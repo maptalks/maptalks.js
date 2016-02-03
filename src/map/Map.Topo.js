@@ -47,12 +47,11 @@ Z.Map.include({
      *                     //是否排除内部图层
      *                     includeInternals : true|false,
      *                     coordinate: coordinate,
-     *                     "layers": [],
-     *                     "success": fn
+     *                     "layers": []
      *                     }
      * @expose
      */
-    identify: function(opts) {
+    identify: function(opts, callback) {
         if (!opts) {
             return;
         }
@@ -70,7 +69,7 @@ Z.Map.include({
             }
         }
         var point = this.coordinateToViewPoint(opts['coordinate']).round();
-        var fn = opts['success'],
+        var fn = callback,
             filter = opts['filter'];
         var hits = [],
             isEnd =false;
@@ -103,7 +102,7 @@ Z.Map.include({
                 }
             }
         }
-        fn.call(this, hits/*{'success': true, 'count':hits.length, 'data': hits}*/);
+        fn.call(this, null, hits);
     }
 
 });

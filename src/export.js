@@ -1,6 +1,6 @@
 
 function exportZ() {
-    var oldZ = window['layertalks'];
+    var oldZ = window['maptalks'];
 
     Z.noConflict = function () {
         window['maptalks'] = oldZ;
