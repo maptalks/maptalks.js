@@ -1,0 +1,38 @@
+{
+  "name": "layertalks",
+  "version": "1.0.0-alpha",
+  "description": "an open-source javascript library for map applications.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MapTalks/layertalks.git"
+  },
+  "devDependencies": {
+    "gulp" : "^3.9.0",
+    "gulp-rename": "~1.2.2",
+    "gulp-header" : "^1.7.1",
+    "gulp-footer" : "^1.0.5",
+    "gulp-cssnano" : "^2.1.0",
+    "gulp-concat" : "^2.6.0",
+    "minimist": "^1.2.0",
+    "jshint": "2.9.x",
+    "gulp-jshint" : "^2.0.0",
+    "gulp-gzip" : "^1.2.0",
+    "gulp-uglify" : "^1.5.1",
+    "gulp-concat" : "^2.6.0",
+    "gulp-coveralls": "^0.1.4",
+    "happen": "~0.2.0",
+    "sinon": "^1.14.1",
+    "karma": "~0.13.19",
+    "karma-chrome-launcher": "^0.2.0",
+    "karma-coverage": "~0.5.1",
+    "karma-firefox-launcher": "~0.1.6",
+    "karma-mocha": "~0.2.0",
+    "karma-phantomjs-launcher": "^0.2.0",
+    "karma-safari-launcher": "~0.1.1",
+    "karma-happen": "git+https://github.com/MapTalks/karma-happen.git",
+    "karma-expect": "^1.1.1",
+    "karma-sinon-ie": "^1.0.2"
+  },
+  "dependencies": {}
+}
