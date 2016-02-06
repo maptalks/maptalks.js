@@ -90,7 +90,7 @@ gulp.task('test', function (done) {
   };
   if (options.coverage) {
     karmaConfig.preprocessors = {
-      'src/!(maptalks)/**/!(Matrix|Promise).js': ['coverage']
+      'src/**/!(Matrix|Promise).js': ['coverage']
     };
     karmaConfig.coverageReporter = {
       type: 'lcov', // lcov or lcovonly are required for generating lcov.info files
