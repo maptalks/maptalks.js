@@ -11,9 +11,12 @@ Z.MultiPoint = Z.MultiPoly.extend({
 
     options:{
         'symbol':{
-            'markerType' : 'pin',
-            'markerHeight' : 26,
-            'markerWidth' : 18
+            'markerType'    : 'pie',
+            'markerHeight'  : 24,
+            'markerWidth'   : 24,
+            'markerFill'    : "#de3333",
+            "markerLineColor" : "#ffffff",
+            "markerLineWidth" : 1
         }
     },
 

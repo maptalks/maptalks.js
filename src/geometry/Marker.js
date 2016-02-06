@@ -11,10 +11,13 @@ Z.Marker=Z.Geometry.extend({
     type: Z.Geometry['TYPE_POINT'],
 
     options:{
-        'symbol':{
-            'markerType' : 'pin',
-            'markerHeight' : 26,
-            'markerWidth' : 18
+        'symbol': {
+            'markerType'    : 'pie',
+            'markerHeight'  : 24,
+            'markerWidth'   : 24,
+            'markerFill'    : "#de3333",
+            "markerLineColor" : "#ffffff",
+            "markerLineWidth" : 1
         }
     },
 
