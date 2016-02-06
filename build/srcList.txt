@@ -34,11 +34,10 @@
 ../src/misc/Promise.js
 ../src/renderer/Renderable.js
 ../src/layer/Layer.js
-../src/layer/Tile/TileLayer.js
+../src/layer/tile/TileLayer.js
 ../src/layer/OverlayLayer.js
 ../src/layer/VectorLayer.js
-../src/layer/ext/HeatmapLayer.js
-../src/layer/ext/D3Layer.js
+../src/layer/HeatmapLayer.js
 ../src/geometry/Geometry.js
 ../src/geometry/ext/Geometry.Edit.js
 ../src/geometry/ext/Geometry.Drag.js
@@ -72,8 +71,6 @@
 ../src/map/Map.Zoom.js
 ../src/map/Map.Topo.js
 ../src/map/Map.DomEvents.js
-../src/map/Map.Snap.js
-../src/map/Map.CartoCSS.js
 ../src/map/Map.FullScreen.js
 ../src/map/Map.Profile.js
 ../src/map/handler/Map.Drag.js
@@ -119,9 +116,4 @@
 ../src/map/ui/Toolbar.js
 ../src/topo/GeoUtils.js
 ../src/topo/SimplifyUtil.js
-../src/maptalks/Map.Snap.js
-../src/maptalks/DynamicLayer.js
-../src/maptalks/query/SpatialFilter.js
-../src/maptalks/query/FeatureQuery.js
-../src/maptalks/query/TopoQuery.js
 ../src/export.js
