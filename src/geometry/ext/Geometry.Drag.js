@@ -252,7 +252,10 @@ Z.Geometry.Drag = Z.Handler.extend({
     },
 
     isDragging:function() {
-        return this._isDragging;
+        if (!this._isDragging) {
+            return false;
+        }
+        return true;
     }
 
 

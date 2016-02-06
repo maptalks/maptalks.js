@@ -68,13 +68,8 @@ Z.Animation = {
     },
 
     framing:function(styles, options) {
-        var styles = styles,
-            duration = options['speed'];
-        if (Z.Util.isString(duration)) {duration = Z.Animation.speed[duration];}
-        if (!duration) {duration = Z.Animation.speed['normal'];}
         var easing = options['easing']?Z.animation.Easing[options['easing']]:Z.animation.Easing.linear;
         if (!easing) {easing = Z.animation.Easing.linear;}
-        var start = options['start'] ? options['start'] : Z.Util.now();
         var dStyles, startStyles, endStyles;
         styles = Z.Animation._resolveStyles(styles);
         if (styles) {
@@ -82,54 +77,52 @@ Z.Animation = {
             dStyles = styles[1];
             endStyles = styles[2];
         }
-        var deltaStyles = function(delta, start, dist) {
-            if (!start || !dist) {
+        var deltaStyles = function(delta, _startStyles, _dStyles) {
+            if (!_startStyles || !_dStyles) {
                 return null;
             }
             var d = {};
-            for (var p in dist) {
-                if (dist.hasOwnProperty(p)) {
-                    var v = dist[p];
+            for (var p in _dStyles) {
+                if (_dStyles.hasOwnProperty(p)) {
+                    var v = _dStyles[p];
                     if (Z.Util.isNumber(v)) {
-                        d[p] = start[p] + delta*dist[p];
+                        d[p] = _startStyles[p] + delta*_dStyles[p];
                     } else {
                         var clazz = v.constructor;
                         if (clazz === Object) {
-                            d[p] = deltaStyles(delta, start[p], dist[p]);
+                            d[p] = deltaStyles(delta, _startStyles[p], _dStyles[p]);
                         } else {
-                            d[p] = start[p].add(dist[p].multi(delta));
+                            d[p] = _startStyles[p].add(_dStyles[p].multi(delta));
                         }
                     }
                 }
             }
             return d;
         }
-        return function(time) {
+        return function(elapsed, duration) {
             var state, d;
-            if (time < start) {
+            if (elapsed < 0) {
               state = {
-                'playing' : 0,
-                'elapsed' : 0,
+                'playState' : "idle",
                 'delta'   : 0
               };
               d = startStyles;
-            } else if (time < start + duration) {
-              var delta = easing((time - start) / duration);
+            } else if (elapsed <  duration) {
+              var delta = easing(elapsed / duration);
               state = {
-                'playing' : 1,
-                'elapsed' : time-start,
+                'playState' : "running",
                 'delta' : delta
               };
               d = deltaStyles(delta, startStyles, dStyles);
             } else {
               state = {
-                'playing' : 0,
-                'elapsed' : time-start,
+                'playState' : "finished",
                 'delta' : 1
               };
               d = endStyles;
             }
-            state['start'] = start;
+            state['startStyles'] = startStyles;
+            state['endStyles'] = endStyles;
             return new Z.animation.Frame(state ,d);
         };
 
@@ -169,42 +162,107 @@ Z.Animation = {
             options = {};
         }
         var animation = Z.Animation.framing(styles, options);
-        var player = function() {
-            var now = Z.Util.now();
-            var frame = animation(now);
-            if (frame.state['elapsed']) {
-                //animation started
-                if (frame.state['playing']) {
-                    var animeFrameId = Z.Animation._requestAnimFrame(function() {
-                        if (step) {
-                            step._animeFrameId = animeFrameId;
-                            var endPlay = step(frame);
-                            if (endPlay) {
-                                Z.Util.cancelAnimFrame(step._animeFrameId);
-                                return;
-                            }
-                        }
-
-                        player();
-                    });
-                } else {
-                    if (step) {
-                        setTimeout(function() {
-                            step(frame);
-                        },1);
-                    }
-                }
-            } else {
-                //延迟到开始时间再开始
-                setTimeout(function() {
-                    player();
-                },frame.state['start']-now);
-            }
-        }
-        Z.Animation._requestAnimFrame(player);
-
+        return new Z.animation.Player(animation, options, step);
     }
 };
+
+/**
+ * Web Animation API style,
+ * https://developer.mozilla.org/zh-CN/docs/Web/API/Animation
+ * @param {[type]} animation [description]
+ * @param {[type]} options   [description]
+ * @param {[type]} step      [description]
+ */
+Z.animation.Player = function(animation, options, step) {
+    this._animation = animation;
+    this._options = options;
+    this._stepFn = step;
+    this.playState = "idle";
+    this.ready = true;
+    this.finished = false;
+}
+
+Z.Util.extend(Z.animation.Player.prototype, {
+    _prepare:function() {
+        var options = this._options;
+        var duration = options['speed'];
+        if (Z.Util.isString(duration)) {duration = Z.Animation.speed[duration];}
+        if (!duration) {duration = Z.Animation.speed['normal'];}
+        this.duration = duration;
+    },
+    cancel:function() {
+         if (this._animeFrameId) {
+            Z.Util.cancelAnimFrame(this._animeFrameId);
+        }
+        this.playState = "idle";
+        this.finished = false;
+    },
+
+    finish:function() {
+        if (this._animeFrameId) {
+            Z.Util.cancelAnimFrame(this._animeFrameId);
+        }
+        this.playState = "finished";
+        this.finished = true;
+    },
+    pause:function() {
+        if (this._animeFrameId) {
+            Z.Util.cancelAnimFrame(this._animeFrameId);
+        }
+        this.playState = "paused";
+        this.duration = this.duration - this.currentTime;
+    },
+    play:function() {
+        if (this.playState !== "idle" && this.playState !== "paused") {
+            return;
+        }
+        if (this.playState === 'idle') {
+            this.currentTime = 0;
+            this._prepare();
+        }
+        var now = Z.Util.now();
+        if (!this.startTime) {
+            var options = this._options;
+            this.startTime = options['startTime'] ? options['startTime'] : now;
+        }
+        this._playStartTime = Math.max(now, this.startTime);
+        this._run();
+    },
+    reverse:function() {
+
+    },
+    _run:function() {
+        if ('finished' === this.playState || 'paused' === this.playState) {
+            return;
+        }
+        var me = this;
+        var now = Z.Util.now();
+        //elapsed, duration
+        var frame = this._animation(now - this._playStartTime, this.duration);
+        this.playState = frame.state['playState'];
+        var step = this._stepFn;
+        if ('idle' === this.playState) {
+            setTimeout(Z.Util.bind(this._run, this),this.startTime-now);
+        } else if ('running' === this.playState) {
+            this._animeFrameId = Z.Animation._requestAnimFrame(function() {
+                me.currentTime = now-me._playStartTime;
+                if (step) {
+                    step(frame);
+                }
+                me._run();
+            });
+        } else {
+            this.finished = true;
+            //finished
+            if (step) {
+                setTimeout(function() {
+                    step(frame);
+                },1);
+            }
+        }
+
+    }
+});
 
 Z.animation.Easing = {
         /**

@@ -33,10 +33,7 @@ Z.Geometry.include({
             }
         }
         var started = false;
-        Z.Animation.animate(aniStyles, options, Z.Util.bind(function(frame) {
-            if (!frame.state['elapsed']) {
-                return;
-            }
+        var player = Z.Animation.animate(aniStyles, options, Z.Util.bind(function(frame) {
             if (!started && isFocusing) {
                 map._onMoveStart();
                 started = true;
@@ -61,7 +58,7 @@ Z.Geometry.include({
                 var center = this.getCenter();
                 var p = projection.project(center);
                 map._setPrjCenterAndMove(p);
-                if (!frame.state['playing']) {
+                if ('running' !== player.playState) {
                     map._onMoveEnd();
                 } else {
                     map._onMoving()
@@ -71,5 +68,7 @@ Z.Geometry.include({
                 callback();
             }
         },this));
+        player.play();
+        return player;
     }
 });

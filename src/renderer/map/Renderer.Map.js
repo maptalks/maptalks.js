@@ -34,36 +34,36 @@ Z.renderer.map.Renderer = Z.Class.extend({
             }
             map._panAnimating = true;
             var preDist = null;
-            Z.Animation.animate({
-                'distance' : distance
-            }, {
-                'easing' : 'out',
-                'speed' : duration
-            }, function(frame) {
-                if (!map._enablePanAnimation) {
-                    map._panAnimating = false;
-                    map._onMoveEnd();
-                    return true;
-                }
-
-                if (frame.state['playing'] && frame.styles['distance']) {
-                    var dist =frame.styles['distance'];
-                    dist = dist.round();
-                    if (!preDist) {
-                        preDist = dist;
+            var player = Z.Animation.animate({
+                    'distance' : distance
+                }, {
+                    'easing' : 'out',
+                    'speed' : duration
+                }, function(frame) {
+                    if (!map._enablePanAnimation) {
+                        map._panAnimating = false;
+                        map._onMoveEnd();
+                        player.finish();
+                        return;
                     }
-                    var offset = dist.substract(preDist);
-                    map.offsetPlatform(offset);
-                    map._offsetCenterByPixel(offset.multi(-1));
-                    preDist = dist;
-                    map._fireEvent('moving');
-                }
-                if (!frame.state['playing']) {
-                    map._panAnimating = false;
-                    map._onMoveEnd();
-                    return true;
-                }
-            });
+
+                    if (player.playState === 'running' && frame.styles['distance']) {
+                        var dist =frame.styles['distance'];
+                        dist = dist.round();
+                        if (!preDist) {
+                            preDist = dist;
+                        }
+                        var offset = dist.substract(preDist);
+                        map.offsetPlatform(offset);
+                        map._offsetCenterByPixel(offset.multi(-1));
+                        preDist = dist;
+                        map._fireEvent('moving');
+                    } else if (player.playState === 'finished') {
+                        map._panAnimating = false;
+                        map._onMoveEnd();
+                    }
+                });
+            player.play();
         } else {
             map._onMoveEnd();
         }
