@@ -1,9 +1,8 @@
 sudo: false
 language: node_js
 node_js:
-  - "0.10"
+  - "5.1"
 before_script:
-  - "npm install -g gulp"
 script: "gulp test --cov"
 after_script:
     - ./node_modules/.bin/gulp coveralls
