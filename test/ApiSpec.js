@@ -374,9 +374,8 @@ describe('API', function () {
             expect(function () {
                 map.identify({
                     coordinate: center,
-                    layers: [layer],
-                    success: spy
-                });
+                    layers: [layer]
+                }, spy);
             }).to.not.throwException();
 
         });

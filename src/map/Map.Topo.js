@@ -102,7 +102,7 @@ Z.Map.include({
                 }
             }
         }
-        fn.call(this, null, hits);
+        fn.call(this, hits);
     }
 
 });

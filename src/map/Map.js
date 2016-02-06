@@ -14,6 +14,7 @@ Z.Map=Z.Class.extend({
 
         'zoomAnimation' : true,
         'zoomAnimationDuration' : 250,
+        //still leave background after zooming, set it to false if baseLayer is a transparent layer
         'zoomBackground' : true,
         //controls whether other layers than base tilelayer will show during zoom animation.
         'layerZoomAnimation' : true,

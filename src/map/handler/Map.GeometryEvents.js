@@ -83,19 +83,19 @@ Z.Map.GeometryEvents = Z.Handler.extend({
             },
             'count' : 1,
             'coordinate' : coordinate,
-            'layers': layers,
-            'success': Z.Util.bind(fireGeometryEvent, this)
+            'layers': layers
         };
+        var callback = Z.Util.bind(fireGeometryEvent, this);
         var me = this;
         if (this._queryIdentifyTimeout) {
                 clearTimeout(this._queryIdentifyTimeout);
             }
         if ('mousemove' === eventType  || eventType === 'touchmove') {
             this._queryIdentifyTimeout = setTimeout(function() {
-                map.identify(me.options);
+                map.identify(me.options, callback);
             }, 20);
         } else {
-            map.identify(me.options);
+            map.identify(me.options, callback);
         }
 
         function fireGeometryEvent(geometries) {
