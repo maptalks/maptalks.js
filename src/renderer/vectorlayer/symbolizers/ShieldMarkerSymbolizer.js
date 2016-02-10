@@ -5,7 +5,7 @@ Z.symbolizer.ShieldMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         "shieldDx"         :  0,
         "shieldDy"         :  0,
 
-        "shieldFaceName"  : "arial",
+        "shieldFaceName"  : "monospace",
         "shieldSize"       :  10,
         "shieldFill"       : "#000000",
         "shieldTextOpacity": 1,

@@ -1,6 +1,6 @@
 Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     defaultSymbol:{
-        "textFaceName"      : "arial",
+        "textFaceName"      : "monospace",
         "textSize"          : 10,
         "textFont"          : null,
         "textFill"          : "#000000",
@@ -8,6 +8,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         "textHaloFill"      : "#ffffff",
         "textHaloRadius"    : 0,
         "textWrapWidth"     : null,
+        "textWrapBefore"    : false,
         "textWrapCharacter" : "",
         "textLineSpacing"   : 0,
 
