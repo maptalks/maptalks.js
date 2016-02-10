@@ -251,6 +251,11 @@ Z.DomUtil = {
      * @return {Object}     屏幕坐标
      */
     getPageCoordinate:function(obj) {
+        if (obj.getBoundingClientRect) {
+            var docEl = +document.documentElement;
+            var rect = obj.getBoundingClientRect();
+            return new Z.Point(rect['left']+docEl['scrollLeft'], rect['top']+docEl['scrollTop']);
+        }
         var topValue= 0,leftValue= 0;
         if (!obj) {
             console.error('obj is null');
