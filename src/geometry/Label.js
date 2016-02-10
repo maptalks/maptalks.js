@@ -35,7 +35,7 @@ Z.Label = Z.Marker.extend({
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
         'boxPadding'   :   new Z.Size(12,8),
-        'boxTextAlign' :   'center'
+        'boxTextAlign' :   'middle'
     },
 
     /**
@@ -124,14 +124,10 @@ Z.Label = Z.Marker.extend({
             if (!symbol['markerType']) {
                 symbol['markerType'] = 'square';
             }
-            var size, textAlignPoint;
+            var size;
             var padding = this.options['boxPadding'];
             if (this.options['boxAutoSize'] || this.options['boxTextAlign']) {
                 size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
-                //背景和文字之间的间隔距离
-                textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
-                textAlignPoint = textAlignPoint._add(new Z.Point(Z.Util.getValueOrDefault(symbol['textDx'],0),Z.Util.getValueOrDefault(symbol['textDy'],0)));
-
             }
             if (this.options['boxAutoSize']) {
                 symbol['markerWidth'] = size['width']+padding['width']*2;
@@ -149,6 +145,9 @@ Z.Label = Z.Marker.extend({
             }
             var align = this.options['boxTextAlign'];
             if (align) {
+                //背景和文字之间的间隔距离
+                var textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
+                textAlignPoint = textAlignPoint._add(new Z.Point(Z.Util.getValueOrDefault(symbol['textDx'],0),Z.Util.getValueOrDefault(symbol['textDy'],0)));
                 symbol['markerDx'] = textAlignPoint.x;
                 symbol['markerDy'] = textAlignPoint.y + size['height']/2;
                 if (align === 'left') {
@@ -164,47 +163,12 @@ Z.Label = Z.Marker.extend({
         this._onSymbolChanged();
     },
 
-    /*_setTextAlign: function(align) {
-        var symbol = this.getSymbol();
-        if (!symbol['markerType']) {
-            symbol['markerType'] = 'square';
-        }
-        var size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
-        if (this.options['box'] && !this.options['boxAutoSize']
-           &&size['width']<this.options['boxMinWidth']) {
-            var textDx = Z.Util.getValueOrDefault(symbol['textDx'],0);
-            var textAlign = Z.Util.getValueOrDefault(this.options['textAlign'], 'center');
-            var dx = (this.options['boxMinWidth'] - size['width'])/2;
-            if(textAlign==='left') {
-                textDx = textDx+dx;
-                if(align==='right') {
-                    dx = textDx+dx;
-                } else {
-                    dx = textDx;
-                }
-            } else if(textAlign==='right') {
-                textDx = textDx-dx;
-                if(align==='left') {
-                    dx = textDx-dx;
-                } else {
-                    dx = textDx;
-                }
-            } else {
-                if(align==='left') {
-                    dx = textDx-dx;
-                } else {
-                    dx = textDx+dx;
-                }
-            }
-            symbol['textDx']= dx;
-            this._onSymbolChanged();
-        }
-    },*/
     _registerEvents: function() {
         this.on('shapechange', this._refresh, this);
         this.on('remove', this._onLabelRemove, this);
         return this;
     },
+
     _onLabelRemove:function() {
         this.off('shapechange', this._refresh, this);
         this.off('remove', this._onLabelRemove,this);
