@@ -191,24 +191,15 @@ Z.Util.extend(Z.animation.Player.prototype, {
         this.duration = duration;
     },
     cancel:function() {
-         if (this._animeFrameId) {
-            Z.Util.cancelAnimFrame(this._animeFrameId);
-        }
         this.playState = "idle";
         this.finished = false;
     },
 
     finish:function() {
-        if (this._animeFrameId) {
-            Z.Util.cancelAnimFrame(this._animeFrameId);
-        }
         this.playState = "finished";
         this.finished = true;
     },
     pause:function() {
-        if (this._animeFrameId) {
-            Z.Util.cancelAnimFrame(this._animeFrameId);
-        }
         this.playState = "paused";
         this.duration = this.duration - this.currentTime;
     },
