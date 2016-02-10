@@ -7,17 +7,13 @@
  */
 Z.Label = Z.Marker.extend({
     defaultSymbol : {
-        "textFaceName": "arial",
+        "textFaceName"  : "monospace",
         "textSize": 12,
-        "textFill": "#000000",
-        "textOpacity": 1,
-        "textSpacing": 30,
-        "textWrapWidth": null,
         "textWrapBefore": false,
         "textWrapCharacter": "\n",
         "textLineSpacing": 8,
         "textHorizontalAlignment": "middle",//left middle right
-        "textVerticalAlignment": "middle", //top middle bottom
+        "textVerticalAlignment": "middle" //top middle bottom
     },
 
     defaultBoxSymbol:{
@@ -25,9 +21,7 @@ Z.Label = Z.Marker.extend({
         "markerLineColor": "#ff0000",
         "markerLineWidth": 2,
         "markerLineOpacity": 0.9,
-        "markerLineDasharray": null,
-        "markerFill": "#ffffff",
-        "markerFillOpacity": 1
+        "markerFill": "#ffffff"
     },
 
     /**
@@ -41,7 +35,7 @@ Z.Label = Z.Marker.extend({
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
         'boxPadding'   :   new Z.Size(12,8),
-        'textAlign'    :   'center'
+        'boxTextAlign' :   'center'
     },
 
     /**
@@ -78,22 +72,7 @@ Z.Label = Z.Marker.extend({
         return this;
     },
 
-    getTextAlign:function() {
-        return this.options['textAlign'];
-    },
-
-     /**
-     * 设置text相对label水平对齐方式
-     */
-    setTextAlign: function(textAlign) {
-        if(this.options['textAlign']!==textAlign) {
-            this._setTextAlign(textAlign);
-            this.options['textAlign'] = textAlign;
-        }
-        return this;
-    },
-
-    setSymbol:function(symbol, noEvent) {
+    setSymbol:function(symbol) {
         if (!symbol || symbol === this.options['symbol']) {
            symbol = {};
         }
@@ -123,41 +102,69 @@ Z.Label = Z.Marker.extend({
         return json;
     },
 
-    _refresh:function(noEvent) {
+    onConfig:function(conf) {
+        var isRefresh = false;
+        for (var p in conf) {
+            if (conf.hasOwnProperty(p)) {
+                if (p.indexOf('box') >= 0) {
+                    isRefresh = true;
+                    break;
+                }
+            }
+        }
+        if (isRefresh) {
+            this._refresh();
+        }
+    },
+
+    _refresh:function() {
         var symbol = this.getSymbol();
         symbol['textName'] = this._content;
         if (this.options['box']) {
             if (!symbol['markerType']) {
                 symbol['markerType'] = 'square';
             }
-            if (this.options['boxAutoSize']) {
-                 var size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
+            var size, textAlignPoint;
+            var padding = this.options['boxPadding'];
+            if (this.options['boxAutoSize'] || this.options['boxTextAlign']) {
+                size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
                 //背景和文字之间的间隔距离
-                var padding = this.options['boxPadding'];
-                var boxAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
-                boxAlignPoint = boxAlignPoint.add(new Z.Point(Z.Util.getValueOrDefault(symbol['textDx'],0),Z.Util.getValueOrDefault(symbol['textDy'],0)));
-                symbol['markerWidth'] = size['width']+padding['width'];
+                textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
+                textAlignPoint = textAlignPoint._add(new Z.Point(Z.Util.getValueOrDefault(symbol['textDx'],0),Z.Util.getValueOrDefault(symbol['textDy'],0)));
 
-                symbol['markerHeight'] = size['height']+padding['height'];
-                symbol['markerDx'] = boxAlignPoint.x+size['width']/2;
-                symbol['markerDy'] = boxAlignPoint.y+size['height']/2;
             }
-        }
-        if (this.options['boxMinWidth']) {
-            if (!symbol['markerWidth'] || symbol['markerWidth'] < this.options['boxMinWidth']) {
-                symbol['markerWidth'] = this.options['boxMinWidth'];
+            if (this.options['boxAutoSize']) {
+                symbol['markerWidth'] = size['width']+padding['width']*2;
+                symbol['markerHeight'] = size['height']+padding['height']*2;
             }
-        }
-        if (this.options['boxMinHeight']) {
-            if (!symbol['markerHeight'] || symbol['markerHeight'] < this.options['boxMinHeight']) {
-                symbol['markerHeight'] = this.options['boxMinHeight'];
+            if (this.options['boxMinWidth']) {
+                if (!symbol['markerWidth'] || symbol['markerWidth'] < this.options['boxMinWidth']) {
+                    symbol['markerWidth'] = this.options['boxMinWidth'];
+                }
+            }
+            if (this.options['boxMinHeight']) {
+                if (!symbol['markerHeight'] || symbol['markerHeight'] < this.options['boxMinHeight']) {
+                    symbol['markerHeight'] = this.options['boxMinHeight'];
+                }
+            }
+            var align = this.options['boxTextAlign'];
+            if (align) {
+                symbol['markerDx'] = textAlignPoint.x;
+                symbol['markerDy'] = textAlignPoint.y + size['height']/2;
+                if (align === 'left') {
+                   symbol['markerDx'] += symbol['markerWidth']/2 - padding['width'];
+                } else if (align === 'right') {
+                   symbol['markerDx'] -= symbol['markerWidth']/2 - size['width'] - padding['width'];
+                } else {
+                    symbol['markerDx'] += size['width']/2;
+                }
             }
         }
         this._symbol = symbol;
         this._onSymbolChanged();
     },
 
-    _setTextAlign: function(align) {
+    /*_setTextAlign: function(align) {
         var symbol = this.getSymbol();
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';
@@ -192,7 +199,7 @@ Z.Label = Z.Marker.extend({
             symbol['textDx']= dx;
             this._onSymbolChanged();
         }
-    },
+    },*/
     _registerEvents: function() {
         this.on('shapechange', this._refresh, this);
         this.on('remove', this._onLabelRemove, this);

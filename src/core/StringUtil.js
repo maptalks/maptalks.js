@@ -144,6 +144,7 @@ Z.StringUtil = {
         if(!Z.Util.isString(text)) {
             text +='';
         }
+        var actualWidth = 0;
         if(wrapChar&&text.indexOf(wrapChar)>=0){
             var texts = text.split(wrapChar);
             //wrapWidth = textWidth/texts.length;
@@ -155,9 +156,12 @@ Z.StringUtil = {
                 if(tWidth>wrapWidth) {
                     var contents = Z.StringUtil.splitContent(t, tWidth, wrapWidth);
                     for (var ii = 0; ii < contents.length; ii++) {
-                        textRows.push({'text':contents[ii],'size':Z.StringUtil.stringLength(contents[ii],font)});
+                        var size = Z.StringUtil.stringLength(contents[ii],font);
+                        if (size['width'] > actualWidth) {actualWidth = size['width'];}
+                        textRows.push({'text':contents[ii],'size':size});
                     }
                 } else {
+                    if (tSize['width'] > actualWidth) {actualWidth = tSize['width'];}
                     textRows.push({'text':t,'size':tSize});
                 }
             }
@@ -165,14 +169,17 @@ Z.StringUtil = {
             if(textWidth>wrapWidth) {
                 var splitted = Z.StringUtil.splitContent(text, textWidth, wrapWidth);
                 for (var iii = 0; iii < splitted.length; iii++) {
-                    textRows.push({'text':splitted[iii],'size':Z.StringUtil.stringLength(splitted[iii],font)});
+                    var size = Z.StringUtil.stringLength(splitted[iii],font);
+                    if (size['width'] > actualWidth) {actualWidth = size['width'];}
+                    textRows.push({'text':splitted[iii],'size':size});
                 }
             } else {
+                if (rawTextSize['width'] > actualWidth) {actualWidth = rawTextSize['width'];}
                 textRows.push({'text':text,'size':rawTextSize});
             }
         }
         var rowNum = textRows.length;
-        var textSize = new Z.Size(wrapWidth, textHeight*rowNum+lineSpacing*(rowNum-1));
+        var textSize = new Z.Size(actualWidth, textHeight*rowNum+lineSpacing*(rowNum-1));
         return {'total': rowNum, 'size': textSize, 'rows': textRows, 'rawSize':rawTextSize};
     },
 

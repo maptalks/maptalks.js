@@ -252,7 +252,7 @@ Z.DomUtil = {
      */
     getPageCoordinate:function(obj) {
         if (obj.getBoundingClientRect) {
-            var docEl = +document.documentElement;
+            var docEl = document.documentElement;
             var rect = obj.getBoundingClientRect();
             return new Z.Point(rect['left']+docEl['scrollLeft'], rect['top']+docEl['scrollTop']);
         }
