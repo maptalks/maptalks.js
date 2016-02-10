@@ -79,15 +79,15 @@ describe('LabelSpec', function() {
             var vector = new maptalks.Label(label,center);
             vector.config('boxAutoSize',false);
             //default textalign
-            expect(vector.getTextAlign()).to.be.eql('center');
-            vector.setTextAlign('right');
-            expect(vector.getTextAlign()).to.be.eql('right');
+            expect(vector.config('boxTextAlign')).to.be.eql('middle');
+            vector.config('boxTextAlign','right');
+            expect(vector.config('boxTextAlign')).to.be.eql('right');
             layer = new Z.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(vector.getTextAlign()).to.be.eql('right');
-            vector.setTextAlign('left');
-            expect(vector.getTextAlign()).to.be.eql('left');
+            expect(vector.config('boxTextAlign')).to.be.eql('right');
+            vector.config('boxTextAlign','left');
+            expect(vector.config('boxTextAlign')).to.be.eql('left');
         });
     });
 
