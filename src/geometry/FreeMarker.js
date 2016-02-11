@@ -11,6 +11,8 @@ Z.FreeMarker = Z.Marker.extend({
      * @cfg {Object} options label属性
      */
     options: {
+        'pathWidth' : 0,
+        'pathHeight' : 0
     },
 
     /**
@@ -57,6 +59,10 @@ Z.FreeMarker = Z.Marker.extend({
        return this;
     },
 
+    getSymbol:function() {
+        return Z.Util.extend({},this._freeSymbol);
+    },
+
     toJSON:function(options) {
         if (!options) {
             options = {};
@@ -93,8 +99,17 @@ Z.FreeMarker = Z.Marker.extend({
             }
         }
         svgStyles = (svgStyles.length>0?svgStyles.join(' '):'');
-        var svg = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs></defs><g><path d="'
-                +this._path+'"'+' '+(svgStyles?svgStyles:'')+'></path></g></svg>';
+        var svg = '<svg version="1.1" ';
+        if (this.options['pathWidth'] && this.options['pathHeight']) {
+            svg += 'height="'+this.options['pathWidth']+'" width="'+this.options['pathHeight']+'"';
+        }
+        svg += ' xmlns="http://www.w3.org/2000/svg"><defs></defs>';
+        var pathes = Z.Util.isArray(this._path)?this._path:[this._path];
+        for (var i = 0; i < pathes.length; i++) {
+            svg += '<path d="'
+                +pathes[i]+'"'+' '+svgStyles+'></path>'
+        }
+        svg += '</svg>';
         var img = 'data:image/svg+xml;base64,'+Z.Util.btoa(svg);
         var actualSymbol = {
             'markerFile'  : img,
