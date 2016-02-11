@@ -1,7 +1,5 @@
 Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
-    defaultIcon: Z.prefix+'images/resource/marker.png',
-
     initialize:function(symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
@@ -30,7 +28,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         }
         for (var i = 0, len=cookedPoints.length;i<len;i++) {
             //图片定位到中心底部
-            var pt = cookedPoints[i].add(new Z.Point(-width/2,-height));
+            var pt = cookedPoints[i].add(new Z.Point(-width/2,-height/2));
             Z.Canvas.image(ctx, pt, img, width, height);
         }
     },
@@ -50,7 +48,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var width = this.style['markerWidth'],
             height = this.style['markerHeight'];
         var dxdy = this.getDxDy();
-        var extent = new Z.Extent(dxdy.add(new Z.Point(-width/2,0)),dxdy.add(new Z.Point(width/2,-height)));
+        var extent = new Z.Extent(dxdy.add(new Z.Point(-width/2,height/2)),dxdy.add(new Z.Point(width/2,-height/2)));
         return extent;
     },
 
