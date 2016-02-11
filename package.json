@@ -10,6 +10,7 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
+    "gulp-connect": "^2.3.1",
     "gulp-coveralls": "^0.1.4",
     "gulp-cssnano": "^2.1.0",
     "gulp-footer": "^1.0.5",

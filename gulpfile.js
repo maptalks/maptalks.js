@@ -9,7 +9,8 @@ var minimist = require('minimist'),
   gzip   = require('gulp-gzip'),
   rename = require('gulp-rename'),
   uglify = require('gulp-uglify'),
-  cssnano = require('gulp-cssnano');
+  cssnano = require('gulp-cssnano'),
+  connect = require('gulp-connect');
 var Server = require('karma').Server;
 
 
@@ -35,7 +36,7 @@ gulp.task('scripts', function() {
       .pipe(footer('\n})();'))          // and some kind of module wrapping
       .pipe(gulp.dest('./dist'))
       .pipe(rename({suffix: '.min'}))
-      .pipe(uglify())
+      // .pipe(uglify())
       .pipe(gulp.dest('./dist'))
       .pipe(gzip())
       .pipe(gulp.dest('./dist'));
@@ -55,7 +56,7 @@ gulp.task('build',['scripts','styles'],function() {
 });
 
 gulp.task('watch', ['build'], function () {
-  var scriptWatcher = gulp.watch(['src/**/*.js', './gulpfile.js','build/srcList.txt'], ['scripts']); // watch the same files in our scripts task
+  var scriptWatcher = gulp.watch(['src/**/*.js', './gulpfile.js','build/srcList.txt'], ['reload']); // watch the same files in our scripts task
   var stylesWatcher = gulp.watch(styles, ['styles']);
 });
 
@@ -127,4 +128,18 @@ gulp.task('tdd', function (done) {
   new Server(karmaConfig, done).start();
 });
 
-gulp.task('default', ['watch']);
+gulp.task('connect',['watch'], function() {
+  connect.server({
+        root: 'dist',
+        livereload: true,
+        port: 20000
+    });
+});
+
+gulp.task('reload',['scripts'], function() {
+    gulp.src('./dist/*.js')
+      .pipe(connect.reload());
+});
+
+gulp.task('default', ['connect']);
+
