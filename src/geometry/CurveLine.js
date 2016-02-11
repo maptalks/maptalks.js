@@ -85,9 +85,10 @@ Z.CurveLine = Z.LineString.extend({
             }
 
         };
+        var symbol = this._getInternalSymbol();
         return {
             "fn" : fn,
-            "context" : [points,this.getSymbol()['lineDasharray'], this.getSymbol()['lineOpacity']]
+            "context" : [points,symbol['lineDasharray'], symbol['lineOpacity']]
         };
     }
 });

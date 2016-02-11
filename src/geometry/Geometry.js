@@ -117,12 +117,7 @@ Z['Geometry']=Z.Geometry=Z.Class.extend({
      * @expose
      */
     getSymbol:function() {
-        if (!this._symbol) {
-            if (this.options['symbol']) {
-                return Z.Util.extend({},this.options['symbol']);
-            }
-        }
-        return Z.Util.extend({},this._symbol);
+        return this._getInternalSymbol();
     },
 
     /**
@@ -531,6 +526,15 @@ Z['Geometry']=Z.Geometry=Z.Class.extend({
        return camelSymbol;
     },
 
+    _getInternalSymbol:function() {
+        if (!this._symbol) {
+            if (this.options['symbol']) {
+                return Z.Util.extend({},this.options['symbol']);
+            }
+        }
+        return this._symbol;
+    },
+
     /**
      * 资源url从相对路径转为绝对路径
      * @param  {[type]} symbol [description]
@@ -666,7 +670,7 @@ Z['Geometry']=Z.Geometry=Z.Class.extend({
     //获取geometry样式中依赖的外部图片资源
     _getExternalResource:function() {
         var geometry = this;
-        var symbol = geometry.getSymbol();
+        var symbol = geometry._getInternalSymbol();
         var resources = Z.Geometry.getExternalResource(symbol);
         return resources;
     },

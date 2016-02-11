@@ -121,7 +121,7 @@ Z.Painter = Z.Class.extend({
     },
 
     _getSymbol:function() {
-        return this.geometry.getSymbol();
+        return this.geometry._getInternalSymbol();
     },
 
     /**
