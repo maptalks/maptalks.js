@@ -1,4 +1,3 @@
-Z.Painter={};
 /**
  * 图形类
  * @class maptalks.Geometry
