@@ -38,6 +38,7 @@
 ../src/layer/OverlayLayer.js
 ../src/layer/VectorLayer.js
 ../src/layer/HeatmapLayer.js
+../src/layer/D3Layer.js
 ../src/geometry/Geometry.js
 ../src/geometry/ext/Geometry.Edit.js
 ../src/geometry/ext/Geometry.Drag.js
@@ -49,6 +50,7 @@
 ../src/geometry/Geometry.Poly.js
 ../src/geometry/Marker.js
 ../src/geometry/Label.js
+../src/geometry/FreeMarker.js
 ../src/geometry/Polygon.js
 ../src/geometry/LineString.js
 ../src/geometry/CurveLine.js

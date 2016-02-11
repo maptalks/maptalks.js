@@ -122,7 +122,7 @@ Z['Geometry']=Z.Geometry=Z.Class.extend({
                 return Z.Util.extend({},this.options['symbol']);
             }
         }
-        return this._symbol;
+        return Z.Util.extend({},this._symbol);
     },
 
     /**

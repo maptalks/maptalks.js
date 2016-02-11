@@ -20,7 +20,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.symbol = symbol;
         this.geometry = geometry;
         this.style = this.translate();
-        this.strokeAndFill = this.translateStrokeAndFill(this.style);
+        this.strokeAndFill = Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(this.style);
     },
 
     symbolize:function(ctx, resources) {
@@ -141,34 +141,6 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         return result;
     },
 
-    translateStrokeAndFill:function(s) {
-        var result = {
-            "stroke" :{
-                "stroke" : s['markerLineColor'],
-                "stroke-width" : s['markerLineWidth'],
-                "stroke-opacity" : s['markerLineOpacity'],
-                "stroke-dasharray": null,
-                "stroke-linecap" : "butt",
-                "stroke-linejoin" : "round"
-            },
-
-            "fill" : {
-                "fill"          : s["markerFill" ],
-                "fill-opacity"  : s["markerFillOpacity"]
-            }
-        };
-        //vml和svg对linecap的定义不同
-        if (result['stroke']['stroke-linecap'] === "butt") {
-            if (Z.Browser.vml) {
-                result['stroke']['stroke-linecap'] = "flat";
-            }
-        }
-        if (result['stroke']['stroke-width'] === 0) {
-            result['stroke']['stroke-opacity'] = 0;
-        }
-        return result;
-    },
-
     _getVectorArray: function(style) {
         //ignore case
         var markerType = style['markerType'].toLowerCase();
@@ -239,4 +211,32 @@ Z.symbolizer.VectorMarkerSymbolizer.test=function(geometry, symbol) {
         return true;
     }
     return false;
+};
+
+Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill=function(s) {
+    var result = {
+        "stroke" :{
+            "stroke" : s['markerLineColor'],
+            "stroke-width" : s['markerLineWidth'],
+            "stroke-opacity" : s['markerLineOpacity'],
+            "stroke-dasharray": null,
+            "stroke-linecap" : "butt",
+            "stroke-linejoin" : "round"
+        },
+
+        "fill" : {
+            "fill"          : s["markerFill" ],
+            "fill-opacity"  : s["markerFillOpacity"]
+        }
+    };
+    //vml和svg对linecap的定义不同
+    if (result['stroke']['stroke-linecap'] === "butt") {
+        if (Z.Browser.vml) {
+            result['stroke']['stroke-linecap'] = "flat";
+        }
+    }
+    if (result['stroke']['stroke-width'] === 0) {
+        result['stroke']['stroke-opacity'] = 0;
+    }
+    return result;
 };
