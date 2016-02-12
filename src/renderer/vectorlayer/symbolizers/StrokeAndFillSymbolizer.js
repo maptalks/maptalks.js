@@ -77,7 +77,11 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         var s = this.symbol;
         var d = this.defaultSymbol;
         var result = {};
-        Z.Util.extend(result, d, s);
+        Z.Util.extend(result, d);
+        if (!Z.Util.isNil(s['polygonFill'])) {
+            result['polygonOpacity'] = 1;
+        }
+        Z.Util.extend(result, s);
         if (result['polygonPatternFile']) {
             delete result['polygonFill'];
         }
