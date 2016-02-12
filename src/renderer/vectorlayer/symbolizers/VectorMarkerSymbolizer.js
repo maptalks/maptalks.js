@@ -67,8 +67,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 }
                 var lineCap = ctx.lineCap;
                 ctx.lineCap = 'round'; //set line cap to round to close the pin bottom
-                Z.Canvas.bezierCurve(ctx,vectorArray,null, lineOpacity);
-                Z.Canvas.fillCanvas(ctx, fillOpacity);
+                Z.Canvas.bezierCurveAndFill(ctx,vectorArray,null, lineOpacity);
                 ctx.lineCap = lineCap;
             } else if (markerType === 'pie') {
                 point = point.add(new Z.Point(0,-style['markerLineWidth']/2));

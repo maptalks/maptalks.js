@@ -390,11 +390,12 @@ Z.Canvas = {
         ctx.lineTo(p.x, p.y);
     },
 
-    bezierCurve:function(ctx, points, lineDashArray, lineOpacity) {
+    bezierCurveAndFill:function(ctx, points, lineDashArray, lineOpacity) {
         ctx.beginPath(points);
         var start = points[0].round();
         ctx.moveTo(start.x,start.y);
         Z.Canvas._bezierCurveTo.apply(Z.Canvas, [ctx].concat(points.splice(1)));
+        Z.Canvas.fillCanvas(ctx, fillOpacity);
         Z.Canvas._stroke(ctx, lineOpacity);
     },
 
@@ -427,6 +428,7 @@ Z.Canvas = {
            Z.Canvas._bezierCurveTo(ctx, new Z.Point(x + a, y + oy), new Z.Point(x + ox, y + b), new Z.Point(x, y + b));
            Z.Canvas._bezierCurveTo(ctx, new Z.Point(x - ox, y + b), new Z.Point(x - a, y + oy), new Z.Point(x - a, y));
            ctx.closePath();
+           Z.Canvas.fillCanvas(ctx, fillOpacity);
            Z.Canvas._stroke(ctx, lineOpacity);
         }
         pt = pt.round();
@@ -434,11 +436,12 @@ Z.Canvas = {
             //如果高宽相同,则直接绘制圆形, 提高效率
             ctx.beginPath();
             ctx.arc(pt.x,pt.y,Z.Util.round(size['width']),0,2*Math.PI);
+            Z.Canvas.fillCanvas(ctx, fillOpacity);
             Z.Canvas._stroke(ctx, lineOpacity);
         } else {
             bezierEllipse(pt.x,pt.y,size["width"],size["height"]);
         }
-        Z.Canvas.fillCanvas(ctx, fillOpacity);
+
     },
 
     rectangle:function(ctx, pt, size, lineOpacity, fillOpacity) {
@@ -446,8 +449,8 @@ Z.Canvas = {
         ctx.beginPath();
         ctx.rect(pt.x, pt.y,
             Z.Util.round(size['width']),Z.Util.round(size['height']));
-        Z.Canvas._stroke(ctx, lineOpacity);
         Z.Canvas.fillCanvas(ctx, fillOpacity);
+        Z.Canvas._stroke(ctx, lineOpacity);
     },
 
     sector:function(ctx, pt, size, angles, lineOpacity, fillOpacity) {
@@ -461,10 +464,10 @@ Z.Canvas = {
             ctx.moveTo(x,y);
             ctx.arc(x, y, radius,sDeg, eDeg);
             ctx.lineTo(x,y);
+            Z.Canvas.fillCanvas(ctx, fillOpacity);
             Z.Canvas._stroke(ctx, lineOpacity);
         }
         pt = pt.round();
         sector(ctx,pt.x,pt.y,size,startAngle,endAngle);
-        Z.Canvas.fillCanvas(ctx, fillOpacity);
     }
 };

@@ -234,10 +234,11 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     clearMask:function(mask) {
         delete this._mask;
         if (!this.getMap() || this.getMap().isBusy()) {
-            return;
+            return this;
         }
-        var render = this._getRenderer();
-        render && render.render();
+        var renderer = this._getRenderer();
+        renderer && renderer.render();
+        return this;
     },
 
     _onRemove:function() {
