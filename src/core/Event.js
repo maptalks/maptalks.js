@@ -11,7 +11,7 @@ Z.Eventable = {
      * @param {Object} context 上下文对象
      * @return {Object} 上下文对象
      */
-    'addEventListener':function(eventTypeArr, handler, context) {
+    on:function(eventTypeArr, handler, context) {
         if (!eventTypeArr || !handler) {return this;}
         if (!this._eventMap) {
             this._eventMap = {};
@@ -48,7 +48,7 @@ Z.Eventable = {
      * @param {Object} context 上下文对象
      * @return {Object} 上下文对象
      */
-    'removeEventListener':function(eventTypeArr, handler, context) {
+    off:function(eventTypeArr, handler, context) {
         if (!eventTypeArr || !this._eventMap || !handler) {return this;}
         var eventTypes = eventTypeArr.split(' ');
         var eventType;
@@ -57,21 +57,13 @@ Z.Eventable = {
             eventType = eventTypes[j].toLowerCase();
             var handlerChain =  this._eventMap[eventType];
             if (!handlerChain) {return this;}
-            // var hits = [];
             for (var i=0, len= handlerChain.length;i<len;i++) {
                 if (handler == handlerChain[i].handler) {
                     if ((context && (handlerChain[i].context == context)) || Z.Util.isNil(context)) {
-                        // hits.push(i);
                         handlerChain[i].del = true;
                     }
                 }
             }
-            /*if (hits.length > 0) {
-                for (var len=hits.length, i=len-1;i>=0;i--) {
-                    handlerChain.splice(hits[i],1);
-                }
-                // handlerChain.splice(start,1);
-            }*/
         }
         return this;
     },
@@ -115,11 +107,11 @@ Z.Eventable = {
         return this;
     },
 
-    _executeListeners:function(eventType, param) {
-        if (!this._eventMap) {return;}
+    fire:function(eventType, param) {
+        if (!this._eventMap) {return this;}
         //if (!this.hasListeners(eventType)) {return;}
         var handlerChain = this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain) {return;}
+        if (!handlerChain) {return this;}
         if (!param) {
             param = {};
         }
@@ -151,17 +143,10 @@ Z.Eventable = {
                 handlerChain.splice(delhits[i],1);
             }
         }
+        return this;
     }
 };
 
-/**
- * 添加事件
- * @param {String} eventTypeArr 事件名字符串，多个事件名用空格分开
- * @param {Function} handler 事件触发后的回调函数
- * @param {Object} context 上下文对象
- * @return {Object} 上下文对象
- */
-Z.Eventable.on = Z.Eventable['addEventListener'];
 
 Z.Eventable.once = function(eventTypeArr, handler, context) {
     var me = this;
@@ -171,20 +156,3 @@ Z.Eventable.once = function(eventTypeArr, handler, context) {
     }
     return this.on(eventTypeArr, onceHandler, context);
 }
-
-/**
- * 删除事件
- * @param {String} eventTypeArr 事件名字符串，多个事件名用空格分开
- * @param {Function} handler 事件触发后的回调函数
- * @param {Object} context 上下文对象
- * @return {Object} 上下文对象
- */
-Z.Eventable.off = Z.Eventable['removeEventListener'];
-
-
-/**
- * 执行事件
- * @param {String} eventType 事件名
- * @param {Object} param 参数
- */
-Z.Eventable.fire = Z.Eventable._executeListeners;
