@@ -87,7 +87,7 @@ Z['InfoWindow'] = Z.InfoWindow = Z.UIComponent.extend({
             container.appendChild(dom);
             this._size = new Z.Size(dom.clientWidth+6, dom.clientHeight);
             var minHeight = this.options['minHeight'];
-            if (minHeight>0 && this._size['height']/minHeight) {
+            if (minHeight>0 && this._size['height']<minHeight) {
                 dom.style.height = minHeight+'px';
                 this._size['height'] = minHeight;
             }
@@ -115,7 +115,7 @@ Z['InfoWindow'] = Z.InfoWindow = Z.UIComponent.extend({
             if (this.options['title']) {
                 content += '<h2>'+this.options['title']+'</h2>';
             }
-            content += '<a href="javascript:;" onclick="this.parentNode.style.display=\'none\';" '+
+            content += '<a href="javascript:void(0);" onclick="this.parentNode.style.display=\'none\';return false;" '+
             ' class="maptalks-close"></a><div class="maptalks-msgContent">'+this.options['content']+'</div>';
             dom.innerHTML = content;
             return dom;
