@@ -246,6 +246,7 @@ describe('#Map Profile', function () {
 
         it('profile Label',function() {
             var options = {
+                'id' : 'label',
                 'symbol': {
                     'markerLineColor': '#ff0000',
                     'markerLineWidth': 1,
@@ -283,6 +284,7 @@ describe('#Map Profile', function () {
             var json = label.toJSON();
             var deser = maptalks.Geometry.fromJSON(json);
             expect(deser instanceof maptalks.Label).to.be.ok();
+            expect(deser.getId()).to.be.eql('label');
             var options = deser.config();
             expect(options.draggable).not.to.be.ok();
             expect(options.boxAutoSize).not.to.be.ok();

@@ -6,7 +6,7 @@
  * @mixins maptalks.Eventable
  * @author Maptalks Team
  */
-Z['Geometry']=Z.Geometry=Z.Class.extend({
+Z.Geometry=Z.Class.extend({
     includes: [Z.Eventable, Z.Handlerable],
 
     exceptionDefs:{
@@ -799,6 +799,9 @@ Z.Geometry.fromJSON = function(json) {
     var geometry;
     if (json['subType']) {
         geometry = Z[json['subType']]._fromJSON(json);
+        if (!Z.Util.isNil(json['feature']['id'])) {
+            geometry.setId(json['feature']['id']);
+        }
     } else {
         var feature = json['feature'];
         geometry = Z.GeoJSON.fromGeoJSON(feature);
