@@ -26,16 +26,20 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
      * 基于Canvas的渲染方法, layers总定义了要渲染的图层
      */
     render:function() {
+
         if (!this._canvas) {
             this._createCanvas();
         }
+
         //更新画布的长宽, 顺便清空画布
         if (!this._updateCanvasSize()) {
             this._clearCanvas();
         }
+
         var mwidth = this._canvas.width,
             mheight = this._canvas.height;
         this._drawBackground();
+
         var layers = this._getAllLayerToCanvas();
         for (var i = 0, len=layers.length; i < len; i++) {
             if (!layers[i].isVisible()) {
@@ -52,12 +56,12 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
     },
 
     onZoomStart:function(startScale, endScale, transOrigin, duration, fn) {
-        var map = this.map;
-        var me = this;
         if (Z.Browser.ielt9) {
-            fn.call(me);
+            fn.call(this);
             return;
         }
+        var map = this.map;
+        var me = this;
 
         this._clearCanvas();
         var baseLayer = map.getBaseLayer();
@@ -94,7 +98,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
                 },
                 Z.Util.bind(function(frame) {
                     var matrixes = this.getZoomMatrix(frame.styles['scale'], transOrigin);
-                    this.transform(matrixes[0], matrixes[1], layersToTransform);
                     if (player.playState === 'finished') {
                         delete this._transMatrix;
                         this._clearCanvas();
@@ -102,12 +105,11 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
                         matrixes[1].applyToContext(this._context);
                         if (baseLayerImage) {
                             this._drawLayerCanvasImage(baseLayerImage, width, height);
-                            // this._canvasBg = Z.DomUtil.copyCanvas(this._canvas);
                         }
-
                         this._context.restore();
-
                         fn.call(me);
+                    } else if (player.playState === 'running'){
+                        this.transform(matrixes[0], matrixes[1], layersToTransform);
                     }
                 }, this)
             );
@@ -153,7 +155,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
             if (render) {
                 if (!ecoTransform) {
                     this._context.save();
-                    if (layers[i] instanceof Z.TileLayer || render.shouldEcoTransform()) {
+                    if ((layers[i] instanceof Z.TileLayer) || render.shouldEcoTransform()) {
                         retinaMatrix.applyToContext(this._context);
                     } else {
                         //redraw all the geometries with transform matrix
@@ -314,12 +316,12 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
                     return;
                 }
                 var vp = param['viewPoint'];
-                var layers = map.getLayers();
+                var layers = map._getLayers();
                 var hit = false,
                     cursor;
                 for (var i = layers.length - 1; i >= 0; i--) {
                     var layer = layers[i];
-                    if (layer instanceof Z.VectorLayer && layer.isCanvasRender()) {
+                    if (!(layer instanceof Z.TileLayer) && layer.isCanvasRender()) {
                         if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(vp)) {
                             cursor = layer.options['cursor'];
                             hit = true;

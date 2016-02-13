@@ -31,7 +31,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
      * @param  {[Geometry]} geometries   geometries to render
      * @param  {boolean} ignorePromise   whether escape step of promise
      */
-    render:function(geometries, ignorePromise) {
+    render:function(geometries) {
         this._clearTimeout();
         if (!this.getMap()) {
             return;
@@ -39,41 +39,34 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
         if (!this._layer.isVisible()) {
             return;
         }
-        if (Z.Util.isArrayHasData(geometries) && geometries.length === 1) {
-            //if geometry is being editted or dragged, draw it ASAP
-            if (geometries[0]._isRenderImmediate()) {
-                var resources = geometries[0]._getExternalResource();
-                //if true, it means geometry's resources are all loaded and ready to draw.
-                var isReadyToDraw = true;
-                if (Z.Util.isArrayHasData(resources)) {
-                    if (!this._resources) {
-                        isReadyToDraw = false;
-                    } else {
-                        for (var i = resources.length - 1; i >= 0; i--) {
-                            if (!this._resources.getImage(resources[i])) {
-                                isReadyToDraw = false;
-                                break;
-                            }
-                        }
-                    }
-
+        var resources = (this._resourcesToLoad || []);
+        var immediate = false;
+        if (Z.Util.isArrayHasData(geometries)) {
+            for (var i = geometries.length - 1; i >= 0; i--) {
+                var res = geometries[i]._getExternalResource();
+                if (!immediate && geometries[i]._isRenderImmediate()) {
+                    immediate = true;
                 }
-                if (isReadyToDraw) {
-                    this.renderImmediate();
-                    return;
+                if (!this._resources || !this._resources.getImage(resources[i])) {
+                    resources.push(res);
                 }
-            }
+           }
         }
-
+        if (resources.length === 0 && immediate) {
+            this.renderImmediate();
+            return;
+        }
+        if (resources.length > 0) {
+            this._resourcesToLoad = resources;
+        }
         var me = this;
         this._renderTimeout = setTimeout(function() {
-            if (ignorePromise) {
-                me.renderImmediate();
-            } else {
+            if (Z.Util.isArrayHasData(me._resourcesToLoad)) {
                 me._promise();
+            } else {
+                me.renderImmediate();
             }
         },1);
-
     },
 
     draw:function() {
@@ -85,9 +78,15 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
         //载入资源后再进行绘制
         if (!this._canvas) {
             this._createCanvas();
+        } else {
+            this._clearCanvas();
         }
         var layer = this._layer;
-        if (layer.isEmpty() || !layer.isVisible()) {
+        if (layer.isEmpty()) {
+            delete this._resources;
+            return;
+        }
+        if (!layer.isVisible()) {
             return;
         }
         var viewExtent = map._getViewExtent();
@@ -98,7 +97,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
         if (this._clipped) {
             this._context.restore();
         }
-        this._clearCanvas();
+
         var mask = layer.getMask();
         if (mask) {
             var maskPxExtent = mask._getPainter().getPixelExtent();
@@ -276,17 +275,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
         if (!this.getMap()) {
             return;
         }
-        if (this._layer.isEmpty()) {
+        if (this._layer.isEmpty() || !Z.Util.isArrayHasData(this._resourcesToLoad)) {
             this.renderImmediate();
             return;
         }
-        var resourceUrls = [];
-        this._layer._eachGeometry(function(geo) {
-            if (!geo || !geo.isVisible()) {
-                return;
-            }
-            resourceUrls = resourceUrls.concat(geo._getExternalResource());
-        });
+        var resourceUrls = this._resourcesToLoad;
         this._loadResources(resourceUrls, this.renderImmediate, this);
     },
 
@@ -298,8 +291,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
      */
     _loadResources:function(resourceUrls, onComplete, context) {
         var me = this;
-        var preResources = this._resources;
-        this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
+        //var preResources = this._resources;
+        if (!this._resources) {
+            this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
+        }
+        var resources = this._resources;
         var promises = [];
         var crossOrigin = this._layer.options['crossOrigin'];
         function onPromiseCallback(_url) {
@@ -309,7 +305,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
                             img['crossOrigin'] = crossOrigin;
                         }
                         img.onload = function(){
-                            me._resources.addResource(_url,this);
+                            resources.addResource(_url,this);
                             resolve({});
                         };
                         img.onabort = function(){
@@ -335,23 +331,25 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
                     continue;
                 }
                 cache[url] = 1;
-                if (!preResources || !preResources.getImage(url)) {
+                if (!resources.getImage(url)) {
                     //closure it to preserve url's value
                     var promise = new Z.Promise((onPromiseCallback)(url));
                     promises.push(promise);
-                } else {
-                    me._resources.addResource(url,preResources.getImage(url));
                 }
             }
         }
+        function whenPromiseEnd() {
+            delete me._resourcesToLoad;
+            onComplete.call(context);
+        }
         if (promises.length > 0) {
             Z.Promise.all(promises).then(function(reources) {
-                onComplete.call(context);
+                whenPromiseEnd();
             },function() {
-                onComplete.call(context);
+               whenPromiseEnd();
             });
         } else {
-            onComplete.call(context);
+            whenPromiseEnd();
         }
     },
 

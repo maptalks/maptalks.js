@@ -222,29 +222,13 @@ Z.Painter = Z.Class.extend({
         if (!geometry.getMap()) {
             return;
         }
-        var needPromise = false,
-            layer = geometry.getLayer(),
-            render = layer._getRenderer();
-        if (!render) {
+        var layer = geometry.getLayer(),
+            renderer = layer._getRenderer();
+        if (!renderer) {
             return;
         }
-        //check if geometry's resources have already loaded, if not, layer render needs to promise to load resources at first.
-        var resources = geometry._getExternalResource();
-        if (Z.Util.isArrayHasData(resources)) {
-            for (var i = resources.length - 1; i >= 0; i--) {
-            if (!render.isResourceLoaded(resources[i])) {
-                    needPromise = true;
-                    break;
-                }
-            }
-        }
         if (layer.isCanvasRender()) {
-            var immediate = !needPromise && geometry._isRenderImmediate();
-            if (immediate) {
-                render.renderImmediate();
-            } else {
-                render.render(null,!needPromise);
-            }
+            renderer.render([geometry]);
         }
     },
 

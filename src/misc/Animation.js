@@ -242,7 +242,7 @@ Z.Util.extend(Z.animation.Player.prototype, {
                 }
                 me._run();
             });
-        } else {
+        } else if ('finished' === this.playState){
             this.finished = true;
             //finished
             if (step) {
