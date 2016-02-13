@@ -390,7 +390,7 @@ Z.Canvas = {
         ctx.lineTo(p.x, p.y);
     },
 
-    bezierCurveAndFill:function(ctx, points, lineDashArray, lineOpacity) {
+    bezierCurveAndFill:function(ctx, points, lineDashArray, lineOpacity, fillOpacity) {
         ctx.beginPath(points);
         var start = points[0].round();
         ctx.moveTo(start.x,start.y);

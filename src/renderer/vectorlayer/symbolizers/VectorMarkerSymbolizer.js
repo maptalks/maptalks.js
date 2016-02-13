@@ -24,7 +24,6 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     symbolize:function(ctx, resources) {
-
         var cookedPoints = this._getRenderContainerPoints();
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
@@ -67,7 +66,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 }
                 var lineCap = ctx.lineCap;
                 ctx.lineCap = 'round'; //set line cap to round to close the pin bottom
-                Z.Canvas.bezierCurveAndFill(ctx,vectorArray,null, lineOpacity);
+                Z.Canvas.bezierCurveAndFill(ctx,vectorArray,null, lineOpacity, fillOpacity);
                 ctx.lineCap = lineCap;
             } else if (markerType === 'pie') {
                 point = point.add(new Z.Point(0,-style['markerLineWidth']/2));

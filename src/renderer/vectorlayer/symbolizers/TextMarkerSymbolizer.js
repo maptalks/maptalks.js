@@ -9,7 +9,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         "textHaloRadius"    : 0,
         "textWrapWidth"     : null,
         "textWrapBefore"    : false,
-        "textWrapCharacter" : "",
+        "textWrapCharacter" : null,
         "textLineSpacing"   : 0,
 
         "textDx"            : 0,
