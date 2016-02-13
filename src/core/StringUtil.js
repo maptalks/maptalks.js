@@ -66,18 +66,18 @@ Z.StringUtil = {
         // ruler.style.fontSize = fontSize+'px';
         // ruler.style.fontWeight = 'bold';
         ruler.innerHTML = text;
-        return new Z.Size(ruler.clientWidth, ruler.clientHeight);
+        var result = new Z.Size(ruler.clientWidth, ruler.clientHeight);
+        //不删除的话, Chrome上canvas背景会变成蓝色, 原因未明
+        Z.DomUtil.removeDomNode(ruler);
+        return result;
+
     },
 
     _getStrRuler:function(){
-        if (!Z.StringUtil._strRuler) {
-            var span = document.createElement("span");
-            span.style.cssText="position:absolute;left:-10000px;top:-10000px;";
-            document.body.appendChild(span);
-            Z.StringUtil._strRuler = span;
-        }
-
-        return Z.StringUtil._strRuler;
+        var span = document.createElement("span");
+        span.style.cssText="position:absolute;left:-10000px;top:-10000px;";
+        document.body.appendChild(span);
+        return span;
     },
 
     _strRuler:null,
