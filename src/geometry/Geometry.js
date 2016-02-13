@@ -45,7 +45,6 @@ Z.Geometry=Z.Class.extend({
         'crossOrigin' : null,
         'shadowBlur' : 0,
         'shadowColor' : 'black',
-        //true means this is an euclidean geometry
         'measure' : 'EPSG:4326', // BAIDU, IDENTITY
     },
 
@@ -491,10 +490,10 @@ Z.Geometry=Z.Class.extend({
             opts = {};
         }
         var symbol = opts['symbol'] || this.options['symbol'];
-        delete opts['symbol'];
         var id = opts['id'];
-        delete opts['id'];
         Z.Util.setOptions(this,opts);
+        delete this.options['symbol'];
+        delete this.options['id'];
         if (symbol) {
             this.setSymbol(symbol);
         }
