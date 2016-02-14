@@ -125,10 +125,16 @@ Z.Eventable = {
             //增加type和target参数, 表示事件类型和事件源对象
             param['type'] = eventType;
             param['target'] = this;
+            var bubble = true;
             if (context) {
-                handlerChain[i].handler.call(context,param);
+                bubble = handlerChain[i].handler.call(context,param);
             } else {
-                handlerChain[i].handler(param);
+                bubble = handlerChain[i].handler(param);
+            }
+            if (!bubble) {
+                if (param['domEvent']) {
+                    Z.DomUtil.stopPropagation(param['domEvent']);
+                }
             }
         }
         for (i=0, len = handlerChain.length;i<len; i++) {

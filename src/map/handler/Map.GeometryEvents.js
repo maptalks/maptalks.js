@@ -30,14 +30,14 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         var map = this.target;
         /**
         map.off('mousedown mouseup mousemove click dblclick contextmenu', this._identifyGeometryEvents, this);*/
-        var canvasContainer;
+        var dom;
         if (Z.Browser.ie9) {
-            canvasContainer = map._panels.canvasLayerContainer;
+            dom = map._panels.canvasLayerContainer;
         } else {
-            canvasContainer = map._panels.mapWrapper;
+            dom = map._panels.mapWrapper;
         }
-        if(canvasContainer) {
-            Z.DomUtil.off(canvasContainer,this.EVENTS, this._identifyGeometryEvents, this);
+        if(dom) {
+            Z.DomUtil.off(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
         // map.off('_mousedown _mouseup _mousemove _click _dblclick _contextmenu', this._identifyGeometryEvents, this);
     },
