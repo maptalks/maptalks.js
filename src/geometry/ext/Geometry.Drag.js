@@ -89,12 +89,7 @@ Z.Geometry.Drag = Z.Handler.extend({
         this._shadow = target.copy();
         var shadow = this._shadow;
         if (target.options['dragShadow']) {
-            var symbol = shadow.getSymbol();
-            if (!Z.Util.isNil(symbol['opacity'])) {
-                symbol['opacity'] *= 0.5;
-            } else {
-                symbol['opacity'] = 0.5;
-            }
+            var symbol = Z.Util.decreaseSymbolOpacity(shadow.getSymbol(), 0.5);
             shadow.setSymbol(symbol);
         }
         shadow.setId(null);
@@ -111,7 +106,7 @@ Z.Geometry.Drag = Z.Handler.extend({
                     connOptions['symbol'] = connSymbol;
                 var conn;
                 if (targetConn.getConnectSource() == target) {
-                     conn = new maptalks.ConnectorLine(shadow, targetConn.getConnectTarget(),connOptions);
+                     conn = new maptalks.ConnectorLine(shadow, targetConn.getConnectTarget(), connOptions);
                 } else {
                      conn = new maptalks.ConnectorLine(targetConn.getConnectSource(), shadow, connOptions);
                 }

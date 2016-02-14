@@ -213,24 +213,22 @@ Z.Editor=Z.Class.extend({
             onDown:function(v, param) {
                 shadow = this._shadow.copy();
                 shadow._isRenderImmediate(true);
-                var symbol = shadow.getSymbol(),
-                    op = symbol['opacity'];
-                if (Z.Util.isNil(op)) {
-                    symbol['opacity'] = 0.5;
-                } else {
-                    symbol['opacity'] *= 0.5;
-                }
+                var symbol = Z.Util.decreaseSymbolOpacity(shadow.getSymbol(), 0.5);
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },
             onMove:function(v,param) {
                 var dragOffset = param['dragOffset'];
-                shadow.translate(dragOffset);
-                this._geometry.translate(dragOffset);
+                if (shadow) {
+                    shadow.translate(dragOffset);
+                    this._geometry.translate(dragOffset);
+                }
             },
             onUp:function(param) {
-                this._shadow.setCoordinates(this._geometry.getCoordinates());
-                shadow.remove();
-                me._refresh();
+                if (shadow) {
+                    this._shadow.setCoordinates(this._geometry.getCoordinates());
+                    shadow.remove();
+                    me._refresh();
+                }
             }
         });
         this._appendHandler(handle);

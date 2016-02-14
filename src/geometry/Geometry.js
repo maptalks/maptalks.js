@@ -314,8 +314,28 @@ Z.Geometry=Z.Class.extend({
      * @expose
      */
     isVisible:function() {
+        if (!this.options['visible']) {
+            return false;
+        }
         var symbol = this.getSymbol();
-        return this.options['visible'] && (!symbol || Z.Util.isNil(symbol['opacity']) || (Z.Util.isNumber(symbol['opacity']) && symbol['opacity'] > 0));
+        if (!symbol) {
+            return true;
+        }
+        if (Z.Util.isArray(symbol)) {
+            if (symbol.length === 0) {
+                return true;
+            }
+            var visible = false;
+            for (var i = 0; i < symbol.length; i++) {
+                if (Z.Util.isNil(symbol[i]['opacity']) || (Z.Util.isNumber(symbol[i]['opacity']) && symbol[i]['opacity'] > 0)) {
+                    visible = true;
+                    break;
+                }
+            }
+            return visible;
+        } else {
+            return (Z.Util.isNil(symbol['opacity']) || (Z.Util.isNumber(symbol['opacity']) && symbol['opacity'] > 0));
+        }
     },
 
     /**
@@ -519,16 +539,28 @@ Z.Geometry=Z.Class.extend({
     },
 
     _prepareSymbol:function(symbol) {
-              //属性的变量名转化为驼峰风格
-       var camelSymbol = Z.Util.convertFieldNameStyle(symbol,'camel');
-       this._convertResourceUrl(camelSymbol);
-       return camelSymbol;
+        var me = this;
+        function prepare(_symbol) {
+            var camelSymbol = Z.Util.convertFieldNameStyle(_symbol,'camel');
+            me._convertResourceUrl(camelSymbol);
+            return camelSymbol;
+        }
+        if (Z.Util.isArray(symbol)) {
+            var camelSymbols = [];
+            for (var i = 0; i < symbol.length; i++) {
+                var camelSymbol = prepare(symbol[i]);
+                camelSymbols.push(camelSymbol);
+            }
+            return camelSymbols;
+        } else {
+            return prepare(symbol);
+        }
     },
 
     _getInternalSymbol:function() {
         if (!this._symbol) {
             if (this.options['symbol']) {
-                return Z.Util.extend({},this.options['symbol']);
+                return Z.Util.extendSymbol(this.options['symbol']);
             }
         }
         return this._symbol;
@@ -825,22 +857,29 @@ Z.Geometry.getExternalResource = function(symbol) {
     if (!symbol) {
         return null;
     }
+    var symbols = symbol;
+    if (!Z.Util.isArray(symbol)) {
+        symbols = [symbol];
+    }
     var resources = [];
-    var icon = symbol['markerFile'];
-    if (icon) {
-        resources.push(icon);
-    }
-    icon = symbol['shieldFile'];
-    if (icon) {
-        resources.push(icon);
-    }
-    var fill = symbol['polygonPatternFile'];
-    if (fill) {
-        resources.push(Z.Util.extractCssUrl(fill));
-    }
-    var linePattern = symbol['linePatternFile'];
-    if (linePattern) {
-        resources.push(Z.Util.extractCssUrl(linePattern));
+    for (var i = symbols.length - 1; i >= 0; i--) {
+        var symbol = symbols[i];
+        var icon = symbol['markerFile'];
+        if (icon) {
+            resources.push(icon);
+        }
+        icon = symbol['shieldFile'];
+        if (icon) {
+            resources.push(icon);
+        }
+        var fill = symbol['polygonPatternFile'];
+        if (fill) {
+            resources.push(Z.Util.extractCssUrl(fill));
+        }
+        var linePattern = symbol['linePatternFile'];
+        if (linePattern) {
+            resources.push(Z.Util.extractCssUrl(linePattern));
+        }
     }
     return resources;
 }

@@ -690,6 +690,52 @@ Z.Util = {
             }
         }
         return exceptionStr;
+    },
+
+    decreaseSymbolOpacity:function(symbol, ratio) {
+        function s(_symbol, _ratio) {
+            var op = _symbol['opacity'];
+            if (Z.Util.isNil(op)) {
+                _symbol['opacity'] = _ratio;
+            } else {
+                _symbol['opacity'] *= _ratio;
+            }
+        }
+        if (Z.Util.isArray(symbol)) {
+            for (var i = 0; i < symbol.length; i++) {
+                s(symbol[i],ratio);
+            }
+        } else {
+            s(symbol,ratio);
+        }
+        return symbol;
+    },
+
+    extendSymbol:function(symbol) {
+        var sources = Array.prototype.slice.call(arguments, 1);
+        if (!sources) {
+            sources = [{}];
+        }
+        if (Z.Util.isArray(symbol)) {
+            var result = [];
+            for (var i = 0; i < symbol.length; i++) {
+                var s = symbol[i];
+                var dest = {};
+                for (var ii = 0; ii < sources.length; ii++) {
+                    if (!Z.Util.isArray(sources[ii])) {
+                        Z.Util.extend(dest, s, sources[ii]);
+                    } else {
+                        if (!Z.Util.isNil(sources[ii][i])) {
+                            Z.Util.extend(dest, s, sources[ii][i]);
+                        }
+                    }
+                }
+                result.push(dest);
+            }
+            return result;
+        } else {
+            return Z.Util.extend.apply(Z.Util, [{}, symbol].concat(sources));
+        }
     }
 
 };

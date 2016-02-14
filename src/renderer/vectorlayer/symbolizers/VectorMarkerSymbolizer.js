@@ -48,8 +48,8 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                     vectorArray[j]._add(point);
                 }
                 //线类型
-                Z.Canvas.path(ctx,vectorArray.slice(0,2),null, lineOpacity);
-                Z.Canvas.path(ctx,vectorArray.slice(2,4),null, lineOpacity);
+                Z.Canvas.path(ctx,vectorArray.slice(0,2), lineOpacity);
+                Z.Canvas.path(ctx,vectorArray.slice(2,4), lineOpacity);
             } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'triangle'){
                 if (markerType === 'bar') {
                     point = point.add(new Z.Point(0,-style['markerLineWidth']/2));
@@ -58,7 +58,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                     vectorArray[j]._add(point);
                 }
                 //面类型
-                Z.Canvas.polygon(ctx,vectorArray,null, lineOpacity, fillOpacity);
+                Z.Canvas.polygon(ctx,vectorArray, lineOpacity, fillOpacity);
             } else if (markerType === 'pin') {
                 point = point.add(new Z.Point(0,-style['markerLineWidth']/2));
                 for (j = vectorArray.length - 1; j >= 0; j--) {
@@ -66,7 +66,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 }
                 var lineCap = ctx.lineCap;
                 ctx.lineCap = 'round'; //set line cap to round to close the pin bottom
-                Z.Canvas.bezierCurveAndFill(ctx,vectorArray,null, lineOpacity, fillOpacity);
+                Z.Canvas.bezierCurveAndFill(ctx,vectorArray, lineOpacity, fillOpacity);
                 ctx.lineCap = lineCap;
             } else if (markerType === 'pie') {
                 point = point.add(new Z.Point(0,-style['markerLineWidth']/2));

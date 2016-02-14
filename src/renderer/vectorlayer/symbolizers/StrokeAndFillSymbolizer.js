@@ -23,7 +23,8 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         var strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
         Z.Canvas.prepareCanvas(ctx, strokeAndFill['stroke'], strokeAndFill['fill'], resources);
-        canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([strokeAndFill['stroke']['stroke-opacity'], strokeAndFill['fill']['fill-opacity']]));
+        canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
+            strokeAndFill['stroke']['stroke-opacity'], strokeAndFill['fill']['fill-opacity'], strokeAndFill['stroke']['stroke-dasharray']]));
     },
 
     getPixelExtent:function() {

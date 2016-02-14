@@ -12,7 +12,19 @@ Z.Vector = Z.Geometry.extend({
 
     _hitTestTolerance: function() {
         var symbol = this.getSymbol();
-        var w = symbol['lineWidth'];
-        return w ? w / 2 : 3;
+        var w;
+        if (Z.Util.isArray(symbol)) {
+            w = 0;
+            for (var i = 0; i < symbol.length; i++) {
+                if (Z.Util.isNumber(symbol[i]['lineWidth'])) {
+                    if (symbol[i]['lineWidth'] > w) {
+                        w = symbol[i]['lineWidth'];
+                    }
+                }
+            }
+        } else {
+            w = symbol['lineWidth'];
+        }
+        return w ? w / 2 : 1.5;
     }
 });

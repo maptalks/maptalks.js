@@ -15,15 +15,22 @@ Z.Painter = Z.Class.extend({
      * @return {[type]} [description]
      */
     _createSymbolizers:function() {
-        var symbol = this._getSymbol();
+        var geoSymbol = this._getSymbol();
         var symbolizers = [];
         var regSymbolizers = Z.Painter.registerSymbolizers;
-        for (var i = regSymbolizers.length - 1; i >= 0; i--) {
-            if (regSymbolizers[i].test(this.geometry, symbol)) {
-                var symbolizer = new regSymbolizers[i](symbol, this.geometry);
-                symbolizers.push(symbolizer);
-                if (symbolizer instanceof Z.symbolizer.PointSymbolizer) {
-                    this._hasPointSymbolizer = true;
+        var symbols = geoSymbol;
+        if (!Z.Util.isArray(geoSymbol)) {
+            symbols = [geoSymbol];
+        }
+        for (var ii = 0; ii < symbols.length; ii++) {
+            var symbol = symbols[ii];
+            for (var i = regSymbolizers.length - 1; i >= 0; i--) {
+                if (regSymbolizers[i].test(this.geometry, symbol)) {
+                    var symbolizer = new regSymbolizers[i](symbol, this.geometry);
+                    symbolizers.push(symbolizer);
+                    if (symbolizer instanceof Z.symbolizer.PointSymbolizer) {
+                        this._hasPointSymbolizer = true;
+                    }
                 }
             }
         }

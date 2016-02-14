@@ -287,13 +287,13 @@ Z.Canvas = {
          }
     },
 
-    path:function(ctx, points, lineDashArray, lineOpacity) {
+    path:function(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         ctx.beginPath();
-        Z.Canvas._path(ctx,points,lineDashArray, lineOpacity);
+        Z.Canvas._path(ctx,points, lineDashArray, lineOpacity);
         Z.Canvas._stroke(ctx, lineOpacity);
     },
 
-    polygon:function(ctx, points, lineDashArray, lineOpacity, fillOpacity) {
+    polygon:function(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         var isPatternLine = !Z.Util.isString(ctx.strokeStyle);
         var fillFirst = (Z.Util.isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
         if (!Z.Util.isArrayHasData(points[0])) {
@@ -341,9 +341,9 @@ Z.Canvas = {
 
     },
 
-    _ring:function(ctx, ring,lineDashArray, lineOpacity) {
+    _ring:function(ctx, ring, lineDashArray, lineOpacity) {
         ctx.beginPath();
-        Z.Canvas._path(ctx,ring,lineDashArray, lineOpacity);
+        Z.Canvas._path(ctx,ring, lineDashArray, lineOpacity);
         ctx.closePath();
     },
 
@@ -390,7 +390,7 @@ Z.Canvas = {
         ctx.lineTo(p.x, p.y);
     },
 
-    bezierCurveAndFill:function(ctx, points, lineDashArray, lineOpacity, fillOpacity) {
+    bezierCurveAndFill:function(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         ctx.beginPath(points);
         var start = points[0].round();
         ctx.moveTo(start.x,start.y);

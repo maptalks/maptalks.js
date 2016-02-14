@@ -207,13 +207,13 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     setMask:function(mask) {
         if (!((mask instanceof Z.Marker && Z.VectorMarkerSymbolizer.test(mask, mask.getSymbol()))
             || mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
-            throw new Error('mask has to be a Polygon or a MultiPolygon');
+            throw new Error('mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon');
         }
 
         mask._bindLayer(this);
         mask._isRenderImmediate(true);
         if (mask instanceof Z.Marker ) {
-            mask.setSymbol(Z.Util.extend({},mask.getSymbol(),{
+            mask.setSymbol(Z.Util.extendSymbol(mask.getSymbol(),{
                 'markerLineWidth': 0,
                 'markerFillOpacity': 0
             }));
@@ -227,8 +227,8 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         if (!this.getMap() || this.getMap().isBusy()) {
             return;
         }
-        var render = this._getRenderer();
-        render && render.render();
+        var renderer = this._getRenderer();
+        renderer && renderer.render();
     },
 
     clearMask:function(mask) {

@@ -31,7 +31,12 @@ Z.Marker=Z.Geometry.extend({
      * @return {Boolean}
      */
     _canEdit:function() {
-        return Z.symbolizer.VectorMarkerSymbolizer.test(this, this.getSymbol()) || Z.symbolizer.ImageMarkerSymbolizer.test(this, this.getSymbol());
+        var symbol = this.getSymbol();
+        if (Z.Util.isArray(symbol)) {
+            return false;
+        }
+        return Z.symbolizer.VectorMarkerSymbolizer.test(this, symbol)
+                    || Z.symbolizer.ImageMarkerSymbolizer.test(this, symbol);
     },
 
     _containsPoint: function(point) {

@@ -55,12 +55,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend({
     },
 
     _computeGeodesicLength:function(measurer) {
-        var coordinates = this.getCoordinates();
-        var result = 0;
-        for (var i=0, len=coordinates.length;i<len-1;i++) {
-            result += measurer.measureLength(coordinates[i],coordinates[i+1]);
-        }
-        return result;
+        return Z.GeoUtils.computeLength(this.getCoordinates(), measurer);
     },
 
     _computeGeodesicArea:function(measurer) {

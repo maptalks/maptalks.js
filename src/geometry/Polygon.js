@@ -212,10 +212,7 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
         }
         var result = 0;
         for (var i=0, len=rings.length;i<len;i++) {
-            var ring = rings[i];
-            for (var j=0, jlen=ring.length-1;j<jlen;j++) {
-                result += measurer.measureLength(ring[j],ring[j+1]);
-            }
+            result += Z.GeoUtils.computeLength(rings[i], measurer);
         }
         return result;
     },

@@ -65,7 +65,7 @@ if (Z.Browser.canvas) {
                 var angle = Math.atan2(point.x - prePoint.x, prePoint.y - point.y);
                 var matrix = new Z.Matrix().translate(point.x, point.y).rotate(angle);
                 var ptsToDraw = matrix.applyToArray(pts);
-                Z.Canvas.polygon(ctx, ptsToDraw, null, opacity, opacity);
+                Z.Canvas.polygon(ctx, ptsToDraw, opacity, opacity);
         },
 
         _getRenderCanvasResources:function() {
@@ -76,7 +76,7 @@ if (Z.Browser.canvas) {
 
             var me = this;
             var fn = function(_ctx, _points, _dasharray, _lineOpacity) {
-                Z.Canvas.path(_ctx, _points, _dasharray, _lineOpacity);
+                Z.Canvas.path(_ctx, _points, _lineOpacity, null, _dasharray);
                 if (_ctx.setLineDash) {
                     //remove line dash effect if any
                     _ctx.setLineDash([]);
@@ -98,8 +98,7 @@ if (Z.Browser.canvas) {
             };
             return {
                 "fn" : fn,
-                //TODO dasharray可能不从本身的symbol来
-                "context" : [points,this.getSymbol()['lineDasharray']]
+                "context" : [points]
             };
         }
     });
@@ -118,7 +117,7 @@ if (Z.Browser.canvas) {
             }
            var resource =  {
                 "fn" : Z.Canvas.polygon,
-                "context" : [[points].concat(holePoints),this.getSymbol()['lineDasharray']]
+                "context" : [[points].concat(holePoints)]
             };
             return resource;
         }

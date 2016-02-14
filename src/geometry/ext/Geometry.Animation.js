@@ -20,10 +20,35 @@ Z.Geometry.include({
                     var current = this[fnName]();
                     aniStyles[p] = [current, v];
                 } else if (p === 'symbol') {
-                    var aniSymbol = {};
-                    for (var sp in v) {
-                        if (v.hasOwnProperty(sp)) {
-                            aniSymbol[sp] = [symbol[sp], v[sp]];
+                    var aniSymbol;
+                    if (Z.Util.isArray(styles['symbol'])) {
+                        if (!Z.Util.isArray(symbol)) {
+                            throw new Error('geometry\'symbol isn\'t a composite symbol, while the symbol in styles is.');
+                        }
+                        aniSymbol = [];
+                        var symbolInStyles = styles['symbol'];
+                        for (var i = 0; i < symbolInStyles.length; i++) {
+                            if (!symbolInStyles[i]) {
+                                aniSymbol.push(null);
+                                continue;
+                            }
+                            var a = {};
+                            for (var sp in symbolInStyles[i]) {
+                                if (symbolInStyles[i].hasOwnProperty(sp)) {
+                                    a[sp] = [symbol[i][sp], symbolInStyles[i][sp]];
+                                }
+                            }
+                            aniSymbol.push(a);
+                        }
+                    } else {
+                        if (Z.Util.isArray(symbol)) {
+                            throw new Error('geometry\'symbol is a composite symbol, while the symbol in styles isn\'t.');
+                        }
+                        aniSymbol = {};
+                        for (var sp in v) {
+                            if (v.hasOwnProperty(sp)) {
+                                aniSymbol[sp] = [symbol[sp], v[sp]];
+                            }
                         }
                     }
                     aniStyles['symbol'] = aniSymbol;
@@ -52,7 +77,8 @@ Z.Geometry.include({
             }
             var dSymbol = styles['symbol'];
             if (dSymbol) {
-                this.setSymbol(Z.Util.extend({},symbol,dSymbol));
+                this.setSymbol(Z.Util.extendSymbol(symbol, dSymbol));
+                // this.setSymbol(Z.Util.extend({},symbol,dSymbol));
             }
             if (isFocusing) {
                 var center = this.getCenter();
