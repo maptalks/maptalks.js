@@ -131,7 +131,7 @@ Z.Eventable = {
             } else {
                 bubble = handlerChain[i].handler(param);
             }
-            if (!bubble) {
+            if (false === bubble) {
                 if (param['domEvent']) {
                     Z.DomUtil.stopPropagation(param['domEvent']);
                 }
