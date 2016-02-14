@@ -27,7 +27,7 @@
 ../src/handler/Handlerable.js
 ../src/handler/Drag.js
 ../src/map/tool/DrawTool.js
-../src/map/tool/DistanceTool.js
+../src/map/tool/DistanceTool2.js
 ../src/map/tool/ComputeAreaTool.js
 ../src/layer/tile/tileinfo/TileSystem.js
 ../src/layer/tile/tileinfo/TileConfig.js

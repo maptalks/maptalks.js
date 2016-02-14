@@ -8,26 +8,30 @@
 Z.DrawTool = Z.Class.extend({
     includes: [Z.Eventable],
 
+    options:{
+        'mode' : 'LineString',
+        'drawOnce' : false
+    },
+
     /**
      * 初始化绘制工具
      * @constructor
      * @param {Object} options:{mode:Z.Geometry.TYPE_CIRCLE, disableOnDrawEnd: true}
      */
     initialize: function(options) {
-        Z.Util.extend(this, options);
-        return this;
+        Z.Util.setOptions(this,options);
     },
     /**
      * 默认的线型
      * @type {Object}
      */
     defaultStrokeSymbol: {
-        'lineColor':'#474cf8',
+        'lineColor':'#000000',//'#474cf8',
         'lineWidth':2,
         'lineOpacity':1,
         'lineDasharray': '',
         'polygonFill' : '#ffffff',
-        'polygonOpacity' : 1
+        'polygonOpacity' : 0
     },
 
     /**
@@ -35,14 +39,19 @@ Z.DrawTool = Z.Class.extend({
      * @param {maptalks.Map} map
      */
     addTo: function(map) {
-        this.map = map;
-        if (!this.map) {return;}
+        this._map = map;
+        if (!this._map) {return;}
         if (map._drawTool && map._drawTool instanceof Z.DrawTool) {
             map._drawTool.disable();
         }
         this.enable();
         map._drawTool = this;
+        this._fireEvent('add');
         return this;
+    },
+
+    getMap:function() {
+        return this._map;
     },
 
     /**
@@ -50,7 +59,7 @@ Z.DrawTool = Z.Class.extend({
      * @expose
      */
     enable:function() {
-        var map = this.map;
+        var map = this._map;
         if (!map || this._enabled) {return;}
         this._enabled = true;
         this._mapDraggable = map.options['draggable'];
@@ -61,23 +70,11 @@ Z.DrawTool = Z.Class.extend({
             'draggable': false,
             'doubleClickZoom':false
         });
-        this.drawToolLayer = this._getDrawLayer();
+        this._drawToolLayer = this._getDrawLayer();
         this._clearEvents();
         this._prepare(this._registerEvents);
-        // this._registerEvents();
+
         return this;
-    },
-
-    _prepare:function(onComplete) {
-        var symbol = this.getSymbol();
-        var resources = Z.Geometry.getExternalResource(symbol);
-        if (Z.Util.isArrayHasData(resources)) {
-            //load external resources at first
-            this.drawToolLayer._getRenderer()._loadResources(resources, onComplete, this);
-        } else {
-            onComplete.call(this);
-        }
-
     },
 
     /**
@@ -85,11 +82,11 @@ Z.DrawTool = Z.Class.extend({
      * @expose
      */
     disable:function() {
-        if (!this._enabled || !this.map) {
+        if (!this._enabled || !this._map) {
             return;
         }
         this._enabled = false;
-        var map = this.map;
+        var map = this._map;
         if (!map) {return;}
         map.config({
             'autoBorderPanning' : this._autoBorderPanning,
@@ -102,6 +99,7 @@ Z.DrawTool = Z.Class.extend({
         this._endDraw();
         map.removeLayer(this._getDrawLayer());
         this._clearEvents();
+        this._fireEvent('disable');
         return this;
     },
 
@@ -111,11 +109,11 @@ Z.DrawTool = Z.Class.extend({
      * @expose
      */
     setMode:function(mode) {
-        if (this.geometry) {
-            this.geometry.remove();
-            delete this.geometry;
+        if (this._geometry) {
+            this._geometry.remove();
+            delete this._geometry;
         }
-        this.mode = mode;
+        this.options['mode'] = mode;
         this._clearEvents();
         this._registerEvents();
     },
@@ -126,11 +124,11 @@ Z.DrawTool = Z.Class.extend({
      * @expose
      */
     getSymbol:function() {
-        var symbol = this.symbol;
+        var symbol = this.options['symbol'];
         if(symbol) {
-            return this.symbol;
+            return Z.Util.extendSymbol(symbol);
         } else {
-            return this.defaultStrokeSymbol;
+            return Z.Util.extendSymbol(this.defaultStrokeSymbol);
         }
     },
 
@@ -143,20 +141,32 @@ Z.DrawTool = Z.Class.extend({
         if (!symbol) {
             return;
         }
-        this.symbol = symbol;
-        if (this.geometry) {
-            this.geometry.setSymbol(symbol);
+        this.options['symbol'] = symbol;
+        if (this._geometry) {
+            this._geometry.setSymbol(symbol);
         }
     },
 
+    _prepare:function(onComplete) {
+        var symbol = this.getSymbol();
+        var resources = Z.Geometry.getExternalResource(symbol);
+        if (Z.Util.isArrayHasData(resources)) {
+            //load external resources at first
+            this._drawToolLayer._getRenderer()._loadResources(resources, onComplete, this);
+        } else {
+            onComplete.call(this);
+        }
+
+    },
+
     _getProjection:function() {
-        return this.map.getProjection();
+        return this._map.getProjection();
     },
 
     //注册鼠标响应事件
     _registerEvents: function() {
-        var map = this.map;
-        var mode = this.mode;
+        var map = this._map;
+        var mode = this.options['mode'];
         if (Z.Util.isNil(mode)) {
             mode = Z.Geometry['TYPE_CIRCLE'];
         }
@@ -169,10 +179,11 @@ Z.DrawTool = Z.Class.extend({
         } else {
             map.on('mousedown',this._mousedownToDraw, this);
         }
+        this._fireEvent('enable');
     },
 
     _clearEvents: function() {
-        var map = this.map;
+        var map = this._map;
         map.off('click',this._clickForPath, this);
         map.off('click',this._clickForPoint, this);
         map.off('mousemove',this._mousemoveForPath,this);
@@ -188,8 +199,8 @@ Z.DrawTool = Z.Class.extend({
 
     _clickForPoint: function(param) {
         var geometry = new Z.Marker(param['coordinate']);
-        if (this.symbol) {
-            geometry.setSymbol(this.symbol);
+        if (this.options['symbol']) {
+            geometry.setSymbol(this.options['symbol']);
         }
         param['geometry'] = geometry;
         /**
@@ -204,14 +215,14 @@ Z.DrawTool = Z.Class.extend({
         var containerPoint = this._getMouseContainerPoint(param);
         var coordinate = this._containerPointToLonlat(containerPoint);
         var symbol = this.getSymbol();
-        if (!this.geometry) {
+        if (!this._geometry) {
             //无论画线还是多边形, 都是从线开始的
-            this.geometry = new Z.Polyline([coordinate]);
+            this._geometry = new Z.Polyline([coordinate]);
 
             if (symbol) {
-                this.geometry.setSymbol(symbol);
+                this._geometry.setSymbol(symbol);
             }
-            this._addGeometryToStage(this.geometry);
+            this._addGeometryToStage(this._geometry);
             /**
              * 触发 drawstart 事件
              * @event drawstart
@@ -221,10 +232,10 @@ Z.DrawTool = Z.Class.extend({
         } else {
             var path = this._getLonlats();
             path.push(coordinate);
-            if (Z.Geometry['TYPE_POLYGON'] == this.mode && path.length === 3) {
+            if (Z.Geometry['TYPE_POLYGON'] === this.options['mode'] && path.length === 3) {
                 var polygon = new Z.Polygon([path]);
                 if (symbol) {
-                    var pSymbol = Z.Util.extend({},symbol,{'lineOpacity':0});
+                    var pSymbol = Z.Util.extendSymbol(symbol,{'lineOpacity':0});
                     polygon.setSymbol(pSymbol);
                 }
                 this._polygon = polygon;
@@ -233,19 +244,19 @@ Z.DrawTool = Z.Class.extend({
             }
                 //这一行代码取消注释后, 会造成dblclick无法响应, 可能是存在循环调用,造成浏览器无法正常响应事件
             this._setLonlats(path);
-            if (this.map.hasListeners('drawvertex')) {
-                /**
-                 * 触发drawvertex事件：端点绘制事件，当为多边形或者多折线绘制了一个新的端点后会触发此事件
-                 * @event drawvertex
-                 * @return {Object} params: {'target': this, 'coordinate':coordinate, 'pixel':containerPoint};
-                 */
-                this._fireEvent('drawvertex',param);
-            }
+
+            /**
+             * 触发drawvertex事件：端点绘制事件，当为多边形或者多折线绘制了一个新的端点后会触发此事件
+             * @event drawvertex
+             * @return {Object} params: {'target': this, 'coordinate':coordinate, 'pixel':containerPoint};
+             */
+            this._fireEvent('drawvertex',param);
+
         }
     },
 
     _mousemoveForPath : function(param) {
-        if (!this.geometry) {return;}
+        if (!this._geometry) {return;}
         var containerPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(containerPoint)) {return;}
         var coordinate = this._containerPointToLonlat(containerPoint);
@@ -253,18 +264,20 @@ Z.DrawTool = Z.Class.extend({
         var path = this._getLonlats();
         var tailPath = [path[path.length-1], coordinate];
         if (!this._movingTail) {
-            var symbol = this.getSymbol();
+            var symbol = Z.Util.decreaseSymbolOpacity(this.getSymbol(),0.5);
             this._movingTail = new Z.LineString(tailPath,{
                 'symbol' : symbol
             });
+            this._movingTail._isRenderImmediate(true);
             this._addGeometryToStage(this._movingTail);
         } else {
             this._movingTail.setCoordinates(tailPath);
         }
+        this._fireEvent('mousemove', param);
     },
 
     _dblclickForPath:function(param) {
-        if (!this.geometry) {return;}
+        if (!this._geometry) {return;}
         var containerPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(containerPoint)) {return;}
         var coordinate = this._containerPointToLonlat(containerPoint);
@@ -283,10 +296,10 @@ Z.DrawTool = Z.Class.extend({
             path.splice(nIndexes[i],1);
         }
 
-        if (path.length < 2 || (Z.Geometry['TYPE_POLYGON'] == this.mode && path.length < 3)) {
+        if (path.length < 2 || (Z.Geometry['TYPE_POLYGON'] === this.options['mode'] && path.length < 3)) {
             return;
         }
-        this.geometry.remove();
+        this._geometry.remove();
         if (this._movingTail) {
             this._movingTail.remove();
         }
@@ -294,15 +307,15 @@ Z.DrawTool = Z.Class.extend({
         if (this._polygon) {
             this._polygon.remove();
         }
-        if (Z.Geometry['TYPE_POLYGON'] == this.mode) {
-            this.geometry = new Z.Polygon([path]);
+        if (Z.Geometry['TYPE_POLYGON'] == this.options['mode']) {
+            this._geometry = new Z.Polygon([path]);
             var symbol=this.getSymbol();
             if (symbol) {
-                this.geometry.setSymbol(symbol);
+                this._geometry.setSymbol(symbol);
             }
-            this._addGeometryToStage(this.geometry);
+            this._addGeometryToStage(this._geometry);
         } else {
-            this.geometry.setCoordinates(path);
+            this._geometry.setCoordinates(path);
         }
         this._endDraw(param);
     },
@@ -312,10 +325,10 @@ Z.DrawTool = Z.Class.extend({
         var onMouseUp;
         function genGeometry(coordinate) {
             var symbol = me.getSymbol();
-            var geometry = me.geometry;
-            var _map = me.map;
+            var geometry = me._geometry;
+            var _map = me._map;
             var center;
-            switch (me.mode) {
+            switch (me.options['mode']) {
             case Z.Geometry['TYPE_CIRCLE']:
                 if (!geometry) {
                     geometry = new Z.Circle(coordinate,0);
@@ -354,11 +367,11 @@ Z.DrawTool = Z.Class.extend({
                 geometry.setHeight(height);
             break;
             }
-            me.geometry=geometry;
+            me._geometry=geometry;
 
         }
         function onMouseMove(_event) {
-            if (!this.geometry) {
+            if (!this._geometry) {
                 return false;
             }
             var containerPoint = this._getMouseContainerPoint(_event);
@@ -368,15 +381,15 @@ Z.DrawTool = Z.Class.extend({
             return false;
         }
         onMouseUp = function(_event) {
-            if (!this.geometry) {
+            if (!this._geometry) {
                 return false;
             }
             var containerPoint = this._getMouseContainerPoint(_event);
             if (!this._isValidContainerPoint(containerPoint)) {return;}
             var coordinate = this._containerPointToLonlat(containerPoint);
             genGeometry(coordinate);
-            this.map.off('mousemove',onMouseMove,this);
-            this.map.off('mouseup',onMouseUp,this);
+            this._map.off('mousemove',onMouseMove,this);
+            this._map.off('mouseup',onMouseUp,this);
             this._endDraw(param);
             return false;
         };
@@ -390,18 +403,18 @@ Z.DrawTool = Z.Class.extend({
          */
         this._fireEvent('drawstart',param);
         genGeometry(coordinate);
-        this.map.on('mousemove',onMouseMove,this);
-        this.map.on('mouseup',onMouseUp,this);
+        this._map.on('mousemove',onMouseMove,this);
+        this._map.on('mouseup',onMouseUp,this);
         return false;
     },
 
-    _endDraw : function(param) {
-        if (!this.geometry) {
+    _endDraw: function(param) {
+        if (!this._geometry) {
             return;
         }
-        var target = this.geometry.copy();
-        this.geometry.remove();
-        delete this.geometry;
+        var target = this._geometry.copy();
+        this._geometry.remove();
+        delete this._geometry;
         if (!param) {
             param = {};
         }
@@ -411,10 +424,10 @@ Z.DrawTool = Z.Class.extend({
            * @event drawend
            * @param {Object} param {'target':drawTool,'geometry':target};
            */
-         this._fireEvent('drawend', param);
-         if(this.disableOnDrawEnd) {
+        this._fireEvent('drawend', param);
+        if(this.options['drawOnce']) {
            this.disable();
-         }
+        }
     },
 
     /**
@@ -422,18 +435,18 @@ Z.DrawTool = Z.Class.extend({
      * @return {[type]} [description]
      */
     _getLonlats:function() {
-        if (this.geometry.getShell) {
-            return this.geometry.getShell();
+        if (this._geometry.getShell) {
+            return this._geometry.getShell();
         }
-        return this.geometry.getCoordinates();
+        return this._geometry.getCoordinates();
     },
 
     _setLonlats:function(lonlats) {
-        if (this.geometry instanceof Z.Polygon) {
-            this.geometry.setCoordinates([lonlats]);
+        if (this._geometry instanceof Z.Polygon) {
+            this._geometry.setCoordinates([lonlats]);
 
-        } else if (this.geometry instanceof Z.Polyline) {
-            this.geometry.setCoordinates(lonlats);
+        } else if (this._geometry instanceof Z.Polyline) {
+            this._geometry.setCoordinates(lonlats);
         }
         if (this._polygon) {
             this._polygon.setCoordinates([lonlats]);
@@ -458,7 +471,7 @@ Z.DrawTool = Z.Class.extend({
      */
     _containerPointToLonlat:function(containerPoint) {
         var projection = this._getProjection(),
-            map = this.map;
+            map = this._map;
 
         //projected pLonlat
         var pLonlat = map._untransform(containerPoint);
@@ -466,7 +479,7 @@ Z.DrawTool = Z.Class.extend({
     },
 
     _isValidContainerPoint:function(containerPoint) {
-        var mapSize = this.map.getSize();
+        var mapSize = this._map.getSize();
         var w = mapSize['width'],
             h = mapSize['height'];
         if (containerPoint.x < 0 || containerPoint.y < 0) {
@@ -479,10 +492,10 @@ Z.DrawTool = Z.Class.extend({
 
     _getDrawLayer:function() {
         var drawLayerId = Z.internalLayerPrefix+'drawtool';
-        var drawToolLayer = this.map.getLayer(drawLayerId);
+        var drawToolLayer = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
             drawToolLayer = new Z.VectorLayer(drawLayerId);
-            this.map.addLayer(drawToolLayer);
+            this._map.addLayer(drawToolLayer);
         }
         return drawToolLayer;
     },
@@ -490,6 +503,9 @@ Z.DrawTool = Z.Class.extend({
     _fireEvent:function(eventName, param) {
         if (!param) {
             param = {};
+        }
+        if (!param['geometry'] && this._geometry) {
+            param['geometry'] = this._geometry;
         }
         this.fire(eventName, param);
     }

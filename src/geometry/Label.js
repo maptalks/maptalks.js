@@ -20,7 +20,7 @@ Z.Label = Z.Marker.extend({
         "markerType":"square",
         "markerLineColor": "#ff0000",
         "markerLineWidth": 2,
-        "markerLineOpacity": 0.9,
+        "markerLineOpacity": 1,
         "markerFill": "#ffffff"
     },
 
