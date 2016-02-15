@@ -50,17 +50,22 @@ Z.DistanceTool = Z.DrawTool.extend({
      */
     initialize: function(options) {
         Z.Util.setOptions(this,options);
+        this.config('mode',Z.Geometry['TYPE_LINESTRING']);
         this._registerDistEvents();
-        this._internalId = Z.Util.GUID();
+        this._measureLayers = [];
     },
 
     clearMeasurement:function() {
-        if (this._distToolLayer) {
-            this._distToolLayer.remove();
+        if (Z.Util.isArrayHasData(this._measureLayers)) {
+            for (var i = 0; i < this._measureLayers.length; i++) {
+                this._measureLayers[i].remove();
+            }
         }
-        if (this._distToolMarkerLayer) {
-            this._distToolMarkerLayer.remove();
-        }
+        return this;
+    },
+
+    getMeasureLayers:function() {
+        return this._measureLayers;
     },
 
     _registerDistEvents:function() {
@@ -73,17 +78,7 @@ Z.DistanceTool = Z.DrawTool.extend({
     },
 
     _onEnable:function(param) {
-        this.options['mode'] = Z.Geometry['TYPE_LINESTRING'];
-        var map = this.getMap();
-        var layerId = Z.internalLayerPrefix+'distancetool'+this._internalId;
-        var markerLayerId = Z.internalLayerPrefix+'distancetool_markers'+this._internalId;
-        if (!map.getLayer(layerId)) {
-            this._distToolLayer = new maptalks.VectorLayer(layerId).addTo(map);
-            this._distToolMarkerLayer = new maptalks.VectorLayer(markerLayerId).addTo(map);
-        } else {
-            this._distToolLayer = map.getLayer(layerId);
-            this._distToolMarkerLayer = map.getLayer(markerLayerId);
-        }
+
     },
 
     _onDisable:function() {
@@ -97,12 +92,25 @@ Z.DistanceTool = Z.DrawTool.extend({
 
 
     _distOnDrawStart:function(param) {
+        var map = this.getMap();
+        var guid = Z.Util.GUID();
+        var layerId = Z.internalLayerPrefix+'distancetool_'+guid;
+        var markerLayerId = Z.internalLayerPrefix+'distancetool_markers_'+guid;
+        if (!map.getLayer(layerId)) {
+            this._measureLineLayer = new maptalks.VectorLayer(layerId).addTo(map);
+            this._measureMarkerLayer = new maptalks.VectorLayer(markerLayerId).addTo(map);
+        } else {
+            this._measureLineLayer = map.getLayer(layerId);
+            this._measureMarkerLayer = map.getLayer(markerLayerId);
+        }
+        this._measureLayers.push(this._measureLineLayer);
+        this._measureLayers.push(this._measureMarkerLayer);
         var startMarker = new maptalks.Marker(param['coordinate'], {
             'symbol' : this.options['startSymbol']
-        }).addTo(this._distToolMarkerLayer);
+        }).addTo(this._measureMarkerLayer);
         var content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
         var startLabel = new maptalks.Label(content, param['coordinate'], this.options['labelOptions']);
-        this._distToolMarkerLayer.addGeometry(startLabel);
+        this._measureMarkerLayer.addGeometry(startLabel);
     },
 
     _distOnMouseMove:function(param) {
@@ -112,7 +120,7 @@ Z.DistanceTool = Z.DrawTool.extend({
             symbol['markerHeight'] /= 2;
             this._tailMarker = new maptalks.Marker(param['coordinate'], {
                 'symbol' : symbol
-            }).addTo(this._distToolMarkerLayer);
+            }).addTo(this._measureMarkerLayer);
             this._tailMarker._isRenderImmediate(true);
         }
         this._tailMarker.setCoordinates(param['coordinate']);
@@ -122,7 +130,7 @@ Z.DistanceTool = Z.DrawTool.extend({
         var geometry = param['geometry'];
         var vertexMarker = new maptalks.Marker(param['coordinate'], {
             'symbol' : this.options['startSymbol']
-        }).addTo(this._distToolMarkerLayer);
+        }).addTo(this._measureMarkerLayer);
         var length = geometry._computeGeodesicLength(this.getMap().getProjection());
         var units;
         if (this.options['language'] === 'zh-CN') {
@@ -132,17 +140,17 @@ Z.DistanceTool = Z.DrawTool.extend({
         }
         var content = '';
         if (this.options['metric']) {
-            content += length < 1000 ? length.toFixed(0) + units[0] : (length / 1000).toFixed(0) + units[1];
+            content += length < 1000 ? length.toFixed(0) + units[0] : (length / 1000).toFixed(2) + units[1];
         }
         if (this.options['imperial']) {
             length *= 3.2808399
             if (content.length > 0) {
                 content += '\n';
             }
-            content += length < 5280 ? length.toFixed(0) + units[2] : (length / 5280).toFixed(0) + units[3];
+            content += length < 5280 ? length.toFixed(0) + units[2] : (length / 5280).toFixed(2) + units[3];
         }
         var vertexLabel = new maptalks.Label(content, param['coordinate'], this.options['labelOptions']);
-        this._distToolMarkerLayer.addGeometry(vertexLabel);
+        this._measureMarkerLayer.addGeometry(vertexLabel);
         this._lastVertex = vertexLabel;
     },
 
@@ -174,16 +182,18 @@ Z.DistanceTool = Z.DrawTool.extend({
                         }
                         ]
         });
+        var measureLineLayer = this._measureLineLayer,
+            measureMarkerLayer = this._measureMarkerLayer;
         endMarker.on('click',function() {
-            this._distToolMarkerLayer.clear();
-            this._distToolLayer.clear();
+            measureLineLayer.remove();
+            measureMarkerLayer.remove();
             //return false to stop propagation of event.
             return false;
         }, this);
-        endMarker.addTo(this._distToolMarkerLayer);
+        endMarker.addTo(this._measureMarkerLayer);
         var geo = param['geometry'].copy();
         geo._isRenderImmediate(true);
-        geo.addTo(this._distToolLayer);
+        geo.addTo(this._measureLineLayer);
     }
 
 });

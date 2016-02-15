@@ -10,7 +10,7 @@ Z.DrawTool = Z.Class.extend({
 
     options:{
         'mode' : 'LineString',
-        'drawOnce' : false
+        'once' : false
     },
 
     /**
@@ -425,7 +425,7 @@ Z.DrawTool = Z.Class.extend({
            * @param {Object} param {'target':drawTool,'geometry':target};
            */
         this._fireEvent('drawend', param);
-        if(this.options['drawOnce']) {
+        if(this.options['once']) {
            this.disable();
         }
     },
