@@ -225,8 +225,9 @@ Z.Painter = Z.Class.extend({
     },
 
     _requestToRender:function() {
-        var geometry = this.geometry;
-        if (!geometry.getMap()) {
+        var geometry = this.geometry,
+            map = geometry.getMap();
+        if (!map || map.isBusy()) {
             return;
         }
         var layer = geometry.getLayer(),

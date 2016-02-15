@@ -268,7 +268,7 @@ Z.Map=Z.Class.extend({
     },
 
     isBusy:function() {
-        return this._isBusy || this._zooming;
+        return this._zooming/* || this._moving*/;
     },
 
     /**
@@ -921,7 +921,7 @@ Z.Map=Z.Class.extend({
 
     _onMoveStart:function() {
         this._originCenter = this.getCenter();
-        this._isBusy = true;
+        this._moving = true;
         this._trySetCursor('move');
         /**
          * 触发map的movestart事件
@@ -942,7 +942,7 @@ Z.Map=Z.Class.extend({
 
     _onMoveEnd:function() {
         this._enablePanAnimation=true;
-        this._isBusy = false;
+        this._moving = false;
         this._trySetCursor('default');
         /**
          * 触发map的moveend事件

@@ -47,8 +47,14 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
                 if (!immediate && geometries[i]._isRenderImmediate()) {
                     immediate = true;
                 }
-                if (!this._resources || !this._resources.getImage(resources[i])) {
-                    resources.push(res);
+                if (!this._resources) {
+                    resources = resources.concat(res);
+                } else {
+                    for (var ii = 0; ii < res.length; ii++) {
+                        if (!this._resources.getImage(res[ii])) {
+                            resources.push(res[ii]);
+                        }
+                    }
                 }
            }
         }
