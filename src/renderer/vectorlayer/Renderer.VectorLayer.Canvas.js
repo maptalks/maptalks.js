@@ -4,6 +4,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
         this._layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
         this._registerEvents();
+        this._painted = false;
     },
 
     getMap: function() {
@@ -38,6 +39,9 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
         }
         if (!this._layer.isVisible()) {
             return;
+        }
+        if (!this._painted && !geometries) {
+            geometries = this._layer.getGeometries();
         }
         var resources = (this._resourcesToLoad || []);
         var immediate = false;
@@ -89,12 +93,13 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
         }
         var layer = this._layer;
         if (layer.isEmpty()) {
-            delete this._resources;
+            this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
             return;
         }
         if (!layer.isVisible()) {
             return;
         }
+        this._painted = true;
         var viewExtent = map._getViewExtent();
 
         var me = this;
@@ -246,20 +251,20 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
                     mask._onZoomEnd();
                 }
             }
-            if (!this._resources) {
+            if (!this._painted) {
                 this.render();
             } else {
                 this.renderImmediate();
             }
         } else if (param['type'] === '_moveend') {
-            if (!this._resources) {
+            if (!this._painted) {
                 this.render();
             } else {
                 this.renderImmediate();
             }
         } else if (param['type'] === '_resize') {
             this._resizeCanvas();
-            if (!this._resources) {
+            if (!this._painted) {
                 this.render();
             } else {
                 this.renderImmediate();
