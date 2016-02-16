@@ -9,6 +9,14 @@ Z.DrawTool = Z.Class.extend({
     includes: [Z.Eventable],
 
     options:{
+        'symbol' : {
+            'lineColor':'#000000',//'#474cf8',
+            'lineWidth':2,
+            'lineOpacity':1,
+            'lineDasharray': '',
+            'polygonFill' : '#ffffff',
+            'polygonOpacity' : 0
+        },
         'mode' : 'LineString',
         'once' : false
     },
@@ -21,18 +29,6 @@ Z.DrawTool = Z.Class.extend({
     initialize: function(options) {
         Z.Util.setOptions(this,options);
     },
-    /**
-     * 默认的线型
-     * @type {Object}
-     */
-    defaultStrokeSymbol: {
-        'lineColor':'#000000',//'#474cf8',
-        'lineWidth':2,
-        'lineOpacity':1,
-        'lineDasharray': '',
-        'polygonFill' : '#ffffff',
-        'polygonOpacity' : 0
-    },
 
     /**
      * 将绘图工具添加到map上
@@ -40,7 +36,7 @@ Z.DrawTool = Z.Class.extend({
      */
     addTo: function(map) {
         this._map = map;
-        if (!this._map) {return;}
+        if (!this._map) {return this;}
         if (map._drawTool && map._drawTool instanceof Z.DrawTool) {
             map._drawTool.disable();
         }
@@ -60,7 +56,7 @@ Z.DrawTool = Z.Class.extend({
      */
     enable:function() {
         var map = this._map;
-        if (!map || this._enabled) {return;}
+        if (!map || this._enabled) {return this;}
         this._enabled = true;
         this._mapDraggable = map.options['draggable'];
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
@@ -83,11 +79,11 @@ Z.DrawTool = Z.Class.extend({
      */
     disable:function() {
         if (!this._enabled || !this._map) {
-            return;
+            return this;
         }
         this._enabled = false;
         var map = this._map;
-        if (!map) {return;}
+        if (!map) {return this;}
         map.config({
             'autoBorderPanning' : this._autoBorderPanning,
             'draggable': this._mapDraggable,
@@ -116,6 +112,7 @@ Z.DrawTool = Z.Class.extend({
         this.options['mode'] = mode;
         this._clearEvents();
         this._registerEvents();
+        return this;
     },
 
     /**
@@ -128,7 +125,7 @@ Z.DrawTool = Z.Class.extend({
         if(symbol) {
             return Z.Util.extendSymbol(symbol);
         } else {
-            return Z.Util.extendSymbol(this.defaultStrokeSymbol);
+            return Z.Util.extendSymbol(this.options['symbol']);
         }
     },
 
@@ -139,12 +136,13 @@ Z.DrawTool = Z.Class.extend({
      */
     setSymbol:function(symbol) {
         if (!symbol) {
-            return;
+            return this;
         }
         this.options['symbol'] = symbol;
         if (this._geometry) {
             this._geometry.setSymbol(symbol);
         }
+        return this;
     },
 
     _prepare:function(onComplete) {
@@ -199,16 +197,11 @@ Z.DrawTool = Z.Class.extend({
 
     _clickForPoint: function(param) {
         var geometry = new Z.Marker(param['coordinate']);
-        if (this.options['symbol']) {
+        if (this.options['symbol'] && this.options.hasOwnProperty('symbol')) {
             geometry.setSymbol(this.options['symbol']);
         }
-        param['geometry'] = geometry;
-        /**
-         * 触发 drawstart 事件
-         * @event drawstart
-         * @return {Object} params: {'coordinate':coordinate, 'pixel':containerPoint};
-         */
-        this._fireEvent('drawend', param);
+        this._geometry = geometry;
+        this._endDraw();
     },
 
     _clickForPath:function(param) {
@@ -273,6 +266,7 @@ Z.DrawTool = Z.Class.extend({
         } else {
             this._movingTail.setCoordinates(tailPath);
         }
+        param['geometry'] = this._geometry;
         this._fireEvent('mousemove', param);
     },
 
