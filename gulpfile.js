@@ -46,7 +46,7 @@ gulp.task('styles',function() {
    return gulp.src(styles)
         .pipe(concat('layertalks.css'))
         .pipe(cssnano())
-        .pipe(gulp.dest('./dist'));
+        .pipe(gulp.dest('./dist/css'));
 });
 
 
