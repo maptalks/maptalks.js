@@ -153,6 +153,8 @@ Z.Eventable = {
     }
 };
 
+Z.Eventable.addEventListener = Z.Eventable.on;
+Z.Eventable.removeEventListener = Z.Eventable.off;
 
 Z.Eventable.once = function(eventTypeArr, handler, context) {
     var me = this;

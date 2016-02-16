@@ -154,6 +154,10 @@ Z.Control = Z.Class.extend({
         return this;
     },
 
+    isVisible:function() {
+        return (this._container && this._container.style.display==="");
+    },
+
     /**
      * 删除组件
      * @expose
