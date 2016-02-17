@@ -1061,8 +1061,8 @@ Z.Map=Z.Class.extend({
         if (this._zoomLevel < minZoom) {
             this._zoomLevel = minZoom;
         }
-        delete this._prjCenter;
         this._center = this.getCenter();
+        delete this._prjCenter;
         var projection = this.getProjection();
         this._prjCenter = projection.project(this._center);
     },
