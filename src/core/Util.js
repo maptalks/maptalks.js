@@ -63,6 +63,9 @@ Z.Util = {
                 onError(err);
                 return;
             }
+            if (!global._maptalksImageFileCache.get(url)) {
+                global._maptalksImageFileCache.add(url, data);
+            }
             var onloadFn = img.onload;
             if (onloadFn) {
                 img.onload = function() {
@@ -73,6 +76,15 @@ Z.Util = {
         }
         if (Z.runningInNode) {
             try {
+                if (!global._maptalksImageFileCache) {
+                    //cache 10 svg files.
+                    global._maptalksImageFileCache = new Z.TileLayer.TileCache(100);
+                }
+                var cache = global._maptalksImageFileCache;
+                if (cache.get(url)) {
+                    onLoadComplete(null, cache.get(url))
+                    return;
+                }
                 var segs = url.split('.');
                 if (segs[segs.length-1] === 'svg') {
                     Z.Util._convertSVG2PNG(url, onLoadComplete);
@@ -138,35 +150,36 @@ Z.Util = {
         if (!this._nodeFS) {
             this._nodeFS = require('fs');
         }
-        if (!this._svgFileCache) {
-            //cache 10 svg files.
-            this._svgFileCache = new Z.TileLayer.TileCache(10);
-        }
-        if (url.indexOf('http://') < 0 && url.indexOf('https://') < 0) {
+        var furl = url;
+        if (furl.indexOf('http://') < 0 && furl.indexOf('https://') < 0) {
             //is a local file
-            url = ('file:///'+url).replace(/\\/g,'/');
+            furl = ('file:///'+furl).replace(/\\/g,'/');
         }
-        var cache = this._svgFileCache;
-        if (cache.get(url)) {
-            complete(null, cache.get(url))
-            return;
-        }
+
         var fs = this._nodeFS;
         function unlinkFile(file) {
-            fs.stat(file, function(err, stat) {
-                if (err == null) {
-                    try {
-                        fs.unlink(file);
-                    } catch (fserr) {
-                        console.error(fserr);
+            try {
+                fs.stat(file, function(err, stat) {
+                    if (err == null) {
+                        try {
+                            fs.unlink(file, function(err2) {
+                                if (err2) {
+                                    console.error(err2)
+                                }
+                            });
+                        } catch (ulerr) {
+                            console.error(ulerr);
+                        }
                     }
+                });
+            } catch (error) {
+                console.error(error);
+            }
 
-                }
-            });
         }
         var now = new Date().getTime();
         var tmpPngFile = (__dirname+'/tmp-'+now+'.png').replace(/\\/g,'/');
-        this._svg2png(url, tmpPngFile, function (error) {
+        this._svg2png(furl, tmpPngFile, function (error) {
             if (error) {
                 unlinkFile(tmpPngFile);
                 complete(error);
@@ -178,7 +191,6 @@ Z.Util = {
                     complete(err);
                     return;
                 }
-                cache.add(url, data);
                 complete(null, data);
             });
         });
