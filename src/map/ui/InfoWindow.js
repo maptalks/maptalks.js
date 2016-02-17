@@ -75,9 +75,9 @@ Z['InfoWindow'] = Z.InfoWindow = Z.UIComponent.extend({
         var container = this._map._panels.tipContainer;
         container.innerHTML = '';
         var dom;
-        if (this._isOnStage() && this._dom) {
-            dom = this._dom;
-            container.appendChild(dom);
+        if (this._isOnStage() && this._domHTML) {
+            container.innerHTML = this._domHTML;
+            this._dom = container.childNodes[0];
         } else {
             dom = this._dom = this._createDOM();
             Z.DomUtil.on(dom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
@@ -85,6 +85,7 @@ Z['InfoWindow'] = Z.InfoWindow = Z.UIComponent.extend({
             dom.style.left = -99999+'px';
             dom.style.top = -99999+'px';
             container.appendChild(dom);
+            this._domHTML = container.innerHTML;
             this._size = new Z.Size(dom.clientWidth+6, dom.clientHeight);
             var minHeight = this.options['minHeight'];
             if (minHeight>0 && this._size['height']<minHeight) {
