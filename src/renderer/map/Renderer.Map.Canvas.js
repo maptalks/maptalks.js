@@ -193,6 +193,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
         var panels = this.map._panels;
         panels.mapWrapper.style.width = width + 'px';
         panels.mapWrapper.style.height = height + 'px';
+        panels.mapMask.style.width = width + 'px';
+        panels.mapMask.style.height = height + 'px';
         panels.controlWrapper.style.width = width + 'px';
         panels.controlWrapper.style.height = height + 'px';
     },
@@ -212,6 +214,15 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
      * initialize container DOM of panels
      */
     initContainer:function() {
+        var panels = this.map._panels;
+        function createContainer(name, className, cssText) {
+            var c = Z.DomUtil.createEl('div', className);
+            if (cssText) {
+                c.style.cssText = cssText;
+            }
+            panels[name] = c;
+            return c;
+        }
         var containerDOM = this.map._containerDOM;
 
         if (this._isCanvasContainer) {
@@ -221,69 +232,41 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
 
         containerDOM.innerHTML = '';
 
-        var controlWrapper = Z.DomUtil.createEl('div', 'MAP_CONTROL_WRAPPER');
+        var controlWrapper = createContainer('controlWrapper', 'MAP_CONTROL_WRAPPER');
+        var mapWrapper = createContainer('mapWrapper','MAP_WRAPPER', 'position:absolute;overflow:hidden;');
+        var mapPlatform = createContainer('mapPlatform', 'MAP_PLATFORM', 'position:absolute;top:0px;left:0px;');
+        var mapViewPort = createContainer('mapViewPort', 'MAP_VIEWPORT', 'position:absolute;top:0px;left:0px;z-index:10;-moz-user-select:none;-webkit-user-select: none;');
+        var tipContainer = createContainer('tipContainer', 'MAP_TIP_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
+        var popMenuContainer = createContainer('popMenuContainer', 'MAP_POPMENU_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
+        var uiContainer = createContainer('uiContainer', 'MAP_UI_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
+        var canvasContainer = createContainer('canvasContainer', 'MAP_CANVAS_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
+        var mapMask = createContainer('mapMask', 'MAP_MASK', 'position:absolute;top:0px;left:0px;');
 
-        var controlsContainer = Z.DomUtil.createEl('div', 'MAP_CONTROLS_CONTAINER');
-        controlWrapper.appendChild(controlsContainer);
-        //map wrapper定义了全局的背景色, hidden overflow等css属性
-        var mapWrapper = Z.DomUtil.createEl('div', 'MAP_WRAPPER');
-        mapWrapper.style.cssText = 'position:absolute;overflow:hidden;';
+        canvasContainer.style.zIndex=1;
+        mapPlatform.style.zIndex = 3;
+        controlWrapper.style.zIndex = 4;
+        mapMask.style.zIndex = 2;
+
         containerDOM.appendChild(mapWrapper);
 
-        // 最外层的div
-        var mapPlatform = Z.DomUtil.createEl('div', 'MAP_PLATFORM');
-        mapPlatform.style.cssText = 'position:absolute;top:0px;left:0px;';
+        uiContainer.appendChild(tipContainer);
+        uiContainer.appendChild(popMenuContainer);
+        mapPlatform.appendChild(uiContainer);
+        mapWrapper.appendChild(mapMask);
         mapWrapper.appendChild(mapPlatform);
         mapWrapper.appendChild(controlWrapper);
-
-        var mapViewPort = Z.DomUtil.createEl('div', 'MAP_VIEWPORT');
-        mapViewPort.style.cssText = 'position:absolute;top:0px;left:0px;z-index:10;-moz-user-select:none;-webkit-user-select: none;';
-
-
-        var tipContainer = Z.DomUtil.createEl('div', 'MAP_CONTAINER');
-        tipContainer.style.cssText = 'position:absolute;top:0px;left:0px;';
-        tipContainer.style.border = 'none';
-        var popMenuContainer = tipContainer.cloneNode(false);
-        var contextCtrlContainer = tipContainer.cloneNode(false);
-        var canvasLayerContainer = tipContainer.cloneNode(false);
-
-        tipContainer.className = 'MAP_TIP_CONTAINER';
-        popMenuContainer.className = 'MAP_POPMENU_CONTAINER';
-        contextCtrlContainer.className = 'MAP_CONTEXTCTRL_CONTAINER';
-        canvasLayerContainer.className = 'MAP_CANVAS_CONTAINER';
-
-        canvasLayerContainer.style.zIndex=1;
-        mapPlatform.style.zIndex = 2;
-        controlWrapper.style.zIndex = 3;
-
-        contextCtrlContainer.appendChild(tipContainer);
-        contextCtrlContainer.appendChild(popMenuContainer);
-        mapPlatform.appendChild(contextCtrlContainer);
-        mapWrapper.appendChild(canvasLayerContainer);
+        mapWrapper.appendChild(canvasContainer);
 
         //解决ie下拖拽矢量图形时，底图div会选中变成蓝色的bug
         if (Z.Browser.ie) {
-
             controlWrapper['onselectstart'] = function(e) {
                 return false;
             };
             controlWrapper['ondragstart'] = function(e) { return false; };
             controlWrapper.setAttribute('unselectable', 'on');
-
             mapWrapper.setAttribute('unselectable', 'on');
             mapPlatform.setAttribute('unselectable', 'on');
         }
-
-
-        //store panels
-        var panels = this.map._panels;
-        panels.controlWrapper = controlWrapper;
-        panels.mapWrapper = mapWrapper;
-        panels.mapPlatform = mapPlatform;
-        panels.tipContainer = tipContainer;
-        panels.popMenuContainer = popMenuContainer;
-        panels.canvasLayerContainer = canvasLayerContainer;
-
         //初始化mapPlatform的偏移量, 适用css3 translate时设置初始值
         this.offsetPlatform(new Z.Point(0,0));
         var mapSize = this.map._getContainerDomSize();
@@ -448,7 +431,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
             this._canvas = Z.DomUtil.createEl('canvas');
             this._canvas.style.cssText = 'position:absolute;top:0px;left:0px;';
             this._updateCanvasSize();
-            this.map._panels.canvasLayerContainer.appendChild(this._canvas);
+            this.map._panels.canvasContainer.appendChild(this._canvas);
         }
         this._context = this._canvas.getContext('2d');
         if (Z.Browser.retina) {

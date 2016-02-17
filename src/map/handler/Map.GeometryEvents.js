@@ -11,35 +11,29 @@ Z.Map.GeometryEvents = Z.Handler.extend({
 
     addHooks: function() {
         var map = this.target;
-        // return;
-        var canvasContainer;
+        var dom = map._panels.mapMask;
         if (Z.Browser.ie9) {
-            canvasContainer = map._panels.canvasLayerContainer;
+            dom = map._panels.canvasContainer;
         } else {
-            canvasContainer = map._panels.mapWrapper;
+            dom = map._panels.mapMask;
         }
-        if(canvasContainer) {
-            Z.DomUtil.on(canvasContainer,this.EVENTS, this._identifyGeometryEvents, this);
+        if(dom) {
+            Z.DomUtil.on(dom,this.EVENTS, this._identifyGeometryEvents, this);
         }
-        //之所以取消在map上的监听, 是因为map事件在geometry事件之前发生, 会导致一些互动上的问题
-        // map.on('_mousedown _mouseup _mousemove _click _dblclick _contextmenu', this._identifyGeometryEvents, this);
 
     },
 
     removeHooks: function() {
         var map = this.target;
-        /**
-        map.off('mousedown mouseup mousemove click dblclick contextmenu', this._identifyGeometryEvents, this);*/
-        var dom;
+        var dom = map._panels.mapMask;
         if (Z.Browser.ie9) {
-            dom = map._panels.canvasLayerContainer;
+            dom = map._panels.canvasContainer;
         } else {
-            dom = map._panels.mapWrapper;
+            dom = map._panels.mapMask;
         }
         if(dom) {
             Z.DomUtil.off(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
-        // map.off('_mousedown _mouseup _mousemove _click _dblclick _contextmenu', this._identifyGeometryEvents, this);
     },
 
     _identifyGeometryEvents: function(domEvent) {
