@@ -61,7 +61,7 @@ Z.Control = Z.Class.extend({
         var controlContainer = map._panels.controlWrapper;
         this._container = Z.DomUtil.createEl('div');
         Z.DomUtil.setStyle(this._container, 'position:absolute');
-        Z.DomUtil.addStyle(this._container, 'z-index', 3);
+        Z.DomUtil.addStyle(this._container, 'z-index', controlContainer.style.zIndex);
         Z.DomUtil.on(this._container, 'mousedown mousemove click dblclick contextmenu', Z.DomUtil.stopPropagation)
         var controlDom = this.buildOn(map);
         if(controlDom) {

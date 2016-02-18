@@ -14,8 +14,6 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         var dom = map._panels.mapMask;
         if (Z.Browser.ie9) {
             dom = map._panels.canvasContainer;
-        } else {
-            dom = map._panels.mapMask;
         }
         if(dom) {
             Z.DomUtil.on(dom,this.EVENTS, this._identifyGeometryEvents, this);
@@ -28,8 +26,6 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         var dom = map._panels.mapMask;
         if (Z.Browser.ie9) {
             dom = map._panels.canvasContainer;
-        } else {
-            dom = map._panels.mapMask;
         }
         if(dom) {
             Z.DomUtil.off(dom, this.EVENTS, this._identifyGeometryEvents, this);

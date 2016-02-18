@@ -13,10 +13,11 @@ Z.Label.include({
 
     _prepareEditor:function() {
         var map = this.getMap();
+        var zIndex = map._panels.controlWrapper.style.zIndex+1;
         var viewPoint = this._computeViewPoint();
         this._container = Z.DomUtil.createEl('div');
         this._container.style.cssText='position:absolute;top:'+viewPoint['y']
-                                    +'px;left:'+viewPoint['x']+'px;z-index:5000;';
+                                    +'px;left:'+viewPoint['x']+'px;z-index:'+zIndex+';';
         map._panels.mapPlatform.appendChild(this._container);
         this._textEditor = this._createInputDom();
         this._container.appendChild(this._textEditor);

@@ -243,9 +243,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
         var mapMask = createContainer('mapMask', 'MAP_MASK', 'position:absolute;top:0px;left:0px;');
 
         canvasContainer.style.zIndex=1;
-        mapPlatform.style.zIndex = 3;
-        controlWrapper.style.zIndex = 4;
-        mapMask.style.zIndex = 2;
+        mapMask.style.zIndex = 200;
+        mapPlatform.style.zIndex = 300;
+        controlWrapper.style.zIndex = 400;
 
         containerDOM.appendChild(mapWrapper);
 
