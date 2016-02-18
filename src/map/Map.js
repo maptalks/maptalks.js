@@ -137,6 +137,7 @@ Z.Map=Z.Class.extend({
         if (oldView && !view) {
             return;
         }
+        this._center = this.getCenter();
         this.options['view'] =  view;
         this._view = new Z.View(view);
         if (this.options['view'] && Z.Util.isFunction(this.options['view']['projection'])) {
@@ -1061,7 +1062,6 @@ Z.Map=Z.Class.extend({
         if (this._zoomLevel < minZoom) {
             this._zoomLevel = minZoom;
         }
-        this._center = this.getCenter();
         delete this._prjCenter;
         var projection = this.getProjection();
         this._prjCenter = projection.project(this._center);

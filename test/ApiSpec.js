@@ -870,7 +870,7 @@ describe('API', function () {
 
     describe('ComputeAreaTool', function() {
         it('enable/disable', function() {
-            var tool = new Z.ComputeAreaTool();
+            var tool = new Z.AreaTool();
 
             expect(function () {
                 tool.addTo(map);

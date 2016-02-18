@@ -51,6 +51,9 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
                 if (!immediate && geometries[i]._isRenderImmediate()) {
                     immediate = true;
                 }
+                if (!Z.Util.isArrayHasData(res)) {
+                    continue;
+                }
                 if (!this._resources) {
                     resources = resources.concat(res);
                 } else {

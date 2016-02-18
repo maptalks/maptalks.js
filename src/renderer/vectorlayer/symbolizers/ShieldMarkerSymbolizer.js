@@ -43,10 +43,12 @@ Z.symbolizer.ShieldMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         Z.Canvas.prepareCanvas(ctx, strokeAndFill['stroke'], strokeAndFill['fill'], resources);
         Z.Canvas.prepareCanvasFont(ctx,style);
 
-
-        var img = resources.getImage(style['shieldFile']);
-        if (!img) {
-            console.warn(style['shieldFile']+' is invalid');
+        var img;
+        if (style['shieldFile'] && resources) {
+            img = resources.getImage(style['shieldFile']);
+            if (!img) {
+                console.warn(style['shieldFile']+' is invalid');
+            }
         }
         this.shieldFileWidth = img ? img.width:0;
         this.shieldFileHeight = img ? img.height:0;

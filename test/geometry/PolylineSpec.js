@@ -13,7 +13,7 @@ describe('PolylineSpec', function() {
         map = setups.map;
         layer = new Z.VectorLayer('id');
         map.addLayer(layer);
-        canvasContainer = map._panels.mapPlatform;
+        canvasContainer = map._panels.mapMask;
     });
 
     afterEach(function() {

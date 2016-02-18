@@ -47,7 +47,17 @@ describe('#Projection', function () {
                 projection:'EPSG:4326'
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4326');
-            expect(map.getCenter().equals(center)).to.be.ok();
+            expect(map.getCenter()).to.nearCoord(center);
+        });
+
+        it('change center before changing view', function() {
+            var newCenter = new Z.Coordinate(100,0);
+            map.setCenter(newCenter);
+            map.setView({
+                projection:'EPSG:4326'
+            });
+            expect(map.getProjection().code).to.be.eql('EPSG:4326');
+            expect(map.getCenter()).to.nearCoord(newCenter);
         });
     });
 
@@ -64,7 +74,7 @@ describe('#Projection', function () {
                 }
             });
             expect(map.getProjection().code).to.be.eql('IDENTITY');
-            expect(map.getCenter().equals(center)).to.be.ok();
+            expect(map.getCenter()).to.nearCoord(center);
             expect(map.computeDistance([0,10],[0,20])).to.be.eql(10);
             var circle = new maptalks.Circle([10,10],1);
             expect(map.computeGeodesicArea(circle)).to.be.eql(Math.PI);
@@ -82,7 +92,7 @@ describe('#Projection', function () {
                 projection:'baidu'
             });
             expect(map.getProjection().code).to.be.eql('BAIDU');
-            expect(map.getCenter().equals(center)).to.be.ok();
+            expect(map.getCenter()).to.nearCoord(center);
         });
     });
 });
