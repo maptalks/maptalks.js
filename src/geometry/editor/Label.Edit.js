@@ -18,7 +18,7 @@ Z.Label.include({
         this._container = Z.DomUtil.createEl('div');
         this._container.style.cssText='position:absolute;top:'+viewPoint['y']
                                     +'px;left:'+viewPoint['x']+'px;z-index:'+zIndex+';';
-        map._panels.mapPlatform.appendChild(this._container);
+        map._panels.uiContainer.appendChild(this._container);
         this._textEditor = this._createInputDom();
         this._container.appendChild(this._textEditor);
     },

@@ -868,7 +868,7 @@ describe('API', function () {
 
     });
 
-    describe('ComputeAreaTool', function() {
+    describe('AreaTool', function() {
         it('enable/disable', function() {
             var tool = new Z.AreaTool();
 

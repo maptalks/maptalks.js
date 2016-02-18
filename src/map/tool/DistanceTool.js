@@ -63,6 +63,13 @@ Z.DistanceTool = Z.DrawTool.extend({
         return this._measureLayers;
     },
 
+    getLastMeasure:function() {
+        if (!this._lastMeasure) {
+            return 0;
+        }
+        return this._lastMeasure;
+    },
+
     _measure:function(toMeasure) {
         var map = this.getMap();
         var length;
@@ -71,6 +78,7 @@ Z.DistanceTool = Z.DrawTool.extend({
         } else if (Z.Util.isArray(toMeasure)) {
             length = Z.GeoUtils.computeLength(toMeasure, map.getProjection());
         }
+        this._lastMeasure = length;
         var units;
         if (this.options['language'] === 'zh-CN') {
             units = [' 米', ' 公里', ' 英尺', ' 英里'];
@@ -108,7 +116,6 @@ Z.DistanceTool = Z.DrawTool.extend({
             .off('mousemove', this._msOnMouseMove, this)
             .off('drawend', this._msOnDrawEnd, this);
     },
-
 
     _msOnDrawStart:function(param) {
         var map = this.getMap();

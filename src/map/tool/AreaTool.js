@@ -38,6 +38,7 @@ Z.AreaTool = Z.DistanceTool.extend({
         } else if (Z.Util.isArray(toMeasure)) {
             area = Z.GeoUtils.computeArea(toMeasure, map.getProjection());
         }
+        this._lastMeasure = area;
         var units;
         if (this.options['language'] === 'zh-CN') {
             units = [' 平方米', ' 平方公里', ' 平方英尺', ' 平方英里'];
