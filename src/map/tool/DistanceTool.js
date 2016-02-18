@@ -1,314 +1,218 @@
 /**
  * 测距鼠标工具类
- * @class maptalks.DistanceTool
+ * @class maptalks.DrawTool
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
  * @author Maptalks Team
  */
-Z.DistanceTool = Z.Class.extend({
-    includes: [Z.Eventable],
+Z.DistanceTool = Z.DrawTool.extend({
+
+    options:{
+        'language' : 'zh-CN', //'en-US'
+        'metric': true,
+        'imperial': false,
+        'symbol' : {
+            'lineColor':'#000000',//'#3388ff',
+            'lineWidth':3,
+            'lineOpacity':1
+        },
+        'vertexSymbol' : {
+            'markerType'        : 'ellipse',
+            "markerFill"        : "#ffffff",//"#d0d2d6",
+            "markerLineColor"   : "#000000",
+            "markerLineWidth"   : 3,
+            "markerWidth"       : 10,
+            "markerHeight"      : 10
+        },
+        'labelOptions' : {
+            'symbol':{
+                'textWrapCharacter' : '\n',
+                'textFaceName' : '"microsoft yahei",sans-serif',
+                'textLineSpacing' : 1,
+                'textHorizontalAlignment' : 'right',
+                'markerLineColor' : '#b4b3b3',
+                'textDx' : 15
+            },
+            'boxPadding'   :   new Z.Size(6,4)
+        }
+    },
 
     /**
-     * 初始化测距工具
+     * 初始化绘制工具
      * @constructor
-     * @param {Object} options:{}
+     * @param {Object} options:{mode:Z.Geometry.TYPE_CIRCLE, disableOnDrawEnd: true}
      */
     initialize: function(options) {
-        Z.Util.extend(this, options);
+        Z.Util.setOptions(this,options);
+        this.config('mode',Z.Geometry['TYPE_LINESTRING']);
+        this.on('enable', this._onEnable, this)
+            .on('disable', this._onDisable, this);
+        this._measureLayers = [];
+    },
+
+    clear:function() {
+        if (Z.Util.isArrayHasData(this._measureLayers)) {
+            for (var i = 0; i < this._measureLayers.length; i++) {
+                this._measureLayers[i].remove();
+            }
+        }
         return this;
     },
 
-    /**
-     * 将工具添加到目标对象上
-     * @param {maptalks.Map} map
-     * @expose
-     */
-    addTo: function(map) {
-        //TODO options应该设置到this.options中
-        this.map = map;
-        if (!this.map) {return;}
-        this.layerId = Z.internalLayerPrefix+'distancetool';
-        this.drawLayer = null;
-        this.drawTool = null;
-        this.rings = [];
-        this.enable();
-        return this;
+    getMeasureLayers:function() {
+        return this._measureLayers;
     },
 
-    /**
-     * 激活测距鼠标工具
-     * @expose
-     */
-    enable:function() {
-        if (!this.map) {
-            return;
+    _measure:function(toMeasure) {
+        var map = this.getMap();
+        var length;
+        if (toMeasure instanceof Z.Geometry) {
+            length = map.computeGeodesicLength(toMeasure);
+        } else if (Z.Util.isArray(toMeasure)) {
+            length = Z.GeoUtils.computeLength(toMeasure, map.getProjection());
         }
-        var drawTool = this.drawTool;
-        this.drawLayer = this.map.getLayer(this.layerId);
-        if (this.drawLayer !== null && drawTool !== null) {
-            drawTool.enable();
-            return;
-        }
-        if (this.drawLayer !== null) {
-            this.map.removeLayer(this.layerId);
-        }
-
-        this.drawLayer = new Z.VectorLayer(this.layerId);
-
-        this.map.addLayer(this.drawLayer);
-
-        drawTool = new Z.DrawTool({
-            'mode':Z.Geometry.TYPE_POLYLINE,
-            'symbol': {'strokeSymbol':{'stroke':'#ff0000', 'stroke-width':3, 'opacity':0.6}},
-            'disableOnDrawEnd': true
-        }).addTo(this.map);
-
-        drawTool.on('drawstart', Z.Util.bind(this._startMeasure, this));
-        drawTool.on('drawvertex', Z.Util.bind(this._measureRing, this));
-        drawTool.on('drawend', Z.Util.bind(this._afterMeasure, this));
-
-        this.drawTool = drawTool;
-
-        this.counter = 0;
-        this.rings = [];
-        this.tmpMarkers = [];
-    },
-
-    /**
-     * 停止测距鼠标工具
-     * @expose
-     */
-    disable:function() {
-        if (!this.map) {
-            return;
-        }
-        this.clear();
-        var drawTool = this.drawTool;
-        var _canvas = this.map.canvasDom;
-        if (!_canvas) {
-            this._changeCursor('default');
-        }
-        if (drawTool !== null) {
-            drawTool.disable();
-        }
-    },
-
-    /**
-     * 清除测量结果
-     * @expose
-     */
-    clear: function(){
-        if (this.drawLayer !== null && this.map !== null) {
-            this.drawLayer.clear();
-        }
-        this.rings = [];
-        this.counter = 0;
-        this.tmpMarkers = [];
-    },
-
-    _startMeasure : function(param) {
-        var startDiv = this._outline('起点', 28);
-        var coordinate = param['coordinate'];
-        this.rings.push(coordinate);
-
-        var point = this._genMeasurePoint(coordinate, this.layerId + '_startp_' + this.counter);
-        var marker = new Z.Marker(coordinate, this.layerId + '_start_' + this.counter);
-        marker.setSymbol({
-            'type' : 'html',
-            'content' : startDiv
-        });
-        this.drawLayer.addGeometry([point,marker]);
-        this.tmpMarkers.push(point);
-        this.tmpMarkers.push(marker);
-    },
-
-    _measureRing : function(param) {
-        var content = null;
-        var coordinate = param['coordinate'];
-        this.rings.push(coordinate);
-        var lenSum = this._caculateLenSum();
-        if (lenSum>1000) {
-            content = (lenSum/1000).toFixed(1)+'公里';
+        var units;
+        if (this.options['language'] === 'zh-CN') {
+            units = [' 米', ' 公里', ' 英尺', ' 英里'];
         } else {
-            content = lenSum + '米';
+            units = [' m', ' km', ' feet', ' mile'];
         }
-        var measureDiv = this._outline(content, 50);
-        var point = this._genMeasurePoint(coordinate, this.layerId + '_ringp_' + this.rings.length+'_' + this.counter);
-        var marker = new Z.Marker(coordinate, this.layerId + '_ring_' + this.rings.length + '_' + this.counter);
-        marker.setSymbol({
-            'type' : 'html',
-            'content' : measureDiv
-        });
-        this.drawLayer.addGeometry([point,marker]);
-        this.tmpMarkers.push(point);
-        this.tmpMarkers.push(marker);
+        var content = '';
+        if (this.options['metric']) {
+            content += length < 1000 ? length.toFixed(0) + units[0] : (length / 1000).toFixed(2) + units[1];
+        }
+        if (this.options['imperial']) {
+            length *= 3.2808399
+            if (content.length > 0) {
+                content += '\n';
+            }
+            content += length < 5280 ? length.toFixed(0) + units[2] : (length / 5280).toFixed(2) + units[3];
+        }
+        return content;
     },
 
-    _afterMeasure : function(param) {
-        var polyline = param.target;
-        var coordinate = param['coordinate'];
-        this.rings.push(coordinate);
-        var divContent = '总长';
-        var lenSum = this._caculateLenSum();
-        if (lenSum>1000) {
-            divContent += (lenSum/1000).toFixed(1)+'公里';
+    _registerMeasureEvents:function() {
+        this.on('drawstart', this._msOnDrawStart, this)
+            .on('drawvertex', this._msOnDrawVertex, this)
+            .on('mousemove', this._msOnMouseMove, this)
+            .on('drawend', this._msOnDrawEnd, this);
+    },
+
+    _onEnable:function(param) {
+        this._registerMeasureEvents();
+    },
+
+    _onDisable:function() {
+        this.off('drawstart', this._msOnDrawStart, this)
+            .off('drawvertex', this._msOnDrawVertex, this)
+            .off('mousemove', this._msOnMouseMove, this)
+            .off('drawend', this._msOnDrawEnd, this);
+    },
+
+
+    _msOnDrawStart:function(param) {
+        var map = this.getMap();
+        var guid = Z.Util.GUID();
+        var layerId = 'distancetool_'+guid;
+        var markerLayerId = 'distancetool_markers_'+guid;
+        if (!map.getLayer(layerId)) {
+            this._measureLineLayer = new maptalks.VectorLayer(layerId).addTo(map);
+            this._measureMarkerLayer = new maptalks.VectorLayer(markerLayerId).addTo(map);
         } else {
-            divContent += lenSum.toFixed(1)+'米';
+            this._measureLineLayer = map.getLayer(layerId);
+            this._measureMarkerLayer = map.getLayer(markerLayerId);
         }
-        this._endMeasure(coordinate, divContent, polyline);
-        this._changeCursor('default');
-        this.counter++;
-        this.rings = [];
-        /**
-         * 距离量算结束事件
-         * @event measureend
-         * @param result: 总长度
-         */
-        this.fire('measureend', {'result': lenSum});
+        this._measureLayers.push(this._measureLineLayer);
+        this._measureLayers.push(this._measureMarkerLayer);
+        var startMarker = new maptalks.Marker(param['coordinate'], {
+            'symbol' : this.options['vertexSymbol']
+        }).addTo(this._measureMarkerLayer);
+        var content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
+        var startLabel = new maptalks.Label(content, param['coordinate'], this.options['labelOptions']);
+        this._measureMarkerLayer.addGeometry(startLabel);
     },
 
-    _caculateLenSum : function() {
-        var rings = this.rings;
-        if (rings.length <= 1) {
-            return 0;
+    _msOnMouseMove:function(param) {
+        var ms = this._measure(param['geometry'].getCoordinates().concat([param['coordinate']]));
+        if (!this._tailMarker) {
+            var symbol = Z.Util.extendSymbol(this.options['vertexSymbol']);
+            symbol['markerWidth'] /= 2;
+            symbol['markerHeight'] /= 2;
+            this._tailMarker = new maptalks.Marker(param['coordinate'], {
+                'symbol' : symbol
+            }).addTo(this._measureMarkerLayer);
+            this._tailMarker._isRenderImmediate(true);
+            this._tailLabel = new maptalks.Label(ms, param['coordinate'], this.options['labelOptions'])
+                .addTo(this._measureMarkerLayer);
         }
-        var lenSum = 0;
-        var projection = this.map.getProjection();
-        for (var i=1,len=rings.length;i<len;i++){
-            lenSum += projection.measureLength(rings[i-1],rings[i]);
-        }
-        return parseFloat(lenSum);
+        this._tailMarker.setCoordinates(param['coordinate']);
+        this._tailLabel.setContent(ms);
+        this._tailLabel.setCoordinates(param['coordinate']);
+
     },
 
-    _genMeasurePoint: function(coordinate, id) {
-        var point = new Z.Marker(coordinate, id);
-        point.setSymbol({
-            'icon':{
-                'type'   : 'picture',
-                'url'    : Z.prefix + 'images/point.png',
-                'width'  : 16,
-                'height' : 17,
-                'offset' : {
-                    'x'  : 0,
-                    'y'  : -8
-                }
-            }
+    _msOnDrawVertex:function(param) {
+        var geometry = param['geometry'];
+        var vertexMarker = new maptalks.Marker(param['coordinate'], {
+            'symbol' : this.options['vertexSymbol']
+        }).addTo(this._measureMarkerLayer);
+        var length = this._measure(geometry);
+        var vertexLabel = new maptalks.Label(length, param['coordinate'], this.options['labelOptions']);
+        this._measureMarkerLayer.addGeometry(vertexLabel);
+        this._lastVertex = vertexLabel;
+    },
 
+    _msOnDrawEnd:function(param) {
+        this._clearTailMarker();
+        var size = this._lastVertex.getSize();
+        if (!size) {
+            size = new Z.Size(10,10);
+        }
+        this._addClearMarker(this._lastVertex.getCoordinates(), size['width']);
+        var geo = param['geometry'].copy();
+        geo._isRenderImmediate(true);
+        geo.addTo(this._measureLineLayer);
+    },
+
+    _addClearMarker:function(coordinates, dx) {
+        var endMarker = new maptalks.Marker(coordinates, {
+            'symbol' : [{
+                            'markerType' : 'x',
+                            'markerWidth' : 10,
+                            'markerHeight' : 10,
+                            'markerDx' : 20 + dx
+                        },
+                        {
+                            'markerType' : 'square',
+                            'markerFill' : '#ffffff',
+                            'markerLineColor' : '#b4b3b3',
+                            'markerLineWidth' : 2,
+                            'markerWidth' : 15,
+                            'markerHeight' : 15,
+                            'markerDx' : 20 + dx
+                        }]
         });
-        return point;
+        var measureLineLayer = this._measureLineLayer,
+            measureMarkerLayer = this._measureMarkerLayer;
+        endMarker.on('click',function() {
+            measureLineLayer.remove();
+            measureMarkerLayer.remove();
+            //return false to stop propagation of event.
+            return false;
+        }, this);
+        endMarker.addTo(this._measureMarkerLayer);
     },
 
-
-
-    _outline: function(content,width,top,left) {
-        if (top===null) {
-            top=-10;
+    _clearTailMarker:function() {
+        if (this._tailMarker) {
+            this._tailMarker.remove();
+            delete this._tailMarker;
         }
-        if (left===null) {
-            left = 10;
+        if (this._tailLabel) {
+            this._tailLabel.remove();
+            delete this._tailLabel;
         }
-        return '<div class="MAP_CONTROL_PointTip" style="top:'+
-            top+'px;left:'+left+'px;width:'+width+'px">'+content+'</div>';
-    },
+    }
 
-    _endMeasure: function(coordinate, divContent, geo) {
-        var _geo = geo;
-        var counter = this.counter;
-        var tmpMarkers = this.tmpMarkers;
-        // var map = this.map;
-        var point = this._genMeasurePoint(coordinate, this.layerId+'_endp_'+counter);
-
-        var rings;
-        if(geo.getPath) {
-            rings = geo.getPath();
-        } else if(geo.getShell) {
-            rings = geo.getShell();
-        }
-        var offsetX,offsetY;
-        //TODO 不清楚map.incre是什么？
-//      if (map.incre.x*(rings[rings.length-1].x - rings[rings.length-2].x)>0) {
-        if ((rings[rings.length-1].x - rings[rings.length-2].x)>0) {
-            offsetX = 15;
-        } else {
-            offsetX = -20;
-        }
-//      if (map.incre.y*(rings[rings.length-1].y - rings[rings.length-2].y)>0) {
-        if ((rings[rings.length-1].y - rings[rings.length-2].y)>0) {
-            offsetY = -30;
-        } else {
-            offsetY = 10;
-        }
-        var endDiv = this._outline('<b>'+divContent+'<b>',80,offsetY);
-        var marker = new Z.Marker(coordinate, this.layerId+'_end_'+counter);
-        marker.setSymbol({
-            'icon':{
-                'type' : 'html',
-                'content' : endDiv
-            }
-        });
-        var closeBtn = new Z.Marker(coordinate, this.layerId + '_close_' + counter);
-        closeBtn.setSymbol({
-            'icon' : {
-                'type'   : 'picture',
-                'url'    : Z.prefix + 'images/m_close.png',
-                'width'  : 12,
-                'height' : 12,
-                'offset' : {
-                    x : offsetX,
-                    y : -6
-                }
-            }
-        });
-
-        closeBtn.setAttributes(counter);
-
-        closeBtn.on('click',function() {
-            _geo.remove();
-            for (var i = 0, len = tmpMarkers.length;i<len;i++) {
-                if (strEndWith(this.tmpMarkers[i].getId(),"_"+closeBtn.getAttributes())) {
-                    this.tmpMarkers[i].remove();
-                }
-            }
-        });
-
-        //去掉最后一个点的标签
-        if(tmpMarkers&&tmpMarkers.length>0) {
-            var center = tmpMarkers[tmpMarkers.length-1].getCenter();
-
-            var endIndexes = [tmpMarkers.length-1];
-            var i, len;
-            for (i=tmpMarkers.length-3;i>0;i-=2) {
-                if (tmpMarkers[i].center.x === center.x && tmpMarkers[i].center.y === center.y) {
-                    endIndexes.push(i);
-                } else {
-                    break;
-                }
-            }
-            for (i=0, len=endIndexes.length;i<len;i++) {
-                tmpMarkers[endIndexes[i]].remove();
-            }
-        }
-
-        this.drawLayer.addGeometry([point,closeBtn,marker,_geo]);
-
-        tmpMarkers.push(marker);
-        tmpMarkers.push(point);
-        tmpMarkers.push(closeBtn);
-        function strEndWith(str, end) {
-            if (str===null||str===''||str.length===0||end.length>str.length) {
-             return false;
-            }
-            if (str.substring(str.length-end.length)===end) {
-             return true;
-            } else {
-             return false;
-            }
-            return true;
-        }
-    },
-
-    _changeCursor:function(cursorStyle) {
-       /*if (_canvas.style!=null && !_canvas.style.cursor)
-            _canvas.style.cursor = cursorStyle;*/
-   }
 });
+
