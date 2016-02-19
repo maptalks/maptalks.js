@@ -35,7 +35,7 @@ Z.Marker=Z.Geometry.extend({
         if (Z.Util.isArray(symbol)) {
             return false;
         }
-        return Z.symbolizer.VectorMarkerSymbolizer.test(this, symbol)
+        return Z.symbolizer.VectorMarkerSymbolizer.test(this, symbol) || Z.symbolizer.VectorPathMarkerSymbolizer.test(this, symbol)
                     || Z.symbolizer.ImageMarkerSymbolizer.test(this, symbol);
     },
 
