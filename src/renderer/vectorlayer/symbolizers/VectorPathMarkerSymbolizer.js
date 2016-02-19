@@ -17,38 +17,59 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
         var styles =  Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(symbol);
         var pathWidth  = symbol['markerPathWidth'],
             pathHeight = symbol['markerPathHeight'];
-        var svgStyles = [];
+        var svgStyles = {};
         if (styles) {
             for (var p in styles['stroke']) {
                 if (styles['stroke'].hasOwnProperty(p)) {
                     if (!Z.Util.isNil(styles['stroke'][p])) {
-                        svgStyles.push(p+'="'+styles['stroke'][p]+'"');
+                        svgStyles[p] = styles['stroke'][p];
                     }
                 }
             }
             for (var p in styles['fill']) {
                 if (styles['fill'].hasOwnProperty(p)) {
                     if (!Z.Util.isNil(styles['fill'][p])) {
-                        svgStyles.push(p+'="'+styles['fill'][p]+'"');
+                        svgStyles[p] = styles['fill'][p];
                     }
                 }
             }
         }
-        svgStyles = (svgStyles.length>0?svgStyles.join(' '):'');
-        var svg = '<svg version="1.1" ';
-        if (pathWidth && pathHeight) {
-            svg += 'height="'+pathWidth+'" width="'+pathHeight+'"';
-        }
-        svg += ' xmlns="http://www.w3.org/2000/svg"><defs></defs>';
+
         var pathes = Z.Util.isArray(symbol['markerPath'])?symbol['markerPath']:[symbol['markerPath']];
+        var pathesToRender = [];
         for (var i = 0; i < pathes.length; i++) {
-            svg += '<path d="'
-                +pathes[i]+'"'+' '+svgStyles+'></path>'
+            var pathObj;
+            if (Z.Util.isString(pathes[i])) {
+                pathObj = {'path' : pathes[i]};
+            } else {
+                pathObj = pathes[i];
+            }
+            var p = Z.Util.extend({},pathObj, svgStyles);
+            p['d'] = p['path'];
+            delete p['path'];
+            pathesToRender.push(p);
         }
-        svg += '</svg>';
-        var b64 = 'data:image/svg+xml;base64,'+Z.Util.btoa(svg);
+        var svgContent = ['<svg version="1.1"'];
+        if (pathWidth && pathHeight) {
+            svgContent.push('height="'+pathWidth+'" width="'+pathHeight+'"');
+        }
+         svgContent.push('xmlns="http://www.w3.org/2000/svg"><defs></defs>');
+
+        for (var i = 0; i < pathesToRender.length; i++) {
+            var strPath = '<path ';
+            for (var p in pathesToRender[i]) {
+                if (pathesToRender[i].hasOwnProperty(p)) {
+                    strPath += ' '+p+'="'+pathesToRender[i][p]+'"';
+                }
+            }
+            strPath +='></path>';
+            svgContent.push(strPath);
+        }
+        svgContent.push('</svg>');
+        var b64 = 'data:image/svg+xml;base64,'+Z.Util.btoa(svgContent.join(' '));
         var img = new Image();
         img.src=b64;
+        this._markerPathImage = img;
         return img;
     }
 });
