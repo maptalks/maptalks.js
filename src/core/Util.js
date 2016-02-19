@@ -611,6 +611,8 @@ Z.Util = {
         }
     },
 
+    b64chrs : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+
     /**
      * from https://github.com/davidchambers/Base64.js
      * @param  {[type]} input [description]
@@ -623,7 +625,7 @@ Z.Util = {
         var str = String(input);
         for (
           // initialize result and counter
-          var block, charCode, idx = 0, map = chars, output = '';
+          var block, charCode, idx = 0, map = Z.Util.b64chrs, output = '';
           // if the next str index does not exist:
           //   change the mapping table to "="
           //   check if d has no fractional digits
@@ -636,36 +638,6 @@ Z.Util = {
             throw new InvalidCharacterError("'btoa' failed: The string to be encoded contains characters outside of the Latin1 range.");
           }
           block = block << 8 | charCode;
-        }
-        return output;
-    },
-
-    /**
-     * from https://github.com/davidchambers/Base64.js
-     * @param  {[type]} input [description]
-     * @return {[type]}       [description]
-     */
-    atob:function(input) {
-        if (window && window.atob) {
-            return window.atob(input);
-        }
-        var str = String(input).replace(/=+$/, '');
-        if (str.length % 4 == 1) {
-          throw new InvalidCharacterError("'atob' failed: The string to be decoded is not correctly encoded.");
-        }
-        for (
-          // initialize result and counters
-          var bc = 0, bs, buffer, idx = 0, output = '';
-          // get next character
-          buffer = str.charAt(idx++);
-          // character found in table? initialize bit storage and add its ascii value;
-          ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
-            // and if not first of each 4 characters,
-            // convert the first 8 bits to one ascii character
-            bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
-        ) {
-          // try to find character in table (0-63, not found => -1)
-          buffer = chars.indexOf(buffer);
         }
         return output;
     },

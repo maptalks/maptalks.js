@@ -26,10 +26,10 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             height = img.height;
             style['markerWidth'] = width;
             style['markerHeight'] = height;
-
             this.geometry._getPainter()._removeCache();
         }
-        if (Z.Util.isNumber(style['markerOpacity']) && style['markerOpacity'] < 1)  {
+        if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer) &&
+            Z.Util.isNumber(style['markerOpacity']) && style['markerOpacity'] < 1)  {
             ctx.globalAlpha *= style['markerOpacity'];
         }
         for (var i = 0, len=cookedPoints.length;i<len;i++) {

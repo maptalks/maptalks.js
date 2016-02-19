@@ -703,7 +703,7 @@ Z.Geometry=Z.Class.extend({
     _getExternalResource:function() {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = Z.Geometry.getExternalResource(symbol);
+        var resources = Z.Geometry.getExternalResource(symbol, this);
         return resources;
     },
 
@@ -854,7 +854,7 @@ Z.Geometry.fromGeoJSON = function(geoJSON) {
     return Z.GeoJSON.fromGeoJSON(geoJSON);
 }
 
-Z.Geometry.getExternalResource = function(symbol) {
+Z.Geometry.getExternalResource = function(symbol, geometry) {
     if (!symbol) {
         return null;
     }
@@ -881,6 +881,82 @@ Z.Geometry.getExternalResource = function(symbol) {
         if (linePattern) {
             resources.push(Z.Util.extractCssUrl(linePattern));
         }
+        if (symbol['markerType'] === 'path' && symbol['markerPath']) {
+            resources.push(Z.Geometry._getMarkerPathURL(symbol, geometry));
+        }
     }
     return resources;
+}
+Z.Geometry._getMarkerPathURL=function(symbol, geometry) {
+    if (!symbol['markerPath']) {
+        return null;
+    }
+    var styles =  Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(symbol);
+    var op = 1;
+    //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
+    if (Z.Util.isNumber(symbol['markerOpacity'])) {
+        op = symbol['markerOpacity'];
+    }
+    if (Z.Util.isNumber(symbol['opacity'])) {
+        op *= symbol['opacity'];
+    }
+    if (geometry.getLayer() && Z.Util.isNumber(geometry.getLayer().options['opacity'])) {
+        op *= geometry.getLayer().options['opacity'];
+    }
+    var pathWidth  = symbol['markerPathWidth'],
+        pathHeight = symbol['markerPathHeight'];
+    var svgStyles = {};
+    if (styles) {
+        for (var p in styles['stroke']) {
+            if (styles['stroke'].hasOwnProperty(p)) {
+                if (!Z.Util.isNil(styles['stroke'][p])) {
+                    svgStyles[p] = styles['stroke'][p];
+                }
+            }
+        }
+        for (var p in styles['fill']) {
+            if (styles['fill'].hasOwnProperty(p)) {
+                if (!Z.Util.isNil(styles['fill'][p])) {
+                    svgStyles[p] = styles['fill'][p];
+                }
+            }
+        }
+    }
+
+    var pathes = Z.Util.isArray(symbol['markerPath'])?symbol['markerPath']:[symbol['markerPath']];
+    var pathesToRender = [];
+    for (var i = 0; i < pathes.length; i++) {
+        var pathObj;
+        if (Z.Util.isString(pathes[i])) {
+            pathObj = {'path' : pathes[i]};
+        } else {
+            pathObj = pathes[i];
+        }
+        var p = Z.Util.extend({},pathObj, svgStyles);
+        p['d'] = p['path'];
+        delete p['path'];
+        pathesToRender.push(p);
+    }
+    var svgContent = ['<svg version="1.1"'];
+    if (op < 1) {
+        svgContent.push('opacity="'+op+'"');
+    }
+    if (pathWidth && pathHeight) {
+        svgContent.push('height="'+pathWidth+'" width="'+pathHeight+'"');
+    }
+     svgContent.push('xmlns="http://www.w3.org/2000/svg"><defs></defs>');
+
+    for (var i = 0; i < pathesToRender.length; i++) {
+        var strPath = '<path ';
+        for (var p in pathesToRender[i]) {
+            if (pathesToRender[i].hasOwnProperty(p)) {
+                strPath += ' '+p+'="'+pathesToRender[i][p]+'"';
+            }
+        }
+        strPath +='></path>';
+        svgContent.push(strPath);
+    }
+    svgContent.push('</svg>');
+    var b64 = 'data:image/svg+xml;base64,'+Z.Util.btoa(svgContent.join(' '));
+    return b64;
 }
