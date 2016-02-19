@@ -26,6 +26,11 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             height = img.height;
             style['markerWidth'] = width;
             style['markerHeight'] = height;
+
+            this.geometry._getPainter()._removeCache();
+        }
+        if (Z.Util.isNumber(style['markerOpacity']) && style['markerOpacity'] < 1)  {
+            ctx.globalAlpha *= style['markerOpacity'];
         }
         for (var i = 0, len=cookedPoints.length;i<len;i++) {
             //图片定位到中心底部
@@ -66,7 +71,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             "markerFile" : s["markerFile"],
             "markerWidth" : Z.Util.getValueOrDefault(s["markerWidth"], null),
             "markerHeight" : Z.Util.getValueOrDefault(s["markerHeight"], null),
-            "markerOpacity" : Z.Util.getValueOrDefault(s["markerOpacity"], null),
+            "markerOpacity" : Z.Util.getValueOrDefault(s["markerOpacity"], 1),
             "markerDx" : Z.Util.getValueOrDefault(s["markerDx"], 0),
             "markerDy" : Z.Util.getValueOrDefault(s["markerDy"], 0)
         };
