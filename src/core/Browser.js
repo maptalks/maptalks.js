@@ -60,6 +60,7 @@ if (!Z.runningInNode) {
              */
             language: navigator.browserLanguage?navigator.browserLanguage:navigator.language,
             ie9: (ie && document.documentMode === 9),
+            ie10: (ie && document.documentMode === 10),
             /**
              * @property {Boolean} 是否支持canvas
              * @static

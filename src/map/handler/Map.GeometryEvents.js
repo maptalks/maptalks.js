@@ -12,7 +12,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
     addHooks: function() {
         var map = this.target;
         var dom = map._panels.mapMask;
-        if (Z.Browser.ie9) {
+        if (Z.Browser.ie9 || Z.Browser.ie10) {
             dom = map._panels.canvasContainer;
         }
         if(dom) {
@@ -24,7 +24,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
     removeHooks: function() {
         var map = this.target;
         var dom = map._panels.mapMask;
-        if (Z.Browser.ie9) {
+        if (Z.Browser.ie9 || Z.Browser.ie10) {
             dom = map._panels.canvasContainer;
         }
         if(dom) {
