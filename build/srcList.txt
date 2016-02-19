@@ -50,7 +50,6 @@
 ../src/geometry/Geometry.Poly.js
 ../src/geometry/Marker.js
 ../src/geometry/Label.js
-../src/geometry/FreeMarker.js
 ../src/geometry/Polygon.js
 ../src/geometry/LineString.js
 ../src/geometry/CurveLine.js
@@ -95,8 +94,9 @@
 ../src/renderer/vectorlayer/symbolizers/PointSymbolizer.js
 ../src/renderer/vectorlayer/symbolizers/ImageMarkerSymbolizer.js
 ../src/renderer/vectorlayer/symbolizers/VectorMarkerSymbolizer.js
+../src/renderer/vectorlayer/symbolizers/VectorPathMarkerSymbolizer.js
 ../src/renderer/vectorlayer/symbolizers/TextMarkerSymbolizer.js
-../src/renderer/vectorlayer/symbolizers/ShieldMarkerSymbolizer.js
+../src/renderer/vectorlayer/symbolizers/DebugSymbolizer.js
 ../src/renderer/vectorlayer/Geometry.Renderer.js
 ../src/renderer/vectorlayer/Geometry.Canvas.js
 ../src/renderer/vectorlayer/Painter.js

@@ -178,6 +178,11 @@ Z.Canvas = {
         ctx.fillText(text, x, y);
     },
 
+    fillText:function(ctx, text, point, rgba) {
+        ctx.fillStyle = rgba;
+        ctx.fillText(text, point.x, point.y);
+    },
+
 
     shield: function (ctx, point, img, text, textDesc, style) {
         if (img) {

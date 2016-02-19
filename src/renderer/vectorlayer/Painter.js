@@ -37,6 +37,7 @@ Z.Painter = Z.Class.extend({
         if (symbolizers.length === 0) {
             throw new Error("no symbolizers can be created to draw, check the validity of the symbol.");
         }
+        this._debugSymbolizer = new Z.symbolizer.DebugSymbolizer(symbol, this.geometry);
         return symbolizers;
     },
 
@@ -146,6 +147,7 @@ Z.Painter = Z.Class.extend({
             symbolizer.symbolize.apply(symbolizer, args);
         }
         this._painted = true;
+        this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, args);
     },
 
     _eachSymbolizer:function(fn,context) {
@@ -287,6 +289,6 @@ Z.Painter.registerSymbolizers = [
         Z.symbolizer.StrokeAndFillSymbolizer,
         Z.symbolizer.ImageMarkerSymbolizer,
         Z.symbolizer.VectorMarkerSymbolizer,
-        Z.symbolizer.ShieldMarkerSymbolizer,
+        Z.symbolizer.VectorPathMarkerSymbolizer,
         Z.symbolizer.TextMarkerSymbolizer
     ];

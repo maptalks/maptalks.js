@@ -151,6 +151,7 @@ Z.DistanceTool = Z.DrawTool.extend({
             this._tailMarker._isRenderImmediate(true);
             this._tailLabel = new maptalks.Label(ms, param['coordinate'], this.options['labelOptions'])
                 .addTo(this._measureMarkerLayer);
+            this._tailLabel._isRenderImmediate(true);
         }
         this._tailMarker.setCoordinates(param['coordinate']);
         this._tailLabel.setContent(ms);
