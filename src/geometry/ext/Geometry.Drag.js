@@ -157,6 +157,9 @@ Z.Geometry.Drag = Z.Handler.extend({
             this._shadow._fireEvent('dragstart', eventParam);
             return;
         }
+        if (!this._shadow){
+            return;
+        }
         var axis = this._shadow.options['draggableAxis'];
         var currentCoord = eventParam['coordinate'];
         if(!this._preCoordDragged) {
