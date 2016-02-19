@@ -208,7 +208,8 @@ Z.Geometry=Z.Class.extend({
             return null;
         }
         var pxExtent = this._getPainter().getPixelExtent();
-        return new Z.Size(Math.round(Math.abs(pxExtent['xmax']-pxExtent['xmin'])), Math.round(Math.abs(pxExtent['ymax'] - pxExtent['ymin'])));
+        return new Z.Size(Math.round(Math.abs(pxExtent['xmax']-pxExtent['xmin'])),
+            Math.round(Math.abs(pxExtent['ymax'] - pxExtent['ymin'])));
     },
 
     /**

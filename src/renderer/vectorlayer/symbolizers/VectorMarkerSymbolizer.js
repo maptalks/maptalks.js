@@ -29,7 +29,8 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             return;
         }
         var style = this.style;
-        var vectorArray = this._getVectorArray(style);
+        var vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(style['markerType'].toLowerCase(),
+                            style['markerWidth'], style['markerHeight']);
         var markerType = style['markerType'].toLowerCase();
         var strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
@@ -137,13 +138,53 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             result["markerLineOpacity"] *= s["markerOpacity"];
         }
         return result;
-    },
+    }
+});
 
-    _getVectorArray: function(style) {
-        //ignore case
-        var markerType = style['markerType'].toLowerCase();
-        var width = style['markerWidth'],
-            height = style['markerHeight'];
+
+Z.symbolizer.VectorMarkerSymbolizer.test=function(geometry, symbol) {
+    if (!geometry || !symbol) {
+        return false;
+    }
+    var layer = geometry.getLayer();
+    if (!layer || !layer.isCanvasRender()) {
+        return false;
+    }
+    if (Z.Util.isNil(symbol['markerFile']) && !Z.Util.isNil(symbol['markerType'])) {
+        return true;
+    }
+    return false;
+};
+
+Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill=function(s) {
+    var result = {
+        "stroke" :{
+            "stroke" : s['markerLineColor'],
+            "stroke-width" : s['markerLineWidth'],
+            "stroke-opacity" : s['markerLineOpacity'],
+            "stroke-dasharray": null,
+            "stroke-linecap" : "butt",
+            "stroke-linejoin" : "round"
+        },
+
+        "fill" : {
+            "fill"          : s["markerFill" ],
+            "fill-opacity"  : s["markerFillOpacity"]
+        }
+    };
+    //vml和svg对linecap的定义不同
+    if (result['stroke']['stroke-linecap'] === "butt") {
+        if (Z.Browser.vml) {
+            result['stroke']['stroke-linecap'] = "flat";
+        }
+    }
+    if (result['stroke']['stroke-width'] === 0) {
+        result['stroke']['stroke-opacity'] = 0;
+    }
+    return result;
+};
+
+Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints = function(markerType, width, height) {
         //half height and half width
         var hh = Math.round(height/2),
             hw = Math.round(width/2);
@@ -193,48 +234,4 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
               return [v0,v1,v2,v3];
         }
         return null;
-    }
-});
-
-
-Z.symbolizer.VectorMarkerSymbolizer.test=function(geometry, symbol) {
-    if (!geometry || !symbol) {
-        return false;
-    }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
-        return false;
-    }
-    if (Z.Util.isNil(symbol['markerFile']) && !Z.Util.isNil(symbol['markerType'])) {
-        return true;
-    }
-    return false;
-};
-
-Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill=function(s) {
-    var result = {
-        "stroke" :{
-            "stroke" : s['markerLineColor'],
-            "stroke-width" : s['markerLineWidth'],
-            "stroke-opacity" : s['markerLineOpacity'],
-            "stroke-dasharray": null,
-            "stroke-linecap" : "butt",
-            "stroke-linejoin" : "round"
-        },
-
-        "fill" : {
-            "fill"          : s["markerFill" ],
-            "fill-opacity"  : s["markerFillOpacity"]
-        }
-    };
-    //vml和svg对linecap的定义不同
-    if (result['stroke']['stroke-linecap'] === "butt") {
-        if (Z.Browser.vml) {
-            result['stroke']['stroke-linecap'] = "flat";
-        }
-    }
-    if (result['stroke']['stroke-width'] === 0) {
-        result['stroke']['stroke-opacity'] = 0;
-    }
-    return result;
-};
+}
