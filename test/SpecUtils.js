@@ -163,7 +163,7 @@ var GeoSymbolTester = {
                 "text-horizontal-alignment" : "middle", //left | middle | right | auto
                 "text-vertical-alignment"   : "middle",   // top | middle | bottom | auto
                 "text-align"                : "left" //left | right | center | auto
-            },
+            }/*,
             {
                 "shield-placement"  : "point", // point | vertex | line | interior
 
@@ -186,7 +186,7 @@ var GeoSymbolTester = {
                 "shield-horizontal-alignment"   : "middle", //left | middle | right | auto
                 "shield-vertical-alignment"     : "middle",   // top | middle | bottom | auto
                 "shield-justify-alignment"      : "left" //left | right | center | auto
-            }
+            }*/
     ],
 
     lineAndFill: {
