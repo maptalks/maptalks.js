@@ -146,11 +146,7 @@ Z.symbolizer.VectorMarkerSymbolizer.test=function(geometry, symbol) {
     if (!geometry || !symbol) {
         return false;
     }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
-        return false;
-    }
-    if (Z.Util.isNil(symbol['markerFile']) && !Z.Util.isNil(symbol['markerType'])) {
+    if (Z.Util.isNil(symbol['markerFile']) && !Z.Util.isNil(symbol['markerType']) && ('path' != symbol['markerType'])) {
         return true;
     }
     return false;

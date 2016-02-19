@@ -13,8 +13,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             return;
         }
         var style = this.style;
-        var url = style['markerFile'];
-        var img = !resources?null:resources.getImage(url);
+        var img = this._getImage(resources);
         if (!img) {
             // console.error('img missed');
             return;
@@ -25,12 +24,21 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!Z.Util.isNumber(width) || !Z.Util.isNumber(height)) {
             width = img.width;
             height = img.height;
+            style['markerWidth'] = width;
+            style['markerHeight'] = height;
         }
         for (var i = 0, len=cookedPoints.length;i<len;i++) {
             //图片定位到中心底部
             var pt = cookedPoints[i].add(new Z.Point(-width/2,-height/2));
             Z.Canvas.image(ctx, pt, img, width, height);
         }
+    },
+
+    _getImage:function(resources) {
+        var style = this.style;
+        var url = style['markerFile'];
+        var img = !resources?null:resources.getImage(url);
+        return img;
     },
 
     getPlacement:function() {
