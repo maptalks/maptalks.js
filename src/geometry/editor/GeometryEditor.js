@@ -56,13 +56,16 @@ Z.Editor=Z.Class.extend({
         if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) {return;}
         this.editing = true;
         var geometry = this._geometry;
+        this._geometryDraggble = geometry.options['draggable'];
+        geometry.config('draggable', false);
         this.prepare();
         //edits are applied to a shadow of geometry to improve performance.
         var shadow = geometry.copy();
-        //TODO geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
+        //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
         //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
-        shadow.copyEventListener(geometry);
-        shadow.setId(null).config({'draggable': false});
+        shadow.copyEventListeners(geometry);
+
+        shadow.setId(null).config({'draggable': true});
         shadow._isRenderImmediate(true);
         shadow.on('dragend', this._onShadowDragEnd, this);
         this._shadow = shadow;
@@ -107,6 +110,8 @@ Z.Editor=Z.Class.extend({
             this._shadow.remove();
             delete this._shadow;
         }
+        this._geometry.config('draggable', this._geometryDraggble);
+        delete this._geometryDraggble;
         this._geometry.show();
         this._editStageLayer.removeGeometry(this._editHandles);
         if (Z.Util.isArrayHasData(this._eventListeners)) {
