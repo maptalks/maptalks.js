@@ -73,11 +73,11 @@ Z.symbolizer.ShieldMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var dxdy = this.getDxDy(),
             style = this.style,
             size = this.textDesc['size'];
-        var fileExtent = new Z.Extent(dxdy.add(new Z.Point(-this.shieldFileWidth/2, - this.shieldFileHeight/2)),
+        var fileExtent = new Z.PointExtent(dxdy.add(new Z.Point(-this.shieldFileWidth/2, - this.shieldFileHeight/2)),
                     dxdy.add(new Z.Point(this.shieldFileWidth/2, this.shieldFileHeight/2)));
         var textDxDy = new Z.Point(this.style['textDx'], this.style['textDy']);
         var ptAlign = Z.StringUtil.getAlignPoint(size,style['textHorizontalAlignment'],style['textVerticalAlignment']);
-        var textExtent = new Z.Extent(
+        var textExtent = new Z.PointExtent(
             textDxDy.add(ptAlign),
             textDxDy.add(new Z.Point(ptAlign.x+size['width'],ptAlign.y+size['height']))
         );

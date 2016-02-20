@@ -163,7 +163,7 @@ Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
 
         var pxMin = new Z.Point(sp.x, sp.y),
             pxMax = new Z.Point(sp.x + pxSize.width, sp.y + pxSize.height),
-            pxExtent = new Z.Extent(pxMin.x - t, pxMin.y - t,
+            pxExtent = new Z.PointExtent(pxMin.x - t, pxMin.y - t,
                                     pxMax.x + t, pxMax.y + t);
 
         point = new Z.Point(point.x, point.y);

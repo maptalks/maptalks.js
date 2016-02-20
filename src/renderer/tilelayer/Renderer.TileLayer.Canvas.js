@@ -99,7 +99,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
             var tileId = tiles[i]['id'];
             //如果缓存中已存有瓦片, 则从不再请求而从缓存中读取.
             var cached = tileRended[tileId] || tileCache.get(tileId);
-            if (!viewExtent.intersects(new Z.Extent(tile['viewPoint'],
+            if (!viewExtent.intersects(new Z.PointExtent(tile['viewPoint'],
                                 tile['viewPoint'].add(new Z.Point(tileSize['width'], tileSize['height']))))) {
                 continue;
             }
@@ -239,7 +239,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
         if (!Z.runningInNode) {
             var tileSize = this._layer.getTileSize();
             var viewExtent = this.getMap()._getViewExtent();
-            if (viewExtent.intersects(new Z.Extent(point, point.add(new Z.Point(tileSize['width'], tileSize['height']))))) {
+            if (viewExtent.intersects(new Z.PointExtent(point, point.add(new Z.Point(tileSize['width'], tileSize['height']))))) {
                 this._requestMapToRend();
             }
         }

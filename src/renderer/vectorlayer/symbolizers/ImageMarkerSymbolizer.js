@@ -61,7 +61,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var width = this.style['markerWidth'],
             height = this.style['markerHeight'];
         var dxdy = this.getDxDy();
-        var extent = new Z.Extent(dxdy.add(new Z.Point(-width/2,height/2)),dxdy.add(new Z.Point(width/2,-height/2)));
+        var extent = new Z.PointExtent(dxdy.add(new Z.Point(-width/2,height/2)),dxdy.add(new Z.Point(width/2,-height/2)));
         return extent;
     },
 

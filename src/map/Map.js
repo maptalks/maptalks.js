@@ -224,9 +224,9 @@ Z.Map=Z.Class.extend({
         var w = size['width']/2,
             h = size['height']/2;
         var prjCenter = this._getPrjCenter();
-        var point1 = projection.unproject({x:prjCenter.x - w*res, y:prjCenter.y + h*res});
-        var point2 = projection.unproject({x:prjCenter.x + w*res, y:prjCenter.y - h*res});
-        return new Z.Extent(point1,point2);
+        var c1 = projection.unproject(new Z.Coordinate(prjCenter.x - w*res, prjCenter.y + h*res));
+        var c2 = projection.unproject(new Z.Coordinate(prjCenter.x + w*res, prjCenter.y - h*res));
+        return new Z.Extent(c1,c2);
     },
 
     /**
@@ -887,7 +887,7 @@ Z.Map=Z.Class.extend({
         var offset = this.offsetPlatform();
         var min = new Z.Point(0,0);
         var max = new Z.Point(size['width'],size['height']);
-        return new Z.Extent(min.substract(offset), max.substract(offset));
+        return new Z.PointExtent(min.substract(offset), max.substract(offset));
     },
 
     _setPrjCenterAndMove:function(pcenter) {
@@ -1239,8 +1239,8 @@ Z.Map=Z.Class.extend({
     _computeExtentByPixelSize: function(plonlat, pnw, pse) {
         var projection = this.getProjection();
         var res = this._getResolution();
-        var nw = projection.unproject({x: plonlat.x - pnw.x*res, y: plonlat.y + pnw.x*res});
-        var se = projection.unproject({x: plonlat.x + pse.y*res, y: plonlat.y - pse.y*res});
+        var nw = projection.unproject(new Z.Coordinate(plonlat.x - pnw.x*res, plonlat.y + pnw.x*res));
+        var se = projection.unproject(new Z.Coordinate(plonlat.x + pse.y*res, plonlat.y - pse.y*res));
         return new Z.Extent(nw,se);
     }
 });

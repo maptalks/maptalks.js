@@ -28,7 +28,7 @@ Z.CollectionPainter=Z.Class.extend({
     },
 
     getPixelExtent:function() {
-        var  extent = new Z.Extent();
+        var  extent = new Z.PointExtent();
         this._eachPainter(function(painter) {
             extent = extent.combine(painter.getPixelExtent());
         });

@@ -3,7 +3,7 @@
  * @class maptalks.Extent
  * @author Maptalks Team
  */
-Z['Extent']= Z.Extent =
+Z.Extent =
  /**
   * @constructor
   * @param {maptalks.Coordinate} p1 坐标
@@ -12,59 +12,64 @@ Z['Extent']= Z.Extent =
   * @param {maptalks.Coordinate} p4 坐标
   * @returns {maptalks.Extent} extent对象
   */
- function(p1,p2,p3,p4) {
-    this['xmin'] = null;
-    this['xmax'] = null;
-    this['ymin'] = null;
-    this['ymax'] = null;
-    if (Z.Util.isNil(p1)) {
-        return;
-    }
-    //构造方法一: 参数都是数字
-    if (Z.Util.isNumber(p1) &&
-        Z.Util.isNumber(p2) &&
-        Z.Util.isNumber(p3) &&
-        Z.Util.isNumber(p4)) {
-        this['xmin'] = Math.min(p1,p3);
-        this['ymin'] = Math.min(p2,p4);
-        this['xmax'] = Math.max(p1,p3);
-        this['ymax'] = Math.max(p2,p4);
-        return;
-    } else {
-         //构造方法二: 参数是两个坐标
-
-        if (Z.Util.isNumber(p1.x) &&
-            Z.Util.isNumber(p2.x) &&
-            Z.Util.isNumber(p1.y) &&
-            Z.Util.isNumber(p2.y)) {
-            if (p1.x>p2.x) {
-                this['xmin'] = p2.x;
-                this['xmax'] = p1.x;
-            } else {
-                this['xmin'] = p1.x;
-                this['xmax'] = p2.x;
-            }
-            if (p1.y>p2.y) {
-                this['ymin'] = p2.y;
-                this['ymax'] = p1.y;
-            } else {
-                this['ymin'] = p1.y;
-                this['ymax'] = p2.y;
-            }
-            //构造方法三: 参数为一个对象,包含xmin, xmax, ymin, ymax四个属性
-        } else if (Z.Util.isNumber(p1['xmin']) &&
-                Z.Util.isNumber(p1['xmax']) &&
-                Z.Util.isNumber(p1['ymin']) &&
-                Z.Util.isNumber(p1['ymax']))   {
-                this['xmin'] = p1['xmin'];
-                this['ymin'] = p1['ymin'];
-                this['xmax'] = p1['xmax'];
-                this['ymax'] = p1['ymax'];
-        }
-    }
+function(p1,p2,p3,p4) {
+    this._clazz = Z.Coordinate;
+    this._initialize(p1,p2,p3,p4);
 };
 
-Z.Util.extend(Z.Extent.prototype,{
+Z.Util.extend(Z.Extent.prototype, {
+    _initialize:function(p1, p2, p3, p4) {
+        this['xmin'] = null;
+        this['xmax'] = null;
+        this['ymin'] = null;
+        this['ymax'] = null;
+        if (Z.Util.isNil(p1)) {
+            return;
+        }
+        //构造方法一: 参数都是数字
+        if (Z.Util.isNumber(p1) &&
+            Z.Util.isNumber(p2) &&
+            Z.Util.isNumber(p3) &&
+            Z.Util.isNumber(p4)) {
+            this['xmin'] = Math.min(p1,p3);
+            this['ymin'] = Math.min(p2,p4);
+            this['xmax'] = Math.max(p1,p3);
+            this['ymax'] = Math.max(p2,p4);
+            return;
+        } else {
+             //构造方法二: 参数是两个坐标
+
+            if (Z.Util.isNumber(p1.x) &&
+                Z.Util.isNumber(p2.x) &&
+                Z.Util.isNumber(p1.y) &&
+                Z.Util.isNumber(p2.y)) {
+                if (p1.x>p2.x) {
+                    this['xmin'] = p2.x;
+                    this['xmax'] = p1.x;
+                } else {
+                    this['xmin'] = p1.x;
+                    this['xmax'] = p2.x;
+                }
+                if (p1.y>p2.y) {
+                    this['ymin'] = p2.y;
+                    this['ymax'] = p1.y;
+                } else {
+                    this['ymin'] = p1.y;
+                    this['ymax'] = p2.y;
+                }
+                //构造方法三: 参数为一个对象,包含xmin, xmax, ymin, ymax四个属性
+            } else if (Z.Util.isNumber(p1['xmin']) &&
+                    Z.Util.isNumber(p1['xmax']) &&
+                    Z.Util.isNumber(p1['ymin']) &&
+                    Z.Util.isNumber(p1['ymax']))   {
+                    this['xmin'] = p1['xmin'];
+                    this['ymin'] = p1['ymin'];
+                    this['xmax'] = p1['xmax'];
+                    this['ymax'] = p1['ymax'];
+            }
+        }
+    },
+
     round:function() {
         return new Z.Extent(Z.Util.round(this['xmin']), Z.Util.round(this['ymin']),
             Z.Util.round(this['xmax']),Z.Util.round(this['ymax']));
@@ -79,12 +84,13 @@ Z.Util.extend(Z.Extent.prototype,{
     },
 
     getCenter:function() {
-        return new Z.Coordinate((this['xmin']+this['xmax'])/2, (this['ymin']+this['ymax'])/2);
+        return new this._clazz((this['xmin']+this['xmax'])/2, (this['ymin']+this['ymax'])/2);
     },
 
     getSize:function() {
         return new Z.Size(this.getWidth(), this.getHeight());
     },
+
     getWidth:function() {
         return this['xmax'] - this['xmin'];
     },
@@ -94,11 +100,11 @@ Z.Util.extend(Z.Extent.prototype,{
     },
 
     getMin:function() {
-        return new Z.Point(this['xmin'],this['ymin']);
+        return new this._clazz(this['xmin'],this['ymin']);
     },
 
     getMax:function() {
-        return new Z.Point(this['xmax'],this['ymax']);
+        return new this._clazz(this['xmax'],this['ymax']);
     },
 
     /**
@@ -160,7 +166,7 @@ Z.Util.extend(Z.Extent.prototype,{
      */
     contains: function(coordinate) {
         var x, y;
-        var c = (coordinate instanceof Z.Coordinate)?coordinate:new Z.Coordinate(coordinate);
+        var c = new this._clazz(coordinate);
         x = c.x;
         y = c.y;
         return (x >= this.xmin) &&

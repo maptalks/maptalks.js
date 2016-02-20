@@ -70,7 +70,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend({
             se = new Z.Coordinate(extent.xmax, extent.ymin),
             pxMin = map._transformToViewPoint(nw),
             pxMax = map._transformToViewPoint(se),
-            pxExtent = new Z.Extent(pxMin.x - t, pxMin.y - t,
+            pxExtent = new Z.PointExtent(pxMin.x - t, pxMin.y - t,
                                     pxMax.x + t, pxMax.y + t);
 
         point = new Z.Point(point.x, point.y);

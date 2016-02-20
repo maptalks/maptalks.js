@@ -166,7 +166,7 @@ Z.Painter = Z.Class.extend({
     getPixelExtent:function() {
         if (!this._viewExtent) {
             if (this.symbolizers) {
-                var viewExtent = new Z.Extent();
+                var viewExtent = new Z.PointExtent();
                 var len = this.symbolizers.length - 1;
                 for (var i = len; i >= 0; i--) {
                     viewExtent._combine(this.symbolizers[i].getPixelExtent());

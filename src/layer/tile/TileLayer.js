@@ -159,7 +159,7 @@ Z.TileLayer = Z.Layer.extend({
     //  tileContainer.appendChild(centerTileImg);
 
         var tiles = [];
-        var fullExtent = new Z.Extent();
+        var fullExtent = new Z.PointExtent();
         //TODO 瓦片从中心开始加起
         for (var i=-(tileLeftNum);i<tileRightNum;i++){
             for (var j=-(tileTopNum);j<=tileBottomNum;j++){
@@ -175,7 +175,7 @@ Z.TileLayer = Z.Layer.extend({
                         'zoom' : zoom
                     };
                     tiles.push(tileDesc);
-                    fullExtent = fullExtent.combine(new Z.Extent(tileDesc['viewPoint'], tileDesc['viewPoint'].add(new Z.Point(tileSize['width'],tileSize['height']))));
+                    fullExtent = fullExtent.combine(new Z.PointExtent(tileDesc['viewPoint'], tileDesc['viewPoint'].add(new Z.Point(tileSize['width'],tileSize['height']))));
             }
         }
         var sortOrder = 1;

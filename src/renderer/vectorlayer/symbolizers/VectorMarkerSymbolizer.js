@@ -103,9 +103,9 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             height = style['markerHeight'];
         var result;
         if (markerType  === 'bar' || markerType  === 'pie' || markerType  === 'pin') {
-            result = new Z.Extent(dxdy.add(new Z.Point(-width/2,-height)), dxdy.add(new Z.Point(width/2,0)));
+            result = new Z.PointExtent(dxdy.add(new Z.Point(-width/2,-height)), dxdy.add(new Z.Point(width/2,0)));
         } else {
-            result = new Z.Extent(dxdy.add(new Z.Point(-width/2,-height/2)), dxdy.add(new Z.Point(width/2,height/2)));
+            result = new Z.PointExtent(dxdy.add(new Z.Point(-width/2,-height/2)), dxdy.add(new Z.Point(width/2,height/2)));
         }
         if (this.style['markerLineWidth']) {
             result = result.expand(this.style['markerLineWidth']/2);

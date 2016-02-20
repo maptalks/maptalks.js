@@ -35,7 +35,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         }
         // var min = map._transformToViewPoint(new Z.Coordinate(extent['xmin'],extent['ymin'])),
         //     max = map._transformToViewPoint(new Z.Coordinate(extent['xmax'],extent['ymax']));
-        // return new Z.Extent(min,max).expand(this.style['lineWidth']/2);
+        // return new Z.PointExtent(min,max).expand(this.style['lineWidth']/2);
         //
         // this ugly implementation is to improve perf as we can
         // it tries to avoid creating instances to save cpu consumption.
@@ -50,7 +50,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         var min = map._transformToViewPoint(this._extMin),
             max = map._transformToViewPoint(this._extMax);
         if (!this._pxExtent) {
-            this._pxExtent = new Z.Extent(min, max);
+            this._pxExtent = new Z.PointExtent(min, max);
         } else {
             if (min.x < max.x) {
                 this._pxExtent['xmin'] = min.x;

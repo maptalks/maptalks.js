@@ -11,6 +11,8 @@
 ../src/geo/Point.js
 ../src/geo/Size.js
 ../src/geo/CRS.js
+../src/geo/Extent.js
+../src/geo/PointExtent.js
 ../src/misc/Matrix.js
 ../src/misc/Animation.js
 ../src/misc/Canvas.js
@@ -44,7 +46,6 @@
 ../src/geometry/ext/Geometry.Drag.js
 ../src/geometry/ext/Geometry.Events.js
 ../src/geometry/ext/Geometry.Animation.js
-../src/geometry/Extent.js
 ../src/geometry/Vector.js
 ../src/geometry/Geometry.Center.js
 ../src/geometry/Geometry.Poly.js
