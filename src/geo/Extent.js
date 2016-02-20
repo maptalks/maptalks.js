@@ -283,7 +283,7 @@ Z.Util.extend(Z.Extent.prototype, {
             ymin = this['ymin'],
             xmax = this['xmax'],
             ymax = this['ymax'];
-        return return [
+        return [
                 new this._clazz([xmin, ymax]), new this._clazz([xmax, ymax]),
                 new this._clazz([xmax, ymin]), new this._clazz([xmin, ymin]),
                 new this._clazz([xmin, ymax])
