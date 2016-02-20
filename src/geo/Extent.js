@@ -278,13 +278,15 @@ Z.Util.extend(Z.Extent.prototype, {
         return this;
     },
 
-    toPolygon:function() {
+    toArray:function() {
         var xmin = this['xmin'],
             ymin = this['ymin'],
             xmax = this['xmax'],
             ymax = this['ymax'];
-        return new Z.Polygon([
-                [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax]
-            ]);
+        return return [
+                new this._clazz([xmin, ymax]), new this._clazz([xmax, ymax]),
+                new this._clazz([xmax, ymin]), new this._clazz([xmin, ymin]),
+                new this._clazz([xmin, ymax])
+            ];
     }
 });
