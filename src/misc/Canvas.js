@@ -17,7 +17,7 @@ Z.Canvas = {
         ctx.strokeStyle = 'rgba(71,76,248,1)';//this.getRgba('#474cf8',1);
         ctx.fillStyle = 'rgba(255,255,255,0)';//this.getRgba('#ffffff',0);
         ctx.textAlign='start';
-        ctx.textBaseline='hanging';
+        ctx.textBaseline='top';
         var fontSize = 11;
         ctx.font=fontSize+'px monospace';
         ctx.shadowBlur = null;
@@ -162,7 +162,7 @@ Z.Canvas = {
     _textOnLine: function(ctx, text, pt, textHaloRadius, textHaloFill) {
         //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
         //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
-        pt = pt.add(new Z.Point(0,3)).round();
+        pt = pt.round();
         var x = pt.x, y=pt.y;
         if (textHaloRadius) {
             ctx.miterLimit = 2;
