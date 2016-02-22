@@ -22,8 +22,9 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     symbolize:function(ctx, resources) {
-        var geometry = this.geometry;
-        if (!geometry.options['debug']) {
+        var geometry = this.geometry,
+            layer = geometry.getLayer();
+        if (!geometry.options['debug'] && !layer.options['debug']) {
             return;
         }
          var map = this.getMap();
