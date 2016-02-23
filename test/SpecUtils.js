@@ -73,11 +73,61 @@ function genAllTypeGeometries() {
     genAllTypeGeometries: genAllTypeGeometries
 };*/
 
+function isArray(obj) {
+    if (!obj) {return false;}
+    return typeof obj == 'array' || (obj.constructor !== null && obj.constructor == Array);
+}
+
+expect.Assertion.prototype.near = function(expected, delta) {
+    delta = delta || 1e-6;
+    expect(this.obj).to.be.within(expected - delta, expected + delta);
+}
+
 expect.Assertion.prototype.nearCoord = function(expected, delta) {
     delta = delta || 1e-6;
-    expect(this.obj.x).to.be.within(expected.x - delta, expected.x + delta);
-    expect(this.obj.y).to.be.within(expected.y - delta, expected.y + delta);
+    if (isArray(expected)) {
+        expect(this.obj[0]).to.be.near(expected[0], delta);
+        expect(this.obj[1]).to.be.near(expected[1], delta);
+    } else {
+        expect(this.obj.x).to.be.near(expected.x, delta);
+        expect(this.obj.y).to.be.near(expected.y, delta);
+    }
 };
+
+expect.Assertion.prototype.eqlArray = function(expected) {
+    expect(this.obj).to.have.length(expected.length);
+    for (var i = 0; i < expected.length; i++) {
+        if (isArray(expected[i])) {
+            expect(this.obj[i]).to.eqlArray(expected[i]);
+        } else {
+            expect(this.obj[i]).to.near(expected[i]);
+        }
+    }
+};
+
+expect.Assertion.prototype.eqlGeoJSON = function(expected) {
+    if (expected.type === 'FeatureCollection') {
+        var features = expected.features;
+        expect(this.obj.type).to.be.eql('FeatureCollection');
+        for (var i = 0; i < features.length; i++) {
+            expect(features[i]).to.eqlGeoJSON(this.obj.features[i]);
+        }
+    } else if (expected.type === 'Feature') {
+        expect(this.obj.type).to.be.eql('Feature');
+        expect(expected.geometry).to.eqlGeoJSON(this.obj.geometry);
+        expect(expected.properties).to.be.eql(this.obj.properties);
+    } else if (expected.type === 'GeometryCollection') {
+        expect(this.obj.type).to.be.eql('GeometryCollection');
+        var geometries = expected.geometries;
+        for (var i = 0; i < geometries.length; i++) {
+            expect(this.obj.geometries[i]).to.eqlGeoJSON(geometries[i]);
+        }
+    } else {
+        expect(this.obj.type).to.be.eql(expected.type);
+        expect(this.obj.coordinates).to.eqlArray(expected.coordinates);
+    }
+};
+
 
 /**
  * 共同的地图初始化方法

@@ -6,25 +6,13 @@ Z.Geometry.include({
      * @expose
      */
     setInfoWindow:function(options) {
-        this._infoWinOptions = options;
+        this._infoWinOptions = Z.Util.extend({},options);
         if (this._infoWindow) {
             Z.Util.setOptions(this._infoWindow, options);
-        }
-        return this;
-    },
-
-    _bindInfoWindow: function(options) {
-        this._infoWindow = new Z.InfoWindow(options);
-        this._infoWindow.addTo(this);
-
-        return this;
-    },
-
-    _unbindInfoWindow:function() {
-        if (this._infoWindow) {
-            this.closeInfoWindow();
-            this._infoWindow.remove();
-            delete this._infoWindow;
+        } else {
+            if (this.getMap()) {
+                this._bindInfoWindow(this._infoWinOptions);
+            }
         }
         return this;
     },
@@ -36,7 +24,12 @@ Z.Geometry.include({
      * @expose
      */
     getInfoWindow:function() {
-        if (!this._infoWindow) {return null;}
+        if (!this._infoWindow) {
+            if (this._infoWinOptions) {
+                return this._infoWinOptions;
+            }
+            return null;
+        }
         return this._infoWindow;
     },
 
@@ -48,7 +41,7 @@ Z.Geometry.include({
      */
     openInfoWindow:function(coordinate) {
         if (!this.getMap()) {
-            throw new Error(this.exceptions['NOT_ADD_TO_LAYER']);
+            return this;
         }
         if (!this._infoWindow) {
             if (this._infoWinOptions && this.getMap()) {
@@ -78,8 +71,25 @@ Z.Geometry.include({
      */
     removeInfoWindow:function() {
         this._unbindInfoWindow();
+        delete this._infoWinOptions;
         delete this._infoWindow;
         return this;
-    }
+    },
+
+    _bindInfoWindow: function(options) {
+        this._infoWindow = new Z.InfoWindow(options);
+        this._infoWindow.addTo(this);
+
+        return this;
+    },
+
+    _unbindInfoWindow:function() {
+        if (this._infoWindow) {
+            this.closeInfoWindow();
+            this._infoWindow.remove();
+            delete this._infoWindow;
+        }
+        return this;
+    },
 
 });

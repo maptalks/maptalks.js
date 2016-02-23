@@ -384,18 +384,6 @@ describe('API', function () {
 
     describe('Map.UI.InfoWindow', function() {
 
-        // it('setOption', function() {
-        //     var win = new Z.InfoWindow();
-        //     var options = {
-        //         title: 'title',
-        //         content: 'content'
-        //     };
-
-        //     expect(function() {
-        //         win.setOptions(options);
-        //     }).to.not.throwException();
-        // });
-
         it('show/hide/isOpen', function() {
 
             var options = {

@@ -5,11 +5,9 @@ describe('#Geometry', function() {
     var tile;
     var center = new Z.Coordinate(118.846825, 32.046534);
     var layer;
-    var clock;
     var context = {
         map:map,
-        layer:layer,
-        clock:clock
+        layer:layer
     };
     var canvasContainer;
 
@@ -22,11 +20,9 @@ describe('#Geometry', function() {
         context.map = map;
         context.layer = layer;
         canvasContainer = map._panels.mapPlatform;
-        context.clock = sinon.useFakeTimers();
     });
 
     afterEach(function() {
-        context.clock.restore();
         map.removeLayer(layer);
         document.body.removeChild(container);
     });

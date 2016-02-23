@@ -8,7 +8,7 @@ Z.Geometry.include({
             projection = this._getProjection();
         var isFocusing;
         if (options) {isFocusing = options['focus'];}
-        var aniStyles = {};
+        var stylesToAnimate = {};
         var symbol = this.getSymbol();
         //prepare styles for animation
         for (var p in styles) {
@@ -18,18 +18,18 @@ Z.Geometry.include({
                     //this.getRadius() / this.getWidth(), etc.
                     var fnName = 'get'+p[0].toUpperCase() + p.substring(1);
                     var current = this[fnName]();
-                    aniStyles[p] = [current, v];
+                    stylesToAnimate[p] = [current, v];
                 } else if (p === 'symbol') {
-                    var aniSymbol;
+                    var symbolToAnimate;
                     if (Z.Util.isArray(styles['symbol'])) {
                         if (!Z.Util.isArray(symbol)) {
                             throw new Error('geometry\'symbol isn\'t a composite symbol, while the symbol in styles is.');
                         }
-                        aniSymbol = [];
+                        symbolToAnimate = [];
                         var symbolInStyles = styles['symbol'];
                         for (var i = 0; i < symbolInStyles.length; i++) {
                             if (!symbolInStyles[i]) {
-                                aniSymbol.push(null);
+                                symbolToAnimate.push(null);
                                 continue;
                             }
                             var a = {};
@@ -38,27 +38,28 @@ Z.Geometry.include({
                                     a[sp] = [symbol[i][sp], symbolInStyles[i][sp]];
                                 }
                             }
-                            aniSymbol.push(a);
+                            symbolToAnimate.push(a);
                         }
                     } else {
                         if (Z.Util.isArray(symbol)) {
                             throw new Error('geometry\'symbol is a composite symbol, while the symbol in styles isn\'t.');
                         }
-                        aniSymbol = {};
+                        symbolToAnimate = {};
                         for (var sp in v) {
                             if (v.hasOwnProperty(sp)) {
-                                aniSymbol[sp] = [symbol[sp], v[sp]];
+                                symbolToAnimate[sp] = [symbol[sp], v[sp]];
                             }
                         }
                     }
-                    aniStyles['symbol'] = aniSymbol;
+                    stylesToAnimate['symbol'] = symbolToAnimate;
                 } else if (p === 'translate'){
-                    aniStyles['translate'] = new Z.Coordinate(v);
+                    stylesToAnimate['translate'] = new Z.Coordinate(v);
                 }
             }
         }
         var started = false;
-        var player = Z.Animation.animate(aniStyles, options, Z.Util.bind(function(frame) {
+        var preTranslate = null;
+        var player = Z.Animation.animate(stylesToAnimate, options, Z.Util.bind(function(frame) {
             if (!started && isFocusing) {
                 map._onMoveStart();
                 started = true;
@@ -73,7 +74,12 @@ Z.Geometry.include({
             }
             var translate = styles['translate'];
             if (translate) {
-                this.translate(translate);
+                var toTranslate = translate;
+                if (preTranslate) {
+                    toTranslate = translate.substract(preTranslate);
+                }
+                preTranslate = translate;
+                this.translate(toTranslate);
             }
             var dSymbol = styles['symbol'];
             if (dSymbol) {
@@ -91,7 +97,7 @@ Z.Geometry.include({
                 }
             }
             if (callback) {
-                callback();
+                callback(frame);
             }
         },this));
         player.play();

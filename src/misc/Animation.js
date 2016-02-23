@@ -18,86 +18,138 @@ Z.Animation = {
         if (!styles) {
             return null;
         }
-        var dStyles = {}, startStyles = {}, endStyles = {};
+        //resolve a child styles.
+        function resolveChild(child) {
+            if (!Z.Util.isArray(child)) {
+                return Z.Animation._resolveStyles(child);
+            }
+            var start = [], d = [], dest = [];
+            for (var i = 0; i < child.length; i++) {
+                var styles = Z.Animation._resolveStyles(child[i]);
+                if (styles) {
+                    start.push(styles[0]);
+                    d.push(styles[1]);
+                    dest.push(styles[2]);
+                }
+            }
+            if (start.length === 0) {
+                return null;
+            } else {
+                return [start, d, dest];
+            }
+        }
+        // resolve a style value.
+        function resolveVal(val) {
+             var values = val;
+            //val is just a destination value, so we set start value to 0 or a 0-point or a 0-coordinate.
+            if (!Z.Util.isArray(val)) {
+                if (Z.Util.isNumber(val)) {
+                values = [0, val];
+                } else if (val instanceof Z.Point || val instanceof Z.Coordinate) {
+                    var clazz = val.constructor;
+                    values = [new clazz(0,0), val];
+                } else {
+                    throw new Error(val+' is not supported in animation styles.');
+                }
+            }
+            //val is a array and val[0] is the start value and val[1] is the destination value.
+            var v1 = values[0],
+                v2 = values[1];
+            if (Z.Util.isNumber(v1) && Z.Util.isNumber(v2)) {
+                if (v1 === v2) {
+                    return null;
+                }
+                return [v1, v2-v1, v2];
+            } else if (Z.Util.isArray(v1) || v1 instanceof Z.Coordinate || v1 instanceof Z.Point) {
+                // is a coordinate (array or a coordinate) or a point
+                if (Z.Util.isArray(v1)) {
+                    v1 = new Z.Coordinate(v1);
+                    v2 = new Z.Coordinate(v2);
+                } else {
+                    var clazz = v1.constructor;
+                    v1 = new clazz(v1);
+                    v2 = new clazz(v2);
+                }
+                if (v1.equals(v2)) {
+                    //a Coordinate or a Point to be eql with each other
+                    return null;
+                }
+                return [v2, v2.substract(v1), v2];
+            } else {
+                throw new Error(values+' is not supported in animation styles.');
+            }
+            return null;
+        }
+
+        function isChild(val) {
+            if (!Z.Util.isArray(val) && val.constructor === Object) {
+                return true;
+            } else if (Z.Util.isArray(val) && val[0].constructor === Object) {
+                return true;
+            }
+            return false;
+        }
+
+        var d = {}, start = {}, dest = {};
         for (var p in styles) {
             if (styles.hasOwnProperty(p)) {
                 var values = styles[p];
-                var clazz;
-                if (!Z.Util.isArray(values)) {
-                    clazz = values.constructor;
-                    if (clazz === Object) {
-                        //an object with literal notations, resolve it as a child style.
-                        var childStyles = Z.Animation._resolveStyles(values);
-                        startStyles[p] = childStyles[0];
-                        dStyles[p] = childStyles[1];
-                        endStyles[p] = childStyles[2];
-                        continue;
-                    } else if (Z.Util.isNumber(values)) {
-                        values = [0, values];
-                    } else {
-                        values = [new clazz(0,0), values];
-                    }
+                var childStyles;
+                if (isChild(values)) {
+                    childStyles = resolveChild(values);
                 } else {
-                    clazz = Z.Util.isArray(values[0])?Z.Coordinate:values[0].constructor;
+                    childStyles = resolveVal(values);
                 }
-                //[v1,v2], v1 is the start and v2 is the end.
-                var v1 = values[0],
-                    v2 = values[1];
-                if (Z.Util.isNumber(v1)) {
-                    if (v1 === v2) {
-                        continue;
-                    }
-                    startStyles[p] = v1;
-                    endStyles[p] = v2;
-                    dStyles[p] = v2 - v1;
-                } else {
-                    if (Z.Util.isArray(v1)) {
-                        v1 = new Z.Coordinate(v1);
-                    }
-                    v2 = new clazz(v2);
-                    if (v1.equals(v2)) {
-                        continue;
-                    }
-                    startStyles[p] = v1;
-                    endStyles[p] = v2;
-                    dStyles[p] = v2._substract(v1);
+                if (childStyles) {
+                    start[p] = childStyles[0];
+                    d[p] = childStyles[1];
+                    dest[p] = childStyles[2];
                 }
             }
         }
-        return [startStyles, dStyles, endStyles];
+        return [start, d, dest];
     },
 
     framing:function(styles, options) {
         var easing = options['easing']?Z.animation.Easing[options['easing']]:Z.animation.Easing.linear;
         if (!easing) {easing = Z.animation.Easing.linear;}
-        var dStyles, startStyles, endStyles;
+        var dStyles, startStyles, destStyles;
         styles = Z.Animation._resolveStyles(styles);
         if (styles) {
             startStyles = styles[0];
             dStyles = styles[1];
-            endStyles = styles[2];
+            destStyles = styles[2];
         }
         var deltaStyles = function(delta, _startStyles, _dStyles) {
             if (!_startStyles || !_dStyles) {
                 return null;
             }
-            var d = {};
+            var result = {};
             for (var p in _dStyles) {
                 if (_dStyles.hasOwnProperty(p)) {
-                    var v = _dStyles[p];
-                    if (Z.Util.isNumber(v)) {
-                        d[p] = _startStyles[p] + delta*_dStyles[p];
-                    } else {
-                        var clazz = v.constructor;
+                    var s = _startStyles[p], d = _dStyles[p];
+                    if (Z.Util.isNumber(d)) {
+                        //eg. radius, width, height
+                        result[p] = s + delta*d;
+                    } else if (Z.Util.isArray(d)) {
+                        //eg. a composite symbol, element in array can only be a object.
+                        var children = [];
+                        for (var i = 0; i < d.length; i++) {
+                            children.push(deltaStyles(delta, s[i], d[i]));
+                        }
+                        result[p] = children;
+                    }else {
+                        //eg. translate or a child
+                        var clazz = d.constructor;
                         if (clazz === Object) {
-                            d[p] = deltaStyles(delta, _startStyles[p], _dStyles[p]);
-                        } else {
-                            d[p] = _startStyles[p].add(_dStyles[p].multi(delta));
+                            result[p] = deltaStyles(delta, s, d);
+                        } else if (s instanceof Z.Point || s instanceof Z.Coordinate) {
+                            result[p] = s.add(d.multi(delta));
                         }
                     }
                 }
             }
-            return d;
+            return result;
         }
         return function(elapsed, duration) {
             var state, d;
@@ -119,10 +171,10 @@ Z.Animation = {
                 'playState' : "finished",
                 'delta' : 1
               };
-              d = endStyles;
+              d = destStyles;
             }
             state['startStyles'] = startStyles;
-            state['endStyles'] = endStyles;
+            state['destStyles'] = destStyles;
             return new Z.animation.Frame(state ,d);
         };
 
