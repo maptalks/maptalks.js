@@ -1,4 +1,4 @@
-layertalks.js [![Build Status](https://travis-ci.org/MapTalks/layertalks.svg?branch=master)](https://travis-ci.org/MapTalks/layertalks) [![Coverage Status](https://coveralls.io/repos/github/MapTalks/layertalks/badge.svg?branch=master)](https://coveralls.io/github/MapTalks/layertalks?branch=master)
+maptalks.js [![Build Status](https://travis-ci.org/MapTalks/maptalks.js.svg?branch=master)](https://travis-ci.org/MapTalks/maptalks.js) [![Coverage Status](https://coveralls.io/repos/github/MapTalks/maptalks.js/badge.svg?branch=master)](https://coveralls.io/github/MapTalks/maptalks.js?branch=master)
 
 ------
 
