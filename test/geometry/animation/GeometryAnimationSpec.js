@@ -96,6 +96,54 @@ describe('#GeometryAnimation', function () {
             }, step);
         });
 
+        it('cannot animate a composite symbol when its wwn is not', function() {
+            var marker = new maptalks.Marker([100,0], {
+                symbol:{
+                    'markerType' : 'ellipse',
+                    'markerWidth' : 10,
+                    'markerHeight' : 10
+                }
+            });
+            expect(function () {
+                marker.animate({
+                    symbol : [
+                        {
+                            'markerWidth' : 100,
+                            'markerHeight' : 110
+                        },
+                        {
+                            'markerWidth' : 120,
+                            'markerHeight' : 130
+                        }
+                    ]
+                });
+            }).to.throwException();
+
+
+            var marker = new maptalks.Marker([100,0], {
+                symbol:[
+                    {
+                        'markerType' : 'ellipse',
+                        'markerWidth' : 10,
+                        'markerHeight' : 10
+                    },
+                    {
+                        'markerType' : 'pin',
+                        'markerWidth' : 20,
+                        'markerHeight' : 30
+                    }
+                ]
+            });
+            expect(function () {
+                marker.animate({
+                    symbol:{
+                        'markerWidth' : 10,
+                        'markerHeight' : 10
+                    }
+                });
+            }).to.throwException();
+        });
+
         it('animate radius', function(done) {
             var circle = new maptalks.Circle([100,0], 100);
             function step(frame) {
