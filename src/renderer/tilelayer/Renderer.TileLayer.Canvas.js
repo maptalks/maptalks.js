@@ -18,7 +18,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
         if (this._onMapMoving) {
             map.off('_moving',this._onMapMoving,this);
         }
-        this._requestMapToRend();
+        this._requestMapToRender();
     },
 
     getMap: function() {
@@ -30,16 +30,16 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
     },
 
     hide:function() {
-        this._requestMapToRend();
+        this._requestMapToRender();
     },
 
     setZIndex:function(zIndex) {
-        this._requestMapToRend();
+        this._requestMapToRender();
     },
 
     clear:function() {
         this._clearCanvas();
-        this._requestMapToRend();
+        this._requestMapToRender();
     },
 
     clearExecutors:function() {
@@ -117,7 +117,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
         this._rending = false;
         if (this._tileToLoadCounter === 0){
             this._fireLoadedEvent();
-            this._requestMapToRend();
+            this._requestMapToRender();
         } else {
             this._totalTileToLoad = this._tileToLoadCounter;
             this._scheduleLoadTileQueue();
@@ -240,7 +240,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
             var tileSize = this._layer.getTileSize();
             var viewExtent = this.getMap()._getViewExtent();
             if (viewExtent.intersects(new Z.PointExtent(point, point.add(new Z.Point(tileSize['width'], tileSize['height']))))) {
-                this._requestMapToRend();
+                this._requestMapToRender();
             }
         }
         if (this._tileToLoadCounter === 0) {
@@ -249,8 +249,10 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
     },
 
     _onTileLoadComplete:function() {
+        //In browser, map will be requested to render once a tile was loaded.
+        //but in node, map will be requested to render when the layer is loaded.
         if (Z.runningInNode) {
-            this._requestMapToRend();
+            this._requestMapToRender();
         }
         this._fireLoadedEvent();
     },
@@ -273,19 +275,19 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
         }
     },
 
-    _requestMapToRend:function() {
-        // if (this.getMap() && !this.getMap().isBusy()) {
-        //     this._mapRender.render();
-        // }
-        if (this._mapRenderRequest) {
-            clearTimeout(this._mapRenderRequest);
+    _requestMapToRender:function() {
+        if (this.getMap() && !this.getMap().isBusy()) {
+            this._mapRender.render();
         }
-        var me = this;
-        this._mapRenderRequest = setTimeout(function() {
-            if (me.getMap() && !me.getMap().isBusy()) {
-                me._mapRender.render();
-            }
-        }, 10);
+    //     if (this._mapRenderRequest) {
+    //         clearTimeout(this._mapRenderRequest);
+    //     }
+    //     var me = this;
+    //     this._mapRenderRequest = setTimeout(function() {
+    //         if (me.getMap() && !me.getMap().isBusy()) {
+    //             me._mapRender.render();
+    //         }
+    //     }, 10);
     },
 
     _registerEvents:function() {

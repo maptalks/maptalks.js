@@ -13,7 +13,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
 
     remove:function() {
         this.getMap().off('_zoomstart _zoomend _moveend _resize',this._onMapEvent,this);
-        this._requestMapToRend();
+        this._requestMapToRender();
     },
 
     /**
@@ -24,7 +24,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
             return;
         }
         this.draw();
-        this._requestMapToRend();
+        this._requestMapToRender();
     },
 
     /**
@@ -183,11 +183,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
      * @expose
      */
     hide: function() {
-        this._requestMapToRend();
+        this._requestMapToRender();
     },
 
     setZIndex: function(zindex) {
-        this._requestMapToRend();
+        this._requestMapToRender();
     },
 
     /**
@@ -367,7 +367,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
         }
     },
 
-    _requestMapToRend:function() {
+    _requestMapToRender:function() {
         if (this.getMap()) {
             this._mapRender.render();
             this._layer.fire('layerload');
