@@ -1,11 +1,11 @@
 {
-  "name": "layertalks",
+  "name": "maptalks.js",
   "version": "1.0.0-alpha",
   "description": "an open-source javascript library for map applications.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MapTalks/layertalks.git"
+    "url": "https://github.com/MapTalks/maptalks.js.git"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
