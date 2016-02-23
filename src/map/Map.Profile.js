@@ -91,11 +91,12 @@ Z.Map.include({
         profile["options"]["zoom"] = this.getZoom();
 
         var baseLayer = this.getBaseLayer();
-        profile['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
-        if (!Z.Util.isNil(options['baseLayer']) && !options['baseLayer']) {
-            profile['baseLayer']['options']['visible'] = false;
+        if (baseLayer) {
+            profile['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
+            if (!Z.Util.isNil(options['baseLayer']) && !options['baseLayer']) {
+                profile['baseLayer']['options']['visible'] = false;
+            }
         }
-
         var extraLayerOptions = {};
         if (options['clipExtent']) {
             //if clipExtent is set, only geometries intersecting with extent will be exported.
@@ -142,7 +143,9 @@ Z.Map.fromJSON=function(container, mapJSON, options) {
     var map = new Z.Map(container, mapJSON["options"]);
     if (Z.Util.isNil(options['baseLayer']) || options['baseLayer']) {
         var baseLayer = Z.Layer.fromJSON(mapJSON["baseLayer"]);
-        map.setBaseLayer(baseLayer);
+        if (baseLayer) {
+            map.setBaseLayer(baseLayer);
+        }
     }
     if (Z.Util.isNil(options['layers']) || options['layers']) {
         var layers = [];

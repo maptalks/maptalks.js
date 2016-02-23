@@ -1011,7 +1011,7 @@ Z.Map=Z.Class.extend({
      * @return {[Layer]}        符合过滤条件的图层数组
      */
     _getLayers:function(filter) {
-        var layers = [this._baseLayer].concat(this._layers);
+        var layers = this._baseLayer?[this._baseLayer].concat(this._layers):this._layers;
         var result = [];
         for (var i = 0; i < layers.length; i++) {
             if (!filter || filter.call(this,layers[i])) {
