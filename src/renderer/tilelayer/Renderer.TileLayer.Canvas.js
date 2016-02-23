@@ -276,18 +276,21 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
     },
 
     _requestMapToRender:function() {
-        if (this.getMap() && !this.getMap().isBusy()) {
-            this._mapRender.render();
+        if (Z.runningInNode) {
+            if (this.getMap() && !this.getMap().isBusy()) {
+                this._mapRender.render();
+            }
+            return;
         }
-    //     if (this._mapRenderRequest) {
-    //         clearTimeout(this._mapRenderRequest);
-    //     }
-    //     var me = this;
-    //     this._mapRenderRequest = setTimeout(function() {
-    //         if (me.getMap() && !me.getMap().isBusy()) {
-    //             me._mapRender.render();
-    //         }
-    //     }, 10);
+        if (this._mapRenderRequest) {
+            clearTimeout(this._mapRenderRequest);
+        }
+        var me = this;
+        this._mapRenderRequest = setTimeout(function() {
+            if (me.getMap() && !me.getMap().isBusy()) {
+                me._mapRender.render();
+            }
+        }, 1);
     },
 
     _registerEvents:function() {
