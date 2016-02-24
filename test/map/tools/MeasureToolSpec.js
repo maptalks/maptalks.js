@@ -49,7 +49,47 @@ describe('#DistanceTool and AreaTool', function () {
     afterEach(function() {
         document.body.removeChild(container);
     });
-    describe('measure', function() {
+    describe('test distanceTool', function() {
+
+
+        it('can measure distance', function() {
+            var distanceTool = new Z.DistanceTool({
+                metric : true,
+                imperial:true
+            }).addTo(map);
+            expect(distanceTool.getLastMeasure()).to.be.eql(0);
+            measure();
+            expect(distanceTool.getLastMeasure()).to.be.above(0);
+        });
+
+        it('can get measureLayers', function() {
+            var distanceTool = new Z.DistanceTool({
+                metric : true,
+                imperial:true
+            }).addTo(map);
+            measure();
+            var measureLayers = distanceTool.getMeasureLayers();
+            expect(measureLayers).to.have.length(2);
+            var result = distanceTool.getLastMeasure();
+            expect(measureLayers[0].getGeometries()[0].getLength()).to.be.eql(result);
+        });
+
+        it('can clear measure results', function() {
+            var distanceTool = new Z.DistanceTool({
+                metric : true,
+                imperial:true
+            }).addTo(map);
+            measure();
+            distanceTool.clear();
+            var measureLayers = distanceTool.getMeasureLayers();
+            expect(measureLayers).to.have.length(0);
+            var result = distanceTool.getLastMeasure();
+            expect(result).to.be.eql(0);
+        });
+    });
+
+    describe('test areaTool', function() {
+
         it('can measure area', function() {
             var areaTool = new Z.AreaTool({
                 metric : true,
@@ -61,15 +101,20 @@ describe('#DistanceTool and AreaTool', function () {
             expect(areaTool.getLastMeasure()).to.be.above(0);
         });
 
-        it('can measure distance', function() {
-            var distanceTool = new Z.DistanceTool({
+        it('can get measureLayers', function() {
+            var areaTool = new Z.AreaTool({
                 metric : true,
                 imperial:true
             }).addTo(map);
-            expect(distanceTool.getLastMeasure()).to.be.eql(0);
             measure();
-            expect(distanceTool.getLastMeasure()).to.be.above(0);
+            var measureLayers = areaTool.getMeasureLayers();
+            expect(measureLayers).to.have.length(2);
+            var result = areaTool.getLastMeasure();
+            expect(measureLayers[0].getGeometries()[0].getArea()).to.be.eql(result);
         });
+
+
     });
+
 
 });
