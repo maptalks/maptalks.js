@@ -64,10 +64,10 @@ Z.Editor=Z.Class.extend({
         //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
         //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
         shadow.copyEventListeners(geometry);
+        //drag shadow by center handle instead.
+        shadow.setId(null).config({'draggable': false});
+        shadow._enableRenderImmediate();
 
-        shadow.setId(null).config({'draggable': true});
-        shadow._isRenderImmediate(true);
-        shadow.on('dragend', this._onShadowDragEnd, this);
         this._shadow = shadow;
         geometry.hide();
         if (geometry instanceof Z.Marker || geometry instanceof Z.Circle || geometry instanceof Z.Rectangle
@@ -78,6 +78,9 @@ Z.Editor=Z.Class.extend({
         this._editStageLayer.bringToFront().addGeometry(shadow);
         if (!(geometry instanceof Z.Marker)) {
             this._createCenterHandle();
+        } else {
+            shadow.config('draggable', true);
+            shadow.on('dragend', this._onShadowDragEnd, this);
         }
         if (geometry instanceof Z.Marker) {
             this.createMarkerEditor();
@@ -217,7 +220,7 @@ Z.Editor=Z.Class.extend({
             'cursor'     : 'move',
             onDown:function(v, param) {
                 shadow = this._shadow.copy();
-                shadow._isRenderImmediate(true);
+                shadow._enableRenderImmediate();
                 var symbol = Z.Util.decreaseSymbolOpacity(shadow.getSymbol(), 0.5);
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },
@@ -420,70 +423,76 @@ Z.Editor=Z.Class.extend({
                 this._editOutline.show();
             }
         }
-        //only image marker and vector marker can be edited now.
-        if (marker._canEdit()) {
-            var symbol = marker.getSymbol();
-            var dxdy = new Z.Point(0,0);
-            if (Z.Util.isNumber(symbol['markerDx'])) {
-                dxdy.x = symbol['markerDx'];
-            }
-            if (Z.Util.isNumber(symbol['markerDy'])) {
-                dxdy.y = symbol['markerDy'];
-            }
-
-            var blackList = null;
-
-            if (Z.symbolizer.VectorMarkerSymbolizer.test(geometryToEdit, symbol)) {
-                if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
-                    //as these types of markers' anchor stands on its bottom, hide southern resize handles to prevent
-                    //any change of coordinates when resizing it.
-                    blackList = [5,6,7];
-                }
-            }
-
-            //defines what can be resized by the handle
-            //0: resize width; 1: resize height; 2: resize both width and height.
-            var resizeAbilities = [
-                2, 1, 2,
-                0,    0,
-                2, 1, 2
-            ];
-
-            resizeHandles = this._createResizeHandles(null,function(handleViewPoint, i) {
-                if (blackList && Z.Util.searchInArray(i, blackList) >= 0) {
-                    //need to change marker's coordinates
-                    var newCoordinates = map.viewPointToCoordinate(handleViewPoint);
-                    var coordinates = marker.getCoordinates();
-                    newCoordinates.x = coordinates.x;
-                    marker.setCoordinates(newCoordinates);
-                    geometryToEdit.setCoordinates(newCoordinates);
-                    //coordinates changed, and use mirror handle instead to caculate width and height
-                    var mirrorHandle = resizeHandles[resizeHandles.length-1-i];
-                    var mirrorViewPoint = map.coordinateToViewPoint(mirrorHandle.getCoordinates());
-                    handleViewPoint = mirrorViewPoint;
-                }
-
-                //caculate width and height
-                var viewCenter = marker._getCenterViewPoint().add(dxdy),
-                    symbol = marker.getSymbol();
-                var wh = handleViewPoint.substract(viewCenter);
-                //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
-                var r = blackList?1:2;
-                var width = Math.abs(wh.x)*2,
-                height = Math.abs(wh.y)*r;
-                var ability = resizeAbilities[i];
-                if (ability === 0 || ability === 2) {
-                    symbol['markerWidth'] = width;
-                }
-                if (ability === 1 || ability === 2) {
-                    symbol['markerHeight'] = height;
-                }
-                marker.setSymbol(symbol);
-                geometryToEdit.setSymbol(symbol);
-            });
-            this._addListener([map, 'zoomstart', onZoomStart]);
-            this._addListener([map, 'zoomend', onZoomEnd]);
+        if (!marker._canEdit()) {
+            console.warn('A marker can\'t be resized with symbol:', marker.getSymbol());
+            return;
         }
+        //only image marker and vector marker can be edited now.
+
+        var symbol = marker.getSymbol();
+        var dxdy = new Z.Point(0,0);
+        if (Z.Util.isNumber(symbol['markerDx'])) {
+            dxdy.x = symbol['markerDx'];
+        }
+        if (Z.Util.isNumber(symbol['markerDy'])) {
+            dxdy.y = symbol['markerDy'];
+        }
+
+        var blackList = null;
+
+        if (Z.symbolizer.VectorMarkerSymbolizer.test(geometryToEdit, symbol)) {
+            if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
+                //as these types of markers' anchor stands on its bottom
+                blackList = [5,6,7];
+            }
+        } else if (Z.symbolizer.ImageMarkerSymbolizer.test(geometryToEdit, symbol)
+            || Z.symbolizer.VectorPathMarkerSymbolizer.test(geometryToEdit, symbol)) {
+            blackList = [5,6,7];
+        }
+
+        //defines what can be resized by the handle
+        //0: resize width; 1: resize height; 2: resize both width and height.
+        var resizeAbilities = [
+            2, 1, 2,
+            0,    0,
+            2, 1, 2
+        ];
+
+        resizeHandles = this._createResizeHandles(null,function(handleViewPoint, i) {
+            if (blackList && Z.Util.searchInArray(i, blackList) >= 0) {
+                //need to change marker's coordinates
+                var newCoordinates = map.viewPointToCoordinate(handleViewPoint);
+                var coordinates = marker.getCoordinates();
+                newCoordinates.x = coordinates.x;
+                marker.setCoordinates(newCoordinates);
+                geometryToEdit.setCoordinates(newCoordinates);
+                //coordinates changed, and use mirror handle instead to caculate width and height
+                var mirrorHandle = resizeHandles[resizeHandles.length-1-i];
+                var mirrorViewPoint = map.coordinateToViewPoint(mirrorHandle.getCoordinates());
+                handleViewPoint = mirrorViewPoint;
+            }
+
+            //caculate width and height
+            var viewCenter = marker._getCenterViewPoint().add(dxdy),
+                symbol = marker.getSymbol();
+            var wh = handleViewPoint.substract(viewCenter);
+            //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
+            var r = blackList?1:2;
+            var width = Math.abs(wh.x)*2,
+            height = Math.abs(wh.y)*r;
+            var ability = resizeAbilities[i];
+            if (ability === 0 || ability === 2) {
+                symbol['markerWidth'] = width;
+            }
+            if (ability === 1 || ability === 2) {
+                symbol['markerHeight'] = height;
+            }
+            marker.setSymbol(symbol);
+            geometryToEdit.setSymbol(symbol);
+        });
+        this._addListener([map, 'zoomstart', onZoomStart]);
+        this._addListener([map, 'zoomend', onZoomEnd]);
+
     },
 
     /**
