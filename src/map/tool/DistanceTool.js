@@ -56,6 +56,9 @@ Z.DistanceTool = Z.DrawTool.extend({
                 this._measureLayers[i].remove();
             }
         }
+        delete this._lastMeasure;
+        delete this._lastVertex;
+        this._measureLayers = []
         return this;
     },
 
@@ -180,6 +183,7 @@ Z.DistanceTool = Z.DrawTool.extend({
         var geo = param['geometry'].copy();
         geo._enableRenderImmediate();
         geo.addTo(this._measureLineLayer);
+        this._lastMeasure = geo.getLength();
     },
 
     _addClearMarker:function(coordinates, dx) {

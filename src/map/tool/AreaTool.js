@@ -83,5 +83,6 @@ Z.AreaTool = Z.DistanceTool.extend({
         var geo = param['geometry'].copy();
         geo._enableRenderImmediate();
         geo.addTo(this._measureLineLayer);
+        this._lastMeasure = geo.getArea();
     }
 });

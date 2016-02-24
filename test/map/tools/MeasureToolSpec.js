@@ -113,7 +113,18 @@ describe('#DistanceTool and AreaTool', function () {
             expect(measureLayers[0].getGeometries()[0].getArea()).to.be.eql(result);
         });
 
-
+        it('can clear measure results', function() {
+            var areaTool = new Z.AreaTool({
+                metric : true,
+                imperial:true
+            }).addTo(map);
+            measure();
+            areaTool.clear();
+            var measureLayers = areaTool.getMeasureLayers();
+            expect(measureLayers).to.have.length(0);
+            var result = areaTool.getLastMeasure();
+            expect(result).to.be.eql(0);
+        });
     });
 
 
