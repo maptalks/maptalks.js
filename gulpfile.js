@@ -31,7 +31,7 @@ var sources = require('./build/getFiles.js').getFiles(),
 gulp.task('scripts', function() {
   return gulp.src(sources)
       .pipe(jshint())                 // do special things to the changed files...
-      .pipe(concat('layertalks.js'))         // do things that require all files
+      .pipe(concat('maptalks.js'))         // do things that require all files
       .pipe(header('(function () {\n')) // e.g. jshinting ^^^
       .pipe(footer('\n})();'))          // and some kind of module wrapping
       .pipe(gulp.dest('./dist'))
@@ -44,7 +44,7 @@ gulp.task('scripts', function() {
 
 gulp.task('styles',function() {
    return gulp.src(styles)
-        .pipe(concat('layertalks.css'))
+        .pipe(concat('maptalks.css'))
         .pipe(cssnano())
         .pipe(gulp.dest('./dist/css'));
 });
@@ -91,13 +91,13 @@ gulp.task('test', function (done) {
   };
   if (options.coverage) {
     karmaConfig.preprocessors = {
-      'src/**/!(Matrix|Promise|HeatmapLayer).js': ['coverage']
+      'src/**/!(Support|Util|Matrix|Promise|HeatmapLayer).js': ['coverage']
     };
     karmaConfig.coverageReporter = {
       type: 'lcov', // lcov or lcovonly are required for generating lcov.info files
       dir: 'coverage/'
     };
-    karmaConfig.reporters = ['coverage'];
+    karmaConfig.reporters = ['dots','coverage'];
   };
   if (options.pattern) {
     karmaConfig.client = {
