@@ -4,17 +4,6 @@
  * @author Maptalks Team
  */
 Z.StringUtil = {
-    /**
-     * 全局替换字符
-     * @param {String} str 字符串
-     * @param {String} replaceStr 被替换的字符串
-     * @param {String} newStr 替换的字符串
-     * @return {String} 处理后的字符串
-     */
-    replaceAll: function (str, replaceStr, newStr) {
-        var reg = new RegExp(replaceStr, 'g');
-        return str.replace(reg, newStr);
-    },
 
     /**
      * 去除字符串某位空格
@@ -33,24 +22,6 @@ Z.StringUtil = {
     splitWords: function (str) {
         return Z.StringUtil.trim(str).split(/\s+/);
     },
-
-    /**
-     * 获取字符串长度
-     * @param {String} str 字符串
-     * @return {Number} 长度
-     */
-    /*getLength : function(str) {
-        var len = 0;
-        for (var i = 0; i < str.length; i++) {
-            var a = str.charAt(i);
-            if (a.match(/[^\x00-\xff]/ig) != null) {
-                len += 2;
-            } else {
-                len += 1;
-            }
-        }
-        return len;
-    },*/
 
     /**
      * 获取文本像素尺寸
