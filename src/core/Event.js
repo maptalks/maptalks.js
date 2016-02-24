@@ -99,9 +99,12 @@ Z.Eventable = {
         var eventMap = target._eventMap;
         if(!eventMap) {return this;}
         for (var eventType in eventMap) {
-            var events = eventMap[eventType];
-            for(var i=0,len=events.length;i<len;i++) {
-                this.on(eventType, events[i].handler, events[i].context);
+            var handlerChain = eventMap[eventType];
+            for(var i=0,len=handlerChain.length;i<len;i++) {
+                if (handlerChain[i].del) {
+                    continue;
+                }
+                this.on(eventType, handlerChain[i].handler, handlerChain[i].context);
             }
         }
         return this;
