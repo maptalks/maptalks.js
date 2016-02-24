@@ -5,9 +5,13 @@ Z.Geometry.include({
      * @expose
      */
     startEdit: function(opts) {
+        if (!this.getMap()) {
+            return this;
+        }
         this.endEdit();
         this._editor = new Z.Editor(this,opts);
         this._editor.start();
+        return this;
     },
 
     /**
@@ -20,6 +24,7 @@ Z.Geometry.include({
             this._editor.stop();
             delete this._editor;
         }
+        return this;
     },
 
     /**

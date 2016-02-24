@@ -211,7 +211,7 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         }
 
         mask._bindLayer(this);
-        mask._isRenderImmediate(true);
+        mask._enableRenderImmediate();
         if (mask instanceof Z.Marker ) {
             mask.setSymbol(Z.Util.extendSymbol(mask.getSymbol(),{
                 'markerLineWidth': 0,

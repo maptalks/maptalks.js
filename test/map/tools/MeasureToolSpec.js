@@ -2,7 +2,7 @@
 
 
 describe('#DistanceTool and AreaTool', function () {
-    var container,mapPlatform;
+    var container,eventContainer;
     var map;
     var tile;
     var center = new Z.Coordinate(118.846825, 32.046534);
@@ -10,29 +10,29 @@ describe('#DistanceTool and AreaTool', function () {
     function measure() {
         var center = map.getCenter();
 
-        var domPosition = Z.DomUtil.getPageCoordinate(container);
+        var domPosition = Z.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var requestAnimFn = Z.Util.requestAnimFrame;
 
-        happen.click(mapPlatform,{
+        happen.click(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y
                 });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(document,{
+            happen.mousemove(eventContainer,{
                 'clientX':point.x+i,
                 'clientY':point.y+i
                 });
         };
-        happen.click(mapPlatform,{
+        happen.click(eventContainer,{
                 'clientX':point.x+10,
                 'clientY':point.y
                 });
-        happen.click(mapPlatform,{
+        happen.click(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y+10
                 });
-        happen.dblclick(mapPlatform,{
+        happen.dblclick(eventContainer,{
                 'clientX':point.x-1,
                 'clientY':point.y+5
                 });
@@ -42,7 +42,7 @@ describe('#DistanceTool and AreaTool', function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        mapPlatform = map._panels.mapPlatform;
+        eventContainer = map._containerDOM;
 
     });
 

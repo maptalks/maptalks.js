@@ -191,7 +191,7 @@ Z.DrawTool = Z.Class.extend({
 
     _addGeometryToStage:function(geometry) {
         var drawLayer = this._getDrawLayer();
-        geometry._isRenderImmediate(true);
+        geometry._enableRenderImmediate();
         drawLayer.addGeometry(geometry);
     },
 
@@ -261,7 +261,7 @@ Z.DrawTool = Z.Class.extend({
             this._movingTail = new Z.LineString(tailPath,{
                 'symbol' : symbol
             });
-            this._movingTail._isRenderImmediate(true);
+            this._movingTail._enableRenderImmediate();
             this._addGeometryToStage(this._movingTail);
         } else {
             this._movingTail.setCoordinates(tailPath);
@@ -369,7 +369,7 @@ Z.DrawTool = Z.Class.extend({
                 return false;
             }
             var containerPoint = this._getMouseContainerPoint(_event);
-            if (!this._isValidContainerPoint(containerPoint)) {return;}
+            if (!this._isValidContainerPoint(containerPoint)) {return false;}
             var coordinate = this._containerPointToLonlat(containerPoint);
             genGeometry(coordinate);
             return false;
@@ -379,9 +379,10 @@ Z.DrawTool = Z.Class.extend({
                 return false;
             }
             var containerPoint = this._getMouseContainerPoint(_event);
-            if (!this._isValidContainerPoint(containerPoint)) {return;}
-            var coordinate = this._containerPointToLonlat(containerPoint);
-            genGeometry(coordinate);
+            if (this._isValidContainerPoint(containerPoint)) {
+                var coordinate = this._containerPointToLonlat(containerPoint);
+                genGeometry(coordinate);
+            }
             this._map.off('mousemove',onMouseMove,this);
             this._map.off('mouseup',onMouseUp,this);
             this._endDraw(param);

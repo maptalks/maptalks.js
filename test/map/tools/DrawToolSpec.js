@@ -2,7 +2,7 @@
 
 
 describe('#DrawTool', function () {
-    var container,mapPlatform;
+    var container,eventContainer;
     var map;
     var tile;
     var center = new Z.Coordinate(118.846825, 32.046534);
@@ -10,29 +10,29 @@ describe('#DrawTool', function () {
     function drawLine() {
         var center = map.getCenter();
 
-        var domPosition = Z.DomUtil.getPageCoordinate(container);
+        var domPosition = Z.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var requestAnimFn = Z.Util.requestAnimFrame;
 
-        happen.click(mapPlatform,{
+        happen.click(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y
                 });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(document,{
+            happen.mousemove(eventContainer,{
                 'clientX':point.x+i,
                 'clientY':point.y+i
                 });
         };
-        happen.click(mapPlatform,{
+        happen.click(eventContainer,{
                 'clientX':point.x+10,
                 'clientY':point.y
                 });
-        happen.click(mapPlatform,{
+        happen.click(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y+10
                 });
-        happen.dblclick(mapPlatform,{
+        happen.dblclick(eventContainer,{
                 'clientX':point.x-1,
                 'clientY':point.y+5
                 });
@@ -41,26 +41,38 @@ describe('#DrawTool', function () {
     function dragDraw() {
         var center = map.getCenter();
 
-        var domPosition = Z.DomUtil.getPageCoordinate(container);
+        var domPosition = Z.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        happen.mousedown(mapPlatform,{
+        happen.mousedown(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y
                 });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(document,{
+            happen.mousemove(eventContainer,{
                 'clientX':point.x+i,
                 'clientY':point.y+i
                 });
         };
-        happen.mouseup(document);
+        happen.mouseup(eventContainer,{
+                'clientX':point.x+10,
+                'clientY':point.y+10
+                });
     }
+    function drawPoint() {
+        var center = map.getCenter();
 
+        var domPosition = Z.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        happen.click(eventContainer,{
+                'clientX':point.x,
+                'clientY':point.y
+                });
+    }
     beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        mapPlatform = map._containerDOM;
+        eventContainer = map._containerDOM;
 
     });
 
@@ -68,59 +80,90 @@ describe('#DrawTool', function () {
         document.body.removeChild(container);
     });
     describe('draw geometries', function() {
-        it('can draw linestring', function() {
-            var spy = sinon.spy();
+        it('can draw a marker', function(done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof Z.Marker).to.be.ok();
+                expect(param.geometry.getCoordinates()).to.be.nearCoord(map.getCenter());
+                done();
+            }
+            var drawTool = new Z.DrawTool({
+                mode : 'Point'
+            });
+            drawTool.addTo(map);
+            drawTool.on('drawend', drawEnd);
+            drawPoint();
+        });
+
+        it('can draw linestring', function(done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof Z.LineString).to.be.ok();
+                expect(param.geometry.getLength()).to.above(0);
+                done();
+            }
             var drawTool = new Z.DrawTool({
                 mode : 'LineString'
             });
             drawTool.addTo(map);
-            drawTool.on('drawend', spy);
+            drawTool.on('drawend', drawEnd);
             drawLine();
-            expect(spy.called).to.be.ok();
         });
 
-        it('can draw Polygon', function() {
-            var spy = sinon.spy();
+        it('can draw Polygon', function(done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof Z.Polygon).to.be.ok();
+                expect(param.geometry.getArea()).to.above(0);
+                done();
+            }
             var drawTool = new Z.DrawTool({
                 mode : 'Polygon'
             });
             drawTool.addTo(map);
-            drawTool.on('drawend', spy);
+            drawTool.on('drawend', drawEnd);
             drawLine();
-            expect(spy.called).to.be.ok();
         });
 
-        it('can draw circle', function() {
-            var spy = sinon.spy();
+        it('can draw circle', function(done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof Z.Circle).to.be.ok();
+                expect(param.geometry.getRadius()).to.above(0);
+                done();
+            }
             var drawTool = new Z.DrawTool({
                 mode : 'Circle'
             });
             drawTool.addTo(map);
-            drawTool.on('drawend', spy);
+            drawTool.on('drawend', drawEnd);
             dragDraw();
-            // expect(spy.called).to.be.ok();
         });
 
-        it('can draw Rectangle', function() {
-            var spy = sinon.spy();
+        it('can draw Rectangle', function(done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof Z.Rectangle).to.be.ok();
+                expect(param.geometry.getWidth()).to.above(0);
+                expect(param.geometry.getHeight()).to.above(0);
+                done();
+            }
             var drawTool = new Z.DrawTool({
                 mode : 'Rectangle'
             });
             drawTool.addTo(map);
-            drawTool.on('drawend', spy);
+            drawTool.on('drawend', drawEnd);
             dragDraw();
-            // expect(spy.called).to.be.ok();
         });
 
-        it('can draw Ellipse', function() {
-            var spy = sinon.spy();
+        it('can draw Ellipse', function(done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof Z.Ellipse).to.be.ok();
+                expect(param.geometry.getWidth()).to.above(0);
+                expect(param.geometry.getHeight()).to.above(0);
+                done();
+            }
             var drawTool = new Z.DrawTool({
                 mode : 'Ellipse'
             });
             drawTool.addTo(map);
-            drawTool.on('drawend', spy);
+            drawTool.on('drawend', drawEnd);
             dragDraw();
-            // expect(spy.called).to.be.ok();
         });
     });
 

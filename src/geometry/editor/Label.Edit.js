@@ -11,6 +11,34 @@ Z.Label.include({
         return this;
     },
 
+    /**
+     * 结束编辑
+     * @member maptalks.Label
+     * @expose
+     */
+    endEditText: function() {
+        var content = this._textEditor.value;
+        this.setContent(content);
+        this.show();
+        Z.DomUtil.removeDomNode(this._container);
+        delete this._container;
+        delete this._textEditor;
+        return this;
+    },
+
+    /**
+     * Label是否处于编辑状态中
+     * @member maptalks.Label
+     * @return {Boolean} 是否处于编辑状态
+     * @expose
+     */
+    isEditingText: function() {
+        if (this._container) {
+            return true;
+        }
+        return false;
+    },
+
     _prepareEditor:function() {
         var map = this.getMap();
         var zIndex = map._panels.controlWrapper.style.zIndex+1;
@@ -60,34 +88,6 @@ Z.Label.include({
         });
         return inputDom;
 
-    },
-
-    /**
-     * 结束编辑
-     * @member maptalks.Label
-     * @expose
-     */
-    endEditText: function() {
-        var content = this._textEditor.value;
-        this.setContent(content);
-        this.show();
-        Z.DomUtil.removeDomNode(this._container);
-        delete this._container;
-        delete this._textEditor;
-        return this;
-    },
-
-    /**
-     * Label是否处于编辑状态中
-     * @member maptalks.Label
-     * @return {Boolean} 是否处于编辑状态
-     * @expose
-     */
-    isEditingText: function() {
-        if (this._container) {
-            return true;
-        }
-        return false;
     }
 
 });

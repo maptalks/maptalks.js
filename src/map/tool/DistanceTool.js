@@ -148,10 +148,10 @@ Z.DistanceTool = Z.DrawTool.extend({
             this._tailMarker = new maptalks.Marker(param['coordinate'], {
                 'symbol' : symbol
             }).addTo(this._measureMarkerLayer);
-            this._tailMarker._isRenderImmediate(true);
+            this._tailMarker._enableRenderImmediate();
             this._tailLabel = new maptalks.Label(ms, param['coordinate'], this.options['labelOptions'])
                 .addTo(this._measureMarkerLayer);
-            this._tailLabel._isRenderImmediate(true);
+            this._tailLabel._enableRenderImmediate();
         }
         this._tailMarker.setCoordinates(param['coordinate']);
         this._tailLabel.setContent(ms);
@@ -178,7 +178,7 @@ Z.DistanceTool = Z.DrawTool.extend({
         }
         this._addClearMarker(this._lastVertex.getCoordinates(), size['width']);
         var geo = param['geometry'].copy();
-        geo._isRenderImmediate(true);
+        geo._enableRenderImmediate();
         geo.addTo(this._measureLineLayer);
     },
 

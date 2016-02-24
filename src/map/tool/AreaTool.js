@@ -81,7 +81,7 @@ Z.AreaTool = Z.DistanceTool.extend({
         }
         this._addClearMarker(param['coordinate'], size['width']);
         var geo = param['geometry'].copy();
-        geo._isRenderImmediate(true);
+        geo._enableRenderImmediate();
         geo.addTo(this._measureLineLayer);
     }
 });

@@ -78,54 +78,108 @@ function isArray(obj) {
     return typeof obj == 'array' || (obj.constructor !== null && obj.constructor == Array);
 }
 
-expect.Assertion.prototype.near = function(expected, delta) {
-    delta = delta || 1e-6;
-    expect(this.obj).to.be.within(expected - delta, expected + delta);
+function near(val, expected, delta) {
+    if (delta == null) {delta = 1e-6;}
+    return val >= expected-delta && val <= expected+delta;
 }
+
+expect.Assertion.prototype.near=function(expected,delta) {
+    this.assert(
+        near(this.obj, expected, delta)
+        , function(){ return 'expected ' + JSON.stringify(this.obj) + ' to sort of equal ' + JSON.stringify(expected) }
+        , function(){ return 'expected ' + JSON.stringify(this.obj) + ' to sort of not equal ' + JSON.stringify(expected) }
+        , expected);
+    return this;
+};
 
 expect.Assertion.prototype.nearCoord = function(expected, delta) {
     delta = delta || 1e-6;
+    var expectation;
     if (isArray(expected)) {
-        expect(this.obj[0]).to.be.near(expected[0], delta);
-        expect(this.obj[1]).to.be.near(expected[1], delta);
+        expectation =
+            near(this.obj[0],expected[0],delta) &&
+            near(this.obj[1],expected[1],delta);
     } else {
-        expect(this.obj.x).to.be.near(expected.x, delta);
-        expect(this.obj.y).to.be.near(expected.y, delta);
+        expectation =
+            near(this.obj.x,expected.x,delta) &&
+            near(this.obj.y,expected.y,delta);
     }
+    this.assert(
+        expectation
+        , function(){ return 'expected ' + JSON.stringify(this.obj) + ' to sort of nearCoord ' + JSON.stringify(expected) }
+        , function(){ return 'expected ' + JSON.stringify(this.obj) + ' to sort of not nearCoord ' + JSON.stringify(expected) }
+        , expected);
+    return this;
 };
 
-expect.Assertion.prototype.eqlArray = function(expected) {
-    expect(this.obj).to.have.length(expected.length);
+function eqlArray(val, expected) {
+    if (val.length !== expected.length) {
+        return false;
+    }
     for (var i = 0; i < expected.length; i++) {
         if (isArray(expected[i])) {
-            expect(this.obj[i]).to.eqlArray(expected[i]);
+            if (!eqlArray(val[i], expected[i])) {
+                return false;
+            }
         } else {
-            expect(this.obj[i]).to.near(expected[i]);
+            if (!near(val[i], expected[i])) {
+                return false;
+            }
         }
     }
+    return true;
+}
+
+expect.Assertion.prototype.eqlArray = function(expected) {
+    this.assert(
+        eqlArray(this.obj, expected)
+        , function(){ return 'expected ' + JSON.stringify(this.obj) + ' to sort of eqlArray ' + JSON.stringify(expected) }
+        , function(){ return 'expected ' + JSON.stringify(this.obj) + ' to sort of not eqlArray ' + JSON.stringify(expected) }
+        , expected);
+    return this;
 };
 
 expect.Assertion.prototype.eqlGeoJSON = function(expected) {
-    if (expected.type === 'FeatureCollection') {
-        var features = expected.features;
-        expect(this.obj.type).to.be.eql('FeatureCollection');
-        for (var i = 0; i < features.length; i++) {
-            expect(features[i]).to.eqlGeoJSON(this.obj.features[i]);
+    function eqlGeoJSON(val, expected) {
+        if (expected.type === 'FeatureCollection') {
+            var features = expected.features;
+            if (val.type !== 'FeatureCollection') {
+                return false;
+            }
+            for (var i = 0; i < features.length; i++) {
+                if (!eqlGeoJSON(val.features[i], features[i])) {
+                    return false;
+                }
+            }
+            return true;
+        } else if (expected.type === 'Feature') {
+            if (val.type !== 'Feature') {
+                return false;
+            }
+            return expect.eql(val.properties, expected.properties)
+                && eqlGeoJSON(val.geometry, expected.geometry);
+        } else if (expected.type === 'GeometryCollection') {
+            if (val.type !== 'GeometryCollection') {
+                return false;
+            }
+            var geometries = expected.geometries;
+            for (var i = 0; i < geometries.length; i++) {
+                if (!eqlGeoJSON(geometries[i], val.geometries[i])) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return val.type === expected.type
+                && eqlArray(val.coordinates, expected.coordinates);
         }
-    } else if (expected.type === 'Feature') {
-        expect(this.obj.type).to.be.eql('Feature');
-        expect(expected.geometry).to.eqlGeoJSON(this.obj.geometry);
-        expect(expected.properties).to.be.eql(this.obj.properties);
-    } else if (expected.type === 'GeometryCollection') {
-        expect(this.obj.type).to.be.eql('GeometryCollection');
-        var geometries = expected.geometries;
-        for (var i = 0; i < geometries.length; i++) {
-            expect(this.obj.geometries[i]).to.eqlGeoJSON(geometries[i]);
-        }
-    } else {
-        expect(this.obj.type).to.be.eql(expected.type);
-        expect(this.obj.coordinates).to.eqlArray(expected.coordinates);
     }
+     this.assert(
+        eqlGeoJSON(this.obj, expected)
+        , function(){ return 'expected ' + JSON.stringify(this.obj) + ' to sort of eqlGeoJSON ' + JSON.stringify(expected) }
+        , function(){ return 'expected ' + JSON.stringify(this.obj) + ' to sort of not eqlGeoJSON ' + JSON.stringify(expected) }
+        , expected);
+    return this;
 };
 
 
@@ -197,6 +251,22 @@ var GeoSymbolTester = {
                 "marker-dy": 0
             },
             {
+                "marker-placement":"point", //point | line | interior
+                "marker-type": "path", //<----- ellipse | triangle | square | bar等,默认ellipse
+                "marker-path" : "M129.657,71.361C129.657,75.173,128.55200000000002,78.812,126.504,81.924C125.275",
+                "marker-opacity": 1,
+                "marker-fill": "#ff0000",
+                "marker-fill-opacity": 1,
+                "marker-line-color": "#0000ff",
+                "marker-line-width": 1,
+                "marker-line-opacity": 1,
+                "marker-width": 30,
+                "marker-height": 30,
+
+                "marker-dx": 0,
+                "marker-dy": 0
+            },
+            {
                 "text-placement"    : "point", // point | vertex | line | interior
 
                 "text-name"         : "文本标注：[marker_name]",
@@ -253,7 +323,8 @@ var GeoSymbolTester = {
             },
 
     testGeoSymbols:function(geometry, map) {
-        // return;
+        // enable debug symbolizer
+        geometry.config('debug', true);
         geometry.remove();
         var layer = new maptalks.VectorLayer("symboltest_layer_svg");
         map.addLayer(layer);
@@ -318,7 +389,7 @@ GeoEventsTester.prototype = {
         layer.addGeometry(vector);
         var point = map.coordinateToContainerPoint(testPoint);
         var dom = map._panels.mapPlatform;
-        var domPosition = Z.DomUtil.getPageCoordinate(dom);
+        var domPosition = Z.DomUtil.getPagePosition(dom);
         point._add(domPosition);
         this._verifyGeometryEvents(dom,
             {

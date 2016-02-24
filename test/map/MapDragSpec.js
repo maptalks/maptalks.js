@@ -12,7 +12,7 @@ describe('#MapDrag', function () {
         var spy = sinon.spy();
         map.on('mousedown', spy);
 
-        var domPosition = Z.DomUtil.getPageCoordinate(container);
+        var domPosition = Z.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var requestAnimFn = Z.Util.requestAnimFrame;
         //replace original requestAnimFrame to immediate execution.

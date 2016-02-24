@@ -13,7 +13,7 @@ describe('#GeometryDrag', function () {
         var spy = sinon.spy();
         geometry.on('mousedown', spy);
 
-        var domPosition = Z.DomUtil.getPageCoordinate(container);
+        var domPosition = Z.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var requestAnimFn = Z.Util.requestAnimFrame;
         //replace original requestAnimFrame to immediate execution.
@@ -46,6 +46,12 @@ describe('#GeometryDrag', function () {
         document.body.removeChild(container);
     });
     describe('drag a marker', function() {
+        it('in default, geometries cannot be dragged', function() {
+            var marker = new maptalks.Marker(center);
+            dragGeometry(marker);
+            expect(marker.getCoordinates()).to.be.nearCoord(center);
+        });
+
         it('can drag a default marker', function() {
             var marker = new maptalks.Marker(center,{draggable:true});
             dragGeometry(marker);

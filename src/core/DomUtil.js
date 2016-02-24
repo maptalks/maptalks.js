@@ -250,7 +250,7 @@ Z.DomUtil = {
      * @param  {HTMLElement} obj Dom对象
      * @return {Object}     屏幕坐标
      */
-    getPageCoordinate:function(obj) {
+    getPagePosition:function(obj) {
         if (obj.getBoundingClientRect) {
             var docEl = document.documentElement;
             var rect = obj.getBoundingClientRect();
@@ -304,7 +304,7 @@ Z.DomUtil = {
         if (!ev) {
             ev = window.event;
         }
-        var domScreenPos = Z.DomUtil.getPageCoordinate(dom);
+        var domScreenPos = Z.DomUtil.getPagePosition(dom);
         var mousePagePos = Z.DomUtil.getEventPagePoint(ev);
         return new Z.Point(mousePagePos.x-domScreenPos.x,mousePagePos.y-domScreenPos.y);
     },

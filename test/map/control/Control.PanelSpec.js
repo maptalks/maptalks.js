@@ -31,7 +31,7 @@ describe("Control.Panel", function() {
     });
 
      function dragPanel(panel) {
-        var domPosition = Z.DomUtil.getPageCoordinate(panel.getContainer());
+        var domPosition = Z.DomUtil.getPagePosition(panel.getContainer());
         var point = new Z.Point(0,0).add(domPosition);
         var requestAnimFn = Z.Util.requestAnimFrame;
         //replace original requestAnimFrame to immediate execution.

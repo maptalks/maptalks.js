@@ -218,7 +218,7 @@ Z.Geometry=Z.Class.extend({
      * @expose
      */
     getCenter:function() {
-        return this._computeCenter(this._getMeasurer());
+        return this._computeCenter(this._getMeasurer()).copy();
     },
 
     /**
@@ -731,14 +731,20 @@ Z.Geometry=Z.Class.extend({
         }
     },
 
-    _isRenderImmediate:function(r) {
+    _isRenderImmediate:function() {
         if (this._getParent()) {
-            return this._getParent()._isRenderImmediate(r);
+            return this._getParent()._isRenderImmediate();
         }
-        if (Z.Util.isNil(r)) {
-            return (this._isEditingOrDragging() || this._im)?true:false;
-        }
-        this._im = r;
+        return (this._isEditingOrDragging() || this._renderImmediate)?true:false;
+    },
+
+    _enableRenderImmediate:function() {
+        this._renderImmediate = true;
+        return this;
+    },
+
+    _disableRenderImmediate:function() {
+        this._renderImmediate = false;
         return this;
     },
 
