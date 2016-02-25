@@ -46,6 +46,7 @@ describe('MapTouchZoomSpec', function () {
         before(function () {  });
         after(function () {  });
         it('zoomin', function(done) {
+            this.timeout(5000);
             var z = map.getZoom();
             testTouchZoom([{
                             pageX : centerPoint.x-10,
@@ -70,6 +71,7 @@ describe('MapTouchZoomSpec', function () {
         });
 
         it('zoomout', function(done) {
+            this.timeout(5000);
             var z = map.getZoom();
             testTouchZoom([{
                             pageX : centerPoint.x-1,
@@ -95,6 +97,7 @@ describe('MapTouchZoomSpec', function () {
 
     describe('touchZoom can be disable', function() {
         it('disables scrollZoom', function(done) {
+            this.timeout(5000);
             var z = map.getZoom();
             map.config('touchZoom',false);
             var spy = sinon.spy();
