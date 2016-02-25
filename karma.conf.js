@@ -83,8 +83,7 @@ module.exports = function(config) {
       'karma-coverage',
       'karma-mocha',
       'karma-expect',
-      'karma-sinon-ie',
-      'karma-happen'
+      'karma-sinon-ie'
     ],
 
     customLaunchers: {
