@@ -1,6 +1,6 @@
 
 describe('#GeometryDrag', function () {
-    var container,canvasContainer;
+    var container,eventContainer;
     var map;
     var tile;
     var center = new Z.Coordinate(118.846825, 32.046534);
@@ -20,7 +20,7 @@ describe('#GeometryDrag', function () {
         Z.Util.requestAnimFrame=function(fn) {
             fn();
         };
-        happen.mousedown(canvasContainer,{
+        happen.mousedown(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y
                 });
@@ -39,7 +39,7 @@ describe('#GeometryDrag', function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.mapMask;
+        eventContainer = map._panels.mapMask;
     });
 
     afterEach(function() {

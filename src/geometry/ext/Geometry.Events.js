@@ -71,13 +71,13 @@ Z.Geometry.include({
             return;
         }
         var originalEvent = event;
-        var params = this._getEventParams(originalEvent,event.type);
+        var params = this._getEventParams(originalEvent,'mouseout');
         /**
          * 触发geometry的mouseout事件
          * @member maptalks.Geometry
          * @event mouseout
          * @return {Object} params: {'target':this, 'pixel':pixel, 'coordinate':coordinate}
          */
-        this._fireEvent(event.type, params);
+        this._fireEvent('mouseout', params);
     }
 });
