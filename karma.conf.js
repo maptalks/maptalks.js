@@ -32,8 +32,7 @@ module.exports = function(config) {
     frameworks: [
       'mocha',
       'expect',
-      'sinon',
-      'happen'
+      'sinon'
     ],
 
     // list of files / patterns to load in the browser
