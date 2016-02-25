@@ -45,7 +45,7 @@ describe('SVGLayer', function() {
             var geometries = genAllTypeGeometries();
 
             expect(function() {
-                layer.addGeometry(geometries);
+                layer.addGeometry(geometries,true);
             }).to.not.throwException();
         });
     });

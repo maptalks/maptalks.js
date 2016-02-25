@@ -981,6 +981,7 @@ Z.Map=Z.Class.extend({
         this._loadAllLayers();
         this._loaded = true;
         this._callOnLoadHooks();
+        this._fireEvent('load');
     },
 
     _initRenderer:function() {

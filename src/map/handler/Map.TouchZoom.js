@@ -40,6 +40,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
             .addDomEvent(document, 'touchend', this._onTouchEnd, this);
 
         Z.DomUtil.preventDefault(event);
+        map._fireEvent('touchzoomstart');
     },
 
     _onTouchMove:function(event) {
@@ -62,10 +63,10 @@ Z.Map.TouchZoom = Z.Handler.extend({
         this._preOrigin = origin;
         this._scale = scale;
 
-        var render = map._getRenderer();
+        var renderer = map._getRenderer();
 
-        var matrix = render.getZoomMatrix(scale, origin);
-        render.transform.apply(render, matrix);
+        var matrix = renderer.getZoomMatrix(scale, origin);
+        renderer.transform.apply(renderer, matrix);
 
         Z.DomUtil.preventDefault(event);
     },
@@ -87,6 +88,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
         if (zoom === -1) {
             zoom = map.getZoom();
         }
+        map._fireEvent('touchzoomend');
         map._zoomAnimation(zoom, this._preOrigin, this._scale);
     }
 });

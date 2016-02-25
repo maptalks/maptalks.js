@@ -276,7 +276,7 @@ Z.DomUtil = {
      * @param  {Event} ev 事件
      * @return {Object} 屏幕坐标
      */
-    getEventPagePoint:function(ev) {
+    getEventPagePosition:function(ev) {
         ev = ev || window.event;
         if(ev.pageX || ev.pageY){
             return {x:ev.pageX, y:ev.pageY};
@@ -305,7 +305,7 @@ Z.DomUtil = {
             ev = window.event;
         }
         var domScreenPos = Z.DomUtil.getPagePosition(dom);
-        var mousePagePos = Z.DomUtil.getEventPagePoint(ev);
+        var mousePagePos = Z.DomUtil.getEventPagePosition(ev);
         return new Z.Point(mousePagePos.x-domScreenPos.x,mousePagePos.y-domScreenPos.y);
     },
 

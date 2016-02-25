@@ -179,10 +179,6 @@ Z.OverlayLayer=Z.Layer.extend({
         this._geoMap={};
         this._geoCache={};
         return this;
-    },
-
-    _getGeoCache:function() {
-        return this._geoCache;
     }
 });
 
