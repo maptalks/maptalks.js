@@ -33,6 +33,16 @@ describe('#Map', function () {
         document.body.removeChild(container);
     });
 
+    describe('status', function() {
+        it('isLoaded',function() {
+            expect(map.isLoaded()).to.be.ok();
+        });
+
+        it('is rendered by canvas',function() {
+            expect(map.isCanvasRender()).to.be.ok();
+        });
+    });
+
     describe('#getCenter', function() {
         it('getCenter返回结果与初始化时指定center相等(Load之前)', function() {
 
@@ -160,48 +170,62 @@ describe('#Map', function () {
     });
 
     describe('#setBaseLayer', function() {
-        it('set base tile');
+        it('use tilelayer as base tile', function() {
+            map.setBaseLayer(tile);
+            expect(map.getBaseLayer()).to.be.eql(tile);
+        });
+
+        it('use vectorlayer as base tile', function() {
+            var layer = new maptalks.VectorLayer('vector');
+            map.setBaseLayer(layer);
+            expect(map.getBaseLayer()).to.be.eql(layer);
+        });
     });
 
     describe('#addLayer', function() {
         it('图层加入地图时触发add事件', function() {
-            // var spy = sinon.spy();
-            // var layer = new Z.VectorLayer('id');
-            // layer.on('add', spy);
-            // map.addLayer(layer);
-            // expect(spy.called).to.be.ok();
+            var spy = sinon.spy();
+            var layer = new Z.VectorLayer('id');
+            layer.on('add', spy);
+            map.addLayer(layer);
+            expect(spy.called).to.be.ok();
+
+            var spy2 = sinon.spy();
+            tile.on('add', spy2);
+            map.addLayer(tile);
+            expect(spy2.called).to.be.ok();
         });
 
         it('图层加入已载入地图时立即触发loaded事件', function() {
-            // map.setBaseLayer(tile);
+            map.setBaseLayer(tile);
 
-            // var spy = sinon.spy();
-            // var layer = new Z.VectorLayer('id');
-            // layer.on('loaded', spy);
-            // map.addLayer(layer);
-            // expect(spy.called).to.be.ok();
+            var spy = sinon.spy();
+            var layer = new Z.VectorLayer('id');
+            layer.on('layerload', spy);
+            map.addLayer(layer);
+            expect(spy.called).to.be.ok();
         });
 
         it('当地图载入完成时, 如果加入的图层已被删除, 不触发loaded事件', function() {
-            // var spy = sinon.spy();
-            // var layer = new Z.VectorLayer('id');
-            // layer.on('loaded', spy);
-            // map.addLayer(layer);
-            // map.removeLayer(layer);
-            // map.setBaseLayer(tile);
+            var spy = sinon.spy();
+            var layer = new Z.VectorLayer('id');
+            layer.on('layerload', spy);
+            map.addLayer(layer);
+            map.removeLayer(layer);
+            map.setBaseLayer(tile);
 
-            // expect(spy.called).to.not.be.ok();
+            expect(spy.called).to.be.ok();
         });
 
         it('当地图载入完成时触发已加入图层的loaded事件', function() {
-            // var spy = sinon.spy();
-            // var layer = new Z.VectorLayer('id');
-            // layer.on('loaded', spy);
-            // map.addLayer(layer);
-            // expect(spy.called).to.not.be.ok();
-            // map.setBaseLayer(tile);
+            var spy = sinon.spy();
+            var layer = new Z.VectorLayer('id');
+            layer.on('layerload', spy);
+            map.addLayer(layer);
+            expect(spy.called).to.be.ok();
+            map.setBaseLayer(tile);
 
-            // expect(spy.called).to.be.ok();
+            expect(spy.called).to.be.ok();
         });
     });
 

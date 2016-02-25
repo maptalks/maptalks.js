@@ -122,8 +122,10 @@ function eqlArray(val, expected) {
                 return false;
             }
         } else {
-            if (!near(val[i], expected[i])) {
-                return false;
+            if (val[i] !== expected[i]) {
+                if (!near(val[i], expected[i])) {
+                    return false;
+                }
             }
         }
     }

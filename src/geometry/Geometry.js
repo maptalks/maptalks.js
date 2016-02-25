@@ -385,7 +385,7 @@ Z.Geometry=Z.Class.extend({
      * @expose
      */
     remove:function() {
-        this._rootRemove(true);
+        this._rootRemoveAndFireEvent();
         return this;
     },
 
@@ -645,15 +645,11 @@ Z.Geometry=Z.Class.extend({
         return this._extent;
     },
 
-    _rootRemove:function(isFireEvent) {
+    _rootRemove:function() {
         var layer = this.getLayer();
         if (!layer) {
             return;
         }
-        if (isFireEvent) {
-            this._fireEvent('removestart');
-        }
-        //label
         //contextmenu
         this._unbindMenu();
         //infowindow
@@ -662,17 +658,21 @@ Z.Geometry=Z.Class.extend({
         if (this._onRemove) {
             this._onRemove();
         }
-
-        if (isFireEvent) {
-            this._removePainter();
-        }
         layer._onGeometryRemove(this);
         delete this._layer;
         delete this._internalId;
         delete this._extent;
-        if (isFireEvent) {
-            this._fireEvent('remove');
+    },
+
+    _rootRemoveAndFireEvent:function() {
+        var layer = this.getLayer();
+        if (!layer) {
+            return;
         }
+        this._fireEvent('removestart');
+        this._removePainter();
+        this._rootRemove();
+        this._fireEvent('remove');
     },
 
     _getInternalId:function() {

@@ -89,9 +89,9 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
     remove:function() {
         var geometries = this.getGeometries();
         for (var i=0,len=geometries.length;i<len;i++) {
-            this._geometries[i]._rootRemove(false);
+            this._geometries[i]._rootRemove();
         }
-        this._rootRemove(true);
+        this._rootRemoveAndFireEvent();
     },
 
     hide:function() {

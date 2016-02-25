@@ -100,15 +100,6 @@ Z['Layer']=Z.Layer=Z.Class.extend({
 
 
     /**
-     * 获取图层的Extent
-     * @return {Extent} 图层的Extent
-     */
-    getExtent:function() {
-        if (!this.extent) {return null;}
-        return this.extent;
-    },
-
-    /**
      * 将图层置顶
      * @expose
      */
@@ -205,7 +196,7 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     },
 
     setMask:function(mask) {
-        if (!((mask instanceof Z.Marker && Z.VectorMarkerSymbolizer.test(mask, mask.getSymbol()))
+        if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask, mask.getSymbol()))
             || mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
             throw new Error('mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon');
         }
@@ -225,10 +216,11 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         }
         this._mask = mask;
         if (!this.getMap() || this.getMap().isBusy()) {
-            return;
+            return this;
         }
         var renderer = this._getRenderer();
         renderer && renderer.render();
+        return this;
     },
 
     clearMask:function(mask) {
@@ -254,6 +246,7 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         if (!map) {return;}
         this.map = map;
         this.setZIndex(zIndex);
+        this.fire('add');
     },
 
     _initRenderer:function() {

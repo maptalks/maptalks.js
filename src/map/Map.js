@@ -576,7 +576,7 @@ Z.Map=Z.Class.extend({
                 throw new Error(this.exceptions['DUPLICATE_LAYER_ID']+':'+id);
             }
             this._layerCache[id] = layer;
-        layer._bindMap(this, this._layers.length);
+            layer._bindMap(this, this._layers.length);
             this._layers.push(layer);
             if (this._loaded) {
                 layer.load();
@@ -1225,23 +1225,6 @@ Z.Map=Z.Class.extend({
         if (!containerPoint) {return null;}
         var platformOffset = this.offsetPlatform();
         return containerPoint._substract(platformOffset);
-    },
-
-
-
-    /**
-     * 根据中心点投影坐标和像素范围,计算像素范围的Extent
-     * @param  {Coordinate} plonlat [中心点坐标]
-     * @param  {Object} pnw     [左上角像素距离]
-     * @param  {Object} pse     [右下角像素距离]
-     * @return {Extent}         [Extent计算结果]
-     */
-    _computeExtentByPixelSize: function(plonlat, pnw, pse) {
-        var projection = this.getProjection();
-        var res = this._getResolution();
-        var nw = projection.unproject(new Z.Coordinate(plonlat.x - pnw.x*res, plonlat.y + pnw.x*res));
-        var se = projection.unproject(new Z.Coordinate(plonlat.x + pse.y*res, plonlat.y - pse.y*res));
-        return new Z.Extent(nw,se);
     }
 });
 
