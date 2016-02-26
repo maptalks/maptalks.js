@@ -47,8 +47,12 @@ Z.UIComponent = Z.Class.extend({
         }
         this.fire('showstart');
         this._prepareDOM();
-        var anchor = this._getAnchor(coordinate);
         var dom = this._getDOM();
+        if (!dom) {
+            this.fire('showend');
+            return this;
+        }
+        var anchor = this._getAnchor(coordinate);
         // Z.DomUtil.on(dom, 'mousedown mousemove click dblclick contextmenu', Z.DomUtil.stopPropagation);
         dom.style.position='absolute';
         dom.style.left = anchor.x+'px';

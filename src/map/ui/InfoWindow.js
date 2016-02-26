@@ -72,6 +72,10 @@ Z['InfoWindow'] = Z.InfoWindow = Z.UIComponent.extend({
     },
 
     _prepareDOM:function() {
+        this._dom = null;
+        if (!this._map.options['enableInfoWindow']) {
+            return;
+        }
         var container = this._map._panels.tipContainer;
         container.innerHTML = '';
         var dom;
