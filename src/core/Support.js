@@ -1,7 +1,7 @@
 //根据script查找
 Z.prefix = '';
 
-if (!Z.runningInNode) {
+if (!Z.node) {
     (function(){
         //解析host地址，插入css和vml定义
         var head= document.getElementsByTagName('head')[0];

@@ -573,7 +573,7 @@ Z.Geometry=Z.Class.extend({
      * @return {[type]}        [description]
      */
     _convertResourceUrl:function(symbol) {
-        if (Z.runningInNode) {
+        if (Z.node) {
             return;
         }
         function absolute(base, relative) {

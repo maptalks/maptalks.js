@@ -107,7 +107,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
 
         var me = this;
         var counter = 0;
-        this._shouldEcoTransform = true;
+        this._shouldUpdatePointsWhileTransforming = true;
         if (this._clipped) {
             this._context.restore();
         }
@@ -136,11 +136,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
                 return;
             }
             counter++;
-            if (me._shouldEcoTransform && geoPainter.hasPointSymbolizer()) {
-                me._shouldEcoTransform = false;
+            if (me._shouldUpdatePointsWhileTransforming && geoPainter.hasPointSymbolizer()) {
+                me._shouldUpdatePointsWhileTransforming = false;
             }
             if (counter > layer.options['thresholdOfEcoTransform']) {
-                me._shouldEcoTransform = true;
+                me._shouldUpdatePointsWhileTransforming = true;
             }
             geoPainter.paint();
         });
@@ -223,13 +223,13 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
 
     },
 
-    //determin whether this layer can be economically transformed, ecoTransform can bring better performance.
-    //if all the geometries to render are vectors including polygons and linestrings, ecoTransform won't reduce user experience.
-    shouldEcoTransform:function() {
-        if (Z.Util.isNil(this._shouldEcoTransform)) {
+    //determin whether this layer can be economically transformed, updatePointsWhileTransforming can bring better performance.
+    //if all the geometries to render are vectors including polygons and linestrings, updatePointsWhileTransforming won't reduce user experience.
+    shouldUpdatePointsWhileTransforming:function() {
+        if (Z.Util.isNil(this._shouldUpdatePointsWhileTransforming)) {
             return true;
         }
-        return this._shouldEcoTransform;
+        return this._shouldUpdatePointsWhileTransforming;
     },
 
     isResourceLoaded:function(url) {

@@ -236,7 +236,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
         var point = tileImage[this.propertyOfPointOnTile];
         this._drawTile(point, tileImage);
 
-        if (!Z.runningInNode) {
+        if (!Z.node) {
             var tileSize = this._layer.getTileSize();
             var viewExtent = this.getMap()._getViewExtent();
             if (viewExtent.intersects(new Z.PointExtent(point, point.add(new Z.Point(tileSize['width'], tileSize['height']))))) {
@@ -251,7 +251,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
     _onTileLoadComplete:function() {
         //In browser, map will be requested to render once a tile was loaded.
         //but in node, map will be requested to render when the layer is loaded.
-        if (Z.runningInNode) {
+        if (Z.node) {
             this._requestMapToRender();
         }
         this._fireLoadedEvent();
@@ -276,7 +276,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
     },
 
     _requestMapToRender:function() {
-        if (Z.runningInNode) {
+        if (Z.node) {
             if (this.getMap() && !this.getMap().isBusy()) {
                 this._mapRender.render();
             }

@@ -1,4 +1,4 @@
-../src/Z.js
+../src/maptalks.js
 ../src/core/Browser.js
 ../src/core/Support.js
 ../src/core/Constants.js

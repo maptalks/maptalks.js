@@ -498,7 +498,7 @@ Z.DomUtil = {
      */
     testCanvasSize: (function() {
         //usually in node
-        if (Z.runningInNode) {
+        if (Z.node) {
             return function(){return true;};
         }
           /**

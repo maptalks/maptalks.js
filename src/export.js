@@ -1,22 +1,22 @@
 
-function exportZ() {
-    var oldZ = window['maptalks'];
+function exportMaptalks() {
+    var old = window['maptalks'];
 
     Z.noConflict = function () {
-        window['maptalks'] = oldZ;
+        window['maptalks'] = old;
         return this;
     };
 
     window['maptalks'] = Z;
 }
 
-if (Z.runningInNode) {
+if (Z.node) {
     exports = module.exports = Z;
 } else if (typeof define === 'function' && define.amd) {
     define(Z);
 }
 
 if (typeof window !== 'undefined') {
-    exportZ(Z);
+    exportMaptalks(Z);
 }
 

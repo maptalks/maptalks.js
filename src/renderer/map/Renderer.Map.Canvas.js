@@ -11,9 +11,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
     },
 
     /**
-     * è·å–å›¾å±‚æ¸²æŸ“å®¹å™¨
-     * @param  {Layer} layer å›¾å±‚
-     * @return {Dom}       å®¹å™¨Domå¯¹è±¡
+     * »ñÈ¡Í¼²ãäÖÈ¾ÈİÆ÷
+     * @param  {Layer} layer Í¼²ã
+     * @return {Dom}       ÈİÆ÷Dom¶ÔÏó
      */
     getLayerRendererContainer:function(layer) {
         if (!this._canvas) {
@@ -23,7 +23,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
     },
 
     /**
-     * åŸºäºCanvasçš„æ¸²æŸ“æ–¹æ³•, layersæ€»å®šä¹‰äº†è¦æ¸²æŸ“çš„å›¾å±‚
+     * »ùÓÚCanvasµÄäÖÈ¾·½·¨, layers×Ü¶¨ÒåÁËÒªäÖÈ¾µÄÍ¼²ã
      */
     render:function() {
 
@@ -31,7 +31,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
             this._createCanvas();
         }
 
-        //æ›´æ–°ç”»å¸ƒçš„é•¿å®½, é¡ºä¾¿æ¸…ç©ºç”»å¸ƒ
+        //¸üĞÂ»­²¼µÄ³¤¿í, Ë³±ãÇå¿Õ»­²¼
         if (!this._updateCanvasSize()) {
             this._clearCanvas();
         }
@@ -123,10 +123,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
     },
 
     /**
-     * å¯¹å›¾å±‚è¿›è¡Œä»¿å°„å˜æ¢
-     * @param  {Matrix} matrix å˜æ¢çŸ©é˜µ
-     * @param  {Matrix} retinaMatrix retinaå±æ—¶,ç”¨æ¥ç»˜åˆ¶å›¾å±‚canvasçš„å˜æ¢çŸ©é˜µ
-     * @param  {[Layer]} layersToTransform å‚ä¸å˜æ¢å’Œç»˜åˆ¶çš„å›¾å±‚
+     * ¶ÔÍ¼²ã½øĞĞ·ÂÉä±ä»»
+     * @param  {Matrix} matrix ±ä»»¾ØÕó
+     * @param  {Matrix} retinaMatrix retinaÆÁÊ±,ÓÃÀ´»æÖÆÍ¼²ãcanvasµÄ±ä»»¾ØÕó
+     * @param  {[Layer]} layersToTransform ²ÎÓë±ä»»ºÍ»æÖÆµÄÍ¼²ã
      */
     transform:function(matrix, retinaMatrix, layersToTransform) {
         var mwidth = this._canvas.width,
@@ -139,10 +139,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
             retinaMatrix = matrix;
         }
 
-        //automatically enable ecoTransform with mobile browsers.
-        var ecoTransform = Z.Browser.mobile || this.map.options['ecoTransform'];
+        //automatically enable updatePointsWhileTransforming with mobile browsers.
+        var updatePoints = Z.Browser.mobile || this.map.options['updatePointsWhileTransforming'];
         this._clearCanvas();
-        if (ecoTransform) {
+        if (updatePoints) {
             this._context.save();
             retinaMatrix.applyToContext(this._context);
         }
@@ -153,9 +153,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
             }
             var render = layers[i]._getRenderer();
             if (render) {
-                if (!ecoTransform) {
+                if (!updatePoints) {
                     this._context.save();
-                    if ((layers[i] instanceof Z.TileLayer) || render.shouldEcoTransform()) {
+                    if ((layers[i] instanceof Z.TileLayer) || render.shouldUpdatePointsWhileTransforming()) {
                         retinaMatrix.applyToContext(this._context);
                     } else {
                         //redraw all the geometries with transform matrix
@@ -168,19 +168,19 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layerImage, mwidth, mheight);
                 }
-                if (!ecoTransform) {
+                if (!updatePoints) {
                     this._context.restore();
                 }
             }
         }
-        if (ecoTransform) {
+        if (updatePoints) {
             this._context.restore();
         }
     },
 
     /**
-     * è·å–åº•å›¾å½“å‰çš„ä»¿å°„çŸ©é˜µ
-     * @return {Matrix} ä»¿å°„çŸ©é˜µ
+     * »ñÈ¡µ×Í¼µ±Ç°µÄ·ÂÉä¾ØÕó
+     * @return {Matrix} ·ÂÉä¾ØÕó
      */
     getTransform:function() {
         return this._transMatrix;
@@ -257,7 +257,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
         mapWrapper.appendChild(controlWrapper);
         mapWrapper.appendChild(canvasContainer);
 
-        //è§£å†³ieä¸‹æ‹–æ‹½çŸ¢é‡å›¾å½¢æ—¶ï¼Œåº•å›¾divä¼šé€‰ä¸­å˜æˆè“è‰²çš„bug
+        //½â¾öieÏÂÍÏ×§Ê¸Á¿Í¼ĞÎÊ±£¬µ×Í¼div»áÑ¡ÖĞ±ä³ÉÀ¶É«µÄbug
         if (Z.Browser.ie) {
             controlWrapper['onselectstart'] = function(e) {
                 return false;
@@ -267,7 +267,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
             mapWrapper.setAttribute('unselectable', 'on');
             mapPlatform.setAttribute('unselectable', 'on');
         }
-        //åˆå§‹åŒ–mapPlatformçš„åç§»é‡, é€‚ç”¨css3 translateæ—¶è®¾ç½®åˆå§‹å€¼
+        //³õÊ¼»¯mapPlatformµÄÆ«ÒÆÁ¿, ÊÊÓÃcss3 translateÊ±ÉèÖÃ³õÊ¼Öµ
         this.offsetPlatform(new Z.Point(0,0));
         var mapSize = this.map._getContainerDomSize();
         this.updateMapSize(mapSize);
@@ -335,13 +335,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
         if (Z.Util.isNumber(layerImage['opacity'])) {
             this._context.globalAlpha *= layerImage['opacity'];
         }
-        if (Z.runningInNode) {
+        if (Z.node) {
             var context = canvasImage.getContext('2d');
             if (context.getSvg) {
                  //canvas2svg
                 canvasImage = context;
             }
-            //CanvasMockå¹¶ä¸ä¸€å®šå®ç°äº†drawImage(img, sx, sy, w, h, dx, dy, w, h)
+            //CanvasMock²¢²»Ò»¶¨ÊµÏÖÁËdrawImage(img, sx, sy, w, h, dx, dy, w, h)
             this._context.drawImage(canvasImage, point.x, point.y);
         } else {
             var sx, sy, w, h, dx, dy;
@@ -410,7 +410,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
         if (mapSize['width']*r === canvas.width && mapSize['height']*r === canvas.height) {
             return false;
         }
-        //retinaå±æ”¯æŒ
+        //retinaÆÁÖ§³Ö
 
         canvas.height = r * mapSize['height'];
         canvas.width = r * mapSize['width'];
@@ -441,7 +441,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
     },
 
     /**
-     * è®¾ç½®åœ°å›¾çš„watcher, ç”¨æ¥ç›‘è§†åœ°å›¾å®¹å™¨çš„å¤§å°å˜åŒ–
+     * ÉèÖÃµØÍ¼µÄwatcher, ÓÃÀ´¼àÊÓµØÍ¼ÈİÆ÷µÄ´óĞ¡±ä»¯
      * @ignore
      */
     _onResize:function() {

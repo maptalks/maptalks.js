@@ -1,4 +1,4 @@
-if (!Z.runningInNode) {
+if (!Z.node) {
     (function () {
 
             var ua = navigator.userAgent.toLowerCase(),

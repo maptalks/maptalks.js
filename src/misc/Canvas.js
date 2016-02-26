@@ -1,7 +1,7 @@
 Z.Canvas = {
     createCanvas:function(width, height, canvasClass) {
         var canvas;
-        if (!Z.runningInNode) {
+        if (!Z.node) {
             canvas = Z.DomUtil.createEl('canvas');
             canvas.width = width;
             canvas.height = height;

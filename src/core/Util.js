@@ -74,7 +74,7 @@ Z.Util = {
             }
             img.src = data;
         }
-        if (Z.runningInNode) {
+        if (Z.node) {
             try {
                 if (!global._maptalksImageFileCache) {
                     //cache 10 svg files.
