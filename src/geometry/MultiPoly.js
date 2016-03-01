@@ -1,11 +1,46 @@
 /**
- * 多图形类
- * @class maptalks.MultiPoly
+ * Parent class for MultiPoint, MultiLineString and MultiPolygon
+ * @class
+ * @abstrct
  * @extends maptalks.GeometryCollection
- * @author Maptalks Team
  */
-Z.MultiPoly = Z.GeometryCollection.extend({
+Z.MultiPoly = Z.GeometryCollection.extend(/** @lends maptalks.MultiPoly.prototype */{
 
+    /**
+     * Get coordinates of the collection
+     * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates
+     */
+    getCoordinates:function() {
+        var coordinates = [];
+        var geometries = this.getGeometries();
+        if (!Z.Util.isArray(geometries)) {
+            return null;
+        }
+        for (var i = 0,len=geometries.length;i<len;i++) {
+            coordinates.push(geometries[i].getCoordinates());
+        }
+        return coordinates;
+    },
+
+    /**
+     * Set new coordinates to the collection
+     * @param {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates
+     * @returns {maptalks.Geometry} this
+     * @fires maptalk.Geometry#shapechange
+     */
+    setCoordinates:function(coordinates) {
+        if (Z.Util.isArrayHasData(coordinates)) {
+            var geometries = [];
+            for (var i=0, len=coordinates.length;i<len;i++) {
+                var p = new this.GeometryType(coordinates[i], this.config());
+                geometries.push(p);
+            }
+            this.setGeometries(geometries);
+        } else {
+            this.setGeometries([]);
+        }
+        return this;
+    },
 
     _initData:function(data) {
         if (Z.Util.isArrayHasData(data)) {
@@ -26,42 +61,6 @@ Z.MultiPoly = Z.GeometryCollection.extend({
             }
         }
         return geometries;
-    },
-
-    /**
-     * 获取MultiPolygon的坐标数组
-     * @return {Coordinate[][][]} MultiPolygon的坐标数组
-     * @expose
-     */
-    getCoordinates:function() {
-        var coordinates = [];
-        var geometries = this.getGeometries();
-        if (!Z.Util.isArray(geometries)) {
-            return null;
-        }
-        for (var i = 0,len=geometries.length;i<len;i++) {
-            coordinates.push(geometries[i].getCoordinates());
-        }
-        return coordinates;
-    },
-
-    /**
-     * 设置MultiPolygon
-     * @param {Coordinate[][][]} MultiPolygon的坐标数组
-     * @expose
-     */
-    setCoordinates:function(coordinates) {
-        if (Z.Util.isArrayHasData(coordinates)) {
-            var geometries = [];
-            for (var i=0, len=coordinates.length;i<len;i++) {
-                var p = new this.GeometryType(coordinates[i], this.config());
-                geometries.push(p);
-            }
-            this.setGeometries(geometries);
-        } else {
-            this.setGeometries([]);
-        }
-        return this;
     },
 
     //override _exportGeoJSONGeometry in GeometryCollection

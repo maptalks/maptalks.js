@@ -19,8 +19,10 @@ Z.TileConfig=Z.Class.extend({
         },
 
         /**
-         * 初始化方法
-         * @param  {[TileInfo]} tileInfo [图层配置属性,参考TileInfo.js中的例子]
+         *
+         * @param  {Object} tileSystem [description]
+         * @param  {maptalks.Extent} fullExtent [description]
+         * @param  {maptalks.Size} tileSize   [description]
          */
         initialize:function(tileSystem, fullExtent, tileSize) {
             this.tileSize = tileSize;
@@ -63,9 +65,9 @@ Z.TileConfig=Z.Class.extend({
 
         /**
          * 根据中心点投影坐标, 计算中心点对应的瓦片和瓦片内偏移量
-         * @param  {[type]} pLonlat   [description]
-         * @param  {[type]} res [description]
-         * @return {[type]}           [description]
+         * @param  {*} pLonlat   [description]
+         * @param  {*} res [description]
+         * @return {*}           [description]
          */
         getCenterTileIndex:function( pLonlat, res) {
             var tileSystem = this.tileSystem,
@@ -96,12 +98,12 @@ Z.TileConfig=Z.Class.extend({
 
         /**
          * 根据给定的瓦片编号,和坐标编号偏移量,计算指定的瓦片编号
-         * @param  {[type]} tileY   [description]
-         * @param  {[type]} tileX   [description]
-         * @param  {[type]} offsetY [description]
-         * @param  {[type]} offsetX [description]
-         * @param  {[type]} zoomLevel [description]
-         * @return {[type]}         [description]
+         * @param  {*} tileY   [description]
+         * @param  {*} tileX   [description]
+         * @param  {*} offsetY [description]
+         * @param  {*} offsetX [description]
+         * @param  {*} zoomLevel [description]
+         * @return {*}         [description]
          */
         getNeighorTileIndex:function(tileY, tileX, offsetY,offsetX, res, isRepeatWorld) {
             var tileSystem = this.tileSystem;
@@ -141,10 +143,10 @@ Z.TileConfig=Z.Class.extend({
 
         /**
          * 计算瓦片左下角的大地投影坐标
-         * @param  {[type]} tileY     [description]
-         * @param  {[type]} tileX     [description]
-         * @param  {[type]} res       [description]
-         * @return {[type]}           [description]
+         * @param  {*} tileY     [description]
+         * @param  {*} tileX     [description]
+         * @param  {*} res       [description]
+         * @return {*}           [description]
          */
         getTileProjectedSw: function(tileY, tileX, res) {
             var tileSystem = this.tileSystem;

@@ -12,7 +12,7 @@ Z.Animation = {
     /**
      * resolve styles to start, distance and end.
      * @param  {Object} styles to resolve
-     * @return {[Object]}        styles resolved
+     * @return {Object[]}        styles resolved
      */
     _resolveStyles:function(styles) {
         if (!styles) {
@@ -129,17 +129,17 @@ Z.Animation = {
                 if (_dStyles.hasOwnProperty(p)) {
                     var s = _startStyles[p], d = _dStyles[p];
                     if (Z.Util.isNumber(d)) {
-                        //eg. radius, width, height
+                        //e.g. radius, width, height
                         result[p] = s + delta*d;
                     } else if (Z.Util.isArray(d)) {
-                        //eg. a composite symbol, element in array can only be a object.
+                        //e.g. a composite symbol, element in array can only be a object.
                         var children = [];
                         for (var i = 0; i < d.length; i++) {
                             children.push(deltaStyles(delta, s[i], d[i]));
                         }
                         result[p] = children;
                     }else {
-                        //eg. translate or a child
+                        //e.g. translate or a child
                         var clazz = d.constructor;
                         if (clazz === Object) {
                             result[p] = deltaStyles(delta, s, d);
@@ -221,9 +221,9 @@ Z.Animation = {
 /**
  * Web Animation API style,
  * https://developer.mozilla.org/zh-CN/docs/Web/API/Animation
- * @param {[type]} animation [description]
- * @param {[type]} options   [description]
- * @param {[type]} step      [description]
+ * @param {*} animation [description]
+ * @param {*} options   [description]
+ * @param {*} step      [description]
  */
 Z.animation.Player = function(animation, options, step) {
     this._animation = animation;

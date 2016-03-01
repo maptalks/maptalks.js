@@ -1,14 +1,30 @@
 /**
- * 扇形类
- * @class maptalks.Sector
+ * @classdesc
+ * Represents a sector Geometry, a child class of [maptalks.Polygon]{@link maptalks.Polygon}. <br>
+ *     It means it shares all the methods defined in [maptalks.Polygon]{@link maptalks.Polygon} besides some overrided ones.
+ * @class
  * @extends maptalks.Polygon
- * @author Maptalks Team
+ * @mixes maptalks.Geometry.Center
+ * @param {maptalks.Coordinate} center - center of the sector
+ * @param {Number} radius           - radius of the sector
+ * @param {Number} startAngle       - start angle of the sector
+ * @param {Number} endAngle         - end angle of the sector
+ * @param {Object} [options=null]   - specific construct options for sector, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+ * @param {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the sector's shell coordinates as a polygon.
+ * @example
+ * var sector = new maptalks.Sector([100, 0], 1000, 30, 120, {
+ *     id : 'sector-id'
+ * });
  */
-Z['Sector']=Z.Sector=Z.Polygon.extend({
+Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
     includes:[Z.Geometry.Center],
 
+    /**
+     * @property {Object} options - specific options of sector, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+     * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the sector to a polygon.
+     */
     options:{
-        'numberOfPoints':60
+        'numberOfShellPoints':60
     },
 
     type:Z.Geometry['TYPE_SECTOR'],
@@ -22,18 +38,18 @@ Z['Sector']=Z.Sector=Z.Polygon.extend({
     },
 
     /**
-     * 返回圆形的半径
-     * @return {Number} [圆形半径]
-     * @expose
+     * Get radius of the sector
+     * @return {Number}
      */
     getRadius:function() {
         return this._radius;
     },
 
     /**
-     * 设置圆形半径
-     * @param {Number} radius [新的半径]
-     * @expose
+     * Set a new radius to the sector
+     * @param {Number} radius - new radius
+     * @return {maptalks.Sector} this
+     * @fires maptalks.Geometry#shapechange
      */
     setRadius:function(radius) {
         this._radius = radius;
@@ -42,18 +58,18 @@ Z['Sector']=Z.Sector=Z.Polygon.extend({
     },
 
     /**
-     * 返回扇形的开始角
-     * @return {Number} 开始角
-     * @expose
+     * Get the sector's start angle
+     * @return {Number}
      */
     getStartAngle:function() {
         return this.startAngle;
     },
 
     /**
-     * 设定扇形的开始角
-     * @param {Number} startAngle 扇形开始角
-     * @expose
+     * Set a new start angle to the sector
+     * @param {Number} startAngle
+     * @return {maptalks.Sector} this
+     * @fires maptalksGeometry#shapechange
      */
     setStartAngle:function(startAngle) {
         this.startAngle = startAngle;
@@ -62,18 +78,18 @@ Z['Sector']=Z.Sector=Z.Polygon.extend({
     },
 
     /**
-     * 返回扇形的结束角
-     * @return {Number} 结束角
-     * @expose
+     * Get the sector's end angle
+     * @return {Number}
      */
     getEndAngle:function() {
         return this.endAngle;
     },
 
     /**
-     * 设定扇形的结束角
-     * @param {Number} endAngle 扇形结束角
-     * @expose
+     * Set a new end angle to the sector
+     * @param {Number} endAngle
+     * @return {maptalks.Sector} this
+     * @fires maptalksGeometry#shapechange
      */
     setEndAngle:function(endAngle) {
         this.endAngle = endAngle;
@@ -82,14 +98,13 @@ Z['Sector']=Z.Sector=Z.Polygon.extend({
     },
 
     /**
-     * 将扇形转化为Polygon的外环坐标数组
-     * @return {[Coordinate]} 转换后的坐标数组
-     * @expose
+     * Gets the shell of the sector as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Sector#options}
+     * @return {maptalks.Coordinate[]} - shell coordinates
      */
     getShell:function() {
         var measurer = this._getMeasurer();
         var center = this.getCoordinates();
-        var numberOfPoints = this.options['numberOfPoints'];
+        var numberOfPoints = this.options['numberOfShellPoints'];
         var radius = this.getRadius();
         var shell = [];
         var angle = this.getEndAngle()-this.getStartAngle();
@@ -105,9 +120,8 @@ Z['Sector']=Z.Sector=Z.Polygon.extend({
     },
 
     /**
-     * 返回空洞
-     * @return {[type]} [description]
-     * @expose
+     * Sector won't have any holes, always returns null
+     * @return {null}
      */
     getHoles:function() {
         return null;

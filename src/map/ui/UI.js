@@ -1,9 +1,11 @@
 /**
- * UI Component
- * @param {[type]} target) {                  if(target instanceof   Z.Map) {                                            this._map [description]
- * @param {[type]} remove: function() {                 this.hide();                this._removeEvents( [description]
+ * @classdesc
+ * Base class for all the ui component classes.
+ * @class
+ * @abstract
+ * @mixes maptalks.Eventable
  */
-Z.UIComponent = Z.Class.extend({
+Z.UIComponent = Z.Class.extend(/** @lends maptalks.UIComponent.prototype */{
     includes: [Z.Eventable],
     /**
      * 将UI组件添加到对象上

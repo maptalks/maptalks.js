@@ -1,20 +1,26 @@
 /**
- * 连接线
- * @class maptalks.Linker
- * @extends maptalks.Class
- * @author Maptalks Team
+ * A connector line geometry can connect geometries and ui components with each other. <br>
+ * Can be
+ * @class
+ * @extends maptalks.CurveLine
+ * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} src     - source to connect
+ * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} target  - target to connect
+ * @param {Object} [options=null]                   - construct options, also support options defined in the parent class [maptalks.CurveLine]{@link maptalks.CurveLine#options}
+ * @param {Number} [options.curveType=0]            - curve type of the connector
+ * @param {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
  */
-Z.ConnectorLine = Z.CurveLine.extend({
+Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
 
+    /**
+     * @property {Object} options - specific options of circle, also support options defined in the parent class [maptalks.CurveLine]{@link maptalks.CurveLine#options}
+     * @param {Number} [options.curveType=0] - curve type of the connector
+     * @param {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
+     */
     options: {
         curveType : 0,
         showOn : 'always'
     },
 
-    /**
-     * @constructor
-     * @returns {maptalks.Linker}
-     */
     initialize: function (src, target, options) {
         this._connSource = src;
         this._connTarget = target;
@@ -22,10 +28,19 @@ Z.ConnectorLine = Z.CurveLine.extend({
         this._initOptions(options);
     },
 
+    /**
+     * Gets the source of the connector line.
+     * @return {maptalks.Geometry|maptalks.Control|maptalks.UIComponent}
+     */
     getConnectSource:function() {
         return this._connSource;
     },
 
+    /**
+     * Sets the source to the connector line.
+     * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} src
+     * @return {maptalks.ConnectorLine} this
+     */
     setConnectSource:function(src) {
         this._onRemove();
         this._connSource = src;
@@ -34,10 +49,19 @@ Z.ConnectorLine = Z.CurveLine.extend({
         return this;
     },
 
+    /**
+     * Gets the target of the connector line.
+     * @return {maptalks.Geometry|maptalks.Control|maptalks.UIComponent}
+     */
     getConnectTarget:function() {
         return this._connTarget;
     },
 
+    /**
+     * Sets the target to the connector line.
+     * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} target
+     * @return {maptalks.ConnectorLine} this
+     */
     setConnectTarget:function(target) {
         this._onRemove();
         this._connTarget = target;
@@ -132,7 +156,7 @@ Z.ConnectorLine = Z.CurveLine.extend({
         } else if ('click' === trigger) {
             this._connSource.on('mousedown', this._showConnect, this).on('mouseup', this.hide, this);
             this._connTarget.on('mousedown', this._showConnect, this).on('mouseup', this.hide, this);
-        } else if ('hover' === trigger) {
+        } else if ('mouseover' === trigger) {
             this._connSource.on('mouseover', this._showConnect, this).on('mouseout', this.hide, this);
             this._connTarget.on('mouseover', this._showConnect, this).on('mouseout', this.hide, this);
         } else {

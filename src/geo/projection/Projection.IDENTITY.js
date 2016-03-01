@@ -1,4 +1,19 @@
-Z.Projection.IDENTITY = Z.Util.extend({}, Z.Projection.Common, {
+/**
+ * A projection based on Cartesian coordinate system.<br>
+ * This projection maps x, y directly, it is useful for maps of flat surfaces (e.g. indoor maps, game maps).
+ * @class
+ * @protected
+ * @memberOf maptalks.projection
+ * @name IDENTITY
+ * @mixes maptalks.projection.Common
+ * @mixes maptalks.measurer.Identity
+ */
+Z.projection.IDENTITY = Z.Util.extend({}, Z.projection.Common, {
+    /**
+     * "IDENTITY", Code of the projection, used by [View]{@link maptalks.View} to get projection instance.
+     * @type {String}
+     * @constant
+     */
     code : "IDENTITY",
     project:function(p){
         return p.copy();

@@ -1,17 +1,18 @@
 /**
- * 事件处理机制,为需要的类添加事件处理机制
- * @class maptalks.Eventable
- * @author Maptalks Team
+ * This provides methods used for event handling. It's a mixin and not meant to be used directly.
+ * @mixin
  */
 Z.Eventable = {
     /**
-     * 添加事件
-     * @param {String} eventTypeArr 事件名字符串，多个事件名用空格分开
-     * @param {Function} handler 事件触发后的回调函数
-     * @param {Object} context 上下文对象
-     * @return {Object} 上下文对象
+     * Register a handler function to be called whenever this event is fired.
+     *
+     * @param {String} eventTypeArr     - event types to register, seperated by space if more than one.
+     * @param {Function} handler                 - handler function to be called
+     * @param {Object} [context=null]            - the context of the handler
+     * @return {*} this
+     * @instance
      */
-    on:function(eventTypeArr, handler, context) {
+    on: function(eventTypeArr, handler, context) {
         if (!eventTypeArr || !handler) {return this;}
         if (!this._eventMap) {
             this._eventMap = {};
@@ -42,11 +43,31 @@ Z.Eventable = {
     },
 
     /**
-     * 删除事件
-     * @param {String} eventTypeArr 事件名字符串，多个事件名用空格分开
-     * @param {Function} handler 事件触发后的回调函数
-     * @param {Object} context 上下文对象
-     * @return {Object} 上下文对象
+     * Same as on, except the listener will only get fired once and then removed.
+     *
+     * @param {String} eventTypeArr     - event types to register, seperated by space if more than one.
+     * @param {Function} handler                 - listener handler
+     * @param {Object} [context=null]            - the context of the handler
+     * @return {*} this
+     * @instance
+     */
+    once: function(eventTypeArr, handler, context) {
+        var me = this;
+        function onceHandler() {
+            handler.call(this, arguments);
+            me.off(eventTypeArr, onceHandler, context);
+        }
+        return this.on(eventTypeArr, onceHandler, context);
+    },
+
+    /**
+     * Unregister the event handler for the specified event types.
+     *
+     * @param {String} eventTypeArr    - event types to unregister, seperated by space if more than one.
+     * @param {Function} handler                - listener handler
+     * @param {Object} [context=null]           - the context of the handler
+     * @return {*} this
+     * @instance
      */
     off:function(eventTypeArr, handler, context) {
         if (!eventTypeArr || !this._eventMap || !handler) {return this;}
@@ -80,11 +101,13 @@ Z.Eventable = {
     },
 
     /**
-     * 判断当前对象上是否绑定了某种类型的监听事件
-     * @param {String} eventType 事件名
-     * @return {Boolean} true,绑定了事件
+     * Returns true if any listener registered for the event type.
+     *
+     * @param {String} eventType - event type
+     * @return {Boolean}
+     * @instance
      */
-    hasListeners:function(eventType) {
+    listens:function(eventType) {
         if (!this._eventMap || !Z.Util.isString(eventType)) {return 0;}
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
         if (!handlerChain) {return 0;}
@@ -92,8 +115,10 @@ Z.Eventable = {
     },
 
    /**
-    * copy event listener from target object
-    * @param {Object} target
+    * Copy all the event listener to the target object
+    * @param {Object} target - target object to copy to.
+    * @return {*} this
+    * @instance
     */
     copyEventListeners: function(target) {
         var eventMap = target._eventMap;
@@ -110,9 +135,16 @@ Z.Eventable = {
         return this;
     },
 
+    /**
+     * Fire an event, causing all handlers for that event name to run.
+     *
+     * @param  {String} eventType - an event type to fire
+     * @param  {Object} param     - parameters for the listener function.
+     * @return {*} this
+     * @instance
+     */
     fire:function(eventType, param) {
         if (!this._eventMap) {return this;}
-        //if (!this.hasListeners(eventType)) {return;}
         var handlerChain = this._eventMap[eventType.toLowerCase()];
         if (!handlerChain) {return this;}
         if (!param) {
@@ -125,7 +157,7 @@ Z.Eventable = {
                 continue;
             }
             var context = handlerChain[i].context;
-            //增加type和target参数, 表示事件类型和事件源对象
+
             param['type'] = eventType;
             param['target'] = this;
             var bubble = true;
@@ -134,6 +166,7 @@ Z.Eventable = {
             } else {
                 bubble = handlerChain[i].handler(param);
             }
+            //stops the event propagation if the handler returns false.
             if (false === bubble) {
                 if (param['domEvent']) {
                     Z.DomUtil.stopPropagation(param['domEvent']);
@@ -156,14 +189,29 @@ Z.Eventable = {
     }
 };
 
+/**
+* Alias for [on]{@link maptalks.Eventable.on}
+*
+* @param {String} eventTypeArr     - event types to register, seperated by space if more than one.
+* @param {Function} handler                 - handler function to be called
+* @param {Object} [context=null]            - the context of the handler
+* @return {*} this
+* @function
+* @instance
+* @memberOf maptalks.Eventable
+* @name addEventListener
+*/
 Z.Eventable.addEventListener = Z.Eventable.on;
+/**
+ * Alias for [off]{@link maptalks.Eventable.off}
+ *
+ * @param {String} eventTypeArr    - event types to unregister, seperated by space if more than one.
+ * @param {Function} handler                - listener handler
+ * @param {Object} [context=null]           - the context of the handler
+ * @return {*} this
+ * @function
+ * @instance
+ * @memberOf maptalks.Eventable
+ * @name removeEventListener
+ */
 Z.Eventable.removeEventListener = Z.Eventable.off;
-
-Z.Eventable.once = function(eventTypeArr, handler, context) {
-    var me = this;
-    function onceHandler() {
-        handler.call(this, arguments);
-        me.off(eventTypeArr, onceHandler, context);
-    }
-    return this.on(eventTypeArr, onceHandler, context);
-}

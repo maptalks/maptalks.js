@@ -26,7 +26,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.style = this.translate();
         this.strokeAndFill = this.translateStrokeAndFill(this.style);
         var props = this.geometry.getProperties();
-        this.textContent = Z.StringUtil.content(this.style['textName'], props);
+        this.textContent = Z.StringUtil.replaceVariable(this.style['textName'], props);
         this.textDesc = Z.StringUtil.splitTextToRow(this.textContent, this.style);
     },
 
@@ -64,7 +64,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             size = this.textDesc['size'];
         var alignPoint = Z.StringUtil.getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
         var alignW = alignPoint.x, alignH = alignPoint.y;
-        return new Z.Extent(
+        return new Z.PointExtent(
             dxdy.add(new Z.Point(alignW, alignH)),
             dxdy.add(new Z.Point(alignW+size['width'],alignH+size['height']))
         );

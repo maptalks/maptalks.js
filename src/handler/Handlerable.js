@@ -1,16 +1,17 @@
 /**
- * Handler总线, 通过include,使类拥有handler的处理能力
- * @type {Object}
+ * A mixin, to enable a class with [interaction handlers]{@link maptalks.Handler}
+ * @protected
+ * @mixin
  */
 Z.Handlerable = {
     /**
-     * [addHandler description]
-     * @param {[type]} name         [description]
-     * @param {[type]} HandlerClass [description]
-     * @expose
+     * Register a handler
+     * @param {String} name       - name of the handler
+     * @param {maptalks.Handler}  - handler class
+     * @return {*} this
      */
-    addHandler: function (name, HandlerClass) {
-        if (!HandlerClass) { return this; }
+    addHandler: function (name, handlerClass) {
+        if (!handlerClass) { return this; }
         if (!this._handlers) {
             this._handlers = [];
         }
@@ -20,7 +21,7 @@ Z.Handlerable = {
             return;
         }
 
-        var handler = this[name] = new HandlerClass(this);
+        var handler = this[name] = new handlerClass(this);
 
         this._handlers.push(handler);
 
@@ -30,11 +31,16 @@ Z.Handlerable = {
         return this;
     },
 
+    /**
+     * Removes a handler
+     * @param {String} name       - name of the handler
+     * @return {*} this
+     */
     removeHandler: function(name) {
         if (!name) {return this;}
-        //handler已经存在
         var handler = this[name];
         if (handler) {
+            //handler registered
             var hit = Z.Util.searchInArray(handler,this._handlers);
             if (hit >= 0) {
                 this._handlers.splice(hit,1);

@@ -18,7 +18,7 @@ Z.symbolizer.PointSymbolizer=Z.symbolizer.CanvasSymbolizer.extend({
 
     /**
      * Get container points to draw on Canvas
-     * @return {[type]} [description]
+     * @return {*} [description]
      */
     _getRenderContainerPoints:function() {
         var points = this._getRenderPoints();

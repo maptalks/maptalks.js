@@ -1,15 +1,15 @@
 /**
- * GeoJSON转化工具类
- * @class maptalks.GeoJSON
- * @author Maptalks Team
+ * GeoJSON utilities
+ * @class
+*  @memberOf maptalks
+ * @name GeoJSON
  */
 Z.GeoJSON={
 
         /**
-         * 将geoJSON字符串或geoJSON对象转化为Geometry对象
-         * @param  {String | Object | [Object]} json json对象
-         * @return {Geometry | [Geometry]}      转化的Geometry对象或数组
-         * @expose
+         * Convert one or more GeoJSON objects to a geometry
+         * @param  {String|Object|Object[]} json - json objects or json string
+         * @return {maptalks.Geometry|maptalks.Geometry[]}
          */
         fromGeoJSON:function(geoJSON) {
             if (Z.Util.isString(geoJSON)) {
@@ -30,10 +30,12 @@ Z.GeoJSON={
         },
 
         /**
-         * 将Coordinate数组转化为GeoJSON坐标数组
-         * @param  {[Coordinate]} coordinates Coordinate数组
-         * @return {number[]..}               GeoJSON数组
-         * @expose
+         * Convert one or more maptalks.Coordinate objects to GeoJSON style coordinates
+         * @param  {maptalks.Coordinate|maptalks.Coordinate[]} coordinates - coordinates to convert
+         * @return {Number[]|Number[][]}
+         * @example
+         * // result is [[100,0], [101,1]]
+         * var jsonCoords = maptalks.GeoJSON.toGeoJSONCoordinates([new maptalks.Coordinate(100,0), new maptalks.Coordinate(101,1)]);
          */
         toGeoJSONCoordinates:function(coordinates) {
             if (!Z.Util.isArray(coordinates)) {
@@ -45,9 +47,9 @@ Z.GeoJSON={
         },
 
         /**
-         * 将GeoJSON坐标数组转化为Coordinate数组
-         * @param  {[type]} coordinates [description]
-         * @return {[type]}             [description]
+         * Convert one or more GeoJSON style coordiantes to maptalks.Coordinate objects
+         * @param  {Number[]|Number[][]} coordinates - coordinates to convert
+         * @return {maptalks.Coordinate|maptalks.Coordinate[]}
          */
         fromGeoJSONCoordinates:function(coordinates) {
             if (Z.Util.isNumber(coordinates[0]) && Z.Util.isNumber(coordinates[1])) {
@@ -70,9 +72,10 @@ Z.GeoJSON={
         },
 
         /**
-         * 解析单个GeoJSON对象,输出为Geometry
-         * @param  {[type]} geoJSONObj [description]
-         * @return {[type]}            [description]
+         * Convert single GeoJSON object
+         * @param  {Object} geoJSONObj - a GeoJSON object
+         * @return {maptalks.Geometry}
+         * @private
          */
         _fromGeoJSONInstance:function(geoJSONObj) {
             if (!geoJSONObj || Z.Util.isNil(geoJSONObj['type'])) {

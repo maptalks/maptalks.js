@@ -75,8 +75,8 @@ Z.Map.include({
     "PROFILE_VERSION" : "1.0",
     /**
      * 返回地图的JSON
-     * @param  {[type]} options [description]
-     * @return {[type]}         [description]
+     * @param  {*} options [description]
+     * @return {*}         [description]
      */
     toJSON:function(options) {
         if (!options) {

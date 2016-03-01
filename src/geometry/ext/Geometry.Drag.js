@@ -1,18 +1,25 @@
-Z.Geometry.mergeOptions({
+Z.Geometry.mergeOptions(/** @lends maptalks.Geometry.prototype */{
     /**
-     * @cfg {Boolean} [draggable="false"] geometry能否拖动
-     * @member maptalks.Geometry
+     * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
      */
     'draggable': false,
+    /**
+     * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
+     */
     'dragShadow' : true,
     /**
-     * @cfg {String} [draggableAixs=null] fixed geometry dragging on particular axis: x or y
-     * @member maptalks.Geometry
+     * @property {Boolean} [options.draggableAxis=null] - if set, geometry can only be dragged along the specified axis, possible values: x, y
      */
     'draggableAxis' : null
 });
 
-Z.Geometry.Drag = Z.Handler.extend({
+/**
+ * Drag handler for geometries.
+ * @class
+ * @protected
+ * @extends {maptalks.Handler}
+ */
+Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype */{
     dragStageLayerId : Z.internalLayerPrefix+'_drag_stage',
 
     START: Z.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
@@ -261,12 +268,10 @@ Z.Geometry.Drag = Z.Handler.extend({
 
 Z.Geometry.addInitHook('addHandler', 'draggable', Z.Geometry.Drag);
 
-Z.Geometry.include({
+Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
-     * Geometry是否处于移动模式中
-     * @member maptalks.Geometry
-     * @reutrn {Boolean} 是否处于移动模式中
-     * @expose
+     * Whether the geometry is being dragged.
+     * @reutrn {Boolean}
      */
     isDragging: function() {
         if (this._getParent()) {

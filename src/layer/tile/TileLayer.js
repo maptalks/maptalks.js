@@ -1,8 +1,10 @@
 /**
- * 瓦片图层
- * @class maptalks.TileLayer
+ * @classdesc
+ * A layer used to display tiled map services, such as [google maps]{@link http://maps.google.com}, [open street maps]{@link http://www.osm.org}
+ * @class
  * @extends maptalks.Layer
- * @author Maptalks Team
+ * @param {String|Number} id - tile layer's id
+ * @param {Object} [options=null] - construct options, including the options defined in [maptalks.Layer]{@link maptalks.Layer#options}
  */
 Z.TileLayer = Z.Layer.extend({
     type: 'tile',
@@ -33,22 +35,6 @@ Z.TileLayer = Z.Layer.extend({
     },
 
 
-    /**
-     * <pre>
-     * 瓦片图层类构造函数
-     * 图层配置如下:
-     *     tileInfo: 空间参考系设置,例如ESGP:3857
-     *     opacity:图层透明度
-     *     urlTemplate:URL模板,例如http://{s}.example.com/{z}/{y}/{x}.png
-     *     subdomains:数组,用来轮流替换url模板中的{s}变量
-     *     tileSize:{width:256,height:256}
-     *     tileInfo的值可为字符串类型的预定义配置或属性对象:
-     *     预定义配置有:"web-mercator","global-mercator","baidu"
-     *     如果是属性对象,则需要指定
-     * </pre>
-     * @param  {String} id 图层identifier
-     * @param  {Object} opts 图层配置
-     */
     initialize:function(id,opts) {
         this.setId(id);
         Z.Util.setOptions(this,opts);
@@ -71,14 +57,23 @@ Z.TileLayer = Z.Layer.extend({
         }
     },
 
+    /**
+     * Get tile size of the tile layer
+     * @return {maptalks.Size}
+     */
     getTileSize:function() {
         return Z.Util.extend({}, this.options['tileSize']);
     },
 
+    /**
+     * Clear the layer
+     * @return {maptalks.TileLayer} this
+     */
     clear:function() {
         if (this._renderer) {
             this._renderer.clear();
         }
+        return this;
     },
 
     /**

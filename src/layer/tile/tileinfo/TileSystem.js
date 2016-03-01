@@ -1,12 +1,9 @@
 /**
  * 瓦片系统描述类
- * @class maptalks.TileSystem
+ * @class
+ * @protected
  */
-Z.TileSystem =
-/**
- * @method TileSystem
- */
-function(sx, sy, ox, oy){
+Z.TileSystem = function(sx, sy, ox, oy){
     if (Z.Util.isArray(sx)) {
         this.scale =  { x : sx[0] , y : sx[1] };
         this.origin = { x : sx[2] , y : sx[3] };
@@ -16,7 +13,7 @@ function(sx, sy, ox, oy){
     }
 };
 
-Z.Util.extend(Z.TileSystem, {
+Z.Util.extend(Z.TileSystem, /** @lends maptalks.TileSystem */{
     //TMS瓦片系统的参考资料:
     //http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification
     //OSGEO组织的TMS瓦片系统, profile为global-mercator, mbtiles等tms标准瓦片服务采用该标准
@@ -32,6 +29,15 @@ Z.Util.extend(Z.TileSystem, {
     'baidu' : new Z.TileSystem([1, 1, 0, 0])
 });
 
+/**
+ * Get the default tile system for the projection.
+ * @function
+ * @static
+ * @memberOf maptalks.TileSystem
+ * @name  getDefault
+ * @param  {Object} projection      - a projection object
+ * @return {String} tile system code
+ */
 Z.TileSystem.getDefault = function(projection) {
     if (projection['code'].toLowerCase() === 'baidu') {
         return 'baidu';

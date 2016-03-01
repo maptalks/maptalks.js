@@ -1,35 +1,40 @@
 /**
- * 操作类
- * @class maptalks.Handler
+ * Base class for all the interaction handlers
+ * @class
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
- * @author Maptalks Team
+ * @abstract
+ * @protected
  */
-Z.Handler = Z.Class.extend({
+Z.Handler = Z.Class.extend(/** @lends maptalks.Handler.prototype */{
 	includes: Z.Eventable,
 
     /**
-     * @constructor
-     * @param {maptalks.Map} map
+     * Enables the handler
+     * @return {maptalks.Handler} this
      */
-	initialize: function (map) {
-        this.target = map;
-    },
-
     enable: function () {
-        if (this._enabled) { return; }
-
+        if (this._enabled) { return this; }
         this._enabled = true;
         this.addHooks();
+        return this;
     },
 
+    /**
+     * Disablesthe handler
+     * @return {maptalks.Handler} this
+     */
     disable: function () {
-        if (!this._enabled) { return; }
-
+        if (!this._enabled) { return this; }
         this._enabled = false;
         this.removeHooks();
+        return this;
     },
 
+    /**
+     * Returns true if the handler is enabled.
+     * @return {Boolean}
+     */
     enabled: function () {
         return !!this._enabled;
     }

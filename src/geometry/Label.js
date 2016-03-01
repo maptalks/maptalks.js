@@ -1,11 +1,27 @@
 /**
- * label控件
- * @class maptalks.Label
- * @extends maptalks.Class
- * @mixins maptalks.Eventable
- * @author Maptalks Team
+ * @classdesc
+ * Represents point type geometry for text labels.<br>
+ * A label is used to draw text (with a box background if specified) on a particular coordinate.
+ * @class
+ * @extends maptalks.Marker
+ * @param {String} content                          - Label's text content
+ * @param {maptalks.Coordinate} coordinates         - center
+ * @param {Object} [options=null]                   - construct options, includes options defined in [Marker]{@link maptalks.Marker#options}
+ * @param {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
+ * @param {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
+ * @param {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
+ * @param {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
+ * @param {Boolean} [options.boxPadding=maptalks.Size(12,8)] - padding of the label text to the border of the background box.
+ * @param {Boolean} [options.boxTextAlign=center]   - text align in the box, possible values:left, middle, right
+ * @example
+ * var label = new maptalks.Label('This is a label',[100,0]);
+ * label.addTo(vectorLayer);
  */
-Z.Label = Z.Marker.extend({
+Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
+    /**
+     * @property {Object} defaultSymbol Default symbol of the label text
+     * @static
+     */
     defaultSymbol : {
         "textFaceName"  : "monospace",
         "textSize": 12,
@@ -16,6 +32,10 @@ Z.Label = Z.Marker.extend({
         "textVerticalAlignment": "middle" //top middle bottom
     },
 
+    /**
+     * @property {Object} defaultSymbol Default symbol of the background box
+     * @static
+     */
     defaultBoxSymbol:{
         "markerType":"square",
         "markerLineColor": "#ff0000",
@@ -25,11 +45,15 @@ Z.Label = Z.Marker.extend({
     },
 
     /**
-     * @cfg {Object} options label属性
+     * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
+     * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
+     * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
+     * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
+     * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
+     * @property {Boolean} [options.boxPadding=maptalks.Size(12,8)] - padding of the label text to the border of the background box.
+     * @property {Boolean} [options.boxTextAlign=center]   - text align in the box, possible values:left, middle, right
      */
     options: {
-        'draggable'    :   false,
-        //是否绘制背景边框
         'box'          :   true,
         'boxAutoSize'  :   true,
         'boxMinWidth'  :   0,
@@ -38,15 +62,6 @@ Z.Label = Z.Marker.extend({
         'boxTextAlign' :   'middle'
     },
 
-    /**
-     * 初始化Label
-     * @constructor
-     * @param {String} content Label文字内容
-     * @param {Coordinate} coordinates Label坐标
-     * @param {Object} options 配置, 与Marker的options配置相同
-     * @return {maptalks.Label}
-     * @expose
-     */
     initialize: function (content, coordinates, options) {
         this._content = content;
         this._coordinates = new Z.Coordinate(coordinates);
@@ -56,19 +71,32 @@ Z.Label = Z.Marker.extend({
     },
 
     /**
-     * 获取label内容
+     * Get text content of the label
+     * @returns {String}
      */
     getContent: function() {
         return this._content;
     },
 
     /**
-     * 设置label内容
+     * Set a new text content to the label
+     * @return {maptalks.Label} this
+     * @fires maptalks.Label#contentchange
      */
     setContent: function(content) {
+        var old = this._content;
         this._content = content;
         this._refresh();
-        this._fireEvent('contentchange');
+        /**
+         * an event when changing label's text content
+         * @event contentchange
+         * @type {Object}
+         * @property {String} type - contentchange
+         * @property {maptalks.Label} target - label fires the event
+         * @property {String} old - old content
+         * @property {String} new - new content
+         */
+        this._fireEvent('contentchange',{'old':old, 'new':content});
         return this;
     },
 
@@ -88,6 +116,18 @@ Z.Label = Z.Marker.extend({
        return this;
     },
 
+    /**
+     * Export a profile json out of the label. <br>
+     * A specific property named "subType" with the value of "Label" will be exported in label's profile json. <br>
+     * This is because label is a subtype of marker, subType property is used to tell the program to reproduce a label instead of a marker.
+     * @param {Object}  [options=null]          - export options
+     * @param {Boolean} [opts.geometry=true]    - whether export feature's geometry
+     * @param {Boolean} [opts.properties=true]  - whether export feature's properties
+     * @param {Boolean} [opts.options=true]     - whether export construct options
+     * @param {Boolean} [opts.symbol=true]      - whether export symbol
+     * @param {Boolean} [opts.infoWindow=true]  - whether export infowindow
+     * @return {Object} profile json object
+     */
     toJSON:function(options) {
         if (!options) {
             options = {};
@@ -145,7 +185,6 @@ Z.Label = Z.Marker.extend({
             }
             var align = this.options['boxTextAlign'];
             if (align) {
-                //背景和文字之间的间隔距离
                 var textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
                 textAlignPoint = textAlignPoint._add(new Z.Point(Z.Util.getValueOrDefault(symbol['textDx'],0),Z.Util.getValueOrDefault(symbol['textDy'],0)));
                 symbol['markerDx'] = textAlignPoint.x;

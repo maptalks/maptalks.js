@@ -2,7 +2,7 @@
  * 版权信息组件
  * @class maptalks.control.Attribution
  * @extends maptalks.Control
- * @author Maptalks Team
+
  */
 Z.control.Attribution = Z.Control.extend({
 

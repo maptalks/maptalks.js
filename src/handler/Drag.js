@@ -1,10 +1,10 @@
 /**
- * 拖动
- * @class maptalks.Handler.Drag
+ * Drag handler
+ * @class
+ * @protected
  * @extends maptalks.Handler
- * @author Maptalks Team
  */
-Z.Handler.Drag = Z.Handler.extend({
+Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
 
     START: Z.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
     END: {
@@ -20,25 +20,16 @@ Z.Handler.Drag = Z.Handler.extend({
         MSPointerDown: 'touchmove'
     },
 
-    /**
-     * @constructor
-     * @param {HTMLElement} dom
-     */
     initialize:function(dom){
         this.dom = dom;
     },
 
-    /**
-     * 激活
-     */
     enable:function(){
         if (!this.dom) {return;}
         Z.DomUtil.on(this.dom, this.START.join(' '), this.onMouseDown, this);
     },
 
-    /**
-     * 停止
-     */
+
     disable:function(){
         if (!this.dom) {return;}
         Z.DomUtil.off(this.dom, this.START.join(' '), this.onMouseDown);

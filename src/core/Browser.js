@@ -54,17 +54,9 @@ if (!Z.node) {
 
             retina: (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI)) > 1,
 
-            /**
-             * @property {String} 语言
-             * @static
-             */
             language: navigator.browserLanguage?navigator.browserLanguage:navigator.language,
             ie9: (ie && document.documentMode === 9),
             ie10: (ie && document.documentMode === 10),
-            /**
-             * @property {Boolean} 是否支持canvas
-             * @static
-             */
             canvas: (!!document.createElement("canvas").getContext)
         };
         Z.Browser.translateDom = (Z.Browser.any3d && !ie);

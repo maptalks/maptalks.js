@@ -1,4 +1,4 @@
-Z['HeatmapLayer'] = Z.HeatmapLayer = Z.Layer.extend({
+Z.HeatmapLayer = Z.Layer.extend({
 
       initialize: function (config) {
         this.cfg = config;

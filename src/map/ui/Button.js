@@ -1,10 +1,11 @@
 /**
- * 按钮控件
- * @class maptalks.Button
+ * @classdesc
+ * Class for button on a [maptalks.Toolbar]{@link maptalks.Toolbar}
+ * @class
  * @extends maptalks.Class
- * @author Maptalks Team
+ * @param {Object} options - construct options
  */
-Z['Button'] = Z.Button = Z.Class.extend({
+Z.Button = Z.Class.extend(/** @lends maptalks.Button.prototype */{
 
     /**
      * @cfg {Object} options 按钮属性

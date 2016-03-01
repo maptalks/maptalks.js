@@ -1,9 +1,11 @@
 /**
- * 抽象类, 允许叠加Geometry的图层的共同父类
- * @type {Z.OverlayLayer}
+ * @classdesc
+ * Base class of all the layers that can add/remove geometries.
+ * @class
+ * @abstract
+ * @extends {maptalks.Layer}
  */
-Z.OverlayLayer=Z.Layer.extend({
-    //根据不同的语言定义不同的错误信息
+Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     exceptionDefs:{
         'en-US':{
             'DUPLICATE_GEOMETRY_ID':'Duplicate ID for the geometry',
@@ -16,27 +18,25 @@ Z.OverlayLayer=Z.Layer.extend({
     },
 
     /**
-     * 通过geometry的id取得Geometry
-     * @param  {[String|Integer]} id [Geometry的id]
-     * @return {[Geometry]}    [Geometry]
+     * Get a geometry by a id
+     * @param  {String|Number} id   - id of the geometry
+     * @return {maptalks.Geometry}
      */
     getGeometryById:function(id) {
         if (Z.Util.isNil(id) || id === '') {
             return null;
         }
         if (!this._geoMap[id]) {
-            //避免出现undefined
             return null;
         }
         return this._geoMap[id];
     },
 
     /**
-     * 返回图层上所有的Geometry
-     * @param {function} filter 过滤函数
-     * @param {Object} context 过滤函数的调用对象
-     * @return {Array} [Geometry数组]
-     * @expose
+     * Get all the geometries on the layer or the ones filtered.
+     * @param {Function} filter  - a function to filter the layer
+     * @param {Object} context   - context of the filter context
+     * @return {maptalks.Geometry[]}
      */
     getGeometries:function(filter, context) {
         var cache = this._geoCache;
@@ -62,18 +62,18 @@ Z.OverlayLayer=Z.Layer.extend({
     },
 
     /**
-     * VectorLayer是否为空
-     * @return {Boolean} 是
+     * Whether the layer is empty.
+     * @return {Boolean}
      */
     isEmpty:function() {
         return this._counter === 0;
     },
 
     /**
-     * 向图层中添加geometry
-     * @param {Geometry|[Geometry]} geometries 添加的geometry
-     * @param {[type]} fitView    添加后是否聚焦到geometry上
-     * @expose
+     * Adds one or more geometries to the layer
+     * @param {maptalks.Geometry|maptalks.Geometry[]} geometries - one or more geometries
+     * @param {Boolean} fitView                                  - automatically set the map to a fit center and zoom for the geometries
+     * @return {maptalks.OverlayLayer} this
      */
     addGeometry:function(geometries,fitView) {
         if (!geometries) {return this;}
@@ -130,25 +130,9 @@ Z.OverlayLayer=Z.Layer.extend({
     },
 
     /**
-     * 遍历geometry
-     * @param  {Function} fn 回调函数
-     */
-    _eachGeometry:function(fn,context) {
-        var cache = this._geoCache;
-        if (!context) {
-            context=this;
-        }
-        for (var g in cache) {
-            if (cache.hasOwnProperty(g)) {
-                fn.call(context,cache[g]);
-            }
-        }
-    },
-
-    /**
-     * 从图层上移除Geometry
-     * @param  {Geometry} geometry 要移除的Geometry
-     * @expose
+     * Removes one or more geometries from the layer
+     * @param  {String|String[]|maptalks.Geometry|maptalks.Geometry[]} geometries - geometry ids or geometries to remove
+     * @returns {maptalks.OverlayLayer} this
      */
     removeGeometry:function(geometry) {
         if (Z.Util.isArray(geometry)) {
@@ -169,8 +153,8 @@ Z.OverlayLayer=Z.Layer.extend({
     },
 
     /**
-     * clear all geometries in this layer
-     * @expose
+     * Clear all geometries in this layer
+     * @returns {maptalks.OverlayLayer} this
      */
     clear:function() {
         this._eachGeometry(function(geo) {
@@ -179,6 +163,24 @@ Z.OverlayLayer=Z.Layer.extend({
         this._geoMap={};
         this._geoCache={};
         return this;
+    },
+
+    /**
+     * Travels among the geometries the layer has.
+     * @param  {Function} fn - a callback function
+     * @param  {*} context   - the travel function's context
+     * @private
+     */
+    _eachGeometry:function(fn,context) {
+        var cache = this._geoCache;
+        if (!context) {
+            context=this;
+        }
+        for (var g in cache) {
+            if (cache.hasOwnProperty(g)) {
+                fn.call(context,cache[g]);
+            }
+        }
     }
 });
 

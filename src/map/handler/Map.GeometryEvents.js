@@ -40,7 +40,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
             }
             return false;
         });
-        if (map.isBusy() || !vectorLayers || vectorLayers.length === 0) {
+        if (map._isBusy() || !vectorLayers || vectorLayers.length === 0) {
             return;
         }
         var layers = [];
@@ -66,7 +66,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
                         geometryCursorStyle = geometry.options['cursor'];
                     }
                 }
-                if (!geometry.hasListeners(eventToFire)) {
+                if (!geometry.listens(eventToFire)) {
                     return false;
                 }
                 return true;

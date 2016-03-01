@@ -1,15 +1,25 @@
 /**
- * 多折线类
- * @class maptalks.LineString
- * @extends maptalks.Vector
- * @mixins maptalks.Geometry.Poly
- * @author Maptalks Team
+ * @classdesc Represents a LineString type Geometry.
+ * @class
+ * @extends {maptalks.Vector}
+ * @mixes   {maptalks.Geometry.Poly}
+ * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the line string
+ * @param {Object} [options=null] - specific construct options for LineString, also support options defined in [Vector]{@link maptalks.Vector#options} and [Geometry]{@link maptalks.Geometry#options}
+ * @param {Number} [options.antiMeridian=default]            - antimeridian
+ * @param {Number} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
+ * @param {Number} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
  */
-Z.LineString = Z.Polyline = Z.Vector.extend({
+Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.prototype */{
     includes:[Z.Geometry.Poly],
 
     type:Z.Geometry['TYPE_LINESTRING'],
 
+    /**
+    * @property {Object} [options=null] - specific construct options for LineString, also support options defined in [Vector]{@link maptalks.Vector#options} and [Geometry]{@link maptalks.Geometry#options}
+    * @property {Number} [options.antiMeridian=default]            - antimeridian
+    * @property {Number} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
+    * @property {Number} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
+    */
     options:{
         "antiMeridian" : "default",
         "arrowStyle" : null,
@@ -23,19 +33,20 @@ Z.LineString = Z.Polyline = Z.Vector.extend({
     },
 
     /**
-     * 设置多折线的坐标值
-     * @param {Array} coordinates 坐标数组
-     * @expose
+     * Set new coordinates to the line string
+     * @param {maptalks.Coordinate[]|Number[][]} coordinates - new coordinates
+     * @fires maptalks.Geometry#shapechange
+     * @return {maptalks.LineString} this
      */
     setCoordinates:function(coordinates) {
         if (!coordinates) {
-            this._points = null;
+            this._coordinates = null;
             this._setPrjCoordinates(null);
             return;
         }
-        this._points = Z.GeoJSON.fromGeoJSONCoordinates(coordinates);
+        this._coordinates = Z.GeoJSON.fromGeoJSONCoordinates(coordinates);
         if (this.getMap()) {
-            this._setPrjCoordinates(this._projectPoints(this._points));
+            this._setPrjCoordinates(this._projectCoords(this._coordinates));
         } else {
             this._onShapeChanged();
         }
@@ -43,15 +54,14 @@ Z.LineString = Z.Polyline = Z.Vector.extend({
     },
 
     /**
-     * 获取多折线坐标值
-     * @return {Array} 多边形坐标数组
-     * @expose
+     * Get coordinates of the line string
+     * @return {maptalks.Coordinate[]|Number[][]} coordinates
      */
     getCoordinates:function() {
-        if (!this._points) {
+        if (!this._coordinates) {
             return [];
         }
-        return this._points;
+        return this._coordinates;
     },
 
     _computeGeodesicLength:function(measurer) {

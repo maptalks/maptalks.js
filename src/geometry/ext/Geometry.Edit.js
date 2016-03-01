@@ -1,23 +1,23 @@
-Z.Geometry.include({
+Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
-     * 开始编辑Geometry
-     * @member maptalks.Geometry
-     * @expose
+     * Start to edit
+     * @param {Object} [options=null]        - edit options
+     * @param {Object} [options.symbol=null] - symbol for the geometry during editing
+     * @return {maptalks.Geometry} this
      */
     startEdit: function(opts) {
-        if (!this.getMap()) {
+        if (!this.getMap() || !this.options['editable']) {
             return this;
         }
         this.endEdit();
-        this._editor = new Z.Editor(this,opts);
+        this._editor = new Z.GeometryEditor(this,opts);
         this._editor.start();
         return this;
     },
 
     /**
-     * 结束编辑
-     * @member maptalks.Geometry
-     * @expose
+     * End editing.
+     * @return {maptalks.Geometry} this
      */
     endEdit: function() {
         if (this._editor) {
@@ -28,10 +28,8 @@ Z.Geometry.include({
     },
 
     /**
-     * Geometry是否处于编辑状态中
-     * @member maptalks.Geometry
-     * @return {Boolean} 是否处于编辑状态
-     * @expose
+     * Whether the geometry collection is being edited.
+     * @return {Boolean}
      */
     isEditing: function() {
         if (this._editor) {

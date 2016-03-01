@@ -1,10 +1,11 @@
 /**
- * 菜单控件
- * @class maptalks.Menu
+ * @classdesc
+ * Class for context menu, useful for interactions with right clicks on the map.
+ * @class
  * @extends maptalks.UIComponent
- * @author Maptalks Team
+ * @param {Object} options - construct options
  */
-Z.Menu = Z.UIComponent.extend({
+Z.Menu = Z.UIComponent.extend(/** @lends maptalks.Menu.prototype */{
 
     /**
      * @cfg {Object} options menu属性
@@ -18,13 +19,6 @@ Z.Menu = Z.UIComponent.extend({
         'items'  : []
     },
 
-    /**
-     * 初始化Menu
-     * @constructor
-     * @param {Object} options options:{"items":[], width:240, beforeOpen:fn, position:{coordinate/piexl}}
-     * @return {maptalks.Menu}
-     * @expose
-     */
     initialize: function(options) {
         Z.Util.setOptions(this, options);
     },
@@ -42,7 +36,7 @@ Z.Menu = Z.UIComponent.extend({
 
     /**
      * 获取设置的菜单项
-     * @return {[type]} [description]
+     * @return {*} [description]
      */
     getItems:function() {
         return this.options['items'];
@@ -166,13 +160,15 @@ Z.Menu = Z.UIComponent.extend({
 
 });
 
-
-Z.Menu.Handler={
+/**
+ * Mixin of the context menu methods.
+ * @mixin
+ */
+Z.Menu.Mixin={
     /**
-    * 设置Geometry的菜单
-    * @param {Object} options 菜单项 {"items":[], width:240, beforeopen:fn}
-    * @member maptalks.Geometry
-    * @expose
+    * Set a context menu
+    * @param {Object} options - menu options
+    * @return {*} this
     */
     setMenu: function(options) {
         this._menuOptions = options;
@@ -181,6 +177,73 @@ Z.Menu.Handler={
         } else {
             this.on('contextmenu', this._defaultOpenMenu, this);
         }
+        return this;
+    },
+
+    /**
+    * Open the context menu
+    * @param {maptalks.Coordinate} [coordinate=null] - coordinate to open the context menu
+    * @return {*} this
+    */
+    openMenu: function(coordinate) {
+        var map = (this instanceof Z.Map)?this:this.getMap();
+        if (!this._menu) {
+            if (this._menuOptions && map) {
+                this._bindMenu(this._menuOptions);
+                this._menu.show(coordinate);
+            }
+        } else {
+            this._menu.show(coordinate);
+        }
+        return this;
+    },
+
+    /**
+    * Set menu items to the context menu
+    * @param {Object[]} items - menu items
+    * @return {*} this
+    */
+    setMenuItems: function(items) {
+        if (this._menuOptions) {
+            this._menuOptions['items'] = items;
+        }
+        if (this._menu) {
+            this._menu.setItems(items);
+        }
+        return this;
+    },
+
+    /**
+     * Get the context menu items
+     * @return {Object[]}
+     */
+    getMenuItems:function() {
+        if (this._menu) {
+            return this._menu.getItems();
+        } else {
+            return null;
+        }
+    },
+
+    /**
+    * Close the contexnt menu
+    * @return {*} this
+    */
+    closeMenu: function() {
+        if(this._menu) {
+            this._menu.hide();
+        }
+        return this;
+    },
+
+    /**
+     * Remove the context menu
+     * @return {*} this
+     */
+    removeMenu:function() {
+        this.off('contextmenu', this._defaultOpenMenu, this);
+        this._unbindMenu();
+        delete this._menuOptions;
         return this;
     },
 
@@ -203,84 +266,15 @@ Z.Menu.Handler={
      /**
      * 应用没有注册contextmenu事件时, 默认在contextmenu事件时打开右键菜单
      * 如果注册过contextmenu事件, 则不做任何操作
-     * @param  {[type]} param [description]
-     * @return {[type]}       [description]
+     * @param  {*} param [description]
+     * @return {*}       [description]
+     * @default
      */
     _defaultOpenMenu:function(param) {
-        if (this.hasListeners('contextmenu')>1) {
+        if (this.listens('contextmenu')>1) {
             return;
         } else {
             this.openMenu(param['coordinate']);
         }
-    },
-
-    /**
-    * 打开geometry菜单
-    * @param {maptalks.Coordinate} 坐标
-    * @member maptalks.Geometry
-    * @expose
-    */
-    openMenu: function(coordinate) {
-        var map = (this instanceof Z.Map)?this:this.getMap();
-        if (!this._menu) {
-            if (this._menuOptions && map) {
-                this._bindMenu(this._menuOptions);
-                this._menu.show(coordinate);
-            }
-        } else {
-            this._menu.show(coordinate);
-        }
-        return this;
-    },
-
-    /**
-    * 添加菜单项目
-    * @param {Array} 菜单项数组
-    * @member maptalks.Geometry
-    * @expose
-    */
-    setMenuItems: function(items) {
-        if (this._menuOptions) {
-            this._menuOptions['items'] = items;
-        }
-        if (this._menu) {
-            this._menu.setItems(items);
-        }
-        return this;
-    },
-
-    /**
-     * 获得菜单项
-     * @return {[type]} [description]
-     */
-    getMenuItems:function() {
-        if (this._menu) {
-            return this._menu.getItems();
-        } else {
-            return null;
-        }
-    },
-
-    /**
-    * 关闭geometry菜单
-    * @member maptalks.Geometry
-    * @expose
-    */
-    closeMenu: function() {
-        if(this._menu) {
-            this._menu.hide();
-        }
-        return this;
-    },
-
-    /**
-     * 移除menu
-     */
-    removeMenu:function() {
-        this.off('contextmenu', this._defaultOpenMenu, this);
-        this._unbindMenu();
-        delete this._menuOptions;
-        return this;
     }
-
 };

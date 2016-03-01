@@ -1,4 +1,11 @@
-Z.Geometry.include({
+Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+    /**
+     * Animate the geometry according to the given options.
+     * @param  {Object}   styles   - styles to animate
+     * @param  {Object}   options  - animation options
+     * @param  {Function} callback - step function when animating
+     * @return {maptalks.animation.Player} animation player
+     */
     animate:function(styles, options, callback) {
         if (Z.Util.isFunction(options)) {
             callback = options;

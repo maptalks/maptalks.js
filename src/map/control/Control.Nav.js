@@ -2,7 +2,7 @@
  * 导航控件
  * @class maptalks.control.Nav
  * @extends maptalks.Control
- * @author Maptalks Team
+
  */
 Z.control.Nav = Z.Control.extend({
 

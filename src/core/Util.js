@@ -1,7 +1,7 @@
 /**
- * 基础工具类
- * @class maptalks.Util
- * @author Maptalks Team
+ * Misc utilities used internally
+ * @class
+ * @protected
  */
 Z.Util = {
     /**
@@ -18,8 +18,10 @@ Z.Util = {
     },
 
     /**
-     * 类扩展
-     * @param {Object} 父类
+     * Extend a object with one or more source objects.
+     * @param  {Object} dest   - object to extend
+     * @param  {...Object} src - sources
+     * @return {Object}
      */
     extend: function (dest) { // (Object[, Object, ...]) ->
         var sources = Array.prototype.slice.call(arguments, 1),i, j, len, src;
@@ -36,9 +38,10 @@ Z.Util = {
     },
 
     /**
-     * 设置options
-     * @param {Object} obj 对象
-     * @param {Object} options
+     * Set options to a object, extends its options member.
+     * @param {Object} obj      - object to set options to
+     * @param {Object} options  - options to set
+     * @returns {Object} options set
      */
     setOptions: function (obj, options) {
         if (!obj.hasOwnProperty('options')) {
@@ -50,6 +53,14 @@ Z.Util = {
         return obj.options;
     },
 
+    /**
+     * Load a image, can be a remote one or a local file. <br>
+     * If in node, a SVG image will be converted to a png file by [svg2png]{@link https://github.com/domenic/svg2png}<br>
+     * Loaded images will be cached in global._maptalksImageFileCache if in node.
+     * @param  {Image} img  - the image object to load.
+     * @param  {String} url - image's url
+     * @return maptalks.Util
+     */
     loadImage:function(img, url) {
         function onError(err) {
             console.error(err);
@@ -87,7 +98,11 @@ Z.Util = {
                 }
                 var segs = url.split('.');
                 if (segs[segs.length-1] === 'svg') {
-                    Z.Util._convertSVG2PNG(url, onLoadComplete);
+                    try {
+                        Z.Util._convertSVG2PNG(url, onLoadComplete);
+                    } catch(err) {
+                        onError(err);
+                    }
                 } else {
                     //canvas-node的Image对象
                     if (Z.Util.isURL(url)) {
@@ -107,7 +122,7 @@ Z.Util = {
     },
 
     _loadRemoteImage:function(img, url, onComplete) {
-        //读取远程图片
+        //http
         var loader;
         if (url.indexOf('https://') === 0) {
             if (!this._nodeHttps) {
@@ -134,7 +149,7 @@ Z.Util = {
     },
 
     _loadLocalImage:function(img, url, onComplete) {
-        //读取本地图片
+        //local file
         if (!this._nodeFS) {
             this._nodeFS = require('fs');
         }
@@ -142,6 +157,7 @@ Z.Util = {
     },
 
     _convertSVG2PNG:function(url, complete) {
+        var me = this;
         if (!this._svg2png) {
             //use svg2png to convert svg to png.
             //https://github.com/domenic/svg2png
@@ -179,21 +195,27 @@ Z.Util = {
         }
         var now = new Date().getTime();
         var tmpPngFile = (__dirname+'/tmp-'+now+'.png').replace(/\\/g,'/');
-        this._svg2png(furl, tmpPngFile, function (error) {
-            if (error) {
-                unlinkFile(tmpPngFile);
-                complete(error);
-                return;
-            }
-            fs.readFile(tmpPngFile, function(err,data) {
-                unlinkFile(tmpPngFile);
-                if (err) {
-                    complete(err);
+
+        try {
+            me._svg2png(furl, tmpPngFile, function (error) {
+                if (error) {
+                    unlinkFile(tmpPngFile);
+                    complete(error);
                     return;
                 }
-                complete(null, data);
+                fs.readFile(tmpPngFile, function(err,data) {
+                    unlinkFile(tmpPngFile);
+                    if (err) {
+                        complete(err);
+                        return;
+                    }
+                    complete(null, data);
+                });
             });
-        });
+        } catch (error) {
+            complete(error);
+        }
+
     },
 
     fixPNG:function(img) {
@@ -201,19 +223,17 @@ Z.Util = {
     },
 
     /**
-     * 获取全局id
-     * @return {String} 全局id
+     * Generate a global UID, not a real UUID, just a auto increment key with a prefix.
+     * @return {String}
      */
     GUID: function() {
         return '___MAPTALKS_GLOBAL_'+(Z.Util.globalCounter++);
     },
 
-    lastId: 0,
-
     /**
-     * 将字符串转化为JSON对象
-     * @param {String} str 字符串
-     * @return {Object} JSON object
+     * Parse a JSON string to a object
+     * @param {String} str      - a JSON string
+     * @return {Object}
      */
     parseJSON:function(str) {
         if (!str || !Z.Util.isString(str)) {
@@ -223,8 +243,10 @@ Z.Util = {
     },
 
     /**
-     * 在低版本浏览器上实现create
-     * @method
+     * Object.create or a polyfill in old browsers.
+     * @function
+     * @param {Object} proto - the proto to create on.
+     * @return {Object}
      */
     create: Object.create || (function () {
         function F() {}
@@ -235,9 +257,10 @@ Z.Util = {
     })(),
 
     /**
-     * 在低版本浏览器上实现bind
-     * @param {Function} fn 执行的函数
-     * @param {Object} obj 执行的上下文
+     * Function.bind or a polyfill in old browsers.
+     * @param {Function} fn     - function to bind
+     * @param {Object} obj      - context to bind
+     * @return {Function} function binded.
      */
     bind: function (fn, obj) {
         var slice = Array.prototype.slice;
@@ -250,8 +273,15 @@ Z.Util = {
         };
     },
 
-    //from leaflet
-    // return a function that won't be called more often than the given interval
+    /**
+     * from leaflet <br>
+     * return a function that won't be called more often than the given interval
+     *
+     * @param  {Function} fn      - function to call
+     * @param  {Number}   time    - interval to throttle
+     * @param  {Object}   context - function's context
+     * @return {Function} the throttled function
+     */
     throttle: function (fn, time, context) {
         var lock, args, wrapperFn, later;
 
@@ -289,13 +319,7 @@ Z.Util = {
         return null;
     },
 
-    /**
-     * 遍历数组中的每个元素,并执行fn操作, 兼容N维数组, 如果数组中有null或undefined,则continue不作处理
-     * @param {Array}   points 数组
-     * @param {Object} context 上下文
-     * @param {Function} fn 函数
-     * @return {Array} result
-     */
+
     eachInArray:function(points, context, fn) {
         if (!this.isArray(points)) {
             return null;
@@ -317,12 +341,7 @@ Z.Util = {
         return result;
     },
 
-    /**
-     * 在数组arr中查找obj,并返回其序号index
-     * @param  {Object} obj 查找的对象
-     * @param  {Array} arr 查找的目标数组
-     * @return {Number}     序号
-     */
+
     searchInArray:function(obj, arr) {
         if (Z.Util.isNil(obj) || !Z.Util.isArrayHasData(arr)) {
             return -1;
@@ -336,24 +355,22 @@ Z.Util = {
     },
 
     /**
-     * 判断a和b是否相同, 浅层判断, 不涉及子属性
+     * Shallow comparison of two objects <br>
      * borrowed from expect.js
      * @param  {Object} a
      * @param  {Object} b
-     * @param {Boolean} isDeep 是否深度判断
-     * @return {Boolean}   true|false
+     * @return {Boolean}
      */
     objEqual:function(a, b) {
         return Z.Util._objEqual(a,b);
     },
 
     /**
-     * 判断a和b是否相同, 深层判断, 子属性也必须相同,du
+     * Deep comparison of two objects <br>
      * borrowed from expect.js
      * @param  {Object} a
      * @param  {Object} b
-     * @param {Boolean} isDeep 是否深度判断
-     * @return {Boolean}   true|false
+     * @return {Boolean}
      */
     objDeepEqual:function(a, b) {
         return Z.Util._objEqual(a,b, true);
@@ -407,10 +424,10 @@ Z.Util = {
         return true;
     },
 
-    /**
-     * 四舍五入
-     * @param  {Number} num 坐标值
-     * @return {Number} 处理后的坐标值
+    /*
+     * round a number, more efficient one.
+     * @param  {Number} num - num to round
+     * @return {Number}
      */
     round:function(num) {
         if (num > 0) {
@@ -421,10 +438,10 @@ Z.Util = {
 
     },
 
-    /**
-     * 是否为坐标
-     * @param  {Object} obj 对象
-     * @return {Boolean} true：坐标
+    /*
+     * Whether the object is a coordinate
+     * @param  {Object} obj     - object
+     * @return {Boolean}
      */
     isCoordinate:function(obj) {
         if (obj instanceof Z.Coordinate) {
@@ -435,42 +452,43 @@ Z.Util = {
         }*/
         return false;
     },
-    /**
-     * 判断obj是否为undefined或者null
-     * @param  {Object}  obj 对象
-     * @return {Boolean}     true|false
+    /*
+     * Whether the object is null or undefined.
+     * @param  {Object}  obj - object
+     * @return {Boolean}
      */
     isNil:function(obj) {
         return (typeof(obj) === 'undefined' || obj === null);
     },
 
-    /**
-     * 判断val是不是合法的数字, 即数字类型且不是NaN
-     * @param  {Object}  val 考察的数字
-     * @return {Boolean}     结果
+    /*
+     * Whether val is a number and not a NaN.
+     * @param  {Object}  val - val
+     * @return {Boolean}
      */
     isNumber:function(val) {
         return (typeof val === 'number') && !isNaN(val);
     },
 
-    /**
-     * 判断obj是否是一个Object类型且不为null
-     * @param  {[type]}  obj 要检查的对象
-     * @return {Boolean}     如果obj是Object类型且不为null，返回true；反之返回false
+    /*
+     * Whether the obj is a javascript object.
+     * @param  {*}  obj     - object to check
+     * @return {Boolean}
      */
     isObject: function (obj) {
         return typeof obj === 'object' && !!obj;
     },
-    /**
-     * 设置默认值
-     * @param {Object} value 赋值
-     * @param {Object} defaultValue 默认值
+    /*
+     * Get the value or default if the value is null or undefined.
+     * @param {*} value        - value
+     * @param {*} defaultValue - default value
+     * @returns {*}
      */
     getValueOrDefault: function(value, defaultValue) {
         return (Z.Util.isNil(value))?defaultValue:value;
     },
 
-    /**
+    /*
      * 判断数组中是否包含obj
      * @param {Object} obj
      * @return {Boolean} true|false
@@ -479,7 +497,7 @@ Z.Util = {
         return this.isArray(obj) && obj.length>0;
     },
 
-    /**
+    /*
      * 判断是否数组
      * @param {Object} obj
      * @return {Boolean} true|false
@@ -499,7 +517,7 @@ Z.Util = {
         return typeof _str == 'string' || (_str.constructor!==null && _str.constructor == String);
     },
 
-    /**
+    /*
      * 判断是否函数
      * @param {Object} _func
      * @return {Boolean} true|false
@@ -512,9 +530,9 @@ Z.Util = {
     },
 
     /**
-     * 判断是否是url
-     * @param  {[type]}  url [description]
-     * @return {Boolean}     [description]
+     * Whether the input string is a valid url.
+     * @param  {String}  url - url to check
+     * @return {Boolean}
      */
     isURL:function(url) {
         if (!url) {
@@ -527,9 +545,9 @@ Z.Util = {
     },
 
     /**
-     * 将带减号的名称转化为camel名称, 如foo-class -> fooClass
-     * @param  {String} p 带减号名称
-     * @return {String}   camel名称
+     * Converts a minus style variable name to a camel style one, eg: foo-class -> fooClass
+     * @param  {String} p - minus style name
+     * @return {String} camel style name
      */
     convertMinusToCamel: function(str) {
         var re = /-([A-Za-z])/g;
@@ -539,9 +557,9 @@ Z.Util = {
     },
 
     /**
-     * 将camel名称转化为带减号的名称, 如fooClass -> foo-class
-     * @param  {String} p camel名称
-     * @return {String}   带减号名称
+     * Converts a camel style variable name to a minus style one, eg: fooClass -> foo-class
+     * @param  {String} p - camel style name
+     * @return {String} minus style name
      */
     convertCamelToMinus: function(str) {
         var re = /([A-Z])/g;
@@ -553,7 +571,7 @@ Z.Util = {
         });
     },
 
-    /**
+    /*
      * 转换对象属性变量名风格, 即将属性名在camel风格到minus风格间转换
      * @param  {Object} symbol 对象
      * @param  {String} style   转换风格:'minus'或'camel'
@@ -614,9 +632,13 @@ Z.Util = {
     b64chrs : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 
     /**
-     * from https://github.com/davidchambers/Base64.js
-     * @param  {[type]} input [description]
-     * @return {[type]}       [description]
+     * btoa or a polyfill in old browsers. <br>
+     * Creates a base-64 encoded ASCII string from a String object in which each character in the string is treated as a byte of binary data.<br>
+     * From https://github.com/davidchambers/Base64.js
+     * @param  {Buffer} input - input string to convert
+     * @return {String} ascii
+     * @example
+     *     var encodedData = maptalks.Util.btoa(stringToEncode);
      */
     btoa:function(input) {
         if (window && window.btoa) {
@@ -643,7 +665,7 @@ Z.Util = {
     },
 
     /**
-     * borrowed from jquery, Evaluates a script in a global context
+     * Borrowed from jquery, evaluates a javascript snippet in a global context
      * @param {String} code
      */
     globalEval: function( code ) {
@@ -652,28 +674,15 @@ Z.Util = {
         document.head.appendChild( script ).parentNode.removeChild( script );
     },
 
+    /**
+     * Borrowed from jquery, evaluates a script in a global context.
+     * @param  {String} file    - javascript file to eval
+     */
     globalScript: function( file ) {
         var script = document.createElement( "script" );
         script.type = "text/javascript"
         script.src = file;
         document.head.appendChild( script );
-    },
-
-    /**
-     * 获取异常信息
-     * @param {String} exceptionStr 异常字符串
-     * @param {String[]} 参数数组
-     * @return {String} 异常字符串
-     */
-    getExceptionInfo: function(exceptionStr, params) {
-        if(!params) return exceptionStr;
-        if(this.isString(params)) params = [params];
-        if(this.isArray) {
-            for(var i=0,len=params.length;i<len;i++) {
-                exceptionStr = exceptionStr.replace('%'+(i+1), params[i]);
-            }
-        }
-        return exceptionStr;
     },
 
     decreaseSymbolOpacity:function(symbol, ratio) {
@@ -725,7 +734,7 @@ Z.Util = {
 };
 
 if (typeof(window) != 'undefined') {
-    //动画, inspired by Leaflet
+    //RequestAnimationFrame, inspired by Leaflet
     (function () {
         // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 
@@ -763,45 +772,39 @@ if (typeof(window) != 'undefined') {
 }
 
 /**
- * Ajax
- * @class maptalks.Util.Ajax
- * @author Maptalks Team
+ * Ajax request used internally.
+ * @class
+ * @protected
+ * @param {String} sUrl             - url
+ * @param {String} sRecvTyp         - content type of the response, 'text/xml' by default
+ * @param {String} sQueryString     - query string
+ * @param {Function} oResultFunc    - callback function
+ * @param {String} responseType     - content type of the response, 'text/xml' by default
+ * @example
+ *     var ajax = new maptalks.Util.Ajax(url, 'text/xml', '?foo=1&foo2=2', function(response){}, 'text/plain');
+ *     ajax.post();
  */
-Z.Util.Ajax =
-    /**
-     * Ajax请求
-     * @method Ajax
-     * @param {String} sUrl 请求地址
-     * @param {String} sRecvTyp text/xml
-     * @param {String} sQueryString 参数
-     * @param {Function} oResultFunc 会到函数
-     * @param {String} responseType 响应类型 text/xml/json
-     */
-function(sUrl,sRecvTyp,sQueryString,oResultFunc,responseType) {
-    this.Url = sUrl;
-    this.QueryString = sQueryString;
-    this.resultFunc = oResultFunc;
-    this.reponseType = responseType;
-    this.XmlHttp = this.createXMLHttpRequest();
-    if (!this.XmlHttp) {
+Z.Util.Ajax = function(sUrl,sRecvTyp,sQueryString,oResultFunc,responseType) {
+    this._url = sUrl;
+    this._queryString = sQueryString;
+    this._reponseType = responseType;
+    this._xmlHttp = this._createXMLHttpRequest();
+    if (!this._xmlHttp) {
         alert("error");
         return;
     }
-    var objxml = this.XmlHttp;
+    var xmlHttp = this._xmlHttp;
     var me = this;
-    if((window.XDomainRequest && document["documentMode"] === 8) || objxml.withCredentials!==undefined){    //xhr2直接用onload
-        objxml.onload = function (){me.handleStateChange(objxml,sRecvTyp,oResultFunc);};
+    if((window.XDomainRequest && document["documentMode"] === 8) || xmlHttp.withCredentials!==undefined){
+        //Cross Domain request in IE 8
+        xmlHttp.onload = function (){me._handleStateChange(xmlHttp,sRecvTyp,oResultFunc);};
     }else{
-        objxml.onreadystatechange = function (){me.handleStateChange(objxml,sRecvTyp,oResultFunc);};
+        xmlHttp.onreadystatechange = function (){me._handleStateChange(xmlHttp,sRecvTyp,oResultFunc);};
     }
 };
 
-Z.Util.extend(Z.Util.Ajax.prototype, {
-    /**
-     * XMLHttp Request
-     * @member maptalks.Util.Ajax
-     */
-    createXMLHttpRequest : function() {
+Z.Util.extend(Z.Util.Ajax.prototype, /** @lends maptalks.Util.Ajax.prototype */{
+    _createXMLHttpRequest : function() {
         if (Z.Browser.ie) {
             if (document["documentMode"] == 8) {
                 try { return new XDomainRequest();} catch(e) {}
@@ -814,26 +817,21 @@ Z.Util.extend(Z.Util.Ajax.prototype, {
         return null;
     },
 
-    /**
-     * 构造请求字符串
-     * @member maptalks.Util.Ajax
-     */
-    createQueryString : function () {
-        var queryString = this.QueryString;
+    _createQueryString : function () {
+        var queryString = this._queryString;
         return queryString;
     },
 
     /**
      * doGet Request
-     * @member maptalks.Util.Ajax
      */
     get : function () {
-        var sUrl = this.Url;
-        var xmlHttp = this.XmlHttp;
-        var queryString = this.createQueryString();
+        var sUrl = this._url;
+        var xmlHttp = this._xmlHttp;
+        var queryString = this._createQueryString();
         var url = sUrl+(!queryString?"":("?"+queryString));
         xmlHttp.open("GET",url,true);
-        if (this.reponseType  && xmlHttp.responseType) {
+        if (this._reponseType  && xmlHttp.responseType) {
             xmlHttp.responseType=this.responseType;
         }
         xmlHttp.send(null);
@@ -841,40 +839,30 @@ Z.Util.extend(Z.Util.Ajax.prototype, {
 
     /**
      * doPost Request
-     * @member maptalks.Util.Ajax
+     * @param {String} contentType - contentType of the request, 'application/x-www-form-urlencoded' by default
      */
     post : function(contentType) {
-        var sUrl = this.Url;
-        var queryString = this.createQueryString();
-        this.XmlHttp.open("POST",sUrl,true);
-        if (this.reponseType && this.XmlHttp.responseType) {
-            this.XmlHttp.responseType=this.responseType;
+        var sUrl = this._url;
+        var queryString = this._createQueryString();
+        this._xmlHttp.open("POST",sUrl,true);
+        if (this._reponseType && this._xmlHttp.responseType) {
+            this._xmlHttp.responseType=this.responseType;
         }
-        //alert((typeof this.XmlHttp));
         var ct = contentType ? contentType : 'application/x-www-form-urlencoded';
         if(!window.XDomainRequest) {
-            this.XmlHttp.setRequestHeader("Content-Type", ct);
+            this._xmlHttp.setRequestHeader("Content-Type", ct);
         }
-        this.XmlHttp.send(queryString);
+        this._xmlHttp.send(queryString);
     },
 
-    /**
-     * ajax请求返回处理
-     * @param {Object} XmlHttp http request Obj
-     * @param {Object} sRecvTyp
-     * @param {Function} oResultFunc 回调函数
-     * @member maptalks.Util.Ajax
-     */
-    handleStateChange : function (XmlHttp,sRecvTyp,oResultFunc) {
+    _handleStateChange : function (XmlHttp,sRecvTyp,oResultFunc) {
         if(XmlHttp.withCredentials !== undefined || (window.XDomainRequest && Z.Browser.ie && document["documentMode"] === 8)) {
             oResultFunc(XmlHttp.responseText);
-            //XmlHttp.responseText=null;
             XmlHttp = null;
         }else{
             if (XmlHttp.readyState == 4) {
                 if (XmlHttp.status == 200) {
                     oResultFunc(sRecvTyp?XmlHttp.responseXML:XmlHttp.responseText);
-                    //XmlHttp.responseText=null;
                     XmlHttp = null;
                 } else {
                     if (XmlHttp.status === 0) {
@@ -889,21 +877,17 @@ Z.Util.extend(Z.Util.Ajax.prototype, {
     }
 });
 
+
 /**
- * 载入外部资源, 并执行回调函数, 参数为资源内容
- * @param {String} url 请求地址
- * @param {Function} callback 请求回调函数
- * @param {Object} context 上下文
- * @member maptalks.Util.Ajax
+ * Load a resource
+ * @param {String} url          - resource url
+ * @param {Function} callback   - callback function when completed.
+ * @static
  */
-Z.Util.Ajax.getResource=function(url, callback, context) {
+Z.Util.Ajax.getResource=function(url, callback) {
     var resourceAjax = new Z.Util.Ajax(url,0,null,function(responseText){
             if (callback) {
-                if (context) {
-                    callback.call(context,responseText);
-                } else {
-                    callback(responseText);
-                }
+                callback(responseText);
             }
         });
 
@@ -912,22 +896,17 @@ Z.Util.Ajax.getResource=function(url, callback, context) {
 };
 
 /**
- * 载入script, 执行script, 并执行回调
- * @param {String} url 请求地址
- * @param {Function} callback 请求回调函数
- * @param {Object} context 上下文
- * @member maptalks.Util.Ajax
+ * Load a script and evaluates.
+ * @param {String} url          - script's url
+ * @param {Function} callback   - callback function when completed.
+ * @static
  */
-Z.Util.Ajax.getScript=function(url, callback, context) {
+Z.Util.Ajax.getScript=function(url, callback) {
     var realCallback = function(responseText) {
         Z.Util.globalEval(responseText);
         if (callback) {
-            if (context) {
-                callback.call(context);
-            } else {
-                callback();
-            }
+            callback();
         }
     };
-    Z.Util.Ajax.getResource(url,realCallback,context);
+    Z.Util.Ajax.getResource(url,realCallback);
 };

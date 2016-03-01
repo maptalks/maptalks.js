@@ -1,10 +1,19 @@
 /**
- * 矩形类
- * @class maptalks.Rectangle
- * @extends maptalks.Polygon
- * @author Maptalks Team
+ * @classdesc
+ * Represents a Rectangle geometry, a child class of [maptalks.Polygon]{@link maptalks.Polygon}. <br>
+ *     It means it shares all the methods defined in [maptalks.Polygon]{@link maptalks.Polygon} besides some overrided ones.
+ * @class
+ * @extends {maptalks.Polygon}
+ * @param {maptalks.Coordinate} coordinates  - northwest of the rectangle
+ * @param {Number} width                     - width of the rectangle
+ * @param {Number} height                    - height of the rectangle
+ * @param {Object} [options=null]            - options defined in [Polygon]{@link maptalks.Polygon#options}
+ * @example
+ * var rectangle = new maptalks.Rectangle([100, 0], 1000, 500, {
+ *     id : 'rectangle-id'
+ * });
  */
-Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
+Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
 
     type:Z.Geometry['TYPE_RECT'],
 
@@ -17,18 +26,18 @@ Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
 
 
     /**
-     * 返回矩形左上角坐标
-     * @return {Coordinate} [左上角坐标]
-     * @expose
+     * Get coordinates of rectangle's northwest
+     * @return {maptalks.Coordinate}
      */
     getCoordinates:function() {
         return this._coordinates;
     },
 
     /**
-     * 设置新的矩形左上角坐标
-     * @param {Coordinate} center 新的center
-     * @expose
+     * Set a new coordinate for northwest of the rectangle
+     * @param {maptalks.Coordinate} nw - coordinates of new northwest
+     * @return {maptalks.Rectangle} this
+     * @fires maptalks.Geometry#positionchange
      */
     setCoordinates:function(nw){
         this._coordinates = new Z.Coordinate(nw);
@@ -43,18 +52,18 @@ Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
     },
 
     /**
-     * 返回矩形的宽度
-     * @return {Number} [矩形宽度]
-     * @expose
+     * Get rectangle's width
+     * @return {Number}
      */
     getWidth:function() {
         return this._width;
     },
 
     /**
-     * 设置矩形宽度
-     * @param {Number} width [新的半径]
-     * @expose
+     * Set new width to the rectangle
+     * @param {Number} width - new width
+     * @fires maptalks.Geometry#shapechange
+     * @return {maptalks.Rectangle} this
      */
     setWidth:function(width) {
         this._width = width;
@@ -63,18 +72,18 @@ Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
     },
 
     /**
-     * 返回矩形的高度
-     * @return {Number} [矩形高度]
-     * @expose
+     * Get rectangle's height
+     * @return {Number}
      */
     getHeight:function() {
         return this._height;
     },
 
     /**
-     * 设置矩形高度
-     * @param {Number} height [矩形高度]
-     * @expose
+     * Set new height to rectangle
+     * @param {Number} height - new height
+     * @fires maptalks.Geometry#shapechange
+     * @return {maptalks.Rectangle} this
      */
     setHeight:function(height) {
         this._height = height;
@@ -82,10 +91,9 @@ Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
         return this;
     },
 
-    /**
-     * 覆盖Polygon的getShell方法, 将矩形转化为多边形的外环坐标数组
-     * @return {[Coordinate]} 外环坐标数组
-     * @expose
+   /**
+     * Gets the shell of the rectangle as a polygon
+     * @return {maptalks.Coordinate[]} - shell coordinates
      */
     getShell:function() {
         var measurer = this._getMeasurer();
@@ -101,9 +109,8 @@ Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
     },
 
     /**
-     * 覆盖Polygon的getHoles方法
-     * @return {[Coordinate]} 空洞坐标
-     * @expose
+     * Rectangle won't have any holes, always returns null
+     * @return {null}
      */
     getHoles:function() {
         return null;
@@ -120,20 +127,14 @@ Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
         return this._pnw;
     },
 
-    /**
-     * 设置投影坐标
-     * @param {Coordinate} pnw 投影坐标
-     */
+
     _setPrjCoordinates:function(pnw) {
         this._pnw=pnw;
         this._onPositionChanged();
     },
 
 
-    /**
-     * 修改投影坐标后调用该方法更新经纬度坐标缓存.
-     * @return {[type]} [description]
-     */
+    //update cached variables if geometry is updated.
     _updateCache:function() {
         delete this._extent;
         var projection = this._getProjection();
@@ -146,11 +147,6 @@ Z['Rectangle'] = Z.Rectangle = Z.Polygon.extend({
         this._pnw = null;
     },
 
-    /**
-     * 计算中心店
-     * @param  {[type]} measurer [description]
-     * @return {[type]}            [description]
-     */
     _computeCenter:function(measurer) {
         return measurer.locate(this._coordinates,this._width/2,-this._height/2);
     },

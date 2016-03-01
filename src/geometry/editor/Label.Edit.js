@@ -1,20 +1,18 @@
-Z.Label.include({
+Z.Label.include(/** @lends maptalks.Label.prototype */{
     /**
-     * 开始编辑Label
-     * @member maptalks.Label
-     * @expose
+     * Start to edit the label text
+     * @return {maptalks.Label} this
      */
     startEditText: function() {
-        //隐藏label标签
         this.hide();
         this._prepareEditor();
         return this;
     },
 
     /**
-     * 结束编辑
+     * End label text edit.
      * @member maptalks.Label
-     * @expose
+     * @return {maptalks.Label} this
      */
     endEditText: function() {
         var content = this._textEditor.value;
@@ -27,10 +25,8 @@ Z.Label.include({
     },
 
     /**
-     * Label是否处于编辑状态中
-     * @member maptalks.Label
-     * @return {Boolean} 是否处于编辑状态
-     * @expose
+     * Whether the label is being edited text.
+     * @return {Boolean}
      */
     isEditingText: function() {
         if (this._container) {

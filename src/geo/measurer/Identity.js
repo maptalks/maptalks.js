@@ -1,5 +1,25 @@
+/**
+ * Identity measurer, a measurer for Cartesian coordinate system.
+ *
+ * @class
+ * @protected
+ * @memberOf maptalks.measurer
+ * @name Identity
+ */
 Z.measurer.Identity = {
+    /**
+     * the code of the measurer, used by [MeasurerUtil]{@link maptalks.MeasurerUtil} to as its key get measurer instance.
+     * @static
+     * @type {String}
+     */
     'measure' : 'IDENTITY',
+    /**
+     * Measure the length between 2 coordinates.
+     * @param  {maptalks.Coordinate} c1
+     * @param  {maptalks.Coordinate} c2
+     * @return {Number}
+     * @static
+     */
     measureLength:function(c1,c2){
         if (!c1 || !c2) {return 0;}
         try {
@@ -8,6 +28,12 @@ Z.measurer.Identity = {
             return 0;
         }
     },
+    /**
+     * Measure the area closed by the given coordinates.
+     * @param  {maptalks.Coordinate[]} coordinates
+     * @return {number}
+     * @static
+     */
     measureArea:function(coordinates) {
         if (!Z.Util.isArrayHasData(coordinates)) {
             return 0;
@@ -25,6 +51,15 @@ Z.measurer.Identity = {
         }
         return Math.abs(area / 2);
     },
+
+    /**
+     * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
+     * @param  {maptalks.Coordinate} c     - source coordinate
+     * @param  {Number} xDist              - x-axis distance
+     * @param  {Number} yDist              - y-axis distance
+     * @return {maptalks.Coordinate}
+     * @static
+     */
     locate:function(c, xDist, yDist) {
         if (!c) {return null;}
         if (!xDist) {xDist = 0;}
@@ -32,4 +67,4 @@ Z.measurer.Identity = {
         if (!xDist && !yDist) {return c;}
         return new Z.Coordinate(c.x+xDist, c.y+yDist);
     }
-}
+};

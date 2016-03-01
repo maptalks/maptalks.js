@@ -1,16 +1,18 @@
 /**
- * 所有图层的基类
- * 供Map调用的图层方法有:
- * @class maptalks.Layer
+ * @classdesc
+ * Base class for all the layers, defines common methods that all the layer classes share.
+ * @class
+ * @abstract
  * @extends maptalks.Class
- * @mixins maptalks.Eventable
- * @author Maptalks Team
+ * @mixes maptalks.Eventable
  */
-Z['Layer']=Z.Layer=Z.Class.extend({
+Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     includes: Z.Eventable,
 
-
+    /**
+     * @property {Object} [options=null] - base options of layer
+     */
     options:{
         //最大最小可视范围, -1表示不受限制
         'minZoom':-1,
@@ -21,11 +23,42 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     },
 
 
-
+    /**
+     * Get the layer id
+     * @returns {String|Number} id
+     */
+    getId:function() {
+        return this._id;
+    },
 
     /**
-     * 将图层加到地图上
-     * @param {Map} map 地图
+     * Set a new id to the layer
+     * @param {String|Number} id - new layer id
+     * @return {maptalks.Layer} this
+     * @fires maptalks.Layer#idchange
+     */
+    setId:function(id) {
+        //TODO 设置id可能造成map无法找到layer
+        var old = this._id;
+        this._id = id;
+        /**
+         * idchange event.
+         *
+         * @event maptalks.Layer#idchange
+         * @type {Object}
+         * @property {String} type - idchange
+         * @property {maptalks.Layer} target    - the layer fires the event
+         * @property {String|Number} old        - value of the old id
+         * @property {String|Number} new        - value of the new id
+         */
+        this.fire('idchange', {'old':old, 'new':id});
+        return this;
+    },
+
+    /**
+     * Adds itself to a map.
+     * @param {maptalks.Map} map - map added to
+     * @return {maptalks.Layer} this
      */
     addTo:function(map) {
         map.addLayer(this);
@@ -33,8 +66,9 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     },
 
     /**
-     * 设置图层z-index叠加顺序
-     * @param {Number} zIndex 叠加顺序
+     * Set a z-index to the layer
+     * @param {Number} zIndex - layer's z-index
+     * @return {maptalks.Layer} this
      */
     setZIndex:function(zIndex) {
         this._zIndex = zIndex;
@@ -48,35 +82,18 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         return this;
     },
 
+    /**
+     * Get the layer's z-index
+     * @return {Number}
+     */
     getZIndex:function() {
         return this._zIndex;
     },
 
     /**
-     * 获取图层id
-     * @returns
-     * @expose
-     */
-    getId:function() {
-        return this._id;
-    },
-
-    /**
-     * 设置图层id
-     * @param {String} [id] [图层id]
-     * @expose
-     */
-    setId:function(id) {
-        //TODO 设置id可能造成map无法找到layer
-        this._id = id;
-        this.fire('idchange');
-        return this;
-    },
-
-    /**
-     * 是否用Canvas渲染
+     * If the layer is rendered by HTML5 Canvas 2d.
      * @return {Boolean}
-     * @expose
+     * @protected
      */
     isCanvasRender:function() {
         var renderer = this._getRenderer();
@@ -87,9 +104,8 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     },
 
     /**
-     * 获取图层所属的地图对象
-     * @expose
-     * @returns {seegoo.maps.Map}
+     * Get the map that the layer added to
+     * @returns {maptalks.Map}
      */
     getMap:function() {
         if (this.map) {
@@ -100,8 +116,8 @@ Z['Layer']=Z.Layer=Z.Class.extend({
 
 
     /**
-     * 将图层置顶
-     * @expose
+     * Brings the layer to the top of all the layers
+     * @returns {maptalks.Layer} this
      */
     bringToFront:function() {
         var layers = this._getLayerList();
@@ -118,8 +134,8 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     },
 
     /**
-     * 将图层置底
-     * @expose
+     * Brings the layer under the bottom of all the layers
+     * @returns {maptalks.Layer} this
      */
     bringToBack:function(){
         var layers = this._getLayerList();
@@ -136,7 +152,8 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     },
 
     /**
-     * 显示图层
+     * Show the layer
+     * @returns {maptalks.Layer} this
      */
     show:function() {
         if (!this.options['visible']) {
@@ -149,7 +166,8 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     },
 
     /**
-     * 隐藏图层
+     * Hide the layer
+     * @returns {maptalks.Layer} this
      */
     hide:function() {
         if (this.options['visible']) {
@@ -162,8 +180,8 @@ Z['Layer']=Z.Layer=Z.Class.extend({
     },
 
     /**
-     * 瓦片图层是否可见
-     * @return {Boolean} true/false
+     * Whether the layer is visible now.
+     * @return {Boolean}
      */
     isVisible:function() {
         if (Z.Util.isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
@@ -184,6 +202,10 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         return this.options['visible'];
     },
 
+    /**
+     * Remove itself from the map added to.
+     * @returns {maptalks.Layer} this
+     */
     remove:function() {
         if (this.map) {
             this.map.removeLayer(this);
@@ -191,10 +213,19 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         return this;
     },
 
+    /**
+     * Get the mask geometry of the layer
+     * @return {maptalks.Geometry}
+     */
     getMask:function() {
         return this._mask;
     },
 
+    /**
+     * Set a mask geometry on the layer, only the area in the mask will be displayed.
+     * @param {maptalks.Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
+     * @returns {maptalks.Layer} this
+     */
     setMask:function(mask) {
         if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask, mask.getSymbol()))
             || mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
@@ -215,7 +246,7 @@ Z['Layer']=Z.Layer=Z.Class.extend({
             });
         }
         this._mask = mask;
-        if (!this.getMap() || this.getMap().isBusy()) {
+        if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
         }
         var renderer = this._getRenderer();
@@ -223,9 +254,13 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         return this;
     },
 
-    clearMask:function(mask) {
+    /**
+     * Clear the mask
+     * @returns {maptalks.Layer} this
+     */
+    clearMask:function() {
         delete this._mask;
-        if (!this.getMap() || this.getMap().isBusy()) {
+        if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
         }
         var renderer = this._getRenderer();
@@ -259,10 +294,6 @@ Z['Layer']=Z.Layer=Z.Class.extend({
         return this._renderer;
     },
 
-
-    /**
-     * 获取该图层所属的list
-     */
     _getLayerList:function() {
         if (!this.map) {return null;}
         return this.map._layers;

@@ -1,44 +1,41 @@
 /**
- * 文本基础工具类
- * @class maptalks.Util
- * @author Maptalks Team
+ * String utilities  used internally
+ * @class
+ * @protected
  */
 Z.StringUtil = {
 
     /**
-     * 去除字符串某位空格
-     * @param {String} str 字符串
-     * @return {String} 处理后的字符串
+     * Trim the string
+     * @param {String} str
+     * @return {String}
      */
     trim: function (str) {
         return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
     },
 
     /**
-     * 分割字符串
-     * @param {String} str 字符串
-     * @return {String} 处理后的字符串
+     * Split string by specified char
+     * @param {String} chr - char to split
+     * @return {String[]}
      */
-    splitWords: function (str) {
-        return Z.StringUtil.trim(str).split(/\s+/);
+    splitWords: function (chr) {
+        return Z.StringUtil.trim(chr).split(/\s+/);
     },
 
     /**
-     * 获取文本像素尺寸
-     * @param {String} text 文本
-     * @param {String} font 字体
-     * @param {String} fontSize 字体大小
-     * @return {maptalks.Size} size对象
+     * Gets size in pixel of the text with a certain font.
+     * @param {String} text - text to measure
+     * @param {String} font - font of the text, same as the CSS font.
+     * @return {maptalks.Size}
      */
     stringLength:function(text, font) {
-        //TODO 该函数在非浏览器环境下无法执行
         var ruler = Z.StringUtil._getStrRuler();
         ruler.style.font = font;
-        // ruler.style.fontSize = fontSize+'px';
-        // ruler.style.fontWeight = 'bold';
         ruler.innerHTML = text;
         var result = new Z.Size(ruler.clientWidth, ruler.clientHeight);
-        //不删除的话, Chrome上canvas背景会变成蓝色, 原因未明
+        //if not removed, the canvas container on chrome will turn to unexpected blue background.
+        //Reason is unknown.
         Z.DomUtil.removeDomNode(ruler);
         return result;
 
@@ -51,15 +48,12 @@ Z.StringUtil = {
         return span;
     },
 
-    _strRuler:null,
-
     /**
-     * 根据长度分割文本
-     * @param {String} content 文本
-     * @param {Number} textLength 文本长度
-     * @param {Number} size 字符大小
-     * @param {Number} wrapWidth 限定宽度
-     * @return {String[]} 分割后的字符串数组
+     * Split content by wrapLength 根据长度分割文本
+     * @param {String} content      - text to split
+     * @param {Number} textLength   - width of the text, provided to prevent expensive repeated text measuring
+     * @param {Number} wrapWidth    - width to wrap
+     * @return {String[]}
      */
     splitContent: function(content, textLength, wrapWidth) {
         var rowNum = Math.ceil(textLength/wrapWidth);
@@ -76,12 +70,15 @@ Z.StringUtil = {
         return result;
     },
     /**
-     * 获取属性值替换后的文本内容
-     * @param {String} str 包含替换符的文本
-     * @param {Object} props 属性值对
-     * @return {String} 替换后的文本
+     * Replace variables wrapped by square brackets ([foo]) with actual values in props.
+     * @example
+     *     // will returns 'John is awesome'
+     *     var actual = maptalks.StringUtil.replaceVariable('[foo] is awesome', {'foo' : 'John'});
+     * @param {String} str      - string to replace
+     * @param {Object} props    - variable value properties
+     * @return {String}
      */
-    content: function (str, props) {
+    replaceVariable: function (str, props) {
         if (!Z.Util.isObject(props) || !Z.Util.isString(str)) {
             return str;
         }
@@ -97,10 +94,11 @@ Z.StringUtil = {
     _contentExpRe: /\[([\w_]+)\]/g,
 
     /**
-     * 将文本marker分割成数组
-     * @param {String} text 文本内容
-     * @param {Object} style textMarker样式
-     * @return {Object} 分割后的文本信息{rowNum: rowNum, textSize: textSize, rows: textRows};
+     * Split a text to multiple rows according to the style.<br>
+     * Style is generated in [TextMarkerSymbolizer]{@link maptalks.symbolizer.TextMarkerSymbolizer}
+     * @param {String} text     - text to split
+     * @param {Object} style    - text style
+     * @return {Object[]} the object's structure: {rowNum: rowNum, textSize: textSize, rows: textRows}
      */
     splitTextToRow: function(text, style) {
         var font = Z.symbolizer.TextMarkerSymbolizer.getFont(style);
@@ -118,10 +116,9 @@ Z.StringUtil = {
         var actualWidth = 0;
         if(wrapChar&&text.indexOf(wrapChar)>=0){
             var texts = text.split(wrapChar);
-            //wrapWidth = textWidth/texts.length;
             for(var i=0,len=texts.length;i<len;i++) {
                 var t = texts[i];
-                //TODO stringLength是个比较昂贵的操作, 需降低其运行频率
+                //TODO stringLength is expensive, should be reduced here.
                 var tSize = Z.StringUtil.stringLength(t,font);
                 var tWidth = tSize['width'];
                 if(tWidth>wrapWidth) {
@@ -155,11 +152,11 @@ Z.StringUtil = {
     },
 
     /**
-     * 根据对齐方式和给定的size值, 计算偏移量
-     * @param  {Size} size                [description]
-     * @param  {String} horizontalAlignment [description]
-     * @param  {String} verticalAlignment   [description]
-     * @return {[type]}                     [description]
+     * Gets text's align point according to the horizontalAlignment and verticalAlignment
+     * @param  {maptalks.Size} size                  - text size
+     * @param  {String} horizontalAlignment - horizontalAlignment: left/middle/right
+     * @param  {String} verticalAlignment   - verticalAlignment: top/middle/bottom
+     * @return {maptalks.Point}
      */
     getAlignPoint:function(size, horizontalAlignment, verticalAlignment) {
         var width = size['width'], height = size['height'];

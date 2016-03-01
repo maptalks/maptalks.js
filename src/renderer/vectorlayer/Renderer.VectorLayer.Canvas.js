@@ -29,8 +29,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
 
     /**
      * render layer
-     * @param  {[Geometry]} geometries   geometries to render
-     * @param  {boolean} ignorePromise   whether escape step of promise
+     * @param  {maptalks.Geometry[]} geometries   geometries to render
+     * @param  {Boolean} ignorePromise   whether escape step of promise
      */
     render:function(geometries) {
         this._clearTimeout();
@@ -283,7 +283,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
 
     /**
      * 读取并载入绘制所需的外部资源, 例如markerFile, shieldFile等
-     * @return {[Promise]} promise数组
+     * @return {Promise[]} promise数组
      */
     _promise:function() {
         if (!this.getMap()) {
@@ -299,9 +299,9 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
 
     /**
      * loadResource from resourceUrls
-     * @param  {[String]} resourceUrls Array of urls to load
-     * @param  {fn} onComplete          callback after loading complete
-     * @param  {object} context      callback's context
+     * @param  {String[]} resourceUrls    - Array of urls to load
+     * @param  {Function} onComplete          - callback after loading complete
+     * @param  {Object} context         - callback's context
      */
     _loadResources:function(resourceUrls, onComplete, context) {
         var me = this;

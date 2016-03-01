@@ -1,4 +1,14 @@
-Z.Vector = Z.Geometry.extend({
+/**
+ * @classdesc Base class for all the geometry classes besides [maptalks.Marker]{@link maptalks.Marker}. <br/>
+ * @class
+ * @abstract
+ * @extends maptalks.Geometry
+ */
+Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
+    /**
+     * @property {Object} options - Vector's options
+     * @property {Object} options.symbol - Vector's default symbol
+     */
     options:{
         'symbol':{
             'lineColor' : '#474cf8',

@@ -1,11 +1,12 @@
 /**
- * 测距鼠标工具类
- * @class maptalks.DrawTool
- * @extends maptalks.Class
+ * @classdesc
+ * A map tool to help measure distance on the map
+ * @class
+ * @extends maptalks.DrawTool
  * @mixins maptalks.Eventable
- * @author Maptalks Team
+ * @param {options} [options=null] - construct options
  */
-Z.DistanceTool = Z.DrawTool.extend({
+Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */{
 
     options:{
         'language' : 'zh-CN', //'en-US'
@@ -37,11 +38,6 @@ Z.DistanceTool = Z.DrawTool.extend({
         }
     },
 
-    /**
-     * 初始化绘制工具
-     * @constructor
-     * @param {Object} options:{mode:Z.Geometry.TYPE_CIRCLE, disableOnDrawEnd: true}
-     */
     initialize: function(options) {
         Z.Util.setOptions(this,options);
         this.config('mode',Z.Geometry['TYPE_LINESTRING']);
@@ -50,6 +46,10 @@ Z.DistanceTool = Z.DrawTool.extend({
         this._measureLayers = [];
     },
 
+    /**
+     * Clear the measurements
+     * @return {maptalks.DistanceTool} this
+     */
     clear:function() {
         if (Z.Util.isArrayHasData(this._measureLayers)) {
             for (var i = 0; i < this._measureLayers.length; i++) {
@@ -62,10 +62,18 @@ Z.DistanceTool = Z.DrawTool.extend({
         return this;
     },
 
+    /**
+     * Get the VectorLayers with the geometries drawn on the map during measuring.
+     * @return {maptalks.Layer[]}
+     */
     getMeasureLayers:function() {
         return this._measureLayers;
     },
 
+    /**
+     * Get last measuring result
+     * @return {Number}
+     */
     getLastMeasure:function() {
         if (!this._lastMeasure) {
             return 0;

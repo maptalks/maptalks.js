@@ -2,7 +2,7 @@
  * 地图放大缩小控件
  * @class maptalks.control.Zoom
  * @extends maptalks.Control
- * @author Maptalks Team
+
  */
 Z.control.Zoom = Z.Control.extend({
 

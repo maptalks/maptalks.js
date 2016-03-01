@@ -1,10 +1,11 @@
 /**
- * 信息窗控件
- * @class maptalks.InfoWindow
- * @extends maptalks.Class
- * @author Maptalks Team
+ * @classdesc
+ * Class for info window, a popup on the map to display any useful infomation you wanted.
+ * @class
+ * @extends maptalks.UIComponent
+ * @param {Object} options - construct options
  */
-Z['InfoWindow'] = Z.InfoWindow = Z.UIComponent.extend({
+Z.InfoWindow = Z.UIComponent.extend(/** @lends maptalks.InfoWindow.prototype */{
 
     /**
      * @cfg {Object} options 信息窗属性
@@ -14,8 +15,8 @@ Z['InfoWindow'] = Z.InfoWindow = Z.UIComponent.extend({
         'width'     : 300,
         'minHeight' : 120,
         'custom'    : false,
-        'title'     : '',
-        'content'   : '',
+        'title'     : null,
+        'content'   : null,
         'offset'    : null
     },
 

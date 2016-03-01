@@ -1,14 +1,28 @@
 /**
- * 圆形类
- * @class maptalks.Circle
+ * @classdesc
+ * Represents a Circle Geometry, a child class of [maptalks.Polygon]{@link maptalks.Polygon}. <br>
+ *     It means it shares all the methods defined in [maptalks.Polygon]{@link maptalks.Polygon} besides some overrided ones.
+ * @class
  * @extends maptalks.Polygon
- * @author Maptalks Team
+ * @mixes maptalks.Geometry.Center
+ * @param {maptalks.Coordinate} center - center of the circle
+ * @param {Number} radius           - radius of the circle
+ * @param {Object} [options=null]   - specific construct options for circle, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+ * @param {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the circle's shell coordinates as a polygon.
+ * @example
+ * var circle = new maptalks.Circle([100, 0], 1000, {
+ *     id : 'circle-id'
+ * });
  */
-Z.Circle=Z.Polygon.extend({
+Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
     includes:[Z.Geometry.Center],
 
+    /**
+     * @property {Object} options - specific options of circle, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+     * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the circle to a polygon.
+     */
     options:{
-        'numberOfPoints':60
+        'numberOfShellPoints':60
     },
 
     type:Z.Geometry['TYPE_CIRCLE'],
@@ -20,18 +34,18 @@ Z.Circle=Z.Polygon.extend({
     },
 
     /**
-     * 返回圆形的半径
-     * @return {Number} [圆形半径]
-     * @expose
+     * Get radius of the circle
+     * @return {Number}
      */
     getRadius:function() {
         return this._radius;
     },
 
     /**
-     * 设置圆形半径
-     * @param {Number} radius [新的半径]
-     * @expose
+     * Set a new radius to the circle
+     * @param {Number} radius - new radius
+     * @return {maptalks.Circle} this
+     * @fires maptalks.Geometry#shapechange
      */
     setRadius:function(radius) {
         this._radius = radius;
@@ -40,14 +54,13 @@ Z.Circle=Z.Polygon.extend({
     },
 
     /**
-     * 覆盖Polygon的getShell方法, 将圆形转化为多边形的外环坐标数组
-     * @return {[Coordinate]} 外环坐标数组
-     * @expose
+     * Gets the shell of the circle as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Circle#options}
+     * @return {maptalks.Coordinate[]} - shell coordinates
      */
     getShell:function() {
         var measurer = this._getMeasurer();
         var center = this.getCoordinates();
-        var numberOfPoints = this.options['numberOfPoints'];
+        var numberOfPoints = this.options['numberOfShellPoints'];
         var radius = this.getRadius();
         var shell = [];
         for (var i=0;i<numberOfPoints;i++) {
@@ -61,9 +74,8 @@ Z.Circle=Z.Polygon.extend({
     },
 
     /**
-     * 覆盖Polygon的getHoles方法
-     * @return {[Coordinate]} 空洞坐标
-     * @expose
+     * Circle won't have any holes, always returns null
+     * @return {null}
      */
     getHoles:function() {
         return null;

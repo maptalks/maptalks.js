@@ -1,14 +1,69 @@
 /**
- * 地图类
- * @class maptalks.Map
- * @extends maptalks.Class
- * @mixins maptalks.Eventable
- * @author Maptalks Team
+ *
+ * @class
+ * @extends {maptalks.Class}
+ *
+ * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
+ *                                          1. A HTMLElement container.<br/>
+ *                                          2. ID of a HTMLElement container.<br/>
+ *                                          3. A canvas compatible container in node,
+ *                                          e.g. [node-canvas]{@link https://github.com/Automattic/node-canvas},
+ *                                              [canvas2svg]{@link https://github.com/gliffy/canvas2svg}
+ * @param {Object} options - construct options
+ * @param {(Number[]|maptalks.Coordinate)} options.center - initial center of the map.
+ * @param {Number} options.zoom - initial zoom of the map.
+ * @param {Object} [options.view=null] - map's view state, default is the common-used by google map or osm<br/>
+ *                               use projection EPSG:3857 with resolutions
+ * @param {maptalks.Layer} [options.baseLayer=null] - base layer that will be set to map initially.
+ * @param {maptalks.Layer[]} [options.layers=null] - layers that will be added to map initially.
+ * @param {*} options.* - any other option defined in [Map.options]{@link maptalks.Map#options}
+ *
+ * @mixes maptalks.Eventable
+ * @mixes maptalks.Handlerable
+ * @mixins maptalks.Menu.Mixin
+ *
+ * @fires maptalks.Map#load
+ * @fires maptalks.Map#viewchange
+ * @fires maptalks.Map#baselayerload
+ * @fires maptalks.Map#baselayerchangestart
+ * @fires maptalks.Map#baselayerchangeend
+ * @fires maptalks.Map#resize
+ * @fires maptalks.Map#movestart
+ * @fires maptalks.Map#moving
+ * @fires maptalks.Map#moveend
+ * @classdesc
+ * The central class of the library, to create a map on a container.
+ * @example
+ * var map = new maptalks.Map("map",{
+        center:     [180,0],
+        zoom:  4,
+        baseLayer : new maptalks.TileLayer("base",{
+            urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            subdomains:['a','b','c']
+        })
+    });
  */
-Z.Map=Z.Class.extend({
+Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
     includes: [Z.Eventable,Z.Handlerable],
 
+    /**
+     * @property {Object} options - map's options, options must be updated by config method, eg: map.config('zoomAnimation', false);
+     * @property {Boolean} [options.clipFullExtent=false] - clip geometries outside map's full extent
+     * @property {Boolean} [options.zoomAnimation=true] - enable zooming animation
+     * @property {Number} [options.zoomAnimationDuration=250] - zoom animation duration.
+     * @property {Boolean} [options.zoomBackground=true] - leaves a background after zooming.
+     * @property {Boolean} [options.layerZoomAnimation=true] - also animate layers when zooming.
+     * @property {Boolean} [options.updatePointsWhileTransforming=true] - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
+     * @property {Boolean} [options.panAnimation=true] - continue to animate panning when draging or touching ended.
+     * @property {Boolean} [options.panAnimationDuration=600] - duration of pan animation.
+     * @property {Boolean} [options.enableZoom=true] - whether to enable map zooming.
+     * @property {Boolean} [options.enableInfoWindow=true] - whether to enable infowindow opening on this map.
+     * @property {Boolean} [options.maxZoom=null] - the max zoom the map can be zooming to.
+     * @property {Boolean} [options.minZoom=null] - the min zoom the map can be zooming to.
+     * @property {maptalks.Extent} [options.maxExtent=null] - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
+     * @property {String} [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+     */
     options:{
         'clipFullExtent' : false,
 
@@ -19,37 +74,33 @@ Z.Map=Z.Class.extend({
         //controls whether other layers than base tilelayer will show during zoom animation.
         'layerZoomAnimation' : true,
 
-        //economically transform, whether point symbolizers transforms during transformation (eg. zoom animation)
+        //economically transform, whether point symbolizers transforms during transformation (e.g. zoom animation)
         //set to true can prevent drastic low performance when number of point symbolizers is large.
-        'ecoTransform' : false,
+        'updatePointsWhileTransforming' : false,
 
         'panAnimation':true,
         //default pan animation duration
         'panAnimationDuration' : 600,
-
-        'maskColor' : '#000',
-        'maskOpacity' : 1,
 
         'enableZoom':true,
         'enableInfoWindow':true,
 
         'maxZoom' : null,
         'minZoom' : null,
+        'maxExtent' : null,
 
         'renderer' : 'canvas'
     },
 
-    //根据不同的语言定义不同的错误信息
+    //Exception definitions in English and Chinese.
     exceptionDefs:{
         'en-US':{
-            'NO_BASE_TILE_LAYER':'Map has no baseLayer, pls specify a baseLayer by setBaseLayer method before loading.',
             'INVALID_OPTION':'Invalid options provided.',
             'INVALID_CENTER':'Invalid Center',
             'INVALID_LAYER_ID':'Invalid id for the layer',
             'DUPLICATE_LAYER_ID':'the id of the layer is duplicate with another layer'
         },
         'zh-CN':{
-            'NO_BASE_TILE_LAYER':'地图没有设置基础图层,请在调用Map.Load之前调用setBaseLayer设定基础图层',
             'INVALID_OPTION':'无效的option.',
             'INVALID_CENTER':'无效的中心点',
             'INVALID_LAYER_ID':'图层的id无效',
@@ -57,12 +108,8 @@ Z.Map=Z.Class.extend({
         }
     },
 
-    /**
-     * @constructor
-     * @param  {String} containerId
-     * @param  {Object} options
-     */
-    initialize:function(_container, options) {
+
+    initialize:function(container, options) {
 
         if (!options) {
             throw new Error(this.exceptions['INVALID_OPTION']);
@@ -73,16 +120,16 @@ Z.Map=Z.Class.extend({
         }
 
         this._loaded=false;
-        this._container = _container;
+        this._container = container;
 
         if (Z.Util.isString(this._container)) {
             this._containerDOM = document.getElementById(this._container);
             if (!this._containerDOM) {
-                throw new Error('invalid container: \''+_container+'\'');
+                throw new Error('invalid container: \''+container+'\'');
             }
         } else {
-            this._containerDOM = _container;
-            if (Z.runningInNode) {
+            this._containerDOM = container;
+            if (Z.node) {
                 //node环境中map的containerDOM即为模拟Canvas容器, 例如node-canvas
                 //获取模拟Canvas类的类型, 用以在各图层的渲染器中构造Canvas
                 this.CanvasClass = this._containerDOM.constructor;
@@ -110,7 +157,6 @@ Z.Map=Z.Class.extend({
         var layers = opts['layers'];
         delete opts['layers'];
 
-        //坐标类型
         Z.Util.setOptions(this,opts);
         this.setView(opts['view']);
 
@@ -121,7 +167,7 @@ Z.Map=Z.Class.extend({
             this.addLayer(layers);
         }
 
-        //内部变量, 控制当前地图是否允许panAnimation
+        //a internal property to enable/disable panAnimation.
         this._enablePanAnimation = true;
         this._mapViewPoint=new Z.Point(0,0);
 
@@ -132,10 +178,43 @@ Z.Map=Z.Class.extend({
         this._Load();
     },
 
+    /**
+     * Whether the map is loaded or not.
+     * @return {Boolean}
+     */
+    isLoaded:function() {
+        return this._loaded;
+    },
+
+    /**
+     * Whether the map is rendered by canvas
+     * @return {Boolean}
+     * @protected
+     * @example
+     * var isCanvas = map.isCanvasRender();
+     */
+    isCanvasRender:function() {
+        var renderer = this._getRenderer();
+        if (renderer) {
+            return renderer.isCanvasRender();
+        }
+        return false;
+    },
+
+    /**
+     * Change the view of the map. <br>
+     * A view is a series of settings to decide the map presentation:<br>
+     * 1. the projection.<br>
+     * 2. zoom levels and resolutions. <br>
+     * 3. full extent.<br>
+     * there are some [predefined views]{@link http://www.foo.com}, and surely you can [define a custom one.]{@link http://www.foo.com}
+     * @param {Object} view - view settings
+     * @returns {maptalks.Map} this
+     */
     setView:function(view) {
         var oldView = this._view;
         if (oldView && !view) {
-            return;
+            return this;
         }
         this._center = this.getCenter();
         this.options['view'] =  view;
@@ -147,45 +226,44 @@ Z.Map=Z.Class.extend({
         }
         this._resetMapStatus();
         this._fireEvent('viewchange');
+        return this;
     },
 
+    /**
+     * Callback when any option is updated
+     * @private
+     * @param  {Object} conf - options to update
+     * @return {maptalks.Map}   this
+     */
     onConfig:function(conf) {
         if (!Z.Util.isNil(conf['view'])) {
             this.setView(conf['view']);
         }
+        return this;
     },
 
+    /**
+     * Get the projection of the map. <br>
+     * Projection is an algorithm for map projection, e.g. well-known [Mercator Projection]{@link https://en.wikipedia.org/wiki/Mercator_projection}
+     * @return {Object}
+     */
     getProjection:function() {
         return this._view.getProjection();
     },
 
+    /**
+     * Get map's full extent, e.g. the world's full extent. <br>
+     * Any geometries outside this extent will be clipped if clipFullExtent options is set true
+     * @return {maptalks.Extent}
+     */
     getFullExtent:function() {
         return this._view.getFullExtent();
     },
 
     /**
-     * 地图是否采用Canvas渲染
-     * @return {Boolean}
-     */
-    isCanvasRender:function() {
-        var renderer = this._getRenderer();
-        if (renderer) {
-            return renderer.isCanvasRender();
-        }
-        return false;
-    },
-
-    /**
-     * 判断地图是否加载完毕
-     * @return {Boolean} true：加载完毕
-     */
-    isLoaded:function() {
-        return this._loaded;
-    },
-
-    /**
-     * 设置地图的鼠标样式
-     * @param {cursor} cursor 鼠标样式, 同css cursor
+     * Set map's cursor style, same with CSS.
+     * @param {String} cursor - cursor style
+     * @returns {maptalks.Map} this
      */
     setCursor:function(cursor) {
         delete this._cursor;
@@ -195,9 +273,45 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 获取地图容器的宽度和高度
-     * @return {{'width':?, 'height':?}}} 地图容器大小,单位像素
-     * @expose
+     * Get center of the map.
+     * @return {maptalks.Coordinate}
+     */
+    getCenter:function() {
+        if (!this._loaded || !this._prjCenter) {return this._center;}
+        var projection = this.getProjection();
+        return projection.unproject(this._prjCenter);
+    },
+
+    /**
+     * Set a new center to the map.
+     * @param {maptalks.Coordinate} center
+     * @return {maptalks.Map} this
+     */
+    setCenter:function(center) {
+        if (!center) {
+            return this;
+        }
+        if (!this._verifyExtent(center)) {
+            return this;
+        }
+        center = new Z.Coordinate(center);
+        if (!this._loaded) {
+            this._center = center;
+            return this;
+        }
+        if (this._loaded && !this._center.equals(center)) {
+            this._onMoveStart();
+        }
+        var projection = this.getProjection();
+        var _pcenter = projection.project(center);
+        this._setPrjCenterAndMove(_pcenter);
+        this._onMoveEnd();
+        return this;
+    },
+
+    /**
+     * Get map's size (width and height) in pixel.
+     * @return {maptalks.Size}
      */
     getSize:function() {
         if (Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
@@ -207,9 +321,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 获取地图的Extent
-     * @return {Extent} 地图的Extent
-     * @expose
+     * Get the geographical extent of map's current view extent.
+     *
+     * @return {maptalks.Extent}
      */
     getExtent:function() {
         var projection = this.getProjection();
@@ -230,62 +344,48 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 获取地图的中心点
-     * @return {Coordinate} 坐标
-     * @expose
+     * Get the max extent that the map is restricted to.
+     * @return {maptalks.Extent}
      */
-    getCenter:function() {
-        if (!this._loaded || !this._prjCenter) {return this._center;}
-        var projection = this.getProjection();
-        return projection.unproject(this._prjCenter);
+    getMaxExtent:function() {
+        if (!this.options['maxExtent']) {
+            return null;
+        }
+        return this.options['maxExtent'].copy();
     },
 
     /**
-     * 设置地图中心点
-     * @param {Coordinate} center [新的中心点坐标]
-     * @expose
+     * Sets the max extent that the map is restricted to.
+     * @param {maptalks.Extent}
+     * @return {maptalks.Map} this
      */
-    setCenter:function(center) {
-        if (!center) {
-            return this;
+    setMaxExtent:function(extent) {
+        if (extent) {
+            var maxExt = new Z.Extent(extent);
+            this.options['maxExtent'] = maxExt;
+            var center = this.getCenter();
+            if (!this._verifyExtent(center)) {
+                this.panTo(maxExt.getCenter());
+            }
+        } else {
+            delete this.options['maxExtent'];
         }
-        if (!this._verifyExtent(center)) {
-            return this;
-        }
-        center = new Z.Coordinate(center);
-        if (!this._loaded) {
-            this._center = center;
-            return this;
-        }
-        if (this._loaded && !this._center.equals(center)) {
-            this._onMoveStart();
-        }
-        var projection = this.getProjection();
-        var _pcenter = projection.project(center);
-        this._setPrjCenterAndMove(_pcenter);
-        // XXX: fire 'moveend' or not?
-        this._onMoveEnd();
         return this;
     },
 
-    isBusy:function() {
-        return this._zooming/* || this._moving*/;
-    },
-
     /**
-     * 获取地图的缩放级别
-     * @return {Number} 地图缩放级别
-     * @expose
+     * Get map's current zoom.
+     * @return {Number}
      */
     getZoom:function() {
         return this._zoomLevel;
     },
 
     /**
-     * 获取与scale最接近的缩放级别
-     * @param  {Number} scale    [description]
-     * @param  {[type]} fromZoom [description]
-     * @return {[type]}          [description]
+     * Caculate the target zoom if scaling from "fromZoom" by "scale"
+     * @param  {Number} scale
+     * @param  {Number} fromZoom
+     * @return {Number}
      */
     getZoomForScale:function(scale, fromZoom) {
         if (Z.Util.isNil(fromZoom)) {
@@ -306,71 +406,69 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 设置地图的缩放级别
-     * @param {Number} z 新的缩放级别
-     * @expose
+     * Sets the zoom of the map
+     * @param {Number} zoom
+     * @returns {maptalks.Map} this
      */
-    setZoom:function(z) {
+    setZoom:function(zoom) {
         if (this.options['zoomAnimation']) {
-            this._zoomAnimation(z);
+            this._zoomAnimation(zoom);
         } else {
-            this._zoom(z);
+            this._zoom(zoom);
         }
         return this;
     },
 
     /**
-     * 获得地图最大放大级别
-     * @return {Number} 最大放大级别
-     * @expose
+     * Get the max zoom that the map can be zoom to.
+     * @return {Number}
      */
     getMaxZoom:function() {
         return this.options['maxZoom'];
     },
 
     /**
-     * 设置最大放大级别
-     * @param {Number} zoomLevel 最大放大级别
-     * @expose
+     * Sets the max zoom that the map can be zoom to.
+     * @param {Number} maxZoom
+     * @returns {maptalks.Map} this
      */
-    setMaxZoom:function(zoomLevel) {
+    setMaxZoom:function(maxZoom) {
         var viewMaxZoom = this._view.getMaxZoom();
-        if (zoomLevel > viewMaxZoom) {
-            zoomLevel = viewMaxZoom;
+        if (maxZoom > viewMaxZoom) {
+            maxZoom = viewMaxZoom;
         }
-        if (zoomLevel < this._zoomLevel) {
-            this.setZoom(zoomLevel);
+        if (maxZoom < this._zoomLevel) {
+            this.setZoom(maxZoom);
         }
-        this.options['maxZoom'] = zoomLevel;
+        this.options['maxZoom'] = maxZoom;
         return this;
     },
 
     /**
-     * 获得地图最小放大级别
-     * @return {Number} 最小放大级别
-     * @expose
+     * Get the min zoom that the map can be zoom to.
+     * @return {Number}
      */
     getMinZoom:function() {
         return this.options['minZoom'];
     },
 
     /**
-     * 设置最小放大级别
-     * @param {Number} zoomLevel 最小放大级别
-     * @expose
+     * Sets the min zoom that the map can be zoom to.
+     * @param {Number} minZoom
+     * @return {maptalks.Map} this
      */
-    setMinZoom:function(zoomLevel) {
+    setMinZoom:function(minZoom) {
         var viewMinZoom = this._view.getMinZoom();
-        if (zoomLevel < viewMinZoom) {
-            zoomLevel = viewMinZoom;
+        if (minZoom < viewMinZoom) {
+            minZoom = viewMinZoom;
         }
-        this.options['minZoom']=zoomLevel;
+        this.options['minZoom']=minZoom;
         return this;
     },
 
     /**
-     * 放大地图
-     * @expose
+     * zoom in
+     * @return {maptalks.Map} this
      */
     zoomIn: function() {
         this.setZoom(this.getZoom() + 1);
@@ -378,8 +476,8 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 地图缩小
-     * @expose
+     * zoom out
+     * @return {maptalks.Map} this
      */
     zoomOut: function() {
         this.setZoom(this.getZoom() - 1);
@@ -387,10 +485,10 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 设置中心点并放大缩小
-     * @param {Coordinate} center    [新的中心点]
-     * @param {Number} zoomLevel [新的缩放级别]
-     * @expose
+     * Sets the center and zoom at the same time.
+     * @param {maptalks.Coordinate} center
+     * @param {Number} zoomLevel
+     * @return {maptalks.Map} this
      */
     setCenterAndZoom:function(center,zoomLevel) {
         if (this._zoomLevel != zoomLevel) {
@@ -402,35 +500,11 @@ Z.Map=Z.Class.extend({
         return this;
     },
 
-    getMaxExtent:function() {
-        return this.options['maxExtent'];
-    },
 
     /**
-     * [setMaxExtent description]
-     * @param {Extent} extent map's max extent
-     */
-    setMaxExtent:function(extent) {
-        if (extent) {
-            var maxExt = new Z.Extent(extent)
-            this.options['maxExtent'] = maxExt;
-            var center = this.getCenter();
-            if (!this._verifyExtent(center)) {
-                this.panTo(maxExt.getCenter());
-            }
-        } else {
-            delete this.options['maxExtent'];
-        }
-        return this;
-    },
-
-    /**
-     * 根据地图的extent取得最合适的zoomlevel
-     *
-     * @category 工具方法
-     * @param extent {Extent} Extent对象
-     * @returns
-     * @expose
+     * Caculate the zoom level that contains the given extent with the maximum zoom level possible.
+     * @param {maptalks.Extent} extent
+     * @return {Number}
      */
     getFitZoom: function(extent) {
         if (!extent || !(extent instanceof Z.Extent)) {
@@ -478,18 +552,18 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 返回基础地图图层
-     * @return {TileLayer} [基础地图图层]
-     * @expose
+     * Get the base layer of the map.
+     * @return {maptalks.Layer}
      */
     getBaseLayer:function() {
         return this._baseLayer;
     },
 
     /**
-     * 设定地图的基础瓦片图层
-     * @param  {TileLayer} baseLayer 瓦片图层
-     * @expose
+     * Sets a new base layer to the map.<br>
+     * Some events will be thrown such as baselayerchangestart, baselayerload, baselayerchangeend.
+     * @param  {maptalks.Layer} baseLayer - new base layer
+     * @return {maptalks.Map} this
      */
     setBaseLayer:function(baseLayer) {
         var isChange = false;
@@ -522,9 +596,11 @@ Z.Map=Z.Class.extend({
         return this;
     },
 
-     /**
-     * 获取所有图层
-     * @return {[type]} [description]
+    /**
+     * Get the layers of the map, not including base layer (by getBaseLayer). <br>
+     * A filter function can be given to exclude certain layers, eg exclude all the VectorLayers.
+     * @param {function} [filter=null] - a filter function of layers, return false to exclude the given layer.
+     * @return {maptalks.Layer[]}
      */
     getLayers:function(filter) {
         return this._getLayers(function(layer) {
@@ -539,10 +615,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 获取图层
-     * @param  {String} id 图层id
-     * @return {Layer}  图层
-     * @expose
+     * Get the layer with the given id.
+     * @param  {String} id - layer id
+     * @return {maptalks.Layer}
      */
     getLayer:function(id) {
         if (!id || !this._layerCache || !this._layerCache[id]) {
@@ -552,9 +627,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 向地图里添加图层
-     * @param  {Layer} layer 图层对象
-     * @expose
+     * Add a new layer on the top of the map.
+     * @param  {maptalks.Layer} layer - Any valid layer object
+     * @return {maptalks.Map} this
      */
     addLayer:function(layers){
         if (!layers) {
@@ -586,8 +661,36 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 图层排序
-     * @param  {String | layers} layerIds 图层id或者图层
+     * Remove a layer from the map
+     * @param  {string|maptalks.Layer} layer - id of the layer or a layer object
+     * @return {maptalks.Map} this
+     */
+    removeLayer: function(layer) {
+        if (!(layer instanceof Z.Layer)) {
+            layer = this.getLayer(layer);
+        }
+        if (!layer) {
+            return this;
+        }
+        var map = layer.getMap();
+        if (!map || map != this) {
+            return this;
+        }
+        this._removeLayer(layer, this._layers);
+        if (this._loaded) {
+            layer._onRemove();
+        }
+        var id = layer.getId();
+        if (this._layerCache) {
+            delete this._layerCache[id];
+        }
+        return this;
+    },
+
+    /**
+     * Sort layers according to the order provided, the last will be on the top.
+     * @param  {string[]|maptalks.Layer[]} layers - layers or layer ids to sort
+     * @return {maptalks.Map} this
      */
     sortLayers:function(layers) {
         if (!layers || !Z.Util.isArray(layers)) {
@@ -614,34 +717,14 @@ Z.Map=Z.Class.extend({
         return this;
     },
 
-
     /**
-     * 移除图层
-     * @param  {Layer | id} layer 图层或图层id
-     * @expose
+     * Exports image from the map's canvas.
+     * @param {Object} options - options
+     * @param {String} [options.mimeType=image/png] - mime type of the image
+     * @param {Boolean} [options.save=false] - whether pop a file save dialog to save the export image.
+     * @param {String} [options.filename=export] - specify the file name, if options.save is true.
+     * @return {String} image of base64 format.
      */
-    removeLayer: function(layer) {
-        if (!(layer instanceof Z.Layer)) {
-            layer = this.getLayer(layer);
-        }
-        if (!layer) {
-            return this;
-        }
-        var map = layer.getMap();
-        if (!map || map != this) {
-            return this;
-        }
-        this._removeLayer(layer, this._layers);
-        if (this._loaded) {
-            layer._onRemove();
-        }
-        var id = layer.getId();
-        if (this._layerCache) {
-            delete this._layerCache[id];
-        }
-        return this;
-    },
-
     toDataURL: function(options) {
         if (!options) {
             options = {};
@@ -650,15 +733,15 @@ Z.Map=Z.Class.extend({
         if (!mimeType) {
             mimeType = "image/png";
         }
-        var download = options['download'];
-        var render = this._getRenderer();
-        if (render) {
+        var save = options['save'];
+        var renderer = this._getRenderer();
+        if (renderer) {
             var file = options['filename'];
             if (!file) {
                 file = "export";
             }
-            var dataURL =  render.toDataURL(mimeType);
-            if (download && dataURL) {
+            var dataURL =  renderer.toDataURL(mimeType);
+            if (save && dataURL) {
                 var imgURL = dataURL;
 
                 var dlLink = document.createElement('a');
@@ -676,9 +759,10 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 将地理坐标转化为容器偏转坐标
-     * @param {Coordinate} coordinate 地理坐标
-     * @return {Point} 容器偏转坐标
+     * Converts a geographical coordinate to the [view point]{@link http://www.foo.com}.<br>
+     * It is useful for placing overlays or ui controls on the map.
+     * @param {maptalks.Coordinate} coordinate
+     * @return {maptalks.Point}
      */
     coordinateToViewPoint: function(coordinate) {
         var projection = this.getProjection();
@@ -688,9 +772,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 将容器偏转坐标转化为地理坐标
-     * @param {Point} viewPoint 容器坐标
-     * @return {Coordinate} 地理坐标
+     * Converts a view point to the geographical coordinate.
+     * @param {maptalks.Point} viewPoint
+     * @return {maptalks.Coordinate}
      */
     viewPointToCoordinate: function(viewPoint) {
         var projection = this.getProjection();
@@ -701,9 +785,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 将地理坐标转化为屏幕坐标
-     * @param {Coordinate} 地理坐标
-     * @return {Point} 屏幕坐标
+     * Convert a geographical coordinate to the container point.
+     * @param {maptalks.Coordinate}
+     * @return {maptalks.Point}
      */
     coordinateToContainerPoint: function(coordinate) {
         var projection = this.getProjection();
@@ -714,9 +798,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 将屏幕像素坐标转化为地理坐标
-     * @param {containerPoint} 屏幕坐标
-     * @return {coordinate} 地理坐标
+     * Converts a container point to geographical coordinate.
+     * @param {maptalks.Point}
+     * @return {maptalks.Coordinate}
      */
     containerPointToCoordinate: function(containerPoint) {
         var projection = this.getProjection();
@@ -727,10 +811,10 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 屏幕坐标到地图容器偏移坐标
+     * Converts a container point to the view point.
      *
-     * @param containerPoint
-     * @returns {viewPoint}
+     * @param {maptalks.Point}
+     * @returns {maptalks.Point}
      */
     containerPointToViewPoint: function(containerPoint) {
         if (!containerPoint) {return null;}
@@ -739,10 +823,10 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 地图容器偏移坐标到屏幕坐标的转换
+     * Converts a view point to the container point.
      *
-     * @param viewPoint
-     * @returns {containerPoint}
+     * @param {maptalks.Point}
+     * @returns {maptalks.Point}
      */
     viewPointToContainerPoint: function(viewPoint) {
         if (!viewPoint) {return null;}
@@ -751,7 +835,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * Checks if the map container size changed
+     * Checks if the map container size changed and updates the map if so.<br>
+     * It is called in a setTimeout call.
+     * @return {maptalks.Map} this
      */
     checkSize:function() {
         if (this._resizeTimeout) {
@@ -767,9 +853,11 @@ Z.Map=Z.Class.extend({
                 var resizeOffset = new Z.Point((watched.width-oldWidth) / 2,(watched.height-oldHeight) / 2);
                 me._offsetCenterByPixel(resizeOffset);
                 /**
-                 * 触发map的resize事件
-                 * @member maptalks.Map
+                 * resize event when map container's size changes
                  * @event resize
+                 * @type {Object}
+                 * @property {String} type - resize
+                 * @property {maptalks.Map} target - map fires the event
                  */
                 me._fireEvent('resize');
             }
@@ -779,18 +867,18 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 在当前比例尺下将距离转换为像素长度
-     * @param  {Number} xDist x轴上的距离
-     * @param  {Number} yDist y轴上的距离
-     * @return {Size}   结果属性上的width为x轴上的像素长度, height为y轴上的像素长度
-     * @expose
+     * Converts a geographical distance to the pixel length.<br>
+     * The value varis with difference zoom level.
+     *
+     * @param  {Number} xDist - distance on X axis.
+     * @param  {Number} yDist - distance on Y axis.
+     * @return {maptalks.Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
      */
     distanceToPixel: function(xDist,yDist) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
         }
-        //计算前刷新scales
         var center = this.getCenter(),
             target = projection.locate(center,xDist,yDist),
             res = this._getResolution();
@@ -801,11 +889,11 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 像素转化为距离
-     * @param  {Number} width 横轴像素长度
+     * Converts pixel length to geographical distance.
+     *
+     * @param  {Number} width -
      * @param  {Number} height 纵轴像素长度
-     * @return {Number}    distance
-     * @expose
+     * @return {Number}  distance
      */
     pixelToDistance:function(width, height) {
         var projection = this.getProjection();
@@ -823,17 +911,18 @@ Z.Map=Z.Class.extend({
 
     /**
      * 返回距离coordinate坐标距离为dx, dy的坐标
-     * @param  {Coordinate} coordinate 坐标
+     * @param  {maptalks.Coordinate} coordinate 坐标
      * @param  {Number} dx         x轴上的距离, 地图CRS为经纬度时,单位为米, 地图CRS为像素时, 单位为像素
      * @param  {Number} dy         y轴上的距离, 地图CRS为经纬度时,单位为米, 地图CRS为像素时, 单位为像素
-     * @return {Coordinate}            新的坐标
+     * @return {maptalks.Coordinate}            新的坐标
      */
     locate:function(coordinate, dx, dy) {
         return this.getProjection().locate(new Z.Coordinate(coordinate),dx,dy);
     },
 
     /**
-    * 获取地图容器
+    * Returns an object with different map panels (to build customized layers or overlays).
+    * @returns {Object}
     */
     getPanel: function() {
         return this._getRenderer().getPanel();
@@ -842,7 +931,17 @@ Z.Map=Z.Class.extend({
 //-----------------------------------------------------------
 
     /**
+     * whether map is busy
+     * @private
+     * @return {Boolean}
+     */
+    _isBusy:function() {
+        return this._zooming/* || this._moving*/;
+    },
+
+    /**
      * try to change cursor when map is not setCursored
+     * @private
      * @param  {String} cursor css cursor
      */
     _trySetCursor:function(cursor) {
@@ -879,8 +978,9 @@ Z.Map=Z.Class.extend({
     },
 
      /**
-     * 获得地图可视范围的viewPoint范围
-     * @return {Extent} 可视范围的ViewPoint范围
+     * Get map's extent in view points.
+     * @return {maptalks.PointExtent}
+     * @private
      */
     _getViewExtent:function() {
         var size = this.getSize();
@@ -896,9 +996,7 @@ Z.Map=Z.Class.extend({
         this.offsetPlatform(offset);
     },
 
-    /**
-     * 从layerList中删除某个图层
-     */
+    //remove a layer from the layerList
     _removeLayer:function(layer,layerList) {
         if (!layer || !layerList) {return;}
         var index = Z.Util.searchInArray(layer,layerList);
@@ -957,16 +1055,17 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 获取指定的投影坐标与当前的地图中心点的像素距离
-     * @param  {Coordinate} pcenter 像素坐标
-     * @return {Point}          像素距离
+     * Gets pixel lenth from pcenter to map's current center.
+     * @param  {maptalks.Coordinate} pcenter - a projected coordinate
+     * @return {maptalks.Point}
+     * @private
      */
-    _getPixelDistance:function(pcenter) {
+    _getPixelDistance:function(pCoord) {
         var current = this._getPrjCenter();
         var curr_px = this._transform(current);
-        var pcenter_px = this._transform(pcenter);
-        var span = new Z.Point((-pcenter_px.x+curr_px.x),(curr_px.y-pcenter_px.y));
-        return span;
+        var pCoord_px = this._transform(pCoord);
+        var dist = new Z.Point(-pCoord_px.x+curr_px.x,curr_px.y-pCoord_px.y);
+        return dist;
     },
 
     _fireEvent:function(eventName, param) {
@@ -1007,9 +1106,10 @@ Z.Map=Z.Class.extend({
 
 
     /**
-     * 获取符合filter过滤条件的图层
-     * @param  {fn} filter 过滤函数
-     * @return {[Layer]}        符合过滤条件的图层数组
+     * Gets layers that fits for the filter
+     * @param  {fn} filter - filter function
+     * @return {maptalks.Layer[]}
+     * @private
      */
     _getLayers:function(filter) {
         var layers = this._baseLayer?[this._baseLayer].concat(this._layers):this._layers;
@@ -1037,10 +1137,7 @@ Z.Map=Z.Class.extend({
         }
     },
 
-    /**
-     * View修改后检查当前地图状态是否吻合新的View设定
-     * @return {[type]} [description]
-     */
+    //Check and reset map's status when map'sview is changed.
     _resetMapStatus:function(){
         var maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
@@ -1092,8 +1189,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 获得地图的投影坐标
-     * @return {Coordinate} 投影坐标
+     * Gets projected center of the map
+     * @return {maptalks.Coordinate}
+     * @private
      */
     _getPrjCenter:function() {
         return this._prjCenter;
@@ -1115,10 +1213,13 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 以像素距离移动地图中心点
-     * @param  {Object} pixel 像素距离,偏移量的正负值关系如下:
-     * -1,1|1,1
-     *-1,-1|1,-1
+     * Move map's center by pixels.
+     * @param  {maptalks.Point} pixel - pixels to move, the relation between value and direction is as:
+     * -1,1 | 1,1
+     * ------------
+     *-1,-1 | 1,-1
+     * @private
+     * @returns {maptalks.Coordinate} the new projected center.
      */
     _offsetCenterByPixel:function(pixel) {
         var posX = this.width/2+pixel.x,
@@ -1129,10 +1230,14 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 获取地图容器偏移量或增加容器的偏移量
-     * @param  {Pixel} offset 增加的偏移量,如果为null,则直接返回容器的偏移量
-     * @return {Point | this} 如果offset为null,则直接返回容器的偏移量, 否则则返回map对象
-     * @expose
+     * offset map platform panel.
+     *
+     * @param  {maptalks.Point} offset - offset in pixel to move
+     * @return {maptalks.Map} this
+     */
+    /**
+     * Gets map platform panel's current view point.
+     * @return {maptalks.Point}
      */
     offsetPlatform:function(offset) {
         if (!offset) {
@@ -1149,8 +1254,9 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 获取当前缩放级别的投影坐标分辨率
+     * Get map's current resolution
      * @return {Number} resolution
+     * @private
      */
     _getResolution:function(zoom) {
         if (Z.Util.isNil(zoom)) {
@@ -1164,36 +1270,39 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * transform dom position to geodesic projected coordinate
-     * @param  {Object} domPos    dom screen xy, eg {left:10, top:10}
-     * @param  {Number} zoomLevel current zoomLevel
-     * @return {Coordinate}           Coordinate
+     * transform container point to geographical projected coordinate
+     *
+     * @param  {maptalks.Point} containerPointt
+     * @return {maptalks.Coordinate}
+     * @private
      */
-    _untransform:function(domPos) {
+    _untransform:function(containerPoint) {
         var transformation =  this._view.getTransformation();
         var res = this._getResolution();
 
         var pcenter = this._getPrjCenter();
         var centerPoint = transformation.transform(pcenter, res);
         //容器的像素坐标方向是固定方向的, 和html标准一致, 即从左到右增大, 从上到下增大
-        var point = new Z.Point(centerPoint.x+ domPos.x - this.width / 2, centerPoint.y+domPos.y - this.height / 2);
+        var point = new Z.Point(centerPoint.x+ containerPoint.x - this.width / 2, centerPoint.y+containerPoint.y - this.height / 2);
         var result = transformation.untransform(point, res);
         return result;
     },
 
     /**
-     * 相对坐标转化为地理投影坐标
-     * @param  {[type]} domPos [description]
-     * @return {[type]}        [description]
+     * transform view point to geographical projected coordinat
+     * @param  {maptalks.Point} viewPoint
+     * @return {maptalks.Coordinate}
+     * @private
      */
-    _untransformFromViewPoint:function(domPos) {
-        return this._untransform(this.viewPointToContainerPoint(domPos));
+    _untransformFromViewPoint:function(viewPoint) {
+        return this._untransform(this.viewPointToContainerPoint(viewPoint));
     },
 
     /**
-     * transform geodesic projected coordinate to screen xy
-     * @param  {[type]} pCoordinate [description]
-     * @return {[type]}             [description]
+     * transform geographical projected coordinate to container point
+     * @param  {maptalks.Coordinate} pCoordinate
+     * @return {maptalks.Point}
+     * @private
      */
     _transform:function(pCoordinate) {
         var transformation =  this._view.getTransformation();
@@ -1210,18 +1319,17 @@ Z.Map=Z.Class.extend({
     },
 
     /**
-     * 投影坐标转化为容器的相对坐标
-     * @param  {Coordinate} pCoordinate 投影坐标
-     * @return {Point}             容器相对坐标
+     * transform geographical projected coordinate to view point
+     * @param  {maptalks.Coordinate} pCoordinate
+     * @return {maptalks.Point}
+     * @private
      */
     _transformToViewPoint:function(pCoordinate) {
         var containerPoint = this._transform(pCoordinate);
         return this._containerPointToViewPoint(containerPoint);
     },
 
-    /**
-     * destructive containerPointToViewPoint
-     */
+    //destructive containerPointToViewPoint
     _containerPointToViewPoint: function(containerPoint) {
         if (!containerPoint) {return null;}
         var platformOffset = this.offsetPlatform();
@@ -1232,7 +1340,7 @@ Z.Map=Z.Class.extend({
 
 
 
-//--------------地图载入完成后的钩子处理----------------
+//--------------hooks after map loaded----------------
 Z.Map.prototype._callOnLoadHooks=function() {
     var proto = Z.Map.prototype;
     for (var i = 0, len = proto._onLoadHooks.length; i < len; i++) {
@@ -1241,9 +1349,10 @@ Z.Map.prototype._callOnLoadHooks=function() {
 };
 
 /**
- * 添加底图加载完成后的钩子
- * @param {Function} fn 执行回调函数
- * @expose
+ * add hooks for additional codes when map's loading complete, useful for plugin developping.
+ * @param {function} fn
+ * @returns {maptalks.Map}
+ * @static
  */
 Z.Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
     var args = Array.prototype.slice.call(arguments, 1);
@@ -1254,7 +1363,8 @@ Z.Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
 
     this.prototype._onLoadHooks = this.prototype._onLoadHooks || [];
     this.prototype._onLoadHooks.push(onload);
+    return this;
 };
 
 
-Z.Util.extend(Z.Map,Z.Renderable);
+Z.Util.extend(Z.Map, Z.Renderable);

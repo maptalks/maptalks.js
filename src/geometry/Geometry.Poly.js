@@ -1,14 +1,13 @@
 /**
- * 多折线/多边形工具类
- * @class maptalks.Geometry.Poly
- * @author Maptalks Team
+ * Common methods for geometry classes based on coordinates arrays, e.g. LineString, Polygon
+ * @mixin maptalks.Geometry.Poly
  */
 Z.Geometry.Poly={
     /**
-     * 将points中的坐标转化为用于显示的容器坐标
-     * @param  {Coordinate[]} prjCoords  投影坐标数组
-     * @returns {Point[]} 容器坐标数组
-     * @ignore
+     * Transform projected coordinates to view points
+     * @param  {maptalks.Coordinate[]} prjCoords  - projected coordinates
+     * @returns {maptalks.Point[]}
+     * @private
      */
     _transformToViewPoint:function(prjCoords) {
         var result = [];
@@ -97,60 +96,58 @@ Z.Geometry.Poly={
     },
 
     _setPrjCoordinates:function(prjPoints) {
-        this._prjPoints = prjPoints;
+        this._prjCoords = prjPoints;
         this._onShapeChanged();
     },
 
     _getPrjCoordinates:function() {
-        if (!this._prjPoints) {
-            var points = this._points;
-            this._prjPoints = this._projectPoints(points);
+        if (!this._prjCoords) {
+            var points = this._coordinates;
+            this._prjCoords = this._projectCoords(points);
         }
-        return this._prjPoints;
+        return this._prjCoords;
     },
 
-    /**
-     * 直接修改Geometry的投影坐标后调用该方法, 更新经纬度坐标缓存
-     */
+    //update cached variables if geometry is updated.
     _updateCache:function() {
         delete this._extent;
         var projection = this._getProjection();
         if (!projection) {
             return;
         }
-        if (this._prjPoints) {
-            this._points = this._unprojectPoints(this._getPrjCoordinates());
+        if (this._prjCoords) {
+            this._coordinates = this._unprojectCoords(this._getPrjCoordinates());
         }
         if (this._prjHoles) {
-            this._holes = this._unprojectPoints(this._getPrjHoles());
+            this._holes = this._unprojectCoords(this._getPrjHoles());
         }
     },
 
     _clearProjection:function() {
-        this._prjPoints = null;
+        this._prjCoords = null;
         if (this._prjHoles) {
             this._prjHoles = null;
         }
     },
 
-    _projectPoints:function(points) {
+    _projectCoords:function(points) {
         var projection = this._getProjection();
         if (projection) {
-            return projection.projectPoints(points);
+            return projection.projectCoords(points);
         }
         return null;
     },
 
-    _unprojectPoints:function(prjPoints) {
+    _unprojectCoords:function(prjPoints) {
         var projection = this._getProjection();
         if (projection) {
-            return projection.unprojectPoints(prjPoints);
+            return projection.unprojectCoords(prjPoints);
         }
         return null;
     },
 
     _computeCenter:function() {
-        var ring=this._points;
+        var ring=this._coordinates;
         if (!Z.Util.isArrayHasData(ring)) {
             return null;
         }
@@ -170,7 +167,7 @@ Z.Geometry.Poly={
     },
 
     _computeExtent:function() {
-        var ring = this._points;
+        var ring = this._coordinates;
         if (!Z.Util.isArrayHasData(ring)) {
             return null;
         }
@@ -178,33 +175,34 @@ Z.Geometry.Poly={
         if (this.hasHoles && this.hasHoles()) {
             rings = rings.concat(this.getHoles());
         }
-        return this._computePointsExtent(rings);
+        return this._computeCoordsExtent(rings);
     },
 
      /**
-      * 计算坐标数组的extent, 数组内的元素可以坐标或者坐标数组,坐标为经纬度坐标,而不是投影坐标
-      * @param  {Point[]} points  points数组
-      * @returns {Extent} {@link maptalks.Extent}
+      * Compute extent of a group of coordinates
+      * @param  {maptalks.Coordinate[]} coords  - coordinates
+      * @returns {maptalks.Extent}
+      * @private
       */
-    _computePointsExtent: function(points) {
+    _computeCoordsExtent: function(coords) {
         var result=null;
         var ext,
             isAntiMeridian = this.options['antiMeridian'];
-        for ( var i = 0, len = points.length; i < len; i++) {
+        for ( var i = 0, len = coords.length; i < len; i++) {
             var p;
-            if (Z.Util.isArray(points[i])) {
-                for ( var j = 0, jlen = points[i].length; j < jlen; j++) {
-                    p = points[i][j];
+            if (Z.Util.isArray(coords[i])) {
+                for ( var j = 0, jlen = coords[i].length; j < jlen; j++) {
+                    p = coords[i][j];
                     if (j > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
-                        p = this._antiMeridian(p, points[i][j-1], null, isAntiMeridian);
+                        p = this._antiMeridian(p, coords[i][j-1], null, isAntiMeridian);
                     }
                     ext = new Z.Extent(p,p);
                     result = ext.combine(result);
                 }
             } else {
-                p = points[i];
+                p = coords[i];
                 if (i > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
-                    p = this._antiMeridian(p, points[i-1], null, isAntiMeridian);
+                    p = this._antiMeridian(p, coords[i-1], null, isAntiMeridian);
                 }
                 ext = new Z.Extent(p,p);
                 result = ext.combine(result);

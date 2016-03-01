@@ -126,7 +126,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
      * 对图层进行仿射变换
      * @param  {Matrix} matrix 变换矩阵
      * @param  {Matrix} retinaMatrix retina屏时,用来绘制图层canvas的变换矩阵
-     * @param  {[Layer]} layersToTransform 参与变换和绘制的图层
+     * @param  {maptalks.Layer[]} layersToTransform 参与变换和绘制的图层
      */
     transform:function(matrix, retinaMatrix, layersToTransform) {
         var mwidth = this._canvas.width,
@@ -295,7 +295,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
         }
         if (!Z.Browser.mobile && Z.Browser.canvas) {
              this._onMapMouseMove=function(param) {
-                if (map.isBusy()) {
+                if (map._isBusy()) {
                     return;
                 }
                 var vp = param['viewPoint'];

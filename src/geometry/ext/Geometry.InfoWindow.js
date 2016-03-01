@@ -1,9 +1,8 @@
-Z.Geometry.include({
+Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
-     * 设置Geometry的信息提示框设置
-     * @param {Object} options 信息提示框设置
-     * @member maptalks.Geometry
-     * @expose
+     * Set info window settings to the geometry
+     * @param {Object} options - construct [options]{@link maptalks.InfoWindow#options} for the info window
+     * @return {maptalks.Geometry} this
      */
     setInfoWindow:function(options) {
         this._infoWinOptions = Z.Util.extend({},options);
@@ -18,10 +17,8 @@ Z.Geometry.include({
     },
 
     /**
-     * 获取Geometry的信息提示框设置
-     * @return {Object} 信息提示框设置
-     * @member maptalks.Geometry
-     * @expose
+     * Get info window's options or the instance of info window if it has been already created.
+     * @return {Object|maptalks.InfoWindow}
      */
     getInfoWindow:function() {
         if (!this._infoWindow) {
@@ -34,10 +31,9 @@ Z.Geometry.include({
     },
 
     /**
-     * 打开geometry的信息提示框
-     * @param  {Coordinate} coordinate 提示框位置,可以为空
-     * @member maptalks.Geometry
-     * @expose
+     * Open the info window.
+     * @param  {maptalks.Coordinate} [coordinate=null] - coordinate to open the info window
+     * @return {maptalks.Geometry} this
      */
     openInfoWindow:function(coordinate) {
         if (!this.getMap()) {
@@ -55,9 +51,8 @@ Z.Geometry.include({
     },
 
     /**
-     * 关闭Geometry的信息提示框
-     * @member maptalks.Geometry
-     * @expose
+     * close the info window
+     * @return {maptalks.Geometry} this
      */
     closeInfoWindow:function() {
         if (this._infoWindow) {
@@ -67,7 +62,8 @@ Z.Geometry.include({
     },
 
     /**
-     * 移除信息提示框
+     * remove the info window
+     * @return {maptalks.Geometry} this
      */
     removeInfoWindow:function() {
         this._unbindInfoWindow();

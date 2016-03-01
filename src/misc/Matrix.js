@@ -9,13 +9,13 @@
 */
 
 /**
- * 2D transformation matrix object initialized with identity matrix.
+ * 2D transformation matrix object initialized with identity matrix.<br>
  *
  * The matrix can synchronize a canvas context by supplying the context
  * as an argument, or later apply current absolute transform to an
- * existing context.
+ * existing context.<br>
  *
- * All values are handled as floating point values.
+ * All values are handled as floating point values.<br>
  *
  * @param {CanvasRenderingContext2D} [context] - Optional context to sync with Matrix
  * @prop {number} a - scale x
@@ -25,6 +25,7 @@
  * @prop {number} e - translate x
  * @prop {number} f - translate y
  * @prop {CanvasRenderingContext2D|null} [context=null] - set or get current canvas context
+ * @protected
  * @constructor
  */
 Z.Matrix = function(context) {

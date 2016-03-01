@@ -1,4 +1,19 @@
-Z.Projection.EPSG3857 = Z.Util.extend({}, Z.Projection.Common, {
+/**
+ * Well-known projection used by Google maps or Open Street Maps, aka Mercator Projection.<br>
+ * It is map's default projection.
+ * @class
+ * @protected
+ * @memberOf maptalks.projection
+ * @name EPSG3857
+ * @mixes maptalks.projection.Common
+ * @mixes maptalks.measurer.WGS84Sphere
+ */
+Z.projection.EPSG3857 = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.projection.EPSG3857 */{
+    /**
+     * "EPSG:3857", Code of the projection, used by [View]{@link maptalks.View} to get projection instance.
+     * @type {String}
+     * @constant
+     */
     code : "EPSG:3857",
     rad : Math.PI / 180,
     metersPerDegree : 2.003750834E7/180,
@@ -34,4 +49,4 @@ Z.Projection.EPSG3857 = Z.Util.extend({}, Z.Projection.Common, {
     }
 }, Z.measurer.WGS84Sphere);
 
-Z.Projection.DEFAULT = Z.Projection.EPSG3857;
+Z.projection.DEFAULT = Z.projection.EPSG3857;

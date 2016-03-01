@@ -1,12 +1,15 @@
 /**
- * 图形类
- * @class maptalks.Geometry
+ * @classdesc Base class for all the geometries, it is not intended to be instantiated but extended. <br/>
+ * It defines common methods that all the geometry classes share.
+ *
+ * @class
  * @abstract
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
- * @author Maptalks Team
+ * @mixins maptalks.Handerable
+ * @mixins maptalks.Menu.Mixin
  */
-Z.Geometry=Z.Class.extend({
+Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     includes: [Z.Eventable, Z.Handlerable],
 
     exceptionDefs:{
@@ -21,37 +24,90 @@ Z.Geometry=Z.Class.extend({
             'NOT_ADD_TO_LAYER':'Geometry必须添加到某个图层上才能作此操作.'
         }
     },
-
+    /** @lends maptalks.Geometry */
     statics:{
-         //--TYPES of geometry
+        /**
+         * Type of [Point]{@link http://geojson.org/geojson-spec.html#point}
+         * @constant
+         */
         'TYPE_POINT' : 'Point',
+        /**
+         * Type of [LineString]{@link http://geojson.org/geojson-spec.html#linestring}
+         * @constant
+         */
         'TYPE_LINESTRING' : 'LineString',
+        /**
+         * Type of [Polygon]{@link http://geojson.org/geojson-spec.html#polygon}
+         * @constant
+         */
         'TYPE_POLYGON' : 'Polygon',
+        /**
+         * Type of [MultiPoint]{@link http://geojson.org/geojson-spec.html#multipoint}
+         * @constant
+         */
         'TYPE_MULTIPOINT' : 'MultiPoint',
+        /**
+         * Type of [MultiLineString]{@link http://geojson.org/geojson-spec.html#multilinestring}
+         * @constant
+         */
         'TYPE_MULTILINESTRING' : 'MultiLineString',
+        /**
+         * Type of [MultiPolygon]{@link http://geojson.org/geojson-spec.html#multipolygon}
+         * @constant
+         */
         'TYPE_MULTIPOLYGON' : 'MultiPolygon',
+        /**
+         * Type of [GeometryCollection]{@link http://geojson.org/geojson-spec.html#geometrycollection}
+         * @constant
+         */
         'TYPE_GEOMETRYCOLLECTION' : 'GeometryCollection',
-        //extented types
+        /**
+         * Type of Rectangle (An extended type, not standard)
+         * @constant
+         */
         'TYPE_RECT' : 'Rectangle',
+        /**
+         * Type of Circle (An extended type, not standard)
+         * @constant
+         */
         'TYPE_CIRCLE' : 'Circle',
+        /**
+         * Type of Ellipse (An extended type, not standard)
+         * @constant
+         */
         'TYPE_ELLIPSE' : 'Ellipse',
+        /**
+         * Type of Sector (An extended type, not standard)
+         * @constant
+         */
         'TYPE_SECTOR' : 'Sector'
     },
 
+    /**
+     * @property {Object} options                       - geometry options
+     * @property {Boolean} [options.id=null]           - id of the geometry
+     * @property {Boolean} [options.visible=true]       - whether the geometry is visible.
+     * @property {Boolean} [options.editable=true]       - whether the geometry can be edited.
+     * @property {String} [options.cursor=null]       - cursor style when mouseover the geometry, same as the definition in CSS.
+     * @property {Number} [options.shadowBlue=0]       - level of the shadow around the geometry, see [MDN's explanation]{@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur}
+     * @property {String} [options.shadowColor=black]       - color of the shadow around the geometry, a CSS style color
+     * @property {String} [options.measure=EPSG:4326]       - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
+     */
     options:{
+        'id'        : null,
         'visible'   : true,
         'editable'  : true,
         'cursor'    : null,
-        'crossOrigin' : null,
         'shadowBlur' : 0,
         'shadowColor' : 'black',
         'measure' : 'EPSG:4326', // BAIDU, IDENTITY
     },
 
     /**
-     * 将Geometry加到图层上
-     * @param {Layer} layer   图层
-     * @param {Boolean} fitview 是否将地图自动聚焦到该Geometry上
+     * Adds the geometry to a layer
+     * @param {maptalks.Layer} layer    - layer add to
+     * @param {Boolean} fitview         - automatically set the map to a fit center and zoom for the geometry
+     * @return {maptalks.Geometry} this
      */
     addTo:function(layer, fitview) {
         layer.addGeometry(this, fitview);
@@ -59,31 +115,8 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 获取id
-     * @returns {String} geometry的id
-     * @expose
-     */
-    getId:function() {
-        return this._id;
-    },
-
-    /**
-     * 设置id
-     * @param {String} id 设置geometry的id
-     * @expose
-     */
-    setId:function(id) {
-        var oldId = this.getId();
-        this._id = id;
-        //FIXME _idchanged没有被图层监听, layer.getGeometryById会出现bug
-        this._fireEvent('idchange',{'oldId':oldId,'newId':id});
-        return this;
-    },
-
-    /**
-     * 获取Geometry的Layer
-     * @returns {Layer} Geometry所属的Layer
-     * @expose
+     * Get the layer which this geometry added to.
+     * @returns {maptalks.Layer} - layer added to
      */
     getLayer:function() {
         if (!this._layer) {return null;}
@@ -91,9 +124,8 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 获取Geometry所属的地图对象
-     * @returns {Map} 地图对象
-     * @expose
+     * Get the map which this geometry added to
+     * @returns {maptalks.Map} - map added to
      */
     getMap:function() {
         if (!this._layer) {return null;}
@@ -101,9 +133,73 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 获取Geometry的类型
-     * @returns {Number} Geometry的类型
-     * @expose
+     * Gets geometry's id. Id is set by setId or constructor options.
+     * @returns {String|Number} geometry的id
+     */
+    getId:function() {
+        return this._id;
+    },
+
+    /**
+     * Set geometry's id.
+     * @param {String} id - new id
+     * @returns {maptalks.Geometry} this
+     * @fires maptalks.Geometry#idchange
+     */
+    setId:function(id) {
+        var oldId = this.getId();
+        this._id = id;
+        //FIXME _idchanged没有被图层监听, layer.getGeometryById会出现bug
+        /**
+         * idchange event.
+         *
+         * @event maptalks.Geometry#idchange
+         * @type {Object}
+         * @property {String} type - idchange
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {String|Number} old        - value of the old id
+         * @property {String|Number} new        - value of the new id
+         */
+        this._fireEvent('idchange',{'old':oldId,'new':id});
+        return this;
+    },
+
+    /**
+     * Get geometry's properties. Defined by GeoJSON as [feature's properties]{@link http://geojson.org/geojson-spec.html#feature-objects}.
+     *
+     * @returns {Object} properties
+     */
+    getProperties:function() {
+        if (!this.properties) {return null;}
+        return this.properties;
+    },
+
+    /**
+     * Set a new properties to geometry.
+     * @param {Object} properties - new properties
+     * @returns {maptalks.Geometry} this
+     * @fires maptalks.Geometry#propertieschange
+     */
+    setProperties:function(properties) {
+        var old = this.properties;
+        this.properties = Z.Util.extend({},properties);
+        /**
+         * propertieschange event, thrown when geometry's properties is changed.
+         *
+         * @event maptalks.Geometry#propertieschange
+         * @type {Object}
+         * @property {String} type - propertieschange
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {String|Number} old        - value of the old properties
+         * @property {String|Number} new        - value of the new properties
+         */
+        this._fireEvent('propertieschange', {'old':old, 'new':properties});
+        return this;
+    },
+
+    /**
+     * Get type of the geometry, e.g. "Point", "LineString"
+     * @returns {String} type of the geometry
      */
     getType:function() {
         return this.type;
@@ -111,18 +207,19 @@ Z.Geometry=Z.Class.extend({
 
 
     /**
-     * 获取Geometry的Symbol
-     * @returns {Symbol} Geometry的Symbol
-     * @expose
+     * Get symbol of the geometry
+     * @returns {Object} geometry's symbol
      */
     getSymbol:function() {
         return this._getInternalSymbol();
     },
 
     /**
-     * 设置Geometry的symbol
-     * @param {Symbol} symbol 新的Symbol
-     * @expose
+     * Set a new symbol to style the geometry.
+     * @param {Object} symbol - new symbol
+     * @see {@tutorial symbol Style a geometry with symbols}
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#symbolchange
      */
     setSymbol:function(symbol) {
         if (!symbol) {
@@ -136,8 +233,8 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * Return the first coordinate of the geometry.
-     * @return {Coordinate} First Coordinate
+     * Returns the first coordinate of the geometry.
+     * @return {maptalks.Coordinate} First Coordinate
      */
     getFirstCoordinate:function() {
         if (this instanceof Z.GeometryCollection) {
@@ -159,8 +256,8 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * Return the last coordinate of the geometry.
-     * @return {Coordinate} Last Coordinate
+     * Returns the last coordinate of the geometry.
+     * @return {maptalks.Coordinate} Last Coordinate
      */
     getLastCoordinate:function() {
         if (this instanceof Z.GeometryCollection) {
@@ -182,9 +279,8 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 计算Geometry的外接矩形范围
-     * @returns {Extent} Geometry的外接矩形范围
-     * @expose
+     * Get the geometry's extent
+     * @returns {maptalksExtent} geometry's extent
      */
     getExtent:function() {
         var prjExt = this._getPrjExtent();
@@ -198,9 +294,8 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 返回Geometry的像素长宽, 像素长宽只在当前比例尺上有效, 比例尺变化后, 其值也会发生变化
-     * @returns {Size}     Size.width, Size.height
-     * @expose
+     * Get size in pixel of the geometry, size may vary in different zoom levels.
+     * @returns {maptalks.Size}
      */
     getSize: function() {
         var map = this.getMap();
@@ -213,38 +308,17 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 计算图形的中心点坐标
-     * @returns {Coordinate} 中心点坐标
-     * @expose
+     * Get the geographical center of the geometry.
+     * @returns {maptalks.Coordinate}
      */
     getCenter:function() {
         return this._computeCenter(this._getMeasurer()).copy();
     },
 
     /**
-     * 获取Geometry的Properties
-     * @returns {Object} 自定义属性
-     * @expose
-     */
-    getProperties:function() {
-        if (!this.properties) {return null;}
-        return this.properties;
-    },
-
-    /**
-     * 设置Geometry的Properties
-     * @param {Object} properties 自定义属性
-     * @expose
-     */
-    setProperties:function(properties) {
-        this.properties = properties;
-        //TODO 抛事件
-        return this;
-    },
-
-    /**
-     * 显示Geometry
-     * @expose
+     * Show the geometry.
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#show
      */
     show:function() {
         this.options['visible'] = true;
@@ -253,14 +327,23 @@ Z.Geometry=Z.Class.extend({
             if (painter) {
                 painter.show();
             }
+            /**
+             * show event
+             *
+             * @event maptalks.Geometry#show
+             * @type {Object}
+             * @property {String} type - show
+             * @property {maptalks.Geometry} target - the geometry fires the event
+             */
             this._fireEvent('show');
         }
         return this;
     },
 
     /**
-     * 隐藏Geometry
-     * @expose
+     * Hide the geometry
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#hide
      */
     hide:function() {
         this.options['visible'] = false;
@@ -269,16 +352,81 @@ Z.Geometry=Z.Class.extend({
             if (painter) {
                 painter.hide();
             }
+            /**
+             * hide event
+             *
+             * @event maptalks.Geometry#hide
+             * @type {Object}
+             * @property {String} type - hide
+             * @property {maptalks.Geometry} target - the geometry fires the event
+             */
             this._fireEvent('hide');
         }
         return this;
     },
 
     /**
-     * 闪烁Geometry
+     * Whether the geometry is visible
+     * @returns {Boolean}
+     */
+    isVisible:function() {
+        if (!this.options['visible']) {
+            return false;
+        }
+        var symbol = this.getSymbol();
+        if (!symbol) {
+            return true;
+        }
+        if (Z.Util.isArray(symbol)) {
+            if (symbol.length === 0) {
+                return true;
+            }
+            var visible = false;
+            for (var i = 0; i < symbol.length; i++) {
+                if (Z.Util.isNil(symbol[i]['opacity']) || (Z.Util.isNumber(symbol[i]['opacity']) && symbol[i]['opacity'] > 0)) {
+                    visible = true;
+                    break;
+                }
+            }
+            return visible;
+        } else {
+            return (Z.Util.isNil(symbol['opacity']) || (Z.Util.isNumber(symbol['opacity']) && symbol['opacity'] > 0));
+        }
+    },
+
+    /**
+     * Translate or move the geometry by the given offset.
+     * @param  {maptalks.Coordinate} offset - translate offset
+     * @return {maptalks.Geometry} this
+     */
+    translate:function(offset) {
+        if (!offset) {
+            return this;
+        }
+        offset = new Z.Coordinate(offset);
+        if (offset.x === 0 && offset.y === 0) {
+            return this;
+        }
+        var coordinates = this.getCoordinates();
+        if (coordinates) {
+            if (Z.Util.isArray(coordinates)) {
+                var offseted = Z.Util.eachInArray(coordinates,this,function(coord) {
+                        return coord.add(offset);
+                });
+                this.setCoordinates(offseted);
+            } else {
+                this.setCoordinates(coordinates.add(offset));
+            }
+        }
+        return this;
+    },
+
+    /**
+     * flash the geometry, show and hide by certain internal for times of count.
      *
-     * @param interval {Number} 闪烁间隔时间，以毫秒为单位
-     * @param count {Number} 闪烁次数
+     * @param {Number} [interval=100]     - interval of flash, in millisecond (ms)
+     * @param {Number} [count=4]          - flash times
+     * @return {maptalks.Geometry} this
      */
     flash: function(interval, count) {
         if (!interval) {
@@ -307,68 +455,12 @@ Z.Geometry=Z.Class.extend({
             me._flashTimeout = setTimeout(flashGeo, interval);
         }
         this._flashTimeout = setTimeout(flashGeo, interval);
-    },
-
-    /**
-     * 是否可见
-     * @returns {Boolean} true|false
-     * @expose
-     */
-    isVisible:function() {
-        if (!this.options['visible']) {
-            return false;
-        }
-        var symbol = this.getSymbol();
-        if (!symbol) {
-            return true;
-        }
-        if (Z.Util.isArray(symbol)) {
-            if (symbol.length === 0) {
-                return true;
-            }
-            var visible = false;
-            for (var i = 0; i < symbol.length; i++) {
-                if (Z.Util.isNil(symbol[i]['opacity']) || (Z.Util.isNumber(symbol[i]['opacity']) && symbol[i]['opacity'] > 0)) {
-                    visible = true;
-                    break;
-                }
-            }
-            return visible;
-        } else {
-            return (Z.Util.isNil(symbol['opacity']) || (Z.Util.isNumber(symbol['opacity']) && symbol['opacity'] > 0));
-        }
-    },
-
-    /**
-     * 图形按给定的坐标偏移量平移
-     * @param  {Coordinate} offset 坐标偏移量
-     */
-    translate:function(offset) {
-        if (!offset) {
-            return this;
-        }
-        offset = new Z.Coordinate(offset);
-        if (offset.x === 0 && offset.y === 0) {
-            return this;
-        }
-        var coordinates = this.getCoordinates();
-        if (coordinates) {
-            if (Z.Util.isArray(coordinates)) {
-                var offseted = Z.Util.eachInArray(coordinates,this,function(coord) {
-                        return coord.add(offset);
-                });
-                this.setCoordinates(offseted);
-            } else {
-                this.setCoordinates(coordinates.add(offset));
-            }
-        }
         return this;
     },
 
     /**
-     * 克隆一个不在任何图层上的属性相同的Geometry,但不包含事件注册
-     * @returns {Geometry} 克隆的Geometry
-     * @expose
+     * Returns a copy of the geometry without the event listeners.
+     * @returns {maptalks.Geometry} copy
      */
     copy:function() {
         var json = this.toJSON();
@@ -381,8 +473,10 @@ Z.Geometry=Z.Class.extend({
 
 
     /**
-     * 将自身从图层中移除
-     * @expose
+     * remove itself from the layer if any.
+     * @returns {maptalks.Geometry} this
+     * @fires maptalks.Geometry#removestart
+     * @fires maptalks.Geometry#remove
      */
     remove:function() {
         this._rootRemoveAndFireEvent();
@@ -390,20 +484,20 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 按照GeoJSON规范生成GeoJSON Geometry 类型对象
-     * @param  {Object} opts 输出配置
-     * @return {Object}      GeoJSON Geometry
+     * Exports a GeoJSON [geometry]{@link http://geojson.org/geojson-spec.html#feature-objects} (part of a feature) out of the geometry.
+     * @return {Object} GeoJSON Geometry
      */
-    toGeoJSONGeometry:function(opts) {
+    toGeoJSONGeometry:function() {
         var gJson = this._exportGeoJSONGeometry();
         return gJson;
     },
 
     /**
-     * 按照GeoJSON规范生成GeoJSON Feature 类型对象, GeoJSON Feature中不包含symbol, options等完整的图形属性. 完整属性输出请调用toProfile方法
-     * @param  {Object} opts 输出配置
-     * @returns {Object}      GeoJSON Feature
-     * @expose
+     * Exports a GeoJSON feature out of the geometry.
+     * @param {Object} [opts=null]              - export options
+     * @param {Boolean} [opts.geometry=true]    - whether export geometry
+     * @param {Boolean} [opts.properties=true]  - whether export properties
+     * @returns {Object} GeoJSON Feature
      */
     toGeoJSON:function(opts) {
         if (!opts) {
@@ -414,7 +508,7 @@ Z.Geometry=Z.Class.extend({
             'geometry':null
         };
         if (Z.Util.isNil(opts['geometry']) || opts['geometry']) {
-            var geoJSON = this._exportGeoJSONGeometry(opts);
+            var geoJSON = this._exportGeoJSONGeometry();
             feature['geometry']=geoJSON;
         }
         var id = this.getId();
@@ -422,7 +516,6 @@ Z.Geometry=Z.Class.extend({
             feature['id'] = id;
         }
         var properties = {};
-        //opts没有设定properties或者设定的properties值为true,则导出properties
         if (Z.Util.isNil(opts['properties']) || opts['properties']) {
             var geoProperties = this.getProperties();
             if (geoProperties) {
@@ -438,28 +531,30 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 获得Geometry的Profile
-     * @return {[type]} [description]
-     */
-    toJSON:function(options) {
-        //一个Graphic的profile
-        /*{
-            //graphic包含的feature
+     * Export a profile json out of the geometry. <br>
+     * Besides exporting the feature object, a profile json also contains symbol, construct options and infowindow info.<br>
+     * The profile json can be stored somewhere else and be used to reproduce the geometry later.<br>
+     * Due to the problem of serialization for functions, event listeners and contextmenu are not included in profile json.
+     * @example
+     *     // an example of a profile json.
+     * var profile = {
             "feature": {
                   "type": "Feature",
                   "id" : "point1",
                   "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
                   "properties": {"prop0": "value0"}
             },
-            //构造参数
+            //construct options.
             "options":{
                 "draggable" : true
             },
             //symbol
             "symbol":{
-                "markerFile" : "http://foo.com/icon.png"
+                "markerFile"  : "http://foo.com/icon.png",
+                "markerWidth" : 20,
+                "markerHeight": 20
             },
-            //infowindow设置
+            //infowindow info
             "infowindow" : {
                 "options" : {
                     "style" : "black"
@@ -467,6 +562,18 @@ Z.Geometry=Z.Class.extend({
                 "title" : "this is a infowindow title",
                 "content" : "this is a infowindow content"
             }
+        };
+     * @param {Object}  [options=null]          - export options
+     * @param {Boolean} [opts.geometry=true]    - whether export feature's geometry
+     * @param {Boolean} [opts.properties=true]  - whether export feature's properties
+     * @param {Boolean} [opts.options=true]     - whether export construct options
+     * @param {Boolean} [opts.symbol=true]      - whether export symbol
+     * @param {Boolean} [opts.infoWindow=true]  - whether export infowindow
+     * @return {Object} profile json object
+     */
+    toJSON:function(options) {
+        //一个Graphic的profile
+        /*
             //因为响应函数无法被序列化, 所以menu, 事件listener等无法被包含在graphic中
         }*/
         if (!options) {
@@ -481,17 +588,16 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 计算Geometry的地理长度,单位为米或像素(依据坐标类型)
-     * @returns {Number} 地理长度
-     * @expose
+     * Get the geographic length of the geometry.
+     * @returns {Number} geographic length
      */
     getLength:function() {
         return this._computeGeodesicLength(this._getMeasurer());
     },
 
     /**
-     * 计算Geometry的地理面积, 单位为平方米或平方像素(依据坐标类型)
-     * @returns {Number} 地理面积
+     * Get the geographic area of the geometry.
+     * @returns {Number} geographic area
      * @expose
      */
     getArea:function() {
@@ -499,13 +605,15 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 获取图形顶点坐标数组
+     * Get the connect points for [ConnectorLine]{@link maptalks.ConnectorLine}
+     * @return {maptalks.Coordinate[]} connect points
+     * @private
      */
-    getConnectPoints: function() {
+    _getConnectPoints: function() {
         return [this.getCenter()];
     },
 
-    //初始化传入的option参数
+    //options initializing
     _initOptions:function(opts) {
         if (!opts) {
             opts = {};
@@ -568,9 +676,9 @@ Z.Geometry=Z.Class.extend({
     },
 
     /**
-     * 资源url从相对路径转为绝对路径
-     * @param  {[type]} symbol [description]
-     * @return {[type]}        [description]
+     * Convert symbol's resources' urls from relative path to a absolute path.
+     * @param  {Object} symbol
+     * @private
      */
     _convertResourceUrl:function(symbol) {
         if (Z.node) {
@@ -669,9 +777,26 @@ Z.Geometry=Z.Class.extend({
         if (!layer) {
             return;
         }
+        /**
+         * removestart event.
+         *
+         * @event maptalks.Geometry#removestart
+         * @type {Object}
+         * @property {String} type - removestart
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
         this._fireEvent('removestart');
         this._removePainter();
         this._rootRemove();
+        /**
+         * remove event.
+         *
+         * @event maptalks.Geometry#remove
+         * @type {Object}
+         * @property {String} type - remove
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
+        this._
         this._fireEvent('remove');
     },
 
@@ -688,7 +813,7 @@ Z.Geometry=Z.Class.extend({
         if (this._getProjection()) {
             return this._getProjection();
         }
-        return Z.Measurer.getInstance(this.options['measure']);
+        return Z.MeasurerUtil.getInstance(this.options['measure']);
     },
 
     _getProjection:function() {
@@ -758,6 +883,14 @@ Z.Geometry=Z.Class.extend({
         if (painter) {
             painter.repaint();
         }
+        /**
+         * shapechange event.
+         *
+         * @event maptalks.Geometry#shapechange
+         * @type {Object}
+         * @property {String} type - shapechange
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
         this._fireEvent('shapechange');
     },
 
@@ -767,6 +900,14 @@ Z.Geometry=Z.Class.extend({
         if (painter) {
             painter.repaint();
         }
+        /**
+         * positionchange event.
+         *
+         * @event maptalks.Geometry#positionchange
+         * @type {Object}
+         * @property {String} type - positionchange
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
         this._fireEvent('positionchange');
     },
 
@@ -775,11 +916,20 @@ Z.Geometry=Z.Class.extend({
         if (painter) {
             painter.refreshSymbol();
         }
+        /**
+         * symbolchange event.
+         *
+         * @event maptalks.Geometry#symbolchange
+         * @type {Object}
+         * @property {String} type - symbolchange
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
         this._fireEvent('symbolchange');
     },
     /**
-     * 设置Geometry的父Geometry, 父Geometry为包含该geometry的Collection类型Geometry
-     * @param {GeometryCollection} geometry 父Geometry
+     * Set a parent to the geometry, which is usually a MultiPolygon, GeometryCollection, etc
+     * @param {maptalks.GeometryCollection} geometry - parent geometry
+     * @private
      */
     _setParent:function(geometry) {
         if (geometry) {
@@ -833,6 +983,32 @@ Z.Geometry=Z.Class.extend({
 
 });
 
+/**
+ * Produce a geometry from a [profile json]{@link maptalks.Geometry#toJSON}
+ * @static
+ * @param  {Object} json - a geometry's profile json
+ * @return {maptalks.Geometry} geometry
+ * @example
+ * var profile = {
+        "feature": {
+              "type": "Feature",
+              "id" : "point1",
+              "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+              "properties": {"prop0": "value0"}
+        },
+        //construct options.
+        "options":{
+            "draggable" : true
+        },
+        //symbol
+        "symbol":{
+            "markerFile"  : "http://foo.com/icon.png",
+            "markerWidth" : 20,
+            "markerHeight": 20
+        }
+    };
+    var marker = maptalks.Geometry.fromJSON(profile);
+ */
 Z.Geometry.fromJSON = function(json) {
     var geometry;
     if (json['subType']) {
@@ -856,10 +1032,35 @@ Z.Geometry.fromJSON = function(json) {
     return geometry;
 };
 
+/**
+ * Produce a geometry from a GeoJSON object
+ * @static
+ * @param  {Object} json - a GeoJSON object
+ * @return {maptalks.Geometry} geometry
+ * @example
+ * var marker = maptalks.Geometry.fromGeoJSON({"type":"Point", "coordinates":[100,0]});
+ * @example
+ * var feature = maptalks.Geometry.fromGeoJSON({
+ *     "type":"Feature",
+ *     "geometry":{
+ *         "type":"Point",
+ *         "coordinates":[100,0]
+ *      },
+ *      "properties":{"foo":"val"}
+ * });
+ */
 Z.Geometry.fromGeoJSON = function(geoJSON) {
     return Z.GeoJSON.fromGeoJSON(geoJSON);
 }
 
+/**
+ * Get external resources from the given symbol and given geometry
+ * @param  {Object} symbol      - symbol
+ * @param  {maptalks.Geometry}  - geometry
+ * @return {String[]}           - resource urls
+ * @static
+ * @private
+ */
 Z.Geometry.getExternalResource = function(symbol, geometry) {
     if (!symbol) {
         return null;

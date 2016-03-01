@@ -1,3 +1,12 @@
+/**
+ * @classdesc Curve style LineString
+ * @class
+ * @extends {maptalks.LineString}
+ * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the line string
+ * @param {Object} options - construct options of LineString, specific construct options for circle, also support options defined in [LineString]{@link maptalks.LineString#options}
+ * @param {Number} [options.curveType=1]            - curve type of the curve line: 0 - straight line; 1: circle arc; 2: quadratic curve; 3: bezier curve
+ * @param {Number} [options.arcDegree=90]           - arc's degree if curveType is 1 (circle arc).
+ */
 Z.CurveLine = Z.LineString.extend({
     options:{
         'curveType'   : 1,

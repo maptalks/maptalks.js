@@ -3,7 +3,7 @@
  * @class maptalks.Panel
  * @extends maptalks.Control
  * @mixins maptalks.Eventable
- * @author Maptalks Team
+
  */
 Z.control.Panel = Z.Control.extend({
     /**
@@ -94,7 +94,7 @@ Z.control.Panel = Z.Control.extend({
     /**
      * 获取panel端点数组
      */
-    getConnectPoints: function() {
+    _getConnectPoints: function() {
         var map = this._map;
         var containerPoint = this.getContainerPoint();
         var controlContainer = this.getContainer(),

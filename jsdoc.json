@@ -1,0 +1,14 @@
+{
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc","closure"]
+    },
+
+    "opts": {
+        "recurse" : true,
+        "template": "./node_modules/maptalks-jsdoc/",
+        "encoding": "utf8",
+        "destination": "./doc/api/",
+        "access"  : "public, undefined"
+    }
+}

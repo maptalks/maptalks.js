@@ -1,32 +1,52 @@
 /**
- * 图形范围类
- * @class maptalks.Extent
- * @author Maptalks Team
+ * Represent a bounding box on the map, a rectangular geographical area with minimum and maximum coordinates. <br>
+ * There are serveral ways to create a extent:
+ * @class
+ * @param {Number} x1   - x of coordinate 1
+ * @param {Number} y1   - y of coordinate 1
+ * @param {Number} x2   - x of coordinate 2
+ * @param {Number} y2   - y of coordinate 2
+ * @example
+ * //with 4 numbers
+ * var extent = new maptalks.Extent(100, 10, 120, 20);
+ * @example
+ * //with 2 coordinates
+ * var extent = new maptalks.Extent(new maptalks.Coordinate(100, 10), new maptalks.Coordinate(120, 20));
+ * @example
+ * //with a json object containing xmin, ymin, xmax and ymax
+ * var extent = new maptalks.Extent({xmin : 100, ymin: 10, xmax: 120, ymax:20});
+ * @example
+ * var extent1 = new maptalks.Extent(100, 10, 120, 20);
+ * //with another extent
+ * var extent2 = new maptalks.Extent(extent1);
  */
-Z.Extent =
- /**
-  * @constructor
-  * @param {maptalks.Coordinate} p1 坐标
-  * @param {maptalks.Coordinate} p2 坐标
-  * @param {maptalks.Coordinate} p3 坐标
-  * @param {maptalks.Coordinate} p4 坐标
-  * @returns {maptalks.Extent} extent对象
-  */
-function(p1,p2,p3,p4) {
+Z.Extent = function(p1,p2,p3,p4) {
     this._clazz = Z.Coordinate;
     this._initialize(p1,p2,p3,p4);
 };
 
-Z.Util.extend(Z.Extent.prototype, {
+Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
     _initialize:function(p1, p2, p3, p4) {
-        this['xmin'] = null;
-        this['xmax'] = null;
-        this['ymin'] = null;
-        this['ymax'] = null;
+        /**
+         * @property {Number} xmin - minimum x
+         */
+        this.xmin = null;
+        /**
+         * @property {Number} xmax - maximum x
+         */
+        this.xmax = null;
+        /**
+         * @property {Number} ymin - minimum y
+         */
+        this.ymin = null;
+        /**
+         * @property {Number} ymax - maximum y
+         */
+        this.ymax = null;
         if (Z.Util.isNil(p1)) {
             return;
         }
-        //构造方法一: 参数都是数字
+        //Constructor 1: all numbers
         if (Z.Util.isNumber(p1) &&
             Z.Util.isNumber(p2) &&
             Z.Util.isNumber(p3) &&
@@ -37,8 +57,7 @@ Z.Util.extend(Z.Extent.prototype, {
             this['ymax'] = Math.max(p2,p4);
             return;
         } else {
-             //构造方法二: 参数是两个坐标
-
+             //Constructor 2: two coordinates
             if (Z.Util.isNumber(p1.x) &&
                 Z.Util.isNumber(p2.x) &&
                 Z.Util.isNumber(p1.y) &&
@@ -57,7 +76,7 @@ Z.Util.extend(Z.Extent.prototype, {
                     this['ymin'] = p1.y;
                     this['ymax'] = p2.y;
                 }
-                //构造方法三: 参数为一个对象,包含xmin, xmax, ymin, ymax四个属性
+                //constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
             } else if (Z.Util.isNumber(p1['xmin']) &&
                     Z.Util.isNumber(p1['xmax']) &&
                     Z.Util.isNumber(p1['ymin']) &&
@@ -83,47 +102,18 @@ Z.Util.extend(Z.Extent.prototype, {
         return this;
     },
 
+    /**
+     * Get center of the extent.
+     * @return {maptalks.Coordinate}
+     */
     getCenter:function() {
         return new this._clazz((this['xmin']+this['xmax'])/2, (this['ymin']+this['ymax'])/2);
     },
 
-    getSize:function() {
-        return new Z.Size(this.getWidth(), this.getHeight());
-    },
-
-    getWidth:function() {
-        return this['xmax'] - this['xmin'];
-    },
-
-    getHeight:function() {
-        return this['ymax'] - this['ymin'];
-    },
-
-    getMin:function() {
-        return new this._clazz(this['xmin'],this['ymin']);
-    },
-
-    getMax:function() {
-        return new this._clazz(this['xmax'],this['ymax']);
-    },
-
     /**
-     * 将extent对象转化为json对象
-     * @return {Object} jsonObject
-     */
-    toJSON:function() {
-        return {
-            'xmin':this['xmin'],
-            'ymin':this['ymin'],
-            'xmax':this['xmax'],
-            'ymax':this['ymax']
-        };
-    },
-
-
-    /**
-     * 判断extent是否有效
-     * @return {Boolean} true：表明有效
+     * Whether the extent is valid
+     * @protected
+     * @return {Boolean}
      */
     isValid:function() {
         return Z.Util.isNumber(this['xmin']) &&
@@ -134,9 +124,9 @@ Z.Util.extend(Z.Extent.prototype, {
 
 
     /**
-     * 比较两个Extent是否相等
-     * @param  {maptalks.Extent}  ext2 比较的extent
-     * @return {Boolean} true：表明两个extent相等
+     * Compare with another extent to see whether they are equal.
+     * @param  {maptalks.Extent}  ext2 - extent to compare
+     * @return {Boolean}
      */
     equals:function(ext2) {
         return (this['xmin'] === ext2['xmin'] &&
@@ -146,9 +136,9 @@ Z.Util.extend(Z.Extent.prototype, {
     },
 
     /**
-     * 两个Extent是否相交
-     * @param  {maptalks.Extent}  ext2 比较的extent
-     * @return {Boolean} true：表明两个extent相交
+     * Whether it intersects with another extent
+     * @param  {maptalks.Extent}  ext2 - another extent
+     * @return {Boolean}
      */
     intersects:function(ext2) {
         var rxmin = Math.max(this['xmin'], ext2['xmin']);
@@ -160,9 +150,9 @@ Z.Util.extend(Z.Extent.prototype, {
     },
 
     /**
-     * 判断坐标是否在extent中
-     * @param  {maptalks.Coordinate} coordinate
-     * @returns {Boolean} true：坐标在extent中
+     * Whether the extent contains the input point.
+     * @param  {maptalks.Coordinate|Number[]} coordinate - input point
+     * @returns {Boolean}
      */
     contains: function(coordinate) {
         var x, y;
@@ -227,39 +217,42 @@ Z.Util.extend(Z.Extent.prototype, {
     },
 
     /**
-     * 合并两个extent
-     * @param  {maptalks.Extent} ext1
-     * @param  {maptalks.Extent} ext2
-     * @returns {maptalks.Extent} 合并后的extent
+     * Combine it with another extent to a larger extent.
+     * @param  {maptalks.Extent} extent - another extent
+     * @returns {maptalks.Extent} extent combined
      */
     combine:function(extent) {
         if (!extent) {
             return this;
         }
         var ext = this.__combine(extent);
-        return new Z.Extent(ext[0],ext[1],ext[2],ext[3]);
+        return new this.constructor(ext[0],ext[1],ext[2],ext[3]);
     },
 
+    /**
+     * Gets the intersection extent of this and another extent.
+     * @param  {maptalks.Extent} extent - another extent
+     * @return {maptalks.Extent} intersection extent
+     */
     intersection:function(extent) {
         if (!this.intersects(extent)) {
             return null;
         }
-        return new Z.Extent(Math.max(this['xmin'], extent['xmin']),Math.max(this['ymin'], extent['ymin']),
+        return new this.constructor(Math.max(this['xmin'], extent['xmin']),Math.max(this['ymin'], extent['ymin']),
             Math.min(this['xmax'], extent['xmax']),Math.min(this['ymax'], extent['ymax'])
             );
     },
 
     /**
-     * 扩大Extent
-     * @param  {maptalks.Extent} ext 初始extent
-     * @param  {maptalks.Extent} distance  像素距离
-     * @returns {maptalks.Extent} 扩大后的extent
+     * Expand the extent by distance
+     * @param  {maptalks.Size|Number} distance  - distance to expand
+     * @returns {maptalks.Extent} a new extent expanded from
      */
     expand:function(distance) {
         if (distance instanceof Z.Size) {
-            return new Z.Extent(this['xmin']-distance['width'], this['ymin']-distance['height'],this['xmax']+distance['width'],this['ymax']+distance['height']);
+            return new this.constructor(this['xmin']-distance['width'], this['ymin']-distance['height'],this['xmax']+distance['width'],this['ymax']+distance['height']);
         } else {
-            return new Z.Extent(this['xmin']-distance, this['ymin']-distance,this['xmax']+distance,this['ymax']+distance);
+            return new this.constructor(this['xmin']-distance, this['ymin']-distance,this['xmax']+distance,this['ymax']+distance);
         }
     },
 
@@ -278,6 +271,26 @@ Z.Util.extend(Z.Extent.prototype, {
         return this;
     },
 
+    /**
+     * Get extent's JSON object.
+     * @return {Object} jsonObject
+     * @example
+     * // {xmin : 100, ymin: 10, xmax: 120, ymax:20}
+     * var json = extent.toJSON();
+     */
+    toJSON:function() {
+        return {
+            'xmin':this['xmin'],
+            'ymin':this['ymin'],
+            'xmax':this['xmax'],
+            'ymax':this['ymax']
+        };
+    },
+
+    /**
+     * Get a coordinate array of extent's rectangle area, containing 5 coordinates in which the first equals with the last.
+     * @return {maptalks.Coordinate[]} coordinates array
+     */
     toArray:function() {
         var xmin = this['xmin'],
             ymin = this['ymin'],
@@ -288,5 +301,13 @@ Z.Util.extend(Z.Extent.prototype, {
                 new this._clazz([xmax, ymin]), new this._clazz([xmin, ymin]),
                 new this._clazz([xmin, ymax])
             ];
+    },
+
+    /**
+     * Get a copy of the extent.
+     * @return {maptalks.Extent} copy
+     */
+    copy:function() {
+        return new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
     }
 });

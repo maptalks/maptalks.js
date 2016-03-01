@@ -1,4 +1,12 @@
-Z.VectorLayer=Z.OverlayLayer.extend({
+/**
+ * @classdesc
+ * A layer for managing and rendering geometrie.
+ * @class
+ * @extends {maptalks.OverlayLayer}
+ * @param {String|Number} id - layer's id
+ * @param {Object} [options=null] - construct options, including the options defined in [maptalks.Layer]{@link maptalks.Layer#options}
+ */
+Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
     type : 'vector',
 
     options:{
@@ -10,16 +18,16 @@ Z.VectorLayer=Z.OverlayLayer.extend({
         'renderer'                  : 'canvas'
     },
 
-    /**
-     * 构造函数
-     * @param  {String} id 图层identifier
-     */
     initialize:function(id, options) {
         this.setId(id);
         Z.Util.setOptions(this, options);
 
     },
 
+    /**
+     * load the layer
+     * @return {maptalks.VectorLayer} this
+     */
     load:function() {
         var renderer = this._getRenderer();
         if (!renderer) {
@@ -33,9 +41,9 @@ Z.VectorLayer=Z.OverlayLayer.extend({
 
 
     /**
-     * 当geometry被移除时触发
-     * @param  {[type]} geometry [description]
-     * @return {[type]}          [description]
+     * Called when geometry is being removed to clear the context concerned.
+     * @param  {maptalks.Geometry} geometry - the geometry instance to remove
+     * @private
      */
     _onGeometryRemove:function(geometry) {
         if (!geometry) {return;}

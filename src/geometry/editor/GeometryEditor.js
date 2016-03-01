@@ -1,20 +1,17 @@
 /**
- * 编辑工具类
- * @class maptalks.Editor
+ * Geometry editor used internally for geometry editing.
+ * @class
+ * @protected
  * @extends maptalks.Class
- * @mixins maptalks.Eventable
- * @author Maptalks Team
+ * @mixes maptalks.Eventable
+ * @param {maptalks._shadow} geometry 待编辑图形
+ * @param {Object} opts 属性
  */
-Z.Editor=Z.Class.extend({
+Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
     includes: [Z.Eventable],
 
     editStageLayerId : Z.internalLayerPrefix+'_edit_stage',
 
-    /**
-     * @constructor
-     * @param {maptalks._shadow} geometry 待编辑图形
-     * @param {Object} opts 属性
-     */
     initialize:function(geometry,opts) {
         this._geometry = geometry;
         if (!this._geometry) {return;}
@@ -101,7 +98,7 @@ Z.Editor=Z.Class.extend({
 
     /**
      * 结束编辑
-     * @return {[type]} [description]
+     * @return {*} [description]
      */
     stop:function() {
         var map = this.getMap();
@@ -146,7 +143,7 @@ Z.Editor=Z.Class.extend({
     },
 
     _update:function() {
-        //update geodesic properties from shadow to geometry
+        //update geographical properties from shadow to geometry
         this._geometry.setCoordinates(this._shadow.getCoordinates());
         if (this._geometry.getRadius) {
             this._geometry.setRadius(this._shadow.getRadius());
@@ -497,7 +494,7 @@ Z.Editor=Z.Class.extend({
 
     /**
      * 圆形编辑器
-     * @return {[type]} [description]
+     * @return {*} [description]
      */
     createCircleEditor:function() {
         var shadow = this._shadow,
@@ -522,7 +519,7 @@ Z.Editor=Z.Class.extend({
 
     /**
      * editor of ellipse or rectangle
-     * @return {[type]} [description]
+     * @return {*} [description]
      */
     createEllipseOrRectEditor:function() {
         //defines what can be resized by the handle
@@ -605,7 +602,7 @@ Z.Editor=Z.Class.extend({
 
     /**
      * 多边形和多折线的编辑器
-     * @return {[type]} [description]
+     * @return {*} [description]
      */
     createPolygonEditor:function() {
 

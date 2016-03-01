@@ -1,11 +1,40 @@
-/*
- * OOP facilities of the library.
+/**
+ * OOP facilities of the library. <br/>
  * Thanks to Leaflet's inspiration (http://www.leafletjs.com)
- * @class maptalks.Class
+ * @see  [Original explanation by Leaflet]{@link http://leafletjs.com/reference.html#class}
+ *
+ * @class
+ * @abstract
  */
-Z.Class = function () {};
+Z.Class = function () {
 
+};
+/**
+ * Extend a class with a prototype object with instance methods and properties.
+ *
+ * @param  {object} props - a literal object with instance properties or methods.
+ * @return {maptalks.Class}
+ * @static
+ * @example
+ *  var MyClass = L.Class.extend({
+        initialize: function (greeter) {
+            this.greeter = greeter;
+            // class constructor
+        },
+
+        greet: function (name) {
+            alert(this.greeter + ', ' + name)
+        }
+    });
+
+    // create instance of MyClass, passing "Hello" to the constructor
+    var a = new MyClass("Hello");
+
+    // call greet method, alerting "Hello, World"
+    a.greet("World");
+ */
 Z.Class.extend = function (props) {
+
     // extended class with the new prototype
     var NewClass = function () {
         // call the constructor
@@ -21,6 +50,7 @@ Z.Class.extend = function (props) {
 
     var parentProto = NewClass.__super__ = this.prototype;
 
+    /** @lends maptalks.Class.prototype */
     var proto = Z.Util.create(parentProto);
 
     proto.constructor = NewClass;
@@ -81,7 +111,13 @@ Z.Class.extend = function (props) {
             proto._initHooks[i].call(this);
         }
     };
-    // config to set option and enable/disable handler
+
+    /**
+     * Get options without any parameter or update one (key, value) or more options (object).<br>
+     * If the instance has a handler of the same name with the option key, the handler will be enabled or disabled when the option is updated.
+     * @param  {object|string} options - options to update
+     * @return {object|this}
+     */
     proto.config = function(conf) {
         if (!conf) {
             var config = {};
@@ -111,7 +147,7 @@ Z.Class.extend = function (props) {
                 }
             }
             //callback when set config
-            if (this.onConfig && (typeof this.onConfig == 'function' || (this.onConfig.constructor!==null && this.onConfig.constructor == Function))) {
+            if (this.onConfig) {
                 this.onConfig(conf);
             }
         }
@@ -122,7 +158,11 @@ Z.Class.extend = function (props) {
 };
 
 
-// method for adding properties to prototype
+/**
+ * method for adding properties to prototype
+ * @param  {object} props - additional instance methods or properties
+ * @static
+ */
 Z.Class.include = function (props) {
     var sources = arguments;
     for (var j = 0, len = sources.length; j < len; j++) {
@@ -131,12 +171,20 @@ Z.Class.include = function (props) {
 
 };
 
-// merge new default options to the Class
+/**
+ * merge new default options to the Class
+ * @param  {object} options - default options.
+ * @static
+ */
 Z.Class.mergeOptions = function (options) {
     Z.Util.extend(this.prototype.options, options);
 };
 
-// add a constructor hook
+/**
+ * add a constructor hook
+ * @param {string|function} fn - a hook function or name of the hook function and arguments
+ * @static
+ */
 Z.Class.addInitHook = function (fn) { // (Function) || (String, args...)
     var args = Array.prototype.slice.call(arguments, 1);
 

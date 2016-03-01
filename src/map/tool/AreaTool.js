@@ -1,15 +1,17 @@
 /**
- * 测距鼠标工具类
- * @class maptalks.DrawTool
+ * @classdesc
+ * A map tool to help measure area on the map
+ * @class
  * @extends maptalks.Class
- * @mixins maptalks.Eventable
- * @author Maptalks Team
+ * @mixins maptalks.DistanceTool
+ * @param {options} [options=null]          - construct options, including options defined in [DistanceTool]{@link maptalks.DistanceTool}
+ * @param {options} [options.symbol=null]   - symbol of lines drawn during measuring
  */
-Z.AreaTool = Z.DistanceTool.extend({
+Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.DistanceTool.prototype */{
 
     options:{
         'symbol' : {
-            'lineColor':'#000000',//'#474cf8',
+            'lineColor':'#000000',
             'lineWidth':2,
             'lineOpacity':1,
             'lineDasharray': '',
@@ -17,11 +19,7 @@ Z.AreaTool = Z.DistanceTool.extend({
             'polygonOpacity' : 0.5
         }
     },
-    /**
-     * 初始化绘制工具
-     * @constructor
-     * @param {Object} options:{mode:Z.Geometry.TYPE_CIRCLE, disableOnDrawEnd: true}
-     */
+
     initialize: function(options) {
         Z.Util.setOptions(this,options);
         this.config('mode',Z.Geometry['TYPE_POLYGON']);

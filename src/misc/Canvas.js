@@ -37,7 +37,6 @@ Z.Canvas = {
         ctx.fillStyle =this.getRgba(fill, fillOpacity);
     },
 
-    // TODO: no prepare, set style just before stroke/fill
     prepareCanvas:function(ctx, strokeSymbol, fillSymbol, resources){
         if (strokeSymbol) {
             var strokeWidth = strokeSymbol['stroke-width'];
@@ -46,18 +45,29 @@ Z.Canvas = {
             }
             var strokeColor = strokeSymbol['stroke'];
              if (strokeColor)  {
-                 if (Z.Util.isCssUrl(strokeColor)) {
+                 if (Z.Util.isCssUrl(strokeColor) && resources) {
                     var imgUrl = Z.Util.extractCssUrl(strokeColor);
-                    var imageTexture = resources.getImage(imgUrl);
-                    if (imageTexture) {
-                        if (imageTexture instanceof Image) {
-                            var w = Z.Util.round(imageTexture.width*strokeWidth/imageTexture.height);
-                            var patternCanvas = this.createCanvas(w,strokeWidth,ctx.canvas.constructor);
-                            var patternCtx = patternCanvas.getContext('2d');
-                            patternCtx.drawImage(imageTexture,0,0,w,strokeWidth);
-                            resources.addResource(imgUrl,patternCanvas);
-                            imageTexture = patternCanvas;
+                    var imageTexture = resources.getImage(imgUrl+'-texture');
+                    if (!imageTexture || (imageTexture.height !== strokeWidth)) {
+                        var imageRes = resources.getImage(imgUrl);
+                        if (imageRes) {
+                            var w;
+                            if (!imageRes.width || !imageRes.height) {
+                                w = strokeWidth;
+                            } else {
+                                w = Z.Util.round(imageRes.width*strokeWidth/imageRes.height);
+                            }
+                            // var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
+                            // patternCanvas.getContext('2d').drawImage(imageRes,0,0,w,strokeWidth);
+                            imageTexture = new Image();
+                            imageTexture.src = imageRes.src;
+                            imageTexture.width = w;
+                            imageTexture.height = strokeWidth;
+                            resources.addResource(imgUrl+'-texture',imageTexture);
+                            // imageTexture = patternCanvas;
                         }
+                    }
+                    if (imageTexture) {
                         //line pattern will override stroke-dasharray
                         strokeSymbol['stroke-dasharray'] = [];
                         ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');

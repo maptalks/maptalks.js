@@ -65,18 +65,18 @@ Z.Util.extend(Z.View.prototype, {
         var projection = this.options['projection'];
         if (projection) {
             if (Z.Util.isString(projection)) {
-                for (var p in Z.Projection) {
-                    if (Z.Projection.hasOwnProperty(p)) {
-                        var regName = Z.Projection[p]['code'];
+                for (var p in Z.projection) {
+                    if (Z.projection.hasOwnProperty(p)) {
+                        var regName = Z.projection[p]['code'];
                         if (regName && regName.toLowerCase() === projection.toLowerCase()) {
-                            projection = Z.Projection[p];
+                            projection = Z.projection[p];
                             break;
                         }
                     }
                 }
             }
         } else {
-            projection = Z.Projection.DEFAULT;
+            projection = Z.projection.DEFAULT;
         }
         if (!projection || Z.Util.isString(projection)) {
             throw new Error('must provide a valid projection in map\'s view.');

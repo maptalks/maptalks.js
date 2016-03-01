@@ -1,21 +1,47 @@
-Z.Projection = {};
+/**
+ * @namespace
+ */
+Z.projection = {};
 
-Z.Projection.Common = {
+/**
+ * Common Methods of Projections.
+ * @mixin
+ * @protected
+ * @memberOf maptalks.projection
+ * @name Common
+ */
+Z.projection.Common = {
     /**
-     * 计算一组坐标的投影坐标
-     * @param  {[type]} points [description]
-     * @return {[type]}        [description]
+     * Project a geographical coordinate to a projected coordinate (2d coordinate)
+     * @param  {maptalks.Coordinate} p - coordinate to project
+     * @return {maptalks.Coordinate}
+     * @static
      */
-    projectPoints:function(points) {
-        return Z.Util.eachInArray(points, this, this.project);
+    project:function() {},
+    /**
+     * Unproject a projected coordinate to a geographical coordinate (2d coordinate)
+     * @param  {maptalks.Coordinate} p - coordinate to project
+     * @return {maptalks.Coordinate}
+     * @static
+     */
+    unproject:function() {},
+    /**
+     * Project a group of geographical coordinates to projected coordinates.
+     * @param  {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates - coordinates to project
+     * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]}
+     * @static
+     */
+    projectCoords:function(coordinates) {
+        return Z.Util.eachInArray(coordinates, this, this.project);
     },
 
     /**
-     * 计算一组投影坐标的经纬度坐标
-     * @param  {[type]} points [description]
-     * @return {[type]}           [description]
+     * Unproject a group of projected coordinates to geographical coordinates.
+     * @param  {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} projCoords - projected coordinates to unproject
+     * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]}
+     * @static
      */
-    unprojectPoints:function(points) {
-        return Z.Util.eachInArray(points, this, this.unproject);
+    unprojectCoords:function(projCoords) {
+        return Z.Util.eachInArray(projCoords, this, this.unproject);
     }
 };

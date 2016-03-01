@@ -2,9 +2,9 @@
  * 工具栏控件
  * @class maptalks.Toolbar
  * @extends maptalks.Control
- * @author Maptalks Team
+
  */
-Z['Toolbar'] = Z.Toolbar = Z.Control.extend({
+Z.Toolbar = Z.Control.extend({
 
     /**
      * @cfg {Object} options 工具栏属性

@@ -1,11 +1,12 @@
 /**
- * 测距鼠标工具类
- * @class maptalks.DrawTool
+ * @classdesc
+ * A map tool to help draw geometries on the map
+ * @class
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
- * @author Maptalks Team
+ * @param {options} [options=null] - construct options
  */
-Z.DrawTool = Z.Class.extend({
+Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
     includes: [Z.Eventable],
 
     options:{
@@ -21,11 +22,6 @@ Z.DrawTool = Z.Class.extend({
         'once' : false
     },
 
-    /**
-     * 初始化绘制工具
-     * @constructor
-     * @param {Object} options:{mode:Z.Geometry.TYPE_CIRCLE, disableOnDrawEnd: true}
-     */
     initialize: function(options) {
         Z.Util.setOptions(this,options);
     },
@@ -427,7 +423,7 @@ Z.DrawTool = Z.Class.extend({
 
     /**
      * 返回多边形或多折线的坐标数组
-     * @return {[type]} [description]
+     * @return {*} [description]
      */
     _getLonlats:function() {
         if (this._geometry.getShell) {
@@ -450,8 +446,8 @@ Z.DrawTool = Z.Class.extend({
 
     /**
      * 获得鼠标事件在地图容器上的屏幕坐标
-     * @param  {[type]} event [description]
-     * @return {[type]}       [description]
+     * @param  {*} event [description]
+     * @return {*}       [description]
      */
     _getMouseContainerPoint:function(event) {
         Z.DomUtil.stopPropagation(event['domEvent']);
@@ -461,8 +457,8 @@ Z.DrawTool = Z.Class.extend({
 
     /**
      * 事件坐标转化为地图上的经纬度坐标
-     * @param  {[type]} event [description]
-     * @return {[type]}       [description]
+     * @param  {*} event [description]
+     * @return {*}       [description]
      */
     _containerPointToLonlat:function(containerPoint) {
         var projection = this._getProjection(),

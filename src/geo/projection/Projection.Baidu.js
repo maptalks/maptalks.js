@@ -1,8 +1,24 @@
-Z.Projection.BAIDU = Z.Util.extend({}, Z.Projection.Common, {
+/**
+ * Projection used by [Baidu Map]{@link http://map.baidu.com}
+ * @class
+ * @protected
+ * @memberOf maptalks.projection
+ * @name BAIDU
+ * @mixes maptalks.projection.Common
+ * @mixes maptalks.measurer.BaiduSphere
+ */
+Z.projection.BAIDU = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.projection.BAIDU */{
+    /**
+     * "BAIDU", Code of the projection, used by [View]{@link maptalks.View} to get projection instance.
+     * @type {String}
+     * @constant
+     */
     code : "BAIDU",
+
     project:function(p){
         return this.convertLL2MC(p);
     },
+
     unproject:function(p){
         return this.convertMC2LL(p);
     }

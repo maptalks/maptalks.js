@@ -277,7 +277,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
 
     _requestMapToRender:function() {
         if (Z.node) {
-            if (this.getMap() && !this.getMap().isBusy()) {
+            if (this.getMap() && !this.getMap()._isBusy()) {
                 this._mapRender.render();
             }
             return;
@@ -287,7 +287,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
         }
         var me = this;
         this._mapRenderRequest = setTimeout(function() {
-            if (me.getMap() && !me.getMap().isBusy()) {
+            if (me.getMap() && !me.getMap()._isBusy()) {
                 me._mapRender.render();
             }
         }, 1);

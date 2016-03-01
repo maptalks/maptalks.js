@@ -39,37 +39,84 @@ Z.Util.extend(Z.measurer.Sphere.prototype, {
         var sy = Math.sin(dy / (2 * this.radius)) * 2;
         ry = ry + sy * (yDist > 0 ? 1 : -1);
         var sx = 2 * Math.sqrt(Math.pow(Math.sin(dx / (2 * this.radius)), 2)/ Math.pow(Math.cos(ry), 2));
-        //              2 * Math.asin(Math.sqrt(Math.abs((Math.sin(xDist
-        //              / (2 * this.radius)))
-        //              / (2 * Math.pow(Math.cos(ry), 2)))));
         rx = rx + sx * (xDist > 0 ? 1 : -1);
         return new Z.Coordinate(rx * 180 / Math.PI, ry * 180 / Math.PI);
     }
 });
 
+/**
+ * WGS84 Sphere measurer.
+ * @class
+ * @protected
+ * @memberOf maptalks.measurer
+ * @name WGS84Sphere
+ */
 Z.measurer.WGS84Sphere = {
     'measure' : 'EPSG:4326',
     sphere : new Z.measurer.Sphere(6378137),
+    /**
+     * Measure the length between 2 coordinates.
+     * @param  {maptalks.Coordinate} c1
+     * @param  {maptalks.Coordinate} c2
+     * @return {Number}
+     */
     measureLength: function() {
         return this.sphere.measureLength.apply(this.sphere,arguments);
     },
+    /**
+     * Measure the area closed by the given coordinates.
+     * @param  {maptalks.Coordinate[]} coordinates
+     * @return {number}
+     */
     measureArea: function() {
         return this.sphere.measureArea.apply(this.sphere,arguments);
     },
+    /**
+     * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
+     * @param  {maptalks.Coordinate} c     - source coordinate
+     * @param  {Number} xDist              - x-axis distance
+     * @param  {Number} yDist              - y-axis distance
+     * @return {maptalks.Coordinate}
+     */
     locate: function() {
         return this.sphere.locate.apply(this.sphere,arguments);
     }
 }
 
+/**
+ * Baidu sphere measurer
+ * @class
+ * @protected
+ * @memberOf maptalks.measurer
+ * @name BaiduSphere
+ */
 Z.measurer.BaiduSphere = {
     'measure' : 'BAIDU',
     sphere : new Z.measurer.Sphere(6370996.81),
+    /**
+     * Measure the length between 2 coordinates.
+     * @param  {maptalks.Coordinate} c1
+     * @param  {maptalks.Coordinate} c2
+     * @return {Number}
+     */
     measureLength: function() {
         return this.sphere.measureLength.apply(this.sphere,arguments);
     },
+    /**
+     * Measure the area closed by the given coordinates.
+     * @param  {maptalks.Coordinate[]} coordinates
+     * @return {number}
+     */
     measureArea: function() {
         return this.sphere.measureArea.apply(this.sphere,arguments);
     },
+    /**
+     * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
+     * @param  {maptalks.Coordinate} c     - source coordinate
+     * @param  {Number} xDist              - x-axis distance
+     * @param  {Number} yDist              - y-axis distance
+     * @return {maptalks.Coordinate}
+     */
     locate: function() {
         return this.sphere.locate.apply(this.sphere,arguments);
     }

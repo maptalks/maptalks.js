@@ -1,32 +1,21 @@
 /**
- * 图形中心点类
- * @class maptalks.Geometry.Center
- * @author Maptalks Team
+ * Common methods for geometry classes that base on a center, e.g. Marker, Circle, Ellipse , etc
+ * @mixin
  */
 Z.Geometry.Center = {
-    //计算Geometry中心点在地图容器中的相对坐标
-    _getCenterViewPoint:function() {
-        var pcenter = this._getPrjCoordinates();
-        if (!pcenter) {return null;}
-        var map=this.getMap();
-        if (!map) {
-            return null;
-        }
-        return map._transformToViewPoint(pcenter);
-    },
-
     /**
-     * 返回Geometry的坐标
-     * @return {Coordinate} 图形坐标
-     * @expose
+     * Get geometry's center
+     * @return {maptalks.Coordinate} - center of the geometry
      */
     getCoordinates:function() {
         return this._coordinates;
     },
 
     /**
-     * 设置新的坐标
-     * @param {Coordinate} coordinates 新的坐标
+     * Set a new center to the geometry
+     * @param {maptalks.Coordinate|Number[]} coordinates - new center
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#positionchange
      */
     setCoordinates:function(coordinates) {
         var center = new Z.Coordinate(coordinates);
@@ -40,6 +29,17 @@ Z.Geometry.Center = {
         return this;
     },
 
+    //Gets view point of the geometry's center
+    _getCenterViewPoint:function() {
+        var pcenter = this._getPrjCoordinates();
+        if (!pcenter) {return null;}
+        var map=this.getMap();
+        if (!map) {
+            return null;
+        }
+        return map._transformToViewPoint(pcenter);
+    },
+
     _getPrjCoordinates:function() {
         var projection = this._getProjection();
         if (!projection) {return null;}
@@ -51,13 +51,13 @@ Z.Geometry.Center = {
         return this._pcenter;
     },
 
-    //设置投影坐标
+    //Set center by projected coordinates
     _setPrjCoordinates:function(pcenter) {
         this._pcenter=pcenter;
         this._onPositionChanged();
     },
 
-    //修改投影坐标后调用该方法更新经纬度坐标缓存.
+    //update cached variables if geometry is updated.
     _updateCache:function() {
         delete this._extent;
         var projection = this._getProjection();

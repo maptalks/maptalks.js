@@ -1,24 +1,18 @@
  /**
- * 多边形类
- * @class maptalks.Polygon
+ * @classdesc
+ *     Geometry class for polygon type
+ * @class
  * @extends maptalks.Vector
  * @mixins maptalks.Geometry.Poly
- * @author Maptalks Team
+ * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
+ * @param {Object} [options=null] - specific construct options for Polygon, also support options defined in [Vector]{@link maptalks.Vector#options} and [Geometry]{@link maptalks.Geometry#options}
  */
-Z['Polygon']=Z.Polygon = Z.Vector.extend({
+Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
     includes:[Z.Geometry.Poly],
 
-    /**
-     * 图形类型
-     * @static
-     */
     type:Z.Geometry['TYPE_POLYGON'],
 
-    /**
-     * 异常信息
-     * @static
-     */
     exceptionDefs:{
         'en-US':{
             'INVALID_COORDINATES':'invalid coordinates for polygon.'
@@ -28,40 +22,36 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
         }
     },
 
+    /**
+     * @property {String} [options.antiMeridian=default] - antiMeridian
+     */
     options:{
         "antiMeridian" : "default"
     },
 
-    /**
-     * @constructor
-     * @param {maptalks.Coordinate[]} coordinates
-     * @param {Object} opts
-     * @returns {maptalks.Polygon}
-     */
     initialize:function(coordinates, opts) {
         this.setCoordinates(coordinates);
         this._initOptions(opts);
     },
 
     /**
-     * @method
-     * @name setCoordinates
-     * 设置新的coordinates
-     * @param {Coordinate[]} coordinates 坐标数组
+     * Set coordinates to the polygon
+     * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - new coordinates
+     * @return {maptalks.Polygon} this
      */
     setCoordinates:function(coordinates) {
         if (!coordinates) {
-            this._points = null;
+            this._coordinates = null;
             this._holes = null;
             this._projectRings();
-            return;
+            return this;
         }
         var rings = Z.GeoJSON.fromGeoJSONCoordinates(coordinates);
         var len = rings.length;
         if (!Z.Util.isArray(rings[0])) {
-            this._points = this._trimRing(rings);
+            this._coordinates = this._trimRing(rings);
         } else {
-            this._points = this._trimRing(rings[0]);
+            this._coordinates = this._trimRing(rings[0]);
             if (len > 1) {
                 var holes = [];
                 for (var i=1; i<len;i++) {
@@ -75,16 +65,15 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
         }
 
         this._projectRings();
+        return this;
     },
 
     /**
-     * @method
-     * @name setCoordinates
-     * 返回多边形的坐标数组
-     * @returns {Coordinate[]} 坐标数组
+     * Gets polygons's coordinates
+     * @returns {maptalks.Coordinate[][]}
      */
     getCoordinates:function() {
-        if (!this._points) {
+        if (!this._coordinates) {
             return [];
         }
         if (Z.Util.isArrayHasData(this._holes)) {
@@ -92,9 +81,42 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
             for (var i = 0; i < this._holes.length; i++) {
                 holes.push(this._closeRing(this._holes[i]));
             }
-            return [this._closeRing(this._points)].concat(holes);
+            return [this._closeRing(this._coordinates)].concat(holes);
         }
-        return [this._closeRing(this._points)];
+        return [this._closeRing(this._coordinates)];
+    },
+
+    /**
+     * Gets shell coordinates of the polygon
+     * @returns {maptalks.Coordinate[]}
+     */
+    getShell:function() {
+       return this._coordinates;
+    },
+
+
+    /**
+     * Gets holes' coordinates of the polygon if it has.
+     * @returns {maptalks.Coordinate[][]}
+     */
+    getHoles:function() {
+        if (this.hasHoles()) {
+            return this._holes;
+        }
+        return null;
+    },
+
+    /**
+     * Whether the polygon has any holes inside.
+     * @returns {Boolean}
+     */
+    hasHoles:function() {
+        if (Z.Util.isArrayHasData(this._holes)) {
+            if (Z.Util.isArrayHasData(this._holes[0])) {
+                return true;
+            }
+        }
+        return false;
     },
 
     _projectRings:function() {
@@ -102,8 +124,8 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
             this._onShapeChanged();
             return;
         }
-        this._prjPoints = this._projectPoints(this._points);
-        this._prjHoles = this._projectPoints(this._holes);
+        this._prjCoords = this._projectCoords(this._coordinates);
+        this._prjHoles = this._projectCoords(this._holes);
         this._onShapeChanged();
     },
 
@@ -117,7 +139,8 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
 
     /**
      * 检查ring是否合法, 并返回ring是否闭合
-     * @param  {[type]} ring [description]
+     * @param  {*} ring [description]
+     * @private
      */
     _checkRing:function(ring) {
         this._cleanRing(ring);
@@ -139,6 +162,7 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
 
     /**
      * 如果最后一个端点与第一个端点相同, 则去掉最后一个端点
+     * @private
      */
     _trimRing:function(ring) {
         var isClose = this._checkRing(ring);
@@ -151,6 +175,7 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
 
     /**
      * 如果最后一个端点与第一个端点不同, 则在最后增加与第一个端点相同的点
+     * @private
      */
     _closeRing:function(ring) {
         var isClose = this._checkRing(ring);
@@ -161,46 +186,10 @@ Z['Polygon']=Z.Polygon = Z.Vector.extend({
         }
     },
 
-    /**
-     * 获取多边形的外环
-     * @returns {Array} 多边形坐标数组
-     * @expose
-     */
-    getShell:function() {
-       return this._points;
-    },
-
-
-    /**
-     * 获取Polygon的空洞的坐标
-     * @returns {Array} 空洞的坐标二维数组
-     * @expose
-     */
-    getHoles:function() {
-        if (this.hasHoles()) {
-            return this._holes;
-        }
-        return null;
-    },
-
-    /**
-     * Polygon是否有空洞
-     * @returns {Boolean} 是否有空洞
-     * @expose
-     */
-    hasHoles:function() {
-        if (Z.Util.isArrayHasData(this._holes)) {
-            if (Z.Util.isArrayHasData(this._holes[0])) {
-                return true;
-            }
-        }
-        return false;
-    },
-
 
     _getPrjHoles:function() {
         if (!this._prjHoles) {
-            this._prjHoles = this._projectPoints(this._holes);
+            this._prjHoles = this._projectCoords(this._holes);
         }
         return this._prjHoles;
     },

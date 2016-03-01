@@ -62,7 +62,7 @@
 ../src/geometry/GeometryCollection.js
 ../src/geometry/MultiPoly.js
 ../src/geometry/MultiPoint.js
-../src/geometry/MultiPolyline.js
+../src/geometry/MultiLineString.js
 ../src/geometry/MultiPolygon.js
 ../src/geometry/GeoJSON.js
 ../src/geometry/editor/GeometryEditor.js

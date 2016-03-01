@@ -1,13 +1,13 @@
 /**
- * geometry集合类
- * @class maptalks.GeometryCollection
+ * @classdesc
+ * Represents a GeometryCollection.
+ * @class
  * @extends maptalks.Geometry
- * @author Maptalks Team
+ * @param {maptalks.Geometry[]} geometries - GeometryCollection's geometries
  */
-Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
+Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.prototype */{
     type:Z.Geometry['TYPE_GEOMETRYCOLLECTION'],
 
-    //根据不同的语言定义不同的错误信息
     exceptionDefs:{
         'en-US':{
             'INVALID_GEOMETRY':'invalid geometry for collection.'
@@ -23,14 +23,13 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
     },
 
     /**
-     * 设置
-     * @param {[Geometry]} geometries [Geometry数组]
-     * @expose
-     *
+     * Set new geometries to the geometry collection
+     * @param {maptalks.Geometry[]} geometries
+     * @return {maptalks.GeometryCollection} this
      */
     setGeometries:function(_geometries) {
         var geometries = this._checkGeometries(_geometries);
-        //设置parent用来处理事件, setGeometries是所有Collection类型的Geometry都会调用的方法
+        //Set the collection as child geometries' parent.
         if (Z.Util.isArray(geometries)) {
             for (var i = geometries.length - 1; i >= 0; i--) {
                 geometries[i]._initOptions(this.config());
@@ -40,16 +39,15 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
         }
         this._geometries = geometries;
         if (this.getLayer()) {
-            this._bindGeometries();
+            this._bindGeometriesToLayer();
             this._onShapeChanged();
         }
         return this;
     },
 
     /**
-     * 获取集合中的Geometries
-     * @return {[Geometry]} Geometry数组
-     * @expose
+     * Get geometries of the geometry collection
+     * @return {maptalks.Geometry[]}
      */
     getGeometries:function() {
         if (!this._geometries) {
@@ -59,8 +57,9 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
     },
 
     /**
-     * 图形按给定的坐标偏移量平移
-     * @param  {Coordinate} offsetPrjCoord 偏转投影坐标
+     * Translate or move the geometry collection by the given offset.
+     * @param  {maptalks.Coordinate} offset - translate offset
+     * @return {maptalks.GeometryCollection} this
      */
     translate:function(offset) {
         if (!offset) {
@@ -78,14 +77,19 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
     },
 
     /**
-     * 集合是否为空
-     * @return {Boolean} [是否为空]
-     * @expose
+     * Whether the geometry collection is empty
+     * @return {Boolean}
      */
     isEmpty:function() {
         return !Z.Util.isArrayHasData(this.getGeometries());
     },
 
+    /**
+     * remove itself from the layer if any.
+     * @returns {maptalks.Geometry} this
+     * @fires maptalks.Geometry#removestart
+     * @fires maptalks.Geometry#remove
+     */
     remove:function() {
         var geometries = this.getGeometries();
         for (var i=0,len=geometries.length;i<len;i++) {
@@ -94,20 +98,30 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
         this._rootRemoveAndFireEvent();
     },
 
-    hide:function() {
-        this.options['visible'] = false;
-        var geometries = this.getGeometries();
-        for (var i=0,len=geometries.length;i<len;i++) {
-            this._geometries[i].hide();
-        }
-        return this;
-    },
-
+    /**
+     * Show the geometry collection.
+     * @return {maptalks.GeometryCollection} this
+     * @fires maptalks.Geometry#show
+     */
     show:function() {
         this.options['visible'] = true;
         var geometries = this.getGeometries();
         for (var i=0,len=geometries.length;i<len;i++) {
             this._geometries[i].show();
+        }
+        return this;
+    },
+
+    /**
+     * Hide the geometry collection.
+     * @return {maptalks.GeometryCollection} this
+     * @fires maptalks.Geometry#hide
+     */
+    hide:function() {
+        this.options['visible'] = false;
+        var geometries = this.getGeometries();
+        for (var i=0,len=geometries.length;i<len;i++) {
+            this._geometries[i].hide();
         }
         return this;
     },
@@ -135,21 +149,16 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
     },
 
     /**
-     * _prepare this geometry collection
-     * @param  {Z.Layer} layer [description]
-     * @return {[type]}       [description]
-     * @override
+     * bind this geometry collection to a layer
+     * @param  {maptalks.Layer} layer
+     * @private
      */
     _bindLayer:function(layer) {
         this._commonBindLayer(layer);
-        this._bindGeometries();
+        this._bindGeometriesToLayer();
     },
 
-    /**
-     * _prepare the geometries, 在geometries发生改变时调用
-     * @return {[type]} [description]
-     */
-    _bindGeometries:function() {
+    _bindGeometriesToLayer:function() {
         var layer = this.getLayer();
         var geometries = this.getGeometries();
         for (var i=0,len=geometries.length;i<len;i++) {
@@ -158,8 +167,9 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
     },
 
     /**
-     * 供GeometryCollection的子类调用, 检查geometries是否符合规则
-     * @param  {Geometry[]} geometries [供检查的Geometry]
+     * Check whether the type of geometries is valid
+     * @param  {maptalks.Geometry[]} geometries - geometries to check
+     * @private
      */
     _checkGeometries:function(geometries) {
         if (geometries && !Z.Util.isArray(geometries)) {
@@ -329,15 +339,28 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
 
     },
 
+    /**
+     * Get connect points if being connected by [ConnectorLine]{@link maptalks.ConnectorLine}
+     * @private
+     * @return {maptalks.Coordinate[]}
+     */
+    _getConnectPoints: function() {
+        var extent = this.getExtent();
+        var anchors = [
+            new Z.Coordinate(extent.xmin,extent.ymax),
+            new Z.Coordinate(extent.xmax,extent.ymin),
+            new Z.Coordinate(extent.xmin,extent.ymin),
+            new Z.Coordinate(extent.xmax,extent.ymax)
+        ];
+        return anchors;
+    },
+
 //----------覆盖Geometry中的编辑相关方法-----------------
 
-    /**
-     * 开始编辑
-     * @expose
-     */
+
     startEdit:function(opts) {
         if (this.isEmpty()) {
-            return;
+            return this;
         }
         if (!opts) {
             opts = {};
@@ -354,13 +377,10 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
         return this;
     },
 
-    /**
-     * 停止编辑
-     * @expose
-     */
+
     endEdit:function() {
         if (this.isEmpty()) {
-            return;
+            return this;
         }
         var geometries = this.getGeometries();
         for (var i=0,len=geometries.length;i<len;i++) {
@@ -374,27 +394,8 @@ Z['GeometryCollection'] = Z.GeometryCollection = Z.Geometry.extend({
         return this;
     },
 
-    /**
-     * 是否处于编辑状态
-     * @return {Boolean} [是否处于编辑状态]
-     * @expose
-     */
+
     isEditing:function() {
         return this._editing;
-    },
-
-
-    /**
-     * 获取端点数组
-     */
-    getConnectPoints: function() {
-        var extent = this.getExtent();
-        var anchors = [
-            new Z.Coordinate(extent.xmin,extent.ymax),
-            new Z.Coordinate(extent.xmax,extent.ymin),
-            new Z.Coordinate(extent.xmin,extent.ymin),
-            new Z.Coordinate(extent.xmax,extent.ymax)
-        ];
-        return anchors;
     }
 });

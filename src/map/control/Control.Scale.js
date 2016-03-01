@@ -3,7 +3,7 @@
  * 比例尺控件
  * @class maptalks.control.Scale
  * @extends maptalks.Control
- * @author Maptalks Team
+
  */
 Z.control.Scale = Z.Control.extend({
 

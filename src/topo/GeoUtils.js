@@ -1,7 +1,7 @@
 /**
  * 空间计算工具类
  * @class maptalks.GeoUtils
- * @author Maptalks Team
+
  */
 Z.GeoUtils={
     /**

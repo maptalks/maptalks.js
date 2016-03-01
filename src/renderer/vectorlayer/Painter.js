@@ -12,7 +12,7 @@ Z.Painter = Z.Class.extend({
 
     /**
      * 构造symbolizers
-     * @return {[type]} [description]
+     * @return {*} [description]
      */
     _createSymbolizers:function() {
         var geoSymbol = this._getSymbol();
@@ -47,7 +47,7 @@ Z.Painter = Z.Class.extend({
 
     /**
      * for point symbolizers
-     * @return {[Point]} points to render
+     * @return {maptalks.Point[]} points to render
      */
     _getRenderPoints:function(placement) {
         if (!this._renderPoints) {
@@ -61,7 +61,7 @@ Z.Painter = Z.Class.extend({
 
     /**
      * for strokeAndFillSymbolizer
-     * @return {[Object]} resources to render vector
+     * @return {Object[]} resources to render vector
      */
     _getRenderResources:function() {
         if (!this._rendResources) {
@@ -229,7 +229,7 @@ Z.Painter = Z.Class.extend({
     _requestToRender:function() {
         var geometry = this.geometry,
             map = geometry.getMap();
-        if (!map || map.isBusy()) {
+        if (!map || map._isBusy()) {
             return;
         }
         var layer = geometry.getLayer(),
@@ -249,7 +249,7 @@ Z.Painter = Z.Class.extend({
         this._removeCache();
         this._removeSymbolizers();
         this.symbolizers = this._createSymbolizers();
-        if (!this._painted) {
+        if (!this.getMap()) {
             return;
         }
         if (this.geometry.isVisible()) {

@@ -1,3 +1,3 @@
-Z['VisualizerLayer']=Z.VisualizerLayer=Z.Layer.extend({
+Z.VisualizerLayer=Z.Layer.extend({
 
 });

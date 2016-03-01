@@ -1,14 +1,25 @@
 /**
- * 椭圆形类
- * @class maptalks.Ellipse
+ * @classdesc
+ * Represents a Ellipse Geometry, a child class of [maptalks.Polygon]{@link maptalks.Polygon}. <br>
+ *     It means it shares all the methods defined in [maptalks.Polygon]{@link maptalks.Polygon} besides some overrided ones.
+ * @class
  * @extends maptalks.Polygon
- * @author Maptalks Team
+ * @mixes maptalks.Geometry.Center
+ * @param {maptalks.Coordinate} center  - center of the ellipse
+ * @param {Number} width                - width of the ellipse
+ * @param {Number} height                - height of the ellipse
+ * @param {Object} [options=null]   - specific construct options for ellipse, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+ * @param {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
+ * @example
+ * var ellipse = new maptalks.Ellipse([100, 0], 1000, 500, {
+ *     id : 'ellipse-id'
+ * });
  */
-Z.Ellipse = Z.Polygon.extend({
+Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     includes:[Z.Geometry.Center],
 
     options:{
-        'numberOfPoints':60
+        'numberOfShellPoints':60
     },
 
     type:Z.Geometry['TYPE_ELLIPSE'],
@@ -21,18 +32,18 @@ Z.Ellipse = Z.Polygon.extend({
     },
 
     /**
-     * 返回椭圆的宽度
-     * @return {Number} [椭圆宽度]
-     * @expose
+     * Get ellipse's width
+     * @return {Number}
      */
     getWidth:function() {
         return this.width;
     },
 
     /**
-     * 设置椭圆宽度
-     * @param {Number} width [新的半径]
-     * @expose
+     * Set new width to ellipse
+     * @param {Number} width - new width
+     * @fires maptalks.Geometry#shapechange
+     * @return {maptalks.Ellipse} this
      */
     setWidth:function(width) {
         this.width = width;
@@ -41,18 +52,18 @@ Z.Ellipse = Z.Polygon.extend({
     },
 
     /**
-     * 返回椭圆的高度
-     * @return {Number} [椭圆高度]
-     * @expose
+     * Get ellipse's height
+     * @return {Number}
      */
     getHeight:function() {
         return this.height;
     },
 
     /**
-     * 设置椭圆高度
-     * @param {Number} height [椭圆高度]
-     * @expose
+     * Set new height to ellipse
+     * @param {Number} height - new height
+     * @fires maptalks.Geometry#shapechange
+     * @return {maptalks.Ellipse} this
      */
     setHeight:function(height) {
         this.height = height;
@@ -61,14 +72,13 @@ Z.Ellipse = Z.Polygon.extend({
     },
 
     /**
-     * 覆盖Polygon的getShell方法, 将椭圆形转化为多边形的外环坐标数组
-     * @return {[Coordinate]} 外环坐标数组
-     * @expose
+     * Gets the shell of the circle as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Circle#options}
+     * @return {maptalks.Coordinate[]} - shell coordinates
      */
     getShell:function() {
         var measurer = this._getMeasurer();
         var center = this.getCoordinates();
-        var numberOfPoints = this.options['numberOfPoints'];
+        var numberOfPoints = this.options['numberOfShellPoints'];
         var width = this.getWidth(),
             height = this.getHeight();
         var shell = [];
@@ -86,9 +96,8 @@ Z.Ellipse = Z.Polygon.extend({
     },
 
     /**
-     * 覆盖Polygon的getHoles方法
-     * @return {[Coordinate]} 空洞坐标
-     * @expose
+     * Ellipse won't have any holes, always returns null
+     * @return {null}
      */
     getHoles:function() {
         return null;
