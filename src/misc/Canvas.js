@@ -57,14 +57,15 @@ Z.Canvas = {
                             } else {
                                 w = Z.Util.round(imageRes.width*strokeWidth/imageRes.height);
                             }
-                            // var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
-                            // patternCanvas.getContext('2d').drawImage(imageRes,0,0,w,strokeWidth);
-                            imageTexture = new Image();
-                            imageTexture.src = imageRes.src;
-                            imageTexture.width = w;
-                            imageTexture.height = strokeWidth;
-                            resources.addResource(imgUrl+'-texture',imageTexture);
-                            // imageTexture = patternCanvas;
+                            var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
+                            patternCanvas.getContext('2d').drawImage(imageRes,0,0,w,strokeWidth);
+                            resources.addResource(imgUrl+'-texture',patternCanvas);
+                            imageTexture = patternCanvas;
+                            // imageTexture = new Image();
+                            // imageTexture.src = imageRes.src;
+                            // imageTexture.width = w;
+                            // imageTexture.height = strokeWidth;
+                            // resources.addResource(imgUrl+'-texture',imageTexture);
                         }
                     }
                     if (imageTexture) {
