@@ -9,6 +9,10 @@
 Z.Handler = Z.Class.extend(/** @lends maptalks.Handler.prototype */{
 	includes: Z.Eventable,
 
+    initialize: function (target) {
+        this.target = target;
+    },
+
     /**
      * Enables the handler
      * @return {maptalks.Handler} this

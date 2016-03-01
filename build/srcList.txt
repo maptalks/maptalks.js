@@ -116,7 +116,7 @@
 ../src/map/control/Control.Panel.js
 ../src/map/control/Control.Toolbar.js
 ../src/map/ui/Button.js
-../src/map/ui/Toolbar.js
+../src/map/ui/Toolbox.js
 ../src/topo/GeoUtils.js
 ../src/topo/SimplifyUtil.js
 ../src/export.js

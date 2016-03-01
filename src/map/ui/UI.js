@@ -1,11 +1,15 @@
 /**
+ * @namespace
+ */
+Z.ui={};
+/**
  * @classdesc
  * Base class for all the ui component classes.
  * @class
  * @abstract
  * @mixes maptalks.Eventable
  */
-Z.UIComponent = Z.Class.extend(/** @lends maptalks.UIComponent.prototype */{
+Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype */{
     includes: [Z.Eventable],
     /**
      * 将UI组件添加到对象上

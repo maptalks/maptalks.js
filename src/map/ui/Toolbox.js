@@ -1,10 +1,10 @@
 /**
- * 工具栏控件
- * @class maptalks.Toolbar
- * @extends maptalks.Control
-
+ * @classdesc
+ * Represents a toolbox ui component for geometries.
+ * @class
+ * @extends Z.ui.UIComponent
  */
-Z.Toolbar = Z.Control.extend({
+Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype */{
 
     /**
      * @cfg {Object} options 工具栏属性
@@ -16,17 +16,7 @@ Z.Toolbar = Z.Control.extend({
         },
         'classname': '',
         'vertical' : false,
-        'items': [{
-            'type' : 'button',
-            'icon' : '',
-            'text': '左',
-            'click' : null,
-            'mouseover' : null,
-            'mouseout' : null
-        }, {
-            'type' : 'html',
-            'content':''
-        }]
+        'items': []
     },
 
     buildOn: function (map) {

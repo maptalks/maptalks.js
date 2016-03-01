@@ -1,7 +1,7 @@
 Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
      * Set info window settings to the geometry
-     * @param {Object} options - construct [options]{@link maptalks.InfoWindow#options} for the info window
+     * @param {Object} options - construct [options]{@link maptalks.ui.InfoWindow#options} for the info window
      * @return {maptalks.Geometry} this
      */
     setInfoWindow:function(options) {
@@ -18,7 +18,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Get info window's options or the instance of info window if it has been already created.
-     * @return {Object|maptalks.InfoWindow}
+     * @return {Object|maptalks.ui.InfoWindow}
      */
     getInfoWindow:function() {
         if (!this._infoWindow) {
@@ -73,7 +73,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     _bindInfoWindow: function(options) {
-        this._infoWindow = new Z.InfoWindow(options);
+        this._infoWindow = new Z.ui.InfoWindow(options);
         this._infoWindow.addTo(this);
 
         return this;

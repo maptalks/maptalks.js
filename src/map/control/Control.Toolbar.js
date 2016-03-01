@@ -1,6 +1,7 @@
 Z.control.Toolbar = Z.Control.extend({
 
     options:{
+        'vertical' : false,
         'position' : Z.Control['top_right'],
         'items'     : {
             //default buttons

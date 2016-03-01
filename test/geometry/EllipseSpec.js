@@ -77,7 +77,7 @@ describe('EllipseSpec', function() {
         it('has shell',function() {
             var vector = new Z.Ellipse(center,100,50);
             var shell = vector.getShell();
-            expect(shell).to.have.length(vector.options['numberOfPoints']);
+            expect(shell).to.have.length(vector.options['numberOfShellPoints']);
         });
 
         it("but doesn't have holes",function() {

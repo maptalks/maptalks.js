@@ -81,8 +81,8 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         if (!map) {
             return;
         }
-        var srcPoints = this._connSource.getConnectPoints();
-        var targetPoints = this._connTarget.getConnectPoints();
+        var srcPoints = this._connSource._getConnectPoints();
+        var targetPoints = this._connTarget._getConnectPoints();
         var minDist = 0;
         var oldCoordinates = this.getCoordinates();
         var c1,c2;

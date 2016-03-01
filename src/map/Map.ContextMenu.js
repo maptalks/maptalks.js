@@ -1,1 +1,1 @@
-Z.Map.include(Z.Menu.Mixin);
+Z.Map.include(Z.ui.Menu.Mixin);

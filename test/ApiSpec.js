@@ -390,7 +390,7 @@ describe('API', function () {
                 title: 'title',
                 content: 'content'
             };
-            var win = new Z.InfoWindow(options);
+            var win = new Z.ui.InfoWindow(options);
             // win.setOptions(options);
             win.addTo(map);
             var pos = {x: 10, y: 10};
@@ -407,7 +407,7 @@ describe('API', function () {
     describe('Map.UI.Menu', function() {
 
         // it('setOptions', function() {
-        //     var menu = new Z.Menu();
+        //     var menu = new Z.ui.Menu();
         //     var options = {
         //         position: null,
         //         beforeOpen: null,
@@ -424,7 +424,7 @@ describe('API', function () {
         // });
 
         // it('getOptions', function() {
-        //     var menu = new Z.Menu();
+        //     var menu = new Z.ui.Menu();
         //     var options = {
         //         position: null,
         //         beforeOpen: null,
@@ -452,7 +452,7 @@ describe('API', function () {
                 ],
                 width: 160
             };
-            var menu = new Z.Menu(options);
+            var menu = new Z.ui.Menu(options);
 
             expect(function () {
                 menu.addTo(map);
@@ -460,7 +460,7 @@ describe('API', function () {
         });
 
         it('setItems', function() {
-            var menu = new Z.Menu();
+            var menu = new Z.ui.Menu();
             var items = [
                 {item: 'item1'},
                 {item: 'item2'}
@@ -481,7 +481,7 @@ describe('API', function () {
                 ],
                 width: 160
             };
-            var menu = new Z.Menu(options);
+            var menu = new Z.ui.Menu(options);
             menu.addTo(map);
             var pos = new Z.Coordinate(10,10);
             menu.show(pos);
@@ -502,7 +502,7 @@ describe('API', function () {
                 ],
                 width: 160
             };
-            var menu = new Z.Menu(options);
+            var menu = new Z.ui.Menu(options);
             menu.addTo(map);
             var pos = new Z.Coordinate(10,10);
 
@@ -1112,7 +1112,7 @@ describe('API', function () {
             var circle = new Z.Circle({x: 0, y: 0}, 1);
             var shell = circle.getShell();
 
-            expect(shell).to.have.length(circle.options.numberOfPoints);
+            expect(shell).to.have.length(circle.options.numberOfShellPoints);
         });
 
     });
@@ -1213,7 +1213,7 @@ describe('API', function () {
             var ellipse = new Z.Ellipse({x: 0, y: 0}, 1, 1);
             var shell = ellipse.getShell();
 
-            expect(shell).to.have.length(ellipse.options.numberOfPoints);
+            expect(shell).to.have.length(ellipse.options.numberOfShellPoints);
         });
 
     });
@@ -1319,7 +1319,7 @@ describe('API', function () {
             var sector = new Z.Sector({x: 0, y: 0}, 1, 30, 60);
             var shell = sector.getShell();
 
-            expect(shell).to.have.length(sector.options.numberOfPoints);
+            expect(shell).to.have.length(sector.options.numberOfShellPoints);
         });
 
     });

@@ -1,13 +1,14 @@
 /**
- * @classdesc Base class for all the geometries, it is not intended to be instantiated but extended. <br/>
+ * @classdesc
+ * Base class for all the geometries, it is not intended to be instantiated but extended. <br/>
  * It defines common methods that all the geometry classes share.
  *
  * @class
  * @abstract
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
- * @mixins maptalks.Handerable
- * @mixins maptalks.Menu.Mixin
+ * @mixins maptalks.Handlerable
+ * @mixins maptalks.ui.Menu.Mixin
  */
 Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     includes: [Z.Eventable, Z.Handlerable],

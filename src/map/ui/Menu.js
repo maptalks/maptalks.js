@@ -2,10 +2,10 @@
  * @classdesc
  * Class for context menu, useful for interactions with right clicks on the map.
  * @class
- * @extends maptalks.UIComponent
+ * @extends maptalks.ui.UIComponent
  * @param {Object} options - construct options
  */
-Z.Menu = Z.UIComponent.extend(/** @lends maptalks.Menu.prototype */{
+Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
 
     /**
      * @cfg {Object} options menu属性
@@ -26,7 +26,7 @@ Z.Menu = Z.UIComponent.extend(/** @lends maptalks.Menu.prototype */{
     /**
      * 设置菜单项目
      * @param {Array} items 菜单项
-     * @return {maptalks.Menu} 菜单
+     * @return {maptalks.ui.Menu} 菜单
      * @expose
      */
     setItems: function(items) {
@@ -164,7 +164,7 @@ Z.Menu = Z.UIComponent.extend(/** @lends maptalks.Menu.prototype */{
  * Mixin of the context menu methods.
  * @mixin
  */
-Z.Menu.Mixin={
+Z.ui.Menu.Mixin={
     /**
     * Set a context menu
     * @param {Object} options - menu options
@@ -248,7 +248,7 @@ Z.Menu.Mixin={
     },
 
     _bindMenu: function(options) {
-        this._menu = new Z.Menu(options);
+        this._menu = new Z.ui.Menu(options);
         this._menu.addTo(this);
 
         return this;

@@ -2,10 +2,10 @@
  * @classdesc
  * Class for info window, a popup on the map to display any useful infomation you wanted.
  * @class
- * @extends maptalks.UIComponent
+ * @extends maptalks.ui.UIComponent
  * @param {Object} options - construct options
  */
-Z.InfoWindow = Z.UIComponent.extend(/** @lends maptalks.InfoWindow.prototype */{
+Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prototype */{
 
     /**
      * @cfg {Object} options 信息窗属性
@@ -24,7 +24,7 @@ Z.InfoWindow = Z.UIComponent.extend(/** @lends maptalks.InfoWindow.prototype */{
      * 初始化信息窗口
      * @constructor
      * @param {Object} options
-     * @return {maptalks.InfoWindow}
+     * @return {maptalks.ui.InfoWindow}
      */
     initialize:function(options) {
         Z.Util.setOptions(this,options);

@@ -19,7 +19,7 @@ describe("Control.Toolbar", function() {
         /**
         * 创建多个toolbar控件
         */
-        var toolbar = new maptalks.Toolbar({
+        var toolbar = new maptalks.control.Toolbar({
             position : { //工具条放置位置
                 top: '2',
                 left: '2'

@@ -20,7 +20,7 @@
  *
  * @mixes maptalks.Eventable
  * @mixes maptalks.Handlerable
- * @mixins maptalks.Menu.Mixin
+ * @mixins maptalks.ui.Menu.Mixin
  *
  * @fires maptalks.Map#load
  * @fires maptalks.Map#viewchange
