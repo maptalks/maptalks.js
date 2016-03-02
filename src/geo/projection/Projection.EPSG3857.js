@@ -2,6 +2,7 @@
  * Well-known projection used by Google maps or Open Street Maps, aka Mercator Projection.<br>
  * It is map's default projection.
  * @class
+ * @category geo
  * @protected
  * @memberOf maptalks.projection
  * @name EPSG3857

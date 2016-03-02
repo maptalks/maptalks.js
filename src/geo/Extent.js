@@ -2,6 +2,7 @@
  * Represent a bounding box on the map, a rectangular geographical area with minimum and maximum coordinates. <br>
  * There are serveral ways to create a extent:
  * @class
+ * @category basic types
  * @param {Number} x1   - x of coordinate 1
  * @param {Number} y1   - y of coordinate 1
  * @param {Number} x2   - x of coordinate 2

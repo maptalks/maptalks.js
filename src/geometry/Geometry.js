@@ -4,6 +4,7 @@
  * It defines common methods that all the geometry classes share.
  *
  * @class
+ * @category geometry
  * @abstract
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
@@ -93,6 +94,9 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @property {Number} [options.shadowBlue=0]       - level of the shadow around the geometry, see [MDN's explanation]{@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur}
      * @property {String} [options.shadowColor=black]       - color of the shadow around the geometry, a CSS style color
      * @property {String} [options.measure=EPSG:4326]       - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
+     * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
+     * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
+     * @property {Boolean} [options.draggableAxis=null] - if set, geometry can only be dragged along the specified axis, possible values: x, y
      */
     options:{
         'id'        : null,

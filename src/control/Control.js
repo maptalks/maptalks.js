@@ -6,17 +6,16 @@ Z.control = {};
 /**
  * Base class for all the map controls, you can extend it to build your own customized Control.
  * @class
+ * @category control
  * @abstract
  * @extends maptalks.Class
  *
  * @mixes maptalks.Eventable
  *
  * @example
- * ```javascript
  * control.addTo(map);
  * //or you can also
  * map.addControl(control);
- * ```
  */
 Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
     includes: [Z.Eventable],

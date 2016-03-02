@@ -1,6 +1,7 @@
 /**
  * Transformation between projected coordinates and base 2d point system.
  * @class
+ * @category geo
  * @protected
  * @classdesc
  * A core class used internally for mapping map's (usually geographical) coordinates to 2d points to view stuffs on a map.<br>
@@ -9,14 +10,14 @@
  * transformation provides mapping functions to map arbitrary coordinates system to the fixed 2d point system. <br>
  * How to transform is decided by the constructor parameters which is a 4 number array [a, b, c, d]:<br>
  * a : the order scale of X-axis values 1 means right is larger and -1 means the reverse, left is larger;<br>
-*  b : the order scale of Y-axis values 1 means bottom is larger and -1 means the reverse, top is larger;<br>
-*  c : x of the origin point of the projected coordinate system <br>
-*  d : y of the origin point of the projected coordinate system <br>
-*  <br>
-*  e.g.: Transformation parameters for Google map: [1, -1, -20037508.34, 20037508.34] <br>
-*  <br>
-*  Parameter scale in transform/untransform method is used to scale the result 2d points on map's different zoom levels.
-*/
+ * b : the order scale of Y-axis values 1 means bottom is larger and -1 means the reverse, top is larger;<br>
+ * c : x of the origin point of the projected coordinate system <br>
+ * d : y of the origin point of the projected coordinate system <br>
+ * <br>
+ * e.g.: Transformation parameters for Google map: [1, -1, -20037508.34, 20037508.34] <br>
+ * <br>
+ * Parameter scale in transform/untransform method is used to scale the result 2d points on map's different zoom levels.
+ */
 Z.Transformation = function(matrix) {
     this.matrix = matrix;
 };

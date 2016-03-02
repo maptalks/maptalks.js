@@ -3,6 +3,7 @@
  * Represents a sector Geometry, a child class of [maptalks.Polygon]{@link maptalks.Polygon}. <br>
  *     It means it shares all the methods defined in [maptalks.Polygon]{@link maptalks.Polygon} besides some overrided ones.
  * @class
+ * @category geometry
  * @extends maptalks.Polygon
  * @mixes maptalks.Geometry.Center
  * @param {maptalks.Coordinate} center - center of the sector

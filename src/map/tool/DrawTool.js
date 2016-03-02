@@ -2,6 +2,7 @@
  * @classdesc
  * A map tool to help draw geometries on the map
  * @class
+ * @category maptool
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
  * @param {options} [options=null] - construct options
@@ -422,8 +423,8 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     /**
-     * 返回多边形或多折线的坐标数组
-     * @return {*} [description]
+     * Get coordinates of polyline or polygon
+     * @private
      */
     _getLonlats:function() {
         if (this._geometry.getShell) {
@@ -445,9 +446,10 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     /**
-     * 获得鼠标事件在地图容器上的屏幕坐标
-     * @param  {*} event [description]
-     * @return {*}       [description]
+     * Get container point of the mouse event
+     * @param  {Event} event -  mouse event
+     * @return {maptalks.Point}
+     * @private
      */
     _getMouseContainerPoint:function(event) {
         Z.DomUtil.stopPropagation(event['domEvent']);
@@ -456,9 +458,10 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     /**
-     * 事件坐标转化为地图上的经纬度坐标
-     * @param  {*} event [description]
-     * @return {*}       [description]
+     * Convert a containerPoint to a coordinates
+     * @param  {maptalks.Point} containerPoint - container point
+     * @return {maptalks.Coordinate}
+     * @private
      */
     _containerPointToLonlat:function(containerPoint) {
         var projection = this._getProjection(),

@@ -1,8 +1,4 @@
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [doubleClickZoom="true"] 双击放大地图
-     * @member maptalks.Map
-     */
     'doubleClickZoom': true
 });
 

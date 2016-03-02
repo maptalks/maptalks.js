@@ -1,14 +1,14 @@
 /**
- * 导航控件
- * @class maptalks.control.Nav
+ * @classdesc
+ * A control for map navigation.
+ * @class
+ * @category control
  * @extends maptalks.Control
-
+ * @memberOf maptalks.control
+ * @name Nav
  */
-Z.control.Nav = Z.Control.extend({
+Z.control.Nav = Z.Control.extend(/** @lends maptalks.control.Nav.prototype */{
 
-    /**
-     * @cfg {Object} options 导航控件属性
-     */
     options:{
         'position' : Z.Control['top_left']
     },
@@ -20,16 +20,13 @@ Z.control.Nav = Z.Control.extend({
 });
 
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [navControl="false"] 是否显示导航控件
-     * @member maptalks.Map
-     */
+
     'navControl' : false
 });
 
 Z.Map.addOnLoadHook(function () {
     if (this.options['navControl']) {
-        this.navControl = new Z.control.Nav();
+        this.navControl = new Z.control.Nav(this.options['navControl']);
         this.addControl(this.navControl);
     }
 });

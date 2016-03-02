@@ -2,6 +2,7 @@
 /**
  * DOM utilities used internally
  * @class
+ * @category core
  * @protected
  * @memberOf maptalks
  * @name DomUtil

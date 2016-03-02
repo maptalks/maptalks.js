@@ -1,9 +1,19 @@
+/**
+ * @namespace
+ */
 Z.renderer.map={};
 
 /**
- * Common functions of map renders.
+ * @classdesc
+ * Base class for all the map renderers.
+ * @class
+ * @abstract
+ * @protected
+ * @memberOf maptalks.renderer.map
+ * @name Renderer
+ * @extends {maptalks.Class}
  */
-Z.renderer.map.Renderer = Z.Class.extend({
+Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prototype */{
 
     /**
      * get Transform Matrix for zooming

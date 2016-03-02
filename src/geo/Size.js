@@ -1,6 +1,7 @@
 /**
  * Represents a size.
  * @class
+ * @category basic types
  * @param {Number} width - width value
  * @param {Number} height - height value
  */

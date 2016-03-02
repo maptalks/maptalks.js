@@ -2,6 +2,7 @@
  * @classdesc
  * Represents a GeometryCollection.
  * @class
+ * @category geometry
  * @extends maptalks.Geometry
  * @param {maptalks.Geometry[]} geometries - GeometryCollection's geometries
  */

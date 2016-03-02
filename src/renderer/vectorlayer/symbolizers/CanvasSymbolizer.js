@@ -1,4 +1,14 @@
-Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend({
+/**
+ * @classdesc
+ * Base symbolizer class for all the symbolizers base on HTML5 Canvas2D
+ * @abstract
+ * @class
+ * @protected
+ * @memberOf maptalks.symbolizer
+ * @name CanvasSymbolizer
+ * @extends {maptalks.Symbolizer}
+ */
+Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symbolizer.CanvasSymbolizer.prototype */{
     _prepareContext:function(ctx) {
         var symbol = this.symbol;
         // ctx.restore();

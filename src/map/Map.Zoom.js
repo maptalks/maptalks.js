@@ -1,4 +1,4 @@
-Z.Map.include({
+Z.Map.include(/** @lends maptalks.Map.prototype */{
     _zoomAnimation:function(nextZoomLevel, origin, startScale) {
         if (!this.options['enableZoom']) {return;}
         if (Z.Util.isNil(startScale)) {
@@ -29,12 +29,6 @@ Z.Map.include({
             //center is out of maxExtent
             transOrigin = new Z.Point(this.width/2,this.height/2);
         }
-        /**
-         * 触发map的zoomstart事件
-         * @member maptalks.Map
-         * @event zoomstart
-         * @return {Object} params: {'target':this}
-         */
         var zoomDuration = this.options['zoomAnimationDuration']*Math.abs(endScale - startScale)/Math.abs(endScale-1);
         this._getRenderer().onZoomStart(startScale, endScale, transOrigin, zoomDuration, function(){
             me._onZoomEnd(nextZoomLevel, zoomOffset);
@@ -52,11 +46,14 @@ Z.Map.include({
         this._zooming = false;
         this._enablePanAnimation=true;
         /**
-         * 触发map的zoomend事件
-         * @member maptalks.Map
-         * @event zoomend
-         * @return {Object} params: {'target':this}
-         */
+          * zoomend event
+          * @event zoomend
+          * @type {Object}
+          * @property {String} type                    - zoomend
+          * @property {String} target                  - the map fires event
+          * @property {Number} from                    - zoom level zooming from
+          * @property {Number} to                      - zoom level zooming to
+          */
         this._fireEvent('zoomend',{"from" : _originZoomLevel, "to": nextZoomLevel});
     },
 

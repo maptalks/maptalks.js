@@ -1,4 +1,14 @@
-Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend({
+/**
+ * @classdesc
+ * Renderer class based on HTML5 Canvas2D for TileLayers
+ * @class
+ * @protected
+ * @memberOf maptalks.renderer.tilelayer
+ * @name Canvas
+ * @extends {maptalks.renderer.Canvas}
+ * @param {maptalks.TileLayer} layer - layer of the renderer
+ */
+Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.tilelayer.Canvas.prototype */{
 
     propertyOfPointOnTile   : '--maptalks-tile-point',
     propertyOfTileId        : '--maptalks-tile-id',

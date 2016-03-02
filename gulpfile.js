@@ -144,7 +144,7 @@ gulp.task('reload',['scripts'], function() {
 gulp.task('doc', function (cb) {
     var conf = require('./jsdoc.json');
     var cmd = 'jsdoc';
-    var args = ['-c','jsdoc.json'].concat(['README.md']).concat(sources);
+    var args = ['-c','jsdoc.json'].concat(['API.md']).concat(sources);
     var exec = require('child_process').exec;
     var child = exec([cmd].concat(args).join(' '), function(error, stdout, stderr) {
         if (error) {

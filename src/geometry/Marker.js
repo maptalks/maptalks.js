@@ -2,6 +2,7 @@
  * @classdesc
  * Represents a Point type Geometry.
  * @class
+ * @category geometry
  * @extends maptalks.Geometry
  * @mixes maptalks.Geometry.Center
  * @param {maptalks.Coordinate} center      - center of the marker

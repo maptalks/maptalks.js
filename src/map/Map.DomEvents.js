@@ -1,61 +1,148 @@
-Z.Map.include({
+Z.Map.include(/** @lends maptalks.Map.prototype */{
     _registerDomEvents: function(remove) {
         var events = /**
-                      * 触发mousedown事件
-                      * @member maptalks.Map
+                      * mousedown event
                       * @event mousedown
+                      * @type {Object}
+                      * @property {String} type                    - mousedown
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'mousedown '+
                      /**
-                      * 触发mouseup事件
-                      * @member maptalks.Map
+                      * mouseup event
                       * @event mouseup
+                      * @type {Object}
+                      * @property {String} type                    - mouseup
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'mouseup '+
                      /**
-                      * 触发mouseover事件
-                      * @member maptalks.Map
+                      * mouseover event
                       * @event mouseover
+                      * @type {Object}
+                      * @property {String} type                    - mouseover
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'mouseover '+
                      /**
-                      * 触发mouseout事件
-                      * @member maptalks.Map
+                      * mouseout event
                       * @event mouseout
+                      * @type {Object}
+                      * @property {String} type                    - mouseout
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'mouseout '+
                      /**
-                      * 触发mousemove事件
-                      * @member maptalks.Map
+                      * mousemove event
                       * @event mousemove
+                      * @type {Object}
+                      * @property {String} type                    - mousemove
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'mousemove '+
                      /**
-                      * 触发click事件
-                      * @member maptalks.Map
+                      * click event
                       * @event click
+                      * @type {Object}
+                      * @property {String} type                    - click
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'click '+
                      /**
-                      * 触发dblclick事件
-                      * @member maptalks.Map
+                      * dblclick event
                       * @event dblclick
+                      * @type {Object}
+                      * @property {String} type                    - dblclick
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'dblclick '+
                      /**
-                      * 触发contextmenu事件
-                      * @member maptalks.Map
+                      * contextmenu event
                       * @event contextmenu
+                      * @type {Object}
+                      * @property {String} type                    - contextmenu
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'contextmenu '+
                      /**
-                      * 触发keypress事件
-                      * @member maptalks.Map
+                      * keypress event
                       * @event keypress
+                      * @type {Object}
+                      * @property {String} type                    - keypress
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
                       */
                      'keypress '+
+                     /**
+                      * touchstart event
+                      * @event touchstart
+                      * @type {Object}
+                      * @property {String} type                    - touchstart
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
+                      */
                      'touchstart '+
+                     /**
+                      * touchmove event
+                      * @event touchmove
+                      * @type {Object}
+                      * @property {String} type                    - touchmove
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
+                      */
                      'touchmove '+
+                     /**
+                      * touchend event
+                      * @event touchend
+                      * @type {Object}
+                      * @property {String} type                    - touchend
+                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                      * @property {maptalks.Point} containerPoint  - container point of the event
+                      * @property {maptalks.Point} viewPoint       - view point of the event
+                      * @property {Event} domEvent                 - dom event
+                      */
                      'touchend ';
         if (remove) {
             Z.DomUtil.removeDomEvent(this._containerDOM, events, this._handleDOMEvent);

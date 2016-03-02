@@ -2,6 +2,7 @@
  * A connector line geometry can connect geometries and ui components with each other. <br>
  * Can be
  * @class
+ * @category geometry
  * @extends maptalks.CurveLine
  * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} src     - source to connect
  * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} target  - target to connect

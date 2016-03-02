@@ -10,6 +10,9 @@ var Z = {};
 
 /**
  * @property {boolean} node - whether running in nodejs.
+ * @global
+ * @name node
+ * @static
  */
 Z.node=(function(){
     return (typeof module !== 'undefined' && module.exports)?true:false;

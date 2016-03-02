@@ -1,13 +1,23 @@
 /**
- * 地图放大缩小控件
- * @class maptalks.control.Zoom
+ * @classdesc
+ * A zoom control with buttons to zoomin/zoomout and a slider indicator for the zoom level.
+ * @class
+ * @category control
  * @extends maptalks.Control
-
+ * @memberOf maptalks.control
+ * @name Zoom
+ * @param {Object}   options - construct options
+ * @param {Object}   [options.position=maptalks.Control.top_left]  - position of the zoom control.
+ * @param {Boolean}  [options.slider=true]                         - Whether to display the slider
+ * @param {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
  */
-Z.control.Zoom = Z.Control.extend({
+Z.control.Zoom = Z.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
 
     /**
-     * @cfg {Object} options zoom控件属性
+     * @property {Object}   options - options
+     * @property {Object}   [options.position=maptalks.Control.top_left]  - position of the zoom control.
+     * @property {Boolean}  [options.slider=true]                         - Whether to display the slider
+     * @property {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
      */
     options:{
         'position'  : Z.Control['top_left'],
@@ -101,20 +111,13 @@ Z.control.Zoom = Z.Control.extend({
 });
 
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [zoomControl="false"] 是否显示zoom控件
-     * @member maptalks.Map
-     */
+
     'zoomControl': false,
 });
 
 Z.Map.addOnLoadHook(function () {
     if (this.options['zoomControl']) {
-        var options = this.options['zoomControl'];
-        if (options === true) {
-            options = {};
-        }
-        this.zoomControl = new Z.control.Zoom(options);
+        this.zoomControl = new Z.control.Zoom(this.options['zoomControl']);
         this.addControl(this.zoomControl);
     }
 });

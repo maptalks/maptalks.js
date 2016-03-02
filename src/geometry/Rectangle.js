@@ -3,6 +3,7 @@
  * Represents a Rectangle geometry, a child class of [maptalks.Polygon]{@link maptalks.Polygon}. <br>
  *     It means it shares all the methods defined in [maptalks.Polygon]{@link maptalks.Polygon} besides some overrided ones.
  * @class
+ * @category geometry
  * @extends {maptalks.Polygon}
  * @param {maptalks.Coordinate} coordinates  - northwest of the rectangle
  * @param {Number} width                     - width of the rectangle

@@ -1,8 +1,4 @@
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [autoBorderPanning="false"] 鼠标移到地图外时自动移图
-     * @member maptalks.Map
-     */
     'autoBorderPanning': false
 });
 

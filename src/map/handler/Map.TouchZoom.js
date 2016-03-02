@@ -1,8 +1,4 @@
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [touchZoom="true"] 滚轮放大缩小地图功能
-     * @member maptalks.Map
-     */
     'touchZoom': true,
     'touchZoomOrigin' : 'center'
 });

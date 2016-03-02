@@ -2,6 +2,7 @@
  * @classdesc
  * A map tool to help measure distance on the map
  * @class
+ * @category maptool
  * @extends maptalks.DrawTool
  * @mixins maptalks.Eventable
  * @param {options} [options=null] - construct options

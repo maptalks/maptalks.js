@@ -1,6 +1,7 @@
 /**
  *
  * @class
+ * @category map
  * @extends {maptalks.Class}
  *
  * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
@@ -1353,6 +1354,7 @@ Z.Map.prototype._callOnLoadHooks=function() {
  * @param {function} fn
  * @returns {maptalks.Map}
  * @static
+ * @protected
  */
 Z.Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
     var args = Array.prototype.slice.call(arguments, 1);

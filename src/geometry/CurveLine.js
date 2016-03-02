@@ -1,6 +1,7 @@
 /**
  * @classdesc Curve style LineString
  * @class
+ * @category geometry
  * @extends {maptalks.LineString}
  * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the line string
  * @param {Object} options - construct options of LineString, specific construct options for circle, also support options defined in [LineString]{@link maptalks.LineString#options}

@@ -1,5 +1,24 @@
-Z.control.Toolbar = Z.Control.extend({
+/**
+ * @classdesc
+ * A toolbar control of the map.
+ * @class
+ * @category control
+ * @extends maptalks.Control
+ * @memberOf maptalks.control
+ * @name Toolbar
+ * @param {Object}   options - construct options
+ * @param {Object}   [options.position=maptalks.Control.top_right]  - position of the toolbar control.
+ * @param {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
+ * @param {Object[]} options.items                                  - items on the toolbar
+ */
+Z.control.Toolbar = Z.Control.extend(/** @lends maptalks.control.Toolbar.prototype */{
 
+    /**
+     * @property {Object}   options - options
+     * @property {Object}   [options.position=maptalks.Control.top_right]  - position of the toolbar control.
+     * @property {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
+     * @property {Object[]} options.items                                  - items on the toolbar
+     */
     options:{
         'vertical' : false,
         'position' : Z.Control['top_right'],

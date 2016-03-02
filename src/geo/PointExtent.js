@@ -2,6 +2,7 @@
  * Represent a bounding box on 2d surface , a rectangular area with minimum and maximum points. <br>
  * There are serveral ways to create a PointExtent:
  * @class
+ * @category basic types
  * @param {Number} x1   - x of point 1
  * @param {Number} y1   - y of point 1
  * @param {Number} x2   - x of point 2

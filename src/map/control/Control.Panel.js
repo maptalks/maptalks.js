@@ -1,13 +1,25 @@
 /**
- * 面板控件
- * @class maptalks.Panel
+ * @classdesc
+ * Class for panel controls.
+ * @class
+ * @category control
  * @extends maptalks.Control
- * @mixins maptalks.Eventable
-
+ * @memberOf maptalks.control
+ * @name Panel
+ * @param {Object} options - construct options
+ * @param {Boolean} [options.draggable=true]            - whether the panel can be dragged
+ * @param {Boolean} [options.custom=false]              - whether the panel's content is customized .
+ * @param {String|HTMLElement} options.content          - panel's content, can be a dom element or a string.
+ * @param {Boolean} [options.closeButton=true]          - whether to display the close button on the panel.
  */
-Z.control.Panel = Z.Control.extend({
+Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype */{
+
     /**
-     * @cfg {Object} options 面板属性
+     * @property {Object} options - options
+     * @property {Boolean} [options.draggable=true]            - whether the panel can be dragged
+     * @property {Boolean} [options.custom=false]              - whether the panel's content is customized .
+     * @property {String|HTMLElement} options.content          - panel's content, can be a dom element or a string.
+     * @property {Boolean} [options.closeButton=true]          - whether to display the close button on the panel.
      */
     options:{
         'position' : {

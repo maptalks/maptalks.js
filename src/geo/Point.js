@@ -8,6 +8,7 @@
  * @example
  * var point = new maptalks.Point({x:1000, y:1000});
  * @class
+ * @category basic types
  * @param {Number} x - x value
  * @param {Number} y - y value
  */

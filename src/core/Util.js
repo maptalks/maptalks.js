@@ -1,6 +1,7 @@
 /**
  * Misc utilities used internally
  * @class
+ * @category core
  * @protected
  */
 Z.Util = {

@@ -1,6 +1,19 @@
+/**
+ * @namespace
+ */
 Z.renderer={};
 
-Z.renderer.Canvas=Z.Class.extend({
+/**
+ * @classdesc
+ * Base Class for all the renderer based on HTML5 Canvas2D
+ * @abstract
+ * @class
+ * @protected
+ * @memberOf maptalks.renderer
+ * @name Canvas
+ * @extends {maptalks.Class}
+ */
+Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype */{
     isCanvasRender:function() {
         return true;
     },

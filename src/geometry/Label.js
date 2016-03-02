@@ -3,6 +3,7 @@
  * Represents point type geometry for text labels.<br>
  * A label is used to draw text (with a box background if specified) on a particular coordinate.
  * @class
+ * @category geometry
  * @extends maptalks.Marker
  * @param {String} content                          - Label's text content
  * @param {maptalks.Coordinate} coordinates         - center

@@ -1,4 +1,11 @@
-Z.Painter = Z.Class.extend({
+/**
+ * @classdesc
+ * Painter class for all geometry types except the collection types.
+ * @class
+ * @protected
+ * @param {maptalks.Geometry} geometry - geometry to paint
+ */
+Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
 
 
     initialize:function(geometry) {

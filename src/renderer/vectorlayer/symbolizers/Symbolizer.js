@@ -25,10 +25,9 @@ Z.Symbolizer = Z.Class.extend(/** @lends maptalks.Symbolizer.prototype */{
 });
 
 /**
- * Symbol properties related with coloring
+ * @property {String[]} colorProperties - Symbol properties related with coloring
  * @static
- * @memeberOf maptalks.Symbolizer
- * @name  colorProperties
+ * @constant
  */
 Z.Symbolizer.colorProperties = [
         "lineColor", "polygonFill", "markerFill", "markerLineColor", "textFill", "shieldFill", "shieldHaloFill"
@@ -36,9 +35,9 @@ Z.Symbolizer.colorProperties = [
 
 /**
  * Test if the property is a property related with coloring
+ * @param {String} prop - property name to test
  * @static
- * @memeberOf maptalks.Symbolizer
- * @name  colorProperties
+ * @function
  * @return {Boolean}
  */
 Z.Symbolizer.testColor = function(prop) {

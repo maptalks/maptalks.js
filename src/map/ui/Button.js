@@ -20,12 +20,7 @@ Z.Button = Z.Class.extend(/** @lends maptalks.Button.prototype */{
         'children' : []
     },
 
-    /**
-     * 初始化按钮
-     * @constructor
-     * @param {Object} options
-     * @returns {maptalks.Button}
-     */
+
     initialize: function(options) {
         if(options) {
             this._dom = this._createDom(options);

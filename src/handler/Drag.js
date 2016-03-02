@@ -1,6 +1,7 @@
 /**
  * Drag handler
  * @class
+ * @category handler
  * @protected
  * @extends maptalks.Handler
  */

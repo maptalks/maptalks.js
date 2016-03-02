@@ -2,6 +2,7 @@
  * Identity measurer, a measurer for Cartesian coordinate system.
  *
  * @class
+ * @category geo
  * @protected
  * @memberOf maptalks.measurer
  * @name Identity

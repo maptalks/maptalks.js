@@ -1,6 +1,7 @@
 /**
  * GeoJSON utilities
  * @class
+ * @category geometry
 *  @memberOf maptalks
  * @name GeoJSON
  */

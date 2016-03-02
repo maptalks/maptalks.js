@@ -1,14 +1,25 @@
 /**
- * TODO 该控件完全照抄的Leaflet, 需要重写
- * 比例尺控件
- * @class maptalks.control.Scale
+ * @classdesc
+ * Based on the implementation in Leaflet, a simple scale control that shows the scale of the current center of screen in metric (m/km) and imperial (mi/ft) systems.
+ * @class
+ * @category control
  * @extends maptalks.Control
-
+ * @memberOf maptalks.control
+ * @name Scale
+ * @param {Object} [options=null] - construct options
+ * @param {Object} [options.position=maptalks.Control.bottom_left]  - position of the scale control.
+ * @param {Number} [options.maxWidth=100]               - max width of the scale control.
+ * @param {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
+ * @param {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
  */
-Z.control.Scale = Z.Control.extend({
+Z.control.Scale = Z.Control.extend(/** @lends maptalks.control.Scale.prototype */{
 
     /**
-     * @cfg {Object} options 比例尺属性
+     * @property {Object} [options=null] - options
+     * @property {Object} [options.position=maptalks.Control.bottom_left]  - position of the scale control.
+     * @property {Number} [options.maxWidth=100]               - max width of the scale control.
+     * @property {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
+     * @property {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
      */
     options:{
         'position' : Z.Control['bottom_left'],
@@ -104,10 +115,6 @@ Z.control.Scale = Z.Control.extend({
 });
 
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [scaleControl="false"] 是否显示比例尺
-     * @member maptalks.Map
-     */
     'scaleControl' : false
 });
 

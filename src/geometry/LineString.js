@@ -1,6 +1,7 @@
 /**
  * @classdesc Represents a LineString type Geometry.
  * @class
+ * @category geometry
  * @extends {maptalks.Vector}
  * @mixes   {maptalks.Geometry.Poly}
  * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the line string

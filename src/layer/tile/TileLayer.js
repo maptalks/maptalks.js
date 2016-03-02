@@ -2,11 +2,12 @@
  * @classdesc
  * A layer used to display tiled map services, such as [google maps]{@link http://maps.google.com}, [open street maps]{@link http://www.osm.org}
  * @class
+ * @category layer
  * @extends maptalks.Layer
  * @param {String|Number} id - tile layer's id
  * @param {Object} [options=null] - construct options, including the options defined in [maptalks.Layer]{@link maptalks.Layer#options}
  */
-Z.TileLayer = Z.Layer.extend({
+Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
     type: 'tile',
 
     options: {

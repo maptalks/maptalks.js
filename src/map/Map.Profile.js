@@ -1,14 +1,16 @@
-/** 实现Map的Profile功能 **/
-/** Profile是地图当前状态的一个画像, 存储了地图 **/
+/** Profile **/
 
-//Layer的Profile
-Z.Layer.include({
+Z.Layer.include(/** @lends maptalks.Layer.prototype */{
     /**
-     * 返回Layer的JSON
-     * @param  {Object} options 属性配置, 控制属性是否输出
-     *                          options: 是否输出options, 不设置或者设置为true则输出, false则不输出
-     *                          geometries: 图层geometry(如果有)的JSON配置(同Geometry.toJSON方法的配置), 设为false则不输出
-     * @return {JSON}         图层的JSON
+     * Export the layer's profile json. <br>
+     * Layer's profile is a snapshot of the layer in JSON format. <br>
+     * It can be used to reproduce the instance by [fromJSON]{@link maptalks.Layer#fromJSON} method
+     * @param  {Object} [options=null] - export options
+     * @param  {Boolean} [options.visible=null]   - used to set profile.options.visible
+     * @param  {Object} [options.geometries=null] - If not null and the layer is a [OverlayerLayer]{@link maptalks.OverlayLayer},
+     *                                            the layer's geometries will be exported with the given "options.geometries" as a parameter of geometry's toJSON.
+     * @param  {maptalks.Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
+     * @return {Object} layer's profile JSON
      */
     toJSON:function(options) {
         if (!options) {
@@ -19,6 +21,9 @@ Z.Layer.include({
             "id":this.getId()
         };
         profile['options'] = this.config();
+        if (!Z.Util.isNil(options['visible'])) {
+            profile['options']['visible'] = options['visible'];
+        }
 
         if (this instanceof Z.OverlayLayer) {
             if (Z.Util.isNil(options['geometries']) || options['geometries']) {
@@ -42,6 +47,14 @@ Z.Layer.include({
     }
 });
 
+/**
+ * Reproduce a Layer from layer's profile JSON.
+ * @param  {Object} layerJSON - layer's profile JSON
+ * @return {maptalks.Layer}
+ * @static
+ * @memberOf maptalks.Layer
+ * @function
+ */
 Z.Layer.fromJSON=function(layerJSON) {
     if (!layerJSON) {return null;}
     var layerType;
@@ -71,12 +84,24 @@ Z.Layer.fromJSON=function(layerJSON) {
     return layer;
 };
 
-Z.Map.include({
+Z.Map.include(/** @lends maptalks.Map.prototype */{
+    /**
+     * @property {String}  - Version of the profile JSON schema.
+     * @constant
+     * @static
+     */
     "PROFILE_VERSION" : "1.0",
     /**
-     * 返回地图的JSON
-     * @param  {*} options [description]
-     * @return {*}         [description]
+     * Export the map's profile json. <br>
+     * Map's profile is a snapshot of the map in JSON format. <br>
+     * It can be used to reproduce the instance by [fromJSON]{@link maptalks.Map#fromJSON} method
+     * @param  {Object} [options=null] - export options
+     * @param  {Boolean|Object} [options.baseLayer=null] - whether to export base layer's profile, if yes, it will be used as layer's toJSON options.
+     * @param  {Boolean|maptalks.Extent} [options.clipExtent=null] - if set with an extent instance, only the geometries intersectes with the extent will be exported.
+     *                                                             If set to true, map's current extent will be used.
+     * @param  {Boolean|Object|Object[]} [options.layers=null] - whether to export other layers' profile, if yes, it will be used as layer's toJSON options.
+     *                                                        It can also be a array of layer export options with a "id" attribute to filter the layers to export.
+     * @return {Object} layer's profile JSON
      */
     toJSON:function(options) {
         if (!options) {
@@ -91,7 +116,7 @@ Z.Map.include({
         profile["options"]["zoom"] = this.getZoom();
 
         var baseLayer = this.getBaseLayer();
-        if (baseLayer) {
+        if (options['baseLayer'] && baseLayer) {
             profile['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
             if (!Z.Util.isNil(options['baseLayer']) && !options['baseLayer']) {
                 profile['baseLayer']['options']['visible'] = false;
@@ -108,11 +133,11 @@ Z.Map.include({
             }
         }
 
-        if (Z.Util.isNil(options['layers']) || options['layers'] === true) {
+        if (Z.Util.isNil(options['layers']) || options['layers']) {
             var layers = this.getLayers();
             var layersJSON = [];
             for (var i = 0, len=layers.length; i < len; i++) {
-                var options = Z.Util.extend({},options['layers'],extraLayerOptions);
+                var options = Z.Util.extend({},Z.Util.isObject(options['layers'])?options['layers']:{},extraLayerOptions);
                 layersJSON.push(layers[i].toJSON(options));
             }
             profile["layers"] = layersJSON;
@@ -133,6 +158,22 @@ Z.Map.include({
     }
 });
 
+/**
+ * Reproduce a map from map's profile JSON.
+ * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
+ *                                          1. A HTMLElement container.<br/>
+ *                                          2. ID of a HTMLElement container.<br/>
+ *                                          3. A canvas compatible container in node,
+ *                                          e.g. [node-canvas]{@link https://github.com/Automattic/node-canvas},
+ *                                              [canvas2svg]{@link https://github.com/gliffy/canvas2svg}
+ * @param  {Object} mapJSON - map's profile JSON
+ * @param  {Object} [options=null] - options
+ * @param  {Object} [options.baseLayer=null] - whether to import the baseLayer
+ * @param  {Object} [options.layers=null]    - whether to import the layers
+ * @return {maptalks.Map}
+ * @static
+ * @function
+ */
 Z.Map.fromJSON=function(container, mapJSON, options) {
     if (!container || !mapJSON) {
         return null;

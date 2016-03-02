@@ -1,8 +1,19 @@
-//package
+//@namespace
 Z.animation = {};
 
+/**
+ * @classdesc
+ * Utilities for animation
+ * @class
+ * @category utility
+ */
 Z.Animation = {
-    //predefined speed constants.
+    /**
+     * @property {Object} speed         - predefined animation speed
+     * @property {Number} speed.slow    - 2000ms
+     * @property {Number} speed.normal  - 1000ms
+     * @property {Number} speed.fast    - 500ms
+     */
     speed:{
         'slow'   : 2000,
         'normal' : 1000,
@@ -10,9 +21,10 @@ Z.Animation = {
     },
 
     /**
-     * resolve styles to start, distance and end.
-     * @param  {Object} styles to resolve
-     * @return {Object[]}        styles resolved
+     * resolve styles for animation, get a style group of start style, styles to animate and end styles.
+     * @param  {Object} styles - styles to resolve
+     * @return {Object[]}  styles resolved
+     * @private
      */
     _resolveStyles:function(styles) {
         if (!styles) {
@@ -110,7 +122,17 @@ Z.Animation = {
         return [start, d, dest];
     },
 
+    /**
+     * Generate a framing function
+     * @param  {Object[]} styles        - animation style group
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.easing=null]  - animation easing
+     * @return {Function} framing function helps to generate animation frames.
+     */
     framing:function(styles, options) {
+        if (!options) {
+            options = {};
+        }
         var easing = options['easing']?Z.animation.Easing[options['easing']]:Z.animation.Easing.linear;
         if (!easing) {easing = Z.animation.Easing.linear;}
         var dStyles, startStyles, destStyles;
@@ -209,6 +231,13 @@ Z.Animation = {
         }
     },
 
+    /**
+     * Get a animation player
+     * @param  {Object} styles  - styles to animate
+     * @param  {Object} options - animation options
+     * @param  {Function} step  - callback function for animation steps
+     * @return {maptalks.animation.Player} player
+     */
     animate : function(styles, options, step) {
         if (!options) {
             options = {};
@@ -219,11 +248,15 @@ Z.Animation = {
 };
 
 /**
- * Web Animation API style,
- * https://developer.mozilla.org/zh-CN/docs/Web/API/Animation
- * @param {*} animation [description]
- * @param {*} options   [description]
- * @param {*} step      [description]
+ * @classdesc
+ * [Web Animation API]{@link https://developer.mozilla.org/zh-CN/docs/Web/API/Animation} style animation player
+ * @param {Function} animation - animation [framing]{@link maptalks.Animation.framing} function
+ * @param {Object} options     - animation options
+ * @param  {Function} step  - callback function for animation steps
+ * @class
+ * @category utility
+ * @memberOf maptalks.animation
+ * @name Player
  */
 Z.animation.Player = function(animation, options, step) {
     this._animation = animation;
@@ -234,7 +267,7 @@ Z.animation.Player = function(animation, options, step) {
     this.finished = false;
 }
 
-Z.Util.extend(Z.animation.Player.prototype, {
+Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player.prototype */{
     _prepare:function() {
         var options = this._options;
         var duration = options['speed'];
@@ -242,22 +275,13 @@ Z.Util.extend(Z.animation.Player.prototype, {
         if (!duration) {duration = Z.Animation.speed['normal'];}
         this.duration = duration;
     },
-    cancel:function() {
-        this.playState = "idle";
-        this.finished = false;
-    },
-
-    finish:function() {
-        this.playState = "finished";
-        this.finished = true;
-    },
-    pause:function() {
-        this.playState = "paused";
-        this.duration = this.duration - this.currentTime;
-    },
+    /**
+     * Start or resume the animation
+     * @return {maptalks.animation.Player} this
+     */
     play:function() {
         if (this.playState !== "idle" && this.playState !== "paused") {
-            return;
+            return this;
         }
         if (this.playState === 'idle') {
             this.currentTime = 0;
@@ -270,6 +294,34 @@ Z.Util.extend(Z.animation.Player.prototype, {
         }
         this._playStartTime = Math.max(now, this.startTime);
         this._run();
+        return this;
+    },
+    /**
+     * Pause the animation
+     * @return {maptalks.animation.Player} this
+     */
+    pause:function() {
+        this.playState = "paused";
+        this.duration = this.duration - this.currentTime;
+        return this;
+    },
+    /**
+     * Cancel the animation play and ready to play again
+     * @return {maptalks.animation.Player} this
+     */
+    cancel:function() {
+        this.playState = "idle";
+        this.finished = false;
+        return this;
+    },
+    /**
+     * Finish the animation play, and can't be played any more.
+     * @return {maptalks.animation.Player} this
+     */
+    finish:function() {
+        this.playState = "finished";
+        this.finished = true;
+        return this;
     },
     reverse:function() {
 
@@ -307,12 +359,19 @@ Z.Util.extend(Z.animation.Player.prototype, {
     }
 });
 
+/**
+ * @classdesc
+ * Easing functions for anmation, from openlayers 3
+ * @class
+ * @category utility
+ * @memberOf maptalks.animation
+ * @name Easing
+ */
 Z.animation.Easing = {
         /**
          * Start slow and speed up.
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
-         * @api
          */
         in : function(t) {
           return Math.pow(t, 3);
@@ -323,7 +382,6 @@ Z.animation.Easing = {
          * Start fast and slow down.
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
-         * @api
          */
         out : function(t) {
           return 1 - Z.animation.Easing.in(1 - t);
@@ -334,7 +392,6 @@ Z.animation.Easing = {
          * Start slow, speed up, and then slow down again.
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
-         * @api
          */
         inAndOut : function(t) {
           return 3 * t * t - 2 * t * t * t;
@@ -345,7 +402,6 @@ Z.animation.Easing = {
          * Maintain a constant speed over time.
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
-         * @api
          */
         linear : function(t) {
           return t;
@@ -358,7 +414,6 @@ Z.animation.Easing = {
          * is delayed.
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
-         * @api
          */
         upAndDown : function(t) {
           if (t < 0.5) {
@@ -370,9 +425,14 @@ Z.animation.Easing = {
 };
 
 /**
- * Animation Frame
- * @param {Object} state animation state
- * @param {Object} styles  styles to animate
+ * @classdesc
+ * Animation Frame used internally n animation player.
+ * @class
+ * @category utility
+ * @memberOf maptalks.animation
+ * @name Frame
+ * @param {Object} state  - animation state
+ * @param {Object} styles - styles to animate
  */
 Z.animation.Frame = function(state, styles) {
     this.state = state;

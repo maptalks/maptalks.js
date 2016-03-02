@@ -1,8 +1,4 @@
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [scrollWheelZoom="true"] 滚轮放大缩小地图功能
-     * @member maptalks.Map
-     */
     'scrollWheelZoom': true
 });
 

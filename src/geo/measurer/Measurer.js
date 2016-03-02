@@ -7,6 +7,7 @@ Z.measurer = {};
  * Utilities with measurers.<br>
  * Measurer is a object containing methods for geographical computations such as length and area measuring, etc.
  * @class
+ * @category geo
  * @protected
  */
 Z.MeasurerUtil = {

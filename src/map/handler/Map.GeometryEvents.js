@@ -1,8 +1,4 @@
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [geometryEvents="true"] geometry事件监控
-     * @member maptalks.Map
-     */
     'geometryEvents': true
 });
 

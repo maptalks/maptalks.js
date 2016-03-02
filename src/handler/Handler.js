@@ -1,6 +1,7 @@
 /**
  * Base class for all the interaction handlers
  * @class
+ * @category handler
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
  * @abstract

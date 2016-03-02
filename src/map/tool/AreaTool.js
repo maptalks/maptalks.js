@@ -2,12 +2,12 @@
  * @classdesc
  * A map tool to help measure area on the map
  * @class
- * @extends maptalks.Class
- * @mixins maptalks.DistanceTool
+ * @category maptool
+ * @extends maptalks.DistanceTool
  * @param {options} [options=null]          - construct options, including options defined in [DistanceTool]{@link maptalks.DistanceTool}
  * @param {options} [options.symbol=null]   - symbol of lines drawn during measuring
  */
-Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.DistanceTool.prototype */{
+Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
 
     options:{
         'symbol' : {

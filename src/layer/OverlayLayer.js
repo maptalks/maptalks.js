@@ -2,6 +2,7 @@
  * @classdesc
  * Base class of all the layers that can add/remove geometries.
  * @class
+ * @category layer
  * @abstract
  * @extends {maptalks.Layer}
  */

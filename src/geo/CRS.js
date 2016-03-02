@@ -3,6 +3,7 @@
  * Represent CRS defined by [GeoJSON]{@link http://geojson.org/geojson-spec.html#coordinate-reference-system-objects}
  *
  * @class
+ * @category geo
  * @param {String} type          - type of the CRS
  * @param {Object} properties    - CRS's properties
  */

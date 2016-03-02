@@ -1,13 +1,15 @@
-Z.Map.include({
+Z.Map.include(/** @lends maptalks.Map.prototype */{
     /**
-     * 将地图移动到指定的坐标
-     * @param  {maptalks.Coordinate} coordinate 指定的坐标
-     * @member maptalks.Map
-     * @expose
+     * Pan to the given coordinate
+     * @param {maptalks.Coordinate} coordinate - coordinate to pan to
+     * @param {Object} [options=null] - pan options
+     * @param {Boolean} [options.animation=null] - whether pan with animation
+     * @param {Boolean} [options.duration=600] - pan animation duration
+     * @return {maptalks.Map} this
      */
     panTo:function(coordinate, options) {
         if (!coordinate) {
-            return;
+            return this;
         }
         var projection = this.getProjection();
         var p = projection.project(new Z.Coordinate(coordinate));
@@ -17,10 +19,12 @@ Z.Map.include({
     },
 
     /**
-     * 按指定的像素距离移动地图
-     * @param  {maptalks.Point} point 点
-     * @member maptalks.Map
-     * @expose
+     * Pan the map by the give point
+     * @param  {maptalks.Point} point - distance to pan, in pixel
+     * @param {Object} [options=null] - pan options
+     * @param {Boolean} [options.animation=null] - whether pan with animation
+     * @param {Boolean} [options.duration=600] - pan animation duration
+     * @return {maptalks.Map} this
      */
     panBy:function(offset, options) {
         this._onMoveStart;

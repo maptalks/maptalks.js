@@ -1,4 +1,14 @@
-Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
+/**
+ * @classdesc
+ * Renderer class based on HTML5 Canvas2D for VectorLayers
+ * @class
+ * @protected
+ * @memberOf maptalks.renderer.vectorlayer
+ * @name Canvas
+ * @extends {maptalks.renderer.Canvas}
+ * @param {maptalks.VectorLayer} layer - layer of the renderer
+ */
+Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vectorlayer.Canvas.prototype */{
 
     initialize:function(layer) {
         this._layer = layer;
@@ -17,7 +27,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
     },
 
     /**
-     * 实时绘制并请求地图重绘
+     * Renderer the layer immediately.
      */
     renderImmediate:function() {
         if (!this._layer.isVisible()) {
@@ -165,7 +175,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
 
     /**
      * 显示图层
-     * @expose
      */
     show: function() {
         this._layer._eachGeometry(function(geo) {
@@ -180,7 +189,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend({
 
     /**
      * 隐藏图层
-     * @expose
      */
     hide: function() {
         this._requestMapToRender();

@@ -1,4 +1,11 @@
-Z.CollectionPainter=Z.Class.extend({
+/**
+ * @classdesc
+ * Painter for collection type geometries
+ * @class
+ * @protected
+ * @param {maptalks.GeometryCollection} geometry - geometry to paint
+ */
+Z.CollectionPainter=Z.Class.extend(/** @lends maptalks.CollectionPainter.prototype */{
     initialize:function(geometry) {
         this.geometry = geometry;
     },

@@ -1,4 +1,14 @@
-Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend({
+/**
+ * @classdesc
+ * Renderer class based on HTML5 Canvas2d for maps.
+ * @class
+ * @protected
+ * @memberOf maptalks.renderer.map
+ * @name Canvas
+ * @extends {Z.renderer.map.Renderer}
+ * @param {maptalks.Map} map - map for the renderer
+ */
+Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map.Canvas.prototype */{
     initialize:function(map) {
         this.map = map;
         //container is a <canvas> element

@@ -2,6 +2,7 @@
  * @classdesc
  * Base class for all the layers, defines common methods that all the layer classes share.
  * @class
+ * @category layer
  * @abstract
  * @extends maptalks.Class
  * @mixes maptalks.Eventable

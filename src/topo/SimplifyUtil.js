@@ -1,6 +1,7 @@
 /**
- * 简化图形工具
- * @class maptalks.Simplify
+ * A high-performance JavaScript polyline simplification library by Vladimir Agafonkin
+ * @class
+ * @protected
  * @author mourner
  * @link https://github.com/mourner/simplify-js
  */

@@ -4,6 +4,7 @@
  * a geographical point with a certain latitude and longitude <br>
  * a point in a indoor room
  * @class
+ * @category basic types
  * @param {Number} x - x value
  * @param {Number} y - y value
  */

@@ -2,6 +2,7 @@
  * @classdesc
  * A layer for managing and rendering geometrie.
  * @class
+ * @category layer
  * @extends {maptalks.OverlayLayer}
  * @param {String|Number} id - layer's id
  * @param {Object} [options=null] - construct options, including the options defined in [maptalks.Layer]{@link maptalks.Layer#options}

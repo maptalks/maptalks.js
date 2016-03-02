@@ -6,8 +6,11 @@ Z.ui={};
  * @classdesc
  * Base class for all the ui component classes.
  * @class
+ * @category ui
  * @abstract
  * @mixes maptalks.Eventable
+ * @memberOf maptalks.ui
+ * @name UIComponent
  */
 Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype */{
     includes: [Z.Eventable],

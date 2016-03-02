@@ -1,6 +1,7 @@
 /**
  * String utilities  used internally
  * @class
+ * @category core
  * @protected
  */
 Z.StringUtil = {

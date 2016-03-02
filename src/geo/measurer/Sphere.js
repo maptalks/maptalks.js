@@ -47,6 +47,7 @@ Z.Util.extend(Z.measurer.Sphere.prototype, {
 /**
  * WGS84 Sphere measurer.
  * @class
+ * @category geo
  * @protected
  * @memberOf maptalks.measurer
  * @name WGS84Sphere
@@ -86,6 +87,7 @@ Z.measurer.WGS84Sphere = {
 /**
  * Baidu sphere measurer
  * @class
+ * @category geo
  * @protected
  * @memberOf maptalks.measurer
  * @name BaiduSphere

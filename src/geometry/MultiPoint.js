@@ -2,6 +2,7 @@
  * @classdesc
  * Represents a Geometry type of MultiPoint.
  * @class
+ * @category geometry
  * @extends maptalks.MultiPoly
  * @param {Number[][]|maptalks.Coordinate[]|maptalks.Marker[]} data - construct data, coordinates or a array of markers
  * @param {Object} [options=null]           - specific construct options for MultiPoint, also support options defined in [Geometry]{@link maptalks.Geometry#options}

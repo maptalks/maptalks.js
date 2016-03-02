@@ -1,8 +1,4 @@
 Z.Map.mergeOptions({
-    /**
-     * @cfg {Boolean} [draggable="true"] 地图支持拖动
-     * @member maptalks.Map
-     */
     'draggable': true
 });
 

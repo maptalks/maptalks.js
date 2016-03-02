@@ -4,6 +4,7 @@
  * @see  [Original explanation by Leaflet]{@link http://leafletjs.com/reference.html#class}
  *
  * @class
+ * @category core
  * @abstract
  */
 Z.Class = function () {

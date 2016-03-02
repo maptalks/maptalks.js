@@ -2,6 +2,8 @@
  * @classdesc
  * Represents a Geometry type of MultiPolygon
  * @class
+ * @category geometry
+ * @category geometry
  * @extends maptalks.MultiPoly
  * @param {Number[][][][]|maptalks.Coordinate[][][]|maptalks.Polygon[]} data - construct data, coordinates or a array of polygons
  * @param {Object} [options=null]           - options defined in [Geometry]{@link maptalks.Geometry#options}

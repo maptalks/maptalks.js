@@ -1,4 +1,14 @@
-Z.symbolizer.PointSymbolizer=Z.symbolizer.CanvasSymbolizer.extend({
+/**
+ * @classdesc
+ * Base symbolizer class for all the point type symbol styles.
+ * @abstract
+ * @class
+ * @protected
+ * @memberOf maptalks.symbolizer
+ * @name PointSymbolizer
+ * @extends {maptalks.symbolizer.CanvasSymbolizer}
+ */
+Z.symbolizer.PointSymbolizer=Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
     getPixelExtent:function() {
         var extent = new Z.PointExtent();
         var markerExtent = this.getMarkerExtent();
@@ -18,7 +28,7 @@ Z.symbolizer.PointSymbolizer=Z.symbolizer.CanvasSymbolizer.extend({
 
     /**
      * Get container points to draw on Canvas
-     * @return {*} [description]
+     * @return {maptalks.Point[]}
      */
     _getRenderContainerPoints:function() {
         var points = this._getRenderPoints();

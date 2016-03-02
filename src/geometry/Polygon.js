@@ -2,6 +2,7 @@
  * @classdesc
  *     Geometry class for polygon type
  * @class
+ * @category geometry
  * @extends maptalks.Vector
  * @mixins maptalks.Geometry.Poly
  * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.

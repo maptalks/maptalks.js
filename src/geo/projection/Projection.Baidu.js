@@ -1,6 +1,7 @@
 /**
  * Projection used by [Baidu Map]{@link http://map.baidu.com}
  * @class
+ * @category geo
  * @protected
  * @memberOf maptalks.projection
  * @name BAIDU

@@ -1,6 +1,14 @@
-Z.TileConfig=Z.Class.extend({
-
-        // includes:Z.TileUtil.Common,
+/**
+ * Tile config for tile layers, a utilities class for tile layers to render tiles
+ * @class
+ * @category layer
+ * @extends {maptalks.Class}
+ * @protected
+ * @param {maptalks.TileSystem} tileSystem  - tileSystem
+ * @param {maptalks.Extent} fullExtent      - fullExtent of the tile layer
+ * @param {maptalks.Size} tileSize          - tile size
+ */
+Z.TileConfig=Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
 
         statics : {
 
@@ -18,12 +26,7 @@ Z.TileConfig=Z.Class.extend({
             }
         },
 
-        /**
-         *
-         * @param  {Object} tileSystem [description]
-         * @param  {maptalks.Extent} fullExtent [description]
-         * @param  {maptalks.Size} tileSize   [description]
-         */
+
         initialize:function(tileSystem, fullExtent, tileSize) {
             this.tileSize = tileSize;
             this.fullExtent = fullExtent;

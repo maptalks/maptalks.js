@@ -3,12 +3,12 @@
         "allowUnknownTags": true,
         "dictionaries": ["jsdoc","closure"]
     },
-
+    "categories" : "map,layer,geometry,maptool",
     "opts": {
         "recurse" : true,
-        "template": "./node_modules/maptalks-jsdoc/",
+        "template": "../maptalks-jsdoc/",
         "encoding": "utf8",
         "destination": "./doc/api/",
-        "access"  : "public, undefined"
+        "access"  : "protected,public, undefined"
     }
 }

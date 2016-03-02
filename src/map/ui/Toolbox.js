@@ -2,7 +2,10 @@
  * @classdesc
  * Represents a toolbox ui component for geometries.
  * @class
+ * @category ui
  * @extends Z.ui.UIComponent
+ * @memberOf maptalks.ui
+ * @name Toolbox
  */
 Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype */{
 

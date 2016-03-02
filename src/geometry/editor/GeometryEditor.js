@@ -1,6 +1,7 @@
 /**
  * Geometry editor used internally for geometry editing.
  * @class
+ * @category geometry
  * @protected
  * @extends maptalks.Class
  * @mixes maptalks.Eventable

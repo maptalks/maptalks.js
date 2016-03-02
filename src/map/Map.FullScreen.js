@@ -1,22 +1,36 @@
-Z.Map.include({
+Z.Map.include(/** @lends maptalks.Map.prototype */{
     /**
-     * 全屏地图
-     * @member maptalks.Map
-     * @expose
+     * Request for the full screen
+     * @return {maptalks.Map} this
      */
     requestFullScreen: function() {
+        /**
+          * fullscreenstart event
+          * @event fullscreenstart
+          * @type {Object}
+          * @property {String} type                    - fullscreenstart
+          * @property {String} target                  - the map fires event
+          */
         this._fireEvent('fullscreenstart');
         this._requestFullScreen(this._containerDOM);
+        /**
+          * fullscreenend event
+          * @event fullscreenend
+          * @type {Object}
+          * @property {String} type                    - fullscreenend
+          * @property {String} target                  - the map fires event
+          */
         this._fireEvent('fullscreenend');
+        return this;
     },
 
     /**
-     * 退出全屏地图
-     * @member maptalks.Map
-     * @expose
+     * Cancel full screen
+     * @return {maptalks.Map} this
      */
     cancelFullScreen: function() {
         this._cancelFullScreen(this._containerDOM);
+        return this;
     },
 
     _requestFullScreen: function(dom) {

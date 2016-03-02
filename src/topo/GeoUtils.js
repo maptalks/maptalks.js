@@ -1,11 +1,11 @@
 /**
- * 空间计算工具类
- * @class maptalks.GeoUtils
-
+ * Utilities for geo
+ * @class
+ * @protected
  */
 Z.GeoUtils={
     /**
-     *
+     * caculate the distance from a point to a segment.
      * @param {maptalks.Point} p
      * @param {maptalks.Point} p1
      * @param {maptalks.Point} p2

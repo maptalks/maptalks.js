@@ -1,21 +1,16 @@
-Z.Geometry.mergeOptions(/** @lends maptalks.Geometry.prototype */{
-    /**
-     * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
-     */
+Z.Geometry.mergeOptions({
+
     'draggable': false,
-    /**
-     * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
-     */
+
     'dragShadow' : true,
-    /**
-     * @property {Boolean} [options.draggableAxis=null] - if set, geometry can only be dragged along the specified axis, possible values: x, y
-     */
+
     'draggableAxis' : null
 });
 
 /**
  * Drag handler for geometries.
  * @class
+ * @category handler
  * @protected
  * @extends {maptalks.Handler}
  */
@@ -32,11 +27,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         this.target.off(this.START.join(' '), this._startDrag, this);
 
     },
-    /**
-     * 开始移动Geometry, 进入移动模式
-     * @param {Boolean} enableMapEvent 是否阻止地图拖动事件 true,阻止
-     * @member maptalks.Geometry
-     */
+
     _startDrag: function(param) {
         var map = this.target.getMap();
         if (!map) {
@@ -196,9 +187,6 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
 
     },
 
-    /**
-     * 结束移动Geometry, 退出移动模式
-     */
     _endDrag: function(param) {
         var target = this.target,
             map = target.getMap();

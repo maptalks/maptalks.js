@@ -1,6 +1,7 @@
 /**
  * @classdesc Base class for all the geometry classes besides [maptalks.Marker]{@link maptalks.Marker}. <br/>
  * @class
+ * @category geometry
  * @abstract
  * @extends maptalks.Geometry
  */

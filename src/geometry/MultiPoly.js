@@ -1,6 +1,7 @@
 /**
  * Parent class for MultiPoint, MultiLineString and MultiPolygon
  * @class
+ * @category geometry
  * @abstrct
  * @extends maptalks.GeometryCollection
  */

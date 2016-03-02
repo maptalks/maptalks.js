@@ -2,8 +2,11 @@
  * @classdesc
  * Class for context menu, useful for interactions with right clicks on the map.
  * @class
+ * @category ui
  * @extends maptalks.ui.UIComponent
  * @param {Object} options - construct options
+ * @memberOf maptalks.ui
+ * @name Menu
  */
 Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
 
@@ -163,6 +166,8 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
 /**
  * Mixin of the context menu methods.
  * @mixin
+ * @memberOf maptalks.ui
+ * @name Menu.Mixin
  */
 Z.ui.Menu.Mixin={
     /**
