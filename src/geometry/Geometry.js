@@ -725,6 +725,13 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                 symbol['polygonPatternFile'] = 'url("'+absolute(location.href,icon)+'")';
             }
         }
+        var linePattern = symbol['linePatternFile'];
+        if (linePattern) {
+            icon = Z.Util.extractCssUrl(linePattern);
+            if (!Z.Util.isURL(icon)) {
+                symbol['linePatternFile'] = 'url("'+absolute(location.href,icon)+'")';
+            }
+        }
     },
 
     _getPrjExtent:function() {

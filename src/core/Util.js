@@ -63,6 +63,10 @@ Z.Util = {
      * @return maptalks.Util
      */
     loadImage:function(img, url) {
+        if (!Z.node) {
+            img.src=url;
+            return;
+        }
         function onError(err) {
             console.error(err);
             var onerrorFn = img.onerror;
@@ -86,38 +90,35 @@ Z.Util = {
             }
             img.src = data;
         }
-        if (Z.node) {
-            try {
-                if (!global._maptalksImageFileCache) {
-                    //cache 10 svg files.
-                    global._maptalksImageFileCache = new Z.TileLayer.TileCache(100);
-                }
-                var cache = global._maptalksImageFileCache;
-                if (cache.get(url)) {
-                    onLoadComplete(null, cache.get(url))
-                    return;
-                }
-                var segs = url.split('.');
-                if (segs[segs.length-1] === 'svg') {
-                    try {
-                        Z.Util._convertSVG2PNG(url, onLoadComplete);
-                    } catch(err) {
-                        onError(err);
-                    }
-                } else {
-                    //canvas-node的Image对象
-                    if (Z.Util.isURL(url)) {
-                        this._loadRemoteImage(img, url, onLoadComplete);
-                    } else {
-                        this._loadLocalImage(img,url, onLoadComplete);
-                    }
-                }
 
-            } catch (error) {
-                 onError(error);
+        try {
+            if (!global._maptalksImageFileCache) {
+                //cache 10 svg files.
+                global._maptalksImageFileCache = new Z.TileLayer.TileCache(100);
             }
-        } else {
-            img.src=url;
+            var cache = global._maptalksImageFileCache;
+            if (cache.get(url)) {
+                onLoadComplete(null, cache.get(url))
+                return;
+            }
+            var segs = url.split('.');
+            if (segs[segs.length-1] === 'svg') {
+                try {
+                    Z.Util._convertSVG2PNG(url, onLoadComplete);
+                } catch(err) {
+                    onError(err);
+                }
+            } else {
+                //canvas-node的Image对象
+                if (Z.Util.isURL(url)) {
+                    this._loadRemoteImage(img, url, onLoadComplete);
+                } else {
+                    this._loadLocalImage(img,url, onLoadComplete);
+                }
+            }
+
+        } catch (error) {
+             onError(error);
         }
         return this;
     },
