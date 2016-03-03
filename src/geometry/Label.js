@@ -90,7 +90,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         this._refresh();
         /**
          * an event when changing label's text content
-         * @event contentchange
+         * @event maptalks.Label#contentchange
          * @type {Object}
          * @property {String} type - contentchange
          * @property {maptalks.Label} target - label fires the event

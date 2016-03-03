@@ -292,12 +292,14 @@ function registerGeometryCommonTest(geometry,_context) {
                 expect(resource[0]).to.be(symbol['marker-file']);
             } else {
                 var symbol = {
-                    'polygon-pattern-file':'url(\'http://foo.com/foo.png\')'
+                    'polygon-pattern-file':'url(\'http://foo.com/foo.png\')',
+                    'line-pattern-file':'url(\'http://foo.com/foo2.png\')',
                 };
                 geometry.setSymbol(symbol);
                 var resource = geometry._getExternalResource();
-                expect(resource).to.have.length(1);
+                expect(resource).to.have.length(2);
                 expect(resource[0]).to.be('http://foo.com/foo.png');
+                expect(resource[1]).to.be('http://foo.com/foo2.png');
             }
         });
 

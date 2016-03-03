@@ -63,7 +63,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         var params = this._getEventParams(originalEvent,event.type);
         /**
          * mouseover event for geometry
-         * @event mouseover
+         * @event maptalks.Geometry#mouseover
          * @type {Object}
          * @property {String} type                    - mouseover
          * @property {String} target                  - the geometry fires mouseover
@@ -88,7 +88,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         var params = this._getEventParams(originalEvent,'mouseout');
         /**
          * mouseout event for geometry
-         * @event mouseout
+         * @event maptalks.Geometry#mouseout
          * @type {Object}
          * @property {String} type                    - mouseout
          * @property {String} target                  - the geometry fires mouseout

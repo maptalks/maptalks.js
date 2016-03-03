@@ -98,8 +98,7 @@ describe('#Map Profile', function () {
                 "baseLayer" : false,
                 "layers" : false
             });
-            expect(profile.baseLayer).to.be.ok();
-            expect(profile.baseLayer.options.visible).not.to.be.ok();
+            expect(profile.baseLayer).not.to.be.ok();
             expect(profile.layers).to.be.ok();
             expect(profile.layers).to.have.length(0);
         });

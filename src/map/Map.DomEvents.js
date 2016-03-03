@@ -2,7 +2,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     _registerDomEvents: function(remove) {
         var events = /**
                       * mousedown event
-                      * @event mousedown
+                      * @event maptalks.Map#mousedown
                       * @type {Object}
                       * @property {String} type                    - mousedown
                       * @property {String} target                  - the map fires event
@@ -14,7 +14,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'mousedown '+
                      /**
                       * mouseup event
-                      * @event mouseup
+                      * @event maptalks.Map#mouseup
                       * @type {Object}
                       * @property {String} type                    - mouseup
                       * @property {String} target                  - the map fires event
@@ -26,7 +26,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'mouseup '+
                      /**
                       * mouseover event
-                      * @event mouseover
+                      * @event maptalks.Map#mouseover
                       * @type {Object}
                       * @property {String} type                    - mouseover
                       * @property {String} target                  - the map fires event
@@ -38,7 +38,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'mouseover '+
                      /**
                       * mouseout event
-                      * @event mouseout
+                      * @event maptalks.Map#mouseout
                       * @type {Object}
                       * @property {String} type                    - mouseout
                       * @property {String} target                  - the map fires event
@@ -50,7 +50,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'mouseout '+
                      /**
                       * mousemove event
-                      * @event mousemove
+                      * @event maptalks.Map#mousemove
                       * @type {Object}
                       * @property {String} type                    - mousemove
                       * @property {String} target                  - the map fires event
@@ -62,7 +62,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'mousemove '+
                      /**
                       * click event
-                      * @event click
+                      * @event maptalks.Map#click
                       * @type {Object}
                       * @property {String} type                    - click
                       * @property {String} target                  - the map fires event
@@ -74,7 +74,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'click '+
                      /**
                       * dblclick event
-                      * @event dblclick
+                      * @event maptalks.Map#dblclick
                       * @type {Object}
                       * @property {String} type                    - dblclick
                       * @property {String} target                  - the map fires event
@@ -86,7 +86,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'dblclick '+
                      /**
                       * contextmenu event
-                      * @event contextmenu
+                      * @event maptalks.Map#contextmenu
                       * @type {Object}
                       * @property {String} type                    - contextmenu
                       * @property {String} target                  - the map fires event
@@ -98,7 +98,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'contextmenu '+
                      /**
                       * keypress event
-                      * @event keypress
+                      * @event maptalks.Map#keypress
                       * @type {Object}
                       * @property {String} type                    - keypress
                       * @property {String} target                  - the map fires event
@@ -110,7 +110,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'keypress '+
                      /**
                       * touchstart event
-                      * @event touchstart
+                      * @event maptalks.Map#touchstart
                       * @type {Object}
                       * @property {String} type                    - touchstart
                       * @property {String} target                  - the map fires event
@@ -122,7 +122,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'touchstart '+
                      /**
                       * touchmove event
-                      * @event touchmove
+                      * @event maptalks.Map#touchmove
                       * @type {Object}
                       * @property {String} type                    - touchmove
                       * @property {String} target                  - the map fires event
@@ -134,7 +134,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                      'touchmove '+
                      /**
                       * touchend event
-                      * @event touchend
+                      * @event maptalks.Map#touchend
                       * @type {Object}
                       * @property {String} type                    - touchend
                       * @property {String} target                  - the map fires event

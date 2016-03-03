@@ -50,10 +50,15 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         this._dragHandler.onMouseDown(param['domEvent']);
         this._moved = false;
         /**
-         * 触发geometry的dragstart事件
-         * @member maptalks.Geometry
-         * @event dragstart
-         * @return {Object} params: {'target':this}
+         * drag start event
+         * @event maptalks.Geometry#dragstart
+         * @type {Object}
+         * @property {String} type                    - dragstart
+         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
          */
         this.target._fireEvent('dragstart', param);
         return this;
@@ -178,10 +183,15 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         this._shadow._fireEvent('dragging', eventParam);
 
         /**
-         * 触发geometry的dragging事件
-         * @member maptalks.Geometry
-         * @event dragging
-         * @return {Object} params: {'target':geometry, 'containerPoint':containerPoint, 'coordinate':coordinate,'domEvent':event};
+         * dragging event
+         * @event maptalks.Geometry#dragging
+         * @type {Object}
+         * @property {String} type                    - dragging
+         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
          */
         target._fireEvent('dragging', eventParam);
 
@@ -235,10 +245,15 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         delete this._mapDraggable;
         this._isDragging = false;
         /**
-         * 触发geometry的dragend事件
-         * @member maptalks.Geometry
-         * @event dragend
-         * @return {Object} params: {'target':this}
+         * dragend event
+         * @event maptalks.Geometry#dragend
+         * @type {Object}
+         * @property {String} type                    - dragend
+         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
          */
         target._fireEvent('dragend', eventParam);
 

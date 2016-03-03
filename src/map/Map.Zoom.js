@@ -47,7 +47,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         this._enablePanAnimation=true;
         /**
           * zoomend event
-          * @event zoomend
+          * @event maptalks.Map#zoomend
           * @type {Object}
           * @property {String} type                    - zoomend
           * @property {String} target                  - the map fires event

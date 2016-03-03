@@ -855,7 +855,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 me._offsetCenterByPixel(resizeOffset);
                 /**
                  * resize event when map container's size changes
-                 * @event resize
+                 * @event maptalks.Map#resize
                  * @type {Object}
                  * @property {String} type - resize
                  * @property {maptalks.Map} target - map fires the event
@@ -1024,18 +1024,22 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._moving = true;
         this._trySetCursor('move');
         /**
-         * 触发map的movestart事件
-         * @member maptalks.Map
-         * @event movestart
+         * movestart event
+         * @event maptalks.Map#movestart
+         * @type {Object}
+         * @property {String} type - movestart
+         * @property {maptalks.Map} target - map fires the event
          */
         this._fireEvent('movestart');
     },
 
     _onMoving:function() {
         /**
-         * 触发map的moving事件
-         * @member maptalks.Map
-         * @event moving
+         * moving event
+         * @event maptalks.Map#moving
+         * @type {Object}
+         * @property {String} type - moving
+         * @property {maptalks.Map} target - map fires the event
          */
         this._fireEvent('moving');
     },
@@ -1045,9 +1049,11 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._moving = false;
         this._trySetCursor('default');
         /**
-         * 触发map的moveend事件
-         * @member maptalks.Map
-         * @event moveend
+         * moveend event
+         * @event maptalks.Map#moveend
+         * @type {Object}
+         * @property {String} type - moveend
+         * @property {maptalks.Map} target - map fires the event
          */
         this._fireEvent('moveend');
         if (!this._verifyExtent(this.getCenter())) {

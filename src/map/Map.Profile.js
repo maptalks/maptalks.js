@@ -52,7 +52,6 @@ Z.Layer.include(/** @lends maptalks.Layer.prototype */{
  * @param  {Object} layerJSON - layer's profile JSON
  * @return {maptalks.Layer}
  * @static
- * @memberOf maptalks.Layer
  * @function
  */
 Z.Layer.fromJSON=function(layerJSON) {
@@ -116,11 +115,11 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         profile["options"]["zoom"] = this.getZoom();
 
         var baseLayer = this.getBaseLayer();
-        if (options['baseLayer'] && baseLayer) {
+        if ((Z.Util.isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
             profile['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
-            if (!Z.Util.isNil(options['baseLayer']) && !options['baseLayer']) {
-                profile['baseLayer']['options']['visible'] = false;
-            }
+            // if (!Z.Util.isNil(options['baseLayer']) && !options['baseLayer']) {
+            //     profile['baseLayer']['options']['visible'] = false;
+            // }
         }
         var extraLayerOptions = {};
         if (options['clipExtent']) {
@@ -133,7 +132,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             }
         }
 
-        if (Z.Util.isNil(options['layers']) || options['layers']) {
+        if (Z.Util.isNil(options['layers']) || (options['layers'] && !Z.Util.isArray(options['layers']))) {
             var layers = this.getLayers();
             var layersJSON = [];
             for (var i = 0, len=layers.length; i < len; i++) {

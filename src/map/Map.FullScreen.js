@@ -6,7 +6,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     requestFullScreen: function() {
         /**
           * fullscreenstart event
-          * @event fullscreenstart
+          * @event maptalks.Map#fullscreenstart
           * @type {Object}
           * @property {String} type                    - fullscreenstart
           * @property {String} target                  - the map fires event
@@ -15,7 +15,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         this._requestFullScreen(this._containerDOM);
         /**
           * fullscreenend event
-          * @event fullscreenend
+          * @event maptalks.Map#fullscreenend
           * @type {Object}
           * @property {String} type                    - fullscreenend
           * @property {String} target                  - the map fires event
@@ -30,6 +30,14 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      */
     cancelFullScreen: function() {
         this._cancelFullScreen(this._containerDOM);
+        /**
+          * cancelfullscreen event
+          * @event maptalks.Map#cancelfullscreen
+          * @type {Object}
+          * @property {String} type                    - cancelfullscreen
+          * @property {String} target                  - the map fires event
+          */
+        this._fireEvent('cancelfullscreen');
         return this;
     },
 

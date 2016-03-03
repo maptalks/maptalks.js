@@ -5,7 +5,7 @@ Z.animation = {};
  * @classdesc
  * Utilities for animation
  * @class
- * @category utility
+ * @category animation
  */
 Z.Animation = {
     /**
@@ -254,7 +254,7 @@ Z.Animation = {
  * @param {Object} options     - animation options
  * @param  {Function} step  - callback function for animation steps
  * @class
- * @category utility
+ * @category animation
  * @memberOf maptalks.animation
  * @name Player
  */
@@ -363,7 +363,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
  * @classdesc
  * Easing functions for anmation, from openlayers 3
  * @class
- * @category utility
+ * @category animation
  * @memberOf maptalks.animation
  * @name Easing
  */
@@ -428,7 +428,7 @@ Z.animation.Easing = {
  * @classdesc
  * Animation Frame used internally n animation player.
  * @class
- * @category utility
+ * @category animation
  * @memberOf maptalks.animation
  * @name Frame
  * @param {Object} state  - animation state

@@ -214,9 +214,9 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
             }
             this._addGeometryToStage(this._geometry);
             /**
-             * 触发 drawstart 事件
-             * @event drawstart
-             * @return {Object} params: {'coordinate':coordinate, 'pixel':containerPoint};
+             * drawstart event
+             * @event maptalks.DrawTool#drawstart
+             * @type {Object}
              */
             this._fireEvent('drawstart', param);
         } else {
@@ -237,8 +237,8 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
 
             /**
              * 触发drawvertex事件：端点绘制事件，当为多边形或者多折线绘制了一个新的端点后会触发此事件
-             * @event drawvertex
-             * @return {Object} params: {'target': this, 'coordinate':coordinate, 'pixel':containerPoint};
+             * @event maptalks.DrawTool#drawvertex
+             * @type {Object}
              */
             this._fireEvent('drawvertex',param);
 
@@ -388,11 +388,6 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
         var containerPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(containerPoint)) {return;}
         var coordinate = this._containerPointToLonlat(containerPoint);
-        /**
-         * 绘制开始事件
-         * @event drawstart
-         * @param {Object} param {'coordinate':coordinate,'pixel':containerPoint}
-         */
         this._fireEvent('drawstart',param);
         genGeometry(coordinate);
         this._map.on('mousemove',onMouseMove,this);
@@ -413,8 +408,8 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
         param['geometry'] = target;
           /**
            * 绘制结束事件
-           * @event drawend
-           * @param {Object} param {'target':drawTool,'geometry':target};
+           * @event maptalks.DrawTool#drawend
+           * @type {Object}
            */
         this._fireEvent('drawend', param);
         if(this.options['once']) {
