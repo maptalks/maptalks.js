@@ -1,12 +1,8 @@
 /**
- * Parent class for MultiPoint, MultiLineString and MultiPolygon
- * @class
- * @category geometry
- * @abstrct
- * @extends maptalks.GeometryCollection
+ * Common methods for MultiPoint, MultiLineString and MultiPolygon
+ * @mixin maptalks.Geometry.MultiPoly
  */
-Z.MultiPoly = Z.GeometryCollection.extend(/** @lends maptalks.MultiPoly.prototype */{
-
+Z.Geometry.MultiPoly = {
     /**
      * Get coordinates of the collection
      * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates
@@ -73,4 +69,4 @@ Z.MultiPoly = Z.GeometryCollection.extend(/** @lends maptalks.MultiPoly.prototyp
             'coordinates': coordinates
         };
     }
-});
+};

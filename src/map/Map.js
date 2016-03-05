@@ -65,17 +65,17 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @property {maptalks.Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
      *
      * options merged from handlers:
-     * @property {Boolean} [draggable=true]                         - disable the map dragging if set to false.
-     * @property {Boolean} [doublClickZoom=true]                    - whether to allow map to zoom by double click events.
-     * @property {Boolean} [scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
-     * @property {Boolean} [touchZoom=true]                         - whether to allow map to zoom by touch events.
-     * @property {Boolean} [autoBorderPanning=false]                - whether to pan the map automatically if mouse moves on the border of the map
-     * @property {Boolean} [geometryEvents=false]                   - enable/disable firing geometry events
+     * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
+     * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
+     * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
+     * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
+     * @property {Boolean} [options.autoBorderPanning=false]                - whether to pan the map automatically if mouse moves on the border of the map
+     * @property {Boolean} [options.geometryEvents=false]                   - enable/disable firing geometry events
      *
      * options merged from controls:
-     * @property {Boolean|Object} [attributionControl=false]        - display the attribution control on the map if set to true or a object as the control construct option.
-     * @property {Boolean|Object} [zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
-     * @property {Boolean|Object} [scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
+     * @property {Boolean|Object} [options.attributionControl=false]        - display the attribution control on the map if set to true or a object as the control construct option.
+     * @property {Boolean|Object} [options.zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
+     * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
      *
      * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
      */
@@ -1370,7 +1370,7 @@ Z.Map.prototype._callOnLoadHooks=function() {
 };
 
 /**
- * add hooks for additional codes when map's loading complete, useful for plugin developping.
+ * Add hooks for additional codes when map's loading complete, useful for plugin developping.
  * @param {function} fn
  * @returns {maptalks.Map}
  * @static
