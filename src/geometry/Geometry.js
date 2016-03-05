@@ -686,7 +686,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @private
      */
     _convertResourceUrl:function(symbol) {
-        if (Z.node) {
+        if (Z.node || !symbol) {
             return;
         }
         function absolute(base, relative) {
@@ -716,16 +716,22 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var props = Z.Symbolizer.resourceProperties;
         for (var i = symbols.length - 1; i >= 0; i--) {
             var symbol = symbols[i];
-            for (var i = 0; i < props.length; i++) {
-                var res = symbol[props[i]];
+            if (!symbol) {
+                continue;
+            }
+            for (var ii = 0; ii < props.length; ii++) {
+                var res = symbol[props[ii]];
+                if (!res) {
+                    continue;
+                }
                 var isCssStyle = false;
                 if (res.indexOf('url(') >= 0) {
-                    res = Z.Util.extractCssUrl(fill);
+                    res = Z.Util.extractCssUrl(res);
                     isCssStyle = true;
                 }
                 if (!Z.Util.isURL(res)) {
                     res = absolute(location.href,res);
-                    symbol[props[i]] = isCssStyle?'url("'+res+'")':res;
+                    symbol[props[ii]] = isCssStyle?'url("'+res+'")':res;
                 }
             }
         }
@@ -1083,13 +1089,16 @@ Z.Geometry.getExternalResource = function(symbol, geometry) {
     var props = Z.Symbolizer.resourceProperties;
     for (var i = symbols.length - 1; i >= 0; i--) {
         var symbol = symbols[i];
-        for (var i = 0; i < props.length; i++) {
-            var res = symbol[props[i]];
+        if (!symbol) {
+            continue;
+        }
+        for (var ii = 0; ii < props.length; ii++) {
+            var res = symbol[props[ii]];
             if (!res) {
                 continue;
             }
             if (res.indexOf('url(') >= 0) {
-                res = Z.Util.extractCssUrl(fill);
+                res = Z.Util.extractCssUrl(res);
             }
             resources.push(res);
         }
