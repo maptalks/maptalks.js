@@ -1,11 +1,14 @@
+if (typeof Promise !== 'undefined') {
+    //built in Promise
+    Z.Promise = Promise;
+} else {
 // zousan - A Lightning Fast, Yet Very Small Promise A+ Compliant Implementation
 // https://github.com/bluejava/zousan
 // Version 2.1.2
 
 /* jshint asi: true, browser: true */
 /* global setImmediate, console */
-
-(function(global){
+(function(_global){
 
         "use strict";
 
@@ -271,8 +274,8 @@
         }
 
         // If this appears to be a commonJS environment, assign Zousan as the module export
-        if(typeof module != _undefinedString && module.exports)     // jshint ignore:line
-            module.exports = Zousan;    // jshint ignore:line
+        // if(typeof module != _undefinedString && module.exports)     // jshint ignore:line
+            // module.exports = Zousan;    // jshint ignore:line
 
         // If this appears to be an AMD environment, define Zousan as the module export (commented out until confirmed works with r.js)
         //if(global.define && global.define.amd)
@@ -282,9 +285,10 @@
         // global.Zousan = Zousan;
 
         //by maptalks
-        global.Promise = Zousan;
+        _global.Promise = Zousan;
 
         // make soon accessable from Zousan
-        Zousan.soon = soon;
+        // Zousan.soon = soon;
 
     })(/*typeof global != "undefined" ? global : this*//* by maptalks*/Z);   // jshint ignore:line
+}
