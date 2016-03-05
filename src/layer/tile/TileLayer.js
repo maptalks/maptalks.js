@@ -78,7 +78,8 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
     },
 
     /**
-     * 载入前的准备操作
+     * Prepare before load
+     * @private
      */
     _prepareLoad:function() {
         //nothing to do here, just return true
@@ -87,8 +88,8 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
 
     /**
-     * * 加载TileConfig
-     * @param  {fn} onLoaded 加载完成后的回调函数
+     * initialize [tileConfig]{@link maptalks.TileConfig} for the tilelayer
+     * @private
      */
     _initTileConfig:function() {
         if (this.options['tileSystem']) {

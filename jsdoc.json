@@ -3,6 +3,11 @@
         "allowUnknownTags": true,
         "dictionaries": ["jsdoc","closure"]
     },
+    "templates" : {
+        "default" : {
+            "useLongnameInNav" : true
+        }
+    },
     "categories" : "map,layer,geometry,maptool",
     "opts": {
         "recurse" : true,

@@ -49,21 +49,35 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     includes: [Z.Eventable,Z.Handlerable],
 
     /**
-     * @property {Object} options - map's options, options must be updated by config method, eg: map.config('zoomAnimation', false);
-     * @property {Boolean} [options.clipFullExtent=false] - clip geometries outside map's full extent
-     * @property {Boolean} [options.zoomAnimation=true] - enable zooming animation
-     * @property {Number} [options.zoomAnimationDuration=250] - zoom animation duration.
-     * @property {Boolean} [options.zoomBackground=true] - leaves a background after zooming.
-     * @property {Boolean} [options.layerZoomAnimation=true] - also animate layers when zooming.
+     * @property {Object} options                                   - map's options, options must be updated by config method, eg: map.config('zoomAnimation', false);
+     * @property {Boolean} [options.clipFullExtent=false]           - clip geometries outside map's full extent
+     * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
+     * @property {Number}  [options.zoomAnimationDuration=250]      - zoom animation duration.
+     * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
+     * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
      * @property {Boolean} [options.updatePointsWhileTransforming=true] - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
-     * @property {Boolean} [options.panAnimation=true] - continue to animate panning when draging or touching ended.
-     * @property {Boolean} [options.panAnimationDuration=600] - duration of pan animation.
-     * @property {Boolean} [options.enableZoom=true] - whether to enable map zooming.
-     * @property {Boolean} [options.enableInfoWindow=true] - whether to enable infowindow opening on this map.
-     * @property {Boolean} [options.maxZoom=null] - the max zoom the map can be zooming to.
-     * @property {Boolean} [options.minZoom=null] - the min zoom the map can be zooming to.
-     * @property {maptalks.Extent} [options.maxExtent=null] - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
-     * @property {String} [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+     * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
+     * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
+     * @property {Boolean} [options.enableZoom=true]                - whether to enable map zooming.
+     * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow opening on this map.
+     * @property {Boolean} [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
+     * @property {Boolean} [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
+     * @property {maptalks.Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
+     *
+     * options merged from handlers:
+     * @property {Boolean} [draggable=true]                         - disable the map dragging if set to false.
+     * @property {Boolean} [doublClickZoom=true]                    - whether to allow map to zoom by double click events.
+     * @property {Boolean} [scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
+     * @property {Boolean} [touchZoom=true]                         - whether to allow map to zoom by touch events.
+     * @property {Boolean} [autoBorderPanning=false]                - whether to pan the map automatically if mouse moves on the border of the map
+     * @property {Boolean} [geometryEvents=false]                   - enable/disable firing geometry events
+     *
+     * options merged from controls:
+     * @property {Boolean|Object} [attributionControl=false]        - display the attribution control on the map if set to true or a object as the control construct option.
+     * @property {Boolean|Object} [zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
+     * @property {Boolean|Object} [scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
+     *
+     * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
      */
     options:{
         'clipFullExtent' : false,

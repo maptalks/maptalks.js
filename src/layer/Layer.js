@@ -12,7 +12,11 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     includes: Z.Eventable,
 
     /**
-     * @property {Object} [options=null] - base options of layer
+     * @property {Object} [options=null] - base options of layer.
+     * @property {Number} [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
+     * @property {Number} [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
+     * @property {Boolean} [options.visible=true] - whether to display the layer.
+     * @property {Number} [options.visible=1] - opacity of the layer, from 0 to 1.
      */
     options:{
         //最大最小可视范围, -1表示不受限制
