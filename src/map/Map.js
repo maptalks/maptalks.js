@@ -21,6 +21,7 @@
  *
  * @mixes maptalks.Eventable
  * @mixes maptalks.Handlerable
+ * @mixes maptalks.Renderable
  * @mixins maptalks.ui.Menu.Mixin
  *
  * @fires maptalks.Map#load

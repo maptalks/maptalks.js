@@ -6,6 +6,7 @@
  * @abstract
  * @extends maptalks.Class
  * @mixes maptalks.Eventable
+ * @mixes maptalks.Renderable
  */
 Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 

@@ -85,7 +85,7 @@ Z.Layer.fromJSON=function(layerJSON) {
 
 Z.Map.include(/** @lends maptalks.Map.prototype */{
     /**
-     * @property {String}  - Version of the profile JSON schema.
+     * @property {String}  - Version of the [profile]{@link maptalks.Map#toJSON} JSON schema.
      * @constant
      * @static
      */
