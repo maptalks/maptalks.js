@@ -709,29 +709,27 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             }
 
         }
+        var symbols = symbol;
+        if (!Z.Util.isArray(symbol)) {
+            symbols = [symbol];
+        }
+        var props = Z.Symbolizer.resourceProperties;
+        for (var i = symbols.length - 1; i >= 0; i--) {
+            var symbol = symbols[i];
+            for (var i = 0; i < props.length; i++) {
+                var res = symbol[props[i]];
+                var isCssStyle = false;
+                if (res.indexOf('url(') >= 0) {
+                    res = Z.Util.extractCssUrl(fill);
+                    isCssStyle = true;
+                }
+                if (!Z.Util.isURL(res)) {
+                    res = absolute(location.href,res);
+                    symbol[props[i]] = isCssStyle?'url("'+res+'")':res;
+                }
+            }
+        }
 
-        var icon = symbol['markerFile'];
-        if (icon && !Z.Util.isURL(icon)) {
-            symbol['markerFile'] = absolute(location.href,icon);
-        }
-        icon = symbol['shieldFile'];
-        if (icon && !Z.Util.isURL(icon)) {
-            symbol['shieldFile'] = absolute(location.href,icon);
-        }
-        var fill = symbol['polygonPatternFile'];
-        if (fill) {
-            icon = Z.Util.extractCssUrl(fill);
-            if (!Z.Util.isURL(icon)) {
-                symbol['polygonPatternFile'] = 'url("'+absolute(location.href,icon)+'")';
-            }
-        }
-        var linePattern = symbol['linePatternFile'];
-        if (linePattern) {
-            icon = Z.Util.extractCssUrl(linePattern);
-            if (!Z.Util.isURL(icon)) {
-                symbol['linePatternFile'] = 'url("'+absolute(location.href,icon)+'")';
-            }
-        }
     },
 
     _getPrjExtent:function() {
@@ -1082,23 +1080,18 @@ Z.Geometry.getExternalResource = function(symbol, geometry) {
         symbols = [symbol];
     }
     var resources = [];
+    var props = Z.Symbolizer.resourceProperties;
     for (var i = symbols.length - 1; i >= 0; i--) {
         var symbol = symbols[i];
-        var icon = symbol['markerFile'];
-        if (icon) {
-            resources.push(icon);
-        }
-        icon = symbol['shieldFile'];
-        if (icon) {
-            resources.push(icon);
-        }
-        var fill = symbol['polygonPatternFile'];
-        if (fill) {
-            resources.push(Z.Util.extractCssUrl(fill));
-        }
-        var linePattern = symbol['linePatternFile'];
-        if (linePattern) {
-            resources.push(Z.Util.extractCssUrl(linePattern));
+        for (var i = 0; i < props.length; i++) {
+            var res = symbol[props[i]];
+            if (!res) {
+                continue;
+            }
+            if (res.indexOf('url(') >= 0) {
+                res = Z.Util.extractCssUrl(fill);
+            }
+            resources.push(res);
         }
         if (symbol['markerType'] === 'path' && symbol['markerPath']) {
             resources.push(Z.Geometry._getMarkerPathURL(symbol, geometry));

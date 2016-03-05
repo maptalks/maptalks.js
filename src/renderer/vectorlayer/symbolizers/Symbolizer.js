@@ -24,6 +24,11 @@ Z.Symbolizer = Z.Class.extend(/** @lends maptalks.Symbolizer.prototype */{
     }
 });
 
+
+Z.Symbolizer.resourceProperties = [
+    "markerFile", "polygonPatternFile", "linePatternFile"
+];
+
 /**
  * @property {String[]} colorProperties - Symbol properties related with coloring
  * @static
