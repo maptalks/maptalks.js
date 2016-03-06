@@ -4,11 +4,13 @@
         "dictionaries": ["jsdoc","closure"]
     },
     "templates" : {
+        "github" : "https://github.com/MapTalks/maptalks.js/blob/master/src/",
+        "categories" : "map, layer, geometry, basic types ,maptool, ui, control",
         "default" : {
             "useLongnameInNav" : true
         }
     },
-    "categories" : "map,layer,geometry,maptool",
+
     "opts": {
         "recurse" : true,
         "template": "../maptalks-jsdoc/",

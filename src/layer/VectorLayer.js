@@ -5,7 +5,14 @@
  * @category layer
  * @extends {maptalks.OverlayLayer}
  * @param {String|Number} id - layer's id
- * @param {Object} [options=null] - construct options, including the options defined in [maptalks.Layer]{@link maptalks.Layer#options}
+ * @param {Object} [options=null] - construct options
+ * @param {Boolean} [options.debug=false] - whether the geometries on the layer is in debug mode.
+ * @param {Boolean} [options.enableSimplify=false] - whether to simplify geometries before rendering.
+ * @param {String} [options.cursor=default] - the cursor style of the layer
+ * @param {Boolean} [options.geometryEvents=true] - enable/disable firing geometry events
+ * @param {Number} [options.thresholdOfPointUpdate=50] - threshold of points number to update points while transforming.
+ * @param {String} [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ * @param {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
  */
 Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
     type : 'vector',
@@ -15,7 +22,7 @@ Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */
         'enableSimplify'            : true,
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
-        'thresholdOfEcoTransform'   : 50,
+        'thresholdOfPointUpdate'   : 50,
         'renderer'                  : 'canvas'
     },
 

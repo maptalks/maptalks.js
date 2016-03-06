@@ -149,7 +149,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             if (me._shouldUpdatePointsWhileTransforming && geoPainter.hasPointSymbolizer()) {
                 me._shouldUpdatePointsWhileTransforming = false;
             }
-            if (counter > layer.options['thresholdOfEcoTransform']) {
+            if (counter > layer.options['thresholdOfPointUpdate']) {
                 me._shouldUpdatePointsWhileTransforming = true;
             }
             geoPainter.paint();
