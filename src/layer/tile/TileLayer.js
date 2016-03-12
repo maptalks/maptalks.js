@@ -79,6 +79,13 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         return this;
     },
 
+    isLoaded:function() {
+        if (!this._renderer) {
+            return false;
+        }
+        return this._renderer.isLoaded();
+    },
+
     /**
      * Prepare before load
      * @private

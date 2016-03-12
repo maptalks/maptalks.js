@@ -8,12 +8,12 @@ describe('MapTouchZoomSpec', function () {
 
     beforeEach(function() {
         var setups = commonSetupMap(center);
-        container = setups.container;
-        map = setups.map;
-        delay = map.options['zoomAnimationDuration'];
-        eventContainer = map._containerDOM;
-        var domPosition = Z.DomUtil.getPagePosition(container);
-        centerPoint = map.coordinateToContainerPoint(center).add(domPosition);
+            container = setups.container;
+            map = setups.map;
+            delay = map.options['zoomAnimationDuration'];
+            eventContainer = map._containerDOM;
+            var domPosition = Z.DomUtil.getPagePosition(container);
+            centerPoint = map.coordinateToContainerPoint(center).add(domPosition);
     });
 
     afterEach(function() {
@@ -23,7 +23,6 @@ describe('MapTouchZoomSpec', function () {
     function testTouchZoom(startTouches, moveTouches, onZoomEnd) {
         map.on('zoomend', onZoomEnd);
         map.on('touchzoomstart', function() {
-                console.log('MapTouchZoomSpec--','touchmove');
                 happen.once(document, {
                     'type' : 'touchmove',
                     'touches' : startTouches
@@ -32,18 +31,29 @@ describe('MapTouchZoomSpec', function () {
                     'type':'touchend'
                 });
         });
-        map.on('baselayerload',function() {
-            console.log('MapTouchZoomSpec--','touchstart');
+        if (!map.getBaseLayer().isLoaded()) {
+            map.on('baselayerload',function() {
+                happen.once(eventContainer, {
+                    'type' : 'touchstart',
+                    'touches' : moveTouches
+                });
+            });
+        } else {
             happen.once(eventContainer, {
                 'type' : 'touchstart',
                 'touches' : moveTouches
             });
-        });
+        }
+
     }
 
     describe('touch zoom', function() {
-        before(function () {  });
-        after(function () {  });
+        before(function () {
+
+         });
+        after(function () {
+
+         });
         it('zoomin', function(done) {
             this.timeout(5000);
             var z = map.getZoom();
