@@ -71,7 +71,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         if (geometry instanceof Z.Marker || geometry instanceof Z.Circle || geometry instanceof Z.Rectangle
                 || geometry instanceof Z.Ellipse) {
             //ouline has to be added before shadow to let shadow on top of it, otherwise shadow's events will be overrided by outline
-            this._createOutline();
+            this._createOrRefreshOutline();
         }
         this._editStageLayer.bringToFront().addGeometry(shadow);
         if (!(geometry instanceof Z.Marker)) {
@@ -174,39 +174,36 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
     /**
      * create rectangle outline of the geometry
      */
-    _createOutline:function() {
-        var me = this,
-            geometry = this._geometry,
-            map = this.getMap();
-        var outline;
-        var fnResizeOutline = function() {
-            var pixelExtent = geometry._getPainter().getPixelExtent(),
-                size = pixelExtent.getSize();
-            var nw = map.viewPointToCoordinate(pixelExtent.getMin());
-            var width = map.pixelToDistance(size['width'],0),
-                height = map.pixelToDistance(0,size['height']);
-            if (!outline) {
-                outline = new Z.Rectangle(nw, width, height, {
-                    "symbol":{
-                        'lineWidth' : 1,
-                        'lineColor' : '6b707b'
-                    }
-                });
-                me._editStageLayer.addGeometry(outline);
-                me._appendHandler(outline);
-            } else {
-                outline.setCoordinates(nw);
-                outline.setWidth(width);
-                outline.setHeight(height);
-            }
-        };
+    _createOrRefreshOutline:function() {
+        var geometry = this._geometry,
+            map = this.getMap(),
+            outline = this._editOutline;
 
-        fnResizeOutline();
-        this._editOutline = outline;
-        // outline._editOnRefresh = fnResizeOutline;
-        this._addRefreshHook(fnResizeOutline);
+        var pixelExtent = geometry._getPainter().getPixelExtent(),
+            size = pixelExtent.getSize();
+        var nw = map.viewPointToCoordinate(pixelExtent.getMin());
+        var width = map.pixelToDistance(size['width'],0),
+            height = map.pixelToDistance(0,size['height']);
+        if (!outline) {
+            outline = new Z.Rectangle(nw, width, height, {
+                "symbol":{
+                    'lineWidth' : 1,
+                    'lineColor' : '6b707b'
+                }
+            });
+            this._editStageLayer.addGeometry(outline);
+            this._appendHandler(outline);
+            this._editOutline = outline;
+            this._addRefreshHook(this._createOrRefreshOutline);
+        } else {
+            outline.setCoordinates(nw);
+            outline.setWidth(width);
+            outline.setHeight(height);
+        }
+
         return outline;
     },
+
 
     _createCenterHandle:function() {
         var me = this;

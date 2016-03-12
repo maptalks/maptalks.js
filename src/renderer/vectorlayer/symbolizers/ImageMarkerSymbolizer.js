@@ -15,7 +15,6 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var style = this.style;
         var img = this._getImage(resources);
         if (!img) {
-            // console.error('img missed');
             return;
         }
         this._prepareContext(ctx);

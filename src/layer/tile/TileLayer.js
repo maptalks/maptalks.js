@@ -5,7 +5,9 @@
  * @category layer
  * @extends maptalks.Layer
  * @param {String|Number} id - tile layer's id
- * @param {Object} [options=null] - construct options, including the options defined in [maptalks.Layer]{@link maptalks.Layer#options}
+ * @param {Object} [options=null] - construct options
+ * @param {Boolean} [options.debug=false] - whether the geometries on the layer is in debug mode.
+ * @param {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
  */
 Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
     type: 'tile',
@@ -13,7 +15,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
     options: {
         'errorTileUrl'  : 'images/system/transparent.png',
         'urlTemplate'   : 'images/system/transparent.png',
-        'subdomains'    : [''],
+        'subdomains'    : null,
 
         'gradualLoading' : true,
 

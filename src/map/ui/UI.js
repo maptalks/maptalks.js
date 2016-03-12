@@ -25,7 +25,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             this._map = target.getMap();
         }
         this._target = target;
-        this._registerEvents();
+        if (this._registerEvents) {this._registerEvents();}
         return this;
     },
 

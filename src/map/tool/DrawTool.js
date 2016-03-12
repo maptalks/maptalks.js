@@ -313,7 +313,6 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
 
     _mousedownToDraw : function(param) {
         var me = this;
-        var onMouseUp;
         function genGeometry(coordinate) {
             var symbol = me.getSymbol();
             var geometry = me._geometry;
@@ -371,7 +370,7 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
             genGeometry(coordinate);
             return false;
         }
-        onMouseUp = function(_event) {
+        var onMouseUp = function(_event) {
             if (!this._geometry) {
                 return false;
             }

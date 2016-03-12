@@ -139,14 +139,9 @@ Z.Canvas = {
         return "rgba("+r+","+g+","+b+","+op+")";
     },
 
-    resetContextState:function(ctx) {
-        // ctx['maptalks-img-smoothing-disabled'] = false;
-    },
-
     image:function(ctx, pt, img, width, height) {
         pt = pt.round();
         var x=pt.x,y=pt.y;
-        // Z.Canvas.disableImageSmoothing(ctx);
         if (Z.Util.isNumber(width) && Z.Util.isNumber(height)) {
             ctx.drawImage(img,x,y,width,height);
         } else {

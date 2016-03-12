@@ -44,9 +44,6 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         } else {
             size = canvasSize;
         }
-        if (this._context) {
-            Z.Canvas.resetContextState(this._context);
-        }
         var canvas = this._canvas;
         //retina support
         var r = Z.Browser.retina?2:1;

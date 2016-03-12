@@ -428,9 +428,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             canvas.style.width = mapSize['width']+'px';
             canvas.style.height = mapSize['height']+'px';
         }
-        if (this._context) {
-            Z.Canvas.resetContextState(this._context);
-        }
         return true;
     },
 
