@@ -41,7 +41,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _getImage:function(resources) {
         var style = this.style;
         var url = style['markerFile'];
-        var img = !resources?null:resources.getImage(url);
+        var img = !resources?null:resources.getImage([url,this.style['markerWidth'], this.style['markerHeight']]);
         return img;
     },
 

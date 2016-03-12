@@ -195,7 +195,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
                     if (crossOrigin) {
                         tileImage.crossOrigin = crossOrigin;
                     }
-                    Z.Util.loadImage(tileImage, tile['url']);
+                    Z.Util.loadImage(tileImage, [tile['url']]);
                 } else {
                     this._drawTileAndRequest(this._tileCache[tileId]);
                 }

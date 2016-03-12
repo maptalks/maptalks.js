@@ -55,23 +55,26 @@ Z.Util = {
     },
 
     isSVG:function(url) {
-        var segs = url.split('.');
-        if (segs[segs.length-1] === 'svg' || url.indexOf('data:image/svg+xml') === 0) {
-            return true;
+        var prefix = 'data:image/svg+xml';
+        if (url.substring(url.length-4) === '.svg') {
+            return 1;
+        } else if (url.substring(0,prefix.length) === prefix) {
+            return 2;
         }
-        return false;
+        return 0;
     },
 
     /**
      * Load a image, can be a remote one or a local file. <br>
      * If in node, a SVG image will be converted to a png file by [svg2img]{@link https://github.com/FuZhenn/node-svg2img}<br>
      * @param  {Image} img  - the image object to load.
-     * @param  {String} url - image's url
+     * @param  {Object[]} imgDesc - image's descriptor, it's a array. imgUrl[0] is the url string, imgUrl[1] is the width, imgUrl[2] is the height.
      * @return maptalks.Util
      */
-    loadImage:function(img, url) {
+    loadImage:function(img, imgDesc) {
         if (!Z.node) {
-            img.src=url;
+            var url = imgDesc[0];
+            img.src = url;
             return;
         }
         function onError(err) {
@@ -94,16 +97,18 @@ Z.Util = {
             }
             img.src = data;
         }
-
+        var url = imgDesc[0],
+            w   = imgDesc[1],
+            h   = imgDesc[2];
         try {
             if (Z.Util.isSVG(url)) {
-                Z.Util._convertSVG2PNG(url, onLoadComplete);
+                Z.Util._convertSVG2PNG(url, w, h, onLoadComplete);
             } else {
                 //canvas-node的Image对象
                 if (Z.Util.isURL(url)) {
                     this._loadRemoteImage(img, url, onLoadComplete);
                 } else {
-                    this._loadLocalImage(img,url, onLoadComplete);
+                    this._loadLocalImage(img, url, onLoadComplete);
                 }
             }
         } catch (error) {
@@ -145,14 +150,14 @@ Z.Util = {
         var data = this._nodeFS.readFile(url,onComplete);
     },
 
-    _convertSVG2PNG:function(url, onComplete) {
+    _convertSVG2PNG:function(url, w, h, onComplete) {
         var me = this;
         if (!this._svg2img) {
             //use svg2img to convert svg to png.
             //https://github.com/FuZhenn/node-svg2img
             this._svg2img = require('svg2img');
         }
-        this._svg2img(url, onComplete);
+        this._svg2img(url, {'width':w, 'height':h},onComplete);
     },
 
     fixPNG:function(img) {

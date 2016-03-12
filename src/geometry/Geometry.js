@@ -1100,10 +1100,11 @@ Z.Geometry.getExternalResource = function(symbol, geometry) {
             if (res.indexOf('url(') >= 0) {
                 res = Z.Util.extractCssUrl(res);
             }
-            resources.push(res);
+            var resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
+            resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
         }
         if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-            resources.push(Z.Geometry._getMarkerPathURL(symbol, geometry));
+            resources.push([Z.Geometry._getMarkerPathURL(symbol, geometry), symbol['markerWidth'], symbol['markerHeight']]);
         }
     }
     return resources;

@@ -29,6 +29,10 @@ Z.Symbolizer.resourceProperties = [
     "markerFile", "polygonPatternFile", "linePatternFile"
 ];
 
+Z.Symbolizer.resourceSizeProperties = [
+    ["markerWidth", "markerHeight"], [], [null, "lineWidth"]
+];
+
 /**
  * @property {String[]} colorProperties - Symbol properties related with coloring
  * @static

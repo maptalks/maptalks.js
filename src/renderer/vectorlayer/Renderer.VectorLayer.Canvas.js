@@ -349,10 +349,10 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             var cache = {};
             for (var i = resourceUrls.length - 1; i >= 0; i--) {
                 var url = resourceUrls[i];
-                if (cache[url] || !url) {
+                if (!url || cache[url.join('-')]) {
                     continue;
                 }
-                cache[url] = 1;
+                cache[url.join('-')] = 1;
                 if (!resources.getImage(url)) {
                     //closure it to preserve url's value
                     var promise = new Z.Promise((onPromiseCallback)(url));
@@ -390,11 +390,26 @@ Z.renderer.vectorlayer.Canvas.Resources=function() {
 
 Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype,{
     addResource:function(url, img) {
-        this._resources[url] = img;
+
+        this._resources[this.regulate(url).join('-')] = img;
     },
 
     getImage:function(url) {
-        return this._resources[url];
+        return this._resources[this.regulate(url).join('-')];
+    },
+    regulate:function(url) {
+        if (url.length < 3) {
+            for (var i = url.length; i<3; i++) {
+                url.push(null);
+            }
+        }
+        if (Z.Util.isNil(url[1])) {
+            url[1] = null;
+        }
+        if (Z.Util.isNil(url[2])) {
+            url[2] = null;
+        }
+        return url;
     }
 });
 
