@@ -24,7 +24,6 @@ describe('MapTouchZoomSpec', function () {
         function testTouchZoom(startTouches, moveTouches, onZoomEnd) {
             map.on('zoomend', onZoomEnd);
             map.on('touchzoomstart', function() {
-                    console.error('touchmove');
                     happen.once(document, {
                         'type' : 'touchmove',
                         'touches' : startTouches
@@ -34,16 +33,13 @@ describe('MapTouchZoomSpec', function () {
                     });
             });
             if (!map.isLoaded()) {
-                console.error('wait');
                 map.on('load',function() {
-                    console.error('touchstart-2');
                     happen.once(eventContainer, {
                         'type' : 'touchstart',
                         'touches' : moveTouches
                     });
                 });
             } else {
-                console.error('touchstart-1');
                 happen.once(eventContainer, {
                     'type' : 'touchstart',
                     'touches' : moveTouches
