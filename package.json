@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/MapTalks/maptalks.js.git"
   },
+  "scripts": {
+    "test": "gulp test --cov"
+  },
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
