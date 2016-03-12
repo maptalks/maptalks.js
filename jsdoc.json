@@ -16,6 +16,6 @@
         "template": "../maptalks-jsdoc/",
         "encoding": "utf8",
         "destination": "./doc/api/",
-        "access"  : "protected,public, undefined"
+        "access"  : "public, undefined"
     }
 }
