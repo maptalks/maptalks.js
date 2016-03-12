@@ -74,19 +74,7 @@ Z.Util = {
     loadImage:function(img, imgDesc) {
         if (!Z.node) {
             var url = imgDesc[0];
-            if (Z.Util.isSVG(url) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
-                var copy = new Image();
-                copy.onload=function() {
-                    var w = imgDesc[1] || copy.width,
-                        h = imgDesc[2] || copy.height;
-                    var canvas = Z.Canvas.createCanvas(w, h);
-                    canvas.getContext('2d').drawImage(copy,0,0,w,h);
-                    img.src = canvas.toDataURL("image/png");
-                }
-                copy.src = url;
-            } else {
-                img.src = url;
-            }
+            img.src = url;
             return;
         }
         function onError(err) {
