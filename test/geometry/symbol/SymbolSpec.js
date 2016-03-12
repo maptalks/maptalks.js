@@ -31,7 +31,7 @@ describe('SymbolSpec', function() {
             });
             var res = marker._getExternalResource();
             expect(res).to.have.length(1);
-            expect(res[0]).to.be.eql(expected);
+            expect(res[0][0]).to.be.eql(expected);
         });
         it('line pattern file', function() {
             var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/foo/x.svg';
@@ -42,7 +42,7 @@ describe('SymbolSpec', function() {
             });
             var res = line._getExternalResource();
             expect(res).to.have.length(1);
-            expect(res[0]).to.be.eql(expected);
+            expect(res[0][0]).to.be.eql(expected);
         });
 
         it('polygon pattern file', function() {
@@ -54,7 +54,7 @@ describe('SymbolSpec', function() {
             });
             var res = polygon._getExternalResource();
             expect(res).to.have.length(1);
-            expect(res[0]).to.be.eql(expected);
+            expect(res[0][0]).to.be.eql(expected);
         });
     });
 });

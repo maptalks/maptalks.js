@@ -23,15 +23,17 @@ describe('MapTouchZoomSpec', function () {
     function testTouchZoom(startTouches, moveTouches, onZoomEnd) {
         map.on('zoomend', onZoomEnd);
         map.on('touchzoomstart', function() {
+                console.log('MapTouchZoomSpec--','touchmove');
                 happen.once(document, {
                     'type' : 'touchmove',
                     'touches' : startTouches
                 });
                 happen.once(document,{
                     'type':'touchend'
-                })
+                });
         });
         map.on('baselayerload',function() {
+            console.log('MapTouchZoomSpec--','touchstart');
             happen.once(eventContainer, {
                 'type' : 'touchstart',
                 'touches' : moveTouches
@@ -40,9 +42,6 @@ describe('MapTouchZoomSpec', function () {
     }
 
     describe('touch zoom', function() {
-
-
-
         before(function () {  });
         after(function () {  });
         it('zoomin', function(done) {
@@ -69,7 +68,6 @@ describe('MapTouchZoomSpec', function () {
                         });
 
         });
-
         it('zoomout', function(done) {
             this.timeout(5000);
             var z = map.getZoom();

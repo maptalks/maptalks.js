@@ -289,7 +289,7 @@ function registerGeometryCommonTest(geometry,_context) {
                 geometry.setSymbol(symbol);
                 var resource = geometry._getExternalResource();
                 expect(resource).to.have.length(1);
-                expect(resource[0]).to.be(symbol['marker-file']);
+                expect(resource[0][0]).to.be(symbol['marker-file']);
             } else {
                 var symbol = {
                     'polygon-pattern-file':'url(\'http://foo.com/foo.png\')',
@@ -298,8 +298,8 @@ function registerGeometryCommonTest(geometry,_context) {
                 geometry.setSymbol(symbol);
                 var resource = geometry._getExternalResource();
                 expect(resource).to.have.length(2);
-                expect(resource[0]).to.be('http://foo.com/foo.png');
-                expect(resource[1]).to.be('http://foo.com/foo2.png');
+                expect(resource[0][0]).to.be('http://foo.com/foo.png');
+                expect(resource[1][0]).to.be('http://foo.com/foo2.png');
             }
         });
 
