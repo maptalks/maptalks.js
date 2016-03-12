@@ -54,10 +54,17 @@ Z.Util = {
         return obj.options;
     },
 
+    isSVG:function(url) {
+        var segs = url.split('.');
+        if (segs[segs.length-1] === 'svg' || url.indexOf('data:image/svg+xml') === 0) {
+            return true;
+        }
+        return false;
+    },
+
     /**
      * Load a image, can be a remote one or a local file. <br>
-     * If in node, a SVG image will be converted to a png file by [svg2png]{@link https://github.com/domenic/svg2png}<br>
-     * Loaded images will be cached in global._maptalksImageFileCache if in node.
+     * If in node, a SVG image will be converted to a png file by [svg2img]{@link https://github.com/FuZhenn/node-svg2img}<br>
      * @param  {Image} img  - the image object to load.
      * @param  {String} url - image's url
      * @return maptalks.Util
@@ -79,9 +86,6 @@ Z.Util = {
                 onError(err);
                 return;
             }
-            if (!global._maptalksImageFileCache.get(url)) {
-                global._maptalksImageFileCache.add(url, data);
-            }
             var onloadFn = img.onload;
             if (onloadFn) {
                 img.onload = function() {
@@ -92,22 +96,8 @@ Z.Util = {
         }
 
         try {
-            if (!global._maptalksImageFileCache) {
-                //cache 10 svg files.
-                global._maptalksImageFileCache = new Z.TileLayer.TileCache(100);
-            }
-            var cache = global._maptalksImageFileCache;
-            if (cache.get(url)) {
-                onLoadComplete(null, cache.get(url))
-                return;
-            }
-            var segs = url.split('.');
-            if (segs[segs.length-1] === 'svg') {
-                try {
-                    Z.Util._convertSVG2PNG(url, onLoadComplete);
-                } catch(err) {
-                    onError(err);
-                }
+            if (Z.Util.isSVG(url)) {
+                Z.Util._convertSVG2PNG(url, onLoadComplete);
             } else {
                 //canvas-node的Image对象
                 if (Z.Util.isURL(url)) {
@@ -116,7 +106,6 @@ Z.Util = {
                     this._loadLocalImage(img,url, onLoadComplete);
                 }
             }
-
         } catch (error) {
              onError(error);
         }
@@ -138,14 +127,12 @@ Z.Util = {
             loader = this._nodeHttp;
         }
         loader.get(url, function(res) {
-            var data = new Buffer(parseInt(res.headers['content-length'],10));
-            var pos = 0;
+            var data = [];
             res.on('data', function(chunk) {
-              chunk.copy(data, pos);
-              pos += chunk.length;
+              data.push(chunk);
             });
             res.on('end', function () {
-                onComplete(null, data);
+                onComplete(null, Buffer.concat(data));
             });
         }).on('error', onComplete);
     },
@@ -158,66 +145,14 @@ Z.Util = {
         var data = this._nodeFS.readFile(url,onComplete);
     },
 
-    _convertSVG2PNG:function(url, complete) {
+    _convertSVG2PNG:function(url, onComplete) {
         var me = this;
-        if (!this._svg2png) {
-            //use svg2png to convert svg to png.
-            //https://github.com/domenic/svg2png
-            this._svg2png = require('svg2png');
+        if (!this._svg2img) {
+            //use svg2img to convert svg to png.
+            //https://github.com/FuZhenn/node-svg2img
+            this._svg2img = require('svg2img');
         }
-        if (!this._nodeFS) {
-            this._nodeFS = require('fs');
-        }
-        var furl = url;
-        if (furl.indexOf('http://') < 0 && furl.indexOf('https://') < 0) {
-            //is a local file
-            furl = ('file:///'+furl).replace(/\\/g,'/');
-        }
-
-        var fs = this._nodeFS;
-        function unlinkFile(file) {
-            try {
-                fs.stat(file, function(err, stat) {
-                    if (err == null) {
-                        try {
-                            fs.unlink(file, function(err2) {
-                                if (err2) {
-                                    console.error(err2)
-                                }
-                            });
-                        } catch (ulerr) {
-                            console.error(ulerr);
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-            }
-
-        }
-        var now = new Date().getTime();
-        var tmpPngFile = (__dirname+'/tmp-'+now+'.png').replace(/\\/g,'/');
-
-        try {
-            me._svg2png(furl, tmpPngFile, function (error) {
-                if (error) {
-                    unlinkFile(tmpPngFile);
-                    complete(error);
-                    return;
-                }
-                fs.readFile(tmpPngFile, function(err,data) {
-                    unlinkFile(tmpPngFile);
-                    if (err) {
-                        complete(err);
-                        return;
-                    }
-                    complete(null, data);
-                });
-            });
-        } catch (error) {
-            complete(error);
-        }
-
+        this._svg2img(url, onComplete);
     },
 
     fixPNG:function(img) {
@@ -643,7 +578,7 @@ Z.Util = {
      *     var encodedData = maptalks.Util.btoa(stringToEncode);
      */
     btoa:function(input) {
-        if (window && window.btoa) {
+        if ((typeof window !== 'undefined') && window.btoa) {
             return window.btoa(input);
         }
         var str = String(input);
