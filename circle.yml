@@ -3,4 +3,4 @@ machine:
     version: 5.1.1
 test:
   post:
-    - ./node_modules/.bin/gulp coveralls
+    - gulp coveralls
