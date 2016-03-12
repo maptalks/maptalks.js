@@ -78,9 +78,11 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var baseLayerImage;
         if (baseLayer) {
             baseLayerImage =  baseLayer._getRenderer().getCanvasImage();
-            this._canvasBg = Z.DomUtil.copyCanvas(baseLayerImage['image']);
-            this._canvasBgRes = map._getResolution();
-            this._canvasBgCoord = map.containerPointToCoordinate(baseLayerImage['point']);
+            if (baseLayerImage) {
+                this._canvasBg = Z.DomUtil.copyCanvas(baseLayerImage['image']);
+                this._canvasBgRes = map._getResolution();
+                this._canvasBgCoord = map.containerPointToCoordinate(baseLayerImage['point']);
+            }
         }
         if (map.options['zoomAnimation'] && this._context) {
             this._context.save();

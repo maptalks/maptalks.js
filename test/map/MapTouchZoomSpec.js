@@ -7,7 +7,7 @@ describe('MapTouchZoomSpec', function () {
     var centerPoint;
 
     beforeEach(function() {
-        var setups = commonSetupMap(center);
+        var setups = commonSetupMap(center, new maptalks.VectorLayer('id'));
             container = setups.container;
             map = setups.map;
             delay = map.options['zoomAnimationDuration'];
@@ -20,41 +20,41 @@ describe('MapTouchZoomSpec', function () {
         document.body.removeChild(container);
     });
 
-    function testTouchZoom(startTouches, moveTouches, onZoomEnd) {
-        map.on('zoomend', onZoomEnd);
-        map.on('touchzoomstart', function() {
-                console.error('touchmove');
-                happen.once(document, {
-                    'type' : 'touchmove',
-                    'touches' : startTouches
+    describe('touch zoom', function() {
+        function testTouchZoom(startTouches, moveTouches, onZoomEnd) {
+            map.on('zoomend', onZoomEnd);
+            map.on('touchzoomstart', function() {
+                    console.error('touchmove');
+                    happen.once(document, {
+                        'type' : 'touchmove',
+                        'touches' : startTouches
+                    });
+                    happen.once(document,{
+                        'type':'touchend'
+                    });
+            });
+            if (!map.isLoaded()) {
+                console.error('wait');
+                map.on('load',function() {
+                    console.error('touchstart-2');
+                    happen.once(eventContainer, {
+                        'type' : 'touchstart',
+                        'touches' : moveTouches
+                    });
                 });
-                happen.once(document,{
-                    'type':'touchend'
-                });
-        });
-        if (!map.getBaseLayer().isLoaded()) {
-            map.on('baselayerload',function() {
-                console.error('touchstart-2');
+            } else {
+                console.error('touchstart-1');
                 happen.once(eventContainer, {
                     'type' : 'touchstart',
                     'touches' : moveTouches
                 });
-            });
-        } else {
-            console.error('touchstart-1');
-            happen.once(eventContainer, {
-                'type' : 'touchstart',
-                'touches' : moveTouches
-            });
+            }
+
         }
 
-    }
-
-    describe('touch zoom', function() {
         before(function () {});
         after(function () {});
         it('zoomin', function(done) {
-            this.timeout(5000);
             var z = map.getZoom();
             testTouchZoom([{
                             pageX : centerPoint.x-10,
@@ -78,7 +78,6 @@ describe('MapTouchZoomSpec', function () {
 
         });
         it('zoomout', function(done) {
-            this.timeout(5000);
             var z = map.getZoom();
             testTouchZoom([{
                             pageX : centerPoint.x-1,
@@ -100,9 +99,6 @@ describe('MapTouchZoomSpec', function () {
                             done();
                         });
         });
-    });
-
-    describe('touchZoom can be disable', function() {
         it('disables scrollZoom', function(done) {
             this.timeout(5000);
             var z = map.getZoom();

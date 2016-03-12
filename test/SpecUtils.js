@@ -190,7 +190,7 @@ expect.Assertion.prototype.eqlGeoJSON = function(expected) {
  * @param  {Coordinate} center 中心点坐标
  * @return {Object}        初始化后的容器坐标
  */
-function commonSetupMap(center) {
+function commonSetupMap(center, baseLayer) {
     var container = document.createElement('div');
     container.style.width = '800px';
     container.style.height = '600px';
@@ -201,12 +201,16 @@ function commonSetupMap(center) {
         center: center
     };
     var map = new Z.Map(container, option);
-    var tile = new Z.TileLayer('tile', {
+    if (!baseLayer) {
+        var tile = new Z.TileLayer('tile', {
 
-        urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-        subdomains: [1, 2, 3]
-    });
-    map.setBaseLayer(tile);
+            urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
+            subdomains: [1, 2, 3]
+        });
+        map.setBaseLayer(tile);
+    } else {
+        map.setBaseLayer(baseLayer);
+    }
     return {
         "container":container,
         "map":map,
