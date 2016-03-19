@@ -1122,9 +1122,6 @@ Z.Geometry._getMarkerPathURL=function(symbol, geometry) {
     if (Z.Util.isNumber(symbol['opacity'])) {
         op *= symbol['opacity'];
     }
-    if (geometry.getLayer() && Z.Util.isNumber(geometry.getLayer().options['opacity'])) {
-        op *= geometry.getLayer().options['opacity'];
-    }
     var pathWidth  = symbol['markerPathWidth'],
         pathHeight = symbol['markerPathHeight'];
     var svgStyles = {};

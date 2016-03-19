@@ -13,14 +13,11 @@ Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symboliz
         var symbol = this.symbol;
         // ctx.restore();
         Z.Canvas.setDefaultCanvasSetting(ctx);
-        var layer = this.geometry.getLayer(),
-            layerOpacity = layer.options['opacity'];
+        var layer = this.geometry.getLayer();
         //for VectorPathMarkerSymbolizer, opacity is already added into SVG element.
         if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer)) {
             if (Z.Util.isNumber(symbol['opacity'])) {
-                ctx.globalAlpha = symbol['opacity']*layerOpacity;
-            } else {
-                ctx.globalAlpha = layerOpacity;
+                ctx.globalAlpha = symbol['opacity'];
             }
         }
         var shadowBlur = this.geometry.options['shadowBlur'];

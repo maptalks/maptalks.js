@@ -22,13 +22,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         this._tileQueue = {};
     },
 
-    isLoaded:function() {
-        if (!this._loaded) {
-            return false;
-        }
-        return true;
-    },
-
     remove:function() {
         var map = this.getMap();
         map.off('_moveend _resize _zoomend',this._onMapEvent,this);
@@ -36,10 +29,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             map.off('_moving',this._onMapMoving,this);
         }
         this._requestMapToRender();
-    },
-
-    getMap: function() {
-        return this._layer.getMap();
     },
 
     show:function() {
@@ -63,24 +52,23 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         clearTimeout(this._loadQueueTimeout);
     },
 
-    initContainer:function() {
-
-    },
-
     render:function() {
+        var map = this.getMap();
+        if (!map) {
+            return;
+        }
+        if (!this._layer.isVisible()) {
+            return;
+        }
         var layer = this._layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
             return;
         }
         this._loaded = false;
-        if (!this._canvas) {
-            this._createCanvas();
-        }
         if (!this._tileRended) {
             this._tileRended = {};
         }
-        this._tileZoom = this.getMap().getZoom();
         var tileRended = this._tileRended;
         this._tileRended = {};
 
@@ -90,23 +78,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
 
         this._canvasFullExtent =  this.getMap()._getViewExtent();
         var viewExtent = this._canvasFullExtent;
-        if (this._clipped) {
-            this._context.restore();
-            this._clipped=false;
-        }
-        this._clearCanvas();
-        var mask = layer.getMask();
-        if (mask) {
-            var maskPxExtent = mask._getPainter().getPixelExtent();
-            if (!maskPxExtent.intersects(viewExtent)) {
-                return;
-            }
-            this._context.save();
-            mask._getPainter().paint();
-            this._context.clip();
-            this._clipped = true;
-            // viewExtent = viewExtent.intersection(maskPxExtent);
-        }
+        this._prepareCanvas(viewExtent);
         //遍历瓦片
         this._tileToLoadCounter = 0;
 
@@ -138,10 +110,11 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             this._totalTileToLoad = this._tileToLoadCounter;
             this._scheduleLoadTileQueue();
         }
+        this._loaded = true;
     },
 
     getCanvasImage:function() {
-        if (!this._canvasFullExtent || this._tileZoom !== this.getMap().getZoom()) {
+        if (!this._canvasFullExtent || this._renderZoom !== this.getMap().getZoom()) {
             return null;
         }
          var gradualOpacity = null;
@@ -218,20 +191,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         var tileSize = this._layer.getTileSize();
-        var opacity = this._layer.config()['opacity'];
-        var isFaded = !Z.Util.isNil(opacity) && opacity < 1;
-        var alpha;
-        if (isFaded) {
-            alpha = this._context.globalAlpha;
-            if (opacity <= 0) {
-                return;
-            }
-            this._context.globalAlpha = opacity;
-        }
+
         Z.Canvas.image(this._context, point.substract(this._canvasFullExtent.getMin()), tileImage, tileSize['width'],tileSize['height']);
-        if (isFaded) {
-            this._context.globalAlpha = alpha;
-        }
+
     },
 
     /**
@@ -347,7 +309,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     },
 
     _fireLoadedEvent:function() {
-        this._loaded = true;
         this._layer.fire('layerload');
     }
 
