@@ -55,6 +55,10 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         this._requestMapToRender();
     },
 
+    getRenderZoom:function() {
+        return this._renderZoom;
+    },
+
     _requestMapToRender:function() {
         if (this.getMap()) {
             this.getMap()._getRenderer().render();
@@ -63,10 +67,6 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
 
     _fireLoadedEvent:function() {
         this._layer.fire('layerload');
-    },
-
-    getRenderZoom:function() {
-        return this._renderZoom;
     },
 
     _createCanvas:function() {

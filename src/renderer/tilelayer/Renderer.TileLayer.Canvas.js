@@ -67,10 +67,16 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
 
         this._canvasFullExtent =  this.getMap()._getViewExtent();
         var viewExtent = this._canvasFullExtent;
-        this._prepareCanvas(viewExtent);
+        var maskViewExtent = this._prepareCanvas(viewExtent);
+        if (maskViewExtent) {
+            if (!maskViewExtent.intersects(viewExtent)) {
+                this._fireLoadedEvent();
+                return;
+            }
+        }
+
         //遍历瓦片
         this._tileToLoadCounter = 0;
-
 
         for (var i = tiles.length - 1; i >= 0; i--) {
             var tile = tiles[i];

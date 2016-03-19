@@ -22,23 +22,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
     },
 
     /**
-     * Renderer the layer immediately.
-     */
-    renderImmediate:function() {
-        if (!this.getMap()) {
-            return;
-        }
-        if (!this._layer.isVisible() || this._layer.isEmpty()) {
-            this._fireLoadedEvent();
-            return;
-        }
-        this.draw();
-        this._requestMapToRender();
-    },
-
-
-
-    /**
      * render layer
      * @param  {maptalks.Geometry[]} geometries   geometries to render
      * @param  {Boolean} ignorePromise   whether escape step of promise
@@ -78,7 +61,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
            }
         }
         if (resources.length === 0 && immediate) {
-            this.renderImmediate();
+            this._renderImmediate();
             return;
         }
         if (resources.length > 0) {
@@ -89,7 +72,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             if (Z.Util.isArrayHasData(me._resourcesToLoad)) {
                 me._promise();
             } else {
-                me.renderImmediate();
+                me._renderImmediate();
             }
         },1);
     },
@@ -119,6 +102,10 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         this._shouldUpdateWhileTransforming = true;
         var maskViewExtent = this._prepareCanvas(viewExtent);
         if (maskViewExtent) {
+            if (!maskViewExtent.intersects(viewExtent)) {
+                this._fireLoadedEvent();
+                return;
+            }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
         var geoViewExt, geoPainter;
@@ -225,6 +212,21 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         return this._resources.getImage(url);
     },
 
+    /**
+     * Renderer the layer immediately.
+     */
+    _renderImmediate:function() {
+        if (!this.getMap()) {
+            return;
+        }
+        if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this._fireLoadedEvent();
+            return;
+        }
+        this.draw();
+        this._requestMapToRender();
+    },
+
     _registerEvents:function() {
         this.getMap().on('_zoomend _moveend _resize',this._onMapEvent,this);
     },
@@ -243,20 +245,20 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             if (!this._painted) {
                 this.render();
             } else {
-                this.renderImmediate();
+                this._renderImmediate();
             }
         } else if (param['type'] === '_moveend') {
             if (!this._painted) {
                 this.render();
             } else {
-                this.renderImmediate();
+                this._renderImmediate();
             }
         } else if (param['type'] === '_resize') {
             this._resizeCanvas();
             if (!this._painted) {
                 this.render();
             } else {
-                this.renderImmediate();
+                this._renderImmediate();
             }
         }
     },
@@ -276,11 +278,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             return;
         }
         if (this._layer.isEmpty() || !Z.Util.isArrayHasData(this._resourcesToLoad)) {
-            this.renderImmediate();
+            this._renderImmediate();
             return;
         }
         var resourceUrls = this._resourcesToLoad;
-        this._loadResources(resourceUrls, this.renderImmediate, this);
+        this._loadResources(resourceUrls, this._renderImmediate, this);
     },
 
     /**
