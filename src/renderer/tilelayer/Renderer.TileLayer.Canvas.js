@@ -40,7 +40,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         clearTimeout(this._loadQueueTimeout);
     },
 
-    render:function() {
+    _render:function() {
         var map = this.getMap();
         if (!map) {
             return;

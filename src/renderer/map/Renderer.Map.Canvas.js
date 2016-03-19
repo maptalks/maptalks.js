@@ -40,10 +40,15 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (!this._canvas) {
             this._createCanvas();
         }
+        var zoom = this.map.getZoom();
         var layers = this._getAllLayerToCanvas();
 
         for (var i = layers.length - 1; i >= 0; i--) {
-            if (!layers[i].isLoaded()) {
+            if (!layers[i].isVisible()) {
+                continue;
+            }
+            var renderer = layers[i]._getRenderer();
+            if (!renderer || renderer.getRenderZoom() !== zoom) {
                 return;
             }
         }
@@ -53,8 +58,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
 
         var mwidth = this._canvas.width,
-            mheight = this._canvas.height,
-            zoom = this.map.getZoom();
+            mheight = this._canvas.height;
         this._drawBackground();
 
 
@@ -63,7 +67,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 continue;
             }
             var renderer = layers[i]._getRenderer();
-            if (renderer && renderer.getRenderZoom() === zoom) {
+            if (renderer) {
                 var layerImage = renderer.getCanvasImage();
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage, mwidth, mheight);

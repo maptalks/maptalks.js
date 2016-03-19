@@ -18,6 +18,11 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         return true;
     },
 
+    render:function() {
+        this._prepareRender();
+        this._render.apply(this, arguments);
+    },
+
     getMap: function() {
         return this._layer.getMap();
     },
@@ -27,7 +32,7 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
     },
 
     isLoaded:function() {
-        if (this.getRenderZoom() === this.getMap().getZoom()) {
+        if (this._loaded) {
             return true;
         }
         return false;
@@ -59,6 +64,14 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         return this._renderZoom;
     },
 
+    _prepareRender:function() {
+        if (this._renderZoom !== this.getMap().getZoom()) {
+            this._clearCanvas();
+        }
+        this._renderZoom = this.getMap().getZoom();
+        this._loaded = false;
+    },
+
     _requestMapToRender:function() {
         if (this.getMap()) {
             this.getMap()._getRenderer().render();
@@ -66,6 +79,7 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
     },
 
     _fireLoadedEvent:function() {
+        this._loaded = true;
         this._layer.fire('layerload');
     },
 
@@ -119,7 +133,6 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         } else {
             this._clearCanvas();
         }
-        this._renderZoom = this.getMap().getZoom();
         if (this._clipped) {
             this._context.restore();
             this._clipped=false;

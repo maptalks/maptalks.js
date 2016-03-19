@@ -26,7 +26,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @param  {maptalks.Geometry[]} geometries   geometries to render
      * @param  {Boolean} ignorePromise   whether escape step of promise
      */
-    render:function(geometries) {
+    _render:function(geometries) {
         this._clearTimeout();
         if (!this.getMap()) {
             return;
@@ -129,7 +129,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             geoPainter.paint();
         });
         this._canvasFullExtent = map._getViewExtent();
-        this._fireLoadedEvent();
     },
 
     getPaintContext:function() {
@@ -225,6 +224,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
         this.draw();
         this._requestMapToRender();
+        this._fireLoadedEvent();
     },
 
     _registerEvents:function() {
@@ -245,12 +245,16 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             if (!this._painted) {
                 this.render();
             } else {
+                //_prepareRender is called in render not in _renderImmediate.
+                //Thus _prepareRender needs to be called here
+                this._prepareRender();
                 this._renderImmediate();
             }
         } else if (param['type'] === '_moveend') {
             if (!this._painted) {
                 this.render();
             } else {
+                this._prepareRender();
                 this._renderImmediate();
             }
         } else if (param['type'] === '_resize') {
@@ -258,6 +262,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             if (!this._painted) {
                 this.render();
             } else {
+                this._prepareRender();
                 this._renderImmediate();
             }
         }
