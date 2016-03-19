@@ -104,6 +104,23 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
     },
 
     /**
+     * Get the minimum point
+     * @return {maptalks.Coordinate}
+     */
+    getMin:function() {
+        return new this._clazz(this['xmin'],this['ymin']);
+    },
+
+    /**
+     * Get the maximum point
+     * @return {maptalks.Coordinate}
+     */
+    getMax:function() {
+        return new this._clazz(this['xmax'],this['ymax']);
+    },
+
+
+    /**
      * Get center of the extent.
      * @return {maptalks.Coordinate}
      */

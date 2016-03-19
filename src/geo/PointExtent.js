@@ -50,21 +50,5 @@ Z.Util.extend(Z.PointExtent.prototype, Z.Extent.prototype, /** @lends maptalks.P
      */
     getHeight:function() {
         return this['ymax'] - this['ymin'];
-    },
-
-    /**
-     * Get the minimum point of the PointExtent
-     * @return {maptalks.Point}
-     */
-    getMin:function() {
-        return new Z.Point(this['xmin'],this['ymin']);
-    },
-
-    /**
-     * Get the maximum point of the PointExtent
-     * @return {maptalks.Point}
-     */
-    getMax:function() {
-        return new Z.Point(this['xmax'],this['ymax']);
     }
 });
