@@ -32,21 +32,6 @@ Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */
 
     },
 
-    /**
-     * load the layer
-     * @return {maptalks.VectorLayer} this
-     */
-    load:function() {
-        var renderer = this._getRenderer();
-        if (!renderer) {
-            this._initRenderer();
-            renderer = this._getRenderer();
-            renderer.setZIndex(this.getZIndex());
-        }
-        renderer.render();
-        return this;
-    },
-
 
     /**
      * Called when geometry is being removed to clear the context concerned.

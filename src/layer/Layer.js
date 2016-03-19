@@ -20,14 +20,28 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
      */
     options:{
-        //最大最小可视范围, -1表示不受限制
-        'minZoom':-1,
-        'maxZoom':-1,
+        //最大最小可视范围, null表示不受限制
+        'minZoom':null,
+        'maxZoom':null,
         //图层是否可见
         'visible':true,
         'opacity': 1
     },
 
+
+     /**
+     * load the tile layer, can't be overrided by sub-classes
+     */
+    load:function(){
+        if (!this.getMap()) {return this;}
+        this._initRenderer();
+        var zIndex = this.getZIndex();
+        if (!Z.Util.isNil(zIndex)) {
+            this._renderer.setZIndex(zIndex);
+        }
+        this._renderer.render();
+        return this;
+    },
 
     /**
      * Get the layer id
@@ -185,6 +199,13 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         return this;
     },
 
+    isLoaded:function() {
+        if (!this._renderer) {
+            return false;
+        }
+        return this._renderer.isLoaded();
+    },
+
     /**
      * Whether the layer is visible now.
      * @return {Boolean}
@@ -196,8 +217,8 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         var map = this.getMap();
         if (map) {
             var zoom = map.getZoom();
-            if ((this.options['maxZoom'] !== -1 && this.options['maxZoom'] < zoom)
-                    || this.options['minZoom'] > zoom) {
+            if ((!Z.Util.isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom)
+                    || (!Z.Util.isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
                 return false;
             }
         }
@@ -294,6 +315,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         var renderer = this.options['renderer'];
         var clazz = this.constructor.getRendererClass(renderer);
         this._renderer = new clazz(this);
+        this._renderer.setZIndex(this.getZIndex());
     },
 
     _getRenderer:function() {

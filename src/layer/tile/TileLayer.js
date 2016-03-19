@@ -44,23 +44,6 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
     },
 
     /**
-     * load the tile layer, can't be overrided by sub-classes
-     */
-    load:function(){
-        if (!this.getMap()) {return;}
-        this._initTileConfig();
-        this._initRenderer();
-        this._renderer.initContainer();
-        var zIndex = this.getZIndex();
-        if (!Z.Util.isNil(zIndex)) {
-            this._renderer.setZIndex(zIndex);
-        }
-        if (this._prepareLoad()) {
-            this._renderer.render(true);
-        }
-    },
-
-    /**
      * Get tile size of the tile layer
      * @return {maptalks.Size}
      */
@@ -79,49 +62,30 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         return this;
     },
 
-    isLoaded:function() {
-        if (!this._renderer) {
-            return false;
-        }
-        return this._renderer.isLoaded();
-    },
-
-    /**
-     * Prepare before load
-     * @private
-     */
-    _prepareLoad:function() {
-        //nothing to do here, just return true
-        return true;
-    },
-
-
     /**
      * initialize [tileConfig]{@link maptalks.TileConfig} for the tilelayer
      * @private
      */
     _initTileConfig:function() {
+        var map = this.getMap();
+        this._defaultTileConfig = new Z.TileConfig(Z.TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
         if (this.options['tileSystem']) {
-            this._tileConfig = new Z.TileConfig(this.options['tileSystem'], this.getMap().getFullExtent(), this.getTileSize());
-        } else {
-            var map = this.getMap();
-            this._defaultTileConfig = new Z.TileConfig(Z.TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
+            this._tileConfig = new Z.TileConfig(this.options['tileSystem'], map.getFullExtent(), this.getTileSize());
         }
     },
 
     _getTileConfig:function(){
+        if (!this._defaultTileConfig) {
+            this._initTileConfig();
+        }
         var tileConfig = this._tileConfig;
-        if (!this._tileConfig) {
-            var map = this.getMap();
-            //如果tilelayer本身没有设定tileconfig,则继承地图基础底图的tileconfig
-            if (map && map.getBaseLayer() && map.getBaseLayer()._getTileConfig) {
-                tileConfig = map.getBaseLayer()._getTileConfig();
-            }
+        if (tileConfig) {return tileConfig;}
+        var map = this.getMap();
+        //inherit baselayer's tileconfig
+        if (map && map.getBaseLayer() && map.getBaseLayer()._getTileConfig) {
+            return map.getBaseLayer()._getTileConfig();
         }
-        if (!tileConfig) {
-            return this._defaultTileConfig;
-        }
-        return tileConfig;
+        return this._defaultTileConfig;
     },
 
     _getTiles:function(canvasSize) {
