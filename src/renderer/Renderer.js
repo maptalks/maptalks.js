@@ -1,4 +1,4 @@
-/**
+    /**
  * @namespace
  */
 Z.renderer={};
@@ -27,10 +27,46 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
     },
 
     isLoaded:function() {
-        if (this._loaded == false) {
-            return false;
+        if (this.getRenderZoom() === this.getMap().getZoom()) {
+            return true;
         }
-        return true;
+        return false;
+    },
+
+    /**
+     * 显示图层
+     */
+    show: function() {
+        var mask = this._layer.getMask();
+        if (mask) {
+            mask._onZoomEnd();
+        }
+        this.render();
+    },
+
+    /**
+     * 隐藏图层
+     */
+    hide: function() {
+        this._requestMapToRender();
+    },
+
+    setZIndex: function(zindex) {
+        this._requestMapToRender();
+    },
+
+    _requestMapToRender:function() {
+        if (this.getMap()) {
+            this.getMap()._getRenderer().render();
+        }
+    },
+
+    _fireLoadedEvent:function() {
+        this._layer.fire('layerload');
+    },
+
+    getRenderZoom:function() {
+        return this._renderZoom;
     },
 
     _createCanvas:function() {
@@ -94,16 +130,12 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         }
         var maskViewExtent = mask._getPainter().getPixelExtent();
         if (!maskViewExtent.intersects(viewExtent)) {
-            return null;
+            return maskViewExtent;
         }
         this._context.save();
         mask._getPainter().paint();
         this._context.clip();
         this._clipped = true;
         return maskViewExtent;
-    },
-
-    getRenderZoom:function() {
-        return this._renderZoom;
     }
 });

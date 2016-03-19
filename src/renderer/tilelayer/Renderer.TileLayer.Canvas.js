@@ -31,18 +31,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         this._requestMapToRender();
     },
 
-    show:function() {
-        this.render();
-    },
-
-    hide:function() {
-        this._requestMapToRender();
-    },
-
-    setZIndex:function(zIndex) {
-        this._requestMapToRender();
-    },
-
     clear:function() {
         this._clearCanvas();
         this._requestMapToRender();
@@ -58,14 +46,15 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         if (!this._layer.isVisible()) {
+            this._fireLoadedEvent();
             return;
         }
         var layer = this._layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
+            this._fireLoadedEvent();
             return;
         }
-        this._loaded = false;
         if (!this._tileRended) {
             this._tileRended = {};
         }
@@ -110,7 +99,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             this._totalTileToLoad = this._tileToLoadCounter;
             this._scheduleLoadTileQueue();
         }
-        this._loaded = true;
     },
 
     getCanvasImage:function() {
@@ -253,6 +241,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
     },
 
+    /**
+     * @override
+     */
     _requestMapToRender:function() {
         if (Z.node) {
             if (this.getMap() && !this.getMap()._isBusy()) {
@@ -306,11 +297,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             this._resizeCanvas();
             this.render();
         }
-    },
-
-    _fireLoadedEvent:function() {
-        this._layer.fire('layerload');
     }
+
+
 
 });
 

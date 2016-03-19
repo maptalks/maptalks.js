@@ -12,7 +12,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     initialize:function(layer) {
         this._layer = layer;
-        this._mapRender = layer.getMap()._getRenderer();
         this._registerEvents();
         this._painted = false;
     },
@@ -26,7 +25,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * Renderer the layer immediately.
      */
     renderImmediate:function() {
-        if (!this.getMap() || !this._layer.isVisible()) {
+        if (!this.getMap()) {
+            return;
+        }
+        if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this._fireLoadedEvent();
             return;
         }
         this.draw();
@@ -42,7 +45,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      */
     render:function(geometries) {
         this._clearTimeout();
-        if (!this.getMap() || !this._layer.isVisible()) {
+        if (!this.getMap()) {
+            return;
+        }
+        if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this._fireLoadedEvent();
             return;
         }
         if (!this._painted && !geometries) {
@@ -97,12 +104,13 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         var layer = this._layer;
         if (layer.isEmpty()) {
             this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
+            this._fireLoadedEvent();
             return;
         }
         if (!layer.isVisible()) {
+            this._fireLoadedEvent();
             return;
         }
-        this._loaded = false;
         this._painted = true;
         var viewExtent = map._getViewExtent();
 
@@ -154,7 +162,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
     },
 
     /**
-     * 显示图层
+     * Show and render
+     * @override
      */
     show: function() {
         this._layer._eachGeometry(function(geo) {
@@ -165,17 +174,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             mask._onZoomEnd();
         }
         this.render();
-    },
-
-    /**
-     * 隐藏图层
-     */
-    hide: function() {
-        this._requestMapToRender();
-    },
-
-    setZIndex: function(zindex) {
-        this._requestMapToRender();
     },
 
     /**
@@ -360,17 +358,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             });
         } else {
             whenPromiseEnd();
-        }
-    },
-
-    _fireLoadedEvent:function() {
-        this._loaded = true;
-        this._layer.fire('layerload');
-    },
-
-    _requestMapToRender:function() {
-        if (this.getMap()) {
-            this._mapRender.render();
         }
     }
 });
