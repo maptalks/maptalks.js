@@ -18,6 +18,21 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         return true;
     },
 
+    getMap: function() {
+        return this._layer.getMap();
+    },
+
+    getLayer:function() {
+        return this._layer;
+    },
+
+    isLoaded:function() {
+        if (this._loaded == false) {
+            return false;
+        }
+        return true;
+    },
+
     _createCanvas:function() {
         if (this._canvas) {
             return;
@@ -60,5 +75,35 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
             return;
         }
         Z.Canvas.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
+    },
+
+    _prepareCanvas:function(viewExtent) {
+        if (!this._canvas) {
+            this._createCanvas();
+        } else {
+            this._clearCanvas();
+        }
+        this._renderZoom = this.getMap().getZoom();
+        if (this._clipped) {
+            this._context.restore();
+            this._clipped=false;
+        }
+        var mask = this.getLayer().getMask();
+        if (!mask) {
+            return null;
+        }
+        var maskViewExtent = mask._getPainter().getPixelExtent();
+        if (!maskViewExtent.intersects(viewExtent)) {
+            return null;
+        }
+        this._context.save();
+        mask._getPainter().paint();
+        this._context.clip();
+        this._clipped = true;
+        return maskViewExtent;
+    },
+
+    getRenderZoom:function() {
+        return this._renderZoom;
     }
 });

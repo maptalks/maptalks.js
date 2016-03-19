@@ -17,10 +17,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         this._painted = false;
     },
 
-    getMap: function() {
-        return this._layer.getMap();
-    },
-
     remove:function() {
         this.getMap().off('_zoomstart _zoomend _moveend _resize',this._onMapEvent,this);
         this._requestMapToRender();
@@ -30,12 +26,14 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * Renderer the layer immediately.
      */
     renderImmediate:function() {
-        if (!this._layer.isVisible()) {
+        if (!this.getMap() || !this._layer.isVisible()) {
             return;
         }
         this.draw();
         this._requestMapToRender();
     },
+
+
 
     /**
      * render layer
@@ -44,10 +42,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      */
     render:function(geometries) {
         this._clearTimeout();
-        if (!this.getMap()) {
-            return;
-        }
-        if (!this._layer.isVisible()) {
+        if (!this.getMap() || !this._layer.isVisible()) {
             return;
         }
         if (!this._painted && !geometries) {
@@ -99,11 +94,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
 
         //载入资源后再进行绘制
-        if (!this._canvas) {
-            this._createCanvas();
-        } else {
-            this._clearCanvas();
-        }
         var layer = this._layer;
         if (layer.isEmpty()) {
             this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
@@ -112,27 +102,16 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (!layer.isVisible()) {
             return;
         }
+        this._loaded = false;
         this._painted = true;
         var viewExtent = map._getViewExtent();
 
         var me = this;
         var counter = 0;
-        this._shouldUpdatePointsWhileTransforming = true;
-        if (this._clipped) {
-            this._context.restore();
-        }
-
-        var mask = layer.getMask();
-        if (mask) {
-            var maskPxExtent = mask._getPainter().getPixelExtent();
-            if (!maskPxExtent.intersects(viewExtent)) {
-                return;
-            }
-            this._context.save();
-            mask._getPainter().paint();
-            this._context.clip();
-            this._clipped = true;
-            viewExtent = viewExtent.intersection(maskPxExtent);
+        this._shouldUpdateWhileTransforming = true;
+        var maskViewExtent = this._prepareCanvas(viewExtent);
+        if (maskViewExtent) {
+            viewExtent = viewExtent.intersection(maskViewExtent);
         }
         var geoViewExt, geoPainter;
         layer._eachGeometry(function(geo) {
@@ -146,15 +125,16 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                 return;
             }
             counter++;
-            if (me._shouldUpdatePointsWhileTransforming && geoPainter.hasPointSymbolizer()) {
-                me._shouldUpdatePointsWhileTransforming = false;
+            if (me._shouldUpdateWhileTransforming && geoPainter.hasPointSymbolizer()) {
+                me._shouldUpdateWhileTransforming = false;
             }
             if (counter > layer.options['thresholdOfPointUpdate']) {
-                me._shouldUpdatePointsWhileTransforming = true;
+                me._shouldUpdateWhileTransforming = true;
             }
             geoPainter.paint();
         });
         this._canvasFullExtent = map._getViewExtent();
+        this._fireLoadedEvent();
     },
 
     getPaintContext:function() {
@@ -233,11 +213,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     //determin whether this layer can be economically transformed, updatePointsWhileTransforming can bring better performance.
     //if all the geometries to render are vectors including polygons and linestrings, updatePointsWhileTransforming won't reduce user experience.
-    shouldUpdatePointsWhileTransforming:function() {
-        if (Z.Util.isNil(this._shouldUpdatePointsWhileTransforming)) {
+    shouldUpdateWhileTransforming:function() {
+        if (Z.Util.isNil(this._shouldUpdateWhileTransforming)) {
             return true;
         }
-        return this._shouldUpdatePointsWhileTransforming;
+        return this._shouldUpdateWhileTransforming;
     },
 
     isResourceLoaded:function(url) {
@@ -383,10 +363,14 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
     },
 
+    _fireLoadedEvent:function() {
+        this._loaded = true;
+        this._layer.fire('layerload');
+    },
+
     _requestMapToRender:function() {
         if (this.getMap()) {
             this._mapRender.render();
-            this._layer.fire('layerload');
         }
     }
 });

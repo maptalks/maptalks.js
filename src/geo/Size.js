@@ -57,5 +57,8 @@ Z.Util.extend(Z.Size.prototype,/** @lends maptalks.Size.prototype */{
         this['width'] = Z.Util.round(this['width']);
         this['height'] = Z.Util.round(this['height']);
         return this;
+    },
+    toPoint:function() {
+        return new Z.Point(this['width'], this['height']);
     }
 });
