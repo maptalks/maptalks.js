@@ -10,7 +10,6 @@
  * @param {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
  */
 Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
-    type: 'tile',
 
     options: {
         'errorTileUrl'  : 'images/system/transparent.png',
@@ -201,5 +200,33 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         });
     }
 });
+
+/**
+ * Export the tile layer's profile json. <br>
+ * Layer's profile is a snapshot of the layer in JSON format. <br>
+ * It can be used to reproduce the instance by [fromJSON]{@link maptalks.Layer#fromJSON} method
+ * @return {Object} layer's profile JSON
+ */
+Z.TileLayer.prototype.toJSON=function() {
+    var profile = {
+        "type":'TileLayer',
+        "id":this.getId(),
+        "options" : this.config()
+    };
+    return profile;
+}
+
+/**
+ * Reproduce a TileLayer from layer's profile JSON.
+ * @param  {Object} layerJSON - layer's profile JSON
+ * @return {maptalks.TileLayer}
+ * @static
+ * @private
+ * @function
+ */
+Z.TileLayer._fromJSON=function(layerJSON) {
+    if (!layerJSON || layerJSON['type'] !== 'TileLayer') {return null;}
+    return new Z.TileLayer(layerJSON['id'], layerJSON['options']);
+}
 
 Z.Util.extend(Z.TileLayer,Z.Renderable);

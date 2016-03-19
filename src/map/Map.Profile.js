@@ -1,52 +1,5 @@
 /** Profile **/
 
-Z.Layer.include(/** @lends maptalks.Layer.prototype */{
-    /**
-     * Export the layer's profile json. <br>
-     * Layer's profile is a snapshot of the layer in JSON format. <br>
-     * It can be used to reproduce the instance by [fromJSON]{@link maptalks.Layer#fromJSON} method
-     * @param  {Object} [options=null] - export options
-     * @param  {Boolean} [options.visible=null]   - used to set profile.options.visible
-     * @param  {Object} [options.geometries=null] - If not null and the layer is a [OverlayerLayer]{@link maptalks.OverlayLayer},
-     *                                            the layer's geometries will be exported with the given "options.geometries" as a parameter of geometry's toJSON.
-     * @param  {maptalks.Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
-     * @return {Object} layer's profile JSON
-     */
-    toJSON:function(options) {
-        if (!options) {
-            options = {};
-        }
-        var profile = {
-            "type":this.type,
-            "id":this.getId()
-        };
-        profile['options'] = this.config();
-        if (!Z.Util.isNil(options['visible'])) {
-            profile['options']['visible'] = options['visible'];
-        }
-
-        if (this instanceof Z.OverlayLayer) {
-            if (Z.Util.isNil(options['geometries']) || options['geometries']) {
-                var clipExtent;
-                if (options['clipExtent']) {
-                    clipExtent = new Z.Extent(options['clipExtent']);
-                }
-                var geoJSONs = [];
-                var geometries = this.getGeometries();
-                for (var i = 0, len=geometries.length; i < len; i++) {
-                    var geoExt = geometries[i].getExtent();
-                    if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
-                        continue;
-                    }
-                    geoJSONs.push(geometries[i].toJSON(options['geometries']));
-                }
-                profile['geometries'] = geoJSONs;
-            }
-        }
-        return profile;
-    }
-});
-
 /**
  * Reproduce a Layer from layer's profile JSON.
  * @param  {Object} layerJSON - layer's profile JSON
@@ -56,31 +9,11 @@ Z.Layer.include(/** @lends maptalks.Layer.prototype */{
  */
 Z.Layer.fromJSON=function(layerJSON) {
     if (!layerJSON) {return null;}
-    var layerType;
-    if (layerJSON['type'] === 'vector') {
-        layerType = Z.VectorLayer;
-    } else if (layerJSON['type'] === 'dynamic') {
-        //DynamicLayer is also a TileLayer, so this should be before TileLayer
-        layerType = Z.DynamicLayer;
-    } else if (layerJSON['type'] === 'tile') {
-        layerType = Z.TileLayer;
+    var layerType = layerJSON['type'];
+    if (typeof Z[layerType] === 'undefined' || !Z[layerType]._fromJSON) {
+        throw new Error("unsupported layer type:"+layerType);
     }
-    if (!layerType) {
-        throw new Error("unsupported layer type:"+layerJSON['type']);
-    }
-    var layer = new layerType(layerJSON['id'], layerJSON['options']);
-    if (layer instanceof Z.VectorLayer) {
-        var geoJSONs = layerJSON['geometries'];
-        var geometries = [];
-        for (var i = 0; i < geoJSONs.length; i++) {
-            var geo = Z.Geometry.fromJSON(geoJSONs[i]);
-            if (geo) {
-                geometries.push(geo);
-            }
-        }
-        layer.addGeometry(geometries);
-    }
-    return layer;
+    return Z[layerType]._fromJSON(layerJSON);
 };
 
 Z.Map.include(/** @lends maptalks.Map.prototype */{
