@@ -39,7 +39,6 @@
 ../src/layer/tile/TileLayer.js
 ../src/layer/OverlayLayer.js
 ../src/layer/VectorLayer.js
-../src/layer/HeatmapLayer.js
 ../src/layer/D3Layer.js
 ../src/geometry/Geometry.js
 ../src/geometry/ext/Geometry.Edit.js
