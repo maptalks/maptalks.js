@@ -215,6 +215,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * Renderer the layer immediately.
      */
     _renderImmediate:function() {
+        this._clearTimeout();
         if (!this.getMap()) {
             return;
         }

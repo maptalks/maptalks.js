@@ -139,7 +139,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
 
     _loadTileQueue:function() {
         var me = this;
-
         function onTileLoad() {
             me._tileCache.add(this[me.propertyOfTileId], this);
             me._tileRended[me.propertyOfTileId] = this;
@@ -238,7 +237,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         var zoom = this.getMap().getZoom();
-        if (!Z.Util.isNil(tileImage[this.propertyOfTileZoom]) && zoom !== tileImage[this.propertyOfTileZoom]) {
+        if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
         }
         this._tileToLoadCounter--;

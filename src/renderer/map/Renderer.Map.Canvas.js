@@ -51,7 +51,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             if (!renderer || renderer.getRenderZoom() !== zoom) {
                 return;
             }
-        }
+        }        
         //更新画布的长宽, 顺便清空画布
         if (!this._updateCanvasSize()) {
             this._clearCanvas();
@@ -304,7 +304,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     delete this._canvasBg;
                 }
             }
-           this.render();
         },this);
         map.on('_moving', function() {
             this.render();
