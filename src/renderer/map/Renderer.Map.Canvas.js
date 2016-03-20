@@ -51,7 +51,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             if (!renderer || renderer.getRenderZoom() !== zoom) {
                 return;
             }
-        }        
+        }
         //更新画布的长宽, 顺便清空画布
         if (!this._updateCanvasSize()) {
             this._clearCanvas();
@@ -299,10 +299,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     _registerEvents:function() {
         var map = this.map;
         map.on('_baselayerchangestart _baselayerload',function(param) {
-            if (param['type'] === '_baselayerload') {
-                if (!map.options['zoomBackground']) {
-                    delete this._canvasBg;
-                }
+            var baseLayer = map.getBaseLayer();
+            if (!map.options['zoomBackground'] || baseLayer.getMask()) {
+                delete this._canvasBg;
             }
         },this);
         map.on('_moving', function() {
