@@ -13,19 +13,19 @@ Z.Coordinate = function(x, y) {
         /**
          * @property {Number} x - value on X-Axis or longitude in degrees
          */
-        this.x = Z.Util.isNumber(x)?x:parseFloat(x);
+        this.x = +(x);
         /**
          * @property {Number} y - value on Y-Axis or Latitude in degrees
          */
-        this.y = Z.Util.isNumber(y)?y:parseFloat(y);
+        this.y = +(y);
     } else if (Z.Util.isArray(x)) {
         //数组
-        this.x = Z.Util.isNumber(x[0])?x[0]:parseFloat(x[0]);
-        this.y = Z.Util.isNumber(x[1])?x[1]:parseFloat(x[1]);
+        this.x = +(x[0]);
+        this.y = +(x[1]);
     } else if (!Z.Util.isNil(x['x']) && !Z.Util.isNil(x['y'])) {
         //对象
-        this.x = Z.Util.isNumber(x['x'])?x['x']:parseFloat(x['x']);
-        this.y = Z.Util.isNumber(x['y'])?x['y']:parseFloat(x['y']);
+        this.x = +(x['x']);
+        this.y = +(x['y']);
     }
     if (this.isNaN()) {
         throw new Error('coordinate is NaN');
