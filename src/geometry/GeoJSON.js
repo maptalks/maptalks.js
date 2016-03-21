@@ -20,7 +20,11 @@ Z.GeoJSON={
                 var resultGeos = [];
                 for (var i=0,len=geoJSON.length;i<len;i++) {
                     var geo = this._fromGeoJSONInstance(geoJSON[i]);
-                    resultGeos.push(geo);
+                    if (Z.Util.isArray(geo)) {
+                        resultGeos = resultGeos.concat(geo);
+                    } else {
+                        resultGeos.push(geo);
+                    }
                 }
                 return resultGeos;
             } else {
