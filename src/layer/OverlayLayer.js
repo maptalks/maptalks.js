@@ -41,10 +41,11 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      */
     getGeometries:function(filter, context) {
         var cache = this._geoCache;
-        var result = [];
+        var result = [],
+            geometry;
         for (var p in cache) {
             if (cache.hasOwnProperty(p)) {
-                var geometry = cache[p];
+                geometry = cache[p];
                 if (filter) {
                     var filtered;
                     if (context) {
@@ -84,38 +85,37 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             return this;
         }
         var fitCounter = 0;
-        var centerSum = {x:0,y:0};
-        var extent = null;
+        var centerSum = new Z.Coordinate(0,0);
+        var extent = null,
+            geo, geoId, internalId, geoCenter, geoExtent;
         for (var i=0, len=geometries.length;i<len;i++) {
-            var geo = geometries[i];
+            geo = geometries[i];
             if (!geo || !(geo instanceof Z.Geometry)) {
                 throw new Error(this.exceptions['INVALID_GEOMETRY']);
             }
 
-            var geoId = geo.getId();
+            geoId = geo.getId();
             if (geoId) {
                 if (!Z.Util.isNil(this._geoMap[geoId])) {
                     throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID']+':'+geoId);
                 }
                 this._geoMap[geoId] = geo;
             }
-            var internalId = Z.Util.GUID();
+            internalId = Z.Util.GUID();
             //内部全局唯一的id
             geo._setInternalId(internalId);
             this._geoCache[internalId] = geo;
             this._counter++;
             geo._bindLayer(this);
             if (fitView) {
-                var geoCenter = geo.getCenter();
-                var geoExtent = geo.getExtent();
+                geoCenter = geo.getCenter();
+                geoExtent = geo.getExtent();
                 if (geoCenter && geoExtent) {
-                    centerSum.x += geoCenter.x;
-                    centerSum.y += geoCenter.y;
+                    centerSum._add(geoCenter);
                     extent = geoExtent.combine(extent);
                     fitCounter++;
                 }
             }
-            //图形添加到layer
             geo._fireEvent('addend', {'geometry':geo});
         }
         var map = this.getMap();
@@ -123,7 +123,7 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             this._getRenderer().render(geometries);
             if (fitView) {
                 var z = map.getFitZoom(extent);
-                var center = {x:centerSum.x/fitCounter, y:centerSum.y/fitCounter};
+                var center = geoCenter._multi(1/fitCounter);
                 map.setCenterAndZoom(center,z);
             }
         }

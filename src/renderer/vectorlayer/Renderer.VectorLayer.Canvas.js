@@ -96,7 +96,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
         this._painted = true;
         var viewExtent = map._getViewExtent();
-
         var me = this;
         var counter = 0;
         this._shouldUpdateWhileTransforming = true;
