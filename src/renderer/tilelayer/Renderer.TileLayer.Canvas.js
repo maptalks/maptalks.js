@@ -77,14 +77,15 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
 
         //遍历瓦片
         this._tileToLoadCounter = 0;
-
+        var tile, tileId, cached, tileViewExtent;
         for (var i = tiles.length - 1; i >= 0; i--) {
-            var tile = tiles[i];
-            var tileId = tiles[i]['id'];
+            tile = tiles[i];
+            tileId = tiles[i]['id'];
             //如果缓存中已存有瓦片, 则从不再请求而从缓存中读取.
-            var cached = tileRended[tileId] || tileCache.get(tileId);
-            if (!viewExtent.intersects(new Z.PointExtent(tile['viewPoint'],
-                                tile['viewPoint'].add(new Z.Point(tileSize['width'], tileSize['height']))))) {
+            cached = tileRended[tileId] || tileCache.get(tileId);
+            tileViewExtent = new Z.PointExtent(tile['viewPoint'],
+                                tile['viewPoint'].add(tileSize.toPoint()));
+            if (!viewExtent.intersects(tileViewExtent)) {
                 continue;
             }
             if (cached) {
@@ -184,9 +185,19 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         var tileSize = this._layer.getTileSize();
-
-        Z.Canvas.image(this._context, point.substract(this._canvasFullExtent.getMin()), tileImage, tileSize['width'],tileSize['height']);
-
+        var p = point.substract(this._canvasFullExtent.getMin());
+        Z.Canvas.image(this._context, p, tileImage, tileSize['width'],tileSize['height']);
+        if (this._layer.options['debug']) {
+            this._context.save();
+            this._context.strokeStyle = 'rgb(0,0,0)';
+            this._context.fillStyle = 'rgb(0,0,0)';
+            this._context.strokeWidth = 10;
+            this._context.font='15px monospace';
+            Z.Canvas.rectangle(this._context, p, tileSize, 1, 0);
+            var xyz = tileImage[this.propertyOfTileId].split('__');
+            Z.Canvas.fillText(this._context, 'x:'+xyz[1]+',y:'+xyz[0]+',z:'+xyz[2], p.add(new Z.Point(10,20)), 'rgb(0,0,0)');
+            this._context.restore();
+        }
     },
 
     /**
