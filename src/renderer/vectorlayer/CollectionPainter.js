@@ -25,12 +25,12 @@ Z.CollectionPainter=Z.Class.extend(/** @lends maptalks.CollectionPainter.prototy
         if (!this.geometry) {
             return;
         }
-        var symbol = this.geometry.getSymbol();
+        // var symbol = this.geometry.getSymbol();
         //将collection的symbol放到末尾,覆盖painter原有的symbol
-        Array.prototype.push.call(arguments, symbol);
-        var args = arguments;
+        // Array.prototype.push.call(arguments, symbol);
+        // var args = arguments;
         this._eachPainter(function(painter) {
-            painter.paint.apply(painter,args);
+            painter.paint();
         });
     },
 

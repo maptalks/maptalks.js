@@ -50,7 +50,7 @@ if (Z.Browser.canvas) {
             if (arrowStyle !== 'classic') {
                 return;
             }
-            var lineWidth = this.getSymbol()['lineWidth'];
+            var lineWidth = this._getInternalSymbol()['lineWidth'];
             if (!lineWidth) {
                 lineWidth = 3;
             }
@@ -80,7 +80,7 @@ if (Z.Browser.canvas) {
             var me = this;
             var fn = function(_ctx, _points, _dasharray, _lineOpacity) {
                 Z.Canvas.path(_ctx, _points, _lineOpacity, null, _dasharray);
-                if (_ctx.setLineDash) {
+                if (_ctx.setLineDash && Z.Util.isArrayHasData(_dasharray)) {
                     //remove line dash effect if any
                     _ctx.setLineDash([]);
                 }

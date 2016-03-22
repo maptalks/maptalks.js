@@ -32,9 +32,9 @@ Z.Geometry.Poly={
         if (!is2dArray && isSimplify) {
             prjCoords = Z.Simplify.simplify(prjCoords, tolerance, false);
         }
-        var preCoordinate;
+        var p, p_r, pp;
         for (var i=0,len=prjCoords.length;i<len;i++) {
-            var p = prjCoords[i];
+            p = prjCoords[i];
             if (Z.Util.isNil(p) || (isClipping && !fullExtent.contains(p))) {
                 continue;
             }
@@ -46,9 +46,9 @@ Z.Geometry.Poly={
                 if (isSimplify) {
                     p = Z.Simplify.simplify(p, tolerance, false);
                 }
-                var p_r = [];
+                p_r = [];
                 for (var j=0,jlen=p.length;j<jlen;j++) {
-                    var pp = p[j];
+                    pp = p[j];
                     if (Z.Util.isNil(p[j])) {
                         continue;
                     }
@@ -63,7 +63,7 @@ Z.Geometry.Poly={
                 if (i > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
                     p = this._antiMeridian(p, prjCoords[i-1], projection, isAntiMeridian);
                 }
-                var pp = map._transformToViewPoint(p);
+                pp = map._transformToViewPoint(p);
                 result.push(pp);
             }
         }

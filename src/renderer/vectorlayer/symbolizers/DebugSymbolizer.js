@@ -31,7 +31,6 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (map._zooming) {
             return;
         }
-        Z.Canvas.setDefaultCanvasSetting(ctx);
         Z.Canvas.prepareCanvas(ctx, this.styles['stroke']);
         var op = this.styles['stroke']['stroke-opacity'];
 

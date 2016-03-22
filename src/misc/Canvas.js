@@ -13,8 +13,8 @@ Z.Canvas = {
     },
 
     setDefaultCanvasSetting:function(ctx) {
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = 'rgba(71,76,248,1)';//this.getRgba('#474cf8',1);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(0,0,0,1)';//'rgba(71,76,248,1)';//this.getRgba('#474cf8',1);
         ctx.fillStyle = 'rgba(255,255,255,0)';//this.getRgba('#ffffff',0);
         ctx.textAlign='start';
         ctx.textBaseline='top';
@@ -100,7 +100,7 @@ Z.Canvas = {
                 var imageTexture = resources.getImage([imgUrl,null,null]);
                 ctx.fillStyle = ctx.createPattern(imageTexture, 'repeat');
             } else {
-                ctx.fillStyle =this.getRgba(fill, 1);
+                ctx.fillStyle = this.getRgba(fill, 1);
             }
          }
     },

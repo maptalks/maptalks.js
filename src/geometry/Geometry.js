@@ -216,7 +216,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {Object} geometry's symbol
      */
     getSymbol:function() {
-        return this._getInternalSymbol();
+        return Z.Util.extend({}, this._getInternalSymbol());
     },
 
     /**
@@ -674,7 +674,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _getInternalSymbol:function() {
         if (!this._symbol) {
             if (this.options['symbol']) {
-                return Z.Util.extendSymbol(this.options['symbol']);
+                return this.options['symbol'];
             }
         }
         return this._symbol;

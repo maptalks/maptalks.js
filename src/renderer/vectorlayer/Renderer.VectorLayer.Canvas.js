@@ -108,7 +108,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
         var geoViewExt, geoPainter;
-        layer._eachGeometry(function(geo) {
+
+        function drawGeo(geo) {
             //geo的map可能为null,因为绘制为延时方法
             if (!geo || !geo.isVisible() || !geo.getMap() || !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
                 return;
@@ -126,7 +127,9 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                 me._shouldUpdateWhileTransforming = true;
             }
             geoPainter.paint();
-        });
+        }
+
+        layer._eachGeometry(drawGeo);
         this._canvasFullExtent = map._getViewExtent();
     },
 
