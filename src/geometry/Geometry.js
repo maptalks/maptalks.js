@@ -216,7 +216,15 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {Object} geometry's symbol
      */
     getSymbol:function() {
-        return Z.Util.extend({}, this._getInternalSymbol());
+        var s = this._getInternalSymbol();
+        if (s) {
+            if (!Z.Util.isArray(s)) {
+                return Z.Util.extend({}, s);
+            } else {
+                return Z.Util.extendSymbol(s);
+            }
+        }
+        return s;
     },
 
     /**
