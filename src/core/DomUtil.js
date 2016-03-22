@@ -381,8 +381,18 @@ Z.DomUtil = {
         return Z.Util.isNil(el.className.baseVal) ? el.className : el.className.baseVal;
     },
 
+    /**
+     * Copy the source canvas
+     * @param  {Element|Canvas} src - source canvas
+     * @return {Element|Canvas}     target canvas
+     */
     copyCanvas:function(src) {
-        var target = Z.Canvas.createCanvas(src.width, src.height);
+        if (Z.node) {
+            return null;
+        }
+        var target = Z.DomUtil.createEl('canvas');
+        target.width = src.width;
+        target.height = src.height;
         target.getContext('2d').drawImage(src,0,0);
         return target;
     },

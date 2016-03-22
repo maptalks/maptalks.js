@@ -28,5 +28,5 @@ Z.CanvasTileLayer.prototype.toJSON=function() {
  */
 Z.CanvasTileLayer._fromJSON=function(layerJSON) {
     if (!layerJSON || layerJSON['type'] !== 'CanvasTileLayer') {return null;}
-    return new Z.TileLayer(layerJSON['id'], layerJSON['options']);
+    return new Z.CanvasTileLayer(layerJSON['id'], layerJSON['options']);
 }
