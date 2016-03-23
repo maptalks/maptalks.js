@@ -1,0 +1,74 @@
+.maptalks-toolbox {
+    background-color: #ffffff;
+    border: 1px solid #C4C7CC;
+    max-height: 20px;
+}
+
+.maptalks-toolbox-button {
+    cursor: pointer;
+    background-color: #ffffff;
+    border: 0px;
+    border-right: 1px solid #ecedef;
+    color: #6490C4;
+    font-size: 16px;
+    white-space: nowrap;
+}
+
+.maptalks-menu {
+    position: absolute;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+.maptalks-menu-item {
+    height: 24px;
+    line-height: 24px;
+    font-size: 12px;
+    margin: 1px;
+    padding: 0px 0px 0px 21px;
+}
+
+.maptalks-menu-color {
+    background-color: #f0f0f0;
+    border: solid 1px #CCCCCC;
+}
+
+.maptalks-menu-item-color {
+    border: solid 1px #ffffff;
+    color: #3C7796;
+}
+
+.maptalks-menu-item-over-color {
+    border: solid 1px #cfe2f3;
+    color: #9fc5e8;
+}
+
+.maptalks-menu-color-black {
+    background-color: #000000;
+    border: solid 1px #ffffff;
+}
+
+.maptalks-menu-item-color-black {
+    border: solid 1px #ffffff;
+    color: #ffffff;
+}
+
+.maptalks-menu-item-over-color-black {
+    border: solid 1px #c9daf8;
+    color: #a2c4c9;
+}
+
+.maptalks-menu-color-grey {
+    background-color: #666666;
+    border: solid 1px #ffffff;
+}
+
+.maptalks-menu-item-color-grey {
+    border: solid 1px #ffffff;
+    color: #333333;
+}
+
+.maptalks-menu-item-over-color-grey {
+    border: solid 1px #c9daf8;
+    color: #663300;
+}

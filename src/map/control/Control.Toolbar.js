@@ -39,11 +39,11 @@ Z.control.Toolbar = Z.Control.extend(/** @lends maptalks.control.Toolbar.prototy
             Z.DomUtil.addClass(dom, 'maptalks-toolbar-horizonal');
         }
         var me = this;
-        function onButtonClick(fn, index, childIndex) {
+        function onButtonClick(fn, index, childIndex, targetDom) {
             var item = me._getItems()[index];
             return function(e) {
                     Z.DomUtil.stopPropagation(e);
-                    return fn({'target':item, 'index':index, 'childIndex': childIndex});
+                    return fn({'target':item, 'index':index, 'childIndex': childIndex, 'dom': targetDom});
                 }
         }
 
@@ -55,7 +55,7 @@ Z.control.Toolbar = Z.Control.extend(/** @lends maptalks.control.Toolbar.prototy
                 li.innerHTML = item['item'];
                 li.style.cursor='pointer';
                 if (item['click']) {
-                    Z.DomUtil.on(li,'click',(onButtonClick)(item['click'], i, null));
+                    Z.DomUtil.on(li,'click',(onButtonClick)(item['click'], i, null, li));
                 }
                 if (Z.Util.isArrayHasData(item['children'])) {
                     var dropMenu = this._createDropMenu(i);
