@@ -1,8 +1,8 @@
 Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
     defaultSymbol:{
-        "lineColor" : "#474cf8",
-        "lineWidth" : 3,
+        "lineColor" : '#000000',
+        "lineWidth" : 1,
         "lineOpacity" : 1,
         "lineDasharray": [],
         "lineCap" : "butt", //“butt”, “square”, “round”
@@ -25,6 +25,9 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         Z.Canvas.prepareCanvas(ctx, strokeAndFill['stroke'], strokeAndFill['fill'], resources);
         canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
             strokeAndFill['stroke']['stroke-opacity'], strokeAndFill['fill']['fill-opacity'], strokeAndFill['stroke']['stroke-dasharray']]));
+        if (ctx.setLineDash && Z.Util.isArrayHasData(strokeAndFill['stroke']['stroke-dasharray'])) {
+            ctx.setLineDash([]);
+        }
     },
 
     getPixelExtent:function() {

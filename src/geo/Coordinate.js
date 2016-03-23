@@ -81,6 +81,12 @@ Z.Util.extend(Z.Coordinate.prototype,/** @lends maptalks.Coordinate.prototype */
         return new Z.Coordinate(this.x*ratio, this.y*ratio);
     },
 
+    _multi: function(ratio) {
+        this.x *= ratio;
+        this.y *= ratio;
+        return this;
+    },
+
     /**
      * Compare with another coordinate to see whether they are equal.
      * @param {maptalks.Coordinate} c2 - coordinate to compare

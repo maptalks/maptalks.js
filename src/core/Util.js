@@ -648,14 +648,15 @@ Z.Util = {
 
     extendSymbol:function(symbol) {
         var sources = Array.prototype.slice.call(arguments, 1);
-        if (!sources) {
+        if (!sources || !sources.length) {
             sources = [{}];
         }
         if (Z.Util.isArray(symbol)) {
+            var s, dest;
             var result = [];
-            for (var i = 0; i < symbol.length; i++) {
-                var s = symbol[i];
-                var dest = {};
+            for (var i = 0, len = symbol.length; i < len; i++) {
+                s = symbol[i];
+                dest = {};
                 for (var ii = 0; ii < sources.length; ii++) {
                     if (!Z.Util.isArray(sources[ii])) {
                         Z.Util.extend(dest, s, sources[ii]);

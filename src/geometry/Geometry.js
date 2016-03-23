@@ -216,7 +216,15 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {Object} geometry's symbol
      */
     getSymbol:function() {
-        return this._getInternalSymbol();
+        var s = this._getInternalSymbol();
+        if (s) {
+            if (!Z.Util.isArray(s)) {
+                return Z.Util.extend({}, s);
+            } else {
+                return Z.Util.extendSymbol(s);
+            }
+        }
+        return s;
     },
 
     /**
@@ -674,7 +682,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _getInternalSymbol:function() {
         if (!this._symbol) {
             if (this.options['symbol']) {
-                return Z.Util.extendSymbol(this.options['symbol']);
+                return this.options['symbol'];
             }
         }
         return this._symbol;

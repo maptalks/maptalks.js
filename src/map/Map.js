@@ -342,21 +342,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Extent}
      */
     getExtent:function() {
-        var projection = this.getProjection();
-        if (!projection) {
-            return null;
-        }
-        var res = this._getResolution();
-        if (Z.Util.isNil(res)) {
-            return null;
-        }
-        var size = this.getSize();
-        var w = size['width']/2,
-            h = size['height']/2;
-        var prjCenter = this._getPrjCenter();
-        var c1 = projection.unproject(new Z.Coordinate(prjCenter.x - w*res, prjCenter.y + h*res));
-        var c2 = projection.unproject(new Z.Coordinate(prjCenter.x + w*res, prjCenter.y - h*res));
-        return new Z.Extent(c1,c2);
+        return this.viewToExtent(this._getViewExtent());
     },
 
     /**
@@ -851,6 +837,45 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
+     * Converts a view points extent to the geographic extent.
+     * @param  {maptalks.PointExtent} viewExtent - view points extent
+     * @return {maptalks.Extent}  geographic extent
+     */
+    viewToExtent:function(viewExtent) {
+        var projection = this.getProjection();
+        if (!projection) {
+            return null;
+        }
+        var res = this._getResolution();
+        if (Z.Util.isNil(res)) {
+            return null;
+        }
+        var viewCenter = this._getViewExtent().getCenter();
+        var prjCenter = this._getPrjCenter();
+        var min = viewExtent.getMin();
+        var max = viewExtent.getMax();
+
+        var dist1 = viewCenter.substract(min),
+            dist2 = viewCenter.substract(max);
+        var c1 = projection.unproject(new Z.Coordinate(prjCenter.x - dist1.x*res, prjCenter.y + dist1.y*res));
+        var c2 = projection.unproject(new Z.Coordinate(prjCenter.x - dist2.x*res, prjCenter.y + dist2.y*res));
+        return new Z.Extent(c1,c2);
+    },
+
+    /**
+     * Converts a container points extent to the geographic extent.
+     * @param  {maptalks.PointExtent} containerExtent - containeproints extent
+     * @return {maptalks.Extent}  geographic extent
+     */
+    containerToExtent:function(containerExtent) {
+        var viewExtent = new Z.PointExtent(
+                this.containerPointToViewPoint(containerExtent.getMin()),
+                this.containerPointToViewPoint(containerExtent.getMax())
+            );
+        return this.viewToExtent(viewExtent);
+    },
+
+    /**
      * Checks if the map container size changed and updates the map if so.<br>
      * It is called in a setTimeout call.
      * @return {maptalks.Map} this
@@ -1191,12 +1216,12 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!this._containerDOM) {return null;}
         var containerDOM = this._containerDOM,
             width,height;
-        if (!Z.Util.isNil(containerDOM.offsetWidth) && !Z.Util.isNil(containerDOM.offsetWidth)) {
-            width = parseInt(containerDOM.offsetWidth,0);
-            height = parseInt(containerDOM.offsetHeight,0);
-        } else if (!Z.Util.isNil(containerDOM.width) && !Z.Util.isNil(containerDOM.height)) {
+        if (!Z.Util.isNil(containerDOM.width) && !Z.Util.isNil(containerDOM.height)) {
             width = containerDOM.width;
             height = containerDOM.height;
+        } else if (!Z.Util.isNil(containerDOM.offsetWidth) && !Z.Util.isNil(containerDOM.offsetWidth)) {
+            width = parseInt(containerDOM.offsetWidth,0);
+            height = parseInt(containerDOM.offsetHeight,0);
         } else {
             throw new Error('can not get size of container');
         }
@@ -1311,7 +1336,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * transform view point to geographical projected coordinat
+     * transform view point to geographical projected coordinate
      * @param  {maptalks.Point} viewPoint
      * @return {maptalks.Coordinate}
      * @private

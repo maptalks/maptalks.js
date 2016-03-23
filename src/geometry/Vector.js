@@ -12,8 +12,8 @@ Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
      */
     options:{
         'symbol':{
-            'lineColor' : '#474cf8',
-            'lineWidth' : 3,
+            'lineColor' : '#000000',
+            'lineWidth' : 1,
             'lineOpacity' : 1,
 
             'polygonFill' : '#ffffff',

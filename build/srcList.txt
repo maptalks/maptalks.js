@@ -37,6 +37,7 @@
 ../src/renderer/Renderable.js
 ../src/layer/Layer.js
 ../src/layer/tile/TileLayer.js
+../src/layer/tile/CanvasTileLayer.js
 ../src/layer/OverlayLayer.js
 ../src/layer/VectorLayer.js
 ../src/layer/D3Layer.js
@@ -86,6 +87,7 @@
 ../src/renderer/tilelayer/TileCache.js
 ../src/renderer/tilelayer/Renderer.TileLayer.js
 ../src/renderer/tilelayer/Renderer.TileLayer.Canvas.js
+../src/renderer/tilelayer/Renderer.CanvasTileLayer.Canvas.js
 ../src/renderer/vectorlayer/Renderer.VectorLayer.js
 ../src/renderer/vectorlayer/Renderer.VectorLayer.Canvas.js
 ../src/renderer/vectorlayer/symbolizers/Symbolizer.js
