@@ -36,36 +36,16 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             return;
         }
         if (!this._painted && !geometries) {
-            geometries = this._layer.getGeometries();
+            geometries = this._layer._geoCache;
         }
-        var resources = (this._resourcesToLoad || []);
-        var immediate = false;
-        if (Z.Util.isArrayHasData(geometries)) {
-            for (var i = geometries.length - 1; i >= 0; i--) {
-                var res = geometries[i]._getExternalResource();
-                if (!immediate && geometries[i]._isRenderImmediate()) {
-                    immediate = true;
-                }
-                if (!Z.Util.isArrayHasData(res)) {
-                    continue;
-                }
-                if (!this._resources) {
-                    resources = resources.concat(res);
-                } else {
-                    for (var ii = 0; ii < res.length; ii++) {
-                        if (!this._resources.getImage(res[ii])) {
-                            resources.push(res[ii]);
-                        }
-                    }
-                }
-           }
-        }
-        if (resources.length === 0 && immediate) {
-            this._renderImmediate();
-            return;
-        }
-        if (resources.length > 0) {
-            this._resourcesToLoad = resources;
+        var check = this._checkResources(geometries);
+        if (Z.Util.isArrayHasData(check.resources)) {
+            this._resourcesToLoad = check.resources;
+        } else {
+            if (check.immediate) {
+                this._renderImmediate();
+                return;
+            }
         }
         var me = this;
         this._renderTimeout = setTimeout(function() {
@@ -210,7 +190,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (!this._resources) {
             return false;
         }
-        return this._resources.getImage(url);
+        return this._resources.isResourceLoaded(url);
     },
 
     /**
@@ -225,9 +205,18 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             this._fireLoadedEvent();
             return;
         }
+        if (this._resources) {
+            var check = this._checkResources(this._layer._geoCache);
+            if (Z.Util.isArrayHasData(check.resources)) {
+                this._resourcesToLoad = (this._resourcesToLoad || []).concat(check.resources);
+                this._promise();
+                return;
+            }
+        }
         this.draw();
         this._requestMapToRender();
         this._fireLoadedEvent();
+
     },
 
     _registerEvents:function() {
@@ -293,6 +282,50 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         this._loadResources(resourceUrls, this._renderImmediate, this);
     },
 
+    _checkResources:function(geometries) {
+        if (!geometries) {
+            return true;
+        }
+        var me = this,
+            resources = [],
+            immediate = false;
+        var res, ii;
+        function checkGeo(geo) {
+            res = geo._getExternalResource();
+            if (!immediate && geo._isRenderImmediate()) {
+                immediate = true;
+            }
+            if (!Z.Util.isArrayHasData(res)) {
+                return;
+            }
+            if (!me._resources) {
+                resources = resources.concat(res);
+            } else {
+                for (ii = 0; ii < res.length; ii++) {
+                    if (!me._resources.isResourceLoaded(res[ii])) {
+                        resources.push(res[ii]);
+                    }
+                }
+            }
+        }
+
+        if (Z.Util.isArrayHasData(geometries)) {
+            for (var i = geometries.length - 1; i >= 0; i--) {
+                checkGeo(geometries[i]);
+           }
+        } else {
+            for (var p in geometries) {
+                if (geometries.hasOwnProperty(p)) {
+                    checkGeo(geometries[p]);
+                }
+            }
+        }
+        return {
+            resources : resources,
+            immediate : immediate
+        };
+    },
+
     /**
      * loadResource from resourceUrls
      * @param  {String[]} resourceUrls    - Array of urls to load
@@ -330,7 +363,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                             resolve({});
                         };
                         img.onerror = function(){
-                            reject({});
+                            resources.markErrorResource(_url);
+                            resolve({});
                         };
                         try {
                             Z.Util.loadImage(img,  _url);
@@ -349,7 +383,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                     continue;
                 }
                 cache[url.join('-')] = 1;
-                if (!resources.getImage(url)) {
+                if (!resources.isResourceLoaded(url)) {
                     //closure it to preserve url's value
                     var promise = new Z.Promise((onPromiseCallback)(url));
                     promises.push(promise);
@@ -375,18 +409,30 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
 Z.renderer.vectorlayer.Canvas.Resources=function() {
     this._resources = {};
+    this._errors = {};
 };
 
 Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype,{
     addResource:function(url, img) {
+        this._resources[this._regulate(url)] = img;
+    },
 
-        this._resources[this.regulate(url).join('-')] = img;
+    isResourceLoaded:function(url) {
+        return (this._resources[this._regulate(url)] || this._errors[url[0]]) ? true : false;
     },
 
     getImage:function(url) {
-        return this._resources[this.regulate(url).join('-')];
+        if (!this.isResourceLoaded(url)) {
+            return null;
+        }
+        return this._resources[this._regulate(url)];
     },
-    regulate:function(url) {
+
+    markErrorResource:function(url) {
+        this._errors[url[0]] = 1;
+    },
+
+    _regulate:function(url) {
         if (url.length < 3) {
             for (var i = url.length; i<3; i++) {
                 url.push(null);
@@ -398,7 +444,7 @@ Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype,{
         if (Z.Util.isNil(url[2])) {
             url[2] = null;
         }
-        return url;
+        return url.join('-');
     }
 });
 
