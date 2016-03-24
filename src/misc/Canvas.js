@@ -98,6 +98,10 @@ Z.Canvas = {
             if (Z.Util.isCssUrl(fill)) {
                 var imgUrl = Z.Util.extractCssUrl(fill);
                 var imageTexture = resources.getImage([imgUrl,null,null]);
+                if (!imageTexture) {
+                    //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
+                    imageTexture = resources.getImage([imgUrl+'-texture',null,strokeSymbol?strokeSymbol['stroke-width']:0]);
+                }
                 ctx.fillStyle = ctx.createPattern(imageTexture, 'repeat');
             } else {
                 ctx.fillStyle = this.getRgba(fill, 1);
