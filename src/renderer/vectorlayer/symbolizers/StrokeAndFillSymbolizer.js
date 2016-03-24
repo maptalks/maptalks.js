@@ -112,7 +112,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
             }
         };
         //if linestring has arrow, needs to fill arrow with same color of line-color
-        if (this.geometry instanceof Z.LineString) {
+        if (this.geometry instanceof Z.LineString && this.geometry.options['arrowStyle']) {
              result['fill'] = {
                 "fill"          : result["stroke"]["stroke"],
                 "fill-opacity"  : result["stroke"]["stroke-opacity"]

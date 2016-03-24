@@ -78,7 +78,7 @@ if (Z.Browser.canvas) {
             var points = this._transformToViewPoint(prjVertexes);
 
             var me = this;
-            var fn = function(_ctx, _points, _dasharray, _lineOpacity) {
+            var fn = function(_ctx, _points, _lineOpacity, _fillOpacity, _dasharray) {
                 Z.Canvas.path(_ctx, _points, _lineOpacity, null, _dasharray);
                 if (_ctx.setLineDash && Z.Util.isArrayHasData(_dasharray)) {
                     //remove line dash effect if any
