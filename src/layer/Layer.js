@@ -40,7 +40,9 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!Z.Util.isNil(zIndex)) {
             this._renderer.setZIndex(zIndex);
         }
-        this._renderer.render();
+        if (this._prepareLoad()) {
+            this._renderer.render();
+        }
         return this;
     },
 
@@ -294,6 +296,15 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         var renderer = this._getRenderer();
         renderer && renderer.render();
         return this;
+    },
+
+    /**
+     * Prepare Layer's loading, this is a method intended to be overrided by subclasses.
+     * @return {Boolean} true to continue, false to cease.
+     * @protected
+     */
+    _prepareLoad:function() {
+        return true;
     },
 
     _onRemove:function() {
