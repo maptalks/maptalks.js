@@ -43,16 +43,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var zoom = this.map.getZoom();
         var layers = this._getAllLayerToCanvas();
 
-        for (var i = layers.length - 1; i >= 0; i--) {
-            if (!layers[i].isVisible()) {
-                continue;
-            }
-            var renderer = layers[i]._getRenderer();
-            if (!renderer || renderer.getRenderZoom() !== zoom) {
-                return;
-            }
-        }
-        //更新画布的长宽, 顺便清空画布
         if (!this._updateCanvasSize()) {
             this._clearCanvas();
         }
@@ -61,13 +51,12 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             mheight = this._canvas.height;
         this._drawBackground();
 
-
         for (var i = 0, len=layers.length; i < len; i++) {
             if (!layers[i].isVisible()) {
                 continue;
             }
             var renderer = layers[i]._getRenderer();
-            if (renderer) {
+            if (renderer && renderer.getRenderZoom() === zoom) {
                 var layerImage = renderer.getCanvasImage();
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage, mwidth, mheight);
