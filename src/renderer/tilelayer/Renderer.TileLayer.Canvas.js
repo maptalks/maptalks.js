@@ -100,8 +100,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
 
         if (this._tileToLoadCounter === 0){
-            this._fireLoadedEvent();
             this._requestMapToRender();
+            this._fireLoadedEvent();
         } else {
             this._totalTileToLoad = this._tileToLoadCounter;
             this._scheduleLoadTileQueue();
@@ -142,7 +142,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         var me = this;
         function onTileLoad() {
             me._tileCache.add(this[me.propertyOfTileId], this);
-            me._tileRended[me.propertyOfTileId] = this;
+            me._tileRended[this[me.propertyOfTileId]] = this;
             me._drawTileAndRequest(this);
         }
         function onTileError() {
