@@ -6,6 +6,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
     startEditText: function() {
         this.hide();
         this._prepareEditor();
+        this.fire('startedittext', this);
         return this;
     },
 
@@ -15,13 +16,16 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
      * @return {maptalks.Label} this
      */
     endEditText: function() {
-        var content = this._textEditor.value;
-        this.setContent(content);
-        this.show();
-        Z.DomUtil.removeDomNode(this._container);
-        delete this._container;
-        delete this._textEditor;
-        return this;
+        if(this._textEditor) {
+            var content = this._textEditor.value;
+            this.setContent(content);
+            this.show();
+            Z.DomUtil.removeDomNode(this._container);
+            delete this._container;
+            delete this._textEditor;
+            this.fire('endedittext', this);
+            return this;
+        }
     },
 
     /**
@@ -74,16 +78,37 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             'border:1px solid '+lineColor+';'+
             'color:'+textColor+';'+
             'font-size:'+textSize+'px;'+
-            'width:'+(width-spacing)+'px;'+
-            'height:'+(height-spacing)+'px;';
+            'width:'+(width)+'px;'+
+            'height:'+(height)+'px;'+
+            'min-height:'+height+'px;'+
+            'margin-left: auto;'+
+            'margin-right: auto;'+
+            'outline: 0;'+
+            'word-wrap: break-word;'+
+            'overflow-x: hidden;'+
+            'overflow-y: auto;'+
+            '-webkit-user-modify: read-write-plaintext-only;';;
         var content = this.getContent();
         inputDom.value = content;
         var me = this;
-        Z.DomUtil.on(inputDom, 'blur', function(param){
-             me.endEditText();
-        });
+        Z.DomUtil.on(inputDom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
+        var map = this.getMap();
+        map.on('click', me.endEditText, me);
         return inputDom;
 
+    },
+
+    setCursortoPos: function (target,pos){//定位光标到某个位置
+        pos = pos ?pos :target.value.length;
+        if (target.createTextRange) {//IE浏览器 IE浏览器中有TextRange  对body,textarea,button有效
+           var range = target.createTextRange(); //创建textRange
+           range.moveStart("character", pos); //移动开始点，以字符为单位
+           range.collapse(true);//没有移动结束点直接 折叠到一个点
+           range.select();//选择这个点
+        } else {//非IE浏览器
+           target.setSelectionRange(target.value.length, pos);
+        }
+        target.focus();
     }
 
 });
