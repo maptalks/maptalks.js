@@ -352,7 +352,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                                 h = _url[2] || img.height;
                             if (w && h && Z.Util.isSVG(_url[0]) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
                                 var canvas = Z.Canvas.createCanvas(w, h);
-                                canvas.getContext('2d').drawImage(img,0,0,w,h);
+                                Z.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
                                 resources.addResource(_url,canvas);
                             } else {
                                 resources.addResource(_url,this);

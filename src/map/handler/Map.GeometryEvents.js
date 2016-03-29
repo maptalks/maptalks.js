@@ -52,7 +52,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
             containerPoint = Z.DomUtil.getEventContainerPoint(domEvent, map._containerDOM),
             coordinate = map.containerPointToCoordinate(containerPoint);
         var geometryCursorStyle = null;
-        this.options = {
+        var identifyOptions = {
             'includeInternals' : true,
             //return only one geometry on top,
             'filter':function(geometry) {
@@ -61,10 +61,15 @@ Z.Map.GeometryEvents = Z.Handler.extend({
                     if (!geometryCursorStyle && geometry.options['cursor']) {
                         geometryCursorStyle = geometry.options['cursor'];
                     }
+                    if (!geometry.listens('mousemove') && !(geometry.listens('mouseover'))) {
+                        return false;
+                    }
+                } else {
+                    if (!geometry.listens(eventToFire)) {
+                        return false;
+                    }
                 }
-                if (!geometry.listens(eventToFire)) {
-                    return false;
-                }
+
                 return true;
             },
             'count' : 1,
@@ -78,10 +83,10 @@ Z.Map.GeometryEvents = Z.Handler.extend({
             }
         if ('mousemove' === eventType  || eventType === 'touchmove') {
             this._queryIdentifyTimeout = setTimeout(function() {
-                map.identify(me.options, callback);
+                map.identify(identifyOptions, callback);
             }, 20);
         } else {
-            map.identify(me.options, callback);
+            map.identify(identifyOptions, callback);
         }
 
         function fireGeometryEvent(geometries) {
@@ -91,6 +96,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
                 if (Z.Util.isArrayHasData(geometries)) {
                     for (i = geometries.length - 1; i >= 0; i--) {
                         geoMap[geometries[i]._getInternalId()] = geometries[i];
+                        geometries[i]._onEvent(domEvent);
                         //the first geometry is on the top, so ignore the latter cursors.
                         geometries[i]._onMouseOver(domEvent);
                     }

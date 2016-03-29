@@ -410,7 +410,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             var scale = this._canvasBgRes/map._getResolution();
             var p = map.coordinateToContainerPoint(this._canvasBgCoord);
             var bSize = size._multi(scale);
-            Z.Canvas.image(this._context, p, this._canvasBg, bSize['width'], bSize['height']);
+            Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, bSize['width'], bSize['height']);
         }
     },
 

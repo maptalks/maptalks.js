@@ -77,6 +77,23 @@ describe('Geometry.Events', function() {
                 });
         });
 
+        it('mouseover',function(done) {
+            var circle = new maptalks.Circle(map.getCenter(), 10);
+            circle.addTo(layer);
+            var domPosition = Z.DomUtil.getPagePosition(container);
+            var point = map.coordinateToContainerPoint(center).add(domPosition);
+            function onMouseOver(param) {
+                expect(param.type).to.be.eql('mouseover');
+                expect(param.target === circle).to.be.ok();
+                done();
+            }
+            circle.on('mouseover', onMouseOver);
+            happen.mousemove(eventContainer,{
+                'clientX':point.x,
+                'clientY':point.y
+                });
+        });
+
         it('click',function() {
             var circle = new maptalks.Circle(map.getCenter(), 10);
             circle.addTo(layer);

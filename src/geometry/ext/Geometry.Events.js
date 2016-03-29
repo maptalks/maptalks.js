@@ -13,7 +13,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             Z.DomUtil.stopPropagation(event);
             Z.DomUtil.preventDefault(event);
         }
-        var params = this._getEventParams(event, eventType);
+        var params = this._getEventParams(event);
         this._fireEvent(eventType, params);
     },
 
@@ -35,7 +35,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @return {Object}
      * @private
      */
-    _getEventParams: function(e,type) {
+    _getEventParams: function(e) {
         var map = this.getMap();
         var eventParam = {
             'domEvent':e
@@ -60,7 +60,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             return;
         }
         var originalEvent = event;
-        var params = this._getEventParams(originalEvent,event.type);
+        var params = this._getEventParams(originalEvent);
         /**
          * mouseover event for geometry
          * @event maptalks.Geometry#mouseover
@@ -72,7 +72,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
          * @property {maptalks.Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent(event.type, params);
+        this._fireEvent('mouseover', params);
     },
 
     /**
@@ -85,7 +85,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             return;
         }
         var originalEvent = event;
-        var params = this._getEventParams(originalEvent,'mouseout');
+        var params = this._getEventParams(originalEvent);
         /**
          * mouseout event for geometry
          * @event maptalks.Geometry#mouseout

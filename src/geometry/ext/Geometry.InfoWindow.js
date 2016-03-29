@@ -17,14 +17,22 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Get info window's options or the instance of info window if it has been already created.
-     * @return {Object|maptalks.ui.InfoWindow}
+     * Get infowindow's options.
+     * @return {Object}
+     */
+    getInfoWindowOptions:function() {
+        if (!this._infoWinOptions) {
+            return null;
+        }
+        return this._infoWinOptions;
+    },
+
+    /**
+     * Get info window's instance of infowindow if it has been already created.
+     * @return {maptalks.ui.InfoWindow}
      */
     getInfoWindow:function() {
         if (!this._infoWindow) {
-            if (this._infoWinOptions) {
-                return this._infoWinOptions;
-            }
             return null;
         }
         return this._infoWindow;

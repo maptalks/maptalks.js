@@ -100,8 +100,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
 
         if (this._tileToLoadCounter === 0){
-            this._fireLoadedEvent();
             this._requestMapToRender();
+            this._fireLoadedEvent();
         } else {
             this._totalTileToLoad = this._tileToLoadCounter;
             this._scheduleLoadTileQueue();
@@ -142,7 +142,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         var me = this;
         function onTileLoad() {
             me._tileCache.add(this[me.propertyOfTileId], this);
-            me._tileRended[me.propertyOfTileId] = this;
+            me._tileRended[this[me.propertyOfTileId]] = this;
             me._drawTileAndRequest(this);
         }
         function onTileError() {
@@ -190,8 +190,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         var tileSize = this._layer.getTileSize();
-        var p = point.substract(this._canvasFullExtent.getMin());
-        Z.Canvas.image(this._context, p, tileImage, tileSize['width'],tileSize['height']);
+        Z.Canvas.image(this._context, tileImage,
+            point.x-this._canvasFullExtent['xmin'], point.y-this._canvasFullExtent['ymin'],
+            tileSize['width'], tileSize['height']);
         if (this._layer.options['debug']) {
             this._context.save();
             this._context.strokeStyle = 'rgb(0,0,0)';
@@ -255,6 +256,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         var zoom = this.getMap().getZoom();
         if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
+        }
+        if (!Z.node) {
+            this._requestMapToRender();
         }
         this._tileToLoadCounter--;
         if (this._tileToLoadCounter === 0) {

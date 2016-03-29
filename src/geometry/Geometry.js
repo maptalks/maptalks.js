@@ -852,7 +852,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _getExternalResource:function() {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = Z.Geometry.getExternalResource(symbol, this);
+        var resources = Z.Geometry.getExternalResource(symbol);
         return resources;
     },
 
@@ -986,11 +986,8 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             }
         }
         if (Z.Util.isNil(options['infoWindow']) || options['infoWindow']) {
-            if (this.getInfoWindow) {
-                var infowindow = this.getInfoWindow();
-                if (infowindow) {
-                    json['infoWindow'] = infowindow.config();
-                }
+            if (this.getInfoWindowOptions && this.getInfoWindowOptions()) {
+                json['infoWindow'] = this.getInfoWindowOptions();
             }
         }
         return json;
@@ -1078,14 +1075,13 @@ Z.Geometry.fromGeoJSON = function(geoJSON) {
 }
 
 /**
- * Get external resources from the given symbol and given geometry
+ * Get external resources from the given symbol
  * @param  {Object} symbol      - symbol
- * @param  {maptalks.Geometry}  - geometry
  * @return {String[]}           - resource urls
  * @static
  * @private
  */
-Z.Geometry.getExternalResource = function(symbol, geometry) {
+Z.Geometry.getExternalResource = function(symbol) {
     if (!symbol) {
         return null;
     }
@@ -1112,12 +1108,12 @@ Z.Geometry.getExternalResource = function(symbol, geometry) {
             resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
         }
         if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-            resources.push([Z.Geometry._getMarkerPathURL(symbol, geometry), symbol['markerWidth'], symbol['markerHeight']]);
+            resources.push([Z.Geometry._getMarkerPathURL(symbol), symbol['markerWidth'], symbol['markerHeight']]);
         }
     }
     return resources;
 }
-Z.Geometry._getMarkerPathURL=function(symbol, geometry) {
+Z.Geometry._getMarkerPathURL=function(symbol) {
     if (!symbol['markerPath']) {
         return null;
     }
