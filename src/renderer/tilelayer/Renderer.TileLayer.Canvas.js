@@ -190,8 +190,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         var tileSize = this._layer.getTileSize();
-        var p = point.substract(this._canvasFullExtent.getMin());
-        Z.Canvas.image(this._context, p, tileImage, tileSize['width'],tileSize['height']);
+        Z.Canvas.image(this._context, tileImage,
+            point.x-this._canvasFullExtent['xmin'], point.y-this._canvasFullExtent['ymin'],
+            tileSize['width'], tileSize['height']);
         if (this._layer.options['debug']) {
             this._context.save();
             this._context.strokeStyle = 'rgb(0,0,0)';

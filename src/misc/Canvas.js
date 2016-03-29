@@ -148,14 +148,14 @@ Z.Canvas = {
         return "rgba("+r+","+g+","+b+","+op+")";
     },
 
-    image:function(ctx, pt, img, width, height) {
-        pt = pt.round();
-        var x=pt.x,y=pt.y;
+    image:function(ctx, img, x, y, width, height) {
+        x = Z.Util.round(x);
+        y = Z.Util.round(y);
         try {
             if (Z.Util.isNumber(width) && Z.Util.isNumber(height)) {
-                ctx.drawImage(img,x,y,width,height);
+                ctx.drawImage(img, x, y, width, height);
             } else {
-                ctx.drawImage(img,x,y);
+                ctx.drawImage(img, x, y);
             }
         } catch (error) {
             console.warn('error when drawing image on canvas:',error);
@@ -172,9 +172,10 @@ Z.Canvas = {
         var ptAlign = Z.StringUtil.getAlignPoint(splitTextSize,style['textHorizontalAlignment'],style['textVerticalAlignment']);
         var lineHeight = textSize['height']+style['textLineSpacing'];
         var basePoint = point.add(new Z.Point(0, ptAlign.y));
+        var text, rowAlign;
         for(var i=0,len=texts.length;i<len;i++) {
-            var text = texts[i]['text'];
-            var rowAlign = Z.StringUtil.getAlignPoint(texts[i]['size'],style['textHorizontalAlignment'],style['textVerticalAlignment']);
+            text = texts[i]['text'];
+            rowAlign = Z.StringUtil.getAlignPoint(texts[i]['size'],style['textHorizontalAlignment'],style['textVerticalAlignment']);
             Z.Canvas._textOnLine(ctx, text, basePoint.add(new Z.Point(rowAlign.x, i*lineHeight)), style['textHaloRadius'], style['textHaloFill']);
         }
     },
@@ -183,19 +184,18 @@ Z.Canvas = {
         //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
         //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
         pt = pt.round();
-        var x = pt.x, y=pt.y;
         if (textHaloRadius) {
             ctx.miterLimit = 2;
             ctx.lineJoin = 'circle';
             var lineWidth=(textHaloRadius*2-1);
             ctx.lineWidth = Z.Util.round(lineWidth);
             ctx.strokeStyle =Z.Canvas.getRgba(textHaloFill, 1);
-            ctx.strokeText(text, x, y);
+            ctx.strokeText(text, pt.x, pt.y);
             ctx.lineWidth = 1;
             ctx.miterLimit = 10; //default
         }
 
-        ctx.fillText(text, x, y);
+        ctx.fillText(text, pt.x, pt.y);
     },
 
     fillText:function(ctx, text, point, rgba) {
@@ -207,9 +207,8 @@ Z.Canvas = {
     shield: function (ctx, point, img, text, textDesc, style) {
         if (img) {
             var width = img.width,
-                height = img.height,
-                imgPos = point.substract(new Z.Point(width/2, height/2));
-            Z.Canvas.image(ctx, imgPos, img, width, height);
+                height = img.height;
+            Z.Canvas.image(ctx, img, point.x - width/2, point.y - height/2, width, height);
         }
         Z.Canvas.text(ctx, text, point, style, textDesc);
     },
@@ -267,9 +266,10 @@ Z.Canvas = {
               var offsetX = fromX;
               var offsetY = fromY;
               var idx = 0, dash = true;
+              var ang, len;
               while (!(checkX.thereYet(offsetX, toX) && checkY.thereYet(offsetY, toY))) {
-                var ang = Math.atan2(toY - fromY, toX - fromX);
-                var len = pattern[idx];
+                ang = Math.atan2(toY - fromY, toX - fromX);
+                len = pattern[idx];
 
                 offsetX = checkX.cap(toX, offsetX + (Math.cos(ang) * len));
                 offsetY = checkY.cap(toY, offsetY + (Math.sin(ang) * len));
@@ -285,8 +285,9 @@ Z.Canvas = {
 
         var isDashed = Z.Util.isArrayHasData(lineDashArray);
         var isPatternLine = !Z.Util.isString(ctx.strokeStyle);
+        var point, prePoint, nextPoint;
         for (var i=0, len=points.length; i<len;i++) {
-            var point = points[i].round();
+            point = points[i].round();
             if (!isDashed || ctx.setLineDash) {//ie9以上浏览器
                 if (i === 0) {
                     ctx.moveTo(point.x, point.y);
@@ -294,7 +295,7 @@ Z.Canvas = {
                     ctx.lineTo(point.x,point.y);
                 }
                 if (isPatternLine && i > 0) {
-                    var prePoint = points[i-1].round();
+                    prePoint = points[i-1].round();
                     fillWithPattern(prePoint, point);
                     ctx.beginPath();
                     ctx.moveTo(point.x,point.y);
@@ -304,7 +305,7 @@ Z.Canvas = {
                     if(i === len-1) {
                         break;
                     }
-                    var nextPoint = points[i+1].round();
+                    nextPoint = points[i+1].round();
                     drawDashLine(point, nextPoint, lineDashArray, isPatternLine);
 
                 }
@@ -324,19 +325,19 @@ Z.Canvas = {
         if (!Z.Util.isArrayHasData(points[0])) {
             points = [points];
         }
-
+        var op;
         if (fillFirst) {
             //因为canvas只填充moveto,lineto,lineto的空间, 而dashline的moveto不再构成封闭空间, 所以重新绘制图形轮廓用于填充
             ctx.save();
             for (var i = 0; i < points.length; i++) {
                 Z.Canvas._ring(ctx, points[i], null, 0);
                if (!fillFirst) {
-                    var o = fillOpacity;
+                    op = fillOpacity;
                     if (i > 0) {
                         ctx.globalCompositeOperation = "destination-out";
-                        o = 1;
+                        op = 1;
                     }
-                    Z.Canvas.fillCanvas(ctx, o);
+                    Z.Canvas.fillCanvas(ctx, op);
                 }
                 if (i > 0) {
                     ctx.globalCompositeOperation = "source-over";
@@ -350,12 +351,12 @@ Z.Canvas = {
             Z.Canvas._ring(ctx, points[i], lineDashArray, lineOpacity);
 
             if (!fillFirst) {
-                var o = fillOpacity;
+                op = fillOpacity;
                 if (i > 0) {
                     ctx.globalCompositeOperation = "destination-out";
-                    o = 1;
+                    op = 1;
                 }
-                Z.Canvas.fillCanvas(ctx, o);
+                Z.Canvas.fillCanvas(ctx, op);
             }
             if (i > 0) {
                 //return to default compositeOperation to display strokes.
