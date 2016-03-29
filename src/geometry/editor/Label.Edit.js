@@ -5,27 +5,28 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
      */
     startEditText: function() {
         this.hide();
+        this.endEditText();
         this._prepareEditor();
-        this.fire('startedittext', this);
+        this.fire('edittextstart', this);
         return this;
     },
 
     /**
      * End label text edit.
-     * @member maptalks.Label
      * @return {maptalks.Label} this
      */
     endEditText: function() {
         if(this._textEditor) {
+            this.getMap().off('click', this.endEditText, this);
             var content = this._textEditor.value;
             this.setContent(content);
             this.show();
             Z.DomUtil.removeDomNode(this._container);
             delete this._container;
             delete this._textEditor;
-            this.fire('endedittext', this);
-            return this;
+            this.fire('edittextend', this);
         }
+        return this;
     },
 
     /**
@@ -66,13 +67,13 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
     _createInputDom: function() {
         var labelSize = this.getSize();
         var symbol = this.getSymbol();
-        var width = labelSize['width'];
-        var height = labelSize['height'];
-        var textColor = symbol['textFill'];
-        var textSize = symbol['textSize'];
-        var fill = symbol['markerFill'];
-        var lineColor = symbol['markerLineColor'];
-        var spacing = Z.Util.getValueOrDefault(symbol['textLineSpacing'],0);
+        var width = labelSize['width']||100;
+        var height = labelSize['height']||100;
+        var textColor = symbol['textFill']||'#ffffff';
+        var textSize = symbol['textSize']||12;
+        var fill = symbol['markerFill']||'#3398CC';
+        var lineColor = symbol['markerLineColor']||'#ffffff';
+        var spacing = symbol['textLineSpacing']||0;
         var inputDom = Z.DomUtil.createEl('textarea');
         inputDom.style.cssText ='background:'+fill+';'+
             'border:1px solid '+lineColor+';'+
@@ -87,15 +88,12 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             'word-wrap: break-word;'+
             'overflow-x: hidden;'+
             'overflow-y: auto;'+
-            '-webkit-user-modify: read-write-plaintext-only;';;
+            '-webkit-user-modify: read-write-plaintext-only;';
         var content = this.getContent();
         inputDom.value = content;
-        var me = this;
         Z.DomUtil.on(inputDom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
-        var map = this.getMap();
-        map.on('click', me.endEditText, me);
+        this.getMap().on('click', this.endEditText, this);
         return inputDom;
-
     }
 
 });
