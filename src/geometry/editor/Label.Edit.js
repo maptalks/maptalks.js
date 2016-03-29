@@ -96,19 +96,6 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         map.on('click', me.endEditText, me);
         return inputDom;
 
-    },
-
-    setCursortoPos: function (target,pos){//定位光标到某个位置
-        pos = pos ?pos :target.value.length;
-        if (target.createTextRange) {//IE浏览器 IE浏览器中有TextRange  对body,textarea,button有效
-           var range = target.createTextRange(); //创建textRange
-           range.moveStart("character", pos); //移动开始点，以字符为单位
-           range.collapse(true);//没有移动结束点直接 折叠到一个点
-           range.select();//选择这个点
-        } else {//非IE浏览器
-           target.setSelectionRange(target.value.length, pos);
-        }
-        target.focus();
     }
 
 });
