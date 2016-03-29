@@ -257,6 +257,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
         }
+        if (!Z.node) {
+            this._requestMapToRender();
+        }
         this._tileToLoadCounter--;
         if (this._tileToLoadCounter === 0) {
             this._onTileLoadComplete();
