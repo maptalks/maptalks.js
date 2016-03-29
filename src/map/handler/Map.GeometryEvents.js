@@ -52,7 +52,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
             containerPoint = Z.DomUtil.getEventContainerPoint(domEvent, map._containerDOM),
             coordinate = map.containerPointToCoordinate(containerPoint);
         var geometryCursorStyle = null;
-        this.options = {
+        var identifyOptions = {
             'includeInternals' : true,
             //return only one geometry on top,
             'filter':function(geometry) {
@@ -83,10 +83,10 @@ Z.Map.GeometryEvents = Z.Handler.extend({
             }
         if ('mousemove' === eventType  || eventType === 'touchmove') {
             this._queryIdentifyTimeout = setTimeout(function() {
-                map.identify(me.options, callback);
+                map.identify(identifyOptions, callback);
             }, 20);
         } else {
-            map.identify(me.options, callback);
+            map.identify(identifyOptions, callback);
         }
 
         function fireGeometryEvent(geometries) {
