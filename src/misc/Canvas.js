@@ -62,7 +62,7 @@ Z.Canvas = {
                                     w = Z.Util.round(imageRes.width*strokeWidth/imageRes.height);
                                 }
                                 var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
-                                patternCanvas.getContext('2d').drawImage(imageRes,0,0,w,strokeWidth);
+                                Z.Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
                                 resources.addResource([imgUrl+'-texture', null, strokeWidth],patternCanvas);
                                 imageTexture = patternCanvas;
                                 // imageTexture = new Image();
@@ -82,7 +82,7 @@ Z.Canvas = {
                     ctx.strokeStyle = Z.Canvas.getRgba(strokeColor,1);
                  }
              }
-             //ä½ç‰ˆæœ¬ieä¸æ”¯æŒè¯¥å±æ€§
+             //µÍ°æ±¾ie²»Ö§³Ö¸ÃÊôĞÔ
              if (ctx.setLineDash) {
                  var strokeDash=(strokeSymbol['stroke-dasharray']);
                  if (Z.Util.isArrayHasData(strokeDash)) {
@@ -151,11 +151,16 @@ Z.Canvas = {
     image:function(ctx, pt, img, width, height) {
         pt = pt.round();
         var x=pt.x,y=pt.y;
-        if (Z.Util.isNumber(width) && Z.Util.isNumber(height)) {
-            ctx.drawImage(img,x,y,width,height);
-        } else {
-            ctx.drawImage(img,x,y);
+        try {
+            if (Z.Util.isNumber(width) && Z.Util.isNumber(height)) {
+                ctx.drawImage(img,x,y,width,height);
+            } else {
+                ctx.drawImage(img,x,y);
+            }
+        } catch (error) {
+            console.warn('error when drawing image on canvas:',error);
         }
+
     },
 
     text:function(ctx, text, pt, style, textDesc) {
@@ -176,7 +181,7 @@ Z.Canvas = {
 
     _textOnLine: function(ctx, text, pt, textHaloRadius, textHaloFill) {
         //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
-        //æ ¹æ®text-horizontal-alignmentå’Œtext-vertical-alignmentè®¡ç®—ç»˜åˆ¶èµ·å§‹ç‚¹åç§»é‡
+        //¸ù¾İtext-horizontal-alignmentºÍtext-vertical-alignment¼ÆËã»æÖÆÆğÊ¼µãÆ«ÒÆÁ¿
         pt = pt.round();
         var x = pt.x, y=pt.y;
         if (textHaloRadius) {
@@ -282,7 +287,7 @@ Z.Canvas = {
         var isPatternLine = !Z.Util.isString(ctx.strokeStyle);
         for (var i=0, len=points.length; i<len;i++) {
             var point = points[i].round();
-            if (!isDashed || ctx.setLineDash) {//ie9ä»¥ä¸Šæµè§ˆå™¨
+            if (!isDashed || ctx.setLineDash) {//ie9ÒÔÉÏä¯ÀÀÆ÷
                 if (i === 0) {
                     ctx.moveTo(point.x, point.y);
                 } else {
@@ -321,7 +326,7 @@ Z.Canvas = {
         }
 
         if (fillFirst) {
-            //å› ä¸ºcanvasåªå¡«å……moveto,lineto,linetoçš„ç©ºé—´, è€Œdashlineçš„movetoä¸å†æ„æˆå°é—­ç©ºé—´, æ‰€ä»¥é‡æ–°ç»˜åˆ¶å›¾å½¢è½®å»“ç”¨äºå¡«å……
+            //ÒòÎªcanvasÖ»Ìî³ämoveto,lineto,linetoµÄ¿Õ¼ä, ¶ødashlineµÄmoveto²»ÔÙ¹¹³É·â±Õ¿Õ¼ä, ËùÒÔÖØĞÂ»æÖÆÍ¼ĞÎÂÖÀªÓÃÓÚÌî³ä
             ctx.save();
             for (var i = 0; i < points.length; i++) {
                 Z.Canvas._ring(ctx, points[i], null, 0);
@@ -432,16 +437,16 @@ Z.Canvas = {
         ctx.quadraticCurveTo(p1.x,p1.y,p2.x,p2.y);
     },
 
-    //å„ç§å›¾å½¢çš„ç»˜åˆ¶æ–¹æ³•
+    //¸÷ÖÖÍ¼ĞÎµÄ»æÖÆ·½·¨
     ellipse:function (ctx, pt, size, lineOpacity, fillOpacity) {
-        //TODO canvas scaleåä¼šäº§ç”Ÿé”™è¯¯?
+        //TODO canvas scaleºó»á²úÉú´íÎó?
         function bezierEllipse( x, y, a, b)
         {
            var k = 0.5522848,
-           ox = a * k, // æ°´å¹³æ§åˆ¶ç‚¹åç§»é‡
-           oy = b * k; // å‚ç›´æ§åˆ¶ç‚¹åç§»é‡
+           ox = a * k, // Ë®Æ½¿ØÖÆµãÆ«ÒÆÁ¿
+           oy = b * k; // ´¹Ö±¿ØÖÆµãÆ«ÒÆÁ¿
            ctx.beginPath();
-           //ä»æ¤­åœ†çš„å·¦ç«¯ç‚¹å¼€å§‹é¡ºæ—¶é’ˆç»˜åˆ¶å››æ¡ä¸‰æ¬¡è´å¡å°”æ›²çº¿
+           //´ÓÍÖÔ²µÄ×ó¶Ëµã¿ªÊ¼Ë³Ê±Õë»æÖÆËÄÌõÈı´Î±´Èû¶ûÇúÏß
            ctx.moveTo(x - a, y);
            Z.Canvas._bezierCurveTo(ctx, new Z.Point(x - a, y - oy), new Z.Point(x - ox, y - b), new Z.Point(x, y - b));
            Z.Canvas._bezierCurveTo(ctx, new Z.Point(x + ox, y - b), new Z.Point(x + a, y - oy), new Z.Point(x + a, y));
@@ -453,7 +458,7 @@ Z.Canvas = {
         }
         pt = pt.round();
         if (size['width'] === size['height']) {
-            //å¦‚æœé«˜å®½ç›¸åŒ,åˆ™ç›´æ¥ç»˜åˆ¶åœ†å½¢, æé«˜æ•ˆç‡
+            //Èç¹û¸ß¿íÏàÍ¬,ÔòÖ±½Ó»æÖÆÔ²ĞÎ, Ìá¸ßĞ§ÂÊ
             ctx.beginPath();
             ctx.arc(pt.x,pt.y,Z.Util.round(size['width']),0,2*Math.PI);
             Z.Canvas.fillCanvas(ctx, fillOpacity);
