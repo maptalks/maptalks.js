@@ -990,10 +990,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             if (!cursor) {
                 cursor = 'default';
             }
-            var panel = this.getPanel();
-            if (panel && panel.style) {
-                panel.style.cursor = cursor;
-            }
+            this._setCursorToPanel(cursor);
         }
         return this;
     },
@@ -1010,12 +1007,16 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             }
         } else {
             this._priorityCursor = cursor;
-            var panel = this.getPanel();
-            if (panel && panel.style) {
-                panel.style.cursor = cursor;
-            }
+            this._setCursorToPanel(cursor);
         }
         return this;
+    },
+
+    _setCursorToPanel:function(cursor) {
+        var panel = this.getPanel();
+        if (panel && panel.style) {
+            panel.style.cursor = cursor;
+        }
     },
 
      /**
