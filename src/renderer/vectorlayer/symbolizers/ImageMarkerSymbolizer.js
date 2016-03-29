@@ -25,6 +25,10 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             height = img.height;
             style['markerWidth'] = width;
             style['markerHeight'] = height;
+            var imgURL = [style['markerFile'],style['markerWidth'], style['markerHeight']];
+            if (!resources.isResourceLoaded(imgURL)) {
+                resources.addResource(imgURL, img);
+            }
             this.geometry._getPainter()._removeCache();
         }
         if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer) &&
@@ -33,15 +37,15 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         }
         for (var i = 0, len=cookedPoints.length;i<len;i++) {
             //图片定位到中心底部
-            var pt = cookedPoints[i].add(new Z.Point(-width/2,-height));
-            Z.Canvas.image(ctx, pt, img, width, height);
+            Z.Canvas.image(ctx, img,
+                cookedPoints[i].x - width/2,
+                cookedPoints[i].y - height,
+                width, height);
         }
     },
 
     _getImage:function(resources) {
-        var style = this.style;
-        var url = style['markerFile'];
-        var img = !resources?null:resources.getImage([url,this.style['markerWidth'], this.style['markerHeight']]);
+        var img = !resources?null:resources.getImage([this.style['markerFile'],this.style['markerWidth'], this.style['markerHeight']]);
         return img;
     },
 
