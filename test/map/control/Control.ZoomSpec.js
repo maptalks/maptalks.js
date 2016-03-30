@@ -25,7 +25,7 @@ describe("Control.Zoom", function() {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe("Zoom button", function() {

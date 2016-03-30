@@ -77,7 +77,7 @@ describe('#DrawTool', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
     describe('draw geometries', function() {
         it('can draw a marker', function(done) {

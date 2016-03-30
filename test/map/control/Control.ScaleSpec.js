@@ -24,7 +24,7 @@ describe("Control.Scale", function() {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     it("widgets contain correct value after initialized", function() {

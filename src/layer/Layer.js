@@ -185,6 +185,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
                 this._getRenderer().show();
             }
         }
+        this.fire('show');
         return this;
     },
 
@@ -199,6 +200,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
                 this._getRenderer().hide();
             }
         }
+        this.fire('hide');
         return this;
     },
 

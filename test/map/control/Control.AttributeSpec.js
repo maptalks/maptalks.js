@@ -24,7 +24,7 @@ describe("Control.Attribution", function() {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     it("contains specified content", function() {

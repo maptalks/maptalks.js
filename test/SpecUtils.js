@@ -218,6 +218,10 @@ function commonSetupMap(center, baseLayer) {
     };
 }
 
+function removeContainer(container) {
+    document.body.innerHTML = '';
+}
+
 /**
  * 共同的地图销毁方法
  */

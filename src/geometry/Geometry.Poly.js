@@ -84,9 +84,9 @@ Z.Geometry.Poly={
         if (isAntiMeridian === 'continuous') {
             if (Math.abs(d) > 180) {
                 if (d > 0) {
-                    current._substract(new Z.Coordinate(180*2,0))
+                    current._substract(180*2, 0)
                 } else {
-                    current._add(new Z.Coordinate(180*2,0))
+                    current._add(180*2, 0)
                 }
                 p = projection?projection.unproject(current):current;
             }

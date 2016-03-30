@@ -14,6 +14,7 @@ Z.ui={};
  */
 Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype */{
     includes: [Z.Eventable],
+
     /**
      * 将UI组件添加到对象上
      * @param {maptalks.Map} map/geometry
@@ -115,7 +116,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @returns {Boolean} true|false
      * @expose
      */
-    isOpen:function() {
+    isVisible:function() {
         return this._getDOM() && this._getDOM().style.display !== 'none';
     }
 });

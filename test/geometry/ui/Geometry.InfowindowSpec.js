@@ -27,7 +27,7 @@ describe("Geometry.Infowindow", function() {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     it("infowindow has methods to change itself.", function(done) {
@@ -82,9 +82,9 @@ describe("Geometry.Infowindow", function() {
                 geo.setInfoWindow(options);
                 geo.openInfoWindow();
                 var w = geo.getInfoWindow();
-                expect(w.isOpen()).to.be.ok();
+                expect(w.isVisible()).to.be.ok();
                 geo.closeInfoWindow();
-                expect(w.isOpen()).not.to.be.ok();
+                expect(w.isVisible()).not.to.be.ok();
                 geo.removeInfoWindow();
                 expect(geo.getInfoWindow()).not.to.be.ok();
             }
@@ -102,9 +102,9 @@ describe("Geometry.Infowindow", function() {
                 geo.setInfoWindow(options);
                 geo.openInfoWindow();
                 var w = geo.getInfoWindow();
-                expect(w.isOpen()).to.be.ok();
+                expect(w.isVisible()).to.be.ok();
                 geo.closeInfoWindow();
-                expect(w.isOpen()).not.to.be.ok();
+                expect(w.isVisible()).not.to.be.ok();
                 geo.removeInfoWindow();
                 expect(geo.getInfoWindow()).not.to.be.ok();
             }

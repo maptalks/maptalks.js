@@ -43,7 +43,7 @@ describe('#GeometryDrag', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
     describe('drag a marker', function() {
         it('in default, geometries cannot be dragged', function() {

@@ -65,9 +65,7 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
     },
 
     _prepareRender:function() {
-        if (this._renderZoom !== this.getMap().getZoom()) {
-            this._clearCanvas();
-        }
+        this._clearCanvas();
         this._renderZoom = this.getMap().getZoom();
         this._loaded = false;
     },

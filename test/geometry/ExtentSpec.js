@@ -14,7 +14,7 @@ describe('ExtentSpec', function() {
 
     afterEach(function() {
         map.removeLayer(layer);
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('extent constructor', function() {

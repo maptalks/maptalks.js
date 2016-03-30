@@ -42,7 +42,7 @@ describe('#MapDrag', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
     describe('drag the map', function() {
         it('can be dragged', function() {

@@ -65,8 +65,8 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var alignPoint = Z.StringUtil.getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
         var alignW = alignPoint.x, alignH = alignPoint.y;
         return new Z.PointExtent(
-            dxdy.add(new Z.Point(alignW, alignH)),
-            dxdy.add(new Z.Point(alignW+size['width'],alignH+size['height']))
+            dxdy.add(alignW, alignH),
+            dxdy.add(alignW+size['width'],alignH+size['height'])
         );
     },
 

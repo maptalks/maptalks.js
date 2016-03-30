@@ -12,7 +12,7 @@ describe("Control.Toolbar", function() {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     it("add a toolbar", function() {

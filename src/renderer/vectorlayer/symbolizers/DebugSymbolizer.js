@@ -48,7 +48,7 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         for (var i = 0; i < points.length; i++) {
             var p = points[i];
             if (!Z.Util.isNil(id)) {
-                Z.Canvas.fillText(ctx, id, p.add(new Z.Point(8,-4)), 'rgba(0,0,0,1)');
+                Z.Canvas.fillText(ctx, id, p.add(8,-4), 'rgba(0,0,0,1)');
             }
             var c = [];
             for (var ii = 0; ii < cross.length; ii++) {

@@ -25,7 +25,7 @@ describe('API', function () {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('Map', function () {
@@ -384,7 +384,7 @@ describe('API', function () {
 
     describe('Map.UI.InfoWindow', function() {
 
-        it('show/hide/isOpen', function() {
+        it('show/hide/isVisible', function() {
 
             var options = {
                 title: 'title',
@@ -397,7 +397,7 @@ describe('API', function () {
 
             expect(function () {
                 win.show(pos);
-                win.isOpen();
+                win.isVisible();
                 win.hide();
             }).to.not.throwException();
         });
@@ -492,7 +492,7 @@ describe('API', function () {
             }).to.not.throwException();
         });
 
-        it('show/hide/isOpen', function() {
+        it('show/hide/isVisible', function() {
             var options = {
                 position: null,
                 beforeOpen: null,
@@ -509,7 +509,7 @@ describe('API', function () {
             expect(function () {
                 menu.show(pos);
                 menu.hide();
-                menu.isOpen();
+                menu.isVisible();
             }).to.not.throwException();
         });
 

@@ -34,7 +34,7 @@ Z.CurveLine = Z.LineString.extend({
         var arcDegree = this.options['arcDegree'],
             curveType = this.options['curveType'];
         var me = this;
-        var fn = function(_ctx, _points, _dasharray, _lineOpacity) {
+        var fn = function(_ctx, _points, _lineOpacity, _fillOpacity, _dasharray) {
 
             var curveFn, degree;
             switch (curveType) {
@@ -81,15 +81,15 @@ Z.CurveLine = Z.LineString.extend({
             if (me.options['arrowStyle'] && _points.length >= 2) {
                 var placement = me.options['arrowPlacement'];
                 if (placement === 'vertex-first' || placement === 'vertex-firstlast') {
-                    me._arrow(_ctx, _points[1], _points[0], _lineOpacity);
+                    me._arrow(_ctx, _points[1], _points[0], _lineOpacity, me.options['arrowStyle']);
                 }
                 if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
-                    me._arrow(_ctx, _points[_points.length-2], _points[_points.length-1], _lineOpacity);
+                    me._arrow(_ctx, _points[_points.length-2], _points[_points.length-1], _lineOpacity, me.options['arrowStyle']);
                 }
                 //besizerCurves doesn't have point arrows
                 if ((curveType === 0 || curveType === 1) && placement === 'point') {
                     for (var i = 0, len = _points.length-1; i < len; i++) {
-                        me._arrow(_ctx, _points[i], _points[i+1], _lineOpacity);
+                        me._arrow(_ctx, _points[i], _points[i+1], _lineOpacity, me.options['arrowStyle']);
                     }
                 }
             }
@@ -98,7 +98,7 @@ Z.CurveLine = Z.LineString.extend({
         var symbol = this._getInternalSymbol();
         return {
             "fn" : fn,
-            "context" : [points,symbol['lineDasharray'], symbol['lineOpacity']]
+            "context" : [points]
         };
     }
 });
