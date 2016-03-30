@@ -31,10 +31,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (!this.getMap()) {
             return;
         }
-        if (!this._layer.isVisible() || this._layer.isEmpty()) {
-            this._fireLoadedEvent();
-            return;
-        }
         if (!this._painted && !geometries) {
             geometries = this._layer._geoCache;
         }
@@ -202,6 +198,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             return;
         }
         if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this._requestMapToRender();
             this._fireLoadedEvent();
             return;
         }
