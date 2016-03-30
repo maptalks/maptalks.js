@@ -146,7 +146,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                     tiles.push(tileDesc);
                     fullExtent = fullExtent.combine(new Z.PointExtent(
                         tileDesc['viewPoint'],
-                        tileDesc['viewPoint'].add(new Z.Point(tileSize['width'],tileSize['height']))
+                        tileDesc['viewPoint'].add(tileSize['width'],tileSize['height'])
                         )
                     );
             }

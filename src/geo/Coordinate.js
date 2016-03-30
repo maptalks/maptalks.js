@@ -42,9 +42,14 @@ Z.Util.extend(Z.Coordinate.prototype,/** @lends maptalks.Coordinate.prototype */
     },
 
     //destructive add, to improve performance in some circumstances.
-    _add: function(d) {
-        this.x += d.x;
-        this.y += d.y;
+    _add: function(x, y) {
+        if (x instanceof Z.Coordinate) {
+            this.x += x.x;
+            this.y += x.y;
+        } else {
+            this.x += x;
+            this.y += y;
+        }
         return this;
     },
     /**
@@ -52,14 +57,27 @@ Z.Util.extend(Z.Coordinate.prototype,/** @lends maptalks.Coordinate.prototype */
      * @param {maptalks.Coordinate} coordinate - coordinate to add
      * @return {maptalks.Coordinate} result
      */
-    add:function(d) {
-        return new Z.Coordinate(this.x+d.x, this.y+d.y);
+    add:function(x, y) {
+        var nx, ny;
+        if (x instanceof Z.Coordinate) {
+            nx = this.x + x.x;
+            ny = this.y + x.y;
+        } else {
+            nx = this.x + x;
+            ny = this.y + y;
+        }
+        return new Z.Coordinate(nx, ny);
     },
 
     //destructive substract
-    _substract: function(d) {
-        this.x -= d.x;
-        this.y -= d.y;
+    _substract: function(x, y) {
+        if (x instanceof Z.Coordinate) {
+            this.x -= x.x;
+            this.y -= x.y;
+        } else {
+            this.x -= x;
+            this.y -= y;
+        }
         return this;
     },
 
@@ -68,8 +86,16 @@ Z.Util.extend(Z.Coordinate.prototype,/** @lends maptalks.Coordinate.prototype */
      * @param {maptalks.Coordinate} coordinate - coordinate to substract
      * @return {maptalks.Coordinate} result
      */
-    substract:function(d) {
-        return new Z.Coordinate(this.x-d.x, this.y-d.y);
+    substract:function(x, y) {
+        var nx, ny;
+        if (x instanceof Z.Coordinate) {
+            nx = this.x - x.x;
+            ny = this.y - x.y;
+        } else {
+            nx = this.x - x;
+            ny = this.y - y;
+        }
+        return new Z.Coordinate(nx, ny);
     },
 
     /**

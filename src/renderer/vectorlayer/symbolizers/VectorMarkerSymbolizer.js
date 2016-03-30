@@ -53,7 +53,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 Z.Canvas.path(ctx,vectorArray.slice(2,4), lineOpacity);
             } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'triangle'){
                 if (markerType === 'bar') {
-                    point = point.add(new Z.Point(0,-style['markerLineWidth']/2));
+                    point = point.add(0,-style['markerLineWidth']/2);
                 }
                 for (j = vectorArray.length - 1; j >= 0; j--) {
                     vectorArray[j]._add(point);
@@ -61,7 +61,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 //面类型
                 Z.Canvas.polygon(ctx,vectorArray, lineOpacity, fillOpacity);
             } else if (markerType === 'pin') {
-                point = point.add(new Z.Point(0,-style['markerLineWidth']/2));
+                point = point.add(0,-style['markerLineWidth']/2);
                 for (j = vectorArray.length - 1; j >= 0; j--) {
                     vectorArray[j]._add(point);
                 }
@@ -70,7 +70,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 Z.Canvas.bezierCurveAndFill(ctx,vectorArray, lineOpacity, fillOpacity);
                 ctx.lineCap = lineCap;
             } else if (markerType === 'pie') {
-                point = point.add(new Z.Point(0,-style['markerLineWidth']/2));
+                point = point.add(0,-style['markerLineWidth']/2);
                 var angle = Math.atan(width/2/height)*180/Math.PI;
                 var lineCap = ctx.lineCap;
                 ctx.lineCap = 'round';
@@ -103,9 +103,9 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             height = style['markerHeight'];
         var result;
         if (markerType  === 'bar' || markerType  === 'pie' || markerType  === 'pin') {
-            result = new Z.PointExtent(dxdy.add(new Z.Point(-width/2,-height)), dxdy.add(new Z.Point(width/2,0)));
+            result = new Z.PointExtent(dxdy.add(-width/2,-height), dxdy.add(width/2,0));
         } else {
-            result = new Z.PointExtent(dxdy.add(new Z.Point(-width/2,-height/2)), dxdy.add(new Z.Point(width/2,height/2)));
+            result = new Z.PointExtent(dxdy.add(-width/2,-height/2), dxdy.add(width/2,height/2));
         }
         if (this.style['markerLineWidth']) {
             result = result.expand(this.style['markerLineWidth']/2);
