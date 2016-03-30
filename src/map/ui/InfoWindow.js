@@ -10,6 +10,10 @@
  */
 Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prototype */{
 
+    statics : {
+        'single' : true
+    },
+
     /**
      * @cfg {Object} options 信息窗属性
      */
@@ -27,13 +31,25 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         Z.Util.setOptions(this,options);
     },
 
+    addTo:function(target) {
+        this._target = target;
+    },
+
+    getMap:function() {
+        if (this._target instanceof Z.Map) {
+            return this._target;
+        }
+        return this._target.getMap();
+    },
+
+    /**
+     * [setContent description]
+     * @param {[type]} content [description]
+     */
     setContent:function(content) {
         this.options['content'] = content;
         if (this.isVisible()) {
-            delete this._dom;
             this.show(this._coordinate);
-        } else if (this._isOnStage()) {
-            delete this._dom;
         }
         return this;
     },
@@ -45,10 +61,7 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
     setTitle:function(title) {
         this.options['title'] = title;
         if (this.isVisible()) {
-            delete this._dom;
             this.show(this._coordinate);
-        } else if (this._isOnStage()) {
-            delete this._dom;
         }
         return this;
     },
@@ -57,63 +70,19 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         return this.options['title'];
     },
 
-    /**
-     * get pixel size of info window
-     * @return {Size} size
-     */
-    getSize:function() {
-        if (this._size) {
-            return this._size.copy();
-        } else {
-            return null;
-        }
-    },
-
-    _prepareDOM:function() {
-        this._dom = null;
-        if (!this._map.options['enableInfoWindow']) {
-            return;
-        }
-        var container = this._map._panels.tipContainer;
-        container.innerHTML = '';
-        var dom;
-        if (this._isOnStage() && this._domHTML) {
-            container.innerHTML = this._domHTML;
-            this._dom = container.childNodes[0];
-        } else {
-            dom = this._dom = this._createDOM();
-            Z.DomUtil.on(dom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
-            dom.style.position = 'absolute';
-            dom.style.left = -99999+'px';
-            dom.style.top = -99999+'px';
-            container.appendChild(dom);
-            this._domHTML = container.innerHTML;
-            this._size = new Z.Size(dom.clientWidth+6, dom.clientHeight);
-            var minHeight = this.options['minHeight'];
-            if (minHeight>0 && this._size['height']<minHeight) {
-                dom.style.height = minHeight+'px';
-                this._size['height'] = minHeight;
-            }
-            dom.style.display = "none";
-        }
-        this._map._infoWindow =  {
-            'target' : this
-        };
-    },
-
     _createDOM: function(){
         if (this.options['custom']) {
             if (Z.Util.isString(this.options['content'])) {
-                var container = Z.DomUtil.createEl('div');
-                container.innerHTML = this.options['content'];
-                return container;
+                var dom = Z.DomUtil.createEl('div');
+                dom.innerHTML = this.options['content'];
+                return dom;
             } else {
                 return this.options['content'];
             }
         } else {
             var dom = Z.DomUtil.createEl('div');
             dom.className = 'maptalks-msgBox';
-            dom.style.width = this._getWidth()+'px';
+            dom.style.width = this._getWindowWidth()+'px';
             var content = '<em class="maptalks-ico"></em>';
             if (this.options['title']) {
                 content += '<h2>'+this.options['title']+'</h2>';
@@ -125,40 +94,19 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         };
     },
 
-    //get anchor of infowindow to place
-    _getAnchor: function(_coordinate) {
-        var position;
-        var coordinate = _coordinate;
-        this._coordinate = _coordinate;
-        if(!coordinate) {
-            coordinate = this._target.getCenter();
-        }
+    _getDomOffset:function() {
         var size = this.getSize();
-        var anchor = this._map.coordinateToViewPoint(new Z.Coordinate(coordinate));
-        anchor = anchor.add(new Z.Point(-size['width']/2, -size['height']));
-        var offset = this.options['offset']?new Z.Point(this.options['offset']):null;
-        if (offset) {
-            anchor = anchor.add(offset);
-        }
-        if (!_coordinate && (this._target instanceof Z.Marker)) {
+        var o = new Z.Point(-size['width']/2, -size['height'])._add(-4, -12);
+        if (this._target instanceof Z.Marker) {
             var markerSize = this._target.getSize();
-            anchor = anchor.add(new Z.Point(0, -markerSize['height']-20));
+            if (markerSize) {
+                o._add(0,  -markerSize['height']);
+            }
         }
-        return anchor;
+        return o;
     },
 
-    _isOnStage:function() {
-        return (this._map._infoWindow && this._map._infoWindow['target'] == this);
-    },
-
-    _getDOM:function() {
-        if (!this._isOnStage()) {
-            return null;
-        }
-        return this._dom;
-    },
-
-    _getWidth:function() {
+    _getWindowWidth:function() {
         var defaultWidth = 300;
         var width = this.options['width'];
         if (!width) {
@@ -168,27 +116,27 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
     },
 
     _registerEvents:function() {
-        this._map.on('_zoomstart', this._onZoomStart, this);
-        this._map.on('_zoomend', this._onZoomEnd, this);
+        this.getMap().on('_zoomstart', this._onZoomStart, this)
+            .on('_zoomend', this._onZoomEnd, this);
     },
 
     _removeEvents:function() {
-        this._map.off('_zoomstart', this._onZoomStart, this);
-        this._map.off('_zoomend', this._onZoomEnd, this);
+        this.getMap().off('_zoomstart', this._onZoomStart, this)
+                     .off('_zoomend', this._onZoomEnd, this);
     },
 
     _onZoomStart:function() {
         if (this.isVisible()) {
-            this._getDOM().style.left = -99999+'px';
-            this._getDOM().style.top = -99999+'px';
+            this._getDOM().style.left = -999999+'px';
+            this._getDOM().style.top = -999999+'px';
         }
     },
 
     _onZoomEnd:function() {
         if (this.isVisible()) {
-            var anchor = this._getAnchor(this._coordinate);
-            this._getDOM().style.left = anchor.x+'px';
-            this._getDOM().style.top = anchor.y+'px';
+            var point = this._getPosition();
+            this._getDOM().style.left = point.x+'px';
+            this._getDOM().style.top = point.y+'px';
         }
     }
 });

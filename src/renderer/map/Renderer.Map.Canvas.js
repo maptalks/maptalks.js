@@ -248,9 +248,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var mapWrapper = createContainer('mapWrapper','MAP_WRAPPER', 'position:absolute;overflow:hidden;');
         var mapPlatform = createContainer('mapPlatform', 'MAP_PLATFORM', 'position:absolute;top:0px;left:0px;');
         var mapViewPort = createContainer('mapViewPort', 'MAP_VIEWPORT', 'position:absolute;top:0px;left:0px;z-index:10;-moz-user-select:none;-webkit-user-select: none;');
-        var tipContainer = createContainer('tipContainer', 'MAP_TIP_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
-        var popMenuContainer = createContainer('popMenuContainer', 'MAP_POPMENU_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
-        var toolboxContainer = createContainer('toolboxContainer', 'MAP_TOOLBOX_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
         var uiContainer = createContainer('uiContainer', 'MAP_UI_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
         var canvasContainer = createContainer('canvasContainer', 'MAP_CANVAS_CONTAINER', 'position:absolute;top:0px;left:0px;border:none;');
         var mapMask = createContainer('mapMask', 'MAP_MASK', 'position:absolute;top:0px;left:0px;');
@@ -262,9 +259,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
         containerDOM.appendChild(mapWrapper);
 
-        uiContainer.appendChild(tipContainer);
-        uiContainer.appendChild(popMenuContainer);
-        uiContainer.appendChild(toolboxContainer);
         mapPlatform.appendChild(uiContainer);
         mapWrapper.appendChild(mapMask);
         mapWrapper.appendChild(mapPlatform);
