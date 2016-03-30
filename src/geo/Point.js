@@ -74,10 +74,14 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
     },
 
     //Destructive add
-    _add: function(_point) {
-        // if (!_point) {return;}
-        this.x += _point.x;
-        this.y += _point.y;
+    _add: function(x, y) {
+        if (x instanceof Z.Point) {
+            this.x += x.x;
+            this.y += x.y;
+        } else {
+            this.x += x;
+            this.y += y;
+        }
         return this;
     },
 
@@ -86,15 +90,26 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @param {maptalks.Point} point - point to add
      * @return {maptalks.Point} result
      */
-    add: function(point) {
-        var offx = this.x + point.x,
-            offy = this.y  + point.y;
-        return new Z.Point(offx, offy);
+    add: function(x, y) {
+        var nx, ny;
+        if (x instanceof Z.Point) {
+            nx = this.x + x.x;
+            ny = this.y + x.y;
+        } else {
+            nx = this.x + x;
+            ny = this.y + y;
+        }
+        return new Z.Point(nx, ny);
     },
 
-    _substract: function(point) {
-        this.x -= point.x;
-        this.y -= point.y;
+    _substract: function(x, y) {
+        if (x instanceof Z.Point) {
+            this.x -= x.x;
+            this.y -= x.y;
+        } else {
+            this.x -= x;
+            this.y -= y;
+        }
         return this;
     },
 
@@ -103,10 +118,16 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @param {maptalks.Point} point - point to substract
      * @return {maptalks.Point} result
      */
-    substract: function(point) {
-        var offx = this.x - point.x,
-            offy = this.y  - point.y;
-        return new Z.Point(offx, offy);
+    substract: function(x, y) {
+        var nx, ny;
+        if (x instanceof Z.Point) {
+            nx = this.x - x.x;
+            ny = this.y - x.y;
+        } else {
+            nx = this.x - x;
+            ny = this.y - y;
+        }
+        return new Z.Point(nx, ny);
     },
 
     //破坏性方法

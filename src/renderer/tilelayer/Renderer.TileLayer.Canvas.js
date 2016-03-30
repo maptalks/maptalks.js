@@ -201,7 +201,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             this._context.font='15px monospace';
             Z.Canvas.rectangle(this._context, p, tileSize, 1, 0);
             var xyz = tileImage[this.propertyOfTileId].split('__');
-            Z.Canvas.fillText(this._context, 'x:'+xyz[1]+',y:'+xyz[0]+',z:'+xyz[2], p.add(new Z.Point(10,20)), 'rgb(0,0,0)');
+            Z.Canvas.fillText(this._context, 'x:'+xyz[1]+',y:'+xyz[0]+',z:'+xyz[2], p.add(10,20), 'rgb(0,0,0)');
             this._context.restore();
         }
     },
@@ -227,7 +227,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         if (!Z.node) {
             var tileSize = this._layer.getTileSize();
             var viewExtent = this.getMap()._getViewExtent();
-            if (viewExtent.intersects(new Z.PointExtent(point, point.add(new Z.Point(tileSize['width'], tileSize['height']))))) {
+            if (viewExtent.intersects(new Z.PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
                 this._requestMapToRender();
             }
         }

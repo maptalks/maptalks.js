@@ -171,12 +171,12 @@ Z.Canvas = {
     _textOnMultiRow: function(ctx, texts, style, point, splitTextSize, textSize) {
         var ptAlign = Z.StringUtil.getAlignPoint(splitTextSize,style['textHorizontalAlignment'],style['textVerticalAlignment']);
         var lineHeight = textSize['height']+style['textLineSpacing'];
-        var basePoint = point.add(new Z.Point(0, ptAlign.y));
+        var basePoint = point.add(0, ptAlign.y);
         var text, rowAlign;
         for(var i=0,len=texts.length;i<len;i++) {
             text = texts[i]['text'];
             rowAlign = Z.StringUtil.getAlignPoint(texts[i]['size'],style['textHorizontalAlignment'],style['textVerticalAlignment']);
-            Z.Canvas._textOnLine(ctx, text, basePoint.add(new Z.Point(rowAlign.x, i*lineHeight)), style['textHaloRadius'], style['textHaloFill']);
+            Z.Canvas._textOnLine(ctx, text, basePoint.add(rowAlign.x, i*lineHeight), style['textHaloRadius'], style['textHaloFill']);
         }
     },
 
