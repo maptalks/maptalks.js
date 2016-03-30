@@ -30,7 +30,7 @@ describe('#Projection', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('is default projection', function() {

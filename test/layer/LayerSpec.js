@@ -16,7 +16,7 @@ describe('#Layer', function() {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('change order of layers', function() {

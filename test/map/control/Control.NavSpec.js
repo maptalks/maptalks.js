@@ -24,7 +24,7 @@
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     it("events", function() {

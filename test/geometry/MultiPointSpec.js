@@ -16,7 +16,7 @@ describe('MultiPointSpec', function() {
 
     afterEach(function() {
         map.removeLayer(layer);
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('constructor', function() {

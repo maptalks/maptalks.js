@@ -16,7 +16,7 @@ describe('#ConnectorLineSpec', function() {
 
     afterEach(function() {
         map.removeLayer(layer);
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('connect geometries', function() {

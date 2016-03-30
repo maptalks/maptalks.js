@@ -1,4 +1,4 @@
-describe('Show and Hide Geometry', function() {
+describe('Remove and Hide Geometry', function() {
 
     var container;
     var map;
@@ -27,7 +27,7 @@ describe('Show and Hide Geometry', function() {
 
     afterEach(function() {
         map.removeLayer(layer);
-        document.body.removeChild(container);
+        removeContainer(container);
     });
 
     // 测试所有类型Geometry的公共方法
@@ -100,6 +100,9 @@ function testRemoveHide(geometry, _context) {
         }
         var testPoints = getTestPoints(geometry);
         layer.once('layerload', function() {
+            if (layer.isEmpty()) {
+                return;
+            }
             expect(isDrawn(testPoints, _context.container)).to.be.ok();
             layer.once('layerload', function() {
                 expect(isDrawn(testPoints, _context.container)).not.to.be.ok();

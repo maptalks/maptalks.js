@@ -23,7 +23,7 @@ describe('#Map Profile', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('Layer can profile', function() {

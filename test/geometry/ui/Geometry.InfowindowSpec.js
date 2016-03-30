@@ -27,7 +27,7 @@ describe("Geometry.Infowindow", function() {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     it("infowindow has methods to change itself.", function(done) {

@@ -17,7 +17,7 @@ describe('#TileLayer', function() {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe("#WebMercator", function() {

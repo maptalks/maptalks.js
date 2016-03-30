@@ -17,7 +17,7 @@ describe('Geometry.Events', function() {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     function dragGeometry(geometry) {
