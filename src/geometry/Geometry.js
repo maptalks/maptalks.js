@@ -255,7 +255,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             if (!geometries || !Z.Util.isArrayHasData(geometries)) {
                 return null;
             }
-            return this.geometries[0].getFirstCoordinate();
+            return geometries[0].getFirstCoordinate();
         }
         var coordinates = this.getCoordinates();
         if (!Z.Util.isArray(coordinates)) {
@@ -278,7 +278,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             if (!geometries || !Z.Util.isArrayHasData(geometries)) {
                 return null;
             }
-            return this.geometries[geometries.length-1].getLastCoordinate();
+            return geometries[geometries.length-1].getLastCoordinate();
         }
         var coordinates = this.getCoordinates();
         if (!Z.Util.isArray(coordinates)) {
