@@ -29,7 +29,7 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
 
     setContent:function(content) {
         this.options['content'] = content;
-        if (this.isOpen()) {
+        if (this.isVisible()) {
             delete this._dom;
             this.show(this._coordinate);
         } else if (this._isOnStage()) {
@@ -44,7 +44,7 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
 
     setTitle:function(title) {
         this.options['title'] = title;
-        if (this.isOpen()) {
+        if (this.isVisible()) {
             delete this._dom;
             this.show(this._coordinate);
         } else if (this._isOnStage()) {
@@ -178,14 +178,14 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
     },
 
     _onZoomStart:function() {
-        if (this.isOpen()) {
+        if (this.isVisible()) {
             this._getDOM().style.left = -99999+'px';
             this._getDOM().style.top = -99999+'px';
         }
     },
 
     _onZoomEnd:function() {
-        if (this.isOpen()) {
+        if (this.isVisible()) {
             var anchor = this._getAnchor(this._coordinate);
             this._getDOM().style.left = anchor.x+'px';
             this._getDOM().style.top = anchor.y+'px';
