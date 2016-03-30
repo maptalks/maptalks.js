@@ -18,7 +18,7 @@ describe('CircleSpec', function() {
 
     afterEach(function() {
         map.removeLayer(layer);
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('geometry fires events', function() {

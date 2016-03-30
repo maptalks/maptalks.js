@@ -18,7 +18,7 @@ describe('SymbolSpec', function() {
 
     afterEach(function() {
         map.removeLayer(layer);
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('external resource', function() {

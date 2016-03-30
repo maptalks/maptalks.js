@@ -14,7 +14,7 @@ describe('Marker', function() {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe("symbol", function() {

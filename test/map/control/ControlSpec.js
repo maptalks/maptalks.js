@@ -29,7 +29,7 @@ describe("Control Common Test", function() {
     });
 
     afterEach(function () {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     it("has common methods", function() {

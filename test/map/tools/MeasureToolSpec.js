@@ -47,7 +47,7 @@ describe('#DistanceTool and AreaTool', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
     describe('test distanceTool', function() {
 

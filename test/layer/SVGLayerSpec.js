@@ -25,7 +25,7 @@ describe('SVGLayer', function() {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('addGeometry', function() {
