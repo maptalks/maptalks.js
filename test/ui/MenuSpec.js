@@ -111,7 +111,24 @@ function runTests(target, _context) {
 
             });
 
+            it('return false to keep the menu open', function() {
+                before();
+                target.setMenuItems([
+                    {
+                        item: 'item1',
+                        click: function() {
+                            return false;
+                        }
+                    },
+                    '-'
+                ]);
+                target.openMenu();
+                var itemEles = document.getElementsByTagName('li');
+                itemEles[0].click();
 
+                expect(target._menu._getDOM().style.display).not.to.be.eql('none');
+
+            });
 
         });
     }

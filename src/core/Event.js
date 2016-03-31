@@ -29,7 +29,7 @@ Z.Eventable = {
             }
             for (var i=0, len=handlerChain.length;i<len;i++) {
                 if (handler == handlerChain[i].handler) {
-                    if (!handlerChain[i].del && ((context && handlerChain[i].context === context) || (Z.Util.isNil(context) && Z.Util.isNil(handlerChain[i].context)))) {
+                    if (!handlerChain[i].del && handlerChain[i].context === context) {
                         return this;
                     }
                 }
@@ -79,10 +79,8 @@ Z.Eventable = {
             var handlerChain =  this._eventMap[eventType];
             if (!handlerChain) {return this;}
             for (var i=0, len= handlerChain.length;i<len;i++) {
-                if (handler == handlerChain[i].handler) {
-                    if ((context && (handlerChain[i].context == context)) || Z.Util.isNil(context)) {
+                if (handler == handlerChain[i].handler && handlerChain[i].context === context) {
                         handlerChain[i].del = true;
-                    }
                 }
             }
         }

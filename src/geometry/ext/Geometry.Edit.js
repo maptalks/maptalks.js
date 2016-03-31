@@ -12,6 +12,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         this.endEdit();
         this._editor = new Z.GeometryEditor(this,opts);
         this._editor.start();
+        this.fire('editstart');
         return this;
     },
 
@@ -23,6 +24,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         if (this._editor) {
             this._editor.stop();
             delete this._editor;
+            this.fire('editend');
         }
         return this;
     },

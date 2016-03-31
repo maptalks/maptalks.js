@@ -241,11 +241,10 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         if (this.isEmpty()) {
             return false;
         }
-        var i, len, geo;
+        var i, len;
         var geometries = this.getGeometries();
         for (i = 0, len = geometries.length; i < len; i++) {
-            geo = geometries[i];
-            if (geo._containsPoint(point)) {
+            if (geometries[i]._containsPoint(point)) {
                 return true;
             }
         }
@@ -260,11 +259,10 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         var geometries = this.getGeometries();
         var result = null;
         for (var i=0, len=geometries.length;i<len;i++) {
-            var geo = geometries[i];
-            if (!geo) {
+            if (!geometries[i]) {
                 continue;
             }
-            var geoExtent = geo._computeExtent(projection);
+            var geoExtent = geometries[i]._computeExtent(projection);
             if (geoExtent) {
                 result = geoExtent.combine(result);
             }
@@ -281,11 +279,10 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         var geometries = this.getGeometries();
         var result = 0;
         for (var i=0, len=geometries.length;i<len;i++) {
-            var geo = geometries[i];
-            if (!geo) {
+            if (!geometries[i]) {
                 continue;
             }
-            result += geo._computeGeodesicLength(projection);
+            result += geometries[i]._computeGeodesicLength(projection);
         }
         return result;
     },
@@ -297,31 +294,29 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         var geometries = this.getGeometries();
         var result = 0;
         for (var i=0, len=geometries.length;i<len;i++) {
-            var geo = geometries[i];
-            if (!geo) {
+            if (!geometries[i]) {
                 continue;
             }
-            result += geo._computeGeodesicArea(projection);
+            result += geometries[i]._computeGeodesicArea(projection);
         }
         return result;
     },
 
 
    _exportGeoJSONGeometry:function() {
-        var geoJSONs = [];
+        var geoJSON = [];
         if (!this.isEmpty()) {
             var geometries = this.getGeometries();
             for (var i=0,len=geometries.length;i<len;i++) {
-                var geo = geometries[i];
-                if (!geo) {
+                if (!geometries[i]) {
                     continue;
                 }
-                geoJSONs.push(geo._exportGeoJSONGeometry());
+                geoJSON.push(geometries[i]._exportGeoJSONGeometry());
             }
         }
         return {
             'type':         'GeometryCollection',
-            'geometries':   geoJSONs
+            'geometries':   geoJSON
         };
     },
 
@@ -331,11 +326,10 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         }
         var geometries = this.getGeometries();
         for (var i=0,len=geometries.length;i<len;i++) {
-            var geo = geometries[i];
-            if (!geo) {
+            if (!geometries[i]) {
                 continue;
             }
-            geo._clearProjection();
+            geometries[i]._clearProjection();
         }
 
     },
@@ -375,6 +369,11 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
             geometries[i].startEdit(opts);
         }
         this._editing = true;
+        this.hide();
+        var me = this;
+        setTimeout(function() {
+            me.fire('editstart');
+        }, 1);
         return this;
     },
 
@@ -392,11 +391,16 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
             delete this._originalSymbol;
         }
         this._editing = false;
+        this.show();
+        this.fire('editend');
         return this;
     },
 
 
     isEditing:function() {
-        return this._editing;
+        if (!this._editing) {
+            return false;
+        }
+        return true;
     }
 });

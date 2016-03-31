@@ -88,6 +88,7 @@ function testRemoveHide(geometry, _context) {
         var layer = _context.layer,
             map = layer.getMap();
         layer.clear();
+        layer._clearAllListeners();
         map.setCenter(geometry.getFirstCoordinate());
         if (geometry instanceof maptalks.Polygon || geometry instanceof maptalks.LineString) {
             geometry.setSymbol({
@@ -165,6 +166,38 @@ function testRemoveHide(geometry, _context) {
              test(function() {
                 geometry.hide();
             }, done);
+        });
+
+        it('should be removed when it is being edited', function(done) {
+            setupGeometry();
+            var layer = _context.layer,
+                map = layer.getMap();
+            layer.clear();
+            map.setCenter(geometry.getFirstCoordinate());
+            if (geometry instanceof maptalks.Polygon || geometry instanceof maptalks.LineString) {
+                geometry.setSymbol({
+                    'lineWidth' : 5,
+                    'lineColor' : '#000000',
+                    'lineOpacity' : 1,
+                    'polygonFill' : '#000000',
+                    'polygonOpacity' : 1
+                });
+            }
+            var testPoints = getTestPoints(geometry);
+            geometry._enableRenderImmediate();
+            layer.addGeometry(geometry);
+            geometry.once('editstart', function() {
+                if (layer.isEmpty()) {
+                    return;
+                }
+                expect(isDrawn(testPoints, _context.container)).to.be.ok();
+                geometry.once('remove', function() {
+                    expect(isDrawn(testPoints, _context.container)).not.to.be.ok();
+                    done();
+                });
+                geometry.remove();
+            });
+            geometry.startEdit();
         });
     });
 }
