@@ -47,6 +47,9 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         if (!this.getMap()) {
             return this;
         }
+        if (!coordinate) {
+            coordinate = this.getCenter();
+        }
         if (!this._infoWindow) {
             if (this._infoWinOptions && this.getMap()) {
                 this._bindInfoWindow(this._infoWinOptions);
