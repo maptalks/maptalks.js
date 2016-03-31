@@ -1,6 +1,15 @@
 /**
  * @classdesc
  * Class for context menu, useful for interactions with right clicks on the map.
+ *
+ * Menu items is set to options.items or by setItems method.
+ *
+ * Normally items is a object array, containing:
+ * 1. item object: {'item': 'This is a menu text', 'click': function() {alert('oops! You clicked!');)}}
+ * 2. minus string "-", which will draw a splitor line on the menu.
+ *
+ * If options.custom is set to true, the menu is considered as a customized one. Then items is the customized html codes or HTMLElement.
+ *
  * @class
  * @category ui
  * @extends maptalks.ui.UIComponent
@@ -15,14 +24,16 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
     },
 
     /**
-     * @cfg {Object} options menu属性
+     * @property {Object} options
+     * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened menu.
+     * @property {Number}  [options.width=160]      - default width
+     * @property {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized menu, customized html codes or a HTMLElement is set to items.
+     * @property {Object[]|String|HTMLElement}  options.items   - html code or a html element is options.custom is true. Or a menu items array, containing: item objects, "-" as a splitor line
      */
     options: {
         'autoPan': false,
-        'custom' : false,
         'width'  : 160,
-        'style'  : 'default',//black|white
-        'position' : null,
+        'custom' : false,
         'items'  : []
     },
 
@@ -30,10 +41,19 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         Z.Util.setOptions(this, options);
     },
 
+    /**
+     * Adds the Menu to a geometry or a map
+     * @param {maptalks.Geometry|maptalks.Map} target - geometry or map to addto.
+     * @returns {maptalks.ui.Menu} this
+     */
     addTo:function(target) {
         this._target = target;
     },
 
+    /**
+     * Get the map instance it displayed
+     * @return {maptalks.Map} [description]
+     */
     getMap:function() {
         if (this._target instanceof Z.Map) {
             return this._target;
@@ -42,10 +62,9 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
     },
 
     /**
-     * 设置菜单项目
-     * @param {Array} items 菜单项
-     * @return {maptalks.ui.Menu} 菜单
-     * @expose
+     * Set the items of the menu.
+     * @param {Object[]|String|HTMLElement} items - items of the menu
+     * return {maptalks.ui.Menu} this
      */
     setItems: function(items) {
         this.options['items'] = items;
@@ -53,15 +72,11 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
     },
 
     /**
-     * 获取设置的菜单项
-     * @return {*} [description]
+     * Get items of  the menu.
+     * @return {Object[]|String|HTMLElement} - items of the menu
      */
     getItems:function() {
         return this.options['items'];
-    },
-
-    _getDomOffset:function() {
-        return new Z.Point(-17, 10);
     },
 
     _createDOM:function() {
@@ -86,6 +101,15 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         }
     },
 
+    /**
+     * Offset of the menu DOM to fit the click position.
+     * @return {maptalks.Point} offset
+     * @private
+     */
+    _getDomOffset:function() {
+        return new Z.Point(-17, 10);
+    },
+
     _createMenuItemDom: function() {
         var me = this;
         var ul = Z.DomUtil.createEl('ul');
@@ -100,9 +124,10 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
                     me.hide();
                 }
         }
+        var item, itemDOM;
         for (var i=0, len=items.length;i<len;i++) {
-            var item = items[i];
-            var itemDOM;
+            item = items[i];
+            itemDOM;
             if ('-' === item || '_' === item) {
                 itemDOM = Z.DomUtil.createEl('li');
                 Z.DomUtil.addClass(itemDOM, 'maptalks-menu-splitter');
