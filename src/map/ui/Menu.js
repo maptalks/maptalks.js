@@ -52,7 +52,8 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
 
     /**
      * Get the map instance it displayed
-     * @return {maptalks.Map} [description]
+     * @return {maptalks.Map} map instance
+     * @override
      */
     getMap:function() {
         if (this._target instanceof Z.Map) {

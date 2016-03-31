@@ -5,6 +5,24 @@ Z.ui={};
 /**
  * @classdesc
  * Base class for all the ui component classes.
+ *
+ * Some instance methods subclasses needs to implement:
+ *
+ * 1. How to get the map instance where UI Component display
+ * function getMap() : maptalks.Map
+ *
+ * 2. Optional, UI Dom's pixel offset from UI's coordinate
+ * function _getDomOffset : maptalks.Point
+ *
+ * 3. Method to create UI's Dom element
+ * function _createDOM : HTMLElement
+ *
+ * 4. Optional, To register any event listener, when the UI Component is created and displayed for the first time.
+ * function _registerEvents : void
+ *
+ * 5. Optional, To remove any event listener registered by _regsiterEvents
+ * function _removeEvents : void
+ *
  * @class
  * @category ui
  * @abstract
@@ -15,6 +33,13 @@ Z.ui={};
 Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype */{
     includes: [Z.Eventable],
 
+    /**
+     * @property {Object} options
+     * @property {Boolean} [options.eventsToStop='mousedown dblclick']  - events to stop propagation from UI's Dom.
+     * @property {Number}  [options.dx=0]     - pixel offset on x axis
+     * @property {Number}  [options.dy=0]     - pixel offset on y axis
+     * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened UI.
+     */
     options:{
         'eventsToStop' : 'mousedown dblclick',
         'dx'     : 0,
