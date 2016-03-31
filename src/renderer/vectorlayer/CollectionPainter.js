@@ -12,8 +12,9 @@ Z.CollectionPainter=Z.Class.extend(/** @lends maptalks.CollectionPainter.prototy
 
     _eachPainter:function(fn) {
         var geometries = this.geometry.getGeometries();
+        var painter;
         for (var i=0,len=geometries.length;i<len;i++) {
-            var painter = geometries[i]._getPainter();
+            painter = geometries[i]._getPainter();
             if (!painter) {
                 continue;
             }
