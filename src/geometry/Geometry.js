@@ -786,7 +786,10 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         this._unbindMenu();
         //infowindow
         this._unbindInfoWindow();
-
+        if (this.isEditing()) {
+            this.endEdit();
+        }
+        this._removePainter();
         if (this._onRemove) {
             this._onRemove();
         }
@@ -810,7 +813,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
          * @property {maptalks.Geometry} target - the geometry fires the event
          */
         this._fireEvent('removestart');
-        this._removePainter();
+
         this._rootRemove();
         /**
          * remove event.
@@ -820,7 +823,6 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
          * @property {String} type - remove
          * @property {maptalks.Geometry} target - the geometry fires the event
          */
-        this._
         this._fireEvent('remove');
     },
 
@@ -882,18 +884,20 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     _isRenderImmediate:function() {
         if (this._getParent()) {
-            return this._getParent()._isRenderImmediate();
+            if (this._getParent()._isRenderImmediate()) {
+                return true;
+            }
         }
-        return (this._isEditingOrDragging() || this._renderImmediate)?true:false;
+        return (this._isEditingOrDragging() || this._immediate)?true:false;        
     },
 
     _enableRenderImmediate:function() {
-        this._renderImmediate = true;
+        this._immediate = true;
         return this;
     },
 
     _disableRenderImmediate:function() {
-        this._renderImmediate = false;
+        this._immediate = false;
         return this;
     },
 
@@ -1165,7 +1169,7 @@ Z.Geometry._getMarkerPathURL=function(symbol) {
         svgContent.push('opacity="'+op+'"');
     }
     if (pathWidth && pathHeight) {
-        svgContent.push('height="'+pathWidth+'" width="'+pathHeight+'"');
+        svgContent.push('height="'+pathHeight+'" width="'+pathWidth+'"');
     }
      svgContent.push('xmlns="http://www.w3.org/2000/svg"><defs></defs>');
 

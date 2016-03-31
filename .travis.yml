@@ -1,7 +1,5 @@
 sudo: false
 language: node_js
-node_js:
-  - "5.1"
 before_script:
 script: "gulp test --cov"
 after_script:
