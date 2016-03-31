@@ -10,6 +10,10 @@
  */
 Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
 
+    statics : {
+        'single' : true
+    },
+
     /**
      * @cfg {Object} options menu属性
      */
@@ -24,6 +28,17 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
 
     initialize: function(options) {
         Z.Util.setOptions(this, options);
+    },
+
+    addTo:function(target) {
+        this._target = target;
+    },
+
+    getMap:function() {
+        if (this._target instanceof Z.Map) {
+            return this._target;
+        }
+        return this._target.getMap();
     },
 
     /**
@@ -45,33 +60,8 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         return this.options['items'];
     },
 
-    /**
-     * get pixel size of menu
-     * @return {Size} size
-     */
-    getSize:function() {
-        if (this._size) {
-            return this._size.copy();
-        } else {
-            return null;
-        }
-    },
-
-    _prepareDOM:function() {
-        var container = this._map._panels.tipContainer;
-        container.innerHTML = '';
-        var dom = this._dom = this._createDOM();
-        Z.DomUtil.on(dom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
-        dom.style.position = 'absolute';
-        dom.style.left = -99999+'px';
-        dom.style.top = -99999+'px';
-        container.appendChild(dom);
-        this._size = new Z.Size(dom.clientWidth+6, dom.clientHeight);
-        dom.style.display = "none";
-        this._map._contextmenu =  {
-            'target' : this
-        };
-        return dom
+    _getDomOffset:function() {
+        return new Z.Point(-17, 10);
     },
 
     _createDOM:function() {
@@ -86,7 +76,7 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         } else {
             var dom = Z.DomUtil.createEl('div');
             Z.DomUtil.addClass(dom, 'maptalks-menu');
-            dom.style.width = this._getWidth()+'px';
+            dom.style.width = this._getMenuWidth()+'px';
             var arrow = Z.DomUtil.createEl('em');
             Z.DomUtil.addClass(arrow, 'maptalks-ico');
             var menuItems = this._createMenuItemDom();
@@ -127,11 +117,7 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         return ul;
     },
 
-    _getDOM:function() {
-        return this._dom;
-    },
-
-    _getWidth:function() {
+    _getMenuWidth:function() {
         var defaultWidth = 160;
         var width = this.options['width'];
         if (!width) {
@@ -140,27 +126,21 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         return width;
     },
 
-    //菜单监听地图的事件
+    /**
+     * Register the events for menu to listen.
+     * @private
+     */
     _registerEvents: function() {
-        this._map.on('_zoomstart _zoomend _movestart _dblclick _click', this.hide, this);
-
+        this.getMap().on('_zoomstart _zoomend _movestart _dblclick _click', this.hide, this);
     },
 
-    //菜单监听地图的事件
+    /**
+     * Remove event listeners
+     * @private
+     */
     _removeEvents: function() {
-        this._map.off('_zoomstart _zoomend _movestart _dblclick _click', this.hide, this);
-    },
-
-    //获取菜单显示位置
-    _getAnchor: function(coordinate) {
-        if (!coordinate) {
-            coordinate = this._target.getCenter();
-        }
-        var anchor = this._map.coordinateToViewPoint(coordinate);
-        //offset menu on the top of the arrow
-        return anchor.add(new Z.Point(-17, 10));
+        this.getMap().off('_zoomstart _zoomend _movestart _dblclick _click', this.hide, this);
     }
-
 });
 
 /**
@@ -253,6 +233,11 @@ Z.ui.Menu.Mixin={
     },
 
     _bindMenu: function(options) {
+        if (Z.Util.isArray(options)) {
+            options = {
+                'items' : options
+            };
+        }
         this._menu = new Z.ui.Menu(options);
         this._menu.addTo(this);
 
