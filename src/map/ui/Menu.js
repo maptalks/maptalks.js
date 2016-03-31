@@ -31,6 +31,7 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
      * @property {Object[]|String|HTMLElement}  options.items   - html code or a html element is options.custom is true. Or a menu items array, containing: item objects, "-" as a splitor line
      */
     options: {
+        'eventsToStop' : 'mousedown dblclick click',
         'autoPan': false,
         'width'  : 160,
         'custom' : false,
