@@ -198,6 +198,9 @@ Z.ui.Menu.Mixin={
     */
     openMenu: function(coordinate) {
         var map = (this instanceof Z.Map)?this:this.getMap();
+        if (!coordinate) {
+            coordinate = this.getCenter();
+        }
         if (!this._menu) {
             if (this._menuOptions && map) {
                 this._bindMenu(this._menuOptions);
@@ -259,11 +262,6 @@ Z.ui.Menu.Mixin={
     },
 
     _bindMenu: function(options) {
-        if (Z.Util.isArray(options)) {
-            options = {
-                'items' : options
-            };
-        }
         this._menu = new Z.ui.Menu(options);
         this._menu.addTo(this);
 
