@@ -46,12 +46,14 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         if (!this._layer.isVisible()) {
+            this._requestMapToRender();
             this._fireLoadedEvent();
             return;
         }
         var layer = this._layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
+            this._requestMapToRender();
             this._fireLoadedEvent();
             return;
         }
@@ -70,6 +72,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         var maskViewExtent = this._prepareCanvas(viewExtent);
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {
+                this._requestMapToRender();
                 this._fireLoadedEvent();
                 return;
             }

@@ -686,6 +686,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (this._layerCache) {
             delete this._layerCache[id];
         }
+        layer.fire('remove');
         return this;
     },
 

@@ -22,7 +22,7 @@ describe('#MapScrollZoomSpec', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('scroll map', function() {

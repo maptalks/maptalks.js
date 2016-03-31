@@ -16,7 +16,7 @@ describe('#MapBorderPanningSpec', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('pan map when mousemove on the border of map', function() {

@@ -184,7 +184,7 @@ describe('#GeometryAnimation', function () {
 
         afterEach(function() {
             map.removeLayer(layer);
-            document.body.removeChild(container);
+            removeContainer(container)
         });
 
 

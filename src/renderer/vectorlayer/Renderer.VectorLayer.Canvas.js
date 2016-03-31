@@ -32,6 +32,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             return;
         }
         if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this._requestMapToRender();
             this._fireLoadedEvent();
             return;
         }
@@ -202,6 +203,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             return;
         }
         if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this._requestMapToRender();
             this._fireLoadedEvent();
             return;
         }

@@ -40,7 +40,7 @@ describe('#GeometryEdit', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('edit all kinds of geometries',function() {

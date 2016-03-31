@@ -17,7 +17,7 @@ describe('MapTouchZoomSpec', function () {
     });
 
     afterEach(function() {
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     describe('touch zoom', function() {

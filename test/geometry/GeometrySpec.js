@@ -24,7 +24,7 @@ describe('#Geometry', function() {
 
     afterEach(function() {
         map.removeLayer(layer);
-        document.body.removeChild(container);
+        removeContainer(container)
     });
 
     // 测试所有类型Geometry的公共方法
