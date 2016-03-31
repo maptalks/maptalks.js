@@ -189,56 +189,6 @@ describe('API', function () {
 
     });
 
-    describe('Map.ContextMenu', function() {
-
-        it('setMenu', function() {
-            var spy = sinon.spy();
-
-            expect(function () {
-                map.setMenu({
-                    items: []
-                });
-                map.setMenu({
-                    items: [
-                        {item: 'item1', callback: spy},
-                        {item: 'item2', callback: spy}
-                    ],
-                    width: 250
-                });
-            }).to.not.throwException();
-        });
-
-        it('setMenuItems', function() {
-            var spy = sinon.spy();
-            var items_1 = [];
-            var items_2 = [
-                {item: 'item1', callback: spy},
-                {item: 'item2', callback: spy}
-            ];
-
-            expect(function () {
-                map.setMenuItems(items_1);
-                map.setMenuItems(items_2);
-            }).to.not.throwException();
-        });
-
-        it('openMenu', function() {
-            var pos = {x: 25, y: 25};
-
-            expect(function () {
-                map.openMenu();
-                map.openMenu(pos);
-            }).to.not.throwException();
-        });
-
-        it('closeMenu', function() {
-            expect(function () {
-                map.closeMenu();
-            }).to.not.throwException();
-        });
-
-    });
-
     describe('Map.FullScreen', function() {
 
         it('requestFullScreen', function(done) {

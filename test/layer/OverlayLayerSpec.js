@@ -75,6 +75,35 @@ describe('#OverlayLayer', function() {
             expect(layer.getGeometryById(gid)).to.equal(geo1);
         });
 
+        it('can be called if geometry is cleared by another layer', function() {
+            var layer1 = new Z.VectorLayer('1');
+            var layer2 = new Z.VectorLayer('2');
+            var gid = 'g1';
+            var geo = new Z.Marker(center);
+            geo.setId(gid);
+            layer1.addGeometry(geo, true);
+            map.addLayer(layer1);
+            layer1.clear();
+            layer2.addGeometry(geo);
+            expect(layer2.getGeometryById(gid)).to.be.ok();
+        });
+
+        it('will fail if geometry is added to another layer', function() {
+            var layer1 = new Z.VectorLayer('1');
+            var layer2 = new Z.VectorLayer('2');
+            var gid = 'g1';
+            var geo = new Z.Marker(center);
+            geo.setId(gid);
+            layer1.addGeometry(geo, true);
+            map.addLayer(layer1);
+
+            expect(function() {
+                layer2.addGeometry(geo);
+            }).to.throwException(function(e) {
+                expect(e).to.be.a(Error);
+            });
+        });
+
         it('shold throw error if geometry to be added has same id', function() {
             var layer = new Z.VectorLayer('id');
             var gid = 'g1';

@@ -4,14 +4,30 @@
  * @class
  * @category ui
  * @extends maptalks.ui.UIComponent
- * @param {Object} options - construct options
+ * @param {Object} options
+ * @param {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
+ * @param {Number}  [options.width=300]     - default width
+ * @param {Number}  [options.minHeight=120] - minimun height
+ * @param {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
+ * @param {String}  [options.title=null]    - title of the infowindow.
+ * @param {String}  options.content         - content of the infowindow.
  * @memberOf maptalks.ui
  * @name InfoWindow
  */
 Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prototype */{
 
+    statics : {
+        'single' : true
+    },
+
     /**
-     * @cfg {Object} options 信息窗属性
+     * @property {Object} options
+     * @property {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
+     * @property {Number}  [options.width=300]     - default width
+     * @property {Number}  [options.minHeight=120] - minimun height
+     * @property {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
+     * @property {String}  [options.title=null]    - title of the infowindow.
+     * @property {String}  options.content         - content of the infowindow.
      */
     options: {
         'autoPan'   : true,
@@ -19,101 +35,89 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         'minHeight' : 120,
         'custom'    : false,
         'title'     : null,
-        'content'   : null,
-        'offset'    : null
+        'content'   : null
     },
 
     initialize:function(options) {
         Z.Util.setOptions(this,options);
     },
 
+    /**
+     * Adds the infowindow to a geometry or a map
+     * @param {maptalks.Geometry|maptalks.Map} target - geometry or map to addto.
+     * @returns {maptalks.ui.InfoWindow} this
+     */
+    addTo:function(target) {
+        this._target = target;
+    },
+
+    /**
+     * Get the map instance it displayed
+     * @return {maptalks.Map} map instance
+     * @override
+     */
+    getMap:function() {
+        if (this._target instanceof Z.Map) {
+            return this._target;
+        }
+        return this._target.getMap();
+    },
+
+    /**
+     * Set the content of the infowindow.
+     * @param {String|HTMLElement} content - content of the infowindow.
+     * return {maptalks.ui.InfoWindow} this
+     */
     setContent:function(content) {
         this.options['content'] = content;
         if (this.isVisible()) {
-            delete this._dom;
             this.show(this._coordinate);
-        } else if (this._isOnStage()) {
-            delete this._dom;
         }
         return this;
     },
 
+    /**
+     * Get content of  the infowindow.
+     * @return {String|HTMLElement} - content of the infowindow
+     */
     getContent:function() {
         return this.options['content'];
     },
 
+    /**
+     * Set the title of the infowindow.
+     * @param {String|HTMLElement} title - title of the infowindow.
+     * return {maptalks.ui.InfoWindow} this
+     */
     setTitle:function(title) {
         this.options['title'] = title;
         if (this.isVisible()) {
-            delete this._dom;
             this.show(this._coordinate);
-        } else if (this._isOnStage()) {
-            delete this._dom;
         }
         return this;
     },
 
+    /**
+     * Get title of  the infowindow.
+     * @return {String|HTMLElement} - content of the infowindow
+     */
     getTitle:function() {
         return this.options['title'];
-    },
-
-    /**
-     * get pixel size of info window
-     * @return {Size} size
-     */
-    getSize:function() {
-        if (this._size) {
-            return this._size.copy();
-        } else {
-            return null;
-        }
-    },
-
-    _prepareDOM:function() {
-        this._dom = null;
-        if (!this._map.options['enableInfoWindow']) {
-            return;
-        }
-        var container = this._map._panels.tipContainer;
-        container.innerHTML = '';
-        var dom;
-        if (this._isOnStage() && this._domHTML) {
-            container.innerHTML = this._domHTML;
-            this._dom = container.childNodes[0];
-        } else {
-            dom = this._dom = this._createDOM();
-            Z.DomUtil.on(dom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
-            dom.style.position = 'absolute';
-            dom.style.left = -99999+'px';
-            dom.style.top = -99999+'px';
-            container.appendChild(dom);
-            this._domHTML = container.innerHTML;
-            this._size = new Z.Size(dom.clientWidth+6, dom.clientHeight);
-            var minHeight = this.options['minHeight'];
-            if (minHeight>0 && this._size['height']<minHeight) {
-                dom.style.height = minHeight+'px';
-                this._size['height'] = minHeight;
-            }
-            dom.style.display = "none";
-        }
-        this._map._infoWindow =  {
-            'target' : this
-        };
     },
 
     _createDOM: function(){
         if (this.options['custom']) {
             if (Z.Util.isString(this.options['content'])) {
-                var container = Z.DomUtil.createEl('div');
-                container.innerHTML = this.options['content'];
-                return container;
+                var dom = Z.DomUtil.createEl('div');
+                dom.innerHTML = this.options['content'];
+                return dom;
             } else {
                 return this.options['content'];
             }
         } else {
             var dom = Z.DomUtil.createEl('div');
             dom.className = 'maptalks-msgBox';
-            dom.style.width = this._getWidth()+'px';
+            dom.style.width = this._getWindowWidth()+'px';
             var content = '<em class="maptalks-ico"></em>';
             if (this.options['title']) {
                 content += '<h2>'+this.options['title']+'</h2>';
@@ -125,40 +129,19 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         };
     },
 
-    //get anchor of infowindow to place
-    _getAnchor: function(_coordinate) {
-        var position;
-        var coordinate = _coordinate;
-        this._coordinate = _coordinate;
-        if(!coordinate) {
-            coordinate = this._target.getCenter();
-        }
+    _getDomOffset:function() {
         var size = this.getSize();
-        var anchor = this._map.coordinateToViewPoint(new Z.Coordinate(coordinate));
-        anchor = anchor.add(new Z.Point(-size['width']/2, -size['height']));
-        var offset = this.options['offset']?new Z.Point(this.options['offset']):null;
-        if (offset) {
-            anchor = anchor.add(offset);
-        }
-        if (!_coordinate && (this._target instanceof Z.Marker)) {
+        var o = new Z.Point(-size['width']/2, -size['height'])._add(-4, -12);
+        if (this._target instanceof Z.Marker) {
             var markerSize = this._target.getSize();
-            anchor = anchor.add(new Z.Point(0, -markerSize['height']-20));
+            if (markerSize) {
+                o._add(0,  -markerSize['height']);
+            }
         }
-        return anchor;
+        return o;
     },
 
-    _isOnStage:function() {
-        return (this._map._infoWindow && this._map._infoWindow['target'] == this);
-    },
-
-    _getDOM:function() {
-        if (!this._isOnStage()) {
-            return null;
-        }
-        return this._dom;
-    },
-
-    _getWidth:function() {
+    _getWindowWidth:function() {
         var defaultWidth = 300;
         var width = this.options['width'];
         if (!width) {
@@ -168,27 +151,27 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
     },
 
     _registerEvents:function() {
-        this._map.on('_zoomstart', this._onZoomStart, this);
-        this._map.on('_zoomend', this._onZoomEnd, this);
+        this.getMap().on('_zoomstart', this._onZoomStart, this)
+            .on('_zoomend', this._onZoomEnd, this);
     },
 
     _removeEvents:function() {
-        this._map.off('_zoomstart', this._onZoomStart, this);
-        this._map.off('_zoomend', this._onZoomEnd, this);
+        this.getMap().off('_zoomstart', this._onZoomStart, this)
+                     .off('_zoomend', this._onZoomEnd, this);
     },
 
     _onZoomStart:function() {
         if (this.isVisible()) {
-            this._getDOM().style.left = -99999+'px';
-            this._getDOM().style.top = -99999+'px';
+            this._getDOM().style.left = -999999+'px';
+            this._getDOM().style.top = -999999+'px';
         }
     },
 
     _onZoomEnd:function() {
         if (this.isVisible()) {
-            var anchor = this._getAnchor(this._coordinate);
-            this._getDOM().style.left = anchor.x+'px';
-            this._getDOM().style.top = anchor.y+'px';
+            var point = this._getPosition();
+            this._getDOM().style.left = point.x+'px';
+            this._getDOM().style.top = point.y+'px';
         }
     }
 });
