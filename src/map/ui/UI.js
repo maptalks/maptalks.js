@@ -8,19 +8,16 @@ Z.ui={};
  *
  * Some instance methods subclasses needs to implement:
  *
- * 1. How to get the map instance where UI Component display
- * function getMap() : maptalks.Map
- *
- * 2. Optional, UI Dom's pixel offset from UI's coordinate
+ * 1. Optional, UI Dom's pixel offset from UI's coordinate
  * function _getDomOffset : maptalks.Point
  *
- * 3. Method to create UI's Dom element
+ * 2. Method to create UI's Dom element
  * function _createDOM : HTMLElement
  *
- * 4. Optional, To register any event listener, when the UI Component is created and displayed for the first time.
+ * 3 Optional, To register any event listener, when the UI Component is created and displayed for the first time.
  * function _registerEvents : void
  *
- * 5. Optional, To remove any event listener registered by _regsiterEvents
+ * 4. Optional, To remove any event listener registered by _regsiterEvents
  * function _removeEvents : void
  *
  * @class
@@ -45,6 +42,27 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         'dx'     : 0,
         'dy'     : 0,
         'autoPan' : false
+    },
+
+    /**
+     * Adds the UI Component to a geometry or a map
+     * @param {maptalks.Geometry|maptalks.Map} target - geometry or map to addto.
+     * @returns {maptalks.ui.UIComponent} this
+     */
+    addTo:function(target) {
+        this._target = target;
+    },
+
+    /**
+     * Get the map instance it displayed
+     * @return {maptalks.Map} map instance
+     * @override
+     */
+    getMap:function() {
+        if (this._target instanceof Z.Map) {
+            return this._target;
+        }
+        return this._target.getMap();
     },
 
     /**

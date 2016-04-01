@@ -43,27 +43,6 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
     },
 
     /**
-     * Adds the Menu to a geometry or a map
-     * @param {maptalks.Geometry|maptalks.Map} target - geometry or map to addto.
-     * @returns {maptalks.ui.Menu} this
-     */
-    addTo:function(target) {
-        this._target = target;
-    },
-
-    /**
-     * Get the map instance it displayed
-     * @return {maptalks.Map} map instance
-     * @override
-     */
-    getMap:function() {
-        if (this._target instanceof Z.Map) {
-            return this._target;
-        }
-        return this._target.getMap();
-    },
-
-    /**
      * Set the items of the menu.
      * @param {Object[]|String|HTMLElement} items - items of the menu
      * return {maptalks.ui.Menu} this

@@ -43,27 +43,6 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
     },
 
     /**
-     * Adds the infowindow to a geometry or a map
-     * @param {maptalks.Geometry|maptalks.Map} target - geometry or map to addto.
-     * @returns {maptalks.ui.InfoWindow} this
-     */
-    addTo:function(target) {
-        this._target = target;
-    },
-
-    /**
-     * Get the map instance it displayed
-     * @return {maptalks.Map} map instance
-     * @override
-     */
-    getMap:function() {
-        if (this._target instanceof Z.Map) {
-            return this._target;
-        }
-        return this._target.getMap();
-    },
-
-    /**
      * Set the content of the infowindow.
      * @param {String|HTMLElement} content - content of the infowindow.
      * return {maptalks.ui.InfoWindow} this
