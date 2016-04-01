@@ -9,10 +9,19 @@
  */
 Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype */{
 
+    statics : {
+        'single' : true
+    },
+
     /**
-     * @cfg {Object} options toolbox attribute
+     * @property {String} [options.eventsToStop='mousedown dblclick click'] - The events which will be stop propagation.
+     * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened menu.
+     * @property {String}  [options.style='maptalks-toolbox']      - default style
+     * @property {Boolean} [options.vertical=false]  - set it to true if you want the toolbox is show vertical.
+     * @property {Object[]}  options.items   - toolbox items array, containing: item objects, "-" as a splitor line
      */
     options:{
+        'eventsToStop' : 'mousedown dblclick click',
         'autoPan': false,
         'style': 'maptalks-toolbox',
         'vertical' : false,
@@ -21,6 +30,27 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
 
     initialize: function(options) {
         Z.Util.setOptions(this, options);
+    },
+
+    /**
+     * Adds the Menu to a geometry or a map
+     * @param {maptalks.Geometry|maptalks.Map} target - geometry or map to addto.
+     * @returns {maptalks.ui.Menu} this
+     */
+    addTo:function(target) {
+        this._target = target;
+    },
+
+    /**
+     * Get the map instance it displayed
+     * @return {maptalks.Map} map instance
+     * @override
+     */
+    getMap:function() {
+        if (this._target instanceof Z.Map) {
+            return this._target;
+        }
+        return this._target.getMap();
     },
 
     /**
@@ -52,23 +82,6 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
         } else {
             return null;
         }
-    },
-
-    _prepareDOM:function() {
-        var container = this._map._panels.toolboxContainer;
-        container.innerHTML = '';
-        var dom = this._dom = this._createDOM();
-        Z.DomUtil.on(dom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
-        dom.style.position = 'absolute';
-        dom.style.left = -99999+'px';
-        dom.style.top = -99999+'px';
-        container.appendChild(dom);
-        this._size = new Z.Size(dom.clientWidth+6, dom.clientHeight);
-        dom.style.display = "none";
-        this._map._toolbox =  {
-            'target' : this
-        };
-        return dom
     },
 
     _createDOM:function() {
@@ -144,23 +157,13 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
 
     //菜单监听地图的事件
     _registerEvents: function() {
-        this._map.on('_zoomstart _zoomend _movestart', this.hide, this);
+        this.getMap().on('_zoomstart _zoomend _movestart', this.hide, this);
 
     },
 
     //菜单监听地图的事件
     _removeEvents: function() {
-        this._map.off('_zoomstart _zoomend _movestart', this.hide, this);
-    },
-
-    //获取菜单显示位置
-    _getAnchor: function(coordinate) {
-        if (!coordinate) {
-            coordinate = this._target.getCenter();
-        }
-        var anchor = this._map.coordinateToViewPoint(coordinate);
-        //offset menu on the top of the arrow
-        return anchor.add(new Z.Point(-17, 10));
+        this.getMap().off('_zoomstart _zoomend _movestart', this.hide, this);
     }
 
 });
