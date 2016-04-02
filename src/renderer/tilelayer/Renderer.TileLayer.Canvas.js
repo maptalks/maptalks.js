@@ -67,9 +67,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             tileCache = this._tileCache,
             tileSize = layer.getTileSize();
 
-        this._canvasFullExtent =  this.getMap()._getViewExtent();
-        var viewExtent = this._canvasFullExtent;
-        var maskViewExtent = this._prepareCanvas(viewExtent);
+        var viewExtent = this.getMap()._getViewExtent();
+        var maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {
                 this._requestMapToRender();
@@ -112,7 +111,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     },
 
     getCanvasImage:function() {
-        if (!this._canvasFullExtent || this._renderZoom !== this.getMap().getZoom()) {
+        if (this._renderZoom !== this.getMap().getZoom()) {
             return null;
         }
          var gradualOpacity = null;
@@ -122,8 +121,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
                 gradualOpacity = 1;
             }
         }
-        var size = this._canvasFullExtent.getSize();
-        var point = this._canvasFullExtent.getMin();
+        var size = this._viewExtent.getSize();
+        var point = this._viewExtent.getMin();
         return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point),'size':size,'opacity':gradualOpacity};
     },
 
@@ -193,8 +192,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         var tileSize = this._layer.getTileSize();
+        var leftTop = this.getMap().offsetPlatform();
         Z.Canvas.image(this._context, tileImage,
-            point.x-this._canvasFullExtent['xmin'], point.y-this._canvasFullExtent['ymin'],
+            point.x+leftTop.x, point.y+leftTop.y,
             tileSize['width'], tileSize['height']);
         if (this._layer.options['debug']) {
             this._context.save();

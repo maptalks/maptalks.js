@@ -80,7 +80,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         var me = this;
         var counter = 0;
         this._shouldUpdateWhileTransforming = true;
-        var maskViewExtent = this._prepareCanvas(viewExtent);
+        var maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {
                 this._fireLoadedEvent();
@@ -111,7 +111,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
 
         layer._eachGeometry(drawGeo);
-        this._canvasFullExtent = map._getViewExtent();
     },
 
     getPaintContext:function() {
@@ -121,14 +120,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         return [this._context, this._resources];
     },
 
-    getCanvasImage:function() {
-        if (!this._canvasFullExtent || this._layer.isEmpty()) {
-            return null;
-        }
-        var size = this._canvasFullExtent.getSize();
-        var point = this._canvasFullExtent.getMin();
-        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point),'size':size};
-    },
 
     /**
      * Show and render
@@ -151,12 +142,13 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @return {Boolean}       true|false
      */
     hitDetect:function(point) {
-        if (!this._context || !this._canvasFullExtent || this._layer.isEmpty()) {
+        if (!this._context || this._layer.isEmpty()) {
             return false;
         }
-        var size = this._canvasFullExtent.getSize();
-        var canvasNW = this._canvasFullExtent.getMin();
-        var detectPoint = point.substract(canvasNW);
+        var viewExtent = this.getMap()._getViewExtent();
+        var size = viewExtent.getSize();
+        var leftTop = viewExtent.getMin();
+        var detectPoint = point.substract(leftTop);
         if (detectPoint.x < 0 || detectPoint.x > size['width'] || detectPoint.y < 0 || detectPoint.y > size['height']) {
             return false;
         }
