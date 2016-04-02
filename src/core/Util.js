@@ -6,10 +6,10 @@
  */
 Z.Util = {
     /**
-     * @property {Number} globalCounter
+     * @property {Number} guid
      * @static
      */
-    globalCounter: 0,
+    guid: 0,
 
     now:function() {
         if (!Date.now) {
@@ -169,7 +169,13 @@ Z.Util = {
      * @return {String}
      */
     GUID: function() {
-        return '___MAPTALKS_GLOBAL_'+(Z.Util.globalCounter++);
+        return '___MAPTALKS_GLOBAL_'+(Z.Util.guid++);
+    },
+
+    // return unique ID of an object
+    stamp: function (obj) {
+        obj._maptalks_id = obj._maptalks_id || Z.Util.GUID();
+        return obj._maptalks_id;
     },
 
     /**

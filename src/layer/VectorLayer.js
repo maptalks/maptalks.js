@@ -11,7 +11,6 @@
  * @param {String} [options.cursor=default] - the cursor style of the layer
  * @param {Boolean} [options.geometryEvents=true] - enable/disable firing geometry events
  * @param {Number} [options.thresholdOfPointUpdate=50] - threshold of points number to update points while transforming.
- * @param {String} [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @param {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
  */
 Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
@@ -21,40 +20,12 @@ Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */
         'enableSimplify'            : true,
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
-        'thresholdOfPointUpdate'   : 50
+        'thresholdOfPointUpdate'    : 50
     },
 
     initialize:function(id, options) {
         this.setId(id);
         Z.Util.setOptions(this, options);
-
-    },
-
-
-    /**
-     * Called when geometry is being removed to clear the context concerned.
-     * @param  {maptalks.Geometry} geometry - the geometry instance to remove
-     * @private
-     */
-    _onGeometryRemove:function(geometry) {
-        if (!geometry) {return;}
-        //考察geometry是否属于该图层
-        if (this != geometry.getLayer()) {
-            return;
-        }
-        var internalId = geometry._getInternalId();
-        if (Z.Util.isNil(internalId)) {
-            return;
-        }
-        var geoId = geometry.getId();
-        if (!Z.Util.isNil(geoId)) {
-            delete this._geoMap[geoId];
-        }
-        delete this._geoCache[internalId];
-        this._counter--;
-        if (this.isCanvasRender()) {
-            this._getRenderer().render();
-        }
     }
 });
 
