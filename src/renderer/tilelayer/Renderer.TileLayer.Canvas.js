@@ -41,16 +41,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     },
 
     _render:function() {
-        var map = this.getMap();
-        if (!map) {
-            return;
-        }
-        if (!this._layer.isVisible()) {
-            this._requestMapToRender();
-            this._fireLoadedEvent();
-            return;
-        }
-        var layer = this._layer;
+        var map = this.getMap(),
+            layer = this._layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
             this._requestMapToRender();
@@ -67,7 +59,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             tileCache = this._tileCache,
             tileSize = layer.getTileSize();
 
-        var viewExtent = this.getMap()._getViewExtent();
+        var viewExtent = map._getViewExtent();
         var maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {

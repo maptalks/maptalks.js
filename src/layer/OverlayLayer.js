@@ -127,6 +127,7 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 map.setCenterAndZoom(center,z);
             }
         }
+        this.fire('addgeo', {'geometries':geometries});
         return this;
     },
 
@@ -135,21 +136,18 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @param  {String|String[]|maptalks.Geometry|maptalks.Geometry[]} geometries - geometry ids or geometries to remove
      * @returns {maptalks.OverlayLayer} this
      */
-    removeGeometry:function(geometry) {
-        if (Z.Util.isArray(geometry)) {
-            for (var i = geometry.length - 1; i >= 0; i--) {
-                this.removeGeometry(geometry[i]);
+    removeGeometry:function(geometries) {
+        if (!Z.Util.isArray(geometries)) {
+            return this.removeGeometry([geometries]);
+        }
+        for (var i = geometries.length - 1; i >= 0; i--) {
+            if (!(geometries[i] instanceof Z.Geometry)) {
+                geometries[i] = this.getGeometryById(geometries[i]);
             }
-            return this;
+            if (!geometries[i] || this !== geometries[i].getLayer()) continue;
+            geometries[i].remove();
         }
-        if (!(geometry instanceof Z.Geometry)) {
-            geometry = this.getGeometryById(geometry);
-        }
-        if (!geometry) {return this;}
-        if (this != geometry.getLayer()) {
-            return this;
-        }
-        geometry.remove();
+        this.fire('removegeo', {'geometries':geometries});
         return this;
     },
 
@@ -163,6 +161,7 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         });
         this._geoMap={};
         this._geoCache={};
+        this.fire('clear');
         return this;
     },
 

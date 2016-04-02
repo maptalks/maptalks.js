@@ -20,6 +20,14 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
 
     render:function() {
         this._prepareRender();
+        if (!this.getMap()) {
+            return;
+        }
+        if (!this._layer.isVisible() || (this._layer.isEmpty && this._layer.isEmpty())) {
+            this._requestMapToRender();
+            this._fireLoadedEvent();
+            return;
+        }
         this._render.apply(this, arguments);
     },
 
