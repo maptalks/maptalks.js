@@ -18,6 +18,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
      * @property {Boolean} [options.visible=true] - whether to display the layer.
      * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
+     * @property {String}  [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
      */
     options:{
         //最大最小可视范围, null表示不受限制

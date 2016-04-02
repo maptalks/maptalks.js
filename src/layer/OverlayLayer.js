@@ -19,7 +19,7 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
-     * Get a geometry by a id
+     * Get a geometry by its id
      * @param  {String|Number} id   - id of the geometry
      * @return {maptalks.Geometry}
      */
@@ -181,6 +181,32 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             if (cache.hasOwnProperty(g)) {
                 fn.call(context,cache[g]);
             }
+        }
+    },
+
+    /**
+     * Called when geometry is being removed to clear the context concerned.
+     * @param  {maptalks.Geometry} geometry - the geometry instance to remove
+     * @private
+     */
+    _onGeometryRemove:function(geometry) {
+        if (!geometry) {return;}
+        //考察geometry是否属于该图层
+        if (this != geometry.getLayer()) {
+            return;
+        }
+        var internalId = geometry._getInternalId();
+        if (Z.Util.isNil(internalId)) {
+            return;
+        }
+        var geoId = geometry.getId();
+        if (!Z.Util.isNil(geoId)) {
+            delete this._geoMap[geoId];
+        }
+        delete this._geoCache[internalId];
+        this._counter--;
+        if (this._getRenderer()) {
+            this._getRenderer().render();
         }
     }
 });
