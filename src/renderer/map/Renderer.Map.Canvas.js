@@ -334,6 +334,11 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (!layer || !layerImage || mwidth === 0 || mheight === 0){
             return;
         }
+        var point = layerImage['point'],
+            size = layerImage['size'];
+        if (point.x + size['width'] <= 0 || point.y + size['height'] <= 0) {
+            return;
+        }
         //opacity of the layer image
         var op = layer.options['opacity'];
         if (!Z.Util.isNumber(op)) {
@@ -350,16 +355,14 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             return;
         }
         var alpha = this._context.globalAlpha;
-        var point = layerImage['point'];
-        var size = layerImage['size'];
-        var canvasImage = layerImage['image'];
+
         if (op < 1) {
             this._context.globalAlpha *= op;
         }
         if (imgOp < 1) {
             this._context.globalAlpha *= imgOp;
         }
-
+        var canvasImage = layerImage['image'];
         if (Z.node) {
             var context = canvasImage.getContext('2d');
             if (context.getSvg) {
@@ -369,10 +372,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         try {
             this._context.drawImage(canvasImage, point.x, point.y);
-        } catch (error) {
-
-        }
-
+        } catch (error) {}
         this._context.globalAlpha = alpha;
     },
 
