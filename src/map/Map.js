@@ -771,7 +771,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         var projection = this.getProjection();
         if (!coordinate || !projection) {return null;}
         var pCoordinate = projection.project(coordinate);
-        return this._transformToViewPoint(pCoordinate).round();
+        return this._prjToViewPoint(pCoordinate).round();
     },
 
     /**
@@ -782,7 +782,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     viewPointToCoordinate: function(viewPoint) {
         var projection = this.getProjection();
         if (!viewPoint || !projection) {return null;}
-        var p = this._untransformFromViewPoint(viewPoint);
+        var p = this._viewPointToPrj(viewPoint);
         var c = projection.unproject(p);
         return c;
     },
@@ -796,7 +796,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         var projection = this.getProjection();
         if (!coordinate || !projection) {return null;}
         var pCoordinate = projection.project(coordinate);
-        var offset = this._transform(pCoordinate);
+        var offset = this._prjToContainerPoint(pCoordinate);
         return offset.round();
     },
 
@@ -808,7 +808,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     containerPointToCoordinate: function(containerPoint) {
         var projection = this.getProjection();
         if (!containerPoint || !projection) {return null;}
-        var pCoordinate = this._untransform(containerPoint);
+        var pCoordinate = this._containerPointToPrj(containerPoint);
         var coordinate = projection.unproject(pCoordinate);
         return coordinate;
     },
@@ -1111,8 +1111,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      */
     _getPixelDistance:function(pCoord) {
         var current = this._getPrjCenter();
-        var curr_px = this._transform(current);
-        var pCoord_px = this._transform(pCoord);
+        var curr_px = this._prjToContainerPoint(current);
+        var pCoord_px = this._prjToContainerPoint(pCoord);
         var dist = new Z.Point(-pCoord_px.x+curr_px.x,curr_px.y-pCoord_px.y);
         return dist;
     },
@@ -1273,7 +1273,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     _offsetCenterByPixel:function(pixel) {
         var posX = this.width/2+pixel.x,
             posY = this.height/2+pixel.y;
-        var pCenter = this._untransform(new Z.Point(posX, posY));
+        var pCenter = this._containerPointToPrj(new Z.Point(posX, posY));
         this._setPrjCenter(pCenter);
         return pCenter;
     },
@@ -1325,7 +1325,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Coordinate}
      * @private
      */
-    _untransform:function(containerPoint) {
+    _containerPointToPrj:function(containerPoint) {
         var transformation =  this._view.getTransformation();
         var res = this._getResolution();
 
@@ -1343,8 +1343,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Coordinate}
      * @private
      */
-    _untransformFromViewPoint:function(viewPoint) {
-        return this._untransform(this.viewPointToContainerPoint(viewPoint));
+    _viewPointToPrj:function(viewPoint) {
+        return this._containerPointToPrj(this.viewPointToContainerPoint(viewPoint));
     },
 
     /**
@@ -1353,7 +1353,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point}
      * @private
      */
-    _transform:function(pCoordinate) {
+    _prjToContainerPoint:function(pCoordinate) {
         var transformation =  this._view.getTransformation();
         var res = this._getResolution();
 
@@ -1373,8 +1373,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point}
      * @private
      */
-    _transformToViewPoint:function(pCoordinate) {
-        var containerPoint = this._transform(pCoordinate);
+    _prjToViewPoint:function(pCoordinate) {
+        var containerPoint = this._prjToContainerPoint(pCoordinate);
         return this._containerPointToViewPoint(containerPoint);
     },
 

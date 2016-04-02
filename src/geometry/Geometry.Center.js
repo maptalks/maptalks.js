@@ -37,7 +37,7 @@ Z.Geometry.Center = {
         if (!map) {
             return null;
         }
-        return map._transformToViewPoint(pcenter);
+        return map._prjToViewPoint(pcenter);
     },
 
     _getPrjCoordinates:function() {

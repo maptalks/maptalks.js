@@ -5,7 +5,7 @@ if (Z.Browser.canvas) {
         _getRenderCanvasResources:function() {
             var map = this.getMap();
             var pcenter = this._getPrjCoordinates();
-            var pt = map._transformToViewPoint(pcenter);
+            var pt = map._prjToViewPoint(pcenter);
             var size = this._getRenderSize();
             return {
                 "fn" : Z.Canvas.ellipse,
@@ -21,7 +21,7 @@ if (Z.Browser.canvas) {
     Z.Rectangle.include({
         _getRenderCanvasResources:function() {
             var map = this.getMap();
-            var pt = map._transformToViewPoint(this._getPrjCoordinates());
+            var pt = map._prjToViewPoint(this._getPrjCoordinates());
             var size = this._getRenderSize();
             return {
                 "fn" : Z.Canvas.rectangle,
@@ -34,7 +34,7 @@ if (Z.Browser.canvas) {
         _getRenderCanvasResources:function() {
             var map = this.getMap();
             var pcenter = this._getPrjCoordinates();
-            var pt = map._transformToViewPoint(pcenter);
+            var pt = map._prjToViewPoint(pcenter);
             var size = this._getRenderSize();
             return {
                 "fn" : Z.Canvas.sector,
@@ -75,7 +75,7 @@ if (Z.Browser.canvas) {
             //draw a triangle arrow
 
             var prjVertexes = this._getPrjCoordinates();
-            var points = this._transformToViewPoint(prjVertexes);
+            var points = this._prjToViewPoint(prjVertexes);
 
             var me = this;
             var fn = function(_ctx, _points, _lineOpacity, _fillOpacity, _dasharray) {
@@ -109,12 +109,12 @@ if (Z.Browser.canvas) {
     Z.Polygon.include({
         _getRenderCanvasResources:function() {
             var prjVertexes = this._getPrjCoordinates(),
-                points = this._transformToViewPoint(prjVertexes);
+                points = this._prjToViewPoint(prjVertexes);
             var prjHoles = this._getPrjHoles();
             var holePoints = [];
             if (Z.Util.isArrayHasData(prjHoles)) {
                 for (var i = 0; i < prjHoles.length; i++) {
-                    var holPoints = this._transformToViewPoint(prjHoles[i]);
+                    var holPoints = this._prjToViewPoint(prjHoles[i]);
                     holePoints.push(holPoints);
                 }
             }

@@ -37,7 +37,7 @@ Z.Sector.include(Symboling.Center,{
 //----------------------------------------------------
 Z.Rectangle.include({
     _getRenderPoints:function(placement) {
-        var domNw = this.getMap()._transformToViewPoint(this._getPrjCoordinates());
+        var domNw = this.getMap()._prjToViewPoint(this._getPrjCoordinates());
         return [domNw];
     },
 
@@ -54,15 +54,15 @@ Symboling.Poly={
         var map = this.getMap();
         var points;
         if ('vertex' === placement) {
-            points = this._transformToViewPoint(this._getPrjCoordinates());
+            points = this._prjToViewPoint(this._getPrjCoordinates());
         } else if ('line' === placement) {
-            //var vertexes = this._transformToViewPoint(this._getPrjCoordinates());
+            //var vertexes = this._prjToViewPoint(this._getPrjCoordinates());
             points = [];
             //TODO 获取线段中心点
         } else {
             var center = this.getCenter();
             var pcenter = this._getProjection().project(center);
-            points = [map._transformToViewPoint(pcenter)];
+            points = [map._prjToViewPoint(pcenter)];
         }
         return points;
     }
