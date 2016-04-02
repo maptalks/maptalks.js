@@ -366,34 +366,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                  //canvas2svg
                 canvasImage = context;
             }
-            //CanvasMock并不一定实现了drawImage(img, sx, sy, w, h, dx, dy, w, h)
-            this._context.drawImage(canvasImage, point.x, point.y);
-        } else {
-            var sx, sy, w, h, dx, dy;
-            if (point.x <= 0) {
-                sx = -point.x;
-                dx = 0;
-                w = Math.min(size['width']-sx,mwidth);
-            } else {
-                sx = 0;
-                dx = point.x;
-                w = mwidth-point.x;
-            }
-            if (point.y <= 0) {
-                sy = -point.y;
-                dy = 0;
-                h = Math.min(size['height']-sy,mheight);
-            } else {
-                sy = 0;
-                dy = point.y;
-                h = mheight-point.y;
-            }
-            if (dx < 0 || dy < 0 || w <=0 || h <= 0) {
-                this._context.globalAlpha = alpha;
-                return;
-            }
-            this._context.drawImage(canvasImage, sx, sy, w, h, dx, dy, w, h);
         }
+        try {
+            this._context.drawImage(canvasImage, point.x, point.y);
+        } catch (error) {
+
+        }
+
         this._context.globalAlpha = alpha;
     },
 
