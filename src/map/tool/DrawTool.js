@@ -462,7 +462,7 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
             map = this._map;
 
         //projected pLonlat
-        var pLonlat = map._untransform(containerPoint);
+        var pLonlat = map._containerPointToPrj(containerPoint);
         return projection.unproject(pLonlat);
     },
 

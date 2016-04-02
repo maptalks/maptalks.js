@@ -230,7 +230,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         if (!pxExtent.contains(point)) { return false; }
 
         // screen points
-        var points = this._transformToViewPoint(this._getPrjCoordinates());
+        var points = this._prjToViewPoint(this._getPrjCoordinates());
 
         var c = Z.GeoUtils.pointInsidePolygon(point, points);
         if (c) {

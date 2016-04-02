@@ -79,8 +79,8 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
             extent = this._getPrjExtent(),
             nw = new Z.Coordinate(extent.xmin, extent.ymax),
             se = new Z.Coordinate(extent.xmax, extent.ymin),
-            pxMin = map._transformToViewPoint(nw),
-            pxMax = map._transformToViewPoint(se),
+            pxMin = map._prjToViewPoint(nw),
+            pxMax = map._prjToViewPoint(se),
             pxExtent = new Z.PointExtent(pxMin.x - t, pxMin.y - t,
                                     pxMax.x + t, pxMax.y + t);
 
@@ -89,7 +89,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         if (!pxExtent.contains(point)) { return false; }
 
         // screen points
-        var points = this._transformToViewPoint(this._getPrjCoordinates());
+        var points = this._prjToViewPoint(this._getPrjCoordinates());
 
         var i, p1, p2,
             len = points.length;

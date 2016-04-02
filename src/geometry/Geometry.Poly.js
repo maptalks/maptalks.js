@@ -9,7 +9,7 @@ Z.Geometry.Poly={
      * @returns {maptalks.Point[]}
      * @private
      */
-    _transformToViewPoint:function(prjCoords) {
+    _prjToViewPoint:function(prjCoords) {
         var result = [];
         if (!Z.Util.isArrayHasData(prjCoords)) {
             return result;
@@ -55,7 +55,7 @@ Z.Geometry.Poly={
                     if (j > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
                         pp = this._antiMeridian(pp, p[j-1], projection, isAntiMeridian);
                     }
-                    p_r.push(map._transformToViewPoint(pp));
+                    p_r.push(map._prjToViewPoint(pp));
                 }
                 delete this._preAntiMeridianCoord;
                 result.push(p_r);
@@ -63,7 +63,7 @@ Z.Geometry.Poly={
                 if (i > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
                     p = this._antiMeridian(p, prjCoords[i-1], projection, isAntiMeridian);
                 }
-                pp = map._transformToViewPoint(p);
+                pp = map._prjToViewPoint(p);
                 result.push(pp);
             }
         }
