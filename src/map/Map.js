@@ -769,7 +769,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      */
     coordinateToPoint: function(coordinate, zoom) {
         var prjCoord = this.getProjection().project(coordinate);
-        return this._prjToPoint(coordinate, zoom);
+        return this._prjToPoint(prjCoord, zoom)._round();
     },
 
     /**
@@ -790,10 +790,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point}
      */
     coordinateToViewPoint: function(coordinate) {
-        var projection = this.getProjection();
-        if (!coordinate || !projection) {return null;}
-        var pCoordinate = projection.project(coordinate);
-        return this._prjToViewPoint(pCoordinate).round();
+        return this._prjToViewPoint(this.getProjection().project(coordinate))._round();
     },
 
     /**
@@ -802,11 +799,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Coordinate}
      */
     viewPointToCoordinate: function(viewPoint) {
-        var projection = this.getProjection();
-        if (!viewPoint || !projection) {return null;}
-        var p = this._viewPointToPrj(viewPoint);
-        var c = projection.unproject(p);
-        return c;
+        return this.getProjection().unproject(this._viewPointToPrj(viewPoint));
     },
 
     /**
@@ -815,11 +808,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point}
      */
     coordinateToContainerPoint: function(coordinate) {
-        var projection = this.getProjection();
-        if (!coordinate || !projection) {return null;}
-        var pCoordinate = projection.project(coordinate);
-        var offset = this._prjToContainerPoint(pCoordinate);
-        return offset.round();
+        var pCoordinate = this.getProjection().project(coordinate);
+        return this._prjToContainerPoint(pCoordinate)._round();
     },
 
     /**
@@ -828,11 +818,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Coordinate}
      */
     containerPointToCoordinate: function(containerPoint) {
-        var projection = this.getProjection();
-        if (!containerPoint || !projection) {return null;}
         var pCoordinate = this._containerPointToPrj(containerPoint);
-        var coordinate = projection.unproject(pCoordinate);
-        return coordinate;
+        return this.getProjection().unproject(pCoordinate);
     },
 
     /**
@@ -842,9 +829,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @returns {maptalks.Point}
      */
     containerPointToViewPoint: function(containerPoint) {
-        if (!containerPoint) {return null;}
-        var platformOffset = this.offsetPlatform();
-        return containerPoint.substract(platformOffset);
+        return containerPoint.substract(this.offsetPlatform());
     },
 
     /**
@@ -854,9 +839,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @returns {maptalks.Point}
      */
     viewPointToContainerPoint: function(viewPoint) {
-        if (!viewPoint) {return null;}
-        var platformOffset = this.offsetPlatform();
-        return viewPoint.add(platformOffset);
+        return viewPoint.add(this.offsetPlatform());
     },
 
     /**
