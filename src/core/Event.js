@@ -142,6 +142,11 @@ Z.Eventable = {
      * @instance
      */
     fire:function(eventType, param) {
+        return this._fire(eventType, param);
+    },
+
+
+    _fire:function(eventType, param) {
         if (!this._eventMap) {return this;}
         var handlerChain = this._eventMap[eventType.toLowerCase()];
         if (!handlerChain) {return this;}
