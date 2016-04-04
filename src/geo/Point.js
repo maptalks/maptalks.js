@@ -49,6 +49,12 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
         return new Z.Point(this.x, this.y);
     },
 
+    _round:function() {
+        this.x = Z.Util.round(this.x);
+        this.y = Z.Util.round(this.y);
+        return this;
+    },
+
     round:function() {
         return new Z.Point(Z.Util.round(this.x),Z.Util.round(this.y));
     },

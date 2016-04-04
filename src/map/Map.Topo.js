@@ -62,7 +62,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 layers.push(reqLayers[i]);
             }
         }
-        var point = this.coordinateToViewPoint(opts['coordinate']).round();
+        var point = this.coordinateToViewPoint(opts['coordinate'])._round();
         var fn = callback,
             filter = opts['filter'];
         var hits = [],
