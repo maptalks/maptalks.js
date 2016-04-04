@@ -76,7 +76,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this._clearCanvas();
         var baseLayer = map.getBaseLayer();
         var baseLayerImage;
-        if (baseLayer) {
+        if (baseLayer && baseLayer._getRenderer()) {
             baseLayerImage =  baseLayer._getRenderer().getCanvasImage();
             if (baseLayerImage) {
                 this._canvasBg = Z.DomUtil.copyCanvas(baseLayerImage['image']);
@@ -163,20 +163,20 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             if (!layers[i].isVisible()) {
                 continue;
             }
-            var render = layers[i]._getRenderer();
-            if (render) {
+            var renderer = layers[i]._getRenderer();
+            if (renderer) {
                 if (!updatePoints) {
                     this._context.save();
-                    if ((layers[i] instanceof Z.VectorLayer) && !render.shouldUpdateWhileTransforming()) {
+                    if ((layers[i] instanceof Z.VectorLayer) && !renderer.shouldUpdateWhileTransforming()) {
                         //redraw all the geometries with transform matrix
                         //this may bring low performance if number of geometries is large.
-                        render.draw();
+                        renderer.draw();
                     } else {
                         retinaMatrix.applyToContext(this._context);
                     }
                 }
 
-                var layerImage = render.getCanvasImage();
+                var layerImage = renderer.getCanvasImage();
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage, mwidth, mheight);
                 }
@@ -310,7 +310,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     cursor;
                 for (var i = layers.length - 1; i >= 0; i--) {
                     var layer = layers[i];
-                    if (layer._getRenderer().hitDetect) {
+                    if (layer._getRenderer() && layer._getRenderer().hitDetect) {
                         if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(vp)) {
                             cursor = layer.options['cursor'];
                             hit = true;
