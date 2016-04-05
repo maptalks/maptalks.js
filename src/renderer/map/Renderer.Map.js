@@ -58,8 +58,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                     }
 
                     if (player.playState === 'running' && frame.styles['distance']) {
-                        var dist =frame.styles['distance'];
-                        dist = dist.round();
+                        var dist = frame.styles['distance']._round();
                         if (!preDist) {
                             preDist = dist;
                         }

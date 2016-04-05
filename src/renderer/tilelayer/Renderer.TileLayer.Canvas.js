@@ -115,7 +115,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
         var size = this._viewExtent.getSize();
         var point = this._viewExtent.getMin();
-        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point),'size':size,'opacity':gradualOpacity};
+        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point)._round(),'size':size,'opacity':gradualOpacity};
     },
 
     getPaintContext:function() {
