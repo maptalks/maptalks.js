@@ -174,7 +174,7 @@ function testRemoveHide(geometry, _context) {
                 map = layer.getMap();
             layer.clear();
             map.setCenter(geometry.getFirstCoordinate());
-            if (geometry instanceof maptalks.Polygon || geometry instanceof maptalks.LineString) {
+            if (!(geometry instanceof maptalks.Marker) && !(geometry instanceof maptalks.MultiPoint)) {
                 geometry.setSymbol({
                     'lineWidth' : 5,
                     'lineColor' : '#000000',
@@ -191,9 +191,12 @@ function testRemoveHide(geometry, _context) {
                     return;
                 }
                 expect(isDrawn(testPoints, _context.container)).to.be.ok();
-                geometry.once('remove', function() {
-                    expect(isDrawn(testPoints, _context.container)).not.to.be.ok();
-                    done();
+                layer.on('layerload', function() {
+                    if (layer.isEmpty()) {
+                        expect(isDrawn(testPoints, _context.container)).not.to.be.ok();
+                        layer._clearListeners();
+                        done();
+                    }
                 });
                 geometry.remove();
             });

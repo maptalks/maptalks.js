@@ -107,6 +107,33 @@ describe('Geometry.Events', function() {
                 'clientY':point.y
                 });
             expect(spy.called).to.be.ok();
+            spy.reset();
+            happen.click(eventContainer,{
+                'clientX':point.x,
+                'clientY':point.y
+                });
+            expect(spy.called).to.be.ok();
+        });
+
+        it('listen click once',function() {
+            var circle = new maptalks.Circle(map.getCenter(), 10);
+            circle.addTo(layer);
+            var domPosition = Z.DomUtil.getPagePosition(container);
+            var point = map.coordinateToContainerPoint(center).add(domPosition);
+            var spy = sinon.spy();
+            circle.once('click', spy);
+
+            happen.click(eventContainer,{
+                'clientX':point.x,
+                'clientY':point.y
+                });
+            expect(spy.called).to.be.ok();
+            spy.reset();
+            happen.click(eventContainer,{
+                'clientX':point.x,
+                'clientY':point.y
+                });
+            expect(spy.called).not.to.be.ok();
         });
 
         it('disable events listening',function() {
