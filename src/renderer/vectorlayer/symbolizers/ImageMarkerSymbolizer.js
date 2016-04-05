@@ -31,8 +31,10 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             }
             this.geometry._getPainter()._removeCache();
         }
+        var alpha;
         if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer) &&
             Z.Util.isNumber(style['markerOpacity']) && style['markerOpacity'] < 1)  {
+            alpha = ctx.globalAlpha;
             ctx.globalAlpha *= style['markerOpacity'];
         }
         for (var i = 0, len=cookedPoints.length;i<len;i++) {
@@ -41,6 +43,9 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 cookedPoints[i].x - width/2,
                 cookedPoints[i].y - height,
                 width, height);
+        }
+        if (alpha !== undefined) {
+            ctx.globalAlpha = alpha;
         }
     },
 

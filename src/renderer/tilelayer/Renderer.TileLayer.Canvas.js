@@ -83,7 +83,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
                 continue;
             }
             if (cached) {
-                    //画瓦片
                 this._drawTile(tile['viewPoint'], cached);
                 this._tileRended[tileId] = cached;
             } else {

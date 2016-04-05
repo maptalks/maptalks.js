@@ -77,7 +77,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         this._painted = true;
         var viewExtent = map._getViewExtent();
         var me = this;
-        var counter = 0;
+        this._drawCounter = 0;
         this._shouldUpdateWhileTransforming = true;
         var maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
@@ -87,29 +87,28 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
-        var geoViewExt, geoPainter;
 
-        function drawGeo(geo) {
-            //geo的map可能为null,因为绘制为延时方法
-            if (!geo || !geo.isVisible() || !geo.getMap() || !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
-                return;
-            }
-            geoPainter = geo._getPainter();
-            geoViewExt = geoPainter.getPixelExtent();
-            if (!geoViewExt || !geoViewExt.intersects(viewExtent)) {
-                return;
-            }
-            counter++;
-            if (me._shouldUpdateWhileTransforming && geoPainter.hasPointSymbolizer()) {
-                me._shouldUpdateWhileTransforming = false;
-            }
-            if (counter > layer.options['thresholdOfPointUpdate']) {
-                me._shouldUpdateWhileTransforming = true;
-            }
-            geoPainter.paint();
+        layer._eachGeometry(this._drawGeo, this);
+    },
+
+    _drawGeo: function(geo) {
+        //geo的map可能为null,因为绘制为延时方法
+        if (!geo || !geo.isVisible() || !geo.getMap() || !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
+            return;
         }
-
-        layer._eachGeometry(drawGeo);
+        var geoPainter = geo._getPainter();
+        var geoViewExt = geoPainter.getPixelExtent();
+        if (!geoViewExt || !geoViewExt.intersects(this._viewExtent)) {
+            return;
+        }
+        this._drawCounter++;
+        if (this._shouldUpdateWhileTransforming && geoPainter.hasPointSymbolizer()) {
+            this._shouldUpdateWhileTransforming = false;
+        }
+        if (this._drawCounter > this._layer.options['thresholdOfPointUpdate']) {
+            this._shouldUpdateWhileTransforming = true;
+        }
+        geoPainter.paint();
     },
 
     getPaintContext:function() {
@@ -281,7 +280,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
         var me = this,
             resources = [],
-            immediate = false;
+            immediate = this._layer.options['drawImmediate'];
         var res, ii;
         function checkGeo(geo) {
             res = geo._getExternalResource();

@@ -9,7 +9,7 @@ if (Z.Browser.canvas) {
             var size = this._getRenderSize();
             return {
                 "fn" : Z.Canvas.ellipse,
-                "context" : [pt, size]
+                "context" : [pt, size['width'], size['height']]
             };
         }
     };

@@ -20,7 +20,8 @@ Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */
         'enableSimplify'            : true,
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
-        'thresholdOfPointUpdate'    : 50
+        'thresholdOfPointUpdate'    : 50,
+        'drawImmediate'             : false
     },
 
     initialize:function(id, options) {

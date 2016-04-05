@@ -17,7 +17,8 @@ Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
             'lineOpacity' : 1,
 
             'polygonFill' : '#ffffff',
-            'polygonOpacity' : 0
+            'polygonOpacity' : 0,
+            'opacity' : 1
         }
     },
 
