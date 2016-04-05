@@ -27,7 +27,12 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.strokeAndFill = this.translateStrokeAndFill(this.style);
         var props = this.geometry.getProperties();
         this.textContent = Z.StringUtil.replaceVariable(this.style['textName'], props);
-        this.textDesc = Z.StringUtil.splitTextToRow(this.textContent, this.style);
+        this.textDesc = this._loadFromCache(this.textContent, this.style);
+        if (!this.textDesc) {
+            this.textDesc = Z.StringUtil.splitTextToRow(this.textContent, this.style);
+            this._storeToCache(this.textContent, this.style, this.textDesc);
+        }
+
     },
 
     symbolize:function(ctx, resources) {
@@ -106,6 +111,30 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             }
         }
         return result;
+    },
+
+    _storeToCache: function(textContent, style, textDesc) {
+        if (!this.geometry['___text_symbol_cache']) {
+            this.geometry['___text_symbol_cache'] = {};
+        }
+        this.geometry['___text_symbol_cache'][this._genCacheKey(textContent, style)] = textDesc;
+    },
+
+    _loadFromCache:function(textContent, style) {
+        if (!this.geometry['___text_symbol_cache']) {
+            return null;
+        }
+        return this.geometry['___text_symbol_cache'][this._genCacheKey(textContent, style)];
+    },
+
+    _genCacheKey: function(textContent, style) {
+        var key = [textContent];
+        for (var p in style) {
+            if (style.hasOwnProperty(p)) {
+                key.push('p='+style[p]);
+            }
+        }
+        return key.join('-');
     }
 });
 

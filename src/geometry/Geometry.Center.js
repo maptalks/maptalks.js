@@ -19,6 +19,9 @@ Z.Geometry.Center = {
      */
     setCoordinates:function(coordinates) {
         var center = new Z.Coordinate(coordinates);
+        if (center.equals(this._coordinates)) {
+            return this;
+        }
         this._coordinates = center;
         if (!this.getMap()) {
             this._onPositionChanged();

@@ -40,7 +40,7 @@ Z.Canvas = {
     prepareCanvas:function(ctx, strokeSymbol, fillSymbol, resources){
         if (strokeSymbol) {
             var strokeWidth = strokeSymbol['stroke-width'];
-            if (!Z.Util.isNil(strokeWidth)) {
+            if (!Z.Util.isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
                 ctx.lineWidth = strokeWidth;
             }
             var strokeColor = strokeSymbol['stroke'];
@@ -79,7 +79,10 @@ Z.Canvas = {
                         ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
                     }
                  } else {
-                    ctx.strokeStyle = Z.Canvas.getRgba(strokeColor,1);
+                    var color = Z.Canvas.getRgba(strokeColor,1);
+                    if (ctx.strokeStyle !== color) {
+                        ctx.strokeStyle = color;
+                    }
                  }
              }
              //低版本ie不支持该属性
@@ -104,7 +107,10 @@ Z.Canvas = {
                 }
                 ctx.fillStyle = ctx.createPattern(imageTexture, 'repeat');
             } else {
-                ctx.fillStyle = this.getRgba(fill, 1);
+                var fillColor = this.getRgba(fill, 1);
+                if (ctx.fillStyle !== fillColor) {
+                    ctx.fillStyle = fillColor;
+                }
             }
          }
     },
@@ -115,13 +121,17 @@ Z.Canvas = {
 
     fillCanvas:function(ctx, fillOpacity){
         if (Z.Util.isNil(fillOpacity)) {
-           fillOpacity = 1
+           fillOpacity = 1;
         }
-        var alpha = ctx.globalAlpha;
-
-        ctx.globalAlpha *= fillOpacity;
+        var alpha;
+        if (fillOpacity < 1) {
+            alpha = ctx.globalAlpha;
+            ctx.globalAlpha *= fillOpacity;
+        }
         ctx.fill();
-        ctx.globalAlpha = alpha;
+        if (fillOpacity < 1) {
+            ctx.globalAlpha = alpha;
+        }
     },
 
     // hexColorRe: /^#([0-9a-f]{6}|[0-9a-f]{3})$/i,
@@ -218,10 +228,15 @@ Z.Canvas = {
         if (Z.Util.isNil(strokeOpacity)) {
             strokeOpacity = 1;
         }
-        var alpha = ctx.globalAlpha;
-        ctx.globalAlpha *= strokeOpacity;
+        var alpha;
+        if (strokeOpacity < 1) {
+            alpha = ctx.globalAlpha;
+            ctx.globalAlpha *= strokeOpacity;
+        }
         ctx.stroke();
-        ctx.globalAlpha = alpha;
+        if (strokeOpacity < 1) {
+            ctx.globalAlpha = alpha;
+        }
     },
 
     _path:function(ctx, points, lineDashArray, lineOpacity) {
@@ -440,7 +455,7 @@ Z.Canvas = {
     },
 
     //各种图形的绘制方法
-    ellipse:function (ctx, pt, size, lineOpacity, fillOpacity) {
+    ellipse:function (ctx, pt, width, height, lineOpacity, fillOpacity) {
         //TODO canvas scale后会产生错误?
         function bezierEllipse( x, y, a, b)
         {
@@ -459,14 +474,14 @@ Z.Canvas = {
            Z.Canvas._stroke(ctx, lineOpacity);
         }
         pt = pt._round();
-        if (size['width'] === size['height']) {
+        if (width === height) {
             //如果高宽相同,则直接绘制圆形, 提高效率
             ctx.beginPath();
-            ctx.arc(pt.x,pt.y,Z.Util.round(size['width']),0,2*Math.PI);
+            ctx.arc(pt.x,pt.y,Z.Util.round(width),0,2*Math.PI);
             Z.Canvas.fillCanvas(ctx, fillOpacity);
             Z.Canvas._stroke(ctx, lineOpacity);
         } else {
-            bezierEllipse(pt.x,pt.y,size["width"],size["height"]);
+            bezierEllipse(pt.x,pt.y, width, height);
         }
 
     },

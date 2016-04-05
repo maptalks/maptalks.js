@@ -301,7 +301,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         if (!Z.Browser.mobile && Z.Browser.canvas) {
              this._onMapMouseMove=function(param) {
-                if (map._isBusy()) {
+                if (map._isBusy() || !map.options['hitDetect']) {
                     return;
                 }
                 var vp = param['viewPoint'];
@@ -370,9 +370,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 canvasImage = context;
             }
         }
-        try {
-            this._context.drawImage(canvasImage, point.x, point.y);
-        } catch (error) {}
+        this._context.drawImage(canvasImage, point.x, point.y);
         this._context.globalAlpha = alpha;
     },
 
