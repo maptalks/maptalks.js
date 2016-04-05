@@ -40,7 +40,7 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
     },
 
     getCanvasImage:function() {
-        if (this._layer.isEmpty() || !this._viewExtent) {
+        if ((this._layer.isEmpty && this._layer.isEmpty()) || !this._viewExtent) {
             return null;
         }
         var size = this._viewExtent.getSize();
