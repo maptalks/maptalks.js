@@ -23,7 +23,7 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         if (!this.getMap()) {
             return;
         }
-        if (!this._layer.isVisible() || (this._layer.isEmpty && this._layer.isEmpty())) {
+        if (!this._layer.isVisible()) {
             this._requestMapToRender();
             this._fireLoadedEvent();
             return;
@@ -45,7 +45,7 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         }
         var size = this._viewExtent.getSize();
         var point = this._viewExtent.getMin();
-        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point),'size':size};
+        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point)._round(),'size':size};
     },
 
     isLoaded:function() {

@@ -27,7 +27,15 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @param  {Boolean} ignorePromise   whether escape step of promise
      */
     _render:function(geometries) {
+        var me = this;
         this._clearTimeout();
+        if (this._layer.isEmpty()) {
+            this._renderTimeout = setTimeout(function() {
+                me._requestMapToRender();
+                me._fireLoadedEvent();
+            },1);
+            return;
+        }
         if (!this._painted && !geometries) {
             geometries = this._layer._geoCache;
         }
@@ -40,7 +48,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                 return;
             }
         }
-        var me = this;
         this._renderTimeout = setTimeout(function() {
             if (Z.Util.isArrayHasData(me._resourcesToLoad)) {
                 me._promise();

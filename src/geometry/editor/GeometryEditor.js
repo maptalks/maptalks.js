@@ -835,8 +835,11 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         if (!this._editHandles) {
             this._editHandles = [];
         }
-        this._editHandles.push(handle);
-
+        if (Z.Util.isArray(handle)) {
+            this._editHandles = this._editHandles.concat(handle);
+        } else {
+            this._editHandles.push(handle);
+        }
     }
 
 });
