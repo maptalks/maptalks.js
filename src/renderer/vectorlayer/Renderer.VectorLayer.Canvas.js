@@ -30,10 +30,15 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         var me = this;
         this._clearTimeout();
         if (this._layer.isEmpty()) {
-            this._renderTimeout = setTimeout(function() {
+            if (this._layer.options['drawImmediate']) {
                 me._requestMapToRender();
                 me._fireLoadedEvent();
-            },1);
+            } else {
+                this._renderTimeout = Z.Util.requestAnimFrame(function() {
+                    me._requestMapToRender();
+                    me._fireLoadedEvent();
+                });
+            }
             return;
         }
         if (!this._painted && !geometries) {
@@ -48,13 +53,13 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                 return;
             }
         }
-        this._renderTimeout = setTimeout(function() {
+        this._renderTimeout = Z.Util.requestAnimFrame(function() {
             if (Z.Util.isArrayHasData(me._resourcesToLoad)) {
                 me._promise();
             } else {
                 me._renderImmediate();
             }
-        },1);
+        });
     },
 
     draw:function() {
@@ -254,7 +259,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     _clearTimeout:function() {
         if (this._renderTimeout) {
-            clearTimeout(this._renderTimeout);
+            //clearTimeout(this._renderTimeout);
+            Z.Util.cancelAnimFrame(this._renderTimeout);
         }
     },
 
