@@ -188,6 +188,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             point.x+leftTop.x, point.y+leftTop.y,
             tileSize['width'], tileSize['height']);
         if (this._layer.options['debug']) {
+            var p = point.add(leftTop);
             this._context.save();
             this._context.strokeStyle = 'rgb(0,0,0)';
             this._context.fillStyle = 'rgb(0,0,0)';
