@@ -24,8 +24,8 @@ describe('#TileLayer', function() {
         it("webmercator", function(done) {
             var tile = new Z.TileLayer('tile', {
                 debug : true,
-                urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-                subdomains: [1, 2, 3]
+                urlTemplate : '#',
+                subdomains:['a','b','c']
             });
             tile.on('layerload', function() {
                 done();
@@ -52,7 +52,7 @@ describe('#TileLayer', function() {
                 debug : true,
                 tileSystem : [1, -1, -180, 90],
                 crossOrigin:"Anonymous",
-                urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_c&x={x}&y={y}&l={z}",
+                urlTemplate:'#',
                 subdomains:['1','2','3','4','5']
             });
             tile.on('layerload', function() {
@@ -73,7 +73,7 @@ describe('#TileLayer', function() {
             var tile = new maptalks.TileLayer("tile",{
                 debug : true,
                 crossOrigin:"Anonymous",
-                urlTemplate:"http://online{s}.map.bdimg.com/tile/?qt=tile&x={x}&y={y}&z={z}&styles=pl",
+                urlTemplate:'#',
                 subdomains:[0,1,2,3,4,5,6,7,8,9]
             })
             tile.on('layerload', function() {
