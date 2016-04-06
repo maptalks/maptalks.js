@@ -697,12 +697,13 @@ Z.Util = {
             lastTime = time + timeToCall;
             return setTimeout(fn, timeToCall);
         }
+        function getPrefixed(name) {
+            return window['webkit' + name] || window['moz' + name] || window['ms' + name];
+        }
         if (typeof(window) != 'undefined') {
             caller = window;
             // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-            function getPrefixed(name) {
-                return window['webkit' + name] || window['moz' + name] || window['ms' + name];
-            }
+
             requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
             cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
                            getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
