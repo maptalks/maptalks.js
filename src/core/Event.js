@@ -149,12 +149,12 @@ Z.Eventable = {
     },
 
     /**
-     * Set a parent layer to handle all the events
-     * @param {maptralks.Layer} layer - parent layer
-     * @return {maptalks.Layer} this
+     * Set a event parent to handle all the events
+     * @param {Any} parent - event parent
+     * @return {Any} this
      */
-    setEventParent:function(layer) {
-        this._eventParent = layer;
+    setEventParent:function(parent) {
+        this._eventParent = parent;
         return this;
     },
 
