@@ -355,7 +355,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!this.options['maxExtent']) {
             return null;
         }
-        return this.options['maxExtent'].copy();
+        return new Z.Extent(this.options['maxExtent']);
     },
 
     /**
