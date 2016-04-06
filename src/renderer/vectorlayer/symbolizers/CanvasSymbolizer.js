@@ -10,12 +10,15 @@
  */
 Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symbolizer.CanvasSymbolizer.prototype */{
     _prepareContext:function(ctx) {
-        // this._restoreCanvas(ctx);
         //for VectorPathMarkerSymbolizer, opacity is already added into SVG element.
         if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer)) {
             var symbol = this.symbol;
             if (Z.Util.isNumber(symbol['opacity'])) {
-                ctx.globalAlpha = symbol['opacity'];
+                if (ctx.globalAlpha !== symbol['opacity']) {
+                    ctx.globalAlpha = symbol['opacity'];
+                }
+            } else if (ctx.globalAlpha !== 1) {
+                ctx.globalAlpha = 1;
             }
         }
         var shadowBlur = this.geometry.options['shadowBlur'];
