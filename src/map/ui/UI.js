@@ -46,11 +46,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
 
     /**
      * Adds the UI Component to a geometry or a map
-     * @param {maptalks.Geometry|maptalks.Map} target - geometry or map to addto.
+     * @param {maptalks.Geometry|maptalks.Map} owner - geometry or map to addto.
      * @returns {maptalks.ui.UIComponent} this
      */
-    addTo:function(target) {
-        this._target = target;
+    addTo:function(owner) {
+        this._owner = owner;
     },
 
     /**
@@ -59,10 +59,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @override
      */
     getMap:function() {
-        if (this._target instanceof Z.Map) {
-            return this._target;
+        if (this._owner instanceof Z.Map) {
+            return this._owner;
         }
-        return this._target.getMap();
+        return this._owner.getMap();
     },
 
     /**
@@ -144,7 +144,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     remove: function() {
         this.hide();
         this._removeEvents && this._removeEvents();
-        delete this._target;
+        delete this._owner;
         delete this._map;
         this.fire('remove');
         return this;
@@ -160,6 +160,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         } else {
             return null;
         }
+    },
+
+    getOwner: function() {
+        return this._owner;
     },
 
     _getPosition : function() {

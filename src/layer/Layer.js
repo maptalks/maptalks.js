@@ -302,34 +302,6 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     },
 
     /**
-     * Set a parent layer to handle all the events
-     * @param {maptralks.Layer} layer - parent layer
-     * @return {maptalks.Layer} this
-     */
-    setEventParent:function(layer) {
-        if (!(layer instanceof Z.Layer)) {
-            throw new Error('It needs to be a layer to setEventParent.');
-        }
-        this._eventParent = layer;
-        return this;
-    },
-
-    /**
-     * Fire an event, causing all handlers for that event name to run.
-     *
-     * @param  {String} eventType - an event type to fire
-     * @param  {Object} param     - parameters for the listener function.
-     * @return {maptalks.Layer} this
-     * @override
-     */
-    fire:function() {
-        if (this._eventParent) {
-            return this._eventParent.fire.apply(this._eventParent, arguments);
-        }
-        return this._fire.apply(this, arguments);
-    },
-
-    /**
      * Prepare Layer's loading, this is a method intended to be overrided by subclasses.
      * @return {Boolean} true to continue, false to cease.
      * @protected

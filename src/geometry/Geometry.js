@@ -969,12 +969,6 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     _fireEvent:function(eventName, param) {
         this.fire(eventName,param);
-        if (this._getParent()) {
-            if (param) {
-                param['target'] = this._getParent();
-            }
-            this._getParent().fire(eventName,param);
-        }
     },
 
     _exportGraphicOptions:function(options) {

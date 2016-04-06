@@ -98,7 +98,7 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         var items = this.getItems();
         function onMenuClick(index) {
             return function(e) {
-                    var result = this._callback({'target':me, 'index':index});
+                    var result = this._callback({'target':me, 'owner':me._owner, 'index':index});
                     if (result === false) {
                         return;
                     }
@@ -190,6 +190,17 @@ Z.ui.Menu.Mixin={
             this._menu.show(coordinate);
         }
         return this;
+    },
+
+    /**
+     * Get the menu options
+     * @return {Object} menuOptions
+     */
+    getMenuOptions: function() {
+        if (!this._menuOptions) {
+            return null;
+        }
+        return Z.Util.extend({}, this._menuOptions);
     },
 
     /**

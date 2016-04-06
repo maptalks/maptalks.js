@@ -141,8 +141,21 @@ Z.Eventable = {
      * @return {*} this
      * @instance
      */
-    fire:function(eventType, param) {
-        return this._fire(eventType, param);
+    fire:function() {
+       if (this._eventParent) {
+            return this._eventParent.fire.apply(this._eventParent, arguments);
+        }
+        return this._fire.apply(this, arguments);
+    },
+
+    /**
+     * Set a event parent to handle all the events
+     * @param {Any} parent - event parent
+     * @return {Any} this
+     */
+    setEventParent:function(parent) {
+        this._eventParent = parent;
+        return this;
     },
 
 
