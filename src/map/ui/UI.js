@@ -79,6 +79,9 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             this._registerEvents && this._registerEvents();
         }
         this._coordinate = coordinate;
+        if (this._singleton()) {
+            this._removePrev();
+        }
         var dom = this._dom = this._createDOM();
         if (!dom) {
             this.fire('showend');
@@ -89,7 +92,6 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         this._measureSize(dom);
 
         if (this._singleton()) {
-            this._removePrev();
             map[this._uiDomKey()] = dom;
         }
 
@@ -216,7 +218,6 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         container.appendChild(dom);
         this._size = new Z.Size(dom.clientWidth, dom.clientHeight);
         dom.style.display = 'none';
-        Z.DomUtil.removeDomNode(dom);
         return this._size;
     },
 

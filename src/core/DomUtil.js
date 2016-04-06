@@ -46,9 +46,11 @@ Z.DomUtil = {
      */
     removeDomNode:function(node){
         if (!node) {return;}
-        if (Z.Browser.ie) {
+        if (Z.Browser.ielt9 || Z.Browser.ie9) {
+            //fix memory leak in IE9-
+            //http://com.hemiola.com/2009/11/23/memory-leaks-in-ie8/
             var d = Z.DomUtil.createEl('div');
-           d.appendChild(node);
+            d.appendChild(node);
             d.innerHTML = '';
             d = null;
         } else {
