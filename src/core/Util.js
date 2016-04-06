@@ -682,16 +682,12 @@ Z.Util = {
 
 };
 
-if (typeof(window) != 'undefined') {
+
     //RequestAnimationFrame, inspired by Leaflet
     (function () {
-        // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-
-        function getPrefixed(name) {
-            return window['webkit' + name] || window['moz' + name] || window['ms' + name];
-        }
-
+        var requestFn, cancelFn, caller;
         var lastTime = 0;
+
 
         // fallback for IE 7-8
         function timeoutDefer(fn) {
@@ -699,26 +695,34 @@ if (typeof(window) != 'undefined') {
                 timeToCall = Math.max(0, 16 - (time - lastTime));
 
             lastTime = time + timeToCall;
-            return window.setTimeout(fn, timeToCall);
+            return setTimeout(fn, timeToCall);
         }
-
-        var requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer,
+        if (typeof(window) != 'undefined') {
+            caller = window;
+            // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+            function getPrefixed(name) {
+                return window['webkit' + name] || window['moz' + name] || window['ms' + name];
+            }
+            requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
             cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
-                       getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
-
-
+                           getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
+        } else {
+            caller = global;
+            requestFn = timeoutDefer;
+            cancelFn =  function (id) { clearTimeout(id); };
+        }
         Z.Util.requestAnimFrame = function (fn) {
-                return requestFn.call(window, fn);
+                return requestFn.call(caller, fn);
         };
 
         Z.Util.cancelAnimFrame = function (id) {
             if (id) {
-                cancelFn.call(window, id);
+                cancelFn.call(caller, id);
             }
         };
     })();
 
-}
+
 
 /**
  * Ajax request used internally.
