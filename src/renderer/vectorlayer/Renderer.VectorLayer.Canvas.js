@@ -27,13 +27,18 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @param  {Boolean} ignorePromise   whether escape step of promise
      */
     _render:function(geometries) {
+        var me = this;
         this._clearTimeout();
-        if (!this.getMap()) {
-            return;
-        }
-        if (!this._layer.isVisible() || this._layer.isEmpty()) {
-            this._requestMapToRender();
-            this._fireLoadedEvent();
+        if (this._layer.isEmpty()) {
+            if (this._layer.options['drawImmediate']) {
+                me._requestMapToRender();
+                me._fireLoadedEvent();
+            } else {
+                this._renderTimeout = Z.Util.requestAnimFrame(function() {
+                    me._requestMapToRender();
+                    me._fireLoadedEvent();
+                });
+            }
             return;
         }
         if (!this._painted && !geometries) {
@@ -48,14 +53,13 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                 return;
             }
         }
-        var me = this;
-        this._renderTimeout = setTimeout(function() {
+        this._renderTimeout = Z.Util.requestAnimFrame(function() {
             if (Z.Util.isArrayHasData(me._resourcesToLoad)) {
                 me._promise();
             } else {
                 me._renderImmediate();
             }
-        },1);
+        });
     },
 
     draw:function() {
@@ -78,9 +82,9 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         this._painted = true;
         var viewExtent = map._getViewExtent();
         var me = this;
-        var counter = 0;
+        this._drawCounter = 0;
         this._shouldUpdateWhileTransforming = true;
-        var maskViewExtent = this._prepareCanvas(viewExtent);
+        var maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {
                 this._fireLoadedEvent();
@@ -88,30 +92,28 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
-        var geoViewExt, geoPainter;
 
-        function drawGeo(geo) {
-            //geo的map可能为null,因为绘制为延时方法
-            if (!geo || !geo.isVisible() || !geo.getMap() || !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
-                return;
-            }
-            geoPainter = geo._getPainter();
-            geoViewExt = geoPainter.getPixelExtent();
-            if (!geoViewExt || !geoViewExt.intersects(viewExtent)) {
-                return;
-            }
-            counter++;
-            if (me._shouldUpdateWhileTransforming && geoPainter.hasPointSymbolizer()) {
-                me._shouldUpdateWhileTransforming = false;
-            }
-            if (counter > layer.options['thresholdOfPointUpdate']) {
-                me._shouldUpdateWhileTransforming = true;
-            }
-            geoPainter.paint();
+        layer._eachGeometry(this._drawGeo, this);
+    },
+
+    _drawGeo: function(geo) {
+        //geo的map可能为null,因为绘制为延时方法
+        if (!geo || !geo.isVisible() || !geo.getMap() || !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
+            return;
         }
-
-        layer._eachGeometry(drawGeo);
-        this._canvasFullExtent = map._getViewExtent();
+        var geoPainter = geo._getPainter();
+        var geoViewExt = geoPainter.getPixelExtent();
+        if (!geoViewExt || !geoViewExt.intersects(this._viewExtent)) {
+            return;
+        }
+        this._drawCounter++;
+        if (this._shouldUpdateWhileTransforming && geoPainter.hasPointSymbolizer()) {
+            this._shouldUpdateWhileTransforming = false;
+        }
+        if (this._drawCounter > this._layer.options['thresholdOfPointUpdate']) {
+            this._shouldUpdateWhileTransforming = true;
+        }
+        geoPainter.paint();
     },
 
     getPaintContext:function() {
@@ -121,14 +123,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         return [this._context, this._resources];
     },
 
-    getCanvasImage:function() {
-        if (!this._canvasFullExtent || this._layer.isEmpty()) {
-            return null;
-        }
-        var size = this._canvasFullExtent.getSize();
-        var point = this._canvasFullExtent.getMin();
-        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point),'size':size};
-    },
 
     /**
      * Show and render
@@ -151,12 +145,13 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @return {Boolean}       true|false
      */
     hitDetect:function(point) {
-        if (!this._context || !this._canvasFullExtent || this._layer.isEmpty()) {
+        if (!this._context || this._layer.isEmpty()) {
             return false;
         }
-        var size = this._canvasFullExtent.getSize();
-        var canvasNW = this._canvasFullExtent.getMin();
-        var detectPoint = point.substract(canvasNW);
+        var viewExtent = this.getMap()._getViewExtent();
+        var size = viewExtent.getSize();
+        var leftTop = viewExtent.getMin();
+        var detectPoint = point.substract(leftTop);
         if (detectPoint.x < 0 || detectPoint.x > size['width'] || detectPoint.y < 0 || detectPoint.y > size['height']) {
             return false;
         }
@@ -264,7 +259,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     _clearTimeout:function() {
         if (this._renderTimeout) {
-            clearTimeout(this._renderTimeout);
+            //clearTimeout(this._renderTimeout);
+            Z.Util.cancelAnimFrame(this._renderTimeout);
         }
     },
 
@@ -290,7 +286,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
         var me = this,
             resources = [],
-            immediate = false;
+            immediate = this._layer.options['drawImmediate'];
         var res, ii;
         function checkGeo(geo) {
             res = geo._getExternalResource();

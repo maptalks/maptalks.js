@@ -18,6 +18,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
      * @property {Boolean} [options.visible=true] - whether to display the layer.
      * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
+     * @property {String}  [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
      */
     options:{
         //最大最小可视范围, null表示不受限制
@@ -37,11 +38,11 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!this.getMap()) {return this;}
         this._initRenderer();
         var zIndex = this.getZIndex();
-        if (!Z.Util.isNil(zIndex)) {
+        if (!Z.Util.isNil(zIndex) && this._renderer) {
             this._renderer.setZIndex(zIndex);
         }
         if (this._prepareLoad()) {
-            this._renderer.render();
+            this._renderer && this._renderer.render();
         }
         return this;
     },
@@ -301,6 +302,34 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     },
 
     /**
+     * Set a parent layer to handle all the events
+     * @param {maptralks.Layer} layer - parent layer
+     * @return {maptalks.Layer} this
+     */
+    setEventParent:function(layer) {
+        if (!(layer instanceof Z.Layer)) {
+            throw new Error('It needs to be a layer to setEventParent.');
+        }
+        this._eventParent = layer;
+        return this;
+    },
+
+    /**
+     * Fire an event, causing all handlers for that event name to run.
+     *
+     * @param  {String} eventType - an event type to fire
+     * @param  {Object} param     - parameters for the listener function.
+     * @return {maptalks.Layer} this
+     * @override
+     */
+    fire:function() {
+        if (this._eventParent) {
+            return this._eventParent.fire.apply(this._eventParent, arguments);
+        }
+        return this._fire.apply(this, arguments);
+    },
+
+    /**
      * Prepare Layer's loading, this is a method intended to be overrided by subclasses.
      * @return {Boolean} true to continue, false to cease.
      * @protected
@@ -327,7 +356,13 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     _initRenderer:function() {
         var renderer = this.options['renderer'];
+        if (!this.constructor.getRendererClass) {
+            return;
+        }
         var clazz = this.constructor.getRendererClass(renderer);
+        if (!clazz) {
+            return;
+        }
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
     },

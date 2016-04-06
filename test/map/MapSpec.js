@@ -196,36 +196,33 @@ describe('#Map', function () {
             expect(spy2.called).to.be.ok();
         });
 
-        it('图层加入已载入地图时立即触发loaded事件', function() {
+        it('图层加入已载入地图时立即触发loaded事件', function(done) {
             map.setBaseLayer(tile);
 
-            var spy = sinon.spy();
             var layer = new Z.VectorLayer('id');
-            layer.on('layerload', spy);
+            layer.on('layerload', function() {
+                done();
+            });
             map.addLayer(layer);
-            expect(spy.called).to.be.ok();
         });
 
-        it('当地图载入完成时, 如果加入的图层已被删除, 不触发loaded事件', function() {
-            var spy = sinon.spy();
+        it('当地图载入完成时, 如果加入的图层已被删除, 不触发loaded事件', function(done) {
             var layer = new Z.VectorLayer('id');
-            layer.on('layerload', spy);
+            layer.on('layerload', function() {
+                done();
+            });
             map.addLayer(layer);
             map.removeLayer(layer);
             map.setBaseLayer(tile);
-
-            expect(spy.called).to.be.ok();
         });
 
-        it('当地图载入完成时触发已加入图层的loaded事件', function() {
-            var spy = sinon.spy();
+        it('当地图载入完成时触发已加入图层的loaded事件', function(done) {
             var layer = new Z.VectorLayer('id');
-            layer.on('layerload', spy);
+            layer.on('layerload', function() {
+                done();
+            });
             map.addLayer(layer);
-            expect(spy.called).to.be.ok();
             map.setBaseLayer(tile);
-
-            expect(spy.called).to.be.ok();
         });
     });
 

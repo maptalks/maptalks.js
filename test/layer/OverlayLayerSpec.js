@@ -139,4 +139,34 @@ describe('#OverlayLayer', function() {
         });
     });
 
+    describe('isEmpty', function() {
+
+        it('return true when clear', function() {
+            var layer = new Z.VectorLayer('id').addTo(map);
+            var gid = 'g1';
+            var geo1 = new Z.Marker(center, {id: gid});
+            layer.addGeometry(geo1);
+            layer.clear();
+            expect(layer.isEmpty()).to.be.ok();
+        });
+
+        it('return true when removing geometry', function() {
+            var layer = new Z.VectorLayer('id').addTo(map);
+            var gid = 'g1';
+            var geo1 = new Z.Marker(center, {id: gid});
+            layer.addGeometry(geo1);
+            layer.removeGeometry(geo1);
+            expect(layer.isEmpty()).to.be.ok();
+        });
+
+        it('return true when geometry removes itself', function() {
+            var layer = new Z.VectorLayer('id').addTo(map);
+            var gid = 'g1';
+            var geo1 = new Z.Marker(center, {id: gid});
+            layer.addGeometry(geo1);
+            geo1.remove();
+            expect(layer.isEmpty()).to.be.ok();
+        });
+    });
+
 });

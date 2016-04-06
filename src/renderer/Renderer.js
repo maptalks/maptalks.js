@@ -20,6 +20,14 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
 
     render:function() {
         this._prepareRender();
+        if (!this.getMap()) {
+            return;
+        }
+        if (!this._layer.isVisible()) {
+            this._requestMapToRender();
+            this._fireLoadedEvent();
+            return;
+        }
         this._render.apply(this, arguments);
     },
 
@@ -29,6 +37,15 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
 
     getLayer:function() {
         return this._layer;
+    },
+
+    getCanvasImage:function() {
+        if ((this._layer.isEmpty && this._layer.isEmpty()) || !this._viewExtent) {
+            return null;
+        }
+        var size = this._viewExtent.getSize();
+        var point = this._viewExtent.getMin();
+        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point)._round(),'size':size};
     },
 
     isLoaded:function() {
@@ -65,7 +82,6 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
     },
 
     _prepareRender:function() {
-        this._clearCanvas();
         this._renderZoom = this.getMap().getZoom();
         this._loaded = false;
     },
@@ -126,12 +142,13 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         Z.Canvas.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
     },
 
-    _prepareCanvas:function(viewExtent) {
+    _prepareCanvas:function() {
         if (!this._canvas) {
             this._createCanvas();
         } else {
             this._clearCanvas();
         }
+        this._viewExtent = this.getMap()._getViewExtent();
         if (this._clipped) {
             this._context.restore();
             this._clipped=false;
@@ -141,7 +158,7 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
             return null;
         }
         var maskViewExtent = mask._getPainter().getPixelExtent();
-        if (!maskViewExtent.intersects(viewExtent)) {
+        if (!maskViewExtent.intersects(this._viewExtent)) {
             return maskViewExtent;
         }
         this._context.save();

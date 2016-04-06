@@ -19,6 +19,9 @@ Z.Geometry.Center = {
      */
     setCoordinates:function(coordinates) {
         var center = new Z.Coordinate(coordinates);
+        if (center.equals(this._coordinates)) {
+            return this;
+        }
         this._coordinates = center;
         if (!this.getMap()) {
             this._onPositionChanged();
@@ -37,7 +40,7 @@ Z.Geometry.Center = {
         if (!map) {
             return null;
         }
-        return map._transformToViewPoint(pcenter);
+        return map._prjToViewPoint(pcenter);
     },
 
     _getPrjCoordinates:function() {

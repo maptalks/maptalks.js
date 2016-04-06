@@ -31,18 +31,10 @@ Z.Util.extend(Z.Transformation.prototype,  /** @lends maptalks.Transformation.pr
      * @return {maptalks.Point} 2d point.
      */
     transform : function(coordinates, scale) {
-        var matrix = this.matrix;
-        var x,y;
-        if (Z.Util.isArray(coordinates)) {
-            x = coordinates[0];
-            y = coordinates[1];
-        } else {
-            x = coordinates.x;
-            y = coordinates.y;
-        }
-        var px = matrix[0]*(x-matrix[2])/scale;
-        var py = matrix[1]*(y-matrix[3])/scale;
-        return new Z.Point(px,py);
+        return new Z.Point(
+            this.matrix[0] * (coordinates.x - this.matrix[2]) / scale,
+            this.matrix[1] * (coordinates.y - this.matrix[3]) / scale
+            );
     },
 
     /**
@@ -52,13 +44,9 @@ Z.Util.extend(Z.Transformation.prototype,  /** @lends maptalks.Transformation.pr
      * @return {maptalks.Coordinate}  projected coordinate.
      */
     untransform : function(point, scale) {
-        var matrix = this.matrix;
-        var x,y;
-        x = point.x;
-        y = point.y;
-        //inverse matrix
-        var cx = (x*scale/matrix[0]+matrix[2]);
-        var cy = (y*scale/matrix[1]+matrix[3]);
-        return new Z.Coordinate(cx,cy);
+        return new Z.Coordinate(
+            point.x * scale / this.matrix[0] + this.matrix[2],
+            point.y * scale / this.matrix[1] + this.matrix[3]
+            );
     }
 });

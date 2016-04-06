@@ -18,19 +18,14 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         }
     },
 
+
     /**
-     * Get a geometry by a id
+     * Get a geometry by its id
      * @param  {String|Number} id   - id of the geometry
      * @return {maptalks.Geometry}
      */
     getGeometryById:function(id) {
-        if (Z.Util.isNil(id) || id === '') {
-            return null;
-        }
-        if (!this._geoMap[id]) {
-            return null;
-        }
-        return this._geoMap[id];
+        return this._getGeometryById(id);
     },
 
     /**
@@ -40,6 +35,55 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @return {maptalks.Geometry[]}
      */
     getGeometries:function(filter, context) {
+        return this._getGeometries(filter, context);
+    },
+
+    /**
+     * Whether the layer is empty.
+     * @return {Boolean}
+     */
+    isEmpty:function() {
+        return this._counter === 0;
+    },
+
+    /**
+     * Adds one or more geometries to the layer
+     * @param {maptalks.Geometry|maptalks.Geometry[]} geometries - one or more geometries
+     * @param {Boolean} fitView                                  - automatically set the map to a fit center and zoom for the geometries
+     * @return {maptalks.OverlayLayer} this
+     */
+    addGeometry:function(geometries, fitView) {
+        return this._addGeometry(geometries, fitView);
+    },
+
+    /**
+     * Removes one or more geometries from the layer
+     * @param  {String|String[]|maptalks.Geometry|maptalks.Geometry[]} geometries - geometry ids or geometries to remove
+     * @returns {maptalks.OverlayLayer} this
+     */
+    removeGeometry:function(geometries) {
+        return this._removeGeometry(geometries);
+    },
+
+    /**
+     * Clear all geometries in this layer
+     * @returns {maptalks.OverlayLayer} this
+     */
+    clear:function() {
+        return this._clear();
+    },
+
+    _getGeometryById:function(id) {
+        if (Z.Util.isNil(id) || id === '') {
+            return null;
+        }
+        if (!this._geoMap[id]) {
+            return null;
+        }
+        return this._geoMap[id];
+    },
+
+    _getGeometries:function(filter, context) {
         var cache = this._geoCache;
         var result = [],
             geometry;
@@ -63,24 +107,10 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return result;
     },
 
-    /**
-     * Whether the layer is empty.
-     * @return {Boolean}
-     */
-    isEmpty:function() {
-        return this._counter === 0;
-    },
-
-    /**
-     * Adds one or more geometries to the layer
-     * @param {maptalks.Geometry|maptalks.Geometry[]} geometries - one or more geometries
-     * @param {Boolean} fitView                                  - automatically set the map to a fit center and zoom for the geometries
-     * @return {maptalks.OverlayLayer} this
-     */
-    addGeometry:function(geometries,fitView) {
+    _addGeometry:function(geometries,fitView) {
         if (!geometries) {return this;}
         if (!Z.Util.isArray(geometries)) {
-            return this.addGeometry([geometries],fitView);
+            return this._addGeometry([geometries],fitView);
         } else if (!Z.Util.isArrayHasData(geometries)) {
             return this;
         }
@@ -127,42 +157,32 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 map.setCenterAndZoom(center,z);
             }
         }
+        this.fire('addgeo', {'geometries':geometries});
         return this;
     },
 
-    /**
-     * Removes one or more geometries from the layer
-     * @param  {String|String[]|maptalks.Geometry|maptalks.Geometry[]} geometries - geometry ids or geometries to remove
-     * @returns {maptalks.OverlayLayer} this
-     */
-    removeGeometry:function(geometry) {
-        if (Z.Util.isArray(geometry)) {
-            for (var i = geometry.length - 1; i >= 0; i--) {
-                this.removeGeometry(geometry[i]);
+    _removeGeometry:function(geometries) {
+        if (!Z.Util.isArray(geometries)) {
+            return this._removeGeometry([geometries]);
+        }
+        for (var i = geometries.length - 1; i >= 0; i--) {
+            if (!(geometries[i] instanceof Z.Geometry)) {
+                geometries[i] = this.getGeometryById(geometries[i]);
             }
-            return this;
+            if (!geometries[i] || this !== geometries[i].getLayer()) continue;
+            geometries[i].remove();
         }
-        if (!(geometry instanceof Z.Geometry)) {
-            geometry = this.getGeometryById(geometry);
-        }
-        if (!geometry) {return this;}
-        if (this != geometry.getLayer()) {
-            return this;
-        }
-        geometry.remove();
+        this.fire('removegeo', {'geometries':geometries});
         return this;
     },
 
-    /**
-     * Clear all geometries in this layer
-     * @returns {maptalks.OverlayLayer} this
-     */
-    clear:function() {
+    _clear:function() {
         this._eachGeometry(function(geo) {
             geo.remove();
         });
         this._geoMap={};
         this._geoCache={};
+        this.fire('clear');
         return this;
     },
 
@@ -181,6 +201,32 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             if (cache.hasOwnProperty(g)) {
                 fn.call(context,cache[g]);
             }
+        }
+    },
+
+    /**
+     * Called when geometry is being removed to clear the context concerned.
+     * @param  {maptalks.Geometry} geometry - the geometry instance to remove
+     * @private
+     */
+    _onGeometryRemove:function(geometry) {
+        if (!geometry) {return;}
+        //考察geometry是否属于该图层
+        if (this != geometry.getLayer()) {
+            return;
+        }
+        var internalId = geometry._getInternalId();
+        if (Z.Util.isNil(internalId)) {
+            return;
+        }
+        var geoId = geometry.getId();
+        if (!Z.Util.isNil(geoId)) {
+            delete this._geoMap[geoId];
+        }
+        delete this._geoCache[internalId];
+        this._counter--;
+        if (this._getRenderer()) {
+            this._getRenderer().render();
         }
     }
 });

@@ -279,7 +279,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         }
         function onHandleDragging(param) {
             me._hideContext();
-            var viewPoint = map._transformToViewPoint(handle._getPrjCoordinates());
+            var viewPoint = map._prjToViewPoint(handle._getPrjCoordinates());
             if (opts.onMove) {
                 opts.onMove.call(me, viewPoint, param);
             }
@@ -577,7 +577,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                     handleViewPoint = mirrorViewPoint;
                 }
                 r = 1;
-                viewCenter = map._transformToViewPoint(shadow._getPrjCoordinates());
+                viewCenter = map._prjToViewPoint(shadow._getPrjCoordinates());
             } else {
                 r = 2;
                 viewCenter = shadow._getCenterViewPoint();
@@ -665,7 +665,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         }
         function moveVertexHandle(handleViewPoint, index) {
             var vertice = getVertexPrjCoordinates();
-            var nVertex = map._untransformFromViewPoint(handleViewPoint);
+            var nVertex = map._viewPointToPrj(handleViewPoint);
             var pVertex = vertice[index];
             pVertex.x = nVertex.x;
             pVertex.y = nVertex.y;
@@ -835,8 +835,11 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         if (!this._editHandles) {
             this._editHandles = [];
         }
-        this._editHandles.push(handle);
-
+        if (Z.Util.isArray(handle)) {
+            this._editHandles = this._editHandles.concat(handle);
+        } else {
+            this._editHandles.push(handle);
+        }
     }
 
 });

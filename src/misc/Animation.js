@@ -56,7 +56,7 @@ Z.Animation = {
             //val is just a destination value, so we set start value to 0 or a 0-point or a 0-coordinate.
             if (!Z.Util.isArray(val)) {
                 if (Z.Util.isNumber(val)) {
-                values = [0, val];
+                    values = [0, val];
                 } else if (val instanceof Z.Point || val instanceof Z.Coordinate) {
                     var clazz = val.constructor;
                     values = [new clazz(0,0), val];
@@ -86,7 +86,7 @@ Z.Animation = {
                     //a Coordinate or a Point to be eql with each other
                     return null;
                 }
-                return [v2, v2.substract(v1), v2];
+                return [v1, v2.substract(v1), v2];
             } else {
                 throw new Error(values+' is not supported in animation styles.');
             }

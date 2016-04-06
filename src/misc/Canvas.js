@@ -40,7 +40,7 @@ Z.Canvas = {
     prepareCanvas:function(ctx, strokeSymbol, fillSymbol, resources){
         if (strokeSymbol) {
             var strokeWidth = strokeSymbol['stroke-width'];
-            if (!Z.Util.isNil(strokeWidth)) {
+            if (!Z.Util.isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
                 ctx.lineWidth = strokeWidth;
             }
             var strokeColor = strokeSymbol['stroke'];
@@ -79,7 +79,10 @@ Z.Canvas = {
                         ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
                     }
                  } else {
-                    ctx.strokeStyle = Z.Canvas.getRgba(strokeColor,1);
+                    var color = Z.Canvas.getRgba(strokeColor,1);
+                    if (ctx.strokeStyle !== color) {
+                        ctx.strokeStyle = color;
+                    }
                  }
              }
              //低版本ie不支持该属性
@@ -104,7 +107,10 @@ Z.Canvas = {
                 }
                 ctx.fillStyle = ctx.createPattern(imageTexture, 'repeat');
             } else {
-                ctx.fillStyle = this.getRgba(fill, 1);
+                var fillColor = this.getRgba(fill, 1);
+                if (ctx.fillStyle !== fillColor) {
+                    ctx.fillStyle = fillColor;
+                }
             }
          }
     },
@@ -115,13 +121,17 @@ Z.Canvas = {
 
     fillCanvas:function(ctx, fillOpacity){
         if (Z.Util.isNil(fillOpacity)) {
-           fillOpacity = 1
+           fillOpacity = 1;
         }
-        var alpha = ctx.globalAlpha;
-
-        ctx.globalAlpha *= fillOpacity;
+        var alpha;
+        if (fillOpacity < 1) {
+            alpha = ctx.globalAlpha;
+            ctx.globalAlpha *= fillOpacity;
+        }
         ctx.fill();
-        ctx.globalAlpha = alpha;
+        if (fillOpacity < 1) {
+            ctx.globalAlpha = alpha;
+        }
     },
 
     // hexColorRe: /^#([0-9a-f]{6}|[0-9a-f]{3})$/i,
@@ -183,7 +193,8 @@ Z.Canvas = {
     _textOnLine: function(ctx, text, pt, textHaloRadius, textHaloFill) {
         //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
         //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
-        pt = pt.round();
+        pt = pt._round();
+        ctx.textBaseline='top';
         if (textHaloRadius) {
             ctx.miterLimit = 2;
             ctx.lineJoin = 'circle';
@@ -217,10 +228,15 @@ Z.Canvas = {
         if (Z.Util.isNil(strokeOpacity)) {
             strokeOpacity = 1;
         }
-        var alpha = ctx.globalAlpha;
-        ctx.globalAlpha *= strokeOpacity;
+        var alpha;
+        if (strokeOpacity < 1) {
+            alpha = ctx.globalAlpha;
+            ctx.globalAlpha *= strokeOpacity;
+        }
         ctx.stroke();
-        ctx.globalAlpha = alpha;
+        if (strokeOpacity < 1) {
+            ctx.globalAlpha = alpha;
+        }
     },
 
     _path:function(ctx, points, lineDashArray, lineOpacity) {
@@ -287,7 +303,7 @@ Z.Canvas = {
         var isPatternLine = !Z.Util.isString(ctx.strokeStyle);
         var point, prePoint, nextPoint;
         for (var i=0, len=points.length; i<len;i++) {
-            point = points[i].round();
+            point = points[i]._round();
             if (!isDashed || ctx.setLineDash) {//ie9以上浏览器
                 if (i === 0) {
                     ctx.moveTo(point.x, point.y);
@@ -295,7 +311,7 @@ Z.Canvas = {
                     ctx.lineTo(point.x,point.y);
                 }
                 if (isPatternLine && i > 0) {
-                    prePoint = points[i-1].round();
+                    prePoint = points[i-1]._round();
                     fillWithPattern(prePoint, point);
                     ctx.beginPath();
                     ctx.moveTo(point.x,point.y);
@@ -305,7 +321,7 @@ Z.Canvas = {
                     if(i === len-1) {
                         break;
                     }
-                    nextPoint = points[i+1].round();
+                    nextPoint = points[i+1]._round();
                     drawDashLine(point, nextPoint, lineDashArray, isPatternLine);
 
                 }
@@ -418,7 +434,7 @@ Z.Canvas = {
 
     bezierCurveAndFill:function(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         ctx.beginPath(points);
-        var start = points[0].round();
+        var start = points[0]._round();
         ctx.moveTo(start.x,start.y);
         Z.Canvas._bezierCurveTo.apply(Z.Canvas, [ctx].concat(points.splice(1)));
         Z.Canvas.fillCanvas(ctx, fillOpacity);
@@ -426,20 +442,20 @@ Z.Canvas = {
     },
 
     _bezierCurveTo:function(ctx, p1, p2, p3) {
-        p1 = p1.round();
-        p2 = p2.round();
-        p3 = p3.round();
+        p1 = p1._round();
+        p2 = p2._round();
+        p3 = p3._round();
         ctx.bezierCurveTo(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y);
     },
 
     _quadraticCurveTo:function(ctx, p1, p2) {
-        p1 = p1.round();
-        p2 = p2.round();
+        p1 = p1._round();
+        p2 = p2._round();
         ctx.quadraticCurveTo(p1.x,p1.y,p2.x,p2.y);
     },
 
     //各种图形的绘制方法
-    ellipse:function (ctx, pt, size, lineOpacity, fillOpacity) {
+    ellipse:function (ctx, pt, width, height, lineOpacity, fillOpacity) {
         //TODO canvas scale后会产生错误?
         function bezierEllipse( x, y, a, b)
         {
@@ -457,21 +473,21 @@ Z.Canvas = {
            Z.Canvas.fillCanvas(ctx, fillOpacity);
            Z.Canvas._stroke(ctx, lineOpacity);
         }
-        pt = pt.round();
-        if (size['width'] === size['height']) {
+        pt = pt._round();
+        if (width === height) {
             //如果高宽相同,则直接绘制圆形, 提高效率
             ctx.beginPath();
-            ctx.arc(pt.x,pt.y,Z.Util.round(size['width']),0,2*Math.PI);
+            ctx.arc(pt.x,pt.y,Z.Util.round(width),0,2*Math.PI);
             Z.Canvas.fillCanvas(ctx, fillOpacity);
             Z.Canvas._stroke(ctx, lineOpacity);
         } else {
-            bezierEllipse(pt.x,pt.y,size["width"],size["height"]);
+            bezierEllipse(pt.x,pt.y, width, height);
         }
 
     },
 
     rectangle:function(ctx, pt, size, lineOpacity, fillOpacity) {
-        pt = pt.round();
+        pt = pt._round();
         ctx.beginPath();
         ctx.rect(pt.x, pt.y,
             Z.Util.round(size['width']),Z.Util.round(size['height']));
@@ -493,7 +509,7 @@ Z.Canvas = {
             Z.Canvas.fillCanvas(ctx, fillOpacity);
             Z.Canvas._stroke(ctx, lineOpacity);
         }
-        pt = pt.round();
+        pt = pt._round();
         sector(ctx,pt.x,pt.y,size,startAngle,endAngle);
     }
 };

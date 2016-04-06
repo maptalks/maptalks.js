@@ -26,9 +26,10 @@ Z.Marker=Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
             'markerType'    : 'pie',
             'markerHeight'  : 24,
             'markerWidth'   : 24,
-            'markerFill'    : "#de3333",
-            "markerLineColor" : "#ffffff",
-            "markerLineWidth" : 1
+            'markerFill'    : '#de3333',
+            'markerLineColor' : '#ffffff',
+            'markerLineWidth' : 1,
+            'opacity' : 1
         }
     },
 

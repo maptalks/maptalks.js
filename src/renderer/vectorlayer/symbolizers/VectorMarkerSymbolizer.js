@@ -41,10 +41,13 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
         var width = style['markerWidth'],
             height = style['markerHeight'];
-
+        var point;
         for (var i = cookedPoints.length - 1; i >= 0; i--) {
-            var point = cookedPoints[i];
-            if (markerType === 'cross' || markerType === 'x'){
+            point = cookedPoints[i];
+            if (markerType === 'ellipse') {
+                 //ellipse default
+                Z.Canvas.ellipse(ctx, point, width/2, height/2, lineOpacity, fillOpacity);
+            } else if (markerType === 'cross' || markerType === 'x'){
                 for (j = vectorArray.length - 1; j >= 0; j--) {
                     vectorArray[j]._add(point);
                 }
@@ -76,9 +79,6 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 ctx.lineCap = 'round';
                 Z.Canvas.sector(ctx, point, height, [90-angle, 90+angle], lineOpacity, fillOpacity);
                 ctx.lineCap = lineCap;
-            } else {
-                //ellipse default
-                Z.Canvas.ellipse(ctx, point, new Z.Size(width/2,height/2), lineOpacity, fillOpacity);
             }
         }
 

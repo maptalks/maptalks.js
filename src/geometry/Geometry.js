@@ -386,7 +386,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!this.options['visible']) {
             return false;
         }
-        var symbol = this.getSymbol();
+        var symbol = this._getInternalSymbol();
         if (!symbol) {
             return true;
         }
@@ -394,14 +394,12 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             if (symbol.length === 0) {
                 return true;
             }
-            var visible = false;
-            for (var i = 0; i < symbol.length; i++) {
-                if (Z.Util.isNil(symbol[i]['opacity']) || (Z.Util.isNumber(symbol[i]['opacity']) && symbol[i]['opacity'] > 0)) {
-                    visible = true;
-                    break;
+            for (var i = 0, len = symbol.length; i < len; i++) {
+                if (Z.Util.isNil(symbol[i]['opacity']) || symbol[i]['opacity'] > 0) {
+                    return true;
                 }
             }
-            return visible;
+            return false;
         } else {
             return (Z.Util.isNil(symbol['opacity']) || (Z.Util.isNumber(symbol['opacity']) && symbol['opacity'] > 0));
         }
@@ -423,10 +421,10 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var coordinates = this.getCoordinates();
         if (coordinates) {
             if (Z.Util.isArray(coordinates)) {
-                var offseted = Z.Util.eachInArray(coordinates,this,function(coord) {
+                var translated = Z.Util.eachInArray(coordinates,this,function(coord) {
                         return coord.add(offset);
                 });
-                this.setCoordinates(offseted);
+                this.setCoordinates(translated);
             } else {
                 this.setCoordinates(coordinates.add(offset));
             }
@@ -888,7 +886,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                 return true;
             }
         }
-        return (this._isEditingOrDragging() || this._immediate)?true:false;        
+        return (this._isEditingOrDragging() || this._immediate)?true:false;
     },
 
     _enableRenderImmediate:function() {

@@ -36,8 +36,8 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         if (!extent) {
             return null;
         }
-        // var min = map._transformToViewPoint(new Z.Coordinate(extent['xmin'],extent['ymin'])),
-        //     max = map._transformToViewPoint(new Z.Coordinate(extent['xmax'],extent['ymax']));
+        // var min = map._prjToViewPoint(new Z.Coordinate(extent['xmin'],extent['ymin'])),
+        //     max = map._prjToViewPoint(new Z.Coordinate(extent['xmax'],extent['ymax']));
         // return new Z.PointExtent(min,max).expand(this.style['lineWidth']/2);
         //
         // this ugly implementation is to improve perf as we can
@@ -50,8 +50,8 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         this._extMin.y = extent['ymin'];
         this._extMax.x = extent['xmax'];
         this._extMax.y = extent['ymax'];
-        var min = map._transformToViewPoint(this._extMin),
-            max = map._transformToViewPoint(this._extMax);
+        var min = map._prjToViewPoint(this._extMin),
+            max = map._prjToViewPoint(this._extMax);
         if (!this._pxExtent) {
             this._pxExtent = new Z.PointExtent(min, max);
         } else {

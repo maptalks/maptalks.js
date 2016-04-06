@@ -76,7 +76,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this._clearCanvas();
         var baseLayer = map.getBaseLayer();
         var baseLayerImage;
-        if (baseLayer) {
+        if (baseLayer && baseLayer._getRenderer()) {
             baseLayerImage =  baseLayer._getRenderer().getCanvasImage();
             if (baseLayerImage) {
                 this._canvasBg = Z.DomUtil.copyCanvas(baseLayerImage['image']);
@@ -163,20 +163,20 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             if (!layers[i].isVisible()) {
                 continue;
             }
-            var render = layers[i]._getRenderer();
-            if (render) {
+            var renderer = layers[i]._getRenderer();
+            if (renderer) {
                 if (!updatePoints) {
                     this._context.save();
-                    if ((layers[i] instanceof Z.VectorLayer) && !render.shouldUpdateWhileTransforming()) {
+                    if ((layers[i] instanceof Z.VectorLayer) && !renderer.shouldUpdateWhileTransforming()) {
                         //redraw all the geometries with transform matrix
                         //this may bring low performance if number of geometries is large.
-                        render.draw();
+                        renderer.draw();
                     } else {
                         retinaMatrix.applyToContext(this._context);
                     }
                 }
 
-                var layerImage = render.getCanvasImage();
+                var layerImage = renderer.getCanvasImage();
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage, mwidth, mheight);
                 }
@@ -301,7 +301,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         if (!Z.Browser.mobile && Z.Browser.canvas) {
              this._onMapMouseMove=function(param) {
-                if (map._isBusy()) {
+                if (map._isBusy() || !map.options['hitDetect']) {
                     return;
                 }
                 var vp = param['viewPoint'];
@@ -310,7 +310,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     cursor;
                 for (var i = layers.length - 1; i >= 0; i--) {
                     var layer = layers[i];
-                    if (layer._getRenderer().hitDetect) {
+                    if (layer._getRenderer() && layer._getRenderer().hitDetect) {
                         if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(vp)) {
                             cursor = layer.options['cursor'];
                             hit = true;
@@ -334,6 +334,11 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (!layer || !layerImage || mwidth === 0 || mheight === 0){
             return;
         }
+        var point = layerImage['point'],
+            size = layerImage['size'];
+        if (point.x + size['width'] <= 0 || point.y + size['height'] <= 0) {
+            return;
+        }
         //opacity of the layer image
         var op = layer.options['opacity'];
         if (!Z.Util.isNumber(op)) {
@@ -350,50 +355,22 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             return;
         }
         var alpha = this._context.globalAlpha;
-        var point = layerImage['point'];
-        var size = layerImage['size'];
-        var canvasImage = layerImage['image'];
+
         if (op < 1) {
             this._context.globalAlpha *= op;
         }
         if (imgOp < 1) {
             this._context.globalAlpha *= imgOp;
         }
-
+        var canvasImage = layerImage['image'];
         if (Z.node) {
             var context = canvasImage.getContext('2d');
             if (context.getSvg) {
                  //canvas2svg
                 canvasImage = context;
             }
-            //CanvasMock并不一定实现了drawImage(img, sx, sy, w, h, dx, dy, w, h)
-            this._context.drawImage(canvasImage, point.x, point.y);
-        } else {
-            var sx, sy, w, h, dx, dy;
-            if (point.x <= 0) {
-                sx = -point.x;
-                dx = 0;
-                w = Math.min(size['width']-sx,mwidth);
-            } else {
-                sx = 0;
-                dx = point.x;
-                w = mwidth-point.x;
-            }
-            if (point.y <= 0) {
-                sy = -point.y;
-                dy = 0;
-                h = Math.min(size['height']-sy,mheight);
-            } else {
-                sy = 0;
-                dy = point.y;
-                h = mheight-point.y;
-            }
-            if (dx < 0 || dy < 0 || w <=0 || h <= 0) {
-                this._context.globalAlpha = alpha;
-                return;
-            }
-            this._context.drawImage(canvasImage, sx, sy, w, h, dx, dy, w, h);
         }
+        this._context.drawImage(canvasImage, point.x, point.y);
         this._context.globalAlpha = alpha;
     },
 
