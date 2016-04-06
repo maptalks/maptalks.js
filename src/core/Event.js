@@ -141,8 +141,21 @@ Z.Eventable = {
      * @return {*} this
      * @instance
      */
-    fire:function(eventType, param) {
-        return this._fire(eventType, param);
+    fire:function() {
+       if (this._eventParent) {
+            return this._eventParent.fire.apply(this._eventParent, arguments);
+        }
+        return this._fire.apply(this, arguments);
+    },
+
+    /**
+     * Set a parent layer to handle all the events
+     * @param {maptralks.Layer} layer - parent layer
+     * @return {maptalks.Layer} this
+     */
+    setEventParent:function(layer) {
+        this._eventParent = layer;
+        return this;
     },
 
 
