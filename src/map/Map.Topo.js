@@ -8,7 +8,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param {Number[]|maptalks.Coordinate} coord2 - coordinate 2
      * @return {Number} distance
      */
-    computeDistance: function(coord1, coord2) {
+    computeLength: function(coord1, coord2) {
         if (!this.getProjection()) {return null;}
         var p1 = new Z.Coordinate(coord1),
             p2 = new Z.Coordinate(coord2);
@@ -21,7 +21,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Geometry} geometry - geometry to caculate
      * @return {Number} length
      */
-    computeGeodesicLength:function(geometry) {
+    computeGeometryLength:function(geometry) {
         return geometry._computeGeodesicLength(this.getProjection());
     },
 
@@ -30,7 +30,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param  {maptalks.Geometry} geometry - geometry to caculate
      * @return {Number} area
      */
-    computeGeodesicArea:function(geometry) {
+    computeGeometryArea:function(geometry) {
         return geometry._computeGeodesicArea(this.getProjection());
     },
 

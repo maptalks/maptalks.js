@@ -32,7 +32,7 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
         var map = this.getMap();
         var area;
         if (toMeasure instanceof Z.Geometry) {
-            area = map.computeGeodesicArea(toMeasure);
+            area = map.computeGeometryArea(toMeasure);
         } else if (Z.Util.isArray(toMeasure)) {
             area = Z.GeoUtils.computeArea(toMeasure, map.getProjection());
         }
