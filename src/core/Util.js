@@ -56,7 +56,7 @@ Z.Util = {
 
     isSVG:function(url) {
         var prefix = 'data:image/svg+xml';
-        if (url.substring(url.length-4) === '.svg') {
+        if (url.length > 4 && url.substring(url.length-4) === '.svg') {
             return 1;
         } else if (url.substring(0,prefix.length) === prefix) {
             return 2;
@@ -73,8 +73,7 @@ Z.Util = {
      */
     loadImage:function(img, imgDesc) {
         if (!Z.node) {
-            var url = imgDesc[0];
-            img.src = url;
+            img.src = imgDesc[0];
             return;
         }
         function onError(err) {
