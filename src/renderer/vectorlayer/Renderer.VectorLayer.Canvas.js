@@ -336,9 +336,9 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (!this._resources) {
             this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
         }
-        var resources = this._resources;
-        var promises = [];
-        var crossOrigin = this._layer.options['crossOrigin'];
+        var resources = this._resources,
+            promises = [],
+            crossOrigin = this._layer.options['crossOrigin'];
         function onPromiseCallback(_url) {
             return function(resolve, reject) {
                         var img = new Image();
@@ -346,16 +346,22 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                             img['crossOrigin'] = crossOrigin;
                         }
                         img.onload = function(){
-                            var w = _url[1] || img.width,
-                                h = _url[2] || img.height;
+                            var w = _url[1] || this.width,
+                                h = _url[2] || this.height;
                             if (w && h && Z.Util.isSVG(_url[0]) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
-                                var canvas = Z.Canvas.createCanvas(w, h);
-                                Z.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
-                                resources.addResource(_url,canvas);
+                                var img2 = new Image();
+                                img2.onload = function() {
+                                    //resolved weird behavior of IE 11, SVG drawn but canvas is still blank.
+                                    var canvas = Z.Canvas.createCanvas(w, h);
+                                    Z.Canvas.image(canvas.getContext('2d'), this, 0, 0, w, h);
+                                    resources.addResource(_url, canvas);
+                                    resolve({});
+                                }
+                                img2.src = this.src;
                             } else {
-                                resources.addResource(_url,this);
+                                resources.addResource(_url, this);
+                                resolve({});
                             }
-                            resolve({});
                         };
                         img.onabort = function(){
                             resolve({});
