@@ -209,6 +209,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         panels.mapMask.style.height = height + 'px';
         panels.controlWrapper.style.width = width + 'px';
         panels.controlWrapper.style.height = height + 'px';
+        this._updateCanvasSize();
     },
 
     getPanel: function() {
