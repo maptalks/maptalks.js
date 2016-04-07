@@ -124,11 +124,11 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     _scheduleLoadTileQueue:function() {
 
         if (this._loadQueueTimeout) {
-            clearTimeout(this._loadQueueTimeout);
+            Z.Util.cancelAnimFrame(this._loadQueueTimeout);
         }
 
         var me = this;
-        this._loadQueueTimeout = setTimeout(function(){me._loadTileQueue();},10);
+        this._loadQueueTimeout = Z.Util.requestAnimFrame(function(){me._loadTileQueue();});
     },
 
     _loadTileQueue:function() {
@@ -272,14 +272,14 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         if (this._mapRenderRequest) {
-            clearTimeout(this._mapRenderRequest);
+            Z.Util.cancelAnimFrame(this._mapRenderRequest);
         }
         var me = this;
-        this._mapRenderRequest = setTimeout(function() {
+        this._mapRenderRequest = Z.Util.requestAnimFrame(function() {
             if (me.getMap() && !me.getMap()._isBusy()) {
                 me._mapRender.render();
             }
-        }, 1);
+        });
     },
 
     _registerEvents:function() {
