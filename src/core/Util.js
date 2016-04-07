@@ -498,6 +498,9 @@ Z.Util = {
      * @return {String} camel style name
      */
     convertMinusToCamel: function(str) {
+        if (str.indexOf('-') < 0) {
+            return str;
+        }
         var re = /-([A-Za-z])/g;
         return str.replace(re, function (match, p1, offset, str) {
             return p1.toUpperCase();
@@ -525,7 +528,7 @@ Z.Util = {
      * @param  {String} style   转换风格:'minus'或'camel'
      * @return {Object}    转换后的对象
      */
-    convertFieldNameStyle:function(symbol,style) {
+    convertFieldNameStyle:function(symbol, style) {
         if (!symbol) {
             return null;
         }
