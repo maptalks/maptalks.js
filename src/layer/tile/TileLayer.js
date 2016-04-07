@@ -151,9 +151,13 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                     );
             }
         }
+        var f = 1;
+        if (Z.Browser.ie || Z.Browser.edge) {
+            f = -1;
+        }
         //瓦片排序, 地图中心的瓦片排在末尾, 末尾的瓦片先载入
         tiles.sort(function (a, b) {
-            return b['viewPoint'].distanceTo(centerTileViewPoint)-a['viewPoint'].distanceTo(centerTileViewPoint);
+            return f * (b['viewPoint'].distanceTo(centerTileViewPoint)-a['viewPoint'].distanceTo(centerTileViewPoint));
         });
         return {
             'tiles' : tiles,
