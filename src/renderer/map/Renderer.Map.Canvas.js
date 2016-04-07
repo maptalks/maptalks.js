@@ -446,6 +446,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      * @ignore
      */
     _onResize:function() {
+        delete this._canvasBg;
         this.map.checkSize();
     }
 });
