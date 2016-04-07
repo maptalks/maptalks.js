@@ -279,10 +279,10 @@ describe('API', function () {
 
     describe('Map.Topo', function() {
 
-        it('computeDistance', function() {
+        it('computeLength', function() {
             var lonlat1 = new Z.Coordinate([0, 0]);
             var lonlat2 = new Z.Coordinate([1, 1]);
-            var distance = map.computeDistance(lonlat1, lonlat2);
+            var distance = map.computeLength(lonlat1, lonlat2);
 
             expect(distance).to.be.above(0);
         });
@@ -293,7 +293,7 @@ describe('API', function () {
             expect(function () {
                 for (var i = 0; i < all.length; i++) {
                     var g = all[i];
-                    map.computeGeodesicLength(g);
+                    map.computeGeometryLength(g);
                 }
             }).to.not.throwException();
         });
@@ -304,7 +304,7 @@ describe('API', function () {
             expect(function () {
                 for (var i = 0; i < all.length; i++) {
                     var g = all[i];
-                    map.computeGeodesicArea(g);
+                    map.computeGeometryArea(g);
                 }
             }).to.not.throwException();
         });

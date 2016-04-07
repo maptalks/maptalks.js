@@ -75,13 +75,13 @@ describe('#Projection', function () {
             });
             expect(map.getProjection().code).to.be.eql('IDENTITY');
             expect(map.getCenter()).to.nearCoord(center);
-            expect(map.computeDistance([0,10],[0,20])).to.be.eql(10);
+            expect(map.computeLength([0,10],[0,20])).to.be.eql(10);
             var circle = new maptalks.Circle([10,10],1);
-            expect(map.computeGeodesicArea(circle)).to.be.eql(Math.PI);
+            expect(map.computeGeometryArea(circle)).to.be.eql(Math.PI);
             var polygon = new maptalks.Polygon([
                     [0,0],[0,10],[10,10],[10,0]
                 ]);
-            expect(map.computeGeodesicArea(polygon)).to.be.eql(100);
+            expect(map.computeGeometryArea(polygon)).to.be.eql(100);
             expect(map.locate([0,0],10,10)).to.be.eql(new maptalks.Coordinate(10,10));
         });
     });

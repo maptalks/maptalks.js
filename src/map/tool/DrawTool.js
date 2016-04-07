@@ -327,7 +327,7 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
                     break;
                 }
                 center =geometry.getCenter();
-                var radius = _map.computeDistance(center,coordinate);
+                var radius = _map.computeLength(center,coordinate);
                 geometry.setRadius(radius);
             break;
             case Z.Geometry['TYPE_ELLIPSE']:
@@ -338,8 +338,8 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
                     break;
                 }
                 center = geometry.getCenter();
-                var rx = _map.computeDistance(center,new Z.Coordinate({x:coordinate.x, y:center.y}));
-                var ry = _map.computeDistance(center,new Z.Coordinate({x:center.x, y:coordinate.y}));
+                var rx = _map.computeLength(center,new Z.Coordinate({x:coordinate.x, y:center.y}));
+                var ry = _map.computeLength(center,new Z.Coordinate({x:center.x, y:coordinate.y}));
                 geometry.setWidth(rx * 2);
                 geometry.setHeight(ry * 2);
             break;
@@ -351,8 +351,8 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
                     break;
                 }
                 var nw =geometry.getCoordinates();
-                var width = _map.computeDistance(nw,new Z.Coordinate({x:coordinate.x, y:nw.y}));
-                var height = _map.computeDistance(nw,new Z.Coordinate({x:nw.x, y:coordinate.y}));
+                var width = _map.computeLength(nw,new Z.Coordinate({x:coordinate.x, y:nw.y}));
+                var height = _map.computeLength(nw,new Z.Coordinate({x:nw.x, y:coordinate.y}));
                 geometry.setWidth(width);
                 geometry.setHeight(height);
             break;

@@ -175,7 +175,12 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {Object} properties
      */
     getProperties:function() {
-        if (!this.properties) {return null;}
+        if (!this.properties) {
+            if (this._getParent()) {
+                return this._getParent().getProperties();
+            }
+            return null;
+        }
         return this.properties;
     },
 
@@ -720,17 +725,18 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             symbols = [symbol];
         }
         var props = Z.Symbolizer.resourceProperties;
-        for (var i = symbols.length - 1; i >= 0; i--) {
-            var symbol = symbols[i];
+        var i, ii, len, symbol, res, isCssStyle = false;
+        for (i = symbols.length - 1; i >= 0; i--) {
+            symbol = symbols[i];
             if (!symbol) {
                 continue;
             }
-            for (var ii = 0; ii < props.length; ii++) {
-                var res = symbol[props[ii]];
+            for (ii = 0, len = props.length; ii < len; ii++) {
+                res = symbol[props[ii]];
                 if (!res) {
                     continue;
                 }
-                var isCssStyle = false;
+                isCssStyle = false;
                 if (res.indexOf('url(') >= 0) {
                     res = Z.Util.extractCssUrl(res);
                     isCssStyle = true;

@@ -86,7 +86,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         var map = this.getMap();
         var length;
         if (toMeasure instanceof Z.Geometry) {
-            length = map.computeGeodesicLength(toMeasure);
+            length = map.computeGeometryLength(toMeasure);
         } else if (Z.Util.isArray(toMeasure)) {
             length = Z.GeoUtils.computeLength(toMeasure, map.getProjection());
         }

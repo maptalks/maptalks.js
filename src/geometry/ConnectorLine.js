@@ -91,7 +91,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
             var p1 = srcPoints[i];
             for(var j=0,length=targetPoints.length;j<length;j++) {
                 var p2 = targetPoints[j];
-                var dist = map.computeDistance(p1, p2);
+                var dist = map.computeLength(p1, p2);
                 if(i===0&&j===0) {
                     c1 = p1;
                     c2 = p2;
