@@ -67,9 +67,11 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
     _prepareMap:function() {
         var map = this.target.getMap();
         this._mapDraggable = map.options['draggable'];
+        this._mapHitDetect = map.options['hitDetect'];
         map._trySetCursor('move');
         map.config({
-            'draggable': false
+            'hitDetect' : false,
+            'draggable' : false
         });
     },
 
@@ -238,6 +240,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             this._mapDraggable = true;
         }
         map.config({
+            'hitDetect': this._mapHitDetect,
             'draggable': this._mapDraggable
         });
 
