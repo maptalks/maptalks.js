@@ -309,7 +309,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     Z.Util.cancelAnimFrame(this._hitDetectTimeout);
                 }
                 this._hitDetectTimeout = Z.Util.requestAnimFrame(function() {
-                    console.log('hitDetect');
                     var vp = param['viewPoint'];
                     var layers = map._getLayers();
                     var hit = false,
