@@ -301,29 +301,35 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             Z.DomUtil.on(window, 'resize', this._onResize, this);
         }
         if (!Z.Browser.mobile && Z.Browser.canvas) {
-             this._onMapMouseMove=function(param) {
-                if (map._isBusy() || !map.options['hitDetect']) {
+             this._onMapMouseMove = function(param) {
+                if (map._isBusy() || map._moving || !map.options['hitDetect']) {
                     return;
                 }
-                var vp = param['viewPoint'];
-                var layers = map._getLayers();
-                var hit = false,
-                    cursor;
-                for (var i = layers.length - 1; i >= 0; i--) {
-                    var layer = layers[i];
-                    if (layer._getRenderer() && layer._getRenderer().hitDetect) {
-                        if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(vp)) {
-                            cursor = layer.options['cursor'];
-                            hit = true;
-                            break;
+                if (this._hitDetectTimeout) {
+                    Z.Util.cancelAnimFrame(this._hitDetectTimeout);
+                }
+                this._hitDetectTimeout = Z.Util.requestAnimFrame(function() {
+                    var vp = param['viewPoint'];
+                    var layers = map._getLayers();
+                    var hit = false,
+                        cursor;
+                    for (var i = layers.length - 1; i >= 0; i--) {
+                        var layer = layers[i];
+                        if (layer._getRenderer() && layer._getRenderer().hitDetect) {
+                            if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(vp)) {
+                                cursor = layer.options['cursor'];
+                                hit = true;
+                                break;
+                            }
                         }
                     }
-                }
-                if (hit) {
-                    map._trySetCursor(cursor);
-                } else {
-                    map._trySetCursor('default');
-                }
+                    if (hit) {
+                        map._trySetCursor(cursor);
+                    } else {
+                        map._trySetCursor('default');
+                    }
+                });
+
             };
             map.on('_mousemove',this._onMapMouseMove,this);
         }
