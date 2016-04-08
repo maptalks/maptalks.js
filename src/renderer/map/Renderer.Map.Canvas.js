@@ -100,6 +100,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 //default zoom animation, animate all the layers.
                 this.render();
             }
+            var matrix;
             var player = Z.Animation.animate(
                 {
                     'scale' : [startScale, endScale]
@@ -109,19 +110,19 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     'speed' : duration
                 },
                 Z.Util.bind(function(frame) {
-                    var matrixes = this.getZoomMatrix(frame.styles['scale'], transOrigin);
+                    matrix = this.getZoomMatrix(frame.styles['scale'], transOrigin);
                     if (player.playState === 'finished') {
                         delete this._transMatrix;
                         this._clearCanvas();
                         //only draw basetile layer
-                        matrixes[1].applyToContext(this._context);
+                        this._applyTransform(matrix);
                         if (baseLayerImage) {
                             this._drawLayerCanvasImage(baseLayer, baseLayerImage, width, height);
                         }
                         this._context.restore();
                         fn.call(me);
                     } else if (player.playState === 'running'){
-                        this.transform(matrixes[0], matrixes[1], layersToTransform);
+                        this.transform(matrix, layersToTransform);
                     }
                 }, this)
             );
@@ -137,26 +138,22 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     /**
      * 对图层进行仿射变换
      * @param  {Matrix} matrix 变换矩阵
-     * @param  {Matrix} retinaMatrix retina屏时,用来绘制图层canvas的变换矩阵
      * @param  {maptalks.Layer[]} layersToTransform 参与变换和绘制的图层
      */
-    transform:function(matrix, retinaMatrix, layersToTransform) {
+    transform:function(matrix, layersToTransform) {
         var mwidth = this._canvas.width,
             mheight = this._canvas.height;
         var layers = layersToTransform || this._getAllLayerToCanvas();
         this._transMatrix = matrix;
         var scale = matrix.decompose()['scale'];
         this._transMatrix._scale = scale;
-        if (!retinaMatrix) {
-            retinaMatrix = matrix;
-        }
 
         //automatically enable updatePointsWhileTransforming with mobile browsers.
         var updatePoints = Z.Browser.mobile || this.map.options['updatePointsWhileTransforming'];
         this._clearCanvas();
         if (updatePoints) {
             this._context.save();
-            retinaMatrix.applyToContext(this._context);
+            this._applyTransform(matrix);
         }
 
         for (var i = 0, len=layers.length; i < len; i++) {
@@ -172,7 +169,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                         //this may bring low performance if number of geometries is large.
                         renderer.draw();
                     } else {
-                        retinaMatrix.applyToContext(this._context);
+                        this._applyTransform(matrix);
                     }
                 }
 
@@ -190,11 +187,28 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
     },
 
+    _applyTransform : function(matrix) {
+        if (Z.Browser.retina) {
+            matrix = matrix.multi(2);
+        }
+        matrix.applyToContext(this._context);
+    },
+
     /**
      * 获取底图当前的仿射矩阵
      * @return {Matrix} 仿射矩阵
      */
     getTransform:function() {
+        if (!this._transMatrix) {
+            return null;
+        }
+        if (Z.Browser.retina) {
+            if (!this._retinaTransMatrix) {
+                this._retinaTransMatrix = this._transMatrix.multi(2);
+                this._retinaTransMatrix._scale = {x:this._transMatrix._scale.x * 2, y:this._transMatrix._scale.y * 2};
+            }
+            return this._retinaTransMatrix;
+        }
         return this._transMatrix;
     },
 
@@ -385,7 +399,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var map = this.map,
             size = map.getSize();
         if (this._canvasBg) {
-            var scale = this._canvasBgRes/map._getResolution();
+            var scale = (Z.Browser.retina?2:1) * this._canvasBgRes / map._getResolution();
             var p = map.coordinateToContainerPoint(this._canvasBgCoord);
             var bSize = size._multi(scale);
             Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, bSize['width'], bSize['height']);

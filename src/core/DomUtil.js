@@ -247,8 +247,13 @@ Z.DomUtil = {
      */
     getEventPagePosition:function(ev) {
         ev = ev || window.event;
-        if(ev.pageX || ev.pageY){
-            return {x:ev.pageX, y:ev.pageY};
+        if (ev.touches && ev.touches.length > 0) {
+            return new Z.Point(ev.touches[0].pageX, ev.touches[0].pageY);
+        } else if (ev.changedTouches && ev.changedTouches.length > 0) {
+            //touchend
+            return new Z.Point(ev.changedTouches[0].pageX, ev.changedTouches[0].pageY);
+        } else if(ev.pageX || ev.pageY){
+            return new Z.Point(ev.pageX, ev.pageY);
         }else{
             //解决是否定义DOCTYPE W3C DTD标准取值滚动条参数
             var dBody = document.body;//无标准这有效
@@ -275,7 +280,7 @@ Z.DomUtil = {
         }
         var domScreenPos = Z.DomUtil.getPagePosition(dom);
         var mousePagePos = Z.DomUtil.getEventPagePosition(ev);
-        return new Z.Point(mousePagePos.x-domScreenPos.x,mousePagePos.y-domScreenPos.y);
+        return mousePagePos._substract(domScreenPos);
     },
 
     /**
