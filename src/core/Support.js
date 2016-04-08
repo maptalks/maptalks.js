@@ -20,7 +20,7 @@ if (!Z.node) {
         if (Z.Browser.mobile) {
             if (viewPortMeta === null) {
                 viewPortMeta=document.createElement('meta');
-                viewPortMeta.setAttribute("viewport");
+                viewPortMeta.setAttribute("name","viewport");
                 viewPortMeta.setAttribute("content","user-scalable=no");
                 head.appendChild(viewPortMeta);
             } else {
