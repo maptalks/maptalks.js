@@ -893,23 +893,31 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             clearTimeout(this._resizeTimeout);
         }
         var me = this;
-        this._resizeTimeout = setTimeout(function() {
+        function resize(update) {
             var watched = me._getContainerDomSize();
-            if (me.width !== watched.width || me.height !== watched.height) {
-                var oldHeight = me.height;
-                var oldWidth = me.width;
-                me._updateMapSize(watched);
-                var resizeOffset = new Z.Point((watched.width-oldWidth) / 2,(watched.height-oldHeight) / 2);
-                me._offsetCenterByPixel(resizeOffset);
-                /**
-                 * resize event when map container's size changes
-                 * @event maptalks.Map#resize
-                 * @type {Object}
-                 * @property {String} type - resize
-                 * @property {maptalks.Map} target - map fires the event
-                 */
-                me._fireEvent('resize');
-            }
+
+            var oldHeight = me.height;
+            var oldWidth = me.width;
+            me._updateMapSize(watched);
+            var resizeOffset = new Z.Point((watched.width-oldWidth) / 2,(watched.height-oldHeight) / 2);
+            me._offsetCenterByPixel(resizeOffset);
+
+            /**
+             * resize event when map container's size changes
+             * @event maptalks.Map#resize
+             * @type {Object}
+             * @property {String} type - resize
+             * @property {maptalks.Map} target - map fires the event
+             */
+            me._fireEvent('resize');
+        }
+
+        this._resizeTimeout = setTimeout(function() {
+            resize();
+            setTimeout(function() {
+                resize();
+            }, 1);
+
         }, 100);
 
         return this;
@@ -1233,9 +1241,9 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 width /= 2;
                 height /= 2;
             }
-        } else if (!Z.Util.isNil(containerDOM.offsetWidth) && !Z.Util.isNil(containerDOM.offsetWidth)) {
-            width = parseInt(containerDOM.offsetWidth,0);
-            height = parseInt(containerDOM.offsetHeight,0);
+        } else if (!Z.Util.isNil(containerDOM.clientWidth) && !Z.Util.isNil(containerDOM.clientHeight)) {
+            width = parseInt(containerDOM.clientWidth,0);
+            height = parseInt(containerDOM.clientHeight,0);
         } else {
             throw new Error('can not get size of container');
         }
