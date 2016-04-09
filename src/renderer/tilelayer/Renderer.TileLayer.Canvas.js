@@ -59,7 +59,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             tileCache = this._tileCache,
             tileSize = layer.getTileSize();
 
-        var viewExtent = map._getViewExtent();
+        // var viewExtent = map._getViewExtent();
         var maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {
@@ -68,6 +68,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
                 return;
             }
         }
+
+        this._resizeCanvas(tileGrid['fullExtent'].getSize());
+        this._viewExtent = tileGrid['fullExtent'];
 
         //遍历瓦片
         this._tileToLoadCounter = 0;
@@ -79,7 +82,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             cached = tileRended[tileId] || tileCache.get(tileId);
             tileViewExtent = new Z.PointExtent(tile['viewPoint'],
                                 tile['viewPoint'].add(tileSize.toPoint()));
-            if (!viewExtent.intersects(tileViewExtent)) {
+            if (!this._viewExtent.intersects(tileViewExtent)) {
                 continue;
             }
             if (cached) {
@@ -114,7 +117,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
         var size = this._viewExtent.getSize();
         var point = this._viewExtent.getMin();
-        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point)._round(),'size':size,'opacity':gradualOpacity};
+        return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point),'size':size,'opacity':gradualOpacity};
     },
 
     getPaintContext:function() {
@@ -183,12 +186,12 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         var tileSize = this._layer.getTileSize();
-        var leftTop = this.getMap().offsetPlatform();
+        var leftTop = this._viewExtent.getMin();
         Z.Canvas.image(this._context, tileImage,
-            point.x+leftTop.x, point.y+leftTop.y,
+            point.x - leftTop.x, point.y - leftTop.y,
             tileSize['width'], tileSize['height']);
         if (this._layer.options['debug']) {
-            var p = point.add(leftTop);
+            var p = point.substract(leftTop);
             this._context.save();
             this._context.strokeStyle = 'rgb(0,0,0)';
             this._context.fillStyle = 'rgb(0,0,0)';

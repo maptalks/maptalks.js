@@ -104,10 +104,11 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         var map = this.getMap();
         var size = map.getSize();
         var r = Z.Browser.retina?2:1;
-        this._canvas = Z.Canvas.createCanvas(r*size['width'],r*size['height'],map.CanvasClass);
+        this._canvas = Z.Canvas.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
         this._context = this._canvas.getContext('2d');
-
-        this._resizeCanvas();
+       if (Z.Browser.retina) {
+            this._context.scale(2, 2);
+        }
         Z.Canvas.setDefaultCanvasSetting(this._context);
     },
 
@@ -122,15 +123,14 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         } else {
             size = canvasSize;
         }
-        var canvas = this._canvas;
-        //retina support
         var r = Z.Browser.retina?2:1;
-        canvas.height = r * size['height'];
-        canvas.width = r * size['width'];
-        if (canvas.style) {
-            canvas.style.width = size['width']+'px';
-            canvas.style.height = size['height']+'px';
+        //only make canvas bigger, never smaller
+        if (this._canvas.width >= r * size['width'] && this._canvas.height >= r * size['height']) {
+            return;
         }
+        //retina support
+        this._canvas.height = r * size['height'];
+        this._canvas.width = r * size['width'];
         if (Z.Browser.retina) {
             this._context.scale(2, 2);
         }
