@@ -62,7 +62,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         // var viewExtent = map._getViewExtent();
         var maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
-            if (!maskViewExtent.intersects(viewExtent)) {
+            if (!maskViewExtent.intersects(this._viewExtent)) {
                 this._requestMapToRender();
                 this._fireLoadedEvent();
                 return;
