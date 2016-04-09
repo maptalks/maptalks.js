@@ -111,8 +111,8 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
     _getDomOffset:function() {
         var size = this.getSize();
         var o = new Z.Point(-size['width']/2, -size['height'])._add(-4, -12);
-        if (this._target instanceof Z.Marker) {
-            var markerSize = this._target.getSize();
+        if (this.getOwner() instanceof Z.Marker) {
+            var markerSize = this.getOwner().getSize();
             if (markerSize) {
                 o._add(0,  -markerSize['height']);
             }

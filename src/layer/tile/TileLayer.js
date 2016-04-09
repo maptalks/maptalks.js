@@ -12,8 +12,8 @@
 Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
     options: {
-        'errorTileUrl'  : 'images/system/transparent.png',
-        'urlTemplate'   : 'images/system/transparent.png',
+        'errorTileUrl'  : '#',
+        'urlTemplate'   : '#',
         'subdomains'    : null,
 
         'gradualLoading' : true,
@@ -22,7 +22,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         'renderWhenPanning' : false,
         //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
-        'renderSpanWhenPanning' : 0,
+        'renderSpanWhenPanning' : (function(){return Z.Browser.mobile?-1:0;})(),
 
         'crossOrigin' : null,
 
@@ -151,9 +151,13 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                     );
             }
         }
+        var f = 1;
+        if (Z.Browser.ie || Z.Browser.edge) {
+            f = -1;
+        }
         //瓦片排序, 地图中心的瓦片排在末尾, 末尾的瓦片先载入
         tiles.sort(function (a, b) {
-            return b['viewPoint'].distanceTo(centerTileViewPoint)-a['viewPoint'].distanceTo(centerTileViewPoint);
+            return f * (b['viewPoint'].distanceTo(centerTileViewPoint)-a['viewPoint'].distanceTo(centerTileViewPoint));
         });
         return {
             'tiles' : tiles,

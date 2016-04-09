@@ -735,3 +735,15 @@ Z.Matrix.prototype = {
 		return me;
 	}
 };
+
+Z.Matrix.prototype.multi = function(s) {
+    var matrix = this;
+    var copy = matrix.clone();
+        copy.a = matrix.a * 2;
+        copy.b = matrix.b * 2;
+        copy.c = matrix.c * 2;
+        copy.d = matrix.d * 2;
+        copy.e = matrix.e * 2;
+        copy.f = matrix.f * 2;
+    return copy;
+}

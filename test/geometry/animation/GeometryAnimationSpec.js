@@ -52,7 +52,11 @@ describe('#GeometryAnimation', function () {
                     'markerWidth' : 20,
                     'markerHeight' : 30
                 }
-            }, step);
+            },
+            {
+                speed: 500
+            },
+            step);
         });
 
         it('animate a composite symbol', function(done) {

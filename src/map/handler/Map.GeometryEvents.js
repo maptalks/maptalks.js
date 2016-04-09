@@ -79,12 +79,12 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         var callback = Z.Util.bind(fireGeometryEvent, this);
         var me = this;
         if (this._queryIdentifyTimeout) {
-                clearTimeout(this._queryIdentifyTimeout);
+                Z.Util.cancelAnimFrame(this._queryIdentifyTimeout);
             }
         if ('mousemove' === eventType  || eventType === 'touchmove') {
-            this._queryIdentifyTimeout = setTimeout(function() {
+            this._queryIdentifyTimeout = Z.Util.requestAnimFrame(function() {
                 map.identify(identifyOptions, callback);
-            }, 20);
+            });
         } else {
             map.identify(identifyOptions, callback);
         }
