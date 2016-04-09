@@ -1229,6 +1229,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             width = containerDOM.width;
             height = containerDOM.height;
             if (Z.Browser.retina && containerDOM[Z.renderer.tilelayer.Canvas.prototype.propertyOfTileId]) {
+                //is a canvas tile of CanvasTileLayer
                 width /= 2;
                 height /= 2;
             }
