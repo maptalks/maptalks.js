@@ -285,7 +285,7 @@ var GeoSymbolTester = {
                 "text-fill"         : "#550033",
                 "text-opacity"      : 1,
                 "text-halo-fill"  : "#fff",
-                "text-halo-radius": 0,
+                "text-halo-radius": 5,
 
                 "text-dx"           : 0,
                 "text-dy"           : 0,
@@ -320,14 +320,14 @@ var GeoSymbolTester = {
     ],
 
     lineAndFill: {
-                "line-pattern-file" : "images/resource/marker.png",
-                "line-color"        : "#f00",
+                "line-pattern-file" : "url(images/resource/marker.png)",
+                // "line-color"        : "#f00",
                 "line-width"        : 5,
                 "line-opacity"      : 1,
                 "line-join"         : "miter", //round bevel
                 "line-cap"          : "round", //butt square
                 "line-dasharray"    : [20, 5, 20],
-                "polygon-pattern-file"  : "images/resource/marker.png",
+                "polygon-pattern-file"  : "url(images/resource/marker.png)",
                 "polygon-fill"          : "#f00",
                 "polygon-opacity"       : 1
             },
@@ -337,6 +337,7 @@ var GeoSymbolTester = {
         geometry.config('debug', true);
         geometry.remove();
         var layer = new maptalks.VectorLayer("symboltest_layer_svg");
+        layer.config('drawImmediate' , true);
         map.addLayer(layer);
         layer.addGeometry(geometry);
         var i;
@@ -348,6 +349,7 @@ var GeoSymbolTester = {
         }
         geometry.remove();
         layer = new maptalks.VectorLayer("symboltest_layer_canvas",{"render":"canvas"});
+        layer.config('drawImmediate' , true);
         map.addLayer(layer);
         layer.addGeometry(geometry);
         for (i = this.markerSymbols.length - 1; i >= 0; i--) {

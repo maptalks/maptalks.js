@@ -51,7 +51,7 @@ describe('#GeometryEdit', function () {
         });
 
         it('drag all kinds of geometries', function() {
-            this.timeout(5000);
+            this.timeout(8000);
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
