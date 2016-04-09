@@ -5,7 +5,9 @@ Z.renderer.canvastilelayer.Canvas=Z.renderer.tilelayer.Canvas.extend({
         var tileSize = this._layer.getTileSize(),
             canvasClass = this._canvas.constructor,
             layer = this._layer;
-        var tileCanvas = Z.Canvas.createCanvas(tileSize['width'], tileSize['height'], canvasClass);
+        var r = Z.Browser.retina?2:1;
+        var tileCanvas = Z.Canvas.createCanvas(tileSize['width'] * r, tileSize['height'] * r, canvasClass);
+
         tileCanvas[this.propertyOfTileId]=tileId;
         tileCanvas[this.propertyOfPointOnTile] = tile['viewPoint'];
         tileCanvas[this.propertyOfTileZoom] = tile['zoom'];

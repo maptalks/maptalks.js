@@ -188,9 +188,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     },
 
     _applyTransform : function(matrix) {
-        if (Z.Browser.retina) {
-            matrix = matrix.multi(2);
-        }
         matrix.applyToContext(this._context);
     },
 
@@ -203,11 +200,11 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             return null;
         }
         if (Z.Browser.retina) {
-            if (!this._retinaTransMatrix) {
-                this._retinaTransMatrix = this._transMatrix.multi(2);
-                this._retinaTransMatrix._scale = {x:this._transMatrix._scale.x * 2, y:this._transMatrix._scale.y * 2};
-            }
-            return this._retinaTransMatrix;
+            var _layerTransMatrix = this._transMatrix.clone();
+            _layerTransMatrix.e = this._transMatrix.e / 2;
+            _layerTransMatrix.f = this._transMatrix.f / 2;
+            _layerTransMatrix._scale = this._transMatrix._scale;
+            return _layerTransMatrix;
         }
         return this._transMatrix;
     },
@@ -355,7 +352,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (!layer || !layerImage || mwidth === 0 || mheight === 0){
             return;
         }
-        var point = layerImage['point'],
+        var point = layerImage['point'].multi(Z.Browser.retina?2:1),
             size = layerImage['size'];
         if (point.x + size['width'] <= 0 || point.y + size['height'] <= 0) {
             return;
@@ -399,10 +396,11 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var map = this.map,
             size = map.getSize();
         if (this._canvasBg) {
-            var scale = (Z.Browser.retina?2:1) * this._canvasBgRes / map._getResolution();
-            var p = map.coordinateToContainerPoint(this._canvasBgCoord);
-            var bSize = size._multi(scale);
-            Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, bSize['width'], bSize['height']);
+            var scale = this._canvasBgRes / map._getResolution();
+            var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Z.Browser.retina?2:1);
+
+
+            Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, this._canvas.width * scale, this._canvas.height * scale);
         }
     },
 
@@ -430,18 +428,19 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var map = this.map;
         var mapSize = map.getSize();
         var canvas = this._canvas;
-        var r = Z.Browser.retina ? 2:1;
+
         if (mapSize['width']*r === canvas.width && mapSize['height']*r === canvas.height) {
             return false;
         }
         //retina屏支持
-
+        var r = Z.Browser.retina ? 2:1;
         canvas.height = r * mapSize['height'];
         canvas.width = r * mapSize['width'];
         if (canvas.style) {
             canvas.style.width = mapSize['width']+'px';
             canvas.style.height = mapSize['height']+'px';
         }
+
         return true;
     },
 
@@ -455,9 +454,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this.map._panels.canvasContainer.appendChild(this._canvas);
         }
         this._context = this._canvas.getContext('2d');
-        if (Z.Browser.retina) {
-            this._context.scale(2, 2);
-        }
+
 
     },
 

@@ -1228,6 +1228,10 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!Z.Util.isNil(containerDOM.width) && !Z.Util.isNil(containerDOM.height)) {
             width = containerDOM.width;
             height = containerDOM.height;
+            if (Z.Browser.retina && containerDOM[Z.renderer.tilelayer.Canvas.prototype.propertyOfTileId]) {
+                width /= 2;
+                height /= 2;
+            }
         } else if (!Z.Util.isNil(containerDOM.offsetWidth) && !Z.Util.isNil(containerDOM.offsetWidth)) {
             width = parseInt(containerDOM.offsetWidth,0);
             height = parseInt(containerDOM.offsetHeight,0);
