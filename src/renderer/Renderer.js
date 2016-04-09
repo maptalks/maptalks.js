@@ -106,9 +106,7 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         var r = Z.Browser.retina?2:1;
         this._canvas = Z.Canvas.createCanvas(r*size['width'],r*size['height'],map.CanvasClass);
         this._context = this._canvas.getContext('2d');
-        if (Z.Browser.retina) {
-            this._context.scale(2, 2);
-        }
+
         this._resizeCanvas();
         Z.Canvas.setDefaultCanvasSetting(this._context);
     },
@@ -132,6 +130,9 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         if (canvas.style) {
             canvas.style.width = size['width']+'px';
             canvas.style.height = size['height']+'px';
+        }
+        if (Z.Browser.retina) {
+            this._context.scale(2, 2);
         }
     },
 

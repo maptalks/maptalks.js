@@ -21,6 +21,9 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
      * @param  {Point} origin Transform Origin
      */
     getZoomMatrix:function(scale, origin) {
+        if (Z.Browser.retina) {
+            origin = origin.multi(2);
+        }
         //matrix for layers to caculate points.
         var matrix = new Z.Matrix().translate(origin.x, origin.y)
             .scaleU(scale).translate(-origin.x,-origin.y);
