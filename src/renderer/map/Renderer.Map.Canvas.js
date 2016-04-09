@@ -354,7 +354,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         var point = layerImage['point'].multi(Z.Browser.retina?2:1),
             size = layerImage['size'];
-        if (point.x + mwidth <= 0 || point.y + mheight <= 0) {
+        var canvasImage = layerImage['image'];
+        if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
         }
         //opacity of the layer image
@@ -380,7 +381,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (imgOp < 1) {
             this._context.globalAlpha *= imgOp;
         }
-        var canvasImage = layerImage['image'];
+
         if (Z.node) {
             var context = canvasImage.getContext('2d');
             if (context.getSvg) {
