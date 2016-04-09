@@ -893,11 +893,13 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             clearTimeout(this._resizeTimeout);
         }
         var me = this;
-        function resize(update) {
+        function resize() {
             var watched = me._getContainerDomSize();
-
             var oldHeight = me.height;
             var oldWidth = me.width;
+            if (watched['width'] === oldWidth && watched['height'] === oldHeight) {
+                return;
+            }
             me._updateMapSize(watched);
             var resizeOffset = new Z.Point((watched.width-oldWidth) / 2,(watched.height-oldHeight) / 2);
             me._offsetCenterByPixel(resizeOffset);
