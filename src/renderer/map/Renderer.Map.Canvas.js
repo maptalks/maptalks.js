@@ -388,6 +388,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 canvasImage = context;
             }
         }
+        point._round();
         this._context.drawImage(canvasImage, point.x, point.y);
         this._context.globalAlpha = alpha;
     },
@@ -398,9 +399,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (this._canvasBg) {
             var scale = this._canvasBgRes / map._getResolution();
             var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Z.Browser.retina?2:1);
-
-
-            Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, this._canvas.width * scale, this._canvas.height * scale);
+            Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
         }
     },
 
