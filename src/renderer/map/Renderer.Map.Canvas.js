@@ -354,7 +354,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         var point = layerImage['point'].multi(Z.Browser.retina?2:1),
             size = layerImage['size'];
-        if (point.x + size['width'] <= 0 || point.y + size['height'] <= 0) {
+        if (point.x + mwidth <= 0 || point.y + mheight <= 0) {
             return;
         }
         //opacity of the layer image
