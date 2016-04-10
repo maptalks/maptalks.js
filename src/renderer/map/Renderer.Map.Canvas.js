@@ -86,20 +86,24 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         if (map.options['zoomAnimation'] && this._context) {
             this._context.save();
-
             var width = this._canvas.width,
                 height = this._canvas.height;
             var layersToTransform;
-            if (!map.options['layerZoomAnimation']) {
-                //zoom animation with better performance, only animate baseLayer, ignore other layers.
-                if (baseLayerImage) {
-                    this._drawLayerCanvasImage(baseLayer, baseLayerImage, width, height);
+            if (startScale === 1) {
+                // redraw the map to prepare for zoom transforming.
+                // if startScale is not 1 (usually by touchZoom on mobiles), it means map is already transformed and doesn't need redraw
+                if (!map.options['layerZoomAnimation']) {
+                    //zoom animation with better performance, only animate baseLayer, ignore other layers.
+                    if (baseLayerImage) {
+                        this._drawLayerCanvasImage(baseLayer, baseLayerImage, width, height);
+                    }
+                    layersToTransform = [baseLayer];
+                } else {
+                    //default zoom animation, animate all the layers.
+                    this.render();
                 }
-                layersToTransform = [baseLayer];
-            } else {
-                //default zoom animation, animate all the layers.
-                this.render();
             }
+
             var matrix;
             var player = Z.Animation.animate(
                 {
@@ -423,17 +427,17 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
     _updateCanvasSize: function() {
         if (!this._canvas || this._isCanvasContainer) {
-            return;
+            return false;
         }
         var map = this.map;
         var mapSize = map.getSize();
         var canvas = this._canvas;
-
+        var r = Z.Browser.retina ? 2:1;
         if (mapSize['width']*r === canvas.width && mapSize['height']*r === canvas.height) {
             return false;
         }
         //retina屏支持
-        var r = Z.Browser.retina ? 2:1;
+
         canvas.height = r * mapSize['height'];
         canvas.width = r * mapSize['width'];
         if (canvas.style) {
