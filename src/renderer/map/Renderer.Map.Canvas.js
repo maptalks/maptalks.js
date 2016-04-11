@@ -86,20 +86,24 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         if (map.options['zoomAnimation'] && this._context) {
             this._context.save();
-
             var width = this._canvas.width,
                 height = this._canvas.height;
             var layersToTransform;
-            if (!map.options['layerZoomAnimation']) {
-                //zoom animation with better performance, only animate baseLayer, ignore other layers.
-                if (baseLayerImage) {
-                    this._drawLayerCanvasImage(baseLayer, baseLayerImage, width, height);
+            if (startScale === 1) {
+                // redraw the map to prepare for zoom transforming.
+                // if startScale is not 1 (usually by touchZoom on mobiles), it means map is already transformed and doesn't need redraw
+                if (!map.options['layerZoomAnimation']) {
+                    //zoom animation with better performance, only animate baseLayer, ignore other layers.
+                    if (baseLayerImage) {
+                        this._drawLayerCanvasImage(baseLayer, baseLayerImage, width, height);
+                    }
+                    layersToTransform = [baseLayer];
+                } else {
+                    //default zoom animation, animate all the layers.
+                    this.render();
                 }
-                layersToTransform = [baseLayer];
-            } else {
-                //default zoom animation, animate all the layers.
-                this.render();
             }
+
             var matrix;
             var player = Z.Animation.animate(
                 {
@@ -354,7 +358,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         var point = layerImage['point'].multi(Z.Browser.retina?2:1),
             size = layerImage['size'];
-        if (point.x + mwidth <= 0 || point.y + mheight <= 0) {
+        var canvasImage = layerImage['image'];
+        if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
         }
         //opacity of the layer image
@@ -380,7 +385,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (imgOp < 1) {
             this._context.globalAlpha *= imgOp;
         }
-        var canvasImage = layerImage['image'];
+
         if (Z.node) {
             var context = canvasImage.getContext('2d');
             if (context.getSvg) {
@@ -388,6 +393,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 canvasImage = context;
             }
         }
+        point._round();
         this._context.drawImage(canvasImage, point.x, point.y);
         this._context.globalAlpha = alpha;
     },
@@ -398,9 +404,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (this._canvasBg) {
             var scale = this._canvasBgRes / map._getResolution();
             var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Z.Browser.retina?2:1);
-
-
-            Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, this._canvas.width * scale, this._canvas.height * scale);
+            Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
         }
     },
 
@@ -423,17 +427,17 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
     _updateCanvasSize: function() {
         if (!this._canvas || this._isCanvasContainer) {
-            return;
+            return false;
         }
         var map = this.map;
         var mapSize = map.getSize();
         var canvas = this._canvas;
-
+        var r = Z.Browser.retina ? 2:1;
         if (mapSize['width']*r === canvas.width && mapSize['height']*r === canvas.height) {
             return false;
         }
         //retina屏支持
-        var r = Z.Browser.retina ? 2:1;
+
         canvas.height = r * mapSize['height'];
         canvas.width = r * mapSize['width'];
         if (canvas.style) {
