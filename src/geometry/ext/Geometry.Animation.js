@@ -12,12 +12,66 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             options = null;
         }
         var map = this.getMap(),
-            projection = this._getProjection();
-        var isFocusing;
+            projection = this._getProjection(),
+            symbol = this.getSymbol(),
+            stylesToAnimate = this._prepareAnimationStyles(styles),
+            preTranslate, isFocusing;
+
         if (options) {isFocusing = options['focus'];}
-        var stylesToAnimate = {};
+        delete this._animationStarted;
+
+        var player = Z.Animation.animate(stylesToAnimate, options, Z.Util.bind(function(frame) {
+            if (!this._animationStarted && isFocusing) {
+                map._onMoveStart();
+            }
+            var styles = frame.styles;
+            for (var p in styles) {
+                if (p !== 'symbol' && p !== 'translate' && styles.hasOwnProperty(p)) {
+                    var v = styles[p];
+                    var fnName = 'set'+p[0].toUpperCase() + p.substring(1);
+                    this[fnName](v);
+                }
+            }
+            var translate = styles['translate'];
+            if (translate) {
+                var toTranslate = translate;
+                if (preTranslate) {
+                    toTranslate = translate.substract(preTranslate);
+                }
+                preTranslate = translate;
+                this.translate(toTranslate);
+            }
+            var dSymbol = styles['symbol'];
+            if (dSymbol) {
+                this.setSymbol(Z.Util.extendSymbol(symbol, dSymbol));
+                // this.setSymbol(Z.Util.extend({},symbol,dSymbol));
+            }
+            if (isFocusing) {
+                var center = this.getCenter();
+                var p = projection.project(center);
+                map._setPrjCenterAndMove(p);
+                if ('running' !== player.playState) {
+                    map._onMoveEnd();
+                } else {
+                    map._onMoving();
+                }
+            }
+            this._fireAnimateEvent(player.playState);
+            if (callback) {
+                callback(frame);
+            }
+        },this));
+
+        return player.play();
+    },
+    /**
+     * prepare styles for animation
+     * @return {Object} symbol to animate
+     * @private
+     */
+    _prepareAnimationStyles:function(styles) {
         var symbol = this.getSymbol();
-        //prepare styles for animation
+        var stylesToAnimate = {};
         for (var p in styles) {
             if (styles.hasOwnProperty(p)) {
                 var v = styles[p];
@@ -64,50 +118,21 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                 }
             }
         }
-        var started = false;
-        var preTranslate = null;
-        var player = Z.Animation.animate(stylesToAnimate, options, Z.Util.bind(function(frame) {
-            if (!started && isFocusing) {
-                map._onMoveStart();
-                started = true;
+        return stylesToAnimate;
+    },
+
+    _fireAnimateEvent:function(playState) {
+        if (playState === 'finished') {
+            delete this._animationStarted;
+            this._fireEvent('animateend');
+        } else if (playState === 'running') {
+            if (this._animationStarted) {
+                this._fireEvent('animating');
+            } else {
+                this._fireEvent('animatestart');
+                this._animationStarted = true;
             }
-            var styles = frame.styles;
-            for (var p in styles) {
-                if (p !== 'symbol' && p !== 'translate' && styles.hasOwnProperty(p)) {
-                    var v = styles[p];
-                    var fnName = 'set'+p[0].toUpperCase() + p.substring(1);
-                    this[fnName](v);
-                }
-            }
-            var translate = styles['translate'];
-            if (translate) {
-                var toTranslate = translate;
-                if (preTranslate) {
-                    toTranslate = translate.substract(preTranslate);
-                }
-                preTranslate = translate;
-                this.translate(toTranslate);
-            }
-            var dSymbol = styles['symbol'];
-            if (dSymbol) {
-                this.setSymbol(Z.Util.extendSymbol(symbol, dSymbol));
-                // this.setSymbol(Z.Util.extend({},symbol,dSymbol));
-            }
-            if (isFocusing) {
-                var center = this.getCenter();
-                var p = projection.project(center);
-                map._setPrjCenterAndMove(p);
-                if ('running' !== player.playState) {
-                    map._onMoveEnd();
-                } else {
-                    map._onMoving()
-                }
-            }
-            if (callback) {
-                callback(frame);
-            }
-        },this));
-        player.play();
-        return player;
+
+        }
     }
 });

@@ -77,7 +77,10 @@ Z.Util = {
             return;
         }
         function onError(err) {
-            console.error(err);
+            if (err) {
+                console.error(err);
+                console.error(err.stack);
+            }
             var onerrorFn = img.onerror;
             if (onerrorFn) {
                 onerrorFn.call(img);
