@@ -299,7 +299,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
     _registerEvents:function() {
         var map = this.map;
-        map.on('_baselayerchangestart _baselayerload',function(param) {
+        map.on('_baselayerchangestart', function(param) {
+            delete this._canvasBg;
+        }, this);
+        map.on('_baselayerload',function(param) {
             var baseLayer = map.getBaseLayer();
             if (!map.options['zoomBackground'] || baseLayer.getMask()) {
                 delete this._canvasBg;
