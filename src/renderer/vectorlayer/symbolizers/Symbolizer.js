@@ -42,6 +42,10 @@ Z.Symbolizer.colorProperties = [
         "lineColor", "polygonFill", "markerFill", "markerLineColor", "textFill", "shieldFill", "shieldHaloFill"
     ];
 
+Z.Symbolizer.DEFAULT_STROKE_COLOR = '#000';
+Z.Symbolizer.DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
+Z.Symbolizer.DEFAULT_TEXT_COLOR = '#000';
+
 /**
  * Test if the property is a property related with coloring
  * @param {String} prop - property name to test

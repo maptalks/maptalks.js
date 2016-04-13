@@ -1,4 +1,5 @@
 Z.Canvas = {
+
     createCanvas:function(width, height, canvasClass) {
         var canvas;
         if (!Z.node) {
@@ -32,7 +33,7 @@ Z.Canvas = {
         var font = Z.symbolizer.TextMarkerSymbolizer.getFont(style);
         ctx.font = font;
         var fill=style['textFill'];
-        if (!fill) {return;}
+        if (!fill) {fill = Z.Symbolizer.DEFAULT_TEXT_COLOR;}
         var fillOpacity = style['textOpacity'];
         ctx.fillStyle =this.getRgba(fill, fillOpacity);
     },
@@ -44,47 +45,49 @@ Z.Canvas = {
                 ctx.lineWidth = strokeWidth;
             }
             var strokeColor = strokeSymbol['stroke'];
-             if (strokeColor)  {
-                 if (Z.Util.isCssUrl(strokeColor) && resources) {
-                    var imgUrl = Z.Util.extractCssUrl(strokeColor);
-                    var imageTexture;
-                    if (Z.node) {
-                        imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
-                    } else {
-                        imageTexture = resources.getImage([imgUrl+'-texture', null, strokeWidth]);
-                        if (!imageTexture) {
-                            var imageRes = resources.getImage([imgUrl, null, strokeWidth]);
-                            if (imageRes) {
-                                var w;
-                                if (!imageRes.width || !imageRes.height) {
-                                    w = strokeWidth;
-                                } else {
-                                    w = Z.Util.round(imageRes.width*strokeWidth/imageRes.height);
-                                }
-                                var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
-                                Z.Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
-                                resources.addResource([imgUrl+'-texture', null, strokeWidth],patternCanvas);
-                                imageTexture = patternCanvas;
-                                // imageTexture = new Image();
-                                // imageTexture.src = imageRes.src;
-                                // imageTexture.width = w;
-                                // imageTexture.height = strokeWidth;
-                                // resources.addResource(imgUrl+'-texture',imageTexture);
+            if (!strokeColor) {
+                strokeColor = Z.Symbolizer.DEFAULT_STROKE_COLOR;
+            }
+            if (Z.Util.isCssUrl(strokeColor) && resources) {
+                var imgUrl = Z.Util.extractCssUrl(strokeColor);
+                var imageTexture;
+                if (Z.node) {
+                    imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
+                } else {
+                    imageTexture = resources.getImage([imgUrl+'-texture', null, strokeWidth]);
+                    if (!imageTexture) {
+                        var imageRes = resources.getImage([imgUrl, null, strokeWidth]);
+                        if (imageRes) {
+                            var w;
+                            if (!imageRes.width || !imageRes.height) {
+                                w = strokeWidth;
+                            } else {
+                                w = Z.Util.round(imageRes.width*strokeWidth/imageRes.height);
                             }
+                            var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
+                            Z.Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
+                            resources.addResource([imgUrl+'-texture', null, strokeWidth],patternCanvas);
+                            imageTexture = patternCanvas;
+                            // imageTexture = new Image();
+                            // imageTexture.src = imageRes.src;
+                            // imageTexture.width = w;
+                            // imageTexture.height = strokeWidth;
+                            // resources.addResource(imgUrl+'-texture',imageTexture);
                         }
                     }
-                    if (imageTexture) {
-                        //line pattern will override stroke-dasharray
-                        strokeSymbol['stroke-dasharray'] = [];
-                        ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
-                    }
-                 } else {
-                    var color = Z.Canvas.getRgba(strokeColor,1);
-                    if (ctx.strokeStyle !== color) {
-                        ctx.strokeStyle = color;
-                    }
-                 }
-             }
+                }
+                if (imageTexture) {
+                    //line pattern will override stroke-dasharray
+                    strokeSymbol['stroke-dasharray'] = [];
+                    ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
+                }
+             } else {
+                var color = Z.Canvas.getRgba(strokeColor,1);
+                if (ctx.strokeStyle !== color) {
+                    ctx.strokeStyle = color;
+                }
+            }
+
              //低版本ie不支持该属性
              if (ctx.setLineDash) {
                  var strokeDash=(strokeSymbol['stroke-dasharray']);
@@ -96,7 +99,7 @@ Z.Canvas = {
          if (fillSymbol) {
             var fill=fillSymbol['fill'];
             if (!fill) {
-                return;
+                fill = Z.Symbolizer.DEFAULT_FILL_COLOR;
             }
             if (Z.Util.isCssUrl(fill)) {
                 var imgUrl = Z.Util.extractCssUrl(fill);
