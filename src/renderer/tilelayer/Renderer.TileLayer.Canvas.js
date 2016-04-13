@@ -73,7 +73,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         this._viewExtent = tileGrid['fullExtent'];
 
         //遍历瓦片
-        this._tileToLoadCounter = 0;
+        this._totalTileToLoad = this._tileToLoadCounter = 0;
         var tile, tileId, cached, tileViewExtent;
         for (var i = tiles.length - 1; i >= 0; i--) {
             tile = tiles[i];
@@ -85,6 +85,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             if (!this._viewExtent.intersects(tileViewExtent)) {
                 continue;
             }
+            this._totalTileToLoad++;
             if (cached) {
                 this._drawTile(tile['viewPoint'], cached);
                 this._tileRended[tileId] = cached;
@@ -99,7 +100,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             this._requestMapToRender();
             this._fireLoadedEvent();
         } else {
-            this._totalTileToLoad = this._tileToLoadCounter;
             this._scheduleLoadTileQueue();
         }
     },
@@ -110,7 +110,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
          var gradualOpacity = null;
         if (this._gradualLoading && this._totalTileToLoad && this._layer.options['gradualLoading']) {
-            gradualOpacity = ((this._totalTileToLoad - this._tileToLoadCounter) / this._totalTileToLoad)*1.5 ;
+            gradualOpacity = ((this._totalTileToLoad - this._tileToLoadCounter) / this._totalTileToLoad) * 1.5 ;
             if (gradualOpacity > 1) {
                 gradualOpacity = 1;
             }
