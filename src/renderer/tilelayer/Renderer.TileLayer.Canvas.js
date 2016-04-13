@@ -100,6 +100,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             this._requestMapToRender();
             this._fireLoadedEvent();
         } else {
+            if (this._tileToLoadCounter < this._totalTileToLoad) {
+                this._requestMapToRender();
+            }
             this._scheduleLoadTileQueue();
         }
     },
