@@ -201,14 +201,14 @@ function commonSetupMap(center, baseLayer) {
         center: center
     };
     var map = new Z.Map(container, option);
-    if (!baseLayer) {
+    if (baseLayer === undefined) {
         var tile = new Z.TileLayer('tile', {
 
             urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
             subdomains: [1, 2, 3]
         });
         map.setBaseLayer(tile);
-    } else {
+    } else if (baseLayer) {
         map.setBaseLayer(baseLayer);
     }
     return {

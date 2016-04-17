@@ -22,7 +22,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         'renderWhenPanning' : false,
         //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
-        'renderSpanWhenPanning' : (function(){return Z.Browser.mobile?-1:80;})(),
+        'renderSpanWhenPanning' : (function(){return Z.Browser.mobile?-1:200;})(),
 
         'crossOrigin' : null,
 
@@ -32,7 +32,11 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         },
 
         'tileSystem' : null,
-        'debug'      : false
+        'debug'      : false,
+
+        'baseLayerRenderer' : (function(){return Z.node?'canvas':'dom';})(),
+
+        'renderer'   : 'canvas'
     },
 
 
@@ -61,6 +65,22 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         return this;
     },
 
+    _initRenderer:function() {
+        var renderer = this.options['renderer'];
+        if (this.getMap().getBaseLayer() === this) {
+            renderer = this.options['baseLayerRenderer'];
+        }
+        if (!this.constructor.getRendererClass) {
+            return;
+        }
+        var clazz = this.constructor.getRendererClass(renderer);
+        if (!clazz) {
+            return;
+        }
+        this._renderer = new clazz(this);
+        this._renderer.setZIndex(this.getZIndex());
+    },
+
     /**
      * initialize [tileConfig]{@link maptalks.TileConfig} for the tilelayer
      * @private
@@ -87,7 +107,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         return this._defaultTileConfig;
     },
 
-    _getTiles:function(canvasSize) {
+    _getTiles:function(containerSize) {
         // rendWhenReady = false;
         var map =this.getMap();
         if (!map) {
@@ -103,25 +123,23 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         var tileSize = this.getTileSize(),
             zoom = map.getZoom(),
             res = map._getResolution(),
-            mapDomOffset = map.offsetPlatform();
+            mapViewPoint = map.offsetPlatform();
 
-        var holderLeft=mapDomOffset.x,
-            holderTop = mapDomOffset.y,
-            mapWidth = map.width,
-            mapHeight = map.height;
+        var mapW = map.width,
+            mapH = map.height;
             //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
         var centerTileIndex =  tileConfig.getCenterTileIndex(map._getPrjCenter(), res);
         //计算中心瓦片的top和left偏移值
-        var centerTileViewPoint=new Z.Point(+(mapWidth/2-centerTileIndex['offsetLeft']),
-                                                +(mapHeight/2-centerTileIndex['offsetTop']))._round();
-        if (!canvasSize || !(canvasSize instanceof Z.Size)) {
-            canvasSize = new Z.Size(mapWidth, mapHeight);
+        var centerTileViewPoint=new Z.Point(+(mapW/2-centerTileIndex['offsetLeft']),
+                                                +(mapH/2-centerTileIndex['offsetTop']))._round();
+        if (!containerSize || !(containerSize instanceof Z.Size)) {
+            containerSize = new Z.Size(mapW, mapH);
         }
         //中心瓦片上下左右的瓦片数
-        var tileTopNum =Math.ceil(Math.abs((canvasSize['height'] - mapHeight)/2 + centerTileViewPoint.y)/tileSize['height']),
-            tileLeftNum=Math.ceil(Math.abs((canvasSize['width']- mapWidth)/2 + centerTileViewPoint.x)/tileSize['width']),
-            tileBottomNum=Math.ceil(Math.abs((canvasSize['height'] - mapHeight)/2 + mapHeight-centerTileViewPoint.y)/tileSize['height']),
-            tileRightNum=Math.ceil(Math.abs((canvasSize['width'] - mapWidth)/2 + mapWidth-centerTileViewPoint.x)/tileSize['width']);
+        var tileTopNum =Math.ceil(Math.abs((containerSize['height'] - mapH)/2 + centerTileViewPoint.y)/tileSize['height']),
+            tileLeftNum=Math.ceil(Math.abs((containerSize['width']- mapW)/2 + centerTileViewPoint.x)/tileSize['width']),
+            tileBottomNum=Math.ceil(Math.abs((containerSize['height'] - mapH)/2 + mapH-centerTileViewPoint.y)/tileSize['height']),
+            tileRightNum=Math.ceil(Math.abs((containerSize['width'] - mapW)/2 + mapW-centerTileViewPoint.x)/tileSize['width']);
 
     //  只加中心的瓦片，用做调试
     //  var centerTileImg = this._createTileImage(centerTileViewPoint.x,centerTileViewPoint.y,this.config._getTileUrl(centerTileIndex['topIndex'],centerTileIndex['leftIndex'],zoom),tileSize['height'],tileSize['width']);
@@ -133,8 +151,8 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         for (var i=-(tileLeftNum);i<tileRightNum;i++){
             for (var j=-(tileTopNum);j<=tileBottomNum;j++){
                     var tileIndex = tileConfig.getNeighorTileIndex(centerTileIndex['y'], centerTileIndex['x'], j,i, res, this.options['repeatWorld']);
-                    var tileLeft = centerTileViewPoint.x + tileSize['width']*i-holderLeft;
-                    var tileTop = centerTileViewPoint.y +tileSize['height']*j-holderTop;
+                    var tileLeft = centerTileViewPoint.x + tileSize['width']*i-mapViewPoint.x;
+                    var tileTop = centerTileViewPoint.y +tileSize['height']*j-mapViewPoint.y;
                     var tileUrl = this._getTileUrl(tileIndex['x'],tileIndex['y'],zoom);
                     var tileId=[tileIndex['y'], tileIndex['x'], zoom].join('__');
                     var tileDesc = {

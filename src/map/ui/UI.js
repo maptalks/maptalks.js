@@ -257,7 +257,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     _getUIContainer : function() {
-        return this.getMap()._panels.uiContainer;
+        return this.getMap()._panels['ui'];
     },
 
     _getClassName:function() {

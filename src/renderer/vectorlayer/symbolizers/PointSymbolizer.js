@@ -31,24 +31,21 @@ Z.symbolizer.PointSymbolizer=Z.symbolizer.CanvasSymbolizer.extend(/** @lends map
      * @return {maptalks.Point[]}
      */
     _getRenderContainerPoints:function() {
-        var points = this._getRenderPoints();
-        var map = this.getMap();
-        var matrix = map._getRenderer().getTransform();
-        var dxdy = this.getDxDy();
+        var map = this.getMap(),
+            points = this._getRenderPoints(),
+            matrices = this.geometry._getPainter().getTransformMatrix(),
+            matrix = matrices?matrices['container']:null,
+            scale = matrices?matrices['scale']:null,
+            dxdy = this.getDxDy();
         if (matrix) {
-            var scale = matrix._scale;
             dxdy = new Z.Point(dxdy.x/scale.x, dxdy.y/scale.y);
         }
 
         var containerPoints = Z.Util.eachInArray(points,this,function(point) {
             return map.viewPointToContainerPoint(point)._add(dxdy);
         });
-        var layer = this.geometry.getLayer();
-        if (layer.isCanvasRender()) {
-            if (matrix) {
-                var p = matrix.applyToArray(containerPoints);
-                return p;
-            }
+        if (matrix) {
+            return matrix.applyToArray(containerPoints);
         }
         return containerPoints;
     }
