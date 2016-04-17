@@ -79,6 +79,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             this._fireLoadedEvent();
             return;
         }
+        this._isBlank = true;
         this._painted = true;
         var viewExtent = map._getViewExtent();
         var me = this;
@@ -92,7 +93,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
-
         layer._eachGeometry(this._drawGeo, this);
     },
 
@@ -113,7 +113,12 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (this._drawCounter > this._layer.options['thresholdOfPointUpdate']) {
             this._shouldUpdateWhileTransforming = true;
         }
+        this._isBlank = false;
         geoPainter.paint();
+    },
+
+    isBlank: function() {
+        return this._isBlank;
     },
 
     getPaintContext:function() {

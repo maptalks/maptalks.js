@@ -43,6 +43,9 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         if ((this._layer.isEmpty && this._layer.isEmpty()) || !this._viewExtent) {
             return null;
         }
+        if (this.isBlank && this.isBlank()) {
+            return null;
+        }
         var size = this._viewExtent.getSize();
         var point = this._viewExtent.getMin();
         return {'image':this._canvas,'layer':this._layer,'point':this.getMap().viewPointToContainerPoint(point)._round(),'size':size};
