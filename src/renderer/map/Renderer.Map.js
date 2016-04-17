@@ -29,14 +29,14 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             'view'      : new Z.Matrix().translate(view.x, view.y)
                         .scaleU(scale).translate(-view.x,-view.y)
         };
-        var scale = matrices['container'].decompose()['scale'];
-        matrices['scale'] = scale;
+
         if (retina) {
             origin = origin.multi(2);
             matrices['retina'] = new Z.Matrix().translate(origin.x, origin.y)
                         .scaleU(scale).translate(-origin.x,-origin.y);
         }
-
+        // var scale = matrices['container'].decompose()['scale'];
+        matrices['scale'] = scale;
         return matrices;
     },
 
