@@ -13,7 +13,7 @@ describe('CircleSpec', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.mapMask;
+        canvasContainer = map._panels.mask;
     });
 
     afterEach(function() {
