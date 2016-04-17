@@ -56,7 +56,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @property {Number}  [options.zoomAnimationDuration=250]      - zoom animation duration.
      * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
      * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
-     * @property {Boolean} [options.updatePointsWhileTransforming=true] - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
+     * @property {Boolean} [options.layerTransforming=true] - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
      * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
      * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
      * @property {Boolean} [options.enableZoom=true]                - whether to enable map zooming.
@@ -92,7 +92,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
         //economically transform, whether point symbolizers transforms during transformation (e.g. zoom animation)
         //set to true can prevent drastic low performance when number of point symbolizers is large.
-        'updatePointsWhileTransforming' : false,
+        'layerTransforming' : true,
 
         'panAnimation':true,
         //default pan animation duration
@@ -1314,8 +1314,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!offset) {
             return this._mapViewPoint;
         } else {
-            this._mapViewPoint = this._mapViewPoint.add(offset);
             this._getRenderer().offsetPlatform(offset);
+            this._mapViewPoint = this._mapViewPoint.add(offset);
             return this;
         }
     },
