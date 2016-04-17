@@ -52,6 +52,13 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         return this._hasPointSymbolizer;
     },
 
+    getTransformMatrix: function() {
+        if (this._matrix) {
+            return this._matrix;
+        }
+        return null;
+    },
+
     /**
      * for point symbolizers
      * @return {maptalks.Point[]} points to render
@@ -75,18 +82,16 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             //render resources geometry returned are based on view points.
             this._rendResources = this.geometry._getRenderCanvasResources();
         }
-        var matrix;
-        var map = this.getMap();
-        var layer = this.geometry.getLayer();
-        if (layer.isCanvasRender()) {
-            matrix = map._getRenderer().getTransform();
-        }
-
-        var context =this._rendResources['context'];
-        var transContext = [];
+        var matrices = this.getTransformMatrix(),
+            matrix = matrices?matrices['container']:null,
+            scale = matrices?matrices['scale']:null;
+        var map = this.getMap(),
+            layer = this.geometry.getLayer(),
+            context =this._rendResources['context'],
+            transContext = [],
         //refer to Geometry.Canvas
-        var points = context[0];
-        var containerPoints;
+            points = context[0],
+            containerPoints;
         //convert view points to container points needed by canvas
         if (Z.Util.isArray(points)) {
             containerPoints = Z.Util.eachInArray(points, this, function(point) {
@@ -103,16 +108,11 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             }
         }
         transContext.push(containerPoints);
-        var scale;
 
         //scale width ,height or radius if geometry has
         for (var i = 1, len = context.length;i<len;i++) {
             if (matrix) {
-
                 if (Z.Util.isNumber(context[i]) || (context[i] instanceof Z.Size)) {
-                    if (matrix && !scale) {
-                        scale = matrix._scale;
-                    }
                     if (Z.Util.isNumber(context[i])) {
                         transContext.push(scale.x*context[i]);
                     } else {
@@ -124,7 +124,6 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             } else {
                 transContext.push(context[i]);
             }
-
         }
 
         var resources = {
@@ -142,11 +141,12 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     /**
      * 绘制图形
      */
-    paint:function() {
+    paint: function(matrix) {
         var contexts = this.geometry.getLayer()._getRenderer().getPaintContext();
         if (!contexts || !this.symbolizers) {
             return;
         }
+        this._matrix = matrix;
         var layer = this.geometry.getLayer();
         var args = contexts.concat([this]);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
