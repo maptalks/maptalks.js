@@ -120,6 +120,22 @@ describe('#OverlayLayer', function() {
                 expect(e).to.be.a(Error);
             });
         });
+
+        it('fit map view after added', function(done) {
+            var layer = new Z.VectorLayer('id');
+            map.addLayer(layer);
+            var center1 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var center2 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var geo1 = new Z.Marker(center1);
+            var geo2 = new Z.Marker(center2);
+            layer.on('addgeo', function() {
+                var center = center1.add(center2).multi(1/2);
+                expect(map.getCenter()).to.be.nearCoord(center);
+                done();
+            });
+            layer.addGeometry([geo1, geo2], true);
+
+        });
     });
 
     describe('getGeometry', function() {
