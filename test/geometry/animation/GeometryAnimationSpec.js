@@ -210,6 +210,29 @@ describe('#GeometryAnimation', function () {
                 focus:true
             }, step);
         });
+
+        it('fire events during animation', function(done) {
+            var marker = new maptalks.Marker(center);
+            marker.addTo(layer);
+            var counter = 0;
+            marker.on('animatestart', function() {
+                counter++;
+            });
+            marker.once('animating', function() {
+                counter++;
+            });
+            marker.on('animateend', function() {
+                counter++;
+                if (counter === 3) {
+                    done();
+                };
+            })
+            marker.animate({
+                translate:[0.1, 0.1]
+            },{
+                focus:true
+            });
+        })
     });
 });
 
