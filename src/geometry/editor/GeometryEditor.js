@@ -11,7 +11,7 @@
 Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
     includes: [Z.Eventable],
 
-    editStageLayerId : Z.internalLayerPrefix+'_edit_stage',
+    editStageLayerIdPrefix : Z.internalLayerPrefix+'_edit_stage_',
 
     initialize:function(geometry,opts) {
         this._geometry = geometry;
@@ -34,15 +34,15 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             this._geometry.setSymbol(this.options['symbol']);
         }
 
-        this._editHandles = [];
         this._prepareEditStageLayer();
     },
 
     _prepareEditStageLayer:function() {
         var map=this.getMap();
-        this._editStageLayer = map.getLayer(this.editStageLayerId);
+        var guid = Z.Util.GUID();
+        this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + guid);
         if (!this._editStageLayer) {
-            this._editStageLayer = new Z.VectorLayer(this.editStageLayerId);
+            this._editStageLayer = new Z.VectorLayer(this.editStageLayerIdPrefix + guid);
             map.addLayer(this._editStageLayer);
         }
     },
@@ -117,7 +117,8 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         this._geometry.config('draggable', this._geometryDraggble);
         delete this._geometryDraggble;
         this._geometry.show();
-        this._editStageLayer.removeGeometry(this._editHandles);
+
+        this._editStageLayer.remove();
         if (Z.Util.isArrayHasData(this._eventListeners)) {
             for (var i = this._eventListeners.length - 1; i >= 0; i--) {
                 var listener = this._eventListeners[i];
@@ -125,7 +126,6 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             }
             this._eventListeners = [];
         }
-        this._editHandles = [];
         this._refreshHooks = [];
         if (this.options['symbol']) {
             this._geometry.setSymbol(this._originalSymbol);
@@ -195,7 +195,6 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                 }
             });
             this._editStageLayer.addGeometry(outline);
-            this._appendHandler(outline);
             this._editOutline = outline;
             this._addRefreshHook(this._createOrRefreshOutline);
         } else {
@@ -237,7 +236,6 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                 }
             }
         });
-        this._appendHandler(handle);
         this._addRefreshHook(function() {
             var center = this._shadow.getCenter();
             handle.setCoordinates(center);
@@ -377,7 +375,6 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                     handle.setId(i);
                     anchorIndexes[i] = resizeHandles.length;
                     resizeHandles.push(handle);
-                    me._appendHandler(handle);
                 } else {
                     resizeHandles[anchorIndexes[i]].setCoordinates(coordinate);
                 }
@@ -650,10 +647,10 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             shadow._setPrjCoordinates(prjCoordinates);
             shadow._updateCache();
             //remove vertex handle
-            Z.Util.removeFromArray(vertexHandles.splice(index,1)[0].remove(),me._editHandles);
+            vertexHandles.splice(index,1)[0].remove();
             //remove two neighbor "new vertex" handles
             if (index < newVertexHandles.length) {
-                Z.Util.removeFromArray(newVertexHandles.splice(index,1)[0].remove(),me._editHandles);
+                newVertexHandles.splice(index,1)[0].remove()
             }
             var nextIndex;
             if (index === 0){
@@ -661,7 +658,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             } else {
                 nextIndex = index - 1;
             }
-            Z.Util.removeFromArray(newVertexHandles.splice(nextIndex,1)[0].remove(),me._editHandles);
+            newVertexHandles.splice(nextIndex,1)[0].remove()
             //add a new "new vertex" handle.
             newVertexHandles.splice(nextIndex,0,createNewVertexHandle.call(me, nextIndex));
             onVertexAddOrRemove();
@@ -752,7 +749,6 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                     var vertexIndex = handle[propertyOfVertexIndex];
                     //remove this handle
                     Z.Util.removeFromArray(handle, newVertexHandles);
-                    Z.Util.removeFromArray(handle, me._editHandles);
                     handle.remove();
                     //add a new vertex handle
                     vertexHandles.splice(vertexIndex+1,0,createVertexHandle.call(me,vertexIndex+1));
@@ -785,8 +781,6 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             //1 more vertex handle for polygon
             newVertexHandles.push(createNewVertexHandle.call(this,vertexCoordinates.length-1));
         }
-        this._appendHandler(newVertexHandles);
-        this._appendHandler(vertexHandles);
         this._addRefreshHook(function() {
             var i;
             for (i = newVertexHandles.length - 1; i >= 0; i--) {
@@ -829,20 +823,6 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             this._refreshHooks = [];
         }
         this._refreshHooks.push(fn);
-    },
-
-    _appendHandler:function(handle){
-        if (!handle) {
-            return;
-        }
-        if (!this._editHandles) {
-            this._editHandles = [];
-        }
-        if (Z.Util.isArray(handle)) {
-            this._editHandles = this._editHandles.concat(handle);
-        } else {
-            this._editHandles.push(handle);
-        }
     }
 
 });
