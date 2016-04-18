@@ -244,6 +244,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;');
         var mask = createContainer('mask', 'maptalks-mask','position:absolute;top:0px;left:0px;');
 
+        mapPlatform.style.zIndex = 300;
         canvasContainer.style.zIndex=100;
         mask.style.zIndex = 200;
         ui.style.zIndex = 300;
