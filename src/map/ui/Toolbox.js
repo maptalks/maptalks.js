@@ -261,7 +261,9 @@ Z.ui.Toolbox.Button = Z.Class.extend({
             if(items&&items.length>0) {
                 for(var i=0,len=items.length;i<len;i++) {
                     var item = items[i];
-                    item['vertical'] = !Z.Util.getValueOrDefault(item['vertical'],options['vertical']);
+                    if(item['vertical']=== undefined) {
+                        item['vertical'] = !Z.Util.getValueOrDefault(item['vertical'],options['vertical']);
+                    }
                     dropdownMenu.appendChild(this._createMenuDom(item, 'li'));
                 }
             }
