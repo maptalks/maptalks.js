@@ -60,6 +60,20 @@ function runTests(target, _context) {
             expect(itemEles[2].innerHTML).to.be.eql('item2');
         }
 
+        function rightclick() {
+            _context.map.setCenter(target.getFirstCoordinate());
+            var eventContainer = _context.map._panels.canvasContainer;
+            var domPosition = Z.DomUtil.getPagePosition(eventContainer);
+            var point = _context.map.coordinateToContainerPoint(target.getFirstCoordinate()).add(domPosition);
+
+            happen.click(eventContainer,{
+                    'clientX':point.x,
+                    'clientY':point.y,
+                    'button' : 2
+                    });
+
+        }
+
         context('Type of ' + type, function() {
             it('setMenuAndOpen', function() {
                 before();
@@ -89,6 +103,35 @@ function runTests(target, _context) {
                 assertItems();
                 target.closeMenu();
                 expect(target._menu._getDOM().style.display).to.be.eql('none');
+            });
+
+            it('openMenu by click', function() {
+                if (target instanceof Z.Sector) {
+                    return;
+                }
+                before();
+                target.setMenuItems(items);
+                rightclick();
+                assertItems();
+                target.closeMenu();
+                expect(target._menu._getDOM().style.display).to.be.eql('none');
+            });
+
+            it('openMenu by click when target is being edited', function(done) {
+                // if (target instanceof Z.Sector) {
+                //     return;
+                // }
+                // before();
+                // target.setMenuItems(items);
+                // target.startEdit();
+                // setTimeout(function() {
+                //     rightclick();
+                //     assertItems();
+                //     target.closeMenu();
+                //     expect(target._menu._getDOM().style.display).to.be.eql('none');
+                //     done();
+                // }, 20);
+                done();
             });
 
             it('callback will be called when item is clicked', function() {

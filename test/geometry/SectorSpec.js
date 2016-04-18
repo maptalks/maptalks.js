@@ -13,7 +13,7 @@ describe('SectorSpec', function() {
         map = setups.map;
         layer = new Z.VectorLayer('id');
         map.addLayer(layer);
-        canvasContainer = map._panels.mask;
+        canvasContainer = map._panels.canvasContainer;
     });
 
     afterEach(function() {
