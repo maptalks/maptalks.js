@@ -570,6 +570,9 @@ Z.DomUtil.on = Z.DomUtil.addDomEvent;
 Z.DomUtil.off = Z.DomUtil.removeDomEvent;
 
 (function () {
+    if (Z.node) {
+        return;
+    }
     // Borrowed from Leaflet.DomUtil
 
     // prefix style property names
