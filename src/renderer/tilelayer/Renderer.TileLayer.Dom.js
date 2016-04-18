@@ -198,8 +198,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         Z.DomUtil.setOpacity(this._container, this._layer.options['opacity']);
 
         var now = Z.Util.now(),
-            nextFrame = false,
-            willPrune = false;
+            nextFrame = false;
         var tile, fade;
         for (var key in this._tiles) {
             tile = this._tiles[key];
@@ -210,21 +209,12 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             Z.DomUtil.setOpacity(tile['el'], fade);
             if (!nextFrame && fade < 1) {
                 nextFrame = true;
-            } else {
-                if (tile.active) { willPrune = true; }
-                tile.active = true;
             }
-        }
-
-        if (willPrune && !this._noPrune) {
-            this._pruneTiles();
         }
 
         if (nextFrame) {
             Z.Util.cancelAnimFrame(this._fadeFrame);
             this._fadeFrame = Z.Util.requestAnimFrame(Z.Util.bind(this._updateOpacity, this));
-        } else {
-            this._noPrune = false;
         }
     },
 
@@ -354,7 +344,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     _onZoomStart: function() {
-        this._noPrune = true;
+        this._pruneTiles();
         this._zoomStartPos = this.getMap().offsetPlatform();
     },
 
