@@ -22,7 +22,7 @@ Z.CollectionPainter=Z.Class.extend(/** @lends maptalks.CollectionPainter.prototy
         }
     },
 
-    paint:function() {
+    paint:function(matrix) {
         if (!this.geometry) {
             return;
         }
@@ -31,7 +31,7 @@ Z.CollectionPainter=Z.Class.extend(/** @lends maptalks.CollectionPainter.prototy
         // Array.prototype.push.call(arguments, symbol);
         // var args = arguments;
         this._eachPainter(function(painter) {
-            painter.paint();
+            painter.paint(matrix);
         });
     },
 

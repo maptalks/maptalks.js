@@ -11,7 +11,7 @@ describe('Geometry.Events', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        eventContainer = map._panels.mask;
+        eventContainer = map._panels.canvasContainer;
         layer = new maptalks.VectorLayer('vector');
         map.addLayer(layer);
     });

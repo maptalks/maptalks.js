@@ -39,7 +39,7 @@ describe('#GeometryDrag', function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        eventContainer = map._panels.mask;
+        eventContainer = map._panels.canvasContainer;
     });
 
     afterEach(function() {

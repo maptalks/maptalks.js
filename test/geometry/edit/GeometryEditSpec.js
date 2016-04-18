@@ -34,7 +34,7 @@ describe('#GeometryEdit', function () {
         var setups = commonSetupMap(center, null);
         container = setups.container;
         map = setups.map;
-        eventContainer = map._panels.mask;
+        eventContainer = map._panels.canvasContainer;
         layer = new Z.VectorLayer('id');
         map.addLayer(layer);
     });
