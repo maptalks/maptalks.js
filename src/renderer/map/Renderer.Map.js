@@ -20,14 +20,24 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
      * @param  {Number} scale  scale
      * @param  {Point} origin Transform Origin
      */
-    getZoomMatrix:function(scale, origin) {
-        if (Z.Browser.retina) {
+    getZoomMatrix:function(scale, origin, retina) {
+        //matrix for layers to transform
+        var view = this.map.containerPointToViewPoint(origin);
+        var matrices  = {
+            'container' : new Z.Matrix().translate(origin.x, origin.y)
+                        .scaleU(scale).translate(-origin.x,-origin.y),
+            'view'      : new Z.Matrix().translate(view.x, view.y)
+                        .scaleU(scale).translate(-view.x,-view.y)
+        };
+
+        if (retina) {
             origin = origin.multi(2);
+            matrices['retina'] = new Z.Matrix().translate(origin.x, origin.y)
+                        .scaleU(scale).translate(-origin.x,-origin.y);
         }
-        //matrix for layers to caculate points.
-        var matrix = new Z.Matrix().translate(origin.x, origin.y)
-            .scaleU(scale).translate(-origin.x,-origin.y);
-        return matrix;
+        // var scale = matrices['container'].decompose()['scale'];
+        matrices['scale'] = scale;
+        return matrices;
     },
 
     panAnimation:function(distance, t) {
@@ -86,20 +96,21 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             return;
         }
         var mapPlatform = this.map._panels.mapPlatform;
-        if (!offset) {
-            return Z.DomUtil.offsetDom(mapPlatform);
-        } else {
-            var domOffset = Z.DomUtil.offsetDom(mapPlatform);
-            Z.DomUtil.offsetDom(mapPlatform, domOffset.add(offset));
-            return this;
-        }
+        Z.DomUtil.offsetDom(mapPlatform, this.map.offsetPlatform().add(offset));
+        return this;
     },
 
     resetContainer:function() {
         this.map._resetMapViewPoint();
         if (this.map._panels.mapPlatform) {
             Z.DomUtil.offsetDom(this.map._panels.mapPlatform, new Z.Point(0,0));
+            this._resetCanvasContainer();
         }
+    },
+
+    _resetCanvasContainer: function() {
+        var mapPos = this.map.offsetPlatform();
+        Z.DomUtil.offsetDom(this.map._panels.canvasContainer, mapPos.multi(-1));
     },
 
     onZoomEnd:function() {

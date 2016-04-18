@@ -13,7 +13,7 @@ describe('PolygonSpec', function() {
         map = setups.map;
         layer = new Z.VectorLayer('id');
         map.addLayer(layer);
-        canvasContainer = map._panels.mapMask;
+        canvasContainer = map._panels.mask;
     });
 
     afterEach(function() {

@@ -153,7 +153,7 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             this._getRenderer().render(geometries);
             if (fitView) {
                 var z = map.getFitZoom(extent);
-                var center = geoCenter._multi(1/fitCounter);
+                var center = centerSum._multi(1/fitCounter);
                 map.setCenterAndZoom(center,z);
             }
         }

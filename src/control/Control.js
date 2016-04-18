@@ -64,7 +64,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
     addTo: function (map) {
         this.remove();
         this._map = map;
-        var controlContainer = map._panels.controlWrapper;
+        var controlContainer = map._panels.control;
         this._container = Z.DomUtil.createEl('div');
         Z.DomUtil.setStyle(this._container, 'position:absolute');
         Z.DomUtil.addStyle(this._container, 'z-index', controlContainer.style.zIndex);

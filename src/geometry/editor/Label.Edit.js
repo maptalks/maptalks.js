@@ -42,12 +42,12 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
 
     _prepareEditor:function() {
         var map = this.getMap();
-        var zIndex = map._panels.controlWrapper.style.zIndex+1;
+        var zIndex = map._panels.control.style.zIndex+1;
         var viewPoint = this._computeViewPoint();
         this._container = Z.DomUtil.createEl('div');
         this._container.style.cssText='position:absolute;top:'+viewPoint['y']
                                     +'px;left:'+viewPoint['x']+'px;z-index:'+zIndex+';';
-        map._panels.uiContainer.appendChild(this._container);
+        map._panels.ui.appendChild(this._container);
         this._textEditor = this._createInputDom();
         this._container.appendChild(this._textEditor);
     },

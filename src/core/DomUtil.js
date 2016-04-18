@@ -1,6 +1,7 @@
 
 /**
- * DOM utilities used internally
+ * DOM utilities used internally.
+ * Learned a lot from Leaflet.DomUtil
  * @class
  * @category core
  * @protected
@@ -205,13 +206,14 @@ Z.DomUtil = {
      */
     offsetDom: function(dom, offset) {
         if (!dom) {return null;}
-        if (!offset) {
-            return new Z.Point(parseInt(dom.style.left,0),parseInt(dom.style.top,0));
+
+        if (Z.Browser.any3d) {
+            Z.DomUtil.setTransform(dom, offset);
         } else {
-            dom.style.left= offset.x+'px';
-            dom.style.top = offset.y +'px';
-            return offset;
+            dom.style.left = offset.x + 'px';
+            dom.style.top = offset.y + 'px';
         }
+        return offset;
     },
 
     /**
@@ -388,6 +390,43 @@ Z.DomUtil = {
         return Z.Util.isNil(el.className.baseVal) ? el.className : el.className.baseVal;
     },
 
+    // Borrowed from Leaflet
+    // @function setOpacity(el: HTMLElement, opacity: Number)
+    // Set the opacity of an element (including old IE support).
+    // `opacity` must be a number from `0` to `1`.
+    setOpacity: function (el, value) {
+
+        if ('opacity' in el.style) {
+            el.style.opacity = value;
+
+        } else if ('filter' in el.style) {
+            Z.DomUtil._setOpacityIE(el, value);
+        }
+    },
+
+    _setOpacityIE: function (el, value) {
+        var filter = false,
+            filterName = 'DXImageTransform.Microsoft.Alpha';
+
+        // filters collection throws an error if we try to retrieve a filter that doesn't exist
+        try {
+            filter = el.filters.item(filterName);
+        } catch (e) {
+            // don't set opacity to 1 if we haven't already set an opacity,
+            // it isn't needed and breaks transparent pngs.
+            if (value === 1) { return; }
+        }
+
+        value = Math.round(value * 100);
+
+        if (filter) {
+            filter.Enabled = (value !== 100);
+            filter.Opacity = value;
+        } else {
+            el.style.filter += ' progid:' + filterName + '(opacity=' + value + ')';
+        }
+    },
+
     /**
      * Copy the source canvas
      * @param  {Element|Canvas} src - source canvas
@@ -457,10 +496,55 @@ Z.DomUtil = {
             }
             return good;
           };
-        })()
+        })(),
+
+
+    /**
+     * From Leaflet.DomUtil
+     * Goes through the array of style names and returns the first name
+     * that is a valid style name for an element. If no such name is found,
+     * it returns false. Useful for vendor-prefixed styles like `transform`.
+     * @param  {String[]} props
+     * @return {Boolean}
+     */
+    testProp: function (props) {
+
+        var style = document.documentElement.style;
+
+        for (var i = 0; i < props.length; i++) {
+            if (props[i] in style) {
+                return props[i];
+            }
+        }
+        return false;
+    },
+
+
+    /**
+     * Based on Leaflet.DomUtil.
+     * Resets the 3D CSS transform of `el` so it is translated by `offset` pixels
+     * and optionally scaled by `scale`. Does not have an effect if the browser doesn't support 3D CSS transforms.
+     * Also support set a transform matrix.
+     * @param {HTMLElement} el
+     * @param {maptalks.Point} offset
+     * @param {Number} scale
+     */
+    setTransform: function (el, offset, scale) {
+        if (offset instanceof Z.Matrix) {
+            el.style[Z.DomUtil.TRANSFORM] = offset.toCSS();
+            return this;
+        }
+        var pos = offset || new Z.Point(0, 0);
+        el.style[Z.DomUtil.TRANSFORM] =
+            (Z.Browser.ie3d ?
+                'translate(' + pos.x + 'px,' + pos.y + 'px)' :
+                'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)') +
+            (scale ? ' scale(' + scale + ')' : '');
+
+        return this;
+    }
 
 };
-
 
 /**
  * Alias for [addDomEvent]{@link maptalks.DomUtil.addDomEvent}
@@ -484,3 +568,22 @@ Z.DomUtil.on = Z.DomUtil.addDomEvent;
 * @return {maptalks.DomUtil}
 */
 Z.DomUtil.off = Z.DomUtil.removeDomEvent;
+
+(function () {
+    // Borrowed from Leaflet.DomUtil
+
+    // prefix style property names
+
+    /**
+     * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
+     * @property
+     * @memberOf maptalks.DomUtil
+     * @type {String}
+     */
+    Z.DomUtil.TRANSFORM = Z.DomUtil.testProp(
+            ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+
+
+})();
+
+

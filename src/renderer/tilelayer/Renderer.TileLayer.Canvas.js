@@ -291,24 +291,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     _registerEvents:function() {
         var map = this.getMap();
         map.on('_moveend _zoomend _resize',this._onMapEvent,this);
-        if (this._layer.options['renderWhenPanning']) {
-        var rendSpan = this._layer.options['renderSpanWhenPanning'];
-            if (Z.Util.isNumber(rendSpan) && rendSpan >= 0) {
-                if (rendSpan > 0) {
-                    this._onMapMoving = Z.Util.throttle(function() {
-                            this._gradualLoading = false;
-                            this.render();
-                        },rendSpan,this);
-                } else {
-                    this._onMapMoving = function() {
-                        this._gradualLoading = false;
-                        this.render();
-                    };
-                }
-                map.on('_moving',this._onMapMoving,this);
-            }
-        }
-
     },
 
     _onMapEvent:function(param) {

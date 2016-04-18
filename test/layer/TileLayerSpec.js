@@ -6,8 +6,8 @@ describe('#TileLayer', function() {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '10px';
-        container.style.height = '10px';
+        container.style.width = '1px';
+        container.style.height = '1px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -20,7 +20,7 @@ describe('#TileLayer', function() {
         removeContainer(container)
     });
 
-    describe("Difference Projections", function() {
+    describe("Different Projections", function() {
         it("webmercator", function(done) {
             var tile = new Z.TileLayer('tile', {
                 debug : true,
@@ -81,6 +81,35 @@ describe('#TileLayer', function() {
             });
             map.setBaseLayer(tile);
         });
+    });
+
+    describe("Different Renderers", function() {
+        it("canvas", function(done) {
+            var tile = new Z.TileLayer('tile', {
+                debug : true,
+                urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains:['a','b','c'],
+                baseLayerRenderer : 'canvas'
+            });
+            tile.on('layerload', function() {
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
+
+        it("dom", function(done) {
+            var tile = new Z.TileLayer('tile', {
+                debug : true,
+                urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains:['a','b','c'],
+                baseLayerRenderer : 'dom'
+            });
+            tile.on('layerload', function() {
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
+
     });
 
 });

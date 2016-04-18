@@ -31,10 +31,10 @@ describe('#GeometryEdit', function () {
     }
 
     beforeEach(function() {
-        var setups = commonSetupMap(center);
+        var setups = commonSetupMap(center, null);
         container = setups.container;
         map = setups.map;
-        eventContainer = map._panels.mapMask;
+        eventContainer = map._panels.mask;
         layer = new Z.VectorLayer('id');
         map.addLayer(layer);
     });
@@ -54,7 +54,7 @@ describe('#GeometryEdit', function () {
             this.timeout(8000);
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
-            for (var i = 0; i < geometries.length; i++) {
+            for (var i = 0; i < 1; i++) {
                 var geo = geometries[i];
                 if (geo instanceof Z.GeometryCollection) {
                     //not fit for geometry collection's test.
@@ -66,7 +66,7 @@ describe('#GeometryEdit', function () {
                 expect(geo.getCenter()).not.to.nearCoord(center);
                 //geo can only be dragged by center handle.
                 var newCenter = geo.getCenter();
-                dragGeometry(geo, new Z.Point(50,20));
+                dragGeometry(geo, new Z.Point(500,20));
                 expect(geo.getCenter()).to.nearCoord(newCenter);
             }
         });

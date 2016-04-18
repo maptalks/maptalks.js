@@ -62,58 +62,83 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         });
     },
 
-    draw:function() {
+    //redraw all the geometries with transform matrix
+    //this may bring low performance if number of geometries is large.
+    transform: function(matrix) {
+        if (Z.Browser.mobile || !this.getMap().options['layerTransforming']) {
+            return false;
+        }
+        if (!this._shouldTransform) {
+            return false;
+        }
+        return this._draw(matrix);
+    },
+
+    _draw:function(matrix) {
         var map = this.getMap();
         if (!map) {
-            return;
+            return false;
         }
-
-        //载入资源后再进行绘制
         var layer = this._layer;
         if (layer.isEmpty()) {
             this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
             this._fireLoadedEvent();
-            return;
+            return false;
         }
         if (!layer.isVisible()) {
             this._fireLoadedEvent();
-            return;
+            return false;
         }
-        this._painted = true;
-        var viewExtent = map._getViewExtent();
-        var me = this;
-        this._drawCounter = 0;
-        this._shouldUpdateWhileTransforming = true;
-        var maskViewExtent = this._prepareCanvas();
+        this._shouldTransform = true;
+        this._prepareToDraw();
+        var viewExtent = map._getViewExtent(),
+            maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {
                 this._fireLoadedEvent();
-                return;
+                return false;
             }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
-
-        layer._eachGeometry(this._drawGeo, this);
+        layer._eachGeometry(this._checkGeo, this);
+        //determin whether this layer should be transformed.
+        //if all the geometries to render are vectors including polygons and linestrings,
+        //disable transforming won't reduce user experience.
+        this._shouldTransform = matrix && this._hasPointSymbolizer
+                && count < this._layer.options['thresholdOfTransforming'];
+        var count = this._geosToDraw.length;
+        for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
+            this._geosToDraw[i]._getPainter().paint(matrix);
+        }
     },
 
-    _drawGeo: function(geo) {
+    _prepareToDraw: function() {
+        this._isBlank = true;
+        this._painted = true;
+        this._hasPointSymbolizer = false;
+        this._geosToDraw = [];
+    },
+
+    _checkGeo: function(geo) {
         //geo的map可能为null,因为绘制为延时方法
-        if (!geo || !geo.isVisible() || !geo.getMap() || !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
+        if (!geo || !geo.isVisible() || !geo.getMap()
+            || !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
             return;
         }
-        var geoPainter = geo._getPainter();
-        var geoViewExt = geoPainter.getPixelExtent();
-        if (!geoViewExt || !geoViewExt.intersects(this._viewExtent)) {
+        var painter = geo._getPainter(),
+            viewExtent = painter.getPixelExtent();
+        if (!viewExtent || !viewExtent.intersects(this._viewExtent)) {
             return;
         }
-        this._drawCounter++;
-        if (this._shouldUpdateWhileTransforming && geoPainter.hasPointSymbolizer()) {
-            this._shouldUpdateWhileTransforming = false;
+        this._isBlank = false;
+        if (painter.hasPointSymbolizer()) {
+            this._hasPointSymbolizer = true;
         }
-        if (this._drawCounter > this._layer.options['thresholdOfPointUpdate']) {
-            this._shouldUpdateWhileTransforming = true;
-        }
-        geoPainter.paint();
+        this._geosToDraw.push(geo);
+    },
+
+    isBlank: function() {
+        return this._isBlank;
     },
 
     getPaintContext:function() {
@@ -173,15 +198,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     },
 
-    //determin whether this layer can be economically transformed, updatePointsWhileTransforming can bring better performance.
-    //if all the geometries to render are vectors including polygons and linestrings, updatePointsWhileTransforming won't reduce user experience.
-    shouldUpdateWhileTransforming:function() {
-        if (Z.Util.isNil(this._shouldUpdateWhileTransforming)) {
-            return true;
-        }
-        return this._shouldUpdateWhileTransforming;
-    },
-
     isResourceLoaded:function(url) {
         if (!this._resources) {
             return false;
@@ -210,7 +226,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                 return;
             }
         }
-        this.draw();
+        this._draw();
         this._requestMapToRender();
         this._fireLoadedEvent();
 
