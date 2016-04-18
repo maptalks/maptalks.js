@@ -87,6 +87,9 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     transform: function(matrices) {
+        if (!this._canTransform()) {
+            return false;
+        }
         var zoom = this.getMap().getZoom();
         for (var z in this._levelContainers) {
             if (this._levelContainers.hasOwnProperty(z)) {
@@ -343,12 +346,22 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
     },
 
+    _canTransform: function() {
+        return Z.Browser.any3d || Z.Browser.ie9;
+    },
+
     _onZoomStart: function() {
         this._pruneTiles();
         this._zoomStartPos = this.getMap().offsetPlatform();
+        if (!this._canTransform()) {
+            this._container.style.display = 'none';
+        }
     },
 
     _onZoomEnd: function(param) {
+        if (!this._canTransform()) {
+            this._container.style.display = '';
+        }
         this.render();
         if (this._levelContainers[param.from] && this._zoomStartPos) {
             this._levelContainers[param.from].style.left = this._zoomStartPos.x + 'px';
