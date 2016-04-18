@@ -101,7 +101,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         'enableZoom':true,
         'enableInfoWindow':true,
 
-        'hitDetect' : true,
+        'hitDetect' : (function(){return Z.Browser.mobile?false:true;})(),
 
         'maxZoom' : null,
         'minZoom' : null,

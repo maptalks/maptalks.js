@@ -36,7 +36,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                         .scaleU(scale).translate(-origin.x,-origin.y);
         }
         // var scale = matrices['container'].decompose()['scale'];
-        matrices['scale'] = scale;
+        matrices['scale'] = {x:scale, y:scale};
         return matrices;
     },
 

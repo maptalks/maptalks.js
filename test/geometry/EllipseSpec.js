@@ -12,7 +12,7 @@ describe('EllipseSpec', function() {
        var setups = commonSetupMap(center);
        container = setups.container;
        map = setups.map;
-       canvasContainer = map._panels.mask;
+       canvasContainer = map._panels.canvasContainer;
     });
 
     afterEach(function() {

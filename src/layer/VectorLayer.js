@@ -10,7 +10,7 @@
  * @param {Boolean} [options.enableSimplify=false] - whether to simplify geometries before rendering.
  * @param {String} [options.cursor=default] - the cursor style of the layer
  * @param {Boolean} [options.geometryEvents=true] - enable/disable firing geometry events
- * @param {Number} [options.thresholdOfPointUpdate=50] - threshold of points number to update points while transforming.
+ * @param {Number} [options.thresholdOfTransforming=50] - threshold of points number to update points while transforming.
  * @param {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
  */
 Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
@@ -20,7 +20,7 @@ Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */
         'enableSimplify'            : true,
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
-        'thresholdOfPointUpdate'    : 50,
+        'thresholdOfTransforming'    : 50,
         'drawImmediate'             : false
     },
 

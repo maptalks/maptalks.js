@@ -71,7 +71,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (!this._shouldTransform) {
             return false;
         }
-        return this._draw(matrix);
+        this._draw(matrix);
+        return true;
     },
 
     _draw:function(matrix) {
@@ -101,12 +102,13 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
         layer._eachGeometry(this._checkGeo, this);
+        var count = this._geosToDraw.length;
         //determin whether this layer should be transformed.
         //if all the geometries to render are vectors including polygons and linestrings,
         //disable transforming won't reduce user experience.
-        this._shouldTransform = matrix && this._hasPointSymbolizer
+        this._shouldTransform = this._hasPointSymbolizer
                 && count < this._layer.options['thresholdOfTransforming'];
-        var count = this._geosToDraw.length;
+
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._getPainter().paint(matrix);
         }

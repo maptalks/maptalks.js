@@ -7,10 +7,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
 
     addHooks: function() {
         var map = this.target;
-        var dom = map._panels.mask;
-        if (Z.Browser.ie9 || Z.Browser.ie10) {
-            dom = map._panels.canvasContainer;
-        }
+        var dom = map._panels.canvasContainer;
         if(dom) {
             Z.DomUtil.on(dom,this.EVENTS, this._identifyGeometryEvents, this);
         }
@@ -19,10 +16,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
 
     removeHooks: function() {
         var map = this.target;
-        var dom = map._panels.mask;
-        if (Z.Browser.ie9 || Z.Browser.ie10) {
-            dom = map._panels.canvasContainer;
-        }
+        var dom = map._panels.canvasContainer;
         if(dom) {
             Z.DomUtil.off(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
