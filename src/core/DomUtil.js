@@ -531,7 +531,7 @@ Z.DomUtil = {
      */
     setTransform: function (el, offset, scale) {
         if (offset instanceof Z.Matrix) {
-            el.style[Z.DomUtil.TRANSFORM] = (Z.Browser.ie9 ? offset.toCSS() : offset.toCSS3D());
+            el.style[Z.DomUtil.TRANSFORM] =  offset.toCSS();
             return this;
         }
         var pos = offset || new Z.Point(0, 0);
