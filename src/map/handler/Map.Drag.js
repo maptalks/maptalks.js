@@ -50,9 +50,10 @@ Z.Map.Drag = Z.Handler.extend({
             my = param['mousePos'].y;
         var nextLeft = (this.startLeft + mx - this.startX);
         var nextTop = (this.startTop + my - this.startY);
-        var currentDomOffset = map.offsetPlatform();
-        map.offsetPlatform(new Z.Point(nextLeft,nextTop)._substract(currentDomOffset));
-        map._offsetCenterByPixel(new Z.Point(-nextLeft,-nextTop)._add(currentDomOffset));
+        var mapPos = map.offsetPlatform();
+        var offset = new Z.Point(nextLeft,nextTop)._substract(mapPos);
+        map.offsetPlatform(offset);
+        map._offsetCenterByPixel(offset);
         map._onMoving();
     },
 

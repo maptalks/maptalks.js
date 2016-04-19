@@ -35,7 +35,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             this._panAnimation(offset, options['duration']);
         } else {
             this.offsetPlatform(offset);
-            this._offsetCenterByPixel(new Z.Point(-offset.x,-offset.y));
+            this._offsetCenterByPixel(offset);
             this._onMoving();;
             this._onMoveEnd();
         }

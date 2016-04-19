@@ -69,6 +69,9 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         var renderer = this.options['renderer'];
         if (this.getMap().getBaseLayer() === this) {
             renderer = this.options['baseLayerRenderer'];
+            if (this.getMap()._getRenderer()._isCanvasContainer) {
+                renderer = 'canvas';
+            }
         }
         if (!this.constructor.getRendererClass) {
             return;
