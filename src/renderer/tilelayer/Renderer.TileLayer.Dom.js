@@ -186,6 +186,8 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         var errorUrl = this._layer.options['errorTileUrl'];
         if (errorUrl) {
             tile['el'].src = errorUrl;
+        } else {
+            tile['el'].style.display = 'none';
         }
         done.call(this, 'error', tile);
     },
