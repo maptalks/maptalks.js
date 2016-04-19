@@ -38,7 +38,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     _onZoomEnd:function(nextZoomLevel, zoomOffset) {
         this._zoomLevel=nextZoomLevel;
         if (zoomOffset) {
-            this._offsetCenterByPixel(zoomOffset);
+            this._offsetCenterByPixel(zoomOffset._multi(-1));
         }
         var _originZoomLevel = this._originZoomLevel;
         this._originZoomLevel=nextZoomLevel;

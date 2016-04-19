@@ -270,7 +270,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             mapPlatform.setAttribute('unselectable', 'on');
         }
 
-        this.offsetPlatform(new Z.Point(0,0));
+        this.resetContainer();
         var mapSize = this.map._getContainerDomSize();
         this.updateMapSize(mapSize);
     },
@@ -284,6 +284,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var canvasImage = layerImage['image'];
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
+        }
+        var containerPos = this._getCanvasContainerPos();
+        if (containerPos) {
+            point = point.add(this.map.offsetPlatform().multi(-1).substract(containerPos));
         }
         //opacity of the layer image
         var op = layer.options['opacity'];

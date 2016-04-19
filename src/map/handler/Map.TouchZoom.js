@@ -55,7 +55,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
         }
         var offset = this._preOrigin.substract(origin);
         map.offsetPlatform(offset);
-        map._offsetCenterByPixel(offset.multi(-1));
+        map._offsetCenterByPixel(offset);
         this._preOrigin = origin;
         this._scale = scale;
 
