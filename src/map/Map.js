@@ -901,7 +901,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 return;
             }
             me._updateMapSize(watched);
-            var resizeOffset = new Z.Point((watched.width-oldWidth) / 2,(watched.height-oldHeight) / 2);
+            var resizeOffset = new Z.Point((oldWidth - watched.width) / 2,(oldHeight - watched.height) / 2);
             me._offsetCenterByPixel(resizeOffset);
 
             /**
@@ -1293,8 +1293,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @returns {maptalks.Coordinate} the new projected center.
      */
     _offsetCenterByPixel:function(pixel) {
-        var posX = this.width/2+pixel.x,
-            posY = this.height/2+pixel.y;
+        var posX = this.width/2 - pixel.x,
+            posY = this.height/2 - pixel.y;
         var pCenter = this._containerPointToPrj(new Z.Point(posX, posY));
         this._setPrjCenter(pCenter);
         return pCenter;

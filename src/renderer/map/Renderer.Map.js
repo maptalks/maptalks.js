@@ -72,7 +72,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                         }
                         var offset = dist.substract(preDist);
                         map.offsetPlatform(offset);
-                        map._offsetCenterByPixel(offset.multi(-1));
+                        map._offsetCenterByPixel(offset);
                         preDist = dist;
                         map._fireEvent('moving');
                     } else if (player.playState === 'finished') {
