@@ -140,7 +140,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     _loadTileQueue:function() {
         var me = this;
         function onTileLoad() {
-            me._tileCache.add(this[me.propertyOfTileId], this);
+            if (!Z.node) {
+                me._tileCache.add(this[me.propertyOfTileId], this);
+            }
             me._tileRended[this[me.propertyOfTileId]] = this;
             me._drawTileAndRequest(this);
         }
