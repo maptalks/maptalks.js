@@ -110,7 +110,16 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
 
     _resetCanvasContainer: function() {
         var mapPos = this.map.offsetPlatform();
-        Z.DomUtil.offsetDom(this.map._panels.canvasContainer, mapPos.multi(-1));
+        var pos = mapPos.multi(-1);
+        this.map._panels.canvasContainer._pos = pos;
+        Z.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
+    },
+
+    _getCanvasContainerPos: function() {
+        if (this.map._panels && this.map._panels.canvasContainer) {
+            return this.map._panels.canvasContainer._pos;
+        }
+        return null;
     },
 
     onZoomEnd:function() {
