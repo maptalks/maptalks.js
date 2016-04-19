@@ -112,4 +112,28 @@ describe('#TileLayer', function() {
 
     });
 
+    describe("In a canvas container", function() {
+        it("can be loaded", function(done) {
+            container = document.createElement('canvas');
+            container.style.width = '1px';
+            container.style.height = '1px';
+            document.body.appendChild(container);
+            var option = {
+                zoom: 17,
+                center: center
+            };
+            map = new Z.Map(container, option);
+            var tile = new Z.TileLayer('tile', {
+                debug : true,
+                urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains:['a','b','c']
+            });
+            tile.on('layerload', function() {
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
+
+    });
+
 });
