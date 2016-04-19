@@ -129,6 +129,7 @@ describe('#TileLayer', function() {
                 subdomains:['a','b','c']
             });
             tile.on('layerload', function() {
+                expect(tile.isCanvasRender()).to.be.ok();
                 done();
             });
             map.setBaseLayer(tile);
