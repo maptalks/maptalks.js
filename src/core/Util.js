@@ -74,7 +74,7 @@ Z.Util = {
     loadImage:function(img, imgDesc) {
         if (!Z.node) {
             img.src = imgDesc[0];
-            return;
+            return this;
         }
         function onError(err) {
             if (err) {
@@ -123,15 +123,9 @@ Z.Util = {
         //http
         var loader;
         if (url.indexOf('https://') === 0) {
-            if (!this._nodeHttps) {
-                this._nodeHttps = require('https');
-            }
-            loader = this._nodeHttps;
+            loader = require('https');
         } else {
-            if (!this._nodeHttp) {
-                this._nodeHttp = require('http');
-            }
-            loader = this._nodeHttp;
+            loader = require('http');
         }
         loader.get(url, function(res) {
             var data = [];
@@ -146,20 +140,13 @@ Z.Util = {
 
     _loadLocalImage:function(img, url, onComplete) {
         //local file
-        if (!this._nodeFS) {
-            this._nodeFS = require('fs');
-        }
-        var data = this._nodeFS.readFile(url,onComplete);
+        require('fs').readFile(url,onComplete);
     },
 
     _convertSVG2PNG:function(url, w, h, onComplete) {
-        var me = this;
-        if (!this._svg2img) {
-            //use svg2img to convert svg to png.
-            //https://github.com/FuZhenn/node-svg2img
-            this._svg2img = require('svg2img');
-        }
-        this._svg2img(url, {'width':w, 'height':h},onComplete);
+        //use svg2img to convert svg to png.
+        //https://github.com/FuZhenn/node-svg2img
+        require('svg2img')(url, {'width':w, 'height':h},onComplete);
     },
 
     fixPNG:function(img) {
@@ -690,7 +677,16 @@ Z.Util = {
 
     //RequestAnimationFrame, inspired by Leaflet
     (function () {
-        var requestFn, cancelFn, caller;
+        if (Z.node) {
+            Z.Util.requestAnimFrame = function (fn) {
+                    return setTimeout(fn, 16);
+            };
+
+            Z.Util.cancelAnimFrame = clearTimeout;
+            return;
+        }
+
+        var requestFn, cancelFn;
         var lastTime = 0;
 
 
@@ -706,24 +702,22 @@ Z.Util = {
             return window['webkit' + name] || window['moz' + name] || window['ms' + name];
         }
         if (typeof(window) != 'undefined') {
-            caller = window;
             // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 
             requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
             cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
                            getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
         } else {
-            caller = global;
             requestFn = timeoutDefer;
             cancelFn =  function (id) { clearTimeout(id); };
         }
         Z.Util.requestAnimFrame = function (fn) {
-                return requestFn.call(caller, fn);
+                return requestFn(fn);
         };
 
         Z.Util.cancelAnimFrame = function (id) {
             if (id) {
-                cancelFn.call(caller, id);
+                cancelFn(id);
             }
         };
     })();

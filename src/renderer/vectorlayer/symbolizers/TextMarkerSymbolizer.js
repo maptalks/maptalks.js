@@ -114,6 +114,9 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     _storeToCache: function(textContent, style, textDesc) {
+        if (Z.node) {
+            return;
+        }
         if (!this.geometry['___text_symbol_cache']) {
             this.geometry['___text_symbol_cache'] = {};
         }

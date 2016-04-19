@@ -142,8 +142,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         function onTileLoad() {
             if (!Z.node) {
                 me._tileCache.add(this[me.propertyOfTileId], this);
+                me._tileRended[this[me.propertyOfTileId]] = this;
             }
-            me._tileRended[this[me.propertyOfTileId]] = this;
             me._drawTileAndRequest(this);
         }
         function onTileError() {
@@ -195,6 +195,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         Z.Canvas.image(this._context, tileImage,
             point.x - leftTop.x, point.y - leftTop.y,
             tileSize['width'], tileSize['height']);
+        tileImage = null;
         if (this._layer.options['debug']) {
             var p = point.substract(leftTop);
             this._context.save();
