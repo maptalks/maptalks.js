@@ -12,8 +12,8 @@
 Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
     options: {
-        'errorTileUrl'  : '#',
-        'urlTemplate'   : '#',
+        'errorTileUrl'  : null,
+        'urlTemplate'   : null,
         'subdomains'    : null,
 
         'gradualLoading' : true,
