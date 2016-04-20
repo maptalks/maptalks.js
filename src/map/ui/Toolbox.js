@@ -121,10 +121,6 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
         return ul;
     },
 
-    _getDOM:function() {
-        return this._dom;
-    },
-
     _getWidth:function() {
         var defaultWidth = 160;
         var width = this.options['width'];
