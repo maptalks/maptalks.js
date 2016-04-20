@@ -195,7 +195,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         Z.Canvas.image(this._context, tileImage,
             point.x - leftTop.x, point.y - leftTop.y,
             tileSize['width'], tileSize['height']);
-        tileImage = null;
         if (this._layer.options['debug']) {
             var p = point.substract(leftTop);
             this._context.save();
@@ -208,6 +207,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             Z.Canvas.fillText(this._context, 'x:'+xyz[1]+',y:'+xyz[0]+',z:'+xyz[2], p.add(10,20), 'rgb(0,0,0)');
             this._context.restore();
         }
+        tileImage = null;
     },
 
     /**
