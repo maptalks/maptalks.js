@@ -158,7 +158,6 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         if (this._ignoreEvent(e)) {
             return true;
         }
-        Z.DomUtil.preventDefault(e);
         var type = e.type;
         this._fireDOMEvent(this, e, type);
     },
