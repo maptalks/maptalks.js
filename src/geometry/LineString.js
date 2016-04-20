@@ -83,7 +83,9 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
             pxMax = map._prjToViewPoint(se),
             pxExtent = new Z.PointExtent(pxMin.x - t, pxMin.y - t,
                                     pxMax.x + t, pxMax.y + t);
-
+        if (t < 2) {
+            t = 2;
+        }
         point = new Z.Point(point.x, point.y);
 
         if (!pxExtent.contains(point)) { return false; }
