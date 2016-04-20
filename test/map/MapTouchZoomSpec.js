@@ -11,7 +11,7 @@ describe('MapTouchZoomSpec', function () {
             container = setups.container;
             map = setups.map;
             delay = map.options['zoomAnimationDuration'];
-            eventContainer = map._containerDOM;
+            eventContainer = map._panels.canvasContainer;;
             var domPosition = Z.DomUtil.getPagePosition(container);
             centerPoint = map.coordinateToContainerPoint(center).add(domPosition);
     });

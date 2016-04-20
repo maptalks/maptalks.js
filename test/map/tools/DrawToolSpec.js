@@ -72,7 +72,7 @@ describe('#DrawTool', function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        eventContainer = map._containerDOM;
+        eventContainer = map._panels.canvasContainer;;
 
     });
 
