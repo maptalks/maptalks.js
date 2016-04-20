@@ -29,10 +29,18 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             //center is out of maxExtent
             transOrigin = new Z.Point(this.width/2,this.height/2);
         }
-        var zoomDuration = this.options['zoomAnimationDuration']*Math.abs(endScale - startScale)/Math.abs(endScale-1);
-        this._getRenderer().onZoomStart(startScale, endScale, transOrigin, zoomDuration, function(){
-            me._onZoomEnd(nextZoomLevel, zoomOffset);
-        });
+        var duration = this.options['zoomAnimationDuration']*Math.abs(endScale - startScale)/Math.abs(endScale-1);
+        this._getRenderer().onZoomStart(
+            {
+                startScale : startScale,
+                endScale : endScale,
+                origin : transOrigin,
+                duration : duration
+            },
+            function(){
+                me._onZoomEnd(nextZoomLevel, zoomOffset);
+            }
+        );
     },
 
     _onZoomEnd:function(nextZoomLevel, zoomOffset) {
