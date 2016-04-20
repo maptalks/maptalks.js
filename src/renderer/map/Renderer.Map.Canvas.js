@@ -159,8 +159,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var panels = this.map._panels;
         panels.mapWrapper.style.width = width + 'px';
         panels.mapWrapper.style.height = height + 'px';
-        panels.mask.style.width = width + 'px';
-        panels.mask.style.height = height + 'px';
+        panels.mapPlatform.style.width = width + 'px';
+        panels.mapPlatform.style.height = height + 'px';
+        panels.canvasContainer.style.width = width + 'px';
+        panels.canvasContainer.style.height = height + 'px';
         panels.control.style.width = width + 'px';
         panels.control.style.height = height + 'px';
         this._updateCanvasSize();
@@ -219,12 +221,19 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      */
     initContainer:function() {
         var panels = this.map._panels;
-        function createContainer(name, className, cssText) {
+        function createContainer(name, className, cssText, enableSelect) {
             var c = Z.DomUtil.createEl('div', className);
             if (cssText) {
                 c.style.cssText = cssText;
             }
             panels[name] = c;
+            if (!enableSelect) {
+                c['onselectstart'] = function(e) {
+                    return false;
+                };
+                c['ondragstart'] = function(e) { return false; };
+                c.setAttribute('unselectable', 'on');
+            }
             return c;
         }
         var containerDOM = this.map._containerDOM;
@@ -236,17 +245,15 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
         containerDOM.innerHTML = '';
 
-        var control = createContainer('control', 'maptalks-control');
-        var mapWrapper = createContainer('mapWrapper','maptalks-wrapper', 'position:absolute;overflow:hidden;');
-        var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;');
-        var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;');
+        var control = createContainer('control', 'maptalks-control', null, true);
+        var mapWrapper = createContainer('mapWrapper','maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
+        var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;', true);
+        var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
         var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;');
         var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;');
-        var mask = createContainer('mask', 'maptalks-mask','position:absolute;top:0px;left:0px;');
 
         mapPlatform.style.zIndex = 300;
         canvasContainer.style.zIndex=100;
-        mask.style.zIndex = 200;
         ui.style.zIndex = 300;
         control.style.zIndex = 400;
 
@@ -255,20 +262,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         mapPlatform.appendChild(ui);
         mapPlatform.appendChild(canvasContainer);
         mapPlatform.appendChild(layer);
-        mapWrapper.appendChild(mask);
         mapWrapper.appendChild(mapPlatform);
         mapWrapper.appendChild(control);
-
-
-        if (Z.Browser.ie) {
-            control['onselectstart'] = function(e) {
-                return false;
-            };
-            control['ondragstart'] = function(e) { return false; };
-            control.setAttribute('unselectable', 'on');
-            mapWrapper.setAttribute('unselectable', 'on');
-            mapPlatform.setAttribute('unselectable', 'on');
-        }
 
         this.resetContainer();
         var mapSize = this.map._getContainerDomSize();

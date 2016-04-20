@@ -65,15 +65,15 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         this.remove();
         this._map = map;
         var controlContainer = map._panels.control;
-        this._container = Z.DomUtil.createEl('div');
-        Z.DomUtil.setStyle(this._container, 'position:absolute');
-        Z.DomUtil.addStyle(this._container, 'z-index', controlContainer.style.zIndex);
-        Z.DomUtil.on(this._container, 'mousedown mousemove click dblclick contextmenu', Z.DomUtil.stopPropagation)
+        this.__ctrlContainer = Z.DomUtil.createEl('div');
+        Z.DomUtil.setStyle(this.__ctrlContainer, 'position:absolute');
+        Z.DomUtil.addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
+        // Z.DomUtil.on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', Z.DomUtil.stopPropagation)
         var controlDom = this.buildOn(map);
         if(controlDom) {
             this._updatePosition();
-            this._container.appendChild(controlDom);
-            controlContainer.appendChild(this._container);
+            this.__ctrlContainer.appendChild(controlDom);
+            controlContainer.appendChild(this.__ctrlContainer);
         }
         /**
          * add event.
@@ -142,7 +142,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @return {HTMLElement}
      */
     getContainer: function () {
-        return this._container;
+        return this.__ctrlContainer;
     },
 
     /**
@@ -150,7 +150,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @return {maptalks.Control} this
      */
     show: function() {
-        this._container.style.display="";
+        this.__ctrlContainer.style.display="";
         return this;
     },
 
@@ -159,7 +159,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @return {maptalks.Control} this
      */
     hide: function() {
-        this._container.style.display="none";
+        this.__ctrlContainer.style.display="none";
         return this;
     },
 
@@ -168,7 +168,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @return {Boolean}
      */
     isVisible:function() {
-        return (this._container && this._container.style.display==="");
+        return (this.__ctrlContainer && this.__ctrlContainer.style.display==="");
     },
 
     /**
@@ -180,12 +180,12 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         if (!this._map) {
             return this;
         }
-        Z.DomUtil.removeDomNode(this._container);
+        Z.DomUtil.removeDomNode(this.__ctrlContainer);
         if (this._onRemove) {
             this._onRemove(this._map);
         }
         delete this._map;
-        delete this._container;
+        delete this.__ctrlContainer;
         /**
          * remove event.
          *
@@ -203,7 +203,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         for (var p in position) {
             if (position.hasOwnProperty(p)) {
                 position[p] = parseInt(position[p]);
-                this._container.style[p] = position[p]+'px';
+                this.__ctrlContainer.style[p] = position[p]+'px';
             }
         }
         /**

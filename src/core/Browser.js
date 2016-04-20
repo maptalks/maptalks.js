@@ -35,6 +35,7 @@ if (!Z.node) {
             android23: android23,
             chrome: chrome,
             safari: !chrome && ua.indexOf('safari') !== -1,
+            phantomjs : phantomjs,
 
             ie3d: ie3d,
             webkit3d: webkit3d,
