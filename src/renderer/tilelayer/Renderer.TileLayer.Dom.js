@@ -91,12 +91,9 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             return false;
         }
         var zoom = this.getMap().getZoom();
-        for (var z in this._levelContainers) {
-            if (this._levelContainers.hasOwnProperty(z)) {
-                if (+z === zoom) {
-                    Z.DomUtil.setTransform(this._levelContainers[z], matrices['view']);
-                }
-            }
+        if (this._levelContainers[zoom]) {
+            Z.DomUtil.setTransform(this._levelContainers[zoom], matrices['view']);
+            // Z.DomUtil.setTransform(this._levelContainers[zoom], new Z.Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
         }
         return false;
     },
@@ -361,6 +358,9 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     _onZoomEnd: function(param) {
+        if (this._pruneTimeout) {
+            clearTimeout(this._pruneTimeout);
+        }
         if (!this._canTransform()) {
             this._container.style.display = '';
         }
