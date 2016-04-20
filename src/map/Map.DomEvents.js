@@ -144,10 +144,12 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {Event} domEvent                 - dom event
                       */
                      'touchend ';
+        //phantomjs will crash when registering events on canvasContainer
+        var dom = Z.Browser.phantomjs ? this._containerDOM : (this._panels.canvasContainer || this._containerDOM);
         if (remove) {
-            Z.DomUtil.removeDomEvent(this._containerDOM, events, this._handleDOMEvent);
+            Z.DomUtil.removeDomEvent(dom, events, this._handleDOMEvent);
         } else {
-            Z.DomUtil.addDomEvent(this._containerDOM, events, this._handleDOMEvent, this);
+            Z.DomUtil.addDomEvent(dom, events, this._handleDOMEvent, this);
         }
 
     },
