@@ -142,8 +142,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         function onTileLoad() {
             if (!Z.node) {
                 me._tileCache.add(this[me.propertyOfTileId], this);
+                me._tileRended[this[me.propertyOfTileId]] = this;
             }
-            me._tileRended[this[me.propertyOfTileId]] = this;
             me._drawTileAndRequest(this);
         }
         function onTileError() {
@@ -207,6 +207,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             Z.Canvas.fillText(this._context, 'x:'+xyz[1]+',y:'+xyz[0]+',z:'+xyz[2], p.add(10,20), 'rgb(0,0,0)');
             this._context.restore();
         }
+        tileImage = null;
     },
 
     /**
