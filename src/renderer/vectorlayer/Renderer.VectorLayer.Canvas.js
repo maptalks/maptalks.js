@@ -17,6 +17,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
     },
 
     remove:function() {
+        delete this._resources;
+        delete this._imgCache;
         this.getMap().off('_zoomstart _zoomend _moveend _resize',this._onMapEvent,this);
         this._requestMapToRender();
     },
@@ -83,6 +85,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         var layer = this._layer;
         if (layer.isEmpty()) {
             this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
+            this._imgCache = new Z.renderer.vectorlayer.Canvas.Resources();
             this._fireLoadedEvent();
             return false;
         }
@@ -354,47 +357,54 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (!this._resources) {
             this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
         }
+        if (!this._imgCache) {
+            this._imgCache = new Z.renderer.vectorlayer.Canvas.Resources();
+        }
         var resources = this._resources,
+            imgCache = this._imgCache,
             promises = [],
             crossOrigin = this._layer.options['crossOrigin'];
         function onPromiseCallback(_url) {
             return function(resolve, reject) {
-                        var img = new Image();
-                        if (crossOrigin) {
-                            img['crossOrigin'] = crossOrigin;
-                        }
-                        img.onload = function(){
-                            var w = _url[1] || this.width,
-                                h = _url[2] || this.height;
-                            if (w && h && Z.Util.isSVG(_url[0]) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
-                                var img2 = new Image();
-                                img2.onload = function() {
-                                    //resolved weird behavior of IE 11, SVG drawn but canvas is still blank.
-                                    var canvas = Z.Canvas.createCanvas(w, h);
-                                    Z.Canvas.image(canvas.getContext('2d'), this, 0, 0, w, h);
-                                    resources.addResource(_url, canvas);
-                                    resolve({});
-                                }
-                                img2.src = this.src;
-                            } else {
-                                resources.addResource(_url, this);
+                    if (imgCache.isResourceLoaded(_url[0])) {
+                        me._cacheResource(_url, imgCache.getImage(_url[0]));
+                        resolve({});
+                        return;
+                    }
+                    var img = new Image();
+                    if (crossOrigin) {
+                        img['crossOrigin'] = crossOrigin;
+                    }
+                    img.onload = function(){
+                        if (Z.Util.isSVG(url[0]) === 1 && !Z.node) {
+                            //resolved weird behavior of SVG, loaded but canvas is still blank.
+                            var img2 = new Image();
+                            img2.onload = function() {
+                                imgCache.addResource(_url[0], img2);
+                                me._cacheResource(_url, this);
                                 resolve({});
                             }
-                        };
-                        img.onabort = function(){
+                            img2.src = img.src;
+                        } else {
+                            imgCache.addResource(_url[0], this);
+                            me._cacheResource(_url, this);
                             resolve({});
-                        };
-                        img.onerror = function(){
-                            resources.markErrorResource(_url);
-                            resolve({});
-                        };
-                        try {
-                            Z.Util.loadImage(img,  _url);
-                        } catch (err) {
-                            reject({});
                         }
-
                     };
+                    img.onabort = function(){
+                        resolve({});
+                    };
+                    img.onerror = function(){
+                        imgCache.markErrorResource(_url[0]);
+                        resources.markErrorResource(_url);
+                        resolve({});
+                    };
+                    try {
+                        Z.Util.loadImage(img,  _url);
+                    } catch (err) {
+                        reject({});
+                    }
+                };
         }
         if (Z.Util.isArrayHasData(resourceUrls)) {
             //重复
@@ -425,6 +435,25 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         } else {
             whenPromiseEnd();
         }
+    },
+
+    _cacheResource: function(url, img) {
+        if (!img) {
+            return;
+        }
+        var w = url[1] || img.width,
+            h = url[2] || img.height;
+        if (!w || !h) {
+            return;
+        }
+        if (Z.Util.isSVG(url[0]) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
+            var canvas = Z.Canvas.createCanvas(w, h);
+            Z.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
+            this._resources.addResource(url, canvas);
+        } else {
+            this._resources.addResource(url, img);
+        }
+
     }
 });
 
@@ -440,7 +469,7 @@ Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype,{
     },
 
     isResourceLoaded:function(url) {
-        return (this._resources[this._regulate(url)] || this._errors[url[0]]) ? true : false;
+        return (this._resources[this._regulate(url)] || this._errors[this._getImgUrl(url)]) ? true : false;
     },
 
     getImage:function(url) {
@@ -451,10 +480,20 @@ Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype,{
     },
 
     markErrorResource:function(url) {
-        this._errors[url[0]] = 1;
+        this._errors[this._getImgUrl(url)] = 1;
+    },
+
+    _getImgUrl: function(url) {
+        if (!Z.Util.isArray(url)) {
+            return url;
+        }
+        return url[0];
     },
 
     _regulate:function(url) {
+        if (!Z.Util.isArray(url)) {
+            return url;
+        }
         if (url.length < 3) {
             for (var i = url.length; i<3; i++) {
                 url.push(null);
