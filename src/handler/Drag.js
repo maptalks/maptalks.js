@@ -47,7 +47,6 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         } else if(window.captureEvents) {
             window.captureEvents(window['Event'].MOUSEMOVE|window['Event'].MOUSEUP);
         }
-        Z.DomUtil.preventDefault(event);
         dom['ondragstart'] = function() { return false; };
         this.moved = false;
         var actual = event.touches ? event.touches[0] : event;
@@ -63,7 +62,7 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
             return;
         }
         var dom = this.dom;
-        Z.DomUtil.preventDefault(event);
+        // Z.DomUtil.preventDefault(event);
         var actual = event.touches ? event.touches[0] : event;
 
         var newPos = new Z.Point(actual.clientX, actual.clientY),
@@ -105,7 +104,6 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
 
     onMouseUp:function(event){
         var dom = this.dom;
-        Z.DomUtil.preventDefault(event);
         var actual = event.changedTouches ? event.changedTouches[0] : event;
         for (var i in this.MOVE) {
             Z.DomUtil

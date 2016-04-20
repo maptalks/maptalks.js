@@ -218,9 +218,9 @@ Z.Animation = {
 
     _run:function() {
         if (this._frameQueue.length) {
-            var running = [].concat(this._frameQueue);
+            var running = this._frameQueue;
             this._frameQueue = [];
-            for (var i = 0; i < running.length; i++) {
+            for (var i = 0, len = running.length; i < len; i++) {
                 running[i]();
             }
             if (this._frameQueue.length) {
@@ -350,9 +350,9 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
             this.finished = true;
             //finished
             if (step) {
-                setTimeout(function() {
+                 Z.Util.requestAnimFrame(function() {
                     step(frame);
-                },1);
+                });
             }
         }
 
@@ -374,7 +374,7 @@ Z.animation.Easing = {
          * @return {number} Output between 0 and 1.
          */
         in : function(t) {
-          return Math.pow(t, 3);
+          return Math.pow(t, 2);
         },
 
 

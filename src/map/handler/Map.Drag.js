@@ -6,7 +6,7 @@ Z.Map.Drag = Z.Handler.extend({
     addHooks: function () {
         var map = this.target;
         if (!map) {return;}
-        this.dom = map._panels.mapPlatform || map._containerDOM;
+        this.dom = map._panels.mapWrapper || map._containerDOM;
         this._dragHandler = new Z.Handler.Drag(this.dom);
         map.on(this._dragHandler.START.join(' '), this._onMouseDown,this);
 
@@ -24,14 +24,27 @@ Z.Map.Drag = Z.Handler.extend({
         delete this._dragHandler;
     },
 
+    _ignore: function(param) {
+        if (!param || !param.domEvent) {
+            return false;
+        }
+        return this.target._ignoreEvent(param.domEvent);
+    },
+
 
     _onMouseDown:function(param) {
+        if (this._ignore(param)) {
+            return;
+        }
         if (this.target._panAnimating) {
             this.target._enablePanAnimation=false;
         }
     },
 
     _onDragStart:function(param) {
+        if (this._ignore(param)) {
+            return;
+        }
         var map = this.target;
         this.startDragTime = new Date().getTime();
         var domOffset = map.offsetPlatform();
@@ -45,6 +58,9 @@ Z.Map.Drag = Z.Handler.extend({
     },
 
     _onDragging:function(param) {
+        if (this._ignore(param)) {
+            return;
+        }
         var map = this.target;
         var mx = param['mousePos'].x,
             my = param['mousePos'].y;
@@ -58,6 +74,9 @@ Z.Map.Drag = Z.Handler.extend({
     },
 
     _onDragEnd:function(param) {
+        if (this._ignore(param)) {
+            return;
+        }
         var map = this.target;
         var t = new Date().getTime()-this.startDragTime;
         var domOffset = map.offsetPlatform();
