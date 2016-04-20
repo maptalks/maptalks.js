@@ -75,14 +75,14 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             throw new Error('UI\'s show coordinate is invalid');
         }
         this.fire('showstart');
-        if (!this._dom) {
+        if (!this.__uiDOM) {
             this._registerEvents && this._registerEvents();
         }
         this._coordinate = coordinate;
         if (this._singleton()) {
             this._removePrev();
         }
-        var dom = this._dom = this._createDOM();
+        var dom = this.__uiDOM = this._createDOM();
         if (!dom) {
             this.fire('showend');
             return this;
@@ -177,7 +177,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     _getDOM : function() {
-        return this._dom;
+        return this.__uiDOM;
     },
 
     _autoPan : function() {

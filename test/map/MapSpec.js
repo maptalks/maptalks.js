@@ -7,6 +7,7 @@
 describe('#Map', function () {
 
     var container;
+    var eventContainer;
     var map;
     var tile;
     var center = new Z.Coordinate(118.846825, 32.046534);
@@ -27,6 +28,7 @@ describe('#Map', function () {
             urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
             subdomains: [1, 2, 3]
         });
+        eventContainer = map._panels.mapPlatform;
     });
 
     afterEach(function() {
@@ -264,7 +266,7 @@ describe('#Map', function () {
             var spy = sinon.spy();
             map.on('dblclick', spy);
 
-            happen.dblclick(container);
+            happen.dblclick(eventContainer);
 
             expect(spy.called).to.be.ok();
         });
@@ -275,8 +277,8 @@ describe('#Map', function () {
             var spy = sinon.spy();
             map.on('movestart moving moveend', spy);
 
-            happen.mousedown(container);
-            happen.mouseup(container);
+            happen.mousedown(eventContainer);
+            happen.mouseup(eventContainer);
 
             expect(spy.called).to.not.be.ok();
         });

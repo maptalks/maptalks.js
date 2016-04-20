@@ -6,7 +6,7 @@ Z.Map.Drag = Z.Handler.extend({
     addHooks: function () {
         var map = this.target;
         if (!map) {return;}
-        this.dom = map._containerDOM;
+        this.dom = map._panels.mapPlatform || map._containerDOM;
         this._dragHandler = new Z.Handler.Drag(this.dom);
         map.on(this._dragHandler.START.join(' '), this._onMouseDown,this);
 
