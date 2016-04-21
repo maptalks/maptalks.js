@@ -71,7 +71,6 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
     },
 
     _onDragStart:function(param) {
-        console.log('drag');
         this._startPos = param['mousePos'];
         this._startPosition = Z.Util.extend({},this.options['position']);
     },

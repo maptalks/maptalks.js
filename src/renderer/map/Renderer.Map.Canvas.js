@@ -64,7 +64,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
     },
 
-    onZoomStart:function(startScale, endScale, transOrigin, duration, fn) {
+    onZoomStart:function(options, fn) {
         if (Z.Browser.ielt9) {
             fn.call(this);
             return;
@@ -82,20 +82,21 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         var layersToTransform = map.options['layerZoomAnimation']?null:[baseLayer],
             matrix;
-        if (startScale === 1) {
+        if (options.startScale === 1) {
             this._beforeTransform();
         }
+
         this._context && this._context.save();
         var player = Z.Animation.animate(
             {
-                'scale' : [startScale, endScale]
+                'scale'  : [options.startScale, options.endScale]
             },
             {
                 'easing' : 'out',
-                'speed' : duration
+                'speed'  : options.duration
             },
             Z.Util.bind(function(frame) {
-                matrix = this.getZoomMatrix(frame.styles['scale'], transOrigin, Z.Browser.retina);
+                matrix = this.getZoomMatrix(frame.styles['scale'], options.origin, Z.Browser.retina);                
                 if (player.playState === 'finished') {
                     this._afterTransform(matrix);
                     this._context && this._context.restore();

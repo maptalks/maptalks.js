@@ -113,7 +113,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         Z.DomUtil.on(tileImage, 'error', Z.Util.bind(this._tileOnError, this, done, tile));
 
         if (this._layer.options['crossOrigin']) {
-            tile.crossOrigin = '';
+            tile.crossOrigin = this._layer.options['crossOrigin'];
         }
 
         tileImage.style.position = 'absolute';
@@ -295,6 +295,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         if (!this._levelContainers[zoom]) {
             var container = this._levelContainers[zoom] = Z.DomUtil.createEl('div', 'maptalks-tilelayer-level');
             container.style.cssText = 'position:absolute;left:0px;top:0px;';
+            container.style.willChange = 'transform';
             this._container.appendChild(container);
         }
         return this._levelContainers[zoom];
@@ -361,16 +362,20 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }
-        if (!this._canTransform()) {
-            this._container.style.display = '';
-        }
         this.render();
-        if (this._levelContainers[param.from] && this._zoomStartPos) {
-            this._levelContainers[param.from].style.left = this._zoomStartPos.x + 'px';
-            this._levelContainers[param.from].style.top = this._zoomStartPos.y + 'px';
+        if (this._canTransform()) {
+            if (this._levelContainers[param.from] && this._zoomStartPos) {
+                this._levelContainers[param.from].style.left = this._zoomStartPos.x + 'px';
+                this._levelContainers[param.from].style.top = this._zoomStartPos.y + 'px';
+            }
+        } else {
+            if (this._levelContainers[param.from]) {
+                this._levelContainers[param.from].style.display = 'none';
+            }
+            this._container.style.display = '';
+
         }
     }
-
 });
 
 Z.TileLayer.registerRenderer('dom', Z.renderer.tilelayer.Dom);

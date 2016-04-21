@@ -145,7 +145,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       */
                      'touchend ';
         //phantomjs will crash when registering events on canvasContainer
-        var dom = this._panels.mapPlatform || this._containerDOM;
+        var dom = this._panels.mapWrapper || this._containerDOM;
         if (remove) {
             Z.DomUtil.removeDomEvent(dom, events, this._handleDOMEvent);
         } else {
@@ -155,8 +155,28 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     },
 
     _handleDOMEvent: function (e) {
+        if (this._ignoreEvent(e)) {
+            return true;
+        }
         var type = e.type;
         this._fireDOMEvent(this, e, type);
+    },
+
+    _ignoreEvent: function(domEvent) {
+        if (!domEvent || !this._panels.control) {
+            return false;
+        }
+        var target = domEvent.srcElement || domEvent.target;
+        if (target) {
+            while (target && target !== this._containerDOM) {
+                if (target.className === 'maptalks-control') {
+                    return true;
+                }
+                target = target.parentNode;
+            }
+
+        }
+        return false;
     },
 
     _parseEvent:function(e, type) {
