@@ -22,6 +22,8 @@ Z.control.Toolbar = Z.Control.extend(/** @lends maptalks.control.Toolbar.prototy
     options:{
         'vertical' : false,
         'position' : Z.Control['top_right'],
+        'menuClass': null,
+        'dropMenuClass': null,
         'items'     : {
             //default buttons
         }
@@ -32,19 +34,23 @@ Z.control.Toolbar = Z.Control.extend(/** @lends maptalks.control.Toolbar.prototy
         var dom = Z.DomUtil.createEl('div');
         var ul = Z.DomUtil.createEl('ul','maptalks-toolbar-hx');
         dom.appendChild(ul);
-
-        if(this.options['vertical']) {
-            Z.DomUtil.addClass(dom, 'maptalks-toolbar-vertical');
+        var className = this.options['menuClass'];
+        if(className) {
+            Z.DomUtil.addClass(dom, className);
         } else {
-            Z.DomUtil.addClass(dom, 'maptalks-toolbar-horizonal');
+            if(this.options['vertical']) {
+                Z.DomUtil.addClass(dom, 'maptalks-toolbar-vertical');
+            } else {
+                Z.DomUtil.addClass(dom, 'maptalks-toolbar-horizonal');
+            }
         }
         var me = this;
         function onButtonClick(fn, index, childIndex, targetDom) {
             var item = me._getItems()[index];
             return function(e) {
-                    Z.DomUtil.stopPropagation(e);
-                    return fn({'target':item, 'index':index, 'childIndex': childIndex, 'dom': targetDom, 'event' : e});
-                }
+                Z.DomUtil.stopPropagation(e);
+                return fn({'target':item, 'index':index, 'childIndex': childIndex, 'dom': targetDom, 'event' : e});
+            }
         }
 
         var items = this.options['items'];
@@ -83,7 +89,11 @@ Z.control.Toolbar = Z.Control.extend(/** @lends maptalks.control.Toolbar.prototy
                     return fn({'target':item, 'index':index, 'childIndex': childIndex});
                 }
         }
-        var menuDom = Z.DomUtil.createEl('div','maptalks-dropMenu');
+        var dropMenuClass = this.options['dropMenuClass'];
+        if(!dropMenuClass) {
+            dropMenuClass = 'maptalks-dropMenu';
+        }
+        var menuDom = Z.DomUtil.createEl('div', dropMenuClass);
         menuDom.style.display = "none";
         menuDom.appendChild(Z.DomUtil.createEl('em','maptalks-ico'));
         var menuUL = Z.DomUtil.createEl('ul');
