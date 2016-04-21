@@ -43,7 +43,7 @@ Z.control.Toolbar = Z.Control.extend(/** @lends maptalks.control.Toolbar.prototy
             var item = me._getItems()[index];
             return function(e) {
                     Z.DomUtil.stopPropagation(e);
-                    return fn({'target':item, 'index':index, 'childIndex': childIndex, 'dom': targetDom});
+                    return fn({'target':item, 'index':index, 'childIndex': childIndex, 'dom': targetDom, 'event' : e});
                 }
         }
 
