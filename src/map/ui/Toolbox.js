@@ -205,67 +205,113 @@ Z.ui.Toolbox.Button = Z.Class.extend({
         if(options['mouseout']) {
             Z.DomUtil.on(_menuDom, 'mouseout', options['mouseout'], this);
         }
-        _menuDom = this._createDropMenu(_menuDom, options, tag);
+        var trigger = options['trigger']||'click';
+        var me = this;
+        if(trigger === 'click') {
+            Z.DomUtil.on(_menuDom, 'click', function() {
+                me._addEventToMenuItem(_menuDom, options);
+            }, this);
+        } else {
+            Z.DomUtil.on(_menuDom, 'mouseover', function() {
+                me._addEventToMenuItem(_menuDom, options);
+            }, this);
+        }
         return _menuDom;
     },
 
-    _createDropMenu: function(_parentDom, options, tag) {
-        var vertical = Z.Util.getValueOrDefault(options['vertical'], false);
-        var block = 'block';
-        function addMenuDropEvent(dropdownMenu, trigger, tag) {
+    _addEventToMenuItem: function(_parentDom, options) {
+        if(options['children'] && options['children'].length>0) {
+            var me = this;
+            var dropdownMenu = me._createDropMenu(_parentDom, options);
+            var trigger = options['trigger'];
             if(trigger === 'click') {
                 Z.DomUtil.on(_parentDom, 'click', function() {
-                    Z.DomUtil.setStyle(dropdownMenu, 'display: '+block);
+                    Z.DomUtil.setStyle(dropdownMenu, 'display:block');
                 }, this);
-                Z.DomUtil.on(dropdownMenu, 'mouseover', function() {
-                    Z.DomUtil.setStyle(dropdownMenu, 'display: '+block);
+                Z.DomUtil.on(_parentDom, 'mouseover', function() {
+                    Z.DomUtil.setStyle(dropdownMenu, 'display:block');
                 }, this);
             } else {
                 Z.DomUtil.on(_parentDom, 'mouseover', function() {
-                    Z.DomUtil.setStyle(dropdownMenu, 'display: '+block);
+                    Z.DomUtil.setStyle(dropdownMenu, 'display:block');
                 }, this);
             }
+            Z.DomUtil.on(_parentDom, 'mouseout', function() {
+                Z.DomUtil.setStyle(dropdownMenu, 'display: none');
+            }, this);
 
             Z.DomUtil.on(dropdownMenu, 'mouseout', function() {
                 Z.DomUtil.setStyle(dropdownMenu, 'display: none');
             }, this);
-
-            Z.DomUtil.on(_parentDom, 'mouseout', function() {
-                Z.DomUtil.setStyle(dropdownMenu, 'display: none');
-            }, this);
         }
-        if(options['children'] && options['children'].length>0) {
-            var style = 'display: none; position: absolute;';
-            var width = Z.Util.getValueOrDefault(options['width'],20);
-            var height = Z.Util.getValueOrDefault(options['height'],20);
-            if(vertical) {
-                style+= 'left:'+width+'px';
+    },
+
+    _createDropMenu: function(_parentDom, options) {
+        var vertical = Z.Util.getValueOrDefault(options['vertical'], false);
+        var style = 'position: absolute;';
+        var offset = this._getDropdownMenuOffset(_parentDom, options);
+        if(vertical) {
+            style+= 'left:'+offset['left']+'px';
+        } else {
+            style+= 'top:'+offset['top']+'px';
+        }
+        var appendSign = ((offset['left']>=0)&&(offset['top']>=0));
+        var dropdownMenu = this._createDropMenuDom(_parentDom, options, style, appendSign);
+        return dropdownMenu;
+    },
+
+    _getDropdownMenuOffset: function(_parentDom, options) {
+        var length = options['children'].length;
+        var height = Z.Util.getValueOrDefault(options['height'],20);
+        var width = Z.Util.getValueOrDefault(options['width'],20);
+        var doc_h = document.body.clientHeight;
+        var doc_w = document.body.clientWidth;
+        var parent_h = _parentDom.clientHeight;
+        var parent_w = _parentDom.clientWidth;
+        var point = Z.DomUtil.getPagePosition(_parentDom);
+        var parent_top = point['y'];
+        var parent_left = point['x'];
+        var vertical = Z.Util.getValueOrDefault(options['vertical'], false);
+        var dropMenu_top = parent_h, dropMenu_left = parent_w;
+        if(!vertical) {//垂直
+            height = height*length;
+            if(parent_top+parent_h+height>doc_h) {
+                dropMenu_top = -(parent_h*3/2+height);
             } else {
-                style+= 'top:'+height+'px';
+                dropMenu_top = parent_h;
             }
-            var dropdownMenu = Z.DomUtil.createElOn('ul', style);
+        } else {
+            width = width*length;
+            if(parent_left+parent_w+width>doc_w) {
+                dropMenu_left = -(parent_w*3/2+width);
+            } else {
+                dropMenu_left = parent_w;
+            }
+        }
+        return {'top': dropMenu_top, 'left': dropMenu_left};
+    },
 
-            // var menuClass = this._getMenuClass(options, tag);
-            // Z.DomUtil.addClass(dropdownMenu, menuClass);
-
-            var trigger = options['trigger'];
-
-            addMenuDropEvent(dropdownMenu,trigger, tag);
-
-            //构造下拉菜单
-            var items = options['children'];
-            if(items&&items.length>0) {
-                for(var i=0,len=items.length;i<len;i++) {
-                    var item = items[i];
-                    if(item['vertical']=== undefined) {
-                        item['vertical'] = !Z.Util.getValueOrDefault(item['vertical'],options['vertical']);
-                    }
+    _createDropMenuDom: function(_parentDom, options, style, appendSign) {
+        var dom = _parentDom.children[1];
+        if(dom) Z.DomUtil.removeDomNode(dom);
+        var dropdownMenu = Z.DomUtil.createElOn('ul', style);
+        //构造下拉菜单
+        var items = options['children'];
+        if(items&&items.length>0) {
+            for(var i=0,len=items.length;i<len;i++) {
+                var item = items[i];
+                if(item['vertical']=== undefined) {
+                    item['vertical'] = !Z.Util.getValueOrDefault(item['vertical'],options['vertical']);
+                }
+                if(appendSign) {
                     dropdownMenu.appendChild(this._createMenuDom(item, 'li'));
+                } else {
+                    dropdownMenu.insertBefore(this._createMenuDom(item, 'li'), dropdownMenu.firstChild);
                 }
             }
-            _parentDom.appendChild(dropdownMenu);
         }
-        return _parentDom;
+        _parentDom.appendChild(dropdownMenu);
+        return dropdownMenu;
     },
 
     _createIconDom : function(options) {
