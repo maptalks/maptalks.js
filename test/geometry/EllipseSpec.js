@@ -85,6 +85,13 @@ describe('EllipseSpec', function() {
             var holes = vector.getHoles();
             expect(holes).to.not.be.ok();
         });
+
+        it("toGeoJSON exported an polygon", function() {
+            var vector = new Z.Ellipse(center,100,50);
+            var geojson = vector.toGeoJSON().geometry ;
+            expect(geojson.type).to.be.eql('Polygon');
+            expect(geojson.coordinates[0]).to.have.length(vector.options['numberOfShellPoints']);
+        });
     });
 
     it('can have various symbols',function() {

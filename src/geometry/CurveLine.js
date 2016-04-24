@@ -14,17 +14,11 @@ Z.CurveLine = Z.LineString.extend({
         'arcDegree'     : 90
     },
 
-    toJSON:function(options) {
-        if (!options) {
-            options = {};
-        }
-        var json = {
+    _toJSON:function(options) {
+        return {
             "feature" : this.toGeoJSON(options),
             "subType" : "CurveLine"
         };
-        var other = this._exportGraphicOptions(options);
-        Z.Util.extend(json,other);
-        return json;
     },
 
     _getRenderCanvasResources:function() {

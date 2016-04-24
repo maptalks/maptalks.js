@@ -55,30 +55,6 @@ describe('GeoJSON', function() {
                   "coordinates": [ [101.0, 0.0], [102.0, 1.0] ]
                 }
             ]
-        },
-        {
-            "type":"Circle",
-            "coordinates":[100.0,0.0],
-            "radius":100
-        },
-        {
-            "type":"Ellipse",
-            "coordinates":[100.0,0.0],
-            "width":100,
-            "height":50
-        },
-        {
-            "type":"Rectangle",
-            "coordinates":[100.0,0.0],
-            "width":100,
-            "height":50
-        },
-        {
-            "type":"Sector",
-            "coordinates":[100.0,0.0],
-            "radius":1000,
-            "startAngle":50,
-            "endAngle":120
         }
     ];
 
@@ -220,34 +196,6 @@ describe('GeoJSON', function() {
             expect(geometryCollection).to.an(Z.GeometryCollection);
             expect(geometryCollection.getType()).to.eql(geoJSONs[7].type);
             expect(geometryCollection.toGeoJSON()['geometry']).to.eql(geoJSONs[7]);
-        });
-
-        it('evaluate Circle', function() {
-            var circle = geometries[8];
-            expect(circle).to.an(Z.Circle);
-            expect(circle.getType()).to.eql(geoJSONs[8].type);
-            expect(circle.toGeoJSON()['geometry']).to.eql(geoJSONs[8]);
-        });
-
-        it('evaluate Ellipse', function() {
-            var ellipse = geometries[9];
-            expect(ellipse).to.an(Z.Ellipse);
-            expect(ellipse.getType()).to.eql(geoJSONs[9].type);
-            expect(ellipse.toGeoJSON()['geometry']).to.eql(geoJSONs[9]);
-        });
-
-        it('evaluate Rectangle', function() {
-            var rect = geometries[10];
-            expect(rect).to.an(Z.Rectangle);
-            expect(rect.getType()).to.eql(geoJSONs[10].type);
-            expect(rect.toGeoJSON()['geometry']).to.eql(geoJSONs[10]);
-        });
-
-        it('evaluate Sector', function() {
-            var sector = geometries[11];
-            expect(sector).to.an(Z.Sector);
-            expect(sector.getType()).to.eql(geoJSONs[11].type);
-            expect(sector.toGeoJSON()['geometry']).to.eql(geoJSONs[11]);
         });
 
     });

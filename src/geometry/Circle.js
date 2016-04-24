@@ -26,8 +26,6 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
         'numberOfShellPoints':60
     },
 
-    type:Z.Geometry['TYPE_CIRCLE'],
-
     initialize:function(coordinates,radius,opts) {
         this._coordinates = new Z.Coordinate(coordinates);
         this._radius = radius;
@@ -117,14 +115,31 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
         return Math.PI*Math.pow(this._radius,2);
     },
 
-
-    _exportGeoJSONGeometry:function() {
-        var center = this.getCoordinates();
+    _exportGeoJSONGeometry: function() {
+        var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
         return {
-            'type':'Circle',
-            'coordinates':[center.x, center.y],
-            'radius':this.getRadius()
+            'type' : 'Polygon',
+            'coordinates' : coordinates
+        }
+    },
+
+    _toJSON:function(options) {
+        var center = this.getCenter();
+        var opts = Z.Util.extend({}, options);
+        opts.geometry = false;
+        return {
+            'feature' : this.toGeoJSON(opts),
+            'subType' : 'Circle',
+            'coordinates'  : [center.x, center.y],
+            'radius'  : this.getRadius()
         };
     }
 
 });
+
+Z.Circle._fromJSON=function(json) {
+    var feature = json['feature'];
+    var circle = new Z.Circle(json['coordinates'], json['radius'], json['options']);
+    circle.setProperties(feature['properties']);
+    return circle;
+};

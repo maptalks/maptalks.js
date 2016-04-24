@@ -163,7 +163,7 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
         var map = this._map;
         var mode = this.options['mode'];
         if (Z.Util.isNil(mode)) {
-            mode = Z.Geometry['TYPE_CIRCLE'];
+            mode = "Circle";
         }
         if (Z.Geometry['TYPE_POLYGON'] == mode || Z.Geometry['TYPE_LINESTRING'] == mode) {
             map.on('click',this._clickForPath, this);
@@ -319,7 +319,7 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
             var _map = me._map;
             var center;
             switch (me.options['mode']) {
-            case Z.Geometry['TYPE_CIRCLE']:
+            case "Circle":
                 if (!geometry) {
                     geometry = new Z.Circle(coordinate,0);
                     geometry.setSymbol(symbol);
@@ -330,7 +330,7 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
                 var radius = _map.computeLength(center,coordinate);
                 geometry.setRadius(radius);
             break;
-            case Z.Geometry['TYPE_ELLIPSE']:
+            case "Ellipse":
                 if (!geometry) {
                     geometry = new Z.Ellipse(coordinate,0,0);
                     geometry.setSymbol(symbol);
@@ -343,7 +343,7 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
                 geometry.setWidth(rx * 2);
                 geometry.setHeight(ry * 2);
             break;
-            case Z.Geometry['TYPE_RECT']:
+            case "Rectangle":
                 if (!geometry) {
                     geometry = new Z.Rectangle(coordinate,0,0);
                     geometry.setSymbol(symbol);
