@@ -23,7 +23,6 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
         'numberOfShellPoints':60
     },
 
-    type:Z.Geometry['TYPE_ELLIPSE'],
 
     initialize:function(coordinates,width,height,opts) {
         this._coordinates = new Z.Coordinate(coordinates);
@@ -163,15 +162,32 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
         return Math.PI*this.width*this.height/4;
     },
 
-
-    _exportGeoJSONGeometry:function() {
-        var center = this.getCenter();
+    _exportGeoJSONGeometry: function() {
+        var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
         return {
-            'type':'Ellipse',
-            'coordinates':[center.x, center.y],
-            'width':this.getWidth(),
-            'height':this.getHeight()
+            'type' : 'Polygon',
+            'coordinates' : coordinates
+        }
+    },
+
+    _toJSON:function(options) {
+        var opts = Z.Util.extend({}, options);
+        var center = this.getCenter();
+        opts.geometry = false;
+        return {
+            'feature'   : this.toGeoJSON(opts),
+            'subType'   : 'Ellipse',
+            'coordinates'  : [center.x, center.y],
+            'width'     : this.getWidth(),
+            'height'    : this.getHeight()
         };
     }
 
 });
+
+Z.Ellipse._fromJSON=function(json) {
+    var feature = json['feature'];
+    var ellipse = new Z.Ellipse(json['coordinates'], json['width'], json['height'], json['options']);
+    ellipse.setProperties(feature['properties']);
+    return ellipse;
+};

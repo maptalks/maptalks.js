@@ -96,6 +96,13 @@ describe('SectorSpec', function() {
             var holes = vector.getHoles();
             expect(holes).to.not.be.ok();
         });
+
+        it("toGeoJSON exported an polygon", function() {
+            var vector = new Z.Sector(center, 1, 0, 270);
+            var geojson = vector.toGeoJSON().geometry ;
+            expect(geojson.type).to.be.eql('Polygon');
+            expect(geojson.coordinates[0]).to.have.length(vector.options['numberOfShellPoints']);
+        });
     });
 
     describe('compute length and area',function() {

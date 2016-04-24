@@ -62,27 +62,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
          * Type of [GeometryCollection]{@link http://geojson.org/geojson-spec.html#geometrycollection}
          * @constant
          */
-        'TYPE_GEOMETRYCOLLECTION' : 'GeometryCollection',
-        /**
-         * Type of Rectangle (An extended type, not standard)
-         * @constant
-         */
-        'TYPE_RECT' : 'Rectangle',
-        /**
-         * Type of Circle (An extended type, not standard)
-         * @constant
-         */
-        'TYPE_CIRCLE' : 'Circle',
-        /**
-         * Type of Ellipse (An extended type, not standard)
-         * @constant
-         */
-        'TYPE_ELLIPSE' : 'Ellipse',
-        /**
-         * Type of Sector (An extended type, not standard)
-         * @constant
-         */
-        'TYPE_SECTOR' : 'Sector'
+        'TYPE_GEOMETRYCOLLECTION' : 'GeometryCollection'
     },
 
     /**
@@ -595,9 +575,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!options) {
             options = {};
         }
-        var json = {
-            "feature" : this.toGeoJSON(options)
-        };
+        var json = this._toJSON(options);
         var other = this._exportGraphicOptions(options);
         Z.Util.extend(json,other);
         return json;
@@ -975,6 +953,12 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     _fireEvent:function(eventName, param) {
         this.fire(eventName,param);
+    },
+
+    _toJSON: function(options) {
+        return {
+            "feature" : this.toGeoJSON(options)
+        };
     },
 
     _exportGraphicOptions:function(options) {

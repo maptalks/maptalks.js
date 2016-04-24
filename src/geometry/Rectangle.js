@@ -16,8 +16,6 @@
  */
 Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
 
-    type:Z.Geometry['TYPE_RECT'],
-
     initialize:function(coordinates,width,height,opts) {
         this._coordinates = new Z.Coordinate(coordinates);
         this._width = width;
@@ -192,15 +190,32 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
         return this._width*this._height;
     },
 
-
-    _exportGeoJSONGeometry:function() {
-        var nw =this.getCoordinates();
+    _exportGeoJSONGeometry: function() {
+        var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
         return {
-            'type':"Rectangle",
-            'coordinates':[nw.x,nw.y],
-            'width':this.getWidth(),
-            'height':this.getHeight()
+            'type' : 'Polygon',
+            'coordinates' : coordinates
+        }
+    },
+
+    _toJSON:function(options) {
+        var opts = Z.Util.extend({}, options);
+        var nw =this.getCoordinates();
+        opts.geometry = false;
+        return {
+            'feature'    :  this.toGeoJSON(opts),
+            'subType'    :  'Rectangle',
+            'coordinates': [nw.x,nw.y],
+            'width'      : this.getWidth(),
+            'height'     : this.getHeight()
         };
     }
 
 });
+
+Z.Rectangle._fromJSON=function(json) {
+    var feature = json['feature'];
+    var rect = new Z.Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
+    rect.setProperties(feature['properties']);
+    return rect;
+};

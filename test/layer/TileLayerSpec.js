@@ -114,6 +114,7 @@ describe('#TileLayer', function() {
 
     describe("In a canvas container", function() {
         it("can be loaded", function(done) {
+            this.timeout(5000);
             container = document.createElement('canvas');
             container.style.width = '1px';
             container.style.height = '1px';
