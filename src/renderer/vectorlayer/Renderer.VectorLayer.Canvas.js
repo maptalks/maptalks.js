@@ -438,7 +438,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
     },
 
     _cacheResource: function(url, img) {
-        if (!img) {
+        if (!img || !this._resources) {
             return;
         }
         var w = url[1] || img.width,
