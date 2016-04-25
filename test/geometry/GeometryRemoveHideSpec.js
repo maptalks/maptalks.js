@@ -182,6 +182,16 @@ function testRemoveHide(geometry, _context) {
                     'polygonFill' : '#000000',
                     'polygonOpacity' : 1
                 });
+            } else {
+                geometry.setSymbol({
+                    'markerType'    : 'pie',
+                    'markerHeight'  : 24,
+                    'markerWidth'   : 24,
+                    'markerFill'    : '#de3333',
+                    'markerLineColor' : '#ffffff',
+                    'markerLineWidth' : 1,
+                    'opacity' : 1
+                });
             }
             var testPoints = getTestPoints(geometry);
             geometry._enableRenderImmediate();
