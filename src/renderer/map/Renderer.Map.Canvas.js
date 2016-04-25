@@ -96,7 +96,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 'speed'  : options.duration
             },
             Z.Util.bind(function(frame) {
-                matrix = this.getZoomMatrix(frame.styles['scale'], options.origin, Z.Browser.retina);                
+                matrix = this.getZoomMatrix(frame.styles['scale'], options.origin, Z.Browser.retina);
                 if (player.playState === 'finished') {
                     this._afterTransform(matrix);
                     this._context && this._context.restore();
@@ -283,7 +283,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         var containerPos = this._getCanvasContainerPos();
         if (containerPos) {
-            point = point.add(this.map.offsetPlatform().multi(-1).substract(containerPos));
+            var offset = this.map.offsetPlatform().multi(-1)._substract(containerPos);
+            if (Z.Browser.retina) {offset._multi(2);}
+            point = point.add(offset);
+
         }
         //opacity of the layer image
         var op = layer.options['opacity'];

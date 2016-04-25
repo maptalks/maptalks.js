@@ -28,7 +28,6 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
         'numberOfShellPoints':60
     },
 
-    type:Z.Geometry['TYPE_SECTOR'],
 
     initialize:function(coordinates,radius,startAngle,endAngle,opts) {
         this._coordinates = new Z.Coordinate(coordinates);
@@ -178,14 +177,33 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
         return Math.PI*Math.pow(this._radius,2)*Math.abs(this.startAngle-this.endAngle)/360;
     },
 
-    _exportGeoJSONGeometry:function() {
-        var center  = this.getCenter();
+    _exportGeoJSONGeometry: function() {
+        var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
         return {
-            'type':         "Sector",
-            'coordinates':  [center.x,center.y],
-            'radius':       this.getRadius(),
-            'startAngle':   this.getStartAngle(),
-            'endAngle':     this.getEndAngle()
+            'type' : 'Polygon',
+            'coordinates' : coordinates
+        }
+    },
+
+    _toJSON:function(options) {
+        var opts = Z.Util.extend({}, options);
+        var center = this.getCenter();
+        opts.geometry = false;
+        return {
+            'feature'   :  this.toGeoJSON(opts),
+            'subType'   :  'Sector',
+            'coordinates'  :  [center.x,center.y],
+            'radius'    :  this.getRadius(),
+            'startAngle':  this.getStartAngle(),
+            'endAngle'  :  this.getEndAngle()
         };
     }
+
 });
+
+Z.Sector._fromJSON=function(json) {
+    var feature = json['feature'];
+    var sector = new Z.Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], json['options']);
+    sector.setProperties(feature['properties']);
+    return sector;
+};

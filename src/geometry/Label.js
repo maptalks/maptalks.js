@@ -117,31 +117,6 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
        return this;
     },
 
-    /**
-     * Export a profile json out of the label. <br>
-     * A specific property named "subType" with the value of "Label" will be exported in label's profile json. <br>
-     * This is because label is a subtype of marker, subType property is used to tell the program to reproduce a label instead of a marker.
-     * @param {Object}  [options=null]          - export options
-     * @param {Boolean} [opts.geometry=true]    - whether export feature's geometry
-     * @param {Boolean} [opts.properties=true]  - whether export feature's properties
-     * @param {Boolean} [opts.options=true]     - whether export construct options
-     * @param {Boolean} [opts.symbol=true]      - whether export symbol
-     * @param {Boolean} [opts.infoWindow=true]  - whether export infowindow
-     * @return {Object} profile json object
-     */
-    toJSON:function(options) {
-        if (!options) {
-            options = {};
-        }
-        var json = {
-            "feature" : this.toGeoJSON(options),
-            "subType" : "Label",
-            "content" : this._content
-        };
-        var other = this._exportGraphicOptions(options);
-        Z.Util.extend(json,other);
-        return json;
-    },
 
     onConfig:function(conf) {
         var isRefresh = false;
@@ -156,6 +131,14 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         if (isRefresh) {
             this._refresh();
         }
+    },
+
+    _toJSON:function(options) {
+        return {
+            "feature" : this.toGeoJSON(options),
+            "subType" : "Label",
+            "content" : this._content
+        };
     },
 
     _refresh:function() {

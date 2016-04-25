@@ -90,6 +90,13 @@ describe('RectangleSpec', function() {
             var holes = vector.getHoles();
             expect(holes).to.not.be.ok();
         });
+
+        it("toGeoJSON exported an polygon", function() {
+            var vector = new Z.Rectangle(center, 1, 1);
+            var geojson = vector.toGeoJSON().geometry ;
+            expect(geojson.type).to.be.eql('Polygon');
+            expect(geojson.coordinates[0]).to.have.length(5);
+        });
     });
 
     describe('compute length and area',function() {
