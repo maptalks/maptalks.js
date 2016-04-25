@@ -23,13 +23,17 @@ Z.Marker=Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
      */
     options:{
         'symbol': {
-            'markerType'    : 'pie',
-            'markerHeight'  : 24,
-            'markerWidth'   : 24,
-            'markerFill'    : '#de3333',
-            'markerLineColor' : '#ffffff',
-            'markerLineWidth' : 1,
-            'opacity' : 1
+            'markerType'    : 'path',
+            'markerPath'    : [
+                {
+                    'path' : 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
+                    'fill' : '#DE3333'
+                }
+            ],
+            'markerPathWidth' : 16,
+            'markerPathHeight' : 23,
+            'markerWidth'   : 32,
+            'markerHeight'  : 46
         }
     },
 
