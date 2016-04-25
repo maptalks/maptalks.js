@@ -276,7 +276,7 @@ Z.ui.Toolbox.Button = Z.Class.extend({
         if(!vertical) {//垂直
             height = height*length;
             if(parent_top+parent_h+height>doc_h) {
-                dropMenu_top = -(parent_h*3/2+height);
+                dropMenu_top = -height;
             } else {
                 dropMenu_top = parent_h;
             }
