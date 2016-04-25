@@ -61,6 +61,10 @@ Z.Map.Drag = Z.Handler.extend({
         if (this._ignore(param)) {
             return;
         }
+        Z.DomUtil.preventDefault(param['domEvent']);
+        if (this.startLeft === undefined) {
+            return;
+        }
         var map = this.target;
         var mx = param['mousePos'].x,
             my = param['mousePos'].y;
@@ -77,11 +81,23 @@ Z.Map.Drag = Z.Handler.extend({
         if (this._ignore(param)) {
             return;
         }
+        Z.DomUtil.preventDefault(param['domEvent']);
+        if (this.startLeft === undefined) {
+            return;
+        }
         var map = this.target;
         var t = new Date().getTime()-this.startDragTime;
         var domOffset = map.offsetPlatform();
         var xSpan =  domOffset.x - this.startLeft;
         var ySpan =  domOffset.y - this.startTop;
+
+        delete this.startLeft;
+        delete this.startTop;
+        delete this.preX;
+        delete this.preY;
+        delete this.startX;
+        delete this.startY;
+
         if (t<280 && Math.abs(ySpan)+Math.abs(xSpan) > 5) {
             map._enablePanAnimation=true;
             var distance = new Z.Point(xSpan*Math.ceil(500/t),ySpan*Math.ceil(500/t)).multi(0.5);
