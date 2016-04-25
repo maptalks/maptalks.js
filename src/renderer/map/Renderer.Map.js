@@ -59,9 +59,10 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                     'speed' : duration
                 }, function(frame) {
                     if (!map._enablePanAnimation) {
+                        player.finish();
                         map._panAnimating = false;
                         map._onMoveEnd();
-                        player.finish();
+
                         return;
                     }
 
@@ -74,7 +75,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                         map.offsetPlatform(offset);
                         map._offsetCenterByPixel(offset);
                         preDist = dist;
-                        map._fireEvent('moving');
+                        map._onMoving();
                     } else if (player.playState === 'finished') {
                         map._panAnimating = false;
                         map._onMoveEnd();
