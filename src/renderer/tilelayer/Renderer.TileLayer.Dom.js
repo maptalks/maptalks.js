@@ -117,8 +117,8 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
 
         tileImage.style.position = 'absolute';
-        tileImage.style.left = tile['viewPoint'].x + 'px';
-        tileImage.style.top  = tile['viewPoint'].y + 'px';
+        tileImage.style.left = Math.floor(tile['viewPoint'].x) + 'px';
+        tileImage.style.top  = Math.floor(tile['viewPoint'].y) + 'px';
 
         tileImage.alt = '';
         tileImage.width = tileSize['width'];
