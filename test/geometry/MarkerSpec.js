@@ -33,7 +33,7 @@ describe('Marker', function() {
         it("can be icon", function() {
             var marker = new Z.Marker(center, {
                 symbol: {
-                    markerFile: Z.prefix + 'images/resource/marker.png',
+                    markerFile: Z.prefix + 'images/control/2.png',
                     markerWidth: 30,
                     markerHeight: 22
                 }
@@ -133,7 +133,7 @@ describe('Marker', function() {
 
         var geometry = new Z.Marker(center, {
             symbol: {
-                markerFile : Z.prefix + 'images/resource/marker.png',
+                markerFile : Z.prefix + 'images/control/2.png',
                 markerHeight : 30,
                 markerWidth : 22,
                 dx : 0,
