@@ -71,6 +71,12 @@ gulp.task('watch', ['build'], function () {
   var stylesWatcher = gulp.watch(styles, ['styles']);
 });
 
+var coveralls = require('gulp-coveralls');
+gulp.task('coveralls', function () {
+  return gulp.src('./coverage/**/lcov.info')
+    .pipe(coveralls());
+});
+
 var browsers = options.browsers.split(',');
 browsers = browsers.map(function(name) {
   var lname = name.toLowerCase();
