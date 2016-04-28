@@ -10,8 +10,7 @@ module.exports = function(config) {
     'test/**/*.js',
     'assets/lib/**/*.js',
     {pattern: 'assets/css/**/*.css', watched: true, included: false, served: true},
-    {pattern: 'assets/images/**/*.png', watched: false, included: false, served: true},
-    {pattern: 'assets/images/**/*.gif', watched: false, included: false, served: true}
+    {pattern: 'assets/images/**/*.png', watched: false, included: false, served: true}
   ]);
 
   config.set({
