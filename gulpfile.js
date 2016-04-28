@@ -73,7 +73,6 @@ gulp.task('watch', ['build'], function () {
 
 var coveralls = require('gulp-coveralls');
 gulp.task('coveralls', function () {
-  if (!process.env.CI) return;
   return gulp.src('./coverage/**/lcov.info')
     .pipe(coveralls());
 });

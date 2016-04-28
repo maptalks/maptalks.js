@@ -1,7 +1,7 @@
 machine:
   environment:
     COVERALLS_REPO_TOKEN : jByzLECc9FPEkffhQWvKAn4tjdEuNAxKW
-    COVERALLS_SERVICE_NAME : maptalks.js
+    COVERALLS_SERVICE_NAME : circleci
 test:
   post:
-    - ./node_modules/coveralls/bin/coveralls.js
+    - gulp coveralls
