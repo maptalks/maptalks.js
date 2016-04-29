@@ -5,7 +5,8 @@ var minimist = require('minimist'),
   header = require('gulp-header'),
   footer = require('gulp-footer'),
   concat = require('gulp-concat'),
-  jshint = require('gulp-jshint'),
+  eslint = require('gulp-eslint'),
+  eslint_config = require('eslint-config-maptalks'),
   gzip   = require('gulp-gzip'),
   rename = require('gulp-rename'),
   uglify = require('gulp-uglify'),
@@ -30,7 +31,17 @@ var sources = require('./build/getFiles.js').getFiles(),
 
 gulp.task('scripts', function() {
   return gulp.src(sources)
-      .pipe(jshint())                 // do special things to the changed files...
+      // .pipe(eslint({
+      //     extends: 'maptalks',
+      //     globals: {
+      //         'Z':true
+      //     },
+      //     "rules": {
+      //       "indent":2
+      //     }
+      // }))
+      // .pipe(eslint.format())
+      // .pipe(eslint.failAfterError())
       .pipe(concat('maptalks.js'))         // do things that require all files
       .pipe(header('(function () {\n')) // e.g. jshinting ^^^
       .pipe(footer('\n})();'))          // and some kind of module wrapping
@@ -62,7 +73,6 @@ gulp.task('watch', ['build'], function () {
 
 var coveralls = require('gulp-coveralls');
 gulp.task('coveralls', function () {
-  if (!process.env.CI) return;
   return gulp.src('./coverage/**/lcov.info')
     .pipe(coveralls());
 });
@@ -83,7 +93,7 @@ browsers = browsers.map(function(name) {
 /**
  * Run test once and exit
  */
-gulp.task('test', function (done) {
+gulp.task('test', ['build'], function (done) {
   var karmaConfig = {
     configFile: __dirname + '/karma.conf.js',
     browsers:browsers,

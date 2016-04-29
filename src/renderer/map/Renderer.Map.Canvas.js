@@ -458,6 +458,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         } else {
             map.on('_moveend', function() {
                 this._resetCanvasContainer();
+                this.render();
             },this);
         }
     }

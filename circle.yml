@@ -1,6 +1,7 @@
 machine:
-  node:
-    version: 5.1.1
+  environment:
+    COVERALLS_REPO_TOKEN : jByzLECc9FPEkffhQWvKAn4tjdEuNAxKW
+    COVERALLS_SERVICE_NAME : circleci
 test:
   post:
     - gulp coveralls
