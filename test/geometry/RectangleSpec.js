@@ -83,6 +83,11 @@ describe('RectangleSpec', function() {
             var vector = new Z.Rectangle(center, 1, 1);
             var shell = vector.getShell();
             expect(shell).to.have.length(5);
+            expect(shell[0].x === center.x && shell[0].y === center.y).to.be.ok();
+            expect(shell[1].x > shell[0].x && shell[1].y === shell[0].y).to.be.ok();
+            expect(shell[2].x > shell[0].x && shell[2].y < shell[0].y).to.be.ok();
+            expect(shell[3].x === shell[0].x && shell[3].y < shell[0].y).to.be.ok();
+            expect(shell[4].x === shell[0].x && shell[4].y === shell[0].y).to.be.ok();
         });
 
         it("but doesn't have holes",function() {
