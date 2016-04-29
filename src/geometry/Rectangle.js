@@ -97,11 +97,19 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
     getShell:function() {
         var measurer = this._getMeasurer();
         var nw =this._coordinates;
+        var map = this.getMap();
+        var r = -1;
+        if (map) {
+            var fExt = map.getFullExtent();
+            if (fExt['bottom'] > fExt['top']) {
+                r = 1;
+            }
+        }
         var points = [];
         points.push(nw);
         points.push(measurer.locate(nw,this._width,0));
-        points.push(measurer.locate(nw,this._width,this._height));
-        points.push(measurer.locate(nw,0,this._height));
+        points.push(measurer.locate(nw,this._width, r * this._height));
+        points.push(measurer.locate(nw, 0, r * this._height));
         points.push(nw);
         return points;
 
