@@ -17,7 +17,7 @@
     "eslint-config-maptalks": "^0.1.0",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
-    "gulp-connect": "^3.0.0",
+    "gulp-connect": "^4.0.0",
     "gulp-coveralls": "^0.1.4",
     "gulp-cssnano": "^2.1.0",
     "gulp-eslint": "^2.0.0",
