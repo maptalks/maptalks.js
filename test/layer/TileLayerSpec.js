@@ -85,6 +85,7 @@ describe('#TileLayer', function() {
 
     describe("Different Renderers", function() {
         it("canvas", function(done) {
+            this.timeout(10000);
             var tile = new Z.TileLayer('tile', {
                 debug : true,
                 urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',

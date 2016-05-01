@@ -14,6 +14,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     initialize:function(layer) {
         this._layer = layer;
         this._tiles = {};
+        this._fadeAnimated = true;
         this._registerEvents();
     },
 
@@ -141,9 +142,15 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
 
         tile.loaded = Z.Util.now();
 
+        if (this._fadeAnimated) {
+            Z.Util.cancelAnimFrame(this._fadeFrame);
+            this._fadeFrame = Z.Util.requestAnimFrame(Z.Util.bind(this._updateOpacity, this));
+        } else {
+            Z.DomUtil.setOpacity(tile['el'], 1);
+            tile.active = true;
+            this._pruneTiles();
+        }
 
-        Z.Util.cancelAnimFrame(this._fadeFrame);
-        this._fadeFrame = Z.Util.requestAnimFrame(Z.Util.bind(this._updateOpacity, this));
 
         // @event tileload: TileEvent
         // Fired when a tile loads.
@@ -162,10 +169,11 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
                 if (this._pruneTimeout) {
                     clearTimeout(this._pruneTimeout);
                 }
-                var timeout = this.getMap() ? this.getMap().options['zoomAnimationDuration'] : 250;
+                var timeout = this.getMap() ? this.getMap().options['zoomAnimationDuration'] : 250,
+                    pruneLevels = this.getMap() ? !!!this.getMap().options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
                 // to trigger a pruning.
-                this._pruneTimeout = setTimeout(Z.Util.bind(this._pruneTiles, this), timeout + 100);
+                this._pruneTimeout = setTimeout(Z.Util.bind(this._pruneTiles, this, pruneLevels), timeout + 100);
             }
         }
     },
@@ -227,7 +235,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         return true;
     },
 
-    _pruneTiles: function () {
+    _pruneTiles: function (pruneLevels) {
         var map = this.getMap();
         if (!map) {
             return;
@@ -243,18 +251,26 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
 
         for (key in this._tiles) {
-            if (!this._tiles[key].current) {
+            if (this._tiles[key].zoom === zoom && !this._tiles[key].current) {
                 this._removeTile(key);
             }
         }
 
-        for (var z in this._levelContainers) {
-            if (+z !== zoom) {
-                Z.DomUtil.removeDomNode(this._levelContainers[z]);
-                this._removeTilesAtZoom(z);
-                delete this._levelContainers[z];
+        if (pruneLevels) {
+            for (key in this._tiles) {
+                if (this._tiles[key].zoom !== zoom) {
+                    this._removeTile(key);
+                }
+            }
+            for (var z in this._levelContainers) {
+                if (+z !== zoom) {
+                    Z.DomUtil.removeDomNode(this._levelContainers[z]);
+                    this._removeTilesAtZoom(z);
+                    delete this._levelContainers[z];
+                }
             }
         }
+
     },
 
     _removeTile: function (key) {
@@ -351,7 +367,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     _onZoomStart: function() {
-        this._pruneTiles();
+        this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
         if (!this._canTransform()) {
             this._container.style.display = 'none';
@@ -373,7 +389,6 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
                 this._levelContainers[param.from].style.display = 'none';
             }
             this._container.style.display = '';
-
         }
     }
 });
