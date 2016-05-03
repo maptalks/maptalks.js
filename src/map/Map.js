@@ -220,6 +220,17 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
+     * Get the view of the Map.
+     * @return {Object} map's view
+     */
+    getView: function() {
+        if (!this._view) {
+            return null;
+        }
+        return this._view;
+    },
+
+    /**
      * Change the view of the map. <br>
      * A view is a series of settings to decide the map presentation:<br>
      * 1. the projection.<br>
@@ -428,7 +439,14 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {Number}
      */
     getMaxZoom:function() {
-        return this.options['maxZoom'];
+        if (!Z.Util.isNil(this.options['maxZoom'])) {
+            return this.options['maxZoom'];
+        }
+        var view = this.getView();
+        if (!view) {
+            return null;
+        }
+        return view.getResolutions().length - 1;
     },
 
     /**
@@ -453,7 +471,10 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {Number}
      */
     getMinZoom:function() {
-        return this.options['minZoom'];
+        if (!Z.Util.isNil(this.options['minZoom'])) {
+            return this.options['minZoom'];
+        }
+        return 0;
     },
 
     /**

@@ -25,6 +25,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     remove:function() {
         var map = this.getMap();
         map.off('_zoomstart', this._onZoomStart, this);
+        map.off('_movestart', this._onMoveStart, this);
         map.off('_zoomend', this._onZoomEnd, this);
         map.off('_moveend _resize',this.render,this);
         if (this._onMapMoving) {
@@ -345,6 +346,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         map.on('_zoomstart', this._onZoomStart, this);
         map.on('_zoomend', this._onZoomEnd, this);
         map.on('_moveend _resize', this.render, this);
+        map.on('_movestart', this._onMoveStart, this);
         if (this._layer.options['renderWhenPanning']) {
         var rendSpan = this._layer.options['renderSpanWhenPanning'];
             if (Z.Util.isNumber(rendSpan) && rendSpan >= 0) {
@@ -366,7 +368,12 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         return Z.Browser.any3d || Z.Browser.ie9;
     },
 
+    _onMoveStart: function() {
+        this._fadeAnimated = false;
+    },
+
     _onZoomStart: function() {
+        this._fadeAnimated = true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
         if (!this._canTransform()) {
