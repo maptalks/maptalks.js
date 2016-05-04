@@ -19,7 +19,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
     remove:function() {
         delete this._resources;
         delete this._imgCache;
-        this.getMap().off('_zoomstart _zoomend _moveend _resize',this._onMapEvent,this);
+        this._removeEvents();
         this._requestMapToRender();
     },
 
@@ -235,10 +235,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         this._requestMapToRender();
         this._fireLoadedEvent();
 
-    },
-
-    _registerEvents:function() {
-        this.getMap().on('_zoomend _moveend _resize',this._onMapEvent,this);
     },
 
     _onMapEvent:function(param) {
