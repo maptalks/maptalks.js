@@ -23,10 +23,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     },
 
     remove:function() {
-        var map = this.getMap();
-        map.off('_moveend _resize _zoomend',this._onMapEvent,this);
+        this._removeEvents();
         if (this._onMapMoving) {
-            map.off('_moving',this._onMapMoving,this);
+            this.getMap().off('_moving',this._onMapMoving,this);
         }
         this._requestMapToRender();
     },
@@ -289,11 +288,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
                 me._mapRender.render();
             }
         });
-    },
-
-    _registerEvents:function() {
-        var map = this.getMap();
-        map.on('_moveend _zoomend _resize',this._onMapEvent,this);
     },
 
     _onMapEvent:function(param) {

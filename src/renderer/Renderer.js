@@ -170,5 +170,22 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         this._context.clip();
         this._clipped = true;
         return maskViewExtent;
+    },
+
+    _removeEvents: function() {
+        this.getMap().off('_movestart _moveend _zoomstart _zoomend _resize',this._onMapEvent,this);
+    },
+
+    _registerEvents:function() {
+        this.getMap().on('_movestart _moveend _zoomstart _zoomend _resize',this._onMapEvent,this);
+    },
+
+    _onMapEvent:function(param) {
+        if (param['type'] === '_moveend' || param['type'] === '_zoomend') {
+            this.render();
+        } else if (param['type'] === '_resize') {
+            this._resizeCanvas();
+            this.render();
+        }
     }
 });
