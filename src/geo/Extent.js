@@ -183,6 +183,23 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
             (y <= this.ymax);
     },
 
+    /**
+     * Get the width of the Extent
+     * @return {Number}
+     */
+    getWidth:function() {
+        return this['xmax'] - this['xmin'];
+    },
+
+    /**
+     * Get the height of the Extent
+     * @return {Number}
+     */
+    getHeight:function() {
+        return this['ymax'] - this['ymin'];
+    },
+
+
     __combine:function(extent) {
         var xmin = this['xmin'];
         if (!Z.Util.isNumber(xmin)) {
