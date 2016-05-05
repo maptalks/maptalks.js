@@ -369,7 +369,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     _onMoveStart: function() {
-        this._fadeAnimated = false;
+        // this._fadeAnimated = false;
     },
 
     _onZoomStart: function() {
