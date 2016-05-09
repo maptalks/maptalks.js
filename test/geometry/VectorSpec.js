@@ -31,17 +31,4 @@ describe('VectorSpec', function() {
         removeContainer(container)
     });
 
-    /*describe('events', function() {
-        it('fires click event when clicked', function() {
-            var spy = sinon.spy();
-            var vector = new Z.Circle(center, 1);
-            vector.on('click', spy);
-            layer.addGeometry(vector);
-            var painter = vector._getPainter();
-            happen.click(painter.getSvgDom()[0]);
-
-            expect(spy.called).to.be.ok();
-        });
-    });*/
-
 });

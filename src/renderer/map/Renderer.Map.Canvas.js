@@ -124,6 +124,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this._context.save();
             this._applyTransform(matrix);
         }
+
         for (var i = 0, len=layers.length; i < len; i++) {
             if (!layers[i].isVisible()) {
                 continue;
@@ -215,6 +216,23 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     _applyTransform : function(matrix) {
         matrix = Z.Browser.retina ? matrix['retina'] : matrix['container'];
         matrix.applyToContext(this._context);
+    },
+
+    _getCountOfGeosToDraw: function() {
+        var layers = this._getAllLayerToTransform(),
+            geos,
+            total = 0;
+        for (var i = layers.length - 1; i >= 0; i--) {
+            if ((layers[i] instanceof Z.VectorLayer)
+                && layers[i].isVisible()
+                && !layers[i].isEmpty()) {
+                geos = layers[i]._getRenderer()._geosToDraw;
+                if (geos) {
+                    total += layers[i]._getRenderer()._geosToDraw.length;
+                }
+            }
+        }
+        return total;
     },
 
     /**
