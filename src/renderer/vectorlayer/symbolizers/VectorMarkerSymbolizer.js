@@ -44,7 +44,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var point;
         for (var i = cookedPoints.length - 1; i >= 0; i--) {
             point = cookedPoints[i];
-            if (markerType === 'ellipse') {
+            if (markerType === 'ellipse' || markerType === 'circle') {
                  //ellipse default
                 Z.Canvas.ellipse(ctx, point, width/2, height/2, lineOpacity, fillOpacity);
             } else if (markerType === 'cross' || markerType === 'x'){
@@ -79,6 +79,8 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 ctx.lineCap = 'round';
                 Z.Canvas.sector(ctx, point, height, [90-angle, 90+angle], lineOpacity, fillOpacity);
                 ctx.lineCap = lineCap;
+            } else {
+                throw new Error('unsupported marker-type: ' + markerType);
             }
         }
 
