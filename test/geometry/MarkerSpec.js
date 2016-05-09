@@ -92,7 +92,7 @@ describe('Marker', function() {
 
     });
 
-    describe('#setSymbol', function() {
+    describe('set marker\'s Symbol', function() {
 
         it('fires symbolchange event', function() {
             var spy = sinon.spy();
@@ -108,6 +108,22 @@ describe('Marker', function() {
             });
 
             expect(spy.called).to.be.ok();
+        });
+
+        it('unsuppored marker-type', function() {
+            var layer = new maptalks.VectorLayer('vector');
+            map.addLayer(layer);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol:{
+                    "marker-type" : "unsupported",
+                    "marker-width":20,
+                    "marker-height":30
+                }
+            });
+            marker._enableRenderImmediate();
+            expect(function() {
+                layer.addGeometry(marker);
+            }).to.throwException();
         });
 
     });
