@@ -18,7 +18,11 @@ Z.CollectionPainter=Z.Class.extend(/** @lends maptalks.CollectionPainter.prototy
             if (!painter) {
                 continue;
             }
-            if (painter) {fn.call(this,painter);}
+            if (painter) {
+                if (!fn.call(this,painter)) {
+                    break;
+                }
+            }
         }
     },
 
@@ -92,23 +96,14 @@ Z.CollectionPainter=Z.Class.extend(/** @lends maptalks.CollectionPainter.prototy
         });
     },
 
-    /**
-     * 获取svg图形的dom
-     */
-    getSvgDom:function() {
-        var result = [];
-        this._eachPainter(function(painter) {
-            result = result.concat(painter.getSvgDom());
-        });
-        return result;
-    },
-
     hasPointSymbolizer:function() {
+        var result = false;
         this._eachPainter(function(painter) {
             if (painter.hasPointSymbolizer()) {
-                return true;
+                result = true;
+                return false;
             }
         });
-        return false;
+        return result;
     }
 });
