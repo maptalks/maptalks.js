@@ -220,6 +220,17 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
+     * Get the view of the Map.
+     * @return {Object} map's view
+     */
+    getView: function() {
+        if (!this._view) {
+            return null;
+        }
+        return this._view;
+    },
+
+    /**
      * Change the view of the map. <br>
      * A view is a series of settings to decide the map presentation:<br>
      * 1. the projection.<br>
@@ -428,7 +439,14 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {Number}
      */
     getMaxZoom:function() {
-        return this.options['maxZoom'];
+        if (!Z.Util.isNil(this.options['maxZoom'])) {
+            return this.options['maxZoom'];
+        }
+        var view = this.getView();
+        if (!view) {
+            return null;
+        }
+        return view.getResolutions().length - 1;
     },
 
     /**
@@ -453,7 +471,10 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {Number}
      */
     getMinZoom:function() {
-        return this.options['minZoom'];
+        if (!Z.Util.isNil(this.options['minZoom'])) {
+            return this.options['minZoom'];
+        }
+        return 0;
     },
 
     /**
@@ -771,7 +792,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      */
     coordinateToPoint: function(coordinate, zoom) {
         var prjCoord = this.getProjection().project(coordinate);
-        return this._prjToPoint(prjCoord, zoom)._round();
+        return this._prjToPoint(prjCoord, zoom);
     },
 
     /**
@@ -792,7 +813,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point}
      */
     coordinateToViewPoint: function(coordinate) {
-        return this._prjToViewPoint(this.getProjection().project(coordinate))._round();
+        return this._prjToViewPoint(this.getProjection().project(coordinate));
     },
 
     /**
@@ -811,7 +832,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      */
     coordinateToContainerPoint: function(coordinate) {
         var pCoordinate = this.getProjection().project(coordinate);
-        return this._prjToContainerPoint(pCoordinate)._round();
+        return this._prjToContainerPoint(pCoordinate);
     },
 
     /**
@@ -944,7 +965,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
         var width = !xDist?0:(projection.project(new Z.Coordinate(target.x, center.y)).x-projection.project(center).x)/res;
         var height = !yDist?0:(projection.project(new Z.Coordinate(center.x, target.y)).y-projection.project(center).y)/res;
-        return new Z.Size(Math.abs(width), Math.abs(height))._round();
+        return new Z.Size(Math.abs(width), Math.abs(height));
     },
 
     /**

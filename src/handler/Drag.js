@@ -50,7 +50,6 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         dom['ondragstart'] = function() { return false; };
         this.moved = false;
         var actual = event.touches ? event.touches[0] : event;
-        // if (this.moving) { return; }
         this.startPos = new Z.Point(actual.clientX, actual.clientY);
         //2015-10-26 fuzhen 改为document, 解决鼠标移出地图容器后的不可控现象
         Z.DomUtil.on(document,this.MOVE[event.type],this.onMouseMove,this);
@@ -61,8 +60,6 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         if ( event.touches && event.touches.length > 1) {
             return;
         }
-        var dom = this.dom;
-        // Z.DomUtil.preventDefault(event);
         var actual = event.touches ? event.touches[0] : event;
 
         var newPos = new Z.Point(actual.clientX, actual.clientY),
@@ -91,15 +88,7 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
                     'domEvent' : event,
                     'mousePos': new Z.Point(actual.clientX, actual.clientY)
                 });
-            /*try {
-
-            } catch (error) {
-                Z.DomUtil.off(document,'mousemove',this.onMouseMove);
-                Z.DomUtil.off(document,'mouseup',this.onMouseUp);
-            }*/
-
         }
-        // this.moving = true;
     },
 
     onMouseUp:function(event){

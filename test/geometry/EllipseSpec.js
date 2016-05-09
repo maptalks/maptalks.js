@@ -120,7 +120,7 @@ describe('EllipseSpec', function() {
         expect(spy.called).to.not.be.ok();
 
         happen.click(canvasContainer, {
-            clientX: 400 + 8 + 10 + 3,
+            clientX: 400 + 8 + 10 + 2,
             clientY: 300 + 8
         });
         expect(spy.called).to.be.ok();

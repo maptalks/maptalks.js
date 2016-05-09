@@ -34,21 +34,5 @@ Z.Util.extend(Z.PointExtent.prototype, Z.Extent.prototype, /** @lends maptalks.P
      */
     getSize:function() {
         return new Z.Size(this.getWidth(), this.getHeight());
-    },
-
-    /**
-     * Get the width of the PointExtent
-     * @return {Number}
-     */
-    getWidth:function() {
-        return this['xmax'] - this['xmin'];
-    },
-
-    /**
-     * Get the height of the PointExtent
-     * @return {Number}
-     */
-    getHeight:function() {
-        return this['ymax'] - this['ymin'];
     }
 });

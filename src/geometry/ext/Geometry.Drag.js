@@ -76,9 +76,8 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
     },
 
     _prepareDragHandler:function() {
-        // var map = this.target.getMap();
-        this._dom = document;//map._containerDOM;
-        this._dragHandler = new Z.Handler.Drag(this._dom);
+        var map = this.target.getMap();
+        this._dragHandler = new Z.Handler.Drag(map._panels.mapWrapper || map._containerDOM);
         this._dragHandler.on("dragging", this._dragging, this);
         this._dragHandler.on("dragend", this._endDrag, this);
         this._dragHandler.enable();
