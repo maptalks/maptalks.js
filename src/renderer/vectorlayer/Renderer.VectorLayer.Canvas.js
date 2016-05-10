@@ -70,7 +70,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (Z.Browser.mobile || !this.getMap().options['layerTransforming']) {
             return false;
         }
-        if (!this._shouldTransform) {
+        //determin whether this layer should be transformed.
+        //if all the geometries to render are vectors including polygons and linestrings,
+        //disable transforming won't reduce user experience.
+        if (!this._hasPointSymbolizer ||
+            this.getMap()._getRenderer()._getCountOfGeosToDraw() > this._layer.options['thresholdOfTransforming']) {
             return false;
         }
         this._draw(matrix);
@@ -93,7 +97,6 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             this._fireLoadedEvent();
             return false;
         }
-        this._shouldTransform = true;
         this._prepareToDraw();
         var viewExtent = map._getViewExtent(),
             maskViewExtent = this._prepareCanvas();
@@ -105,12 +108,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
         layer._eachGeometry(this._checkGeo, this);
-        var count = this._geosToDraw.length;
-        //determin whether this layer should be transformed.
-        //if all the geometries to render are vectors including polygons and linestrings,
-        //disable transforming won't reduce user experience.
-        this._shouldTransform = this._hasPointSymbolizer
-                && count < this._layer.options['thresholdOfTransforming'];
+
 
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._getPainter().paint(matrix);
