@@ -157,7 +157,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                     var tileLeft = centerTileViewPoint.x + tileSize['width']*i-mapViewPoint.x;
                     var tileTop = centerTileViewPoint.y +tileSize['height']*j-mapViewPoint.y;
                     var tileUrl = this._getTileUrl(tileIndex['x'],tileIndex['y'],zoom);
-                    var tileId=[tileIndex['y'], tileIndex['x'], zoom].join('__');
+                    var tileId=[tileIndex['y'], tileIndex['x'], zoom, tileLeft, tileTop].join('__');
                     var tileDesc = {
                         'url' : tileUrl,
                         'viewPoint': new Z.Point(tileLeft, tileTop),

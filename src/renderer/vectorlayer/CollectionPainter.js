@@ -19,7 +19,7 @@ Z.CollectionPainter=Z.Class.extend(/** @lends maptalks.CollectionPainter.prototy
                 continue;
             }
             if (painter) {
-                if (!fn.call(this,painter)) {
+                if (false === fn.call(this,painter)) {
                     break;
                 }
             }
