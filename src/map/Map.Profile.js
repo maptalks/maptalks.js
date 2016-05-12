@@ -10,6 +10,13 @@
 Z.Layer.fromJSON=function(layerJSON) {
     if (!layerJSON) {return null;}
     var layerType = layerJSON['type'];
+    if (layerType === 'vector') {
+        layerType = layerJSON['type'] = 'VectorLayer';
+    } else if (layerType === 'dynamic') {
+        layerType = layerJSON['type'] = 'DynamicLayer';
+    } else if (layerType === 'tile') {
+        layerType = layerJSON['type'] = 'TileLayer';
+    }
     if (typeof Z[layerType] === 'undefined' || !Z[layerType]._fromJSON) {
         throw new Error("unsupported layer type:"+layerType);
     }
@@ -106,23 +113,23 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
  * @static
  * @function
  */
-Z.Map.fromJSON=function(container, mapJSON, options) {
-    if (!container || !mapJSON) {
+Z.Map.fromJSON=function(container, profile, options) {
+    if (!container || !profile) {
         return null;
     }
     if (!options) {
         options = {};
     }
-    var map = new Z.Map(container, mapJSON["options"]);
+    var map = new Z.Map(container, profile["options"]);
     if (Z.Util.isNil(options['baseLayer']) || options['baseLayer']) {
-        var baseLayer = Z.Layer.fromJSON(mapJSON["baseLayer"]);
+        var baseLayer = Z.Layer.fromJSON(profile["baseLayer"]);
         if (baseLayer) {
             map.setBaseLayer(baseLayer);
         }
     }
     if (Z.Util.isNil(options['layers']) || options['layers']) {
         var layers = [];
-        var layerJSONs = mapJSON["layers"];
+        var layerJSONs = profile["layers"];
         for (var i = 0; i < layerJSONs.length; i++) {
             var layer = Z.Layer.fromJSON(layerJSONs[i]);
             layers.push(layer);

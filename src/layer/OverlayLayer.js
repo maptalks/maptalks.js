@@ -39,6 +39,25 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
+     * Travels among the geometries the layer has.
+     * @param  {Function} fn - a callback function
+     * @param  {*} context   - callback's context
+     * @return {maptalks.OverlayLayer} this
+     */
+    forEach:function(fn,context) {
+        var cache = this._geoCache;
+        if (!context) {
+            context=this;
+        }
+        for (var g in cache) {
+            if (cache.hasOwnProperty(g)) {
+                fn.call(context,cache[g]);
+            }
+        }
+        return this;
+    },
+
+    /**
      * Whether the layer is empty.
      * @return {Boolean}
      */
@@ -177,31 +196,13 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     _clear:function() {
-        this._eachGeometry(function(geo) {
+        this.forEach(function(geo) {
             geo.remove();
         });
         this._geoMap={};
         this._geoCache={};
         this.fire('clear');
         return this;
-    },
-
-    /**
-     * Travels among the geometries the layer has.
-     * @param  {Function} fn - a callback function
-     * @param  {*} context   - the travel function's context
-     * @private
-     */
-    _eachGeometry:function(fn,context) {
-        var cache = this._geoCache;
-        if (!context) {
-            context=this;
-        }
-        for (var g in cache) {
-            if (cache.hasOwnProperty(g)) {
-                fn.call(context,cache[g]);
-            }
-        }
     },
 
     /**

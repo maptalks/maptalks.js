@@ -107,7 +107,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
-        layer._eachGeometry(this._checkGeo, this);
+        layer.forEach(this._checkGeo, this);
 
 
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
@@ -157,7 +157,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @override
      */
     show: function() {
-        this._layer._eachGeometry(function(geo) {
+        this._layer.forEach(function(geo) {
             geo._onZoomEnd();
         });
         var mask = this._layer.getMask();
@@ -238,7 +238,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
     _onMapEvent:function(param) {
         if (param['type'] === '_zoomend') {
             if (this._layer.isVisible()) {
-                this._layer._eachGeometry(function(geo) {
+                this._layer.forEach(function(geo) {
                     geo._onZoomEnd();
                 });
                 var mask = this._layer.getMask();
