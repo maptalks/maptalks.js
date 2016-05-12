@@ -47,7 +47,7 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
      * get item from Toolbox
      * @return {Array} items
      */
-    getItems:function() {
+    getItems: function() {
         return this.options['items'];
     },
 
@@ -55,7 +55,7 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
      * get pixel size of menu
      * @return {Size} size
      */
-    getSize:function() {
+    getSize: function() {
         if (this._size) {
             return this._size.copy();
         } else {
@@ -63,22 +63,22 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
         }
     },
 
-    _createDOM:function() {
+    _createDOM: function() {
         var dom = Z.DomUtil.createEl('div');
         if(this.options['style']) {
             Z.DomUtil.addClass(dom, this.options['style']);
         }
         var items = this.options['items'];
         if(items&&items.length>0) {
-            var maxWidth=0,maxHeight=0;
-            for(var i=0,len=items.length;i<len;i++) {
+            var maxWidth = 0,maxHeight=0;
+            for(var i = 0,len = items.length; i < len; i++) {
                 var item = items[i];
                 if(!item['hidden']) {
-                    item['vertical'] = Z.Util.getValueOrDefault(item['vertical'], this.options['vertical']);
-                    var buttonDom = new Z.ui.Toolbox.Button(item).getDom();
-                    dom.appendChild(buttonDom);
-                    maxWidth+=Z.Util.getValueOrDefault(item['width'],0)+2;
-                    maxHeight+=Z.Util.getValueOrDefault(item['height'],0)+2;
+                    item['vertical'] = item['vertical']||this.options['vertical'];
+                    var menuDom = this._createMenuDom(item);
+                    dom.appendChild(menuDom);
+                    maxWidth += (item['width']||0)+4;
+                    maxHeight += (item['height']||0)+2;
                 }
             }
             if(this.options['vertical']) {
@@ -87,41 +87,11 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
                 dom.style.width = maxWidth+'px';
             }
         }
+        this._toolboxDom = dom;
         return dom;
     },
 
-    _createMenuItemDom: function() {
-        var me = this;
-        var ul = Z.DomUtil.createEl('ul');
-        Z.DomUtil.addClass(ul,'maptalks-menu-items');
-        var items = this.getItems();
-        function onMenuClick(index) {
-            return function(e) {
-                    var result = this._callback({'target':me, 'index':index});
-                    if (result === false) {
-                        return;
-                    }
-                    me.hide();
-                }
-        }
-        for (var i=0, len=items.length;i<len;i++) {
-            var item = items[i];
-            var itemDOM;
-            if ('-' === item || '_' === item) {
-                itemDOM = Z.DomUtil.createEl('li');
-                Z.DomUtil.addClass(itemDOM, 'maptalks-menu-splitter');
-            } else {
-                itemDOM = Z.DomUtil.createEl('li');
-                itemDOM.innerHTML = item['item'];
-                itemDOM._callback = item['click'];
-                Z.DomUtil.on(itemDOM,'click',(onMenuClick)(i));
-            }
-            ul.appendChild(itemDOM);
-        }
-        return ul;
-    },
-
-    _getWidth:function() {
+    _getWidth: function() {
         var defaultWidth = 160;
         var width = this.options['width'];
         if (!width) {
@@ -132,52 +102,38 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
 
     //菜单监听地图的事件
     _registerEvents: function() {
-        this.getMap().on('_zoomstart _zoomend _movestart', this.hide, this);
-
+        this._map = this.getMap();
+        this._map.on('_zoomstart _zoomend _movestart', this.hide, this);
     },
 
     //菜单监听地图的事件
     _removeEvents: function() {
-        this.getMap().off('_zoomstart _zoomend _movestart', this.hide, this);
-    }
-
-});
-
-/**
- * 按钮控件
- * @class maptalks.Button
- * @extends maptalks.Class
- * @author Maptalks Team
- */
-Z.ui.Toolbox.Button = Z.Class.extend({
-
-    /**
-     * @cfg {Object} options 按钮属性
-     */
-    options:{
-        'hidden': false,
-        'icon' : '',
-        'text' : '左',
-        'click' : null,
-        'mouseover' : null,
-        'mouseout' : null,
-        'children' : []
+        this._map.off('_zoomstart _zoomend _movestart', this.hide, this);
+        this._removeDomEvents(this._toolboxDom);
     },
 
-    /**
-     * 初始化按钮
-     * @constructor
-     * @param {Object} options
-     * @returns {maptalks.Button}
-     */
-    initialize: function(options) {
-        if(options) {
-            this._dom = this._createDom(options);
+    _removeDomEvents: function(dom) {
+        var children = dom.childNodes;
+        for(var i=0,len=children.length;i<len;i++) {
+            var node = children[i];
+            if(node && node.childNodes.length>0) {
+                this._removeDomEvents(node);
+            } else {
+                this._removeEventsFromDom(node);
+            }
         }
+
     },
 
-    _createDom : function(options) {
-        return this._createMenuDom(options);
+    _removeEventsFromDom: function(dom) {
+        Z.DomUtil.off(dom, 'click')
+                 .off(dom, 'mouseover')
+                 .off(dom, 'mouseout')
+                 .off(dom, 'mousedown')
+                 .off(dom, 'dblclick')
+                 .off(dom, 'contextmenu');
+        Z.DomUtil.removeDomNode(dom);
+        dom = null;
     },
 
     _createMenuDom : function(options, tag) {
@@ -185,28 +141,37 @@ Z.ui.Toolbox.Button = Z.Class.extend({
         if(tag) {
             _menuDom = Z.DomUtil.createEl(tag);
         }
-        var width = Z.Util.getValueOrDefault(options['width'],16);
-        var height = Z.Util.getValueOrDefault(options['height'],16);
-        var vertical = Z.Util.getValueOrDefault(options['vertical'],false);
+        var width = options['width'] || 16;
+        var height = options['height'] || 16;
+        var vertical = options['vertical'];
+        if(vertical === undefined || vertical == null) {
+            vertical = false;
+        }
         var block = 'inline-block';
         if(vertical) {
             block = 'block';
         }
-        _menuDom.style.cssText='text-align:center;display:-moz-inline-box;display:'+block+';width:'+width+'px;height:'+height+'px;';
-        Z.DomUtil.on(_menuDom, 'click dblclick contextmenu', Z.DomUtil.stopPropagation);
+        _menuDom.style.cssText = 'text-align:center;display:-moz-inline-box;display:' + block
+                               + ';width:' + width + 'px;height:' + height + 'px;';
+
         Z.DomUtil.addClass(_menuDom, 'maptalks-toolbox-button');
+
         _menuDom.appendChild(this._createIconDom(options));
+
         if(options['click']) {
             Z.DomUtil.on(_menuDom, 'click', options['click'], this);
         }
+
         if(options['mouseover']) {
             Z.DomUtil.on(_menuDom, 'mouseover', options['mouseover'], this);
         }
+
         if(options['mouseout']) {
             Z.DomUtil.on(_menuDom, 'mouseout', options['mouseout'], this);
         }
-        var trigger = options['trigger']||'click';
+
         var me = this;
+        var trigger = options['trigger']||'click';
         if(trigger === 'click') {
             Z.DomUtil.on(_menuDom, 'click', function() {
                 me._addEventToMenuItem(_menuDom, options);
@@ -216,38 +181,42 @@ Z.ui.Toolbox.Button = Z.Class.extend({
                 me._addEventToMenuItem(_menuDom, options);
             }, this);
         }
+
         return _menuDom;
     },
 
     _addEventToMenuItem: function(_parentDom, options) {
         if(options['children'] && options['children'].length>0) {
             var me = this;
-            var dropdownMenu = me._createDropMenu(_parentDom, options);
+            var _dropdownMenu = me._createDropMenu(_parentDom, options);
             var trigger = options['trigger'];
             if(trigger === 'click') {
                 Z.DomUtil.on(_parentDom, 'click', function() {
-                    Z.DomUtil.setStyle(dropdownMenu, 'display:block');
+                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
                 }, this);
                 Z.DomUtil.on(_parentDom, 'mouseover', function() {
-                    Z.DomUtil.setStyle(dropdownMenu, 'display:block');
+                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
                 }, this);
             } else {
                 Z.DomUtil.on(_parentDom, 'mouseover', function() {
-                    Z.DomUtil.setStyle(dropdownMenu, 'display:block');
+                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
                 }, this);
             }
             Z.DomUtil.on(_parentDom, 'mouseout', function() {
-                Z.DomUtil.setStyle(dropdownMenu, 'display: none');
+                Z.DomUtil.setStyle(_dropdownMenu, 'display : none');
             }, this);
 
-            Z.DomUtil.on(dropdownMenu, 'mouseout', function() {
-                Z.DomUtil.setStyle(dropdownMenu, 'display: none');
+            Z.DomUtil.on(_dropdownMenu, 'mouseout', function() {
+                Z.DomUtil.setStyle(_dropdownMenu, 'display : none');
             }, this);
         }
     },
 
     _createDropMenu: function(_parentDom, options) {
-        var vertical = Z.Util.getValueOrDefault(options['vertical'], false);
+        var vertical = options['vertical'];
+        if(vertical === undefined || vertical == null) {
+            vertical = false;
+        }
         var style = 'position: absolute;';
         var offset = this._getDropdownMenuOffset(_parentDom, options);
         if(vertical) {
@@ -256,14 +225,13 @@ Z.ui.Toolbox.Button = Z.Class.extend({
             style+= 'top:'+offset['top']+'px';
         }
         var appendSign = ((offset['left']>=0)&&(offset['top']>=0));
-        var dropdownMenu = this._createDropMenuDom(_parentDom, options, style, appendSign);
-        return dropdownMenu;
+        return this._createDropMenuDom(_parentDom, options, style, appendSign);
     },
 
     _getDropdownMenuOffset: function(_parentDom, options) {
         var length = options['children'].length;
-        var height = Z.Util.getValueOrDefault(options['height'],20);
-        var width = Z.Util.getValueOrDefault(options['width'],20);
+        var height = options['height'] || 20;
+        var width = options['width'] || 20;
         var doc_h = document.body.clientHeight;
         var doc_w = document.body.clientWidth;
         var parent_h = _parentDom.clientHeight;
@@ -271,7 +239,10 @@ Z.ui.Toolbox.Button = Z.Class.extend({
         var point = Z.DomUtil.getPagePosition(_parentDom);
         var parent_top = point['y'];
         var parent_left = point['x'];
-        var vertical = Z.Util.getValueOrDefault(options['vertical'], false);
+        var vertical = options['vertical'];
+        if(vertical === undefined || vertical == null) {
+            vertical = false;
+        }
         var dropMenu_top = parent_h, dropMenu_left = parent_w;
         if(!vertical) {//垂直
             height = height*length;
@@ -294,42 +265,42 @@ Z.ui.Toolbox.Button = Z.Class.extend({
     _createDropMenuDom: function(_parentDom, options, style, appendSign) {
         var dom = _parentDom.children[1];
         if(dom) Z.DomUtil.removeDomNode(dom);
-        var dropdownMenu = Z.DomUtil.createElOn('ul', style);
+        var _dropdownMenu = Z.DomUtil.createElOn('ul', style);
         //构造下拉菜单
         var items = options['children'];
         if(items&&items.length>0) {
             for(var i=0,len=items.length;i<len;i++) {
                 var item = items[i];
                 if(item['vertical']=== undefined) {
-                    item['vertical'] = !Z.Util.getValueOrDefault(item['vertical'],options['vertical']);
+                    item['vertical'] = !(item['vertical']||options['vertical']);
                 }
                 if(appendSign) {
-                    dropdownMenu.appendChild(this._createMenuDom(item, 'li'));
+                    _dropdownMenu.appendChild(this._createMenuDom(item, 'li'));
                 } else {
-                    dropdownMenu.insertBefore(this._createMenuDom(item, 'li'), dropdownMenu.firstChild);
+                    _dropdownMenu.insertBefore(this._createMenuDom(item, 'li'), _dropdownMenu.firstChild);
                 }
             }
         }
-        _parentDom.appendChild(dropdownMenu);
-        return dropdownMenu;
+        _parentDom.appendChild(_dropdownMenu);
+        return _dropdownMenu;
     },
 
-    _createIconDom : function(options) {
+    _createIconDom: function(options) {
         var _spanDom = Z.DomUtil.createEl('span');
         var icon = options['icon'];
         var content = options['item'];
         var title = options['title'];
         var html = options['html'];
         if(icon) {
-            var width = Z.Util.getValueOrDefault(options['iconWidth'],options['width']);
-            var height = Z.Util.getValueOrDefault(options['iconHeight'],options['height']);
+            var width = options['iconWidth']||options['width'];
+            var height = options['iconHeight']||options['height'];
             var _imgDom = Z.DomUtil.createEl('img');
-            _imgDom.src=icon;
-            _imgDom.border=0;
-            _imgDom.width=width;
-            _imgDom.height=height;
+            _imgDom.src = icon;
+            _imgDom.border = 0;
+            _imgDom.width = width;
+            _imgDom.height = height;
             if(title) {
-                _imgDom.title=title;
+                _imgDom.title = title;
             }
             _spanDom.appendChild(_imgDom);
             if(content) {
@@ -358,12 +329,6 @@ Z.ui.Toolbox.Button = Z.Class.extend({
             }
            return _spanDom;
         }
-    },
-
-    /**
-     * 获取button dom
-     */
-    getDom: function() {
-        return this._dom;
     }
+
 });
