@@ -79,7 +79,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     },
 
     select: function(condition) {
-        var evaFn = new Function('geometry', 'with (geometry) { return !!(' + condition + '); }');
+        var evaFn = new Function('geometry', 'with (geometry) { return ' + condition + '; }');
         var selected = [];
         this.forEach(function(geometry) {
             var json = {
