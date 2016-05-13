@@ -153,6 +153,53 @@ describe('#OverlayLayer', function() {
 
             expect(layer.clear().getGeometries()).to.be.empty();
         });
+
+        it('select by properties',function() {
+            var layer = new Z.VectorLayer('id');
+            var points = [
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 1,
+                        'foo2' : 'test1',
+                        'foo3' : true
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 2,
+                        'foo2' : 'test2',
+                        'foo3' : false
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 3,
+                        'foo2' : 'test3',
+                        'foo3' : true
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 4,
+                        'foo2' : 'test4',
+                        'foo3' : true
+                    }
+                })
+            ];
+            var selection = layer.addGeometry(points)
+                                    .select('type === "Point" && properties.foo1 > 0 && properties.foo2.indexOf("test") >= 0');
+
+            expect(selection).to.be.an(maptalks.GeometryCollection);
+            expect(selection.getGeometries()).to.have.length(points.length);
+            for (var i = points.length - 1; i >= 0; i--) {
+                expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
+            }
+
+            expect(layer.select('properties.foo3 === true').getGeometries()).to.have.length(3);
+
+            selection = layer.select('type !== "Point"');
+            expect(selection).not.to.be.ok();
+        });
     });
 
     describe('isEmpty', function() {

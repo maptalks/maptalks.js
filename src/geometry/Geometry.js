@@ -172,7 +172,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     setProperties:function(properties) {
         var old = this.properties;
-        this.properties = Z.Util.extend({},properties);
+        this.properties = Z.Util.isObject(properties) ? Z.Util.extend({},properties) : properties;
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
@@ -511,16 +511,9 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!Z.Util.isNil(id)) {
             feature['id'] = id;
         }
-        var properties = {};
+        var properties;
         if (Z.Util.isNil(opts['properties']) || opts['properties']) {
-            var geoProperties = this.getProperties();
-            if (geoProperties) {
-                for (var p in geoProperties) {
-                    if (geoProperties.hasOwnProperty(p)) {
-                        properties[p] = geoProperties[p];
-                    }
-                }
-            }
+            properties = this._exportProperties();
         }
         feature['properties'] = properties;
         return feature;
@@ -613,12 +606,17 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             opts = {};
         }
         var symbol = opts['symbol'] || this.options['symbol'];
+        var properties = opts['properties'];
         var id = opts['id'];
-        Z.Util.setOptions(this,opts);
+        Z.Util.setOptions(this, opts);
         delete this.options['symbol'];
         delete this.options['id'];
+        delete this.options['properties'];
         if (symbol) {
             this.setSymbol(symbol);
+        }
+        if (properties) {
+            this.setProperties(properties);
         }
         if (!Z.Util.isNil(id)) {
             this.setId(id);
@@ -986,6 +984,19 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             'type':this.getType(),
             'coordinates': coordinates
         };
+    },
+
+    _exportProperties: function() {
+        var properties = null;
+        var geoProperties = this.getProperties();
+        if (geoProperties) {
+            if (Z.Util.isObject(geoProperties)) {
+                properties = Z.Util.extend({}, geoProperties);
+            } else {
+                geoProperties = properties;
+            }
+        }
+        return properties;
     }
 
 });
