@@ -74,6 +74,13 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return selected.length>0 ? new Z.GeometryCollection(selected) : null;
     },
 
+    selectAll: function() {
+        if (this.isEmpty()) {
+            return null;
+        }
+        return new Z.GeometryCollection(this.getGeometries());
+    },
+
     /**
      * Whether the layer is empty.
      * @return {Boolean}
