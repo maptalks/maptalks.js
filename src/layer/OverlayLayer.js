@@ -49,12 +49,36 @@ Z.OverlayLayer=Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         if (!context) {
             context=this;
         }
+        var counter = 0;
         for (var g in cache) {
             if (cache.hasOwnProperty(g)) {
-                fn.call(context,cache[g]);
+                fn.call(context, cache[g], counter++);
             }
         }
         return this;
+    },
+
+
+    select: function(condition) {
+        var evaFn = new Function('geometry', 'with (geometry) { return ' + condition + ' }');
+        var selected = [];
+        this.forEach(function(geometry) {
+            var json = {
+                'type' : geometry.getType(),
+                'properties' : geometry._exportProperties()
+            }
+            if (evaFn(json) === true) {
+                selected.push(geometry);
+            }
+        });
+        return selected.length>0 ? new Z.GeometryCollection(selected) : null;
+    },
+
+    selectAll: function() {
+        if (this.isEmpty()) {
+            return null;
+        }
+        return new Z.GeometryCollection(this.getGeometries());
     },
 
     /**
