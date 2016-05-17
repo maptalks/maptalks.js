@@ -1,6 +1,6 @@
 {
-  "name": "maptalks.js",
-  "version": "1.0.0-alpha",
+  "name": "maptalks",
+  "version": "0.1.0",
   "description": "An open-source javascript library for map applications.",
   "license": "Apache-2.0",
   "repository": {
@@ -14,7 +14,7 @@
   "main": "dist/maptalks.js",
   "style": "dist/css/maptalks.css",
   "devDependencies": {
-    "eslint-config-maptalks": "^0.1.0",
+    "eslint-config-maptalks": "^0.2.1",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.0.0",
@@ -40,9 +40,6 @@
     "mocha": "^2.4.5",
     "phantomjs-prebuilt": "^2.1.6",
     "sinon": "^1.14.1"
-  },
-  "eslintConfig": {
-    "extends": "maptalks"
   },
   "dependencies": {}
 }
