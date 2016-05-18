@@ -174,6 +174,17 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
             Z.DomUtil.on(_menuDom, 'mouseup', options['mouseup'], this);
         }
         this._addEventToMenuItem(_menuDom, options);
+        var me = this;
+        var trigger = options['trigger']||'click';
+        if(trigger === 'click') {
+            Z.DomUtil.on(_menuDom, 'click', function() {
+                me._showDropMenu(_menuDom, options);
+            }, this);
+        } else if (trigger === 'mouseover'){
+            Z.DomUtil.on(_menuDom, 'mouseover', function() {
+                me._showDropMenu(_menuDom, options);
+            }, this);
+        }
         return _menuDom;
     },
 
@@ -184,14 +195,14 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
             var trigger = options['trigger'];
             if(trigger === 'click') {
                 Z.DomUtil.on(_parentDom, 'click', function() {
-                    me._showDropMenu(_dropdownMenu, options);
+                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
                 }, this);
                 Z.DomUtil.on(_dropdownMenu, 'mouseover', function() {
-                    me._showDropMenu(_dropdownMenu, options);
+                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
                 }, this);
             } else if (trigger === 'mouseover') {
                 Z.DomUtil.on(_parentDom, 'mouseover', function() {
-                    me._showDropMenu(_dropdownMenu, options);
+                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
                 }, this);
             }
             Z.DomUtil.on(_parentDom, 'mouseout', function() {
@@ -206,8 +217,8 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
     },
 
     _showDropMenu: function(parentDom, options) {
-        var offset = this._getDropdownMenuOffset(parentDom, options);
-        if(parentDom.children.length>1) {
+        if(options['children'] && options['children'].length >0) {
+            var offset = this._getDropdownMenuOffset(parentDom, options);
             var dom = parentDom.lastChild;
             dom.style.cssText = 'position: absolute; top:'+offset['top']+'px; left:'+offset['left']+'px;';
             this.fire('showmenuend');
