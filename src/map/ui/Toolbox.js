@@ -161,27 +161,19 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
         if(options['click']) {
             Z.DomUtil.on(_menuDom, 'click', options['click'], this);
         }
-
         if(options['mouseover']) {
             Z.DomUtil.on(_menuDom, 'mouseover', options['mouseover'], this);
         }
-
         if(options['mouseout']) {
             Z.DomUtil.on(_menuDom, 'mouseout', options['mouseout'], this);
         }
-
-        var me = this;
-        var trigger = options['trigger']||'click';
-        if(trigger === 'click') {
-            Z.DomUtil.on(_menuDom, 'click', function() {
-                me._addEventToMenuItem(_menuDom, options);
-            }, this);
-        } else {
-            Z.DomUtil.on(_menuDom, 'mouseover', function() {
-                me._addEventToMenuItem(_menuDom, options);
-            }, this);
+        if(options['mousedown']) {
+            Z.DomUtil.on(_menuDom, 'mousedown', options['mousedown'], this);
         }
-
+        if(options['mouseup']) {
+            Z.DomUtil.on(_menuDom, 'mouseup', options['mouseup'], this);
+        }
+        this._addEventToMenuItem(_menuDom, options);
         return _menuDom;
     },
 
@@ -192,46 +184,46 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
             var trigger = options['trigger'];
             if(trigger === 'click') {
                 Z.DomUtil.on(_parentDom, 'click', function() {
-                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
+                    me._showDropMenu(_dropdownMenu, options);
                 }, this);
-                Z.DomUtil.on(_parentDom, 'mouseover', function() {
-                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
+                Z.DomUtil.on(_dropdownMenu, 'mouseover', function() {
+                    me._showDropMenu(_dropdownMenu, options);
                 }, this);
-            } else {
+            } else if (trigger === 'mouseover') {
                 Z.DomUtil.on(_parentDom, 'mouseover', function() {
-                    Z.DomUtil.setStyle(_dropdownMenu, 'display : block');
+                    me._showDropMenu(_dropdownMenu, options);
                 }, this);
             }
             Z.DomUtil.on(_parentDom, 'mouseout', function() {
                 Z.DomUtil.setStyle(_dropdownMenu, 'display : none');
+                _dropdownMenu.style.cssText = 'position: absolute; top: -10000px; left: -10000px;';
             }, this);
-
-            Z.DomUtil.on(_dropdownMenu, 'mouseout', function() {
+            Z.DomUtil.on(_dropdownMenu, 'mouseout mouseup', function() {
                 Z.DomUtil.setStyle(_dropdownMenu, 'display : none');
+                _dropdownMenu.style.cssText = 'position: absolute; top: -10000px; left: -10000px;';
             }, this);
         }
     },
 
-    _createDropMenu: function(_parentDom, options) {
-        var vertical = options['vertical'];
-        if(vertical === undefined || vertical == null) {
-            vertical = false;
+    _showDropMenu: function(parentDom, options) {
+        var offset = this._getDropdownMenuOffset(parentDom, options);
+        if(parentDom.children.length>1) {
+            var dom = parentDom.lastChild;
+            dom.style.cssText = 'position: absolute; top:'+offset['top']+'px; left:'+offset['left']+'px;';
+            this.fire('showmenuend');
         }
-        var style = 'position: absolute;';
-        var offset = this._getDropdownMenuOffset(_parentDom, options);
-        if(vertical) {
-            style+= 'left:'+offset['left']+'px';
-        } else {
-            style+= 'top:'+offset['top']+'px';
-        }
-        var appendSign = ((offset['left']>=0)&&(offset['top']>=0));
-        return this._createDropMenuDom(_parentDom, options, style, appendSign);
     },
 
     _getDropdownMenuOffset: function(_parentDom, options) {
-        var length = options['children'].length;
-        var height = options['height'] || 20;
-        var width = options['width'] || 20;
+        var children = options['children'];
+        var height = 16, width = 16;
+        if(children && children.length > 0) {
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                height += child['height']||0;
+                width += child['width']||0;
+            }
+        }
         var doc_h = document.body.clientHeight;
         var doc_w = document.body.clientWidth;
         var parent_h = _parentDom.clientHeight;
@@ -245,24 +237,40 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
         }
         var dropMenu_top = parent_h, dropMenu_left = parent_w;
         if(!vertical) {//垂直
-            height = height*length;
-            if(parent_top+parent_h+height>doc_h) {
-                dropMenu_top = -height;
+            if(parent_top + parent_h + height > doc_h) {
+                dropMenu_top = -height+parent_h/2;
             } else {
                 dropMenu_top = parent_h;
             }
+            dropMenu_left = _parentDom.offsetLeft;
         } else {
-            width = width*length;
             if(parent_left+parent_w+width>doc_w) {
                 dropMenu_left = -(parent_w*3/2+width);
             } else {
                 dropMenu_left = parent_w;
             }
+            dropMenu_top = _parentDom.offsetTop;
         }
         return {'top': dropMenu_top, 'left': dropMenu_left};
     },
 
-    _createDropMenuDom: function(_parentDom, options, style, appendSign) {
+    _createDropMenu: function(_parentDom, options) {
+        var vertical = options['vertical'];
+        if(vertical === undefined || vertical == null) {
+            vertical = false;
+        }
+        var style = 'position: absolute;';
+        var width = options['width'] || 20;
+        var height = options['height'] || 20;
+        if(vertical) {
+            style+= 'left: -10000px;';
+        } else {
+            style+= 'top: -10000px;';
+        }
+        return this._createDropMenuDom(_parentDom, options, style);
+    },
+
+    _createDropMenuDom: function(_parentDom, options, style) {
         var dom = _parentDom.children[1];
         if(dom) Z.DomUtil.removeDomNode(dom);
         var _dropdownMenu = Z.DomUtil.createElOn('ul', style);
@@ -274,11 +282,7 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
                 if(item['vertical']=== undefined) {
                     item['vertical'] = !(item['vertical']||options['vertical']);
                 }
-                if(appendSign) {
-                    _dropdownMenu.appendChild(this._createMenuDom(item, 'li'));
-                } else {
-                    _dropdownMenu.insertBefore(this._createMenuDom(item, 'li'), _dropdownMenu.firstChild);
-                }
+                _dropdownMenu.appendChild(this._createMenuDom(item, 'li'));
             }
         }
         _parentDom.appendChild(_dropdownMenu);
