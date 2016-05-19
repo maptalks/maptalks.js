@@ -127,7 +127,18 @@ Z.Util = {
         } else {
             loader = require('http');
         }
-        loader.get(url, function(res) {
+        var urlObj = require('url').parse(url);
+        //mimic the browser to prevent server blocking.
+        urlObj.headers = {
+            'Accept':'image/*,*/*;q=0.8',
+            'Accept-Encoding':'gzip, deflate',
+            'Cache-Control':'no-cache',
+            'Connection':'keep-alive',
+            'Host':urlObj.host,
+            'Pragma':'no-cache',
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'
+        }
+        loader.request(urlObj, function(res) {
             var data = [];
             res.on('data', function(chunk) {
               data.push(chunk);
@@ -135,7 +146,7 @@ Z.Util = {
             res.on('end', function () {
                 onComplete(null, Buffer.concat(data));
             });
-        }).on('error', onComplete);
+        }).on('error', onComplete).end();
     },
 
     _loadLocalImage:function(img, url, onComplete) {
