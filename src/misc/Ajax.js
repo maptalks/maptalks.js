@@ -83,17 +83,18 @@ if (Z.node) {
         },
 
         _wrapCallback: function (client, cb) {
+            var me = this;
             return function () {
-                if (client.withCredentials !== undefined || this._isIE8()) {
+                if (client.withCredentials !== undefined || me._isIE8()) {
                     cb(null, client.responseText);
                 } else if (client.readyState === 4) {
                     if (client.status === 200) {
-                        cb(client.responseText);
+                        cb(null, client.responseText);
                     } else {
                         if (client.status === 0) {
                             return;
                         }
-                        cb('{"success":false,"error":\"Status:' + client.status + ',' + client.statusText + '\"}');
+                        cb(null, '{"success":false,"error":\"Status:' + client.status + ',' + client.statusText + '\"}');
                     }
                 }
             };
@@ -135,7 +136,7 @@ if (Z.node) {
  * @static
  */
 Ajax.getResource = function (url, cb) {
-    this.get(url, cb);
+    return this.get(url, cb);
 };
 
 /**
@@ -151,7 +152,7 @@ Ajax.getScript = function (url, cb) {
             cb();
         }
     };
-    Ajax.getResource(url, callback);
+    return Ajax.getResource(url, callback);
 };
 
 Z.Ajax = Ajax;
