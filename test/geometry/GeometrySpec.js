@@ -27,6 +27,31 @@ describe('#Geometry', function() {
         removeContainer(container)
     });
 
+    it('constructor options', function() {
+        it ('some common options', function() {
+            var symbol = {
+                markerFile : 'file',
+                markerWidth : 10,
+                markerWidth : 15
+            };
+            var properties = {
+                foo1 : 1,
+                foo2 : 'test',
+                foo3 : true
+            };
+            var id = '1';
+            var marker = new maptalks.Marker([0, 0], {
+                id : id,
+                symbol : symbol,
+                properties : properties
+            });
+
+            expect(marker.getProperties()).to.be.eql(properties);
+            expect(marker.getSymbol()).to.be.eql(symbol);
+            expect(marker.getId()).to.be.eql(id);
+        });
+    });
+
     // 测试所有类型Geometry的公共方法
     var geometries = genAllTypeGeometries();
 

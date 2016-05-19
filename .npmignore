@@ -1,0 +1,14 @@
+assets/
+build/
+dist/debug
+dist/examples
+dist/maptalks.*.js
+coverage/
+doc/
+src/
+test/
+gulpfile.js
+jsdoc.json
+karma.conf.js
+.editorconfig
+.eslintrc
