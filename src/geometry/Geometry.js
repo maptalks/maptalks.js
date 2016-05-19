@@ -1155,7 +1155,7 @@ Z.Geometry._getMarkerPathURL=function(symbol) {
         delete p['path'];
         pathesToRender.push(p);
     }
-    var svgContent = ['<svg version="1.1"'];
+    var svgContent = ['<svg version="1.1"','xmlns="http://www.w3.org/2000/svg"'];
     if (op < 1) {
         svgContent.push('opacity="'+op+'"');
     }
@@ -1163,9 +1163,9 @@ Z.Geometry._getMarkerPathURL=function(symbol) {
         svgContent.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
     }
     if (symbol['markerPathWidth'] && symbol['markerPathHeight']) {
-        svgContent.push('viewBox = "0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
+        svgContent.push('viewBox="0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
     }
-    svgContent.push('xmlns="http://www.w3.org/2000/svg"><defs></defs>');
+    svgContent.push('><defs></defs>');
 
     for (var i = 0; i < pathesToRender.length; i++) {
         var strPath = '<path ';
