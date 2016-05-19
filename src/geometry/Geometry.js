@@ -1123,8 +1123,6 @@ Z.Geometry._getMarkerPathURL=function(symbol) {
     if (Z.Util.isNumber(symbol['opacity'])) {
         op *= symbol['opacity'];
     }
-    var pathWidth  = symbol['markerPathWidth'],
-        pathHeight = symbol['markerPathHeight'];
     var svgStyles = {};
     if (styles) {
         for (var p in styles['stroke']) {
@@ -1161,10 +1159,13 @@ Z.Geometry._getMarkerPathURL=function(symbol) {
     if (op < 1) {
         svgContent.push('opacity="'+op+'"');
     }
-    if (pathWidth && pathHeight) {
-        svgContent.push('height="'+pathHeight+'" width="'+pathWidth+'"');
+    if (symbol['markerWidth'] && symbol['markerHeight']) {
+        svgContent.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
     }
-     svgContent.push('xmlns="http://www.w3.org/2000/svg"><defs></defs>');
+    if (symbol['markerPathWidth'] && symbol['markerPathHeight']) {
+        svgContent.push('viewBox = "0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
+    }
+    svgContent.push('xmlns="http://www.w3.org/2000/svg"><defs></defs>');
 
     for (var i = 0; i < pathesToRender.length; i++) {
         var strPath = '<path ';
