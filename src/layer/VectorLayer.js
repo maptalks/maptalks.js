@@ -20,7 +20,7 @@ Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */
         'enableSimplify'            : true,
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
-        'thresholdOfTransforming'    : 100,
+        'thresholdOfTransforming'    : 200,
         'drawImmediate'             : false
     },
 
