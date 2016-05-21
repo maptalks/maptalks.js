@@ -292,6 +292,19 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
+     * Whehter the geometry contains the input container point.
+     * @param  {maptalks.Point} point - input container point
+     * @param  {Number} t - tolerance in pixel
+     * @return {Boolean}
+     */
+    containsPoint: function(containerPoint, t) {
+        if (!this.getMap()) {
+            throw new Error('The geometry is required to be on a map to perform the "contains".');
+        }
+        return this._containsPoint(this.getMap().containerPointToViewPoint(containerPoint), t);
+    },
+
+    /**
      * Get size in pixel of the geometry, size may vary in different zoom levels.
      * @returns {maptalks.Size}
      */

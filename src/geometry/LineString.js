@@ -73,9 +73,9 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         return 0;
     },
 
-    _containsPoint: function(point) {
+    _containsPoint: function(point, tolerance) {
         var map = this.getMap(),
-            t = this._hitTestTolerance(),
+            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             extent = this._getPrjExtent(),
             nw = new Z.Coordinate(extent.xmin, extent.ymax),
             se = new Z.Coordinate(extent.xmax, extent.ymin),

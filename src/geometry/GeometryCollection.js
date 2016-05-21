@@ -266,14 +266,14 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         return new Z.Coordinate(sumX/counter, sumY/counter);
     },
 
-    _containsPoint: function(point) {
+    _containsPoint: function(point, t) {
         if (this.isEmpty()) {
             return false;
         }
         var i, len;
         var geometries = this.getGeometries();
         for (i = 0, len = geometries.length; i < len; i++) {
-            if (geometries[i]._containsPoint(point)) {
+            if (geometries[i]._containsPoint(point, t)) {
                 return true;
             }
         }

@@ -103,9 +103,9 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
         return null;
     },
 
-    _containsPoint: function(point) {
+    _containsPoint: function(point, tolerance) {
         var map = this.getMap(),
-            t = this._hitTestTolerance(),
+            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pa = map.distanceToPixel(this.width / 2, 0),
             pb = map.distanceToPixel(0, this.height /2),
             a = pa.width,
