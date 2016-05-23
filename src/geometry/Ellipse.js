@@ -145,7 +145,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
         return new Z.Extent(p1, p2);
     },
 
-    _computeGeodesicLength:function (measurer) {
+    _computeGeodesicLength:function () {
         if (Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
             return 0;
         }
@@ -155,7 +155,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
         return 2 * Math.PI * longer / 2 - 4 * Math.abs(this.width - this.height);
     },
 
-    _computeGeodesicArea:function (measurer) {
+    _computeGeodesicArea:function () {
         if (Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
             return 0;
         }

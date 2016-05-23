@@ -85,7 +85,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         'cursor'    : null,
         'shadowBlur' : 0,
         'shadowColor' : 'black',
-        'measure' : 'EPSG:4326', // BAIDU, IDENTITY
+        'measure' : 'EPSG:4326' // BAIDU, IDENTITY
     },
 
     /**
@@ -698,9 +698,9 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                 stack.pop(); // remove current file name (or empty string)
                              // (omit if "base" is the current folder without trailing slash)
                 for (var i = 0; i < parts.length; i++) {
-                    if (parts[i] == '.')
+                    if (parts[i] === '.')
                         continue;
-                    if (parts[i] == '..')
+                    if (parts[i] === '..')
                         stack.pop();
                     else
                         stack.push(parts[i]);
@@ -714,7 +714,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             symbols = [symbol];
         }
         var props = Z.Symbolizer.resourceProperties;
-        var i, ii, len, symbol, res, isCssStyle = false;
+        var i, ii, len, res, isCssStyle = false;
         for (i = symbols.length - 1; i >= 0; i--) {
             symbol = symbols[i];
             if (!symbol) {
@@ -881,7 +881,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                 return true;
             }
         }
-        return (this._isEditingOrDragging() || this._immediate) ? true : false;
+        return (this._isEditingOrDragging() || this._immediate);
     },
 
     _enableRenderImmediate:function () {
@@ -1102,7 +1102,7 @@ Z.Geometry.getExternalResource = function (symbol) {
     var resources = [];
     var props = Z.Symbolizer.resourceProperties;
     for (var i = symbols.length - 1; i >= 0; i--) {
-        var symbol = symbols[i];
+        symbol = symbols[i];
         if (!symbol) {
             continue;
         }
@@ -1127,8 +1127,8 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     if (!symbol['markerPath']) {
         return null;
     }
-    var styles =  Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(symbol);
-    var op = 1;
+    var op,
+        styles =  Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
     if (Z.Util.isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];
@@ -1136,16 +1136,17 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     if (Z.Util.isNumber(symbol['opacity'])) {
         op *= symbol['opacity'];
     }
-    var svgStyles = {};
+    var p,
+        svgStyles = {};
     if (styles) {
-        for (var p in styles['stroke']) {
+        for (p in styles['stroke']) {
             if (styles['stroke'].hasOwnProperty(p)) {
                 if (!Z.Util.isNil(styles['stroke'][p])) {
                     svgStyles[p] = styles['stroke'][p];
                 }
             }
         }
-        for (var p in styles['fill']) {
+        for (p in styles['fill']) {
             if (styles['fill'].hasOwnProperty(p)) {
                 if (!Z.Util.isNil(styles['fill'][p])) {
                     svgStyles[p] = styles['fill'][p];
@@ -1155,18 +1156,13 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     }
 
     var pathes = Z.Util.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
-    var pathesToRender = [];
-    for (var i = 0; i < pathes.length; i++) {
-        var pathObj;
-        if (Z.Util.isString(pathes[i])) {
-            pathObj = {'path' : pathes[i]};
-        } else {
-            pathObj = pathes[i];
-        }
-        var p = Z.Util.extend({}, pathObj, svgStyles);
-        p['d'] = p['path'];
-        delete p['path'];
-        pathesToRender.push(p);
+    var i, path, pathesToRender = [];
+    for (i = 0; i < pathes.length; i++) {
+        var pathObj = Z.Util.isString(pathes[i]) ? {'path' : pathes[i]} : pathes[i];
+        path = Z.Util.extend({}, pathObj, svgStyles);
+        path['d'] = path['path'];
+        delete path['path'];
+        pathesToRender.push(path);
     }
     var svgContent = ['<svg version="1.1"', 'xmlns="http://www.w3.org/2000/svg"'];
     if (op < 1) {
@@ -1180,9 +1176,9 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     }
     svgContent.push('><defs></defs>');
 
-    for (var i = 0; i < pathesToRender.length; i++) {
+    for (i = 0; i < pathesToRender.length; i++) {
         var strPath = '<path ';
-        for (var p in pathesToRender[i]) {
+        for (p in pathesToRender[i]) {
             if (pathesToRender[i].hasOwnProperty(p)) {
                 strPath += ' ' + p + '="' + pathesToRender[i][p] + '"';
             }

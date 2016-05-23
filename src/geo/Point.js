@@ -31,8 +31,8 @@ Z.Point = function (x, y) {
         this.y = x[1];
     }
     if (this.isNaN()) {
-         throw new Error('point is NaN');
-     }
+        throw new Error('point is NaN');
+    }
 };
 
 Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{

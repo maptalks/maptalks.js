@@ -53,9 +53,10 @@ Z.VectorLayer.prototype.toJSON = function (options) {
             clipExtent = new Z.Extent(options['clipExtent']);
         }
         var geoJSONs = [];
-        var geometries = this.getGeometries();
+        var geometries = this.getGeometries(),
+            geoExt;
         for (var i = 0, len = geometries.length; i < len; i++) {
-            var geoExt = geometries[i].getExtent();
+            geoExt = geometries[i].getExtent();
             if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
                 continue;
             }
@@ -78,9 +79,10 @@ Z.VectorLayer._fromJSON = function (layerJSON) {
     if (!layerJSON || layerJSON['type'] !== 'VectorLayer') { return null; }
     var layer = new Z.VectorLayer(layerJSON['id'], layerJSON['options']);
     var geoJSONs = layerJSON['geometries'];
-    var geometries = [];
+    var geometries = [],
+        geo;
     for (var i = 0; i < geoJSONs.length; i++) {
-        var geo = Z.Geometry.fromJSON(geoJSONs[i]);
+        geo = Z.Geometry.fromJSON(geoJSONs[i]);
         if (geo) {
             geometries.push(geo);
         }

@@ -184,14 +184,14 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
         return new Z.Extent(p1, this._coordinates);
     },
 
-    _computeGeodesicLength:function (measurer) {
+    _computeGeodesicLength:function () {
         if (Z.Util.isNil(this._width) || Z.Util.isNil(this._height)) {
             return 0;
         }
         return 2 * (this._width + this._height);
     },
 
-    _computeGeodesicArea:function (measurer) {
+    _computeGeodesicArea:function () {
         if (Z.Util.isNil(this._width) || Z.Util.isNil(this._height)) {
             return 0;
         }

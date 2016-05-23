@@ -43,7 +43,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         if (!coordinates) {
             this._coordinates = null;
             this._setPrjCoordinates(null);
-            return;
+            return this;
         }
         this._coordinates = Z.GeoJSON.fromGeoJSONCoordinates(coordinates);
         if (this.getMap()) {
@@ -69,7 +69,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         return Z.GeoUtils.computeLength(this.getCoordinates(), measurer);
     },
 
-    _computeGeodesicArea:function (measurer) {
+    _computeGeodesicArea:function () {
         return 0;
     },
 

@@ -151,7 +151,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         var lastPoint = ring[ring.length - 1];
         var isClose = true;
         // var least = 4;
-        if (ring[0].x != lastPoint.x || ring[0].y != lastPoint.y) {
+        if (ring[0].x !== lastPoint.x || ring[0].y !== lastPoint.y) {
             // least = 3;
             isClose = false;
         }

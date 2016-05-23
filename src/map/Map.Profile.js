@@ -71,23 +71,22 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 extraLayerOptions['clipExtent'] = options['clipExtent'];
             }
         }
-
+        var i, len, layers, opts,
+            layersJSON = [];
         if (Z.Util.isNil(options['layers']) || (options['layers'] && !Z.Util.isArray(options['layers']))) {
-            var layers = this.getLayers();
-            var layersJSON = [];
-            for (var i = 0, len = layers.length; i < len; i++) {
-                var options = Z.Util.extend({}, Z.Util.isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
-                layersJSON.push(layers[i].toJSON(options));
+            layers = this.getLayers();
+            for (i = 0, len = layers.length; i < len; i++) {
+                opts = Z.Util.extend({}, Z.Util.isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
+                layersJSON.push(layers[i].toJSON(opts));
             }
             profile['layers'] = layersJSON;
         } else if (Z.Util.isArrayHasData(options['layers'])) {
-            var layers = options['layers'];
-            var layersJSON = [];
-            for (var i = 0; i < layers.length; i++) {
+            layers = options['layers'];
+            for (i = 0; i < layers.length; i++) {
                 var exportOption = layers[i];
                 var layer = this.getLayer(exportOption['id']);
-                var options = Z.Util.extend({}, exportOption['options'], extraLayerOptions);
-                layersJSON.push(layer.toJSON(options));
+                opts = Z.Util.extend({}, exportOption['options'], extraLayerOptions);
+                layersJSON.push(layer.toJSON(opts));
             }
             profile['layers'] = layersJSON;
         } else {

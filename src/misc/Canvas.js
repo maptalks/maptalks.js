@@ -457,11 +457,10 @@ Z.Canvas = {
     //各种图形的绘制方法
     ellipse:function (ctx, pt, width, height, lineOpacity, fillOpacity) {
         //TODO canvas scale后会产生错误?
-        function bezierEllipse(x, y, a, b)
-        {
+        function bezierEllipse(x, y, a, b) {
             var k = 0.5522848,
-           ox = a * k, // 水平控制点偏移量
-           oy = b * k; // 垂直控制点偏移量
+                ox = a * k, // 水平控制点偏移量
+                oy = b * k; // 垂直控制点偏移量
             ctx.beginPath();
            //从椭圆的左端点开始顺时针绘制四条三次贝塞尔曲线
             ctx.moveTo(x - a, y);

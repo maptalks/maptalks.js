@@ -114,10 +114,10 @@ Z.StringUtil = {
         if (!Z.Util.isString(text)) {
             text += '';
         }
-        var actualWidth = 0;
+        var actualWidth = 0, size, i, len;
         if (wrapChar && text.indexOf(wrapChar) >= 0) {
             var texts = text.split(wrapChar);
-            for (var i = 0, len = texts.length; i < len; i++) {
+            for (i = 0, len = texts.length; i < len; i++) {
                 var t = texts[i];
                 //TODO stringLength is expensive, should be reduced here.
                 var tSize = Z.StringUtil.stringLength(t, font);
@@ -125,7 +125,7 @@ Z.StringUtil = {
                 if (tWidth > wrapWidth) {
                     var contents = Z.StringUtil.splitContent(t, tWidth, wrapWidth);
                     for (var ii = 0; ii < contents.length; ii++) {
-                        var size = Z.StringUtil.stringLength(contents[ii], font);
+                        size = Z.StringUtil.stringLength(contents[ii], font);
                         if (size['width'] > actualWidth) { actualWidth = size['width']; }
                         textRows.push({'text':contents[ii], 'size':size});
                     }
@@ -134,19 +134,20 @@ Z.StringUtil = {
                     textRows.push({'text':t, 'size':tSize});
                 }
             }
-        } else {
-            if (textWidth > wrapWidth) {
-                var splitted = Z.StringUtil.splitContent(text, textWidth, wrapWidth);
-                for (var iii = 0; iii < splitted.length; iii++) {
-                    var size = Z.StringUtil.stringLength(splitted[iii], font);
-                    if (size['width'] > actualWidth) { actualWidth = size['width']; }
-                    textRows.push({'text':splitted[iii], 'size':size});
-                }
-            } else {
-                if (rawTextSize['width'] > actualWidth) { actualWidth = rawTextSize['width']; }
-                textRows.push({'text':text, 'size':rawTextSize});
+        } else if (textWidth > wrapWidth) {
+            var splitted = Z.StringUtil.splitContent(text, textWidth, wrapWidth);
+            for (i = 0; i < splitted.length; i++) {
+                size = Z.StringUtil.stringLength(splitted[i], font);
+                if (size['width'] > actualWidth) { actualWidth = size['width']; }
+                textRows.push({'text':splitted[i], 'size':size});
             }
+        } else {
+            if (rawTextSize['width'] > actualWidth) {
+                actualWidth = rawTextSize['width'];
+            }
+            textRows.push({'text':text, 'size':rawTextSize});
         }
+
         var rowNum = textRows.length;
         var textSize = new Z.Size(actualWidth, textHeight * rowNum + lineSpacing * (rowNum - 1));
         return {'total': rowNum, 'size': textSize, 'rows': textRows, 'rawSize':rawTextSize};

@@ -55,7 +55,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         }
         var layers = [];
         var i, len;
-        for (i = 0; i < reqLayers.length; i++) {
+        for (i = 0, len = reqLayers.length; i < len; i++) {
             if (Z.Util.isString(reqLayers[i])) {
                 layers.push(this.getLayer(reqLayers[i]));
             } else {

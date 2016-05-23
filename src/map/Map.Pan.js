@@ -27,7 +27,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Map} this
      */
     panBy:function (offset, options) {
-        this._onMoveStart;
+        this._onMoveStart();
         if (!options) {
             options = {};
         }

@@ -57,36 +57,34 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
             this['xmax'] = Math.max(p1, p3);
             this['ymax'] = Math.max(p2, p4);
             return;
-        } else {
-             //Constructor 2: two coordinates
-            if (Z.Util.isNumber(p1.x) &&
-                Z.Util.isNumber(p2.x) &&
-                Z.Util.isNumber(p1.y) &&
-                Z.Util.isNumber(p2.y)) {
-                if (p1.x > p2.x) {
-                    this['xmin'] = p2.x;
-                    this['xmax'] = p1.x;
-                } else {
-                    this['xmin'] = p1.x;
-                    this['xmax'] = p2.x;
-                }
-                if (p1.y > p2.y) {
-                    this['ymin'] = p2.y;
-                    this['ymax'] = p1.y;
-                } else {
-                    this['ymin'] = p1.y;
-                    this['ymax'] = p2.y;
-                }
-                //constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
-            } else if (Z.Util.isNumber(p1['xmin']) &&
-                    Z.Util.isNumber(p1['xmax']) &&
-                    Z.Util.isNumber(p1['ymin']) &&
-                    Z.Util.isNumber(p1['ymax']))   {
-                this['xmin'] = p1['xmin'];
-                this['ymin'] = p1['ymin'];
-                this['xmax'] = p1['xmax'];
-                this['ymax'] = p1['ymax'];
+        } else if (Z.Util.isNumber(p1.x) &&
+            Z.Util.isNumber(p2.x) &&
+            Z.Util.isNumber(p1.y) &&
+            Z.Util.isNumber(p2.y)) {
+            //Constructor 2: two coordinates
+            if (p1.x > p2.x) {
+                this['xmin'] = p2.x;
+                this['xmax'] = p1.x;
+            } else {
+                this['xmin'] = p1.x;
+                this['xmax'] = p2.x;
             }
+            if (p1.y > p2.y) {
+                this['ymin'] = p2.y;
+                this['ymax'] = p1.y;
+            } else {
+                this['ymin'] = p1.y;
+                this['ymax'] = p2.y;
+            }
+            //constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
+        } else if (Z.Util.isNumber(p1['xmin']) &&
+                Z.Util.isNumber(p1['xmax']) &&
+                Z.Util.isNumber(p1['ymin']) &&
+                Z.Util.isNumber(p1['ymax'])) {
+            this['xmin'] = p1['xmin'];
+            this['ymin'] = p1['ymin'];
+            this['xmax'] = p1['xmax'];
+            this['ymax'] = p1['ymax'];
         }
     },
 

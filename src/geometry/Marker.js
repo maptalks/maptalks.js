@@ -52,8 +52,8 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
         if (Z.Util.isArray(symbol)) {
             return false;
         }
-        return Z.symbolizer.VectorMarkerSymbolizer.test(this, symbol) || Z.symbolizer.VectorPathMarkerSymbolizer.test(this, symbol)
-                    || Z.symbolizer.ImageMarkerSymbolizer.test(this, symbol);
+        return Z.symbolizer.VectorMarkerSymbolizer.test(this, symbol) || Z.symbolizer.VectorPathMarkerSymbolizer.test(this, symbol) ||
+                    Z.symbolizer.ImageMarkerSymbolizer.test(this, symbol);
     },
 
     _containsPoint: function (point) {

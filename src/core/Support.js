@@ -9,9 +9,9 @@ if (!Z.node) {
         var headChildren = head.childNodes;
         var viewPortMeta = null;
         for (var i = 0, len = headChildren.length; i < len; i++) {
-            if ('meta' === headChildren[i].nodeName.toLowerCase()) {
+            if (headChildren[i].nodeName.toLowerCase() === 'meta') {
                 var metaName = (headChildren[i].getAttribute ? headChildren[i].getAttribute('name') : null);
-                if ('viewport' === metaName) {
+                if (metaName === 'viewport') {
                     viewPortMeta = headChildren[i];
                 }
             }

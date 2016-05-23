@@ -96,11 +96,9 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
                     c1 = p1;
                     c2 = p2;
                     minDist = dist;
-                } else {
-                    if (dist < minDist) {
-                        c1 = p1;
-                        c2 = p2;
-                    }
+                } else if (dist < minDist) {
+                    c1 = p1;
+                    c2 = p2;
                 }
             }
         }
@@ -134,7 +132,6 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
     },
 
     _registEvents: function () {
-        var me = this;
         if (!this._connSource.__connectors) {
             this._connSource.__connectors = [];
         }
@@ -151,13 +148,13 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         this._connTarget.on('show', this._showConnect, this).on('hide', this.hide, this);
         var trigger = this.options['showOn'];
         this.hide();
-        if ('moving' === trigger) {
+        if (trigger === 'moving') {
             this._connSource.on('dragstart', this._showConnect, this).on('dragend', this.hide, this);
             this._connTarget.on('dragstart', this._showConnect, this).on('dragend', this.hide, this);
-        } else if ('click' === trigger) {
+        } else if (trigger === 'click') {
             this._connSource.on('mousedown', this._showConnect, this).on('mouseup', this.hide, this);
             this._connTarget.on('mousedown', this._showConnect, this).on('mouseup', this.hide, this);
-        } else if ('mouseover' === trigger) {
+        } else if (trigger === 'mouseover') {
             this._connSource.on('mouseover', this._showConnect, this).on('mouseout', this.hide, this);
             this._connTarget.on('mouseover', this._showConnect, this).on('mouseout', this.hide, this);
         } else {
@@ -165,19 +162,19 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         }
     },
     _isEditingOrDragging:function () {
-        return ((!(this._connSource instanceof Z.Control) && this._connSource._isEditingOrDragging())
-            || (!(this._connTarget instanceof Z.Control) && this._connTarget._isEditingOrDragging()));
+        return ((!(this._connSource instanceof Z.Control) && this._connSource._isEditingOrDragging()) ||
+            (!(this._connTarget instanceof Z.Control) && this._connTarget._isEditingOrDragging()));
     },
     _isRenderImmediate:function () {
-        return ((!(this._connSource instanceof Z.Control) && this._connSource._isRenderImmediate())
-            || (!(this._connTarget instanceof Z.Control) && this._connTarget._isRenderImmediate()));
+        return ((!(this._connSource instanceof Z.Control) && this._connSource._isRenderImmediate()) ||
+            (!(this._connTarget instanceof Z.Control) && this._connTarget._isRenderImmediate()));
     }
 });
 
 
 Z.Util.extend(Z.ConnectorLine, {
     _hasConnectors:function (geometry) {
-        return (geometry.__connectors != null && geometry.__connectors.length > 0);
+        return (!Z.Util.isNil(geometry.__connectors) && geometry.__connectors.length > 0);
     },
 
     _getConnectors:function (geometry) {

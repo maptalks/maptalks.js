@@ -147,7 +147,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         //phantomjs will crash when registering events on canvasContainer
         var dom = this._panels.mapWrapper || this._containerDOM;
         if (remove) {
-            Z.DomUtil.removeDomEvent(dom, events, this._handleDOMEvent);
+            Z.DomUtil.removeDomEvent(dom, events, this._handleDOMEvent, this);
         } else {
             Z.DomUtil.addDomEvent(dom, events, this._handleDOMEvent, this);
         }
@@ -156,13 +156,14 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     _handleDOMEvent: function (e) {
         if (this._ignoreEvent(e)) {
-            return true;
+            return;
         }
         var type = e.type;
         this._fireDOMEvent(this, e, type);
     },
 
     _ignoreEvent: function (domEvent) {
+        //ignore events originated from control doms.
         if (!domEvent || !this._panels.control) {
             return false;
         }

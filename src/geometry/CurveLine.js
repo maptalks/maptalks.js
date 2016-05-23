@@ -28,8 +28,7 @@ Z.CurveLine = Z.LineString.extend({
         var arcDegree = this.options['arcDegree'],
             curveType = this.options['curveType'];
         var me = this;
-        var fn = function (_ctx, _points, _lineOpacity, _fillOpacity, _dasharray) {
-
+        var fn = function (_ctx, _points, _lineOpacity) {
             var curveFn, degree;
             switch (curveType) {
             case 0 : curveFn = Z.Canvas._lineTo; degree = 1; break;
@@ -37,9 +36,9 @@ Z.CurveLine = Z.LineString.extend({
             case 2 : curveFn = Z.Canvas._quadraticCurveTo; degree = 2; break;
             case 3 : curveFn = Z.Canvas._bezierCurveTo; degree = 3; break;
             }
-            var len = _points.length;
+            var i, len = _points.length;
             _ctx.beginPath();
-            for (var i = 0; i < len; i += degree) {
+            for (i = 0; i < len; i += degree) {
                 var p = _points[i].round();
                 if (i === 0) {
                     _ctx.moveTo(p.x, p.y);
@@ -58,7 +57,7 @@ Z.CurveLine = Z.LineString.extend({
                         points.push(_points[i + ii + 1]);
                     }
                     var args = [_ctx].concat(points);
-                    if (curveFn == Z.Canvas._arcBetween) {
+                    if (curveFn === Z.Canvas._arcBetween) {
                         //arc start point
                         args.splice(1, 0, p);
                         args = args.concat([arcDegree]);
@@ -82,14 +81,13 @@ Z.CurveLine = Z.LineString.extend({
                 }
                 //besizerCurves doesn't have point arrows
                 if ((curveType === 0 || curveType === 1) && placement === 'point') {
-                    for (var i = 0, len = _points.length - 1; i < len; i++) {
+                    for (i = 0, len = _points.length - 1; i < len; i++) {
                         me._arrow(_ctx, _points[i], _points[i + 1], _lineOpacity, me.options['arrowStyle']);
                     }
                 }
             }
 
         };
-        var symbol = this._getInternalSymbol();
         return {
             'fn' : fn,
             'context' : [points]

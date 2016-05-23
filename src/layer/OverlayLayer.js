@@ -237,7 +237,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     _onGeometryRemove:function (geometry) {
         if (!geometry) { return; }
         //考察geometry是否属于该图层
-        if (this != geometry.getLayer()) {
+        if (this !== geometry.getLayer()) {
             return;
         }
         var internalId = geometry._getInternalId();

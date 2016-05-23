@@ -105,13 +105,11 @@ Z.Util = {
         try {
             if (Z.Util.isSVG(url)) {
                 Z.Util._convertSVG2PNG(url, w, h, onLoadComplete);
-            } else {
+            } else if (Z.Util.isURL(url)) {
                 //canvas-node的Image对象
-                if (Z.Util.isURL(url)) {
-                    this._loadRemoteImage(img, url, onLoadComplete);
-                } else {
-                    this._loadLocalImage(img, url, onLoadComplete);
-                }
+                this._loadRemoteImage(img, url, onLoadComplete);
+            } else {
+                this._loadLocalImage(img, url, onLoadComplete);
             }
         } catch (error) {
             onError(error);
@@ -160,7 +158,7 @@ Z.Util = {
         require('svg2img')(url, {'width':w, 'height':h}, onComplete);
     },
 
-    fixPNG:function (img) {
+    fixPNG:function () {
 
     },
 
@@ -174,8 +172,10 @@ Z.Util = {
 
     // return unique ID of an object
     stamp: function (obj) {
+        /*eslint-disable camelcase*/
         obj._maptalks_id = obj._maptalks_id || Z.Util.GUID();
         return obj._maptalks_id;
+        /*eslint-enable camelcase*/
     },
 
     /**
@@ -355,7 +355,7 @@ Z.Util = {
         }
         //~~~cheap key test
         for (i = ka.length - 1; i >= 0; i--) {
-            if (ka[i] != kb[i]) {
+            if (ka[i] !== kb[i]) {
                 return false;
             }
         }
@@ -452,7 +452,10 @@ Z.Util = {
      */
     isArray:function (obj) {
         if (!obj) { return false; }
-        return typeof obj == 'array' || (obj.constructor !== null && obj.constructor == Array);
+        if (Array.isArray) {
+            return Array.isArray(obj);
+        }
+        return Object.prototype.toString.call(obj) === '[object Array]';
     },
 
     /**
@@ -462,7 +465,7 @@ Z.Util = {
      */
     isString:function (_str) {
         if (Z.Util.isNil(_str)) { return false; }
-        return typeof _str == 'string' || (_str.constructor !== null && _str.constructor == String);
+        return typeof _str === 'string' || (_str.constructor !== null && _str.constructor === String);
     },
 
     /*
@@ -474,7 +477,7 @@ Z.Util = {
         if (this.isNil(_func)) {
             return false;
         }
-        return typeof _func == 'function' || (_func.constructor !== null && _func.constructor == Function);
+        return typeof _func === 'function' || (_func.constructor !== null && _func.constructor === Function);
     },
 
     /**
@@ -502,7 +505,7 @@ Z.Util = {
             return str;
         }
         var re = /-([A-Za-z])/g;
-        return str.replace(re, function (match, p1, offset, str) {
+        return str.replace(re, function (match, p1) {
             return p1.toUpperCase();
         });
     },
@@ -514,7 +517,7 @@ Z.Util = {
      */
     convertCamelToMinus: function (str) {
         var re = /([A-Z])/g;
-        return str.replace(re, function (match, p1, offset, str) {
+        return str.replace(re, function (match, p1, offset) {
             if (offset > 0) {
                 return '-' + p1.toLowerCase();
             }
@@ -669,10 +672,8 @@ Z.Util = {
                 for (var ii = 0; ii < sources.length; ii++) {
                     if (!Z.Util.isArray(sources[ii])) {
                         Z.Util.extend(dest, s, sources[ii]);
-                    } else {
-                        if (!Z.Util.isNil(sources[ii][i])) {
-                            Z.Util.extend(dest, s, sources[ii][i]);
-                        }
+                    } else if (!Z.Util.isNil(sources[ii][i])) {
+                        Z.Util.extend(dest, s, sources[ii][i]);
                     }
                 }
                 result.push(dest);

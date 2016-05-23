@@ -39,7 +39,8 @@
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
     "phantomjs-prebuilt": "^2.1.6",
-    "sinon": "^1.14.1"
+    "sinon": "^1.14.1",
+    "eslint": "^2.10.2"
   },
   "dependencies": {}
 }

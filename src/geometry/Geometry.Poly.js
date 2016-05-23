@@ -32,7 +32,7 @@ Z.Geometry.Poly = {
         if (!is2dArray && isSimplify) {
             prjCoords = Z.Simplify.simplify(prjCoords, tolerance, false);
         }
-        var p, p_r, pp;
+        var p, vpoints, pp;
         for (var i = 0, len = prjCoords.length; i < len; i++) {
             p = prjCoords[i];
             if (Z.Util.isNil(p) || (isClipping && !fullExtent.contains(p))) {
@@ -46,7 +46,7 @@ Z.Geometry.Poly = {
                 if (isSimplify) {
                     p = Z.Simplify.simplify(p, tolerance, false);
                 }
-                p_r = [];
+                vpoints = [];
                 for (var j = 0, jlen = p.length; j < jlen; j++) {
                     pp = p[j];
                     if (Z.Util.isNil(p[j])) {
@@ -55,10 +55,10 @@ Z.Geometry.Poly = {
                     if (j > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
                         pp = this._antiMeridian(pp, p[j - 1], projection, isAntiMeridian);
                     }
-                    p_r.push(map._prjToViewPoint(pp));
+                    vpoints.push(map._prjToViewPoint(pp));
                 }
                 delete this._preAntiMeridianCoord;
-                result.push(p_r);
+                result.push(vpoints);
             } else {
                 if (i > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
                     p = this._antiMeridian(p, prjCoords[i - 1], projection, isAntiMeridian);

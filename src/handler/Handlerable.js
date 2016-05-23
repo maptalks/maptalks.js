@@ -18,7 +18,7 @@ Z.Handlerable = {
         //handler已经存在
         if (this[name]) {
             this[name].enable();
-            return;
+            return this;
         }
 
         var handler = this[name] = new handlerClass(this);

@@ -149,7 +149,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
         }
 
         // TODO: tolerance
-        return pp.distanceTo(pc) <= size.width / 2 && between;
+        return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
     },
 
     _computeExtent:function (measurer) {
@@ -163,14 +163,14 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
         return new Z.Extent(p1, p2);
     },
 
-    _computeGeodesicLength:function (measurer) {
+    _computeGeodesicLength:function () {
         if (Z.Util.isNil(this._radius)) {
             return 0;
         }
         return Math.PI * 2 * this._radius * Math.abs(this.startAngle - this.endAngle) / 360 + 2 * this._radius;
     },
 
-    _computeGeodesicArea:function (measurer) {
+    _computeGeodesicArea:function () {
         if (Z.Util.isNil(this._radius)) {
             return 0;
         }

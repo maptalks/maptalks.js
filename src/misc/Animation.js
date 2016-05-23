@@ -52,13 +52,14 @@ Z.Animation = {
         }
         // resolve a style value.
         function resolveVal(val) {
-            var values = val;
+            var values = val,
+                clazz;
             //val is just a destination value, so we set start value to 0 or a 0-point or a 0-coordinate.
             if (!Z.Util.isArray(val)) {
                 if (Z.Util.isNumber(val)) {
                     values = [0, val];
                 } else if (val instanceof Z.Point || val instanceof Z.Coordinate) {
-                    var clazz = val.constructor;
+                    clazz = val.constructor;
                     values = [new clazz(0, 0), val];
                 } else {
                     throw new Error(val + ' is not supported in animation styles.');
@@ -78,7 +79,7 @@ Z.Animation = {
                     v1 = new Z.Coordinate(v1);
                     v2 = new Z.Coordinate(v2);
                 } else {
-                    var clazz = v1.constructor;
+                    clazz = v1.constructor;
                     v1 = new clazz(v1);
                     v2 = new clazz(v2);
                 }
@@ -90,7 +91,6 @@ Z.Animation = {
             } else {
                 throw new Error(values + ' is not supported in animation styles.');
             }
-            return null;
         }
 
         function isChild(val) {
@@ -327,7 +327,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
 
     },
     _run:function () {
-        if ('finished' === this.playState || 'paused' === this.playState) {
+        if (this.playState === 'finished' || this.playState === 'paused') {
             return;
         }
         var me = this;
@@ -336,9 +336,9 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
         var frame = this._animation(now - this._playStartTime, this.duration);
         this.playState = frame.state['playState'];
         var step = this._stepFn;
-        if ('idle' === this.playState) {
+        if (this.playState === 'idle') {
             setTimeout(Z.Util.bind(this._run, this), this.startTime - now);
-        } else if ('running' === this.playState) {
+        } else if (this.playState === 'running') {
             this._animeFrameId = Z.Animation._requestAnimFrame(function () {
                 me.currentTime = now - me._playStartTime;
                 if (step) {
@@ -346,7 +346,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
                 }
                 me._run();
             });
-        } else if ('finished' === this.playState) {
+        } else if (this.playState === 'finished') {
             this.finished = true;
             //finished
             if (step) {

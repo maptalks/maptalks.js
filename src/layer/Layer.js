@@ -38,11 +38,13 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!this.getMap()) { return this; }
         this._initRenderer();
         var zIndex = this.getZIndex();
-        if (!Z.Util.isNil(zIndex) && this._renderer) {
-            this._renderer.setZIndex(zIndex);
-        }
-        if (this._prepareLoad()) {
-            this._renderer && this._renderer.render();
+        if (this._renderer) {
+            if (!Z.Util.isNil(zIndex)) {
+                this._renderer.setZIndex(zIndex);
+            }
+            if (this._prepareLoad()) {
+                this._renderer.render();
+            }
         }
         return this;
     },
@@ -223,8 +225,8 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         var map = this.getMap();
         if (map) {
             var zoom = map.getZoom();
-            if ((!Z.Util.isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom)
-                    || (!Z.Util.isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
+            if ((!Z.Util.isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom) ||
+                    (!Z.Util.isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
                 return false;
             }
         }
@@ -260,8 +262,8 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @returns {maptalks.Layer} this
      */
     setMask:function (mask) {
-        if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask, mask.getSymbol()))
-            || mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
+        if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask, mask.getSymbol())) ||
+                mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
             throw new Error('mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon');
         }
 
@@ -282,8 +284,9 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
         }
-        var renderer = this._getRenderer();
-        renderer && renderer.render();
+        if (this._getRenderer()) {
+            this._getRenderer().render();
+        }
         return this;
     },
 
@@ -296,8 +299,9 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
         }
-        var renderer = this._getRenderer();
-        renderer && renderer.render();
+        if (this._getRenderer()) {
+            this._getRenderer().render();
+        }
         return this;
     },
 

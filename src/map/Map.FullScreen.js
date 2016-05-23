@@ -63,22 +63,22 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         }
     },
 
-    _cancelFullScreen: function (dom) {
-         if (document.cancelFullScreen) {
-           document.cancelFullScreen();
-       } else if (document.mozCancelFullScreen) {
-           document.mozCancelFullScreen();
-       } else if (document.webkitCancelFullScreen) {
-           document.webkitCancelFullScreen();
-       } else {
-           var features = 'fullscreen=no,status=yes,resizable=yes,scrollbars=no,' +
+    _cancelFullScreen: function () {
+        if (document.cancelFullScreen) {
+            document.cancelFullScreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.webkitCancelFullScreen) {
+            document.webkitCancelFullScreen();
+        } else {
+            var features = 'fullscreen=no,status=yes,resizable=yes,scrollbars=no,' +
                 'titlebar=no,menubar=yes,location=yes,toolbar=yes,z-look=yes';
-           var newWin = window.open(location.href, '_blank', features);
-           if (newWin !== null) {
+            var newWin = window.open(location.href, '_blank', features);
+            if (newWin !== null) {
                 window.opener = null;
                 //关闭父窗口
                 window.close();
             }
-       }
-     }
+        }
+    }
 });

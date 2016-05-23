@@ -28,7 +28,7 @@ Z.Eventable = {
                 this._eventMap[eventType] = handlerChain;
             }
             for (var i = 0, len = handlerChain.length; i < len; i++) {
-                if (handler == handlerChain[i].handler) {
+                if (handler === handlerChain[i].handler) {
                     if (!handlerChain[i].del && handlerChain[i].context === context) {
                         return this;
                     }
@@ -79,7 +79,7 @@ Z.Eventable = {
             var handlerChain =  this._eventMap[eventType];
             if (!handlerChain) { return this; }
             for (var i = 0, len = handlerChain.length; i < len; i++) {
-                if (handler == handlerChain[i].handler && handlerChain[i].context === context) {
+                if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
                     handlerChain[i].del = true;
                 }
             }
@@ -183,7 +183,7 @@ Z.Eventable = {
                 bubble = handlerChain[i].handler(param);
             }
             //stops the event propagation if the handler returns false.
-            if (false === bubble) {
+            if (bubble === false) {
                 if (param['domEvent']) {
                     Z.DomUtil.stopPropagation(param['domEvent']);
                 }
