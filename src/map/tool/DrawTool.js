@@ -7,12 +7,11 @@
  * @mixins maptalks.Eventable
  * @param {options} [options=null] - construct options
  */
-Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
-    includes: [Z.Eventable],
+Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
     options:{
         'symbol' : {
-            'lineColor':'#000000',//'#474cf8',
+            'lineColor':'#000000',
             'lineWidth':2,
             'lineOpacity':1,
             'lineDasharray': '',
@@ -28,75 +27,6 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     /**
-     * 将绘图工具添加到map上
-     * @param {maptalks.Map} map
-     */
-    addTo: function(map) {
-        this._map = map;
-        if (!this._map) {return this;}
-        if (map._drawTool && map._drawTool instanceof Z.DrawTool) {
-            map._drawTool.disable();
-        }
-        this.enable();
-        map._drawTool = this;
-        this._fireEvent('add');
-        return this;
-    },
-
-    getMap:function() {
-        return this._map;
-    },
-
-    /**
-     * 激活
-     * @expose
-     */
-    enable:function() {
-        var map = this._map;
-        if (!map || this._enabled) {return this;}
-        this._enabled = true;
-        this._mapDraggable = map.options['draggable'];
-        this._mapDoubleClickZoom = map.options['doubleClickZoom'];
-        this._autoBorderPanning = map.options['autoBorderPanning'];
-        map.config({
-            'autoBorderPanning' : true,
-            'draggable': false,
-            'doubleClickZoom':false
-        });
-        this._drawToolLayer = this._getDrawLayer();
-        this._clearEvents();
-        this._prepare(this._registerEvents);
-
-        return this;
-    },
-
-    /**
-     * 停止激活
-     * @expose
-     */
-    disable:function() {
-        if (!this._enabled || !this._map) {
-            return this;
-        }
-        this._enabled = false;
-        var map = this._map;
-        if (!map) {return this;}
-        map.config({
-            'autoBorderPanning' : this._autoBorderPanning,
-            'draggable': this._mapDraggable,
-            'doubleClickZoom' : this._mapDoubleClickZoom
-        });
-        delete this._autoBorderPanning;
-        delete this._mapDraggable;
-        delete this._mapDoubleClickZoom;
-        this._endDraw();
-        map.removeLayer(this._getDrawLayer());
-        this._clearEvents();
-        this._fireEvent('disable');
-        return this;
-    },
-
-    /**
      * 设置绘图模式
      * @param {Number} mode 绘图模式
      * @expose
@@ -106,9 +36,9 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
             this._geometry.remove();
             delete this._geometry;
         }
+        this._switchEvents('off');
         this.options['mode'] = mode;
-        this._clearEvents();
-        this._registerEvents();
+        this._switchEvents('on');
         return this;
     },
 
@@ -142,7 +72,37 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
         return this;
     },
 
-    _prepare:function(onComplete) {
+
+    _onEnable:function() {
+        var map = this.getMap();
+        this._mapDraggable = map.options['draggable'];
+        this._mapDoubleClickZoom = map.options['doubleClickZoom'];
+        this._autoBorderPanning = map.options['autoBorderPanning'];
+        map.config({
+            'autoBorderPanning' : true,
+            'draggable': false,
+            'doubleClickZoom':false
+        });
+        this._drawToolLayer = this._getDrawLayer();
+        return this;
+    },
+
+    _onDisable:function() {
+        var map = this.getMap();
+        map.config({
+            'autoBorderPanning' : this._autoBorderPanning,
+            'draggable': this._mapDraggable,
+            'doubleClickZoom' : this._mapDoubleClickZoom
+        });
+        delete this._autoBorderPanning;
+        delete this._mapDraggable;
+        delete this._mapDoubleClickZoom;
+        this._endDraw();
+        map.removeLayer(this._getDrawLayer());
+        return this;
+    },
+
+    _loadResources:function(onComplete) {
         var symbol = this.getSymbol();
         var resources = Z.Geometry.getExternalResource(symbol);
         if (Z.Util.isArrayHasData(resources)) {
@@ -158,32 +118,27 @@ Z.DrawTool = Z.Class.extend(/** @lends maptalks.DrawTool.prototype */{
         return this._map.getProjection();
     },
 
-    //注册鼠标响应事件
-    _registerEvents: function() {
-        var map = this._map;
+    _getEvents: function() {
         var mode = this.options['mode'];
         if (Z.Util.isNil(mode)) {
             mode = "Circle";
         }
         if (Z.Geometry['TYPE_POLYGON'] == mode || Z.Geometry['TYPE_LINESTRING'] == mode) {
-            map.on('click',this._clickForPath, this);
-            map.on('mousemove',this._mousemoveForPath,this);
-            map.on('dblclick',this._dblclickForPath,this);
+            return {
+                'click' : this._clickForPath,
+                'mousemove' : this._mousemoveForPath,
+                'dblclick'  : this._dblclickForPath
+            }
         } else if (Z.Geometry['TYPE_POINT'] == mode) {
-            map.on('click',this._clickForPoint, this);
+            return {
+                'click' : this._clickForPoint
+            }
         } else {
-            map.on('mousedown',this._mousedownToDraw, this);
+            return {
+                'mousedown' : this._mousedownToDraw
+            }
         }
-        this._fireEvent('enable');
-    },
-
-    _clearEvents: function() {
-        var map = this._map;
-        map.off('click',this._clickForPath, this);
-        map.off('click',this._clickForPoint, this);
-        map.off('mousemove',this._mousemoveForPath,this);
-        map.off('dblclick',this._dblclickForPath,this);
-        map.off('mousedown',this._mousedownToDraw,this);
+        return null;
     },
 
     _addGeometryToStage:function(geometry) {

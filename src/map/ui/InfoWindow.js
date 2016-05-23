@@ -129,14 +129,11 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         return width;
     },
 
-    _registerEvents:function() {
-        this.getMap().on('_zoomstart', this._onZoomStart, this)
-            .on('_zoomend', this._onZoomEnd, this);
-    },
-
-    _removeEvents:function() {
-        this.getMap().off('_zoomstart', this._onZoomStart, this)
-                     .off('_zoomend', this._onZoomEnd, this);
+    _getEvents: function() {
+        return {
+            '_zoomstart' : this._onZoomStart,
+            '_zoomend'   : this._onZoomEnd
+        };
     },
 
     _onZoomStart:function() {

@@ -76,7 +76,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         }
         this.fire('showstart');
         if (!this.__uiDOM) {
-            this._registerEvents && this._registerEvents();
+            this._switchEvents('on');
         }
         this._coordinate = coordinate;
         if (this._singleton()) {
@@ -143,7 +143,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      */
     remove: function() {
         this.hide();
-        this._removeEvents && this._removeEvents();
+        this._switchEvents('off');
         delete this._owner;
         delete this._map;
         this.fire('remove');
@@ -272,5 +272,17 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             }
         }
         return null;
+    },
+
+    _switchEvents: function(to) {
+        var events = this._getEvents ? this._getEvents() : null;
+        if (events) {
+            var map = this.getMap();
+            for (var p in events) {
+                if (events.hasOwnProperty(p)) {
+                    map[to](p, events[p], this);
+                }
+            }
+        }
     }
 });

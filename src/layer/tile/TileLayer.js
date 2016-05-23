@@ -82,6 +82,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         }
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
+        this._switchEvents('on');
     },
 
     /**

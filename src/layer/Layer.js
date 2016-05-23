@@ -313,6 +313,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     _onRemove:function() {
         this.clear();
         if (this._renderer) {
+            this._switchEvents('off');
             this._renderer.remove();
             delete this._renderer;
         }
@@ -337,6 +338,21 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         }
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
+        this._switchEvents('on');
+    },
+
+    _switchEvents: function(to) {
+        if (this._renderer && this._renderer._getEvents) {
+            var events = this._renderer._getEvents();
+            if (events) {
+                var map = this.getMap();
+                for (var p in events) {
+                    if (events.hasOwnProperty(p)) {
+                        map[to](p, events[p], this._renderer);
+                    }
+                }
+            }
+        }
     },
 
     _getRenderer:function() {
