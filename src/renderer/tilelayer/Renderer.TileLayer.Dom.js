@@ -342,10 +342,9 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         if (!this._onMapMoving && this._layer.options['renderWhenPanning']) {
             var rendSpan = this._layer.options['renderSpanWhenPanning'];
             if (Z.Util.isNumber(rendSpan) && rendSpan >= 0) {
-                var me = this;
                 if (rendSpan > 0) {
                     this._onMapMoving = Z.Util.throttle(function() {
-                            me.render();
+                            this.render();
                         },rendSpan,this);
                 } else {
                     this._onMapMoving = function() {
