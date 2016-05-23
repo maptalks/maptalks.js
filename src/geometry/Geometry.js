@@ -299,7 +299,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     containsPoint: function(containerPoint, t) {
         if (!this.getMap()) {
-            throw new Error('The geometry is required to be on a map to perform the "contains".');
+            throw new Error('The geometry is required to be on a map to perform "containsPoint".');
         }
         return this._containsPoint(this.getMap().containerPointToViewPoint(containerPoint), t);
     },
