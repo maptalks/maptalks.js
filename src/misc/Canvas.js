@@ -88,7 +88,7 @@ Z.Canvas = {
                 }
             }
 
-             //�Ͱ汾ie��֧�ָ�����
+             //低版本ie不支持该属性
             if (ctx.setLineDash) {
                 var strokeDash = (strokeSymbol['stroke-dasharray']);
                 if (Z.Util.isArrayHasData(strokeDash)) {
@@ -195,7 +195,7 @@ Z.Canvas = {
 
     _textOnLine: function (ctx, text, pt, textHaloRadius, textHaloFill) {
         //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
-        //����text-horizontal-alignment��text-vertical-alignment����������ʼ��ƫ����
+        //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
         pt = pt._round();
         ctx.textBaseline = 'top';
         if (textHaloRadius) {
@@ -346,7 +346,7 @@ Z.Canvas = {
         }
         var op, i, len;
         if (fillFirst) {
-            //��Ϊcanvasֻ����moveto,lineto,lineto�Ŀռ�, ��dashline��moveto���ٹ��ɷ��տռ�, �������»���ͼ��������������
+            //因为canvas只填充moveto,lineto,lineto的空间, 而dashline的moveto不再构成封闭空间, 所以重新绘制图形轮廓用于填充
             ctx.save();
             for (i = 0, len = points.length; i < len; i++) {
                 Z.Canvas._ring(ctx, points[i], null, 0);
@@ -454,16 +454,16 @@ Z.Canvas = {
         ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y);
     },
 
-    //����ͼ�εĻ��Ʒ���
+    //各种图形的绘制方法
     ellipse:function (ctx, pt, width, height, lineOpacity, fillOpacity) {
-        //TODO canvas scale������������?
+        //TODO canvas scale后会产生错误?
         function bezierEllipse(x, y, a, b)
         {
             var k = 0.5522848,
-                ox = a * k, // ˮƽ���Ƶ�ƫ����
-                oy = b * k; // ��ֱ���Ƶ�ƫ����
+           ox = a * k, // 水平控制点偏移量
+           oy = b * k; // 垂直控制点偏移量
             ctx.beginPath();
-           //����Բ�����˵㿪ʼ˳ʱ�������������α���������
+           //从椭圆的左端点开始顺时针绘制四条三次贝塞尔曲线
             ctx.moveTo(x - a, y);
             Z.Canvas._bezierCurveTo(ctx, new Z.Point(x - a, y - oy), new Z.Point(x - ox, y - b), new Z.Point(x, y - b));
             Z.Canvas._bezierCurveTo(ctx, new Z.Point(x + ox, y - b), new Z.Point(x + a, y - oy), new Z.Point(x + a, y));
@@ -475,7 +475,7 @@ Z.Canvas = {
         }
         pt = pt._round();
         if (width === height) {
-            //�����߿���ͬ,��ֱ�ӻ���Բ��, ����Ч��
+            //如果高宽相同,则直接绘制圆形, 提高效率
             ctx.beginPath();
             ctx.arc(pt.x, pt.y, Z.Util.round(width), 0, 2 * Math.PI);
             Z.Canvas.fillCanvas(ctx, fillOpacity);
