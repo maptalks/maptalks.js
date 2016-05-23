@@ -11,7 +11,7 @@ Z.Renderable = {
      * @static
      * @return {*} this
      */
-    registerRenderer : function(name, clazz) {
+    registerRenderer : function (name, clazz) {
         if (!this._regRenderers) {
             this._regRenderers = {};
         }
@@ -25,10 +25,10 @@ Z.Renderable = {
      * @return {Function} renderer's class
      * @static
      */
-    getRendererClass : function(name) {
+    getRendererClass : function (name) {
         if (!this._regRenderers) {
             return null;
         }
         return this._regRenderers[name.toLowerCase()];
     }
-}
+};

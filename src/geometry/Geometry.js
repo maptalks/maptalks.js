@@ -11,7 +11,7 @@
  * @mixins maptalks.Handlerable
  * @mixins maptalks.ui.Menu.Mixin
  */
-Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
+Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     includes: [Z.Eventable, Z.Handlerable],
 
     exceptionDefs:{
@@ -94,7 +94,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @param {Boolean} fitview         - automatically set the map to a fit center and zoom for the geometry
      * @return {maptalks.Geometry} this
      */
-    addTo:function(layer, fitview) {
+    addTo:function (layer, fitview) {
         layer.addGeometry(this, fitview);
         return this;
     },
@@ -103,8 +103,8 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Get the layer which this geometry added to.
      * @returns {maptalks.Layer} - layer added to
      */
-    getLayer:function() {
-        if (!this._layer) {return null;}
+    getLayer:function () {
+        if (!this._layer) { return null; }
         return this._layer;
     },
 
@@ -112,8 +112,8 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Get the map which this geometry added to
      * @returns {maptalks.Map} - map added to
      */
-    getMap:function() {
-        if (!this._layer) {return null;}
+    getMap:function () {
+        if (!this._layer) { return null; }
         return this._layer.getMap();
     },
 
@@ -121,7 +121,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Gets geometry's id. Id is set by setId or constructor options.
      * @returns {String|Number} geometry的id
      */
-    getId:function() {
+    getId:function () {
         return this._id;
     },
 
@@ -131,7 +131,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {maptalks.Geometry} this
      * @fires maptalks.Geometry#idchange
      */
-    setId:function(id) {
+    setId:function (id) {
         var oldId = this.getId();
         this._id = id;
         //FIXME _idchanged没有被图层监听, layer.getGeometryById会出现bug
@@ -145,7 +145,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
          * @property {String|Number} old        - value of the old id
          * @property {String|Number} new        - value of the new id
          */
-        this._fireEvent('idchange',{'old':oldId,'new':id});
+        this._fireEvent('idchange', {'old':oldId, 'new':id});
         return this;
     },
 
@@ -154,7 +154,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      *
      * @returns {Object} properties
      */
-    getProperties:function() {
+    getProperties:function () {
         if (!this.properties) {
             if (this._getParent()) {
                 return this._getParent().getProperties();
@@ -170,9 +170,9 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {maptalks.Geometry} this
      * @fires maptalks.Geometry#propertieschange
      */
-    setProperties:function(properties) {
+    setProperties:function (properties) {
         var old = this.properties;
-        this.properties = Z.Util.isObject(properties) ? Z.Util.extend({},properties) : properties;
+        this.properties = Z.Util.isObject(properties) ? Z.Util.extend({}, properties) : properties;
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
@@ -191,7 +191,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Get type of the geometry, e.g. "Point", "LineString"
      * @returns {String} type of the geometry
      */
-    getType:function() {
+    getType:function () {
         return this.type;
     },
 
@@ -200,7 +200,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Get symbol of the geometry
      * @returns {Object} geometry's symbol
      */
-    getSymbol:function() {
+    getSymbol:function () {
         var s = this._getInternalSymbol();
         if (s) {
             if (!Z.Util.isArray(s)) {
@@ -219,12 +219,12 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @return {maptalks.Geometry} this
      * @fires maptalks.Geometry#symbolchange
      */
-    setSymbol:function(symbol) {
+    setSymbol:function (symbol) {
         if (!symbol) {
-           this._symbol = null;
+            this._symbol = null;
         } else {
-           var camelSymbol = this._prepareSymbol(symbol);
-           this._symbol = camelSymbol;
+            var camelSymbol = this._prepareSymbol(symbol);
+            this._symbol = camelSymbol;
         }
         this._onSymbolChanged();
         return this;
@@ -234,7 +234,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Returns the first coordinate of the geometry.
      * @return {maptalks.Coordinate} First Coordinate
      */
-    getFirstCoordinate:function() {
+    getFirstCoordinate:function () {
         if (this instanceof Z.GeometryCollection) {
             var geometries = this.getGeometries();
             if (!geometries || !Z.Util.isArrayHasData(geometries)) {
@@ -257,13 +257,13 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Returns the last coordinate of the geometry.
      * @return {maptalks.Coordinate} Last Coordinate
      */
-    getLastCoordinate:function() {
+    getLastCoordinate:function () {
         if (this instanceof Z.GeometryCollection) {
             var geometries = this.getGeometries();
             if (!geometries || !Z.Util.isArrayHasData(geometries)) {
                 return null;
             }
-            return geometries[geometries.length-1].getLastCoordinate();
+            return geometries[geometries.length - 1].getLastCoordinate();
         }
         var coordinates = this.getCoordinates();
         if (!Z.Util.isArray(coordinates)) {
@@ -271,7 +271,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
         var last = coordinates;
         do {
-            last = last[last.length-1];
+            last = last[last.length - 1];
         } while (Z.Util.isArray(last));
         return last;
     },
@@ -280,11 +280,11 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Get the geometry's extent
      * @returns {maptalksExtent} geometry's extent
      */
-    getExtent:function() {
+    getExtent:function () {
         var prjExt = this._getPrjExtent();
         if (prjExt) {
             var p = this._getProjection();
-            return new Z.Extent(p.unproject(new Z.Coordinate(prjExt['xmin'],prjExt['ymin'])), p.unproject(new Z.Coordinate(prjExt['xmax'],prjExt['ymax'])));
+            return new Z.Extent(p.unproject(new Z.Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new Z.Coordinate(prjExt['xmax'], prjExt['ymax'])));
         } else {
             return this._computeExtent(this._getMeasurer());
         }
@@ -297,7 +297,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @param  {Number} t - tolerance in pixel
      * @return {Boolean}
      */
-    containsPoint: function(containerPoint, t) {
+    containsPoint: function (containerPoint, t) {
         if (!this.getMap()) {
             throw new Error('The geometry is required to be on a map to perform "containsPoint".');
         }
@@ -308,13 +308,13 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Get size in pixel of the geometry, size may vary in different zoom levels.
      * @returns {maptalks.Size}
      */
-    getSize: function() {
+    getSize: function () {
         var map = this.getMap();
         if (!map) {
             return null;
         }
         var pxExtent = this._getPainter().getPixelExtent();
-        return new Z.Size(Math.round(Math.abs(pxExtent['xmax']-pxExtent['xmin'])),
+        return new Z.Size(Math.round(Math.abs(pxExtent['xmax'] - pxExtent['xmin'])),
             Math.round(Math.abs(pxExtent['ymax'] - pxExtent['ymin'])));
     },
 
@@ -322,7 +322,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Get the geographical center of the geometry.
      * @returns {maptalks.Coordinate}
      */
-    getCenter:function() {
+    getCenter:function () {
         return this._computeCenter(this._getMeasurer()).copy();
     },
 
@@ -331,7 +331,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @return {maptalks.Geometry} this
      * @fires maptalks.Geometry#show
      */
-    show:function() {
+    show:function () {
         this.options['visible'] = true;
         if (this.getMap()) {
             var painter = this._getPainter();
@@ -356,7 +356,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @return {maptalks.Geometry} this
      * @fires maptalks.Geometry#hide
      */
-    hide:function() {
+    hide:function () {
         this.options['visible'] = false;
         if (this.getMap()) {
             var painter = this._getPainter();
@@ -380,7 +380,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Whether the geometry is visible
      * @returns {Boolean}
      */
-    isVisible:function() {
+    isVisible:function () {
         if (!this.options['visible']) {
             return false;
         }
@@ -408,7 +408,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @param  {maptalks.Coordinate} offset - translate offset
      * @return {maptalks.Geometry} this
      */
-    translate:function(offset) {
+    translate:function (offset) {
         if (!offset) {
             return this;
         }
@@ -419,8 +419,8 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var coordinates = this.getCoordinates();
         if (coordinates) {
             if (Z.Util.isArray(coordinates)) {
-                var translated = Z.Util.eachInArray(coordinates,this,function(coord) {
-                        return coord.add(offset);
+                var translated = Z.Util.eachInArray(coordinates, this, function (coord) {
+                    return coord.add(offset);
                 });
                 this.setCoordinates(translated);
             } else {
@@ -437,7 +437,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @param {Number} [count=4]          - flash times
      * @return {maptalks.Geometry} this
      */
-    flash: function(interval, count) {
+    flash: function (interval, count) {
         if (!interval) {
             interval = 100;
         }
@@ -471,7 +471,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Returns a copy of the geometry without the event listeners.
      * @returns {maptalks.Geometry} copy
      */
-    copy:function() {
+    copy:function () {
         var json = this.toJSON();
         //FIXME symbol信息没有被拷贝过来
         var ret = Z.Geometry.fromJSON(json);
@@ -487,7 +487,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @fires maptalks.Geometry#removestart
      * @fires maptalks.Geometry#remove
      */
-    remove:function() {
+    remove:function () {
         this._rootRemoveAndFireEvent();
         return this;
     },
@@ -496,7 +496,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Exports a GeoJSON [geometry]{@link http://geojson.org/geojson-spec.html#feature-objects} (part of a feature) out of the geometry.
      * @return {Object} GeoJSON Geometry
      */
-    toGeoJSONGeometry:function() {
+    toGeoJSONGeometry:function () {
         var gJson = this._exportGeoJSONGeometry();
         return gJson;
     },
@@ -508,7 +508,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @param {Boolean} [opts.properties=true]  - whether export properties
      * @returns {Object} GeoJSON Feature
      */
-    toGeoJSON:function(opts) {
+    toGeoJSON:function (opts) {
         if (!opts) {
             opts = {};
         }
@@ -518,7 +518,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         };
         if (Z.Util.isNil(opts['geometry']) || opts['geometry']) {
             var geoJSON = this._exportGeoJSONGeometry();
-            feature['geometry']=geoJSON;
+            feature['geometry'] = geoJSON;
         }
         var id = this.getId();
         if (!Z.Util.isNil(id)) {
@@ -573,7 +573,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @param {Boolean} [opts.infoWindow=true]  - whether export infowindow
      * @return {Object} profile json object
      */
-    toJSON:function(options) {
+    toJSON:function (options) {
         //一个Graphic的profile
         /*
             //因为响应函数无法被序列化, 所以menu, 事件listener等无法被包含在graphic中
@@ -583,7 +583,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
         var json = this._toJSON(options);
         var other = this._exportGraphicOptions(options);
-        Z.Util.extend(json,other);
+        Z.Util.extend(json, other);
         return json;
     },
 
@@ -591,7 +591,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * Get the geographic length of the geometry.
      * @returns {Number} geographic length
      */
-    getLength:function() {
+    getLength:function () {
         return this._computeGeodesicLength(this._getMeasurer());
     },
 
@@ -600,7 +600,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {Number} geographic area
      * @expose
      */
-    getArea:function() {
+    getArea:function () {
         return this._computeGeodesicArea(this._getMeasurer());
     },
 
@@ -609,12 +609,12 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @return {maptalks.Coordinate[]} connect points
      * @private
      */
-    _getConnectPoints: function() {
+    _getConnectPoints: function () {
         return [this.getCenter()];
     },
 
     //options initializing
-    _initOptions:function(opts) {
+    _initOptions:function (opts) {
         if (!opts) {
             opts = {};
         }
@@ -637,11 +637,11 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     //调用prepare时,layer已经注册到map上
-    _bindLayer:function(layer) {
+    _bindLayer:function (layer) {
         this._commonBindLayer(layer);
     },
 
-    _commonBindLayer:function(layer) {
+    _commonBindLayer:function (layer) {
         //Geometry不允许被重复添加到多个图层上
         if (this.getLayer()) {
             throw new Error(this.exceptions['DUPLICATE_LAYER']);
@@ -652,10 +652,10 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         this.callInitHooks();
     },
 
-    _prepareSymbol:function(symbol) {
+    _prepareSymbol:function (symbol) {
         var me = this;
         function prepare(_symbol) {
-            var camelSymbol = Z.Util.convertFieldNameStyle(_symbol,'camel');
+            var camelSymbol = Z.Util.convertFieldNameStyle(_symbol, 'camel');
             me._convertResourceUrl(camelSymbol);
             return camelSymbol;
         }
@@ -671,7 +671,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
     },
 
-    _getInternalSymbol:function() {
+    _getInternalSymbol:function () {
         if (!this._symbol) {
             if (this.options['symbol']) {
                 return this.options['symbol'];
@@ -685,27 +685,27 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @param  {Object} symbol
      * @private
      */
-    _convertResourceUrl:function(symbol) {
+    _convertResourceUrl:function (symbol) {
         if (Z.node || !symbol) {
             return;
         }
         function absolute(base, relative) {
-            var stack = base.split("/"),
-                parts = relative.split("/");
+            var stack = base.split('/'),
+                parts = relative.split('/');
             if (relative.indexOf('/') === 0) {
-                return stack.slice(0,3).join('/')+relative;
+                return stack.slice(0, 3).join('/') + relative;
             } else {
                 stack.pop(); // remove current file name (or empty string)
                              // (omit if "base" is the current folder without trailing slash)
-                for (var i=0; i<parts.length; i++) {
-                    if (parts[i] == ".")
+                for (var i = 0; i < parts.length; i++) {
+                    if (parts[i] == '.')
                         continue;
-                    if (parts[i] == "..")
+                    if (parts[i] == '..')
                         stack.pop();
                     else
                         stack.push(parts[i]);
                 }
-                return stack.join("/");
+                return stack.join('/');
             }
 
         }
@@ -731,15 +731,15 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                     isCssStyle = true;
                 }
                 if (!Z.Util.isURL(res)) {
-                    res = absolute(location.href,res);
-                    symbol[props[ii]] = isCssStyle?'url("'+res+'")':res;
+                    res = absolute(location.href, res);
+                    symbol[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
                 }
             }
         }
 
     },
 
-    _getPrjExtent:function() {
+    _getPrjExtent:function () {
         var p = this._getProjection();
         if (!this._extent && p) {
             var ext = this._computeExtent(p);
@@ -762,15 +762,15 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                         ext['xmin'] = tmp;
                     }
                 }
-                this._extent = new Z.Extent(p.project(new Z.Coordinate(ext['xmin'],ext['ymin'])),
-                    p.project(new Z.Coordinate(ext['xmax'],ext['ymax'])));
+                this._extent = new Z.Extent(p.project(new Z.Coordinate(ext['xmin'], ext['ymin'])),
+                    p.project(new Z.Coordinate(ext['xmax'], ext['ymax'])));
             }
 
         }
         return this._extent;
     },
 
-    _rootRemove:function() {
+    _rootRemove:function () {
         var layer = this.getLayer();
         if (!layer) {
             return;
@@ -792,7 +792,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         delete this._extent;
     },
 
-    _rootRemoveAndFireEvent:function() {
+    _rootRemoveAndFireEvent:function () {
         var layer = this.getLayer();
         if (!layer) {
             return;
@@ -819,23 +819,23 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         this._fireEvent('remove');
     },
 
-    _getInternalId:function() {
+    _getInternalId:function () {
         return this._internalId;
     },
 
     //只能被图层调用
-    _setInternalId:function(id) {
+    _setInternalId:function (id) {
         this._internalId = id;
     },
 
-    _getMeasurer:function() {
+    _getMeasurer:function () {
         if (this._getProjection()) {
             return this._getProjection();
         }
         return Z.MeasurerUtil.getInstance(this.options['measure']);
     },
 
-    _getProjection:function() {
+    _getProjection:function () {
         var map = this.getMap();
         if (map && map.getProjection()) {
             return map.getProjection();
@@ -844,14 +844,14 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     //获取geometry样式中依赖的外部图片资源
-    _getExternalResource:function() {
+    _getExternalResource:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
         var resources = Z.Geometry.getExternalResource(symbol);
         return resources;
     },
 
-    _getPainter:function() {
+    _getPainter:function () {
         if (this.getMap() && !this._painter) {
             if (this instanceof Z.GeometryCollection) {
                 this._painter = new Z.CollectionPainter(this);
@@ -862,43 +862,43 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return this._painter;
     },
 
-    _removePainter:function() {
+    _removePainter:function () {
         if (this._painter) {
             this._painter.remove();
         }
         delete this._painter;
     },
 
-    _onZoomEnd:function() {
+    _onZoomEnd:function () {
         if (this._painter) {
             this._painter.onZoomEnd();
         }
     },
 
-    _isRenderImmediate:function() {
+    _isRenderImmediate:function () {
         if (this._getParent()) {
             if (this._getParent()._isRenderImmediate()) {
                 return true;
             }
         }
-        return (this._isEditingOrDragging() || this._immediate)?true:false;
+        return (this._isEditingOrDragging() || this._immediate) ? true : false;
     },
 
-    _enableRenderImmediate:function() {
+    _enableRenderImmediate:function () {
         this._immediate = true;
         return this;
     },
 
-    _disableRenderImmediate:function() {
+    _disableRenderImmediate:function () {
         this._immediate = false;
         return this;
     },
 
-    _isEditingOrDragging:function() {
+    _isEditingOrDragging:function () {
         return ((this.isEditing && this.isEditing()) || (this.isDragging && this.isDragging()));
     },
 
-    _onShapeChanged:function() {
+    _onShapeChanged:function () {
         this._extent = null;
         var painter = this._getPainter();
         if (painter) {
@@ -915,7 +915,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         this._fireEvent('shapechange');
     },
 
-    _onPositionChanged:function() {
+    _onPositionChanged:function () {
         this._extent = null;
         var painter = this._getPainter();
         if (painter) {
@@ -932,7 +932,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         this._fireEvent('positionchange');
     },
 
-    _onSymbolChanged:function() {
+    _onSymbolChanged:function () {
         var painter = this._getPainter();
         if (painter) {
             painter.refreshSymbol();
@@ -952,27 +952,27 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @param {maptalks.GeometryCollection} geometry - parent geometry
      * @private
      */
-    _setParent:function(geometry) {
+    _setParent:function (geometry) {
         if (geometry) {
             this._parent = geometry;
         }
     },
 
-    _getParent:function() {
+    _getParent:function () {
         return this._parent;
     },
 
-    _fireEvent:function(eventName, param) {
-        this.fire(eventName,param);
+    _fireEvent:function (eventName, param) {
+        this.fire(eventName, param);
     },
 
-    _toJSON: function(options) {
+    _toJSON: function (options) {
         return {
-            "feature" : this.toGeoJSON(options)
+            'feature' : this.toGeoJSON(options)
         };
     },
 
-    _exportGraphicOptions:function(options) {
+    _exportGraphicOptions:function (options) {
         var json = {};
         if (Z.Util.isNil(options['options']) || options['options']) {
             json['options'] = this.config();
@@ -990,7 +990,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return json;
     },
 
-    _exportGeoJSONGeometry:function() {
+    _exportGeoJSONGeometry:function () {
         var points = this.getCoordinates();
         var coordinates = Z.GeoJSON.toGeoJSONCoordinates(points);
         return {
@@ -999,7 +999,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         };
     },
 
-    _exportProperties: function() {
+    _exportProperties: function () {
         var properties = null;
         var geoProperties = this.getProperties();
         if (geoProperties) {
@@ -1040,7 +1040,7 @@ Z.Geometry=Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     };
     var marker = maptalks.Geometry.fromJSON(profile);
  */
-Z.Geometry.fromJSON = function(json) {
+Z.Geometry.fromJSON = function (json) {
     var geometry;
     if (json['subType']) {
         geometry = Z[json['subType']]._fromJSON(json);
@@ -1080,9 +1080,9 @@ Z.Geometry.fromJSON = function(json) {
  *      "properties":{"foo":"val"}
  * });
  */
-Z.Geometry.fromGeoJSON = function(geoJSON) {
+Z.Geometry.fromGeoJSON = function (geoJSON) {
     return Z.GeoJSON.fromGeoJSON(geoJSON);
-}
+};
 
 /**
  * Get external resources from the given symbol
@@ -1091,7 +1091,7 @@ Z.Geometry.fromGeoJSON = function(geoJSON) {
  * @static
  * @private
  */
-Z.Geometry.getExternalResource = function(symbol) {
+Z.Geometry.getExternalResource = function (symbol) {
     if (!symbol) {
         return null;
     }
@@ -1122,8 +1122,8 @@ Z.Geometry.getExternalResource = function(symbol) {
         }
     }
     return resources;
-}
-Z.Geometry._getMarkerPathURL=function(symbol) {
+};
+Z.Geometry._getMarkerPathURL = function (symbol) {
     if (!symbol['markerPath']) {
         return null;
     }
@@ -1154,7 +1154,7 @@ Z.Geometry._getMarkerPathURL=function(symbol) {
         }
     }
 
-    var pathes = Z.Util.isArray(symbol['markerPath'])?symbol['markerPath']:[symbol['markerPath']];
+    var pathes = Z.Util.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
     var pathesToRender = [];
     for (var i = 0; i < pathes.length; i++) {
         var pathObj;
@@ -1163,14 +1163,14 @@ Z.Geometry._getMarkerPathURL=function(symbol) {
         } else {
             pathObj = pathes[i];
         }
-        var p = Z.Util.extend({},pathObj, svgStyles);
+        var p = Z.Util.extend({}, pathObj, svgStyles);
         p['d'] = p['path'];
         delete p['path'];
         pathesToRender.push(p);
     }
-    var svgContent = ['<svg version="1.1"','xmlns="http://www.w3.org/2000/svg"'];
+    var svgContent = ['<svg version="1.1"', 'xmlns="http://www.w3.org/2000/svg"'];
     if (op < 1) {
-        svgContent.push('opacity="'+op+'"');
+        svgContent.push('opacity="' + op + '"');
     }
     if (symbol['markerWidth'] && symbol['markerHeight']) {
         svgContent.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
@@ -1184,13 +1184,13 @@ Z.Geometry._getMarkerPathURL=function(symbol) {
         var strPath = '<path ';
         for (var p in pathesToRender[i]) {
             if (pathesToRender[i].hasOwnProperty(p)) {
-                strPath += ' '+p+'="'+pathesToRender[i][p]+'"';
+                strPath += ' ' + p + '="' + pathesToRender[i][p] + '"';
             }
         }
-        strPath +='></path>';
+        strPath += '></path>';
         svgContent.push(strPath);
     }
     svgContent.push('</svg>');
-    var b64 = 'data:image/svg+xml;base64,'+Z.Util.btoa(svgContent.join(' '));
+    var b64 = 'data:image/svg+xml;base64,' + Z.Util.btoa(svgContent.join(' '));
     return b64;
-}
+};

@@ -24,7 +24,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     },
 
 
-    initialize:function(coordinates,width,height,opts) {
+    initialize:function (coordinates, width, height, opts) {
         this._coordinates = new Z.Coordinate(coordinates);
         this.width = width;
         this.height = height;
@@ -35,7 +35,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      * Get ellipse's width
      * @return {Number}
      */
-    getWidth:function() {
+    getWidth:function () {
         return this.width;
     },
 
@@ -45,7 +45,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      * @fires maptalks.Geometry#shapechange
      * @return {maptalks.Ellipse} this
      */
-    setWidth:function(width) {
+    setWidth:function (width) {
         this.width = width;
         this._onShapeChanged();
         return this;
@@ -55,7 +55,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      * Get ellipse's height
      * @return {Number}
      */
-    getHeight:function() {
+    getHeight:function () {
         return this.height;
     },
 
@@ -65,7 +65,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      * @fires maptalks.Geometry#shapechange
      * @return {maptalks.Ellipse} this
      */
-    setHeight:function(height) {
+    setHeight:function (height) {
         this.height = height;
         this._onShapeChanged();
         return this;
@@ -75,20 +75,20 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      * Gets the shell of the circle as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Circle#options}
      * @return {maptalks.Coordinate[]} - shell coordinates
      */
-    getShell:function() {
+    getShell:function () {
         var measurer = this._getMeasurer();
         var center = this.getCoordinates();
         var numberOfPoints = this.options['numberOfShellPoints'];
         var width = this.getWidth(),
             height = this.getHeight();
         var shell = [];
-        var s = Math.pow(width,2)*Math.pow(height,2),
-            sx = Math.pow(width,2),
-            sy = Math.pow(height,2);
-        for (var i=0;i<numberOfPoints;i++) {
-            var rad = (360*i/numberOfPoints)*Math.PI/180;
-            var dx = Math.sqrt(s/(sx*Math.pow(Math.tan(rad),2)+sy));
-            var dy = Math.sqrt(s/(sy*Math.pow(1/Math.tan(rad),2)+sx));
+        var s = Math.pow(width, 2) * Math.pow(height, 2),
+            sx = Math.pow(width, 2),
+            sy = Math.pow(height, 2);
+        for (var i = 0; i < numberOfPoints; i++) {
+            var rad = (360 * i / numberOfPoints) * Math.PI / 180;
+            var dx = Math.sqrt(s / (sx * Math.pow(Math.tan(rad), 2) + sy));
+            var dy = Math.sqrt(s / (sy * Math.pow(1 / Math.tan(rad), 2) + sx));
             var vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
@@ -99,15 +99,15 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      * Ellipse won't have any holes, always returns null
      * @return {null}
      */
-    getHoles:function() {
+    getHoles:function () {
         return null;
     },
 
-    _containsPoint: function(point, tolerance) {
+    _containsPoint: function (point, tolerance) {
         var map = this.getMap(),
             t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pa = map.distanceToPixel(this.width / 2, 0),
-            pb = map.distanceToPixel(0, this.height /2),
+            pb = map.distanceToPixel(0, this.height / 2),
             a = pa.width,
             b = pb.height,
             c = Math.sqrt(Math.abs(a * a - b * b)),
@@ -134,43 +134,43 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
         return point.distanceTo(f1) + point.distanceTo(f2) <= d + 2 * t;
     },
 
-    _computeExtent:function(measurer) {
+    _computeExtent:function (measurer) {
         if (!measurer || !this._coordinates || Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
             return null;
         }
         var width = this.getWidth(),
             height = this.getHeight();
-        var p1 = measurer.locate(this._coordinates,width/2,height/2);
-        var p2 = measurer.locate(this._coordinates,-width/2,-height/2);
-        return new Z.Extent(p1,p2);
+        var p1 = measurer.locate(this._coordinates, width / 2, height / 2);
+        var p2 = measurer.locate(this._coordinates, -width / 2, -height / 2);
+        return new Z.Extent(p1, p2);
     },
 
-    _computeGeodesicLength:function(measurer) {
+    _computeGeodesicLength:function (measurer) {
         if (Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
             return 0;
         }
         //L=2πb+4(a-b)
         //近似值
-        var longer = (this.width > this.height?this.width:this.height);
-        return 2*Math.PI*longer/2-4*Math.abs(this.width-this.height);
+        var longer = (this.width > this.height ? this.width : this.height);
+        return 2 * Math.PI * longer / 2 - 4 * Math.abs(this.width - this.height);
     },
 
-    _computeGeodesicArea:function(measurer) {
+    _computeGeodesicArea:function (measurer) {
         if (Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
             return 0;
         }
-        return Math.PI*this.width*this.height/4;
+        return Math.PI * this.width * this.height / 4;
     },
 
-    _exportGeoJSONGeometry: function() {
+    _exportGeoJSONGeometry: function () {
         var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates
-        }
+        };
     },
 
-    _toJSON:function(options) {
+    _toJSON:function (options) {
         var opts = Z.Util.extend({}, options);
         var center = this.getCenter();
         opts.geometry = false;
@@ -185,7 +185,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
 
 });
 
-Z.Ellipse._fromJSON=function(json) {
+Z.Ellipse._fromJSON = function (json) {
     var feature = json['feature'];
     var ellipse = new Z.Ellipse(json['coordinates'], json['width'], json['height'], json['options']);
     ellipse.setProperties(feature['properties']);

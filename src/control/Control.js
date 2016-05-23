@@ -26,25 +26,25 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
          * @constant
          * @type {Object}
          */
-        'top_left' : {'top': '20','left': '20'},
+        'top_left' : {'top': '20', 'left': '20'},
         /**
          * Predefined position constant: {'top': '40','right': '60'}
          * @constant
          * @type {Object}
          */
-        'top_right' : {'top': '40','right': '60'},
+        'top_right' : {'top': '40', 'right': '60'},
         /**
          * Predefined position constant: {'bottom': '20','left': '60'}
          * @constant
          * @type {Object}
          */
-        'bottom_left' : {'bottom': '20','left': '60'},
+        'bottom_left' : {'bottom': '20', 'left': '60'},
         /**
          * Predefined position constant: {'bottom': '20','right': '60'}
          * @constant
          * @type {Object}
          */
-        'bottom_right' : {'bottom': '20','right': '60'}
+        'bottom_right' : {'bottom': '20', 'right': '60'}
     },
 
     options:{
@@ -70,7 +70,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         Z.DomUtil.addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
         // Z.DomUtil.on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', Z.DomUtil.stopPropagation)
         var controlDom = this.buildOn(map);
-        if(controlDom) {
+        if (controlDom) {
             this._updatePosition();
             this.__ctrlContainer.appendChild(controlDom);
             controlContainer.appendChild(this.__ctrlContainer);
@@ -91,7 +91,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * Get the map that the control is added to.
      * @return {maptalks.Map}
      */
-    getMap:function() {
+    getMap:function () {
         return this._map;
     },
 
@@ -100,7 +100,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @return {Object}
      */
     getPosition: function () {
-        return Z.Util.extend({},this.options['position']);
+        return Z.Util.extend({}, this.options['position']);
     },
 
     /**
@@ -110,7 +110,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @fires maptalks.Control#positionupdate
      */
     setPosition: function (position) {
-        this.options['position'] = Z.Util.extend({},position);
+        this.options['position'] = Z.Util.extend({}, position);
         this._updatePosition();
         return this;
     },
@@ -119,11 +119,11 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * Get container point of the control.
      * @return {maptalks.Point}
      */
-    getContainerPoint:function() {
+    getContainerPoint:function () {
         var position = this.options['position'];
 
         var size = this._map.getSize();
-        var x,y;
+        var x, y;
         if (!Z.Util.isNil(position['top'])) {
             x = position['top'];
         } else if (!Z.Util.isNil(position['bottom'])) {
@@ -134,7 +134,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         } else if (!Z.Util.isNil(position['right'])) {
             y = size['width'] - position['right'];
         }
-        return new Z.Point(x,y);
+        return new Z.Point(x, y);
     },
 
     /**
@@ -149,8 +149,8 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * Show
      * @return {maptalks.Control} this
      */
-    show: function() {
-        this.__ctrlContainer.style.display="";
+    show: function () {
+        this.__ctrlContainer.style.display = '';
         return this;
     },
 
@@ -158,8 +158,8 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * Hide
      * @return {maptalks.Control} this
      */
-    hide: function() {
-        this.__ctrlContainer.style.display="none";
+    hide: function () {
+        this.__ctrlContainer.style.display = 'none';
         return this;
     },
 
@@ -167,8 +167,8 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * Whether the control is visible
      * @return {Boolean}
      */
-    isVisible:function() {
-        return (this.__ctrlContainer && this.__ctrlContainer.style.display==="");
+    isVisible:function () {
+        return (this.__ctrlContainer && this.__ctrlContainer.style.display === '');
     },
 
     /**
@@ -198,12 +198,12 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         return this;
     },
 
-    _updatePosition: function(){
+    _updatePosition: function () {
         var position = this.options['position'];
         for (var p in position) {
             if (position.hasOwnProperty(p)) {
                 position[p] = parseInt(position[p]);
-                this.__ctrlContainer.style[p] = position[p]+'px';
+                this.__ctrlContainer.style[p] = position[p] + 'px';
             }
         }
         /**
@@ -216,9 +216,9 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
          * @property {Object} position - Position of the control, eg:{"top" : 100, "left" : 50}
          */
         this.fire('positionupdate', {
-            'position' : Z.Util.extend({},this.options['position'])
+            'position' : Z.Util.extend({}, this.options['position'])
         });
-    },
+    }
 
 });
 
@@ -231,7 +231,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      */
     addControl: function (control) {
         //map container is a canvas, can't add control on it.
-        if (!!this._containerDOM.getContext) {
+        if (this._containerDOM.getContext) {
             return this;
         }
         control.addTo(this);

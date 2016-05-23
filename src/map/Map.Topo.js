@@ -8,11 +8,11 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param {Number[]|maptalks.Coordinate} coord2 - coordinate 2
      * @return {Number} distance
      */
-    computeLength: function(coord1, coord2) {
-        if (!this.getProjection()) {return null;}
+    computeLength: function (coord1, coord2) {
+        if (!this.getProjection()) { return null; }
         var p1 = new Z.Coordinate(coord1),
             p2 = new Z.Coordinate(coord2);
-        if (p1.equals(p2)) {return 0;}
+        if (p1.equals(p2)) { return 0; }
         return this.getProjection().measureLength(p1, p2);
     },
 
@@ -21,7 +21,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Geometry} geometry - geometry to caculate
      * @return {Number} length
      */
-    computeGeometryLength:function(geometry) {
+    computeGeometryLength:function (geometry) {
         return geometry._computeGeodesicLength(this.getProjection());
     },
 
@@ -30,7 +30,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param  {maptalks.Geometry} geometry - geometry to caculate
      * @return {Number} area
      */
-    computeGeometryArea:function(geometry) {
+    computeGeometryArea:function (geometry) {
         return geometry._computeGeodesicArea(this.getProjection());
     },
 
@@ -45,16 +45,16 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param {Function} callback           - the callback function using the result geometries as the parameter.
      * @return {maptalks.Map} this
      */
-    identify: function(opts, callback) {
+    identify: function (opts, callback) {
         if (!opts) {
             return this;
         }
         var reqLayers = opts['layers'];
-        if(!Z.Util.isArrayHasData(reqLayers)) {
+        if (!Z.Util.isArrayHasData(reqLayers)) {
             return this;
         }
         var layers = [];
-        var i,len;
+        var i, len;
         for (i = 0; i < reqLayers.length; i++) {
             if (Z.Util.isString(reqLayers[i])) {
                 layers.push(this.getLayer(reqLayers[i]));
@@ -66,13 +66,13 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         var fn = callback,
             filter = opts['filter'];
         var hits = [],
-            isEnd =false;
+            isEnd = false;
         for (i = layers.length - 1; i >= 0; i--) {
             if (isEnd) {
                 break;
             }
             var layer = layers[i];
-            if(!layer || !layer.getMap() || (!opts['includeInternals'] && layer.getId().indexOf(Z.internalLayerPrefix) >= 0)) {
+            if (!layer || !layer.getMap() || (!opts['includeInternals'] && layer.getId().indexOf(Z.internalLayerPrefix) >= 0)) {
                 continue;
             }
             var allGeos = layers[i].getGeometries();
@@ -81,7 +81,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 if (!geo || !geo.isVisible()) {
                     continue;
                 }
-                var pxExtent = !geo._getPainter()? null : geo._getPainter().getPixelExtent();
+                var pxExtent = !geo._getPainter() ? null : geo._getPainter().getPixelExtent();
                 if (!pxExtent || !pxExtent.contains(point)) {
                     continue;
                 }

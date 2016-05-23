@@ -29,13 +29,13 @@ Z.MultiPoint = Z.GeometryCollection.extend(/** @lends maptalks.MultiPoint.protot
             'markerType'    : 'pie',
             'markerHeight'  : 24,
             'markerWidth'   : 24,
-            'markerFill'    : "#de3333",
-            "markerLineColor" : "#ffffff",
-            "markerLineWidth" : 1
+            'markerFill'    : '#de3333',
+            'markerLineColor' : '#ffffff',
+            'markerLineWidth' : 1
         }
     },
 
-    initialize:function(data, opts) {
+    initialize:function (data, opts) {
         this._initOptions(opts);
         this._initData(data);
     }

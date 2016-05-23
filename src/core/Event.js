@@ -12,22 +12,22 @@ Z.Eventable = {
      * @return {*} this
      * @instance
      */
-    on: function(eventTypeArr, handler, context) {
-        if (!eventTypeArr || !handler) {return this;}
+    on: function (eventTypeArr, handler, context) {
+        if (!eventTypeArr || !handler) { return this; }
         if (!this._eventMap) {
             this._eventMap = {};
         }
         var eventTypes = eventTypeArr.split(' ');
         var eventType;
-        if(!context) {context = this;}
-        for (var j = 0, jl = eventTypes.length; j <jl; j++) {
+        if (!context) { context = this; }
+        for (var j = 0, jl = eventTypes.length; j < jl; j++) {
             eventType = eventTypes[j].toLowerCase();
             var handlerChain = this._eventMap[eventType];
             if (!handlerChain) {
                 handlerChain = [];
-                this._eventMap[eventType]=handlerChain;
+                this._eventMap[eventType] = handlerChain;
             }
-            for (var i=0, len=handlerChain.length;i<len;i++) {
+            for (var i = 0, len = handlerChain.length; i < len; i++) {
                 if (handler == handlerChain[i].handler) {
                     if (!handlerChain[i].del && handlerChain[i].context === context) {
                         return this;
@@ -51,7 +51,7 @@ Z.Eventable = {
      * @return {*} this
      * @instance
      */
-    once: function(eventTypeArr, handler, context) {
+    once: function (eventTypeArr, handler, context) {
         var me = this;
         function onceHandler() {
             handler.call(this, arguments);
@@ -69,32 +69,32 @@ Z.Eventable = {
      * @return {*} this
      * @instance
      */
-    off:function(eventTypeArr, handler, context) {
-        if (!eventTypeArr || !this._eventMap || !handler) {return this;}
+    off:function (eventTypeArr, handler, context) {
+        if (!eventTypeArr || !this._eventMap || !handler) { return this; }
         var eventTypes = eventTypeArr.split(' ');
         var eventType;
-        if(!context) {context = this;}
-        for (var j = 0, jl = eventTypes.length; j <jl; j++) {
+        if (!context) { context = this; }
+        for (var j = 0, jl = eventTypes.length; j < jl; j++) {
             eventType = eventTypes[j].toLowerCase();
             var handlerChain =  this._eventMap[eventType];
-            if (!handlerChain) {return this;}
-            for (var i=0, len= handlerChain.length;i<len;i++) {
+            if (!handlerChain) { return this; }
+            for (var i = 0, len = handlerChain.length; i < len; i++) {
                 if (handler == handlerChain[i].handler && handlerChain[i].context === context) {
-                        handlerChain[i].del = true;
+                    handlerChain[i].del = true;
                 }
             }
         }
         return this;
     },
 
-    _clearListeners:function(eventType) {
-        if (!this._eventMap || !Z.Util.isString(eventType)) {return;}
+    _clearListeners:function (eventType) {
+        if (!this._eventMap || !Z.Util.isString(eventType)) { return; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain) {return;}
+        if (!handlerChain) { return; }
         this._eventMap[eventType] = null;
     },
 
-    _clearAllListeners:function() {
+    _clearAllListeners:function () {
         this._eventMap = null;
     },
 
@@ -105,10 +105,10 @@ Z.Eventable = {
      * @return {Boolean}
      * @instance
      */
-    listens:function(eventType) {
-        if (!this._eventMap || !Z.Util.isString(eventType)) {return 0;}
+    listens:function (eventType) {
+        if (!this._eventMap || !Z.Util.isString(eventType)) { return 0; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain) {return 0;}
+        if (!handlerChain) { return 0; }
         return handlerChain.length;
     },
 
@@ -118,12 +118,12 @@ Z.Eventable = {
     * @return {*} this
     * @instance
     */
-    copyEventListeners: function(target) {
+    copyEventListeners: function (target) {
         var eventMap = target._eventMap;
-        if(!eventMap) {return this;}
+        if (!eventMap) { return this; }
         for (var eventType in eventMap) {
             var handlerChain = eventMap[eventType];
-            for(var i=0,len=handlerChain.length;i<len;i++) {
+            for (var i = 0, len = handlerChain.length; i < len; i++) {
                 if (handlerChain[i].del) {
                     continue;
                 }
@@ -141,8 +141,8 @@ Z.Eventable = {
      * @return {*} this
      * @instance
      */
-    fire:function() {
-       if (this._eventParent) {
+    fire:function () {
+        if (this._eventParent) {
             return this._eventParent.fire.apply(this._eventParent, arguments);
         }
         return this._fire.apply(this, arguments);
@@ -153,22 +153,22 @@ Z.Eventable = {
      * @param {Any} parent - event parent
      * @return {Any} this
      */
-    setEventParent:function(parent) {
+    setEventParent:function (parent) {
         this._eventParent = parent;
         return this;
     },
 
 
-    _fire:function(eventType, param) {
-        if (!this._eventMap) {return this;}
+    _fire:function (eventType, param) {
+        if (!this._eventMap) { return this; }
         var handlerChain = this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain) {return this;}
+        if (!handlerChain) { return this; }
         if (!param) {
             param = {};
         }
         var delhits = [];
-        for (var i=0, len = handlerChain.length;i<len; i++) {
-            if (!handlerChain[i]) {continue;}
+        for (var i = 0, len = handlerChain.length; i < len; i++) {
+            if (!handlerChain[i]) { continue; }
             if (handlerChain[i].del) {
                 continue;
             }
@@ -178,7 +178,7 @@ Z.Eventable = {
             param['target'] = this;
             var bubble = true;
             if (context) {
-                bubble = handlerChain[i].handler.call(context,param);
+                bubble = handlerChain[i].handler.call(context, param);
             } else {
                 bubble = handlerChain[i].handler(param);
             }
@@ -189,16 +189,16 @@ Z.Eventable = {
                 }
             }
         }
-        for (i=0, len = handlerChain.length;i<len; i++) {
-            if (!handlerChain[i]) {continue;}
+        for (i = 0, len = handlerChain.length; i < len; i++) {
+            if (!handlerChain[i]) { continue; }
             if (handlerChain[i].del) {
                 delhits.push(i);
                 continue;
             }
         }
         if (delhits.length > 0) {
-            for (len=delhits.length, i=len-1;i>=0;i--) {
-                handlerChain.splice(delhits[i],1);
+            for (len = delhits.length, i = len - 1; i >= 0; i--) {
+                handlerChain.splice(delhits[i], 1);
             }
         }
         return this;

@@ -13,7 +13,7 @@
  * @param {Number} [options.thresholdOfTransforming=50] - threshold of points number to update points while transforming.
  * @param {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
  */
-Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
+Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
 
     options:{
         'debug'                     : false,
@@ -24,7 +24,7 @@ Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */
         'drawImmediate'             : false
     },
 
-    initialize:function(id, options) {
+    initialize:function (id, options) {
         this.setId(id);
         Z.Util.setOptions(this, options);
     }
@@ -38,14 +38,14 @@ Z.VectorLayer=Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */
  * @param  {maptalks.Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
  * @return {Object} layer's profile JSON
  */
-Z.VectorLayer.prototype.toJSON = function(options) {
+Z.VectorLayer.prototype.toJSON = function (options) {
     if (!options) {
         options = {};
     }
     var profile = {
-        "type"    : 'VectorLayer',
-        "id"      : this.getId(),
-        "options" : this.config()
+        'type'    : 'VectorLayer',
+        'id'      : this.getId(),
+        'options' : this.config()
     };
     if (Z.Util.isNil(options['geometries']) || options['geometries']) {
         var clipExtent;
@@ -54,7 +54,7 @@ Z.VectorLayer.prototype.toJSON = function(options) {
         }
         var geoJSONs = [];
         var geometries = this.getGeometries();
-        for (var i = 0, len=geometries.length; i < len; i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             var geoExt = geometries[i].getExtent();
             if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
                 continue;
@@ -64,7 +64,7 @@ Z.VectorLayer.prototype.toJSON = function(options) {
         profile['geometries'] = geoJSONs;
     }
     return profile;
-}
+};
 
 /**
  * Reproduce a VectorLayer from layer's profile JSON.
@@ -74,8 +74,8 @@ Z.VectorLayer.prototype.toJSON = function(options) {
  * @private
  * @function
  */
-Z.VectorLayer._fromJSON = function(layerJSON) {
-    if (!layerJSON || layerJSON['type'] !== 'VectorLayer') {return null;}
+Z.VectorLayer._fromJSON = function (layerJSON) {
+    if (!layerJSON || layerJSON['type'] !== 'VectorLayer') { return null; }
     var layer = new Z.VectorLayer(layerJSON['id'], layerJSON['options']);
     var geoJSONs = layerJSON['geometries'];
     var geometries = [];
@@ -87,6 +87,6 @@ Z.VectorLayer._fromJSON = function(layerJSON) {
     }
     layer.addGeometry(geometries);
     return layer;
-}
+};
 
-Z.Util.extend(Z.VectorLayer,Z.Renderable);
+Z.Util.extend(Z.VectorLayer, Z.Renderable);
