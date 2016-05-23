@@ -5,20 +5,20 @@
 *  @memberOf maptalks
  * @name GeoJSON
  */
-Z.GeoJSON={
+Z.GeoJSON = {
 
         /**
          * Convert one or more GeoJSON objects to a geometry
          * @param  {String|Object|Object[]} json - json objects or json string
          * @return {maptalks.Geometry|maptalks.Geometry[]}
          */
-        fromGeoJSON:function(geoJSON) {
+    fromGeoJSON:function (geoJSON) {
             if (Z.Util.isString(geoJSON)) {
                 geoJSON = Z.Util.parseJSON(geoJSON);
             }
             if (Z.Util.isArray(geoJSON)) {
                 var resultGeos = [];
-                for (var i=0,len=geoJSON.length;i<len;i++) {
+                for (var i = 0, len = geoJSON.length; i < len; i++) {
                     var geo = this._fromGeoJSONInstance(geoJSON[i]);
                     if (Z.Util.isArray(geo)) {
                         resultGeos = resultGeos.concat(geo);
@@ -42,11 +42,11 @@ Z.GeoJSON={
          * // result is [[100,0], [101,1]]
          * var jsonCoords = maptalks.GeoJSON.toGeoJSONCoordinates([new maptalks.Coordinate(100,0), new maptalks.Coordinate(101,1)]);
          */
-        toGeoJSONCoordinates:function(coordinates) {
+    toGeoJSONCoordinates:function (coordinates) {
             if (!Z.Util.isArray(coordinates)) {
                 return [coordinates.x, coordinates.y];
             }
-            return Z.Util.eachInArray(coordinates, this, function(coord) {
+            return Z.Util.eachInArray(coordinates, this, function (coord) {
                 return [coord.x, coord.y];
             });
         },
@@ -56,12 +56,12 @@ Z.GeoJSON={
          * @param  {Number[]|Number[][]} coordinates - coordinates to convert
          * @return {maptalks.Coordinate|maptalks.Coordinate[]}
          */
-        fromGeoJSONCoordinates:function(coordinates) {
+    fromGeoJSONCoordinates:function (coordinates) {
             if (Z.Util.isNumber(coordinates[0]) && Z.Util.isNumber(coordinates[1])) {
                 return new Z.Coordinate(coordinates);
             }
             var result = [];
-            for (var i=0, len=coordinates.length;i<len;i++) {
+            for (var i = 0, len = coordinates.length; i < len; i++) {
                 var child = coordinates[i];
                 if (Z.Util.isArray(child)) {
                     if (Z.Util.isNumber(child[0])) {
@@ -82,7 +82,7 @@ Z.GeoJSON={
          * @return {maptalks.Geometry}
          * @private
          */
-        _fromGeoJSONInstance:function(geoJSONObj) {
+    _fromGeoJSONInstance:function (geoJSONObj) {
             if (!geoJSONObj || Z.Util.isNil(geoJSONObj['type'])) {
                 return null;
             }
@@ -107,9 +107,9 @@ Z.GeoJSON={
                 var result = this.fromGeoJSON(features);
                 return result;
             } else if (Z.Util.searchInArray(type,
-                ['Point','LineString','Polygon','MultiPoint','MultiLineString','MultiPolygon']) >= 0) {
-                var clazz = (type === 'Point'?'Marker':type);
-                return new Z[clazz](geoJSONObj['coordinates'],options);
+                ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
+                var clazz = (type === 'Point' ? 'Marker':type);
+                return new Z[clazz](geoJSONObj['coordinates'], options);
             } else if ('GeometryCollection' === type) {
                 var geometries = geoJSONObj['geometries'];
                 if (!Z.Util.isArrayHasData(geometries)) {
@@ -120,13 +120,13 @@ Z.GeoJSON={
                 for (var i = 0; i < size; i++) {
                     mGeos.push(this._fromGeoJSONInstance(geometries[i]));
                 }
-                return new Z.GeometryCollection(mGeos,options);
+                return new Z.GeometryCollection(mGeos, options);
             } else if ('Circle' === type) {
-                return new Z.Circle(geoJSONObj['coordinates'], geoJSONObj['radius'],options);
+                return new Z.Circle(geoJSONObj['coordinates'], geoJSONObj['radius'], options);
             } else if ('Ellipse' === type || 'Rectangle' === type) {
-                return new Z[type](geoJSONObj['coordinates'], geoJSONObj['width'], geoJSONObj['height'],options);
+                return new Z[type](geoJSONObj['coordinates'], geoJSONObj['width'], geoJSONObj['height'], options);
             } else if ('Sector' === type) {
-                return new Z.Sector(geoJSONObj['coordinates'], geoJSONObj['radius'], geoJSONObj['startAngle'], geoJSONObj['endAngle'],options);
+                return new Z.Sector(geoJSONObj['coordinates'], geoJSONObj['radius'], geoJSONObj['startAngle'], geoJSONObj['endAngle'], options);
             }
             return null;
         }

@@ -88,7 +88,7 @@ Z.Canvas = {
                 }
             }
 
-             //µÍ°æ±¾ie²»Ö§³Ö¸ÃÊôÐÔ
+             //ï¿½Í°æ±¾ieï¿½ï¿½Ö§ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½
             if (ctx.setLineDash) {
                 var strokeDash = (strokeSymbol['stroke-dasharray']);
                 if (Z.Util.isArrayHasData(strokeDash)) {
@@ -195,7 +195,7 @@ Z.Canvas = {
 
     _textOnLine: function (ctx, text, pt, textHaloRadius, textHaloFill) {
         //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
-        //¸ù¾Ýtext-horizontal-alignmentºÍtext-vertical-alignment¼ÆËã»æÖÆÆðÊ¼µãÆ«ÒÆÁ¿
+        //ï¿½ï¿½ï¿½ï¿½text-horizontal-alignmentï¿½ï¿½text-vertical-alignmentï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Æ«ï¿½ï¿½ï¿½ï¿½
         pt = pt._round();
         ctx.textBaseline = 'top';
         if (textHaloRadius) {
@@ -346,7 +346,7 @@ Z.Canvas = {
         }
         var op, i, len;
         if (fillFirst) {
-            //ÒòÎªcanvasÖ»Ìî³ämoveto,lineto,linetoµÄ¿Õ¼ä, ¶ødashlineµÄmoveto²»ÔÙ¹¹³É·â±Õ¿Õ¼ä, ËùÒÔÖØÐÂ»æÖÆÍ¼ÐÎÂÖÀªÓÃÓÚÌî³ä
+            //ï¿½ï¿½ÎªcanvasÖ»ï¿½ï¿½ï¿½ï¿½moveto,lineto,linetoï¿½Ä¿Õ¼ï¿½, ï¿½ï¿½dashlineï¿½ï¿½movetoï¿½ï¿½ï¿½Ù¹ï¿½ï¿½É·ï¿½ï¿½Õ¿Õ¼ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â»ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             ctx.save();
             for (i = 0, len = points.length; i < len; i++) {
                 Z.Canvas._ring(ctx, points[i], null, 0);
@@ -418,7 +418,7 @@ Z.Canvas = {
             cx = p1.x + dx,
             cy = p1.y + dy;
 
-        var startAngle = Math.asin((p2.y-cy)/r);
+        var startAngle = Math.asin((p2.y - cy) / r);
         if (cx > p2.x) {
             startAngle = Math.PI - startAngle;
         }
@@ -454,16 +454,16 @@ Z.Canvas = {
         ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y);
     },
 
-    //¸÷ÖÖÍ¼ÐÎµÄ»æÖÆ·½·¨
+    //ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ÎµÄ»ï¿½ï¿½Æ·ï¿½ï¿½ï¿½
     ellipse:function (ctx, pt, width, height, lineOpacity, fillOpacity) {
-        //TODO canvas scaleºó»á²úÉú´íÎó?
+        //TODO canvas scaleï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?
         function bezierEllipse(x, y, a, b)
         {
             var k = 0.5522848,
-           ox = a * k, // Ë®Æ½¿ØÖÆµãÆ«ÒÆÁ¿
-           oy = b * k; // ´¹Ö±¿ØÖÆµãÆ«ÒÆÁ¿
+                ox = a * k, // Ë®Æ½ï¿½ï¿½ï¿½Æµï¿½Æ«ï¿½ï¿½ï¿½ï¿½
+                oy = b * k; // ï¿½ï¿½Ö±ï¿½ï¿½ï¿½Æµï¿½Æ«ï¿½ï¿½ï¿½ï¿½
             ctx.beginPath();
-           //´ÓÍÖÔ²µÄ×ó¶Ëµã¿ªÊ¼Ë³Ê±Õë»æÖÆËÄÌõÈý´Î±´Èû¶ûÇúÏß
+           //ï¿½ï¿½ï¿½ï¿½Ô²ï¿½ï¿½ï¿½ï¿½ï¿½Ëµã¿ªÊ¼Ë³Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             ctx.moveTo(x - a, y);
             Z.Canvas._bezierCurveTo(ctx, new Z.Point(x - a, y - oy), new Z.Point(x - ox, y - b), new Z.Point(x, y - b));
             Z.Canvas._bezierCurveTo(ctx, new Z.Point(x + ox, y - b), new Z.Point(x + a, y - oy), new Z.Point(x + a, y));
@@ -475,7 +475,7 @@ Z.Canvas = {
         }
         pt = pt._round();
         if (width === height) {
-            //Èç¹û¸ß¿íÏàÍ¬,ÔòÖ±½Ó»æÖÆÔ²ÐÎ, Ìá¸ßÐ§ÂÊ
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ß¿ï¿½ï¿½ï¿½Í¬,ï¿½ï¿½Ö±ï¿½Ó»ï¿½ï¿½ï¿½Ô²ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
             ctx.beginPath();
             ctx.arc(pt.x, pt.y, Z.Util.round(width), 0, 2 * Math.PI);
             Z.Canvas.fillCanvas(ctx, fillOpacity);

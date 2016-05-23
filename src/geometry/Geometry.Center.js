@@ -7,7 +7,7 @@ Z.Geometry.Center = {
      * Get geometry's center
      * @return {maptalks.Coordinate} - center of the geometry
      */
-    getCoordinates:function() {
+    getCoordinates:function () {
         return this._coordinates;
     },
 
@@ -17,7 +17,7 @@ Z.Geometry.Center = {
      * @return {maptalks.Geometry} this
      * @fires maptalks.Geometry#positionchange
      */
-    setCoordinates:function(coordinates) {
+    setCoordinates:function (coordinates) {
         var center = new Z.Coordinate(coordinates);
         if (center.equals(this._coordinates)) {
             return this;
@@ -33,19 +33,19 @@ Z.Geometry.Center = {
     },
 
     //Gets view point of the geometry's center
-    _getCenterViewPoint:function() {
+    _getCenterViewPoint:function () {
         var pcenter = this._getPrjCoordinates();
-        if (!pcenter) {return null;}
-        var map=this.getMap();
+        if (!pcenter) { return null; }
+        var map = this.getMap();
         if (!map) {
             return null;
         }
         return map._prjToViewPoint(pcenter);
     },
 
-    _getPrjCoordinates:function() {
+    _getPrjCoordinates:function () {
         var projection = this._getProjection();
-        if (!projection) {return null;}
+        if (!projection) { return null; }
         if (!this._pcenter) {
             if (this._coordinates) {
                 this._pcenter = projection.project(this._coordinates);
@@ -55,13 +55,13 @@ Z.Geometry.Center = {
     },
 
     //Set center by projected coordinates
-    _setPrjCoordinates:function(pcenter) {
-        this._pcenter=pcenter;
+    _setPrjCoordinates:function (pcenter) {
+        this._pcenter = pcenter;
         this._onPositionChanged();
     },
 
     //update cached variables if geometry is updated.
-    _updateCache:function() {
+    _updateCache:function () {
         delete this._extent;
         var projection = this._getProjection();
         if (this._pcenter && projection) {
@@ -69,11 +69,11 @@ Z.Geometry.Center = {
         }
     },
 
-    _clearProjection:function() {
+    _clearProjection:function () {
         this._pcenter = null;
     },
 
-    _computeCenter:function() {
+    _computeCenter:function () {
         return this._coordinates;
     }
 };

@@ -12,7 +12,7 @@
  * @param {Number} x - x value
  * @param {Number} y - y value
  */
-Z.Point=function(x,y) {
+Z.Point = function (x, y) {
     if (!Z.Util.isNil(x) && !Z.Util.isNil(y)) {
         /**
          * @property x {Number} - x value
@@ -29,14 +29,14 @@ Z.Point=function(x,y) {
     } else if (Z.Util.isArrayHasData(x)) {
         this.x = x[0];
         this.y = x[1];
-     }
-     if (this.isNaN()) {
-        throw new Error('point is NaN');
+    }
+    if (this.isNaN()) {
+         throw new Error('point is NaN');
      }
 };
 
 Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
-    _abs:function() {
+    _abs:function () {
         this.x = Math.abs(this.x);
         this.y = Math.abs(this.y);
         return this;
@@ -45,18 +45,18 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * Returns a copy of the point
      * @return {maptalks.Point} copy
      */
-    copy:function() {
+    copy:function () {
         return new Z.Point(this.x, this.y);
     },
 
-    _round:function() {
+    _round:function () {
         this.x = Z.Util.round(this.x);
         this.y = Z.Util.round(this.y);
         return this;
     },
 
-    round:function() {
-        return new Z.Point(Z.Util.round(this.x),Z.Util.round(this.y));
+    round:function () {
+        return new Z.Point(Z.Util.round(this.x), Z.Util.round(this.y));
     },
 
     /**
@@ -64,7 +64,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @param {maptalks.Point} c2 - point to compare
      * @return {Boolean}
      */
-    equals:function(p) {
+    equals:function (p) {
         return this.x === p.x && this.y === p.y;
     },
 
@@ -73,14 +73,14 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @param  {maptalks.Point} point - another point
      * @return {Number} distance
      */
-    distanceTo: function(point) {
+    distanceTo: function (point) {
         var x = point.x - this.x,
             y = point.y - this.y;
         return Math.sqrt(x * x + y * y);
     },
 
     //Destructive add
-    _add: function(x, y) {
+    _add: function (x, y) {
         if (x instanceof Z.Point) {
             this.x += x.x;
             this.y += x.y;
@@ -96,7 +96,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @param {maptalks.Point} point - point to add
      * @return {maptalks.Point} result
      */
-    add: function(x, y) {
+    add: function (x, y) {
         var nx, ny;
         if (x instanceof Z.Point) {
             nx = this.x + x.x;
@@ -108,7 +108,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
         return new Z.Point(nx, ny);
     },
 
-    _substract: function(x, y) {
+    _substract: function (x, y) {
         if (x instanceof Z.Point) {
             this.x -= x.x;
             this.y -= x.y;
@@ -124,7 +124,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @param {maptalks.Point} point - point to substract
      * @return {maptalks.Point} result
      */
-    substract: function(x, y) {
+    substract: function (x, y) {
         var nx, ny;
         if (x instanceof Z.Point) {
             nx = this.x - x.x;
@@ -137,7 +137,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
     },
 
     //破坏性方法
-    _multi: function(ratio) {
+    _multi: function (ratio) {
         this.x *= ratio;
         this.y *= ratio;
         return this;
@@ -148,15 +148,15 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @param {Number} ratio - ratio to multi
      * @return {maptalks.Point} result
      */
-    multi: function(ratio) {
-        return new Z.Point(this.x*ratio, this.y*ratio);
+    multi: function (ratio) {
+        return new Z.Point(this.x * ratio, this.y * ratio);
     },
 
-    isNaN:function() {
+    isNaN:function () {
         return isNaN(this.x) || isNaN(this.y);
     },
 
-    toString:function() {
-        return [this.x,this.y].join(',');
+    toString:function () {
+        return [this.x, this.y].join(',');
     }
 });

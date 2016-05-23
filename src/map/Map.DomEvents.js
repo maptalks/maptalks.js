@@ -1,5 +1,5 @@
 Z.Map.include(/** @lends maptalks.Map.prototype */{
-    _registerDomEvents: function(remove) {
+    _registerDomEvents: function (remove) {
         var events = /**
                       * mousedown event
                       * @event maptalks.Map#mousedown
@@ -11,7 +11,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'mousedown '+
+                     'mousedown ' +
                      /**
                       * mouseup event
                       * @event maptalks.Map#mouseup
@@ -23,7 +23,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'mouseup '+
+                     'mouseup ' +
                      /**
                       * mouseover event
                       * @event maptalks.Map#mouseover
@@ -35,7 +35,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'mouseover '+
+                     'mouseover ' +
                      /**
                       * mouseout event
                       * @event maptalks.Map#mouseout
@@ -47,7 +47,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'mouseout '+
+                     'mouseout ' +
                      /**
                       * mousemove event
                       * @event maptalks.Map#mousemove
@@ -59,7 +59,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'mousemove '+
+                     'mousemove ' +
                      /**
                       * click event
                       * @event maptalks.Map#click
@@ -71,7 +71,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'click '+
+                     'click ' +
                      /**
                       * dblclick event
                       * @event maptalks.Map#dblclick
@@ -83,7 +83,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'dblclick '+
+                     'dblclick ' +
                      /**
                       * contextmenu event
                       * @event maptalks.Map#contextmenu
@@ -95,7 +95,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'contextmenu '+
+                     'contextmenu ' +
                      /**
                       * keypress event
                       * @event maptalks.Map#keypress
@@ -107,7 +107,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'keypress '+
+                     'keypress ' +
                      /**
                       * touchstart event
                       * @event maptalks.Map#touchstart
@@ -119,7 +119,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'touchstart '+
+                     'touchstart ' +
                      /**
                       * touchmove event
                       * @event maptalks.Map#touchmove
@@ -131,7 +131,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @property {maptalks.Point} viewPoint       - view point of the event
                       * @property {Event} domEvent                 - dom event
                       */
-                     'touchmove '+
+                     'touchmove ' +
                      /**
                       * touchend event
                       * @event maptalks.Map#touchend
@@ -162,7 +162,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         this._fireDOMEvent(this, e, type);
     },
 
-    _ignoreEvent: function(domEvent) {
+    _ignoreEvent: function (domEvent) {
         if (!domEvent || !this._panels.control) {
             return false;
         }
@@ -179,7 +179,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         return false;
     },
 
-    _parseEvent:function(e, type) {
+    _parseEvent:function (e, type) {
         var eventParam = {
             'domEvent': e
         };
