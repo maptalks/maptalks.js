@@ -127,9 +127,9 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
         return null;
     },
 
-    _containsPoint: function(point) {
+    _containsPoint: function(point, tolerance) {
         var center = this._getCenterViewPoint(),
-            t = this._hitTestTolerance(),
+            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
             pc = center,
             pp = point,

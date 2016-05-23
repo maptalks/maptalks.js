@@ -221,8 +221,8 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         return result;
     },
 
-    _containsPoint: function(point) {
-        var t = this._hitTestTolerance(),
+    _containsPoint: function(point, tolerance) {
+        var t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pxExtent = this._getPainter().getPixelExtent().expand(t);
 
         point = new Z.Point(point.x, point.y);

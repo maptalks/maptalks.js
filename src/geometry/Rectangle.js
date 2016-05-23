@@ -158,9 +158,9 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
         return measurer.locate(this._coordinates,this._width/2,-this._height/2);
     },
 
-    _containsPoint: function(point) {
+    _containsPoint: function(point, tolerance) {
         var map = this.getMap(),
-            t = this._hitTestTolerance(),
+            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             sp = map.coordinateToViewPoint(this._coordinates),
             pxSize = map.distanceToPixel(this._width, this._height);
 
