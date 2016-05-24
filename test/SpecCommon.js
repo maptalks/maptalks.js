@@ -35,8 +35,9 @@ function genAllTypeGeometries() {
         new Z.Polygon([
             [
                 {x: 121.111, y: 30.111},
-                {x: 121.222, y: 30.222},
-                {x: 121.333, y: 30.333}
+                {x: 122.222, y: 30.111},
+                {x: 122.222, y: 30.333},
+                {x: 121.111, y: 30.333}
             ]
         ]),
         new Z.MultiPolyline([

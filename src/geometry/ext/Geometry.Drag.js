@@ -46,6 +46,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         }
         this.target.on('click', this._endDrag, this);
         this._preCoordDragged = param['coordinate'];
+        this._prepareMap();
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
         this._moved = false;
@@ -78,7 +79,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         var map = this.target.getMap();
         this._dragHandler = new Z.Handler.Drag(map._panels.mapWrapper || map._containerDOM);
         this._dragHandler.on('dragging', this._dragging, this);
-        this._dragHandler.on('dragend', this._endDrag, this);
+        this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
     },
 
@@ -151,7 +152,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         if (!this._moved) {
             this._moved = true;
             target.on('symbolchange', this._onTargetUpdated, this);
-            this._prepareMap();
+            // this._prepareMap();
             this._isDragging = true;
             this._prepareShadow();
             if (!target.options['dragShadow']) {

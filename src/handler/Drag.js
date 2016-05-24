@@ -115,6 +115,9 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
                 'mousePos': new Z.Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0))
             });
         }
-        // this.moving = false;
+        this.fire('mouseup', {
+            'domEvent' : event,
+            'mousePos': new Z.Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0))
+        });
     }
 });
