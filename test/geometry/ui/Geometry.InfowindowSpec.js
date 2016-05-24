@@ -64,7 +64,6 @@ describe("Geometry.Infowindow", function() {
             var geometries = genAllTypeGeometries();
             for (var i = 0; i < geometries.length; i++) {
                 geometries[i].setInfoWindow(options);
-                expect(geometries[i].getInfoWindowOptions()).to.be.ok();
                 expect(geometries[i].getInfoWindow()).not.to.be.ok();
             }
             layer.addGeometry(geometries);

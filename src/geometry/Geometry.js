@@ -983,8 +983,8 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             }
         }
         if (Z.Util.isNil(options['infoWindow']) || options['infoWindow']) {
-            if (this.getInfoWindowOptions && this.getInfoWindowOptions()) {
-                json['infoWindow'] = this.getInfoWindowOptions();
+            if (this._infoWinOptions) {
+                json['infoWindow'] = this._infoWinOptions;
             }
         }
         return json;

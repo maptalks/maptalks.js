@@ -16,17 +16,6 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Get infowindow's options.
-     * @return {Object}
-     */
-    getInfoWindowOptions:function () {
-        if (!this._infoWinOptions) {
-            return null;
-        }
-        return this._infoWinOptions;
-    },
-
-    /**
      * Get info window's instance of infowindow if it has been already created.
      * @return {maptalks.ui.InfoWindow}
      */

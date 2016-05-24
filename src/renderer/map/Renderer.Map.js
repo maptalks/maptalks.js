@@ -97,7 +97,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             return this;
         }
         var mapPlatform = this.map._panels.mapPlatform;
-        Z.DomUtil.offsetDom(mapPlatform, this.map.offsetPlatform().add(offset));
+        Z.DomUtil.offsetDom(mapPlatform, this.map.offsetPlatform().add(offset)._round());
         return this;
     },
 
@@ -111,7 +111,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
 
     _resetCanvasContainer: function () {
         var mapPos = this.map.offsetPlatform();
-        var pos = mapPos.multi(-1);
+        var pos = mapPos.multi(-1)._round();
         this.map._panels.canvasContainer._pos = pos;
         Z.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
     },
