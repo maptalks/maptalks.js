@@ -6,7 +6,7 @@ describe('#GeometryEdit', function () {
     var center = new Z.Coordinate(118.846825, 32.046534);
     var layer;
     function dragGeometry(geometry, offset) {
-        var domPosition = Z.DomUtil.getPagePosition(eventContainer);
+        var domPosition = Z.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(geometry.getCenter()).add(domPosition);
         if (offset) {
             point._add(offset);
@@ -34,6 +34,7 @@ describe('#GeometryEdit', function () {
         var setups = commonSetupMap(center, null);
         container = setups.container;
         map = setups.map;
+        map.config('panAnimation', false);
         eventContainer = map._panels.canvasContainer;
         layer = new Z.VectorLayer('id');
         map.addLayer(layer);
@@ -54,9 +55,10 @@ describe('#GeometryEdit', function () {
             this.timeout(8000);
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
-            for (var i = 0; i < 1; i++) {
+            for (var i = 0; i < geometries.length; i++) {
                 var geo = geometries[i];
-                if (geo instanceof Z.GeometryCollection) {
+                if (geo instanceof Z.GeometryCollection || geo instanceof Z.Sector
+                    || geo instanceof Z.CurveLine) {
                     //not fit for geometry collection's test.
                     continue;
                 }
