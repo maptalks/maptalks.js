@@ -1,6 +1,6 @@
 Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.extend({
 
-    initialize:function(symbol, geometry) {
+    initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
         this._url = [Z.Geometry._getMarkerPathURL(symbol, geometry), symbol['markerWidth'], symbol['markerHeight']];
@@ -15,17 +15,17 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
         }
     },
 
-    _getImage:function(resources) {
-        return !resources?null:resources.getImage(this._url);
+    _getImage:function (resources) {
+        return !resources ? null : resources.getImage(this._url);
     }
 });
 
 
-Z.symbolizer.VectorPathMarkerSymbolizer.test=function(geometry, symbol) {
+Z.symbolizer.VectorPathMarkerSymbolizer.test = function (geometry, symbol) {
     if (!geometry || !symbol) {
         return false;
     }
-    if (Z.Util.isNil(symbol['markerFile']) && 'path' === symbol['markerType']) {
+    if (Z.Util.isNil(symbol['markerFile']) && symbol['markerType'] === 'path') {
         return true;
     }
     return false;

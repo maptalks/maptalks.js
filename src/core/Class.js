@@ -44,7 +44,7 @@ Z.Class.extend = function (props) {
         }
 
         // call all constructor hooks
-        if(this._initHooks) {
+        if (this._initHooks) {
             this.callInitHooks();
         }
     };
@@ -85,7 +85,7 @@ Z.Class.extend = function (props) {
     // exception definitions
     if (props.exceptionDefs) {
         var lang = Z.Browser.language;
-        if ( lang !== 'zh-CN') {
+        if (lang !== 'zh-CN') {
             lang = 'en-US'; //only support chinese and english now;
         }
         Z.Util.extend(proto, {exceptions:props.exceptionDefs[lang]});
@@ -100,7 +100,7 @@ Z.Class.extend = function (props) {
     // add method for calling all hooks
     proto.callInitHooks = function () {
 
-        if (this._initHooksCalled ) { return; }
+        if (this._initHooksCalled) { return; }
 
         if (parentProto.callInitHooks) {
             parentProto.callInitHooks.call(this);
@@ -119,7 +119,7 @@ Z.Class.extend = function (props) {
      * @param  {object|string} options - options to update
      * @return {object|this}
      */
-    proto.config = function(conf) {
+    proto.config = function (conf) {
         if (!conf) {
             var config = {};
             for (var p in this.options) {
@@ -136,7 +136,7 @@ Z.Class.extend = function (props) {
             }
             for (var i in conf) {
                 if (conf.hasOwnProperty(i)) {
-                     this.options[i] = conf[i];
+                    this.options[i] = conf[i];
                     //handler
                     if (this[i] && (this[i] instanceof Z.Handler)) {
                         if (conf[i]) {
@@ -164,7 +164,7 @@ Z.Class.extend = function (props) {
  * @param  {object} props - additional instance methods or properties
  * @static
  */
-Z.Class.include = function (props) {
+Z.Class.include = function () {
     var sources = arguments;
     for (var j = 0, len = sources.length; j < len; j++) {
         Z.Util.extend(this.prototype, sources[j]);

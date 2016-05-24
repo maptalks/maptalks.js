@@ -18,7 +18,7 @@ Z.Handlerable = {
         //handler已经存在
         if (this[name]) {
             this[name].enable();
-            return;
+            return this;
         }
 
         var handler = this[name] = new handlerClass(this);
@@ -36,14 +36,14 @@ Z.Handlerable = {
      * @param {String} name       - name of the handler
      * @return {*} this
      */
-    removeHandler: function(name) {
-        if (!name) {return this;}
+    removeHandler: function (name) {
+        if (!name) { return this; }
         var handler = this[name];
         if (handler) {
             //handler registered
-            var hit = Z.Util.searchInArray(handler,this._handlers);
+            var hit = Z.Util.searchInArray(handler, this._handlers);
             if (hit >= 0) {
-                this._handlers.splice(hit,1);
+                this._handlers.splice(hit, 1);
             }
             this[name].disable();
             delete this[name];

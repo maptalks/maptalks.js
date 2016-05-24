@@ -7,8 +7,8 @@
  * @param {String} type          - type of the CRS
  * @param {Object} properties    - CRS's properties
  */
-Z.CRS = function(type, properties) {
-    this.type=type;
+Z.CRS = function (type, properties) {
+    this.type = type;
     this.properties = properties;
 };
 
@@ -26,7 +26,7 @@ Z.CRS = function(type, properties) {
  * @param  {String} proj - a proj4 projection string.
  * @return {maptalks.CRS}
  */
-Z.CRS.createProj4 = function(proj) {
+Z.CRS.createProj4 = function (proj) {
     return new Z.CRS('proj4', {
         'proj': proj
     });
@@ -39,7 +39,7 @@ Z.CRS.createProj4 = function(proj) {
  * @static
  * @constant
  */
-Z.CRS.WGS84 = Z.CRS.createProj4("+proj=longlat +datum=WGS84 +no_defs");
+Z.CRS.WGS84 = Z.CRS.createProj4('+proj=longlat +datum=WGS84 +no_defs');
 /**
  * Alias for maptalks.CRS.WGS84
  * @type {maptalks.CRS}
@@ -53,7 +53,7 @@ Z.CRS.EPSG4326 = Z.CRS.WGS84;
  * @static
  * @constant
  */
-Z.CRS.EPSG3857 = Z.CRS.createProj4("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs");
+Z.CRS.EPSG3857 = Z.CRS.createProj4('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs');
 /**
  * A CRS represents a simple Cartesian coordinate system. <br>
  * Maps x, y directly, is useful for maps of flat surfaces (e.g. indoor maps, game maps).
@@ -61,7 +61,7 @@ Z.CRS.EPSG3857 = Z.CRS.createProj4("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0
  * @static
  * @constant
  */
-Z.CRS.IDENTITY = Z.CRS.createProj4("+proj=identity +no_defs");
+Z.CRS.IDENTITY = Z.CRS.createProj4('+proj=identity +no_defs');
 /**
  * Official coordinate system in China (aka EPSG:4490), in most cases, it can be considered the same with WGS84.
  * @type {maptalks.CRS}
@@ -69,7 +69,7 @@ Z.CRS.IDENTITY = Z.CRS.createProj4("+proj=identity +no_defs");
  * @static
  * @constant
  */
-Z.CRS.CGCS2000 = Z.CRS.createProj4("+proj=longlat +datum=CGCS2000");
+Z.CRS.CGCS2000 = Z.CRS.createProj4('+proj=longlat +datum=CGCS2000');
 /**
  * Alias for maptalks.CRS.CGCS2000
  * @type {maptalks.CRS}
@@ -83,7 +83,7 @@ Z.CRS.EPSG4490 = Z.CRS.CGCS2000;
  * @static
  * @constant
  */
-Z.CRS.BD09LL = Z.CRS.createProj4("+proj=longlat +datum=BD09");
+Z.CRS.BD09LL = Z.CRS.createProj4('+proj=longlat +datum=BD09');
 /**
  * A encrypted CRS usded in the most online map services in China..
  * @type {maptalks.CRS}
@@ -91,4 +91,4 @@ Z.CRS.BD09LL = Z.CRS.createProj4("+proj=longlat +datum=BD09");
  * @static
  * @constant
  */
-Z.CRS.GCJ02 = Z.CRS.createProj4("+proj=longlat +datum=GCJ02");
+Z.CRS.GCJ02 = Z.CRS.createProj4('+proj=longlat +datum=GCJ02');

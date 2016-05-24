@@ -5,9 +5,9 @@
  * @author mourner
  * @link https://github.com/mourner/simplify-js
  */
-Z.Simplify={
+Z.Simplify = {
 	// square distance between 2 points
-    getSqDist:function(p1, p2) {
+    getSqDist:function (p1, p2) {
 
         var dx = p1.x - p2.x,
             dy = p1.y - p2.y;
@@ -16,7 +16,7 @@ Z.Simplify={
     },
 
     // square distance from a point to a segment
-    getSqSegDist:function(p, p1, p2) {
+    getSqSegDist:function (p, p1, p2) {
 
         var x = p1.x,
             y = p1.y,
@@ -44,7 +44,7 @@ Z.Simplify={
     // rest of the code doesn't care about point format
 
     // basic distance-based simplification
-    simplifyRadialDist:function(points, sqTolerance) {
+    simplifyRadialDist:function (points, sqTolerance) {
 
         var prevPoint = points[0],
             newPoints = [prevPoint],
@@ -64,7 +64,7 @@ Z.Simplify={
         return newPoints;
     },
 
-    simplifyDPStep:function(points, first, last, sqTolerance, simplified) {
+    simplifyDPStep:function (points, first, last, sqTolerance, simplified) {
         var maxSqDist = sqTolerance,
             index;
 
@@ -85,7 +85,7 @@ Z.Simplify={
     },
 
     // simplification using Ramer-Douglas-Peucker algorithm
-    simplifyDouglasPeucker:function(points, sqTolerance) {
+    simplifyDouglasPeucker:function (points, sqTolerance) {
         var last = points.length - 1;
 
         var simplified = [points[0]];
@@ -96,7 +96,7 @@ Z.Simplify={
     },
 
     // both algorithms combined for awesome performance
-    simplify:function(points, tolerance, highestQuality) {
+    simplify:function (points, tolerance, highestQuality) {
 
         if (points.length <= 2) return points;
 

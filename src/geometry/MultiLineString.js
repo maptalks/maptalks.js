@@ -8,7 +8,7 @@
  * @param {Number[][][]|maptalks.Coordinate[][]|maptalks.LineString[]} data - construct data, coordinates or a array of linestrings
  * @param {Object} [options=null]           - options defined in [Geometry]{@link maptalks.Geometry#options}
  */
-Z.MultiLineString=Z.MultiPolyline = Z.GeometryCollection.extend(/** @lends maptalks.MultiLineString.prototype */{
+Z.MultiLineString = Z.MultiPolyline = Z.GeometryCollection.extend(/** @lends maptalks.MultiLineString.prototype */{
 
     includes:[Z.Geometry.MultiPoly],
 
@@ -16,7 +16,7 @@ Z.MultiLineString=Z.MultiPolyline = Z.GeometryCollection.extend(/** @lends mapta
 
     type:Z.Geometry['TYPE_MULTILINESTRING'],
 
-    initialize:function(data, opts) {
+    initialize:function (data, opts) {
         this._initOptions(opts);
         this._initData(data);
     }

@@ -5,23 +5,23 @@
  * @param {Number} width - width value
  * @param {Number} height - height value
  */
-Z.Size=function(width,height) {
+Z.Size = function (width, height) {
     /**
      * @property {Number} width - width
      */
-    this.width=width;
+    this.width = width;
     /**
      * @property {Number} height - height
      */
-    this.height=height;
+    this.height = height;
 };
 
-Z.Util.extend(Z.Size.prototype,/** @lends maptalks.Size.prototype */{
+Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
     /**
      * Returns a copy of the size
      * @return {maptalks.Size} copy
      */
-    copy:function() {
+    copy:function () {
         return new Z.Size(this['width'], this['height']);
     },
     /**
@@ -29,15 +29,15 @@ Z.Util.extend(Z.Size.prototype,/** @lends maptalks.Size.prototype */{
      * @param {maptalks.Size} size - size to add
      * @return {maptalks.Size} result
      */
-    add:function(size) {
-        return new Z.Size(this['width']+size['width'], this['height']+size['height']);
+    add:function (size) {
+        return new Z.Size(this['width'] + size['width'], this['height'] + size['height']);
     },
     /**
      * Compare with another size to see whether they are equal.
      * @param {maptalks.Size} size - size to compare
      * @return {Boolean}
      */
-    equals:function(size) {
+    equals:function (size) {
         return this['width'] === size['width'] && this['height'] === size['height'];
     },
     /**
@@ -45,20 +45,20 @@ Z.Util.extend(Z.Size.prototype,/** @lends maptalks.Size.prototype */{
      * @param {Number} ratio - ratio to multi
      * @return {maptalks.Size} result
      */
-    multi:function(ratio) {
-        return new Z.Size(this['width']*ratio, this['height']*ratio);
+    multi:function (ratio) {
+        return new Z.Size(this['width'] * ratio, this['height'] * ratio);
     },
-    _multi:function(ratio) {
+    _multi:function (ratio) {
         this['width'] *= ratio;
         this['height'] *= ratio;
         return this;
     },
-    _round:function() {
+    _round:function () {
         this['width'] = Z.Util.round(this['width']);
         this['height'] = Z.Util.round(this['height']);
         return this;
     },
-    toPoint:function() {
+    toPoint:function () {
         return new Z.Point(this['width'], this['height']);
     }
 });

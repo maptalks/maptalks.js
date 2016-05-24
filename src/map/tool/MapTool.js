@@ -16,7 +16,7 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
      * @param {maptalks.Map} map
      * @return {maptalks.MapTool} this
      */
-    addTo: function(map) {
+    addTo: function (map) {
         if (!map) {
             return this;
         }
@@ -25,7 +25,6 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         if (map[key]) {
             map[key].disable();
         }
-        var me = this;
         this.enable();
         map[key] = this;
         if (this._onAdd) {
@@ -35,7 +34,7 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         return this;
     },
 
-    getMap:function() {
+    getMap:function () {
         return this._map;
     },
 
@@ -43,9 +42,9 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
      * Enable the map tool.
      * @return {maptalks.MapTool} this
      */
-    enable:function() {
+    enable:function () {
         var map = this._map;
-        if (!map || this._enabled) {return this;}
+        if (!map || this._enabled) { return this; }
         this._enabled = true;
         this._switchEvents('off');
         if (this._loadResources) {
@@ -65,12 +64,12 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
      * Disable the map tool
      * @return {maptalks.MapTool} this
      */
-    disable:function() {
+    disable:function () {
         if (!this._enabled || !this._map) {
             return this;
         }
         this._enabled = false;
-        if (!this._map) {return this;}
+        if (!this._map) { return this; }
         this._switchEvents('off');
         if (this._onDisable) {
             this._onDisable();
@@ -79,11 +78,11 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         return this;
     },
 
-    _registerEvents: function() {
+    _registerEvents: function () {
         this._switchEvents('on');
     },
 
-    _switchEvents: function(to) {
+    _switchEvents: function (to) {
         var events = this._getEvents();
         if (events) {
             for (var p in events) {

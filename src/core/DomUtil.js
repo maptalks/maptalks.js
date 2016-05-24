@@ -15,7 +15,7 @@ Z.DomUtil = {
      * @param {String} tagName
      * @returns {HTMLElement}
      */
-    createEl:function(tagName, className) {
+    createEl:function (tagName, className) {
         var el = document.createElement(tagName);
         if (className) {
             Z.DomUtil.setClass(el, className);
@@ -30,9 +30,9 @@ Z.DomUtil = {
      * @param {HTMLElement} container
      * @return {HTMLElement}
      */
-    createElOn:function(tagName, style, container) {
+    createElOn:function (tagName, style, container) {
         var el = this.createEl(tagName);
-        if(style) {
+        if (style) {
             this.setStyle(el, style);
         }
         if (container) {
@@ -45,8 +45,8 @@ Z.DomUtil = {
      * Removes a html element.
      * @param {HTMLElement} node
      */
-    removeDomNode:function(node){
-        if (!node) {return;}
+    removeDomNode:function (node) {
+        if (!node) { return; }
         if (Z.Browser.ielt9 || Z.Browser.ie9) {
             //fix memory leak in IE9-
             //http://com.hemiola.com/2009/11/23/memory-leaks-in-ie8/
@@ -54,10 +54,8 @@ Z.DomUtil = {
             d.appendChild(node);
             d.innerHTML = '';
             d = null;
-        } else {
-            if (node.parentNode) {
-                node.parentNode.removeChild(node);
-            }
+        } else if (node.parentNode) {
+            node.parentNode.removeChild(node);
         }
     },
 
@@ -69,8 +67,8 @@ Z.DomUtil = {
      * @param {Object} context      - function context
      * @return {maptalks.DomUtil}
      */
-    addDomEvent:function(obj, typeArr, handler, context) {
-        if (!obj || !typeArr || !handler) {return Z.DomUtil;}
+    addDomEvent:function (obj, typeArr, handler, context) {
+        if (!obj || !typeArr || !handler) { return Z.DomUtil; }
         var eventHandler = function (e) {
             if (!e) {
                 e = window.event;
@@ -84,19 +82,19 @@ Z.DomUtil = {
                 continue;
             }
 
-            if (!obj['Z__'+type]) {
-                obj['Z__'+type]=[];
+            if (!obj['Z__' + type]) {
+                obj['Z__' + type] = [];
 
             }
-            var hit = Z.DomUtil.listensDomEvent(obj,type,handler);
+            var hit = Z.DomUtil.listensDomEvent(obj, type, handler);
             if (hit >= 0) {
-                Z.DomUtil.removeDomEvent(obj,type,handler);
+                Z.DomUtil.removeDomEvent(obj, type, handler);
             }
-            obj['Z__'+type].push({callback:eventHandler,src:handler});
+            obj['Z__' + type].push({callback:eventHandler, src:handler});
             if ('addEventListener' in obj) {
                 //滚轮事件的特殊处理
-                if (type === "mousewheel" && document['mozHidden'] !== undefined) {
-                    type = "DOMMouseScroll";
+                if (type === 'mousewheel' && document['mozHidden'] !== undefined) {
+                    type = 'DOMMouseScroll';
                 }
                 obj.addEventListener(type, eventHandler, false);
             } else if ('attachEvent' in obj) {
@@ -113,41 +111,41 @@ Z.DomUtil = {
      * @param {Function} handler        - listening function
      * @return {maptalks.DomUtil}
      */
-    removeDomEvent:function(obj, typeArr, handler) {
-        function doRemove(type,callback) {
+    removeDomEvent:function (obj, typeArr, handler) {
+        function doRemove(type, callback) {
             if ('removeEventListener' in obj) {
                 //mouse wheel in firefox
-                if (type === "mousewheel" && document['mozHidden'] !== undefined) {
-                    type = "DOMMouseScroll";
+                if (type === 'mousewheel' && document['mozHidden'] !== undefined) {
+                    type = 'DOMMouseScroll';
                 }
                 obj.removeEventListener(type, callback, false);
             } else if ('detachEvent' in obj) {
                 obj.detachEvent('on' + type, callback);
             }
         }
-        if (!obj || !typeArr) {return this;}
-         var types = typeArr.split(' ');
+        if (!obj || !typeArr) { return this; }
+        var types = typeArr.split(' ');
         for (var i = types.length - 1; i >= 0; i--) {
             var type = types[i];
             if (!type) {
                 continue;
             }
             //remove all the listeners if handler is not given.
-            if (!handler && obj['Z__'+type]) {
-                var handlers = obj['Z__'+type];
-                for (var j=0,jlen=handlers.length;j<jlen;j++) {
+            if (!handler && obj['Z__' + type]) {
+                var handlers = obj['Z__' + type];
+                for (var j = 0, jlen = handlers.length; j < jlen; j++) {
                     doRemove(handlers[j].callback);
                 }
-                delete obj['Z__'+type];
+                delete obj['Z__' + type];
                 return this;
             }
-            var hit = this.listensDomEvent(obj,type,handler);
+            var hit = this.listensDomEvent(obj, type, handler);
             if (hit < 0) {
                 return this;
             }
-            var hitHandler = obj['Z__'+type][hit];
-            doRemove(type,hitHandler.callback);
-            obj['Z__'+type].splice(hit,1);
+            var hitHandler = obj['Z__' + type][hit];
+            doRemove(type, hitHandler.callback);
+            obj['Z__' + type].splice(hit, 1);
         }
         return this;
     },
@@ -159,13 +157,13 @@ Z.DomUtil = {
      * @param {Function} handler    - the listening function
      * @return {Number} - the handler's index in the listener chain, returns -1 if not.
      */
-    listensDomEvent:function(obj, type, handler) {
-        if (!obj || !obj['Z__'+type] || !handler) {
+    listensDomEvent:function (obj, type, handler) {
+        if (!obj || !obj['Z__' + type] || !handler) {
             return -1;
         }
-        var handlers = obj['Z__'+type];
-        for (var i=0,len=handlers.length;i<len;i++) {
-            if (handlers[i].src == handler) {
+        var handlers = obj['Z__' + type];
+        for (var i = 0, len = handlers.length; i < len; i++) {
+            if (handlers[i].src === handler) {
                 return i;
             }
         }
@@ -177,7 +175,7 @@ Z.DomUtil = {
      * preventDefault Cancels the event if it is cancelable, without stopping further propagation of the event.
      * @param {Event} event - browser event
      */
-    preventDefault: function(event) {
+    preventDefault: function (event) {
         if (event.preventDefault) {
             event.preventDefault();
         } else {
@@ -204,8 +202,8 @@ Z.DomUtil = {
      * @param  {maptalks.Point} [offset=null] - position to set.
      * @return {maptalks.Point} - dom element's current position if offset is null.
      */
-    offsetDom: function(dom, offset) {
-        if (!dom) {return null;}
+    offsetDom: function (dom, offset) {
+        if (!dom) { return null; }
 
         if (Z.Browser.any3d) {
             Z.DomUtil.setTransform(dom, offset);
@@ -221,25 +219,25 @@ Z.DomUtil = {
      * @param  {HTMLElement} obj Dom对象
      * @return {Object}     屏幕坐标
      */
-    getPagePosition:function(obj) {
+    getPagePosition:function (obj) {
         if (obj.getBoundingClientRect) {
             var docEl = document.documentElement;
             var rect = obj.getBoundingClientRect();
-            return new Z.Point(rect['left']+docEl['scrollLeft'], rect['top']+docEl['scrollTop']);
+            return new Z.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
         }
-        var topValue= 0,leftValue= 0;
+        var topValue = 0, leftValue = 0;
         if (!obj) {
             console.error('obj is null');
         }
-        leftValue+= parseInt(obj.offsetLeft,0);
-        topValue+= parseInt(obj.offsetTop,0);
-        obj= obj.offsetParent;
-        while(obj){
-            leftValue+= parseInt(obj.offsetLeft,0);
-            topValue+= parseInt(obj.offsetTop,0);
-            obj= obj.offsetParent;
+        leftValue += parseInt(obj.offsetLeft, 0);
+        topValue += parseInt(obj.offsetTop, 0);
+        obj = obj.offsetParent;
+        while (obj) {
+            leftValue += parseInt(obj.offsetLeft, 0);
+            topValue += parseInt(obj.offsetTop, 0);
+            obj = obj.offsetParent;
         }
-       return new Z.Point(leftValue, topValue);
+        return new Z.Point(leftValue, topValue);
     },
 
     /**
@@ -247,23 +245,23 @@ Z.DomUtil = {
      * @param  {Event} ev 事件
      * @return {Object} 屏幕坐标
      */
-    getEventPagePosition:function(ev) {
+    getEventPagePosition:function (ev) {
         ev = ev || window.event;
         if (ev.touches && ev.touches.length > 0) {
             return new Z.Point(ev.touches[0].pageX, ev.touches[0].pageY);
         } else if (ev.changedTouches && ev.changedTouches.length > 0) {
             //touchend
             return new Z.Point(ev.changedTouches[0].pageX, ev.changedTouches[0].pageY);
-        } else if(ev.pageX || ev.pageY){
+        } else if (ev.pageX || ev.pageY) {
             return new Z.Point(ev.pageX, ev.pageY);
-        }else{
+        } else {
             //解决是否定义DOCTYPE W3C DTD标准取值滚动条参数
             var dBody = document.body;//无标准这有效
             var dElement = document.documentElement;//有标准这有效
-            var scrollLeft = dElement.scrollLeft?dElement.scrollLeft:dBody.scrollLeft;
-            var clientLeft = dElement.clientLeft?dElement.clientLeft:dBody.clientLeft;
-            var scrollTop = dElement.scrollTop?dElement.scrollTop:dBody.scrollTop;
-            var clientTop = dElement.clientTop?dElement.clientTop:dBody.clientTop;
+            var scrollLeft = dElement.scrollLeft ? dElement.scrollLeft : dBody.scrollLeft;
+            var clientLeft = dElement.clientLeft ? dElement.clientLeft : dBody.clientLeft;
+            var scrollTop = dElement.scrollTop ? dElement.scrollTop : dBody.scrollTop;
+            var clientTop = dElement.clientTop ? dElement.clientTop : dBody.clientTop;
             return new Z.Point(
                 ev.clientX + scrollLeft - clientLeft,
                 ev.clientY + scrollTop  - clientTop
@@ -276,7 +274,7 @@ Z.DomUtil = {
      * @param {Event} ev  触发的事件
      * @return {maptalks.Point} left:鼠标在页面上的横向位置, top:鼠标在页面上的纵向位置
      */
-    getEventContainerPoint:function(ev, dom) {
+    getEventContainerPoint:function (ev, dom) {
         if (!ev) {
             ev = window.event;
         }
@@ -290,14 +288,14 @@ Z.DomUtil = {
      * @param {HTMLElement} dom dom节点
      * @param {String} strCss 样式字符串
      */
-    setStyle : function(dom, strCss) {
+    setStyle : function (dom, strCss) {
         function endsWith(str, suffix) {
             var l = str.length - suffix.length;
-            return l >= 0 && str.indexOf(suffix, l) == l;
+            return l >= 0 && str.indexOf(suffix, l) === l;
         }
         var style = dom.style,
             cssText = style.cssText;
-        if(!endsWith(cssText, ';')){
+        if (!endsWith(cssText, ';')) {
             cssText += ';';
         }
         dom.style.cssText = cssText + strCss;
@@ -307,7 +305,7 @@ Z.DomUtil = {
      * 清空dom样式
      * @param {HTMLElement} dom dom节点
      */
-    removeStyle: function(dom) {
+    removeStyle: function (dom) {
         dom.style.cssText = '';
     },
 
@@ -317,12 +315,12 @@ Z.DomUtil = {
      * @param {String} attr 样式标签
      * @param {String} value 样式值
      */
-    addStyle: function(dom, attr, value) {
-         var css = dom.style.cssText;
-         if(attr && value) {
-             var newStyle = attr+':'+value+';';
-             dom.style.cssText = css + newStyle;
-         }
+    addStyle: function (dom, attr, value) {
+        var css = dom.style.cssText;
+        if (attr && value) {
+            var newStyle = attr + ':' + value + ';';
+            dom.style.cssText = css + newStyle;
+        }
     },
 
     /**
@@ -432,14 +430,14 @@ Z.DomUtil = {
      * @param  {Element|Canvas} src - source canvas
      * @return {Element|Canvas}     target canvas
      */
-    copyCanvas:function(src) {
+    copyCanvas:function (src) {
         if (Z.node) {
             return null;
         }
         var target = Z.DomUtil.createEl('canvas');
         target.width = src.width;
         target.height = src.height;
-        target.getContext('2d').drawImage(src,0,0);
+        target.getContext('2d').drawImage(src, 0, 0);
         return target;
     },
 
@@ -449,54 +447,54 @@ Z.DomUtil = {
      * @param  {maptalks.Size} - size
      * @return {Boolean}
      */
-    testCanvasSize: (function() {
+    testCanvasSize: (function () {
         if (Z.node) {
-            return function(){return true;};
+            return function () { return true; };
         }
           /**
            * @type {CanvasRenderingContext2D}
            */
-          var context = null;
+        var context = null;
 
           /**
            * @type {ImageData}
            */
-          var imageData = null;
+        var imageData = null;
 
-          return function(size) {
+        return function (size) {
             if (!context) {
-              var _canvas = Z.DomUtil.createEl('canvas');
-              _canvas.width = 1;
-              _canvas.height = 1;
-              context = _canvas.getContext('2d');
-              imageData = context.createImageData(1, 1);
-              var data = imageData.data;
-              data[0] = 42;
-              data[1] = 84;
-              data[2] = 126;
-              data[3] = 255;
+                var _canvas = Z.DomUtil.createEl('canvas');
+                _canvas.width = 1;
+                _canvas.height = 1;
+                context = _canvas.getContext('2d');
+                imageData = context.createImageData(1, 1);
+                var data = imageData.data;
+                data[0] = 42;
+                data[1] = 84;
+                data[2] = 126;
+                data[3] = 255;
             }
             var canvas = context.canvas;
             var good = size['width'] <= canvas.width && size['height'] <= canvas.height;
             if (!good) {
-              canvas.width = size['width'];
-              canvas.height = size['height'];
-              var x = size['width'] - 1;
-              var y = size['height'] - 1;
-              context.putImageData(imageData, x, y);
-              var result = context.getImageData(x, y, 1, 1);
-              var arrEqual = true;
-              for (var i = result.data.length - 1; i >= 0; i--) {
-                  if (result.data[i] != imageData.data[i]) {
-                    arrEqual = false;
-                    break;
-                  }
-              };
-              good = arrEqual;
+                canvas.width = size['width'];
+                canvas.height = size['height'];
+                var x = size['width'] - 1;
+                var y = size['height'] - 1;
+                context.putImageData(imageData, x, y);
+                var result = context.getImageData(x, y, 1, 1);
+                var arrEqual = true;
+                for (var i = result.data.length - 1; i >= 0; i--) {
+                    if (result.data[i] !== imageData.data[i]) {
+                        arrEqual = false;
+                        break;
+                    }
+                }
+                good = arrEqual;
             }
             return good;
-          };
-        })(),
+        };
+    })(),
 
 
     /**

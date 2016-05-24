@@ -1,7 +1,7 @@
 /**
  * @namespace
  */
-Z.ui={};
+Z.ui = {};
 /**
  * @classdesc
  * Base class for all the ui component classes.
@@ -49,7 +49,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @param {maptalks.Geometry|maptalks.Map} owner - geometry or map to addto.
      * @returns {maptalks.ui.UIComponent} this
      */
-    addTo:function(owner) {
+    addTo:function (owner) {
         this._owner = owner;
     },
 
@@ -58,7 +58,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @return {maptalks.Map} map instance
      * @override
      */
-    getMap:function() {
+    getMap:function () {
         if (this._owner instanceof Z.Map) {
             return this._owner;
         }
@@ -70,7 +70,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @param {maptalks.Coordinate} - coordinate to show
      * @return {maptalks.ui.UIComponent} this
      */
-    show: function(coordinate) {
+    show: function (coordinate) {
         if (!coordinate) {
             throw new Error('UI\'s show coordinate is invalid');
         }
@@ -120,7 +120,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * Hide the UI Component.
      * @return {maptalks.ui.UIComponent} this
      */
-    hide:function() {
+    hide:function () {
         if (!this._getDOM()) {
             return this;
         }
@@ -133,7 +133,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * Decide whether the component is open
      * @returns {Boolean} true|false
      */
-    isVisible:function() {
+    isVisible:function () {
         return this._getDOM() && this._getDOM().style.display !== 'none';
     },
 
@@ -141,7 +141,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * Remove the UI Component
      * @return {maptalks.ui.UIComponent} this
      */
-    remove: function() {
+    remove: function () {
         this.hide();
         this._switchEvents('off');
         delete this._owner;
@@ -154,7 +154,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * Get pixel size of the UI Component.
      * @return {maptalks.Size} size
      */
-    getSize:function() {
+    getSize:function () {
         if (this._size) {
             return this._size.copy();
         } else {
@@ -162,25 +162,25 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         }
     },
 
-    getOwner: function() {
+    getOwner: function () {
         return this._owner;
     },
 
-    _getPosition : function() {
+    _getPosition : function () {
         var p = this.getMap().coordinateToViewPoint(this._coordinate)
                     ._add(this.options['dx'], this.options['dy']);
         if (this._getDomOffset) {
             var o = this._getDomOffset();
-            o && p._add(o);
+            if (o) { p._add(o); }
         }
         return p;
     },
 
-    _getDOM : function() {
+    _getDOM : function () {
         return this.__uiDOM;
     },
 
-    _autoPan : function() {
+    _autoPan : function () {
         var map = this.getMap(),
             dom = this._getDOM();
         var point = new Z.Point(parseInt(dom.style.left), parseInt(dom.style.top));
@@ -189,22 +189,21 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             mapHeight = mapSize['height'];
 
         var containerPoint = map.viewPointToContainerPoint(point);
-        var size = this.getSize(),
-            clientWidth = parseInt(dom.clientWidth),
+        var clientWidth = parseInt(dom.clientWidth),
             clientHeight = parseInt(dom.clientHeight);
-        var left = 0,top = 0;
+        var left = 0, top = 0;
         if ((containerPoint.x) < 0) {
-            left = -(containerPoint.x - clientWidth/2);
+            left = -(containerPoint.x - clientWidth / 2);
         } else if ((containerPoint.x + clientWidth - 35) > mapWidth) {
             left = (mapWidth - (containerPoint.x + clientWidth * 3 / 2));
         }
         if (containerPoint.y < 0) {
             top = -containerPoint.y + 50;
-        } else if (containerPoint.y > mapHeight){
+        } else if (containerPoint.y > mapHeight) {
             top = (mapHeight - containerPoint.y - clientHeight) - 30;
         }
         if (top !== 0 || left !== 0) {
-            map._panAnimation(new Z.Point(left,top),600);
+            map._panAnimation(new Z.Point(left, top), 600);
         }
     },
 
@@ -214,11 +213,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @return {maptalks.Size} size
      * @private
      */
-    _measureSize:function(dom) {
+    _measureSize:function (dom) {
         var container = this._getUIContainer();
         dom.style.position = 'absolute';
-        dom.style.left = -99999+'px';
-        dom.style.top = -99999+'px';
+        dom.style.left = -99999 + 'px';
+        dom.style.top = -99999 + 'px';
         container.appendChild(dom);
         this._size = new Z.Size(dom.clientWidth, dom.clientHeight);
         dom.style.display = 'none';
@@ -230,7 +229,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      *
      * @private
      */
-    _removePrev:function() {
+    _removePrev:function () {
         var map = this.getMap(),
             key = this._uiDomKey();
         if (map[key]) {
@@ -244,11 +243,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @private
      * @return {String} cache key
      */
-    _uiDomKey:function() {
-        return '__ui_'+this._getClassName();
+    _uiDomKey:function () {
+        return '__ui_' + this._getClassName();
     },
 
-    _singleton:function() {
+    _singleton:function () {
         var clazzName = this._getClassName();
         if (Z.ui[clazzName] && !Z.ui[clazzName]['single']) {
             return false;
@@ -256,11 +255,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         return true;
     },
 
-    _getUIContainer : function() {
+    _getUIContainer : function () {
         return this.getMap()._panels['ui'];
     },
 
-    _getClassName:function() {
+    _getClassName:function () {
         for (var p in Z.ui) {
             if (Z.ui.hasOwnProperty(p)) {
                 if (p === 'UIComponent') {
@@ -274,7 +273,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         return null;
     },
 
-    _switchEvents: function(to) {
+    _switchEvents: function (to) {
         var events = this._getEvents ? this._getEvents() : null;
         if (events) {
             var map = this.getMap();

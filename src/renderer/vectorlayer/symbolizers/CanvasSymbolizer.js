@@ -9,7 +9,7 @@
  * @extends {maptalks.Symbolizer}
  */
 Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symbolizer.CanvasSymbolizer.prototype */{
-    _prepareContext:function(ctx) {
+    _prepareContext:function (ctx) {
         //for VectorPathMarkerSymbolizer, opacity is already added into SVG element.
         if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer)) {
             var symbol = this.symbol;
@@ -31,19 +31,19 @@ Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symboliz
         }
     },
 
-    refresh:function() {
+    refresh:function () {
     },
 
     //所有point symbolizer的共同的remove方法
-    remove:function() {
+    remove:function () {
     },
 
-    setZIndex:function(zIndex) {
+    setZIndex:function () {
     },
 
-    show:function(){
+    show:function () {
     },
 
-    hide:function(){
+    hide:function () {
     }
 });

@@ -30,7 +30,7 @@ Z.StringUtil = {
      * @param {String} font - font of the text, same as the CSS font.
      * @return {maptalks.Size}
      */
-    stringLength:function(text, font) {
+    stringLength:function (text, font) {
         var ruler = Z.StringUtil._getStrRuler();
         ruler.style.font = font;
         ruler.innerHTML = text;
@@ -42,9 +42,9 @@ Z.StringUtil = {
 
     },
 
-    _getStrRuler:function(){
-        var span = document.createElement("span");
-        span.style.cssText="position:absolute;left:-10000px;top:-10000px;";
+    _getStrRuler:function () {
+        var span = document.createElement('span');
+        span.style.cssText = 'position:absolute;left:-10000px;top:-10000px;';
         document.body.appendChild(span);
         return span;
     },
@@ -56,16 +56,16 @@ Z.StringUtil = {
      * @param {Number} wrapWidth    - width to wrap
      * @return {String[]}
      */
-    splitContent: function(content, textLength, wrapWidth) {
-        var rowNum = Math.ceil(textLength/wrapWidth);
+    splitContent: function (content, textLength, wrapWidth) {
+        var rowNum = Math.ceil(textLength / wrapWidth);
         var avgLen = textLength / content.length;
         var approxLen =  Math.floor(wrapWidth / avgLen);
         var result = [];
-        for(var i=0;i<rowNum;i++) {
-            if(i < rowNum -1 ) {
-                result.push(content.substring(i*approxLen, (i+1)*approxLen));
+        for (var i = 0; i < rowNum; i++) {
+            if (i < rowNum - 1) {
+                result.push(content.substring(i * approxLen, (i + 1) * approxLen));
             } else {
-                result.push(content.substring(i*approxLen));
+                result.push(content.substring(i * approxLen));
             }
         }
         return result;
@@ -101,54 +101,55 @@ Z.StringUtil = {
      * @param {Object} style    - text style
      * @return {Object[]} the object's structure: {rowNum: rowNum, textSize: textSize, rows: textRows}
      */
-    splitTextToRow: function(text, style) {
+    splitTextToRow: function (text, style) {
         var font = Z.symbolizer.TextMarkerSymbolizer.getFont(style);
-        var lineSpacing = Z.Util.getValueOrDefault(style['textLineSpacing'],0);
-        var rawTextSize = Z.StringUtil.stringLength(text,font);
+        var lineSpacing = Z.Util.getValueOrDefault(style['textLineSpacing'], 0);
+        var rawTextSize = Z.StringUtil.stringLength(text, font);
         var textWidth = rawTextSize['width'];
         var textHeight = rawTextSize['height'];
-        var wrapChar = Z.Util.getValueOrDefault(style['textWrapCharacter'],null);
+        var wrapChar = Z.Util.getValueOrDefault(style['textWrapCharacter'], null);
         var wrapWidth = style['textWrapWidth'];
-        if(!wrapWidth || wrapWidth > textWidth) {wrapWidth = textWidth;}
+        if (!wrapWidth || wrapWidth > textWidth) { wrapWidth = textWidth; }
         var textRows = [];
-        if(!Z.Util.isString(text)) {
-            text +='';
+        if (!Z.Util.isString(text)) {
+            text += '';
         }
-        var actualWidth = 0;
-        if(wrapChar&&text.indexOf(wrapChar)>=0){
+        var actualWidth = 0, size, i, len;
+        if (wrapChar && text.indexOf(wrapChar) >= 0) {
             var texts = text.split(wrapChar);
-            for(var i=0,len=texts.length;i<len;i++) {
+            for (i = 0, len = texts.length; i < len; i++) {
                 var t = texts[i];
                 //TODO stringLength is expensive, should be reduced here.
-                var tSize = Z.StringUtil.stringLength(t,font);
+                var tSize = Z.StringUtil.stringLength(t, font);
                 var tWidth = tSize['width'];
-                if(tWidth>wrapWidth) {
+                if (tWidth > wrapWidth) {
                     var contents = Z.StringUtil.splitContent(t, tWidth, wrapWidth);
                     for (var ii = 0; ii < contents.length; ii++) {
-                        var size = Z.StringUtil.stringLength(contents[ii],font);
-                        if (size['width'] > actualWidth) {actualWidth = size['width'];}
-                        textRows.push({'text':contents[ii],'size':size});
+                        size = Z.StringUtil.stringLength(contents[ii], font);
+                        if (size['width'] > actualWidth) { actualWidth = size['width']; }
+                        textRows.push({'text':contents[ii], 'size':size});
                     }
                 } else {
-                    if (tSize['width'] > actualWidth) {actualWidth = tSize['width'];}
-                    textRows.push({'text':t,'size':tSize});
+                    if (tSize['width'] > actualWidth) { actualWidth = tSize['width']; }
+                    textRows.push({'text':t, 'size':tSize});
                 }
+            }
+        } else if (textWidth > wrapWidth) {
+            var splitted = Z.StringUtil.splitContent(text, textWidth, wrapWidth);
+            for (i = 0; i < splitted.length; i++) {
+                size = Z.StringUtil.stringLength(splitted[i], font);
+                if (size['width'] > actualWidth) { actualWidth = size['width']; }
+                textRows.push({'text':splitted[i], 'size':size});
             }
         } else {
-            if(textWidth>wrapWidth) {
-                var splitted = Z.StringUtil.splitContent(text, textWidth, wrapWidth);
-                for (var iii = 0; iii < splitted.length; iii++) {
-                    var size = Z.StringUtil.stringLength(splitted[iii],font);
-                    if (size['width'] > actualWidth) {actualWidth = size['width'];}
-                    textRows.push({'text':splitted[iii],'size':size});
-                }
-            } else {
-                if (rawTextSize['width'] > actualWidth) {actualWidth = rawTextSize['width'];}
-                textRows.push({'text':text,'size':rawTextSize});
+            if (rawTextSize['width'] > actualWidth) {
+                actualWidth = rawTextSize['width'];
             }
+            textRows.push({'text':text, 'size':rawTextSize});
         }
+
         var rowNum = textRows.length;
-        var textSize = new Z.Size(actualWidth, textHeight*rowNum+lineSpacing*(rowNum-1));
+        var textSize = new Z.Size(actualWidth, textHeight * rowNum + lineSpacing * (rowNum - 1));
         return {'total': rowNum, 'size': textSize, 'rows': textRows, 'rawSize':rawTextSize};
     },
 
@@ -159,20 +160,20 @@ Z.StringUtil = {
      * @param  {String} verticalAlignment   - verticalAlignment: top/middle/bottom
      * @return {maptalks.Point}
      */
-    getAlignPoint:function(size, horizontalAlignment, verticalAlignment) {
+    getAlignPoint:function (size, horizontalAlignment, verticalAlignment) {
         var width = size['width'], height = size['height'];
         var alignW, alignH;
         if (horizontalAlignment === 'left') {
             alignW = -width;
         } else if (horizontalAlignment === 'middle') {
-            alignW = -width/2;
+            alignW = -width / 2;
         } else if (horizontalAlignment === 'right') {
             alignW = 0;
         }
         if (verticalAlignment === 'top') {
             alignH = -height;
         } else if (verticalAlignment === 'middle') {
-            alignH = -height/2;
+            alignH = -height / 2;
         } else if (verticalAlignment === 'bottom') {
             alignH = 0;
         }

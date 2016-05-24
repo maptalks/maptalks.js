@@ -7,13 +7,13 @@ Z.Geometry.MultiPoly = {
      * Get coordinates of the collection
      * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates
      */
-    getCoordinates:function() {
+    getCoordinates:function () {
         var coordinates = [];
         var geometries = this.getGeometries();
         if (!Z.Util.isArray(geometries)) {
             return null;
         }
-        for (var i = 0,len=geometries.length;i<len;i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             coordinates.push(geometries[i].getCoordinates());
         }
         return coordinates;
@@ -25,10 +25,10 @@ Z.Geometry.MultiPoly = {
      * @returns {maptalks.Geometry} this
      * @fires maptalk.Geometry#shapechange
      */
-    setCoordinates:function(coordinates) {
+    setCoordinates:function (coordinates) {
         if (Z.Util.isArrayHasData(coordinates)) {
             var geometries = [];
-            for (var i=0, len=coordinates.length;i<len;i++) {
+            for (var i = 0, len = coordinates.length; i < len; i++) {
                 var p = new this.GeometryType(coordinates[i], this.config());
                 geometries.push(p);
             }
@@ -39,7 +39,7 @@ Z.Geometry.MultiPoly = {
         return this;
     },
 
-    _initData:function(data) {
+    _initData:function (data) {
         if (Z.Util.isArrayHasData(data)) {
             if (data[0] instanceof this.GeometryType) {
                 this.setGeometries(data);
@@ -49,11 +49,11 @@ Z.Geometry.MultiPoly = {
         }
     },
 
-    _checkGeometries:function(geometries) {
+    _checkGeometries:function (geometries) {
         if (Z.Util.isArray(geometries)) {
-            for (var i=0,len=geometries.length;i<len;i++) {
+            for (var i = 0, len = geometries.length; i < len; i++) {
                 if (geometries[i] && !(geometries[i] instanceof this.GeometryType)) {
-                    throw new Error(this.exceptions['INVALID_GEOMETRY_IN_COLLECTION']+i);
+                    throw new Error(this.exceptions['INVALID_GEOMETRY_IN_COLLECTION'] + i);
                 }
             }
         }
@@ -61,7 +61,7 @@ Z.Geometry.MultiPoly = {
     },
 
     //override _exportGeoJSONGeometry in GeometryCollection
-    _exportGeoJSONGeometry:function() {
+    _exportGeoJSONGeometry:function () {
         var points = this.getCoordinates();
         var coordinates = Z.GeoJSON.toGeoJSONCoordinates(points);
         return {

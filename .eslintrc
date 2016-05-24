@@ -1,0 +1,13 @@
+{
+  "extends": "maptalks",
+  "globals": {
+      "Z" : true,
+      "define" : true
+  },
+  "rules": {
+    "new-cap"     : 0,
+    "key-spacing" : 0,
+    "strict"      : 0,
+    "global-require" : 0
+  }
+}

@@ -20,15 +20,15 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
         }
     },
 
-    initialize: function(options) {
-        Z.Util.setOptions(this,options);
-        this.config('mode',Z.Geometry['TYPE_POLYGON']);
-         this.on('enable', this._afterEnable, this)
+    initialize: function (options) {
+        Z.Util.setOptions(this, options);
+        this.config('mode', Z.Geometry['TYPE_POLYGON']);
+        this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
     },
 
-    _measure:function(toMeasure) {
+    _measure:function (toMeasure) {
         var map = this.getMap();
         var area;
         if (toMeasure instanceof Z.Geometry) {
@@ -48,18 +48,17 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
             content += area < 1E6 ? area.toFixed(0) + units[0] : (area / 1E6).toFixed(2) + units[1];
         }
         if (this.options['imperial']) {
-            area *= 3.2808399
+            area *= 3.2808399;
             if (content.length > 0) {
                 content += '\n';
             }
-            var sqmi = 5280*5280;
+            var sqmi = 5280 * 5280;
             content += area < sqmi ? area.toFixed(0) + units[2] : (area / sqmi).toFixed(2) + units[3];
         }
         return content;
     },
 
-    _msOnDrawVertex:function(param) {
-        var geometry = param['geometry'];
+    _msOnDrawVertex:function (param) {
         var vertexMarker = new maptalks.Marker(param['coordinate'], {
             'symbol' : this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
@@ -67,7 +66,7 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
         this._lastVertex = vertexMarker;
     },
 
-    _msOnDrawEnd:function(param) {
+    _msOnDrawEnd:function (param) {
         this._clearTailMarker();
 
         var ms = this._measure(param['geometry']);
@@ -75,7 +74,7 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
                         .addTo(this._measureMarkerLayer);
         var size = endLabel.getSize();
         if (!size) {
-            size = new Z.Size(10,10);
+            size = new Z.Size(10, 10);
         }
         this._addClearMarker(param['coordinate'], size['width']);
         var geo = param['geometry'].copy();

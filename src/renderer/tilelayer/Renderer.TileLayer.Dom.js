@@ -11,43 +11,40 @@
  */
 Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.prototype */{
 
-    initialize:function(layer) {
+    initialize:function (layer) {
         this._layer = layer;
         this._tiles = {};
         this._fadeAnimated = true;
     },
 
-    getMap:function() {
+    getMap:function () {
         return this._layer.getMap();
     },
 
-    remove:function() {
+    remove:function () {
         this._removeLayerContainer();
     },
 
-    clear:function() {
+    clear:function () {
         this._removeAllTiles();
         this._clearLayerContainer();
     },
 
-    setZIndex: function(z) {
+    setZIndex: function (z) {
         this._zIndex = z;
         if (this._container) {
             this._container.style.zIndex = z;
         }
     },
 
-    isCanvasRender: function() {
+    isCanvasRender: function () {
         return false;
     },
 
-    render:function() {
-        var map = this.getMap(),
-            layer = this._layer;
+    render:function () {
+        var layer = this._layer;
         var tileGrid = layer._getTiles(),
             tiles = tileGrid['tiles'],
-            tileSize = layer.getTileSize(),
-            zoom = map.getZoom(),
             queue = [];
         if (!this._container) {
             this._createLayerContainer();
@@ -59,7 +56,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             }
         }
 
-        var tile, tileId;
+        var tile;
         for (var i = tiles.length - 1; i >= 0; i--) {
             tile = tiles[i];
             if (this._tiles[tile['id']]) {
@@ -79,7 +76,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
     },
 
-    transform: function(matrices) {
+    transform: function (matrices) {
         if (!this._canTransform()) {
             return false;
         }
@@ -91,12 +88,12 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         return false;
     },
 
-    _loadTile: function(tile) {
+    _loadTile: function (tile) {
         this._tiles[tile['id']] = tile;
         return this._createTile(tile, Z.Util.bind(this._tileReady, this));
     },
 
-    _createTile: function(tile, done) {
+    _createTile: function (tile, done) {
         var tileSize = this._layer.getTileSize();
         var tileImage = Z.DomUtil.createEl('img');
 
@@ -124,7 +121,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         return tileImage;
     },
 
-    _tileReady: function(err, tile) {
+    _tileReady: function (err, tile) {
         if (err) {
             this._layer.fire('tileerror', {
                 error: err,
@@ -143,16 +140,11 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             this._pruneTiles();
         }
 
-
-        // @event tileload: TileEvent
-        // Fired when a tile loads.
         this._layer.fire('tileload', {
             tile: tile
         });
 
         if (this._noTilesToLoad()) {
-            // @event load: TileEvent
-            // Fired when the grid layer loaded all visible tiles.
             this._layer.fire('layerload');
 
             if (Z.Browser.ielt9) {
@@ -162,7 +154,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
                     clearTimeout(this._pruneTimeout);
                 }
                 var timeout = this.getMap() ? this.getMap().options['zoomAnimationDuration'] : 250,
-                    pruneLevels = this.getMap() ? !!!this.getMap().options['zoomBackground'] : true;
+                    pruneLevels = this.getMap() ? !this.getMap().options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
                 // to trigger a pruning.
                 this._pruneTimeout = setTimeout(Z.Util.bind(this._pruneTiles, this, pruneLevels), timeout + 100);
@@ -170,7 +162,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
     },
 
-    _tileOnLoad: function(done, tile) {
+    _tileOnLoad: function (done, tile) {
         // For https://github.com/Leaflet/Leaflet/issues/3332
         if (Z.Browser.ielt9) {
             setTimeout(Z.Util.bind(done, this, null, tile), 0);
@@ -179,7 +171,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
     },
 
-    _tileOnError: function(done, tile) {
+    _tileOnError: function (done, tile) {
         var errorUrl = this._layer.options['errorTileUrl'];
         if (errorUrl) {
             tile['el'].src = errorUrl;
@@ -233,10 +225,9 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             return;
         }
 
-        var key, tile,
+        var key,
             zoom = map.getZoom();
 
-        var zoom = map.getZoom();
         if (!this._layer.isVisible()) {
             this._removeAllTiles();
             return;
@@ -280,7 +271,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         });
     },
 
-    _removeTilesAtZoom: function(zoom) {
+    _removeTilesAtZoom: function (zoom) {
         for (var key in this._tiles) {
             if (+this._tiles[key]['zoom'] !== +zoom) {
                 continue;
@@ -295,7 +286,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
     },
 
-    _getTileContainer: function() {
+    _getTileContainer: function () {
         if (!this._levelContainers) {
             this._levelContainers = {};
         }
@@ -309,7 +300,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         return this._levelContainers[zoom];
     },
 
-    _createLayerContainer: function() {
+    _createLayerContainer: function () {
         var container = this._container = Z.DomUtil.createEl('div', 'maptalks-tilelayer');
         container.style.cssText = 'position:absolute;left:0px;top:0px;';
         if (this._zIndex) {
@@ -318,21 +309,21 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         this.getMap()._panels['layer'].appendChild(container);
     },
 
-    _clearLayerContainer:function() {
+    _clearLayerContainer:function () {
         if (this._container) {
             this._container.innerHTML = '';
         }
         delete this._levelContainers;
     },
 
-    _removeLayerContainer:function() {
+    _removeLayerContainer:function () {
         if (this._container) {
             Z.DomUtil.removeDomNode(this._container);
         }
         delete this._levelContainers;
     },
 
-    _getEvents:function() {
+    _getEvents:function () {
         var events = {
             '_zoomstart'    : this._onZoomStart,
             '_zoomend'      : this._onZoomEnd,
@@ -343,11 +334,11 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             var rendSpan = this._layer.options['renderSpanWhenPanning'];
             if (Z.Util.isNumber(rendSpan) && rendSpan >= 0) {
                 if (rendSpan > 0) {
-                    this._onMapMoving = Z.Util.throttle(function() {
-                            this.render();
-                        },rendSpan,this);
+                    this._onMapMoving = Z.Util.throttle(function () {
+                        this.render();
+                    }, rendSpan, this);
                 } else {
-                    this._onMapMoving = function() {
+                    this._onMapMoving = function () {
                         this.render();
                     };
                 }
@@ -359,15 +350,15 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         return events;
     },
 
-    _canTransform: function() {
+    _canTransform: function () {
         return Z.Browser.any3d || Z.Browser.ie9;
     },
 
-    _onMoveStart: function() {
+    _onMoveStart: function () {
         // this._fadeAnimated = false;
     },
 
-    _onZoomStart: function() {
+    _onZoomStart: function () {
         this._fadeAnimated = true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
@@ -376,7 +367,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
     },
 
-    _onZoomEnd: function(param) {
+    _onZoomEnd: function (param) {
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }

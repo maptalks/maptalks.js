@@ -7,8 +7,8 @@
  * @static
  * @function
  */
-Z.Layer.fromJSON=function(layerJSON) {
-    if (!layerJSON) {return null;}
+Z.Layer.fromJSON = function (layerJSON) {
+    if (!layerJSON) { return null; }
     var layerType = layerJSON['type'];
     if (layerType === 'vector') {
         layerType = layerJSON['type'] = 'VectorLayer';
@@ -18,7 +18,7 @@ Z.Layer.fromJSON=function(layerJSON) {
         layerType = layerJSON['type'] = 'TileLayer';
     }
     if (typeof Z[layerType] === 'undefined' || !Z[layerType]._fromJSON) {
-        throw new Error("unsupported layer type:"+layerType);
+        throw new Error('unsupported layer type:' + layerType);
     }
     return Z[layerType]._fromJSON(layerJSON);
 };
@@ -29,7 +29,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @constant
      * @static
      */
-    "PROFILE_VERSION" : "1.0",
+    'PROFILE_VERSION' : '1.0',
     /**
      * Export the map's profile json. <br>
      * Map's profile is a snapshot of the map in JSON format. <br>
@@ -42,17 +42,17 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      *                                                        It can also be a array of layer export options with a "id" attribute to filter the layers to export.
      * @return {Object} layer's profile JSON
      */
-    toJSON:function(options) {
+    toJSON:function (options) {
         if (!options) {
             options = {};
         }
         var profile = {
-            "version": this["PROFILE_VERSION"],
-            "extent" : this.getExtent().toJSON()
+            'version': this['PROFILE_VERSION'],
+            'extent' : this.getExtent().toJSON()
         };
         profile['options'] = this.config();
-        profile["options"]["center"] = this.getCenter();
-        profile["options"]["zoom"] = this.getZoom();
+        profile['options']['center'] = this.getCenter();
+        profile['options']['zoom'] = this.getZoom();
 
         var baseLayer = this.getBaseLayer();
         if ((Z.Util.isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
@@ -71,27 +71,26 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 extraLayerOptions['clipExtent'] = options['clipExtent'];
             }
         }
-
+        var i, len, layers, opts,
+            layersJSON = [];
         if (Z.Util.isNil(options['layers']) || (options['layers'] && !Z.Util.isArray(options['layers']))) {
-            var layers = this.getLayers();
-            var layersJSON = [];
-            for (var i = 0, len=layers.length; i < len; i++) {
-                var options = Z.Util.extend({},Z.Util.isObject(options['layers'])?options['layers']:{},extraLayerOptions);
-                layersJSON.push(layers[i].toJSON(options));
+            layers = this.getLayers();
+            for (i = 0, len = layers.length; i < len; i++) {
+                opts = Z.Util.extend({}, Z.Util.isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
+                layersJSON.push(layers[i].toJSON(opts));
             }
-            profile["layers"] = layersJSON;
+            profile['layers'] = layersJSON;
         } else if (Z.Util.isArrayHasData(options['layers'])) {
-            var layers = options['layers'];
-            var layersJSON = [];
-            for (var i = 0; i < layers.length; i++) {
+            layers = options['layers'];
+            for (i = 0; i < layers.length; i++) {
                 var exportOption = layers[i];
                 var layer = this.getLayer(exportOption['id']);
-                var options = Z.Util.extend({},exportOption['options'],extraLayerOptions);
-                layersJSON.push(layer.toJSON(options));
+                opts = Z.Util.extend({}, exportOption['options'], extraLayerOptions);
+                layersJSON.push(layer.toJSON(opts));
             }
-            profile["layers"] = layersJSON;
+            profile['layers'] = layersJSON;
         } else {
-            profile["layers"] = [];
+            profile['layers'] = [];
         }
         return profile;
     }
@@ -113,23 +112,23 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
  * @static
  * @function
  */
-Z.Map.fromJSON=function(container, profile, options) {
+Z.Map.fromJSON = function (container, profile, options) {
     if (!container || !profile) {
         return null;
     }
     if (!options) {
         options = {};
     }
-    var map = new Z.Map(container, profile["options"]);
+    var map = new Z.Map(container, profile['options']);
     if (Z.Util.isNil(options['baseLayer']) || options['baseLayer']) {
-        var baseLayer = Z.Layer.fromJSON(profile["baseLayer"]);
+        var baseLayer = Z.Layer.fromJSON(profile['baseLayer']);
         if (baseLayer) {
             map.setBaseLayer(baseLayer);
         }
     }
     if (Z.Util.isNil(options['layers']) || options['layers']) {
         var layers = [];
-        var layerJSONs = profile["layers"];
+        var layerJSONs = profile['layers'];
         for (var i = 0; i < layerJSONs.length; i++) {
             var layer = Z.Layer.fromJSON(layerJSONs[i]);
             layers.push(layer);

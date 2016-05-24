@@ -33,7 +33,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
      * Gets the source of the connector line.
      * @return {maptalks.Geometry|maptalks.Control|maptalks.UIComponent}
      */
-    getConnectSource:function() {
+    getConnectSource:function () {
         return this._connSource;
     },
 
@@ -42,7 +42,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
      * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} src
      * @return {maptalks.ConnectorLine} this
      */
-    setConnectSource:function(src) {
+    setConnectSource:function (src) {
         this._onRemove();
         this._connSource = src;
         this._updateCoordinates();
@@ -54,7 +54,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
      * Gets the target of the connector line.
      * @return {maptalks.Geometry|maptalks.Control|maptalks.UIComponent}
      */
-    getConnectTarget:function() {
+    getConnectTarget:function () {
         return this._connTarget;
     },
 
@@ -63,7 +63,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
      * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} target
      * @return {maptalks.ConnectorLine} this
      */
-    setConnectTarget:function(target) {
+    setConnectTarget:function (target) {
         this._onRemove();
         this._connTarget = target;
         this._updateCoordinates();
@@ -71,7 +71,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         return this;
     },
 
-    _updateCoordinates:function() {
+    _updateCoordinates:function () {
         var map = this.getMap();
         if (!map) {
             map = this._connSource.getMap();
@@ -86,21 +86,19 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         var targetPoints = this._connTarget._getConnectPoints();
         var minDist = 0;
         var oldCoordinates = this.getCoordinates();
-        var c1,c2;
-        for(var i=0,len=srcPoints.length;i<len;i++) {
+        var c1, c2;
+        for (var i = 0, len = srcPoints.length; i < len; i++) {
             var p1 = srcPoints[i];
-            for(var j=0,length=targetPoints.length;j<length;j++) {
+            for (var j = 0, length = targetPoints.length; j < length; j++) {
                 var p2 = targetPoints[j];
                 var dist = map.computeLength(p1, p2);
-                if(i===0&&j===0) {
+                if (i === 0 && j === 0) {
                     c1 = p1;
                     c2 = p2;
                     minDist = dist;
-                } else {
-                    if(dist < minDist) {
-                        c1 = p1;
-                        c2 = p2;
-                    }
+                } else if (dist < minDist) {
+                    c1 = p1;
+                    c2 = p2;
                 }
             }
         }
@@ -122,7 +120,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
     },
 
-    _showConnect:function() {
+    _showConnect:function () {
         if (!this._connSource || !this._connTarget) {
             return;
         }
@@ -133,8 +131,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         }
     },
 
-    _registEvents: function() {
-        var me = this;
+    _registEvents: function () {
         if (!this._connSource.__connectors) {
             this._connSource.__connectors = [];
         }
@@ -151,36 +148,36 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         this._connTarget.on('show', this._showConnect, this).on('hide', this.hide, this);
         var trigger = this.options['showOn'];
         this.hide();
-        if ('moving' === trigger) {
+        if (trigger === 'moving') {
             this._connSource.on('dragstart', this._showConnect, this).on('dragend', this.hide, this);
             this._connTarget.on('dragstart', this._showConnect, this).on('dragend', this.hide, this);
-        } else if ('click' === trigger) {
+        } else if (trigger === 'click') {
             this._connSource.on('mousedown', this._showConnect, this).on('mouseup', this.hide, this);
             this._connTarget.on('mousedown', this._showConnect, this).on('mouseup', this.hide, this);
-        } else if ('mouseover' === trigger) {
+        } else if (trigger === 'mouseover') {
             this._connSource.on('mouseover', this._showConnect, this).on('mouseout', this.hide, this);
             this._connTarget.on('mouseover', this._showConnect, this).on('mouseout', this.hide, this);
         } else {
             this._showConnect();
         }
     },
-    _isEditingOrDragging:function() {
-        return ((!(this._connSource instanceof Z.Control) && this._connSource._isEditingOrDragging())
-            || (!(this._connTarget instanceof Z.Control) && this._connTarget._isEditingOrDragging()));
+    _isEditingOrDragging:function () {
+        return ((!(this._connSource instanceof Z.Control) && this._connSource._isEditingOrDragging()) ||
+            (!(this._connTarget instanceof Z.Control) && this._connTarget._isEditingOrDragging()));
     },
-    _isRenderImmediate:function() {
-        return ((!(this._connSource instanceof Z.Control) && this._connSource._isRenderImmediate())
-            || (!(this._connTarget instanceof Z.Control) && this._connTarget._isRenderImmediate()));
+    _isRenderImmediate:function () {
+        return ((!(this._connSource instanceof Z.Control) && this._connSource._isRenderImmediate()) ||
+            (!(this._connTarget instanceof Z.Control) && this._connTarget._isRenderImmediate()));
     }
 });
 
 
 Z.Util.extend(Z.ConnectorLine, {
-    _hasConnectors:function(geometry) {
-        return (geometry.__connectors != null && geometry.__connectors.length > 0);
+    _hasConnectors:function (geometry) {
+        return (!Z.Util.isNil(geometry.__connectors) && geometry.__connectors.length > 0);
     },
 
-    _getConnectors:function(geometry) {
+    _getConnectors:function (geometry) {
         return geometry.__connectors;
     }
 });

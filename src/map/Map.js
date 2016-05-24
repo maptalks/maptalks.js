@@ -45,9 +45,9 @@
         })
     });
  */
-Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
+Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
-    includes: [Z.Eventable,Z.Handlerable],
+    includes: [Z.Eventable, Z.Handlerable],
 
     /**
      * @property {Object} options                                   - map's options, options must be updated by config method, eg: map.config('zoomAnimation', false);
@@ -101,7 +101,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         'enableZoom':true,
         'enableInfoWindow':true,
 
-        'hitDetect' : (function(){return Z.Browser.mobile?false:true;})(),
+        'hitDetect' : (function () { return Z.Browser.mobile; })(),
 
         'maxZoom' : null,
         'minZoom' : null,
@@ -127,7 +127,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
 
-    initialize:function(container, options) {
+    initialize:function (container, options) {
 
         if (!options) {
             throw new Error(this.exceptions['INVALID_OPTION']);
@@ -137,13 +137,13 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             throw new Error(this.exceptions['INVALID_CENTER']);
         }
 
-        this._loaded=false;
+        this._loaded = false;
         this._container = container;
 
         if (Z.Util.isString(this._container)) {
             this._containerDOM = document.getElementById(this._container);
             if (!this._containerDOM) {
-                throw new Error('invalid container: \''+container+'\'');
+                throw new Error('invalid container: \'' + container + '\'');
             }
         } else {
             this._containerDOM = container;
@@ -156,10 +156,10 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
 
         //Layer of Details, always derived from baseLayer
-        this._panels={};
+        this._panels = {};
 
         //Layers
-        this._baseLayer=null;
+        this._baseLayer = null;
         this._layers = [];
 
         //shallow copy options
@@ -175,7 +175,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         var layers = opts['layers'];
         delete opts['layers'];
 
-        Z.Util.setOptions(this,opts);
+        Z.Util.setOptions(this, opts);
         this.setView(opts['view']);
 
         if (baseLayer) {
@@ -187,7 +187,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
         //a internal property to enable/disable panAnimation.
         this._enablePanAnimation = true;
-        this._mapViewPoint=new Z.Point(0,0);
+        this._mapViewPoint = new Z.Point(0, 0);
 
         this._initRenderer();
         this._getRenderer().initContainer();
@@ -200,7 +200,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Whether the map is loaded or not.
      * @return {Boolean}
      */
-    isLoaded:function() {
+    isLoaded:function () {
         return this._loaded;
     },
 
@@ -211,7 +211,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @example
      * var isCanvas = map.isCanvasRender();
      */
-    isCanvasRender:function() {
+    isCanvasRender:function () {
         var renderer = this._getRenderer();
         if (renderer) {
             return renderer.isCanvasRender();
@@ -223,7 +223,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get the view of the Map.
      * @return {Object} map's view
      */
-    getView: function() {
+    getView: function () {
         if (!this._view) {
             return null;
         }
@@ -240,7 +240,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {Object} view - view settings
      * @returns {maptalks.Map} this
      */
-    setView:function(view) {
+    setView:function (view) {
         var oldView = this._view;
         if (oldView && !view) {
             return this;
@@ -264,7 +264,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Object} conf - options to update
      * @return {maptalks.Map}   this
      */
-    onConfig:function(conf) {
+    onConfig:function (conf) {
         if (!Z.Util.isNil(conf['view'])) {
             this.setView(conf['view']);
         }
@@ -276,7 +276,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Projection is an algorithm for map projection, e.g. well-known [Mercator Projection]{@link https://en.wikipedia.org/wiki/Mercator_projection}
      * @return {Object}
      */
-    getProjection:function() {
+    getProjection:function () {
         return this._view.getProjection();
     },
 
@@ -285,7 +285,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Any geometries outside this extent will be clipped if clipFullExtent options is set true
      * @return {maptalks.Extent}
      */
-    getFullExtent:function() {
+    getFullExtent:function () {
         return this._view.getFullExtent();
     },
 
@@ -294,7 +294,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {String} cursor - cursor style
      * @returns {maptalks.Map} this
      */
-    setCursor:function(cursor) {
+    setCursor:function (cursor) {
         delete this._cursor;
         this._trySetCursor(cursor);
         this._cursor = cursor;
@@ -305,8 +305,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get center of the map.
      * @return {maptalks.Coordinate}
      */
-    getCenter:function() {
-        if (!this._loaded || !this._prjCenter) {return this._center;}
+    getCenter:function () {
+        if (!this._loaded || !this._prjCenter) { return this._center; }
         var projection = this.getProjection();
         return projection.unproject(this._prjCenter);
     },
@@ -316,7 +316,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Coordinate} center
      * @return {maptalks.Map} this
      */
-    setCenter:function(center) {
+    setCenter:function (center) {
         if (!center) {
             return this;
         }
@@ -342,7 +342,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get map's size (width and height) in pixel.
      * @return {maptalks.Size}
      */
-    getSize:function() {
+    getSize:function () {
         if (Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
             return this._getContainerDomSize();
         }
@@ -354,7 +354,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      *
      * @return {maptalks.Extent}
      */
-    getExtent:function() {
+    getExtent:function () {
         return this.viewToExtent(this._getViewExtent());
     },
 
@@ -362,7 +362,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get the max extent that the map is restricted to.
      * @return {maptalks.Extent}
      */
-    getMaxExtent:function() {
+    getMaxExtent:function () {
         if (!this.options['maxExtent']) {
             return null;
         }
@@ -374,7 +374,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Extent}
      * @return {maptalks.Map} this
      */
-    setMaxExtent:function(extent) {
+    setMaxExtent:function (extent) {
         if (extent) {
             var maxExt = new Z.Extent(extent);
             this.options['maxExtent'] = maxExt;
@@ -392,7 +392,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get map's current zoom.
      * @return {Number}
      */
-    getZoom:function() {
+    getZoom:function () {
         return this._zoomLevel;
     },
 
@@ -402,7 +402,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} fromZoom
      * @return {Number}
      */
-    getZoomForScale:function(scale, fromZoom) {
+    getZoomForScale:function (scale, fromZoom) {
         if (Z.Util.isNil(fromZoom)) {
             fromZoom = this.getZoom();
         }
@@ -411,7 +411,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             min = Number.MAX_VALUE,
             hit = -1;
         for (var i = resolutions.length - 1; i >= 0; i--) {
-            var test = Math.abs(res/resolutions[i]-scale);
+            var test = Math.abs(res / resolutions[i] - scale);
             if (test < min) {
                 min = test;
                 hit = i;
@@ -425,7 +425,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {Number} zoom
      * @returns {maptalks.Map} this
      */
-    setZoom:function(zoom) {
+    setZoom:function (zoom) {
         if (this.options['zoomAnimation']) {
             this._zoomAnimation(zoom);
         } else {
@@ -438,7 +438,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get the max zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMaxZoom:function() {
+    getMaxZoom:function () {
         if (!Z.Util.isNil(this.options['maxZoom'])) {
             return this.options['maxZoom'];
         }
@@ -454,7 +454,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {Number} maxZoom
      * @returns {maptalks.Map} this
      */
-    setMaxZoom:function(maxZoom) {
+    setMaxZoom:function (maxZoom) {
         var viewMaxZoom = this._view.getMaxZoom();
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
@@ -470,7 +470,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get the min zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMinZoom:function() {
+    getMinZoom:function () {
         if (!Z.Util.isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
@@ -482,12 +482,12 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {Number} minZoom
      * @return {maptalks.Map} this
      */
-    setMinZoom:function(minZoom) {
+    setMinZoom:function (minZoom) {
         var viewMinZoom = this._view.getMinZoom();
         if (minZoom < viewMinZoom) {
             minZoom = viewMinZoom;
         }
-        this.options['minZoom']=minZoom;
+        this.options['minZoom'] = minZoom;
         return this;
     },
 
@@ -495,7 +495,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * zoom in
      * @return {maptalks.Map} this
      */
-    zoomIn: function() {
+    zoomIn: function () {
         this.setZoom(this.getZoom() + 1);
         return this;
     },
@@ -504,7 +504,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * zoom out
      * @return {maptalks.Map} this
      */
-    zoomOut: function() {
+    zoomOut: function () {
         this.setZoom(this.getZoom() - 1);
         return this;
     },
@@ -515,8 +515,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {Number} zoomLevel
      * @return {maptalks.Map} this
      */
-    setCenterAndZoom:function(center,zoomLevel) {
-        if (this._zoomLevel != zoomLevel) {
+    setCenterAndZoom:function (center, zoomLevel) {
+        if (this._zoomLevel !== zoomLevel) {
             this.setCenter(center);
             this.setZoom(zoomLevel);
         } else {
@@ -531,56 +531,51 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Extent} extent
      * @return {Number}
      */
-    getFitZoom: function(extent) {
+    getFitZoom: function (extent) {
         if (!extent || !(extent instanceof Z.Extent)) {
             return this._zoomLevel;
         }
         //点类型
-        if (extent['xmin'] == extent['xmax'] && extent['ymin'] == extent['ymax']) {
+        if (extent['xmin'] === extent['xmax'] && extent['ymin'] === extent['ymax']) {
             return this.getMaxZoom();
         }
-        try {
-            var projection = this.getProjection();
-            var x = Math.abs(extent["xmin"] - extent["xmax"]);
-            var y = Math.abs(extent["ymin"] - extent["ymax"]);
-            var projectedExtent = projection.project({x:x, y:y});
-            var resolutions = this._getResolutions();
-            var xz = -1;
-            var yz = -1;
-            for ( var i = this.getMinZoom(), len = this.getMaxZoom(); i < len; i++) {
-                if (Z.Util.round(projectedExtent.x / resolutions[i]) >= this.width) {
-                    if (xz == -1) {
-                        xz = i;
-                    }
-                }
-                if (Z.Util.round(projectedExtent.y / resolutions[i]) >= this.height) {
-                    if (yz == -1) {
-                        yz = i;
-                    }
-                }
-                if (xz > -1 && yz > -1) {
-                    break;
+        var projection = this.getProjection(),
+            x = Math.abs(extent['xmin'] - extent['xmax']),
+            y = Math.abs(extent['ymin'] - extent['ymax']),
+            projectedExtent = projection.project({x:x, y:y}),
+            resolutions = this._getResolutions(),
+            xz = -1,
+            yz = -1;
+        for (var i = this.getMinZoom(), len = this.getMaxZoom(); i < len; i++) {
+            if (Z.Util.round(projectedExtent.x / resolutions[i]) >= this.width) {
+                if (xz === -1) {
+                    xz = i;
                 }
             }
-            var ret = xz < yz ? xz : yz;
-            if (ret === -1) {
-                ret = xz < yz ? yz : xz;
+            if (Z.Util.round(projectedExtent.y / resolutions[i]) >= this.height) {
+                if (yz === -1) {
+                    yz = i;
+                }
             }
-            if (ret === -1) {
-                return this.getMaxZoom();
+            if (xz > -1 && yz > -1) {
+                break;
             }
-            // return ret - 2;
-            return ret;
-        } catch (exception) {
-            return this.getZoom();
         }
+        var ret = xz < yz ? xz : yz;
+        if (ret === -1) {
+            ret = xz < yz ? yz : xz;
+        }
+        if (ret === -1) {
+            return this.getMaxZoom();
+        }
+        return ret;
     },
 
     /**
      * Get the base layer of the map.
      * @return {maptalks.Layer}
      */
-    getBaseLayer:function() {
+    getBaseLayer:function () {
         return this._baseLayer;
     },
 
@@ -590,7 +585,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {maptalks.Layer} baseLayer - new base layer
      * @return {maptalks.Map} this
      */
-    setBaseLayer:function(baseLayer) {
+    setBaseLayer:function (baseLayer) {
         var isChange = false;
         if (this._baseLayer) {
             isChange = true;
@@ -605,7 +600,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 baseLayer.config('tileSystem', Z.TileSystem.getDefault(this.getProjection()));
             }
         }
-        baseLayer._bindMap(this,-1);
+        baseLayer._bindMap(this, -1);
         this._baseLayer = baseLayer;
         function onbaseLayerload() {
             this._fireEvent('baselayerload');
@@ -614,7 +609,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 this._fireEvent('baselayerchangeend');
             }
         }
-        this._baseLayer.on('layerload',onbaseLayerload,this);
+        this._baseLayer.on('layerload', onbaseLayerload, this);
         if (this._loaded) {
             this._baseLayer.load();
         }
@@ -627,8 +622,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {function} [filter=null] - a filter function of layers, return false to exclude the given layer.
      * @return {maptalks.Layer[]}
      */
-    getLayers:function(filter) {
-        return this._getLayers(function(layer) {
+    getLayers:function (filter) {
+        return this._getLayers(function (layer) {
             if (layer === this._baseLayer || layer.getId().indexOf(Z.internalLayerPrefix) >= 0) {
                 return false;
             }
@@ -644,7 +639,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {String} id - layer id
      * @return {maptalks.Layer}
      */
-    getLayer:function(id) {
+    getLayer:function (id) {
         if (!id || !this._layerCache || !this._layerCache[id]) {
             return null;
         }
@@ -656,7 +651,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {maptalks.Layer} layer - Any valid layer object
      * @return {maptalks.Map} this
      */
-    addLayer:function(layers){
+    addLayer:function (layers) {
         if (!layers) {
             return this;
         }
@@ -666,14 +661,14 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!this._layerCache) {
             this._layerCache = {};
         }
-        for (var i=0,len=layers.length;i<len;i++) {
+        for (var i = 0, len = layers.length; i < len; i++) {
             var layer = layers[i];
             var id = layer.getId();
             if (Z.Util.isNil(id)) {
-                throw new Error(this.exceptions['INVALID_LAYER_ID']+':'+id);
+                throw new Error(this.exceptions['INVALID_LAYER_ID'] + ':' + id);
             }
             if (this._layerCache[id]) {
-                throw new Error(this.exceptions['DUPLICATE_LAYER_ID']+':'+id);
+                throw new Error(this.exceptions['DUPLICATE_LAYER_ID'] + ':' + id);
             }
             this._layerCache[id] = layer;
             layer._bindMap(this, this._layers.length);
@@ -690,7 +685,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {string|maptalks.Layer} layer - id of the layer or a layer object
      * @return {maptalks.Map} this
      */
-    removeLayer: function(layer) {
+    removeLayer: function (layer) {
         if (!(layer instanceof Z.Layer)) {
             layer = this.getLayer(layer);
         }
@@ -698,7 +693,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             return this;
         }
         var map = layer.getMap();
-        if (!map || map != this) {
+        if (!map || map !== this) {
             return this;
         }
         this._removeLayer(layer, this._layers);
@@ -718,7 +713,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {string[]|maptalks.Layer[]} layers - layers or layer ids to sort
      * @return {maptalks.Map} this
      */
-    sortLayers:function(layers) {
+    sortLayers:function (layers) {
         if (!layers || !Z.Util.isArray(layers)) {
             return this;
         }
@@ -738,7 +733,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             layersToOrder.push(layer);
         }
         for (var ii = 0; ii < layersToOrder.length; ii++) {
-            layersToOrder[ii].setZIndex(minZ+ii);
+            layersToOrder[ii].setZIndex(minZ + ii);
         }
         return this;
     },
@@ -751,20 +746,20 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {String} [options.filename=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
      */
-    toDataURL: function(options) {
+    toDataURL: function (options) {
         if (!options) {
             options = {};
         }
         var mimeType = options['mimeType'];
         if (!mimeType) {
-            mimeType = "image/png";
+            mimeType = 'image/png';
         }
         var save = options['save'];
         var renderer = this._getRenderer();
         if (renderer) {
             var file = options['filename'];
             if (!file) {
-                file = "export";
+                file = 'export';
             }
             var dataURL =  renderer.toDataURL(mimeType);
             if (save && dataURL) {
@@ -790,7 +785,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} zoom       - zoom level
      * @return {maptalks.Point}  2D point
      */
-    coordinateToPoint: function(coordinate, zoom) {
+    coordinateToPoint: function (coordinate, zoom) {
         var prjCoord = this.getProjection().project(coordinate);
         return this._prjToPoint(prjCoord, zoom);
     },
@@ -801,7 +796,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} zoom  - zoom level
      * @return {maptalks.Coordinate} coordinate
      */
-    pointToCoordinate: function(point, zoom) {
+    pointToCoordinate: function (point, zoom) {
         var prjCoord = this._pointToPrj(point, zoom);
         return this.getProjection().unproject(prjCoord);
     },
@@ -812,7 +807,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Coordinate} coordinate
      * @return {maptalks.Point}
      */
-    coordinateToViewPoint: function(coordinate) {
+    coordinateToViewPoint: function (coordinate) {
         return this._prjToViewPoint(this.getProjection().project(coordinate));
     },
 
@@ -821,7 +816,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Point} viewPoint
      * @return {maptalks.Coordinate}
      */
-    viewPointToCoordinate: function(viewPoint) {
+    viewPointToCoordinate: function (viewPoint) {
         return this.getProjection().unproject(this._viewPointToPrj(viewPoint));
     },
 
@@ -830,7 +825,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Coordinate}
      * @return {maptalks.Point}
      */
-    coordinateToContainerPoint: function(coordinate) {
+    coordinateToContainerPoint: function (coordinate) {
         var pCoordinate = this.getProjection().project(coordinate);
         return this._prjToContainerPoint(pCoordinate);
     },
@@ -840,7 +835,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Point}
      * @return {maptalks.Coordinate}
      */
-    containerPointToCoordinate: function(containerPoint) {
+    containerPointToCoordinate: function (containerPoint) {
         var pCoordinate = this._containerPointToPrj(containerPoint);
         return this.getProjection().unproject(pCoordinate);
     },
@@ -851,7 +846,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Point}
      * @returns {maptalks.Point}
      */
-    containerPointToViewPoint: function(containerPoint) {
+    containerPointToViewPoint: function (containerPoint) {
         return containerPoint.substract(this.offsetPlatform());
     },
 
@@ -861,7 +856,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {maptalks.Point}
      * @returns {maptalks.Point}
      */
-    viewPointToContainerPoint: function(viewPoint) {
+    viewPointToContainerPoint: function (viewPoint) {
         return viewPoint.add(this.offsetPlatform());
     },
 
@@ -870,7 +865,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {maptalks.PointExtent} viewExtent - view points extent
      * @return {maptalks.Extent}  geographic extent
      */
-    viewToExtent:function(viewExtent) {
+    viewToExtent:function (viewExtent) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
@@ -886,9 +881,9 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
         var dist1 = viewCenter.substract(min),
             dist2 = viewCenter.substract(max);
-        var c1 = projection.unproject(new Z.Coordinate(prjCenter.x - dist1.x*res, prjCenter.y + dist1.y*res));
-        var c2 = projection.unproject(new Z.Coordinate(prjCenter.x - dist2.x*res, prjCenter.y + dist2.y*res));
-        return new Z.Extent(c1,c2);
+        var c1 = projection.unproject(new Z.Coordinate(prjCenter.x - dist1.x * res, prjCenter.y + dist1.y * res));
+        var c2 = projection.unproject(new Z.Coordinate(prjCenter.x - dist2.x * res, prjCenter.y + dist2.y * res));
+        return new Z.Extent(c1, c2);
     },
 
     /**
@@ -896,7 +891,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {maptalks.PointExtent} containerExtent - containeproints extent
      * @return {maptalks.Extent}  geographic extent
      */
-    containerToExtent:function(containerExtent) {
+    containerToExtent:function (containerExtent) {
         var viewExtent = new Z.PointExtent(
                 this.containerPointToViewPoint(containerExtent.getMin()),
                 this.containerPointToViewPoint(containerExtent.getMax())
@@ -909,7 +904,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * It is called in a setTimeout call.
      * @return {maptalks.Map} this
      */
-    checkSize:function() {
+    checkSize:function () {
         if (this._resizeTimeout) {
             clearTimeout(this._resizeTimeout);
         }
@@ -922,7 +917,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 return;
             }
             me._updateMapSize(watched);
-            var resizeOffset = new Z.Point((oldWidth - watched.width) / 2,(oldHeight - watched.height) / 2);
+            var resizeOffset = new Z.Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
             me._offsetCenterByPixel(resizeOffset);
 
             /**
@@ -935,9 +930,9 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
             me._fireEvent('resize');
         }
 
-        this._resizeTimeout = setTimeout(function() {
+        this._resizeTimeout = setTimeout(function () {
             resize();
-            setTimeout(function() {
+            setTimeout(function () {
                 resize();
             }, 1);
 
@@ -954,17 +949,17 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} yDist - distance on Y axis.
      * @return {maptalks.Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
      */
-    distanceToPixel: function(xDist,yDist) {
+    distanceToPixel: function (xDist, yDist) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
         }
         var center = this.getCenter(),
-            target = projection.locate(center,xDist,yDist),
+            target = projection.locate(center, xDist, yDist),
             res = this._getResolution();
 
-        var width = !xDist?0:(projection.project(new Z.Coordinate(target.x, center.y)).x-projection.project(center).x)/res;
-        var height = !yDist?0:(projection.project(new Z.Coordinate(center.x, target.y)).y-projection.project(center).y)/res;
+        var width = !xDist ? 0 : (projection.project(new Z.Coordinate(target.x, center.y)).x - projection.project(center).x) / res;
+        var height = !yDist ? 0 : (projection.project(new Z.Coordinate(center.x, target.y)).y - projection.project(center).y) / res;
         return new Z.Size(Math.abs(width), Math.abs(height));
     },
 
@@ -975,7 +970,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} height 纵轴像素长度
      * @return {Number}  distance
      */
-    pixelToDistance:function(width, height) {
+    pixelToDistance:function (width, height) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
@@ -984,9 +979,9 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         var center = this.getCenter(),
             pcenter = this._getPrjCenter(),
             res = this._getResolution();
-        var pTarget = new Z.Coordinate(pcenter.x+width*res, pcenter.y+height*res);
+        var pTarget = new Z.Coordinate(pcenter.x + width * res, pcenter.y + height * res);
         var target = projection.unproject(pTarget);
-        return projection.measureLength(target,center);
+        return projection.measureLength(target, center);
     },
 
     /**
@@ -996,15 +991,15 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} dy         y轴上的距离, 地图CRS为经纬度时,单位为米, 地图CRS为像素时, 单位为像素
      * @return {maptalks.Coordinate}            新的坐标
      */
-    locate:function(coordinate, dx, dy) {
-        return this.getProjection().locate(new Z.Coordinate(coordinate),dx,dy);
+    locate:function (coordinate, dx, dy) {
+        return this.getProjection().locate(new Z.Coordinate(coordinate), dx, dy);
     },
 
     /**
     * Returns an object with different map panels (to build customized layers or overlays).
     * @returns {Object}
     */
-    getPanel: function() {
+    getPanel: function () {
         return this._getRenderer().getPanel();
     },
 
@@ -1015,7 +1010,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      * @return {Boolean}
      */
-    _isBusy:function() {
+    _isBusy:function () {
         return this._zooming/* || this._moving*/;
     },
 
@@ -1024,7 +1019,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      * @param  {String} cursor css cursor
      */
-    _trySetCursor:function(cursor) {
+    _trySetCursor:function (cursor) {
         if (!this._cursor && !this._priorityCursor) {
             if (!cursor) {
                 cursor = 'default';
@@ -1034,7 +1029,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         return this;
     },
 
-    _setPriorityCursor:function(cursor) {
+    _setPriorityCursor:function (cursor) {
         if (!cursor) {
             var hasCursor = false;
             if (this._priorityCursor) {
@@ -1051,7 +1046,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         return this;
     },
 
-    _setCursorToPanel:function(cursor) {
+    _setCursorToPanel:function (cursor) {
         var panel = this.getPanel();
         if (panel && panel.style) {
             panel.style.cursor = cursor;
@@ -1063,28 +1058,28 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.PointExtent}
      * @private
      */
-    _getViewExtent:function() {
+    _getViewExtent:function () {
         var size = this.getSize();
         var offset = this.offsetPlatform();
-        var min = new Z.Point(0,0);
-        var max = new Z.Point(size['width'],size['height']);
+        var min = new Z.Point(0, 0);
+        var max = new Z.Point(size['width'], size['height']);
         return new Z.PointExtent(min.substract(offset), max.substract(offset));
     },
 
-    _setPrjCenterAndMove:function(pcenter) {
+    _setPrjCenterAndMove:function (pcenter) {
         var offset = this._getPixelDistance(pcenter);
         this._setPrjCenter(pcenter);
         this.offsetPlatform(offset);
     },
 
     //remove a layer from the layerList
-    _removeLayer:function(layer,layerList) {
-        if (!layer || !layerList) {return;}
-        var index = Z.Util.searchInArray(layer,layerList);
+    _removeLayer:function (layer, layerList) {
+        if (!layer || !layerList) { return; }
+        var index = Z.Util.searchInArray(layer, layerList);
         if (index > -1) {
             layerList.splice(index, 1);
 
-            for (var j=0, jlen=layerList.length;j<jlen;j++) {
+            for (var j = 0, jlen = layerList.length; j < jlen; j++) {
                 if (layerList[j].setZIndex) {
                     layerList[j].setZIndex(j);
                 }
@@ -1092,14 +1087,14 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         }
     },
 
-    _sortLayersByZIndex:function(layerList) {
-        layerList.sort(function(a,b) {
-            return a.getZIndex()-b.getZIndex();
+    _sortLayersByZIndex:function (layerList) {
+        layerList.sort(function (a, b) {
+            return a.getZIndex() - b.getZIndex();
         });
     },
 
 
-    _onMoveStart:function() {
+    _onMoveStart:function () {
         this._originCenter = this.getCenter();
         this._moving = true;
         this._trySetCursor('move');
@@ -1113,7 +1108,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._fireEvent('movestart');
     },
 
-    _onMoving:function() {
+    _onMoving:function () {
         /**
          * moving event
          * @event maptalks.Map#moving
@@ -1124,8 +1119,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._fireEvent('moving');
     },
 
-    _onMoveEnd:function() {
-        this._enablePanAnimation=true;
+    _onMoveEnd:function () {
+        this._enablePanAnimation = true;
         this._moving = false;
         this._trySetCursor('default');
         /**
@@ -1147,21 +1142,21 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point}
      * @private
      */
-    _getPixelDistance:function(pCoord) {
-        var current = this._getPrjCenter();
-        var curr_px = this._prjToContainerPoint(current);
-        var pCoord_px = this._prjToContainerPoint(pCoord);
-        var dist = new Z.Point(-pCoord_px.x+curr_px.x,curr_px.y-pCoord_px.y);
+    _getPixelDistance:function (pCoord) {
+        var center = this._getPrjCenter();
+        var pxCenter = this._prjToContainerPoint(center);
+        var pxCoord = this._prjToContainerPoint(pCoord);
+        var dist = new Z.Point(-pxCoord.x + pxCenter.x, pxCenter.y - pxCoord.y);
         return dist;
     },
 
-    _fireEvent:function(eventName, param) {
+    _fireEvent:function (eventName, param) {
         //fire internal events at first
-        this.fire('_'+eventName,param);
-        this.fire(eventName,param);
+        this.fire('_' + eventName, param);
+        this.fire(eventName, param);
     },
 
-    _Load:function() {
+    _Load:function () {
         this._resetMapStatus();
         this._registerDomEvents();
         this._loadAllLayers();
@@ -1170,24 +1165,24 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._fireEvent('load');
     },
 
-    _initRenderer:function() {
+    _initRenderer:function () {
         var renderer = this.options['renderer'];
         var clazz = Z.Map.getRendererClass(renderer);
         this._renderer = new clazz(this);
     },
 
-    _getRenderer:function() {
+    _getRenderer:function () {
         return this._renderer;
     },
 
-    _loadAllLayers:function() {
+    _loadAllLayers:function () {
         function loadLayer(layer) {
             if (layer) {
                 layer.load();
             }
         }
-        if (this._baseLayer) {this._baseLayer.load();}
-        this._eachLayer(loadLayer,this.getLayers());
+        if (this._baseLayer) { this._baseLayer.load(); }
+        this._eachLayer(loadLayer, this.getLayers());
     },
 
 
@@ -1198,34 +1193,34 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Layer[]}
      * @private
      */
-    _getLayers:function(filter) {
-        var layers = this._baseLayer?[this._baseLayer].concat(this._layers):this._layers;
+    _getLayers:function (filter) {
+        var layers = this._baseLayer ? [this._baseLayer].concat(this._layers) : this._layers;
         var result = [];
         for (var i = 0; i < layers.length; i++) {
-            if (!filter || filter.call(this,layers[i])) {
+            if (!filter || filter.call(this, layers[i])) {
                 result.push(layers[i]);
             }
         }
         return result;
     },
 
-    _eachLayer:function(fn) {
-        if (arguments.length < 2) {return;}
+    _eachLayer:function (fn) {
+        if (arguments.length < 2) { return; }
         var layerLists = Array.prototype.slice.call(arguments, 1);
         if (layerLists && !Z.Util.isArray(layerLists)) {
             layerLists = [layerLists];
         }
         var layers = [];
-        for (var i=0, len=layerLists.length;i<len;i++) {
+        for (var i = 0, len = layerLists.length; i < len; i++) {
             layers = layers.concat(layerLists[i]);
         }
-        for (var j=0, jlen = layers.length;j<jlen;j++) {
-            fn.call(fn,layers[j]);
+        for (var j = 0, jlen = layers.length; j < jlen; j++) {
+            fn.call(fn, layers[j]);
         }
     },
 
     //Check and reset map's status when map'sview is changed.
-    _resetMapStatus:function(){
+    _resetMapStatus:function () {
         var maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
         var viewMaxZoom = this._view.getMaxZoom(),
@@ -1236,7 +1231,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!minZoom || minZoom === -1 || minZoom < viewMinZoom) {
             this.setMinZoom(viewMinZoom);
         }
-        maxZoom = this.getMaxZoom(),
+        maxZoom = this.getMaxZoom();
         minZoom = this.getMinZoom();
         if (maxZoom < minZoom) {
             this.setMaxZoom(minZoom);
@@ -1252,10 +1247,10 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._prjCenter = projection.project(this._center);
     },
 
-    _getContainerDomSize:function(){
-        if (!this._containerDOM) {return null;}
+    _getContainerDomSize:function () {
+        if (!this._containerDOM) { return null; }
         var containerDOM = this._containerDOM,
-            width,height;
+            width, height;
         if (!Z.Util.isNil(containerDOM.width) && !Z.Util.isNil(containerDOM.height)) {
             width = containerDOM.width;
             height = containerDOM.height;
@@ -1265,15 +1260,15 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 height /= 2;
             }
         } else if (!Z.Util.isNil(containerDOM.clientWidth) && !Z.Util.isNil(containerDOM.clientHeight)) {
-            width = parseInt(containerDOM.clientWidth,0);
-            height = parseInt(containerDOM.clientHeight,0);
+            width = parseInt(containerDOM.clientWidth, 0);
+            height = parseInt(containerDOM.clientHeight, 0);
         } else {
             throw new Error('can not get size of container');
         }
         return new Z.Size(width, height);
     },
 
-    _updateMapSize:function(mSize) {
+    _updateMapSize:function (mSize) {
         this.width = mSize['width'];
         this.height = mSize['height'];
         this._getRenderer().updateMapSize(mSize);
@@ -1285,15 +1280,15 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Coordinate}
      * @private
      */
-    _getPrjCenter:function() {
+    _getPrjCenter:function () {
         return this._prjCenter;
     },
 
-    _setPrjCenter:function(pcenter) {
-        this._prjCenter=pcenter;
+    _setPrjCenter:function (pcenter) {
+        this._prjCenter = pcenter;
     },
 
-    _verifyExtent:function(center) {
+    _verifyExtent:function (center) {
         if (!center) {
             return false;
         }
@@ -1313,9 +1308,9 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      * @returns {maptalks.Coordinate} the new projected center.
      */
-    _offsetCenterByPixel:function(pixel) {
-        var posX = this.width/2 - pixel.x,
-            posY = this.height/2 - pixel.y;
+    _offsetCenterByPixel:function (pixel) {
+        var posX = this.width / 2 - pixel.x,
+            posY = this.height / 2 - pixel.y;
         var pCenter = this._containerPointToPrj(new Z.Point(posX, posY));
         this._setPrjCenter(pCenter);
         return pCenter;
@@ -1331,7 +1326,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Gets map platform panel's current view point.
      * @return {maptalks.Point}
      */
-    offsetPlatform:function(offset) {
+    offsetPlatform:function (offset) {
         if (!offset) {
             return this._mapViewPoint;
         } else {
@@ -1341,8 +1336,8 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
         }
     },
 
-    _resetMapViewPoint:function() {
-        this._mapViewPoint = new Z.Point(0,0);
+    _resetMapViewPoint:function () {
+        this._mapViewPoint = new Z.Point(0, 0);
     },
 
     /**
@@ -1350,14 +1345,14 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {Number} resolution
      * @private
      */
-    _getResolution:function(zoom) {
+    _getResolution:function (zoom) {
         if (Z.Util.isNil(zoom)) {
             zoom = this.getZoom();
         }
         return this._view.getResolution(zoom);
     },
 
-    _getResolutions:function() {
+    _getResolutions:function () {
         return this._view.getResolutions();
     },
 
@@ -1368,7 +1363,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point} 2D point
      * @private
      */
-    _prjToPoint:function(pCoord, zoom) {
+    _prjToPoint:function (pCoord, zoom) {
         zoom = zoom === undefined ? this.getZoom() : zoom;
         return this._view.getTransformation().transform(pCoord, this._getResolution(zoom));
     },
@@ -1380,7 +1375,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Coordinate} projected coordinate
      * @private
      */
-    _pointToPrj:function(point, zoom) {
+    _pointToPrj:function (point, zoom) {
         zoom = zoom === undefined ? this.getZoom() : zoom;
         return this._view.getTransformation().untransform(point, this._getResolution(zoom));
     },
@@ -1392,10 +1387,10 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Coordinate}
      * @private
      */
-    _containerPointToPrj:function(containerPoint) {
+    _containerPointToPrj:function (containerPoint) {
         var centerPoint = this._prjToPoint(this._getPrjCenter());
         //容器的像素坐标方向是固定方向的, 和html标准一致, 即从左到右增大, 从上到下增大
-        var point = new Z.Point(centerPoint.x+ containerPoint.x - this.width / 2, centerPoint.y+containerPoint.y - this.height / 2);
+        var point = new Z.Point(centerPoint.x + containerPoint.x - this.width / 2, centerPoint.y + containerPoint.y - this.height / 2);
         return this._pointToPrj(point);
     },
 
@@ -1405,7 +1400,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Coordinate}
      * @private
      */
-    _viewPointToPrj:function(viewPoint) {
+    _viewPointToPrj:function (viewPoint) {
         return this._containerPointToPrj(this.viewPointToContainerPoint(viewPoint));
     },
 
@@ -1415,7 +1410,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point}
      * @private
      */
-    _prjToContainerPoint:function(pCoordinate) {
+    _prjToContainerPoint:function (pCoordinate) {
         var centerPoint = this._prjToPoint(this._getPrjCenter());
         var point = this._prjToPoint(pCoordinate);
         return new Z.Point(
@@ -1430,14 +1425,14 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Point}
      * @private
      */
-    _prjToViewPoint:function(pCoordinate) {
+    _prjToViewPoint:function (pCoordinate) {
         var containerPoint = this._prjToContainerPoint(pCoordinate);
         return this._containerPointToViewPoint(containerPoint);
     },
 
     //destructive containerPointToViewPoint
-    _containerPointToViewPoint: function(containerPoint) {
-        if (!containerPoint) {return null;}
+    _containerPointToViewPoint: function (containerPoint) {
+        if (!containerPoint) { return null; }
         var platformOffset = this.offsetPlatform();
         return containerPoint._substract(platformOffset);
     }
@@ -1447,7 +1442,7 @@ Z.Map=Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
 
 //--------------hooks after map loaded----------------
-Z.Map.prototype._callOnLoadHooks=function() {
+Z.Map.prototype._callOnLoadHooks = function () {
     var proto = Z.Map.prototype;
     for (var i = 0, len = proto._onLoadHooks.length; i < len; i++) {
         proto._onLoadHooks[i].call(this);

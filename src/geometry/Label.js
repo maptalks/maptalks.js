@@ -24,13 +24,13 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
      * @static
      */
     defaultSymbol : {
-        "textFaceName"  : "monospace",
-        "textSize": 12,
-        "textWrapBefore": false,
-        "textWrapCharacter": "\n",
-        "textLineSpacing": 8,
-        "textHorizontalAlignment": "middle",//left middle right
-        "textVerticalAlignment": "middle" //top middle bottom
+        'textFaceName'  : 'monospace',
+        'textSize': 12,
+        'textWrapBefore': false,
+        'textWrapCharacter': '\n',
+        'textLineSpacing': 8,
+        'textHorizontalAlignment': 'middle', //left middle right
+        'textVerticalAlignment': 'middle' //top middle bottom
     },
 
     /**
@@ -38,11 +38,11 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
      * @static
      */
     defaultBoxSymbol:{
-        "markerType":"square",
-        "markerLineColor": "#ff0000",
-        "markerLineWidth": 2,
-        "markerLineOpacity": 1,
-        "markerFill": "#ffffff"
+        'markerType':'square',
+        'markerLineColor': '#ff0000',
+        'markerLineWidth': 2,
+        'markerLineOpacity': 1,
+        'markerFill': '#ffffff'
     },
 
     /**
@@ -59,7 +59,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         'boxAutoSize'  :   true,
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
-        'boxPadding'   :   new Z.Size(12,8),
+        'boxPadding'   :   new Z.Size(12, 8),
         'boxTextAlign' :   'middle'
     },
 
@@ -75,7 +75,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
      * Get text content of the label
      * @returns {String}
      */
-    getContent: function() {
+    getContent: function () {
         return this._content;
     },
 
@@ -84,7 +84,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
      * @return {maptalks.Label} this
      * @fires maptalks.Label#contentchange
      */
-    setContent: function(content) {
+    setContent: function (content) {
         var old = this._content;
         this._content = content;
         this._refresh();
@@ -97,28 +97,28 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
          * @property {String} old - old content
          * @property {String} new - new content
          */
-        this._fireEvent('contentchange',{'old':old, 'new':content});
+        this._fireEvent('contentchange', {'old':old, 'new':content});
         return this;
     },
 
-    setSymbol:function(symbol) {
+    setSymbol:function (symbol) {
         if (!symbol || symbol === this.options['symbol']) {
-           symbol = {};
+            symbol = {};
         }
-       var camelSymbol = this._prepareSymbol(symbol);
-       var s = {};
-       Z.Util.extend(s, this.defaultSymbol);
-       if (this.options['box']) {
+        var camelSymbol = this._prepareSymbol(symbol);
+        var s = {};
+        Z.Util.extend(s, this.defaultSymbol);
+        if (this.options['box']) {
             Z.Util.extend(s, this.defaultBoxSymbol);
-       }
-       Z.Util.extend(s,camelSymbol);
-       this._symbol = s;
-       this._refresh();
-       return this;
+        }
+        Z.Util.extend(s, camelSymbol);
+        this._symbol = s;
+        this._refresh();
+        return this;
     },
 
 
-    onConfig:function(conf) {
+    onConfig:function (conf) {
         var isRefresh = false;
         for (var p in conf) {
             if (conf.hasOwnProperty(p)) {
@@ -133,15 +133,15 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         }
     },
 
-    _toJSON:function(options) {
+    _toJSON:function (options) {
         return {
-            "feature" : this.toGeoJSON(options),
-            "subType" : "Label",
-            "content" : this._content
+            'feature' : this.toGeoJSON(options),
+            'subType' : 'Label',
+            'content' : this._content
         };
     },
 
-    _refresh:function() {
+    _refresh:function () {
         var symbol = this.getSymbol();
         symbol['textName'] = this._content;
         if (this.options['box']) {
@@ -154,8 +154,8 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
                 size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
             }
             if (this.options['boxAutoSize']) {
-                symbol['markerWidth'] = size['width']+padding['width']*2;
-                symbol['markerHeight'] = size['height']+padding['height']*2;
+                symbol['markerWidth'] = size['width'] + padding['width'] * 2;
+                symbol['markerHeight'] = size['height'] + padding['height'] * 2;
             }
             if (this.options['boxMinWidth']) {
                 if (!symbol['markerWidth'] || symbol['markerWidth'] < this.options['boxMinWidth']) {
@@ -170,15 +170,15 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
             var align = this.options['boxTextAlign'];
             if (align) {
                 var textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
-                textAlignPoint = textAlignPoint._add(Z.Util.getValueOrDefault(symbol['textDx'],0),Z.Util.getValueOrDefault(symbol['textDy'],0));
+                textAlignPoint = textAlignPoint._add(Z.Util.getValueOrDefault(symbol['textDx'], 0), Z.Util.getValueOrDefault(symbol['textDy'], 0));
                 symbol['markerDx'] = textAlignPoint.x;
-                symbol['markerDy'] = textAlignPoint.y + size['height']/2;
+                symbol['markerDy'] = textAlignPoint.y + size['height'] / 2;
                 if (align === 'left') {
-                   symbol['markerDx'] += symbol['markerWidth']/2 - padding['width'];
+                    symbol['markerDx'] += symbol['markerWidth'] / 2 - padding['width'];
                 } else if (align === 'right') {
-                   symbol['markerDx'] -= symbol['markerWidth']/2 - size['width'] - padding['width'];
+                    symbol['markerDx'] -= symbol['markerWidth'] / 2 - size['width'] - padding['width'];
                 } else {
-                    symbol['markerDx'] += size['width']/2;
+                    symbol['markerDx'] += size['width'] / 2;
                 }
             }
         }
@@ -186,21 +186,21 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         this._onSymbolChanged();
     },
 
-    _registerEvents: function() {
+    _registerEvents: function () {
         this.on('shapechange', this._refresh, this);
         this.on('remove', this._onLabelRemove, this);
         return this;
     },
 
-    _onLabelRemove:function() {
+    _onLabelRemove:function () {
         this.off('shapechange', this._refresh, this);
-        this.off('remove', this._onLabelRemove,this);
+        this.off('remove', this._onLabelRemove, this);
     }
 });
 
-Z.Label._fromJSON=function(json) {
+Z.Label._fromJSON = function (json) {
     var feature = json['feature'];
     var label = new Z.Label(json['content'], feature['geometry']['coordinates'], json['options']);
     label.setProperties(feature['properties']);
     return label;
-}
+};

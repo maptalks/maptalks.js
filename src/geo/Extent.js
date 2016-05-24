@@ -21,13 +21,13 @@
  * //with another extent
  * var extent2 = new maptalks.Extent(extent1);
  */
-Z.Extent = function(p1,p2,p3,p4) {
+Z.Extent = function (p1, p2, p3, p4) {
     this._clazz = Z.Coordinate;
-    this._initialize(p1,p2,p3,p4);
+    this._initialize(p1, p2, p3, p4);
 };
 
 Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
-    _initialize:function(p1, p2, p3, p4) {
+    _initialize:function (p1, p2, p3, p4) {
         /**
          * @property {Number} xmin - minimum x
          */
@@ -52,50 +52,48 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
             Z.Util.isNumber(p2) &&
             Z.Util.isNumber(p3) &&
             Z.Util.isNumber(p4)) {
-            this['xmin'] = Math.min(p1,p3);
-            this['ymin'] = Math.min(p2,p4);
-            this['xmax'] = Math.max(p1,p3);
-            this['ymax'] = Math.max(p2,p4);
+            this['xmin'] = Math.min(p1, p3);
+            this['ymin'] = Math.min(p2, p4);
+            this['xmax'] = Math.max(p1, p3);
+            this['ymax'] = Math.max(p2, p4);
             return;
-        } else {
-             //Constructor 2: two coordinates
-            if (Z.Util.isNumber(p1.x) &&
-                Z.Util.isNumber(p2.x) &&
-                Z.Util.isNumber(p1.y) &&
-                Z.Util.isNumber(p2.y)) {
-                if (p1.x>p2.x) {
-                    this['xmin'] = p2.x;
-                    this['xmax'] = p1.x;
-                } else {
-                    this['xmin'] = p1.x;
-                    this['xmax'] = p2.x;
-                }
-                if (p1.y>p2.y) {
-                    this['ymin'] = p2.y;
-                    this['ymax'] = p1.y;
-                } else {
-                    this['ymin'] = p1.y;
-                    this['ymax'] = p2.y;
-                }
-                //constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
-            } else if (Z.Util.isNumber(p1['xmin']) &&
-                    Z.Util.isNumber(p1['xmax']) &&
-                    Z.Util.isNumber(p1['ymin']) &&
-                    Z.Util.isNumber(p1['ymax']))   {
-                    this['xmin'] = p1['xmin'];
-                    this['ymin'] = p1['ymin'];
-                    this['xmax'] = p1['xmax'];
-                    this['ymax'] = p1['ymax'];
+        } else if (Z.Util.isNumber(p1.x) &&
+            Z.Util.isNumber(p2.x) &&
+            Z.Util.isNumber(p1.y) &&
+            Z.Util.isNumber(p2.y)) {
+            //Constructor 2: two coordinates
+            if (p1.x > p2.x) {
+                this['xmin'] = p2.x;
+                this['xmax'] = p1.x;
+            } else {
+                this['xmin'] = p1.x;
+                this['xmax'] = p2.x;
             }
+            if (p1.y > p2.y) {
+                this['ymin'] = p2.y;
+                this['ymax'] = p1.y;
+            } else {
+                this['ymin'] = p1.y;
+                this['ymax'] = p2.y;
+            }
+            //constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
+        } else if (Z.Util.isNumber(p1['xmin']) &&
+                Z.Util.isNumber(p1['xmax']) &&
+                Z.Util.isNumber(p1['ymin']) &&
+                Z.Util.isNumber(p1['ymax'])) {
+            this['xmin'] = p1['xmin'];
+            this['ymin'] = p1['ymin'];
+            this['xmax'] = p1['xmax'];
+            this['ymax'] = p1['ymax'];
         }
     },
 
-    round:function() {
+    round:function () {
         return new Z.Extent(Z.Util.round(this['xmin']), Z.Util.round(this['ymin']),
-            Z.Util.round(this['xmax']),Z.Util.round(this['ymax']));
+            Z.Util.round(this['xmax']), Z.Util.round(this['ymax']));
     },
 
-    _round:function() {
+    _round:function () {
         this['xmin'] = Z.Util.round(this['xmin']);
         this['ymin'] = Z.Util.round(this['ymin']);
         this['xmax'] = Z.Util.round(this['xmax']);
@@ -107,16 +105,16 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * Get the minimum point
      * @return {maptalks.Coordinate}
      */
-    getMin:function() {
-        return new this._clazz(this['xmin'],this['ymin']);
+    getMin:function () {
+        return new this._clazz(this['xmin'], this['ymin']);
     },
 
     /**
      * Get the maximum point
      * @return {maptalks.Coordinate}
      */
-    getMax:function() {
-        return new this._clazz(this['xmax'],this['ymax']);
+    getMax:function () {
+        return new this._clazz(this['xmax'], this['ymax']);
     },
 
 
@@ -124,8 +122,8 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * Get center of the extent.
      * @return {maptalks.Coordinate}
      */
-    getCenter:function() {
-        return new this._clazz((this['xmin']+this['xmax'])/2, (this['ymin']+this['ymax'])/2);
+    getCenter:function () {
+        return new this._clazz((this['xmin'] + this['xmax']) / 2, (this['ymin'] + this['ymax']) / 2);
     },
 
     /**
@@ -133,7 +131,7 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * @protected
      * @return {Boolean}
      */
-    isValid:function() {
+    isValid:function () {
         return Z.Util.isNumber(this['xmin']) &&
                 Z.Util.isNumber(this['ymin']) &&
                 Z.Util.isNumber(this['xmax']) &&
@@ -146,7 +144,7 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * @param  {maptalks.Extent}  ext2 - extent to compare
      * @return {Boolean}
      */
-    equals:function(ext2) {
+    equals:function (ext2) {
         return (this['xmin'] === ext2['xmin'] &&
             this['xmax'] === ext2['xmax'] &&
             this['ymin'] === ext2['ymin'] &&
@@ -158,7 +156,7 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * @param  {maptalks.Extent}  ext2 - another extent
      * @return {Boolean}
      */
-    intersects:function(ext2) {
+    intersects:function (ext2) {
         var rxmin = Math.max(this['xmin'], ext2['xmin']);
         var rymin = Math.max(this['ymin'], ext2['ymin']);
         var rxmax = Math.min(this['xmax'], ext2['xmax']);
@@ -172,7 +170,7 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * @param  {maptalks.Coordinate|Number[]} coordinate - input point
      * @returns {Boolean}
      */
-    contains: function(coordinate) {
+    contains: function (coordinate) {
         var x, y;
         var c = new this._clazz(coordinate);
         x = c.x;
@@ -187,7 +185,7 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * Get the width of the Extent
      * @return {Number}
      */
-    getWidth:function() {
+    getWidth:function () {
         return this['xmax'] - this['xmin'];
     },
 
@@ -195,17 +193,17 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * Get the height of the Extent
      * @return {Number}
      */
-    getHeight:function() {
+    getHeight:function () {
         return this['ymax'] - this['ymin'];
     },
 
 
-    __combine:function(extent) {
+    __combine:function (extent) {
         var xmin = this['xmin'];
         if (!Z.Util.isNumber(xmin)) {
             xmin = extent['xmin'];
         } else if (Z.Util.isNumber(extent['xmin'])) {
-            if (xmin>extent['xmin']) {
+            if (xmin > extent['xmin']) {
                 xmin = extent['xmin'];
             }
         }
@@ -214,7 +212,7 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
         if (!Z.Util.isNumber(xmax)) {
             xmax = extent['xmax'];
         } else if (Z.Util.isNumber(extent['xmax'])) {
-            if (xmax<extent['xmax']) {
+            if (xmax < extent['xmax']) {
                 xmax = extent['xmax'];
             }
         }
@@ -223,7 +221,7 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
         if (!Z.Util.isNumber(ymin)) {
             ymin = extent['ymin'];
         } else if (Z.Util.isNumber(extent['ymin'])) {
-            if (ymin>extent['ymin']) {
+            if (ymin > extent['ymin']) {
                 ymin = extent['ymin'];
             }
         }
@@ -232,14 +230,14 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
         if (!Z.Util.isNumber(ymax)) {
             ymax = extent['ymax'];
         } else if (Z.Util.isNumber(extent['ymax'])) {
-            if (ymax<extent['ymax']) {
+            if (ymax < extent['ymax']) {
                 ymax = extent['ymax'];
             }
         }
         return [xmin, ymin, xmax, ymax];
     },
 
-    _combine:function(extent) {
+    _combine:function (extent) {
         if (!extent) {
             return this;
         }
@@ -256,12 +254,12 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * @param  {maptalks.Extent} extent - another extent
      * @returns {maptalks.Extent} extent combined
      */
-    combine:function(extent) {
+    combine:function (extent) {
         if (!extent) {
             return this;
         }
         var ext = this.__combine(extent);
-        return new this.constructor(ext[0],ext[1],ext[2],ext[3]);
+        return new this.constructor(ext[0], ext[1], ext[2], ext[3]);
     },
 
     /**
@@ -269,12 +267,12 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * @param  {maptalks.Extent} extent - another extent
      * @return {maptalks.Extent} intersection extent
      */
-    intersection:function(extent) {
+    intersection:function (extent) {
         if (!this.intersects(extent)) {
             return null;
         }
-        return new this.constructor(Math.max(this['xmin'], extent['xmin']),Math.max(this['ymin'], extent['ymin']),
-            Math.min(this['xmax'], extent['xmax']),Math.min(this['ymax'], extent['ymax'])
+        return new this.constructor(Math.max(this['xmin'], extent['xmin']), Math.max(this['ymin'], extent['ymin']),
+            Math.min(this['xmax'], extent['xmax']), Math.min(this['ymax'], extent['ymax'])
             );
     },
 
@@ -283,15 +281,15 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * @param  {maptalks.Size|Number} distance  - distance to expand
      * @returns {maptalks.Extent} a new extent expanded from
      */
-    expand:function(distance) {
+    expand:function (distance) {
         if (distance instanceof Z.Size) {
-            return new this.constructor(this['xmin']-distance['width'], this['ymin']-distance['height'],this['xmax']+distance['width'],this['ymax']+distance['height']);
+            return new this.constructor(this['xmin'] - distance['width'], this['ymin'] - distance['height'], this['xmax'] + distance['width'], this['ymax'] + distance['height']);
         } else {
-            return new this.constructor(this['xmin']-distance, this['ymin']-distance,this['xmax']+distance,this['ymax']+distance);
+            return new this.constructor(this['xmin'] - distance, this['ymin'] - distance, this['xmax'] + distance, this['ymax'] + distance);
         }
     },
 
-    _expand:function(distance) {
+    _expand:function (distance) {
         if (distance instanceof Z.Size) {
             this['xmin'] -= distance['width'];
             this['ymin'] -= distance['height'];
@@ -313,7 +311,7 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * // {xmin : 100, ymin: 10, xmax: 120, ymax:20}
      * var json = extent.toJSON();
      */
-    toJSON:function() {
+    toJSON:function () {
         return {
             'xmin':this['xmin'],
             'ymin':this['ymin'],
@@ -326,23 +324,23 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * Get a coordinate array of extent's rectangle area, containing 5 coordinates in which the first equals with the last.
      * @return {maptalks.Coordinate[]} coordinates array
      */
-    toArray:function() {
+    toArray:function () {
         var xmin = this['xmin'],
             ymin = this['ymin'],
             xmax = this['xmax'],
             ymax = this['ymax'];
         return [
-                new this._clazz([xmin, ymax]), new this._clazz([xmax, ymax]),
-                new this._clazz([xmax, ymin]), new this._clazz([xmin, ymin]),
-                new this._clazz([xmin, ymax])
-            ];
+            new this._clazz([xmin, ymax]), new this._clazz([xmax, ymax]),
+            new this._clazz([xmax, ymin]), new this._clazz([xmin, ymin]),
+            new this._clazz([xmin, ymax])
+        ];
     },
 
     /**
      * Get a copy of the extent.
      * @return {maptalks.Extent} copy
      */
-    copy:function() {
+    copy:function () {
         return new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
     }
 });

@@ -26,7 +26,7 @@ Z.Animation = {
      * @return {Object[]}  styles resolved
      * @private
      */
-    _resolveStyles:function(styles) {
+    _resolveStyles:function (styles) {
         if (!styles) {
             return null;
         }
@@ -52,16 +52,17 @@ Z.Animation = {
         }
         // resolve a style value.
         function resolveVal(val) {
-             var values = val;
+            var values = val,
+                clazz;
             //val is just a destination value, so we set start value to 0 or a 0-point or a 0-coordinate.
             if (!Z.Util.isArray(val)) {
                 if (Z.Util.isNumber(val)) {
                     values = [0, val];
                 } else if (val instanceof Z.Point || val instanceof Z.Coordinate) {
-                    var clazz = val.constructor;
-                    values = [new clazz(0,0), val];
+                    clazz = val.constructor;
+                    values = [new clazz(0, 0), val];
                 } else {
-                    throw new Error(val+' is not supported in animation styles.');
+                    throw new Error(val + ' is not supported in animation styles.');
                 }
             }
             //val is a array and val[0] is the start value and val[1] is the destination value.
@@ -71,14 +72,14 @@ Z.Animation = {
                 if (v1 === v2) {
                     return null;
                 }
-                return [v1, v2-v1, v2];
+                return [v1, v2 - v1, v2];
             } else if (Z.Util.isArray(v1) || v1 instanceof Z.Coordinate || v1 instanceof Z.Point) {
                 // is a coordinate (array or a coordinate) or a point
                 if (Z.Util.isArray(v1)) {
                     v1 = new Z.Coordinate(v1);
                     v2 = new Z.Coordinate(v2);
                 } else {
-                    var clazz = v1.constructor;
+                    clazz = v1.constructor;
                     v1 = new clazz(v1);
                     v2 = new clazz(v2);
                 }
@@ -88,9 +89,8 @@ Z.Animation = {
                 }
                 return [v1, v2.substract(v1), v2];
             } else {
-                throw new Error(values+' is not supported in animation styles.');
+                throw new Error(values + ' is not supported in animation styles.');
             }
-            return null;
         }
 
         function isChild(val) {
@@ -129,12 +129,12 @@ Z.Animation = {
      * @param  {Object} [options.easing=null]  - animation easing
      * @return {Function} framing function helps to generate animation frames.
      */
-    framing:function(styles, options) {
+    framing:function (styles, options) {
         if (!options) {
             options = {};
         }
-        var easing = options['easing']?Z.animation.Easing[options['easing']]:Z.animation.Easing.linear;
-        if (!easing) {easing = Z.animation.Easing.linear;}
+        var easing = options['easing'] ? Z.animation.Easing[options['easing']] : Z.animation.Easing.linear;
+        if (!easing) { easing = Z.animation.Easing.linear; }
         var dStyles, startStyles, destStyles;
         styles = Z.Animation._resolveStyles(styles);
         if (styles) {
@@ -142,7 +142,7 @@ Z.Animation = {
             dStyles = styles[1];
             destStyles = styles[2];
         }
-        var deltaStyles = function(delta, _startStyles, _dStyles) {
+        var deltaStyles = function (delta, _startStyles, _dStyles) {
             if (!_startStyles || !_dStyles) {
                 return null;
             }
@@ -152,7 +152,7 @@ Z.Animation = {
                     var s = _startStyles[p], d = _dStyles[p];
                     if (Z.Util.isNumber(d)) {
                         //e.g. radius, width, height
-                        result[p] = s + delta*d;
+                        result[p] = s + delta * d;
                     } else if (Z.Util.isArray(d)) {
                         //e.g. a composite symbol, element in array can only be a object.
                         var children = [];
@@ -160,7 +160,7 @@ Z.Animation = {
                             children.push(deltaStyles(delta, s[i], d[i]));
                         }
                         result[p] = children;
-                    }else {
+                    } else {
                         //e.g. translate or a child
                         var clazz = d.constructor;
                         if (clazz === Object) {
@@ -172,37 +172,37 @@ Z.Animation = {
                 }
             }
             return result;
-        }
-        return function(elapsed, duration) {
+        };
+        return function (elapsed, duration) {
             var state, d;
             if (elapsed < 0) {
-              state = {
-                'playState' : "idle",
-                'delta'   : 0
-              };
-              d = startStyles;
+                state = {
+                    'playState' : 'idle',
+                    'delta'   : 0
+                };
+                d = startStyles;
             } else if (elapsed <  duration) {
-              var delta = easing(elapsed / duration);
-              state = {
-                'playState' : "running",
-                'delta' : delta
-              };
-              d = deltaStyles(delta, startStyles, dStyles);
+                var delta = easing(elapsed / duration);
+                state = {
+                    'playState' : 'running',
+                    'delta' : delta
+                };
+                d = deltaStyles(delta, startStyles, dStyles);
             } else {
-              state = {
-                'playState' : "finished",
-                'delta' : 1
-              };
-              d = destStyles;
+                state = {
+                    'playState' : 'finished',
+                    'delta' : 1
+                };
+                d = destStyles;
             }
             state['startStyles'] = startStyles;
             state['destStyles'] = destStyles;
-            return new Z.animation.Frame(state ,d);
+            return new Z.animation.Frame(state, d);
         };
 
     },
 
-    _requestAnimFrame:function(fn) {
+    _requestAnimFrame:function (fn) {
         if (!this._frameQueue) {
             this._frameQueue = [];
         }
@@ -210,13 +210,13 @@ Z.Animation = {
         this._a();
     },
 
-    _a:function() {
+    _a:function () {
         if (!this._animationFrameId) {
             this._animationFrameId = Z.Util.requestAnimFrame(Z.Util.bind(Z.Animation._run, Z.Animation));
         }
     },
 
-    _run:function() {
+    _run:function () {
         if (this._frameQueue.length) {
             var running = this._frameQueue;
             this._frameQueue = [];
@@ -238,7 +238,7 @@ Z.Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {maptalks.animation.Player} player
      */
-    animate : function(styles, options, step) {
+    animate : function (styles, options, step) {
         if (!options) {
             options = {};
         }
@@ -258,29 +258,29 @@ Z.Animation = {
  * @memberOf maptalks.animation
  * @name Player
  */
-Z.animation.Player = function(animation, options, step) {
+Z.animation.Player = function (animation, options, step) {
     this._animation = animation;
     this._options = options;
     this._stepFn = step;
-    this.playState = "idle";
+    this.playState = 'idle';
     this.ready = true;
     this.finished = false;
-}
+};
 
 Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player.prototype */{
-    _prepare:function() {
+    _prepare:function () {
         var options = this._options;
         var duration = options['speed'];
-        if (Z.Util.isString(duration)) {duration = Z.Animation.speed[duration];}
-        if (!duration) {duration = Z.Animation.speed['normal'];}
+        if (Z.Util.isString(duration)) { duration = Z.Animation.speed[duration]; }
+        if (!duration) { duration = Z.Animation.speed['normal']; }
         this.duration = duration;
     },
     /**
      * Start or resume the animation
      * @return {maptalks.animation.Player} this
      */
-    play:function() {
-        if (this.playState !== "idle" && this.playState !== "paused") {
+    play:function () {
+        if (this.playState !== 'idle' && this.playState !== 'paused') {
             return this;
         }
         if (this.playState === 'idle') {
@@ -300,8 +300,8 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
      * Pause the animation
      * @return {maptalks.animation.Player} this
      */
-    pause:function() {
-        this.playState = "paused";
+    pause:function () {
+        this.playState = 'paused';
         this.duration = this.duration - this.currentTime;
         return this;
     },
@@ -309,8 +309,8 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
      * Cancel the animation play and ready to play again
      * @return {maptalks.animation.Player} this
      */
-    cancel:function() {
-        this.playState = "idle";
+    cancel:function () {
+        this.playState = 'idle';
         this.finished = false;
         return this;
     },
@@ -318,16 +318,16 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
      * Finish the animation play, and can't be played any more.
      * @return {maptalks.animation.Player} this
      */
-    finish:function() {
-        this.playState = "finished";
+    finish:function () {
+        this.playState = 'finished';
         this.finished = true;
         return this;
     },
-    reverse:function() {
+    reverse:function () {
 
     },
-    _run:function() {
-        if ('finished' === this.playState || 'paused' === this.playState) {
+    _run:function () {
+        if (this.playState === 'finished' || this.playState === 'paused') {
             return;
         }
         var me = this;
@@ -336,21 +336,21 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
         var frame = this._animation(now - this._playStartTime, this.duration);
         this.playState = frame.state['playState'];
         var step = this._stepFn;
-        if ('idle' === this.playState) {
-            setTimeout(Z.Util.bind(this._run, this),this.startTime-now);
-        } else if ('running' === this.playState) {
-            this._animeFrameId = Z.Animation._requestAnimFrame(function() {
-                me.currentTime = now-me._playStartTime;
+        if (this.playState === 'idle') {
+            setTimeout(Z.Util.bind(this._run, this), this.startTime - now);
+        } else if (this.playState === 'running') {
+            this._animeFrameId = Z.Animation._requestAnimFrame(function () {
+                me.currentTime = now - me._playStartTime;
                 if (step) {
                     step(frame);
                 }
                 me._run();
             });
-        } else if ('finished' === this.playState){
+        } else if (this.playState === 'finished') {
             this.finished = true;
             //finished
             if (step) {
-                 Z.Util.requestAnimFrame(function() {
+                Z.Util.requestAnimFrame(function () {
                     step(frame);
                 });
             }
@@ -373,9 +373,9 @@ Z.animation.Easing = {
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
          */
-        in : function(t) {
-          return Math.pow(t, 2);
-        },
+    in : function (t) {
+        return Math.pow(t, 2);
+    },
 
 
         /**
@@ -383,9 +383,9 @@ Z.animation.Easing = {
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
          */
-        out : function(t) {
-          return 1 - Z.animation.Easing.in(1 - t);
-        },
+    out : function (t) {
+        return 1 - Z.animation.Easing.in(1 - t);
+    },
 
 
         /**
@@ -393,9 +393,9 @@ Z.animation.Easing = {
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
          */
-        inAndOut : function(t) {
-          return 3 * t * t - 2 * t * t * t;
-        },
+    inAndOut : function (t) {
+        return 3 * t * t - 2 * t * t * t;
+    },
 
 
         /**
@@ -403,9 +403,9 @@ Z.animation.Easing = {
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
          */
-        linear : function(t) {
-          return t;
-        },
+    linear : function (t) {
+        return t;
+    },
 
 
         /**
@@ -415,13 +415,13 @@ Z.animation.Easing = {
          * @param {number} t Input between 0 and 1.
          * @return {number} Output between 0 and 1.
          */
-        upAndDown : function(t) {
-          if (t < 0.5) {
+    upAndDown : function (t) {
+        if (t < 0.5) {
             return Z.animation.Easing.inAndOut(2 * t);
-          } else {
+        } else {
             return 1 - Z.animation.Easing.inAndOut(2 * (t - 0.5));
-          }
         }
+    }
 };
 
 /**
@@ -434,7 +434,7 @@ Z.animation.Easing = {
  * @param {Object} state  - animation state
  * @param {Object} styles - styles to animate
  */
-Z.animation.Frame = function(state, styles) {
+Z.animation.Frame = function (state, styles) {
     this.state = state;
     this.styles = styles;
 };

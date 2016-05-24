@@ -15,7 +15,7 @@
  *     id : 'circle-id'
  * });
  */
-Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
+Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
     includes:[Z.Geometry.Center],
 
     /**
@@ -26,7 +26,7 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
         'numberOfShellPoints':60
     },
 
-    initialize:function(coordinates,radius,opts) {
+    initialize:function (coordinates, radius, opts) {
         this._coordinates = new Z.Coordinate(coordinates);
         this._radius = radius;
         this._initOptions(opts);
@@ -36,7 +36,7 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
      * Get radius of the circle
      * @return {Number}
      */
-    getRadius:function() {
+    getRadius:function () {
         return this._radius;
     },
 
@@ -46,7 +46,7 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
      * @return {maptalks.Circle} this
      * @fires maptalks.Geometry#shapechange
      */
-    setRadius:function(radius) {
+    setRadius:function (radius) {
         this._radius = radius;
         this._onShapeChanged();
         return this;
@@ -56,16 +56,16 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
      * Gets the shell of the circle as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Circle#options}
      * @return {maptalks.Coordinate[]} - shell coordinates
      */
-    getShell:function() {
+    getShell:function () {
         var measurer = this._getMeasurer();
         var center = this.getCoordinates();
         var numberOfPoints = this.options['numberOfShellPoints'];
         var radius = this.getRadius();
         var shell = [];
-        for (var i=0;i<numberOfPoints;i++) {
-            var rad = (360*i/numberOfPoints)*Math.PI/180;
-            var dx = radius*Math.cos(rad);
-            var dy = radius*Math.sin(rad);
+        for (var i = 0; i < numberOfPoints; i++) {
+            var rad = (360 * i / numberOfPoints) * Math.PI / 180;
+            var dx = radius * Math.cos(rad);
+            var dy = radius * Math.sin(rad);
             var vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
@@ -76,11 +76,11 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
      * Circle won't have any holes, always returns null
      * @return {null}
      */
-    getHoles:function() {
+    getHoles:function () {
         return null;
     },
 
-    _containsPoint: function(point, tolerance) {
+    _containsPoint: function (point, tolerance) {
         var center = this._getCenterViewPoint(),
             size = this.getSize(),
             t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
@@ -90,40 +90,40 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
         return pp.distanceTo(pc) <= size.width / 2 + t;
     },
 
-    _computeExtent:function(measurer) {
+    _computeExtent:function (measurer) {
         if (!measurer || !this._coordinates || Z.Util.isNil(this._radius)) {
             return null;
         }
 
         var radius = this._radius;
-        var p1 = measurer.locate(this._coordinates,radius,radius);
-        var p2 = measurer.locate(this._coordinates,-radius,-radius);
-        return new Z.Extent(p1,p2);
+        var p1 = measurer.locate(this._coordinates, radius, radius);
+        var p2 = measurer.locate(this._coordinates, -radius, -radius);
+        return new Z.Extent(p1, p2);
     },
 
-    _computeGeodesicLength:function(measurer) {
+    _computeGeodesicLength:function () {
         if (Z.Util.isNil(this._radius)) {
             return 0;
         }
-        return Math.PI*2*this._radius;
+        return Math.PI * 2 * this._radius;
     },
 
-    _computeGeodesicArea:function(measurer) {
+    _computeGeodesicArea:function () {
         if (Z.Util.isNil(this._radius)) {
             return 0;
         }
-        return Math.PI*Math.pow(this._radius,2);
+        return Math.PI * Math.pow(this._radius, 2);
     },
 
-    _exportGeoJSONGeometry: function() {
+    _exportGeoJSONGeometry: function () {
         var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates
-        }
+        };
     },
 
-    _toJSON:function(options) {
+    _toJSON:function (options) {
         var center = this.getCenter();
         var opts = Z.Util.extend({}, options);
         opts.geometry = false;
@@ -137,7 +137,7 @@ Z.Circle=Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
 
 });
 
-Z.Circle._fromJSON=function(json) {
+Z.Circle._fromJSON = function (json) {
     var feature = json['feature'];
     var circle = new Z.Circle(json['coordinates'], json['radius'], json['options']);
     circle.setProperties(feature['properties']);

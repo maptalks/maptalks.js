@@ -27,10 +27,10 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * @property {String} [options.antiMeridian=default] - antiMeridian
      */
     options:{
-        "antiMeridian" : "default"
+        'antiMeridian' : 'default'
     },
 
-    initialize:function(coordinates, opts) {
+    initialize:function (coordinates, opts) {
         this.setCoordinates(coordinates);
         this._initOptions(opts);
     },
@@ -40,7 +40,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - new coordinates
      * @return {maptalks.Polygon} this
      */
-    setCoordinates:function(coordinates) {
+    setCoordinates:function (coordinates) {
         if (!coordinates) {
             this._coordinates = null;
             this._holes = null;
@@ -55,7 +55,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
             this._coordinates = this._trimRing(rings[0]);
             if (len > 1) {
                 var holes = [];
-                for (var i=1; i<len;i++) {
+                for (var i = 1; i < len; i++) {
                     if (!rings[i]) {
                         continue;
                     }
@@ -73,7 +73,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * Gets polygons's coordinates
      * @returns {maptalks.Coordinate[][]}
      */
-    getCoordinates:function() {
+    getCoordinates:function () {
         if (!this._coordinates) {
             return [];
         }
@@ -91,8 +91,8 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * Gets shell coordinates of the polygon
      * @returns {maptalks.Coordinate[]}
      */
-    getShell:function() {
-       return this._coordinates;
+    getShell:function () {
+        return this._coordinates;
     },
 
 
@@ -100,7 +100,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * Gets holes' coordinates of the polygon if it has.
      * @returns {maptalks.Coordinate[][]}
      */
-    getHoles:function() {
+    getHoles:function () {
         if (this.hasHoles()) {
             return this._holes;
         }
@@ -111,7 +111,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * Whether the polygon has any holes inside.
      * @returns {Boolean}
      */
-    hasHoles:function() {
+    hasHoles:function () {
         if (Z.Util.isArrayHasData(this._holes)) {
             if (Z.Util.isArrayHasData(this._holes[0])) {
                 return true;
@@ -120,7 +120,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         return false;
     },
 
-    _projectRings:function() {
+    _projectRings:function () {
         if (!this.getMap()) {
             this._onShapeChanged();
             return;
@@ -130,10 +130,10 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         this._onShapeChanged();
     },
 
-    _cleanRing:function(ring) {
+    _cleanRing:function (ring) {
         for (var i = ring.length - 1; i >= 0; i--) {
             if (!ring[i]) {
-                ring.splice(i,1);
+                ring.splice(i, 1);
             }
         }
     },
@@ -143,15 +143,15 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * @param  {*} ring [description]
      * @private
      */
-    _checkRing:function(ring) {
+    _checkRing:function (ring) {
         this._cleanRing(ring);
         if (!ring || !Z.Util.isArrayHasData(ring)) {
             return false;
         }
-        var lastPoint = ring[ring.length-1];
+        var lastPoint = ring[ring.length - 1];
         var isClose = true;
         // var least = 4;
-        if (ring[0].x != lastPoint.x || ring[0].y != lastPoint.y ) {
+        if (ring[0].x !== lastPoint.x || ring[0].y !== lastPoint.y) {
             // least = 3;
             isClose = false;
         }
@@ -165,10 +165,10 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * 如果最后一个端点与第一个端点相同, 则去掉最后一个端点
      * @private
      */
-    _trimRing:function(ring) {
+    _trimRing:function (ring) {
         var isClose = this._checkRing(ring);
         if (Z.Util.isArrayHasData(ring) && isClose) {
-            return ring.slice(0,ring.length-1);
+            return ring.slice(0, ring.length - 1);
         } else {
             return ring;
         }
@@ -178,50 +178,50 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
      * 如果最后一个端点与第一个端点不同, 则在最后增加与第一个端点相同的点
      * @private
      */
-    _closeRing:function(ring) {
+    _closeRing:function (ring) {
         var isClose = this._checkRing(ring);
         if (Z.Util.isArrayHasData(ring) && !isClose) {
-            return ring.concat([new Z.Coordinate(ring[0].x,ring[0].y)]);
+            return ring.concat([new Z.Coordinate(ring[0].x, ring[0].y)]);
         } else {
             return ring;
         }
     },
 
 
-    _getPrjHoles:function() {
+    _getPrjHoles:function () {
         if (!this._prjHoles) {
             this._prjHoles = this._projectCoords(this._holes);
         }
         return this._prjHoles;
     },
 
-    _computeGeodesicLength:function(measurer) {
+    _computeGeodesicLength:function (measurer) {
         var rings = this.getCoordinates();
         if (!Z.Util.isArrayHasData(rings)) {
             return 0;
         }
         var result = 0;
-        for (var i=0, len=rings.length;i<len;i++) {
+        for (var i = 0, len = rings.length; i < len; i++) {
             result += Z.GeoUtils.computeLength(rings[i], measurer);
         }
         return result;
     },
 
-    _computeGeodesicArea:function(measurer) {
+    _computeGeodesicArea:function (measurer) {
         var rings = this.getCoordinates();
         if (!Z.Util.isArrayHasData(rings)) {
             return 0;
         }
         var result = measurer.measureArea(rings[0]);
         //holes
-        for (var i=1, len=rings.length;i<len;i++) {
+        for (var i = 1, len = rings.length; i < len; i++) {
             result -= measurer.measureArea(rings[i]);
 
         }
         return result;
     },
 
-    _containsPoint: function(point, tolerance) {
+    _containsPoint: function (point, tolerance) {
         var t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pxExtent = this._getPainter().getPixelExtent().expand(t);
 

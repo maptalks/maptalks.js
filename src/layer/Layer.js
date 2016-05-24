@@ -8,7 +8,7 @@
  * @mixes maptalks.Eventable
  * @mixes maptalks.Renderable
  */
-Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
+Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     includes: Z.Eventable,
 
@@ -34,15 +34,17 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      /**
      * load the tile layer, can't be overrided by sub-classes
      */
-    load:function(){
-        if (!this.getMap()) {return this;}
+    load:function () {
+        if (!this.getMap()) { return this; }
         this._initRenderer();
         var zIndex = this.getZIndex();
-        if (!Z.Util.isNil(zIndex) && this._renderer) {
-            this._renderer.setZIndex(zIndex);
-        }
-        if (this._prepareLoad()) {
-            this._renderer && this._renderer.render();
+        if (this._renderer) {
+            if (!Z.Util.isNil(zIndex)) {
+                this._renderer.setZIndex(zIndex);
+            }
+            if (this._prepareLoad()) {
+                this._renderer.render();
+            }
         }
         return this;
     },
@@ -51,7 +53,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Get the layer id
      * @returns {String|Number} id
      */
-    getId:function() {
+    getId:function () {
         return this._id;
     },
 
@@ -61,7 +63,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @return {maptalks.Layer} this
      * @fires maptalks.Layer#idchange
      */
-    setId:function(id) {
+    setId:function (id) {
         //TODO 设置id可能造成map无法找到layer
         var old = this._id;
         this._id = id;
@@ -84,7 +86,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @param {maptalks.Map} map - map added to
      * @return {maptalks.Layer} this
      */
-    addTo:function(map) {
+    addTo:function (map) {
         map.addLayer(this);
         return this;
     },
@@ -94,7 +96,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @param {Number} zIndex - layer's z-index
      * @return {maptalks.Layer} this
      */
-    setZIndex:function(zIndex) {
+    setZIndex:function (zIndex) {
         this._zIndex = zIndex;
         if (this.map) {
             var layerList = this._getLayerList();
@@ -110,7 +112,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Get the layer's z-index
      * @return {Number}
      */
-    getZIndex:function() {
+    getZIndex:function () {
         return this._zIndex;
     },
 
@@ -119,7 +121,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @return {Boolean}
      * @protected
      */
-    isCanvasRender:function() {
+    isCanvasRender:function () {
         var renderer = this._getRenderer();
         if (renderer) {
             return renderer.isCanvasRender();
@@ -131,7 +133,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Get the map that the layer added to
      * @returns {maptalks.Map}
      */
-    getMap:function() {
+    getMap:function () {
         if (this.map) {
             return this.map;
         }
@@ -143,17 +145,17 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Brings the layer to the top of all the layers
      * @returns {maptalks.Layer} this
      */
-    bringToFront:function() {
+    bringToFront:function () {
         var layers = this._getLayerList();
         if (!layers) {
             return this;
         }
-        var topLayer = layers[layers.length-1];
+        var topLayer = layers[layers.length - 1];
         if (layers.length === 1 || topLayer === this) {
             return this;
         }
         var max = topLayer.getZIndex();
-        this.setZIndex(max+1);
+        this.setZIndex(max + 1);
         return this;
     },
 
@@ -161,7 +163,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Brings the layer under the bottom of all the layers
      * @returns {maptalks.Layer} this
      */
-    bringToBack:function(){
+    bringToBack:function () {
         var layers = this._getLayerList();
         if (!layers) {
             return this;
@@ -171,7 +173,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
             return this;
         }
         var min = bottomLayer.getZIndex();
-        this.setZIndex(min-1);
+        this.setZIndex(min - 1);
         return this;
     },
 
@@ -179,7 +181,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Show the layer
      * @returns {maptalks.Layer} this
      */
-    show:function() {
+    show:function () {
         if (!this.options['visible']) {
             this.options['visible'] = true;
             if (this._getRenderer()) {
@@ -194,7 +196,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Hide the layer
      * @returns {maptalks.Layer} this
      */
-    hide:function() {
+    hide:function () {
         if (this.options['visible']) {
             this.options['visible'] = false;
             if (this._getRenderer()) {
@@ -205,7 +207,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         return this;
     },
 
-    isLoaded:function() {
+    isLoaded:function () {
         if (!this._renderer) {
             return false;
         }
@@ -216,15 +218,15 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Whether the layer is visible now.
      * @return {Boolean}
      */
-    isVisible:function() {
+    isVisible:function () {
         if (Z.Util.isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
             return false;
         }
         var map = this.getMap();
         if (map) {
             var zoom = map.getZoom();
-            if ((!Z.Util.isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom)
-                    || (!Z.Util.isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
+            if ((!Z.Util.isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom) ||
+                    (!Z.Util.isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
                 return false;
             }
         }
@@ -239,7 +241,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Remove itself from the map added to.
      * @returns {maptalks.Layer} this
      */
-    remove:function() {
+    remove:function () {
         if (this.map) {
             this.map.removeLayer(this);
         }
@@ -250,7 +252,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Get the mask geometry of the layer
      * @return {maptalks.Geometry}
      */
-    getMask:function() {
+    getMask:function () {
         return this._mask;
     },
 
@@ -259,16 +261,16 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @param {maptalks.Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
      * @returns {maptalks.Layer} this
      */
-    setMask:function(mask) {
-        if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask, mask.getSymbol()))
-            || mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
+    setMask:function (mask) {
+        if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask, mask.getSymbol())) ||
+                mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
             throw new Error('mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon');
         }
 
         mask._bindLayer(this);
         mask._enableRenderImmediate();
-        if (mask instanceof Z.Marker ) {
-            mask.setSymbol(Z.Util.extendSymbol(mask.getSymbol(),{
+        if (mask instanceof Z.Marker) {
+            mask.setSymbol(Z.Util.extendSymbol(mask.getSymbol(), {
                 'markerLineWidth': 0,
                 'markerFillOpacity': 0
             }));
@@ -282,8 +284,9 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
         }
-        var renderer = this._getRenderer();
-        renderer && renderer.render();
+        if (this._getRenderer()) {
+            this._getRenderer().render();
+        }
         return this;
     },
 
@@ -291,13 +294,14 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Clear the mask
      * @returns {maptalks.Layer} this
      */
-    clearMask:function() {
+    clearMask:function () {
         delete this._mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
         }
-        var renderer = this._getRenderer();
-        renderer && renderer.render();
+        if (this._getRenderer()) {
+            this._getRenderer().render();
+        }
         return this;
     },
 
@@ -306,11 +310,11 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @return {Boolean} true to continue, false to cease.
      * @protected
      */
-    _prepareLoad:function() {
+    _prepareLoad:function () {
         return true;
     },
 
-    _onRemove:function() {
+    _onRemove:function () {
         this.clear();
         if (this._renderer) {
             this._switchEvents('off');
@@ -320,14 +324,14 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         delete this.map;
     },
 
-    _bindMap:function(map,zIndex) {
-        if (!map) {return;}
+    _bindMap:function (map, zIndex) {
+        if (!map) { return; }
         this.map = map;
         this.setZIndex(zIndex);
         this.fire('add');
     },
 
-    _initRenderer:function() {
+    _initRenderer:function () {
         var renderer = this.options['renderer'];
         if (!this.constructor.getRendererClass) {
             return;
@@ -341,7 +345,7 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         this._switchEvents('on');
     },
 
-    _switchEvents: function(to) {
+    _switchEvents: function (to) {
         if (this._renderer && this._renderer._getEvents) {
             var events = this._renderer._getEvents();
             if (events) {
@@ -355,12 +359,12 @@ Z.Layer=Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         }
     },
 
-    _getRenderer:function() {
+    _getRenderer:function () {
         return this._renderer;
     },
 
-    _getLayerList:function() {
-        if (!this.map) {return null;}
+    _getLayerList:function () {
+        if (!this.map) { return null; }
         return this.map._layers;
     }
 });

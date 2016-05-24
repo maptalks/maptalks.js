@@ -8,8 +8,8 @@
  * @name PointSymbolizer
  * @extends {maptalks.symbolizer.CanvasSymbolizer}
  */
-Z.symbolizer.PointSymbolizer=Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
-    getPixelExtent:function() {
+Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
+    getPixelExtent:function () {
         var extent = new Z.PointExtent();
         var markerExtent = this.getMarkerExtent();
         var min = markerExtent.getMin(),
@@ -22,26 +22,26 @@ Z.symbolizer.PointSymbolizer=Z.symbolizer.CanvasSymbolizer.extend(/** @lends map
         return extent;
     },
 
-    _getRenderPoints:function() {
-       return this.geometry._getPainter()._getRenderPoints(this.getPlacement());
+    _getRenderPoints:function () {
+        return this.geometry._getPainter()._getRenderPoints(this.getPlacement());
     },
 
     /**
      * Get container points to draw on Canvas
      * @return {maptalks.Point[]}
      */
-    _getRenderContainerPoints:function() {
+    _getRenderContainerPoints:function () {
         var map = this.getMap(),
             points = this._getRenderPoints(),
             matrices = this.geometry._getPainter().getTransformMatrix(),
-            matrix = matrices?matrices['container']:null,
-            scale = matrices?matrices['scale']:null,
+            matrix = matrices ? matrices['container'] : null,
+            scale = matrices ? matrices['scale'] : null,
             dxdy = this.getDxDy();
         if (matrix) {
-            dxdy = new Z.Point(dxdy.x/scale.x, dxdy.y/scale.y);
+            dxdy = new Z.Point(dxdy.x / scale.x, dxdy.y / scale.y);
         }
 
-        var containerPoints = Z.Util.eachInArray(points,this,function(point) {
+        var containerPoints = Z.Util.eachInArray(points, this, function (point) {
             return map.viewPointToContainerPoint(point)._add(dxdy);
         });
         if (matrix) {

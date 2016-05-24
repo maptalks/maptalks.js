@@ -19,18 +19,18 @@ Z.symbolizer = {};
  * @protected
  */
 Z.Symbolizer = Z.Class.extend(/** @lends maptalks.Symbolizer.prototype */{
-    getMap:function() {
+    getMap:function () {
         return this.geometry.getMap();
     }
 });
 
 
 Z.Symbolizer.resourceProperties = [
-    "markerFile", "polygonPatternFile", "linePatternFile"
+    'markerFile', 'polygonPatternFile', 'linePatternFile'
 ];
 
 Z.Symbolizer.resourceSizeProperties = [
-    ["markerWidth", "markerHeight"], [], [null, "lineWidth"]
+    ['markerWidth', 'markerHeight'], [], [null, 'lineWidth']
 ];
 
 /**
@@ -39,8 +39,8 @@ Z.Symbolizer.resourceSizeProperties = [
  * @constant
  */
 Z.Symbolizer.colorProperties = [
-        "lineColor", "polygonFill", "markerFill", "markerLineColor", "textFill", "shieldFill", "shieldHaloFill"
-    ];
+    'lineColor', 'polygonFill', 'markerFill', 'markerLineColor', 'textFill', 'shieldFill', 'shieldHaloFill'
+];
 
 Z.Symbolizer.DEFAULT_STROKE_COLOR = '#000';
 Z.Symbolizer.DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
@@ -53,10 +53,10 @@ Z.Symbolizer.DEFAULT_TEXT_COLOR = '#000';
  * @function
  * @return {Boolean}
  */
-Z.Symbolizer.testColor = function(prop) {
-    if (!prop || !Z.Util.isString(prop)) {return false;}
-    if (Z.Util.searchInArray(prop, colorProperties) >= 0) {
+Z.Symbolizer.testColor = function (prop) {
+    if (!prop || !Z.Util.isString(prop)) { return false; }
+    if (Z.Util.searchInArray(prop, Z.Symbolizer.colorProperties) >= 0) {
         return true;
     }
     return false;
-}
+};

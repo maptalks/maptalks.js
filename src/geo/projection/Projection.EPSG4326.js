@@ -15,11 +15,11 @@ Z.projection.EPSG4326 = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
      * @type {String}
      * @constant
      */
-    code : "EPSG:4326",
-    project:function(p){
-        return new Z.Coordinate(p.x,p.y);
+    code : 'EPSG:4326',
+    project:function (p) {
+        return new Z.Coordinate(p.x, p.y);
     },
-    unproject:function(p){
-        return new Z.Coordinate(p.x,p.y);
+    unproject:function (p) {
+        return new Z.Coordinate(p.x, p.y);
     }
 }, Z.measurer.WGS84Sphere);
