@@ -393,6 +393,8 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
             this._originalSymbol = this.getSymbol();
             this.setSymbol(opts['symbol']);
         }
+        this._draggbleBeforeEdit = this.options['draggable'];
+        this.config('draggable', false);
         var geometries = this.getGeometries();
         for (var i = 0, len = geometries.length; i < len; i++) {
             geometries[i].startEdit(opts);
@@ -421,6 +423,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         }
         this._editing = false;
         this.show();
+        this.config('draggable', this._draggbleBeforeEdit);
         this.fire('editend');
         return this;
     },
