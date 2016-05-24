@@ -16,9 +16,9 @@ Z.Map.ScrollWheelZoom = Z.Handler.extend({
         var _containerDOM = map._containerDOM;
         Z.DomUtil.preventDefault(evt);
         Z.DomUtil.stopPropagation(evt);
-        if (map._zooming) {return;}
+        if (map._zooming) { return false; }
         var _levelValue = 0;
-        _levelValue += (evt.wheelDelta?evt.wheelDelta:evt.detail) > 0 ? 1 : -1;
+        _levelValue += (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             _levelValue *= -1;
         }
@@ -28,7 +28,7 @@ Z.Map.ScrollWheelZoom = Z.Handler.extend({
         }
         this._wheelExecutor = setTimeout(function () {
             map._zoomAnimation(map.getZoom() + _levelValue, mouseOffset);
-        },40);
+        }, 40);
 
         return false;
     }

@@ -17,21 +17,21 @@ Z.projection.Common = {
      * @return {maptalks.Coordinate}
      * @static
      */
-    project:function() {},
+    project:function () {},
     /**
      * Unproject a projected coordinate to a geographical coordinate (2d coordinate)
      * @param  {maptalks.Coordinate} p - coordinate to project
      * @return {maptalks.Coordinate}
      * @static
      */
-    unproject:function() {},
+    unproject:function () {},
     /**
      * Project a group of geographical coordinates to projected coordinates.
      * @param  {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates - coordinates to project
      * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]}
      * @static
      */
-    projectCoords:function(coordinates) {
+    projectCoords:function (coordinates) {
         return Z.Util.eachInArray(coordinates, this, this.project);
     },
 
@@ -41,7 +41,7 @@ Z.projection.Common = {
      * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]}
      * @static
      */
-    unprojectCoords:function(projCoords) {
+    unprojectCoords:function (projCoords) {
         return Z.Util.eachInArray(projCoords, this, this.unproject);
     }
 };

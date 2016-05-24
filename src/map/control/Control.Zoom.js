@@ -37,9 +37,9 @@ Z.control.Zoom = Z.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
             this._levelDOM = levelDOM;
         }
 
-        var zoomDOM = Z.DomUtil.createEl('div','maptalks-zoom-slider');
+        var zoomDOM = Z.DomUtil.createEl('div', 'maptalks-zoom-slider');
 
-        var zoomInButton = Z.DomUtil.createEl('a','maptalks-zoom-zoomin');
+        var zoomInButton = Z.DomUtil.createEl('a', 'maptalks-zoom-zoomin');
         zoomInButton.href = 'javascript:;';
         zoomInButton.innerHTML = '+';
         zoomDOM.appendChild(zoomInButton);
@@ -60,7 +60,7 @@ Z.control.Zoom = Z.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
             this._sliderDot = dot;
         }
 
-        var zoomOutButton = Z.DomUtil.createEl('a','maptalks-zoom-zoomout');
+        var zoomOutButton = Z.DomUtil.createEl('a', 'maptalks-zoom-zoomout');
         zoomOutButton.href = 'javascript:;';
         zoomOutButton.innerHTML = '-';
         zoomDOM.appendChild(zoomOutButton);
@@ -76,14 +76,14 @@ Z.control.Zoom = Z.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
         return dom;
     },
 
-    _update:function() {
+    _update:function () {
         var map = this._map;
         if (this._sliderBox) {
             var pxUnit = 10;
             var totalRange = (map.getMaxZoom() - map.getMinZoom()) * pxUnit;
-            this._sliderBox.style.height = totalRange+6 + 'px';
+            this._sliderBox.style.height = totalRange + 6 + 'px';
             this._sliderRuler.style.height = totalRange + 'px';
-            var zoomRange = (map.getZoom() - map.getMinZoom())*pxUnit;
+            var zoomRange = (map.getZoom() - map.getMinZoom()) * pxUnit;
             this._sliderReading.style.height = zoomRange + 'px';
             this._sliderDot.style.bottom = zoomRange + 'px';
         }
@@ -93,7 +93,7 @@ Z.control.Zoom = Z.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
 
     },
 
-    _registerDomEvents:function() {
+    _registerDomEvents:function () {
         var map = this._map;
         if (this._zoomInButton) {
             Z.DomUtil.on(this._zoomInButton, 'click', map.zoomIn, map);
@@ -112,7 +112,7 @@ Z.control.Zoom = Z.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
 
 Z.Map.mergeOptions({
 
-    'zoomControl': false,
+    'zoomControl': false
 });
 
 Z.Map.addOnLoadHook(function () {

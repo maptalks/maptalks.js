@@ -15,11 +15,11 @@ Z.projection.IDENTITY = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
      * @type {String}
      * @constant
      */
-    code : "IDENTITY",
-    project:function(p){
+    code : 'IDENTITY',
+    project:function (p) {
         return p.copy();
     },
-    unproject:function(p){
+    unproject:function (p) {
         return p.copy();
     }
 }, Z.measurer.Identity);

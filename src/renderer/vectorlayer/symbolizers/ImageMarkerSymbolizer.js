@@ -1,13 +1,13 @@
 Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
-    initialize:function(symbol, geometry) {
+    initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
         this.style = this.translate();
     },
 
 
-    symbolize:function(ctx, resources) {
+    symbolize:function (ctx, resources) {
         var cookedPoints = this._getRenderContainerPoints();
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
@@ -25,7 +25,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             height = img.height;
             style['markerWidth'] = width;
             style['markerHeight'] = height;
-            var imgURL = [style['markerFile'],style['markerWidth'], style['markerHeight']];
+            var imgURL = [style['markerFile'], style['markerWidth'], style['markerHeight']];
             if (!resources.isResourceLoaded(imgURL)) {
                 resources.addResource(imgURL, img);
             }
@@ -37,10 +37,10 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= style['markerOpacity'];
         }
-        for (var i = 0, len=cookedPoints.length;i<len;i++) {
+        for (var i = 0, len = cookedPoints.length; i < len; i++) {
             //图片定位到中心底部
             Z.Canvas.image(ctx, img,
-                cookedPoints[i].x - width/2,
+                cookedPoints[i].x - width / 2,
                 cookedPoints[i].y - height,
                 width, height);
         }
@@ -49,45 +49,45 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         }
     },
 
-    _getImage:function(resources) {
-        var img = !resources?null:resources.getImage([this.style['markerFile'],this.style['markerWidth'], this.style['markerHeight']]);
+    _getImage:function (resources) {
+        var img = !resources ? null : resources.getImage([this.style['markerFile'], this.style['markerWidth'], this.style['markerHeight']]);
         return img;
     },
 
-    getPlacement:function() {
+    getPlacement:function () {
         return this.symbol['markerPlacement'];
     },
 
-    getDxDy:function() {
+    getDxDy:function () {
         var s = this.style;
         var dx = s['markerDx'],
             dy = s['markerDy'];
         return new Z.Point(dx, dy);
     },
 
-    getMarkerExtent:function() {
+    getMarkerExtent:function () {
         var width = this.style['markerWidth'],
             height = this.style['markerHeight'];
         var dxdy = this.getDxDy();
-        var extent = new Z.PointExtent(dxdy.add(-width/2,0),dxdy.add(width/2,-height));
+        var extent = new Z.PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
         return extent;
     },
 
-    translate:function() {
+    translate:function () {
         var s = this.symbol;
         return {
-            "markerFile" : s["markerFile"],
-            "markerWidth" : Z.Util.getValueOrDefault(s["markerWidth"], null),
-            "markerHeight" : Z.Util.getValueOrDefault(s["markerHeight"], null),
-            "markerOpacity" : Z.Util.getValueOrDefault(s["markerOpacity"], 1),
-            "markerDx" : Z.Util.getValueOrDefault(s["markerDx"], 0),
-            "markerDy" : Z.Util.getValueOrDefault(s["markerDy"], 0)
+            'markerFile' : s['markerFile'],
+            'markerWidth' : Z.Util.getValueOrDefault(s['markerWidth'], null),
+            'markerHeight' : Z.Util.getValueOrDefault(s['markerHeight'], null),
+            'markerOpacity' : Z.Util.getValueOrDefault(s['markerOpacity'], 1),
+            'markerDx' : Z.Util.getValueOrDefault(s['markerDx'], 0),
+            'markerDy' : Z.Util.getValueOrDefault(s['markerDy'], 0)
         };
     }
 });
 
 
-Z.symbolizer.ImageMarkerSymbolizer.test=function(geometry, symbol) {
+Z.symbolizer.ImageMarkerSymbolizer.test = function (geometry, symbol) {
     if (!geometry || !symbol) {
         return false;
     }

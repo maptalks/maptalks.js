@@ -8,37 +8,37 @@
  * @param {maptalks._shadow} geometry 待编辑图形
  * @param {Object} opts 属性
  */
-Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
+Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
     includes: [Z.Eventable],
 
-    editStageLayerIdPrefix : Z.internalLayerPrefix+'_edit_stage_',
+    editStageLayerIdPrefix : Z.internalLayerPrefix + '_edit_stage_',
 
-    initialize:function(geometry,opts) {
+    initialize:function (geometry, opts) {
         this._geometry = geometry;
-        if (!this._geometry) {return;}
+        if (!this._geometry) { return; }
         Z.Util.setOptions(this, opts);
     },
 
-    getMap:function() {
+    getMap:function () {
         return this._geometry.getMap();
     },
 
-    prepare:function() {
-        var map=this.getMap();
-        if (!map) {return;}
+    prepare:function () {
+        var map = this.getMap();
+        if (!map) { return; }
         /**
          * 保存原有的symbol
          */
         if (this.options['symbol']) {
-            this._originalSymbol=this._geometry.getSymbol();
+            this._originalSymbol = this._geometry.getSymbol();
             this._geometry.setSymbol(this.options['symbol']);
         }
 
         this._prepareEditStageLayer();
     },
 
-    _prepareEditStageLayer:function() {
-        var map=this.getMap();
+    _prepareEditStageLayer:function () {
+        var map = this.getMap();
         var guid = Z.Util.GUID();
         this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + guid);
         if (!this._editStageLayer) {
@@ -50,8 +50,8 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
     /**
      * 开始编辑
      */
-    start:function() {
-        if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) {return;}
+    start:function () {
+        if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) { return; }
         this.editing = true;
         var geometry = this._geometry;
         this._geometryDraggble = geometry.options['draggable'];
@@ -71,8 +71,10 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
 
         this._shadow = shadow;
         geometry.hide();
-        if (geometry instanceof Z.Marker || geometry instanceof Z.Circle || geometry instanceof Z.Rectangle
-                || geometry instanceof Z.Ellipse) {
+        if (geometry instanceof Z.Marker ||
+                geometry instanceof Z.Circle ||
+                geometry instanceof Z.Rectangle ||
+                geometry instanceof Z.Ellipse) {
             //ouline has to be added before shadow to let shadow on top of it, otherwise shadow's events will be overrided by outline
             this._createOrRefreshOutline();
         }
@@ -94,7 +96,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         } else if (geometry instanceof Z.Sector) {
             // TODO: createSectorEditor
         } else if ((geometry instanceof Z.Polygon) ||
-                   (geometry instanceof Z.Polyline)){
+                   (geometry instanceof Z.Polyline)) {
             this.createPolygonEditor();
         }
 
@@ -104,7 +106,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
      * 结束编辑
      * @return {*} [description]
      */
-    stop:function() {
+    stop:function () {
         var map = this.getMap();
         if (!map) {
             return;
@@ -134,19 +136,19 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         this.editing = false;
     },
 
-    isEditing:function() {
+    isEditing:function () {
         if (Z.Util.isNil(this.editing)) {
             return false;
         }
         return this.editing;
     },
 
-    _onShadowDragEnd:function() {
+    _onShadowDragEnd:function () {
         this._update();
         this._refresh();
     },
 
-    _update:function() {
+    _update:function () {
         //update geographical properties from shadow to geometry
         this._geometry.setCoordinates(this._shadow.getCoordinates());
         if (this._geometry.getRadius) {
@@ -166,7 +168,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         }
     },
 
-    _updateAndFireEvent:function(eventName) {
+    _updateAndFireEvent:function (eventName) {
         if (!this._shadow) {
             return;
         }
@@ -177,7 +179,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
     /**
      * create rectangle outline of the geometry
      */
-    _createOrRefreshOutline:function() {
+    _createOrRefreshOutline:function () {
         var geometry = this._geometry,
             map = this.getMap(),
             outline = this._editOutline;
@@ -185,11 +187,11 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         var pixelExtent = geometry._getPainter().getPixelExtent(),
             size = pixelExtent.getSize();
         var nw = map.viewPointToCoordinate(pixelExtent.getMin());
-        var width = map.pixelToDistance(size['width'],0),
-            height = map.pixelToDistance(0,size['height']);
+        var width = map.pixelToDistance(size['width'], 0),
+            height = map.pixelToDistance(0, size['height']);
         if (!outline) {
             outline = new Z.Rectangle(nw, width, height, {
-                "symbol":{
+                'symbol':{
                     'lineWidth' : 1,
                     'lineColor' : '6b707b'
                 }
@@ -207,28 +209,28 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
     },
 
 
-    _createCenterHandle:function() {
+    _createCenterHandle:function () {
         var me = this;
         var center = this._shadow.getCenter();
         var shadow;
-        var handle = me.createHandle(center,{
+        var handle = me.createHandle(center, {
             'markerType' : 'ellipse',
-            'dxdy'       : new Z.Point(0,0),
+            'dxdy'       : new Z.Point(0, 0),
             'cursor'     : 'move',
-            onDown:function(v, param) {
+            onDown:function () {
                 shadow = this._shadow.copy();
                 shadow._enableRenderImmediate();
                 var symbol = Z.Util.decreaseSymbolOpacity(shadow.getSymbol(), 0.5);
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },
-            onMove:function(v,param) {
+            onMove:function (v, param) {
                 var dragOffset = param['dragOffset'];
                 if (shadow) {
                     shadow.translate(dragOffset);
                     this._geometry.translate(dragOffset);
                 }
             },
-            onUp:function(param) {
+            onUp:function () {
                 if (shadow) {
                     this._shadow.setCoordinates(this._geometry.getCoordinates());
                     shadow.remove();
@@ -236,27 +238,27 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                 }
             }
         });
-        this._addRefreshHook(function() {
+        this._addRefreshHook(function () {
             var center = this._shadow.getCenter();
             handle.setCoordinates(center);
         });
     },
 
-    _createHandleInstance:function(coordinate,opts) {
+    _createHandleInstance:function (coordinate, opts) {
         var symbol = {
-            "markerType"        : opts['markerType'],
-            "markerFill"        : "#ffffff",//"#d0d2d6",
-            "markerLineColor"   : "#000000",
-            "markerLineWidth"   : 2,
-            "markerWidth"       : 10,
-            "markerHeight"      : 10,
-            "markerDx"          : opts['dxdy'].x,
-            "markerDy"          : opts['dxdy'].y
+            'markerType'        : opts['markerType'],
+            'markerFill'        : '#ffffff', //"#d0d2d6",
+            'markerLineColor'   : '#000000',
+            'markerLineWidth'   : 2,
+            'markerWidth'       : 10,
+            'markerHeight'      : 10,
+            'markerDx'          : opts['dxdy'].x,
+            'markerDy'          : opts['dxdy'].y
         };
         if (opts['symbol']) {
             Z.Util.extend(symbol, opts['symbol']);
         }
-        var handle = new Z.Marker(coordinate,{
+        var handle = new Z.Marker(coordinate, {
             'draggable' : true,
             'dragShadow' : false,
             'draggableAxis' : opts['axis'],
@@ -266,12 +268,12 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         return handle;
     },
 
-    createHandle:function(coordinate, opts) {
+    createHandle:function (coordinate, opts) {
         if (!opts) {
             opts = {};
         }
         var map = this.getMap();
-        var handle = this._createHandleInstance(coordinate,opts);
+        var handle = this._createHandleInstance(coordinate, opts);
         var me = this;
         function onHandleDragstart(param) {
             if (opts.onDown) {
@@ -306,12 +308,12 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
      * @param {Array} blackList handle indexes that doesn't display, to prevent change a geometry's coordinates
      * @param {fn} onHandleMove callback
      */
-    _createResizeHandles:function(blackList, onHandleMove) {
+    _createResizeHandles:function (blackList, onHandleMove) {
         //cursor styles.
         var cursors = [
-            'nw-resize','n-resize','ne-resize',
+            'nw-resize', 'n-resize', 'ne-resize',
             'w-resize',            'e-resize',
-            'sw-resize','s-resize','se-resize'
+            'sw-resize', 's-resize', 'se-resize'
         ];
         //defines draggableAxis of resize handle
         var axis = [
@@ -323,12 +325,12 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         function getResizeAnchors(ext) {
             return [
                 ext.getMin(),
-                new Z.Point((ext['xmax']+ext['xmin'])/2,ext['ymin']),
+                new Z.Point((ext['xmax'] + ext['xmin']) / 2, ext['ymin']),
                 new Z.Point(ext['xmax'], ext['ymin']),
-                new Z.Point(ext['xmin'], (ext['ymax']+ext['ymin'])/2),
-                new Z.Point(ext['xmax'], (ext['ymax']+ext['ymin'])/2),
+                new Z.Point(ext['xmin'], (ext['ymax'] + ext['ymin']) / 2),
+                new Z.Point(ext['xmax'], (ext['ymax'] + ext['ymin']) / 2),
                 new Z.Point(ext['xmin'], ext['ymax']),
-                new Z.Point((ext['xmax']+ext['xmin'])/2,ext['ymax']),
+                new Z.Point((ext['xmax'] + ext['xmin']) / 2, ext['ymax']),
                 ext.getMax()
             ];
         }
@@ -338,10 +340,10 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         var resizeHandles = [];
         var anchorIndexes = {};
         var me = this, map = this.getMap();
-        var fnLocateHandles = function() {
+        var fnLocateHandles = function () {
             var pExt = geometry._getPainter().getPixelExtent(),
                 anchors = getResizeAnchors(pExt);
-            for (var i = 0; i <anchors.length; i++) {
+            for (var i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist
                 if (Z.Util.isArrayHasData(blackList)) {
                     var isBlack = false;
@@ -358,17 +360,17 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                 var anchor = anchors[i],
                     coordinate = map.viewPointToCoordinate(anchor);
                 if (resizeHandles.length < anchors.length - blackList.length) {
-                    var handle = me.createHandle(coordinate,{
+                    var handle = me.createHandle(coordinate, {
                         'markerType' : 'square',
-                        'dxdy'       : new Z.Point(0,0),
+                        'dxdy'       : new Z.Point(0, 0),
                         'cursor'     : cursors[i],
                         'axis'       : axis[i],
-                        onMove:(function(_index) {
-                            return function(handleViewPoint) {
+                        onMove:(function (_index) {
+                            return function (handleViewPoint) {
                                 onHandleMove(handleViewPoint, _index);
                             };
                         })(i),
-                        onUp:function() {
+                        onUp:function () {
                             me._refresh();
                         }
                     });
@@ -391,7 +393,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
     /**
      * 标注和自定义标注编辑器
      */
-    createMarkerEditor:function() {
+    createMarkerEditor:function () {
 
         var marker = this._shadow,
             geometryToEdit = this._geometry,
@@ -425,7 +427,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         //only image marker and vector marker can be edited now.
 
         var symbol = marker.getSymbol();
-        var dxdy = new Z.Point(0,0);
+        var dxdy = new Z.Point(0, 0);
         if (Z.Util.isNumber(symbol['markerDx'])) {
             dxdy.x = symbol['markerDx'];
         }
@@ -438,11 +440,11 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         if (Z.symbolizer.VectorMarkerSymbolizer.test(geometryToEdit, symbol)) {
             if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
                 //as these types of markers' anchor stands on its bottom
-                blackList = [5,6,7];
+                blackList = [5, 6, 7];
             }
-        } else if (Z.symbolizer.ImageMarkerSymbolizer.test(geometryToEdit, symbol)
-            || Z.symbolizer.VectorPathMarkerSymbolizer.test(geometryToEdit, symbol)) {
-            blackList = [5,6,7];
+        } else if (Z.symbolizer.ImageMarkerSymbolizer.test(geometryToEdit, symbol) ||
+                    Z.symbolizer.VectorPathMarkerSymbolizer.test(geometryToEdit, symbol)) {
+            blackList = [5, 6, 7];
         }
 
         //defines what can be resized by the handle
@@ -453,7 +455,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             2, 1, 2
         ];
 
-        resizeHandles = this._createResizeHandles(null,function(handleViewPoint, i) {
+        resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
             if (blackList && Z.Util.searchInArray(i, blackList) >= 0) {
                 //need to change marker's coordinates
                 var newCoordinates = map.viewPointToCoordinate(handleViewPoint);
@@ -462,7 +464,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                 marker.setCoordinates(newCoordinates);
                 geometryToEdit.setCoordinates(newCoordinates);
                 //coordinates changed, and use mirror handle instead to caculate width and height
-                var mirrorHandle = resizeHandles[resizeHandles.length-1-i];
+                var mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
                 var mirrorViewPoint = map.coordinateToViewPoint(mirrorHandle.getCoordinates());
                 handleViewPoint = mirrorViewPoint;
             }
@@ -472,9 +474,9 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                 symbol = marker.getSymbol();
             var wh = handleViewPoint.substract(viewCenter);
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
-            var r = blackList?1:2;
-            var width = Math.abs(wh.x)*2,
-            height = Math.abs(wh.y)*r;
+            var r = blackList ? 1 : 2;
+            var width = Math.abs(wh.x) * 2,
+                height = Math.abs(wh.y) * r;
             var ability = resizeAbilities[i];
             if (ability === 0 || ability === 2) {
                 symbol['markerWidth'] = width;
@@ -494,12 +496,11 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
      * 圆形编辑器
      * @return {*} [description]
      */
-    createCircleEditor:function() {
+    createCircleEditor:function () {
         var shadow = this._shadow,
             circle = this._geometry;
         var map = this.getMap();
-        var me = this;
-        this._createResizeHandles(null,function(handleViewPoint, i) {
+        this._createResizeHandles(null, function (handleViewPoint) {
             var viewCenter = shadow._getCenterViewPoint();
             var wh = handleViewPoint.substract(viewCenter);
             var w = Math.abs(wh.x),
@@ -519,26 +520,25 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
      * editor of ellipse or rectangle
      * @return {*} [description]
      */
-    createEllipseOrRectEditor:function() {
+    createEllipseOrRectEditor:function () {
         //defines what can be resized by the handle
         //0: resize width; 1: resize height; 2: resize both width and height.
         var resizeAbilities = [
-                2, 1, 2,
-                0,    0,
-                2, 1, 2
-            ];
+            2, 1, 2,
+            0,    0,
+            2, 1, 2
+        ];
         var shadow = this._shadow,
             geometryToEdit = this._geometry;
         var map = this.getMap();
-        var me = this;
         //handles in blackList will change geometry's coordinates
         var blackList = null;
         var isRect = this._geometry instanceof Z.Rectangle;
         if (isRect) {
             //resize handles to hide for rectangle
-            blackList = [0,1,2,3,5];
+            blackList = [0, 1, 2, 3, 5];
         }
-        var resizeHandles = this._createResizeHandles(null,function(handleViewPoint, i) {
+        var resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
             var viewCenter;
             //ratio of width and height
             var r;
@@ -551,25 +551,25 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                     var mirrorHandle = resizeHandles[7];
                     var mirrorViewPoint = map.coordinateToViewPoint(mirrorHandle.getCoordinates());
                     switch (i) {
-                        case 0:
-                            newCoordinates = handleCoordinates;
-                            break;
-                        case 1:
-                            newCoordinates = new Z.Coordinate(coordinates.x, handleCoordinates.y);
-                            break;
-                        case 2:
-                            newCoordinates = new Z.Coordinate(coordinates.x, handleCoordinates.y);
-                            mirrorViewPoint = new Z.Point(handleViewPoint.x, mirrorViewPoint.y);
-                            break;
-                        case 3:
-                            newCoordinates = new Z.Coordinate(handleCoordinates.x, coordinates.y);
-                            break;
-                        case 5:
-                            newCoordinates = new Z.Coordinate(handleCoordinates.x, coordinates.y);
-                            mirrorViewPoint = new Z.Point(mirrorViewPoint.x, handleViewPoint.y);
-                            break;
-                        default:
-                            newCoordinates = null;
+                    case 0:
+                        newCoordinates = handleCoordinates;
+                        break;
+                    case 1:
+                        newCoordinates = new Z.Coordinate(coordinates.x, handleCoordinates.y);
+                        break;
+                    case 2:
+                        newCoordinates = new Z.Coordinate(coordinates.x, handleCoordinates.y);
+                        mirrorViewPoint = new Z.Point(handleViewPoint.x, mirrorViewPoint.y);
+                        break;
+                    case 3:
+                        newCoordinates = new Z.Coordinate(handleCoordinates.x, coordinates.y);
+                        break;
+                    case 5:
+                        newCoordinates = new Z.Coordinate(handleCoordinates.x, coordinates.y);
+                        mirrorViewPoint = new Z.Point(mirrorViewPoint.x, handleViewPoint.y);
+                        break;
+                    default:
+                        newCoordinates = null;
                     }
                     shadow.setCoordinates(newCoordinates);
                     geometryToEdit.setCoordinates(newCoordinates);
@@ -585,14 +585,14 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             var wh = handleViewPoint.substract(viewCenter);
             var ability = resizeAbilities[i];
             var w = map.pixelToDistance(Math.abs(wh.x), 0);
-            var h = map.pixelToDistance(0,Math.abs(wh.y));
+            var h = map.pixelToDistance(0, Math.abs(wh.y));
             if (ability === 0 || ability === 2) {
-                shadow.setWidth(w*r);
-                geometryToEdit.setWidth(w*r);
+                shadow.setWidth(w * r);
+                geometryToEdit.setWidth(w * r);
             }
             if (ability === 1 || ability === 2) {
-                shadow.setHeight(h*r);
-                geometryToEdit.setHeight(h*r);
+                shadow.setHeight(h * r);
+                geometryToEdit.setHeight(h * r);
             }
             // me._updateAndFireEvent('shapechange');
         });
@@ -602,13 +602,13 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
      * 多边形和多折线的编辑器
      * @return {*} [description]
      */
-    createPolygonEditor:function() {
+    createPolygonEditor:function () {
 
         var map = this.getMap(),
             shadow = this._shadow,
             me = this,
             projection = map.getProjection();
-        var verticeLimit = shadow instanceof Z.Polygon? 3:2;
+        var verticeLimit = shadow instanceof Z.Polygon ? 3 : 2;
         var propertyOfVertexRefreshFn = 'maptalks--editor-refresh-fn',
             propertyOfVertexIndex = 'maptalks--editor-vertex-index';
         var vertexHandles = [],
@@ -616,7 +616,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         function getVertexCoordinates() {
             if (shadow instanceof Z.Polygon) {
                 var coordinates = shadow.getCoordinates()[0];
-                return coordinates.slice(0, coordinates.length-1);
+                return coordinates.slice(0, coordinates.length - 1);
             } else {
                 return shadow.getCoordinates();
             }
@@ -643,24 +643,24 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             if (prjCoordinates.length <= verticeLimit) {
                 return;
             }
-            prjCoordinates.splice(index,1);
+            prjCoordinates.splice(index, 1);
             shadow._setPrjCoordinates(prjCoordinates);
             shadow._updateCache();
             //remove vertex handle
-            vertexHandles.splice(index,1)[0].remove();
+            vertexHandles.splice(index, 1)[0].remove();
             //remove two neighbor "new vertex" handles
             if (index < newVertexHandles.length) {
-                newVertexHandles.splice(index,1)[0].remove()
+                newVertexHandles.splice(index, 1)[0].remove();
             }
             var nextIndex;
-            if (index === 0){
-                nextIndex = newVertexHandles.length-1;
+            if (index === 0) {
+                nextIndex = newVertexHandles.length - 1;
             } else {
                 nextIndex = index - 1;
             }
-            newVertexHandles.splice(nextIndex,1)[0].remove()
+            newVertexHandles.splice(nextIndex, 1)[0].remove();
             //add a new "new vertex" handle.
-            newVertexHandles.splice(nextIndex,0,createNewVertexHandle.call(me, nextIndex));
+            newVertexHandles.splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex));
             onVertexAddOrRemove();
         }
         function moveVertexHandle(handleViewPoint, index) {
@@ -673,7 +673,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             shadow._onShapeChanged();
             var nextIndex;
             if (index === 0) {
-                nextIndex = newVertexHandles.length-1;
+                nextIndex = newVertexHandles.length - 1;
             } else {
                 nextIndex = index - 1;
             }
@@ -689,19 +689,19 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         }
         function createVertexHandle(index) {
             var vertex = getVertexCoordinates()[index];
-            var handle = me.createHandle(vertex,{
+            var handle = me.createHandle(vertex, {
                 'markerType' : 'square',
-                'dxdy'       : new Z.Point(0,0),
+                'dxdy'       : new Z.Point(0, 0),
                 'cursor'     : 'pointer',
                 'axis'       : null,
-                onMove:function(handleViewPoint) {
-                    moveVertexHandle(handleViewPoint,handle[propertyOfVertexIndex]);
+                onMove:function (handleViewPoint) {
+                    moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex]);
                 },
-                onRefresh:function() {
+                onRefresh:function () {
                     vertex = getVertexCoordinates()[handle[propertyOfVertexIndex]];
                     handle.setCoordinates(vertex);
                 },
-                onUp:function() {
+                onUp:function () {
                     me._refresh();
                 }
             });
@@ -712,25 +712,25 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         function createNewVertexHandle(index) {
             var vertexCoordinates = getVertexCoordinates();
             var nextVertex;
-            if (index+1 >= vertexCoordinates.length) {
+            if (index + 1 >= vertexCoordinates.length) {
                 nextVertex = vertexCoordinates[0];
             } else {
-                nextVertex = vertexCoordinates[index+1];
+                nextVertex = vertexCoordinates[index + 1];
             }
-            var vertex = vertexCoordinates[index].add(nextVertex).multi(1/2);
-            var handle = me.createHandle(vertex,{
+            var vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
+            var handle = me.createHandle(vertex, {
                 'markerType' : 'square',
                 'symbol'     : {'opacity' : 0.4},
-                'dxdy'       : new Z.Point(0,0),
+                'dxdy'       : new Z.Point(0, 0),
                 'cursor'     : 'pointer',
                 'axis'       : null,
-                onDown:function() {
+                onDown:function () {
                     var prjCoordinates = getVertexPrjCoordinates();
                     var vertexIndex = handle[propertyOfVertexIndex];
                     //add a new vertex
                     var pVertex = projection.project(handle.getCoordinates());
                     //update shadow's vertice
-                    prjCoordinates.splice(vertexIndex+1,0,pVertex);
+                    prjCoordinates.splice(vertexIndex + 1, 0, pVertex);
                     shadow._setPrjCoordinates(prjCoordinates);
                     shadow._updateCache();
 
@@ -739,22 +739,22 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                     handle.setSymbol(symbol);
 
                     //add two "new vertex" handles
-                    newVertexHandles.splice(vertexIndex,0, createNewVertexHandle.call(me, vertexIndex),createNewVertexHandle.call(me, vertexIndex+1));
+                    newVertexHandles.splice(vertexIndex, 0, createNewVertexHandle.call(me, vertexIndex), createNewVertexHandle.call(me, vertexIndex + 1));
                     me._updateAndFireEvent('shapechange');
                 },
-                onMove:function(handleViewPoint) {
-                    moveVertexHandle(handleViewPoint,handle[propertyOfVertexIndex]+1);
+                onMove:function (handleViewPoint) {
+                    moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex] + 1);
                 },
-                onUp:function() {
+                onUp:function () {
                     var vertexIndex = handle[propertyOfVertexIndex];
                     //remove this handle
                     Z.Util.removeFromArray(handle, newVertexHandles);
                     handle.remove();
                     //add a new vertex handle
-                    vertexHandles.splice(vertexIndex+1,0,createVertexHandle.call(me,vertexIndex+1));
+                    vertexHandles.splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1));
                     onVertexAddOrRemove();
                 },
-                onRefresh:function() {
+                onRefresh:function () {
                     vertexCoordinates = getVertexCoordinates();
                     var vertexIndex = handle[propertyOfVertexIndex];
                     var nextIndex;
@@ -763,7 +763,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
                     } else {
                         nextIndex = vertexIndex + 1;
                     }
-                    var refreshVertex = vertexCoordinates[vertexIndex].add(vertexCoordinates[nextIndex]).multi(1/2);
+                    var refreshVertex = vertexCoordinates[vertexIndex].add(vertexCoordinates[nextIndex]).multi(1 / 2);
                     handle.setCoordinates(refreshVertex);
                 }
             });
@@ -771,17 +771,17 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
             return handle;
         }
         var vertexCoordinates = getVertexCoordinates();
-        for (var i=0,len=vertexCoordinates.length;i<len;i++){
-            vertexHandles.push(createVertexHandle.call(this,i));
-            if (i<len-1) {
-                newVertexHandles.push(createNewVertexHandle.call(this,i));
+        for (var i = 0, len = vertexCoordinates.length; i < len; i++) {
+            vertexHandles.push(createVertexHandle.call(this, i));
+            if (i < len - 1) {
+                newVertexHandles.push(createNewVertexHandle.call(this, i));
             }
         }
         if (shadow instanceof Z.Polygon) {
             //1 more vertex handle for polygon
-            newVertexHandles.push(createNewVertexHandle.call(this,vertexCoordinates.length-1));
+            newVertexHandles.push(createNewVertexHandle.call(this, vertexCoordinates.length - 1));
         }
-        this._addRefreshHook(function() {
+        this._addRefreshHook(function () {
             var i;
             for (i = newVertexHandles.length - 1; i >= 0; i--) {
                 newVertexHandles[i][propertyOfVertexRefreshFn]();
@@ -792,7 +792,7 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         });
     },
 
-    _refresh:function() {
+    _refresh:function () {
         if (this._refreshHooks) {
             for (var i = this._refreshHooks.length - 1; i >= 0; i--) {
                 this._refreshHooks[i].call(this);
@@ -800,22 +800,22 @@ Z.GeometryEditor=Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
         }
     },
 
-    _hideContext:function() {
+    _hideContext:function () {
         if (this._geometry) {
             this._geometry.closeMenu();
             this._geometry.closeInfoWindow();
         }
     },
 
-    _addListener:function(listener) {
+    _addListener:function (listener) {
         if (!this._eventListeners) {
             this._eventListeners = [];
         }
         this._eventListeners.push(listener);
-        listener[0].on(listener[1], listener[2],this);
+        listener[0].on(listener[1], listener[2], this);
     },
 
-    _addRefreshHook:function(fn) {
+    _addRefreshHook:function (fn) {
         if (!fn) {
             return;
         }

@@ -4,12 +4,12 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @param  {Event} event - dom event
      * @private
      */
-    _onEvent: function(event) {
+    _onEvent: function (event) {
         if (!this.getMap()) {
             return;
         }
         var eventType = this._getEventTypeToFire(event);
-        if ('contextmenu' === eventType && this.listens('contextmenu')) {
+        if (eventType === 'contextmenu' && this.listens('contextmenu')) {
             Z.DomUtil.stopPropagation(event);
             Z.DomUtil.preventDefault(event);
         }
@@ -17,12 +17,11 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         this._fireEvent(eventType, params);
     },
 
-    _getEventTypeToFire:function(originalEvent) {
+    _getEventTypeToFire:function (originalEvent) {
         var eventType = originalEvent.type;
         //change event type to contextmenu
-        if ('click' === eventType || 'mousedown' === eventType) {
-            var button = originalEvent.button;
-            if (button === 2) {
+        if (eventType === 'click' || eventType === 'mousedown') {
+            if (originalEvent.button === 2) {
                 eventType = 'contextmenu';
             }
         }
@@ -35,7 +34,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @return {Object}
      * @private
      */
-    _getEventParams: function(e) {
+    _getEventParams: function (e) {
         var map = this.getMap();
         var eventParam = {
             'domEvent':e
@@ -55,7 +54,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @param  {Event} event - mouseover dom event
      * @private
      */
-    _onMouseOver: function(event) {
+    _onMouseOver: function (event) {
         if (!this.getMap()) {
             return;
         }
@@ -80,7 +79,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @param  {Event} event - mouseout dom event
      * @private
      */
-    _onMouseOut: function(event) {
+    _onMouseOut: function (event) {
         if (!this.getMap()) {
             return;
         }

@@ -22,7 +22,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         'renderWhenPanning' : false,
         //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
-        'renderSpanWhenPanning' : (function(){return Z.Browser.mobile?-1:100;})(),
+        'renderSpanWhenPanning' : (function () { return Z.Browser.mobile ? -1 : 100; })(),
 
         'crossOrigin' : null,
 
@@ -34,22 +34,22 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         'tileSystem' : null,
         'debug'      : false,
 
-        'baseLayerRenderer' : (function(){return Z.node?'canvas':'dom';})(),
+        'baseLayerRenderer' : (function () { return Z.node ? 'canvas' : 'dom'; })(),
 
         'renderer'   : 'canvas'
     },
 
 
-    initialize:function(id,opts) {
+    initialize:function (id, opts) {
         this.setId(id);
-        Z.Util.setOptions(this,opts);
+        Z.Util.setOptions(this, opts);
     },
 
     /**
      * Get tile size of the tile layer
      * @return {maptalks.Size}
      */
-    getTileSize:function() {
+    getTileSize:function () {
         var size = this.options['tileSize'];
         return new Z.Size(size['width'], size['height']);
     },
@@ -58,14 +58,14 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
      * Clear the layer
      * @return {maptalks.TileLayer} this
      */
-    clear:function() {
+    clear:function () {
         if (this._renderer) {
             this._renderer.clear();
         }
         return this;
     },
 
-    _initRenderer:function() {
+    _initRenderer:function () {
         var renderer = this.options['renderer'];
         if (this.getMap().getBaseLayer() === this) {
             renderer = this.options['baseLayerRenderer'];
@@ -89,7 +89,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
      * initialize [tileConfig]{@link maptalks.TileConfig} for the tilelayer
      * @private
      */
-    _initTileConfig:function() {
+    _initTileConfig:function () {
         var map = this.getMap();
         this._defaultTileConfig = new Z.TileConfig(Z.TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
         if (this.options['tileSystem']) {
@@ -97,12 +97,12 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         }
     },
 
-    _getTileConfig:function(){
+    _getTileConfig:function () {
         if (!this._defaultTileConfig) {
             this._initTileConfig();
         }
         var tileConfig = this._tileConfig;
-        if (tileConfig) {return tileConfig;}
+        if (tileConfig) { return tileConfig; }
         var map = this.getMap();
         //inherit baselayer's tileconfig
         if (map && map.getBaseLayer() && map.getBaseLayer()._getTileConfig) {
@@ -111,9 +111,9 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         return this._defaultTileConfig;
     },
 
-    _getTiles:function(containerSize) {
+    _getTiles:function (containerSize) {
         // rendWhenReady = false;
-        var map =this.getMap();
+        var map = this.getMap();
         if (!map) {
             return null;
         }
@@ -122,7 +122,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         }
 
         var tileConfig = this._getTileConfig();
-        if (!tileConfig) {return null;}
+        if (!tileConfig) { return null; }
 
         var tileSize = this.getTileSize(),
             zoom = map.getZoom(),
@@ -134,16 +134,16 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
             //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
         var centerTileIndex =  tileConfig.getCenterTileIndex(map._getPrjCenter(), res);
         //计算中心瓦片的top和left偏移值
-        var centerTileViewPoint=new Z.Point(+(mapW/2-centerTileIndex['offsetLeft']),
-                                                +(mapH/2-centerTileIndex['offsetTop']))._round();
+        var centerTileViewPoint = new Z.Point(+(mapW / 2 - centerTileIndex['offsetLeft']),
+                                                +(mapH / 2 - centerTileIndex['offsetTop']))._round();
         if (!containerSize || !(containerSize instanceof Z.Size)) {
             containerSize = new Z.Size(mapW, mapH);
         }
         //中心瓦片上下左右的瓦片数
-        var tileTopNum =Math.ceil(Math.abs((containerSize['height'] - mapH)/2 + centerTileViewPoint.y)/tileSize['height']),
-            tileLeftNum=Math.ceil(Math.abs((containerSize['width']- mapW)/2 + centerTileViewPoint.x)/tileSize['width']),
-            tileBottomNum=Math.ceil(Math.abs((containerSize['height'] - mapH)/2 + mapH-centerTileViewPoint.y)/tileSize['height']),
-            tileRightNum=Math.ceil(Math.abs((containerSize['width'] - mapW)/2 + mapW-centerTileViewPoint.x)/tileSize['width']);
+        var tileTopNum = Math.ceil(Math.abs((containerSize['height'] - mapH) / 2 + centerTileViewPoint.y) / tileSize['height']),
+            tileLeftNum = Math.ceil(Math.abs((containerSize['width'] - mapW) / 2 + centerTileViewPoint.x) / tileSize['width']),
+            tileBottomNum = Math.ceil(Math.abs((containerSize['height'] - mapH) / 2 + mapH - centerTileViewPoint.y) / tileSize['height']),
+            tileRightNum = Math.ceil(Math.abs((containerSize['width'] - mapW) / 2 + mapW - centerTileViewPoint.x) / tileSize['width']);
 
     //  只加中心的瓦片，用做调试
     //  var centerTileImg = this._createTileImage(centerTileViewPoint.x,centerTileViewPoint.y,this.config._getTileUrl(centerTileIndex['topIndex'],centerTileIndex['leftIndex'],zoom),tileSize['height'],tileSize['width']);
@@ -152,23 +152,23 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         var tiles = [];
         var fullExtent = new Z.PointExtent();
         //TODO 瓦片从中心开始加起
-        for (var i=-(tileLeftNum);i<tileRightNum;i++){
-            for (var j=-(tileTopNum);j<=tileBottomNum;j++){
-                    var tileIndex = tileConfig.getNeighorTileIndex(centerTileIndex['y'], centerTileIndex['x'], j,i, res, this.options['repeatWorld']);
-                    var tileLeft = centerTileViewPoint.x + tileSize['width']*i-mapViewPoint.x;
-                    var tileTop = centerTileViewPoint.y +tileSize['height']*j-mapViewPoint.y;
-                    var tileUrl = this._getTileUrl(tileIndex['x'],tileIndex['y'],zoom);
-                    var tileId=[tileIndex['y'], tileIndex['x'], zoom, tileLeft, tileTop].join('__');
-                    var tileDesc = {
-                        'url' : tileUrl,
-                        'viewPoint': new Z.Point(tileLeft, tileTop),
-                        'id'  : tileId,
-                        'zoom' : zoom
-                    };
-                    tiles.push(tileDesc);
-                    fullExtent = fullExtent.combine(new Z.PointExtent(
+        for (var i = -(tileLeftNum); i < tileRightNum; i++) {
+            for (var j = -(tileTopNum); j <= tileBottomNum; j++) {
+                var tileIndex = tileConfig.getNeighorTileIndex(centerTileIndex['y'], centerTileIndex['x'], j, i, res, this.options['repeatWorld']);
+                var tileLeft = centerTileViewPoint.x + tileSize['width'] * i - mapViewPoint.x;
+                var tileTop = centerTileViewPoint.y + tileSize['height'] * j - mapViewPoint.y;
+                var tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom);
+                var tileId = [tileIndex['y'], tileIndex['x'], zoom, tileLeft, tileTop].join('__');
+                var tileDesc = {
+                    'url' : tileUrl,
+                    'viewPoint': new Z.Point(tileLeft, tileTop),
+                    'id'  : tileId,
+                    'zoom' : zoom
+                };
+                tiles.push(tileDesc);
+                fullExtent = fullExtent.combine(new Z.PointExtent(
                         tileDesc['viewPoint'],
-                        tileDesc['viewPoint'].add(tileSize['width'],tileSize['height'])
+                        tileDesc['viewPoint'].add(tileSize['width'], tileSize['height'])
                         )
                     );
             }
@@ -176,7 +176,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         //瓦片排序, 地图中心的瓦片排在末尾, 末尾的瓦片先载入
         tiles.sort(function (a, b) {
-            return (b['viewPoint'].distanceTo(centerTileViewPoint)-a['viewPoint'].distanceTo(centerTileViewPoint));
+            return (b['viewPoint'].distanceTo(centerTileViewPoint) - a['viewPoint'].distanceTo(centerTileViewPoint));
         });
         return {
             'tiles' : tiles,
@@ -184,22 +184,22 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         };
     },
 
-    _getTileUrl:function(x,y,z) {
+    _getTileUrl:function (x, y, z) {
         if (!this.options['urlTemplate']) {
             return this.options['errorTileUrl'];
         }
         var urlTemplate = this.options['urlTemplate'];
         if (Z.Util.isFunction(urlTemplate)) {
-            return urlTemplate(x,y,z);
+            return urlTemplate(x, y, z);
         }
         var domain = '';
         if (this.options['subdomains']) {
             var subdomains = this.options['subdomains'];
             if (Z.Util.isArrayHasData(subdomains)) {
                 var length = subdomains.length;
-                var s = (x+y) % length;
-                if (s<0) {
-                    s=0;
+                var s = (x + y) % length;
+                if (s < 0) {
+                    s = 0;
                 }
                 domain = subdomains[s];
             }
@@ -210,7 +210,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
             'z' : z,
             's' : domain
         };
-        return urlTemplate.replace(/\{ *([\w_]+) *\}/g,function (str, key) {
+        return urlTemplate.replace(/\{ *([\w_]+) *\}/g, function (str, key) {
             var value = data[key];
 
             if (value === undefined) {
@@ -230,14 +230,14 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
  * It can be used to reproduce the instance by [fromJSON]{@link maptalks.Layer#fromJSON} method
  * @return {Object} layer's profile JSON
  */
-Z.TileLayer.prototype.toJSON=function() {
+Z.TileLayer.prototype.toJSON = function () {
     var profile = {
-        "type":"TileLayer",
-        "id":this.getId(),
-        "options" : this.config()
+        'type':'TileLayer',
+        'id':this.getId(),
+        'options' : this.config()
     };
     return profile;
-}
+};
 
 /**
  * Reproduce a TileLayer from layer's profile JSON.
@@ -247,9 +247,9 @@ Z.TileLayer.prototype.toJSON=function() {
  * @private
  * @function
  */
-Z.TileLayer._fromJSON=function(layerJSON) {
-    if (!layerJSON || layerJSON['type'] !== 'TileLayer') {return null;}
+Z.TileLayer._fromJSON = function (layerJSON) {
+    if (!layerJSON || layerJSON['type'] !== 'TileLayer') { return null; }
     return new Z.TileLayer(layerJSON['id'], layerJSON['options']);
-}
+};
 
-Z.Util.extend(Z.TileLayer,Z.Renderable);
+Z.Util.extend(Z.TileLayer, Z.Renderable);

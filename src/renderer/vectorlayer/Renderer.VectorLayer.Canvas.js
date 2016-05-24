@@ -8,14 +8,14 @@
  * @extends {maptalks.renderer.Canvas}
  * @param {maptalks.VectorLayer} layer - layer of the renderer
  */
-Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vectorlayer.Canvas.prototype */{
+Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.vectorlayer.Canvas.prototype */{
 
-    initialize:function(layer) {
+    initialize:function (layer) {
         this._layer = layer;
         this._painted = false;
     },
 
-    remove:function() {
+    remove:function () {
         delete this._resources;
         delete this._imgCache;
         this._requestMapToRender();
@@ -26,7 +26,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @param  {maptalks.Geometry[]} geometries   geometries to render
      * @param  {Boolean} ignorePromise   whether escape step of promise
      */
-    _render:function(geometries) {
+    _render:function (geometries) {
         var me = this;
         this._clearTimeout();
         if (this._layer.isEmpty()) {
@@ -34,7 +34,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
                 me._requestMapToRender();
                 me._fireLoadedEvent();
             } else {
-                this._renderTimeout = Z.Util.requestAnimFrame(function() {
+                this._renderTimeout = Z.Util.requestAnimFrame(function () {
                     me._requestMapToRender();
                     me._fireLoadedEvent();
                 });
@@ -47,13 +47,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         var check = this._checkResources(geometries);
         if (Z.Util.isArrayHasData(check.resources)) {
             this._resourcesToLoad = check.resources;
-        } else {
-            if (check.immediate) {
-                this._renderImmediate();
-                return;
-            }
+        } else if (check.immediate) {
+            this._renderImmediate();
+            return;
         }
-        this._renderTimeout = Z.Util.requestAnimFrame(function() {
+        this._renderTimeout = Z.Util.requestAnimFrame(function () {
             if (Z.Util.isArrayHasData(me._resourcesToLoad)) {
                 me._promise();
             } else {
@@ -64,7 +62,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     //redraw all the geometries with transform matrix
     //this may bring low performance if number of geometries is large.
-    transform: function(matrix) {
+    transform: function (matrix) {
         if (Z.Browser.mobile || !this.getMap().options['layerTransforming']) {
             return false;
         }
@@ -79,21 +77,21 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         return true;
     },
 
-    _draw:function(matrix) {
+    _draw:function (matrix) {
         var map = this.getMap();
         if (!map) {
-            return false;
+            return;
         }
         var layer = this._layer;
         if (layer.isEmpty()) {
             this._resources = new Z.renderer.vectorlayer.Canvas.Resources();
             this._imgCache = new Z.renderer.vectorlayer.Canvas.Resources();
             this._fireLoadedEvent();
-            return false;
+            return;
         }
         if (!layer.isVisible()) {
             this._fireLoadedEvent();
-            return false;
+            return;
         }
         this._prepareToDraw();
         var viewExtent = map._getViewExtent(),
@@ -101,7 +99,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {
                 this._fireLoadedEvent();
-                return false;
+                return;
             }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
@@ -113,17 +111,17 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
     },
 
-    _prepareToDraw: function() {
+    _prepareToDraw: function () {
         this._isBlank = true;
         this._painted = true;
         this._hasPointSymbolizer = false;
         this._geosToDraw = [];
     },
 
-    _checkGeo: function(geo) {
+    _checkGeo: function (geo) {
         //geo的map可能为null,因为绘制为延时方法
-        if (!geo || !geo.isVisible() || !geo.getMap()
-            || !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
+        if (!geo || !geo.isVisible() || !geo.getMap() ||
+            !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
             return;
         }
         var painter = geo._getPainter(),
@@ -138,11 +136,11 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         this._geosToDraw.push(geo);
     },
 
-    isBlank: function() {
+    isBlank: function () {
         return this._isBlank;
     },
 
-    getPaintContext:function() {
+    getPaintContext:function () {
         if (!this._context) {
             return null;
         }
@@ -154,8 +152,8 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * Show and render
      * @override
      */
-    show: function() {
-        this._layer.forEach(function(geo) {
+    show: function () {
+        this._layer.forEach(function (geo) {
             geo._onZoomEnd();
         });
         var mask = this._layer.getMask();
@@ -170,7 +168,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @param  {ViewPoint} point ViewPoint
      * @return {Boolean}       true|false
      */
-    hitDetect:function(point) {
+    hitDetect:function (point) {
         if (!this._context || this._layer.isEmpty()) {
             return false;
         }
@@ -199,7 +197,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     },
 
-    isResourceLoaded:function(url) {
+    isResourceLoaded:function (url) {
         if (!this._resources) {
             return false;
         }
@@ -209,7 +207,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
     /**
      * Renderer the layer immediately.
      */
-    _renderImmediate:function() {
+    _renderImmediate:function () {
         this._clearTimeout();
         if (!this.getMap()) {
             return;
@@ -233,10 +231,10 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     },
 
-    _onMapEvent:function(param) {
+    _onMapEvent:function (param) {
         if (param['type'] === '_zoomend') {
             if (this._layer.isVisible()) {
-                this._layer.forEach(function(geo) {
+                this._layer.forEach(function (geo) {
                     geo._onZoomEnd();
                 });
                 var mask = this._layer.getMask();
@@ -270,7 +268,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         }
     },
 
-    _clearTimeout:function() {
+    _clearTimeout:function () {
         if (this._renderTimeout) {
             //clearTimeout(this._renderTimeout);
             Z.Util.cancelAnimFrame(this._renderTimeout);
@@ -281,7 +279,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * 读取并载入绘制所需的外部资源, 例如markerFile, shieldFile等
      * @return {Promise[]} promise数组
      */
-    _promise:function() {
+    _promise:function () {
         if (!this.getMap()) {
             return;
         }
@@ -293,7 +291,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         this._loadResources(resourceUrls, this._renderImmediate, this);
     },
 
-    _checkResources:function(geometries) {
+    _checkResources:function (geometries) {
         if (!geometries) {
             return true;
         }
@@ -323,7 +321,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
         if (Z.Util.isArrayHasData(geometries)) {
             for (var i = geometries.length - 1; i >= 0; i--) {
                 checkGeo(geometries[i]);
-           }
+            }
         } else {
             for (var p in geometries) {
                 if (geometries.hasOwnProperty(p)) {
@@ -343,7 +341,7 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
      * @param  {Function} onComplete          - callback after loading complete
      * @param  {Object} context         - callback's context
      */
-    _loadResources:function(resourceUrls, onComplete, context) {
+    _loadResources:function (resourceUrls, onComplete, context) {
         var me = this;
         //var preResources = this._resources;
         if (!this._resources) {
@@ -357,48 +355,48 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             promises = [],
             crossOrigin = this._layer.options['crossOrigin'];
         function onPromiseCallback(_url) {
-            return function(resolve, reject) {
-                    if (imgCache.isResourceLoaded(_url[0])) {
-                        me._cacheResource(_url, imgCache.getImage(_url[0]));
-                        resolve({});
-                        return;
-                    }
-                    var img = new Image();
-                    if (crossOrigin) {
-                        img['crossOrigin'] = crossOrigin;
-                    }
-                    img.onload = function(){
-                        if (Z.Util.isSVG(url[0]) === 1 && !Z.node) {
+            return function (resolve, reject) {
+                if (imgCache.isResourceLoaded(_url[0])) {
+                    me._cacheResource(_url, imgCache.getImage(_url[0]));
+                    resolve({});
+                    return;
+                }
+                var img = new Image();
+                if (crossOrigin) {
+                    img['crossOrigin'] = crossOrigin;
+                }
+                img.onload = function () {
+                    if (Z.Util.isSVG(_url[0]) === 1 && !Z.node) {
                             //resolved weird behavior of SVG, loaded but canvas is still blank.
-                            var img2 = new Image();
-                            img2.onload = function() {
-                                imgCache.addResource(_url[0], img2);
-                                me._cacheResource(_url, this);
-                                resolve({});
-                            }
-                            img2.src = img.src;
-                        } else {
-                            imgCache.addResource(_url[0], this);
+                        var img2 = new Image();
+                        img2.onload = function () {
+                            imgCache.addResource(_url[0], img2);
                             me._cacheResource(_url, this);
                             resolve({});
-                        }
-                    };
-                    img.onabort = function(){
-                        console.warn('image loading aborted: ' + _url[0]);
+                        };
+                        img2.src = img.src;
+                    } else {
+                        imgCache.addResource(_url[0], this);
+                        me._cacheResource(_url, this);
                         resolve({});
-                    };
-                    img.onerror = function(err){
-                        console.warn('image loading failed: ' + _url[0]);
-                        imgCache.markErrorResource(_url[0]);
-                        resources.markErrorResource(_url);
-                        resolve({});
-                    };
-                    try {
-                        Z.Util.loadImage(img,  _url);
-                    } catch (err) {
-                        reject({});
                     }
                 };
+                img.onabort = function () {
+                    console.warn('image loading aborted: ' + _url[0]);
+                    resolve({});
+                };
+                img.onerror = function (err) {
+                    console.warn('image loading failed: ' + _url[0] + ',' + err);
+                    imgCache.markErrorResource(_url[0]);
+                    resources.markErrorResource(_url);
+                    resolve({});
+                };
+                try {
+                    Z.Util.loadImage(img,  _url);
+                } catch (err) {
+                    reject({});
+                }
+            };
         }
         if (Z.Util.isArrayHasData(resourceUrls)) {
             //重复
@@ -421,17 +419,17 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
             onComplete.call(context);
         }
         if (promises.length > 0) {
-            Z.Promise.all(promises).then(function(reources) {
+            Z.Promise.all(promises).then(function () {
                 whenPromiseEnd();
-            },function() {
-               whenPromiseEnd();
+            }, function () {
+                whenPromiseEnd();
             });
         } else {
             whenPromiseEnd();
         }
     },
 
-    _cacheResource: function(url, img) {
+    _cacheResource: function (url, img) {
         if (!img || !this._resources) {
             return;
         }
@@ -452,44 +450,44 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 });
 
 
-Z.renderer.vectorlayer.Canvas.Resources=function() {
+Z.renderer.vectorlayer.Canvas.Resources = function () {
     this._resources = {};
     this._errors = {};
 };
 
-Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype,{
-    addResource:function(url, img) {
+Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype, {
+    addResource:function (url, img) {
         this._resources[this._regulate(url)] = img;
     },
 
-    isResourceLoaded:function(url) {
-        return (this._resources[this._regulate(url)] || this._errors[this._getImgUrl(url)]) ? true : false;
+    isResourceLoaded:function (url) {
+        return (this._resources[this._regulate(url)] || this._errors[this._getImgUrl(url)]);
     },
 
-    getImage:function(url) {
+    getImage:function (url) {
         if (!this.isResourceLoaded(url)) {
             return null;
         }
         return this._resources[this._regulate(url)];
     },
 
-    markErrorResource:function(url) {
+    markErrorResource:function (url) {
         this._errors[this._getImgUrl(url)] = 1;
     },
 
-    _getImgUrl: function(url) {
+    _getImgUrl: function (url) {
         if (!Z.Util.isArray(url)) {
             return url;
         }
         return url[0];
     },
 
-    _regulate:function(url) {
+    _regulate:function (url) {
         if (!Z.Util.isArray(url)) {
             return url;
         }
         if (url.length < 3) {
-            for (var i = url.length; i<3; i++) {
+            for (var i = url.length; i < 3; i++) {
                 url.push(null);
             }
         }
@@ -503,5 +501,5 @@ Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype,{
     }
 });
 
-Z.VectorLayer.registerRenderer('canvas',Z.renderer.vectorlayer.Canvas);
+Z.VectorLayer.registerRenderer('canvas', Z.renderer.vectorlayer.Canvas);
 

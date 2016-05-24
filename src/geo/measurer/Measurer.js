@@ -16,7 +16,7 @@ Z.MeasurerUtil = {
      * @param  {String} name - code of the measurer: 'EPSG:4326', 'Identity', 'BAIDU'
      * @return {Object} a measurer object
      */
-    getInstance:function(name) {
+    getInstance:function (name) {
         if (!name) {
             return Z.MeasurerUtil.DEFAULT;
         }
@@ -39,4 +39,4 @@ Z.MeasurerUtil = {
      * @type {Object}
      */
     DEFAULT: Z.measurer.WGS84Sphere
-}
+};

@@ -32,7 +32,7 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
         'closeButton'   : true
     },
 
-    buildOn: function (map) {
+    buildOn: function () {
         var dom;
         if (this.options['custom']) {
             if (Z.Util.isString(this.options['content'])) {
@@ -44,10 +44,10 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
         } else {
             dom = Z.DomUtil.createEl('div', 'maptalks-panel');
             if (this.options['closeButton']) {
-                var closeButton = Z.DomUtil.createEl('a','maptalks-close');
+                var closeButton = Z.DomUtil.createEl('a', 'maptalks-close');
                 closeButton.href = 'javascript:;';
-                closeButton.onclick = function() {
-                    dom.style.display = "none";
+                closeButton.onclick = function () {
+                    dom.style.display = 'none';
                 };
                 dom.appendChild(closeButton);
             }
@@ -59,9 +59,9 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
 
         this.draggable = new Z.Handler.Drag(dom);
 
-        this.draggable.on("dragstart", this._onDragStart, this);
-        this.draggable.on("dragging", this._onDragging, this);
-        this.draggable.on("dragend", this._onDragEnd, this);
+        this.draggable.on('dragstart', this._onDragStart, this);
+        this.draggable.on('dragging', this._onDragging, this);
+        this.draggable.on('dragend', this._onDragEnd, this);
 
         if (this.options['draggable']) {
             this.draggable.enable();
@@ -70,12 +70,12 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
         return dom;
     },
 
-    _onDragStart:function(param) {
+    _onDragStart:function (param) {
         this._startPos = param['mousePos'];
-        this._startPosition = Z.Util.extend({},this.options['position']);
+        this._startPosition = Z.Util.extend({}, this.options['position']);
     },
 
-    _onDragging:function(param) {
+    _onDragging:function (param) {
         var pos = param['mousePos'];
         var offset = pos.substract(this._startPos);
 
@@ -97,7 +97,7 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
         this._updatePosition();
     },
 
-    _onDragEnd:function(param) {
+    _onDragEnd:function () {
         delete this._startPos;
         delete this._startPosition;
     },
@@ -105,7 +105,7 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
     /**
      * 获取panel端点数组
      */
-    _getConnectPoints: function() {
+    _getConnectPoints: function () {
         var map = this._map;
         var containerPoint = this.getContainerPoint();
         var controlContainer = this.getContainer(),
@@ -115,19 +115,19 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
         var anchors = [
             //top center
             map.containerPointToCoordinate(
-                containerPoint.add(new Z.Point(Math.round(width/2),0))
+                containerPoint.add(new Z.Point(Math.round(width / 2), 0))
             ),
             //middle right
             map.containerPointToCoordinate(
-                containerPoint.add(new Z.Point(width, Math.round(height/2)))
+                containerPoint.add(new Z.Point(width, Math.round(height / 2)))
             ),
             //bottom center
             map.containerPointToCoordinate(
-                containerPoint.add(new Z.Point(Math.round(width/2), height))
+                containerPoint.add(new Z.Point(Math.round(width / 2), height))
             ),
             //middle left
             map.containerPointToCoordinate(
-                containerPoint.add(new Z.Point(0,Math.round(height/2)))
+                containerPoint.add(new Z.Point(0, Math.round(height / 2)))
             )
 
         ];

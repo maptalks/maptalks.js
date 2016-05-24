@@ -21,10 +21,10 @@ Z.measurer.Identity = {
      * @return {Number}
      * @static
      */
-    measureLength:function(c1,c2){
-        if (!c1 || !c2) {return 0;}
+    measureLength:function (c1, c2) {
+        if (!c1 || !c2) { return 0; }
         try {
-            return Math.sqrt(Math.pow(c1.x-c2.x,2)+Math.pow(c1.y-c2.y,2));
+            return Math.sqrt(Math.pow(c1.x - c2.x, 2) + Math.pow(c1.y - c2.y, 2));
         } catch (err) {
             return 0;
         }
@@ -35,18 +35,18 @@ Z.measurer.Identity = {
      * @return {number}
      * @static
      */
-    measureArea:function(coordinates) {
+    measureArea:function (coordinates) {
         if (!Z.Util.isArrayHasData(coordinates)) {
             return 0;
         }
         var area = 0;
-        for ( var i = 0, len = coordinates.length; i < len; i++) {
+        for (var i = 0, len = coordinates.length; i < len; i++) {
             var c1 = coordinates[i];
             var c2 = null;
             if (i === len - 1) {
                 c2 = coordinates[0];
             } else {
-                c2 = coordinates[i+1];
+                c2 = coordinates[i + 1];
             }
             area += c1.x * c2.y - c1.y * c2.x;
         }
@@ -61,11 +61,11 @@ Z.measurer.Identity = {
      * @return {maptalks.Coordinate}
      * @static
      */
-    locate:function(c, xDist, yDist) {
-        if (!c) {return null;}
-        if (!xDist) {xDist = 0;}
-        if (!yDist) {yDist = 0;}
-        if (!xDist && !yDist) {return c;}
-        return new Z.Coordinate(c.x+xDist, c.y+yDist);
+    locate:function (c, xDist, yDist) {
+        if (!c) { return null; }
+        if (!xDist) { xDist = 0; }
+        if (!yDist) { yDist = 0; }
+        if (!xDist && !yDist) { return c; }
+        return new Z.Coordinate(c.x + xDist, c.y + yDist);
     }
 };

@@ -9,18 +9,19 @@
   },
   "scripts": {
     "lint": "eslint src/**/*.js",
-    "test": "gulp test --cov"
+    "test": "gulp test --cov",
+    "pretest": "npm run lint"
   },
   "main": "dist/maptalks.js",
   "style": "dist/css/maptalks.css",
   "devDependencies": {
+    "eslint": "^2.10.2",
     "eslint-config-maptalks": "^0.2.1",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.0.0",
     "gulp-coveralls": "^0.1.4",
     "gulp-cssnano": "^2.1.0",
-    "gulp-eslint": "^2.0.0",
     "gulp-footer": "^1.0.5",
     "gulp-gzip": "^1.2.0",
     "gulp-header": "^1.7.1",
@@ -39,8 +40,7 @@
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
     "phantomjs-prebuilt": "^2.1.6",
-    "sinon": "^1.14.1",
-    "eslint": "^2.10.2"
+    "sinon": "^1.14.1"
   },
   "dependencies": {}
 }

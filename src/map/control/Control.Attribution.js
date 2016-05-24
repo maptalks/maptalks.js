@@ -29,7 +29,7 @@ Z.control.Attribution = Z.Control.extend(/** @lends maptalks.control.Attribution
     },
 
 
-    buildOn: function (map) {
+    buildOn: function () {
         this._attributionContainer = Z.DomUtil.createEl('div');
         Z.DomUtil.setStyle(this._attributionContainer, Z.control.Attribution['maptalks-control-attribution-bg']);
         this._update();

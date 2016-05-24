@@ -13,7 +13,7 @@ Z.control.Nav = Z.Control.extend(/** @lends maptalks.control.Nav.prototype */{
         'position' : Z.Control['top_left']
     },
 
-    buildOn: function (map) {
+    buildOn: function () {
         return null;
     }
 

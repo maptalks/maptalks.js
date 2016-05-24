@@ -18,7 +18,7 @@
  * <br>
  * Parameter scale in transform/untransform method is used to scale the result 2d points on map's different zoom levels.
  */
-Z.Transformation = function(matrix) {
+Z.Transformation = function (matrix) {
     this.matrix = matrix;
 };
 
@@ -30,7 +30,7 @@ Z.Util.extend(Z.Transformation.prototype,  /** @lends maptalks.Transformation.pr
      * @param  {Number} scale                              - transform scale
      * @return {maptalks.Point} 2d point.
      */
-    transform : function(coordinates, scale) {
+    transform : function (coordinates, scale) {
         return new Z.Point(
             this.matrix[0] * (coordinates.x - this.matrix[2]) / scale,
             this.matrix[1] * (coordinates.y - this.matrix[3]) / scale
@@ -43,7 +43,7 @@ Z.Util.extend(Z.Transformation.prototype,  /** @lends maptalks.Transformation.pr
      * @param  {Number} scale           - transform scale
      * @return {maptalks.Coordinate}  projected coordinate.
      */
-    untransform : function(point, scale) {
+    untransform : function (point, scale) {
         return new Z.Coordinate(
             point.x * scale / this.matrix[0] + this.matrix[2],
             point.y * scale / this.matrix[1] + this.matrix[3]

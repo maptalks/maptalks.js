@@ -15,13 +15,13 @@ Z.projection.EPSG3857 = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
      * @type {String}
      * @constant
      */
-    code : "EPSG:3857",
+    code : 'EPSG:3857',
     rad : Math.PI / 180,
-    metersPerDegree : 2.003750834E7/180,
+    metersPerDegree : 2.003750834E7 / 180,
     maxLatitude : 85.0511287798,
 
-    project: function(lnglat) {
-       var rad = this.rad,
+    project: function (lnglat) {
+        var rad = this.rad,
             metersPerDegree = this.metersPerDegree,
             max = this.maxLatitude;
         var lng = lnglat.x, lat = Math.max(Math.min(max, lnglat.y), -max);
@@ -31,10 +31,10 @@ Z.projection.EPSG3857 = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
         } else {
             c = Math.log(Math.tan((90 + lat) * rad / 2)) / rad;
         }
-        return new Z.Coordinate( lng * metersPerDegree, c * metersPerDegree);
+        return new Z.Coordinate(lng * metersPerDegree, c * metersPerDegree);
     },
 
-    unproject: function(pLnglat) {
+    unproject: function (pLnglat) {
         var x = pLnglat.x,
             y = pLnglat.y;
         var rad = this.rad,
@@ -44,7 +44,7 @@ Z.projection.EPSG3857 = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
             c = 0;
         } else {
             c = y / metersPerDegree;
-            c = (2 * Math.atan(Math.exp(c * rad)) - Math.PI / 2)/rad;
+            c = (2 * Math.atan(Math.exp(c * rad)) - Math.PI / 2) / rad;
         }
         return new Z.Coordinate(x / metersPerDegree, c);
     }

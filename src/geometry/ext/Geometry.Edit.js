@@ -5,12 +5,12 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @param {Object} [options.symbol=null] - symbol for the geometry during editing
      * @return {maptalks.Geometry} this
      */
-    startEdit: function(opts) {
+    startEdit: function (opts) {
         if (!this.getMap() || !this.options['editable']) {
             return this;
         }
         this.endEdit();
-        this._editor = new Z.GeometryEditor(this,opts);
+        this._editor = new Z.GeometryEditor(this, opts);
         this._editor.start();
         this.fire('editstart');
         return this;
@@ -20,7 +20,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * End editing.
      * @return {maptalks.Geometry} this
      */
-    endEdit: function() {
+    endEdit: function () {
         if (this._editor) {
             this._editor.stop();
             delete this._editor;
@@ -33,7 +33,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * Whether the geometry collection is being edited.
      * @return {Boolean}
      */
-    isEditing: function() {
+    isEditing: function () {
         if (this._editor) {
             return this._editor.isEditing();
         }
