@@ -29,6 +29,7 @@
 ../src/handler/Handler.js
 ../src/handler/Handlerable.js
 ../src/handler/Drag.js
+../src/map/tool/MapTool.js
 ../src/map/tool/DrawTool.js
 ../src/map/tool/DistanceTool.js
 ../src/map/tool/AreaTool.js

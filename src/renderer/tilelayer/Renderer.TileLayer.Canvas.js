@@ -18,7 +18,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         this._layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
         this._tileCache = new Z.TileLayer.TileCache();
-        this._registerEvents();
         this._tileQueue = {};
     },
 

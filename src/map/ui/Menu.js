@@ -132,20 +132,10 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         return width;
     },
 
-    /**
-     * Register the events for menu to listen.
-     * @private
-     */
-    _registerEvents: function() {
-        this.getMap().on('_zoomstart _zoomend _movestart _dblclick _click', this.hide, this);
-    },
-
-    /**
-     * Remove event listeners
-     * @private
-     */
-    _removeEvents: function() {
-        this.getMap().off('_zoomstart _zoomend _movestart _dblclick _click', this.hide, this);
+    _getEvents: function() {
+        return {
+            '_zoomstart _zoomend _movestart _dblclick _click' : this.hide
+        };
     }
 });
 

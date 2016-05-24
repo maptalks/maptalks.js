@@ -12,14 +12,12 @@ Z.renderer.vectorlayer.Canvas=Z.renderer.Canvas.extend(/** @lends Z.renderer.vec
 
     initialize:function(layer) {
         this._layer = layer;
-        this._registerEvents();
         this._painted = false;
     },
 
     remove:function() {
         delete this._resources;
         delete this._imgCache;
-        this._removeEvents();
         this._requestMapToRender();
     },
 

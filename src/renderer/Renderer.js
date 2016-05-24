@@ -172,12 +172,10 @@ Z.renderer.Canvas=Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype *
         return maskViewExtent;
     },
 
-    _removeEvents: function() {
-        this.getMap().off('_movestart _moveend _zoomstart _zoomend _resize',this._onMapEvent,this);
-    },
-
-    _registerEvents:function() {
-        this.getMap().on('_movestart _moveend _zoomstart _zoomend _resize',this._onMapEvent,this);
+    _getEvents: function() {
+        return {
+            '_movestart _moveend _zoomstart _zoomend _resize' : this._onMapEvent
+        }
     },
 
     _onMapEvent:function(param) {

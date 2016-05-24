@@ -23,8 +23,8 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
     initialize: function(options) {
         Z.Util.setOptions(this,options);
         this.config('mode',Z.Geometry['TYPE_POLYGON']);
-         this.on('enable', this._onEnable, this)
-            .on('disable', this._onDisable, this);
+         this.on('enable', this._afterEnable, this)
+            .on('disable', this._afterDisable, this);
         this._measureLayers = [];
     },
 

@@ -15,7 +15,6 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         this._layer = layer;
         this._tiles = {};
         this._fadeAnimated = true;
-        this._registerEvents();
     },
 
     getMap:function() {
@@ -23,14 +22,6 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     remove:function() {
-        var map = this.getMap();
-        map.off('_zoomstart', this._onZoomStart, this);
-        map.off('_movestart', this._onMoveStart, this);
-        map.off('_zoomend', this._onZoomEnd, this);
-        map.off('_moveend _resize',this.render,this);
-        if (this._onMapMoving) {
-            map.off('_moving',this._onMapMoving,this);
-        }
         this._removeLayerContainer();
     },
 
@@ -341,14 +332,15 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         delete this._levelContainers;
     },
 
-    _registerEvents:function() {
-        var map = this.getMap();
-        map.on('_zoomstart', this._onZoomStart, this);
-        map.on('_zoomend', this._onZoomEnd, this);
-        map.on('_moveend _resize', this.render, this);
-        map.on('_movestart', this._onMoveStart, this);
-        if (this._layer.options['renderWhenPanning']) {
-        var rendSpan = this._layer.options['renderSpanWhenPanning'];
+    _getEvents:function() {
+        var events = {
+            '_zoomstart'    : this._onZoomStart,
+            '_zoomend'      : this._onZoomEnd,
+            '_moveend _resize' : this.render,
+            '_movestart'    : this._onMoveStart
+        };
+        if (!this._onMapMoving && this._layer.options['renderWhenPanning']) {
+            var rendSpan = this._layer.options['renderSpanWhenPanning'];
             if (Z.Util.isNumber(rendSpan) && rendSpan >= 0) {
                 if (rendSpan > 0) {
                     this._onMapMoving = Z.Util.throttle(function() {
@@ -359,9 +351,12 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
                         this.render();
                     };
                 }
-                map.on('_moving',this._onMapMoving,this);
             }
         }
+        if (this._onMapMoving) {
+            events['_moving'] = this._onMapMoving;
+        }
+        return events;
     },
 
     _canTransform: function() {

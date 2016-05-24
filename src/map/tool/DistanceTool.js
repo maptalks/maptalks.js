@@ -42,8 +42,8 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
     initialize: function(options) {
         Z.Util.setOptions(this,options);
         this.config('mode',Z.Geometry['TYPE_LINESTRING']);
-        this.on('enable', this._onEnable, this)
-            .on('disable', this._onDisable, this);
+        this.on('enable', this._afterEnable, this)
+            .on('disable', this._afterDisable, this);
         this._measureLayers = [];
     },
 
@@ -118,11 +118,11 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
             .on('drawend', this._msOnDrawEnd, this);
     },
 
-    _onEnable:function(param) {
+    _afterEnable:function(param) {
         this._registerMeasureEvents();
     },
 
-    _onDisable:function() {
+    _afterDisable:function() {
         this.off('drawstart', this._msOnDrawStart, this)
             .off('drawvertex', this._msOnDrawVertex, this)
             .off('mousemove', this._msOnMouseMove, this)
