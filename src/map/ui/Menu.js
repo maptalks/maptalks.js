@@ -182,17 +182,6 @@ Z.ui.Menu.Mixin = {
     },
 
     /**
-     * Get the menu options
-     * @return {Object} menuOptions
-     */
-    getMenuOptions: function () {
-        if (!this._menuOptions) {
-            return null;
-        }
-        return Z.Util.extend({}, this._menuOptions);
-    },
-
-    /**
     * Set menu items to the context menu
     * @param {Object[]} items - menu items
     * @return {*} this
