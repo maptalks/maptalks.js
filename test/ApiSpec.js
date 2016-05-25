@@ -730,7 +730,7 @@ describe('API', function () {
 
         it('addTo', function() {
             var drawTool = new Z.DrawTool({
-                mode: Z.Geometry.TYPE_POLYLINE,
+                mode: 'LineString',
                 symbol: {
                     strokeSymbol: {
                         stroke: '#ff0000',
@@ -747,7 +747,7 @@ describe('API', function () {
 
         it('enable/disable', function() {
             var drawTool = new Z.DrawTool({
-                mode: Z.Geometry.TYPE_POLYLINE,
+                mode: 'LineString',
                 symbol: {
                     strokeSymbol: {
                         stroke: '#ff0000',
@@ -766,7 +766,7 @@ describe('API', function () {
 
         it('setMode', function() {
             var drawTool = new Z.DrawTool({
-                mode: Z.Geometry.TYPE_POLYLINE
+                mode: 'LineString'
             });
             drawTool.addTo(map);
 
@@ -777,7 +777,7 @@ describe('API', function () {
 
         it('setSymbol', function() {
             var drawTool = new Z.DrawTool({
-                mode: Z.Geometry.TYPE_POLYLINE
+                mode: 'LineString'
             });
             drawTool.addTo(map);
             var symbol = {
@@ -795,7 +795,7 @@ describe('API', function () {
 
         it('getSymbol', function() {
             var drawTool = new Z.DrawTool({
-                mode: Z.Geometry.TYPE_POLYLINE
+                mode: 'LineString'
             });
             drawTool.addTo(map);
 

@@ -25,11 +25,12 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         if (map[key]) {
             map[key].disable();
         }
-        this.enable();
-        map[key] = this;
         if (this._onAdd) {
             this._onAdd();
         }
+        this.enable();
+        map[key] = this;
+
         this._fireEvent('add');
         return this;
     },

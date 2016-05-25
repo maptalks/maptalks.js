@@ -10,6 +10,7 @@
 Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
 
     options:{
+        'mode' : 'Polygon',
         'symbol' : {
             'lineColor':'#000000',
             'lineWidth':2,
@@ -22,7 +23,6 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
 
     initialize: function (options) {
         Z.Util.setOptions(this, options);
-        this.config('mode', Z.Geometry['TYPE_POLYGON']);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
