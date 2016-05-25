@@ -38,7 +38,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             delete this._geometry;
         }
         this._switchEvents('off');
-        this.options['mode'] = mode.toLowerCase();
         this._checkMode();
         this._switchEvents('on');
         return this;
