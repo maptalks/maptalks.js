@@ -140,9 +140,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
     _getEvents: function () {
         var mode = this.options['mode'];
-        if (Z.Util.isNil(mode)) {
-            mode = 'circle';
-        }
         if (mode === 'polygon' || mode === 'linestring') {
             return {
                 'click' : this._clickForPath,
