@@ -10,6 +10,7 @@
 Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */{
 
     options:{
+        'mode' : 'LineString',
         'language' : 'zh-CN', //'en-US'
         'metric': true,
         'imperial': false,
@@ -41,7 +42,6 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
 
     initialize: function (options) {
         Z.Util.setOptions(this, options);
-        this.config('mode', Z.Geometry['TYPE_LINESTRING']);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];

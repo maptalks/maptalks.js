@@ -18,12 +18,13 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             'polygonFill' : '#ffffff',
             'polygonOpacity' : 0
         },
-        'mode' : 'LineString',
+        'mode' : null,
         'once' : false
     },
 
     initialize: function (options) {
         Z.Util.setOptions(this, options);
+        this._checkMode();
     },
 
     /**
@@ -38,6 +39,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         }
         this._switchEvents('off');
         this.options['mode'] = mode;
+        this._checkMode();
         this._switchEvents('on');
         return this;
     },
@@ -72,8 +74,12 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         return this;
     },
 
+    _onAdd: function () {
+        this._checkMode();
+    },
 
     _onEnable:function () {
+
         var map = this.getMap();
         this._mapDraggable = map.options['draggable'];
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
@@ -85,6 +91,20 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         });
         this._drawToolLayer = this._getDrawLayer();
         return this;
+    },
+
+    _checkMode: function () {
+        if (!this.options['mode']) {
+            throw new Error('drawtool\'s mode is null.');
+        }
+        var modes = ['circle', 'ellipse', 'rectangle', 'point', 'linestring', 'polygon'];
+        this.options['mode'] = this.options['mode'].toLowerCase();
+        for (var i = 0; i < modes.length; i++) {
+            if (this.options['mode'] === modes[i]) {
+                return true;
+            }
+        }
+        throw new Error('invalid mode for drawtool : ' + this.options['mode']);
     },
 
     _onDisable:function () {
@@ -120,16 +140,13 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
     _getEvents: function () {
         var mode = this.options['mode'];
-        if (Z.Util.isNil(mode)) {
-            mode = 'Circle';
-        }
-        if (Z.Geometry['TYPE_POLYGON'] === mode || Z.Geometry['TYPE_LINESTRING'] === mode) {
+        if (mode === 'polygon' || mode === 'linestring') {
             return {
                 'click' : this._clickForPath,
                 'mousemove' : this._mousemoveForPath,
                 'dblclick'  : this._dblclickForPath
             };
-        } else if (Z.Geometry['TYPE_POINT'] === mode) {
+        } else if (mode === 'point') {
             return {
                 'click' : this._clickForPoint
             };
@@ -176,7 +193,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         } else {
             var path = this._getLonlats();
             path.push(coordinate);
-            if (Z.Geometry['TYPE_POLYGON'] === this.options['mode'] && path.length === 3) {
+            if (this.options['mode'] === 'polygon' && path.length === 3) {
                 var polygon = new Z.Polygon([path]);
                 if (symbol) {
                     var pSymbol = Z.Util.extendSymbol(symbol, {'lineOpacity':0});
@@ -241,7 +258,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             path.splice(nIndexes[i], 1);
         }
 
-        if (path.length < 2 || (Z.Geometry['TYPE_POLYGON'] === this.options['mode'] && path.length < 3)) {
+        if (path.length < 2 || (this.options['mode'] === 'polygon' && path.length < 3)) {
             return;
         }
         this._geometry.remove();
@@ -252,7 +269,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         if (this._polygon) {
             this._polygon.remove();
         }
-        if (Z.Geometry['TYPE_POLYGON'] === this.options['mode']) {
+        if (this.options['mode'] === 'polygon') {
             this._geometry = new Z.Polygon([path]);
             var symbol = this.getSymbol();
             if (symbol) {
@@ -273,7 +290,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             var _map = me._map;
             var center;
             switch (me.options['mode']) {
-            case 'Circle':
+            case 'circle':
                 if (!geometry) {
                     geometry = new Z.Circle(coordinate, 0);
                     geometry.setSymbol(symbol);
@@ -284,7 +301,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
                 var radius = _map.computeLength(center, coordinate);
                 geometry.setRadius(radius);
                 break;
-            case 'Ellipse':
+            case 'ellipse':
                 if (!geometry) {
                     geometry = new Z.Ellipse(coordinate, 0, 0);
                     geometry.setSymbol(symbol);
@@ -297,7 +314,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
                 geometry.setWidth(rx * 2);
                 geometry.setHeight(ry * 2);
                 break;
-            case 'Rectangle':
+            case 'rectangle':
                 if (!geometry) {
                     geometry = new Z.Rectangle(coordinate, 0, 0);
                     geometry.setSymbol(symbol);
