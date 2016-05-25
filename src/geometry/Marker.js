@@ -32,8 +32,8 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
             ],
             'markerPathWidth' : 16,
             'markerPathHeight' : 23,
-            'markerWidth'   : 32,
-            'markerHeight'  : 46
+            'markerWidth'   : 24,
+            'markerHeight'  : 34
         }
     },
 

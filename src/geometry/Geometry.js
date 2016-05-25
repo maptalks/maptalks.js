@@ -1174,6 +1174,7 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     if (symbol['markerPathWidth'] && symbol['markerPathHeight']) {
         svgContent.push('viewBox="0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
     }
+    svgContent.push('preserveAspectRatio="none"');
     svgContent.push('><defs></defs>');
 
     for (i = 0; i < pathesToRender.length; i++) {
