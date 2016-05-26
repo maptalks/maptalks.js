@@ -50,7 +50,7 @@ describe('#Map Profile', function () {
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
             var style = {
-                condition : 'type === "Point"',
+                condition : 'type === "Point" && subType !== "Label"',
                 symbol: {
                     markerFile : 'http://www.foo.com/foo.png'
                 }
@@ -65,7 +65,13 @@ describe('#Map Profile', function () {
             expect(json.geometries).to.have.length(geometries.length);
 
             for (var i = 0; i < geometries.length; i++) {
-                expect(geometries[i].toJSON()).to.be.eql(json.geometries[i]);
+                if (!vectorLayer._styleGeometry(geometries[i])) {
+                    expect(geometries[i].toJSON()).to.be.eql(json.geometries[i]);
+                } else {
+                    var j = geometries[i].toJSON();
+                    j.symbol = null;
+                    expect(j).to.be.eql(json.geometries[i]);
+                }
             }
 
             json = vectorLayer.toJSON({

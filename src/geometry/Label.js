@@ -101,22 +101,25 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         return this;
     },
 
+    getSymbol: function () {
+        if (this._labelSymbolChanged) {
+            return Z.Geometry.prototype.getSymbol.call(this);
+        }
+        return null;
+    },
+
     setSymbol:function (symbol) {
         if (!symbol || symbol === this.options['symbol']) {
             symbol = {};
         }
         var camelSymbol = this._prepareSymbol(symbol);
-        var s = {};
-        Z.Util.extend(s, this.defaultSymbol);
-        if (this.options['box']) {
-            Z.Util.extend(s, this.defaultBoxSymbol);
-        }
+        var s = this._getDefaultLabelSymbol();
         Z.Util.extend(s, camelSymbol);
         this._symbol = s;
+        this._labelSymbolChanged = true;
         this._refresh();
         return this;
     },
-
 
     onConfig:function (conf) {
         var isRefresh = false;
@@ -133,6 +136,19 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         }
     },
 
+    _getInternalSymbol:function () {
+        return this._symbol;
+    },
+
+    _getDefaultLabelSymbol: function () {
+        var s = {};
+        Z.Util.extend(s, this.defaultSymbol);
+        if (this.options['box']) {
+            Z.Util.extend(s, this.defaultBoxSymbol);
+        }
+        return s;
+    },
+
     _toJSON:function (options) {
         return {
             'feature' : this.toGeoJSON(options),
@@ -142,7 +158,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
     },
 
     _refresh:function () {
-        var symbol = this.getSymbol();
+        var symbol = this.getSymbol() || this._getDefaultLabelSymbol();
         symbol['textName'] = this._content;
         if (this.options['box']) {
             if (!symbol['markerType']) {

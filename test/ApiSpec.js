@@ -877,7 +877,7 @@ describe('API', function () {
             };
             var undef;
 
-            expect(geometry.getSymbol()).to.eql(undef);
+            expect(geometry.getSymbol()).to.eql(null);
 
             geometry.setSymbol(symbol);
             var got = geometry.getSymbol();

@@ -41,12 +41,12 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
     },
 
     removeStyle: function () {
+        if (!this._style) {
+            return this;
+        }
         delete this._style;
         delete this._cookedStyles;
         this.forEach(function (geometry) {
-            if (!geometry._symbolBeforeStyle) {
-                return;
-            }
             geometry.setSymbol(geometry._symbolBeforeStyle);
             delete geometry._symbolBeforeStyle;
         }, this);
@@ -61,6 +61,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
             'properties' : json['feature']['properties']
         };
         var symbol = geometry.getSymbol();
+
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
             if (this._cookedStyles[i]['fn'](o) === true) {
                 if (!geometry._symbolBeforeStyle) {
@@ -117,13 +118,18 @@ Z.VectorLayer.prototype.toJSON = function (options) {
         }
         var geoJSONs = [];
         var geometries = this.getGeometries(),
-            geoExt;
+            geoExt,
+            json;
         for (var i = 0, len = geometries.length; i < len; i++) {
             geoExt = geometries[i].getExtent();
             if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
                 continue;
             }
-            geoJSONs.push(geometries[i].toJSON(options['geometries']));
+            json = geometries[i].toJSON(options['geometries']);
+            if (json['symbol'] && this.getStyle()) {
+                json['symbol'] = geometries[i]._symbolBeforeStyle ? Z.Util.extend({}, geometries[i]._symbolBeforeStyle) : null;
+            }
+            geoJSONs.push(json);
         }
         profile['geometries'] = geoJSONs;
     }

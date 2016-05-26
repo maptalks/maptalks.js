@@ -48,7 +48,7 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
      * @private
      */
     _canEdit:function () {
-        var symbol = this.getSymbol();
+        var symbol = this._getInternalSymbol();
         if (Z.Util.isArray(symbol)) {
             return false;
         }
