@@ -22,12 +22,12 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
     * @property {Number} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
     */
     options:{
-        "antiMeridian" : "default",
-        "arrowStyle" : null,
-        "arrowPlacement" : "vertex-last" //vertex-first, vertex-last, vertex-firstlast, point
+        'antiMeridian' : 'default',
+        'arrowStyle' : null,
+        'arrowPlacement' : 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
     },
 
-    initialize:function(coordinates, opts) {
+    initialize:function (coordinates, opts) {
 
         this.setCoordinates(coordinates);
         this._initOptions(opts);
@@ -39,11 +39,11 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
      * @fires maptalks.Geometry#shapechange
      * @return {maptalks.LineString} this
      */
-    setCoordinates:function(coordinates) {
+    setCoordinates:function (coordinates) {
         if (!coordinates) {
             this._coordinates = null;
             this._setPrjCoordinates(null);
-            return;
+            return this;
         }
         this._coordinates = Z.GeoJSON.fromGeoJSONCoordinates(coordinates);
         if (this.getMap()) {
@@ -58,24 +58,24 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
      * Get coordinates of the line string
      * @return {maptalks.Coordinate[]|Number[][]} coordinates
      */
-    getCoordinates:function() {
+    getCoordinates:function () {
         if (!this._coordinates) {
             return [];
         }
         return this._coordinates;
     },
 
-    _computeGeodesicLength:function(measurer) {
+    _computeGeodesicLength:function (measurer) {
         return Z.GeoUtils.computeLength(this.getCoordinates(), measurer);
     },
 
-    _computeGeodesicArea:function(measurer) {
+    _computeGeodesicArea:function () {
         return 0;
     },
 
-    _containsPoint: function(point) {
+    _containsPoint: function (point, tolerance) {
         var map = this.getMap(),
-            t = this._hitTestTolerance(),
+            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             extent = this._getPrjExtent(),
             nw = new Z.Coordinate(extent.xmin, extent.ymax),
             se = new Z.Coordinate(extent.xmax, extent.ymin),

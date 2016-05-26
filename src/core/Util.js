@@ -11,7 +11,7 @@ Z.Util = {
      */
     guid: 0,
 
-    now:function() {
+    now:function () {
         if (!Date.now) {
             return new Date().getTime();
         }
@@ -25,7 +25,7 @@ Z.Util = {
      * @return {Object}
      */
     extend: function (dest) { // (Object[, Object, ...]) ->
-        var sources = Array.prototype.slice.call(arguments, 1),i, j, len, src;
+        var sources = Array.prototype.slice.call(arguments, 1), i, j, len, src;
 
         for (j = 0, len = sources.length; j < len; j++) {
             src = sources[j] || {};
@@ -54,11 +54,11 @@ Z.Util = {
         return obj.options;
     },
 
-    isSVG:function(url) {
+    isSVG:function (url) {
         var prefix = 'data:image/svg+xml';
-        if (url.length > 4 && url.substring(url.length-4) === '.svg') {
+        if (url.length > 4 && url.substring(url.length - 4) === '.svg') {
             return 1;
-        } else if (url.substring(0,prefix.length) === prefix) {
+        } else if (url.substring(0, prefix.length) === prefix) {
             return 2;
         }
         return 0;
@@ -71,7 +71,7 @@ Z.Util = {
      * @param  {Object[]} imgDesc - image's descriptor, it's a array. imgUrl[0] is the url string, imgUrl[1] is the width, imgUrl[2] is the height.
      * @return maptalks.Util
      */
-    loadImage:function(img, imgDesc) {
+    loadImage:function (img, imgDesc) {
         if (!Z.node) {
             img.src = imgDesc[0];
             return this;
@@ -93,7 +93,7 @@ Z.Util = {
             }
             var onloadFn = img.onload;
             if (onloadFn) {
-                img.onload = function() {
+                img.onload = function () {
                     onloadFn.call(img);
                 };
             }
@@ -105,21 +105,19 @@ Z.Util = {
         try {
             if (Z.Util.isSVG(url)) {
                 Z.Util._convertSVG2PNG(url, w, h, onLoadComplete);
-            } else {
+            } else if (Z.Util.isURL(url)) {
                 //canvas-node的Image对象
-                if (Z.Util.isURL(url)) {
-                    this._loadRemoteImage(img, url, onLoadComplete);
-                } else {
-                    this._loadLocalImage(img, url, onLoadComplete);
-                }
+                this._loadRemoteImage(img, url, onLoadComplete);
+            } else {
+                this._loadLocalImage(img, url, onLoadComplete);
             }
         } catch (error) {
-             onError(error);
+            onError(error);
         }
         return this;
     },
 
-    _loadRemoteImage:function(img, url, onComplete) {
+    _loadRemoteImage:function (img, url, onComplete) {
         //http
         var loader;
         if (url.indexOf('https://') === 0) {
@@ -127,29 +125,40 @@ Z.Util = {
         } else {
             loader = require('http');
         }
-        loader.get(url, function(res) {
+        var urlObj = require('url').parse(url);
+        //mimic the browser to prevent server blocking.
+        urlObj.headers = {
+            'Accept':'image/*,*/*;q=0.8',
+            'Accept-Encoding':'gzip, deflate',
+            'Cache-Control':'no-cache',
+            'Connection':'keep-alive',
+            'Host':urlObj.host,
+            'Pragma':'no-cache',
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'
+        };
+        loader.request(urlObj, function (res) {
             var data = [];
-            res.on('data', function(chunk) {
-              data.push(chunk);
+            res.on('data', function (chunk) {
+                data.push(chunk);
             });
             res.on('end', function () {
                 onComplete(null, Buffer.concat(data));
             });
-        }).on('error', onComplete);
+        }).on('error', onComplete).end();
     },
 
-    _loadLocalImage:function(img, url, onComplete) {
+    _loadLocalImage:function (img, url, onComplete) {
         //local file
-        require('fs').readFile(url,onComplete);
+        require('fs').readFile(url, onComplete);
     },
 
-    _convertSVG2PNG:function(url, w, h, onComplete) {
+    _convertSVG2PNG:function (url, w, h, onComplete) {
         //use svg2img to convert svg to png.
         //https://github.com/FuZhenn/node-svg2img
-        require('svg2img')(url, {'width':w, 'height':h},onComplete);
+        require('svg2img')(url, {'width':w, 'height':h}, onComplete);
     },
 
-    fixPNG:function(img) {
+    fixPNG:function () {
 
     },
 
@@ -157,14 +166,16 @@ Z.Util = {
      * Generate a global UID, not a real UUID, just a auto increment key with a prefix.
      * @return {String}
      */
-    GUID: function() {
-        return '___MAPTALKS_GLOBAL_'+(Z.Util.guid++);
+    GUID: function () {
+        return '___MAPTALKS_GLOBAL_' + (Z.Util.guid++);
     },
 
     // return unique ID of an object
     stamp: function (obj) {
+        /*eslint-disable camelcase*/
         obj._maptalks_id = obj._maptalks_id || Z.Util.GUID();
         return obj._maptalks_id;
+        /*eslint-enable camelcase*/
     },
 
     /**
@@ -172,7 +183,7 @@ Z.Util = {
      * @param {String} str      - a JSON string
      * @return {Object}
      */
-    parseJSON:function(str) {
+    parseJSON:function (str) {
         if (!str || !Z.Util.isString(str)) {
             return str;
         }
@@ -247,7 +258,7 @@ Z.Util = {
         return wrapperFn;
     },
 
-    removeFromArray:function(obj, array) {
+    removeFromArray:function (obj, array) {
         for (var i = array.length - 1; i >= 0; i--) {
             if (array[i] === obj) {
                 return array.splice(i, 1);
@@ -257,12 +268,12 @@ Z.Util = {
     },
 
 
-    eachInArray:function(points, context, fn) {
+    eachInArray:function (points, context, fn) {
         if (!this.isArray(points)) {
             return null;
         }
         var result = [];
-        for (var i=0,len=points.length;i<len;i++) {
+        for (var i = 0, len = points.length; i < len; i++) {
             var p = points[i];
             if (Z.Util.isNil(p)) {
                 continue;
@@ -270,7 +281,7 @@ Z.Util = {
             if (Z.Util.isArray(p)) {
                 result.push(Z.Util.eachInArray(p, context, fn));
             } else {
-                var pp = fn.call(context,p);
+                var pp = fn.call(context, p);
                 result.push(pp);
             }
 
@@ -279,11 +290,11 @@ Z.Util = {
     },
 
 
-    searchInArray:function(obj, arr) {
+    searchInArray:function (obj, arr) {
         if (Z.Util.isNil(obj) || !Z.Util.isArrayHasData(arr)) {
             return -1;
         }
-        for (var i = 0, len=arr.length; i < len; i++) {
+        for (var i = 0, len = arr.length; i < len; i++) {
             if (arr[i] === obj) {
                 return i;
             }
@@ -298,8 +309,8 @@ Z.Util = {
      * @param  {Object} b
      * @return {Boolean}
      */
-    objEqual:function(a, b) {
-        return Z.Util._objEqual(a,b);
+    objEqual:function (a, b) {
+        return Z.Util._objEqual(a, b);
     },
 
     /**
@@ -309,53 +320,53 @@ Z.Util = {
      * @param  {Object} b
      * @return {Boolean}
      */
-    objDeepEqual:function(a, b) {
-        return Z.Util._objEqual(a,b, true);
+    objDeepEqual:function (a, b) {
+        return Z.Util._objEqual(a, b, true);
     },
 
-    _objEqual:function(a, b, isDeep) {
-        function getKeys (obj) {
+    _objEqual:function (a, b, isDeep) {
+        function getKeys(obj) {
             if (Object.keys) {
-              return Object.keys(obj);
+                return Object.keys(obj);
             }
             var keys = [];
             for (var i in obj) {
-              if (Object.prototype.hasOwnProperty.call(obj, i)) {
-                keys.push(i);
-              }
+                if (Object.prototype.hasOwnProperty.call(obj, i)) {
+                    keys.push(i);
+                }
             }
             return keys;
         }
         if (Z.Util.isNil(a) || Z.Util.isNil(b)) {
-          return false;
+            return false;
         }
         // an identical "prototype" property.
-        if (a.prototype !== b.prototype) {return false;}
+        if (a.prototype !== b.prototype) { return false; }
         var ka, kb, key, i;
-        try{
+        try {
             ka = getKeys(a);
             kb = getKeys(b);
-        } catch (e) {//happens when one is a string literal and the other isn't
-          return false;
+        } catch (e) { //happens when one is a string literal and the other isn't
+            return false;
         }
         // having the same number of owned properties (keys incorporates hasOwnProperty)
-        if (ka.length !== kb.length){
-          return false;
+        if (ka.length !== kb.length) {
+            return false;
         }
         //~~~cheap key test
         for (i = ka.length - 1; i >= 0; i--) {
-          if (ka[i] != kb[i]){
-            return false;
-          }
+            if (ka[i] !== kb[i]) {
+                return false;
+            }
         }
         //equivalent values for every corresponding key, and
         //~~~possibly expensive deep test
         if (isDeep) {
             for (i = ka.length - 1; i >= 0; i--) {
-              key = ka[i];
-              if (!Z.Util.objEqual(a[key], b[key])) {
-                 return false;
-              }
+                key = ka[i];
+                if (!Z.Util.objEqual(a[key], b[key])) {
+                    return false;
+                }
             }
         }
         return true;
@@ -366,7 +377,7 @@ Z.Util = {
      * @param  {Number} num - num to round
      * @return {Number}
      */
-    round:function(num) {
+    round:function (num) {
         if (num > 0) {
             return (0.5 + num) << 0;
         } else {
@@ -380,7 +391,7 @@ Z.Util = {
      * @param  {Object} obj     - object
      * @return {Boolean}
      */
-    isCoordinate:function(obj) {
+    isCoordinate:function (obj) {
         if (obj instanceof Z.Coordinate) {
             return true;
         }
@@ -394,8 +405,8 @@ Z.Util = {
      * @param  {Object}  obj - object
      * @return {Boolean}
      */
-    isNil:function(obj) {
-        return (typeof(obj) === 'undefined' || obj === null);
+    isNil:function (obj) {
+        return (typeof (obj) === 'undefined' || obj === null);
     },
 
     /*
@@ -403,7 +414,7 @@ Z.Util = {
      * @param  {Object}  val - val
      * @return {Boolean}
      */
-    isNumber:function(val) {
+    isNumber:function (val) {
         return (typeof val === 'number') && !isNaN(val);
     },
 
@@ -421,8 +432,8 @@ Z.Util = {
      * @param {*} defaultValue - default value
      * @returns {*}
      */
-    getValueOrDefault: function(value, defaultValue) {
-        return (Z.Util.isNil(value))?defaultValue:value;
+    getValueOrDefault: function (value, defaultValue) {
+        return (Z.Util.isNil(value)) ? defaultValue : value;
     },
 
     /*
@@ -430,8 +441,8 @@ Z.Util = {
      * @param {Object} obj
      * @return {Boolean} true|false
      */
-    isArrayHasData:function(obj) {
-        return this.isArray(obj) && obj.length>0;
+    isArrayHasData:function (obj) {
+        return this.isArray(obj) && obj.length > 0;
     },
 
     /*
@@ -439,9 +450,12 @@ Z.Util = {
      * @param {Object} obj
      * @return {Boolean} true|false
      */
-    isArray:function(obj) {
-        if (!obj) {return false;}
-        return typeof obj == 'array' || (obj.constructor !== null && obj.constructor == Array);
+    isArray:function (obj) {
+        if (!obj) { return false; }
+        if (Array.isArray) {
+            return Array.isArray(obj);
+        }
+        return Object.prototype.toString.call(obj) === '[object Array]';
     },
 
     /**
@@ -449,9 +463,9 @@ Z.Util = {
      * @param {Object} _str
      * @return {Boolean} true|false
      */
-    isString:function(_str) {
-        if (Z.Util.isNil(_str)) {return false;}
-        return typeof _str == 'string' || (_str.constructor!==null && _str.constructor == String);
+    isString:function (_str) {
+        if (Z.Util.isNil(_str)) { return false; }
+        return typeof _str === 'string' || (_str.constructor !== null && _str.constructor === String);
     },
 
     /*
@@ -459,11 +473,11 @@ Z.Util = {
      * @param {Object} _func
      * @return {Boolean} true|false
      */
-    isFunction:function(_func) {
+    isFunction:function (_func) {
         if (this.isNil(_func)) {
             return false;
         }
-        return typeof _func == 'function' || (_func.constructor!==null && _func.constructor == Function);
+        return typeof _func === 'function' || (_func.constructor !== null && _func.constructor === Function);
     },
 
     /**
@@ -471,7 +485,7 @@ Z.Util = {
      * @param  {String}  url - url to check
      * @return {Boolean}
      */
-    isURL:function(url) {
+    isURL:function (url) {
         if (!url) {
             return false;
         }
@@ -486,12 +500,12 @@ Z.Util = {
      * @param  {String} p - minus style name
      * @return {String} camel style name
      */
-    convertMinusToCamel: function(str) {
+    convertMinusToCamel: function (str) {
         if (str.indexOf('-') < 0) {
             return str;
         }
         var re = /-([A-Za-z])/g;
-        return str.replace(re, function (match, p1, offset, str) {
+        return str.replace(re, function (match, p1) {
             return p1.toUpperCase();
         });
     },
@@ -501,9 +515,9 @@ Z.Util = {
      * @param  {String} p - camel style name
      * @return {String} minus style name
      */
-    convertCamelToMinus: function(str) {
+    convertCamelToMinus: function (str) {
         var re = /([A-Z])/g;
-        return str.replace(re, function (match, p1, offset, str) {
+        return str.replace(re, function (match, p1, offset) {
             if (offset > 0) {
                 return '-' + p1.toLowerCase();
             }
@@ -517,7 +531,7 @@ Z.Util = {
      * @param  {String} style   转换风格:'minus'或'camel'
      * @return {Object}    转换后的对象
      */
-    convertFieldNameStyle:function(symbol, style) {
+    convertFieldNameStyle:function (symbol, style) {
         if (!symbol) {
             return null;
         }
@@ -530,8 +544,8 @@ Z.Util = {
         var option = {};
         for (var p in symbol) {
             if (symbol.hasOwnProperty(p)) {
-                if (p === "") {continue;}
-                option[fn(p)]=symbol[p];
+                if (p === '') { continue; }
+                option[fn(p)] = symbol[p];
             }
         }
         return option;
@@ -546,13 +560,13 @@ Z.Util = {
     cssUrlRe:/^url\(([^\'\"].*[^\'\"])\)$/i,
 
     isCssUrl: function (str) {
-         if (Z.Util.cssUrlRe.test(str)) {
+        if (Z.Util.cssUrlRe.test(str)) {
             return 1;
-         }
-         if (Z.Util.cssUrlReWithQuote.test(str)) {
+        }
+        if (Z.Util.cssUrlReWithQuote.test(str)) {
             return 2;
-         }
-         return 0;
+        }
+        return 0;
     },
 
     extractCssUrl: function (str) {
@@ -580,7 +594,7 @@ Z.Util = {
      * @example
      *     var encodedData = maptalks.Util.btoa(stringToEncode);
      */
-    btoa:function(input) {
+    btoa:function (input) {
         if ((typeof window !== 'undefined') && window.btoa) {
             return window.btoa(input);
         }
@@ -595,11 +609,11 @@ Z.Util = {
           // "8 - idx % 1 * 8" generates the sequence 2, 4, 6, 8
           output += map.charAt(63 & block >> 8 - idx % 1 * 8)
         ) {
-          charCode = str.charCodeAt(idx += 3/4);
-          if (charCode > 0xFF) {
-            throw new Error("'btoa' failed: The string to be encoded contains characters outside of the Latin1 range.");
-          }
-          block = block << 8 | charCode;
+            charCode = str.charCodeAt(idx += 3 / 4);
+            if (charCode > 0xFF) {
+                throw new Error('\'btoa\' failed: The string to be encoded contains characters outside of the Latin1 range.');
+            }
+            block = block << 8 | charCode;
         }
         return output;
     },
@@ -608,24 +622,24 @@ Z.Util = {
      * Borrowed from jquery, evaluates a javascript snippet in a global context
      * @param {String} code
      */
-    globalEval: function( code ) {
-        var script = document.createElement( "script" );
+    globalEval: function (code) {
+        var script = document.createElement('script');
         script.text = code;
-        document.head.appendChild( script ).parentNode.removeChild( script );
+        document.head.appendChild(script).parentNode.removeChild(script);
     },
 
     /**
      * Borrowed from jquery, evaluates a script in a global context.
      * @param  {String} file    - javascript file to eval
      */
-    globalScript: function( file ) {
-        var script = document.createElement( "script" );
-        script.type = "text/javascript"
+    globalScript: function (file) {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
         script.src = file;
-        document.head.appendChild( script );
+        document.head.appendChild(script);
     },
 
-    decreaseSymbolOpacity:function(symbol, ratio) {
+    decreaseSymbolOpacity:function (symbol, ratio) {
         function s(_symbol, _ratio) {
             var op = _symbol['opacity'];
             if (Z.Util.isNil(op)) {
@@ -636,15 +650,15 @@ Z.Util = {
         }
         if (Z.Util.isArray(symbol)) {
             for (var i = 0; i < symbol.length; i++) {
-                s(symbol[i],ratio);
+                s(symbol[i], ratio);
             }
         } else {
-            s(symbol,ratio);
+            s(symbol, ratio);
         }
         return symbol;
     },
 
-    extendSymbol:function(symbol) {
+    extendSymbol:function (symbol) {
         var sources = Array.prototype.slice.call(arguments, 1);
         if (!sources || !sources.length) {
             sources = [{}];
@@ -658,10 +672,8 @@ Z.Util = {
                 for (var ii = 0; ii < sources.length; ii++) {
                     if (!Z.Util.isArray(sources[ii])) {
                         Z.Util.extend(dest, s, sources[ii]);
-                    } else {
-                        if (!Z.Util.isNil(sources[ii][i])) {
-                            Z.Util.extend(dest, s, sources[ii][i]);
-                        }
+                    } else if (!Z.Util.isNil(sources[ii][i])) {
+                        Z.Util.extend(dest, s, sources[ii][i]);
                     }
                 }
                 result.push(dest);
@@ -676,48 +688,48 @@ Z.Util = {
 
 
     //RequestAnimationFrame, inspired by Leaflet
-    (function () {
-        if (Z.node) {
-            Z.Util.requestAnimFrame = function (fn) {
-                    return setTimeout(fn, 16);
-            };
+(function () {
+    if (Z.node) {
+        Z.Util.requestAnimFrame = function (fn) {
+            return setTimeout(fn, 16);
+        };
 
-            Z.Util.cancelAnimFrame = clearTimeout;
-            return;
-        }
+        Z.Util.cancelAnimFrame = clearTimeout;
+        return;
+    }
 
-        var requestFn, cancelFn;
-        var lastTime = 0;
+    var requestFn, cancelFn;
+    var lastTime = 0;
 
 
         // fallback for IE 7-8
-        function timeoutDefer(fn) {
-            var time = +new Date(),
-                timeToCall = Math.max(0, 16 - (time - lastTime));
+    function timeoutDefer(fn) {
+        var time = +new Date(),
+            timeToCall = Math.max(0, 16 - (time - lastTime));
 
-            lastTime = time + timeToCall;
-            return setTimeout(fn, timeToCall);
-        }
-        function getPrefixed(name) {
-            return window['webkit' + name] || window['moz' + name] || window['ms' + name];
-        }
-        if (typeof(window) != 'undefined') {
+        lastTime = time + timeToCall;
+        return setTimeout(fn, timeToCall);
+    }
+    function getPrefixed(name) {
+        return window['webkit' + name] || window['moz' + name] || window['ms' + name];
+    }
+    if (typeof (window) != 'undefined') {
             // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 
-            requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
-            cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
+        requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
+        cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
                            getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
-        } else {
-            requestFn = timeoutDefer;
-            cancelFn =  function (id) { clearTimeout(id); };
-        }
-        Z.Util.requestAnimFrame = function (fn) {
-                return requestFn(fn);
-        };
+    } else {
+        requestFn = timeoutDefer;
+        cancelFn =  function (id) { clearTimeout(id); };
+    }
+    Z.Util.requestAnimFrame = function (fn) {
+        return requestFn(fn);
+    };
 
-        Z.Util.cancelAnimFrame = function (id) {
-            if (id) {
-                cancelFn(id);
-            }
-        };
-    })();
+    Z.Util.cancelAnimFrame = function (id) {
+        if (id) {
+            cancelFn(id);
+        }
+    };
+})();

@@ -18,7 +18,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         }
     },
 
-    initialize:function(geometries, opts) {
+    initialize:function (geometries, opts) {
         this._initOptions(opts);
         this.setGeometries(geometries);
     },
@@ -28,7 +28,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param {maptalks.Geometry[]} geometries
      * @return {maptalks.GeometryCollection} this
      */
-    setGeometries:function(_geometries) {
+    setGeometries:function (_geometries) {
         var geometries = this._checkGeometries(_geometries);
         //Set the collection as child geometries' parent.
         if (Z.Util.isArray(geometries)) {
@@ -51,7 +51,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * Get geometries of the geometry collection
      * @return {maptalks.Geometry[]}
      */
-    getGeometries:function() {
+    getGeometries:function () {
         if (!this._geometries) {
             return [];
         }
@@ -64,9 +64,9 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param  {*} context   - callback's context
      * @return {maptalks.GeometryCollection} this
      */
-    forEach: function(fn, context) {
+    forEach: function (fn, context) {
         if (!context) {
-            context=this;
+            context = this;
         }
         var geometries = this.getGeometries();
         for (var i = 0, len = geometries.length; i < len; i++) {
@@ -78,19 +78,19 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         return this;
     },
 
-    select: function(condition) {
+    select: function (condition) {
         var evaFn = new Function('geometry', 'with (geometry) { return ' + condition + '; }');
         var selected = [];
-        this.forEach(function(geometry) {
+        this.forEach(function (geometry) {
             var json = {
                 'type' : geometry.getType(),
                 'properties' : geometry._exportProperties()
-            }
+            };
             if (evaFn(json) === true) {
                 selected.push(geometry);
             }
         });
-        return selected.length>0 ? new Z.GeometryCollection(selected) : null;
+        return selected.length > 0 ? new Z.GeometryCollection(selected) : null;
     },
 
     /**
@@ -98,14 +98,14 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param  {maptalks.Coordinate} offset - translate offset
      * @return {maptalks.GeometryCollection} this
      */
-    translate:function(offset) {
+    translate:function (offset) {
         if (!offset) {
             return this;
         }
         if (this.isEmpty()) {
             return this;
         }
-        this.forEach(function(geometry) {
+        this.forEach(function (geometry) {
             if (geometry && geometry.translate) {
                 geometry.translate(offset);
             }
@@ -117,7 +117,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * Whether the geometry collection is empty
      * @return {Boolean}
      */
-    isEmpty:function() {
+    isEmpty:function () {
         return !Z.Util.isArrayHasData(this.getGeometries());
     },
 
@@ -127,8 +127,8 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @fires maptalks.Geometry#removestart
      * @fires maptalks.Geometry#remove
      */
-    remove:function() {
-        this.forEach(function(geometry) {
+    remove:function () {
+        this.forEach(function (geometry) {
             geometry._rootRemove();
         });
         this._rootRemoveAndFireEvent();
@@ -140,9 +140,9 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @return {maptalks.GeometryCollection} this
      * @fires maptalks.Geometry#show
      */
-    show:function() {
+    show:function () {
         this.options['visible'] = true;
-        this.forEach(function(geometry) {
+        this.forEach(function (geometry) {
             geometry.show();
         });
         return this;
@@ -153,30 +153,30 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @return {maptalks.GeometryCollection} this
      * @fires maptalks.Geometry#hide
      */
-    hide:function() {
+    hide:function () {
         this.options['visible'] = false;
-        this.forEach(function(geometry) {
+        this.forEach(function (geometry) {
             geometry.hide();
         });
         return this;
     },
 
-    setSymbol:function(symbol) {
+    setSymbol:function (symbol) {
         if (!symbol) {
-           this._symbol = null;
+            this._symbol = null;
         } else {
-           var camelSymbol = this._prepareSymbol(symbol);
-           this._symbol = camelSymbol;
+            var camelSymbol = this._prepareSymbol(symbol);
+            this._symbol = camelSymbol;
         }
-        this.forEach(function(geometry) {
+        this.forEach(function (geometry) {
             geometry.setSymbol(symbol);
         });
         this._onSymbolChanged();
         return this;
     },
 
-    onConfig:function(config) {
-        this.forEach(function(geometry) {
+    onConfig:function (config) {
+        this.forEach(function (geometry) {
             geometry.config(config);
         });
     },
@@ -186,14 +186,14 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param  {maptalks.Layer} layer
      * @private
      */
-    _bindLayer:function(layer) {
+    _bindLayer:function (layer) {
         this._commonBindLayer(layer);
         this._bindGeometriesToLayer();
     },
 
-    _bindGeometriesToLayer:function() {
+    _bindGeometriesToLayer:function () {
         var layer = this.getLayer();
-        this.forEach(function(geometry) {
+        this.forEach(function (geometry) {
             geometry._bindLayer(layer);
         });
     },
@@ -203,7 +203,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param  {maptalks.Geometry[]} geometries - geometries to check
      * @private
      */
-    _checkGeometries:function(geometries) {
+    _checkGeometries:function (geometries) {
         if (geometries && !Z.Util.isArray(geometries)) {
             if (geometries instanceof Z.Geometry) {
                 return [geometries];
@@ -211,9 +211,9 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
                 throw new Error(this.exceptions['INVALID_GEOMETRY']);
             }
         } else if (Z.Util.isArray(geometries)) {
-            for (var i=0, len=geometries.length;i<len;i++) {
+            for (var i = 0, len = geometries.length; i < len; i++) {
                 if (!(geometries[i] instanceof Z.Geometry)) {
-                   throw new Error(this.exceptions['INVALID_GEOMETRY']);
+                    throw new Error(this.exceptions['INVALID_GEOMETRY']);
                 }
             }
             return geometries;
@@ -221,35 +221,35 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         return null;
     },
 
-    _updateCache:function() {
+    _updateCache:function () {
         delete this._extent;
         if (this.isEmpty()) {
             return;
         }
-        this.forEach(function(geometry) {
+        this.forEach(function (geometry) {
             if (geometry && geometry._updateCache) {
                 geometry._updateCache();
             }
         });
     },
 
-    _removePainter:function() {
+    _removePainter:function () {
         if (this._painter) {
             this._painter.remove();
         }
         delete this._painter;
-        this.forEach(function(geometry) {
+        this.forEach(function (geometry) {
             geometry._removePainter();
         });
     },
 
-    _computeCenter:function(projection) {
+    _computeCenter:function (projection) {
         if (!projection || this.isEmpty()) {
             return null;
         }
-        var sumX=0, sumY=0,counter=0;
+        var sumX = 0, sumY = 0, counter = 0;
         var geometries = this.getGeometries();
-        for (var i=0, len=geometries.length;i<len;i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -263,17 +263,17 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         if (counter === 0) {
             return null;
         }
-        return new Z.Coordinate(sumX/counter, sumY/counter);
+        return new Z.Coordinate(sumX / counter, sumY / counter);
     },
 
-    _containsPoint: function(point) {
+    _containsPoint: function (point, t) {
         if (this.isEmpty()) {
             return false;
         }
         var i, len;
         var geometries = this.getGeometries();
         for (i = 0, len = geometries.length; i < len; i++) {
-            if (geometries[i]._containsPoint(point)) {
+            if (geometries[i]._containsPoint(point, t)) {
                 return true;
             }
         }
@@ -281,13 +281,13 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         return false;
     },
 
-    _computeExtent:function(projection) {
+    _computeExtent:function (projection) {
         if (this.isEmpty()) {
             return null;
         }
         var geometries = this.getGeometries();
         var result = null;
-        for (var i=0, len=geometries.length;i<len;i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -301,13 +301,13 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
 
 
 
-    _computeGeodesicLength:function(projection) {
+    _computeGeodesicLength:function (projection) {
         if (!projection || this.isEmpty()) {
             return 0;
         }
         var geometries = this.getGeometries();
         var result = 0;
-        for (var i=0, len=geometries.length;i<len;i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -316,13 +316,13 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         return result;
     },
 
-    _computeGeodesicArea:function(projection) {
+    _computeGeodesicArea:function (projection) {
         if (!projection || this.isEmpty()) {
             return 0;
         }
         var geometries = this.getGeometries();
         var result = 0;
-        for (var i=0, len=geometries.length;i<len;i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -332,11 +332,11 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     },
 
 
-   _exportGeoJSONGeometry:function() {
+    _exportGeoJSONGeometry:function () {
         var geoJSON = [];
         if (!this.isEmpty()) {
             var geometries = this.getGeometries();
-            for (var i=0,len=geometries.length;i<len;i++) {
+            for (var i = 0, len = geometries.length; i < len; i++) {
                 if (!geometries[i]) {
                     continue;
                 }
@@ -349,12 +349,12 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         };
     },
 
-    _clearProjection:function() {
+    _clearProjection:function () {
         if (this.isEmpty()) {
             return;
         }
         var geometries = this.getGeometries();
-        for (var i=0,len=geometries.length;i<len;i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -368,13 +368,13 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @private
      * @return {maptalks.Coordinate[]}
      */
-    _getConnectPoints: function() {
+    _getConnectPoints: function () {
         var extent = this.getExtent();
         var anchors = [
-            new Z.Coordinate(extent.xmin,extent.ymax),
-            new Z.Coordinate(extent.xmax,extent.ymin),
-            new Z.Coordinate(extent.xmin,extent.ymin),
-            new Z.Coordinate(extent.xmax,extent.ymax)
+            new Z.Coordinate(extent.xmin, extent.ymax),
+            new Z.Coordinate(extent.xmax, extent.ymin),
+            new Z.Coordinate(extent.xmin, extent.ymin),
+            new Z.Coordinate(extent.xmax, extent.ymax)
         ];
         return anchors;
     },
@@ -382,7 +382,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
 //----------覆盖Geometry中的编辑相关方法-----------------
 
 
-    startEdit:function(opts) {
+    startEdit:function (opts) {
         if (this.isEmpty()) {
             return this;
         }
@@ -393,26 +393,28 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
             this._originalSymbol = this.getSymbol();
             this.setSymbol(opts['symbol']);
         }
+        this._draggbleBeforeEdit = this.options['draggable'];
+        this.config('draggable', false);
         var geometries = this.getGeometries();
-        for (var i=0,len=geometries.length;i<len;i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             geometries[i].startEdit(opts);
         }
         this._editing = true;
         this.hide();
         var me = this;
-        setTimeout(function() {
+        setTimeout(function () {
             me.fire('editstart');
         }, 1);
         return this;
     },
 
 
-    endEdit:function() {
+    endEdit:function () {
         if (this.isEmpty()) {
             return this;
         }
         var geometries = this.getGeometries();
-        for (var i=0,len=geometries.length;i<len;i++) {
+        for (var i = 0, len = geometries.length; i < len; i++) {
             geometries[i].endEdit();
         }
         if (this._originalSymbol) {
@@ -421,12 +423,13 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         }
         this._editing = false;
         this.show();
+        this.config('draggable', this._draggbleBeforeEdit);
         this.fire('editend');
         return this;
     },
 
 
-    isEditing:function() {
+    isEditing:function () {
         if (!this._editing) {
             return false;
         }

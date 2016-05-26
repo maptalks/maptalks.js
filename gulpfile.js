@@ -5,8 +5,6 @@ var minimist = require('minimist'),
   header = require('gulp-header'),
   footer = require('gulp-footer'),
   concat = require('gulp-concat'),
-  eslint = require('gulp-eslint'),
-  eslint_config = require('eslint-config-maptalks'),
   gzip   = require('gulp-gzip'),
   rename = require('gulp-rename'),
   uglify = require('gulp-uglify'),
@@ -31,20 +29,9 @@ var sources = require('./build/getFiles.js').getFiles(),
 
 gulp.task('scripts', function() {
   return gulp.src(sources)
-      // .pipe(eslint({
-      //     extends: 'maptalks',
-      //     globals: {
-      //         'Z':true
-      //     },
-      //     "rules": {
-      //       "indent":2
-      //     }
-      // }))
-      // .pipe(eslint.format())
-      // .pipe(eslint.failAfterError())
-      .pipe(concat('maptalks.js'))         // do things that require all files
-      .pipe(header('(function () {\n')) // e.g. jshinting ^^^
-      .pipe(footer('\n})();'))          // and some kind of module wrapping
+      .pipe(concat('maptalks.js'))
+      .pipe(header('(function () {\n'))
+      .pipe(footer('\n})();'))
       .pipe(gulp.dest('./dist'))
       .pipe(rename({suffix: '.min'}))
 //      .pipe(uglify())

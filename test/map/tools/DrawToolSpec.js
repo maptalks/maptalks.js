@@ -80,6 +80,21 @@ describe('#DrawTool', function () {
         removeContainer(container)
     });
     describe('draw geometries', function() {
+        it('throw exception with an undefined mode', function() {
+            expect(function() {
+                var drawTool = new Z.DrawTool({
+                });
+            }).to.throwException();
+        });
+
+        it('throw exception with an invalid mode', function() {
+            expect(function() {
+                var drawTool = new Z.DrawTool({
+                    mode : 'invalidMode'
+                });
+            }).to.throwException();
+        });
+
         it('can draw a marker', function(done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof Z.Marker).to.be.ok();

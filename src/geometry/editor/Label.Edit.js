@@ -33,38 +33,38 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
      * Whether the label is being edited text.
      * @return {Boolean}
      */
-    isEditingText: function() {
+    isEditingText: function () {
         if (this._container) {
             return true;
         }
         return false;
     },
 
-    _prepareEditor:function() {
+    _prepareEditor:function () {
         var map = this.getMap();
-        var zIndex = map._panels.control.style.zIndex+1;
+        var zIndex = map._panels.control.style.zIndex + 1;
         var viewPoint = this._computeViewPoint();
         this._container = Z.DomUtil.createEl('div');
-        this._container.style.cssText='position:absolute;top:'+viewPoint['y']
-                                    +'px;left:'+viewPoint['x']+'px;z-index:'+zIndex+';';
+        this._container.style.cssText = 'position:absolute;top:' + viewPoint['y']
+                                    + 'px;left:' + viewPoint['x'] + 'px;z-index:' + zIndex + ';';
         map._panels.ui.appendChild(this._container);
         this._textEditor = this._createInputDom();
         this._container.appendChild(this._textEditor);
     },
 
-    _computeViewPoint: function() {
+    _computeViewPoint: function () {
         var map = this.getMap();
         var symbol = this.getSymbol();
         var labelSize = this.getSize();
-        var dx = Z.Util.getValueOrDefault(symbol['textDx'],0),
-            dy = Z.Util.getValueOrDefault(symbol['textDy'],0);
+        var dx = Z.Util.getValueOrDefault(symbol['textDx'], 0),
+            dy = Z.Util.getValueOrDefault(symbol['textDy'], 0);
         var align = Z.StringUtil.getAlignPoint(labelSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment'])
-                    .add(new Z.Point(dx,dy));
+                    .add(new Z.Point(dx, dy));
         var viewPoint = map.coordinateToViewPoint(this.getCenter()).add(align);
         return viewPoint;
     },
 
-    _createInputDom: function() {
+    _createInputDom: function () {
         var labelSize = this.getSize();
         var symbol = this.getSymbol();
         var width = labelSize['width']||100;
@@ -79,8 +79,8 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             'border:1px solid '+lineColor+';'+
             'color:'+textColor+';'+
             'font-size:'+textSize+'px;'+
-            'width:'+(width)+'px;'+
-            'height:'+(height)+'px;'+
+            'width:'+(width - spacing)+'px;'+
+            'height:'+(height - spacing) +'px;'+
             'min-height:'+height+'px;'+
             'margin-left: auto;'+
             'margin-right: auto;'+
@@ -93,6 +93,10 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         inputDom.value = content;
         Z.DomUtil.on(inputDom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
         this.getMap().on('click', this.endEditText, this);
+        var me = this;
+        Z.DomUtil.on(inputDom, 'blur', function (param) {
+            me.endEditText();
+        });
         return inputDom;
     }
 

@@ -11,13 +11,13 @@
  * @category layer
  * @protected
  */
-Z.TileSystem = function(sx, sy, ox, oy){
+Z.TileSystem = function (sx, sy, ox, oy) {
     if (Z.Util.isArray(sx)) {
-        this.scale =  { x : sx[0] , y : sx[1] };
-        this.origin = { x : sx[2] , y : sx[3] };
+        this.scale =  {x : sx[0], y : sx[1]};
+        this.origin = {x : sx[2], y : sx[3]};
     } else {
-        this.scale =  { x : sx , y : sy };
-        this.origin = { x : ox , y : oy };
+        this.scale =  {x : sx, y : sy};
+        this.origin = {x : ox, y : oy};
     }
 };
 
@@ -64,7 +64,7 @@ Z.Util.extend(Z.TileSystem, /** @lends maptalks.TileSystem */{
  * @param  {Object} projection      - a projection object
  * @return {String} tile system code
  */
-Z.TileSystem.getDefault = function(projection) {
+Z.TileSystem.getDefault = function (projection) {
     if (projection['code'].toLowerCase() === 'baidu') {
         return 'baidu';
     } else if (projection['code'].toLowerCase() === 'EPSG:4326'.toLowerCase()) {
@@ -72,4 +72,4 @@ Z.TileSystem.getDefault = function(projection) {
     } else {
         return 'web-mercator';
     }
-}
+};

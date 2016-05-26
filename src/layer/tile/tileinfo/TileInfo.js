@@ -23,7 +23,7 @@ Z.TileInfo = {
     }
 };
 
-Z['TileInfo']={
+Z['TileInfo'] = {
     'web-mercator':{
         'projection':'EPSG:3857', //4326 | 3857 | bd09
         'tileSystem' : 'web-mercator',
@@ -51,10 +51,10 @@ Z['TileInfo']={
             0.5971642833709717
         ],
         'fullExtent': {
-            "top":20037508.34,
-            "left":-20037508.34,
-            "bottom":-20037508.34,
-            "right":20037508.34
+            'top':20037508.34,
+            'left':-20037508.34,
+            'bottom':-20037508.34,
+            'right':20037508.34
         },
         'tileSize':{
             'width':256,
@@ -89,10 +89,10 @@ Z['TileInfo']={
             0.5971642833709717
         ],
         'fullExtent': {
-            "top":20037508.34,
-            "left":-20037508.34,
-            "bottom":-20037508.34,
-            "right":20037508.34
+            'top':20037508.34,
+            'left':-20037508.34,
+            'bottom':-20037508.34,
+            'right':20037508.34
         },
         'tileSize':{
             'width':256,
@@ -101,23 +101,23 @@ Z['TileInfo']={
     },
     'baidu':{
         'projection':'BAIDU',
-        'tileSystem':[1,1,0,0],
+        'tileSystem':[1, 1, 0, 0],
         'maxZoom':19,
         'minZoom':1,
-        'resolutions':(function() {
-            var res = Math.pow(2,18);
+        'resolutions':(function () {
+            var res = Math.pow(2, 18);
             var resolutions = [];
-            for (var i = 0; i < 20; i++){
+            for (var i = 0; i < 20; i++) {
                 resolutions[i] = res;
                 res *= 0.5;
             }
             return resolutions;
         })(),
         'fullExtent':{
-            "top":33554432,
-            "left":-33554432,
-            "bottom":-33554432,
-            "right":33554432
+            'top':33554432,
+            'left':-33554432,
+            'bottom':-33554432,
+            'right':33554432
         },
         'tileSize':{
             'width':256,

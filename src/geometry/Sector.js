@@ -17,7 +17,7 @@
  *     id : 'sector-id'
  * });
  */
-Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
+Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
     includes:[Z.Geometry.Center],
 
     /**
@@ -29,7 +29,7 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
     },
 
 
-    initialize:function(coordinates,radius,startAngle,endAngle,opts) {
+    initialize:function (coordinates, radius, startAngle, endAngle, opts) {
         this._coordinates = new Z.Coordinate(coordinates);
         this._radius = radius;
         this.startAngle = startAngle;
@@ -41,7 +41,7 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * Get radius of the sector
      * @return {Number}
      */
-    getRadius:function() {
+    getRadius:function () {
         return this._radius;
     },
 
@@ -51,7 +51,7 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * @return {maptalks.Sector} this
      * @fires maptalks.Geometry#shapechange
      */
-    setRadius:function(radius) {
+    setRadius:function (radius) {
         this._radius = radius;
         this._onShapeChanged();
         return this;
@@ -61,7 +61,7 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * Get the sector's start angle
      * @return {Number}
      */
-    getStartAngle:function() {
+    getStartAngle:function () {
         return this.startAngle;
     },
 
@@ -71,7 +71,7 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * @return {maptalks.Sector} this
      * @fires maptalksGeometry#shapechange
      */
-    setStartAngle:function(startAngle) {
+    setStartAngle:function (startAngle) {
         this.startAngle = startAngle;
         this._onShapeChanged();
         return this;
@@ -81,7 +81,7 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * Get the sector's end angle
      * @return {Number}
      */
-    getEndAngle:function() {
+    getEndAngle:function () {
         return this.endAngle;
     },
 
@@ -91,7 +91,7 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * @return {maptalks.Sector} this
      * @fires maptalksGeometry#shapechange
      */
-    setEndAngle:function(endAngle) {
+    setEndAngle:function (endAngle) {
         this.endAngle = endAngle;
         this._onShapeChanged();
         return this;
@@ -101,17 +101,17 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * Gets the shell of the sector as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Sector#options}
      * @return {maptalks.Coordinate[]} - shell coordinates
      */
-    getShell:function() {
+    getShell:function () {
         var measurer = this._getMeasurer();
         var center = this.getCoordinates();
         var numberOfPoints = this.options['numberOfShellPoints'];
         var radius = this.getRadius();
         var shell = [];
-        var angle = this.getEndAngle()-this.getStartAngle();
-        for (var i=0;i<numberOfPoints;i++) {
-            var rad = (angle*i/numberOfPoints+this.getStartAngle())*Math.PI/180;
-            var dx = radius*Math.cos(rad);
-            var dy = radius*Math.sin(rad);
+        var angle = this.getEndAngle() - this.getStartAngle();
+        for (var i = 0; i < numberOfPoints; i++) {
+            var rad = (angle * i / numberOfPoints + this.getStartAngle()) * Math.PI / 180;
+            var dx = radius * Math.cos(rad);
+            var dy = radius * Math.sin(rad);
             var vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
@@ -123,13 +123,13 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * Sector won't have any holes, always returns null
      * @return {null}
      */
-    getHoles:function() {
+    getHoles:function () {
         return null;
     },
 
-    _containsPoint: function(point) {
+    _containsPoint: function (point, tolerance) {
         var center = this._getCenterViewPoint(),
-            t = this._hitTestTolerance(),
+            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
             pc = center,
             pp = point,
@@ -149,50 +149,50 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
         }
 
         // TODO: tolerance
-        return pp.distanceTo(pc) <= size.width / 2 && between;
+        return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
     },
 
-    _computeExtent:function(measurer) {
+    _computeExtent:function (measurer) {
         if (!measurer || !this._coordinates || Z.Util.isNil(this._radius)) {
             return null;
         }
 
         var radius = this._radius;
-        var p1 = measurer.locate(this._coordinates,radius,radius);
-        var p2 = measurer.locate(this._coordinates,-radius,-radius);
-        return new Z.Extent(p1,p2);
+        var p1 = measurer.locate(this._coordinates, radius, radius);
+        var p2 = measurer.locate(this._coordinates, -radius, -radius);
+        return new Z.Extent(p1, p2);
     },
 
-    _computeGeodesicLength:function(measurer) {
+    _computeGeodesicLength:function () {
         if (Z.Util.isNil(this._radius)) {
             return 0;
         }
-        return Math.PI*2*this._radius*Math.abs(this.startAngle-this.endAngle)/360+2*this._radius;
+        return Math.PI * 2 * this._radius * Math.abs(this.startAngle - this.endAngle) / 360 + 2 * this._radius;
     },
 
-    _computeGeodesicArea:function(measurer) {
+    _computeGeodesicArea:function () {
         if (Z.Util.isNil(this._radius)) {
             return 0;
         }
-        return Math.PI*Math.pow(this._radius,2)*Math.abs(this.startAngle-this.endAngle)/360;
+        return Math.PI * Math.pow(this._radius, 2) * Math.abs(this.startAngle - this.endAngle) / 360;
     },
 
-    _exportGeoJSONGeometry: function() {
+    _exportGeoJSONGeometry: function () {
         var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates
-        }
+        };
     },
 
-    _toJSON:function(options) {
+    _toJSON:function (options) {
         var opts = Z.Util.extend({}, options);
         var center = this.getCenter();
         opts.geometry = false;
         return {
             'feature'   :  this.toGeoJSON(opts),
             'subType'   :  'Sector',
-            'coordinates'  :  [center.x,center.y],
+            'coordinates'  :  [center.x, center.y],
             'radius'    :  this.getRadius(),
             'startAngle':  this.getStartAngle(),
             'endAngle'  :  this.getEndAngle()
@@ -201,7 +201,7 @@ Z.Sector=Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
 
 });
 
-Z.Sector._fromJSON=function(json) {
+Z.Sector._fromJSON = function (json) {
     var feature = json['feature'];
     var sector = new Z.Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], json['options']);
     sector.setProperties(feature['properties']);

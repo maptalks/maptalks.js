@@ -20,9 +20,9 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
         Z.DomUtil.off(this._dom, 'mouseout', this._onMouseOut, this);
     },
 
-    _onMouseMove: function(event) {
+    _onMouseMove: function (event) {
         var eventParam = this.target._parseEvent(event);
-        var mousePos = eventParam['containerPoint']
+        var mousePos = eventParam['containerPoint'];
         var size = this.target.getSize();
         var tests = [mousePos.x, size['width'] - mousePos.x,
                 mousePos.y, size['height'] - mousePos.y];
@@ -35,7 +35,7 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
             return;
         }
         var step = this.step;
-        var offset = new Z.Point(0,0);
+        var offset = new Z.Point(0, 0);
         if (tests[0] === min) {
             offset.x = step;
         } else if (tests[1] === min) {
@@ -50,11 +50,11 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
         this._pan();
     },
 
-    _onMouseOut: function(event) {
+    _onMouseOut: function () {
         this._cancelPan();
     },
 
-    _cancelPan:function() {
+    _cancelPan:function () {
         delete this._stepOffset;
         if (this._animationId) {
             Z.Util.cancelAnimFrame(this._animationId);
@@ -62,12 +62,12 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
         }
     },
 
-    _pan:function() {
+    _pan:function () {
         if (this._stepOffset) {
             this.target.panBy(this._stepOffset, {
                 'animation':false
             });
-            this._animationId = Z.Util.requestAnimFrame(Z.Util.bind(this._pan,this));
+            this._animationId = Z.Util.requestAnimFrame(Z.Util.bind(this._pan, this));
         }
     }
 });

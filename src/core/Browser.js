@@ -1,7 +1,7 @@
 if (!Z.node) {
     (function () {
 
-            var ua = navigator.userAgent.toLowerCase(),
+        var ua = navigator.userAgent.toLowerCase(),
             doc = document.documentElement,
 
             ie = 'ActiveXObject' in window,
@@ -55,10 +55,10 @@ if (!Z.node) {
 
             retina: (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI)) > 1,
 
-            language: navigator.browserLanguage?navigator.browserLanguage:navigator.language,
+            language: navigator.browserLanguage ? navigator.browserLanguage : navigator.language,
             ie9: (ie && document.documentMode === 9),
             ie10: (ie && document.documentMode === 10),
-            canvas: (!!document.createElement("canvas").getContext)
+            canvas: (!!document.createElement('canvas').getContext)
         };
         Z.Browser.translateDom = (Z.Browser.any3d && !ie);
     }());

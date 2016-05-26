@@ -7,7 +7,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param {Boolean} [options.duration=600] - pan animation duration
      * @return {maptalks.Map} this
      */
-    panTo:function(coordinate, options) {
+    panTo:function (coordinate, options) {
         if (!coordinate) {
             return this;
         }
@@ -26,23 +26,23 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param {Boolean} [options.duration=600] - pan animation duration
      * @return {maptalks.Map} this
      */
-    panBy:function(offset, options) {
-        this._onMoveStart;
+    panBy:function (offset, options) {
+        this._onMoveStart();
         if (!options) {
             options = {};
         }
-        if (typeof(options['animation']) === 'undefined' || options['animation']) {
+        if (typeof (options['animation']) === 'undefined' || options['animation']) {
             this._panAnimation(offset, options['duration']);
         } else {
             this.offsetPlatform(offset);
             this._offsetCenterByPixel(offset);
-            this._onMoving();;
+            this._onMoving();
             this._onMoveEnd();
         }
         return this;
     },
 
-    _panAnimation:function(offset, t) {
+    _panAnimation:function (offset, t) {
         this._getRenderer().panAnimation(offset, t);
     }
 

@@ -4,34 +4,22 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @param {Object} options - construct [options]{@link maptalks.ui.InfoWindow#options} for the info window
      * @return {maptalks.Geometry} this
      */
-    setInfoWindow:function(options) {
-        this._infoWinOptions = Z.Util.extend({},options);
+    setInfoWindow:function (options) {
+        this._infoWinOptions = Z.Util.extend({}, options);
         if (this._infoWindow) {
             Z.Util.setOptions(this._infoWindow, options);
-        } else {
-            if (this.getMap()) {
-                this._bindInfoWindow(this._infoWinOptions);
-            }
+        } else if (this.getMap()) {
+            this._bindInfoWindow(this._infoWinOptions);
         }
-        return this;
-    },
 
-    /**
-     * Get infowindow's options.
-     * @return {Object}
-     */
-    getInfoWindowOptions:function() {
-        if (!this._infoWinOptions) {
-            return null;
-        }
-        return this._infoWinOptions;
+        return this;
     },
 
     /**
      * Get info window's instance of infowindow if it has been already created.
      * @return {maptalks.ui.InfoWindow}
      */
-    getInfoWindow:function() {
+    getInfoWindow:function () {
         if (!this._infoWindow) {
             return null;
         }
@@ -43,7 +31,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @param  {maptalks.Coordinate} [coordinate=null] - coordinate to open the info window
      * @return {maptalks.Geometry} this
      */
-    openInfoWindow:function(coordinate) {
+    openInfoWindow:function (coordinate) {
         if (!this.getMap()) {
             return this;
         }
@@ -65,7 +53,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * close the info window
      * @return {maptalks.Geometry} this
      */
-    closeInfoWindow:function() {
+    closeInfoWindow:function () {
         if (this._infoWindow) {
             this._infoWindow.hide();
         }
@@ -76,27 +64,27 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * remove the info window
      * @return {maptalks.Geometry} this
      */
-    removeInfoWindow:function() {
+    removeInfoWindow:function () {
         this._unbindInfoWindow();
         delete this._infoWinOptions;
         delete this._infoWindow;
         return this;
     },
 
-    _bindInfoWindow: function(options) {
+    _bindInfoWindow: function (options) {
         this._infoWindow = new Z.ui.InfoWindow(options);
         this._infoWindow.addTo(this);
 
         return this;
     },
 
-    _unbindInfoWindow:function() {
+    _unbindInfoWindow:function () {
         if (this._infoWindow) {
             this.closeInfoWindow();
             this._infoWindow.remove();
             delete this._infoWindow;
         }
         return this;
-    },
+    }
 
 });

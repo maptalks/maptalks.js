@@ -3,14 +3,14 @@
  * @class
  * @protected
  */
-Z.GeoUtils={
+Z.GeoUtils = {
     /**
      * caculate the distance from a point to a segment.
      * @param {maptalks.Point} p
      * @param {maptalks.Point} p1
      * @param {maptalks.Point} p2
      */
-    distanceToSegment: function(p, p1, p2) {
+    distanceToSegment: function (p, p1, p2) {
         var x = p.x,
             y = p.y,
             x1 = p1.x,
@@ -41,7 +41,7 @@ Z.GeoUtils={
      * @param {maptalks.Coordinate} 点对象
      * @return {Boolean} true：点在面中
      */
-    pointInsidePolygon: function(p, points) {
+    pointInsidePolygon: function (p, points) {
         var i, j, p1, p2,
             len = points.length;
         var c = false;
@@ -58,15 +58,15 @@ Z.GeoUtils={
         return c;
     },
 
-    computeLength:function(coordinates, measurer) {
+    computeLength:function (coordinates, measurer) {
         var result = 0;
-        for (var i=0, len=coordinates.length;i<len-1;i++) {
-            result += measurer.measureLength(coordinates[i],coordinates[i+1]);
+        for (var i = 0, len = coordinates.length; i < len - 1; i++) {
+            result += measurer.measureLength(coordinates[i], coordinates[i + 1]);
         }
         return result;
     },
 
-    computeArea:function(coordinates, measurer) {
+    computeArea:function (coordinates, measurer) {
         return measurer.measureArea(coordinates);
     }
 };

@@ -38,7 +38,7 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         'items'  : []
     },
 
-    initialize: function(options) {
+    initialize: function (options) {
         Z.Util.setOptions(this, options);
     },
 
@@ -47,7 +47,7 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
      * @param {Object[]|String|HTMLElement} items - items of the menu
      * return {maptalks.ui.Menu} this
      */
-    setItems: function(items) {
+    setItems: function (items) {
         this.options['items'] = items;
         return this;
     },
@@ -56,11 +56,11 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
      * Get items of  the menu.
      * @return {Object[]|String|HTMLElement} - items of the menu
      */
-    getItems:function() {
+    getItems:function () {
         return this.options['items'];
     },
 
-    _createDOM:function() {
+    _createDOM:function () {
         if (this.options['custom']) {
             if (Z.Util.isString(this.options['items'])) {
                 var container = Z.DomUtil.createEl('div');
@@ -72,7 +72,7 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         } else {
             var dom = Z.DomUtil.createEl('div');
             Z.DomUtil.addClass(dom, 'maptalks-menu');
-            dom.style.width = this._getMenuWidth()+'px';
+            dom.style.width = this._getMenuWidth() + 'px';
             var arrow = Z.DomUtil.createEl('em');
             Z.DomUtil.addClass(arrow, 'maptalks-ico');
             var menuItems = this._createMenuItemDom();
@@ -87,43 +87,42 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
      * @return {maptalks.Point} offset
      * @private
      */
-    _getDomOffset:function() {
+    _getDomOffset:function () {
         return new Z.Point(-17, 10);
     },
 
-    _createMenuItemDom: function() {
+    _createMenuItemDom: function () {
         var me = this;
         var ul = Z.DomUtil.createEl('ul');
-        Z.DomUtil.addClass(ul,'maptalks-menu-items');
+        Z.DomUtil.addClass(ul, 'maptalks-menu-items');
         var items = this.getItems();
         function onMenuClick(index) {
-            return function(e) {
-                    var result = this._callback({'target':me, 'owner':me._owner, 'index':index});
-                    if (result === false) {
-                        return;
-                    }
-                    me.hide();
+            return function () {
+                var result = this._callback({'target':me, 'owner':me._owner, 'index':index});
+                if (result === false) {
+                    return;
                 }
+                me.hide();
+            };
         }
         var item, itemDOM;
-        for (var i=0, len=items.length;i<len;i++) {
+        for (var i = 0, len = items.length; i < len; i++) {
             item = items[i];
-            itemDOM;
-            if ('-' === item || '_' === item) {
+            if (item === '-' || item === '_') {
                 itemDOM = Z.DomUtil.createEl('li');
                 Z.DomUtil.addClass(itemDOM, 'maptalks-menu-splitter');
             } else {
                 itemDOM = Z.DomUtil.createEl('li');
                 itemDOM.innerHTML = item['item'];
                 itemDOM._callback = item['click'];
-                Z.DomUtil.on(itemDOM,'click',(onMenuClick)(i));
+                Z.DomUtil.on(itemDOM, 'click', (onMenuClick)(i));
             }
             ul.appendChild(itemDOM);
         }
         return ul;
     },
 
-    _getMenuWidth:function() {
+    _getMenuWidth:function () {
         var defaultWidth = 160;
         var width = this.options['width'];
         if (!width) {
@@ -132,20 +131,10 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         return width;
     },
 
-    /**
-     * Register the events for menu to listen.
-     * @private
-     */
-    _registerEvents: function() {
-        this.getMap().on('_zoomstart _zoomend _movestart _dblclick _click', this.hide, this);
-    },
-
-    /**
-     * Remove event listeners
-     * @private
-     */
-    _removeEvents: function() {
-        this.getMap().off('_zoomstart _zoomend _movestart _dblclick _click', this.hide, this);
+    _getEvents: function () {
+        return {
+            '_zoomstart _zoomend _movestart _dblclick _click' : this.hide
+        };
     }
 });
 
@@ -155,13 +144,13 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
  * @memberOf maptalks.ui
  * @name Menu.Mixin
  */
-Z.ui.Menu.Mixin={
+Z.ui.Menu.Mixin = {
     /**
     * Set a context menu
     * @param {Object} options - menu options
     * @return {*} this
     */
-    setMenu: function(options) {
+    setMenu: function (options) {
         this._menuOptions = options;
         if (this._menu) {
             Z.Util.setOptions(this._menu, options);
@@ -176,8 +165,8 @@ Z.ui.Menu.Mixin={
     * @param {maptalks.Coordinate} [coordinate=null] - coordinate to open the context menu
     * @return {*} this
     */
-    openMenu: function(coordinate) {
-        var map = (this instanceof Z.Map)?this:this.getMap();
+    openMenu: function (coordinate) {
+        var map = (this instanceof Z.Map) ? this : this.getMap();
         if (!coordinate) {
             coordinate = this.getCenter();
         }
@@ -193,22 +182,11 @@ Z.ui.Menu.Mixin={
     },
 
     /**
-     * Get the menu options
-     * @return {Object} menuOptions
-     */
-    getMenuOptions: function() {
-        if (!this._menuOptions) {
-            return null;
-        }
-        return Z.Util.extend({}, this._menuOptions);
-    },
-
-    /**
     * Set menu items to the context menu
     * @param {Object[]} items - menu items
     * @return {*} this
     */
-    setMenuItems: function(items) {
+    setMenuItems: function (items) {
         if (this._menuOptions) {
             this._menuOptions['items'] = items;
         }
@@ -222,7 +200,7 @@ Z.ui.Menu.Mixin={
      * Get the context menu items
      * @return {Object[]}
      */
-    getMenuItems:function() {
+    getMenuItems:function () {
         if (this._menu) {
             return this._menu.getItems();
         } else {
@@ -234,8 +212,8 @@ Z.ui.Menu.Mixin={
     * Close the contexnt menu
     * @return {*} this
     */
-    closeMenu: function() {
-        if(this._menu) {
+    closeMenu: function () {
+        if (this._menu) {
             this._menu.hide();
         }
         return this;
@@ -245,21 +223,21 @@ Z.ui.Menu.Mixin={
      * Remove the context menu
      * @return {*} this
      */
-    removeMenu:function() {
+    removeMenu:function () {
         this.off('contextmenu', this._defaultOpenMenu, this);
         this._unbindMenu();
         delete this._menuOptions;
         return this;
     },
 
-    _bindMenu: function(options) {
+    _bindMenu: function (options) {
         this._menu = new Z.ui.Menu(options);
         this._menu.addTo(this);
 
         return this;
     },
 
-    _unbindMenu:function() {
+    _unbindMenu:function () {
         if (this._menu) {
             this.closeMenu();
             this._menu.remove();
@@ -275,8 +253,8 @@ Z.ui.Menu.Mixin={
      * @return {*}       [description]
      * @default
      */
-    _defaultOpenMenu:function(param) {
-        if (this.listens('contextmenu')>1) {
+    _defaultOpenMenu:function (param) {
+        if (this.listens('contextmenu') > 1) {
             return;
         } else {
             this.openMenu(param['coordinate']);

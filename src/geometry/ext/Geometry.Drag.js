@@ -15,7 +15,7 @@ Z.Geometry.mergeOptions({
  * @extends {maptalks.Handler}
  */
 Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype */{
-    dragStageLayerId : Z.internalLayerPrefix+'_drag_stage',
+    dragStageLayerId : Z.internalLayerPrefix + '_drag_stage',
 
     START: Z.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
 
@@ -28,7 +28,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
 
     },
 
-    _startDrag: function(param) {
+    _startDrag: function (param) {
         var map = this.target.getMap();
         if (!map) {
             return;
@@ -41,11 +41,12 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             return;
         }
         var domEvent = param['domEvent'];
-        if ( domEvent.touches && domEvent.touches.length > 1) {
+        if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
         this.target.on('click', this._endDrag, this);
         this._preCoordDragged = param['coordinate'];
+        this._prepareMap();
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
         this._moved = false;
@@ -61,10 +62,9 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
          * @property {Event} domEvent                 - dom event
          */
         this.target._fireEvent('dragstart', param);
-        return this;
     },
 
-    _prepareMap:function() {
+    _prepareMap:function () {
         var map = this.target.getMap();
         this._mapDraggable = map.options['draggable'];
         this._mapHitDetect = map.options['hitDetect'];
@@ -75,15 +75,15 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         });
     },
 
-    _prepareDragHandler:function() {
+    _prepareDragHandler:function () {
         var map = this.target.getMap();
         this._dragHandler = new Z.Handler.Drag(map._panels.mapWrapper || map._containerDOM);
-        this._dragHandler.on("dragging", this._dragging, this);
-        this._dragHandler.on("dragend", this._endDrag, this);
+        this._dragHandler.on('dragging', this._dragging, this);
+        this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
     },
 
-    _prepareShadow:function() {
+    _prepareShadow:function () {
         var target = this.target;
         this._prepareDragStageLayer();
         if (this._shadow) {
@@ -107,12 +107,12 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
                 var targetConn = connectors[i];
                 var connOptions = targetConn.config(),
                     connSymbol = targetConn.getSymbol();
-                    connOptions['symbol'] = connSymbol;
+                connOptions['symbol'] = connSymbol;
                 var conn;
-                if (targetConn.getConnectSource() == target) {
-                     conn = new maptalks.ConnectorLine(shadow, targetConn.getConnectTarget(), connOptions);
+                if (targetConn.getConnectSource() === target) {
+                    conn = new maptalks.ConnectorLine(shadow, targetConn.getConnectTarget(), connOptions);
                 } else {
-                     conn = new maptalks.ConnectorLine(targetConn.getConnectSource(), shadow, connOptions);
+                    conn = new maptalks.ConnectorLine(targetConn.getConnectSource(), shadow, connOptions);
                 }
                 shadowConnectors.push(conn);
             }
@@ -121,15 +121,15 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         this._dragStageLayer.bringToFront().addGeometry(shadowConnectors.concat(shadow));
     },
 
-    _onTargetUpdated:function() {
+    _onTargetUpdated:function () {
         if (this._shadow) {
             this._shadow.setSymbol(this.target.getSymbol());
         }
     },
 
-    _prepareDragStageLayer:function() {
-        var map=this.target.getMap(),
-            layer=this.target.getLayer();
+    _prepareDragStageLayer:function () {
+        var map = this.target.getMap(),
+            layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(this.dragStageLayerId);
         if (!this._dragStageLayer) {
             this._dragStageLayer = new Z.VectorLayer(this.dragStageLayerId);
@@ -139,20 +139,20 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         this._dragStageLayer._getRenderer()._resources = layer._getRenderer()._resources;
     },
 
-    _dragging: function(param) {
+    _dragging: function (param) {
         var target = this.target;
         var map = target.getMap(),
             eventParam = map._parseEvent(param['domEvent']);
 
         var domEvent = eventParam['domEvent'];
-        if ( domEvent.touches && domEvent.touches.length > 1) {
+        if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
 
         if (!this._moved) {
             this._moved = true;
             target.on('symbolchange', this._onTargetUpdated, this);
-            this._prepareMap();
+            // this._prepareMap();
             this._isDragging = true;
             this._prepareShadow();
             if (!target.options['dragShadow']) {
@@ -161,24 +161,24 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             this._shadow._fireEvent('dragstart', eventParam);
             return;
         }
-        if (!this._shadow){
+        if (!this._shadow) {
             return;
         }
         var axis = this._shadow.options['draggableAxis'];
         var currentCoord = eventParam['coordinate'];
-        if(!this._preCoordDragged) {
+        if (!this._preCoordDragged) {
             this._preCoordDragged = currentCoord;
         }
         var dragOffset = currentCoord.substract(this._preCoordDragged);
-        if ('x' === axis) {
+        if (axis === 'x') {
             dragOffset.y = 0;
-        } else if ('y' === axis) {
+        } else if (axis === 'y') {
             dragOffset.x = 0;
         }
         this._preCoordDragged = currentCoord;
         this._shadow.translate(dragOffset);
         if (!target.options['dragShadow']) {
-            target.translate(dragOffset)
+            target.translate(dragOffset);
         }
         eventParam['dragOffset'] = dragOffset;
         this._shadow._fireEvent('dragging', eventParam);
@@ -198,7 +198,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
 
     },
 
-    _endDrag: function(param) {
+    _endDrag: function (param) {
         var target = this.target,
             map = target.getMap();
         if (this._dragHandler) {
@@ -261,7 +261,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
 
     },
 
-    isDragging:function() {
+    isDragging:function () {
         if (!this._isDragging) {
             return false;
         }
@@ -278,7 +278,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * Whether the geometry is being dragged.
      * @reutrn {Boolean}
      */
-    isDragging: function() {
+    isDragging: function () {
         if (this._getParent()) {
             return this._getParent().isDragging();
         }

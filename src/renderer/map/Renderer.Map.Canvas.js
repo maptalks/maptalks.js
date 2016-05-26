@@ -9,33 +9,21 @@
  * @param {maptalks.Map} map - map for the renderer
  */
 Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map.Canvas.prototype */{
-    initialize:function(map) {
+    initialize:function (map) {
         this.map = map;
         //container is a <canvas> element
         this._isCanvasContainer = !!map._containerDOM.getContext;
         this._registerEvents();
     },
 
-    isCanvasRender:function() {
+    isCanvasRender:function () {
         return true;
-    },
-
-    /**
-     * 获取图层渲染容器
-     * @param  {Layer} layer 图层
-     * @return {Dom}       容器Dom对象
-     */
-    getLayerRendererContainer:function(layer) {
-        if (!this._canvas) {
-            this._createCanvas();
-        }
-        return this._canvas;
     },
 
     /**
      * 基于Canvas的渲染方法, layers总定义了要渲染的图层
      */
-    render:function() {
+    render:function () {
         if (!this._canvas) {
             this._createCanvas();
         }
@@ -50,7 +38,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             mheight = this._canvas.height;
         this._drawBackground();
 
-        for (var i = 0, len=layers.length; i < len; i++) {
+        for (var i = 0, len = layers.length; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
                 continue;
             }
@@ -64,7 +52,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
     },
 
-    onZoomStart:function(options, fn) {
+    onZoomStart:function (options, fn) {
         if (Z.Browser.ielt9) {
             fn.call(this);
             return;
@@ -80,13 +68,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (baseLayerImage) {
             this._storeBackground(baseLayerImage);
         }
-        var layersToTransform = map.options['layerZoomAnimation']?null:[baseLayer],
+        var layersToTransform = map.options['layerZoomAnimation'] ? null : [baseLayer],
             matrix;
         if (options.startScale === 1) {
             this._beforeTransform();
         }
 
-        this._context && this._context.save();
+        if (this._context) { this._context.save(); }
         var player = Z.Animation.animate(
             {
                 'scale'  : [options.startScale, options.endScale]
@@ -95,13 +83,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 'easing' : 'out',
                 'speed'  : options.duration
             },
-            Z.Util.bind(function(frame) {
+            Z.Util.bind(function (frame) {
                 matrix = this.getZoomMatrix(frame.styles['scale'], options.origin, Z.Browser.retina);
                 if (player.playState === 'finished') {
                     this._afterTransform(matrix);
-                    this._context && this._context.restore();
+                    if (this._context) { this._context.restore(); }
                     fn.call(this);
-                } else if (player.playState === 'running'){
+                } else if (player.playState === 'running') {
                     this.transform(matrix, layersToTransform);
                 }
             }, this)
@@ -113,7 +101,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      * @param  {Matrix} matrix 变换矩阵
      * @param  {maptalks.Layer[]} layersToTransform 参与变换和绘制的图层
      */
-    transform:function(matrix, layersToTransform) {
+    transform:function (matrix, layersToTransform) {
         var mwidth = this._canvas.width,
             mheight = this._canvas.height;
         var layers = layersToTransform || this._getAllLayerToTransform();
@@ -125,7 +113,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this._applyTransform(matrix);
         }
 
-        for (var i = 0, len=layers.length; i < len; i++) {
+        for (var i = 0, len = layers.length; i < len; i++) {
             if (!layers[i].isVisible()) {
                 continue;
             }
@@ -154,8 +142,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
     },
 
-    updateMapSize:function(mSize) {
-        if (!mSize || this._isCanvasContainer) {return;}
+    updateMapSize:function (mSize) {
+        if (!mSize || this._isCanvasContainer) { return; }
         var width = mSize['width'],
             height = mSize['height'];
         var panels = this.map._panels;
@@ -170,25 +158,25 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this._updateCanvasSize();
     },
 
-    getPanel: function() {
+    getPanel: function () {
         if (this._isCanvasContainer) {
             return this.map._containerDOM;
         }
         return this.map._panels.mapWrapper;
     },
 
-    toDataURL:function(mimeType) {
+    toDataURL:function (mimeType) {
         return this._canvas.toDataURL(mimeType);
     },
 
-     _getLayerImage: function(layer) {
+    _getLayerImage: function (layer) {
         if (layer && layer._getRenderer() && layer._getRenderer().getCanvasImage) {
             return layer._getRenderer().getCanvasImage();
         }
         return null;
     },
 
-    _beforeTransform: function() {
+    _beforeTransform: function () {
         var map = this.map;
         // redraw the map to prepare for zoom transforming.
         // if startScale is not 1 (usually by touchZoom on mobiles), it means map is already transformed and doesn't need redraw
@@ -206,26 +194,26 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
     },
 
-    _afterTransform: function(matrix) {
+    _afterTransform: function (matrix) {
         delete this._transMatrix;
         this._clearCanvas();
         this._applyTransform(matrix);
         this._drawBackground();
     },
 
-    _applyTransform : function(matrix) {
+    _applyTransform : function (matrix) {
         matrix = Z.Browser.retina ? matrix['retina'] : matrix['container'];
         matrix.applyToContext(this._context);
     },
 
-    _getCountOfGeosToDraw: function() {
+    _getCountOfGeosToDraw: function () {
         var layers = this._getAllLayerToTransform(),
             geos,
             total = 0;
         for (var i = layers.length - 1; i >= 0; i--) {
-            if ((layers[i] instanceof Z.VectorLayer)
-                && layers[i].isVisible()
-                && !layers[i].isEmpty()) {
+            if ((layers[i] instanceof Z.VectorLayer) &&
+                layers[i].isVisible() &&
+                !layers[i].isEmpty()) {
                 geos = layers[i]._getRenderer()._geosToDraw;
                 if (geos) {
                     total += layers[i]._getRenderer()._geosToDraw.length;
@@ -238,7 +226,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     /**
      * initialize container DOM of panels
      */
-    initContainer:function() {
+    initContainer:function () {
         var panels = this.map._panels;
         function createContainer(name, className, cssText, enableSelect) {
             var c = Z.DomUtil.createEl('div', className);
@@ -247,10 +235,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
             panels[name] = c;
             if (!enableSelect) {
-                c['onselectstart'] = function(e) {
+                c['onselectstart'] = function () {
                     return false;
                 };
-                c['ondragstart'] = function(e) { return false; };
+                c['ondragstart'] = function () { return false; };
                 c.setAttribute('unselectable', 'on');
             }
             return c;
@@ -265,14 +253,14 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         containerDOM.innerHTML = '';
 
         var control = createContainer('control', 'maptalks-control', null, true);
-        var mapWrapper = createContainer('mapWrapper','maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
+        var mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
         var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;', true);
         var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
         var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;');
         var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;');
 
         mapPlatform.style.zIndex = 300;
-        canvasContainer.style.zIndex=100;
+        canvasContainer.style.zIndex = 100;
         ui.style.zIndex = 300;
         control.style.zIndex = 400;
 
@@ -289,12 +277,11 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this.updateMapSize(mapSize);
     },
 
-    _drawLayerCanvasImage:function(layer, layerImage, mwidth, mheight) {
-        if (!layer || !layerImage || mwidth === 0 || mheight === 0){
+    _drawLayerCanvasImage:function (layer, layerImage, mwidth, mheight) {
+        if (!layer || !layerImage || mwidth === 0 || mheight === 0) {
             return;
         }
-        var point = layerImage['point'].multi(Z.Browser.retina?2:1),
-            size = layerImage['size'];
+        var point = layerImage['point'].multi(Z.Browser.retina ? 2 : 1);
         var canvasImage = layerImage['image'];
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
@@ -302,7 +289,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var containerPos = this._getCanvasContainerPos();
         if (containerPos) {
             var offset = this.map.offsetPlatform().multi(-1)._substract(containerPos);
-            if (Z.Browser.retina) {offset._multi(2);}
+            if (Z.Browser.retina) { offset._multi(2); }
             point = point.add(offset);
 
         }
@@ -342,7 +329,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this._context.globalAlpha = alpha;
     },
 
-    _storeBackground: function(baseLayerImage) {
+    _storeBackground: function (baseLayerImage) {
         if (baseLayerImage) {
             var map = this.map;
             this._canvasBg = Z.DomUtil.copyCanvas(baseLayerImage['image']);
@@ -351,36 +338,35 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
     },
 
-    _drawBackground:function() {
-        var map = this.map,
-            size = map.getSize();
+    _drawBackground:function () {
+        var map = this.map;
         if (this._canvasBg) {
             var scale = this._canvasBgRes / map._getResolution();
-            var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Z.Browser.retina?2:1);
+            var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Z.Browser.retina ? 2 : 1);
             Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
         }
     },
 
-    _getAllLayerToTransform:function() {
+    _getAllLayerToTransform:function () {
         return this.map._getLayers();
     },
 
-    _clearCanvas:function() {
+    _clearCanvas:function () {
         if (!this._canvas) {
             return;
         }
         Z.Canvas.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
     },
 
-    _updateCanvasSize: function() {
+    _updateCanvasSize: function () {
         if (!this._canvas || this._isCanvasContainer) {
             return false;
         }
         var map = this.map;
         var mapSize = map.getSize();
         var canvas = this._canvas;
-        var r = Z.Browser.retina ? 2:1;
-        if (mapSize['width']*r === canvas.width && mapSize['height']*r === canvas.height) {
+        var r = Z.Browser.retina ? 2 : 1;
+        if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
             return false;
         }
         //retina屏支持
@@ -388,14 +374,14 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         canvas.height = r * mapSize['height'];
         canvas.width = r * mapSize['width'];
         if (canvas.style) {
-            canvas.style.width = mapSize['width']+'px';
-            canvas.style.height = mapSize['height']+'px';
+            canvas.style.width = mapSize['width'] + 'px';
+            canvas.style.height = mapSize['height'] + 'px';
         }
 
         return true;
     },
 
-    _createCanvas:function() {
+    _createCanvas:function () {
         if (this._isCanvasContainer) {
             this._canvas = this.map._containerDOM;
         } else {
@@ -410,39 +396,39 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      * 设置地图的watcher, 用来监视地图容器的大小变化
      * @ignore
      */
-    _onResize:function() {
+    _onResize:function () {
         delete this._canvasBg;
         this.map.checkSize();
     },
 
-    _registerEvents:function() {
+    _registerEvents:function () {
         var map = this.map;
-        map.on('_baselayerchangestart', function(param) {
+        map.on('_baselayerchangestart', function () {
             delete this._canvasBg;
         }, this);
-        map.on('_baselayerload',function(param) {
+        map.on('_baselayerload', function () {
             var baseLayer = map.getBaseLayer();
             if (!map.options['zoomBackground'] || baseLayer.getMask()) {
                 delete this._canvasBg;
             }
-        },this);
+        }, this);
 
-        map.on('_zoomstart',function() {
+        map.on('_zoomstart', function () {
             delete this._canvasBg;
             this._clearCanvas();
-        },this);
-        if (typeof window !== 'undefined' ) {
+        }, this);
+        if (typeof window !== 'undefined') {
             Z.DomUtil.on(window, 'resize', this._onResize, this);
         }
         if (!Z.Browser.mobile && Z.Browser.canvas) {
-             this._onMapMouseMove = function(param) {
+            this._onMapMouseMove = function (param) {
                 if (map._isBusy() || map._moving || !map.options['hitDetect']) {
                     return;
                 }
                 if (this._hitDetectTimeout) {
                     Z.Util.cancelAnimFrame(this._hitDetectTimeout);
                 }
-                this._hitDetectTimeout = Z.Util.requestAnimFrame(function() {
+                this._hitDetectTimeout = Z.Util.requestAnimFrame(function () {
                     var vp = param['viewPoint'];
                     var layers = map._getLayers();
                     var hit = false,
@@ -465,19 +451,19 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 });
 
             };
-            map.on('_mousemove',this._onMapMouseMove,this);
+            map.on('_mousemove', this._onMapMouseMove, this);
         }
 
 
         if (this._isCanvasContainer) {
-            map.on('_moving', function() {
+            map.on('_moving', function () {
                 this.render();
-            },this);
+            }, this);
         } else {
-            map.on('_moveend', function() {
+            map.on('_moveend', function () {
                 this._resetCanvasContainer();
                 this.render();
-            },this);
+            }, this);
         }
     }
 });

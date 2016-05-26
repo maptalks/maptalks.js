@@ -1,5 +1,5 @@
-"use strict";
-"version:1.0.0-alpha";
+'use strict';
+'version:1.0.0-alpha';
 
 // Z is the root namespace used internally, and will be exported later as maptalks.
 /**
@@ -14,6 +14,6 @@ var Z = {};
  * @name node
  * @static
  */
-Z.node=(function(){
-    return (typeof module !== 'undefined' && module.exports)?true:false;
+Z.node = (function () {
+    return (typeof module !== 'undefined' && module.exports);
 })();

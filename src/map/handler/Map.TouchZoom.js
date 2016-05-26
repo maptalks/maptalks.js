@@ -13,7 +13,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
         Z.DomUtil.removeDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart);
     },
 
-    _onTouchStart:function(event) {
+    _onTouchStart:function (event) {
         var map = this.target;
         if (!event.touches || event.touches.length !== 2 || map._zooming) { return; }
         var container = map._containerDOM;
@@ -23,10 +23,10 @@ Z.Map.TouchZoom = Z.Handler.extend({
         this._startDist = p1.distanceTo(p2);
         this._startZoom = map.getZoom();
         if (map.options['touchZoomOrigin'] === 'pinch') {
-            this._preOrigin = p1.add(p2)._multi(1/2);
+            this._preOrigin = p1.add(p2)._multi(1 / 2);
         } else {
             var size = map.getSize();
-            this._preOrigin = new Z.Point(size['width']/2, size['height']/2);
+            this._preOrigin = new Z.Point(size['width'] / 2, size['height'] / 2);
         }
 
 
@@ -39,7 +39,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
         map._fireEvent('touchzoomstart');
     },
 
-    _onTouchMove:function(event) {
+    _onTouchMove:function (event) {
         var map = this.target;
         if (!event.touches || event.touches.length !== 2 || !map._zooming) { return; }
         var container = map._containerDOM,
@@ -48,10 +48,10 @@ Z.Map.TouchZoom = Z.Handler.extend({
             scale = p1.distanceTo(p2) / this._startDist;
         var origin;
         if (map.options['touchZoomOrigin'] === 'pinch') {
-            origin = p1.add(p2)._multi(1/2);
+            origin = p1.add(p2)._multi(1 / 2);
         } else {
             var size = map.getSize();
-            origin = new Z.Point(size['width']/2, size['height']/2);
+            origin = new Z.Point(size['width'] / 2, size['height'] / 2);
         }
         var offset = this._preOrigin.substract(origin);
         map.offsetPlatform(offset);
@@ -62,12 +62,12 @@ Z.Map.TouchZoom = Z.Handler.extend({
         var renderer = map._getRenderer();
 
         var matrix = renderer.getZoomMatrix(scale, origin, Z.Browser.retina);
-        renderer.transform.call(renderer, matrix);
+        renderer.transform(matrix);
 
         Z.DomUtil.preventDefault(event);
     },
 
-    _onTouchEnd:function(event) {
+    _onTouchEnd:function () {
         var map = this.target;
         if (!map._zooming) {
             map._zooming = false;

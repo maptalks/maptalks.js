@@ -15,7 +15,7 @@ Z.MultiPolygon = Z.GeometryCollection.extend(/** @lends maptalks.MultiPolygon.pr
 
     type:Z.Geometry['TYPE_MULTIPOLYGON'],
 
-    initialize:function(data, opts) {
+    initialize:function (data, opts) {
         this._initOptions(opts);
         this._initData(data);
     }

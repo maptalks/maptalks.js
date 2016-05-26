@@ -10,21 +10,22 @@
 Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */{
 
     options:{
+        'mode' : 'LineString',
         'language' : 'zh-CN', //'en-US'
         'metric': true,
         'imperial': false,
         'symbol' : {
-            'lineColor':'#000000',//'#3388ff',
+            'lineColor':'#000000', //'#3388ff',
             'lineWidth':3,
             'lineOpacity':1
         },
         'vertexSymbol' : {
             'markerType'        : 'ellipse',
-            "markerFill"        : "#ffffff",//"#d0d2d6",
-            "markerLineColor"   : "#000000",
-            "markerLineWidth"   : 3,
-            "markerWidth"       : 10,
-            "markerHeight"      : 10
+            'markerFill'        : '#ffffff', //"#d0d2d6",
+            'markerLineColor'   : '#000000',
+            'markerLineWidth'   : 3,
+            'markerWidth'       : 10,
+            'markerHeight'      : 10
         },
         'labelOptions' : {
             'symbol':{
@@ -35,15 +36,14 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
                 'markerLineColor' : '#b4b3b3',
                 'textDx' : 15
             },
-            'boxPadding'   :   new Z.Size(6,4)
+            'boxPadding'   :   new Z.Size(6, 4)
         }
     },
 
-    initialize: function(options) {
-        Z.Util.setOptions(this,options);
-        this.config('mode',Z.Geometry['TYPE_LINESTRING']);
-        this.on('enable', this._onEnable, this)
-            .on('disable', this._onDisable, this);
+    initialize: function (options) {
+        Z.Util.setOptions(this, options);
+        this.on('enable', this._afterEnable, this)
+            .on('disable', this._afterDisable, this);
         this._measureLayers = [];
     },
 
@@ -51,7 +51,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
      * Clear the measurements
      * @return {maptalks.DistanceTool} this
      */
-    clear:function() {
+    clear:function () {
         if (Z.Util.isArrayHasData(this._measureLayers)) {
             for (var i = 0; i < this._measureLayers.length; i++) {
                 this._measureLayers[i].remove();
@@ -59,7 +59,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         }
         delete this._lastMeasure;
         delete this._lastVertex;
-        this._measureLayers = []
+        this._measureLayers = [];
         return this;
     },
 
@@ -67,7 +67,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
      * Get the VectorLayers with the geometries drawn on the map during measuring.
      * @return {maptalks.Layer[]}
      */
-    getMeasureLayers:function() {
+    getMeasureLayers:function () {
         return this._measureLayers;
     },
 
@@ -75,14 +75,14 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
      * Get last measuring result
      * @return {Number}
      */
-    getLastMeasure:function() {
+    getLastMeasure:function () {
         if (!this._lastMeasure) {
             return 0;
         }
         return this._lastMeasure;
     },
 
-    _measure:function(toMeasure) {
+    _measure:function (toMeasure) {
         var map = this.getMap();
         var length;
         if (toMeasure instanceof Z.Geometry) {
@@ -102,7 +102,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
             content += length < 1000 ? length.toFixed(0) + units[0] : (length / 1000).toFixed(2) + units[1];
         }
         if (this.options['imperial']) {
-            length *= 3.2808399
+            length *= 3.2808399;
             if (content.length > 0) {
                 content += '\n';
             }
@@ -111,29 +111,29 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         return content;
     },
 
-    _registerMeasureEvents:function() {
+    _registerMeasureEvents:function () {
         this.on('drawstart', this._msOnDrawStart, this)
             .on('drawvertex', this._msOnDrawVertex, this)
             .on('mousemove', this._msOnMouseMove, this)
             .on('drawend', this._msOnDrawEnd, this);
     },
 
-    _onEnable:function(param) {
+    _afterEnable:function () {
         this._registerMeasureEvents();
     },
 
-    _onDisable:function() {
+    _afterDisable:function () {
         this.off('drawstart', this._msOnDrawStart, this)
             .off('drawvertex', this._msOnDrawVertex, this)
             .off('mousemove', this._msOnMouseMove, this)
             .off('drawend', this._msOnDrawEnd, this);
     },
 
-    _msOnDrawStart:function(param) {
+    _msOnDrawStart:function (param) {
         var map = this.getMap();
         var guid = Z.Util.GUID();
-        var layerId = 'distancetool_'+guid;
-        var markerLayerId = 'distancetool_markers_'+guid;
+        var layerId = 'distancetool_' + guid;
+        var markerLayerId = 'distancetool_markers_' + guid;
         if (!map.getLayer(layerId)) {
             this._measureLineLayer = new maptalks.VectorLayer(layerId).addTo(map);
             this._measureMarkerLayer = new maptalks.VectorLayer(markerLayerId).addTo(map);
@@ -143,7 +143,8 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         }
         this._measureLayers.push(this._measureLineLayer);
         this._measureLayers.push(this._measureMarkerLayer);
-        var startMarker = new maptalks.Marker(param['coordinate'], {
+        //start marker
+        new maptalks.Marker(param['coordinate'], {
             'symbol' : this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
         var content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
@@ -151,7 +152,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         this._measureMarkerLayer.addGeometry(startLabel);
     },
 
-    _msOnMouseMove:function(param) {
+    _msOnMouseMove:function (param) {
         var ms = this._measure(param['geometry'].getCoordinates().concat([param['coordinate']]));
         if (!this._tailMarker) {
             var symbol = Z.Util.extendSymbol(this.options['vertexSymbol']);
@@ -171,9 +172,10 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
 
     },
 
-    _msOnDrawVertex:function(param) {
+    _msOnDrawVertex:function (param) {
         var geometry = param['geometry'];
-        var vertexMarker = new maptalks.Marker(param['coordinate'], {
+        //vertex marker
+        new maptalks.Marker(param['coordinate'], {
             'symbol' : this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
         var length = this._measure(geometry);
@@ -182,11 +184,11 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         this._lastVertex = vertexLabel;
     },
 
-    _msOnDrawEnd:function(param) {
+    _msOnDrawEnd:function (param) {
         this._clearTailMarker();
         var size = this._lastVertex.getSize();
         if (!size) {
-            size = new Z.Size(10,10);
+            size = new Z.Size(10, 10);
         }
         this._addClearMarker(this._lastVertex.getCoordinates(), size['width']);
         var geo = param['geometry'].copy();
@@ -195,27 +197,27 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         this._lastMeasure = geo.getLength();
     },
 
-    _addClearMarker:function(coordinates, dx) {
+    _addClearMarker:function (coordinates, dx) {
         var endMarker = new maptalks.Marker(coordinates, {
             'symbol' : [{
-                            'markerType' : 'x',
-                            'markerWidth' : 10,
-                            'markerHeight' : 10,
-                            'markerDx' : 20 + dx
-                        },
-                        {
-                            'markerType' : 'square',
-                            'markerFill' : '#ffffff',
-                            'markerLineColor' : '#b4b3b3',
-                            'markerLineWidth' : 2,
-                            'markerWidth' : 15,
-                            'markerHeight' : 15,
-                            'markerDx' : 20 + dx
-                        }]
+                'markerType' : 'x',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerDx' : 20 + dx
+            },
+                {
+                    'markerType' : 'square',
+                    'markerFill' : '#ffffff',
+                    'markerLineColor' : '#b4b3b3',
+                    'markerLineWidth' : 2,
+                    'markerWidth' : 15,
+                    'markerHeight' : 15,
+                    'markerDx' : 20 + dx
+                }]
         });
         var measureLineLayer = this._measureLineLayer,
             measureMarkerLayer = this._measureMarkerLayer;
-        endMarker.on('click',function() {
+        endMarker.on('click', function () {
             measureLineLayer.remove();
             measureMarkerLayer.remove();
             //return false to stop propagation of event.
@@ -224,7 +226,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         endMarker.addTo(this._measureMarkerLayer);
     },
 
-    _clearTailMarker:function() {
+    _clearTailMarker:function () {
         if (this._tailMarker) {
             this._tailMarker.remove();
             delete this._tailMarker;

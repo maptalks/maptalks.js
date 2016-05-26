@@ -6,7 +6,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @param  {Function} callback - step function when animating
      * @return {maptalks.animation.Player} animation player
      */
-    animate:function(styles, options, callback) {
+    animate:function (styles, options, callback) {
         if (Z.Util.isFunction(options)) {
             callback = options;
             options = null;
@@ -17,19 +17,18 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             stylesToAnimate = this._prepareAnimationStyles(styles),
             preTranslate, isFocusing;
 
-        if (options) {isFocusing = options['focus'];}
+        if (options) { isFocusing = options['focus']; }
         delete this._animationStarted;
 
-        var player = Z.Animation.animate(stylesToAnimate, options, Z.Util.bind(function(frame) {
+        var player = Z.Animation.animate(stylesToAnimate, options, Z.Util.bind(function (frame) {
             if (!this._animationStarted && isFocusing) {
                 map._onMoveStart();
             }
             var styles = frame.styles;
             for (var p in styles) {
                 if (p !== 'symbol' && p !== 'translate' && styles.hasOwnProperty(p)) {
-                    var v = styles[p];
-                    var fnName = 'set'+p[0].toUpperCase() + p.substring(1);
-                    this[fnName](v);
+                    var fnName = 'set' + p[0].toUpperCase() + p.substring(1);
+                    this[fnName](styles[p]);
                 }
             }
             var translate = styles['translate'];
@@ -44,13 +43,11 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             var dSymbol = styles['symbol'];
             if (dSymbol) {
                 this.setSymbol(Z.Util.extendSymbol(symbol, dSymbol));
-                // this.setSymbol(Z.Util.extend({},symbol,dSymbol));
             }
             if (isFocusing) {
-                var center = this.getCenter();
-                var p = projection.project(center);
-                map._setPrjCenterAndMove(p);
-                if ('running' !== player.playState) {
+                var pcenter = projection.project(this.getCenter());
+                map._setPrjCenterAndMove(pcenter);
+                if (player.playState !== 'running') {
                     map._onMoveEnd();
                 } else {
                     map._onMoving();
@@ -60,7 +57,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             if (callback) {
                 callback(frame);
             }
-        },this));
+        }, this));
 
         return player.play();
     },
@@ -69,15 +66,16 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @return {Object} symbol to animate
      * @private
      */
-    _prepareAnimationStyles:function(styles) {
+    _prepareAnimationStyles:function (styles) {
         var symbol = this.getSymbol();
         var stylesToAnimate = {};
         for (var p in styles) {
             if (styles.hasOwnProperty(p)) {
-                var v = styles[p];
+                var v = styles[p],
+                    sp;
                 if (p !== 'translate' && p !== 'symbol') {
                     //this.getRadius() / this.getWidth(), etc.
-                    var fnName = 'get'+p[0].toUpperCase() + p.substring(1);
+                    var fnName = 'get' + p[0].toUpperCase() + p.substring(1);
                     var current = this[fnName]();
                     stylesToAnimate[p] = [current, v];
                 } else if (p === 'symbol') {
@@ -94,7 +92,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                                 continue;
                             }
                             var a = {};
-                            for (var sp in symbolInStyles[i]) {
+                            for (sp in symbolInStyles[i]) {
                                 if (symbolInStyles[i].hasOwnProperty(sp)) {
                                     a[sp] = [symbol[i][sp], symbolInStyles[i][sp]];
                                 }
@@ -106,14 +104,14 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                             throw new Error('geometry\'symbol is a composite symbol, while the symbol in styles isn\'t.');
                         }
                         symbolToAnimate = {};
-                        for (var sp in v) {
+                        for (sp in v) {
                             if (v.hasOwnProperty(sp)) {
                                 symbolToAnimate[sp] = [symbol[sp], v[sp]];
                             }
                         }
                     }
                     stylesToAnimate['symbol'] = symbolToAnimate;
-                } else if (p === 'translate'){
+                } else if (p === 'translate') {
                     stylesToAnimate['translate'] = new Z.Coordinate(v);
                 }
             }
@@ -121,7 +119,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         return stylesToAnimate;
     },
 
-    _fireAnimateEvent:function(playState) {
+    _fireAnimateEvent:function (playState) {
         if (playState === 'finished') {
             delete this._animationStarted;
             this._fireEvent('animateend');

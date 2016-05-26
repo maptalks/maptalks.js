@@ -28,7 +28,7 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
         'items': []
     },
 
-    initialize: function(options) {
+    initialize: function (options) {
         Z.Util.setOptions(this, options);
     },
 
@@ -38,7 +38,7 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
      * @return {maptalks.ui.Toolbox}
      * @expose
      */
-    setItems: function(items) {
+    setItems: function (items) {
         this.options['items'] = items;
         return this;
     },
@@ -122,6 +122,15 @@ Z.ui.Toolbox = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Toolbox.prototype 
                 this._removeEventsFromDom(node);
             }
         }
+    //获取菜单显示位置
+    _getAnchor: function (coordinate) {
+        if (!coordinate) {
+            coordinate = this._target.getCenter();
+        }
+        var anchor = this._map.coordinateToViewPoint(coordinate);
+        //offset menu on the top of the arrow
+        return anchor.add(new Z.Point(-17, 10));
+    }
 
     },
 
