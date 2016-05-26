@@ -445,7 +445,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             count = 4;
         }
         var me = this;
-        count = count * 2;
+        count *= 2;
         if (this._flashTimeout) {
             clearTimeout(this._flashTimeout);
         }

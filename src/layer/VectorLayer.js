@@ -22,11 +22,6 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'geometryEvents'            : true,
         'thresholdOfTransforming'    : 200,
         'drawImmediate'             : false
-    },
-
-    initialize:function (id, options) {
-        this.setId(id);
-        Z.Util.setOptions(this, options);
     }
 });
 
