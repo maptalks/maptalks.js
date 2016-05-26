@@ -105,6 +105,11 @@ describe('VectorLayer', function() {
                     }
                 }
 
+                var geoAddLater = points[hitIndex[0]].copy();
+                geoAddLater.setSymbol(null);
+                layer.addGeometry(geoAddLater);
+                expect(geoAddLater.getSymbol()).to.be.eql(symbols[0]);
+
                 layer.removeStyle();
 
                 expect(layer.getStyle()).not.to.be.ok();
@@ -112,6 +117,7 @@ describe('VectorLayer', function() {
                 for (var i = 0; i < points.length; i++) {
                     expect(points[i].getSymbol()).to.be.eql(defaultSymbols[i]);
                 }
+                expect(geoAddLater.getSymbol()).to.be.eql(defaultSymbols[0]);
             }
 
             it('setStyle with a singleStyle', function() {

@@ -35,10 +35,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         this._style = style;
         this._cookedStyles = this._cookStyle(style);
         this.forEach(function (geometry) {
-            var symbol = geometry.getSymbol();
-            if (this._styleGeometry(geometry) && !geometry._symbolBeforeStyle) {
-                geometry._symbolBeforeStyle = symbol;
-            }
+            this._styleGeometry(geometry);
         }, this);
         return this;
     },
@@ -63,8 +60,12 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
             'subType' : json['subType'],
             'properties' : json['feature']['properties']
         };
+        var symbol = geometry.getSymbol();
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
             if (this._cookedStyles[i]['fn'](o) === true) {
+                if (!geometry._symbolBeforeStyle) {
+                    geometry._symbolBeforeStyle = symbol;
+                }
                 geometry.setSymbol(this._cookedStyles[i]['symbol']);
                 return true;
             }
