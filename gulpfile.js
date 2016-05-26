@@ -47,7 +47,7 @@ gulp.task('scripts', function() {
       .pipe(footer('\n})();'))          // and some kind of module wrapping
       .pipe(gulp.dest('./dist'))
       .pipe(rename({suffix: '.min'}))
-      .pipe(uglify())
+//      .pipe(uglify())
       .pipe(gulp.dest('./dist'))
       .pipe(gzip())
       .pipe(gulp.dest('./dist'));

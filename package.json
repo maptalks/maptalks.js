@@ -1,10 +1,6 @@
 {
   "name": "maptalks",
-<<<<<<< HEAD
-  "version": "0.1.0",
-=======
   "version": "0.1.2",
->>>>>>> upstream/master
   "description": "An open-source javascript library for map applications.",
   "license": "Apache-2.0",
   "repository": {
