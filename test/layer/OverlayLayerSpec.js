@@ -195,7 +195,7 @@ describe('#OverlayLayer', function() {
 
         });
 
-        it('select by properties',function() {
+        it('filter by properties',function() {
             var layer = new Z.VectorLayer('id');
             var points = [
                 new maptalks.Marker([0,0], {
@@ -227,8 +227,9 @@ describe('#OverlayLayer', function() {
                     }
                 })
             ];
-            var selection = layer.addGeometry(points)
-                                    .select('type === "Point" && properties.foo1 > 0 && properties.foo2.indexOf("test") >= 0');
+            var selection = layer.addGeometry(points).filter(function(geometry) {
+                return geometry.getType() === 'Point' && geometry.getProperties().foo1 > 0 && geometry.getProperties().foo2.indexOf("test") >= 0;
+            });
 
             expect(selection).to.be.an(maptalks.GeometryCollection);
             expect(selection.getGeometries()).to.have.length(points.length);
@@ -236,9 +237,13 @@ describe('#OverlayLayer', function() {
                 expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
             }
 
-            expect(layer.select('properties.foo3 === true').getGeometries()).to.have.length(3);
+            expect(layer.filter(function(geometry) {
+                return geometry.getProperties().foo3 === true;
+            }).getGeometries()).to.have.length(3);
 
-            selection = layer.select('type !== "Point"');
+            selection = layer.filter(function(geometry) {
+                return geometry.getType() !== 'Point';
+            });
             expect(selection).not.to.be.ok();
         });
     });

@@ -65,31 +65,35 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @return {maptalks.GeometryCollection} this
      */
     forEach: function (fn, context) {
-        if (!context) {
-            context = this;
-        }
         var geometries = this.getGeometries();
         for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
                 continue;
             }
-            fn.call(context, geometries[i], i);
+            if (!context) {
+                fn(geometries[i], i);
+            } else {
+                fn.call(context, geometries[i], i);
+            }
         }
         return this;
     },
 
-    select: function (condition) {
-        var evaFn = new Function('geometry', 'with (geometry) { return ' + condition + '; }');
+    /**
+     * creates a GeometryCollection with all elements that pass the test implemented by the provided function.
+     * @param  {Function} fn      - Function to test each geometry
+     * @param  {*} context        - Function's context
+     * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
+     */
+    filter: function(fn, context) {
         var selected = [];
-        this.forEach(function (geometry) {
-            var json = {
-                'type' : geometry.getType(),
-                'properties' : geometry._exportProperties()
-            };
-            if (evaFn(json) === true) {
-                selected.push(geometry);
-            }
-        });
+        if (fn) {
+            this.forEach(function (geometry) {
+                if ( context ? fn.call(context, geometry) : fn(geometry)) {
+                    selected.push(geometry);
+                }
+            });
+        }
         return selected.length > 0 ? new Z.GeometryCollection(selected) : null;
     },
 

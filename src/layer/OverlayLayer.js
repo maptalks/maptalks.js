@@ -46,39 +46,35 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      */
     forEach:function (fn, context) {
         var cache = this._geoCache;
-        if (!context) {
-            context = this;
-        }
         var counter = 0;
         for (var g in cache) {
             if (cache.hasOwnProperty(g)) {
-                fn.call(context, cache[g], counter++);
+                if (!context) {
+                    fn(cache[g], counter++);
+                } else {
+                    fn.call(context, cache[g], counter++);
+                }
             }
         }
         return this;
     },
 
-
-    select: function (condition) {
-        var evaFn = new Function('geometry', 'with (geometry) { return ' + condition + '; }');
+    /**
+     * creates a GeometryCollection with all elements that pass the test implemented by the provided function.
+     * @param  {Function} fn      - Function to test each geometry
+     * @param  {*} context        - Function's context
+     * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
+     */
+    filter: function(fn, context) {
         var selected = [];
-        this.forEach(function (geometry) {
-            var json = {
-                'type' : geometry.getType(),
-                'properties' : geometry._exportProperties()
-            };
-            if (evaFn(json) === true) {
-                selected.push(geometry);
-            }
-        });
-        return selected.length > 0 ? new Z.GeometryCollection(selected) : null;
-    },
-
-    selectAll: function () {
-        if (this.isEmpty()) {
-            return null;
+        if (fn) {
+            this.forEach(function (geometry) {
+                if ( context ? fn.call(context, geometry) : fn(geometry)) {
+                    selected.push(geometry);
+                }
+            });
         }
-        return new Z.GeometryCollection(this.getGeometries());
+        return selected.length > 0 ? new Z.GeometryCollection(selected) : null;
     },
 
     /**
