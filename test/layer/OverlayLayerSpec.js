@@ -156,7 +156,7 @@ describe('#OverlayLayer', function() {
 
         it('selectAll', function() {
             var layer = new Z.VectorLayer('id');
-            expect(layer.selectAll()).not.to.be.ok();
+            expect(layer.filter(function(){return true})).not.to.be.ok();
             var points = [
                 new maptalks.Marker([0,0], {
                     properties : {
@@ -187,7 +187,7 @@ describe('#OverlayLayer', function() {
                     }
                 })
             ];
-            var selection = layer.addGeometry(points).selectAll();
+            var selection = layer.addGeometry(points).filter(function(){return true});
             expect(selection.getGeometries()).to.have.length(points.length);
             for (var i = 0; i < points.length; i++) {
                 expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
