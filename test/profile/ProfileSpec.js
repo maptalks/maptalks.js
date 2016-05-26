@@ -49,10 +49,18 @@ describe('#Map Profile', function () {
             var vectorLayer = new Z.VectorLayer("vector");
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
+            var style = {
+                condition : 'type === "Point"',
+                symbol: {
+                    markerFile : 'http://www.foo.com/foo.png'
+                }
+            };
+            vectorLayer.setStyle(style);
             var json = vectorLayer.toJSON();
             expect(json).to.be.ok();
             expect(json.options).to.eql(vectorLayer.config());
             expect(json.id).to.eql(vectorLayer.getId());
+            expect(json.style).to.eql(style);
             expect(json.geometries).to.be.ok();
             expect(json.geometries).to.have.length(geometries.length);
 
@@ -70,10 +78,18 @@ describe('#Map Profile', function () {
             var vectorLayer = new Z.VectorLayer("vector",{"render":"canvas"});
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
+            var style = {
+                condition : 'type === "Point"',
+                symbol: {
+                    markerFile : 'http://www.foo.com/foo.png'
+                }
+            };
+            vectorLayer.setStyle(style);
             var json = vectorLayer.toJSON();
             var layer = Z.Layer.fromJSON(json);
             expect(layer).to.be.ok();
             expect(layer.config()).to.eql(vectorLayer.config());
+            expect(layer.getStyle()).to.eql(style);
             expect(layer.getId()).to.eql(vectorLayer.getId());
             expect(layer.getGeometries()).to.have.length(geometries.length);
             var layerGeos = layer.getGeometries();

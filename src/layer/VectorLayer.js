@@ -22,6 +22,70 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'geometryEvents'            : true,
         'thresholdOfTransforming'    : 200,
         'drawImmediate'             : false
+    },
+
+    getStyle: function () {
+        if (!this._style) {
+            return null;
+        }
+        return this._style;
+    },
+
+    setStyle: function (style) {
+        this._style = style;
+        this._cookedStyles = this._cookStyle(style);
+        this.forEach(function (geometry) {
+            var symbol = geometry.getSymbol();
+            if (this._styleGeometry(geometry) && !geometry._symbolBeforeStyle) {
+                geometry._symbolBeforeStyle = symbol;
+            }
+        }, this);
+        return this;
+    },
+
+    removeStyle: function () {
+        delete this._style;
+        delete this._cookedStyles;
+        this.forEach(function (geometry) {
+            if (!geometry._symbolBeforeStyle) {
+                return;
+            }
+            geometry.setSymbol(geometry._symbolBeforeStyle);
+            delete geometry._symbolBeforeStyle;
+        }, this);
+        return this;
+    },
+
+    _styleGeometry: function (geometry) {
+        var json = geometry._toJSON();
+        var o = {
+            'type' : json['feature']['geometry']['type'],
+            'subType' : json['subType'],
+            'properties' : json['feature']['properties']
+        };
+        for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
+            if (this._cookedStyles[i]['fn'](o) === true) {
+                geometry.setSymbol(this._cookedStyles[i]['symbol']);
+                return true;
+            }
+        }
+        return false;
+    },
+
+    _cookStyle: function (styles) {
+        if (!Z.Util.isArray(styles)) {
+            return this._cookStyle([styles]);
+        }
+        var cooked = [],
+            fn;
+        for (var i = 0; i < styles.length; i++) {
+            fn = new Function('o', 'with (o) { return ' + styles[i]['condition'] + '; }');
+            cooked.push({
+                'fn' : fn,
+                'symbol' : styles[i].symbol
+            });
+        }
+        return cooked;
     }
 });
 
@@ -42,6 +106,9 @@ Z.VectorLayer.prototype.toJSON = function (options) {
         'id'      : this.getId(),
         'options' : this.config()
     };
+    if ((Z.Util.isNil(options['style']) || options['style']) && this.getStyle()) {
+        profile['style'] = this.getStyle();
+    }
     if (Z.Util.isNil(options['geometries']) || options['geometries']) {
         var clipExtent;
         if (options['clipExtent']) {
@@ -70,10 +137,10 @@ Z.VectorLayer.prototype.toJSON = function (options) {
  * @private
  * @function
  */
-Z.VectorLayer._fromJSON = function (layerJSON) {
-    if (!layerJSON || layerJSON['type'] !== 'VectorLayer') { return null; }
-    var layer = new Z.VectorLayer(layerJSON['id'], layerJSON['options']);
-    var geoJSONs = layerJSON['geometries'];
+Z.VectorLayer._fromJSON = function (profile) {
+    if (!profile || profile['type'] !== 'VectorLayer') { return null; }
+    var layer = new Z.VectorLayer(profile['id'], profile['options']);
+    var geoJSONs = profile['geometries'];
     var geometries = [],
         geo;
     for (var i = 0; i < geoJSONs.length; i++) {
@@ -83,6 +150,9 @@ Z.VectorLayer._fromJSON = function (layerJSON) {
         }
     }
     layer.addGeometry(geometries);
+    if (profile['style']) {
+        layer.setStyle(profile['style']);
+    }
     return layer;
 };
 

@@ -127,8 +127,12 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
         var center = this.getCenter();
         var opts = Z.Util.extend({}, options);
         opts.geometry = false;
+        var feature = this.toGeoJSON(opts);
+        feature['geometry'] = {
+            'type' : 'Polygon'
+        };
         return {
-            'feature' : this.toGeoJSON(opts),
+            'feature' : feature,
             'subType' : 'Circle',
             'coordinates'  : [center.x, center.y],
             'radius'  : this.getRadius()
