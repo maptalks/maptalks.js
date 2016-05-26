@@ -21,7 +21,23 @@ describe('SymbolSpec', function() {
         removeContainer(container)
     });
 
+    it('default', function() {
+        var geometries = genAllTypeGeometries();
+        var i;
+        for (i = 0; i < geometries.length; i++) {
+            expect(geometries[i].getSymbol()).not.to.be.ok();
+        }
+        for (i = 0; i < geometries.length; i++) {
+            if (!(geometries[i] instanceof maptalks.GeometryCollection)) {
+                expect(geometries[i]._getInternalSymbol()).to.be.ok();
+            } else {
+                expect(geometries[i]._getInternalSymbol()).not.to.be.ok();
+            }
+        }
+    });
+
     describe('external resource', function() {
+
         it('marker file', function() {
             var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/foo/x.svg';
             var marker = new maptalks.Marker([100,0], {
