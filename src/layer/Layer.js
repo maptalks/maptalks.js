@@ -30,6 +30,11 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         'renderer' : 'canvas'
     },
 
+    initialize:function (id, opts) {
+        this.setId(id);
+        Z.Util.setOptions(this, opts);
+    },
+
 
      /**
      * load the tile layer, can't be overrided by sub-classes

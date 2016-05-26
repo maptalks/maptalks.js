@@ -40,11 +40,6 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
     },
 
 
-    initialize:function (id, opts) {
-        this.setId(id);
-        Z.Util.setOptions(this, opts);
-    },
-
     /**
      * Get tile size of the tile layer
      * @return {maptalks.Size}
