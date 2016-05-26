@@ -85,11 +85,11 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param  {*} context        - Function's context
      * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
      */
-    filter: function(fn, context) {
+    filter: function (fn, context) {
         var selected = [];
         if (fn) {
             this.forEach(function (geometry) {
-                if ( context ? fn.call(context, geometry) : fn(geometry)) {
+                if (context ? fn.call(context, geometry) : fn(geometry)) {
                     selected.push(geometry);
                 }
             });
