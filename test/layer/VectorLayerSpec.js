@@ -110,6 +110,11 @@ describe('VectorLayer', function() {
                 layer.addGeometry(geoAddLater);
                 expect(geoAddLater.getSymbol()).to.be.eql(symbols[0]);
 
+                var profile = layer.toJSON();
+                for (var i = 0; i < profile.geometries.length; i++) {
+                    expect(profile.geometries[i].symbol).not.to.be.ok();
+                }
+
                 layer.removeStyle();
 
                 expect(layer.getStyle()).not.to.be.ok();

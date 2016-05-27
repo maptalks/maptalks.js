@@ -49,7 +49,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
 
     _computeViewPoint: function () {
         var map = this.getMap();
-        var symbol = this.getSymbol();
+        var symbol = this._getInternalSymbol();
         var labelSize = this.getSize();
         var dx = Z.Util.getValueOrDefault(symbol['textDx'], 0),
             dy = Z.Util.getValueOrDefault(symbol['textDy'], 0);
@@ -61,7 +61,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
 
     _createInputDom: function () {
         var labelSize = this.getSize();
-        var symbol = this.getSymbol();
+        var symbol = this._getInternalSymbol();
         var width = labelSize['width'];
         var height = labelSize['height'];
         var textColor = symbol['textFill'];

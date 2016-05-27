@@ -201,7 +201,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {Object} geometry's symbol
      */
     getSymbol:function () {
-        var s = this._getInternalSymbol();
+        var s = this._symbol;
         if (s) {
             if (!Z.Util.isArray(s)) {
                 return Z.Util.extend({}, s);
@@ -209,7 +209,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                 return Z.Util.extendSymbol(s);
             }
         }
-        return s;
+        return null;
     },
 
     /**
@@ -618,7 +618,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!opts) {
             opts = {};
         }
-        var symbol = opts['symbol'] || this.options['symbol'];
+        var symbol = opts['symbol'];
         var properties = opts['properties'];
         var id = opts['id'];
         Z.Util.setOptions(this, opts);
@@ -978,9 +978,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             json['options'] = this.config();
         }
         if (Z.Util.isNil(options['symbol']) || options['symbol']) {
-            if (this.getSymbol()) {
-                json['symbol'] = this.getSymbol();
-            }
+            json['symbol'] = this.getSymbol();
         }
         if (Z.Util.isNil(options['infoWindow']) || options['infoWindow']) {
             if (this._infoWinOptions) {

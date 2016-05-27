@@ -381,12 +381,18 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                         resolve({});
                     }
                 };
-                img.onabort = function () {
+                img.onabort = function (err) {
                     console.warn('image loading aborted: ' + _url[0]);
+                    if (err) {
+                        console.warn(err);
+                    }
                     resolve({});
                 };
                 img.onerror = function (err) {
-                    console.warn('image loading failed: ' + _url[0] + ',' + err);
+                    console.warn('image loading failed: ' + _url[0]);
+                    if (err) {
+                        console.warn(err);
+                    }
                     imgCache.markErrorResource(_url[0]);
                     resources.markErrorResource(_url);
                     resolve({});

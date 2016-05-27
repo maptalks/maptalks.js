@@ -13,7 +13,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         }
         var map = this.getMap(),
             projection = this._getProjection(),
-            symbol = this.getSymbol(),
+            symbol = this._getInternalSymbol(),
             stylesToAnimate = this._prepareAnimationStyles(styles),
             preTranslate, isFocusing;
 
@@ -67,7 +67,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @private
      */
     _prepareAnimationStyles:function (styles) {
-        var symbol = this.getSymbol();
+        var symbol = this._getInternalSymbol();
         var stylesToAnimate = {};
         for (var p in styles) {
             if (styles.hasOwnProperty(p)) {
