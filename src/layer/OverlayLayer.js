@@ -157,6 +157,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         var centerSum = new Z.Coordinate(0, 0);
         var extent = null,
             geo, geoId, internalId, geoCenter, geoExtent;
+        var style = this.getStyle();
         for (var i = 0, len = geometries.length; i < len; i++) {
             geo = geometries[i];
             if (!geo || !(geo instanceof Z.Geometry)) {
@@ -184,6 +185,9 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                     extent = geoExtent.combine(extent);
                     fitCounter++;
                 }
+            }
+            if (style) {
+                this._styleGeometry(geo);
             }
             geo._fireEvent('addend', {'geometry':geo});
         }

@@ -210,8 +210,12 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
         var opts = Z.Util.extend({}, options);
         var nw = this.getCoordinates();
         opts.geometry = false;
+        var feature = this.toGeoJSON(opts);
+        feature['geometry'] = {
+            'type' : 'Polygon'
+        };
         return {
-            'feature'    :  this.toGeoJSON(opts),
+            'feature'    :  feature,
             'subType'    :  'Rectangle',
             'coordinates': [nw.x, nw.y],
             'width'      : this.getWidth(),

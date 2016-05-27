@@ -558,7 +558,7 @@ describe('API', function () {
         it('bringToBack');
 
         it('addGeometry', function() {
-            var layer = new Z.OverlayLayer();
+            var layer = new Z.VectorLayer('vector');
             layer._paintGeometries = paint;
             layer.setId('id');
             // map.addLayer(layer);
@@ -577,7 +577,7 @@ describe('API', function () {
         });
 
         it('getGeometries', function() {
-            var layer = new Z.OverlayLayer();
+            var layer = new Z.VectorLayer('vector');
             layer.paintGeometries = paint;
             layer.setId('id');
             // map.addLayer(layer);
@@ -598,7 +598,7 @@ describe('API', function () {
         });
 
         it('getGeometryById', function() {
-            var layer = new Z.OverlayLayer();
+            var layer = new Z.VectorLayer('vector');
             layer.paintGeometries = paint;
             layer.setId('id');
             // map.addLayer(layer);

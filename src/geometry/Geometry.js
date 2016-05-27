@@ -994,8 +994,8 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var points = this.getCoordinates();
         var coordinates = Z.GeoJSON.toGeoJSONCoordinates(points);
         return {
-            'type':this.getType(),
-            'coordinates': coordinates
+            'type'        : this.getType(),
+            'coordinates' : coordinates
         };
     },
 
