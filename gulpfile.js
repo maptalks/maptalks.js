@@ -88,7 +88,7 @@ gulp.task('test', ['build'], function (done) {
   };
   if (options.coverage) {
     karmaConfig.preprocessors = {
-      'src/**/!(happen|Support|Util|DomUtil|Matrix|Promise|HeatmapLayer).js': ['coverage']
+      'src/**/!(happen|Support|Util|DomUtil|Matrix|Promise|FeatureFilter|HeatmapLayer).js': ['coverage']
     };
     karmaConfig.coverageReporter = {
       type: 'lcov', // lcov or lcovonly are required for generating lcov.info files

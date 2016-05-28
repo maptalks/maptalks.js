@@ -104,7 +104,7 @@ describe('GeometryCollectionSpec', function() {
     });
 
     describe('test filter', function() {
-        it('filter by properties',function() {
+        it('filter with function',function() {
             var points = genPoints();
 
             var collection = new maptalks.GeometryCollection(points);
@@ -127,6 +127,17 @@ describe('GeometryCollectionSpec', function() {
                 return geometry.getType() !== 'Point';
             });
             expect(selection).not.to.be.ok();
+        });
+
+        it('filter with feature-filter',function() {
+            var points = genPoints();
+
+            var collection = new maptalks.GeometryCollection(points);
+
+            var selection = collection.filter(['in', '$type', 'Point']);
+
+            expect(selection).to.be.an(maptalks.GeometryCollection);
+            expect(selection.getGeometries()).to.have.length(points.length);
         });
     });
 });

@@ -268,20 +268,22 @@ Z.Util = {
     },
 
 
-    eachInArray:function (points, context, fn) {
+    eachInArray:function (points, fn, context) {
         if (!this.isArray(points)) {
             return null;
         }
-        var result = [];
+        var result = [],
+            p, pp;
         for (var i = 0, len = points.length; i < len; i++) {
-            var p = points[i];
+            p = points[i];
             if (Z.Util.isNil(p)) {
+                result.push(null);
                 continue;
             }
             if (Z.Util.isArray(p)) {
-                result.push(Z.Util.eachInArray(p, context, fn));
+                result.push(Z.Util.eachInArray(p, fn));
             } else {
-                var pp = fn.call(context, p);
+                pp = context ? fn.call(context, p) : fn(p);
                 result.push(pp);
             }
 
@@ -289,6 +291,24 @@ Z.Util = {
         return result;
     },
 
+
+    mapArray: function(array, fn, context) {
+        if (!this.isArray(array)) {
+            return null;
+        }
+        var result = [],
+            p, pp;
+        for (var i = 0, len = array.length; i < len; i++) {
+            p = array[i];
+            if (Z.Util.isNil(p)) {
+                result.push(null);
+                continue;
+            }
+            pp = context ? fn.call(context, p) : fn(p);
+            result.push(pp);
+        }
+        return result;
+    },
 
     searchInArray:function (obj, arr) {
         if (Z.Util.isNil(obj) || !Z.Util.isArrayHasData(arr)) {

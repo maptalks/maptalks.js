@@ -419,7 +419,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var coordinates = this.getCoordinates();
         if (coordinates) {
             if (Z.Util.isArray(coordinates)) {
-                var translated = Z.Util.eachInArray(coordinates, this, function (coord) {
+                var translated = Z.Util.eachInArray(coordinates, function (coord) {
                     return coord.add(offset);
                 });
                 this.setCoordinates(translated);

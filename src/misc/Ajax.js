@@ -1,3 +1,4 @@
+(function() {
 var Ajax;
 if (Z.node) {
     var urlParser = require('url'),
@@ -156,3 +157,4 @@ Ajax.getScript = function (url, cb) {
 };
 
 Z.Ajax = Ajax;
+})();

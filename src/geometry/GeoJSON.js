@@ -46,7 +46,7 @@ Z.GeoJSON = {
         if (!Z.Util.isArray(coordinates)) {
             return [coordinates.x, coordinates.y];
         }
-        return Z.Util.eachInArray(coordinates, this, function (coord) {
+        return Z.Util.eachInArray(coordinates, function (coord) {
             return [coord.x, coord.y];
         });
     },

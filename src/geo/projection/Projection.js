@@ -32,7 +32,7 @@ Z.projection.Common = {
      * @static
      */
     projectCoords:function (coordinates) {
-        return Z.Util.eachInArray(coordinates, this, this.project);
+        return Z.Util.eachInArray(coordinates, this.project, this);
     },
 
     /**
@@ -42,6 +42,6 @@ Z.projection.Common = {
      * @static
      */
     unprojectCoords:function (projCoords) {
-        return Z.Util.eachInArray(projCoords, this, this.unproject);
+        return Z.Util.eachInArray(projCoords, this.unproject, this);
     }
 };

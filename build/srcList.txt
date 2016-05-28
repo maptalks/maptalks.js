@@ -17,6 +17,7 @@
 ../src/misc/Animation.js
 ../src/misc/Canvas.js
 ../src/misc/Ajax.js
+../src/misc/FeatureFilter.js
 ../src/geo/transformation/Transformation.js
 ../src/geo/measurer/Measurer.js
 ../src/geo/measurer/Sphere.js
