@@ -5,7 +5,7 @@
     www.mapbox.com
     License: MIT, header required.
 */
-(function(){
+(function () {
     var types = ['Unknown', 'Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'];
 
     /**
@@ -60,7 +60,7 @@
     }
 
     function compileInOp(property, values) {
-        if (property === '$type') values = Z.Util.mapArray(values, function(value) { return Z.Util.searchInArray(value, types); });
+        if (property === '$type') values = Z.Util.mapArray(values, function (value) { return Z.Util.searchInArray(value, types); });
         var left = JSON.stringify(values.sort(compare));
         var right = compilePropertyReference(property);
 
@@ -93,7 +93,7 @@
         g['type'] = Z.Util.searchInArray(g['geometry']['type'], types);
         g['subType'] = json['subType'];
         return g;
-    }
+    };
 })();
 
 

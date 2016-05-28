@@ -292,7 +292,7 @@ Z.Util = {
     },
 
 
-    mapArray: function(array, fn, context) {
+    mapArray: function (array, fn, context) {
         if (!this.isArray(array)) {
             return null;
         }

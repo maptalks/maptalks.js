@@ -85,7 +85,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param  {*} context        - Function's context
      * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
      */
-    filter: function (fn, context) {
+    filter: function () {
         return Z.VectorLayer.prototype.filter.apply(this, arguments);
     },
 

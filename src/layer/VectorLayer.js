@@ -72,8 +72,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         if (!Z.Util.isArray(styles)) {
             return this._cookStyle([styles]);
         }
-        var cooked = [],
-            fn;
+        var cooked = [];
         for (var i = 0; i < styles.length; i++) {
             cooked.push({
                 'fn' : Z.Util.createFilter(styles[i]['filter']),
