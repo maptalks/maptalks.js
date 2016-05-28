@@ -46,7 +46,7 @@ Z.GeoJSON = {
         if (!Z.Util.isArray(coordinates)) {
             return [coordinates.x, coordinates.y];
         }
-        return Z.Util.eachInArray(coordinates, function (coord) {
+        return Z.Util.mapArrayRecursively(coordinates, function (coord) {
             return [coord.x, coord.y];
         });
     },
@@ -106,7 +106,7 @@ Z.GeoJSON = {
             //返回geometry数组
             var result = this.fromGeoJSON(features);
             return result;
-        } else if (Z.Util.searchInArray(type,
+        } else if (Z.Util.indexOfArray(type,
             ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
             var clazz = (type === 'Point' ? 'Marker' : type);
             return new Z[clazz](geoJSONObj['coordinates'], options);

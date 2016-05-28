@@ -268,7 +268,7 @@ Z.Util = {
     },
 
 
-    eachInArray:function (points, fn, context) {
+    mapArrayRecursively:function (points, fn, context) {
         if (!this.isArray(points)) {
             return null;
         }
@@ -281,7 +281,7 @@ Z.Util = {
                 continue;
             }
             if (Z.Util.isArray(p)) {
-                result.push(Z.Util.eachInArray(p, fn, context));
+                result.push(Z.Util.mapArrayRecursively(p, fn, context));
             } else {
                 pp = context ? fn.call(context, p) : fn(p);
                 result.push(pp);
@@ -310,7 +310,7 @@ Z.Util = {
         return result;
     },
 
-    searchInArray:function (obj, arr) {
+    indexOfArray:function (obj, arr) {
         if (Z.Util.isNil(obj) || !Z.Util.isArrayHasData(arr)) {
             return -1;
         }

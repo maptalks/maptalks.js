@@ -456,7 +456,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         ];
 
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
-            if (blackList && Z.Util.searchInArray(i, blackList) >= 0) {
+            if (blackList && Z.Util.indexOfArray(i, blackList) >= 0) {
                 //need to change marker's coordinates
                 var newCoordinates = map.viewPointToCoordinate(handleViewPoint);
                 var coordinates = marker.getCoordinates();
@@ -544,7 +544,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             var r;
             if (isRect) {
                 //change rectangle's coordinates
-                if (blackList && Z.Util.searchInArray(i, blackList) >= 0) {
+                if (blackList && Z.Util.indexOfArray(i, blackList) >= 0) {
                     var coordinates = shadow.getCoordinates(),
                         handleCoordinates = map.viewPointToCoordinate(handleViewPoint);
                     var newCoordinates;

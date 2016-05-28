@@ -51,7 +51,7 @@
 
     function compileComparisonOp(property, value, op, checkType) {
         var left = compilePropertyReference(property);
-        var right = property === '$type' ? Z.Util.searchInArray(value, types) : JSON.stringify(value);
+        var right = property === '$type' ? Z.Util.indexOfArray(value, types) : JSON.stringify(value);
         return (checkType ? 'typeof ' + left + '=== typeof ' + right + '&&' : '') + left + op + right;
     }
 
@@ -60,11 +60,11 @@
     }
 
     function compileInOp(property, values) {
-        if (property === '$type') values = Z.Util.mapArray(values, function (value) { return Z.Util.searchInArray(value, types); });
+        if (property === '$type') values = Z.Util.mapArray(values, function (value) { return Z.Util.indexOfArray(value, types); });
         var left = JSON.stringify(values.sort(compare));
         var right = compilePropertyReference(property);
 
-        if (values.length <= 200) return 'maptalks.Util.searchInArray(' + right + ', ' + left + ') !== -1';
+        if (values.length <= 200) return 'maptalks.Util.indexOfArray(' + right + ', ' + left + ') !== -1';
         return 'function(v, a, i, j) {' +
             'while (i <= j) { var m = (i + j) >> 1;' +
             '    if (a[m] === v) return true; if (a[m] > v) j = m - 1; else i = m + 1;' +
@@ -90,7 +90,7 @@
     Z.Util.getFilterFeature = function (geometry) {
         var json = geometry._toJSON(),
             g = json['feature'];
-        g['type'] = Z.Util.searchInArray(g['geometry']['type'], types);
+        g['type'] = Z.Util.indexOfArray(g['geometry']['type'], types);
         g['subType'] = json['subType'];
         return g;
     };

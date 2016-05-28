@@ -93,7 +93,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             containerPoints;
         //convert view points to container points needed by canvas
         if (Z.Util.isArray(points)) {
-            containerPoints = Z.Util.eachInArray(points, function (point) {
+            containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
                 var cp = map.viewPointToContainerPoint(point);
                 if (matrix) {
                     return matrix.applyToPointInstance(cp);
