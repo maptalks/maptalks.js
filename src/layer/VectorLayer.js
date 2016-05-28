@@ -54,16 +54,10 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
     },
 
     _styleGeometry: function (geometry) {
-        var json = geometry._toJSON();
-        var o = {
-            'type' : json['feature']['geometry']['type'],
-            'subType' : json['subType'],
-            'properties' : json['feature']['properties']
-        };
-        var symbol = geometry.getSymbol();
-
+        var symbol = geometry.getSymbol(),
+            g = Z.Util.getFilterFeature(geometry);
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
-            if (this._cookedStyles[i]['fn'](o) === true) {
+            if (this._cookedStyles[i]['fn'](g) === true) {
                 if (!geometry._symbolBeforeStyle) {
                     geometry._symbolBeforeStyle = symbol;
                 }
@@ -78,12 +72,10 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         if (!Z.Util.isArray(styles)) {
             return this._cookStyle([styles]);
         }
-        var cooked = [],
-            fn;
+        var cooked = [];
         for (var i = 0; i < styles.length; i++) {
-            fn = new Function('o', 'with (o) { return ' + styles[i]['condition'] + '; }');
             cooked.push({
-                'fn' : fn,
+                'fn' : Z.Util.createFilter(styles[i]['filter']),
                 'symbol' : styles[i].symbol
             });
         }

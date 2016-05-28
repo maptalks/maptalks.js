@@ -195,8 +195,7 @@ describe('#OverlayLayer', function() {
 
         });
 
-        it('filter by properties',function() {
-            var layer = new Z.VectorLayer('id');
+        function genPoints() {
             var points = [
                 new maptalks.Marker([0,0], {
                     properties : {
@@ -227,11 +226,42 @@ describe('#OverlayLayer', function() {
                     }
                 })
             ];
+            return points;
+        }
+
+        it('filter by properties',function() {
+            var layer = new Z.VectorLayer('id');
+            var points = genPoints();
             var selection = layer.addGeometry(points).filter(function(geometry) {
                 return geometry.getType() === 'Point' && geometry.getProperties().foo1 > 0 && geometry.getProperties().foo2.indexOf("test") >= 0;
             });
 
             expect(selection).to.be.an(maptalks.GeometryCollection);
+            expect(selection.getGeometries()).to.have.length(points.length);
+            for (var i = points.length - 1; i >= 0; i--) {
+                expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
+            }
+
+            expect(layer.filter(function(geometry) {
+                return geometry.getProperties().foo3 === true;
+            }).getGeometries()).to.have.length(3);
+
+            selection = layer.filter(function(geometry) {
+                return geometry.getType() !== 'Point';
+            });
+            expect(selection).not.to.be.ok();
+        });
+
+        it('filter by feature-filter',function() {
+            var layer = new Z.VectorLayer('id');
+            var points = genPoints();
+            var selection = layer.addGeometry(points).filter([
+                                                                'all',
+                                                                ['==', '$type', 'Point'],
+                                                                ['>', 'foo1', 0]
+                                                             ]);
+
+            expect(selection).to.be.an(Z.GeometryCollection);
             expect(selection.getGeometries()).to.have.length(points.length);
             for (var i = points.length - 1; i >= 0; i--) {
                 expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());

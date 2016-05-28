@@ -67,12 +67,22 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      */
     filter: function (fn, context) {
         var selected = [];
-        if (fn) {
+        if (Z.Util.isFunction(fn)) {
+            if (fn) {
+                this.forEach(function (geometry) {
+                    if (context ? fn.call(context, geometry) : fn(geometry)) {
+                        selected.push(geometry);
+                    }
+                });
+            }
+        } else {
+            var filter = Z.Util.createFilter(fn);
             this.forEach(function (geometry) {
-                if (context ? fn.call(context, geometry) : fn(geometry)) {
+                var g = Z.Util.getFilterFeature(geometry);
+                if (filter(g)) {
                     selected.push(geometry);
                 }
-            });
+            }, this);
         }
         return selected.length > 0 ? new Z.GeometryCollection(selected) : null;
     },
@@ -145,6 +155,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         }
         return result;
     },
+
 
     _addGeometry:function (geometries, fitView) {
         if (!geometries) { return this; }

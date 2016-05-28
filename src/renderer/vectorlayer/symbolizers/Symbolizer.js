@@ -55,7 +55,7 @@ Z.Symbolizer.DEFAULT_TEXT_COLOR = '#000';
  */
 Z.Symbolizer.testColor = function (prop) {
     if (!prop || !Z.Util.isString(prop)) { return false; }
-    if (Z.Util.searchInArray(prop, Z.Symbolizer.colorProperties) >= 0) {
+    if (Z.Util.indexOfArray(prop, Z.Symbolizer.colorProperties) >= 0) {
         return true;
     }
     return false;

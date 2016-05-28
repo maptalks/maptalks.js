@@ -50,7 +50,11 @@ describe('#Map Profile', function () {
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
             var style = {
-                condition : 'type === "Point" && subType !== "Label"',
+                condition : [
+                                'all',
+                                ['==', '$type', 'Point'],
+                                ['!=', '$subType', 'Label']
+                            ],
                 symbol: {
                     markerFile : 'http://www.foo.com/foo.png'
                 }

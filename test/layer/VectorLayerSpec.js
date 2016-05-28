@@ -98,7 +98,7 @@ describe('VectorLayer', function() {
 
                 for (var i = 0; i < points.length; i++) {
                     var hit = hitIndex.indexOf(i);
-                    if (hit >= 0) {
+                    if (hitIndex.indexOf(i) >= 0) {
                         expect(points[i].getSymbol()).to.be.eql(symbols[hit]);
                     } else {
                         expect(points[i].getSymbol()).to.be.eql(defaultSymbols[i]);
@@ -130,7 +130,11 @@ describe('VectorLayer', function() {
                     'markerFile' : 'http://www.foo.com/foo.png'
                 };
                 testStyle({
-                    condition : 'properties.foo1 === 2',
+                    filter : [
+                                'all',
+                                ['==', 'foo1', 2],
+                                ['==', '$type', 'Point']
+                             ],
                     symbol : symbol
                 }, [1], [symbol]);
             });
@@ -144,11 +148,15 @@ describe('VectorLayer', function() {
                 };
                 testStyle([
                     {
-                        condition : 'properties.foo1 === 2',
+                        filter : ['==', 'foo1', 2],
                         symbol : symbol
                     },
                     {
-                        condition : 'type !== "Polygon" && properties.foo1 === 3',
+                        filter : [
+                                    'all',
+                                    ['!=', '$type', 'Polygon'],
+                                    ['==', 'foo1', 3]
+                                ],
                         symbol : symbol2
                     },
                 ], [1, 2], [symbol, symbol2]);
