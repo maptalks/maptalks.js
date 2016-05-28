@@ -268,14 +268,14 @@ Z.Util = {
     },
 
 
-    mapArrayRecursively:function (points, fn, context) {
-        if (!this.isArray(points)) {
+    mapArrayRecursively:function (arr, fn, context) {
+        if (!this.isArray(arr)) {
             return null;
         }
         var result = [],
             p, pp;
-        for (var i = 0, len = points.length; i < len; i++) {
-            p = points[i];
+        for (var i = 0, len = arr.length; i < len; i++) {
+            p = arr[i];
             if (Z.Util.isNil(p)) {
                 result.push(null);
                 continue;
@@ -311,7 +311,7 @@ Z.Util = {
     },
 
     indexOfArray:function (obj, arr) {
-        if (Z.Util.isNil(obj) || !Z.Util.isArrayHasData(arr)) {
+        if (!Z.Util.isArrayHasData(arr)) {
             return -1;
         }
         for (var i = 0, len = arr.length; i < len; i++) {
