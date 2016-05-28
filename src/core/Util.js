@@ -281,7 +281,7 @@ Z.Util = {
                 continue;
             }
             if (Z.Util.isArray(p)) {
-                result.push(Z.Util.eachInArray(p, fn));
+                result.push(Z.Util.eachInArray(p, fn, context));
             } else {
                 pp = context ? fn.call(context, p) : fn(p);
                 result.push(pp);
