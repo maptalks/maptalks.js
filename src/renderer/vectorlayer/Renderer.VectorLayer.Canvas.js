@@ -233,7 +233,6 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                 this._fireLoadedEvent();
                 return;
             } else if (this._canvasCache[zoom]) {
-                console.log('>>>>>>>>>>>>>>>>');
                 this._canvas = this._canvasCache[zoom].canvas;
                 var center = map._prjToPoint(map._getPrjCenter());
                 this._viewExtent = this._canvasCache[zoom].viewExtent.add(this._canvasCache[zoom].center.substract(center));

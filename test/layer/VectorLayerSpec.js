@@ -71,36 +71,6 @@ describe('VectorLayer', function() {
         });
     });
 
-
-
-    /*it('hit detect', function(done) {
-        function dragMap() {
-            var center = map.getCenter();
-            var spy = sinon.spy();
-
-            var domPosition = maptalks.DomUtil.getPagePosition(container);
-            var point = map.coordinateToContainerPoint(center).add(domPosition);
-            happen.mousedown(map._panels.mapPlatform,{
-                    'clientX':point.x,
-                    'clientY':point.y
-                    });
-            happen.mousemove(document,{
-                    'clientX':point.x + 1,
-                    'clientY':point.y + 1
-                    });
-            happen.mouseup(document);
-        }
-        map.on('moveend', function(done) {
-            done();
-        });
-        layer.clear();
-        map.addLayer(layer);
-        layer.once('layerload', function() {
-            dragMap();
-        });
-        layer.addGeometry(new maptalks.Circle(map.getCenter(), 1000));
-    });*/
-
     it('set drawOnce option', function(done) {
         layer.clear();
         layer.config({
