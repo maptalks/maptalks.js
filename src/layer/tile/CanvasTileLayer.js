@@ -1,8 +1,6 @@
 Z.CanvasTileLayer = Z.TileLayer.extend({
 });
 
-Z.Util.extend(Z.CanvasTileLayer, Z.Renderable);
-
 /**
  * Export the CanvasTileLayer's profile json. <br>
  * Layer's profile is a snapshot of the layer in JSON format. <br>

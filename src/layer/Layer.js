@@ -321,8 +321,9 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     _onRemove:function () {
         this.clear();
+        this._switchEvents('off', this);
         if (this._renderer) {
-            this._switchEvents('off');
+            this._switchEvents('off', this._renderer);
             this._renderer.remove();
             delete this._renderer;
         }
@@ -333,6 +334,9 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!map) { return; }
         this.map = map;
         this.setZIndex(zIndex);
+        if (this._getEvents && this._getEvents()) {
+            this._switchEvents('on', this);
+        }
         this.fire('add');
     },
 
@@ -347,17 +351,17 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         }
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
-        this._switchEvents('on');
+        this._switchEvents('on', this._renderer);
     },
 
-    _switchEvents: function (to) {
-        if (this._renderer && this._renderer._getEvents) {
-            var events = this._renderer._getEvents();
+    _switchEvents: function (to, emitter) {
+        if (emitter && emitter._getEvents) {
+            var events = emitter._getEvents();
             if (events) {
                 var map = this.getMap();
                 for (var p in events) {
                     if (events.hasOwnProperty(p)) {
-                        map[to](p, events[p], this._renderer);
+                        map[to](p, events[p], emitter);
                     }
                 }
             }
@@ -373,3 +377,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         return this.map._layers;
     }
 });
+
+Z.Util.extend(Z.Layer, Z.Renderable);
+
+
