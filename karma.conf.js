@@ -6,11 +6,10 @@ module.exports = function(config) {
 
   var srcFiles = require(__dirname + '/build/getFiles.js').getFiles();
   var files = srcFiles.concat([
-    // 'test/geometry/*.js',
     'test/**/*.js',
-    'assets/lib/**/*.js',
     {pattern: 'assets/css/**/*.css', watched: true, included: false, served: true},
-    {pattern: 'assets/images/**/*.png', watched: false, included: false, served: true}
+    {pattern: 'assets/images/**/*.png', watched: false, included: false, served: true},
+    {pattern: 'test/resources/*.svg', watched: false, included: false, served: true}
   ]);
 
   config.set({
@@ -23,7 +22,8 @@ module.exports = function(config) {
     proxies: {
       '/images/': '/base/assets/images/',
       '/css/': '/base/assets/css/',
-      '/lib/': '/base/assets/lib/'
+      '/lib/': '/base/assets/lib/',
+      '/resources/': '/base/test/resources/'
     },
 
     // testing framework to use (jasmine/mocha/qunit/...)
