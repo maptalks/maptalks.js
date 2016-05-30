@@ -287,22 +287,20 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         });
     },
 
-    _onMapEvent:function (param) {
-        if (param['type'] === '_moveend' || param['type'] === '_zoomend') {
-            if (param['type'] === '_zoomend') {
-                this._gradualLoading = true;
-            } else {
-                this._gradualLoading = false;
-            }
-            this.render();
-        } else if (param['type'] === '_resize') {
-            this._resizeCanvas();
-            this.render();
-        }
+    _onMoveEnd: function () {
+        this._gradualLoading = false;
+        this.render();
+    },
+
+    _onZoomEnd: function () {
+        this._gradualLoading = true;
+        this.render();
+    },
+
+    _onResize: function () {
+        this._resizeCanvas();
+        this.render();
     }
-
-
-
 });
 
 Z.TileLayer.registerRenderer('canvas', Z.renderer.tilelayer.Canvas);
