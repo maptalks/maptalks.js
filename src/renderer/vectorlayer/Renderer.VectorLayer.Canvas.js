@@ -18,6 +18,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     remove:function () {
         delete this._resources;
         delete this._imgCache;
+        delete this._canvasCache;
         this._requestMapToRender();
     },
 
@@ -103,7 +104,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
-        layer.forEach(this._checkGeo, this);
+        this._forEachGeo(this._checkGeo, this);
 
 
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
@@ -204,6 +205,10 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         return this._resources.isResourceLoaded(url);
     },
 
+    _forEachGeo: function (fn, context) {
+        this._layer.forEach(fn, context);
+    },
+
     /**
      * Renderer the layer immediately.
      */
@@ -212,10 +217,32 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!this.getMap()) {
             return;
         }
+        var map = this.getMap();
         if (!this._layer.isVisible() || this._layer.isEmpty()) {
             this._requestMapToRender();
             this._fireLoadedEvent();
             return;
+        }
+        var zoom = this.getMap().getZoom();
+        if (this._layer.options['drawOnce']) {
+            if (!this._canvasCache) {
+                this._canvasCache = {};
+            }
+            if (this._viewExtent) {
+                this._requestMapToRender();
+                this._fireLoadedEvent();
+                return;
+            } else if (this._canvasCache[zoom]) {
+                this._canvas = this._canvasCache[zoom].canvas;
+                var center = map._prjToPoint(map._getPrjCenter());
+                this._viewExtent = this._canvasCache[zoom].viewExtent.add(this._canvasCache[zoom].center.substract(center));
+                this._requestMapToRender();
+                this._fireLoadedEvent();
+                return;
+            } else {
+                delete this._canvas;
+            }
+
         }
         if (this._resources) {
             var check = this._checkResources(this._layer._geoCache);
@@ -226,45 +253,59 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             }
         }
         this._draw();
+        if (this._layer.options['drawOnce']) {
+            if (!this._canvasCache[zoom]) {
+                this._canvasCache[zoom] = {
+                    'canvas'       : this._canvas,
+                    'viewExtent'   : this._viewExtent,
+                    'center'       : map._prjToPoint(map._getPrjCenter())
+                };
+            }
+        }
         this._requestMapToRender();
         this._fireLoadedEvent();
 
     },
 
-    _onMapEvent:function (param) {
-        if (param['type'] === '_zoomend') {
-            if (this._layer.isVisible()) {
-                this._layer.forEach(function (geo) {
-                    geo._onZoomEnd();
-                });
-                var mask = this._layer.getMask();
-                if (mask) {
-                    mask._onZoomEnd();
-                }
+    _onZoomEnd: function () {
+        delete this._viewExtent;
+        if (this._layer.isVisible()) {
+            this._layer.forEach(function (geo) {
+                geo._onZoomEnd();
+            });
+            var mask = this._layer.getMask();
+            if (mask) {
+                mask._onZoomEnd();
             }
-            if (!this._painted) {
-                this.render();
-            } else {
-                //_prepareRender is called in render not in _renderImmediate.
-                //Thus _prepareRender needs to be called here
-                this._prepareRender();
-                this._renderImmediate();
-            }
-        } else if (param['type'] === '_moveend') {
-            if (!this._painted) {
-                this.render();
-            } else {
-                this._prepareRender();
-                this._renderImmediate();
-            }
-        } else if (param['type'] === '_resize') {
-            this._resizeCanvas();
-            if (!this._painted) {
-                this.render();
-            } else {
-                this._prepareRender();
-                this._renderImmediate();
-            }
+        }
+        if (!this._painted) {
+            this.render();
+        } else {
+            //_prepareRender is called in render not in _renderImmediate.
+            //Thus _prepareRender needs to be called here
+            this._prepareRender();
+            this._renderImmediate();
+        }
+    },
+
+    _onMoveEnd: function () {
+        if (!this._painted) {
+            this.render();
+        } else {
+            this._prepareRender();
+            this._renderImmediate();
+        }
+    },
+
+    _onResize: function () {
+        this._resizeCanvas();
+        if (!this._painted) {
+            this.render();
+        } else {
+            delete this._canvasCache;
+            delete this._viewExtent;
+            this._prepareRender();
+            this._renderImmediate();
         }
     },
 

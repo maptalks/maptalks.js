@@ -4,7 +4,7 @@ describe('VectorLayer', function() {
 
     var container;
     var map;
-    var tile;
+    var tile, layer;
     var center = new Z.Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
@@ -22,16 +22,14 @@ describe('VectorLayer', function() {
             urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
             subdomains: [1, 2, 3]
         });
+        layer = new Z.VectorLayer('id');
     });
 
     afterEach(function() {
-        removeContainer(container)
+        removeContainer(container);
     });
 
-    describe('addGeometry', function() {
-
-        var layer = new Z.VectorLayer('id');
-
+    describe('can addGeometry', function() {
         beforeEach(function() {
             map.setBaseLayer(tile);
             map.addLayer(layer);
@@ -41,129 +39,182 @@ describe('VectorLayer', function() {
             map.removeLayer(layer);
         });
 
-        it('all type of geometry', function() {
-            var geometries = genAllTypeGeometries();
+        it('all type of geometry', function(done) {
+            expect(function() {
+                layer.addGeometry([],true);
 
+                layer.on('layerload', function() {
+                    map.on('zoomend', function() {
+                        done();
+                    });
+                    map.zoomOut();
+
+                });
+            }).to.not.throwException();
+
+        });
+
+        it('empty geometries', function(done) {
+            var geometries = genAllTypeGeometries();
+            map.on('zoomend', function() {
+                done();
+            });
+            layer.on('layerload', function() {
+                map.on('zoomend', function() {
+                    map.panBy(new maptalks.Point(1,1));
+                });
+                map.zoomOut();
+            })
             expect(function() {
                 layer.addGeometry(geometries,true);
             }).to.not.throwException();
         });
+    });
 
-        context('should can setStyle', function() {
-            function testStyle(style, hitIndex, symbols) {
-                var points = [
-                    new maptalks.Marker([0,0], {
-                        properties : {
-                            'foo1' : 1,
-                            'foo2' : 'test1',
-                            'foo3' : true
-                        }
-                    }),
-                    new maptalks.Marker([0,0], {
-                        properties : {
-                            'foo1' : 2,
-                            'foo2' : 'test2',
-                            'foo3' : false
-                        }
-                    }),
-                    new maptalks.Marker([0,0], {
-                        properties : {
-                            'foo1' : 3,
-                            'foo2' : 'test3',
-                            'foo3' : true
-                        }
-                    }),
-                    new maptalks.Marker([0,0], {
-                        properties : {
-                            'foo1' : 4,
-                            'foo2' : 'test4',
-                            'foo3' : true
-                        }
-                    }),
-                    new maptalks.Circle([0,0], 100, {
-                        properties : {
-                            'foo1' : 5,
-                            'foo2' : 'test5',
-                            'foo3' : true
-                        }
-                    })
-                ];
+    it('set drawOnce option', function(done) {
+        layer.clear();
+        layer.config({
+            'drawOnce' : true,
+            'drawImmediate' : true
+        });
+        map.addLayer(layer);
+        var geometries = genAllTypeGeometries();
 
-                var defaultSymbols = [];
-                layer.addGeometry(points).forEach(function(geometry) {
-                    defaultSymbols.push(geometry.getSymbol());
-                }).setStyle(style);
-
-                expect(layer.getStyle()).to.be.eql(style);
-
-                for (var i = 0; i < points.length; i++) {
-                    var hit = hitIndex.indexOf(i);
-                    if (hitIndex.indexOf(i) >= 0) {
-                        expect(points[i].getSymbol()).to.be.eql(symbols[hit]);
-                    } else {
-                        expect(points[i].getSymbol()).to.be.eql(defaultSymbols[i]);
-                    }
-                }
-
-                var geoAddLater = points[hitIndex[0]].copy();
-                geoAddLater.setSymbol(null);
-                layer.addGeometry(geoAddLater);
-                expect(geoAddLater.getSymbol()).to.be.eql(symbols[0]);
-
-                var profile = layer.toJSON();
-                for (var i = 0; i < profile.geometries.length; i++) {
-                    expect(profile.geometries[i].symbol).not.to.be.ok();
-                }
-
-                layer.removeStyle();
-
-                expect(layer.getStyle()).not.to.be.ok();
-
-                for (var i = 0; i < points.length; i++) {
-                    expect(points[i].getSymbol()).to.be.eql(defaultSymbols[i]);
-                }
-                expect(geoAddLater.getSymbol()).to.be.eql(defaultSymbols[0]);
+        map.on('moveend', function() {
+            map.removeLayer(layer);
+            done();
+        });
+        var counter = 0;
+        map.on('zoomend', function() {
+            if (counter === 0) {
+                map.zoomIn();
+                counter++;
+            } else {
+                map.panBy(new maptalks.Point(10,10));
             }
 
-            it('setStyle with a singleStyle', function() {
-                var symbol = {
-                    'markerFile' : 'http://www.foo.com/foo.png'
-                };
-                testStyle({
+        });
+        layer.on('layerload', function() {
+            map.zoomOut();
+        })
+        expect(function() {
+            layer.addGeometry(geometries);
+        }).to.not.throwException();
+    });
+
+    describe('can setStyle', function() {
+        function testStyle(style, hitIndex, symbols) {
+            layer.clear();
+            var points = [
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 1,
+                        'foo2' : 'test1',
+                        'foo3' : true
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 2,
+                        'foo2' : 'test2',
+                        'foo3' : false
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 3,
+                        'foo2' : 'test3',
+                        'foo3' : true
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 4,
+                        'foo2' : 'test4',
+                        'foo3' : true
+                    }
+                }),
+                new maptalks.Circle([0,0], 100, {
+                    properties : {
+                        'foo1' : 5,
+                        'foo2' : 'test5',
+                        'foo3' : true
+                    }
+                })
+            ];
+
+            var defaultSymbols = [];
+            layer.addGeometry(points).forEach(function(geometry) {
+                defaultSymbols.push(geometry.getSymbol());
+            }).setStyle(style);
+
+            expect(layer.getStyle()).to.be.eql(style);
+
+            for (var i = 0; i < points.length; i++) {
+                var hit = hitIndex.indexOf(i);
+                if (hitIndex.indexOf(i) >= 0) {
+                    expect(points[i].getSymbol()).to.be.eql(symbols[hit]);
+                } else {
+                    expect(points[i].getSymbol()).to.be.eql(defaultSymbols[i]);
+                }
+            }
+
+            var geoAddLater = points[hitIndex[0]].copy();
+            geoAddLater.setSymbol(null);
+            layer.addGeometry(geoAddLater);
+            expect(geoAddLater.getSymbol()).to.be.eql(symbols[0]);
+
+            var profile = layer.toJSON();
+            for (var i = 0; i < profile.geometries.length; i++) {
+                expect(profile.geometries[i].symbol).not.to.be.ok();
+            }
+
+            layer.removeStyle();
+
+            expect(layer.getStyle()).not.to.be.ok();
+
+            for (var i = 0; i < points.length; i++) {
+                expect(points[i].getSymbol()).to.be.eql(defaultSymbols[i]);
+            }
+            expect(geoAddLater.getSymbol()).to.be.eql(defaultSymbols[0]);
+        }
+
+        it('setStyle with a singleStyle', function() {
+            var symbol = {
+                'markerFile' : 'http://www.foo.com/foo.png'
+            };
+            testStyle({
+                filter : [
+                            'all',
+                            ['==', 'foo1', 2],
+                            ['==', '$type', 'Point']
+                         ],
+                symbol : symbol
+            }, [1], [symbol]);
+        });
+
+        it('setStyle with a array of styles', function() {
+            var symbol = {
+                'markerFile' : 'http://www.foo.com/foo.png'
+            };
+            var symbol2 = {
+                'markerFile' : 'http://www.foo.com/foo2.png'
+            };
+            testStyle([
+                {
+                    filter : ['==', 'foo1', 2],
+                    symbol : symbol
+                },
+                {
                     filter : [
                                 'all',
-                                ['==', 'foo1', 2],
-                                ['==', '$type', 'Point']
-                             ],
-                    symbol : symbol
-                }, [1], [symbol]);
-            });
-
-            it('setStyle with a array of styles', function() {
-                var symbol = {
-                    'markerFile' : 'http://www.foo.com/foo.png'
-                };
-                var symbol2 = {
-                    'markerFile' : 'http://www.foo.com/foo2.png'
-                };
-                testStyle([
-                    {
-                        filter : ['==', 'foo1', 2],
-                        symbol : symbol
-                    },
-                    {
-                        filter : [
-                                    'all',
-                                    ['!=', '$type', 'Polygon'],
-                                    ['==', 'foo1', 3]
-                                ],
-                        symbol : symbol2
-                    },
-                ], [1, 2], [symbol, symbol2]);
-            });
-        })
-
-
+                                ['!=', '$type', 'Polygon'],
+                                ['==', 'foo1', 3]
+                            ],
+                    symbol : symbol2
+                },
+            ], [1, 2], [symbol, symbol2]);
+        });
     });
 
 });

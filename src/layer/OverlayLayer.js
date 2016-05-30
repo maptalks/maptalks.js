@@ -39,6 +39,17 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
+     * Get count of the geometries
+     * @return {Number} count
+     */
+    getCount: function () {
+        if (!this._counter) {
+            return 0;
+        }
+        return this._counter;
+    },
+
+    /**
      * Travels among the geometries the layer has.
      * @param  {Function} fn - a callback function
      * @param  {*} context   - callback's context
@@ -167,8 +178,8 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         var fitCounter = 0;
         var centerSum = new Z.Coordinate(0, 0);
         var extent = null,
-            geo, geoId, internalId, geoCenter, geoExtent;
-        var style = this.getStyle();
+            geo, geoId, internalId, geoCenter, geoExtent,
+            style = this.getStyle ? this.getStyle() : null;
         for (var i = 0, len = geometries.length; i < len; i++) {
             geo = geometries[i];
             if (!geo || !(geo instanceof Z.Geometry)) {
@@ -193,7 +204,11 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 geoExtent = geo.getExtent();
                 if (geoCenter && geoExtent) {
                     centerSum._add(geoCenter);
-                    extent = geoExtent.combine(extent);
+                    if (extent == null) {
+                        extent = geoExtent;
+                    } else {
+                        extent = extent._combine(geoExtent);
+                    }
                     fitCounter++;
                 }
             }
@@ -205,7 +220,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         var map = this.getMap();
         if (map) {
             this._getRenderer().render(geometries);
-            if (fitView) {
+            if (fitView && extent) {
                 var z = map.getFitZoom(extent);
                 var center = centerSum._multi(1 / fitCounter);
                 map.setCenterAndZoom(center, z);

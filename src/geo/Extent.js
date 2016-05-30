@@ -88,8 +88,20 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
         }
     },
 
+    _add: function (p) {
+        this['xmin'] += p.x;
+        this['ymin'] += p.y;
+        this['xmax'] += p.x;
+        this['ymax'] += p.y;
+        return this;
+    },
+
+    add: function (p) {
+        return new this.constructor(this['xmin'] + p.x, this['ymin'] + p.y, this['xmax'] + p.x, this['ymax'] + p.y);
+    },
+
     round:function () {
-        return new Z.Extent(Z.Util.round(this['xmin']), Z.Util.round(this['ymin']),
+        return new this.constructor(Z.Util.round(this['xmin']), Z.Util.round(this['ymin']),
             Z.Util.round(this['xmax']), Z.Util.round(this['ymax']));
     },
 

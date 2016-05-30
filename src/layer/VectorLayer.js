@@ -21,7 +21,8 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
         'thresholdOfTransforming'    : 200,
-        'drawImmediate'             : false
+        'drawImmediate'             : false,
+        'drawOnce'                  : false
     },
 
     getStyle: function () {
@@ -57,7 +58,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         var symbol = geometry.getSymbol(),
             g = Z.Util.getFilterFeature(geometry);
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
-            if (this._cookedStyles[i]['fn'](g) === true) {
+            if (this._cookedStyles[i]['filter'](g) === true) {
                 if (!geometry._symbolBeforeStyle) {
                     geometry._symbolBeforeStyle = symbol;
                 }
@@ -75,7 +76,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         var cooked = [];
         for (var i = 0; i < styles.length; i++) {
             cooked.push({
-                'fn' : Z.Util.createFilter(styles[i]['filter']),
+                'filter' : Z.Util.createFilter(styles[i]['filter']),
                 'symbol' : styles[i].symbol
             });
         }
@@ -154,5 +155,3 @@ Z.VectorLayer._fromJSON = function (profile) {
     }
     return layer;
 };
-
-Z.Util.extend(Z.VectorLayer, Z.Renderable);
