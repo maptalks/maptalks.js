@@ -187,7 +187,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             }
 
             geoId = geo.getId();
-            if (geoId) {
+            if (!Z.Util.isNil(geoId)) {
                 if (!Z.Util.isNil(this._geoMap[geoId])) {
                     throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + geoId);
                 }

@@ -69,6 +69,12 @@ describe('VectorLayer', function() {
                 layer.addGeometry(geometries,true);
             }).to.not.throwException();
         });
+
+        it('add a geometry with id of 0', function() {
+            layer.addGeometry(new maptalks.Marker([0, 0], {id:0}));
+            var geo = layer.getGeometryById(0);
+            expect(geo).to.be.ok();
+        });
     });
 
     it('set drawOnce option', function(done) {
