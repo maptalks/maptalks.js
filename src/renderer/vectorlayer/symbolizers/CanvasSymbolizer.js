@@ -45,5 +45,41 @@ Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symboliz
     },
 
     hide:function () {
-    }
+    },
+
+    _defineStyle: function (style) {
+        var me = this;
+        if (style) {
+            var props = [], p;
+            for (p in style) {
+                if (style.hasOwnProperty(p)) {
+                    props.push(p);
+                }
+            }
+
+            for (var i = 0, len = props.length; i < len; i++) {
+                p = props[i];
+                style['_' + p] = style[p];
+                (function(_p){
+                    Object.defineProperty(style, _p, {
+                        get: function () {
+                            if (Z.Util.isFunctionDefinition(this['_' + _p])) {
+                                if (!this['__fn_'+_p]) {
+                                    this['__fn_'+_p] = Z.Util.interpolated(this['_' + _p]);
+                                }
+                                return this['__fn_'+_p](me.getMap().getZoom(), me.geometry.getProperties());
+                            } else {
+                                return this['_' + _p];
+                            }
+                        },
+                        set: function (v) {
+                            this['_' + _p] = v;
+                        }
+                      });
+                })(p)
+
+
+            }
+        }
+    },
 });

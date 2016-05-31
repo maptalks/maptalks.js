@@ -847,8 +847,33 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _getExternalResource:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = Z.Geometry.getExternalResource(symbol);
+        var resources = Z.Geometry.getExternalResource(this._interpolateSymbol(symbol));
         return resources;
+    },
+
+    _interpolateSymbol: function (symbol) {
+        var result;
+        if (Z.Util.isArray(symbol)) {
+            result = [];
+            for (var i = 0; i < symbol.length; i++) {
+                result.push(this._interpolateSymbol(symbol[i]));
+            }
+            return result;
+        }
+        result = {};
+        for (var p in symbol) {
+            if (symbol.hasOwnProperty(p)) {
+                if (Z.Util.isFunctionDefinition(symbol[p])) {
+                    if (!this.getMap()) {
+                        return null;
+                    }
+                    result[p] = Z.Util.interpolated(symbol[p])(this.getMap().getZoom(), this.getProperties());
+                } else {
+                    result[p] = symbol[p];
+                }
+            }
+        }
+        return result;
     },
 
     _getPainter:function () {
@@ -1098,21 +1123,22 @@ Z.Geometry.getExternalResource = function (symbol) {
         symbols = [symbol];
     }
     var resources = [];
-    var props = Z.Symbolizer.resourceProperties;
+    var props = Z.Symbolizer.resourceProperties,
+        ii, res, resSizeProp;
     for (var i = symbols.length - 1; i >= 0; i--) {
         symbol = symbols[i];
         if (!symbol) {
             continue;
         }
-        for (var ii = 0; ii < props.length; ii++) {
-            var res = symbol[props[ii]];
+        for (ii = 0; ii < props.length; ii++) {
+            res = symbol[props[ii]];
             if (!res) {
                 continue;
             }
             if (res.indexOf('url(') >= 0) {
                 res = Z.Util.extractCssUrl(res);
             }
-            var resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
+            resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
             resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
         }
         if (symbol['markerType'] === 'path' && symbol['markerPath']) {

@@ -14,6 +14,7 @@ describe('SymbolSpec', function() {
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.canvasContainer;
+        layer = new maptalks.VectorLayer('id').addTo(map);
     });
 
     afterEach(function() {
@@ -35,6 +36,9 @@ describe('SymbolSpec', function() {
             }
         }
     });
+
+
+
 
     describe('external resource', function() {
 
@@ -122,5 +126,24 @@ describe('SymbolSpec', function() {
             });
             map.addLayer(vectorLayer);
         });
+    });
+
+    it('marker file', function(done) {
+        var layer = new maptalks.VectorLayer('id2').addTo(map);
+        var marker = new maptalks.Marker([100,0], {
+            symbol:{
+                "marker-file" : "resources/x.svg",
+                "marker-width": {stops: [[1, 1], [5, 10]]},
+                "marker-height":30
+            }
+        });
+        layer.on('layerload', function() {
+            expect(marker.getMap()).to.be.ok();
+            expect(marker.getSize().width).to.be.eql(10);
+            map.removeLayer('id2');
+            done();
+        });
+        layer.addGeometry(marker);
+        expect(marker.getMap()).to.be.ok();
     });
 });
