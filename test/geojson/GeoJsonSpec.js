@@ -146,6 +146,7 @@ describe('GeoJSON', function() {
             expect(point.getType()).to.eql(geoJSONs[0].type);
             expect(point.getCenter()).to.eql(new Z.Coordinate(geoJSONs[0]['coordinates']));
             expect(point.toGeoJSON()['geometry']).to.eql(geoJSONs[0]);
+            expect(point.toGeoJSONGeometry()).to.eql(geoJSONs[0]);
         });
 
         it('evaluate polyline', function() {
@@ -153,6 +154,7 @@ describe('GeoJSON', function() {
             expect(polyline).to.an(Z.Polyline);
             expect(polyline.getType()).to.eql(geoJSONs[1].type);
             expect(polyline.toGeoJSON()['geometry']).to.eql(geoJSONs[1]);
+            expect(polyline.toGeoJSONGeometry()).to.eql(geoJSONs[1]);
         });
 
         it('evaluate polygon', function() {
@@ -160,12 +162,14 @@ describe('GeoJSON', function() {
             expect(polygon).to.an(Z.Polygon);
             expect(polygon.getType()).to.eql(geoJSONs[2].type);
             expect(polygon.toGeoJSON()['geometry']).to.eql(geoJSONs[2]);
+            expect(polygon.toGeoJSONGeometry()).to.eql(geoJSONs[2]);
         });
 
         it('evaluate polygon with holes', function() {
             var polygon = geometries[3];
             expect(polygon).to.an(Z.Polygon);
             expect(polygon.toGeoJSON()['geometry']).to.eql(geoJSONs[3]);
+            expect(polygon.toGeoJSONGeometry()).to.eql(geoJSONs[3]);
             var holes = polygon.getHoles();
             expect(holes).to.have.length(1);
         });
@@ -175,6 +179,7 @@ describe('GeoJSON', function() {
             expect(multipoint).to.an(Z.MultiPoint);
             expect(multipoint.getType()).to.eql(geoJSONs[4].type);
             expect(multipoint.toGeoJSON()['geometry']).to.eql(geoJSONs[4]);
+            expect(multipoint.toGeoJSONGeometry()).to.eql(geoJSONs[4]);
         });
 
         it('evaluate MultiLineString', function() {
@@ -182,6 +187,7 @@ describe('GeoJSON', function() {
             expect(multiPolyline).to.an(Z.MultiPolyline);
             expect(multiPolyline.getType()).to.eql(geoJSONs[5].type);
             expect(multiPolyline.toGeoJSON()['geometry']).to.eql(geoJSONs[5]);
+            expect(multiPolyline.toGeoJSONGeometry()).to.eql(geoJSONs[5]);
         });
 
         it('evaluate MultiPolygon', function() {
@@ -189,6 +195,7 @@ describe('GeoJSON', function() {
             expect(multiPolygon).to.an(Z.MultiPolygon);
             expect(multiPolygon.getType()).to.eql(geoJSONs[6].type);
             expect(multiPolygon.toGeoJSON()['geometry']).to.eql(geoJSONs[6]);
+            expect(multiPolygon.toGeoJSONGeometry()).to.eql(geoJSONs[6]);
         });
 
         it('evaluate GeometryCollection', function() {
@@ -196,6 +203,7 @@ describe('GeoJSON', function() {
             expect(geometryCollection).to.an(Z.GeometryCollection);
             expect(geometryCollection.getType()).to.eql(geoJSONs[7].type);
             expect(geometryCollection.toGeoJSON()['geometry']).to.eql(geoJSONs[7]);
+            expect(geometryCollection.toGeoJSONGeometry()).to.eql(geoJSONs[7]);
         });
 
     });

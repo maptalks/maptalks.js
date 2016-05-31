@@ -435,9 +435,11 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      *
      * @param {Number} [interval=100]     - interval of flash, in millisecond (ms)
      * @param {Number} [count=4]          - flash times
+     * @param {Function} [cb=null]        - callback function when flash ended
+     * @param {*} [context=null]          - callback context
      * @return {maptalks.Geometry} this
      */
-    flash: function (interval, count) {
+    flash: function (interval, count, cb, context) {
         if (!interval) {
             interval = 100;
         }
@@ -452,6 +454,13 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         function flashGeo() {
             if (count === 0) {
                 me.show();
+                if (cb) {
+                    if (context) {
+                        cb.call(context);
+                    } else {
+                        cb();
+                    }
+                }
                 return;
             }
 
