@@ -60,14 +60,14 @@ Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symboliz
             for (var i = 0, len = props.length; i < len; i++) {
                 p = props[i];
                 style['_' + p] = style[p];
-                (function(_p){
+                (function (_p) {
                     Object.defineProperty(style, _p, {
                         get: function () {
                             if (Z.Util.isFunctionDefinition(this['_' + _p])) {
-                                if (!this['__fn_'+_p]) {
-                                    this['__fn_'+_p] = Z.Util.interpolated(this['_' + _p]);
+                                if (!this['__fn_' + _p]) {
+                                    this['__fn_' + _p] = Z.Util.interpolated(this['_' + _p]);
                                 }
-                                return this['__fn_'+_p](me.getMap().getZoom(), me.geometry.getProperties());
+                                return this['__fn_' + _p](me.getMap().getZoom(), me.geometry.getProperties());
                             } else {
                                 return this['_' + _p];
                             }
@@ -75,11 +75,11 @@ Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symboliz
                         set: function (v) {
                             this['_' + _p] = v;
                         }
-                      });
-                })(p)
+                    });
+                })(p);
 
 
             }
         }
-    },
+    }
 });
