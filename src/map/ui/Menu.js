@@ -19,10 +19,6 @@
  */
 Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
 
-    statics : {
-        'single' : true
-    },
-
     /**
      * @property {Object} options
      * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened menu.
@@ -36,10 +32,6 @@ Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
         'width'  : 160,
         'custom' : false,
         'items'  : []
-    },
-
-    initialize: function (options) {
-        Z.Util.setOptions(this, options);
     },
 
     /**

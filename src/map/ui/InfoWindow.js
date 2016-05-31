@@ -16,10 +16,6 @@
  */
 Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prototype */{
 
-    statics : {
-        'single' : true
-    },
-
     /**
      * @property {Object} options
      * @property {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
@@ -36,10 +32,6 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         'custom'    : false,
         'title'     : null,
         'content'   : null
-    },
-
-    initialize:function (options) {
-        Z.Util.setOptions(this, options);
     },
 
     /**

@@ -14,11 +14,8 @@ Z.ui = {};
  * 2. Method to create UI's Dom element
  * function _createDOM : HTMLElement
  *
- * 3 Optional, To register any event listener, when the UI Component is created and displayed for the first time.
- * function _registerEvents : void
- *
- * 4. Optional, To remove any event listener registered by _regsiterEvents
- * function _removeEvents : void
+ * 3 Optional, to provide an event map to register event listeners.
+ * function _getEvents : void
  *
  * @class
  * @category ui
@@ -41,7 +38,12 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         'eventsToStop' : 'mousedown dblclick',
         'dx'     : 0,
         'dy'     : 0,
-        'autoPan' : false
+        'autoPan' : false,
+        'single' : true
+    },
+
+    initialize: function (options) {
+        Z.Util.setOptions(this, options);
     },
 
     /**
@@ -51,6 +53,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      */
     addTo:function (owner) {
         this._owner = owner;
+        return this;
     },
 
     /**
@@ -81,6 +84,8 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         this._coordinate = coordinate;
         if (this._singleton()) {
             this._removePrev();
+        } else if (this.__uiDOM) {
+            Z.DomUtil.removeDomNode(this.__uiDOM);
         }
         var dom = this.__uiDOM = this._createDOM();
         if (!dom) {
@@ -89,6 +94,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         }
         var map = this.getMap(),
             container = this._getUIContainer();
+
         this._measureSize(dom);
 
         if (this._singleton()) {
@@ -218,6 +224,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         dom.style.position = 'absolute';
         dom.style.left = -99999 + 'px';
         dom.style.top = -99999 + 'px';
+        dom.style.display = '';
         container.appendChild(dom);
         this._size = new Z.Size(dom.clientWidth, dom.clientHeight);
         dom.style.display = 'none';
@@ -248,11 +255,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     _singleton:function () {
-        var clazzName = this._getClassName();
-        if (Z.ui[clazzName] && !Z.ui[clazzName]['single']) {
-            return false;
-        }
-        return true;
+        return this.options['single'];
     },
 
     _getUIContainer : function () {
