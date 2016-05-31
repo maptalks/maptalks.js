@@ -91,6 +91,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     fn.call(this);
                 } else if (player.playState === 'running') {
                     this.transform(matrix, layersToTransform);
+                    map._fireEvent('zooming', {'matrix' : matrix});
                 }
             }, this)
         ).play();
