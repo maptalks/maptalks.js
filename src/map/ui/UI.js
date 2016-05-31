@@ -152,6 +152,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         this._switchEvents('off');
         delete this._owner;
         delete this._map;
+        if (!this._singleton() && this.__uiDOM) {
+            Z.DomUtil.removeDomNode(this.__uiDOM);
+            delete this.__uiDOM;
+        }
         this.fire('remove');
         return this;
     },
