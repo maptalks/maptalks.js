@@ -20,8 +20,20 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
     },
 
     initialize: function (coordinate, options) {
-        this._markerCoordinate = new Z.Coordinate(coordinate);
+        this._markerCoord = new Z.Coordinate(coordinate);
         Z.Util.setOptions(this, options);
+    },
+
+    setCoordinates: function (coordinates) {
+        this._markerCoord = coordinates;
+        if (this.isVisible()) {
+            this.show();
+        }
+        return this;
+    },
+
+    getCoordinates: function () {
+        return this._markerCoord;
     },
 
     setContent: function (content) {
@@ -36,8 +48,8 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         return this.options['content'];
     },
 
-    show: function () {
-        return Z.ui.UIComponent.prototype.show.call(this, this._markerCoordinate);
+    show: function (coordinates) {
+        return Z.ui.UIComponent.prototype.show.call(this, coordinates || this._markerCoord);
     },
 
     _getDomOffset: function () {

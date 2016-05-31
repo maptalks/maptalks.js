@@ -138,4 +138,24 @@ describe('UIMarker Tests', function() {
         expect(m).not.to.be.ok();
     });
 
+    it('can getCoordinates', function() {
+        var content = '<svg>marker</svg>';
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            single : true,
+            content : content
+        });
+        marker.addTo(map).show();
+        expect(marker.getCoordinates().toArray()).to.be.eql(map.getCenter().toArray());
+    });
+
+    it('can setCoordinates', function() {
+        var content = '<svg>marker</svg>';
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            single : true,
+            content : content
+        });
+        marker.addTo(map).show();
+        marker.setCoordinates(map.getCenter().add(0.01, 0.01));
+        expect(marker.getCoordinates().toArray()).to.be.eql(map.getCenter().add(0.01, 0.01).toArray());
+    });
 });
