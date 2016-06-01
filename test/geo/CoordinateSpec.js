@@ -97,6 +97,15 @@ describe('#Coordinate', function () {
             var c1 = new maptalks.Coordinate(new maptalks.Coordinate(2,3));
             expect(c1.toArray()).to.be.eql([2,3]);
         });
+
+        it('can toJSON',function() {
+            var c = new maptalks.Coordinate(-2,-3);
+            var t = c.toJSON();
+            expect(t).to.be.eql({
+                x : -2,
+                y : -3
+            });
+        });
     });
 
 
