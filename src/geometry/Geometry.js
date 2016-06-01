@@ -874,9 +874,10 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             if (symbol.hasOwnProperty(p)) {
                 if (Z.Util.isFunctionDefinition(symbol[p])) {
                     if (!this.getMap()) {
-                        return null;
+                        result[p] = null;
+                    } else {
+                        result[p] = Z.Util.interpolated(symbol[p])(this.getMap().getZoom(), this.getProperties());
                     }
-                    result[p] = Z.Util.interpolated(symbol[p])(this.getMap().getZoom(), this.getProperties());
                 } else {
                     result[p] = symbol[p];
                 }
