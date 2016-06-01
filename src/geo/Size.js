@@ -60,5 +60,16 @@ Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
     },
     toPoint:function () {
         return new Z.Point(this['width'], this['height']);
+    },
+
+    /**
+     * toJSON
+     * @return {Object} json
+     */
+    toJSON: function () {
+        return {
+            'width' : this['width'],
+            'height': this['height']
+        };
     }
 });

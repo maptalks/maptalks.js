@@ -2139,20 +2139,11 @@ describe('API', function () {
 
         it('edit', function() {
             var geometries = genAllTypeGeometries();
-            layer.addGeometry(geometries);
-
-            expect(function () {
-                for (var i = 0; i < geometries.length; i++) {
-                    var geometry = geometries[i];
-                    /*if ((geometry instanceof Z.MultiPoint) ||
-                        (geometry instanceof Z.MultiPolyline) ||
-                        (geometry instanceof Z.MultiPolygon)) {
-                        continue;
-                    }*/
-                    geometry.startEdit();
-                    geometry.endEdit();
-                }
-            }).to.not.throwException();
+            for (var i = 0; i < geometries.length; i++) {
+                var geometry = geometries[i];
+                geometry.startEdit();
+                geometry.endEdit();
+            }
         });
 
         /*it('drag', function() {
