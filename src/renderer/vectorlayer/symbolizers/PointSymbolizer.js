@@ -41,7 +41,7 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
             dxdy = new Z.Point(dxdy.x / scale.x, dxdy.y / scale.y);
         }
 
-        var containerPoints = Z.Util.eachInArray(points, this, function (point) {
+        var containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
             return map.viewPointToContainerPoint(point)._add(dxdy);
         });
         if (matrix) {

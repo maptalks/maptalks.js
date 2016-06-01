@@ -174,8 +174,12 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
         var opts = Z.Util.extend({}, options);
         var center = this.getCenter();
         opts.geometry = false;
+        var feature = this.toGeoJSON(opts);
+        feature['geometry'] = {
+            'type' : 'Polygon'
+        };
         return {
-            'feature'   : this.toGeoJSON(opts),
+            'feature'   : feature,
             'subType'   : 'Ellipse',
             'coordinates'  : [center.x, center.y],
             'width'     : this.getWidth(),

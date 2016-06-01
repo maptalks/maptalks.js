@@ -4,6 +4,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.symbol = symbol;
         this.geometry = geometry;
         this.style = this.translate();
+        this._defineStyle(this.style);
     },
 
 
@@ -15,6 +16,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var style = this.style;
         var img = this._getImage(resources);
         if (!img) {
+            console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
             return;
         }
         this._prepareContext(ctx);

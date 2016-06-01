@@ -201,7 +201,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @returns {Object} geometry's symbol
      */
     getSymbol:function () {
-        var s = this._getInternalSymbol();
+        var s = this._symbol;
         if (s) {
             if (!Z.Util.isArray(s)) {
                 return Z.Util.extend({}, s);
@@ -209,7 +209,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                 return Z.Util.extendSymbol(s);
             }
         }
-        return s;
+        return null;
     },
 
     /**
@@ -419,7 +419,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var coordinates = this.getCoordinates();
         if (coordinates) {
             if (Z.Util.isArray(coordinates)) {
-                var translated = Z.Util.eachInArray(coordinates, this, function (coord) {
+                var translated = Z.Util.mapArrayRecursively(coordinates, function (coord) {
                     return coord.add(offset);
                 });
                 this.setCoordinates(translated);
@@ -435,9 +435,11 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      *
      * @param {Number} [interval=100]     - interval of flash, in millisecond (ms)
      * @param {Number} [count=4]          - flash times
+     * @param {Function} [cb=null]        - callback function when flash ended
+     * @param {*} [context=null]          - callback context
      * @return {maptalks.Geometry} this
      */
-    flash: function (interval, count) {
+    flash: function (interval, count, cb, context) {
         if (!interval) {
             interval = 100;
         }
@@ -445,13 +447,20 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             count = 4;
         }
         var me = this;
-        count = count * 2;
+        count *= 2;
         if (this._flashTimeout) {
             clearTimeout(this._flashTimeout);
         }
         function flashGeo() {
             if (count === 0) {
                 me.show();
+                if (cb) {
+                    if (context) {
+                        cb.call(context);
+                    } else {
+                        cb();
+                    }
+                }
                 return;
             }
 
@@ -618,7 +627,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!opts) {
             opts = {};
         }
-        var symbol = opts['symbol'] || this.options['symbol'];
+        var symbol = opts['symbol'];
         var properties = opts['properties'];
         var id = opts['id'];
         Z.Util.setOptions(this, opts);
@@ -847,8 +856,34 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _getExternalResource:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = Z.Geometry.getExternalResource(symbol);
+        var resources = Z.Geometry.getExternalResource(this._interpolateSymbol(symbol));
         return resources;
+    },
+
+    _interpolateSymbol: function (symbol) {
+        var result;
+        if (Z.Util.isArray(symbol)) {
+            result = [];
+            for (var i = 0; i < symbol.length; i++) {
+                result.push(this._interpolateSymbol(symbol[i]));
+            }
+            return result;
+        }
+        result = {};
+        for (var p in symbol) {
+            if (symbol.hasOwnProperty(p)) {
+                if (Z.Util.isFunctionDefinition(symbol[p])) {
+                    if (!this.getMap()) {
+                        result[p] = null;
+                    } else {
+                        result[p] = Z.Util.interpolated(symbol[p])(this.getMap().getZoom(), this.getProperties());
+                    }
+                } else {
+                    result[p] = symbol[p];
+                }
+            }
+        }
+        return result;
     },
 
     _getPainter:function () {
@@ -978,9 +1013,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             json['options'] = this.config();
         }
         if (Z.Util.isNil(options['symbol']) || options['symbol']) {
-            if (this.getSymbol()) {
-                json['symbol'] = this.getSymbol();
-            }
+            json['symbol'] = this.getSymbol();
         }
         if (Z.Util.isNil(options['infoWindow']) || options['infoWindow']) {
             if (this._infoWinOptions) {
@@ -994,8 +1027,8 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var points = this.getCoordinates();
         var coordinates = Z.GeoJSON.toGeoJSONCoordinates(points);
         return {
-            'type':this.getType(),
-            'coordinates': coordinates
+            'type'        : this.getType(),
+            'coordinates' : coordinates
         };
     },
 
@@ -1100,21 +1133,22 @@ Z.Geometry.getExternalResource = function (symbol) {
         symbols = [symbol];
     }
     var resources = [];
-    var props = Z.Symbolizer.resourceProperties;
+    var props = Z.Symbolizer.resourceProperties,
+        ii, res, resSizeProp;
     for (var i = symbols.length - 1; i >= 0; i--) {
         symbol = symbols[i];
         if (!symbol) {
             continue;
         }
-        for (var ii = 0; ii < props.length; ii++) {
-            var res = symbol[props[ii]];
+        for (ii = 0; ii < props.length; ii++) {
+            res = symbol[props[ii]];
             if (!res) {
                 continue;
             }
             if (res.indexOf('url(') >= 0) {
                 res = Z.Util.extractCssUrl(res);
             }
-            var resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
+            resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
             resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
         }
         if (symbol['markerType'] === 'path' && symbol['markerPath']) {

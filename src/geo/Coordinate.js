@@ -135,5 +135,16 @@ Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype *
      */
     toArray:function () {
         return [this.x, this.y];
+    },
+
+    /**
+     * toJSON
+     * @return {Object} json
+     */
+    toJSON: function () {
+        return {
+            x : this.x,
+            y : this.y
+        };
     }
 });

@@ -39,6 +39,17 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
+     * Get count of the geometries
+     * @return {Number} count
+     */
+    getCount: function () {
+        if (!this._counter) {
+            return 0;
+        }
+        return this._counter;
+    },
+
+    /**
      * Travels among the geometries the layer has.
      * @param  {Function} fn - a callback function
      * @param  {*} context   - callback's context
@@ -46,39 +57,45 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      */
     forEach:function (fn, context) {
         var cache = this._geoCache;
-        if (!context) {
-            context = this;
-        }
         var counter = 0;
         for (var g in cache) {
             if (cache.hasOwnProperty(g)) {
-                fn.call(context, cache[g], counter++);
+                if (!context) {
+                    fn(cache[g], counter++);
+                } else {
+                    fn.call(context, cache[g], counter++);
+                }
             }
         }
         return this;
     },
 
-
-    select: function (condition) {
-        var evaFn = new Function('geometry', 'with (geometry) { return ' + condition + '; }');
+    /**
+     * creates a GeometryCollection with all elements that pass the test implemented by the provided function.
+     * @param  {Function} fn      - Function to test each geometry
+     * @param  {*} context        - Function's context
+     * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
+     */
+    filter: function (fn, context) {
         var selected = [];
-        this.forEach(function (geometry) {
-            var json = {
-                'type' : geometry.getType(),
-                'properties' : geometry._exportProperties()
-            };
-            if (evaFn(json) === true) {
-                selected.push(geometry);
+        if (Z.Util.isFunction(fn)) {
+            if (fn) {
+                this.forEach(function (geometry) {
+                    if (context ? fn.call(context, geometry) : fn(geometry)) {
+                        selected.push(geometry);
+                    }
+                });
             }
-        });
-        return selected.length > 0 ? new Z.GeometryCollection(selected) : null;
-    },
-
-    selectAll: function () {
-        if (this.isEmpty()) {
-            return null;
+        } else {
+            var filter = Z.Util.createFilter(fn);
+            this.forEach(function (geometry) {
+                var g = Z.Util.getFilterFeature(geometry);
+                if (filter(g)) {
+                    selected.push(geometry);
+                }
+            }, this);
         }
-        return new Z.GeometryCollection(this.getGeometries());
+        return selected.length > 0 ? new Z.GeometryCollection(selected) : null;
     },
 
     /**
@@ -150,6 +167,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return result;
     },
 
+
     _addGeometry:function (geometries, fitView) {
         if (!geometries) { return this; }
         if (!Z.Util.isArray(geometries)) {
@@ -160,7 +178,8 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         var fitCounter = 0;
         var centerSum = new Z.Coordinate(0, 0);
         var extent = null,
-            geo, geoId, internalId, geoCenter, geoExtent;
+            geo, geoId, internalId, geoCenter, geoExtent,
+            style = this.getStyle ? this.getStyle() : null;
         for (var i = 0, len = geometries.length; i < len; i++) {
             geo = geometries[i];
             if (!geo || !(geo instanceof Z.Geometry)) {
@@ -168,7 +187,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             }
 
             geoId = geo.getId();
-            if (geoId) {
+            if (!Z.Util.isNil(geoId)) {
                 if (!Z.Util.isNil(this._geoMap[geoId])) {
                     throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + geoId);
                 }
@@ -185,16 +204,23 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 geoExtent = geo.getExtent();
                 if (geoCenter && geoExtent) {
                     centerSum._add(geoCenter);
-                    extent = geoExtent.combine(extent);
+                    if (extent == null) {
+                        extent = geoExtent;
+                    } else {
+                        extent = extent._combine(geoExtent);
+                    }
                     fitCounter++;
                 }
+            }
+            if (style) {
+                this._styleGeometry(geo);
             }
             geo._fireEvent('addend', {'geometry':geo});
         }
         var map = this.getMap();
         if (map) {
             this._getRenderer().render(geometries);
-            if (fitView) {
+            if (fitView && extent) {
                 var z = map.getFitZoom(extent);
                 var center = centerSum._multi(1 / fitCounter);
                 map.setCenterAndZoom(center, z);

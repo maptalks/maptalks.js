@@ -21,12 +21,66 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
         'thresholdOfTransforming'    : 200,
-        'drawImmediate'             : false
+        'drawImmediate'             : false,
+        'drawOnce'                  : false
     },
 
-    initialize:function (id, options) {
-        this.setId(id);
-        Z.Util.setOptions(this, options);
+    getStyle: function () {
+        if (!this._style) {
+            return null;
+        }
+        return this._style;
+    },
+
+    setStyle: function (style) {
+        this._style = style;
+        this._cookedStyles = this._cookStyle(style);
+        this.forEach(function (geometry) {
+            this._styleGeometry(geometry);
+        }, this);
+        return this;
+    },
+
+    removeStyle: function () {
+        if (!this._style) {
+            return this;
+        }
+        delete this._style;
+        delete this._cookedStyles;
+        this.forEach(function (geometry) {
+            geometry.setSymbol(geometry._symbolBeforeStyle);
+            delete geometry._symbolBeforeStyle;
+        }, this);
+        return this;
+    },
+
+    _styleGeometry: function (geometry) {
+        var symbol = geometry.getSymbol(),
+            g = Z.Util.getFilterFeature(geometry);
+        for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
+            if (this._cookedStyles[i]['filter'](g) === true) {
+                if (!geometry._symbolBeforeStyle) {
+                    geometry._symbolBeforeStyle = symbol;
+                }
+                geometry.setSymbol(this._cookedStyles[i]['symbol']);
+                return true;
+            }
+        }
+        return false;
+    },
+
+    _cookStyle: function (styles) {
+        if (!Z.Util.isArray(styles)) {
+            return this._cookStyle([styles]);
+        }
+        var cooked = [];
+        for (var i = 0; i < styles.length; i++) {
+            cooked.push({
+                'filter' : Z.Util.createFilter(styles[i]['filter']),
+                'symbol' : styles[i].symbol
+            });
+        }
+        return cooked;
     }
 });
 
@@ -47,6 +101,9 @@ Z.VectorLayer.prototype.toJSON = function (options) {
         'id'      : this.getId(),
         'options' : this.config()
     };
+    if ((Z.Util.isNil(options['style']) || options['style']) && this.getStyle()) {
+        profile['style'] = this.getStyle();
+    }
     if (Z.Util.isNil(options['geometries']) || options['geometries']) {
         var clipExtent;
         if (options['clipExtent']) {
@@ -54,13 +111,18 @@ Z.VectorLayer.prototype.toJSON = function (options) {
         }
         var geoJSONs = [];
         var geometries = this.getGeometries(),
-            geoExt;
+            geoExt,
+            json;
         for (var i = 0, len = geometries.length; i < len; i++) {
             geoExt = geometries[i].getExtent();
             if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
                 continue;
             }
-            geoJSONs.push(geometries[i].toJSON(options['geometries']));
+            json = geometries[i].toJSON(options['geometries']);
+            if (json['symbol'] && this.getStyle()) {
+                json['symbol'] = geometries[i]._symbolBeforeStyle ? Z.Util.extend({}, geometries[i]._symbolBeforeStyle) : null;
+            }
+            geoJSONs.push(json);
         }
         profile['geometries'] = geoJSONs;
     }
@@ -75,10 +137,10 @@ Z.VectorLayer.prototype.toJSON = function (options) {
  * @private
  * @function
  */
-Z.VectorLayer._fromJSON = function (layerJSON) {
-    if (!layerJSON || layerJSON['type'] !== 'VectorLayer') { return null; }
-    var layer = new Z.VectorLayer(layerJSON['id'], layerJSON['options']);
-    var geoJSONs = layerJSON['geometries'];
+Z.VectorLayer._fromJSON = function (profile) {
+    if (!profile || profile['type'] !== 'VectorLayer') { return null; }
+    var layer = new Z.VectorLayer(profile['id'], profile['options']);
+    var geoJSONs = profile['geometries'];
     var geometries = [],
         geo;
     for (var i = 0; i < geoJSONs.length; i++) {
@@ -88,7 +150,8 @@ Z.VectorLayer._fromJSON = function (layerJSON) {
         }
     }
     layer.addGeometry(geometries);
+    if (profile['style']) {
+        layer.setStyle(profile['style']);
+    }
     return layer;
 };
-
-Z.Util.extend(Z.VectorLayer, Z.Renderable);

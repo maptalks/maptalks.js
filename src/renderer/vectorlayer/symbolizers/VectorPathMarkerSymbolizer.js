@@ -5,6 +5,7 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
         this.geometry = geometry;
         this._url = [Z.Geometry._getMarkerPathURL(symbol, geometry), symbol['markerWidth'], symbol['markerHeight']];
         this.style = this.translate();
+        this._defineStyle(this.style);
         //IE must have a valid width and height to draw a svg image
         //otherwise, error will be thrown
         if (Z.Util.isNil(this.style['markerWidth'])) {

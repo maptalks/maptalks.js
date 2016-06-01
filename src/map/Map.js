@@ -101,7 +101,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         'enableZoom':true,
         'enableInfoWindow':true,
 
-        'hitDetect' : (function () { return Z.Browser.mobile; })(),
+        'hitDetect' : (function () { return !Z.Browser.mobile; })(),
 
         'maxZoom' : null,
         'minZoom' : null,
@@ -1075,7 +1075,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     //remove a layer from the layerList
     _removeLayer:function (layer, layerList) {
         if (!layer || !layerList) { return; }
-        var index = Z.Util.searchInArray(layer, layerList);
+        var index = Z.Util.indexOfArray(layer, layerList);
         if (index > -1) {
             layerList.splice(index, 1);
 

@@ -3,6 +3,7 @@
  */
 Z.renderer = {};
 
+
 /**
  * @classdesc
  * Base Class for all the renderer based on HTML5 Canvas2D
@@ -174,16 +175,22 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _getEvents: function () {
         return {
-            '_movestart _moveend _zoomstart _zoomend _resize' : this._onMapEvent
+            '_zoomend' : this._onZoomEnd,
+            '_resize'  : this._onResize,
+            '_moveend' : this._onMoveEnd
         };
     },
 
-    _onMapEvent:function (param) {
-        if (param['type'] === '_moveend' || param['type'] === '_zoomend') {
-            this.render();
-        } else if (param['type'] === '_resize') {
-            this._resizeCanvas();
-            this.render();
-        }
+    _onZoomEnd: function () {
+        this.render();
+    },
+
+    _onMoveEnd: function () {
+        this.render();
+    },
+
+    _onResize: function () {
+        this._resizeCanvas();
+        this.render();
     }
 });

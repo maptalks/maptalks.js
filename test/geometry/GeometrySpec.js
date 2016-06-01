@@ -111,11 +111,10 @@ function registerGeometryCommonTest(geometry,_context) {
             expect(type).to.not.be.empty();
         });
 
-        it('Symbol',function() {
-           /* var symbol = geometry.getSymbol();
-            expect(symbol).to.be.ok();
-            expect(symbol).to.not.be.empty();*/
-            //setSymbol单独测试
+        it('flash',function(done) {
+           geometry.flash(100, 4, function() {
+                done();
+           });
         });
 
         it('Properties',function() {

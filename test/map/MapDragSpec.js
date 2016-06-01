@@ -19,7 +19,7 @@ describe('#MapDrag', function () {
             Z.Util.requestAnimFrame=function(fn) {
                 fn();
         };
-        happen.mousedown(mapPlatform,{
+        happen.mousedown(map._panels.mapPlatform,{
                 'clientX':point.x,
                 'clientY':point.y
                 });

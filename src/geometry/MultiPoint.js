@@ -20,21 +20,6 @@ Z.MultiPoint = Z.GeometryCollection.extend(/** @lends maptalks.MultiPoint.protot
      */
     type:Z.Geometry['TYPE_MULTIPOINT'],
 
-    /**
-     * @property {Object} [options=null]           - specific options for MultiPoint, also support options defined in [Geometry]{@link maptalks.Geometry#options}
-     * @property {Object} [options.symbol=object]  - default symbol of the MultiPoint.
-     */
-    options:{
-        'symbol':{
-            'markerType'    : 'pie',
-            'markerHeight'  : 24,
-            'markerWidth'   : 24,
-            'markerFill'    : '#de3333',
-            'markerLineColor' : '#ffffff',
-            'markerLineWidth' : 1
-        }
-    },
-
     initialize:function (data, opts) {
         this._initOptions(opts);
         this._initData(data);

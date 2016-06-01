@@ -558,7 +558,7 @@ describe('API', function () {
         it('bringToBack');
 
         it('addGeometry', function() {
-            var layer = new Z.OverlayLayer();
+            var layer = new Z.VectorLayer('vector');
             layer._paintGeometries = paint;
             layer.setId('id');
             // map.addLayer(layer);
@@ -577,7 +577,7 @@ describe('API', function () {
         });
 
         it('getGeometries', function() {
-            var layer = new Z.OverlayLayer();
+            var layer = new Z.VectorLayer('vector');
             layer.paintGeometries = paint;
             layer.setId('id');
             // map.addLayer(layer);
@@ -598,7 +598,7 @@ describe('API', function () {
         });
 
         it('getGeometryById', function() {
-            var layer = new Z.OverlayLayer();
+            var layer = new Z.VectorLayer('vector');
             layer.paintGeometries = paint;
             layer.setId('id');
             // map.addLayer(layer);
@@ -877,7 +877,7 @@ describe('API', function () {
             };
             var undef;
 
-            expect(geometry.getSymbol()).to.eql(undef);
+            expect(geometry.getSymbol()).to.eql(null);
 
             geometry.setSymbol(symbol);
             var got = geometry.getSymbol();
@@ -2139,20 +2139,11 @@ describe('API', function () {
 
         it('edit', function() {
             var geometries = genAllTypeGeometries();
-            layer.addGeometry(geometries);
-
-            expect(function () {
-                for (var i = 0; i < geometries.length; i++) {
-                    var geometry = geometries[i];
-                    /*if ((geometry instanceof Z.MultiPoint) ||
-                        (geometry instanceof Z.MultiPolyline) ||
-                        (geometry instanceof Z.MultiPolygon)) {
-                        continue;
-                    }*/
-                    geometry.startEdit();
-                    geometry.endEdit();
-                }
-            }).to.not.throwException();
+            for (var i = 0; i < geometries.length; i++) {
+                var geometry = geometries[i];
+                geometry.startEdit();
+                geometry.endEdit();
+            }
         });
 
         /*it('drag', function() {

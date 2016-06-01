@@ -268,20 +268,22 @@ Z.Util = {
     },
 
 
-    eachInArray:function (points, context, fn) {
-        if (!this.isArray(points)) {
+    mapArrayRecursively:function (arr, fn, context) {
+        if (!this.isArray(arr)) {
             return null;
         }
-        var result = [];
-        for (var i = 0, len = points.length; i < len; i++) {
-            var p = points[i];
+        var result = [],
+            p, pp;
+        for (var i = 0, len = arr.length; i < len; i++) {
+            p = arr[i];
             if (Z.Util.isNil(p)) {
+                result.push(null);
                 continue;
             }
             if (Z.Util.isArray(p)) {
-                result.push(Z.Util.eachInArray(p, context, fn));
+                result.push(Z.Util.mapArrayRecursively(p, fn, context));
             } else {
-                var pp = fn.call(context, p);
+                pp = context ? fn.call(context, p) : fn(p);
                 result.push(pp);
             }
 
@@ -290,8 +292,26 @@ Z.Util = {
     },
 
 
-    searchInArray:function (obj, arr) {
-        if (Z.Util.isNil(obj) || !Z.Util.isArrayHasData(arr)) {
+    mapArray: function (array, fn, context) {
+        if (!this.isArray(array)) {
+            return null;
+        }
+        var result = [],
+            p, pp;
+        for (var i = 0, len = array.length; i < len; i++) {
+            p = array[i];
+            if (Z.Util.isNil(p)) {
+                result.push(null);
+                continue;
+            }
+            pp = context ? fn.call(context, p) : fn(p);
+            result.push(pp);
+        }
+        return result;
+    },
+
+    indexOfArray:function (obj, arr) {
+        if (!Z.Util.isArrayHasData(arr)) {
             return -1;
         }
         for (var i = 0, len = arr.length; i < len; i++) {

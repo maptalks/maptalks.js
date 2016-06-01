@@ -217,16 +217,6 @@ Z.Canvas = {
         ctx.fillText(text, point.x, point.y);
     },
 
-
-    shield: function (ctx, point, img, text, textDesc, style) {
-        if (img) {
-            var width = img.width,
-                height = img.height;
-            Z.Canvas.image(ctx, img, point.x - width / 2, point.y - height / 2, width, height);
-        }
-        Z.Canvas.text(ctx, text, point, style, textDesc);
-    },
-
     _stroke:function (ctx, strokeOpacity) {
         if (Z.Util.isNil(strokeOpacity)) {
             strokeOpacity = 1;

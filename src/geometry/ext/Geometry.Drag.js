@@ -93,7 +93,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         this._shadow = target.copy();
         var shadow = this._shadow;
         if (target.options['dragShadow']) {
-            var symbol = Z.Util.decreaseSymbolOpacity(shadow.getSymbol(), 0.5);
+            var symbol = Z.Util.decreaseSymbolOpacity(shadow._getInternalSymbol(), 0.5);
             shadow.setSymbol(symbol);
         }
         shadow.setId(null);
@@ -106,7 +106,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             for (var i = 0; i < connectors.length; i++) {
                 var targetConn = connectors[i];
                 var connOptions = targetConn.config(),
-                    connSymbol = targetConn.getSymbol();
+                    connSymbol = targetConn._getInternalSymbol();
                 connOptions['symbol'] = connSymbol;
                 var conn;
                 if (targetConn.getConnectSource() === target) {

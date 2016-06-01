@@ -220,7 +220,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             onDown:function () {
                 shadow = this._shadow.copy();
                 shadow._enableRenderImmediate();
-                var symbol = Z.Util.decreaseSymbolOpacity(shadow.getSymbol(), 0.5);
+                var symbol = Z.Util.decreaseSymbolOpacity(shadow._getInternalSymbol(), 0.5);
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },
             onMove:function (v, param) {
@@ -426,7 +426,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         }
         //only image marker and vector marker can be edited now.
 
-        var symbol = marker.getSymbol();
+        var symbol = marker._getInternalSymbol();
         var dxdy = new Z.Point(0, 0);
         if (Z.Util.isNumber(symbol['markerDx'])) {
             dxdy.x = symbol['markerDx'];
@@ -456,7 +456,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         ];
 
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
-            if (blackList && Z.Util.searchInArray(i, blackList) >= 0) {
+            if (blackList && Z.Util.indexOfArray(i, blackList) >= 0) {
                 //need to change marker's coordinates
                 var newCoordinates = map.viewPointToCoordinate(handleViewPoint);
                 var coordinates = marker.getCoordinates();
@@ -471,7 +471,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
 
             //caculate width and height
             var viewCenter = marker._getCenterViewPoint().add(dxdy),
-                symbol = marker.getSymbol();
+                symbol = marker._getInternalSymbol();
             var wh = handleViewPoint.substract(viewCenter);
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
             var r = blackList ? 1 : 2;
@@ -544,7 +544,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             var r;
             if (isRect) {
                 //change rectangle's coordinates
-                if (blackList && Z.Util.searchInArray(i, blackList) >= 0) {
+                if (blackList && Z.Util.indexOfArray(i, blackList) >= 0) {
                     var coordinates = shadow.getCoordinates(),
                         handleCoordinates = map.viewPointToCoordinate(handleViewPoint);
                     var newCoordinates;

@@ -61,5 +61,14 @@ describe('#Size', function () {
             expect(t.width).to.be.eql(2);
             expect(t.height).to.be.eql(4);
         });
+
+        it('can toJSON',function() {
+            var c = new maptalks.Size(2,3);
+            var t = c.toJSON();
+            expect(t).to.be.eql({
+                width : 2,
+                height : 3
+            });
+        });
     });
 });

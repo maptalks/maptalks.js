@@ -40,11 +40,6 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
     },
 
 
-    initialize:function (id, opts) {
-        this.setId(id);
-        Z.Util.setOptions(this, opts);
-    },
-
     /**
      * Get tile size of the tile layer
      * @return {maptalks.Size}
@@ -82,7 +77,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         }
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
-        this._switchEvents('on');
+        this._switchEvents('on', this._renderer);
     },
 
     /**
@@ -251,5 +246,3 @@ Z.TileLayer._fromJSON = function (layerJSON) {
     if (!layerJSON || layerJSON['type'] !== 'TileLayer') { return null; }
     return new Z.TileLayer(layerJSON['id'], layerJSON['options']);
 };
-
-Z.Util.extend(Z.TileLayer, Z.Renderable);

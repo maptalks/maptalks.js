@@ -25,6 +25,8 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.geometry = geometry;
         this.style = this.translate();
         this.strokeAndFill = this.translateStrokeAndFill(this.style);
+        this._defineStyle(this.style);
+        this._defineStyle(this.strokeAndFill);
         var props = this.geometry.getProperties();
         this.textContent = Z.StringUtil.replaceVariable(this.style['textName'], props);
         this.textDesc = this._loadFromCache(this.textContent, this.style);

@@ -156,7 +156,14 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
         return isNaN(this.x) || isNaN(this.y);
     },
 
-    toString:function () {
-        return [this.x, this.y].join(',');
+    /**
+     * toJSON
+     * @return {Object} json
+     */
+    toJSON: function () {
+        return {
+            x : this.x,
+            y : this.y
+        };
     }
 });

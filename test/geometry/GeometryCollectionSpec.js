@@ -103,13 +103,15 @@ describe('GeometryCollectionSpec', function() {
         }
     });
 
-    describe('test select', function() {
-        it('select by properties',function() {
+    describe('test filter', function() {
+        it('filter with function',function() {
             var points = genPoints();
 
             var collection = new maptalks.GeometryCollection(points);
 
-            var selection = collection.select('type === "Point" && properties.foo1 > 0 && properties.foo2.indexOf("test") >= 0');
+            var selection = collection.filter(function(geometry) {
+                return geometry.getType() === 'Point' && geometry.getProperties().foo1 > 0 && geometry.getProperties().foo2.indexOf("test") >= 0;
+            });
 
             expect(selection).to.be.an(maptalks.GeometryCollection);
             expect(selection.getGeometries()).to.have.length(points.length);
@@ -117,10 +119,25 @@ describe('GeometryCollectionSpec', function() {
                 expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
             }
 
-            expect(collection.select('properties.foo3 === true').getGeometries()).to.have.length(3);
+            expect(collection.filter(function(geometry) {
+                return geometry.getProperties().foo3 === true;
+            }).getGeometries()).to.have.length(3);
 
-            selection = collection.select('type !== "Point"');
+            selection = collection.filter(function(geometry) {
+                return geometry.getType() !== 'Point';
+            });
             expect(selection).not.to.be.ok();
+        });
+
+        it('filter with feature-filter',function() {
+            var points = genPoints();
+
+            var collection = new maptalks.GeometryCollection(points);
+
+            var selection = collection.filter(['in', '$type', 'Point']);
+
+            expect(selection).to.be.an(maptalks.GeometryCollection);
+            expect(selection.getGeometries()).to.have.length(points.length);
         });
     });
 });

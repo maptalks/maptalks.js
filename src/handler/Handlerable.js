@@ -41,7 +41,7 @@ Z.Handlerable = {
         var handler = this[name];
         if (handler) {
             //handler registered
-            var hit = Z.Util.searchInArray(handler, this._handlers);
+            var hit = Z.Util.indexOfArray(handler, this._handlers);
             if (hit >= 0) {
                 this._handlers.splice(hit, 1);
             }

@@ -23,7 +23,7 @@ Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
     },
 
     _hitTestTolerance: function () {
-        var symbol = this.getSymbol();
+        var symbol = this._getInternalSymbol();
         var w;
         if (Z.Util.isArray(symbol)) {
             w = 0;

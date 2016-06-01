@@ -17,6 +17,8 @@
 ../src/misc/Animation.js
 ../src/misc/Canvas.js
 ../src/misc/Ajax.js
+../src/misc/FeatureFilter.js
+../src/misc/FunctionType.js
 ../src/geo/transformation/Transformation.js
 ../src/geo/measurer/Measurer.js
 ../src/geo/measurer/Sphere.js
@@ -106,6 +108,7 @@
 ../src/renderer/vectorlayer/Painter.js
 ../src/renderer/vectorlayer/CollectionPainter.js
 ../src/map/ui/UI.js
+../src/map/ui/UIMarker.js
 ../src/map/ui/InfoWindow.js
 ../src/map/ui/Menu.js
 ../src/map/ui/Toolbox.js

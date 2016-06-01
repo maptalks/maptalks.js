@@ -119,6 +119,15 @@ describe('#Point', function () {
             expect(t.x).to.be.eql(2);
             expect(t.y).to.be.eql(3);
         });
+
+        it('can toJSON',function() {
+            var c = new maptalks.Point(-2,-3);
+            var t = c.toJSON();
+            expect(t).to.be.eql({
+                x : -2,
+                y : -3
+            });
+        });
     });
 });
 
