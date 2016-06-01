@@ -71,10 +71,10 @@ Z.StringUtil = {
         return result;
     },
     /**
-     * Replace variables wrapped by square brackets ([foo]) with actual values in props.
+     * Replace variables wrapped by square brackets ({foo}) with actual values in props.
      * @example
      *     // will returns 'John is awesome'
-     *     var actual = maptalks.StringUtil.replaceVariable('[foo] is awesome', {'foo' : 'John'});
+     *     var actual = maptalks.StringUtil.replaceVariable('{foo} is awesome', {'foo' : 'John'});
      * @param {String} str      - string to replace
      * @param {Object} props    - variable value properties
      * @return {String}
@@ -92,7 +92,7 @@ Z.StringUtil = {
         });
     },
 
-    _contentExpRe: /\[([\w_]+)\]/g,
+    _contentExpRe: /\{([\w_]+)\}/g,
 
     /**
      * Split a text to multiple rows according to the style.<br>

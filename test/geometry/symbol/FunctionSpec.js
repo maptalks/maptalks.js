@@ -96,16 +96,23 @@ describe('FunctionTypeSpec', function() {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
                 "marker-file" : "resources/x.svg",
-                "marker-width": {property:'foo', stops: [[{zoom : 17, value: 1}, 1], [{zoom : 18, value: 5}, 10], [{zoom : 18, value: 18},20]]},
+                "marker-width": {
+                    property:'foo',
+                    stops: [
+                        [{zoom : 1, value: 1}, 15],
+                        [{zoom : map.getZoom(), value: 5}, 18],
+                        [{zoom : 18, value: 18},20]
+                    ]
+                },
                 "marker-height":30
             },
             properties:{
-                'foo' : 6
+                'foo' : 5
             }
         });
         layer.once('layerload', function() {
             expect(marker.getMap()).to.be.ok();
-            expect(marker.getSize().width).to.be.eql(1);
+            expect(marker.getSize().width).to.be.eql(18);
             done();
         });
         layer.addGeometry(marker);
