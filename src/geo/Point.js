@@ -164,6 +164,6 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
         return {
             x : this.x,
             y : this.y
-        }
+        };
     }
 });

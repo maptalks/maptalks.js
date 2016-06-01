@@ -70,6 +70,6 @@ Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
         return {
             'width' : this['width'],
             'height': this['height']
-        }
+        };
     }
 });

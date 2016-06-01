@@ -145,6 +145,6 @@ Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype *
         return {
             x : this.x,
             y : this.y
-        }
+        };
     }
 });
