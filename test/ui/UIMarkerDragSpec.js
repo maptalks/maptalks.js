@@ -20,8 +20,12 @@ describe('#UIMarkerDrag', function () {
                     'clientX':point.x+i,
                     'clientY':point.y+i
                     });
-            };
+            }
+            if (marker.options.draggable) {
+                expect(marker.isDragging()).to.be.ok();
+            }
         }
+
         happen.mouseup(document);
     }
 
@@ -74,6 +78,18 @@ describe('#UIMarkerDrag', function () {
         marker.addTo(map).show();
         dragMarker(marker);
         expect(marker.getCoordinates()).not.to.be.eql(center);
+    });
+
+    it('can disable draggable', function() {
+        var center = map.getCenter();
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            content : '<div id="uimarker">marker</div>',
+            draggable : true
+        });
+        marker.addTo(map).show();
+        marker.config('draggable', false);
+        dragMarker(marker);
+        expect(marker.getCoordinates()).to.be.eql(center);
     });
 
     it('enable map draggable after dragging', function() {

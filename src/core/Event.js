@@ -29,8 +29,14 @@ Z.Eventable = {
             }
             for (var i = 0, len = handlerChain.length; i < len; i++) {
                 if (handler === handlerChain[i].handler) {
-                    if (!handlerChain[i].del && handlerChain[i].context === context) {
-                        return this;
+                    if (handlerChain[i].context === context) {
+                        if (!handlerChain[i].del) {
+                            return this;
+                        } else {
+                            //listener is deleted before, restore it.
+                            delete handlerChain[i].del;
+                            return this;
+                        }
                     }
                 }
             }
@@ -105,11 +111,24 @@ Z.Eventable = {
      * @return {Boolean}
      * @instance
      */
-    listens:function (eventType) {
+    listens:function (eventType, handler, context) {
         if (!this._eventMap || !Z.Util.isString(eventType)) { return 0; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
         if (!handlerChain) { return 0; }
-        return handlerChain.length;
+        var count = 0;
+        for (var i = 0, len = handlerChain.length; i < len; i++) {
+            if (!handlerChain[i].del) {
+                if (handler) {
+                    if (handler === handlerChain[i].handler &&
+                        (Z.Util.isNil(context) || handlerChain[i].context === context)) {
+                        return 1;
+                    }
+                } else {
+                    count++;
+                }
+            }
+        }
+        return count;
     },
 
    /**
