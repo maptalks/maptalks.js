@@ -1,0 +1,104 @@
+describe('#UIMarkerDrag', function () {
+    var container, eventContainer;
+    var map;
+    var tile;
+    var center = new Z.Coordinate(118.846825, 32.046534);
+
+    function dragMarker(marker, isMove) {
+        var spy = sinon.spy();
+        marker.on('mousedown', spy);
+        var domPosition = Z.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(marker.getCoordinates()).add(domPosition);
+        happen.mousedown(marker._getDOM(),{
+                'clientX':point.x,
+                'clientY':point.y
+                });
+        expect(spy.called).to.be.ok();
+        if (isMove === undefined || isMove) {
+            for (var i = 0; i < 10; i++) {
+                happen.mousemove(document,{
+                    'clientX':point.x+i,
+                    'clientY':point.y+i
+                    });
+            };
+        }
+        happen.mouseup(document);
+    }
+
+    function dragMap() {
+        var domPosition = Z.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new Z.Point(30,20));
+        happen.mousedown(eventContainer,{
+                'clientX':point.x,
+                'clientY':point.y
+                });
+        for (var i = 0; i < 10; i++) {
+            happen.mousemove(document,{
+                'clientX':point.x+i,
+                'clientY':point.y+i
+                });
+        };
+        happen.mouseup(document);
+    }
+
+    beforeEach(function() {
+       var setups = commonSetupMap(center);
+       container = setups.container;
+       map = setups.map;
+       context.map = map;
+       eventContainer = map._panels.canvasContainer;
+    });
+
+    afterEach(function() {
+        removeContainer(container)
+    });
+
+    describe('drag uimarker', function() {
+        it('in default, uimarkers cannot be dragged', function() {
+            var center = map.getCenter();
+            var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+                content : '<div id="uimarker">marker</div>'
+            });
+            marker.addTo(map).show();
+            dragMarker(marker);
+            expect(marker.getCoordinates()).to.be.nearCoord(center);
+        });
+    });
+
+    it('can drag a uimarker', function() {
+        var center = map.getCenter();
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            content : '<div id="uimarker">marker</div>',
+            draggable : true
+        });
+        marker.addTo(map).show();
+        dragMarker(marker);
+        expect(marker.getCoordinates()).not.to.be.eql(center);
+    });
+
+    it('enable map draggable after dragging', function() {
+        var center = map.getCenter();
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            content : '<div id="uimarker">marker</div>',
+            draggable : true
+        });
+        marker.addTo(map).show();
+        dragMarker(marker);
+        var center = map.getCenter();
+        dragMap();
+        expect(map.getCenter()).not.to.nearCoord(center);
+    });
+
+    it('enable map draggable after dragging without moving', function() {
+        var center = map.getCenter();
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            content : '<div id="uimarker">marker</div>',
+            draggable : true
+        });
+        marker.addTo(map).show();
+        dragMarker(marker, false);
+        var center = map.getCenter();
+        dragMap();
+        expect(map.getCenter()).not.to.nearCoord(center);
+    });
+});

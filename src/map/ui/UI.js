@@ -82,11 +82,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             this._switchEvents('on');
         }
         this._coordinate = coordinate;
-        if (this._singleton()) {
-            this._removePrev();
-        } else if (this.__uiDOM) {
-            Z.DomUtil.removeDomNode(this.__uiDOM);
-        }
+        this._removePrevDOM();
         var dom = this.__uiDOM = this._createDOM();
         if (!dom) {
             this.fire('showend');
@@ -153,8 +149,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         delete this._owner;
         delete this._map;
         if (!this._singleton() && this.__uiDOM) {
-            Z.DomUtil.removeDomNode(this.__uiDOM);
-            delete this.__uiDOM;
+            this._removePrevDOM();
         }
         this.fire('remove');
         return this;
@@ -240,12 +235,20 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      *
      * @private
      */
-    _removePrev:function () {
-        var map = this.getMap(),
-            key = this._uiDomKey();
-        if (map[key]) {
-            Z.DomUtil.removeDomNode(map[key]);
-            delete map[key];
+    _removePrevDOM:function () {
+        if (this._onDOMRemove) {
+            this._onDOMRemove();
+        }
+        if (this._singleton()) {
+            var map = this.getMap(),
+                key = this._uiDomKey();
+            if (map[key]) {
+                Z.DomUtil.removeDomNode(map[key]);
+                delete map[key];
+            }
+        } else if (this.__uiDOM) {
+            Z.DomUtil.removeDomNode(this.__uiDOM);
+            delete this.__uiDOM;
         }
     },
 
