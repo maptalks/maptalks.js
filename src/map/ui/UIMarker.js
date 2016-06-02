@@ -14,6 +14,7 @@
  * @name UIMarker
  */
 Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototype */{
+
     includes: [Z.Handlerable],
 
     options : {
@@ -92,8 +93,153 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         this.show();
     },
 
+    _domEvents : /**
+                  * mousedown event
+                  * @event maptalks.ui.UIMarker#mousedown
+                  * @type {Object}
+                  * @property {String} type                    - mousedown
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'mousedown ' +
+                 /**
+                  * mouseup event
+                  * @event maptalks.ui.UIMarker#mouseup
+                  * @type {Object}
+                  * @property {String} type                    - mouseup
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'mouseup ' +
+                 /**
+                  * mouseover event
+                  * @event maptalks.ui.UIMarker#mouseover
+                  * @type {Object}
+                  * @property {String} type                    - mouseover
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'mouseover ' +
+                 /**
+                  * mouseout event
+                  * @event maptalks.ui.UIMarker#mouseout
+                  * @type {Object}
+                  * @property {String} type                    - mouseout
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'mouseout ' +
+                 /**
+                  * mousemove event
+                  * @event maptalks.ui.UIMarker#mousemove
+                  * @type {Object}
+                  * @property {String} type                    - mousemove
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'mousemove ' +
+                 /**
+                  * click event
+                  * @event maptalks.ui.UIMarker#click
+                  * @type {Object}
+                  * @property {String} type                    - click
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'click ' +
+                 /**
+                  * dblclick event
+                  * @event maptalks.ui.UIMarker#dblclick
+                  * @type {Object}
+                  * @property {String} type                    - dblclick
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'dblclick ' +
+                 /**
+                  * contextmenu event
+                  * @event maptalks.ui.UIMarker#contextmenu
+                  * @type {Object}
+                  * @property {String} type                    - contextmenu
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'contextmenu ' +
+                 /**
+                  * keypress event
+                  * @event maptalks.ui.UIMarker#keypress
+                  * @type {Object}
+                  * @property {String} type                    - keypress
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'keypress ' +
+                 /**
+                  * touchstart event
+                  * @event maptalks.ui.UIMarker#touchstart
+                  * @type {Object}
+                  * @property {String} type                    - touchstart
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'touchstart ' +
+                 /**
+                  * touchmove event
+                  * @event maptalks.ui.UIMarker#touchmove
+                  * @type {Object}
+                  * @property {String} type                    - touchmove
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'touchmove ' +
+                 /**
+                  * touchend event
+                  * @event maptalks.ui.UIMarker#touchend
+                  * @type {Object}
+                  * @property {String} type                    - touchend
+                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
+                  * @property {maptalks.Point} containerPoint  - container point of the event
+                  * @property {maptalks.Point} viewPoint       - view point of the event
+                  * @property {Event} domEvent                 - dom event
+                  */
+                 'touchend ',
+
     _registerDOMEvents: function (dom) {
-        Z.DomUtil.on(dom, 'mousedown touchstart', this._onDomEvents, this);
+        Z.DomUtil.on(dom, this._domEvents, this._onDomEvents, this);
     },
 
     _onDomEvents: function (e) {
@@ -102,7 +248,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
     },
 
     _removeDOMEvents: function (dom) {
-        Z.DomUtil.off(dom, 'mousedown touchstart', this._onDomEvents, this);
+        Z.DomUtil.off(dom, this._domEvents, this._onDomEvents, this);
     }
 
 });

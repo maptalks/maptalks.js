@@ -246,6 +246,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
                 Z.DomUtil.removeDomNode(map[key]);
                 delete map[key];
             }
+            delete this.__uiDOM;
         } else if (this.__uiDOM) {
             Z.DomUtil.removeDomNode(this.__uiDOM);
             delete this.__uiDOM;
