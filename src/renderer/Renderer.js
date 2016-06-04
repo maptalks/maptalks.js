@@ -194,6 +194,10 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         return maskViewExtent;
     },
 
+    getPaintContext:function () {
+        return [this._context];
+    },
+
     _getEvents: function () {
         return {
             '_zoomend' : this._onZoomEnd,

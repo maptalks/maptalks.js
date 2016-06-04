@@ -114,10 +114,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         return {'image':this._canvas, 'layer':this._layer, 'point':this.getMap().viewPointToContainerPoint(point), 'size':size, 'opacity':gradualOpacity};
     },
 
-    getPaintContext:function () {
-        return [this._context];
-    },
-
     _scheduleLoadTileQueue:function () {
 
         if (this._loadQueueTimeout) {
