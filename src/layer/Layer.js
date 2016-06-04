@@ -310,6 +310,12 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         return this;
     },
 
+    _refreshMask: function () {
+        if (this._mask) {
+            this._mask._onZoomEnd();
+        }
+    },
+
     /**
      * Prepare Layer's loading, this is a method intended to be overrided by subclasses.
      * @return {Boolean} true to continue, false to cease.
@@ -322,6 +328,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     _onRemove:function () {
         this.clear();
         this._switchEvents('off', this);
+        this._removeEvents();
         if (this._renderer) {
             this._switchEvents('off', this._renderer);
             this._renderer.remove();
@@ -334,6 +341,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!map) { return; }
         this.map = map;
         this.setZIndex(zIndex);
+        this._registerEvents();
         if (this._getEvents && this._getEvents()) {
             this._switchEvents('on', this);
         }
@@ -366,6 +374,14 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
                 }
             }
         }
+    },
+
+    _registerEvents: function() {
+        this.getMap().on('_zoomend', this._refreshMask, this);
+    },
+
+    _removeEvents: function() {
+        this.getMap().off('_zoomend', this._refreshMask, this);
     },
 
     _getRenderer:function () {

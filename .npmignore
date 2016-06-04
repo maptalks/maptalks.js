@@ -3,6 +3,8 @@ build/
 dist/debug
 dist/examples
 dist/maptalks.*.js
+dist/maptalks.min.js
+dist/*.gz
 coverage/
 doc/
 src/
@@ -12,3 +14,8 @@ jsdoc.json
 karma.conf.js
 .editorconfig
 .eslintrc
+.eslintignore
+.gitignore
+.projectile
+API.md
+circle.yml

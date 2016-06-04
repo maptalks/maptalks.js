@@ -36,13 +36,14 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
             matrices = this.geometry._getPainter().getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null,
-            dxdy = this.getDxDy();
+            dxdy = this.getDxDy(),
+            layerViewPoint = this.geometry.getLayer()._getRenderer()._viewExtent.getMin();
         if (matrix) {
             dxdy = new Z.Point(dxdy.x / scale.x, dxdy.y / scale.y);
         }
 
         var containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
-            return map.viewPointToContainerPoint(point)._add(dxdy);
+            return point.substract(layerViewPoint);
         });
         if (matrix) {
             return matrix.applyToArray(containerPoints);

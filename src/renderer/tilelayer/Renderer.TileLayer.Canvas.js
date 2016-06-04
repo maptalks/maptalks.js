@@ -21,14 +21,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         this._tileQueue = {};
     },
 
-    remove:function () {
-        this._removeEvents();
-        if (this._onMapMoving) {
-            this.getMap().off('_moving', this._onMapMoving, this);
-        }
-        this._requestMapToRender();
-    },
-
     clear:function () {
         this._clearCanvas();
         this._requestMapToRender();
@@ -56,6 +48,11 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             tileCache = this._tileCache,
             tileSize = layer.getTileSize();
 
+        this._viewExtent = tileGrid['fullExtent'];
+        if (!this._canvas) {
+            this._createCanvas();
+        }
+        this._resizeCanvas(tileGrid['fullExtent'].getSize());
         var maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(this._viewExtent)) {
@@ -65,8 +62,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             }
         }
 
-        this._resizeCanvas(tileGrid['fullExtent'].getSize());
-        this._viewExtent = tileGrid['fullExtent'];
 
         //遍历瓦片
         this._totalTileToLoad = this._tileToLoadCounter = 0;
@@ -300,6 +295,12 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     _onResize: function () {
         this._resizeCanvas();
         this.render();
+    },
+
+    _onRemove: function () {
+        delete this._tileCache;
+        delete this._tileQueue;
+        delete this._mapRender;
     }
 });
 

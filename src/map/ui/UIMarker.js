@@ -254,7 +254,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
 });
 
 /**
- * Drag handler for geometries.
+ * Drag handler for maptalks.ui.UIMarker.
  * @class
  * @category handler
  * @protected

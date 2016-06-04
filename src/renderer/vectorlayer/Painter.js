@@ -85,6 +85,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         var matrices = this.getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null;
+        var layerViewPoint = this.geometry.getLayer()._getRenderer()._viewExtent.getMin();
         var map = this.getMap(),
             context = this._rendResources['context'],
             transContext = [],
@@ -94,14 +95,14 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         //convert view points to container points needed by canvas
         if (Z.Util.isArray(points)) {
             containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
-                var cp = map.viewPointToContainerPoint(point);
+                var cp = point.substract(layerViewPoint);//map.viewPointToContainerPoint(point);
                 if (matrix) {
                     return matrix.applyToPointInstance(cp);
                 }
                 return cp;
             });
         } else if (points instanceof Z.Point) {
-            containerPoints = map.viewPointToContainerPoint(points);
+            containerPoints = point.substract(layerViewPoint);//map.viewPointToContainerPoint(points);
             if (matrix) {
                 containerPoints = matrix.applyToPointInstance(containerPoints);
             }
