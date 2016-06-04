@@ -108,6 +108,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _requestMapToRender:function () {
         if (this.getMap()) {
+            if (this._context) {
+                this._layer.fire('renderend', {'context' : this._context});
+            }
             this.getMap()._getRenderer().render();
         }
     },
@@ -188,6 +191,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         mask._getPainter().paint();
         this._context.clip();
         this._clipped = true;
+        this._layer.fire('renderstart', {'context' : this._context});
         return maskViewExtent;
     },
 
