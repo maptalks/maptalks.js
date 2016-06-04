@@ -108,6 +108,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _requestMapToRender:function () {
         if (this.getMap()) {
+            if (this._context) {
+                this._layer.fire('renderend', {'context' : this._context});
+            }
             this.getMap()._getRenderer().render();
         }
     },
@@ -166,15 +169,14 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     _prepareCanvas:function () {
+        if (this._clipped) {
+            this._context.restore();
+            this._clipped = false;
+        }
         if (!this._canvas) {
             this._createCanvas();
         } else {
             this._clearCanvas();
-        }
-
-        if (this._clipped) {
-            this._context.restore();
-            this._clipped = false;
         }
         var mask = this.getLayer().getMask();
         if (!mask) {
@@ -188,7 +190,12 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         mask._getPainter().paint();
         this._context.clip();
         this._clipped = true;
+        this._layer.fire('renderstart', {'context' : this._context});
         return maskViewExtent;
+    },
+
+    getPaintContext:function () {
+        return [this._context];
     },
 
     _getEvents: function () {
