@@ -376,11 +376,11 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         }
     },
 
-    _registerEvents: function() {
+    _registerEvents: function () {
         this.getMap().on('_zoomend', this._refreshMask, this);
     },
 
-    _removeEvents: function() {
+    _removeEvents: function () {
         this.getMap().off('_zoomend', this._refreshMask, this);
     },
 

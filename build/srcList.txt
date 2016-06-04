@@ -107,6 +107,7 @@
 ../src/renderer/vectorlayer/Geometry.Canvas.js
 ../src/renderer/vectorlayer/Painter.js
 ../src/renderer/vectorlayer/CollectionPainter.js
+../src/layer/MassivePointLayer.js
 ../src/map/ui/UI.js
 ../src/map/ui/UIMarker.js
 ../src/map/ui/InfoWindow.js
