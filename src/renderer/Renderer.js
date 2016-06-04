@@ -37,6 +37,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         if (this._onRemove) {
             this._onRemove();
         }
+        delete this._layer;
         delete this._canvas;
         delete this._context;
         delete this._viewExtent;
