@@ -15,12 +15,6 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         this._painted = false;
     },
 
-    remove:function () {
-        delete this._resources;
-        delete this._canvasCache;
-        this._requestMapToRender();
-    },
-
     /**
      * render layer
      * @param  {maptalks.Geometry[]} geometries   geometries to render
@@ -63,7 +57,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     //redraw all the geometries with transform matrix
     //this may bring low performance if number of geometries is large.
     transform: function (matrix) {
-        if (Z.Browser.mobile || !this.getMap().options['layerTransforming'] || this._layer.options['drawOnce']) {
+        if (Z.Browser.mobile || !this.getMap().options['layerTransforming'] || this._layer.options['drawOnce'] || this._layer.getMask()) {
             return false;
         }
         //determin whether this layer should be transformed.
@@ -155,11 +149,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         this._layer.forEach(function (geo) {
             geo._onZoomEnd();
         });
-        var mask = this._layer.getMask();
-        if (mask) {
-            mask._onZoomEnd();
-        }
-        this.render();
+        Z.renderer.Canvas.prototype.show.apply(this, arguments);
     },
 
     /**
@@ -271,10 +261,6 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             this._layer.forEach(function (geo) {
                 geo._onZoomEnd();
             });
-            var mask = this._layer.getMask();
-            if (mask) {
-                mask._onZoomEnd();
-            }
         }
         if (!this._painted) {
             this.render();
@@ -305,6 +291,11 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             this._prepareRender();
             this._renderImmediate();
         }
+    },
+
+    _onRemove:function () {
+        delete this._resources;
+        delete this._canvasCache;
     },
 
     _clearTimeout:function () {

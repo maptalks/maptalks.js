@@ -29,10 +29,25 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             this._fireLoadedEvent();
             return;
         }
+
         this._render.apply(this, arguments);
     },
 
+    remove: function () {
+        if (this._onRemove) {
+            this._onRemove();
+        }
+        delete this._canvas;
+        delete this._context;
+        delete this._viewExtent;
+        this._requestMapToRender();
+        delete this._layer;
+    },
+
     getMap: function () {
+        if (!this._layer) {
+            return null;
+        }
         return this._layer.getMap();
     },
 
@@ -87,6 +102,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _prepareRender:function () {
         this._renderZoom = this.getMap().getZoom();
+        this._viewExtent = this.getMap()._getViewExtent();
         this._loaded = false;
     },
 
@@ -98,7 +114,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _fireLoadedEvent:function () {
         this._loaded = true;
-        this._layer.fire('layerload');
+        if (this._layer) {
+            this._layer.fire('layerload');
+        }
     },
 
     _createCanvas:function () {
@@ -153,7 +171,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         } else {
             this._clearCanvas();
         }
-        this._viewExtent = this.getMap()._getViewExtent();
+
         if (this._clipped) {
             this._context.restore();
             this._clipped = false;

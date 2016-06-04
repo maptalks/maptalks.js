@@ -210,7 +210,7 @@ describe('#Map', function () {
 
         it('当地图载入完成时, 如果加入的图层已被删除, 不触发loaded事件', function(done) {
             var layer = new Z.VectorLayer('id');
-            layer.on('layerload', function() {
+            layer.on('remove', function() {
                 done();
             });
             map.addLayer(layer);

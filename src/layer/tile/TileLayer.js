@@ -57,6 +57,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         if (this._renderer) {
             this._renderer.clear();
         }
+        this.fire('clear');
         return this;
     },
 
