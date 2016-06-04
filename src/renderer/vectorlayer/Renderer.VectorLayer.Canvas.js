@@ -390,7 +390,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                 if (crossOrigin) {
                     img['crossOrigin'] = crossOrigin;
                 }
-                if (Z.Util.isSVG(_url[0]) === 1 && !Z.node) {
+                if (Z.Util.isSVG(_url[0]) && !Z.node) {
                     //amplify the svg image to reduce loading.
                     _url[1] *= 2;
                     _url[2] *= 2;

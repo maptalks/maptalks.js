@@ -169,15 +169,14 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     _prepareCanvas:function () {
+        if (this._clipped) {
+            this._context.restore();
+            this._clipped = false;
+        }
         if (!this._canvas) {
             this._createCanvas();
         } else {
             this._clearCanvas();
-        }
-
-        if (this._clipped) {
-            this._context.restore();
-            this._clipped = false;
         }
         var mask = this.getLayer().getMask();
         if (!mask) {
