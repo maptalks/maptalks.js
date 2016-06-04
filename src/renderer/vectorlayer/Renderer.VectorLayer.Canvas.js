@@ -87,7 +87,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             return;
         }
         this._prepareToDraw();
-        var viewExtent = map._getViewExtent(),
+        var viewExtent = this._viewExtent,
             maskViewExtent = this._prepareCanvas();
         if (maskViewExtent) {
             if (!maskViewExtent.intersects(viewExtent)) {
@@ -96,8 +96,8 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             }
             viewExtent = viewExtent.intersection(maskViewExtent);
         }
+        this._displayExtent = viewExtent;
         this._forEachGeo(this._checkGeo, this);
-
 
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._getPainter().paint(matrix);
@@ -119,7 +119,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
         var painter = geo._getPainter(),
             viewExtent = painter.getPixelExtent();
-        if (!viewExtent || !viewExtent.intersects(this._viewExtent)) {
+        if (!viewExtent || !viewExtent.intersects(this._displayExtent)) {
             return;
         }
         this._isBlank = false;
