@@ -25,11 +25,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             return;
         }
         if (!this._layer.isVisible()) {
-            this._requestMapToRender();
-            this._fireLoadedEvent();
+            this._complete();
             return;
         }
-
         this._render.apply(this, arguments);
     },
 
@@ -96,17 +94,17 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         this._requestMapToRender();
     },
 
-    getRenderZoom:function () {
+    getRenderZoom: function () {
         return this._renderZoom;
     },
 
-    _prepareRender:function () {
+    _prepareRender: function () {
         this._renderZoom = this.getMap().getZoom();
         this._viewExtent = this.getMap()._getViewExtent();
         this._loaded = false;
     },
 
-    _requestMapToRender:function () {
+    _requestMapToRender: function () {
         if (this.getMap()) {
             if (this._context) {
                 this._layer.fire('renderend', {'context' : this._context});
@@ -115,11 +113,16 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         }
     },
 
-    _fireLoadedEvent:function () {
+    _fireLoadedEvent: function () {
         this._loaded = true;
         if (this._layer) {
             this._layer.fire('layerload');
         }
+    },
+
+    _complete: function () {
+        this._requestMapToRender();
+        this._fireLoadedEvent();
     },
 
     _createCanvas:function () {

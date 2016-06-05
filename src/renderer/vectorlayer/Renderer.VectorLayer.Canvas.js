@@ -25,12 +25,10 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         this._clearTimeout();
         if (this._layer.isEmpty()) {
             if (this._layer.options['drawImmediate']) {
-                me._requestMapToRender();
-                me._fireLoadedEvent();
+                me._complete();
             } else {
                 this._renderTimeout = Z.Util.requestAnimFrame(function () {
-                    me._requestMapToRender();
-                    me._fireLoadedEvent();
+                    me._complete();
                 });
             }
             return;
@@ -207,8 +205,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
         var map = this.getMap();
         if (!this._layer.isVisible() || this._layer.isEmpty()) {
-            this._requestMapToRender();
-            this._fireLoadedEvent();
+            this._complete();
             return;
         }
         var zoom = this.getMap().getZoom();
@@ -217,15 +214,13 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                 this._canvasCache = {};
             }
             if (this._viewExtent) {
-                this._requestMapToRender();
-                this._fireLoadedEvent();
+                this._complete();
                 return;
             } else if (this._canvasCache[zoom]) {
                 this._canvas = this._canvasCache[zoom].canvas;
                 var center = map._prjToPoint(map._getPrjCenter());
                 this._viewExtent = this._canvasCache[zoom].viewExtent.add(this._canvasCache[zoom].center.substract(center));
-                this._requestMapToRender();
-                this._fireLoadedEvent();
+                this._complete();
                 return;
             } else {
                 delete this._canvas;
@@ -250,9 +245,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                 };
             }
         }
-        this._requestMapToRender();
-        this._fireLoadedEvent();
-
+        this._complete();
     },
 
     _onZoomEnd: function () {
