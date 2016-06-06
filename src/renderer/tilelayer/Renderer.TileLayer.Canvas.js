@@ -93,7 +93,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     },
 
     getCanvasImage:function () {
-        if (this._renderZoom !== this.getMap().getZoom()) {
+        if (this._renderZoom !== this.getMap().getZoom() || !this._canvas) {
             return null;
         }
         var gradualOpacity = null;

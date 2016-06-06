@@ -92,10 +92,13 @@ describe('#TileLayer', function() {
                 subdomains:['a','b','c'],
                 baseLayerRenderer : 'canvas'
             });
-            tile.on('layerload', function() {
+            tile.once('layerload', function() {
+                tile.hide();
+                tile.show();
                 done();
             });
             map.setBaseLayer(tile);
+
         });
 
         it("dom", function(done) {
@@ -105,10 +108,13 @@ describe('#TileLayer', function() {
                 subdomains:['a','b','c'],
                 baseLayerRenderer : 'dom'
             });
-            tile.on('layerload', function() {
+            tile.once('layerload', function() {
+                tile.hide();
+                tile.show();
                 done();
             });
             map.setBaseLayer(tile);
+
         });
 
     });

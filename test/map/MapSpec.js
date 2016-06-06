@@ -14,8 +14,8 @@ describe('#Map', function () {
 
     beforeEach(function() {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '2px';
+        container.style.height = '2px';
         document.body.appendChild(container);
         var option = {
             zoomAnimation:false,
@@ -24,9 +24,9 @@ describe('#Map', function () {
         };
         map = new Z.Map(container, option);
         tile = new Z.TileLayer('tile', {
-
             urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-            subdomains: [1, 2, 3]
+            subdomains: [1, 2, 3],
+            visible : false
         });
         eventContainer = map._panels.mapPlatform;
     });
@@ -171,19 +171,6 @@ describe('#Map', function () {
         });
     });
 
-    describe('#setBaseLayer', function() {
-        it('use tilelayer as base tile', function() {
-            map.setBaseLayer(tile);
-            expect(map.getBaseLayer()).to.be.eql(tile);
-        });
-
-        it('use vectorlayer as base tile', function() {
-            var layer = new maptalks.VectorLayer('vector');
-            map.setBaseLayer(layer);
-            expect(map.getBaseLayer()).to.be.eql(layer);
-        });
-    });
-
     describe('#addLayer', function() {
         it('图层加入地图时触发add事件', function() {
             var spy = sinon.spy();
@@ -285,4 +272,77 @@ describe('#Map', function () {
 
     });
 
+    describe('#setBaseLayer', function() {
+        function isDrawn(x, y, canvas) {
+            var context = canvas.getContext('2d');
+            var imgData = context.getImageData(x, y, 1, 1).data;
+            if (imgData[3] > 0) {
+                return true;
+            }
+            return false;
+        }
+
+        it('use tilelayer as base tile', function(done) {
+            this.timeout(6000);
+            tile.config({
+                'baseLayerRenderer': 'canvas',
+                'crossOrigin' : 'anonymous',
+                'gradualLoading' : false,
+                'visible' : true
+            });
+            var size = map.getSize();
+            var baseLoaded = false,
+                baseRemoved = false;
+            map.on('baselayerload', function() {
+                baseLoaded = true;
+            });
+            function onRenderEnd() {
+                if (baseLoaded) {
+                    if (!baseRemoved) {
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer()._canvas)).to.be.ok();
+                        baseRemoved = true;
+                        map.removeBaseLayer();
+                    } else {
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer()._canvas)).not.to.be.ok();
+                        done();
+                    }
+                }
+            }
+            map.on('renderend', onRenderEnd);
+            map.setBaseLayer(tile);
+            expect(map.getBaseLayer()).to.be.eql(tile);
+        });
+
+        it('use vectorlayer as base tile', function(done) {
+            var layer = new maptalks.VectorLayer('vector').addGeometry(new maptalks.Circle(map.getCenter(), 1000, {
+                symbol : {
+                    polygonFill : '#000',
+                    polygonOpacity : 0.5
+                }
+            }));
+            var size = map.getSize();
+            var baseLoaded = false,
+                baseRemoved = false;
+            layer.on('renderend', function() {
+                baseLoaded = true;
+            });
+            map.on('baselayerload', function() {
+                baseRemoved = true;
+                map.removeBaseLayer();
+            });
+            function onRenderEnd() {
+                if (!baseRemoved) {
+                    if (baseLoaded) {
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer()._canvas)).to.be.ok();
+                    }
+                } else {
+                    expect(isDrawn(size.width/2, size.height/2, map._getRenderer()._canvas)).not.to.be.ok();
+                    done();
+                }
+            }
+            map.on('renderend', onRenderEnd);
+            map.setBaseLayer(layer);
+            expect(map.getBaseLayer()).to.be.eql(layer);
+        });
+    });
 });

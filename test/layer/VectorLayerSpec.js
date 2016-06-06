@@ -31,7 +31,6 @@ describe('VectorLayer', function() {
 
     describe('can addGeometry', function() {
         beforeEach(function() {
-            map.setBaseLayer(tile);
             map.addLayer(layer);
         });
 

@@ -617,6 +617,19 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
+     * Remove the base layer from the map
+     * @return {maptalks.Map} this
+     */
+    removeBaseLayer: function ()  {
+        if (this._baseLayer) {
+            this._baseLayer.remove();
+            delete this._baseLayer;
+            this._fireEvent('baselayerremove');
+        }
+        return this;
+    },
+
+    /**
      * Get the layers of the map, not including base layer (by getBaseLayer). <br>
      * A filter function can be given to exclude certain layers, eg exclude all the VectorLayers.
      * @param {function} [filter=null] - a filter function of layers, return false to exclude the given layer.
