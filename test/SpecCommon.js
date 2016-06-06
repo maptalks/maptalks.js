@@ -204,9 +204,9 @@ function commonSetupMap(center, baseLayer) {
     var map = new Z.Map(container, option);
     if (baseLayer === undefined) {
         var tile = new Z.TileLayer('tile', {
-
             urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-            subdomains: [1, 2, 3]
+            subdomains: [1, 2, 3],
+            visible:false
         });
         map.setBaseLayer(tile);
     } else if (baseLayer) {

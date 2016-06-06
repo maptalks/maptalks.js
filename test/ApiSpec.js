@@ -21,7 +21,7 @@ describe('API', function () {
             urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
             subdomains: [1, 2, 3]
         });
-        map.setBaseLayer(tile);
+        // map.setBaseLayer(tile);
     });
 
     afterEach(function () {
@@ -127,28 +127,6 @@ describe('API', function () {
 
             expect(fitZoom).to.eql(zoom);
         });
-
-        it('getBaseLayer', function () {
-            expect(map.getBaseLayer()).to.equal(tile);
-        });
-
-        it('setBaseLayer', function () {
-            var tile2 = new Z.TileLayer('tile2', {
-
-                urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-                subdomains: [0, 1, 2]
-            });
-            expect(function () {
-                map.setBaseLayer(tile2);
-            }).to.not.throwException();
-        });
-
-        it('getLayer', function () {
-        });
-
-        it('addLayer', function () {
-        });
-
         // it('getCRS', function () {
         //     var t = map.getCRS();
 
@@ -720,11 +698,6 @@ describe('API', function () {
         });
     });
 
-    describe('TileLayer', function() {
-    });
-
-    describe('DynamicLayer', function() {
-    });
 
     describe('DrawTool', function() {
 

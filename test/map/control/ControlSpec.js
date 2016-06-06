@@ -20,7 +20,6 @@ describe("Control Common Test", function() {
             urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
             subdomains: [1, 2, 3]
         });
-        map.setBaseLayer(tile);
         control = new Z.control.Scale({
             metric: true,
             imperial: true

@@ -18,7 +18,8 @@ describe('#Map Profile', function () {
         tile = new Z.TileLayer('tile', {
 
             urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-            subdomains: [1, 2, 3]
+            subdomains: [1, 2, 3],
+            visible:false
         });
     });
 

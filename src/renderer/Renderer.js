@@ -38,7 +38,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         delete this._canvas;
         delete this._context;
         delete this._viewExtent;
-        this._requestMapToRender();
+        Z.renderer.Canvas.prototype._requestMapToRender.call(this);
         delete this._layer;
     },
 
@@ -54,6 +54,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     getCanvasImage:function () {
+        if (!this._canvas) {
+            return null;
+        }
         if ((this._layer.isEmpty && this._layer.isEmpty()) || !this._viewExtent) {
             return null;
         }

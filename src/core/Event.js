@@ -59,9 +59,14 @@ Z.Eventable = {
      */
     once: function (eventTypeArr, handler, context) {
         var me = this;
+        var called = false;
         function onceHandler() {
-            handler.call(this, arguments);
-            me.off(eventTypeArr, onceHandler, context);
+            if (called) {
+                return;
+            }
+            called = true;
+            handler.apply(this, arguments);
+            me.off(eventTypeArr, onceHandler, this);
         }
         return this.on(eventTypeArr, onceHandler, context);
     },

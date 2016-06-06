@@ -94,12 +94,12 @@ describe('#Layer', function() {
             map.addLayer(tilelayer);
             tilelayer.setMask(mask);
             expect(tilelayer.getMask()).not.to.be.empty();
-            tilelayer.clearMask();
+            tilelayer.removeMask();
             expect(tilelayer.getMask()).not.to.be.ok();
 
             tilelayer.setMask(mask2);
             expect(tilelayer.getMask()).not.to.be.empty();
-            tilelayer.clearMask();
+            tilelayer.removeMask();
             expect(tilelayer.getMask()).not.to.be.ok();
         });
 
@@ -109,12 +109,12 @@ describe('#Layer', function() {
             vectorlayer.addGeometry(genAllTypeGeometries());
             vectorlayer.setMask(mask);
             expect(vectorlayer.getMask()).not.to.be.empty();
-            vectorlayer.clearMask();
+            vectorlayer.removeMask();
             expect(vectorlayer.getMask()).not.to.be.ok();
 
             vectorlayer.setMask(mask2);
             expect(vectorlayer.getMask()).not.to.be.empty();
-            vectorlayer.clearMask();
+            vectorlayer.removeMask();
             expect(vectorlayer.getMask()).not.to.be.ok();
         });
     });

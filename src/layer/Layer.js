@@ -272,8 +272,6 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
             throw new Error('mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon');
         }
 
-        mask._bindLayer(this);
-        mask._enableRenderImmediate();
         if (mask instanceof Z.Marker) {
             mask.setSymbol(Z.Util.extendSymbol(mask.getSymbol(), {
                 'markerLineWidth': 0,
@@ -285,6 +283,8 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
                 'polygonOpacity':0
             });
         }
+        mask._bindLayer(this);
+        mask._enableRenderImmediate();
         this._mask = mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
@@ -296,10 +296,10 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     },
 
     /**
-     * Clear the mask
+     * Remove the mask
      * @returns {maptalks.Layer} this
      */
-    clearMask:function () {
+    removeMask:function () {
         delete this._mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
@@ -326,7 +326,6 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     },
 
     _onRemove:function () {
-        this.clear();
         this._switchEvents('off', this);
         this._removeEvents();
         if (this._renderer) {
