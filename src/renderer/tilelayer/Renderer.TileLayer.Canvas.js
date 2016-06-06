@@ -53,13 +53,10 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
         this._resizeCanvas(tileGrid['fullExtent'].getSize());
         var maskViewExtent = this._prepareCanvas();
-        if (maskViewExtent) {
-            if (!maskViewExtent.intersects(this._viewExtent)) {
-                this._complete();
-                return;
-            }
+        if (maskViewExtent && !maskViewExtent.intersects(this._viewExtent)) {
+            this._complete();
+            return;
         }
-
 
         //遍历瓦片
         this._totalTileToLoad = this._tileToLoadCounter = 0;
