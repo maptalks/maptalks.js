@@ -22,8 +22,8 @@ describe('MaskSpec', function() {
         tile = new Z.TileLayer('tile', {
             crossOrigin : 'anonymous',
             baseLayerRenderer : 'canvas',
-            urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-            subdomains: [1, 2, 3],
+            urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            subdomains:['a','b','c'],
             visible : false
         });
 
