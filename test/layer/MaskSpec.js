@@ -22,7 +22,7 @@ describe('MaskSpec', function() {
         tile = new Z.TileLayer('tile', {
             crossOrigin : 'anonymous',
             baseLayerRenderer : 'canvas',
-            urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            urlTemplate : '/resources/tile.png',
             subdomains:['a','b','c'],
             visible : false
         });
@@ -74,7 +74,7 @@ describe('MaskSpec', function() {
     //test tilelayer
     runTests(new Z.TileLayer('tile', {
             crossOrigin : 'anonymous',
-            urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            urlTemplate:'/resources/tile.png',
             subdomains:['a','b','c']
         }), context);
 

@@ -17,7 +17,7 @@ describe('#Map Profile', function () {
         map = new Z.Map(container, option);
         tile = new Z.TileLayer('tile', {
 
-            urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
+            urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3],
             visible:false
         });
@@ -146,7 +146,7 @@ describe('#Map Profile', function () {
         it("get profile with various layers",function() {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road',{
-                urlTemplate:"http://t{s}.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}",
+                urlTemplate:"/resources/tile.png",
                 subdomains:['1','2','3','4','5'],
                 opacity:0.6
             });
@@ -168,7 +168,7 @@ describe('#Map Profile', function () {
         it("get profile of selected layers",function() {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road',{
-                urlTemplate:"http://t{s}.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}",
+                urlTemplate:"/resources/tile.png",
                 subdomains:['1','2','3','4','5'],
                 opacity:0.6
             });
@@ -198,7 +198,7 @@ describe('#Map Profile', function () {
         it('get map from various profile',function() {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road',{
-                urlTemplate:"http://t{s}.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}",
+                urlTemplate:"/resources/tile.png",
                 subdomains:['1','2','3','4','5'],
                 opacity:0.6
             });

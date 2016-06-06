@@ -9,7 +9,7 @@ module.exports = function(config) {
     'test/**/*.js',
     {pattern: 'assets/css/**/*.css', watched: true, included: false, served: true},
     {pattern: 'assets/images/**/*.png', watched: false, included: false, served: true},
-    {pattern: 'test/resources/*.svg', watched: false, included: false, served: true}
+    {pattern: 'test/resources/*', watched: false, included: false, served: true}
   ]);
 
   config.set({

@@ -88,7 +88,7 @@ describe('#TileLayer', function() {
             this.timeout(10000);
             var tile = new Z.TileLayer('tile', {
                 debug : true,
-                urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate : '/resources/tile.png',
                 subdomains:['a','b','c'],
                 baseLayerRenderer : 'canvas'
             });
@@ -104,7 +104,7 @@ describe('#TileLayer', function() {
         it("dom", function(done) {
             var tile = new Z.TileLayer('tile', {
                 debug : true,
-                urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate : '/resources/tile.png',
                 subdomains:['a','b','c'],
                 baseLayerRenderer : 'dom'
             });
@@ -133,7 +133,7 @@ describe('#TileLayer', function() {
             map = new Z.Map(container, option);
             var tile = new Z.TileLayer('tile', {
                 debug : true,
-                urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate : '/resources/tile.png',
                 subdomains:['a','b','c']
             });
             tile.on('layerload', function() {
