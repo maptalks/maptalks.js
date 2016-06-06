@@ -74,8 +74,8 @@ describe('MaskSpec', function() {
     //test tilelayer
     runTests(new Z.TileLayer('tile', {
             crossOrigin : 'anonymous',
-            urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-            subdomains: [1, 2, 3]
+            urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            subdomains:['a','b','c']
         }), context);
 
     //test vectorlayer
@@ -89,7 +89,7 @@ describe('MaskSpec', function() {
     runTests(vlayer, context);
 
     function runTests(layerToTest, context) {
-        describe('tests for tilelayer', function() {
+        describe('layer', function() {
             beforeEach(function() {
                 context.map.addLayer(layerToTest);
             });

@@ -35,7 +35,10 @@ describe('#MapDrag', function () {
     }
 
     beforeEach(function() {
-        var setups = commonSetupMap(center);
+        var setups = commonSetupMap(center, new Z.TileLayer('tile', {
+            urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
+            subdomains: [1, 2, 3]
+        }));
         container = setups.container;
         map = setups.map;
         mapPlatform = map._panels.mapPlatform;

@@ -282,7 +282,7 @@ describe('#Map', function () {
             return false;
         }
 
-        it('use tilelayer as base tile', function(done) {
+        /*it('use tilelayer as base tile', function(done) {
             this.timeout(6000);
             tile.config({
                 'baseLayerRenderer': 'canvas',
@@ -311,7 +311,7 @@ describe('#Map', function () {
             map.on('renderend', onRenderEnd);
             map.setBaseLayer(tile);
             expect(map.getBaseLayer()).to.be.eql(tile);
-        });
+        });*/
 
         it('use vectorlayer as base tile', function(done) {
             var layer = new maptalks.VectorLayer('vector').addGeometry(new maptalks.Circle(map.getCenter(), 1000, {
