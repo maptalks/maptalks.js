@@ -125,10 +125,9 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      */
     remove:function () {
         this.forEach(function (geometry) {
-            geometry._rootRemove();
+            geometry._unbind();
         });
-        this._rootRemoveAndFireEvent();
-        return this;
+        return Z.Geometry.prototype.remove.apply(this, arguments);
     },
 
     /**
@@ -178,7 +177,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @private
      */
     _bindLayer:function (layer) {
-        this._commonBindLayer(layer);
+        Z.Geometry.prototype._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
     },
 

@@ -492,7 +492,30 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @fires maptalks.Geometry#remove
      */
     remove:function () {
-        this._rootRemoveAndFireEvent();
+        var layer = this.getLayer();
+        if (!layer) {
+            return;
+        }
+        /**
+         * removestart event.
+         *
+         * @event maptalks.Geometry#removestart
+         * @type {Object}
+         * @property {String} type - removestart
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
+        this._fireEvent('removestart');
+
+        this._unbind();
+        /**
+         * remove event.
+         *
+         * @event maptalks.Geometry#remove
+         * @type {Object}
+         * @property {String} type - remove
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
+        this._fireEvent('remove');
         return this;
     },
 
@@ -642,11 +665,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     //调用prepare时,layer已经注册到map上
     _bindLayer:function (layer) {
-        this._commonBindLayer(layer);
-    },
-
-    _commonBindLayer:function (layer) {
-        //Geometry不允许被重复添加到多个图层上
+         //Geometry不允许被重复添加到多个图层上
         if (this.getLayer()) {
             throw new Error(this.exceptions['DUPLICATE_LAYER']);
         }
@@ -763,7 +782,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return this._extent;
     },
 
-    _rootRemove:function () {
+    _unbind:function () {
         var layer = this.getLayer();
         if (!layer) {
             return;
@@ -783,33 +802,6 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         delete this._layer;
         delete this._internalId;
         delete this._extent;
-    },
-
-    _rootRemoveAndFireEvent:function () {
-        var layer = this.getLayer();
-        if (!layer) {
-            return;
-        }
-        /**
-         * removestart event.
-         *
-         * @event maptalks.Geometry#removestart
-         * @type {Object}
-         * @property {String} type - removestart
-         * @property {maptalks.Geometry} target - the geometry fires the event
-         */
-        this._fireEvent('removestart');
-
-        this._rootRemove();
-        /**
-         * remove event.
-         *
-         * @event maptalks.Geometry#remove
-         * @type {Object}
-         * @property {String} type - remove
-         * @property {maptalks.Geometry} target - the geometry fires the event
-         */
-        this._fireEvent('remove');
     },
 
     _getInternalId:function () {
