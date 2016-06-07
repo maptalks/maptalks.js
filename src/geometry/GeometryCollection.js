@@ -176,7 +176,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param  {maptalks.Layer} layer
      * @private
      */
-    _bindLayer:function (layer) {
+    _bindLayer:function () {
         Z.Geometry.prototype._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
     },

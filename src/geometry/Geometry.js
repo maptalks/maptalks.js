@@ -494,7 +494,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     remove:function () {
         var layer = this.getLayer();
         if (!layer) {
-            return;
+            return this;
         }
         /**
          * removestart event.
