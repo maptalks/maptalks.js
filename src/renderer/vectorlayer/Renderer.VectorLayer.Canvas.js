@@ -205,6 +205,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
         var map = this.getMap();
         if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this._clearCanvas();
             this._complete();
             return;
         }
