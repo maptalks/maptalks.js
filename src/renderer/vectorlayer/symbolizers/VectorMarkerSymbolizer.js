@@ -82,7 +82,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 Z.Canvas.sector(ctx, point, height, [90 - angle, 90 + angle], lineOpacity, fillOpacity);
                 ctx.lineCap = lineCap;
             } else {
-                throw new Error('unsupported marker-type: ' + markerType);
+                throw new Error('unsupported markerType: ' + markerType);
             }
         }
 
@@ -121,7 +121,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var s = this.symbol;
         var d = this.defaultSymbol;
         var result = Z.Util.extend({}, d, s);
-        //marker-opacity覆盖fill-opacity和line-opacity
+        //markerOpacity覆盖fillOpacity和lineOpacity
         if (Z.Util.isNumber(s['markerOpacity'])) {
             result['markerFillOpacity'] *= s['markerOpacity'];
             result['markerLineOpacity'] *= s['markerOpacity'];
