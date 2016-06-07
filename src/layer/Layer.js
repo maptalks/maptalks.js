@@ -43,11 +43,11 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!this.getMap()) { return this; }
         this._initRenderer();
         var zIndex = this.getZIndex();
-        if (this._renderer) {
-            if (!Z.Util.isNil(zIndex)) {
-                this._renderer.setZIndex(zIndex);
-            }
-            if (this._prepareLoad()) {
+        if (this._prepareLoad()) {
+            if (this._renderer) {
+                if (!Z.Util.isNil(zIndex)) {
+                    this._renderer.setZIndex(zIndex);
+                }
                 this._renderer.render();
             }
         }
