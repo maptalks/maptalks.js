@@ -23,7 +23,8 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'thresholdOfTransforming'    : 150,
         'drawImmediate'             : false,
         'drawOnce'                  : false,
-        'defaultIconSize'           : [20, 20]
+        'defaultIconSize'           : [20, 20],
+        'cacheSvgOnCanvas'          : true
     },
 
     getStyle: function () {

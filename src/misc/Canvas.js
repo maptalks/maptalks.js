@@ -70,6 +70,14 @@ Z.Canvas = {
                 //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
                 fillTexture = resources.getImage([fillImgUrl + '-texture', null, strokeWidth]);
             }
+            if (Z.Util.isSVG(fillImgUrl) && (fillTexture instanceof Image) && (Z.Browser.edge || Z.Browser.ie)) {
+                //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
+                var w = fillTexture.width || 20,
+                    h = fillTexture.height || 20;
+                var canvas = Z.Canvas.createCanvas(w, h);
+                Z.Canvas.image(canvas.getContext('2d'), fillTexture, 0, 0, w, h);
+                fillTexture = canvas;
+            }
             ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
         } else {
             var fillColor = this.getRgba(fill, 1);
