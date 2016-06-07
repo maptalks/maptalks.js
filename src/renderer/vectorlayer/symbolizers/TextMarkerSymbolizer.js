@@ -95,7 +95,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             'lineJoin' : 'round',
             'polygonFill' : s['textFill'],
             'polygonOpacity' : s['textOpacity']
-        }
+        };
     },
 
     _storeToCache: function (textContent, style, textDesc) {

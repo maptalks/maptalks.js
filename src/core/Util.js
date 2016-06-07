@@ -652,20 +652,6 @@ Z.Util = {
         } else {
             return Z.Util.extend.apply(Z.Util, [{}, symbol].concat(sources));
         }
-    },
-
-    testImage: function(img, url, w, h) {
-        if (!Z.Util.isSVG(url)) {
-            return;
-        }
-        var canvas = Z.Canvas.createCanvas(w, h);
-        Z.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
-        var imgData = canvas.getContext('2d').getImageData(w/2, h/2, 1, 1).data;
-        var imgData2 = canvas.getContext('2d').getImageData(w/2, h, 1, 1).data;
-        if (imgData[3] > 0 || imgData2[3] > 0 ) {
-            return true;
-        }
-        return false;
     }
 
 };

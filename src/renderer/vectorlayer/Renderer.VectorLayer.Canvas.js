@@ -386,8 +386,8 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                     }
                     if (Z.Util.isSVG(_url[0]) && !Z.node) {
                         //amplify the svg image to reduce loading.
-                        if (_url[1]) {_url[1] *= 2;}
-                        if (_url[2]) {_url[2] *= 2;}
+                        if (_url[1]) { _url[1] *= 2; }
+                        if (_url[2]) { _url[2] *= 2; }
                     }
                     img.onload = function () {
                         if (Z.Util.isSVG(_url[0]) === 1 && !Z.node) {

@@ -68,7 +68,7 @@ Z.Canvas = {
             var fillTexture = resources.getImage([fillImgUrl, null, null]);
             if (!fillTexture) {
                 //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
-                fillTexture = resources.getImage([fillImgUrl + '-texture', null, strokeSymbol ? strokeSymbol['stroke-width'] : 0]);
+                fillTexture = resources.getImage([fillImgUrl + '-texture', null, strokeWidth]);
             }
             ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
         } else {
