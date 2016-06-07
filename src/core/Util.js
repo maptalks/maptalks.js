@@ -515,62 +515,6 @@ Z.Util = {
         return false;
     },
 
-    /**
-     * Converts a minus style variable name to a camel style one, eg: foo-class -> fooClass
-     * @param  {String} p - minus style name
-     * @return {String} camel style name
-     */
-    convertMinusToCamel: function (str) {
-        if (str.indexOf('-') < 0) {
-            return str;
-        }
-        var re = /-([A-Za-z])/g;
-        return str.replace(re, function (match, p1) {
-            return p1.toUpperCase();
-        });
-    },
-
-    /**
-     * Converts a camel style variable name to a minus style one, eg: fooClass -> foo-class
-     * @param  {String} p - camel style name
-     * @return {String} minus style name
-     */
-    convertCamelToMinus: function (str) {
-        var re = /([A-Z])/g;
-        return str.replace(re, function (match, p1, offset) {
-            if (offset > 0) {
-                return '-' + p1.toLowerCase();
-            }
-            return p1.toLowerCase();
-        });
-    },
-
-    /*
-     * 转换对象属性变量名风格, 即将属性名在camel风格到minus风格间转换
-     * @param  {Object} symbol 对象
-     * @param  {String} style   转换风格:'minus'或'camel'
-     * @return {Object}    转换后的对象
-     */
-    convertFieldNameStyle:function (symbol, style) {
-        if (!symbol) {
-            return null;
-        }
-        var fn;
-        if (style === 'minus') {
-            fn = this.convertCamelToMinus;
-        } else {
-            fn = this.convertMinusToCamel;
-        }
-        var option = {};
-        for (var p in symbol) {
-            if (symbol.hasOwnProperty(p)) {
-                if (p === '') { continue; }
-                option[fn(p)] = symbol[p];
-            }
-        }
-        return option;
-    },
-
     //改原先的regex名字为xWithQuote；不带引号的regex，/^url\(([^\'\"].*[^\'\"])\)$/i，为xWithoutQuote。然后在is函数里||测试，extract函数里if...else处理。没引号的匹配后，取matches[1]
 
     // match: url('x'), url("x").

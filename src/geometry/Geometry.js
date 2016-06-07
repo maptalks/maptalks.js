@@ -220,12 +220,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @fires maptalks.Geometry#symbolchange
      */
     setSymbol:function (symbol) {
-        if (!symbol) {
-            this._symbol = null;
-        } else {
-            var camelSymbol = this._prepareSymbol(symbol);
-            this._symbol = camelSymbol;
-        }
+        this._symbol = this._prepareSymbol(symbol);
         this._onSymbolChanged();
         return this;
     },
@@ -662,21 +657,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     _prepareSymbol:function (symbol) {
-        var me = this;
-        function prepare(_symbol) {
-            var camelSymbol = Z.Util.convertFieldNameStyle(_symbol, 'camel');
-            me._convertResourceUrl(camelSymbol);
-            return camelSymbol;
-        }
         if (Z.Util.isArray(symbol)) {
-            var camelSymbols = [];
+            var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
-                var camelSymbol = prepare(symbol[i]);
-                camelSymbols.push(camelSymbol);
+                cookedSymbols.push(this._convertResourceUrl(symbol[i]));
             }
-            return camelSymbols;
+            return cookedSymbols;
         } else {
-            return prepare(symbol);
+            return this._convertResourceUrl(symbol);
         }
     },
 
@@ -695,9 +683,10 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @private
      */
     _convertResourceUrl:function (symbol) {
-        if (Z.node || !symbol) {
-            return;
+        if (!symbol) {
+            return null;
         }
+
         function absolute(base, relative) {
             var stack = base.split('/'),
                 parts = relative.split('/');
@@ -718,34 +707,29 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             }
 
         }
-        var symbols = symbol;
-        if (!Z.Util.isArray(symbol)) {
-            symbols = [symbol];
+        var s = Z.Util.extend({}, symbol);
+        if (Z.node) {
+            return s;
         }
         var props = Z.Symbolizer.resourceProperties;
-        var i, ii, len, res, isCssStyle = false;
-        for (i = symbols.length - 1; i >= 0; i--) {
-            symbol = symbols[i];
-            if (!symbol) {
+        var res, isCssStyle = false;
+        for (var ii = 0, len = props.length; ii < len; ii++) {
+            res = s[props[ii]];
+            if (!res) {
                 continue;
             }
-            for (ii = 0, len = props.length; ii < len; ii++) {
-                res = symbol[props[ii]];
-                if (!res) {
-                    continue;
-                }
-                isCssStyle = false;
-                if (res.indexOf('url(') >= 0) {
-                    res = Z.Util.extractCssUrl(res);
-                    isCssStyle = true;
-                }
-                if (!Z.Util.isURL(res)) {
-                    res = absolute(location.href, res);
-                    symbol[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
-                }
+            isCssStyle = false;
+            if (res.indexOf('url(') >= 0) {
+                res = Z.Util.extractCssUrl(res);
+                isCssStyle = true;
+            }
+            if (!Z.Util.isURL(res)) {
+                res = absolute(location.href, res);
+                s[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
             }
         }
 
+        return s;
     },
 
     _getPrjExtent:function () {

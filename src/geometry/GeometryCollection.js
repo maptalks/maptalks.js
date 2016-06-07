@@ -158,12 +158,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     },
 
     setSymbol:function (symbol) {
-        if (!symbol) {
-            this._symbol = null;
-        } else {
-            var camelSymbol = this._prepareSymbol(symbol);
-            this._symbol = camelSymbol;
-        }
+        this._symbol = this._prepareSymbol(symbol);
         this.forEach(function (geometry) {
             geometry.setSymbol(symbol);
         });

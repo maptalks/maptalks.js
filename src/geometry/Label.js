@@ -112,9 +112,9 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         if (!symbol || symbol === this.options['symbol']) {
             symbol = {};
         }
-        var camelSymbol = this._prepareSymbol(symbol);
+        var cooked = this._prepareSymbol(symbol);
         var s = this._getDefaultLabelSymbol();
-        Z.Util.extend(s, camelSymbol);
+        Z.Util.extend(s, cooked);
         this._symbol = s;
         this._labelSymbolChanged = true;
         this._refresh();
