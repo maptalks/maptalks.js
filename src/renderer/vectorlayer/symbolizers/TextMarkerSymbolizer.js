@@ -24,7 +24,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.symbol = symbol;
         this.geometry = geometry;
         this.style = this.translate();
-        this.strokeAndFill = this.translateStrokeAndFill(this.style);
+        this.strokeAndFill = this.translateLineAndFill(this.style);
         this._defineStyle(this.style);
         this._defineStyle(this.strokeAndFill);
         var props = this.geometry.getProperties();
@@ -46,7 +46,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             textContent = this.textContent,
             strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
-        Z.Canvas.prepareCanvas(ctx, strokeAndFill['stroke'], strokeAndFill['fill'], resources);
+        Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         Z.Canvas.prepareCanvasFont(ctx, style);
 
         for (var i = 0, len = cookedPoints.length; i < len; i++) {
@@ -80,39 +80,22 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     translate:function () {
         var s = this.symbol;
         var d = this.defaultSymbol;
-        var result = {};
-        for (var p in d) {
-            if (d.hasOwnProperty(p)) {
-                result[p] = Z.Util.getValueOrDefault(s[p], d[p]);
-            }
-        }
+        var result = Z.Util.extend({}, d, s);
         result['textName'] = s['textName'];
         return result;
     },
 
-    translateStrokeAndFill:function (s) {
-        var result = {
-            'stroke' :{
-                'stroke' : s['textHaloRadius'] ? s['textHaloFill'] : s['textFill'],
-                'stroke-width' : s['textHaloRadius'],
-                'stroke-opacity' : s['textOpacity'],
-                'stroke-dasharray': null,
-                'stroke-linecap' : 'butt',
-                'stroke-linejoin' : 'round'
-            },
-
-            'fill' : {
-                'fill'          : s['textFill' ],
-                'fill-opacity'  : s['textOpacity']
-            }
-        };
-        //vml和svg对linecap的定义不同
-        if (result['stroke']['stroke-linecap'] === 'butt') {
-            if (Z.Browser.vml) {
-                result['stroke']['stroke-linecap'] = 'flat';
-            }
+    translateLineAndFill:function (s) {
+        return {
+            'lineColor' : s['textHaloRadius'] ? s['textHaloFill'] : s['textFill'],
+            'lineWidth' : s['textHaloRadius'],
+            'lineOpacity' : s['textOpacity'],
+            'lineDasharray' : null,
+            'lineCap' : 'butt',
+            'lineJoin' : 'round',
+            'polygonFill' : s['textFill'],
+            'polygonOpacity' : s['textOpacity']
         }
-        return result;
     },
 
     _storeToCache: function (textContent, style, textDesc) {

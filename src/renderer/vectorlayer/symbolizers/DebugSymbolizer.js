@@ -1,11 +1,9 @@
 Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     styles:{
-        'stroke' : {
-            'stroke':'#000',
-            'stroke-opacity' : 1,
-            'stroke-width' : 1
-        }
+        'lineColor':'#000',
+        'lineOpacity' : 1,
+        'lineWidth' : 1
     },
 
     initialize:function (symbol, geometry) {
@@ -31,8 +29,8 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (map._zooming) {
             return;
         }
-        Z.Canvas.prepareCanvas(ctx, this.styles['stroke']);
-        var op = this.styles['stroke']['stroke-opacity'];
+        Z.Canvas.prepareCanvas(ctx, this.styles);
+        var op = this.styles['lineOpacity'];
 
         //outline
         var pixelExtent = geometry._getPainter().getPixelExtent(),

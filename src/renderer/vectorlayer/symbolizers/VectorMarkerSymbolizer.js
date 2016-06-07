@@ -20,7 +20,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.symbol = symbol;
         this.geometry = geometry;
         this.style = this.translate();
-        this.strokeAndFill = Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(this.style);
+        this.strokeAndFill = this.translateLineAndFill(this.style);
         this._defineStyle(this.style);
         this._defineStyle(this.strokeAndFill);
     },
@@ -36,9 +36,9 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var markerType = style['markerType'].toLowerCase();
         var strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
-        Z.Canvas.prepareCanvas(ctx, strokeAndFill['stroke'], strokeAndFill['fill'], resources);
-        var lineOpacity = strokeAndFill['stroke']['stroke-opacity'],
-            fillOpacity = strokeAndFill['fill']['fill-opacity'];
+        Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+        var lineOpacity = strokeAndFill['lineOpacity'],
+            fillOpacity = strokeAndFill['polygonOpacity'];
         var j;
 
         var width = style['markerWidth'],
@@ -117,29 +117,31 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         return result;
     },
 
-
     translate:function () {
         var s = this.symbol;
         var d = this.defaultSymbol;
-
-        var result = {
-            'markerType'       : s['markerType'],
-            'markerWidth'      : Z.Util.getValueOrDefault(s['markerWidth'], d['markerWidth']),
-            'markerHeight'     : Z.Util.getValueOrDefault(s['markerHeight'], d['markerHeight']),
-            'markerDx'         : Z.Util.getValueOrDefault(s['markerDx'], d['markerDx']),
-            'markerDy'         : Z.Util.getValueOrDefault(s['markerDy'], d['markerDy']),
-
-            'markerFill'       : Z.Util.getValueOrDefault(s['markerFill'], d['markerFill']),
-            'markerFillOpacity': Z.Util.getValueOrDefault(s['markerFillOpacity'], d['markerFillOpacity']),
-            'markerLineColor' : Z.Util.getValueOrDefault(s['markerLineColor'], d['markerLineColor']),
-            'markerLineWidth' : Z.Util.getValueOrDefault(s['markerLineWidth'], d['markerLineWidth']),
-            'markerLineDasharray': Z.Util.getValueOrDefault(s['markerLineDasharray'], d['markerLineDasharray']),
-            'markerLineOpacity': Z.Util.getValueOrDefault(s['markerLineOpacity'], d['markerLineOpacity'])
-        };
+        var result = Z.Util.extend({}, d, s);
         //marker-opacity覆盖fill-opacity和line-opacity
         if (Z.Util.isNumber(s['markerOpacity'])) {
             result['markerFillOpacity'] *= s['markerOpacity'];
             result['markerLineOpacity'] *= s['markerOpacity'];
+        }
+        return result;
+    },
+
+    translateLineAndFill: function (s) {
+        var result = {
+            'lineColor' : s['markerLineColor'],
+            'lineWidth' : s['markerLineWidth'],
+            'lineOpacity' : s['markerLineOpacity'],
+            'lineDasharray': null,
+            'lineCap' : 'butt',
+            'lineJoin' : 'round',
+            'polygonFill' : s['markerFill'],
+            'polygonOpacity' : s['markerFillOpacity']
+        };
+        if (result['lineWidth'] === 0) {
+            result['lineOpacity'] = 0;
         }
         return result;
     }
@@ -156,7 +158,7 @@ Z.symbolizer.VectorMarkerSymbolizer.test = function (geometry, symbol) {
     return false;
 };
 
-Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill = function (s) {
+Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles = function (s) {
     var result = {
         'stroke' :{
             'stroke' : s['markerLineColor'],

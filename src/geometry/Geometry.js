@@ -1162,7 +1162,7 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
         return null;
     }
     var op,
-        styles =  Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(symbol);
+        styles =  Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
     if (Z.Util.isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];

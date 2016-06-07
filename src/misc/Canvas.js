@@ -38,83 +38,72 @@ Z.Canvas = {
         ctx.fillStyle = this.getRgba(fill, fillOpacity);
     },
 
-    prepareCanvas:function (ctx, strokeSymbol, fillSymbol, resources) {
-        if (strokeSymbol) {
-            var strokeWidth = strokeSymbol['stroke-width'];
-            if (!Z.Util.isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
-                ctx.lineWidth = strokeWidth;
+    prepareCanvas:function (ctx, style, resources) {
+        if (!style) {
+            return;
+        }
+        var strokeWidth = style['lineWidth'];
+        if (!Z.Util.isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
+            ctx.lineWidth = strokeWidth;
+        }
+        var strokeColor = style['lineColor'] || style['linePatternFile'] || Z.Symbolizer.DEFAULT_STROKE_COLOR;
+        if (Z.Util.isCssUrl(strokeColor) && resources) {
+            Z.Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
+            //line pattern will override stroke-dasharray
+            style['lineDasharray'] = [];
+        } else {
+            var color = Z.Canvas.getRgba(strokeColor, 1);
+            if (ctx.strokeStyle !== color) {
+                ctx.strokeStyle = color;
             }
-            var strokeColor = strokeSymbol['stroke'];
-            if (!strokeColor) {
-                strokeColor = Z.Symbolizer.DEFAULT_STROKE_COLOR;
-            }
-            if (Z.Util.isCssUrl(strokeColor) && resources) {
-                var imgUrl = Z.Util.extractCssUrl(strokeColor);
-                var imageTexture;
-                if (Z.node) {
-                    imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
-                } else {
-                    imageTexture = resources.getImage([imgUrl + '-texture', null, strokeWidth]);
-                    if (!imageTexture) {
-                        var imageRes = resources.getImage([imgUrl, null, strokeWidth]);
-                        if (imageRes) {
-                            var w;
-                            if (!imageRes.width || !imageRes.height) {
-                                w = strokeWidth;
-                            } else {
-                                w = Z.Util.round(imageRes.width * strokeWidth / imageRes.height);
-                            }
-                            var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
-                            Z.Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
-                            resources.addResource([imgUrl + '-texture', null, strokeWidth], patternCanvas);
-                            imageTexture = patternCanvas;
-                            // imageTexture = new Image();
-                            // imageTexture.src = imageRes.src;
-                            // imageTexture.width = w;
-                            // imageTexture.height = strokeWidth;
-                            // resources.addResource(imgUrl+'-texture',imageTexture);
-                        }
-                    }
-                }
-                if (imageTexture) {
-                    //line pattern will override stroke-dasharray
-                    strokeSymbol['stroke-dasharray'] = [];
-                    ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
-                }
-            } else {
-                var color = Z.Canvas.getRgba(strokeColor, 1);
-                if (ctx.strokeStyle !== color) {
-                    ctx.strokeStyle = color;
-                }
-            }
+        }
+         //低版本ie不支持该属性
+        if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
+            ctx.setLineDash(style['lineDasharray']);
+        }
 
-             //低版本ie不支持该属性
-            if (ctx.setLineDash) {
-                var strokeDash = (strokeSymbol['stroke-dasharray']);
-                if (Z.Util.isArrayHasData(strokeDash)) {
-                    ctx.setLineDash(strokeDash);
+        var fill = style['polygonFill'] || style['polygonPatternFile'] || Z.Symbolizer.DEFAULT_FILL_COLOR;
+        if (Z.Util.isCssUrl(fill)) {
+            var fillImgUrl = Z.Util.extractCssUrl(fill);
+            var fillTexture = resources.getImage([fillImgUrl, null, null]);
+            if (!fillTexture) {
+                //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
+                fillTexture = resources.getImage([fillImgUrl + '-texture', null, strokeSymbol ? strokeSymbol['stroke-width'] : 0]);
+            }
+            ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
+        } else {
+            var fillColor = this.getRgba(fill, 1);
+            if (ctx.fillStyle !== fillColor) {
+                ctx.fillStyle = fillColor;
+            }
+        }
+    },
+
+    _setStrokePattern: function (ctx, strokePattern, strokeWidth, resources) {
+        var imgUrl = Z.Util.extractCssUrl(strokePattern);
+        var imageTexture;
+        if (Z.node) {
+            imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
+        } else {
+            imageTexture = resources.getImage([imgUrl + '-texture', null, strokeWidth]);
+            if (!imageTexture) {
+                var imageRes = resources.getImage([imgUrl, null, strokeWidth]);
+                if (imageRes) {
+                    var w;
+                    if (!imageRes.width || !imageRes.height) {
+                        w = strokeWidth;
+                    } else {
+                        w = Z.Util.round(imageRes.width * strokeWidth / imageRes.height);
+                    }
+                    var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
+                    Z.Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
+                    resources.addResource([imgUrl + '-texture', null, strokeWidth], patternCanvas);
+                    imageTexture = patternCanvas;
                 }
             }
         }
-        if (fillSymbol) {
-            var fill = fillSymbol['fill'];
-            if (!fill) {
-                fill = Z.Symbolizer.DEFAULT_FILL_COLOR;
-            }
-            if (Z.Util.isCssUrl(fill)) {
-                var fillImgUrl = Z.Util.extractCssUrl(fill);
-                var fillTexture = resources.getImage([fillImgUrl, null, null]);
-                if (!fillTexture) {
-                    //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
-                    fillTexture = resources.getImage([fillImgUrl + '-texture', null, strokeSymbol ? strokeSymbol['stroke-width'] : 0]);
-                }
-                ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
-            } else {
-                var fillColor = this.getRgba(fill, 1);
-                if (ctx.fillStyle !== fillColor) {
-                    ctx.fillStyle = fillColor;
-                }
-            }
+        if (imageTexture) {
+            ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
         }
     },
 
@@ -166,7 +155,7 @@ Z.Canvas = {
         y = Z.Util.round(y);
         try {
             if (Z.Util.isNumber(width) && Z.Util.isNumber(height)) {
-                ctx.drawImage(img, x, y, width, height);
+                ctx.drawImage(img, x, y, Z.Util.round(width), Z.Util.round(height));
             } else {
                 ctx.drawImage(img, x, y);
             }
@@ -232,7 +221,7 @@ Z.Canvas = {
         }
     },
 
-    _path:function (ctx, points, lineDashArray, lineOpacity) {
+    _path:function (ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
         function fillWithPattern(p1, p2) {
             var dx = p1.x - p2.x;
             var dy = p1.y - p2.y;
@@ -296,7 +285,7 @@ Z.Canvas = {
         if (!Z.Util.isArrayHasData(points)) { return; }
 
         var isDashed = Z.Util.isArrayHasData(lineDashArray);
-        var isPatternLine = !Z.Util.isString(ctx.strokeStyle);
+        var isPatternLine = ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle);
         var point, prePoint, nextPoint;
         for (var i = 0, len = points.length; i < len; i++) {
             point = points[i]._round();
@@ -340,14 +329,12 @@ Z.Canvas = {
             ctx.save();
             for (i = 0, len = points.length; i < len; i++) {
                 Z.Canvas._ring(ctx, points[i], null, 0);
-                if (!fillFirst) {
-                    op = fillOpacity;
-                    if (i > 0) {
-                        ctx.globalCompositeOperation = 'destination-out';
-                        op = 1;
-                    }
-                    Z.Canvas.fillCanvas(ctx, op);
+                op = fillOpacity;
+                if (i > 0) {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    op = 1;
                 }
+                Z.Canvas.fillCanvas(ctx, op);
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'source-over';
                 }
@@ -378,7 +365,7 @@ Z.Canvas = {
 
     _ring:function (ctx, ring, lineDashArray, lineOpacity) {
         ctx.beginPath();
-        Z.Canvas._path(ctx, ring, lineDashArray, lineOpacity);
+        Z.Canvas._path(ctx, ring, lineDashArray, lineOpacity, true);
         ctx.closePath();
     },
 

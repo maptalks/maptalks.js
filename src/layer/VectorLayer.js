@@ -22,7 +22,8 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'geometryEvents'            : true,
         'thresholdOfTransforming'    : 200,
         'drawImmediate'             : false,
-        'drawOnce'                  : false
+        'drawOnce'                  : false,
+        'defaultIconSize'           : [20, 20]
     },
 
     getStyle: function () {
