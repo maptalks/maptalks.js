@@ -634,12 +634,12 @@ Z.Util = {
             sources = [{}];
         }
         if (Z.Util.isArray(symbol)) {
-            var s, dest;
+            var s, dest, i, ii, len, ilen;
             var result = [];
-            for (var i = 0, len = symbol.length; i < len; i++) {
+            for (i = 0, len = symbol.length; i < len; i++) {
                 s = symbol[i];
                 dest = {};
-                for (var ii = 0; ii < sources.length; ii++) {
+                for (ii = 0, ilen = sources.length; ii < ilen; ii++) {
                     if (!Z.Util.isArray(sources[ii])) {
                         Z.Util.extend(dest, s, sources[ii]);
                     } else if (!Z.Util.isNil(sources[ii][i])) {

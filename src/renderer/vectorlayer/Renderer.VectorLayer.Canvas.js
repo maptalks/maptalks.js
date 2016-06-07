@@ -391,18 +391,18 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                         if (_url[2]) { _url[2] *= 2; }
                     }
                     img.onload = function () {
-                        if (Z.Util.isSVG(_url[0]) === 1 && !Z.node) {
-                                //resolved weird behavior of SVG, loaded but canvas is still blank.
-                            var img2 = new Image();
-                            img2.onload = function () {
-                                me._cacheResource(_url, this);
-                                resolve({});
-                            };
-                            img2.src = img.src;
-                        } else {
-                            me._cacheResource(_url, this);
-                            resolve({});
-                        }
+                        // if (Z.Util.isSVG(_url[0]) === 1 && !Z.node) {
+                        //         //resolved weird behavior of SVG, loaded but canvas is still blank.
+                        //     var img2 = new Image();
+                        //     img2.onload = function () {
+                        //         me._cacheResource(_url, this);
+                        //         resolve({});
+                        //     };
+                        //     img2.src = img.src;
+                        // } else {
+                        me._cacheResource(_url, this);
+                        resolve({});
+                        // }
                     };
                     img.onabort = function (err) {
                         console.warn('image loading aborted: ' + _url[0]);
@@ -465,6 +465,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
         var w = url[1], h = url[2];
         if (Z.Util.isSVG(url[0]) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
+            //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
             if (Z.Util.isNil(w)) {
                 w = img.width || this._layer.options['defaultIconSize'][0];
             }
