@@ -41,9 +41,9 @@ describe('SymbolSpec', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-file" : "resources/x.svg",
-                "marker-width":20,
-                "marker-height":30
+                "markerFile" : "resources/x.svg",
+                "markerWidth":20,
+                "markerHeight":30
             }
         });
         var res = marker._getExternalResource();
@@ -56,7 +56,7 @@ describe('SymbolSpec', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
         var line = new maptalks.Polygon([[100,0],[101,1],[105,10],[100,0]], {
             symbol:{
-                "line-pattern-file" : "resources/x.svg"
+                "linePatternFile" : "resources/x.svg"
             }
         });
         var res = line._getExternalResource();
@@ -68,7 +68,7 @@ describe('SymbolSpec', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
         var polygon = new maptalks.Polygon([[100,0],[101,1],[105,10],[100,0]], {
             symbol:{
-                "polygon-pattern-file" : "resources/x.svg"
+                "polygonPatternFile" : "resources/x.svg"
             }
         });
         var res = polygon._getExternalResource();
@@ -79,9 +79,9 @@ describe('SymbolSpec', function() {
     it('with a non-exist svg icon', function(done) {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-file" : "resources/not-existed.svg",
-                "marker-width":20,
-                "marker-height":30
+                "markerFile" : "resources/not-existed.svg",
+                "markerWidth":20,
+                "markerHeight":30
             }
         });
         var vectorLayer = new maptalks.VectorLayer('v').addGeometry(marker);
@@ -95,17 +95,17 @@ describe('SymbolSpec', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-file" : "resources/x.svg",
-                "marker-width":20,
-                "marker-height":30
+                "markerFile" : "resources/x.svg",
+                "markerWidth":20,
+                "markerHeight":30
             }
         });
         /*map.on('zoomstart', function() {
             marker.setSymbol(
                 {
-                    "marker-file" : "resources/x.svg",
-                    "marker-width":40,
-                    "marker-height":50
+                    "markerFile" : "resources/x.svg",
+                    "markerWidth":40,
+                    "markerHeight":50
                 }
             )
         });*/

@@ -329,7 +329,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
         }
         // point._round();
-        this._context.drawImage(canvasImage, point.x, point.y);
+        this._context.drawImage(canvasImage, Z.Util.round(point.x), Z.Util.round(point.y));
         this._context.globalAlpha = alpha;
     },
 

@@ -63,10 +63,10 @@ Z.CurveLine = Z.LineString.extend({
                         args = args.concat([arcDegree]);
                     }
                     curveFn.apply(Z.Canvas, args);
-                    Z.Canvas._stroke(_ctx, this.strokeAndFill['stroke']['stroke-opacity']);
+                    Z.Canvas._stroke(_ctx, this.style['lineOpacity']);
                 }
             }
-            Z.Canvas._stroke(_ctx, this.strokeAndFill['stroke']['stroke-opacity']);
+            Z.Canvas._stroke(_ctx, this.style['lineOpacity']);
             if (_ctx.setLineDash) {
                 //remove line dash effect if any
                 _ctx.setLineDash([]);

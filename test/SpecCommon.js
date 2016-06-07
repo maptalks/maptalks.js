@@ -233,66 +233,66 @@ function commonTearDownMap() {
 var GeoSymbolTester = {
     markerSymbols : [
             {
-                "marker-placement":"point", //point | line | interior
-                "marker-file"   : "images/control/2.png",
+                "markerPlacement":"point", //point | line | interior
+                "markerFile"   : "images/control/2.png",
                 //设定marker-file后, 只有下面的属性起作用
-                "marker-width"  : 20,
-                "marker-height" : 20,
-                "marker-opacity": 1,
+                "markerWidth"  : 20,
+                "markerHeight" : 20,
+                "markerOpacity": 1,
                 //两个cartocss里没有的扩展属性, 用来标注相对中心点的像素距离
-                "marker-dx"     : 0, //<-------
-                "marker-dy"     : 0  //<-------
+                "markerDx"     : 0, //<-------
+                "markerDy"     : 0  //<-------
             },
             {
-                "marker-placement":"point", //point | line | interior
+                "markerPlacement":"point", //point | line | interior
 
                 //marker-type中定义了若干cartoCSS中没有的属性值
-                "marker-type": "ellipse", //<----- ellipse | triangle | square | bar等,默认ellipse
-                "marker-opacity": 1,
-                "marker-fill": "#ff0000",
-                "marker-fill-opacity": 1,
-                "marker-line-color": "#0000ff",
-                "marker-line-width": 1,
-                "marker-line-opacity": 1,
-                "marker-width": 30,
-                "marker-height": 30,
+                "markerType": "ellipse", //<----- ellipse | triangle | square | bar等,默认ellipse
+                "markerOpacity": 1,
+                "markerFill": "#ff0000",
+                "markerFillOpacity": 1,
+                "markerLineColor": "#0000ff",
+                "markerLineWidth": 1,
+                "markerLineOpacity": 1,
+                "markerWidth": 30,
+                "markerHeight": 30,
 
-                "marker-dx": 0,
-                "marker-dy": 0
+                "markerDx": 0,
+                "markerDy": 0
             },
             {
-                "marker-placement":"point", //point | line | interior
-                "marker-type": "path", //<----- ellipse | triangle | square | bar等,默认ellipse
-                "marker-path" : "M129.657,71.361C129.657,75.173,128.55200000000002,78.812,126.504,81.924C125.275",
-                "marker-opacity": 1,
-                "marker-fill": "#ff0000",
-                "marker-fill-opacity": 1,
-                "marker-line-color": "#0000ff",
-                "marker-line-width": 1,
-                "marker-line-opacity": 1,
-                "marker-width": 30,
-                "marker-height": 30,
+                "markerPlacement":"point", //point | line | interior
+                "markerType": "path", //<----- ellipse | triangle | square | bar等,默认ellipse
+                "markerPath" : "M129.657,71.361C129.657,75.173,128.55200000000002,78.812,126.504,81.924C125.275",
+                "markerOpacity": 1,
+                "markerFill": "#ff0000",
+                "markerFillOpacity": 1,
+                "markerLineColor": "#0000ff",
+                "markerLineWidth": 1,
+                "markerLineOpacity": 1,
+                "markerWidth": 30,
+                "markerHeight": 30,
 
-                "marker-dx": 0,
-                "marker-dy": 0
+                "markerDx": 0,
+                "markerDy": 0
             },
             {
-                "text-placement"    : "point", // point | vertex | line | interior
+                "textPlacement"    : "point", // point | vertex | line | interior
 
-                "text-name"         : "文本标注：[marker_name]",
-                "text-face-name"    : "arial",
-                "text-size"         : 12,
-                "text-fill"         : "#550033",
-                "text-opacity"      : 1,
-                "text-halo-fill"  : "#fff",
-                "text-halo-radius": 5,
+                "textName"         : "文本标注：[marker_name]",
+                "textFaceName"    : "arial",
+                "textSize"         : 12,
+                "textFill"         : "#550033",
+                "textOpacity"      : 1,
+                "textHaloFill"  : "#fff",
+                "textHaloRadius": 5,
 
-                "text-dx"           : 0,
-                "text-dy"           : 0,
+                "textDx"           : 0,
+                "textDy"           : 0,
 
-                "text-horizontal-alignment" : "middle", //left | middle | right | auto
-                "text-vertical-alignment"   : "middle",   // top | middle | bottom | auto
-                "text-align"                : "left" //left | right | center | auto
+                "textHorizontalAlignment" : "middle", //left | middle | right | auto
+                "textVerticalAlignment"   : "middle",   // top | middle | bottom | auto
+                "textAlign"                : "left" //left | right | center | auto
             }/*,
             {
                 "shield-placement"  : "point", // point | vertex | line | interior
@@ -320,16 +320,16 @@ var GeoSymbolTester = {
     ],
 
     lineAndFill: {
-                "line-pattern-file" : "url(images/control/2.png)",
-                // "line-color"        : "#f00",
-                "line-width"        : 5,
-                "line-opacity"      : 1,
-                "line-join"         : "miter", //round bevel
-                "line-cap"          : "round", //butt square
-                "line-dasharray"    : [20, 5, 20],
-                "polygon-pattern-file"  : "url(images/control/2.png)",
-                "polygon-fill"          : "#f00",
-                "polygon-opacity"       : 1
+                "linePatternFile" : "url(images/control/2.png)",
+                // "lineColor"        : "#f00",
+                "lineWidth"        : 5,
+                "lineOpacity"      : 1,
+                "lineJoin"         : "miter", //round bevel
+                "lineCap"          : "round", //butt square
+                "lineDasharray"    : [20, 5, 20],
+                "polygonPatternFile"  : "url(images/control/2.png)",
+                "polygonFill"          : "#f00",
+                "polygonOpacity"       : 1
             },
 
     testGeoSymbols:function(geometry, map) {

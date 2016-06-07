@@ -28,7 +28,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
     },
 
-    hide: function() {
+    hide: function () {
         if (this._container) {
             this._container.style.display = 'none';
             this.clear();

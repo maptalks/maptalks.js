@@ -90,6 +90,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
      * 隐藏图层
      */
     hide: function () {
+        this._clearCanvas();
         this._requestMapToRender();
     },
 

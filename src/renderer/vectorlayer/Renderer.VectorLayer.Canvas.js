@@ -156,7 +156,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
      * @return {Boolean}       true|false
      */
     hitDetect:function (point) {
-        if (!this._context || this._layer.isEmpty()) {
+        if (!this._context || this._layer.isEmpty() || this._errorThrown) {
             return false;
         }
         var viewExtent = this.getMap()._getViewExtent();
@@ -205,6 +205,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
         var map = this.getMap();
         if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this._clearCanvas();
             this._complete();
             return;
         }
@@ -379,49 +380,51 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                     resolve({});
                     return;
                 }
-                var img = new Image();
-                if (crossOrigin) {
-                    img['crossOrigin'] = crossOrigin;
-                }
-                if (Z.Util.isSVG(_url[0]) && !Z.node) {
-                    //amplify the svg image to reduce loading.
-                    _url[1] *= 2;
-                    _url[2] *= 2;
-                }
-                img.onload = function () {
-                    if (Z.Util.isSVG(_url[0]) === 1 && !Z.node) {
-                            //resolved weird behavior of SVG, loaded but canvas is still blank.
-                        var img2 = new Image();
-                        img2.onload = function () {
-                            me._cacheResource(_url, this);
-                            resolve({});
-                        };
-                        img2.src = img.src;
-                    } else {
+                try {
+                    var img = new Image();
+                    if (crossOrigin) {
+                        img['crossOrigin'] = crossOrigin;
+                    }
+                    if (Z.Util.isSVG(_url[0]) && !Z.node) {
+                        //amplify the svg image to reduce loading.
+                        if (_url[1]) { _url[1] *= 2; }
+                        if (_url[2]) { _url[2] *= 2; }
+                    }
+                    img.onload = function () {
+                        // if (Z.Util.isSVG(_url[0]) === 1 && !Z.node) {
+                        //         //resolved weird behavior of SVG, loaded but canvas is still blank.
+                        //     var img2 = new Image();
+                        //     img2.onload = function () {
+                        //         me._cacheResource(_url, this);
+                        //         resolve({});
+                        //     };
+                        //     img2.src = img.src;
+                        // } else {
                         me._cacheResource(_url, this);
                         resolve({});
-                    }
-                };
-                img.onabort = function (err) {
-                    console.warn('image loading aborted: ' + _url[0]);
-                    if (err) {
-                        console.warn(err);
-                    }
-                    resolve({});
-                };
-                img.onerror = function (err) {
-                    console.warn('image loading failed: ' + _url[0]);
-                    if (err) {
-                        console.warn(err);
-                    }
-                    resources.markErrorResource(_url);
-                    resolve({});
-                };
-                try {
+                        // }
+                    };
+                    img.onabort = function (err) {
+                        console.warn('image loading aborted: ' + _url[0]);
+                        if (err) {
+                            console.warn(err);
+                        }
+                        resolve({});
+                    };
+                    img.onerror = function (err) {
+                        console.warn('image loading failed: ' + _url[0]);
+                        if (err) {
+                            console.warn(err);
+                        }
+                        resources.markErrorResource(_url);
+                        resolve({});
+                    };
                     Z.Util.loadImage(img,  _url);
                 } catch (err) {
-                    reject({});
+                    resources.markErrorResource(_url);
+                    reject(err);
                 }
+                //
             };
         }
         if (Z.Util.isArrayHasData(resourceUrls)) {
@@ -447,7 +450,8 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (promises.length > 0) {
             Z.Promise.all(promises).then(function () {
                 whenPromiseEnd();
-            }, function () {
+            }, function (reason) {
+                console.warn(reason);
                 whenPromiseEnd();
             });
         } else {
@@ -459,19 +463,20 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!img || !this._resources) {
             return;
         }
-        var w = url[1] || img.width,
-            h = url[2] || img.height;
-        if (!w || !h) {
-            return;
-        }
+        var w = url[1], h = url[2];
         if (Z.Util.isSVG(url[0]) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
+            //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
+            if (Z.Util.isNil(w)) {
+                w = img.width || this._layer.options['defaultIconSize'][0];
+            }
+            if (Z.Util.isNil(h)) {
+                h = img.height || this._layer.options['defaultIconSize'][1];
+            }
             var canvas = Z.Canvas.createCanvas(w, h);
             Z.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
-            this._resources.addResource(url, canvas);
-        } else {
-            this._resources.addResource(url, img);
+            img = canvas;
         }
-
+        this._resources.addResource(url, img);
     }
 });
 
@@ -505,10 +510,10 @@ Z.Util.extend(Z.renderer.vectorlayer.Canvas.Resources.prototype, {
     },
 
     getImage:function (url) {
-        if (!this.isResourceLoaded(url)) {
+        if (!this.isResourceLoaded(url) || this._errors[this._getImgUrl(url)]) {
             return null;
         }
-        return this._resources[url[0]].image;
+        return this._resources[this._getImgUrl(url)].image;
     },
 
     markErrorResource:function (url) {
