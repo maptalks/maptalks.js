@@ -437,13 +437,13 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
 
         var blackList = null;
 
-        if (Z.symbolizer.VectorMarkerSymbolizer.test(geometryToEdit, symbol)) {
+        if (Z.symbolizer.VectorMarkerSymbolizer.test(symbol)) {
             if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
                 //as these types of markers' anchor stands on its bottom
                 blackList = [5, 6, 7];
             }
-        } else if (Z.symbolizer.ImageMarkerSymbolizer.test(geometryToEdit, symbol) ||
-                    Z.symbolizer.VectorPathMarkerSymbolizer.test(geometryToEdit, symbol)) {
+        } else if (Z.symbolizer.ImageMarkerSymbolizer.test(symbol) ||
+                    Z.symbolizer.VectorPathMarkerSymbolizer.test(symbol)) {
             blackList = [5, 6, 7];
         }
 

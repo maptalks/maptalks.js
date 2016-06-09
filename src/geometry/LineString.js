@@ -28,7 +28,6 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
     },
 
     initialize:function (coordinates, opts) {
-
         this.setCoordinates(coordinates);
         this._initOptions(opts);
     },

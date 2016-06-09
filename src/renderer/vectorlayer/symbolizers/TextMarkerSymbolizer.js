@@ -26,14 +26,8 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var style = this.translate();
         this.style = this._defineStyle(style);
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
-        var props = this.geometry.getProperties();
-        this.textContent = Z.StringUtil.replaceVariable(this.style['textName'], props);
-        this.textDesc = this._loadFromCache(this.textContent, this.style);
-        if (!this.textDesc) {
-            this.textDesc = Z.StringUtil.splitTextToRow(this.textContent, this.style);
-            this._storeToCache(this.textContent, this.style, this.textDesc);
-        }
-
+        var textContent = Z.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
+        this._descText(textContent);
     },
 
     symbolize:function (ctx, resources) {
@@ -42,8 +36,9 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             return;
         }
         var style = this.style,
-            textContent = this.textContent,
             strokeAndFill = this.strokeAndFill;
+        var textContent = Z.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
+        this._descText(textContent);
         this._prepareContext(ctx);
         Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         Z.Canvas.prepareCanvasFont(ctx, style);
@@ -97,6 +92,14 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         };
     },
 
+    _descText : function (textContent) {
+        this.textDesc = this._loadFromCache(textContent, this.style);
+        if (!this.textDesc) {
+            this.textDesc = Z.StringUtil.splitTextToRow(textContent, this.style);
+            this._storeToCache(textContent, this.style, this.textDesc);
+        }
+    },
+
     _storeToCache: function (textContent, style, textDesc) {
         if (Z.node) {
             return;
@@ -104,7 +107,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!this.geometry['___text_symbol_cache']) {
             this.geometry['___text_symbol_cache'] = {};
         }
-        this.geometry['___text_symbol_cache'][this._genCacheKey(textContent, style)] = textDesc;
+        this.geometry['___text_symbol_cache'][this._genCacheKey(style)] = textDesc;
     },
 
     _loadFromCache:function (textContent, style) {
@@ -117,8 +120,8 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _genCacheKey: function (textContent, style) {
         var key = [textContent];
         for (var p in style) {
-            if (style.hasOwnProperty(p)) {
-                key.push('p=' + style[p]);
+            if (style.hasOwnProperty(p) && p.length > 4 && p.substring(0, 4) === 'text' ) {
+                key.push(p + '=' + style[p]);
             }
         }
         return key.join('-');
@@ -127,12 +130,8 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
 
 
-Z.symbolizer.TextMarkerSymbolizer.test = function (geometry, symbol) {
-    if (!geometry || !symbol) {
-        return false;
-    }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
+Z.symbolizer.TextMarkerSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
     if (!Z.Util.isNil(symbol['textName'])) {
@@ -145,6 +144,6 @@ Z.symbolizer.TextMarkerSymbolizer.getFont = function (style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
-        return style['textSize'] + 'px ' + style['textFaceName'].substring(0,1) === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"';
+        return style['textSize'] + 'px ' + (style['textFaceName'].substring(0,1) === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
     }
 };

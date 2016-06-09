@@ -189,7 +189,9 @@
                         },
                         set: function (v) {
                             this['_' + _p] = v;
-                        }
+                        },
+                        configurable : true,
+                        enumerable : true
                     });
                 })(p);
             } else {

@@ -88,12 +88,8 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 });
 
 
-Z.symbolizer.ImageMarkerSymbolizer.test = function (geometry, symbol) {
-    if (!geometry || !symbol) {
-        return false;
-    }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
+Z.symbolizer.ImageMarkerSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
     if (!Z.Util.isNil(symbol['markerFile'])) {

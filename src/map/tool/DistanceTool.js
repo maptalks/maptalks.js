@@ -15,14 +15,14 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         'metric': true,
         'imperial': false,
         'symbol' : {
-            'lineColor':'#000000', //'#3388ff',
+            'lineColor':'#000', //'#3388ff',
             'lineWidth':3,
             'lineOpacity':1
         },
         'vertexSymbol' : {
             'markerType'        : 'ellipse',
-            'markerFill'        : '#ffffff', //"#d0d2d6",
-            'markerLineColor'   : '#000000',
+            'markerFill'        : '#fff', //"#d0d2d6",
+            'markerLineColor'   : '#000',
             'markerLineWidth'   : 3,
             'markerWidth'       : 10,
             'markerHeight'      : 10
@@ -30,7 +30,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         'labelOptions' : {
             'symbol':{
                 'textWrapCharacter' : '\n',
-                'textFaceName' : '"microsoft yahei",sans-serif',
+                'textFaceName' : 'monospace',
                 'textLineSpacing' : 1,
                 'textHorizontalAlignment' : 'right',
                 'markerLineColor' : '#b4b3b3',
@@ -199,12 +199,13 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
 
     _addClearMarker:function (coordinates, dx) {
         var endMarker = new maptalks.Marker(coordinates, {
-            'symbol' : [{
-                'markerType' : 'x',
-                'markerWidth' : 10,
-                'markerHeight' : 10,
-                'markerDx' : 20 + dx
-            },
+            'symbol' : [
+                {
+                    'markerType' : 'x',
+                    'markerWidth' : 10,
+                    'markerHeight' : 10,
+                    'markerDx' : 20 + dx
+                },
                 {
                     'markerType' : 'square',
                     'markerFill' : '#ffffff',
@@ -213,7 +214,8 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
                     'markerWidth' : 15,
                     'markerHeight' : 15,
                     'markerDx' : 20 + dx
-                }]
+                }
+            ]
         });
         var measureLineLayer = this._measureLineLayer,
             measureMarkerLayer = this._measureMarkerLayer;

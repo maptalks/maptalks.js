@@ -21,8 +21,8 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
 });
 
 
-Z.symbolizer.VectorPathMarkerSymbolizer.test = function (geometry, symbol) {
-    if (!geometry || !symbol) {
+Z.symbolizer.VectorPathMarkerSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
     if (Z.Util.isNil(symbol['markerFile']) && symbol['markerType'] === 'path') {

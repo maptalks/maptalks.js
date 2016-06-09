@@ -18,8 +18,11 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
     },
 
     symbolize:function (ctx, resources) {
-        var canvasResources = this._getRenderResources();
         var style = this.style;
+        if (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0) {
+            return;
+        }
+        var canvasResources = this._getRenderResources();
         this._prepareContext(ctx);
         Z.Canvas.prepareCanvas(ctx, style, resources);
         canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
@@ -91,16 +94,14 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
 });
 
-Z.symbolizer.StrokeAndFillSymbolizer.test = function (geometry) {
-    if (!geometry) {
+Z.symbolizer.StrokeAndFillSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
-        return false;
+    for (var p in symbol) {
+        if (p.indexOf('polygon') >= 0 || p.indexOf('line') >= 0) {
+            return true;
+        }
     }
-    if (geometry instanceof Z.Marker) {
-        return false;
-    }
-    return true;
+    return false;
 };

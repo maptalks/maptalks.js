@@ -147,8 +147,8 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 });
 
 
-Z.symbolizer.VectorMarkerSymbolizer.test = function (geometry, symbol) {
-    if (!geometry || !symbol) {
+Z.symbolizer.VectorMarkerSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
     if (Z.Util.isNil(symbol['markerFile']) && !Z.Util.isNil(symbol['markerType']) && (symbol['markerType'] !== 'path')) {

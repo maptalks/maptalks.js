@@ -32,7 +32,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         for (var ii = 0; ii < symbols.length; ii++) {
             var symbol = symbols[ii];
             for (var i = regSymbolizers.length - 1; i >= 0; i--) {
-                if (regSymbolizers[i].test(this.geometry, symbol)) {
+                if (regSymbolizers[i].test(symbol)) {
                     var symbolizer = new regSymbolizers[i](symbol, this.geometry);
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Z.symbolizer.PointSymbolizer) {
@@ -66,6 +66,9 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     _getRenderPoints:function (placement) {
         if (!this._renderPoints) {
             this._renderPoints = {};
+        }
+        if (!placement) {
+            placement = 'point';
         }
         if (!this._renderPoints[placement]) {
             this._renderPoints[placement] = this.geometry._getRenderPoints(placement);
@@ -239,7 +242,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         }
         var layer = geometry.getLayer(),
             renderer = layer._getRenderer();
-        if (!renderer) {
+        if (!renderer || !(layer instanceof Z.VectorLayer)) {
             return;
         }
         if (layer.isCanvasRender()) {
