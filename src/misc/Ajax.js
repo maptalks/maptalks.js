@@ -69,7 +69,7 @@
             post: function (options, postData, cb) {
                 var client = this._getClient(cb);
                 client.open('POST', options.url, true);
-                if (options.headers && client.setRequestHeader) {
+                if (options.headers && 'setRequestHeader' in client) {
                     for (var p in options.headers) {
                         if (options.headers.hasOwnProperty(p)) {
                             client.setRequestHeader(p, options.headers[p]);

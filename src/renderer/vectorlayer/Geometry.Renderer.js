@@ -37,7 +37,7 @@ Z.Sector.include(Symboling.Center, {
 //----------------------------------------------------
 Z.Rectangle.include({
     _getRenderPoints:function (placement) {
-        if (placement === 'vertex') {
+        if (placement === 'point') {
             var shell = this.getShell();
             var points = [];
             for (var i = 0, len = shell.length; i < len; i++) {
@@ -62,7 +62,7 @@ Symboling.Poly = {
     _getRenderPoints:function (placement) {
         var map = this.getMap();
         var points;
-        if (placement === 'vertex') {
+        if (placement === 'point') {
             points = this._prjToViewPoint(this._getPrjCoordinates());
         } else if (placement === 'line') {
             //var vertexes = this._prjToViewPoint(this._getPrjCoordinates());

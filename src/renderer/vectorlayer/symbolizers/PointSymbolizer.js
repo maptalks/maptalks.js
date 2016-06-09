@@ -42,7 +42,7 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
         }
 
         var containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
-            return point.substract(layerViewPoint);
+            return point.substract(layerViewPoint)._add(dxdy);
         });
         if (matrix) {
             return matrix.applyToArray(containerPoints);

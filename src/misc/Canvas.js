@@ -30,12 +30,10 @@ Z.Canvas = {
     },
 
     prepareCanvasFont:function (ctx, style) {
-        var font = Z.symbolizer.TextMarkerSymbolizer.getFont(style);
-        ctx.font = font;
+        ctx.font = Z.symbolizer.TextMarkerSymbolizer.getFont(style);
         var fill = style['textFill'];
         if (!fill) { fill = Z.Symbolizer.DEFAULT_TEXT_COLOR; }
-        var fillOpacity = style['textOpacity'];
-        ctx.fillStyle = this.getRgba(fill, fillOpacity);
+        ctx.fillStyle = this.getRgba(fill, style['textOpacity']);
     },
 
     prepareCanvas:function (ctx, style, resources) {
@@ -57,11 +55,9 @@ Z.Canvas = {
                 ctx.strokeStyle = color;
             }
         }
-         //低版本ie不支持该属性
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-
         var fill = style['polygonFill'] || style['polygonPatternFile'] || Z.Symbolizer.DEFAULT_FILL_COLOR;
         if (Z.Util.isCssUrl(fill)) {
             var fillImgUrl = Z.Util.extractCssUrl(fill);

@@ -3,8 +3,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this._defineStyle(this.style);
+        this.style = this._defineStyle(this.translate());
     },
 
 
@@ -89,12 +88,8 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 });
 
 
-Z.symbolizer.ImageMarkerSymbolizer.test = function (geometry, symbol) {
-    if (!geometry || !symbol) {
-        return false;
-    }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
+Z.symbolizer.ImageMarkerSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
     if (!Z.Util.isNil(symbol['markerFile'])) {
