@@ -14,8 +14,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this._defineStyle(this.style);
+        this.style = this._defineStyle(this.translate());
     },
 
     symbolize:function (ctx, resources) {

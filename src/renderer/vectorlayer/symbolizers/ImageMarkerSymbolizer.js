@@ -3,8 +3,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this._defineStyle(this.style);
+        this.style = this._defineStyle(this.translate());
     },
 
 

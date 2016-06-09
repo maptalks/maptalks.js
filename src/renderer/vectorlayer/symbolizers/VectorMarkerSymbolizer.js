@@ -19,10 +19,9 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this.strokeAndFill = this.translateLineAndFill(this.style);
-        this._defineStyle(this.style);
-        this._defineStyle(this.strokeAndFill);
+        var style = this.translate();
+        this.style = this._defineStyle(style);
+        this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
     },
 
     symbolize:function (ctx, resources) {

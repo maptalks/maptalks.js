@@ -57,11 +57,9 @@ Z.Canvas = {
                 ctx.strokeStyle = color;
             }
         }
-         //低版本ie不支持该属性
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-
         var fill = style['polygonFill'] || style['polygonPatternFile'] || Z.Symbolizer.DEFAULT_FILL_COLOR;
         if (Z.Util.isCssUrl(fill)) {
             var fillImgUrl = Z.Util.extractCssUrl(fill);

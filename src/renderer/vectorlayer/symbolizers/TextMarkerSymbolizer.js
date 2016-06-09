@@ -23,10 +23,9 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this.strokeAndFill = this.translateLineAndFill(this.style);
-        this._defineStyle(this.style);
-        this._defineStyle(this.strokeAndFill);
+        var style = this.translate();
+        this.style = this._defineStyle(style);
+        this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
         var props = this.geometry.getProperties();
         this.textContent = Z.StringUtil.replaceVariable(this.style['textName'], props);
         this.textDesc = this._loadFromCache(this.textContent, this.style);
@@ -146,6 +145,6 @@ Z.symbolizer.TextMarkerSymbolizer.getFont = function (style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
-        return style['textSize'] + 'px ' + style['textFaceName'];
+        return style['textSize'] + 'px ' + style['textFaceName'].substring(0,1) === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"';
     }
 };
