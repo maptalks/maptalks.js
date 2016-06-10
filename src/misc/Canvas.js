@@ -329,7 +329,7 @@ Z.Canvas = {
     },
 
     polygon:function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
-        function fillPolygon (points, i, op) {
+        function fillPolygon(points, i, op) {
             var isPatternFill = !Z.Util.isString(ctx.fillStyle);
             if (i === 0 && isPatternFill) {
                 ctx.translate(points[i][0].x, points[i][0].y);
