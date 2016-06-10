@@ -329,8 +329,19 @@ Z.Canvas = {
     },
 
     polygon:function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
-        var isPatternLine = !Z.Util.isString(ctx.strokeStyle);
-        var fillFirst = (Z.Util.isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
+        function fillPolygon (points, i, op) {
+            var isPatternFill = !Z.Util.isString(ctx.fillStyle);
+            if (i === 0 && isPatternFill) {
+                ctx.translate(points[i][0].x, points[i][0].y);
+            }
+            Z.Canvas.fillCanvas(ctx, op);
+            if (i === 0 && isPatternFill) {
+                ctx.translate(-points[i][0].x, -points[i][0].y);
+                ctx.fillStyle = '#fff';
+            }
+        }
+        var isPatternLine = !Z.Util.isString(ctx.strokeStyle),
+            fillFirst = (Z.Util.isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
         if (!Z.Util.isArrayHasData(points[0])) {
             points = [points];
         }
@@ -345,7 +356,7 @@ Z.Canvas = {
                     ctx.globalCompositeOperation = 'destination-out';
                     op = 1;
                 }
-                Z.Canvas.fillCanvas(ctx, op);
+                fillPolygon(points, i, op);
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'source-over';
                 }
@@ -363,11 +374,11 @@ Z.Canvas = {
                     ctx.globalCompositeOperation = 'destination-out';
                     op = 1;
                 }
-                Z.Canvas.fillCanvas(ctx, op);
-            }
-            if (i > 0) {
-                //return to default compositeOperation to display strokes.
-                ctx.globalCompositeOperation = 'source-over';
+                fillPolygon(points, i, op);
+                if (i > 0) {
+                    //return to default compositeOperation to display strokes.
+                    ctx.globalCompositeOperation = 'source-over';
+                }
             }
             Z.Canvas._stroke(ctx, lineOpacity);
         }
