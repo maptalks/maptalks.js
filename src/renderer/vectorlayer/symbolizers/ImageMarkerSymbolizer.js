@@ -8,11 +8,15 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
 
     symbolize:function (ctx, resources) {
+        var style = this.style;
+        if (style['markerWidth'] <= 0 || style['markerHeight'] <= 0 || style['markerOpacity'] === 0) {
+            return;
+        }
         var cookedPoints = this._getRenderContainerPoints();
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var style = this.style;
+
         var img = this._getImage(resources);
         if (!img) {
             console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));

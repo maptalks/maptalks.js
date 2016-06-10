@@ -25,11 +25,15 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     symbolize:function (ctx, resources) {
+        var style = this.style;
+        if (style['markerWidth'] <= 0 || style['markerHeight'] <= 0 ||
+            (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0)) {
+            return;
+        }
         var cookedPoints = this._getRenderContainerPoints();
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var style = this.style;
         var vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(style['markerType'].toLowerCase(),
                             style['markerWidth'], style['markerHeight']);
         var markerType = style['markerType'].toLowerCase();
