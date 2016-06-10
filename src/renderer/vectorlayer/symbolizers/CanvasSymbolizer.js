@@ -51,7 +51,7 @@ Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symboliz
         var me = this;
         var argFn = function () {
             return [me.getMap().getZoom(), me.geometry.getProperties()];
-        }
+        };
 
         return Z.Util.loadFunctionTypes(style, argFn);
     }

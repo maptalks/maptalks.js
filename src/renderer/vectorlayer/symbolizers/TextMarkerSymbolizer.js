@@ -35,6 +35,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
+        var rotations = this._getRotations();
         var style = this.style,
             strokeAndFill = this.strokeAndFill;
         var textContent = Z.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
@@ -42,9 +43,19 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this._prepareContext(ctx);
         Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         Z.Canvas.prepareCanvasFont(ctx, style);
-
+        var p;
         for (var i = 0, len = cookedPoints.length; i < len; i++) {
-            Z.Canvas.text(ctx, textContent, cookedPoints[i], style, this.textDesc);
+            p = cookedPoints[i];
+            if (rotations && !Z.Util.isNil(rotations[i])) {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(rotations[i]);
+                p = new Z.Point(0, 0);
+            }
+            Z.Canvas.text(ctx, textContent, p, style, this.textDesc);
+            if (rotations && !Z.Util.isNil(rotations[i])) {
+                ctx.restore();
+            }
         }
     },
 
@@ -120,7 +131,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _genCacheKey: function (textContent, style) {
         var key = [textContent];
         for (var p in style) {
-            if (style.hasOwnProperty(p) && p.length > 4 && p.substring(0, 4) === 'text' ) {
+            if (style.hasOwnProperty(p) && p.length > 4 && p.substring(0, 4) === 'text') {
                 key.push(p + '=' + style[p]);
             }
         }
@@ -144,6 +155,6 @@ Z.symbolizer.TextMarkerSymbolizer.getFont = function (style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
-        return style['textSize'] + 'px ' + (style['textFaceName'].substring(0,1) === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
+        return style['textSize'] + 'px ' + (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
     }
 };

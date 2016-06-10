@@ -15,6 +15,8 @@ Z.Canvas = {
 
     setDefaultCanvasSetting:function (ctx) {
         ctx.lineWidth = 1;
+        ctx.lineCap = 'butt';
+        ctx.lineJoin = 'miter';
         ctx.strokeStyle = 'rgba(0,0,0,1)';//'rgba(71,76,248,1)';//this.getRgba('#474cf8',1);
         ctx.fillStyle = 'rgba(255,255,255,0)';//this.getRgba('#ffffff',0);
         ctx.textAlign = 'start';
@@ -54,6 +56,12 @@ Z.Canvas = {
             if (ctx.strokeStyle !== color) {
                 ctx.strokeStyle = color;
             }
+        }
+        if (style['lineJoin'] && ctx.lineJoin !== style['lineJoin']) {
+            ctx.lineJoin = style['lineJoin'];
+        }
+        if (style['lineCap'] && ctx.lineCap !== style['lineCap']) {
+            ctx.lineCap = style['lineCap'];
         }
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
@@ -138,7 +146,7 @@ Z.Canvas = {
         if (Z.Util.isNil(op)) {
             op = 1;
         }
-        if (color.substring(0, 1) !== '#') {
+        if (color[0] !== '#') {
             return color;
         }
         var r, g, b;
@@ -193,7 +201,8 @@ Z.Canvas = {
         ctx.textBaseline = 'top';
         if (textHaloRadius) {
             ctx.miterLimit = 2;
-            ctx.lineJoin = 'circle';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
             var lineWidth = (textHaloRadius * 2 - 1);
             ctx.lineWidth = Z.Util.round(lineWidth);
             ctx.strokeStyle = Z.Canvas.getRgba(textHaloFill, 1);
@@ -367,7 +376,7 @@ Z.Canvas = {
 
     _ring:function (ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
         var isPatternLine = (ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle));
-        if (isPatternLine && !ring[0].equals(ring[ring.length-1])) {
+        if (isPatternLine && !ring[0].equals(ring[ring.length - 1])) {
             ring = ring.concat([ring[0]]);
         }
         ctx.beginPath();
@@ -378,7 +387,7 @@ Z.Canvas = {
     },
 
     /**
-     * draw a arc from p1 to p2 with degree of (p1, center) and (p2, center)
+     * draw an arc from p1 to p2 with degree of (p1, center) and (p2, center)
      * @param  {Context} ctx    canvas context
      * @param  {Point} p1      point 1
      * @param  {Point} p2      point 2

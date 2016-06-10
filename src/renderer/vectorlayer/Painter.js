@@ -68,7 +68,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             this._renderPoints = {};
         }
         if (!placement) {
-            placement = 'point';
+            placement = 'default';
         }
         if (!this._renderPoints[placement]) {
             this._renderPoints[placement] = this.geometry._getRenderPoints(placement);

@@ -9,12 +9,12 @@
  * @extends {maptalks.symbolizer.CanvasSymbolizer}
  */
 Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
-    getPixelExtent:function () {
+    getPixelExtent: function () {
         var extent = new Z.PointExtent();
         var markerExtent = this.getMarkerExtent();
         var min = markerExtent.getMin(),
             max = markerExtent.getMax();
-        var renderPoints = this._getRenderPoints();
+        var renderPoints = this._getRenderPoints()[0];
         for (var i = renderPoints.length - 1; i >= 0; i--) {
             var point = renderPoints[i];
             extent = extent.combine(new Z.PointExtent(point.add(min), point.add(max)));
@@ -22,7 +22,7 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
         return extent;
     },
 
-    _getRenderPoints:function () {
+    _getRenderPoints: function () {
         return this.geometry._getPainter()._getRenderPoints(this.getPlacement());
     },
 
@@ -30,8 +30,8 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
      * Get container points to draw on Canvas
      * @return {maptalks.Point[]}
      */
-    _getRenderContainerPoints:function () {
-        var points = this._getRenderPoints(),
+    _getRenderContainerPoints: function () {
+        var points = this._getRenderPoints()[0],
             matrices = this.geometry._getPainter().getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null,
@@ -48,5 +48,9 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
             return matrix.applyToArray(containerPoints);
         }
         return containerPoints;
+    },
+
+    _getRotations: function () {
+        return this._getRenderPoints()[1];
     }
 });
