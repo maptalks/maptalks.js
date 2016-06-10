@@ -9,7 +9,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     symbolize:function (ctx, resources) {
         var style = this.style;
-        if (style['markerWidth'] <= 0 || style['markerHeight'] <= 0) {
+        if (style['markerWidth'] <= 0 || style['markerHeight'] <= 0 || style['markerOpacity'] === 0) {
             return;
         }
         var cookedPoints = this._getRenderContainerPoints();
