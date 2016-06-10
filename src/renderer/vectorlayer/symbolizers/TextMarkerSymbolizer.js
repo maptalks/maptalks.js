@@ -3,7 +3,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         'textFaceName'      : 'monospace',
         'textSize'          : 10,
         'textFont'          : null,
-        'textFill'          : '#000000',
+        'textFill'          : '#000',
         'textOpacity'       : 1,
         'textHaloFill'      : '#ffffff',
         'textHaloRadius'    : 0,
@@ -31,6 +31,9 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     symbolize:function (ctx, resources) {
+        if (this.style['textSize'] <= 0) {
+            return;
+        }
         var cookedPoints = this._getRenderContainerPoints();
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
