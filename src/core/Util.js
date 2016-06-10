@@ -652,6 +652,12 @@ Z.Util = {
         } else {
             return Z.Util.extend.apply(Z.Util, [{}, symbol].concat(sources));
         }
+    },
+
+    computeDegree: function (p1, p2) {
+        var dx = p2.x - p1.x;
+        var dy = p2.y - p1.y;
+        return Math.atan2(dy, dx);
     }
 
 };

@@ -43,7 +43,7 @@
     }
 
     function compilePropertyReference(property) {
-        return property.substring(0, 1) === '$' ? 'f.' + property.substring(1) : 'p[' + JSON.stringify(property) + ']';
+        return property[0] === '$' ? 'f.' + property.substring(1) : 'p[' + JSON.stringify(property) + ']';
     }
 
     function compileComparisonOp(property, value, op, checkType) {

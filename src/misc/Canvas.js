@@ -15,6 +15,8 @@ Z.Canvas = {
 
     setDefaultCanvasSetting:function (ctx) {
         ctx.lineWidth = 1;
+        ctx.lineCap = 'butt';
+        ctx.lineJoin = 'miter';
         ctx.strokeStyle = 'rgba(0,0,0,1)';//'rgba(71,76,248,1)';//this.getRgba('#474cf8',1);
         ctx.fillStyle = 'rgba(255,255,255,0)';//this.getRgba('#ffffff',0);
         ctx.textAlign = 'start';
@@ -54,6 +56,12 @@ Z.Canvas = {
             if (ctx.strokeStyle !== color) {
                 ctx.strokeStyle = color;
             }
+        }
+        if (style['lineJoin'] && ctx.lineJoin !== style['lineJoin']) {
+            ctx.lineJoin = style['lineJoin'];
+        }
+        if (style['lineCap'] && ctx.lineCap !== style['lineCap']) {
+            ctx.lineCap = style['lineCap'];
         }
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
@@ -138,7 +146,7 @@ Z.Canvas = {
         if (Z.Util.isNil(op)) {
             op = 1;
         }
-        if (color.substring(0, 1) !== '#') {
+        if (color[0] !== '#') {
             return color;
         }
         var r, g, b;
@@ -193,7 +201,8 @@ Z.Canvas = {
         ctx.textBaseline = 'top';
         if (textHaloRadius) {
             ctx.miterLimit = 2;
-            ctx.lineJoin = 'circle';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
             var lineWidth = (textHaloRadius * 2 - 1);
             ctx.lineWidth = Z.Util.round(lineWidth);
             ctx.strokeStyle = Z.Canvas.getRgba(textHaloFill, 1);
@@ -227,9 +236,7 @@ Z.Canvas = {
 
     _path:function (ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
         function fillWithPattern(p1, p2) {
-            var dx = p1.x - p2.x;
-            var dy = p1.y - p2.y;
-            var degree = Math.atan2(dy, dx);
+            var degree = Z.Util.computeDegree(p1, p2);
             ctx.save();
             ctx.translate(p1.x, p1.y - ctx.lineWidth / 2 / Math.cos(degree));
             ctx.rotate(degree);
@@ -289,7 +296,7 @@ Z.Canvas = {
         if (!Z.Util.isArrayHasData(points)) { return; }
 
         var isDashed = Z.Util.isArrayHasData(lineDashArray);
-        var isPatternLine = ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle);
+        var isPatternLine = (ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle));
         var point, prePoint, nextPoint;
         for (var i = 0, len = points.length; i < len; i++) {
             point = points[i]._round();
@@ -322,8 +329,19 @@ Z.Canvas = {
     },
 
     polygon:function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
-        var isPatternLine = !Z.Util.isString(ctx.strokeStyle);
-        var fillFirst = (Z.Util.isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
+        function fillPolygon(points, i, op) {
+            var isPatternFill = !Z.Util.isString(ctx.fillStyle);
+            if (i === 0 && isPatternFill) {
+                ctx.translate(points[i][0].x, points[i][0].y);
+            }
+            Z.Canvas.fillCanvas(ctx, op);
+            if (i === 0 && isPatternFill) {
+                ctx.translate(-points[i][0].x, -points[i][0].y);
+                ctx.fillStyle = '#fff';
+            }
+        }
+        var isPatternLine = !Z.Util.isString(ctx.strokeStyle),
+            fillFirst = (Z.Util.isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
         if (!Z.Util.isArrayHasData(points[0])) {
             points = [points];
         }
@@ -332,13 +350,13 @@ Z.Canvas = {
             //因为canvas只填充moveto,lineto,lineto的空间, 而dashline的moveto不再构成封闭空间, 所以重新绘制图形轮廓用于填充
             ctx.save();
             for (i = 0, len = points.length; i < len; i++) {
-                Z.Canvas._ring(ctx, points[i], null, 0);
+                Z.Canvas._ring(ctx, points[i], null, 0, true);
                 op = fillOpacity;
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'destination-out';
                     op = 1;
                 }
-                Z.Canvas.fillCanvas(ctx, op);
+                fillPolygon(points, i, op);
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'source-over';
                 }
@@ -356,25 +374,31 @@ Z.Canvas = {
                     ctx.globalCompositeOperation = 'destination-out';
                     op = 1;
                 }
-                Z.Canvas.fillCanvas(ctx, op);
-            }
-            if (i > 0) {
-                //return to default compositeOperation to display strokes.
-                ctx.globalCompositeOperation = 'source-over';
+                fillPolygon(points, i, op);
+                if (i > 0) {
+                    //return to default compositeOperation to display strokes.
+                    ctx.globalCompositeOperation = 'source-over';
+                }
             }
             Z.Canvas._stroke(ctx, lineOpacity);
         }
 
     },
 
-    _ring:function (ctx, ring, lineDashArray, lineOpacity) {
+    _ring:function (ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
+        var isPatternLine = (ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle));
+        if (isPatternLine && !ring[0].equals(ring[ring.length - 1])) {
+            ring = ring.concat([ring[0]]);
+        }
         ctx.beginPath();
-        Z.Canvas._path(ctx, ring, lineDashArray, lineOpacity, true);
-        ctx.closePath();
+        Z.Canvas._path(ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern);
+        if (!isPatternLine) {
+            ctx.closePath();
+        }
     },
 
     /**
-     * draw a arc from p1 to p2 with degree of (p1, center) and (p2, center)
+     * draw an arc from p1 to p2 with degree of (p1, center) and (p2, center)
      * @param  {Context} ctx    canvas context
      * @param  {Point} p1      point 1
      * @param  {Point} p2      point 2
