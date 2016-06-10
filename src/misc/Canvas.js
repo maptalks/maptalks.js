@@ -227,9 +227,7 @@ Z.Canvas = {
 
     _path:function (ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
         function fillWithPattern(p1, p2) {
-            var dx = p1.x - p2.x;
-            var dy = p1.y - p2.y;
-            var degree = Math.atan2(dy, dx);
+            var degree = Z.Util.computeDegree(p1, p2);
             ctx.save();
             ctx.translate(p1.x, p1.y - ctx.lineWidth / 2 / Math.cos(degree));
             ctx.rotate(degree);
@@ -289,7 +287,7 @@ Z.Canvas = {
         if (!Z.Util.isArrayHasData(points)) { return; }
 
         var isDashed = Z.Util.isArrayHasData(lineDashArray);
-        var isPatternLine = ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle);
+        var isPatternLine = (ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle));
         var point, prePoint, nextPoint;
         for (var i = 0, len = points.length; i < len; i++) {
             point = points[i]._round();
@@ -332,7 +330,7 @@ Z.Canvas = {
             //因为canvas只填充moveto,lineto,lineto的空间, 而dashline的moveto不再构成封闭空间, 所以重新绘制图形轮廓用于填充
             ctx.save();
             for (i = 0, len = points.length; i < len; i++) {
-                Z.Canvas._ring(ctx, points[i], null, 0);
+                Z.Canvas._ring(ctx, points[i], null, 0, true);
                 op = fillOpacity;
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'destination-out';
@@ -367,10 +365,16 @@ Z.Canvas = {
 
     },
 
-    _ring:function (ctx, ring, lineDashArray, lineOpacity) {
+    _ring:function (ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
+        var isPatternLine = (ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle));
+        if (isPatternLine && !ring[0].equals(ring[ring.length-1])) {
+            ring = ring.concat([ring[0]]);
+        }
         ctx.beginPath();
-        Z.Canvas._path(ctx, ring, lineDashArray, lineOpacity, true);
-        ctx.closePath();
+        Z.Canvas._path(ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern);
+        if (!isPatternLine) {
+            ctx.closePath();
+        }
     },
 
     /**
