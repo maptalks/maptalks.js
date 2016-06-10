@@ -31,7 +31,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     symbolize:function (ctx, resources) {
-        if (this.style['textSize'] <= 0 || this.style['textOpacity'] === 0) {
+        if (this.style['textSize'] === 0 || this.style['textOpacity'] === 0) {
             return;
         }
         var cookedPoints = this._getRenderContainerPoints();

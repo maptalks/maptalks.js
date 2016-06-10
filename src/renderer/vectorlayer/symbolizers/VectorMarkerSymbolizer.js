@@ -26,7 +26,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     symbolize:function (ctx, resources) {
         var style = this.style;
-        if (style['markerWidth'] <= 0 || style['markerHeight'] <= 0 ||
+        if (style['markerWidth'] === 0 || style['markerHeight'] === 0 ||
             (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0)) {
             return;
         }
