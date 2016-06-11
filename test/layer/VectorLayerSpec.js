@@ -38,22 +38,16 @@ describe('VectorLayer', function() {
             map.removeLayer(layer);
         });
 
-        it('all type of geometry', function(done) {
+        it('empty geometries', function() {
             expect(function() {
                 layer.addGeometry([],true);
-
-                layer.on('layerload', function() {
-                    map.on('zoomend', function() {
-                        done();
-                    });
-                    map.zoomOut();
-
-                });
+                layer.addGeometry(null,true);
+                layer.addGeometry();
             }).to.not.throwException();
 
         });
 
-        it('empty geometries', function(done) {
+        it('all type of geometry', function(done) {
             var geometries = genAllTypeGeometries();
             map.on('zoomend', function() {
                 done();

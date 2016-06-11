@@ -77,6 +77,6 @@ describe('#MapPan', function () {
             done();
         })
         map.panTo(coord, {'animation' : true});
-        map.setCenterAndZoom(center.add(1, 1));
+        map.setCenterAndZoom(center.add(1, 1), map.getZoom() + 1);
     });
 });
