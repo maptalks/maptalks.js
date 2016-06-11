@@ -37,14 +37,14 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
         var step = this.step;
         var offset = new Z.Point(0, 0);
         if (tests[0] === min) {
-            offset.x = step;
-        } else if (tests[1] === min) {
             offset.x = -step;
+        } else if (tests[1] === min) {
+            offset.x = step;
         }
         if (tests[2] === min) {
-            offset.y = step;
-        } else if (tests[3] === min) {
             offset.y = -step;
+        } else if (tests[3] === min) {
+            offset.y = step;
         }
         this._stepOffset = offset;
         this._pan();

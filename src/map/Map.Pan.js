@@ -11,11 +11,14 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         if (!coordinate) {
             return this;
         }
-        var projection = this.getProjection();
-        var p = projection.project(new Z.Coordinate(coordinate));
-        var span = this._getPixelDistance(p);
-        this.panBy(span, options);
-        return this;
+        var map = this;
+        coordinate = new Z.Coordinate(coordinate);
+        var dest = this.coordinateToViewPoint(coordinate),
+            current = this.offsetPlatform();
+        return this._panBy(dest.substract(current), options, function () {
+            var p = map.getProjection().project(coordinate);
+            map._setPrjCenterAndMove(p);
+        });
     },
 
     /**
@@ -27,22 +30,33 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Map} this
      */
     panBy:function (offset, options) {
+        return this._panBy(offset, options);
+    },
+
+    _panBy: function (offset, options, cb) {
+        if (!offset) {
+            return this;
+        }
+        offset = new Z.Point(offset).multi(-1);
         this._onMoveStart();
         if (!options) {
             options = {};
         }
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
-            this._panAnimation(offset, options['duration']);
+            this._panAnimation(offset, options['duration'], cb);
         } else {
             this.offsetPlatform(offset);
             this._offsetCenterByPixel(offset);
             this._onMoving();
+            if (cb) {
+                cb();
+            }
             this._onMoveEnd();
         }
         return this;
     },
 
-    _panAnimation:function (offset, t) {
+    _panAnimation:function (offset, t, cb) {
         var map = this,
             delta = 200,
             changed = false;
@@ -52,7 +66,13 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             destCoord = map.viewPointToCoordinate(dest),
             dist = dest.distanceTo(start);
         this._getRenderer().panAnimation(offset, t, function (frame, player) {
-            if (changed || !player || player.playState !== 'running') {
+            if (changed || !player) {
+                return true;
+            }
+            if (player.playState !== 'running') {
+                if (cb) {
+                    cb();
+                }
                 return true;
             }
             var vCenter = map.offsetPlatform();

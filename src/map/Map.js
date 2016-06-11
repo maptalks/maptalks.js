@@ -518,7 +518,9 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     setCenterAndZoom:function (center, zoomLevel) {
         if (this._zoomLevel !== zoomLevel) {
             this.setCenter(center);
-            this.setZoom(zoomLevel);
+            if (!Z.Util.isNil(zoomLevel)) {
+                this.setZoom(zoomLevel);
+            }
         } else {
             this.setCenter(center);
         }
@@ -1377,7 +1379,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      */
     _prjToPoint:function (pCoord, zoom) {
-        zoom = zoom === undefined ? this.getZoom() : zoom;
+        zoom = (zoom === undefined ? this.getZoom() : zoom);
         return this._view.getTransformation().transform(pCoord, this._getResolution(zoom));
     },
 
@@ -1389,7 +1391,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      */
     _pointToPrj:function (point, zoom) {
-        zoom = zoom === undefined ? this.getZoom() : zoom;
+        zoom = (zoom === undefined ? this.getZoom() : zoom);
         return this._view.getTransformation().untransform(point, this._getResolution(zoom));
     },
 
