@@ -60,6 +60,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             }, function (frame) {
                 if (cb) {
                     if (!cb(frame, player)) {
+                        player.finish();
                         return;
                     }
                 }

@@ -44,22 +44,20 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     _panAnimation:function (offset, t) {
         var map = this,
-            delta = 200;
-        var changed = false;
-        var startCenter = this.getCenter(),
-            startZoom = this.getZoom(),
+            delta = 200,
+            changed = false;
+        var startZoom = this.getZoom(),
             start = this.offsetPlatform(),
             dest = start.add(offset),
             destCoord = map.viewPointToCoordinate(dest),
             dist = dest.distanceTo(start);
-        this._getRenderer().panAnimation(offset, t, function(frame, player) {
+        this._getRenderer().panAnimation(offset, t, function (frame, player) {
             if (changed || !player || player.playState !== 'running') {
                 return true;
             }
             var vCenter = map.offsetPlatform();
             if (Math.abs(vCenter.distanceTo(start) - dist) > dist + delta || map.getZoom() !== startZoom) {
                 changed = true;
-                player.finish();
                 var newOffset = map.coordinateToViewPoint(destCoord).substract(vCenter);
                 map._panAnimation(newOffset, t);
                 return false;
