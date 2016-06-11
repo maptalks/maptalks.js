@@ -198,17 +198,17 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             clientHeight = parseInt(dom.clientHeight);
         var left = 0, top = 0;
         if ((containerPoint.x) < 0) {
-            left = (containerPoint.x - clientWidth / 2);
+            left = -(containerPoint.x - clientWidth / 2);
         } else if ((containerPoint.x + clientWidth - 35) > mapWidth) {
-            left = -(mapWidth - (containerPoint.x + clientWidth * 3 / 2));
+            left = (mapWidth - (containerPoint.x + clientWidth * 3 / 2));
         }
         if (containerPoint.y < 0) {
-            top = containerPoint.y - 50;
+            top = -containerPoint.y + 50;
         } else if (containerPoint.y > mapHeight) {
-            top = -(mapHeight - containerPoint.y - clientHeight) + 30;
+            top = (mapHeight - containerPoint.y - clientHeight) - 30;
         }
         if (top !== 0 || left !== 0) {
-            map._panBy(new Z.Point(left, top), {'duration':600}, this._coordinate);
+            map._panAnimation(new Z.Point(left, top), 600, this._coordinate);
         }
     },
 
