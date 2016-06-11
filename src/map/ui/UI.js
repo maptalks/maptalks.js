@@ -208,7 +208,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             top = (mapHeight - containerPoint.y - clientHeight) - 30;
         }
         if (top !== 0 || left !== 0) {
-            map._panAnimation(new Z.Point(left, top), 600);
+            map._panAnimation(new Z.Point(left, top), 600, this._coordinate);
         }
     },
 

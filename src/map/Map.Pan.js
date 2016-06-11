@@ -11,10 +11,14 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         if (!coordinate) {
             return this;
         }
+        var map = this;
         coordinate = new Z.Coordinate(coordinate);
         var dest = this.coordinateToViewPoint(coordinate),
             current = this.offsetPlatform();
-        return this._panBy(dest.substract(current), options, coordinate);
+        return this._panBy(dest.substract(current), options, coordinate, function () {
+            var c = map.getProjection().project(coordinate);
+            map._setPrjCenterAndMove(c);
+        });
     },
 
     /**
@@ -29,17 +33,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         return this._panBy(offset, options);
     },
 
-    _panBy: function (offset, options, destCoord) {
+    _panBy: function (offset, options, destCoord, cb) {
         if (!offset) {
             return this;
-        }
-        var cb;
-        if (destCoord) {
-            var map = this;
-            cb = function () {
-                var p = map.getProjection().project(destCoord);
-                map._setPrjCenterAndMove(p);
-            };
         }
         offset = new Z.Point(offset).multi(-1);
         this._onMoveStart();
@@ -62,15 +58,13 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     _panAnimation:function (offset, t, destCoord, cb) {
         var map = this,
-            delta = 200,
-            changed = false;
+            delta = 200;
         var startZoom = this.getZoom(),
             start = this.offsetPlatform(),
             dest = start.add(offset),
-            panTo = destCoord || map.viewPointToCoordinate(dest),
             dist = dest.distanceTo(start);
         this._getRenderer().panAnimation(offset, t, function (frame, player) {
-            if (changed || !player) {
+            if (!player) {
                 return true;
             }
             if (player.playState !== 'running') {
@@ -81,9 +75,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             }
             var vCenter = map.offsetPlatform();
             if (Math.abs(vCenter.distanceTo(start) - dist) > dist + delta || map.getZoom() !== startZoom) {
-                changed = true;
-                var newOffset = map.coordinateToViewPoint(panTo).substract(vCenter);
-                map._panAnimation(newOffset, t, panTo, cb);
+                if (destCoord) {
+                    map.setCenter(destCoord);
+                }
                 return false;
             }
             return true;
