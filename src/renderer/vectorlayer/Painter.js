@@ -32,7 +32,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         for (var ii = 0; ii < symbols.length; ii++) {
             var symbol = symbols[ii];
             for (var i = regSymbolizers.length - 1; i >= 0; i--) {
-                if (regSymbolizers[i].test(this.geometry, symbol)) {
+                if (regSymbolizers[i].test(symbol)) {
                     var symbolizer = new regSymbolizers[i](symbol, this.geometry);
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Z.symbolizer.PointSymbolizer) {
@@ -67,6 +67,9 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         if (!this._renderPoints) {
             this._renderPoints = {};
         }
+        if (!placement) {
+            placement = 'default';
+        }
         if (!this._renderPoints[placement]) {
             this._renderPoints[placement] = this.geometry._getRenderPoints(placement);
         }
@@ -85,7 +88,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         var matrices = this.getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null;
-        var map = this.getMap(),
+        var layerViewPoint = this.geometry.getLayer()._getRenderer()._viewExtent.getMin(),
             context = this._rendResources['context'],
             transContext = [],
         //refer to Geometry.Canvas
@@ -94,14 +97,14 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         //convert view points to container points needed by canvas
         if (Z.Util.isArray(points)) {
             containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
-                var cp = map.viewPointToContainerPoint(point);
+                var cp = point.substract(layerViewPoint);
                 if (matrix) {
                     return matrix.applyToPointInstance(cp);
                 }
                 return cp;
             });
         } else if (points instanceof Z.Point) {
-            containerPoints = map.viewPointToContainerPoint(points);
+            containerPoints = points.substract(layerViewPoint);
             if (matrix) {
                 containerPoints = matrix.applyToPointInstance(containerPoints);
             }
@@ -239,7 +242,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         }
         var layer = geometry.getLayer(),
             renderer = layer._getRenderer();
-        if (!renderer) {
+        if (!renderer || !(layer instanceof Z.VectorLayer)) {
             return;
         }
         if (layer.isCanvasRender()) {

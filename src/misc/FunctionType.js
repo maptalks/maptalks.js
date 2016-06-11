@@ -164,4 +164,41 @@
         return createFunction(parameters, 'interval');
     };
 
+    Z.Util.loadFunctionTypes = function (obj, argFn) {
+        if (!obj) {
+            return null;
+        }
+        var result = {},
+            props = [], p;
+        for (p in obj) {
+            if (obj.hasOwnProperty(p)) {
+                props.push(p);
+            }
+        }
+        for (var i = 0, len = props.length; i < len; i++) {
+            p = props[i];
+            if (Z.Util.isFunctionDefinition(obj[p])) {
+                result['_' + p] = obj[p];
+                (function (_p) {
+                    Object.defineProperty(result, _p, {
+                        get: function () {
+                            if (!this['__fn_' + _p]) {
+                                this['__fn_' + _p] = Z.Util.interpolated(this['_' + _p]);
+                            }
+                            return this['__fn_' + _p].apply(this, argFn());
+                        },
+                        set: function (v) {
+                            this['_' + _p] = v;
+                        },
+                        configurable : true,
+                        enumerable : true
+                    });
+                })(p);
+            } else {
+                result[p] = obj[p];
+            }
+        }
+        return result;
+    }
+
 })();

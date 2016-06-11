@@ -4,7 +4,7 @@ if (typeof Promise !== 'undefined') {
 } else {
 // zousan - A Lightning Fast, Yet Very Small Promise A+ Compliant Implementation
 // https://github.com/bluejava/zousan
-// Version 2.1.2
+// Version 2.2.2
 
 /* jshint asi: true, browser: true */
 /* global setImmediate, console */
@@ -17,8 +17,8 @@ if (typeof Promise !== 'undefined') {
             STATE_FULFILLED = "fulfilled",      // a promise can be in.  The state is stored
             STATE_REJECTED = "rejected",        // in this.state as read-only
 
-            _undefined,
-            _undefinedString = "undefined";
+            _undefined,                     // let the obfiscator compress these down
+            _undefinedString = "undefined";     // by assigning them to variables (debatable "optimization")
 
         // See http://www.bluejava.com/4NS/Speed-up-your-Websites-with-a-Faster-setTimeout-using-soon
         // This is a very fast "asynchronous" flow control - i.e. it yields the thread and executes later,
@@ -32,20 +32,20 @@ if (typeof Promise !== 'undefined') {
         var soon = (function() {
 
                 var fq = [], // function queue;
-                    fqStart = 0; // avoid using shift() by maintaining a start pointer - and remove items in chunks of 1024
+                    fqStart = 0, // avoid using shift() by maintaining a start pointer - and remove items in chunks of 1024 (bufferSize)
+                    bufferSize = 1024
 
                 function callQueue()
                 {
                     while(fq.length - fqStart) // this approach allows new yields to pile on during the execution of these
                     {
                         fq[fqStart](); // no context or args..
-                        fqStart++;
-                        if(fqStart > 1024)
+                        fq[fqStart++] = _undefined  // increase start pointer and dereference function just called
+                        if(fqStart == bufferSize)
                         {
-                            fq.splice(0,fqStart);
+                            fq.splice(0,bufferSize);
                             fqStart = 0;
                         }
-                        //fq.shift(); // remove element just processed... do this after processing so we don't go 0 and trigger soon again
                     }
                 }
 
@@ -197,13 +197,14 @@ if (typeof Promise !== 'undefined') {
 
                 // new for 1.2  - this returns a new promise that times out if original promise does not resolve/reject before the time specified.
                 // Note: this has no effect on the original promise - which may still resolve/reject at a later time.
-                "timeout" : function(ms)
+                "timeout" : function(ms,timeoutMsg)
                 {
+                    timeoutMsg = timeoutMsg || "Timeout"
                     var me = this;
                     return new Zousan(function(resolve,reject) {
 
                             setTimeout(function() {
-                                    reject(Error("Timeout"));   // This will fail silently if promise already resolved or rejected
+                                    reject(Error(timeoutMsg));  // This will fail silently if promise already resolved or rejected
                                 }, ms);
 
                             me.then(function(v) { resolve(v) },     // This will fail silently if promise already timed out
@@ -275,7 +276,7 @@ if (typeof Promise !== 'undefined') {
 
         // If this appears to be a commonJS environment, assign Zousan as the module export
         // if(typeof module != _undefinedString && module.exports)     // jshint ignore:line
-            // module.exports = Zousan;    // jshint ignore:line
+        //     module.exports = Zousan;    // jshint ignore:line
 
         // If this appears to be an AMD environment, define Zousan as the module export (commented out until confirmed works with r.js)
         //if(global.define && global.define.amd)
@@ -283,6 +284,9 @@ if (typeof Promise !== 'undefined') {
 
         // Make Zousan a global variable in all environments
         // global.Zousan = Zousan;
+
+        // make soon accessable from Zousan
+        // Zousan.soon = soon;
 
         //by maptalks
         _global.Promise = Zousan;

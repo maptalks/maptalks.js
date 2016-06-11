@@ -21,12 +21,12 @@ describe('FunctionTypeSpec', function() {
         removeContainer(container);
     });
 
-    it('marker-width interpolating with zoom', function(done) {
+    it('markerWidth interpolating with zoom', function(done) {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-file" : "resources/x.svg",
-                "marker-width": {stops: [[1, 1], [5, 10]]},
-                "marker-height":30
+                "markerFile" : "resources/x.svg",
+                "markerWidth": {stops: [[1, 1], [5, 10]]},
+                "markerHeight":30
             }
         });
         layer.once('layerload', function() {
@@ -37,12 +37,12 @@ describe('FunctionTypeSpec', function() {
         layer.addGeometry(marker);
     });
 
-    it('marker-width interpolating with properties', function(done) {
+    it('markerWidth interpolating with properties', function(done) {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-file" : "resources/x.svg",
-                "marker-width": {property:'foo', stops: [[1, 1], [5, 10], [18,20]]},
-                "marker-height":30
+                "markerFile" : "resources/x.svg",
+                "markerWidth": {property:'foo', stops: [[1, 1], [5, 10], [18,20]]},
+                "markerHeight":30
             },
             properties:{
                 'foo' : 2
@@ -56,13 +56,13 @@ describe('FunctionTypeSpec', function() {
         layer.addGeometry(marker);
     });
 
-    it('marker-width interpolating with properties', function() {
+    it('markerWidth interpolating with properties', function() {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-type" : "ellipse",
-                "marker-width": 20,
-                "marker-height":30,
-                "marker-fill" : {property:'foo', type:'interval', stops: [[1, 'red'], [5, 'blue'], [18,'green']]}
+                "markerType" : "ellipse",
+                "markerWidth": 20,
+                "markerHeight":30,
+                "markerFill" : {property:'foo', type:'interval', stops: [[1, 'red'], [5, 'blue'], [18,'green']]}
             },
             properties:{
                 'foo' : 3
@@ -73,12 +73,12 @@ describe('FunctionTypeSpec', function() {
         expect(s.markerFill).to.be.eql('red');
     });
 
-    it('marker-width interpolating with non-existed properties', function(done) {
+    it('markerWidth interpolating with non-existed properties', function(done) {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-file" : "resources/x.svg",
-                "marker-width": {property:'foo1', stops: [[1, 1], [5, 10], [18,20]]},
-                "marker-height":30
+                "markerFile" : "resources/x.svg",
+                "markerWidth": {property:'foo1', stops: [[1, 1], [5, 10], [18,20]]},
+                "markerHeight":30
             },
             properties:{
                 'foo' : 1
@@ -92,11 +92,11 @@ describe('FunctionTypeSpec', function() {
         layer.addGeometry(marker);
     });
 
-    it('marker-width interpolating with properties and zoom together', function(done) {
+    it('markerWidth interpolating with properties and zoom together', function(done) {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-file" : "resources/x.svg",
-                "marker-width": {
+                "markerFile" : "resources/x.svg",
+                "markerWidth": {
                     property:'foo',
                     stops: [
                         [{zoom : 1, value: 1}, 15],
@@ -104,7 +104,7 @@ describe('FunctionTypeSpec', function() {
                         [{zoom : 18, value: 18},20]
                     ]
                 },
-                "marker-height":30
+                "markerHeight":30
             },
             properties:{
                 'foo' : 5
@@ -118,12 +118,12 @@ describe('FunctionTypeSpec', function() {
         layer.addGeometry(marker);
     });
 
-    it('marker-width without adding on a map', function() {
+    it('markerWidth without adding on a map', function() {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
-                "marker-file" : "resources/x.svg",
-                "marker-width": {stops: [[1, 1], [5, 10]]},
-                "marker-height":30
+                "markerFile" : "resources/x.svg",
+                "markerWidth": {stops: [[1, 1], [5, 10]]},
+                "markerHeight":30
             }
         });
         var s = marker._interpolateSymbol(marker.getSymbol());

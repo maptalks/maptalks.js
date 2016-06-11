@@ -19,26 +19,29 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this.strokeAndFill = Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(this.style);
-        this._defineStyle(this.style);
-        this._defineStyle(this.strokeAndFill);
+        var style = this.translate();
+        this.style = this._defineStyle(style);
+        this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
     },
 
     symbolize:function (ctx, resources) {
+        var style = this.style;
+        if (style['markerWidth'] === 0 || style['markerHeight'] === 0 ||
+            (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0)) {
+            return;
+        }
         var cookedPoints = this._getRenderContainerPoints();
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var style = this.style;
         var vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(style['markerType'].toLowerCase(),
                             style['markerWidth'], style['markerHeight']);
         var markerType = style['markerType'].toLowerCase();
         var strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
-        Z.Canvas.prepareCanvas(ctx, strokeAndFill['stroke'], strokeAndFill['fill'], resources);
-        var lineOpacity = strokeAndFill['stroke']['stroke-opacity'],
-            fillOpacity = strokeAndFill['fill']['fill-opacity'];
+        Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+        var lineOpacity = strokeAndFill['lineOpacity'],
+            fillOpacity = strokeAndFill['polygonOpacity'];
         var j;
 
         var width = style['markerWidth'],
@@ -82,7 +85,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 Z.Canvas.sector(ctx, point, height, [90 - angle, 90 + angle], lineOpacity, fillOpacity);
                 ctx.lineCap = lineCap;
             } else {
-                throw new Error('unsupported marker-type: ' + markerType);
+                throw new Error('unsupported markerType: ' + markerType);
             }
         }
 
@@ -117,37 +120,39 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         return result;
     },
 
-
     translate:function () {
         var s = this.symbol;
         var d = this.defaultSymbol;
-
-        var result = {
-            'markerType'       : s['markerType'],
-            'markerWidth'      : Z.Util.getValueOrDefault(s['markerWidth'], d['markerWidth']),
-            'markerHeight'     : Z.Util.getValueOrDefault(s['markerHeight'], d['markerHeight']),
-            'markerDx'         : Z.Util.getValueOrDefault(s['markerDx'], d['markerDx']),
-            'markerDy'         : Z.Util.getValueOrDefault(s['markerDy'], d['markerDy']),
-
-            'markerFill'       : Z.Util.getValueOrDefault(s['markerFill'], d['markerFill']),
-            'markerFillOpacity': Z.Util.getValueOrDefault(s['markerFillOpacity'], d['markerFillOpacity']),
-            'markerLineColor' : Z.Util.getValueOrDefault(s['markerLineColor'], d['markerLineColor']),
-            'markerLineWidth' : Z.Util.getValueOrDefault(s['markerLineWidth'], d['markerLineWidth']),
-            'markerLineDasharray': Z.Util.getValueOrDefault(s['markerLineDasharray'], d['markerLineDasharray']),
-            'markerLineOpacity': Z.Util.getValueOrDefault(s['markerLineOpacity'], d['markerLineOpacity'])
-        };
-        //marker-opacity覆盖fill-opacity和line-opacity
+        var result = Z.Util.extend({}, d, s);
+        //markerOpacity覆盖fillOpacity和lineOpacity
         if (Z.Util.isNumber(s['markerOpacity'])) {
             result['markerFillOpacity'] *= s['markerOpacity'];
             result['markerLineOpacity'] *= s['markerOpacity'];
+        }
+        return result;
+    },
+
+    translateLineAndFill: function (s) {
+        var result = {
+            'lineColor' : s['markerLineColor'],
+            'lineWidth' : s['markerLineWidth'],
+            'lineOpacity' : s['markerLineOpacity'],
+            'lineDasharray': null,
+            'lineCap' : 'butt',
+            'lineJoin' : 'round',
+            'polygonFill' : s['markerFill'],
+            'polygonOpacity' : s['markerFillOpacity']
+        };
+        if (result['lineWidth'] === 0) {
+            result['lineOpacity'] = 0;
         }
         return result;
     }
 });
 
 
-Z.symbolizer.VectorMarkerSymbolizer.test = function (geometry, symbol) {
-    if (!geometry || !symbol) {
+Z.symbolizer.VectorMarkerSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
     if (Z.Util.isNil(symbol['markerFile']) && !Z.Util.isNil(symbol['markerType']) && (symbol['markerType'] !== 'path')) {
@@ -156,7 +161,7 @@ Z.symbolizer.VectorMarkerSymbolizer.test = function (geometry, symbol) {
     return false;
 };
 
-Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill = function (s) {
+Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles = function (s) {
     var result = {
         'stroke' :{
             'stroke' : s['markerLineColor'],

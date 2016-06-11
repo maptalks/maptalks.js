@@ -220,12 +220,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @fires maptalks.Geometry#symbolchange
      */
     setSymbol:function (symbol) {
-        if (!symbol) {
-            this._symbol = null;
-        } else {
-            var camelSymbol = this._prepareSymbol(symbol);
-            this._symbol = camelSymbol;
-        }
+        this._symbol = this._prepareSymbol(symbol);
         this._onSymbolChanged();
         return this;
     },
@@ -497,7 +492,30 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @fires maptalks.Geometry#remove
      */
     remove:function () {
-        this._rootRemoveAndFireEvent();
+        var layer = this.getLayer();
+        if (!layer) {
+            return this;
+        }
+        /**
+         * removestart event.
+         *
+         * @event maptalks.Geometry#removestart
+         * @type {Object}
+         * @property {String} type - removestart
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
+        this._fireEvent('removestart');
+
+        this._unbind();
+        /**
+         * remove event.
+         *
+         * @event maptalks.Geometry#remove
+         * @type {Object}
+         * @property {String} type - remove
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
+        this._fireEvent('remove');
         return this;
     },
 
@@ -647,11 +665,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     //调用prepare时,layer已经注册到map上
     _bindLayer:function (layer) {
-        this._commonBindLayer(layer);
-    },
-
-    _commonBindLayer:function (layer) {
-        //Geometry不允许被重复添加到多个图层上
+         //Geometry不允许被重复添加到多个图层上
         if (this.getLayer()) {
             throw new Error(this.exceptions['DUPLICATE_LAYER']);
         }
@@ -662,21 +676,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     _prepareSymbol:function (symbol) {
-        var me = this;
-        function prepare(_symbol) {
-            var camelSymbol = Z.Util.convertFieldNameStyle(_symbol, 'camel');
-            me._convertResourceUrl(camelSymbol);
-            return camelSymbol;
-        }
         if (Z.Util.isArray(symbol)) {
-            var camelSymbols = [];
+            var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
-                var camelSymbol = prepare(symbol[i]);
-                camelSymbols.push(camelSymbol);
+                cookedSymbols.push(this._convertResourceUrl(symbol[i]));
             }
-            return camelSymbols;
+            return cookedSymbols;
         } else {
-            return prepare(symbol);
+            return this._convertResourceUrl(symbol);
         }
     },
 
@@ -695,9 +702,10 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @private
      */
     _convertResourceUrl:function (symbol) {
-        if (Z.node || !symbol) {
-            return;
+        if (!symbol) {
+            return null;
         }
+
         function absolute(base, relative) {
             var stack = base.split('/'),
                 parts = relative.split('/');
@@ -718,34 +726,29 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             }
 
         }
-        var symbols = symbol;
-        if (!Z.Util.isArray(symbol)) {
-            symbols = [symbol];
+        var s = Z.Util.extend({}, symbol);
+        if (Z.node) {
+            return s;
         }
         var props = Z.Symbolizer.resourceProperties;
-        var i, ii, len, res, isCssStyle = false;
-        for (i = symbols.length - 1; i >= 0; i--) {
-            symbol = symbols[i];
-            if (!symbol) {
+        var res, isCssStyle = false;
+        for (var ii = 0, len = props.length; ii < len; ii++) {
+            res = s[props[ii]];
+            if (!res) {
                 continue;
             }
-            for (ii = 0, len = props.length; ii < len; ii++) {
-                res = symbol[props[ii]];
-                if (!res) {
-                    continue;
-                }
-                isCssStyle = false;
-                if (res.indexOf('url(') >= 0) {
-                    res = Z.Util.extractCssUrl(res);
-                    isCssStyle = true;
-                }
-                if (!Z.Util.isURL(res)) {
-                    res = absolute(location.href, res);
-                    symbol[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
-                }
+            isCssStyle = false;
+            if (res.indexOf('url(') >= 0) {
+                res = Z.Util.extractCssUrl(res);
+                isCssStyle = true;
+            }
+            if (!Z.Util.isURL(res)) {
+                res = absolute(location.href, res);
+                s[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
             }
         }
 
+        return s;
     },
 
     _getPrjExtent:function () {
@@ -779,7 +782,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return this._extent;
     },
 
-    _rootRemove:function () {
+    _unbind:function () {
         var layer = this.getLayer();
         if (!layer) {
             return;
@@ -799,33 +802,6 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         delete this._layer;
         delete this._internalId;
         delete this._extent;
-    },
-
-    _rootRemoveAndFireEvent:function () {
-        var layer = this.getLayer();
-        if (!layer) {
-            return;
-        }
-        /**
-         * removestart event.
-         *
-         * @event maptalks.Geometry#removestart
-         * @type {Object}
-         * @property {String} type - removestart
-         * @property {maptalks.Geometry} target - the geometry fires the event
-         */
-        this._fireEvent('removestart');
-
-        this._rootRemove();
-        /**
-         * remove event.
-         *
-         * @event maptalks.Geometry#remove
-         * @type {Object}
-         * @property {String} type - remove
-         * @property {maptalks.Geometry} target - the geometry fires the event
-         */
-        this._fireEvent('remove');
     },
 
     _getInternalId:function () {
@@ -1162,7 +1138,7 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
         return null;
     }
     var op,
-        styles =  Z.symbolizer.VectorMarkerSymbolizer.translateStrokeAndFill(symbol);
+        styles =  Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
     if (Z.Util.isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];

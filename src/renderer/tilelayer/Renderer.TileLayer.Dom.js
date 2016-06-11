@@ -21,6 +21,20 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         return this._layer.getMap();
     },
 
+    show: function () {
+        if (this._container) {
+            this.render();
+            this._container.style.display = '';
+        }
+    },
+
+    hide: function () {
+        if (this._container) {
+            this._container.style.display = 'none';
+            this.clear();
+        }
+    },
+
     remove:function () {
         this._removeLayerContainer();
     },
@@ -43,12 +57,16 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
 
     render:function () {
         var layer = this._layer;
-        var tileGrid = layer._getTiles(),
-            tiles = tileGrid['tiles'],
-            queue = [];
         if (!this._container) {
             this._createLayerContainer();
         }
+        var tileGrid = layer._getTiles();
+        if (!tileGrid) {
+            return;
+        }
+        var tiles = tileGrid['tiles'],
+            queue = [];
+
 
         if (this._tiles) {
             for (var p in this._tiles) {
@@ -372,16 +390,18 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             clearTimeout(this._pruneTimeout);
         }
         this.render();
-        if (this._canTransform()) {
-            if (this._levelContainers[param.from] && this._zoomStartPos) {
-                this._levelContainers[param.from].style.left = this._zoomStartPos.x + 'px';
-                this._levelContainers[param.from].style.top = this._zoomStartPos.y + 'px';
+        if (this._levelContainers) {
+            if (this._canTransform()) {
+                if (this._levelContainers[param.from] && this._zoomStartPos) {
+                    this._levelContainers[param.from].style.left = this._zoomStartPos.x + 'px';
+                    this._levelContainers[param.from].style.top = this._zoomStartPos.y + 'px';
+                }
+            } else {
+                if (this._levelContainers[param.from]) {
+                    this._levelContainers[param.from].style.display = 'none';
+                }
+                this._container.style.display = '';
             }
-        } else {
-            if (this._levelContainers[param.from]) {
-                this._levelContainers[param.from].style.display = 'none';
-            }
-            this._container.style.display = '';
         }
     }
 });

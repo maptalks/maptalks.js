@@ -308,16 +308,16 @@ function registerGeometryCommonTest(geometry,_context) {
             var type = geometry.getType();
             if (type === Z.Geometry.TYPE_POINT) {
                 var symbol = {
-                    'marker-file':'http://foo.com/foo.png'
+                    'markerFile':'http://foo.com/foo.png'
                 };
                 geometry.setSymbol(symbol);
                 var resource = geometry._getExternalResource();
                 expect(resource).to.have.length(1);
-                expect(resource[0][0]).to.be(symbol['marker-file']);
+                expect(resource[0][0]).to.be(symbol['markerFile']);
             } else {
                 var symbol = {
-                    'polygon-pattern-file':'url(\'http://foo.com/foo.png\')',
-                    'line-pattern-file':'url(\'http://foo.com/foo2.png\')',
+                    'polygonPatternFile':'url(\'http://foo.com/foo.png\')',
+                    'linePatternFile':'url(\'http://foo.com/foo2.png\')',
                 };
                 geometry.setSymbol(symbol);
                 var resource = geometry._getExternalResource();

@@ -11,16 +11,17 @@ Z.Util.extend(Z.View.prototype, {
         'EPSG:3857' : {
             'resolutions' : (function () {
                 var resolutions = [];
+                var d = 2 * 6378137 * Math.PI;
                 for (var i = 0; i < 21; i++) {
-                    resolutions[i] = 2 * 20037508.34 / (256 * Math.pow(2, i));
+                    resolutions[i] = d / (256 * Math.pow(2, i));
                 }
                 return resolutions;
             })(),
             'fullExtent': {
-                'top':20037508.34,
-                'left':-20037508.34,
-                'bottom':-20037508.34,
-                'right':20037508.34
+                'top'   : 6378137 * Math.PI,
+                'left'  : -6378137 * Math.PI,
+                'bottom': -6378137 * Math.PI,
+                'right' : 6378137 * Math.PI
             }
         },
         'EPSG:4326' : {

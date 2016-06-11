@@ -24,6 +24,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      * 基于Canvas的渲染方法, layers总定义了要渲染的图层
      */
     render:function () {
+        this.map._fireEvent('renderstart', {'context' : this._context});
         if (!this._canvas) {
             this._createCanvas();
         }
@@ -50,6 +51,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 }
             }
         }
+
+        this.map._fireEvent('renderend', {'context' : this._context});
     },
 
     onZoomStart:function (options, fn) {
@@ -326,7 +329,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
         }
         // point._round();
-        this._context.drawImage(canvasImage, point.x, point.y);
+        this._context.drawImage(canvasImage, Z.Util.round(point.x), Z.Util.round(point.y));
         this._context.globalAlpha = alpha;
     },
 

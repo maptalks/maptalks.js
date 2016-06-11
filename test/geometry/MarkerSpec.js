@@ -99,25 +99,25 @@ describe('Marker', function() {
             var marker = new Z.Marker(center);
             marker.on('symbolchange', spy);
             marker.setSymbol({
-                'marker-type' : 'ellipse',
-                'marker-line-color': '#ff0000',
-                'marker-fill': '#ffffff',
-                'marker-fill-opacity': 0.6,
-                'marker-height' : 8,
-                'marker-width' : 8
+                'markerType' : 'ellipse',
+                'markerLineColor': '#ff0000',
+                'markerFill': '#ffffff',
+                'markerFillOpacity': 0.6,
+                'markerHeight' : 8,
+                'markerWidth' : 8
             });
 
             expect(spy.called).to.be.ok();
         });
 
-        it('unsuppored marker-type', function() {
+        it('unsuppored markerType', function() {
             var layer = new maptalks.VectorLayer('vector');
             map.addLayer(layer);
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol:{
-                    "marker-type" : "unsupported",
-                    "marker-width":20,
-                    "marker-height":30
+                    "markerType" : "unsupported",
+                    "markerWidth":20,
+                    "markerHeight":30
                 }
             });
             marker._enableRenderImmediate();

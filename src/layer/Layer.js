@@ -43,11 +43,11 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!this.getMap()) { return this; }
         this._initRenderer();
         var zIndex = this.getZIndex();
-        if (this._renderer) {
-            if (!Z.Util.isNil(zIndex)) {
-                this._renderer.setZIndex(zIndex);
-            }
-            if (this._prepareLoad()) {
+        if (this._prepareLoad()) {
+            if (this._renderer) {
+                if (!Z.Util.isNil(zIndex)) {
+                    this._renderer.setZIndex(zIndex);
+                }
                 this._renderer.render();
             }
         }
@@ -267,24 +267,24 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @returns {maptalks.Layer} this
      */
     setMask:function (mask) {
-        if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask, mask.getSymbol())) ||
+        if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
                 mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
             throw new Error('mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon');
         }
 
-        mask._bindLayer(this);
-        mask._enableRenderImmediate();
         if (mask instanceof Z.Marker) {
             mask.setSymbol(Z.Util.extendSymbol(mask.getSymbol(), {
                 'markerLineWidth': 0,
-                'markerFillOpacity': 0
+                'markerFillOpacity': 1
             }));
         } else {
             mask.setSymbol({
                 'lineWidth':0,
-                'polygonOpacity':0
+                'polygonOpacity':1
             });
         }
+        mask._bindLayer(this);
+        mask._enableRenderImmediate();
         this._mask = mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
@@ -296,10 +296,10 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     },
 
     /**
-     * Clear the mask
+     * Remove the mask
      * @returns {maptalks.Layer} this
      */
-    clearMask:function () {
+    removeMask:function () {
         delete this._mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
@@ -308,6 +308,12 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
             this._getRenderer().render();
         }
         return this;
+    },
+
+    _refreshMask: function () {
+        if (this._mask) {
+            this._mask._onZoomEnd();
+        }
     },
 
     /**
@@ -320,8 +326,8 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     },
 
     _onRemove:function () {
-        this.clear();
         this._switchEvents('off', this);
+        this._removeEvents();
         if (this._renderer) {
             this._switchEvents('off', this._renderer);
             this._renderer.remove();
@@ -334,6 +340,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!map) { return; }
         this.map = map;
         this.setZIndex(zIndex);
+        this._registerEvents();
         if (this._getEvents && this._getEvents()) {
             this._switchEvents('on', this);
         }
@@ -366,6 +373,14 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
                 }
             }
         }
+    },
+
+    _registerEvents: function () {
+        this.getMap().on('_zoomend', this._refreshMask, this);
+    },
+
+    _removeEvents: function () {
+        this.getMap().off('_zoomend', this._refreshMask, this);
     },
 
     _getRenderer:function () {

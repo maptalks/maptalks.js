@@ -20,18 +20,17 @@ Z.Eventable = {
         var eventTypes = eventTypeArr.split(' ');
         var eventType;
         if (!context) { context = this; }
+        var handlerChain, i, len;
         for (var j = 0, jl = eventTypes.length; j < jl; j++) {
             eventType = eventTypes[j].toLowerCase();
-            var handlerChain = this._eventMap[eventType];
+            handlerChain = this._eventMap[eventType];
             if (!handlerChain) {
                 handlerChain = [];
                 this._eventMap[eventType] = handlerChain;
             }
-            for (var i = 0, len = handlerChain.length; i < len; i++) {
-                if (handler === handlerChain[i].handler) {
-                    if (!handlerChain[i].del && handlerChain[i].context === context) {
-                        return this;
-                    }
+            for (i = 0, len = handlerChain.length; i < len; i++) {
+                if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
+                    return this;
                 }
             }
             handlerChain.push({
@@ -53,9 +52,14 @@ Z.Eventable = {
      */
     once: function (eventTypeArr, handler, context) {
         var me = this;
+        var called = false;
         function onceHandler() {
-            handler.call(this, arguments);
-            me.off(eventTypeArr, onceHandler, context);
+            if (called) {
+                return;
+            }
+            called = true;
+            handler.apply(this, arguments);
+            me.off(eventTypeArr, onceHandler, this);
         }
         return this.on(eventTypeArr, onceHandler, context);
     },
@@ -72,15 +76,16 @@ Z.Eventable = {
     off:function (eventTypeArr, handler, context) {
         if (!eventTypeArr || !this._eventMap || !handler) { return this; }
         var eventTypes = eventTypeArr.split(' ');
-        var eventType;
+        var eventType, handlerChain;
         if (!context) { context = this; }
+        var i;
         for (var j = 0, jl = eventTypes.length; j < jl; j++) {
             eventType = eventTypes[j].toLowerCase();
-            var handlerChain =  this._eventMap[eventType];
+            handlerChain =  this._eventMap[eventType];
             if (!handlerChain) { return this; }
-            for (var i = 0, len = handlerChain.length; i < len; i++) {
+            for (i = handlerChain.length - 1; i >= 0; i--) {
                 if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
-                    handlerChain[i].del = true;
+                    handlerChain.splice(i, 1);
                 }
             }
         }
@@ -105,11 +110,22 @@ Z.Eventable = {
      * @return {Boolean}
      * @instance
      */
-    listens:function (eventType) {
+    listens:function (eventType, handler, context) {
         if (!this._eventMap || !Z.Util.isString(eventType)) { return 0; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
         if (!handlerChain) { return 0; }
-        return handlerChain.length;
+        var count = 0;
+        for (var i = 0, len = handlerChain.length; i < len; i++) {
+            if (handler) {
+                if (handler === handlerChain[i].handler &&
+                    (Z.Util.isNil(context) || handlerChain[i].context === context)) {
+                    return 1;
+                }
+            } else {
+                count++;
+            }
+        }
+        return count;
     },
 
    /**
@@ -121,12 +137,10 @@ Z.Eventable = {
     copyEventListeners: function (target) {
         var eventMap = target._eventMap;
         if (!eventMap) { return this; }
+        var handlerChain, i, len;
         for (var eventType in eventMap) {
-            var handlerChain = eventMap[eventType];
-            for (var i = 0, len = handlerChain.length; i < len; i++) {
-                if (handlerChain[i].del) {
-                    continue;
-                }
+            handlerChain = eventMap[eventType];
+            for (i = 0, len = handlerChain.length; i < len; i++) {
                 this.on(eventType, handlerChain[i].handler, handlerChain[i].context);
             }
         }
@@ -166,39 +180,26 @@ Z.Eventable = {
         if (!param) {
             param = {};
         }
-        var delhits = [];
-        for (var i = 0, len = handlerChain.length; i < len; i++) {
-            if (!handlerChain[i]) { continue; }
-            if (handlerChain[i].del) {
-                continue;
-            }
-            var context = handlerChain[i].context;
-
-            param['type'] = eventType;
-            param['target'] = this;
-            var bubble = true;
+        param['type'] = eventType;
+        param['target'] = this;
+        //in case of deleting a listener in a execution, copy the handlerChain to execute.
+        var queue = [].concat(handlerChain),
+            context, bubble, passed;
+        for (var i = 0, len = queue.length; i < len; i++) {
+            if (!queue[i]) { continue; }
+            context = queue[i].context;
+            bubble = true;
+            passed = Z.Util.extend({}, param);
             if (context) {
-                bubble = handlerChain[i].handler.call(context, param);
+                bubble = queue[i].handler.call(context, passed);
             } else {
-                bubble = handlerChain[i].handler(param);
+                bubble = queue[i].handler(passed);
             }
             //stops the event propagation if the handler returns false.
             if (bubble === false) {
                 if (param['domEvent']) {
                     Z.DomUtil.stopPropagation(param['domEvent']);
                 }
-            }
-        }
-        for (i = 0, len = handlerChain.length; i < len; i++) {
-            if (!handlerChain[i]) { continue; }
-            if (handlerChain[i].del) {
-                delhits.push(i);
-                continue;
-            }
-        }
-        if (delhits.length > 0) {
-            for (len = delhits.length, i = len - 1; i >= 0; i--) {
-                handlerChain.splice(delhits[i], 1);
             }
         }
         return this;

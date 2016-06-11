@@ -3,17 +3,20 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this._defineStyle(this.style);
+        this.style = this._defineStyle(this.translate());
     },
 
 
     symbolize:function (ctx, resources) {
+        var style = this.style;
+        if (style['markerWidth'] === 0 || style['markerHeight'] === 0 || style['markerOpacity'] === 0) {
+            return;
+        }
         var cookedPoints = this._getRenderContainerPoints();
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var style = this.style;
+
         var img = this._getImage(resources);
         if (!img) {
             console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
@@ -89,12 +92,8 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 });
 
 
-Z.symbolizer.ImageMarkerSymbolizer.test = function (geometry, symbol) {
-    if (!geometry || !symbol) {
-        return false;
-    }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
+Z.symbolizer.ImageMarkerSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
     if (!Z.Util.isNil(symbol['markerFile'])) {

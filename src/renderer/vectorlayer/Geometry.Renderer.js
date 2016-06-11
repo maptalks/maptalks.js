@@ -2,7 +2,7 @@ var Symboling = {};
 //有中心点的图形的共同方法
 Symboling.Center = {
     _getRenderPoints:function () {
-        return [this._getCenterViewPoint()];
+        return [[this._getCenterViewPoint()], null];
     }
 };
 /**
@@ -37,16 +37,16 @@ Z.Sector.include(Symboling.Center, {
 //----------------------------------------------------
 Z.Rectangle.include({
     _getRenderPoints:function (placement) {
-        if (placement === 'vertex') {
+        if (placement === 'point') {
             var shell = this.getShell();
             var points = [];
             for (var i = 0, len = shell.length; i < len; i++) {
                 points.push(this.getMap().coordinateToViewPoint(shell[i]));
             }
-            return points;
+            return [points, null];
         } else {
             var domNw = this.getMap()._prjToViewPoint(this._getPrjCoordinates());
-            return [domNw];
+            return [[domNw], null];
         }
     },
 
@@ -61,19 +61,26 @@ Z.Rectangle.include({
 Symboling.Poly = {
     _getRenderPoints:function (placement) {
         var map = this.getMap();
-        var points;
-        if (placement === 'vertex') {
+        var points, rotations = null;
+        if (placement === 'point') {
             points = this._prjToViewPoint(this._getPrjCoordinates());
         } else if (placement === 'line') {
-            //var vertexes = this._prjToViewPoint(this._getPrjCoordinates());
             points = [];
-            //TODO 获取线段中心点
+            rotations = [];
+            var vertice = this._prjToViewPoint(this._getPrjCoordinates());
+            if (this instanceof Z.Polygon && vertice.length > 0 && !vertice[0].equals(vertice[vertice.length - 1])) {
+                vertice.push(vertice[0]);
+            }
+            for (var i = 1, len = vertice.length; i < len; i++) {
+                points.push(vertice[i].add(vertice[i - 1])._multi(0.5));
+                rotations.push(Z.Util.computeDegree(vertice[i - 1], vertice[i]));
+            }
         } else {
             var center = this.getCenter();
             var pcenter = this._getProjection().project(center);
             points = [map._prjToViewPoint(pcenter)];
         }
-        return points;
+        return [points, rotations];
     }
 };
 

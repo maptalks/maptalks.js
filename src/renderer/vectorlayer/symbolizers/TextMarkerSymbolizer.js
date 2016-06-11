@@ -3,7 +3,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         'textFaceName'      : 'monospace',
         'textSize'          : 10,
         'textFont'          : null,
-        'textFill'          : '#000000',
+        'textFill'          : '#000',
         'textOpacity'       : 1,
         'textHaloFill'      : '#ffffff',
         'textHaloRadius'    : 0,
@@ -23,34 +23,42 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this.strokeAndFill = this.translateStrokeAndFill(this.style);
-        this._defineStyle(this.style);
-        this._defineStyle(this.strokeAndFill);
-        var props = this.geometry.getProperties();
-        this.textContent = Z.StringUtil.replaceVariable(this.style['textName'], props);
-        this.textDesc = this._loadFromCache(this.textContent, this.style);
-        if (!this.textDesc) {
-            this.textDesc = Z.StringUtil.splitTextToRow(this.textContent, this.style);
-            this._storeToCache(this.textContent, this.style, this.textDesc);
-        }
-
+        var style = this.translate();
+        this.style = this._defineStyle(style);
+        this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
+        var textContent = Z.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
+        this._descText(textContent);
     },
 
     symbolize:function (ctx, resources) {
+        if (this.style['textSize'] === 0 || this.style['textOpacity'] === 0) {
+            return;
+        }
         var cookedPoints = this._getRenderContainerPoints();
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
+        var rotations = this._getRotations();
         var style = this.style,
-            textContent = this.textContent,
             strokeAndFill = this.strokeAndFill;
+        var textContent = Z.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
+        this._descText(textContent);
         this._prepareContext(ctx);
-        Z.Canvas.prepareCanvas(ctx, strokeAndFill['stroke'], strokeAndFill['fill'], resources);
+        Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         Z.Canvas.prepareCanvasFont(ctx, style);
-
+        var p;
         for (var i = 0, len = cookedPoints.length; i < len; i++) {
-            Z.Canvas.text(ctx, textContent, cookedPoints[i], style, this.textDesc);
+            p = cookedPoints[i];
+            if (rotations && !Z.Util.isNil(rotations[i])) {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(rotations[i]);
+                p = new Z.Point(0, 0);
+            }
+            Z.Canvas.text(ctx, textContent, p, style, this.textDesc);
+            if (rotations && !Z.Util.isNil(rotations[i])) {
+                ctx.restore();
+            }
         }
     },
 
@@ -80,39 +88,30 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     translate:function () {
         var s = this.symbol;
         var d = this.defaultSymbol;
-        var result = {};
-        for (var p in d) {
-            if (d.hasOwnProperty(p)) {
-                result[p] = Z.Util.getValueOrDefault(s[p], d[p]);
-            }
-        }
+        var result = Z.Util.extend({}, d, s);
         result['textName'] = s['textName'];
         return result;
     },
 
-    translateStrokeAndFill:function (s) {
-        var result = {
-            'stroke' :{
-                'stroke' : s['textHaloRadius'] ? s['textHaloFill'] : s['textFill'],
-                'stroke-width' : s['textHaloRadius'],
-                'stroke-opacity' : s['textOpacity'],
-                'stroke-dasharray': null,
-                'stroke-linecap' : 'butt',
-                'stroke-linejoin' : 'round'
-            },
-
-            'fill' : {
-                'fill'          : s['textFill' ],
-                'fill-opacity'  : s['textOpacity']
-            }
+    translateLineAndFill:function (s) {
+        return {
+            'lineColor' : s['textHaloRadius'] ? s['textHaloFill'] : s['textFill'],
+            'lineWidth' : s['textHaloRadius'],
+            'lineOpacity' : s['textOpacity'],
+            'lineDasharray' : null,
+            'lineCap' : 'butt',
+            'lineJoin' : 'round',
+            'polygonFill' : s['textFill'],
+            'polygonOpacity' : s['textOpacity']
         };
-        //vml和svg对linecap的定义不同
-        if (result['stroke']['stroke-linecap'] === 'butt') {
-            if (Z.Browser.vml) {
-                result['stroke']['stroke-linecap'] = 'flat';
-            }
+    },
+
+    _descText : function (textContent) {
+        this.textDesc = this._loadFromCache(textContent, this.style);
+        if (!this.textDesc) {
+            this.textDesc = Z.StringUtil.splitTextToRow(textContent, this.style);
+            this._storeToCache(textContent, this.style, this.textDesc);
         }
-        return result;
     },
 
     _storeToCache: function (textContent, style, textDesc) {
@@ -122,7 +121,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!this.geometry['___text_symbol_cache']) {
             this.geometry['___text_symbol_cache'] = {};
         }
-        this.geometry['___text_symbol_cache'][this._genCacheKey(textContent, style)] = textDesc;
+        this.geometry['___text_symbol_cache'][this._genCacheKey(style)] = textDesc;
     },
 
     _loadFromCache:function (textContent, style) {
@@ -135,8 +134,8 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _genCacheKey: function (textContent, style) {
         var key = [textContent];
         for (var p in style) {
-            if (style.hasOwnProperty(p)) {
-                key.push('p=' + style[p]);
+            if (style.hasOwnProperty(p) && p.length > 4 && p.substring(0, 4) === 'text') {
+                key.push(p + '=' + style[p]);
             }
         }
         return key.join('-');
@@ -145,12 +144,8 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
 
 
-Z.symbolizer.TextMarkerSymbolizer.test = function (geometry, symbol) {
-    if (!geometry || !symbol) {
-        return false;
-    }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
+Z.symbolizer.TextMarkerSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
     if (!Z.Util.isNil(symbol['textName'])) {
@@ -163,6 +158,6 @@ Z.symbolizer.TextMarkerSymbolizer.getFont = function (style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
-        return style['textSize'] + 'px ' + style['textFaceName'];
+        return style['textSize'] + 'px ' + (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
     }
 };

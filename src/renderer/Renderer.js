@@ -25,14 +25,27 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             return;
         }
         if (!this._layer.isVisible()) {
-            this._requestMapToRender();
-            this._fireLoadedEvent();
+            this._complete();
             return;
         }
         this._render.apply(this, arguments);
     },
 
+    remove: function () {
+        if (this._onRemove) {
+            this._onRemove();
+        }
+        delete this._canvas;
+        delete this._context;
+        delete this._viewExtent;
+        Z.renderer.Canvas.prototype._requestMapToRender.call(this);
+        delete this._layer;
+    },
+
     getMap: function () {
+        if (!this._layer) {
+            return null;
+        }
         return this._layer.getMap();
     },
 
@@ -41,6 +54,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     getCanvasImage:function () {
+        if (!this._canvas) {
+            return null;
+        }
         if ((this._layer.isEmpty && this._layer.isEmpty()) || !this._viewExtent) {
             return null;
         }
@@ -74,6 +90,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
      * 隐藏图层
      */
     hide: function () {
+        this._clearCanvas();
         this._requestMapToRender();
     },
 
@@ -81,24 +98,35 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         this._requestMapToRender();
     },
 
-    getRenderZoom:function () {
+    getRenderZoom: function () {
         return this._renderZoom;
     },
 
-    _prepareRender:function () {
+    _prepareRender: function () {
         this._renderZoom = this.getMap().getZoom();
+        this._viewExtent = this.getMap()._getViewExtent();
         this._loaded = false;
     },
 
-    _requestMapToRender:function () {
+    _requestMapToRender: function () {
         if (this.getMap()) {
+            if (this._context) {
+                this._layer.fire('renderend', {'context' : this._context});
+            }
             this.getMap()._getRenderer().render();
         }
     },
 
-    _fireLoadedEvent:function () {
+    _fireLoadedEvent: function () {
         this._loaded = true;
-        this._layer.fire('layerload');
+        if (this._layer) {
+            this._layer.fire('layerload');
+        }
+    },
+
+    _complete: function () {
+        this._requestMapToRender();
+        this._fireLoadedEvent();
     },
 
     _createCanvas:function () {
@@ -148,15 +176,14 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     _prepareCanvas:function () {
+        if (this._clipped) {
+            this._context.restore();
+            this._clipped = false;
+        }
         if (!this._canvas) {
             this._createCanvas();
         } else {
             this._clearCanvas();
-        }
-        this._viewExtent = this.getMap()._getViewExtent();
-        if (this._clipped) {
-            this._context.restore();
-            this._clipped = false;
         }
         var mask = this.getLayer().getMask();
         if (!mask) {
@@ -170,7 +197,12 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         mask._getPainter().paint();
         this._context.clip();
         this._clipped = true;
+        this._layer.fire('renderstart', {'context' : this._context});
         return maskViewExtent;
+    },
+
+    getPaintContext:function () {
+        return [this._context];
     },
 
     _getEvents: function () {

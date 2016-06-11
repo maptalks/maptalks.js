@@ -57,6 +57,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         if (this._renderer) {
             this._renderer.clear();
         }
+        this.fire('clear');
         return this;
     },
 
@@ -127,31 +128,31 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         var mapW = map.width,
             mapH = map.height;
             //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
-        var centerTileIndex =  tileConfig.getCenterTileIndex(map._getPrjCenter(), res);
+        var centerTile =  tileConfig.getCenterTile(map._getPrjCenter(), res);
         //计算中心瓦片的top和left偏移值
-        var centerTileViewPoint = new Z.Point(+(mapW / 2 - centerTileIndex['offsetLeft']),
-                                                +(mapH / 2 - centerTileIndex['offsetTop']))._round();
+        var centerPoint = new Z.Point(+(mapW / 2 - centerTile['offsetLeft']),
+                                                +(mapH / 2 - centerTile['offsetTop']))._round();
         if (!containerSize || !(containerSize instanceof Z.Size)) {
             containerSize = new Z.Size(mapW, mapH);
         }
         //中心瓦片上下左右的瓦片数
-        var tileTopNum = Math.ceil(Math.abs((containerSize['height'] - mapH) / 2 + centerTileViewPoint.y) / tileSize['height']),
-            tileLeftNum = Math.ceil(Math.abs((containerSize['width'] - mapW) / 2 + centerTileViewPoint.x) / tileSize['width']),
-            tileBottomNum = Math.ceil(Math.abs((containerSize['height'] - mapH) / 2 + mapH - centerTileViewPoint.y) / tileSize['height']),
-            tileRightNum = Math.ceil(Math.abs((containerSize['width'] - mapW) / 2 + mapW - centerTileViewPoint.x) / tileSize['width']);
+        var top = Math.ceil(Math.abs((containerSize['height'] - mapH) / 2 + centerPoint.y) / tileSize['height']),
+            left = Math.ceil(Math.abs((containerSize['width'] - mapW) / 2 + centerPoint.x) / tileSize['width']),
+            bottom = Math.ceil(Math.abs((containerSize['height'] - mapH) / 2 + mapH - centerPoint.y) / tileSize['height']),
+            right = Math.ceil(Math.abs((containerSize['width'] - mapW) / 2 + mapW - centerPoint.x) / tileSize['width']);
 
     //  只加中心的瓦片，用做调试
-    //  var centerTileImg = this._createTileImage(centerTileViewPoint.x,centerTileViewPoint.y,this.config._getTileUrl(centerTileIndex['topIndex'],centerTileIndex['leftIndex'],zoom),tileSize['height'],tileSize['width']);
+    //  var centerTileImg = this._createTileImage(centerPoint.x,centerPoint.y,this.config._getTileUrl(centerTile['topIndex'],centerTile['leftIndex'],zoom),tileSize['height'],tileSize['width']);
     //  tileContainer.appendChild(centerTileImg);
 
         var tiles = [];
         var fullExtent = new Z.PointExtent();
         //TODO 瓦片从中心开始加起
-        for (var i = -(tileLeftNum); i < tileRightNum; i++) {
-            for (var j = -(tileTopNum); j <= tileBottomNum; j++) {
-                var tileIndex = tileConfig.getNeighorTileIndex(centerTileIndex['y'], centerTileIndex['x'], j, i, res, this.options['repeatWorld']);
-                var tileLeft = centerTileViewPoint.x + tileSize['width'] * i - mapViewPoint.x;
-                var tileTop = centerTileViewPoint.y + tileSize['height'] * j - mapViewPoint.y;
+        for (var i = -(left); i < right; i++) {
+            for (var j = -(top); j <= bottom; j++) {
+                var tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']);
+                var tileLeft = centerPoint.x + tileSize['width'] * i - mapViewPoint.x;
+                var tileTop = centerPoint.y + tileSize['height'] * j - mapViewPoint.y;
                 var tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom);
                 var tileId = [tileIndex['y'], tileIndex['x'], zoom, tileLeft, tileTop].join('__');
                 var tileDesc = {
@@ -171,7 +172,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         //瓦片排序, 地图中心的瓦片排在末尾, 末尾的瓦片先载入
         tiles.sort(function (a, b) {
-            return (b['viewPoint'].distanceTo(centerTileViewPoint) - a['viewPoint'].distanceTo(centerTileViewPoint));
+            return (b['viewPoint'].distanceTo(centerPoint) - a['viewPoint'].distanceTo(centerPoint));
         });
         return {
             'tiles' : tiles,

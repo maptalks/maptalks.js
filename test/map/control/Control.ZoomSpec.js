@@ -18,10 +18,9 @@ describe("Control.Zoom", function() {
         map = new Z.Map(container, option);
         tile = new Z.TileLayer('tile', {
 
-            urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
+            urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
         });
-        map.setBaseLayer(tile);
     });
 
     afterEach(function () {

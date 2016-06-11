@@ -63,13 +63,13 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
         return {'x':tileSystem['scale']['x'] * tileX, 'y':tileSystem['scale']['y'] * tileY};
     },
 
-        /**
-         * 根据中心点投影坐标, 计算中心点对应的瓦片和瓦片内偏移量
-         * @param  {*} pLonlat   [description]
-         * @param  {*} res [description]
-         * @return {*}           [description]
-         */
-    getCenterTileIndex:function (pLonlat, res) {
+    /**
+     * 根据中心点投影坐标, 计算中心点对应的瓦片和瓦片内偏移量
+     * @param  {*} pLonlat   [description]
+     * @param  {*} res [description]
+     * @return {*}           [description]
+     */
+    getCenterTile:function (pLonlat, res) {
         var tileSystem = this.tileSystem,
             tileSize = this['tileSize'];
         var point = this.transformation.transform(pLonlat, 1);
@@ -96,15 +96,15 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
         return {'x':tileIndex['x'], 'y':tileIndex['y'], 'offsetLeft':offsetLeft, 'offsetTop':offsetTop};
     },
 
-        /**
-         * 根据给定的瓦片编号,和坐标编号偏移量,计算指定的瓦片编号
-         * @param  {*} tileY   [description]
-         * @param  {*} tileX   [description]
-         * @param  {*} offsetY [description]
-         * @param  {*} offsetX [description]
-         * @param  {*} zoomLevel [description]
-         * @return {*}         [description]
-         */
+    /**
+     * 根据给定的瓦片编号,和坐标编号偏移量,计算指定的瓦片编号
+     * @param  {*} tileY   [description]
+     * @param  {*} tileX   [description]
+     * @param  {*} offsetY [description]
+     * @param  {*} offsetX [description]
+     * @param  {*} zoomLevel [description]
+     * @return {*}         [description]
+     */
     getNeighorTileIndex:function (tileY, tileX, offsetY, offsetX, res, isRepeatWorld) {
         var tileSystem = this.tileSystem;
         var x = (tileX + tileSystem['scale']['x'] * offsetX);
@@ -141,13 +141,13 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
         return new Z.Extent(nwIndex, seIndex);
     },
 
-        /**
-         * 计算瓦片左下角的大地投影坐标
-         * @param  {*} tileY     [description]
-         * @param  {*} tileX     [description]
-         * @param  {*} res       [description]
-         * @return {*}           [description]
-         */
+    /**
+     * 计算瓦片左下角的大地投影坐标
+     * @param  {*} tileY     [description]
+     * @param  {*} tileX     [description]
+     * @param  {*} res       [description]
+     * @return {*}           [description]
+     */
     getTileProjectedSw: function (tileY, tileX, res) {
         var tileSystem = this.tileSystem;
         var tileSize = this['tileSize'];

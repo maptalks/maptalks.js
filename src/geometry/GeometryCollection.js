@@ -125,10 +125,9 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      */
     remove:function () {
         this.forEach(function (geometry) {
-            geometry._rootRemove();
+            geometry._unbind();
         });
-        this._rootRemoveAndFireEvent();
-        return this;
+        return Z.Geometry.prototype.remove.apply(this, arguments);
     },
 
     /**
@@ -158,12 +157,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     },
 
     setSymbol:function (symbol) {
-        if (!symbol) {
-            this._symbol = null;
-        } else {
-            var camelSymbol = this._prepareSymbol(symbol);
-            this._symbol = camelSymbol;
-        }
+        this._symbol = this._prepareSymbol(symbol);
         this.forEach(function (geometry) {
             geometry.setSymbol(symbol);
         });
@@ -182,8 +176,8 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @param  {maptalks.Layer} layer
      * @private
      */
-    _bindLayer:function (layer) {
-        this._commonBindLayer(layer);
+    _bindLayer:function () {
+        Z.Geometry.prototype._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
     },
 

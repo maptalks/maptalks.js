@@ -87,6 +87,62 @@ function runTests(target, _context) {
                 expect(target._menu._getDOM().style.display).to.be.eql('none');
             });
 
+            it('get menu', function() {
+                before();
+                target.setMenu({
+                        items: items,
+                        width: 250
+                    });
+                var items = target.getMenuItems();
+                expect(items).to.be.eql(items);
+            });
+
+            it('remove menu', function() {
+                before();
+                target.setMenu({
+                        items: items,
+                        width: 250
+                    });
+                target.removeMenu();
+                expect(target.getMenuItems()).not.to.be.ok();
+            });
+
+            it('custom menu', function() {
+                before();
+                target.setMenu({
+                        custom : true,
+                        items: '<ul><li>item1</li><li>--</li><li>item2</li></ul>',
+                        width: 250
+                    });
+                target.openMenu();
+                assertItems();
+                target.closeMenu();
+                expect(target._menu._getDOM().style.display).to.be.eql('none');
+            });
+
+            it('custom menu 2', function() {
+                var ul = document.createElement('ul');
+                var li1 = document.createElement('li');
+                li1.innerHTML = 'item1';
+                var li2 = document.createElement('li');
+                li2.innerHTML = '--';
+                var li3 = document.createElement('li');
+                li3.innerHTML = 'item2';
+                ul.appendChild(li1);
+                ul.appendChild(li2);
+                ul.appendChild(li3);
+                before();
+                target.setMenu({
+                        custom : true,
+                        items: ul,
+                        width: 250
+                    });
+                target.openMenu();
+                assertItems();
+                target.closeMenu();
+                expect(target._menu._getDOM().style.display).to.be.eql('none');
+            });
+
             it('setMenuItems', function() {
                 before();
                 target.setMenuItems(items);
@@ -110,7 +166,10 @@ function runTests(target, _context) {
                     return;
                 }
                 before();
-                target.setMenuItems(items);
+                target.setMenu({
+                        items: items,
+                        width: 250
+                    });
                 rightclick();
                 assertItems();
                 target.closeMenu();

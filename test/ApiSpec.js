@@ -18,10 +18,10 @@ describe('API', function () {
         };
         map = new Z.Map(container, option);
         tile = new Z.TileLayer('tile', {
-            urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
+            urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
         });
-        map.setBaseLayer(tile);
+        // map.setBaseLayer(tile);
     });
 
     afterEach(function () {
@@ -127,28 +127,6 @@ describe('API', function () {
 
             expect(fitZoom).to.eql(zoom);
         });
-
-        it('getBaseLayer', function () {
-            expect(map.getBaseLayer()).to.equal(tile);
-        });
-
-        it('setBaseLayer', function () {
-            var tile2 = new Z.TileLayer('tile2', {
-
-                urlTemplate:"http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
-                subdomains: [0, 1, 2]
-            });
-            expect(function () {
-                map.setBaseLayer(tile2);
-            }).to.not.throwException();
-        });
-
-        it('getLayer', function () {
-        });
-
-        it('addLayer', function () {
-        });
-
         // it('getCRS', function () {
         //     var t = map.getCRS();
 
@@ -210,72 +188,6 @@ describe('API', function () {
     describe('Map.Snap', function() {
         it('snap');
     });
-
-    /*describe('Map.CartoCSS', function() {
-
-        var layer;
-
-        beforeEach(function() {
-            layer = new Z.VectorLayer('layer1');
-            map.addLayer(layer);
-        });
-
-        afterEach(function() {
-            map.removeLayer(layer);
-        });
-
-        it('CartoCSS 1', function () {
-            var cartocss = [
-                '#layer1 {',
-                ' marker-width: 2',
-                '}'
-            ].join('');
-            map.cartoCSS(cartocss);
-            var marker = new Z.Marker(center);
-            // marker.setProperties({});
-            layer.addGeometry(marker);
-            var style = map._cartoCSSGeometry(marker);
-
-            expect(style['marker-width']).to.eql(2);
-        });
-
-        it('CartoCSS 2', function () {
-            var cartocss = [
-                '#layer1 {',
-                ' marker-width: [my-width]',
-                '}'
-            ].join('');
-            map.cartoCSS(cartocss);
-            var marker = new Z.Marker(center);
-            marker.setProperties({
-                'my-width': 2
-            });
-            layer.addGeometry(marker);
-            var style = map._cartoCSSGeometry(marker);
-
-            expect(style['marker-width']).to.eql(2);
-        });
-
-        it('CartoCSS 3', function () {
-            var cartocss = [
-                '#layer1 {',
-                ' marker-width: [my-width];',
-                ' [property>3] { marker-width: 5; }',
-                '}'
-            ].join('');
-            map.cartoCSS(cartocss);
-            var marker = new Z.Marker(center);
-            marker.setProperties({
-                'my-width': 2,
-                'property': 4
-            });
-            layer.addGeometry(marker);
-            var style = map._cartoCSSGeometry(marker);
-
-            expect(style['marker-width']).to.eql(5);
-        });
-
-    });*/
 
     describe('Map.Topo', function() {
 
@@ -720,11 +632,6 @@ describe('API', function () {
         });
     });
 
-    describe('TileLayer', function() {
-    });
-
-    describe('DynamicLayer', function() {
-    });
 
     describe('DrawTool', function() {
 

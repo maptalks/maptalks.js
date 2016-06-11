@@ -14,20 +14,20 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
-        this.style = this.translate();
-        this.strokeAndFill = this.translateStrokeAndFill(this.style);
-        this._defineStyle(this.style);
-        this._defineStyle(this.strokeAndFill);
+        this.style = this._defineStyle(this.translate());
     },
 
     symbolize:function (ctx, resources) {
+        var style = this.style;
+        if (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0) {
+            return;
+        }
         var canvasResources = this._getRenderResources();
-        var strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
-        Z.Canvas.prepareCanvas(ctx, strokeAndFill['stroke'], strokeAndFill['fill'], resources);
+        Z.Canvas.prepareCanvas(ctx, style, resources);
         canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
-            strokeAndFill['stroke']['stroke-opacity'], strokeAndFill['fill']['fill-opacity'], strokeAndFill['stroke']['stroke-dasharray']]));
-        if (ctx.setLineDash && Z.Util.isArrayHasData(strokeAndFill['stroke']['stroke-dasharray'])) {
+            style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
+        if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash([]);
         }
     },
@@ -38,10 +38,6 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         if (!extent) {
             return null;
         }
-        // var min = map._prjToViewPoint(new Z.Coordinate(extent['xmin'],extent['ymin'])),
-        //     max = map._prjToViewPoint(new Z.Coordinate(extent['xmax'],extent['ymax']));
-        // return new Z.PointExtent(min,max).expand(this.style['lineWidth']/2);
-        //
         // this ugly implementation is to improve perf as we can
         // it tries to avoid creating instances to save cpu consumption.
         if (!this._extMin || !this._extMax) {
@@ -83,68 +79,29 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         var s = this.symbol;
         var d = this.defaultSymbol;
         var result = {};
-        Z.Util.extend(result, d);
-        if (!Z.Util.isNil(s['polygonFill'])) {
-            result['polygonOpacity'] = 1;
-        }
-        Z.Util.extend(result, s);
+        Z.Util.extend(result, d, s);
         if (result['polygonPatternFile']) {
             delete result['polygonFill'];
         }
         if (result['linePatternFile']) {
             delete result['lineColor'];
         }
-        return result;
-    },
-
-    translateStrokeAndFill:function (s) {
-        var result = {
-            'stroke' :{
-                'stroke' : s['lineColor'] || s['linePatternFile'],
-                'stroke-width' : s['lineWidth'],
-                'stroke-opacity' : s['lineOpacity'],
-                'stroke-dasharray': s['lineDasharray'],
-                'stroke-linecap' : s['lineCap'],
-                'stroke-linejoin' : s['lineJoin']
-            },
-
-            'fill' : {
-                'fill'          : s['polygonFill'] || s['polygonPatternFile'],
-                'fill-opacity'  : s['polygonOpacity']
-            }
-        };
-        //if linestring has arrow, needs to fill arrow with same color of line-color
-        if (this.geometry instanceof Z.LineString && this.geometry.options['arrowStyle']) {
-            result['fill'] = {
-                'fill'          : result['stroke']['stroke'],
-                'fill-opacity'  : result['stroke']['stroke-opacity']
-            };
-        }
-        //vml和svg对linecap的定义不同
-        if (result['stroke']['stroke-linecap'] === 'butt') {
-            if (Z.Browser.vml) {
-                result['stroke']['stroke-linecap'] = 'flat';
-            }
-        }
-        //it has no use to set stroke-width to 0 in canvas, so set stroke-opacity to make it disapear.
-        if (result['stroke']['stroke-width'] === 0) {
-            result['stroke']['stroke-opacity'] = 0;
+        if (result['lineWidth'] === 0) {
+            result['lineOpacity'] = 0;
         }
         return result;
     }
 
 });
 
-Z.symbolizer.StrokeAndFillSymbolizer.test = function (geometry) {
-    if (!geometry) {
+Z.symbolizer.StrokeAndFillSymbolizer.test = function (symbol) {
+    if (!symbol) {
         return false;
     }
-    var layer = geometry.getLayer();
-    if (!layer || !layer.isCanvasRender()) {
-        return false;
+    for (var p in symbol) {
+        if (p.indexOf('polygon') >= 0 || p.indexOf('line') >= 0) {
+            return true;
+        }
     }
-    if (geometry instanceof Z.Marker) {
-        return false;
-    }
-    return true;
+    return false;
 };
