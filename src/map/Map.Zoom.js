@@ -1,4 +1,16 @@
 Z.Map.include(/** @lends maptalks.Map.prototype */{
+    _zoom:function (nextZoomLevel, origin, startScale) {
+        this._originZoomLevel = this.getZoom();
+        nextZoomLevel = this._checkZoomLevel(nextZoomLevel);
+        this._onZoomStart(nextZoomLevel);
+        var zoomOffset;
+        if (origin) {
+            origin = new Z.Point(this.width / 2, this.height / 2);
+            zoomOffset = this._getZoomCenterOffset(nextZoomLevel, origin, startScale);
+        }
+        this._onZoomEnd(nextZoomLevel, zoomOffset);
+    },
+
     _zoomAnimation:function (nextZoomLevel, origin, startScale) {
         if (!this.options['enableZoom']) { return; }
         if (Z.Util.isNil(startScale)) {
@@ -11,16 +23,15 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         if (this._originZoomLevel === nextZoomLevel) {
             return;
         }
-        this._enablePanAnimation = false;
-        this._zooming = true;
-        this._fireEvent('zoomstart', {'from' : this._originZoomLevel, 'to': nextZoomLevel});
+
+        this._onZoomStart(nextZoomLevel);
         if (!origin) {
             origin = new Z.Point(this.width / 2, this.height / 2);
         }
-        this._onZoomStart(startScale, origin, nextZoomLevel);
+        this._startZoomAnimation(startScale, origin, nextZoomLevel);
     },
 
-    _onZoomStart:function (startScale, transOrigin, nextZoomLevel) {
+    _startZoomAnimation:function (startScale, transOrigin, nextZoomLevel) {
         var me = this;
         var resolutions = this._getResolutions();
         var endScale = resolutions[this._originZoomLevel] / resolutions[nextZoomLevel];
@@ -43,6 +54,12 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         );
     },
 
+    _onZoomStart: function (nextZoomLevel) {
+        this._zooming = true;
+        this._enablePanAnimation = false;
+        this._fireEvent('zoomstart', {'from' : this._originZoomLevel, 'to': nextZoomLevel});
+    },
+
     _onZoomEnd:function (nextZoomLevel, zoomOffset) {
         this._zoomLevel = nextZoomLevel;
         if (zoomOffset) {
@@ -52,7 +69,6 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         this._originZoomLevel = nextZoomLevel;
         this._getRenderer().onZoomEnd();
         this._zooming = false;
-        this._enablePanAnimation = true;
         /**
           * zoomend event
           * @event maptalks.Map#zoomend
@@ -77,20 +93,6 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         }
         return nextZoomLevel;
     },
-
-    _zoom:function (nextZoomLevel, origin, startScale) {
-        this._zooming = true;
-        nextZoomLevel = this._checkZoomLevel(nextZoomLevel);
-        this._fireEvent('zoomstart');
-        var zoomOffset;
-        if (origin) {
-            origin = new Z.Point(this.width / 2, this.height / 2);
-            zoomOffset = this._getZoomCenterOffset(nextZoomLevel, origin, startScale);
-        }
-        this._onZoomEnd(nextZoomLevel, zoomOffset);
-    },
-
-
 
     _getZoomCenterOffset:function (nextZoomLevel, origin, startScale) {
         if (Z.Util.isNil(startScale)) {

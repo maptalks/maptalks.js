@@ -66,17 +66,18 @@ describe('#MapPan', function () {
     });
 
     it('change zoom or center during panning', function(done) {
-        var coord = center.substract(1, 1);
+        var coord = center.substract(1, 1),
+            newCenter = center.add(1, 1);
         var counter = 0;
         map.on('moveend', function() {
             counter++;
             if (counter === 1) {
                 return;
             }
-            expect(map.getCenter()).to.be.nearCoord(coord);
+            expect(map.getCenter()).to.be.nearCoord(newCenter);
             done();
         })
         map.panTo(coord, {'animation' : true});
-        map.setCenterAndZoom(center.add(1, 1), map.getZoom() + 1);
+        map.setCenterAndZoom(newCenter, map.getZoom() + 1);
     });
 });

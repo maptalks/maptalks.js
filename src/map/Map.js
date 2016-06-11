@@ -185,8 +185,6 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             this.addLayer(layers);
         }
 
-        //a internal property to enable/disable panAnimation.
-        this._enablePanAnimation = true;
         this._mapViewPoint = new Z.Point(0, 0);
 
         this._initRenderer();
@@ -328,9 +326,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             this._center = center;
             return this;
         }
-        if (this._loaded && !this._center.equals(center)) {
-            this._onMoveStart();
-        }
+        this._onMoveStart();
         var projection = this.getProjection();
         var _pcenter = projection.project(center);
         this._setPrjCenterAndMove(_pcenter);
@@ -1111,6 +1107,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
     _onMoveStart:function () {
         this._originCenter = this.getCenter();
+        this._enablePanAnimation = false;
         this._moving = true;
         this._trySetCursor('move');
         /**
@@ -1135,7 +1132,6 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     _onMoveEnd:function () {
-        this._enablePanAnimation = true;
         this._moving = false;
         this._trySetCursor('default');
         /**

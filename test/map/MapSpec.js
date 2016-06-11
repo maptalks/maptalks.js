@@ -100,14 +100,14 @@ describe('#Map', function () {
             expect(map.getCenter()).to.nearCoord(nc);
         });
 
-        it('setCenter设定中心点为当前地图中心点, 不应该触发movestart', function() {
+        it('setCenter设定中心点为当前地图中心点, 应该触发movestart', function() {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
             map.on('movestart', spy);
             map.setCenter(center);
 
-            expect(spy.called).to.not.be.ok();
+            expect(spy.called).to.be.ok();
         });
 
         it('setCenter设定中心点为当前地图中心点, 应该触发moveend', function() {

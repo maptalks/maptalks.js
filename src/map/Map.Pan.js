@@ -15,7 +15,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         coordinate = new Z.Coordinate(coordinate);
         var dest = this.coordinateToViewPoint(coordinate),
             current = this.offsetPlatform();
-        return this._panBy(dest.substract(current), options, coordinate, function () {
+        return this._panBy(dest.substract(current), options, function () {
             var c = map.getProjection().project(coordinate);
             map._setPrjCenterAndMove(c);
         });
@@ -33,7 +33,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         return this._panBy(offset, options);
     },
 
-    _panBy: function (offset, options, destCoord, cb) {
+    _panBy: function (offset, options, cb) {
         if (!offset) {
             return this;
         }
@@ -43,7 +43,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             options = {};
         }
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
-            this._panAnimation(offset, options['duration'], destCoord, cb);
+            this._panAnimation(offset, options['duration'], cb);
         } else {
             this.offsetPlatform(offset);
             this._offsetCenterByPixel(offset);
@@ -56,32 +56,8 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         return this;
     },
 
-    _panAnimation:function (offset, t, destCoord, cb) {
-        var map = this,
-            delta = 200;
-        var startZoom = this.getZoom(),
-            start = this.offsetPlatform(),
-            dest = start.add(offset),
-            dist = dest.distanceTo(start);
-        this._getRenderer().panAnimation(offset, t, function (frame, player) {
-            if (!player) {
-                return true;
-            }
-            if (player.playState !== 'running') {
-                if (cb) {
-                    cb();
-                }
-                return true;
-            }
-            var vCenter = map.offsetPlatform();
-            if (Math.abs(vCenter.distanceTo(start) - dist) > dist + delta || map.getZoom() !== startZoom) {
-                if (destCoord) {
-                    map.setCenter(destCoord);
-                }
-                return false;
-            }
-            return true;
-        });
+    _panAnimation:function (offset, t, onFinish) {
+        this._getRenderer().panAnimation(offset, t, onFinish);
     }
 
 });
