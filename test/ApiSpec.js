@@ -111,14 +111,6 @@ describe('API', function () {
             }).to.not.throwException();
         });
 
-        it('setCenterAndZoom', function () {
-            var zoom = map.getZoom();
-            zoom = Math.ceil(zoom / 2);
-
-            expect(function () {
-                map.setCenterAndZoom({x: 0, y: 0}, zoom);
-            }).to.not.throwException();
-        });
 
         it('getFitZoom', function () {
             var extent = map.getExtent();
@@ -147,25 +139,6 @@ describe('API', function () {
 
     });
 
-    describe('Map.Pan', function() {
-
-        it('panTo', function() {
-            var coord = {x: 1, y: 1};
-
-            expect(function () {
-                map.panTo(coord);
-            }).to.not.throwException();
-        });
-
-        it('panBy', function() {
-            var offset = {x: 20, y: 20};
-
-            expect(function () {
-                map.panBy(offset);
-            }).to.not.throwException();
-        });
-
-    });
 
     describe('Map.FullScreen', function() {
 

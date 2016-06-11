@@ -40,7 +40,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
         return matrices;
     },
 
-    panAnimation:function (distance, t) {
+    panAnimation:function (distance, t, cb) {
         distance = new Z.Point(distance);
         var map = this.map;
         if (map.options['panAnimation']) {
@@ -58,11 +58,16 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                 'easing' : 'out',
                 'speed' : duration
             }, function (frame) {
+                if (cb) {
+                    if (!cb(frame, player)) {
+                        player.finish();
+                        return;
+                    }
+                }
                 if (!map._enablePanAnimation) {
                     player.finish();
                     map._panAnimating = false;
                     map._onMoveEnd();
-
                     return;
                 }
 

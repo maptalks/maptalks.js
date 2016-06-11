@@ -11,11 +11,10 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         if (!coordinate) {
             return this;
         }
-        var projection = this.getProjection();
-        var p = projection.project(new Z.Coordinate(coordinate));
-        var span = this._getPixelDistance(p);
-        this.panBy(span, options);
-        return this;
+        coordinate = new Z.Coordinate(coordinate);
+        var dest = this.coordinateToViewPoint(coordinate),
+            current = this.offsetPlatform();
+        return this._panBy(dest.substract(current), options, coordinate);
     },
 
     /**
@@ -27,23 +26,68 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Map} this
      */
     panBy:function (offset, options) {
+        return this._panBy(offset, options);
+    },
+
+    _panBy: function (offset, options, destCoord) {
+        if (!offset) {
+            return this;
+        }
+        var cb;
+        if (destCoord) {
+            var map = this;
+            cb = function () {
+                var p = map.getProjection().project(destCoord);
+                map._setPrjCenterAndMove(p);
+            };
+        }
+        offset = new Z.Point(offset).multi(-1);
         this._onMoveStart();
         if (!options) {
             options = {};
         }
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
-            this._panAnimation(offset, options['duration']);
+            this._panAnimation(offset, options['duration'], destCoord, cb);
         } else {
             this.offsetPlatform(offset);
             this._offsetCenterByPixel(offset);
             this._onMoving();
+            if (cb) {
+                cb();
+            }
             this._onMoveEnd();
         }
         return this;
     },
 
-    _panAnimation:function (offset, t) {
-        this._getRenderer().panAnimation(offset, t);
+    _panAnimation:function (offset, t, destCoord, cb) {
+        var map = this,
+            delta = 200,
+            changed = false;
+        var startZoom = this.getZoom(),
+            start = this.offsetPlatform(),
+            dest = start.add(offset),
+            panTo = destCoord || map.viewPointToCoordinate(dest),
+            dist = dest.distanceTo(start);
+        this._getRenderer().panAnimation(offset, t, function (frame, player) {
+            if (changed || !player) {
+                return true;
+            }
+            if (player.playState !== 'running') {
+                if (cb) {
+                    cb();
+                }
+                return true;
+            }
+            var vCenter = map.offsetPlatform();
+            if (Math.abs(vCenter.distanceTo(start) - dist) > dist + delta || map.getZoom() !== startZoom) {
+                changed = true;
+                var newOffset = map.coordinateToViewPoint(panTo).substract(vCenter);
+                map._panAnimation(newOffset, t, panTo, cb);
+                return false;
+            }
+            return true;
+        });
     }
 
 });
