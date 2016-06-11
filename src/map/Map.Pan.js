@@ -37,8 +37,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         if (destCoord) {
             var map = this;
             cb = function () {
-                var p = map.getProjection().project(destCoord);
-                map._setPrjCenterAndMove(p);
+                map.setCenter(destCoord);
             };
         }
         offset = new Z.Point(offset).multi(-1);
@@ -62,15 +61,13 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     _panAnimation:function (offset, t, destCoord, cb) {
         var map = this,
-            delta = 200,
-            changed = false;
+            delta = 200;
         var startZoom = this.getZoom(),
             start = this.offsetPlatform(),
             dest = start.add(offset),
-            panTo = destCoord || map.viewPointToCoordinate(dest),
             dist = dest.distanceTo(start);
         this._getRenderer().panAnimation(offset, t, function (frame, player) {
-            if (changed || !player) {
+            if (!player) {
                 return true;
             }
             if (player.playState !== 'running') {
@@ -81,9 +78,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             }
             var vCenter = map.offsetPlatform();
             if (Math.abs(vCenter.distanceTo(start) - dist) > dist + delta || map.getZoom() !== startZoom) {
-                changed = true;
-                var newOffset = map.coordinateToViewPoint(panTo).substract(vCenter);
-                map._panAnimation(newOffset, t, panTo, cb);
+                if (cb) {
+                    cb();
+                }
                 return false;
             }
             return true;
