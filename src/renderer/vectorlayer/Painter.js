@@ -189,7 +189,16 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     getContainerExtent : function () {
         var layerViewPoint = this.geometry.getLayer()._getRenderer()._viewExtent.getMin(),
             viewExtent = this.getViewExtent();
-        return viewExtent.add(layerViewPoint._multi(-1));
+        var matrices = this.getTransformMatrix(),
+            matrix = matrices ? matrices['container'] : null;
+        var containerExtent = viewExtent.add(layerViewPoint._multi(-1));
+        if (matrix) {
+            containerExtent = new Z.PointExtent(
+                    matrix.applyToPointInstance(containerExtent.getMin()),
+                    matrix.applyToPointInstance(containerExtent.getMax())
+                    );
+        }
+        return containerExtent;
     },
 
     setZIndex:function (change) {
