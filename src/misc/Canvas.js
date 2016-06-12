@@ -114,12 +114,12 @@ Z.Canvas = {
                 places = [min.x, min.y, max.x, min.y];
             } else {
                 if (places.length !== 4) {
-                    throw new Error('A linear gradient\'s places should have 4 numbers.')
+                    throw new Error('A linear gradient\'s places should have 4 numbers.');
                 }
                 places = [
-                            min.x + places[0] * width, min.y + places[1] * height,
-                            min.x + places[2] * width, min.y + places[3] * height
-                        ];
+                    min.x + places[0] * width, min.y + places[1] * height,
+                    min.x + places[2] * width, min.y + places[3] * height
+                ];
             }
             gradient = ctx.createLinearGradient.apply(ctx, places);
         } else if (g['type'] === 'radial') {
@@ -128,12 +128,12 @@ Z.Canvas = {
                 places = [c.x, c.y, c.x - min.x, c.x, c.y, 0];
             } else {
                 if (places.length !== 6) {
-                    throw new Error('A radial gradient\'s places should have 6 numbers.')
+                    throw new Error('A radial gradient\'s places should have 6 numbers.');
                 }
                 places = [
-                            min.x + places[0] * width, min.y + places[1] * height, width * places[2],
-                            min.x + places[3] * width, min.y + places[4] * height, width * places[5]
-                        ];
+                    min.x + places[0] * width, min.y + places[1] * height, width * places[2],
+                    min.x + places[3] * width, min.y + places[4] * height, width * places[5]
+                ];
             }
             gradient = ctx.createRadialGradient.apply(ctx, places);
         }
