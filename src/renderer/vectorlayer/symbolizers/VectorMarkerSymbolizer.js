@@ -34,16 +34,25 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(style['markerType'].toLowerCase(),
-                            style['markerWidth'], style['markerHeight']);
-        var markerType = style['markerType'].toLowerCase();
         var strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
+        if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
+            strokeAndFill['lineGradientExtent'] = this.geometry._getPainter().getContainerExtent()._expand(strokeAndFill['lineWidth'])._round();
+        }
+        if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
+            strokeAndFill['polygonGradientExtent'] = this.geometry._getPainter().getContainerExtent()._round();
+        }
         Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
-        var lineOpacity = strokeAndFill['lineOpacity'],
-            fillOpacity = strokeAndFill['polygonOpacity'];
-        var j;
+        this._drawMarkers(ctx, cookedPoints);
+    },
 
+    _drawMarkers: function (ctx, cookedPoints) {
+        var style = this.style, strokeAndFill = this.strokeAndFill,
+            markerType = style['markerType'].toLowerCase(),
+            vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(markerType,
+                            style['markerWidth'], style['markerHeight']),
+            lineOpacity = strokeAndFill['lineOpacity'], fillOpacity = strokeAndFill['polygonOpacity'],
+            j;
         var width = style['markerWidth'],
             height = style['markerHeight'],
             point, lineCap, angle;
@@ -88,7 +97,6 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 throw new Error('unsupported markerType: ' + markerType);
             }
         }
-
     },
 
     getPlacement:function () {
@@ -129,18 +137,24 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             result['markerFillOpacity'] *= s['markerOpacity'];
             result['markerLineOpacity'] *= s['markerOpacity'];
         }
+        if (result['markerFillPatternFile']) {
+            delete result['markerFill'];
+        }
+        if (result['markerLinePatternFile']) {
+            delete result['markerLineColor'];
+        }
         return result;
     },
 
     translateLineAndFill: function (s) {
         var result = {
-            'lineColor' : s['markerLineColor'],
+            'lineColor' : s['markerLineColor'] || s['markerLinePatternFile'],
             'lineWidth' : s['markerLineWidth'],
             'lineOpacity' : s['markerLineOpacity'],
             'lineDasharray': null,
             'lineCap' : 'butt',
             'lineJoin' : 'round',
-            'polygonFill' : s['markerFill'],
+            'polygonFill' : s['markerFill'] || s['markerFillPatternFile'],
             'polygonOpacity' : s['markerFillOpacity']
         };
         if (result['lineWidth'] === 0) {

@@ -26,11 +26,11 @@ Z.Symbolizer = Z.Class.extend(/** @lends maptalks.Symbolizer.prototype */{
 
 
 Z.Symbolizer.resourceProperties = [
-    'markerFile', 'polygonPatternFile', 'linePatternFile'
+    'markerFile', 'polygonPatternFile', 'linePatternFile', 'markerFillPatternFile', 'markerLinePatternFile'
 ];
 
 Z.Symbolizer.resourceSizeProperties = [
-    ['markerWidth', 'markerHeight'], [], [null, 'lineWidth']
+    ['markerWidth', 'markerHeight'], [], [null, 'lineWidth'], [], [null, 'markerLineWidth']
 ];
 
 /**
@@ -39,7 +39,7 @@ Z.Symbolizer.resourceSizeProperties = [
  * @constant
  */
 Z.Symbolizer.colorProperties = [
-    'lineColor', 'polygonFill', 'markerFill', 'markerLineColor', 'textFill', 'shieldFill', 'shieldHaloFill'
+    'lineColor', 'polygonFill', 'markerFill', 'markerLineColor', 'textFill'
 ];
 
 Z.Symbolizer.DEFAULT_STROKE_COLOR = '#000';

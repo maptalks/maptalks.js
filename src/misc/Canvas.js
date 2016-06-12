@@ -51,6 +51,12 @@ Z.Canvas = {
             Z.Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
             style['lineDasharray'] = [];
+        } else if (Z.Util.isGradient(strokeColor)) {
+            if (style['lineGradientExtent']) {
+                ctx.strokeStyle = Z.Canvas._createGradient(ctx, strokeColor, style['lineGradientExtent']);
+            } else {
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+            }
         } else {
             var color = Z.Canvas.getRgba(strokeColor, 1);
             if (ctx.strokeStyle !== color) {
@@ -83,12 +89,67 @@ Z.Canvas = {
                 fillTexture = canvas;
             }
             ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
+        } else if (Z.Util.isGradient(fill)) {
+            if (style['polygonGradientExtent']) {
+                ctx.fillStyle = Z.Canvas._createGradient(ctx, fill, style['polygonGradientExtent']);
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0)';
+            }
         } else {
             var fillColor = this.getRgba(fill, 1);
             if (ctx.fillStyle !== fillColor) {
                 ctx.fillStyle = fillColor;
             }
         }
+    },
+
+    _createGradient: function (ctx, g, extent) {
+        var gradient = null, places = g['places'],
+            min = extent.getMin(),
+            max = extent.getMax(),
+            width = extent.getWidth(),
+            height = extent.getHeight();
+        if (!g['type'] || g['type'] === 'linear') {
+            if (!places) {
+                places = [min.x, min.y, max.x, min.y];
+            } else {
+                if (places.length !== 4) {
+                    throw new Error('A linear gradient\'s places should have 4 numbers.');
+                }
+                places = [
+                    min.x + places[0] * width, min.y + places[1] * height,
+                    min.x + places[2] * width, min.y + places[3] * height
+                ];
+            }
+            gradient = ctx.createLinearGradient.apply(ctx, places);
+        } else if (g['type'] === 'radial') {
+            if (!places) {
+                var c = extent.getCenter()._round();
+                places = [c.x, c.y, c.x - min.x, c.x, c.y, 0];
+            } else {
+                if (places.length !== 6) {
+                    throw new Error('A radial gradient\'s places should have 6 numbers.');
+                }
+                places = [
+                    min.x + places[0] * width, min.y + places[1] * height, width * places[2],
+                    min.x + places[3] * width, min.y + places[4] * height, width * places[5]
+                ];
+            }
+            gradient = ctx.createRadialGradient.apply(ctx, places);
+        }
+        g['colorStops'].forEach(function (stop) {
+            gradient.addColorStop.apply(gradient, stop);
+        });
+        return gradient;
+        /*{
+           type : 'linear/radial',
+           places : [],
+           colorStops : [
+              [0, 'red'],
+              [0.5, 'blue'],
+              [1, 'green']
+           ]
+        }*/
     },
 
     _setStrokePattern: function (ctx, strokePattern, strokeWidth, resources) {
@@ -123,7 +184,8 @@ Z.Canvas = {
         ctx.clearRect(x1, y1, x2, y2);
     },
 
-    fillCanvas:function (ctx, fillOpacity) {
+    fillCanvas:function (ctx, fillOpacity, x, y) {
+        var isPattern = Z.Canvas._isPattern(ctx.fillStyle);
         if (Z.Util.isNil(fillOpacity)) {
             fillOpacity = 1;
         }
@@ -132,7 +194,13 @@ Z.Canvas = {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= fillOpacity;
         }
+        if (isPattern) {
+            ctx.translate(x, y);
+        }
         ctx.fill();
+        if (isPattern) {
+            ctx.translate(-x, -y);
+        }
         if (fillOpacity < 1) {
             ctx.globalAlpha = alpha;
         }
@@ -219,7 +287,8 @@ Z.Canvas = {
         ctx.fillText(text, point.x, point.y);
     },
 
-    _stroke:function (ctx, strokeOpacity) {
+    _stroke:function (ctx, strokeOpacity, x, y) {
+        var isPattern = Z.Canvas._isPattern(ctx.strokeStyle) && !Z.Util.isNil(x) && !Z.Util.isNil(y);
         if (Z.Util.isNil(strokeOpacity)) {
             strokeOpacity = 1;
         }
@@ -228,7 +297,13 @@ Z.Canvas = {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= strokeOpacity;
         }
+        if (isPattern) {
+            ctx.translate(x, y);
+        }
         ctx.stroke();
+        if (isPattern) {
+            ctx.translate(-x, -y);
+        }
         if (strokeOpacity < 1) {
             ctx.globalAlpha = alpha;
         }
@@ -296,7 +371,7 @@ Z.Canvas = {
         if (!Z.Util.isArrayHasData(points)) { return; }
 
         var isDashed = Z.Util.isArrayHasData(lineDashArray);
-        var isPatternLine = (ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle));
+        var isPatternLine = (ignoreStrokePattern === true ? false : Z.Canvas._isPattern(ctx.strokeStyle));
         var point, prePoint, nextPoint;
         for (var i = 0, len = points.length; i < len; i++) {
             point = points[i]._round();
@@ -330,17 +405,9 @@ Z.Canvas = {
 
     polygon:function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         function fillPolygon(points, i, op) {
-            var isPatternFill = !Z.Util.isString(ctx.fillStyle);
-            if (i === 0 && isPatternFill) {
-                ctx.translate(points[i][0].x, points[i][0].y);
-            }
-            Z.Canvas.fillCanvas(ctx, op);
-            if (i === 0 && isPatternFill) {
-                ctx.translate(-points[i][0].x, -points[i][0].y);
-                ctx.fillStyle = '#fff';
-            }
+            Z.Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
         }
-        var isPatternLine = !Z.Util.isString(ctx.strokeStyle),
+        var isPatternLine = Z.Canvas._isPattern(ctx.strokeStyle),
             fillFirst = (Z.Util.isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
         if (!Z.Util.isArrayHasData(points[0])) {
             points = [points];
@@ -386,7 +453,7 @@ Z.Canvas = {
     },
 
     _ring:function (ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
-        var isPatternLine = (ignoreStrokePattern === true ? false : !Z.Util.isString(ctx.strokeStyle));
+        var isPatternLine = (ignoreStrokePattern === true ? false : Z.Canvas._isPattern(ctx.strokeStyle));
         if (isPatternLine && !ring[0].equals(ring[ring.length - 1])) {
             ring = ring.concat([ring[0]]);
         }
@@ -438,7 +505,7 @@ Z.Canvas = {
     },
 
     bezierCurveAndFill:function (ctx, points, lineOpacity, fillOpacity) {
-        ctx.beginPath(points);
+        ctx.beginPath();
         var start = points[0]._round();
         ctx.moveTo(start.x, start.y);
         Z.Canvas._bezierCurveTo.apply(Z.Canvas, [ctx].concat(points.splice(1)));
@@ -461,7 +528,6 @@ Z.Canvas = {
 
     //各种图形的绘制方法
     ellipse:function (ctx, pt, width, height, lineOpacity, fillOpacity) {
-        //TODO canvas scale后会产生错误?
         function bezierEllipse(x, y, a, b) {
             var k = 0.5522848,
                 ox = a * k, // 水平控制点偏移量
@@ -474,16 +540,16 @@ Z.Canvas = {
             Z.Canvas._bezierCurveTo(ctx, new Z.Point(x + a, y + oy), new Z.Point(x + ox, y + b), new Z.Point(x, y + b));
             Z.Canvas._bezierCurveTo(ctx, new Z.Point(x - ox, y + b), new Z.Point(x - a, y + oy), new Z.Point(x - a, y));
             ctx.closePath();
-            Z.Canvas.fillCanvas(ctx, fillOpacity);
-            Z.Canvas._stroke(ctx, lineOpacity);
+            Z.Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
+            Z.Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
         }
         pt = pt._round();
         if (width === height) {
             //如果高宽相同,则直接绘制圆形, 提高效率
             ctx.beginPath();
             ctx.arc(pt.x, pt.y, Z.Util.round(width), 0, 2 * Math.PI);
-            Z.Canvas.fillCanvas(ctx, fillOpacity);
-            Z.Canvas._stroke(ctx, lineOpacity);
+            Z.Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
+            Z.Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
         } else {
             bezierEllipse(pt.x, pt.y, width, height);
         }
@@ -495,8 +561,8 @@ Z.Canvas = {
         ctx.beginPath();
         ctx.rect(pt.x, pt.y,
             Z.Util.round(size['width']), Z.Util.round(size['height']));
-        Z.Canvas.fillCanvas(ctx, fillOpacity);
-        Z.Canvas._stroke(ctx, lineOpacity);
+        Z.Canvas.fillCanvas(ctx, fillOpacity, pt.x, pt.y);
+        Z.Canvas._stroke(ctx, lineOpacity, pt.x, pt.y);
     },
 
     sector:function (ctx, pt, size, angles, lineOpacity, fillOpacity) {
@@ -510,10 +576,14 @@ Z.Canvas = {
             ctx.moveTo(x, y);
             ctx.arc(x, y, radius, sDeg, eDeg);
             ctx.lineTo(x, y);
-            Z.Canvas.fillCanvas(ctx, fillOpacity);
-            Z.Canvas._stroke(ctx, lineOpacity);
+            Z.Canvas.fillCanvas(ctx, fillOpacity, x - radius, y - radius);
+            Z.Canvas._stroke(ctx, lineOpacity, x - radius, y - radius);
         }
         pt = pt._round();
         sector(ctx, pt.x, pt.y, size, startAngle, endAngle);
+    },
+
+    _isPattern : function (style) {
+        return !Z.Util.isString(style) && !('addColorStop' in style);
     }
 };

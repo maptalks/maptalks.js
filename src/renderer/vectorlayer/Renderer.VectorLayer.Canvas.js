@@ -116,7 +116,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             return;
         }
         var painter = geo._getPainter(),
-            viewExtent = painter.getPixelExtent();
+            viewExtent = painter.getViewExtent();
         if (!viewExtent || !viewExtent.intersects(this._displayExtent)) {
             return;
         }

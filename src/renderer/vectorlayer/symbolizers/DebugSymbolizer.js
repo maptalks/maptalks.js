@@ -33,7 +33,7 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var op = this.styles['lineOpacity'];
 
         //outline
-        var pixelExtent = geometry._getPainter().getPixelExtent(),
+        var pixelExtent = geometry._getPainter().getViewExtent(),
             size = pixelExtent.getSize();
         var nw = map.viewPointToContainerPoint(pixelExtent.getMin());
         Z.Canvas.rectangle(ctx, nw, size, op, 0);

@@ -81,7 +81,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 if (!geo || !geo.isVisible()) {
                     continue;
                 }
-                var pxExtent = !geo._getPainter() ? null : geo._getPainter().getPixelExtent();
+                var pxExtent = !geo._getPainter() ? null : geo._getPainter().getViewExtent();
                 if (!pxExtent || !pxExtent.contains(point)) {
                     continue;
                 }
