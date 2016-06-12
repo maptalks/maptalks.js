@@ -113,6 +113,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         }
         if (this._shadow) {
             this._update();
+            this._shadow._clearAllListeners();
             this._shadow.remove();
             delete this._shadow;
         }
