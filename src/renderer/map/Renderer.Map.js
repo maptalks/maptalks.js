@@ -40,7 +40,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
         return matrices;
     },
 
-    panAnimation:function (distance, t) {
+    panAnimation:function (distance, t, onFinish) {
         distance = new Z.Point(distance);
         var map = this.map;
         if (map.options['panAnimation']) {
@@ -50,6 +50,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             } else {
                 duration = t;
             }
+            map._enablePanAnimation = true;
             map._panAnimating = true;
             var preDist = null;
             var player = Z.Animation.animate({
@@ -62,7 +63,6 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                     player.finish();
                     map._panAnimating = false;
                     map._onMoveEnd();
-
                     return;
                 }
 
@@ -78,6 +78,9 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                     map._onMoving();
                 } else if (player.playState === 'finished') {
                     map._panAnimating = false;
+                    if (onFinish) {
+                        onFinish();
+                    }
                     map._onMoveEnd();
                 }
             });

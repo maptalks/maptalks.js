@@ -66,6 +66,24 @@ describe('#Map', function () {
     });
 
     describe('#setCenter', function() {
+        it('setCenterAndZoom', function() {
+            var nc = new Z.Coordinate(119, 32);
+            var z = map.getZoom();
+            map.setCenterAndZoom(nc);
+
+            expect(map.getCenter()).to.nearCoord(nc);
+            expect(map.getZoom()).to.be.eql(z);
+        });
+
+        it('setCenterAndZoom2', function() {
+            var nc = new Z.Coordinate(119, 32);
+            var nz = map.getZoom() + 1;
+            map.setCenterAndZoom(nc, nz);
+
+            expect(map.getCenter()).to.nearCoord(nc);
+            expect(map.getZoom()).to.be.eql(nz);
+        });
+
         it('setCenter后, getCenter返回结果与指定center近似相等(Load之前)', function() {
             var nc = new Z.Coordinate(119, 32);
             map.setCenter(nc);
@@ -82,14 +100,14 @@ describe('#Map', function () {
             expect(map.getCenter()).to.nearCoord(nc);
         });
 
-        it('setCenter设定中心点为当前地图中心点, 不应该触发movestart', function() {
+        it('setCenter设定中心点为当前地图中心点, 应该触发movestart', function() {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
             map.on('movestart', spy);
             map.setCenter(center);
 
-            expect(spy.called).to.not.be.ok();
+            expect(spy.called).to.be.ok();
         });
 
         it('setCenter设定中心点为当前地图中心点, 应该触发moveend', function() {
