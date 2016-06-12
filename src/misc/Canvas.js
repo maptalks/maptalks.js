@@ -51,6 +51,10 @@ Z.Canvas = {
             Z.Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
             style['lineDasharray'] = [];
+        } else if (Z.Util.isGradient(strokeColor)) {
+            if (style['lineGradientExtent']) {
+                ctx.strokeStyle = Z.Canvas._createGradient(ctx, strokeColor, style['lineGradientExtent']);
+            }
         } else {
             var color = Z.Canvas.getRgba(strokeColor, 1);
             if (ctx.strokeStyle !== color) {
@@ -83,12 +87,59 @@ Z.Canvas = {
                 fillTexture = canvas;
             }
             ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
+        } else if (Z.Util.isGradient(fill)) {
+            if (style['polygonGradientExtent']) {
+                ctx.fillStyle = Z.Canvas._createGradient(ctx, fill, style['polygonGradientExtent']);
+            }
         } else {
             var fillColor = this.getRgba(fill, 1);
             if (ctx.fillStyle !== fillColor) {
                 ctx.fillStyle = fillColor;
             }
         }
+    },
+
+    _createGradient: function (ctx, g, extent) {
+        var gradient = null, places = g['places'],
+            min = extent.getMin(),
+            max = extent.getMax(),
+            width = extent.getWidth(),
+            width = extent.getHeight();
+        if (!g['type'] || g['type'] === 'linear') {
+            if (!places) {
+                places = [min.x, min.y, min.x, max.y];
+            } else {
+                places = [
+                            min.x + places[0] * width, min.y + places[1] * height,
+                            min.x + places[2] * width, min.y + places[3] * height
+                        ];
+            }
+            gradient = ctx.createLinearGradient.apply(ctx, places);
+        } else if (g['type'] === 'radial') {
+            if (!places) {
+                var c = extent.getCenter()._round();
+                places = [c.x, c.y, c.x - min.x, c.x, c.y, 0];
+            } else {
+                places = [
+                            min.x + places[0] * width, min.y + places[1] * height, width * places[2],
+                            min.x + places[3] * width, min.y + places[4] * height, , width * places[5]
+                        ];
+            }
+            gradient = ctx.createRadialGradient.apply(ctx, places);
+        }
+        g['colorStops'].forEach(function (stop) {
+            gradient.addColorStop.apply(gradient, stop);
+        });
+        return gradient;
+        /*{
+           type : 'linear/radial',
+           places : [],
+           colorStops : [
+              [0, 'red'],
+              [0.5, 'blue'],
+              [1, 'green']
+           ]
+        }*/
     },
 
     _setStrokePattern: function (ctx, strokePattern, strokeWidth, resources) {

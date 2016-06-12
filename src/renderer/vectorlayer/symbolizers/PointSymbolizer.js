@@ -9,7 +9,7 @@
  * @extends {maptalks.symbolizer.CanvasSymbolizer}
  */
 Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
-    getPixelExtent: function () {
+    getViewExtent: function () {
         var extent = new Z.PointExtent();
         var markerExtent = this.getMarkerExtent();
         var min = markerExtent.getMin(),

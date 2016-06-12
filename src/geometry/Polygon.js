@@ -223,7 +223,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
     _containsPoint: function (point, tolerance) {
         var t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
-            pxExtent = this._getPainter().getPixelExtent().expand(t);
+            pxExtent = this._getPainter().getViewExtent().expand(t);
 
         point = new Z.Point(point.x, point.y);
 

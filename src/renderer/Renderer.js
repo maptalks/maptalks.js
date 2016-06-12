@@ -189,7 +189,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         if (!mask) {
             return null;
         }
-        var maskViewExtent = mask._getPainter().getPixelExtent();
+        var maskViewExtent = mask._getPainter().getViewExtent();
         if (!maskViewExtent.intersects(this._viewExtent)) {
             return maskViewExtent;
         }
