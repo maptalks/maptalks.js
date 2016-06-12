@@ -113,6 +113,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         }
         if (this._shadow) {
             this._update();
+            this._shadow._clearAllListeners();
             this._shadow.remove();
             delete this._shadow;
         }
@@ -184,7 +185,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             map = this.getMap(),
             outline = this._editOutline;
 
-        var pixelExtent = geometry._getPainter().getPixelExtent(),
+        var pixelExtent = geometry._getPainter().getViewExtent(),
             size = pixelExtent.getSize();
         var nw = map.viewPointToCoordinate(pixelExtent.getMin());
         var width = map.pixelToDistance(size['width'], 0),
@@ -341,7 +342,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         var anchorIndexes = {};
         var me = this, map = this.getMap();
         var fnLocateHandles = function () {
-            var pExt = geometry._getPainter().getPixelExtent(),
+            var pExt = geometry._getPainter().getViewExtent(),
                 anchors = getResizeAnchors(pExt);
             for (var i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist

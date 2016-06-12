@@ -524,6 +524,9 @@ Z.Util = {
     cssUrlRe:/^url\(([^\'\"].*[^\'\"])\)$/i,
 
     isCssUrl: function (str) {
+        if (!Z.Util.isString(str)) {
+            return 0;
+        }
         if (str.substring(0, 4) === 'http') {
             return 3;
         }
@@ -658,6 +661,10 @@ Z.Util = {
         var dx = p2.x - p1.x;
         var dy = p2.y - p1.y;
         return Math.atan2(dy, dx);
+    },
+
+    isGradient: function (g) {
+        return g && Z.Util.isArrayHasData(g['colorStops']);
     }
 
 };

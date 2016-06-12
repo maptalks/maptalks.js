@@ -24,6 +24,12 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         }
         var canvasResources = this._getRenderResources();
         this._prepareContext(ctx);
+        if (Z.Util.isGradient(style['lineColor'])) {
+            style['lineGradientExtent'] = this.geometry._getPainter().getContainerExtent()._expand(style['lineWidth'])._round();
+        }
+        if (Z.Util.isGradient(style['polygonFill'])) {
+            style['polygonGradientExtent'] = this.geometry._getPainter().getContainerExtent()._round();
+        }
         Z.Canvas.prepareCanvas(ctx, style, resources);
         canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
             style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
@@ -32,7 +38,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         }
     },
 
-    getPixelExtent:function () {
+    getViewExtent:function () {
         var map = this.getMap();
         var extent = this.geometry._getPrjExtent();
         if (!extent) {

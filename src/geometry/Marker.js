@@ -57,7 +57,7 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
     },
 
     _containsPoint: function (point) {
-        var pxExtent = this._getPainter().getPixelExtent();
+        var pxExtent = this._getPainter().getViewExtent();
         return pxExtent.contains(point);
     },
 

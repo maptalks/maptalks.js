@@ -308,7 +308,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!map) {
             return null;
         }
-        var pxExtent = this._getPainter().getPixelExtent();
+        var pxExtent = this._getPainter().getViewExtent();
         return new Z.Size(Math.round(Math.abs(pxExtent['xmax'] - pxExtent['xmin'])),
             Math.round(Math.abs(pxExtent['ymax'] - pxExtent['ymin'])));
     },

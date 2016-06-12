@@ -171,19 +171,34 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     },
 
     //需要实现的接口方法
-    getPixelExtent:function () {
+    getViewExtent:function () {
         if (!this._viewExtent) {
             if (this.symbolizers) {
                 var viewExtent = new Z.PointExtent();
                 var len = this.symbolizers.length - 1;
                 for (var i = len; i >= 0; i--) {
-                    viewExtent._combine(this.symbolizers[i].getPixelExtent());
+                    viewExtent._combine(this.symbolizers[i].getViewExtent());
                 }
                 viewExtent._round();
                 this._viewExtent = viewExtent;
             }
         }
         return this._viewExtent;
+    },
+
+    getContainerExtent : function () {
+        var layerViewPoint = this.geometry.getLayer()._getRenderer()._viewExtent.getMin(),
+            viewExtent = this.getViewExtent();
+        var matrices = this.getTransformMatrix(),
+            matrix = matrices ? matrices['container'] : null;
+        var containerExtent = viewExtent.add(layerViewPoint._multi(-1));
+        if (matrix) {
+            containerExtent = new Z.PointExtent(
+                    matrix.applyToPointInstance(containerExtent.getMin()),
+                    matrix.applyToPointInstance(containerExtent.getMax())
+                    );
+        }
+        return containerExtent;
     },
 
     setZIndex:function (change) {
