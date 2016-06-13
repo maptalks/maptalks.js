@@ -78,21 +78,6 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         this._removeDOMEvents(dom);
     },
 
-    _getEvents: function () {
-        return {
-            'zoomstart' : this._onZoomStart,
-            'zoomend'   : this._onZoomEnd
-        };
-    },
-
-    _onZoomStart: function () {
-        this.hide();
-    },
-
-    _onZoomEnd: function () {
-        this.show();
-    },
-
     _domEvents : /**
                   * mousedown event
                   * @event maptalks.ui.UIMarker#mousedown
