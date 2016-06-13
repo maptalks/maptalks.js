@@ -45,13 +45,13 @@ describe('UIMarker Tests', function() {
         expect(m.clientWidth).to.be.above(0);
     });
 
-    it('hide and show when zooming', function(done) {
+    it('show when zooming', function(done) {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
         map.on('zoomstart', function() {
-             expect(marker.isVisible()).not.to.be.ok();
+             expect(marker.isVisible()).to.be.ok();
         });
         map.on('zoomend', function() {
              expect(marker.isVisible()).to.be.ok();
