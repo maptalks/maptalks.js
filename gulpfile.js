@@ -13,9 +13,6 @@ var minimist = require('minimist'),
   version = require('./package.json').version;
 var Server = require('karma').Server;
 
-'use strict';
-'version:1.0.0-alpha';
-
 var knownOptions = {
   string: ['browsers', 'pattern'],
   boolean: 'coverage',
