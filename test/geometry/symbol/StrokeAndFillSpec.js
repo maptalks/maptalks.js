@@ -254,7 +254,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(v).to.be.painted();
+                expect(v).to.be.painted(0, 0, [255, 255, 255]);
                 done();
             })
             v.addGeometry(circle);
