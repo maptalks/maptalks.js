@@ -28,16 +28,16 @@ describe('#Layer', function() {
 
             map.addLayer([layer1, layer2, layer3]);
 
-            expect(map.getLayers()).to.eqlArray([layer1, layer2, layer3]);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
 
             layer1.bringToFront();
-            expect(map.getLayers()).to.eqlArray([layer2, layer3, layer1]);
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
 
             layer2.bringToFront();
-            expect(map.getLayers()).to.eqlArray([layer3, layer1, layer2]);
+            expect(map.getLayers()).to.be.eql([layer3, layer1, layer2]);
 
             layer3.bringToFront();
-            expect(map.getLayers()).to.eqlArray([layer1, layer2, layer3]);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
         });
 
         it('bring a layer to back', function() {
@@ -47,16 +47,16 @@ describe('#Layer', function() {
 
             map.addLayer([layer1, layer2, layer3]);
 
-            expect(map.getLayers()).to.eqlArray([layer1, layer2, layer3]);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
 
             layer3.bringToBack();
-            expect(map.getLayers()).to.eqlArray([layer3, layer1, layer2]);
+            expect(map.getLayers()).to.be.eql([layer3, layer1, layer2]);
 
             layer2.bringToBack();
-            expect(map.getLayers()).to.eqlArray([layer2, layer3, layer1]);
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
 
             layer3.bringToBack();
-            expect(map.getLayers()).to.eqlArray([layer3, layer2, layer1]);
+            expect(map.getLayers()).to.be.eql([layer3, layer2, layer1]);
         });
 
         it('sort layers by map',function() {
@@ -67,7 +67,7 @@ describe('#Layer', function() {
             map.addLayer([layer1, layer2, layer3]);
 
             map.sortLayers(['3', '2', '1']);
-            expect(map.getLayers()).to.eqlArray([layer3, layer2, layer1]);
+            expect(map.getLayers()).to.be.eql([layer3, layer2, layer1]);
         });
     });
 

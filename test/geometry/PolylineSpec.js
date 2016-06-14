@@ -48,7 +48,7 @@ describe('PolylineSpec', function() {
             ]);
             layer.addGeometry(polyline);
 
-            expect(polyline.getCenter()).to.nearCoord(new Z.Coordinate(0, 30));
+            expect(polyline.getCenter()).to.closeTo(new Z.Coordinate(0, 30));
         });
     });
 

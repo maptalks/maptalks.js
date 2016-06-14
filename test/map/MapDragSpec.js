@@ -56,7 +56,7 @@ describe('#MapDrag', function () {
         it('disables dragging', function() {
             map.config('draggable',false);
             dragMap();
-            expect(map.getCenter()).to.be.nearCoord(center);
+            expect(map.getCenter()).to.be.closeTo(center);
         });
     });
 

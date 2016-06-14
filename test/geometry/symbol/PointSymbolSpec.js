@@ -20,27 +20,6 @@ describe('PointSymbolSpec', function() {
         removeContainer(container)
     });
 
-    function isCenterDrawn(layer, dx, dy) {
-        if (!dx) {
-            dx = 0;
-        }
-        if (!dy) {
-            dy = 0;
-        }
-        var image = layer._getRenderer().getCanvasImage(),
-            canvas = image.image;
-        return isDrawn(parseInt(container.style.width)/2 - image.point.x + dx, parseInt(container.style.height)/2 - image.point.y + dy, canvas);
-    }
-
-    function isDrawn(x, y, canvas) {
-        var context = canvas.getContext('2d');
-        var imgData = context.getImageData(x, y, 1, 1).data;
-        if (imgData[3] > 0) {
-            return true;
-        }
-        return false;
-    }
-
     describe('dx dy', function() {
         it('without dx, dy', function() {
             var marker = new maptalks.Marker(center, {
@@ -52,7 +31,7 @@ describe('PointSymbolSpec', function() {
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
             v.addGeometry(marker);
-            expect(isCenterDrawn(v)).to.be.ok();
+            expect(v).to.be.painted();
         });
 
         it('with dx', function() {
@@ -66,8 +45,8 @@ describe('PointSymbolSpec', function() {
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
             v.addGeometry(marker);
-            expect(isCenterDrawn(v)).not.to.be.ok();
-            expect(isCenterDrawn(v, 10)).to.be.ok();
+            expect(v).not.to.be.painted();
+            expect(v).to.be.painted(10);
         });
 
         it('with dy', function() {
@@ -81,8 +60,8 @@ describe('PointSymbolSpec', function() {
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
             v.addGeometry(marker);
-            expect(isCenterDrawn(v)).not.to.be.ok();
-            expect(isCenterDrawn(v, 0, 10)).to.be.ok();
+            expect(v).not.to.be.painted();
+            expect(v).to.be.painted(0, 10);
         });
 
         it('with dx, dy', function() {
@@ -97,8 +76,8 @@ describe('PointSymbolSpec', function() {
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
             v.addGeometry(marker);
-            expect(isCenterDrawn(v)).not.to.be.ok();
-            expect(isCenterDrawn(v, 10, 10)).to.be.ok();
+            expect(v).not.to.be.painted();
+            expect(v).to.be.painted(10, 10);
         });
     });
 
@@ -118,9 +97,9 @@ describe('PointSymbolSpec', function() {
 
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
-            expect(isCenterDrawn(v)).to.be.ok();
-            expect(isCenterDrawn(v, 10, 0)).to.be.ok();
-            expect(isCenterDrawn(v, 20, 0)).to.be.ok();
+            expect(v).to.be.painted();
+            expect(v).to.be.painted(10, 0);
+            expect(v).to.be.painted(20, 0);
         });
 
         it('line placement', function() {
@@ -137,11 +116,11 @@ describe('PointSymbolSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
-            expect(isCenterDrawn(v)).not.to.be.ok();
-            expect(isCenterDrawn(v, 10, 0)).not.to.be.ok();
-            expect(isCenterDrawn(v, 20, 0)).not.to.be.ok();
-            expect(isCenterDrawn(v, 5, 0)).to.be.ok();
-            expect(isCenterDrawn(v, 15, 0)).to.be.ok();
+            expect(v).not.to.be.painted();
+            expect(v).not.to.be.painted(10, 0);
+            expect(v).not.to.be.painted(20, 0);
+            expect(v).to.be.painted(5, 0);
+            expect(v).to.be.painted(15, 0);
         });
     });
 
