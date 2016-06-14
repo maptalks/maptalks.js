@@ -98,7 +98,7 @@ describe('#DrawTool', function () {
         it('can draw a marker', function(done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof Z.Marker).to.be.ok();
-                expect(param.geometry.getCoordinates()).to.be.nearCoord(map.getCenter());
+                expect(param.geometry.getCoordinates()).to.be.closeTo(map.getCenter());
                 done();
             }
             var drawTool = new Z.DrawTool({

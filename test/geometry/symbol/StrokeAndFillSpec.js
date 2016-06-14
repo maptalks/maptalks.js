@@ -51,7 +51,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v)).to.be.ok();
+                expect(v).to.be.painted();
                 done();
             })
             v.addGeometry(circle);
@@ -69,7 +69,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v, 11, 0)).to.be.ok();
+                expect(v).to.be.painted(11);
                 done();
             })
             v.addGeometry(circle);
@@ -87,7 +87,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v)).to.be.ok();
+                expect(v).to.be.painted();
                 done();
             })
             v.addGeometry(circle);
@@ -107,7 +107,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v, 11, 0)).to.be.ok();
+                expect(v).to.be.painted(11);
                 done();
             })
             v.addGeometry(circle);
@@ -137,7 +137,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v)).to.be.ok();
+                expect(v).to.be.painted();
                 done();
             })
             v.addGeometry(circle);
@@ -163,7 +163,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v)).to.be.ok();
+                expect(v).to.be.painted();
                 done();
             })
             v.addGeometry(circle);
@@ -191,8 +191,8 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v)).not.to.be.ok();
-                expect(isCenterDrawn(v, 11, 0)).to.be.ok();
+                expect(v).not.to.be.painted();
+                expect(v).to.be.painted(11);
                 done();
             })
             v.addGeometry(circle);
@@ -222,8 +222,8 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v)).not.to.be.ok();
-                expect(isCenterDrawn(v, 11, 0)).to.be.ok();
+                expect(v).not.to.be.painted();
+                expect(v).to.be.painted(11);
                 done();
             })
             v.addGeometry(circle);
@@ -254,13 +254,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v)).to.be.ok();
-                var data = isCenterDrawn(v, 2);
-                expect(data).to.be.ok();
-                //white
-                expect(data[0]).to.be(255);
-                expect(data[1]).to.be(255);
-                expect(data[2]).to.be(255);
+                expect(v).to.be.painted();
                 done();
             })
             v.addGeometry(circle);
@@ -286,7 +280,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v)).to.be.ok();
+                expect(v).to.be.painted();
                 done();
             })
             v.addGeometry(circle);
@@ -313,7 +307,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v, 11, 0)).to.be.ok();
+                expect(v).to.be.painted(11);
                 done();
             })
             v.addGeometry(circle);
@@ -343,7 +337,7 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(isCenterDrawn(v, -50, 0)).to.be.ok();
+                expect(v).to.be.painted(-50);
                 done();
             })
             v.addGeometry(circle);

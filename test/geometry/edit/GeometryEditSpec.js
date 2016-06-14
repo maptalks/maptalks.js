@@ -65,11 +65,11 @@ describe('#GeometryEdit', function () {
                 geo.startEdit();
                 var center = geo.getCenter();
                 dragGeometry(geo);
-                expect(geo.getCenter()).not.to.nearCoord(center);
+                expect(geo.getCenter()).not.to.closeTo(center);
                 //geo can only be dragged by center handle.
                 var newCenter = geo.getCenter();
                 dragGeometry(geo, new Z.Point(500,20));
-                expect(geo.getCenter()).to.nearCoord(newCenter);
+                expect(geo.getCenter()).to.closeTo(newCenter);
             }
         });
     });

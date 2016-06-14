@@ -199,8 +199,8 @@ describe('#GeometryAnimation', function () {
                     return;
                 }
                 var expected = center.add(new Z.Coordinate(0.1, 0.1));
-                expect(marker.getCenter()).to.nearCoord(expected);
-                expect(map.getCenter()).to.nearCoord(expected);
+                expect(marker.getCenter()).to.closeTo(expected);
+                expect(map.getCenter()).to.closeTo(expected);
                 done();
             }
             marker.addTo(layer);

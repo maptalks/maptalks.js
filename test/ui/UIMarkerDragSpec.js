@@ -65,7 +65,7 @@ describe('#UIMarkerDrag', function () {
             });
             marker.addTo(map).show();
             dragMarker(marker);
-            expect(marker.getCoordinates()).to.be.nearCoord(center);
+            expect(marker.getCoordinates()).to.be.closeTo(center);
         });
     });
 
@@ -102,7 +102,7 @@ describe('#UIMarkerDrag', function () {
         dragMarker(marker);
         var center = map.getCenter();
         dragMap();
-        expect(map.getCenter()).not.to.nearCoord(center);
+        expect(map.getCenter()).not.to.closeTo(center);
     });
 
     it('enable map draggable after dragging without moving', function() {
@@ -115,6 +115,6 @@ describe('#UIMarkerDrag', function () {
         dragMarker(marker, false);
         var center = map.getCenter();
         dragMap();
-        expect(map.getCenter()).not.to.nearCoord(center);
+        expect(map.getCenter()).not.to.closeTo(center);
     });
 });

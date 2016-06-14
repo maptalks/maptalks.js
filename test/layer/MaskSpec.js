@@ -1,6 +1,6 @@
 // var utils = require('../SpecUtils.js');
 
-describe('MaskSpec', function() {
+describe('Spec of Masks', function() {
 
     var container;
     var map;
@@ -35,21 +35,10 @@ describe('MaskSpec', function() {
         removeContainer(container);
     });
 
-    function isDrawn(x, y, canvas) {
-        var context = canvas.getContext('2d');
-        var imgData = context.getImageData(x, y, 1, 1).data;
-        if (imgData[3] > 0) {
-            return true;
-        }
-        return false;
-    }
-
     function testMask(layer, done) {
         layer.once('layerload', function() {
-            var image = layer._getRenderer().getCanvasImage(),
-                canvas = image.image;
-            expect(isDrawn(1, 1, canvas)).not.to.be.ok();
-            expect(isCenterDrawn(layer)).to.be.ok();
+            expect(layer).not.to.be.painted(-7);
+            expect(layer).to.be.painted();
             done();
         });
 
@@ -63,12 +52,6 @@ describe('MaskSpec', function() {
                 'markerDy' : 5
             }
         }));
-    }
-
-    function isCenterDrawn(layer) {
-        var image = layer._getRenderer().getCanvasImage(),
-            canvas = image.image;
-        return isDrawn(parseInt(container.style.width)/2 - image.point.x, parseInt(container.style.height)/2 - image.point.y, canvas);
     }
 
     //test tilelayer
@@ -100,8 +83,7 @@ describe('MaskSpec', function() {
 
             it('can set mask', function(done) {
                 layerToTest.once('layerload', function() {
-                    var canvas = layerToTest._getRenderer()._canvas;
-                    expect(isDrawn(1, 1, canvas)).to.be.ok();
+                    expect(layerToTest).to.be.painted(-20);
                     testMask(layerToTest, done);
                 });
             });
@@ -110,9 +92,8 @@ describe('MaskSpec', function() {
                 layerToTest.once('layerload', function() {
                     layerToTest.once('layerload', function() {
                         layerToTest.once('layerload', function() {
-                            var canvas = layerToTest._getRenderer()._canvas;
-                            expect(isDrawn(1, 1, canvas)).to.be.ok();
-                            expect(isCenterDrawn(layerToTest)).to.be.ok();
+                            expect(layerToTest).to.be.painted(-20);
+                            expect(layerToTest).to.be.painted();
                             done();
                         });
                         layerToTest.removeMask();

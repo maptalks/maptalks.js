@@ -52,7 +52,7 @@ describe('PolygonSpec', function() {
             ]]);
             layer.addGeometry(polygon);
 
-            expect(polygon.getCenter()).to.nearCoord({x:5, y: 5});
+            expect(polygon.getCenter()).to.be.closeTo({x:5, y: 5});
         });
     });
 

@@ -2,6 +2,7 @@ assets/
 build/
 dist/debug
 dist/examples
+dist/Plugins
 dist/maptalks.*.js
 dist/maptalks.min.js
 dist/*.gz
