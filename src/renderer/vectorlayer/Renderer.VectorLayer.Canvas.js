@@ -64,7 +64,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             resources = [];
         var res, ii;
         function checkGeo(geo) {
-            res = geo._getExternalResource();
+            res = geo._getExternalResources();
             if (!Z.Util.isArrayHasData(res)) {
                 return;
             }

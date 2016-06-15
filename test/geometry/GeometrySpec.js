@@ -302,7 +302,7 @@ function registerGeometryCommonTest(geometry,_context) {
             teardownGeometry();
         });
 
-        it('getExternalResource',function() {
+        it('getExternalResources',function() {
             var oldSymbol = geometry.getSymbol();
 
             var type = geometry.getType();
@@ -311,7 +311,7 @@ function registerGeometryCommonTest(geometry,_context) {
                     'markerFile':'http://foo.com/foo.png'
                 };
                 geometry.setSymbol(symbol);
-                var resource = geometry._getExternalResource();
+                var resource = geometry._getExternalResources();
                 expect(resource).to.have.length(1);
                 expect(resource[0][0]).to.be(symbol['markerFile']);
             } else {
@@ -320,7 +320,7 @@ function registerGeometryCommonTest(geometry,_context) {
                     'linePatternFile':'url(\'http://foo.com/foo2.png\')',
                 };
                 geometry.setSymbol(symbol);
-                var resource = geometry._getExternalResource();
+                var resource = geometry._getExternalResources();
                 expect(resource).to.have.length(2);
                 expect(resource[0][0]).to.be('http://foo.com/foo.png');
                 expect(resource[1][0]).to.be('http://foo.com/foo2.png');

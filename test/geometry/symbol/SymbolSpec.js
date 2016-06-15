@@ -46,7 +46,7 @@ describe('SymbolSpec', function() {
                 "markerHeight":30
             }
         });
-        var res = marker._getExternalResource();
+        var res = marker._getExternalResources();
         expect(res).to.have.length(1);
         expect(res[0][0]).to.be.eql(expected);
         expect(res[0][1]).to.be.eql(20);
@@ -59,7 +59,7 @@ describe('SymbolSpec', function() {
                 "linePatternFile" : "resources/x.svg"
             }
         });
-        var res = line._getExternalResource();
+        var res = line._getExternalResources();
         expect(res).to.have.length(1);
         expect(res[0][0]).to.be.eql(expected);
     });
@@ -71,7 +71,7 @@ describe('SymbolSpec', function() {
                 "polygonPatternFile" : "resources/x.svg"
             }
         });
-        var res = polygon._getExternalResource();
+        var res = polygon._getExternalResources();
         expect(res).to.have.length(1);
         expect(res[0][0]).to.be.eql(expected);
     });
@@ -110,7 +110,7 @@ describe('SymbolSpec', function() {
             )
         });*/
         map.on('zoomend', function() {
-            var res = marker._getExternalResource();
+            var res = marker._getExternalResources();
             expect(res).to.have.length(1);
             expect(vectorLayer._getRenderer()._resources.isResourceLoaded(res[0])).to.be.ok();
             done();

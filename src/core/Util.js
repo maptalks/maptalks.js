@@ -672,7 +672,7 @@ Z.Util = {
      * @param  {Object} symbol      - symbol
      * @return {String[]}           - resource urls
      */
-    getExternalResource: function (symbol) {
+    getExternalResources: function (symbol) {
         if (!symbol) {
             return null;
         }
@@ -704,6 +704,60 @@ Z.Util = {
             }
         }
         return resources;
+    },
+
+     /**
+     * Convert symbol's resources' urls from relative path to an absolute path.
+     * @param  {Object} symbol
+     * @private
+     */
+    convertResourceUrl: function (symbol) {
+        if (!symbol) {
+            return null;
+        }
+
+        function absolute(base, relative) {
+            var stack = base.split('/'),
+                parts = relative.split('/');
+            if (relative.indexOf('/') === 0) {
+                return stack.slice(0, 3).join('/') + relative;
+            } else {
+                stack.pop(); // remove current file name (or empty string)
+                             // (omit if "base" is the current folder without trailing slash)
+                for (var i = 0; i < parts.length; i++) {
+                    if (parts[i] === '.')
+                        continue;
+                    if (parts[i] === '..')
+                        stack.pop();
+                    else
+                        stack.push(parts[i]);
+                }
+                return stack.join('/');
+            }
+
+        }
+        var s = Z.Util.extend({}, symbol);
+        if (Z.node) {
+            return s;
+        }
+        var props = Z.Symbolizer.resourceProperties;
+        var res, isCssStyle = false;
+        for (var ii = 0, len = props.length; ii < len; ii++) {
+            res = s[props[ii]];
+            if (!res) {
+                continue;
+            }
+            isCssStyle = false;
+            if (res.indexOf('url(') >= 0) {
+                res = Z.Util.extractCssUrl(res);
+                isCssStyle = true;
+            }
+            if (!Z.Util.isURL(res)) {
+                res = absolute(location.href, res);
+                s[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
+            }
+        }
+        return s;
     }
 
 };

@@ -679,11 +679,11 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (Z.Util.isArray(symbol)) {
             var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
-                cookedSymbols.push(this._convertResourceUrl(symbol[i]));
+                cookedSymbols.push(Z.Util.convertResourceUrl(symbol[i]));
             }
             return cookedSymbols;
         } else {
-            return this._convertResourceUrl(symbol);
+            return Z.Util.convertResourceUrl(symbol);
         }
     },
 
@@ -696,60 +696,6 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return this._symbol;
     },
 
-    /**
-     * Convert symbol's resources' urls from relative path to a absolute path.
-     * @param  {Object} symbol
-     * @private
-     */
-    _convertResourceUrl:function (symbol) {
-        if (!symbol) {
-            return null;
-        }
-
-        function absolute(base, relative) {
-            var stack = base.split('/'),
-                parts = relative.split('/');
-            if (relative.indexOf('/') === 0) {
-                return stack.slice(0, 3).join('/') + relative;
-            } else {
-                stack.pop(); // remove current file name (or empty string)
-                             // (omit if "base" is the current folder without trailing slash)
-                for (var i = 0; i < parts.length; i++) {
-                    if (parts[i] === '.')
-                        continue;
-                    if (parts[i] === '..')
-                        stack.pop();
-                    else
-                        stack.push(parts[i]);
-                }
-                return stack.join('/');
-            }
-
-        }
-        var s = Z.Util.extend({}, symbol);
-        if (Z.node) {
-            return s;
-        }
-        var props = Z.Symbolizer.resourceProperties;
-        var res, isCssStyle = false;
-        for (var ii = 0, len = props.length; ii < len; ii++) {
-            res = s[props[ii]];
-            if (!res) {
-                continue;
-            }
-            isCssStyle = false;
-            if (res.indexOf('url(') >= 0) {
-                res = Z.Util.extractCssUrl(res);
-                isCssStyle = true;
-            }
-            if (!Z.Util.isURL(res)) {
-                res = absolute(location.href, res);
-                s[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
-            }
-        }
-
-        return s;
-    },
 
     _getPrjExtent:function () {
         var p = this._getProjection();
@@ -829,10 +775,10 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     //获取geometry样式中依赖的外部图片资源
-    _getExternalResource:function () {
+    _getExternalResources:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = Z.Util.getExternalResource(this._interpolateSymbol(symbol));
+        var resources = Z.Util.getExternalResources(this._interpolateSymbol(symbol));
         return resources;
     },
 

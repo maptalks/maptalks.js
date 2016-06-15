@@ -247,7 +247,7 @@ describe('#Map', function () {
 
             var layer = new Z.VectorLayer('id');
             map.addLayer(layer);
-            map.removeLayer(layer);
+            map.removeLayer([layer]);
 
             expect(map.getLayer(layer)).to.equal(null);
         });
