@@ -832,7 +832,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _getExternalResource:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = Z.Geometry.getExternalResource(this._interpolateSymbol(symbol));
+        var resources = Z.Util.getExternalResource(this._interpolateSymbol(symbol));
         return resources;
     },
 
@@ -1074,46 +1074,6 @@ Z.Geometry.fromGeoJSON = function (geoJSON) {
     return Z.GeoJSON.fromGeoJSON(geoJSON);
 };
 
-/**
- * Get external resources from the given symbol
- * @param  {Object} symbol      - symbol
- * @return {String[]}           - resource urls
- * @static
- * @private
- */
-Z.Geometry.getExternalResource = function (symbol) {
-    if (!symbol) {
-        return null;
-    }
-    var symbols = symbol;
-    if (!Z.Util.isArray(symbol)) {
-        symbols = [symbol];
-    }
-    var resources = [];
-    var props = Z.Symbolizer.resourceProperties,
-        ii, res, resSizeProp;
-    for (var i = symbols.length - 1; i >= 0; i--) {
-        symbol = symbols[i];
-        if (!symbol) {
-            continue;
-        }
-        for (ii = 0; ii < props.length; ii++) {
-            res = symbol[props[ii]];
-            if (!res) {
-                continue;
-            }
-            if (res.indexOf('url(') >= 0) {
-                res = Z.Util.extractCssUrl(res);
-            }
-            resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
-            resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
-        }
-        if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-            resources.push([Z.Geometry._getMarkerPathURL(symbol), symbol['markerWidth'], symbol['markerHeight']]);
-        }
-    }
-    return resources;
-};
 Z.Geometry._getMarkerPathURL = function (symbol) {
     if (!symbol['markerPath']) {
         return null;

@@ -665,6 +665,45 @@ Z.Util = {
 
     isGradient: function (g) {
         return g && Z.Util.isArrayHasData(g['colorStops']);
+    },
+
+    /**
+     * Get external resources from the given symbol
+     * @param  {Object} symbol      - symbol
+     * @return {String[]}           - resource urls
+     */
+    getExternalResource: function (symbol) {
+        if (!symbol) {
+            return null;
+        }
+        var symbols = symbol;
+        if (!Z.Util.isArray(symbol)) {
+            symbols = [symbol];
+        }
+        var resources = [];
+        var props = Z.Symbolizer.resourceProperties,
+            ii, res, resSizeProp;
+        for (var i = symbols.length - 1; i >= 0; i--) {
+            symbol = symbols[i];
+            if (!symbol) {
+                continue;
+            }
+            for (ii = 0; ii < props.length; ii++) {
+                res = symbol[props[ii]];
+                if (!res) {
+                    continue;
+                }
+                if (res.indexOf('url(') >= 0) {
+                    res = Z.Util.extractCssUrl(res);
+                }
+                resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
+                resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
+            }
+            if (symbol['markerType'] === 'path' && symbol['markerPath']) {
+                resources.push([Z.Geometry._getMarkerPathURL(symbol), symbol['markerWidth'], symbol['markerHeight']]);
+            }
+        }
+        return resources;
     }
 
 };

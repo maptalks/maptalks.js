@@ -124,7 +124,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
     _loadResources:function (onComplete) {
         var symbol = this.getSymbol();
-        var resources = Z.Geometry.getExternalResource(symbol);
+        var resources = Z.Util.getExternalResource(symbol);
         if (Z.Util.isArrayHasData(resources)) {
             //load external resources at first
             this._drawToolLayer._getRenderer()._loadResources(resources, onComplete, this);
