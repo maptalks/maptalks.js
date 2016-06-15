@@ -9,9 +9,9 @@ var minimist = require('minimist'),
   rename = require('gulp-rename'),
   uglify = require('gulp-uglify'),
   cssnano = require('gulp-cssnano'),
-  connect = require('gulp-connect');
+  connect = require('gulp-connect'),
+  version = require('./package.json').version;
 var Server = require('karma').Server;
-
 
 var knownOptions = {
   string: ['browsers', 'pattern'],
@@ -30,7 +30,7 @@ var sources = require('./build/getFiles.js').getFiles(),
 gulp.task('scripts', function() {
   return gulp.src(sources)
       .pipe(concat('maptalks.js'))
-      .pipe(header('(function () {\n'))
+      .pipe(header('(function () {\n\'use strict\';\n\'' + version + '\';\n'))
       .pipe(footer('\n})();'))
       .pipe(gulp.dest('./dist'))
       .pipe(rename({suffix: '.min'}))

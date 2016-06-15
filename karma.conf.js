@@ -31,7 +31,8 @@ module.exports = function(config) {
     frameworks: [
       'mocha',
       'expect',
-      'sinon'
+      'sinon',
+      'expect-maptalks'
     ],
 
     // list of files / patterns to load in the browser
@@ -81,6 +82,7 @@ module.exports = function(config) {
       'karma-coverage',
       'karma-mocha',
       'karma-expect',
+      'karma-expect-maptalks',
       'karma-sinon-ie'
     ],
 

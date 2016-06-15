@@ -32,7 +32,7 @@ describe('#MapPan', function () {
     it('panTo without animation', function(done) {
         var coord = center.substract(1, 1);
         map.once('moveend', function() {
-            expect(map.getCenter()).to.be.nearCoord(coord);
+            expect(map.getCenter()).to.be.closeTo(coord);
             done();
         })
         map.panTo(coord, {'animation' : false});
@@ -41,7 +41,7 @@ describe('#MapPan', function () {
     it('panTo', function(done) {
         var coord = center.substract(1, 1);
         map.once('moveend', function() {
-            expect(map.getCenter()).to.be.nearCoord(coord);
+            expect(map.getCenter()).to.be.closeTo(coord);
             done();
         })
         map.panTo(coord, {'animation' : true});
@@ -74,7 +74,7 @@ describe('#MapPan', function () {
             if (counter === 1) {
                 return;
             }
-            expect(map.getCenter()).to.be.nearCoord(newCenter);
+            expect(map.getCenter()).to.be.closeTo(newCenter);
             done();
         })
         map.panTo(coord, {'animation' : true});

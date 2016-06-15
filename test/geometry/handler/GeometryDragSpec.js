@@ -70,7 +70,7 @@ describe('#GeometryDrag', function () {
         it('in default, geometries cannot be dragged', function() {
             var marker = new maptalks.Marker(center);
             dragGeometry(marker);
-            expect(marker.getCoordinates()).to.be.nearCoord(center);
+            expect(marker.getCoordinates()).to.be.closeTo(center);
         });
 
         it('can drag a default marker', function() {
@@ -92,7 +92,7 @@ describe('#GeometryDrag', function () {
                 geo.config('draggable', true);
                 var center = geo.getCenter();
                 dragGeometry(geo);
-                expect(geo.getCenter()).not.to.nearCoord(center);
+                expect(geo.getCenter()).not.to.closeTo(center);
             }
         });
 
@@ -102,7 +102,7 @@ describe('#GeometryDrag', function () {
             dragGeometry(marker);
             var center = map.getCenter();
             dragMap();
-            expect(map.getCenter()).not.to.nearCoord(center);
+            expect(map.getCenter()).not.to.closeTo(center);
         });
 
         it('enable map draggable after dragging without moving', function() {
@@ -111,7 +111,7 @@ describe('#GeometryDrag', function () {
             dragGeometry(marker, false);
             var center = map.getCenter();
             dragMap();
-            expect(map.getCenter()).not.to.nearCoord(center);
+            expect(map.getCenter()).not.to.closeTo(center);
         });
     });
 
@@ -119,7 +119,7 @@ describe('#GeometryDrag', function () {
         it('disables dragging', function() {
             var marker = new maptalks.Marker(center,{draggable:false});
             dragGeometry(marker);
-            expect(marker.getCoordinates()).to.be.nearCoord(center);
+            expect(marker.getCoordinates()).to.be.closeTo(center);
         });
     });
 

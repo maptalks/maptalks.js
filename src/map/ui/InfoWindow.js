@@ -120,27 +120,5 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
             width = defaultWidth;
         }
         return width;
-    },
-
-    _getEvents: function () {
-        return {
-            '_zoomstart' : this._onZoomStart,
-            '_zoomend'   : this._onZoomEnd
-        };
-    },
-
-    _onZoomStart:function () {
-        if (this.isVisible()) {
-            this._getDOM().style.left = -999999 + 'px';
-            this._getDOM().style.top = -999999 + 'px';
-        }
-    },
-
-    _onZoomEnd:function () {
-        if (this.isVisible()) {
-            var point = this._getPosition();
-            this._getDOM().style.left = point.x + 'px';
-            this._getDOM().style.top = point.y + 'px';
-        }
     }
 });

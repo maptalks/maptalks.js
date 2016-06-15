@@ -29,6 +29,22 @@ describe('VectorLayer', function() {
         removeContainer(container);
     });
 
+    describe('add to map', function () {
+        it('add again', function (done) {
+            layer = new maptalks.VectorLayer('v')
+                .addGeometry(new maptalks.Marker(map.getCenter()));
+            expect(layer.getCount()).to.be(1);
+            map.removeLayer(layer);
+            expect(layer.getCount()).to.be(1);
+            layer.on('layerload', function () {
+                expect(layer.getCount()).to.be(1);
+                expect(layer).to.be.painted(0, -1);
+                done();
+            });
+            map.addLayer(layer);
+        });
+    });
+
     describe('can addGeometry', function() {
         beforeEach(function() {
             map.addLayer(layer);

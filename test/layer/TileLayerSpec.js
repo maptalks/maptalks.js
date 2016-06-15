@@ -20,6 +20,24 @@ describe('#TileLayer', function() {
         removeContainer(container)
     });
 
+    describe('add to map', function () {
+        it('add again', function (done) {
+            var tile = new Z.TileLayer('tile', {
+                urlTemplate : '/resources/tile.png'
+            });
+            tile.once('layerload', function () {
+                expect(tile).to.be.painted();
+                map.removeLayer(tile);
+                tile.once('layerload', function () {
+                    expect(tile).to.be.painted();
+                    done();
+                });
+                map.addLayer(tile);
+            });
+            map.addLayer(tile);
+        });
+    });
+
     describe("Different Projections", function() {
         it("webmercator", function(done) {
             var tile = new Z.TileLayer('tile', {

@@ -285,7 +285,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     _switchEvents: function (to) {
-        var events = this._getEvents ? this._getEvents() : null;
+        var events = this._getDefaultEvents();
+        if (this._getEvents) {
+            Z.Util.extend(events, this._getEvents());
+        }
         if (events) {
             var map = this.getMap();
             for (var p in events) {
@@ -294,5 +297,38 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
                 }
             }
         }
+    },
+
+    _getDefaultEvents: function () {
+        return {
+            'zooming' : this._onZooming,
+            'zoomend' : this._onZoomEnd
+        };
+    },
+
+    _onZooming : function (param) {
+        if (!this.isVisible() || !this._getDOM()) {
+            return;
+        }
+        var dom = this._getDOM(),
+            point = this.getMap().coordinateToViewPoint(this._coordinate),
+            matrix = param['matrix']['view'];
+        var p = matrix.applyToPointInstance(point)._add(this.options['dx'], this.options['dy']);
+        if (this._getDomOffset) {
+            var o = this._getDomOffset();
+            if (o) { p._add(o); }
+        }
+        dom.style.left = p.x + 'px';
+        dom.style.top  = p.y + 'px';
+    },
+
+    _onZoomEnd : function () {
+        if (!this.isVisible() || !this._getDOM()) {
+            return;
+        }
+        var dom = this._getDOM(),
+            p = this._getPosition();
+        dom.style.left = p.x + 'px';
+        dom.style.top  = p.y + 'px';
     }
 });

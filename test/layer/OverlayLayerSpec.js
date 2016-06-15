@@ -128,7 +128,7 @@ describe('#OverlayLayer', function() {
             var geo2 = new Z.Marker(center2);
             layer.on('addgeo', function() {
                 var center = center1.add(center2).multi(1/2);
-                expect(map.getCenter()).to.be.nearCoord(center);
+                expect(map.getCenter()).to.be.closeTo(center);
                 done();
             });
             layer.addGeometry([geo1, geo2], true);

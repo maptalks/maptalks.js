@@ -48,20 +48,20 @@ describe('#Map', function () {
     describe('#getCenter', function() {
         it('getCenter返回结果与初始化时指定center相等(Load之前)', function() {
 
-            expect(map.getCenter()).to.nearCoord(center);
+            expect(map.getCenter()).to.closeTo(center);
         });
 
         it('getCenter返回结果与初始化时指定center相等(Load之后)', function() {
             map.setBaseLayer(tile);
 
-            expect(map.getCenter()).to.nearCoord(center);
+            expect(map.getCenter()).to.closeTo(center);
         });
 
         it('getCenter返回结果与初始化时指定center相等(setZoom之后)', function() {
             map.setBaseLayer(tile);
             map.setZoom(13);
 
-            expect(map.getCenter()).to.nearCoord(center);
+            expect(map.getCenter()).to.closeTo(center);
         });
     });
 
@@ -71,7 +71,7 @@ describe('#Map', function () {
             var z = map.getZoom();
             map.setCenterAndZoom(nc);
 
-            expect(map.getCenter()).to.nearCoord(nc);
+            expect(map.getCenter()).to.closeTo(nc);
             expect(map.getZoom()).to.be.eql(z);
         });
 
@@ -80,7 +80,7 @@ describe('#Map', function () {
             var nz = map.getZoom() + 1;
             map.setCenterAndZoom(nc, nz);
 
-            expect(map.getCenter()).to.nearCoord(nc);
+            expect(map.getCenter()).to.closeTo(nc);
             expect(map.getZoom()).to.be.eql(nz);
         });
 
@@ -88,7 +88,7 @@ describe('#Map', function () {
             var nc = new Z.Coordinate(119, 32);
             map.setCenter(nc);
 
-            expect(map.getCenter()).to.nearCoord(nc);
+            expect(map.getCenter()).to.closeTo(nc);
         });
 
         it('setCenter后, getCenter返回结果与指定center相等(Load之后)', function() {
@@ -97,7 +97,7 @@ describe('#Map', function () {
             var nc = new Z.Coordinate(122, 32);
             map.setCenter(nc);
 
-            expect(map.getCenter()).to.nearCoord(nc);
+            expect(map.getCenter()).to.closeTo(nc);
         });
 
         it('setCenter设定中心点为当前地图中心点, 应该触发movestart', function() {

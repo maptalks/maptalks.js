@@ -1171,7 +1171,7 @@ describe('API', function () {
             var rect = new Z.Rectangle({x: 0, y: 0}, 200, 100);
             var got = rect.getCenter();
 
-            expect(got).to.nearCoord(new Z.Coordinate([0.000898, -0.000449]));
+            expect(got).to.closeTo(new Z.Coordinate([0.000898, -0.000449]));
         });
 
         it('getExtent', function() {
@@ -1343,7 +1343,7 @@ describe('API', function () {
             var coords = polyline.getCoordinates();
 
             for(var i = 0; i < coords.length; i++) {
-                expect(coords[i]).to.nearCoord(path[i]);
+                expect(coords[i]).to.closeTo(path[i]);
             }
             // expect(polyline.getCoordinates()).to.eql(path);
         });
@@ -1388,7 +1388,7 @@ describe('API', function () {
             var polygon = new Z.Polygon(rings);
             var got = polygon.getCenter();
 
-            expect(got).to.nearCoord(new Z.Coordinate([0, 0]));
+            expect(got).to.closeTo(new Z.Coordinate([0, 0]));
         });
 
         it('getExtent', function() {
