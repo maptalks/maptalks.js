@@ -97,7 +97,6 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             shadow.setSymbol(symbol);
         }
         shadow.setId(null);
-        shadow._enableRenderImmediate();
         //copy connectors
         var shadowConnectors = [];
         if (Z.ConnectorLine._hasConnectors(target)) {
@@ -132,7 +131,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(this.dragStageLayerId);
         if (!this._dragStageLayer) {
-            this._dragStageLayer = new Z.VectorLayer(this.dragStageLayerId);
+            this._dragStageLayer = new Z.VectorLayer(this.dragStageLayerId, {'drawImmediate' : true});
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.

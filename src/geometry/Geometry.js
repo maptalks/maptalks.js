@@ -886,25 +886,6 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
     },
 
-    _isRenderImmediate:function () {
-        if (this._getParent()) {
-            if (this._getParent()._isRenderImmediate()) {
-                return true;
-            }
-        }
-        return (this._isEditingOrDragging() || this._immediate);
-    },
-
-    _enableRenderImmediate:function () {
-        this._immediate = true;
-        return this;
-    },
-
-    _disableRenderImmediate:function () {
-        this._immediate = false;
-        return this;
-    },
-
     _isEditingOrDragging:function () {
         return ((this.isEditing && this.isEditing()) || (this.isDragging && this.isDragging()));
     },

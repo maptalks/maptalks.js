@@ -42,7 +42,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         var guid = Z.Util.GUID();
         this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + guid);
         if (!this._editStageLayer) {
-            this._editStageLayer = new Z.VectorLayer(this.editStageLayerIdPrefix + guid);
+            this._editStageLayer = new Z.VectorLayer(this.editStageLayerIdPrefix + guid, {'drawImmediate' : true});
             map.addLayer(this._editStageLayer);
         }
     },
@@ -67,7 +67,6 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         }
         //drag shadow by center handle instead.
         shadow.setId(null).config({'draggable': false});
-        shadow._enableRenderImmediate();
 
         this._shadow = shadow;
         geometry.hide();
@@ -220,7 +219,6 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             'cursor'     : 'move',
             onDown:function () {
                 shadow = this._shadow.copy();
-                shadow._enableRenderImmediate();
                 var symbol = Z.Util.decreaseSymbolOpacity(shadow._getInternalSymbol(), 0.5);
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },

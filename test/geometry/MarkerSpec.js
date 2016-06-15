@@ -111,7 +111,7 @@ describe('Marker', function() {
         });
 
         it('unsuppored markerType', function() {
-            var layer = new maptalks.VectorLayer('vector');
+            var layer = new maptalks.VectorLayer('vector', {'drawImmediate' : true});
             map.addLayer(layer);
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol:{
@@ -120,7 +120,6 @@ describe('Marker', function() {
                     "markerHeight":30
                 }
             });
-            marker._enableRenderImmediate();
             expect(function() {
                 layer.addGeometry(marker);
             }).to.throwException();

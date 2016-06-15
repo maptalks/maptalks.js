@@ -112,7 +112,7 @@ describe('SymbolSpec', function() {
         map.on('zoomend', function() {
             var res = marker._getExternalResource();
             expect(res).to.have.length(1);
-            expect(vectorLayer._getRenderer().isResourceLoaded(res[0])).to.be.ok();
+            expect(vectorLayer._getRenderer()._resources.isResourceLoaded(res[0])).to.be.ok();
             done();
         });
         var vectorLayer = new maptalks.VectorLayer('v').addGeometry(marker);

@@ -172,6 +172,7 @@ function testRemoveHide(geometry, _context) {
             setupGeometry();
             var layer = _context.layer,
                 map = layer.getMap();
+            layer.config('drawImmediate', true);
             layer.clear();
             map.setCenter(geometry.getFirstCoordinate());
             if (!(geometry instanceof maptalks.Marker) && !(geometry instanceof maptalks.MultiPoint)) {
@@ -194,7 +195,6 @@ function testRemoveHide(geometry, _context) {
                 });
             }
             var testPoints = getTestPoints(geometry);
-            geometry._enableRenderImmediate();
             layer.addGeometry(geometry);
             geometry.once('editstart', function() {
                 if (layer.isEmpty()) {

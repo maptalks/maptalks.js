@@ -284,7 +284,6 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
             });
         }
         mask._bindLayer(this);
-        mask._enableRenderImmediate();
         this._mask = mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;

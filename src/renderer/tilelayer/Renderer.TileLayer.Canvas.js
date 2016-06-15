@@ -30,7 +30,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         clearTimeout(this._loadQueueTimeout);
     },
 
-    _render:function () {
+    draw:function () {
         var layer = this._layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
