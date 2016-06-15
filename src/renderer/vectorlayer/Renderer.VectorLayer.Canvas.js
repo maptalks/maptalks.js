@@ -20,7 +20,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
      * @param  {maptalks.Geometry[]} geometries   geometries to render
      * @param  {Boolean} ignorePromise   whether escape step of promise
      */
-    _render:function (geometries) {
+    draw:function (geometries) {
         var me = this;
         this._clearTimeout();
         if (this._layer.isEmpty()) {
@@ -65,11 +65,11 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             this.getMap()._getRenderer()._getCountOfGeosToDraw() > this._layer.options['thresholdOfTransforming']) {
             return false;
         }
-        this._draw(matrix);
+        this._drawGeos(matrix);
         return true;
     },
 
-    _draw:function (matrix) {
+    _drawGeos:function (matrix) {
         var map = this.getMap();
         if (!map) {
             return;
@@ -236,7 +236,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                 return;
             }
         }
-        this._draw();
+        this._drawGeos();
         if (this._layer.options['drawOnce']) {
             if (!this._canvasCache[zoom]) {
                 this._canvasCache[zoom] = {

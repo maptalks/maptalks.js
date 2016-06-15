@@ -28,7 +28,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             this._complete();
             return;
         }
-        this._render.apply(this, arguments);
+        this.draw.apply(this, arguments);
     },
 
     remove: function () {
