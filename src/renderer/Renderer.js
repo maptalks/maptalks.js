@@ -183,7 +183,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     _promiseResource: function (url) {
         var me = this, resources = this._resources,
             crossOrigin = this._layer.options['crossOrigin'];
-        return function (resolve, reject) {
+        return function (resolve) {
             if (resources.isResourceLoaded(url)) {
                 resolve({});
                 return;
