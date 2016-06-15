@@ -78,7 +78,6 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
         }
         this._addClearMarker(param['coordinate'], size['width']);
         var geo = param['geometry'].copy();
-        geo._enableRenderImmediate();
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getArea();
     }

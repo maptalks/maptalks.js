@@ -159,7 +159,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
     _addGeometryToStage:function (geometry) {
         var drawLayer = this._getDrawLayer();
-        geometry._enableRenderImmediate();
         drawLayer.addGeometry(geometry);
     },
 
@@ -229,7 +228,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             this._movingTail = new Z.LineString(tailPath, {
                 'symbol' : symbol
             });
-            this._movingTail._enableRenderImmediate();
             this._addGeometryToStage(this._movingTail);
         } else {
             this._movingTail.setCoordinates(tailPath);
@@ -453,7 +451,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         var drawLayerId = Z.internalLayerPrefix + 'drawtool';
         var drawToolLayer = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
-            drawToolLayer = new Z.VectorLayer(drawLayerId);
+            drawToolLayer = new Z.VectorLayer(drawLayerId, {'drawImmediate' : true});
             this._map.addLayer(drawToolLayer);
         }
         return drawToolLayer;

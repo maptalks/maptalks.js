@@ -135,8 +135,8 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         var layerId = 'distancetool_' + guid;
         var markerLayerId = 'distancetool_markers_' + guid;
         if (!map.getLayer(layerId)) {
-            this._measureLineLayer = new maptalks.VectorLayer(layerId).addTo(map);
-            this._measureMarkerLayer = new maptalks.VectorLayer(markerLayerId).addTo(map);
+            this._measureLineLayer = new maptalks.VectorLayer(layerId, {'drawImmediate' : true}).addTo(map);
+            this._measureMarkerLayer = new maptalks.VectorLayer(markerLayerId, {'drawImmediate' : true}).addTo(map);
         } else {
             this._measureLineLayer = map.getLayer(layerId);
             this._measureMarkerLayer = map.getLayer(markerLayerId);
@@ -161,10 +161,8 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
             this._tailMarker = new maptalks.Marker(param['coordinate'], {
                 'symbol' : symbol
             }).addTo(this._measureMarkerLayer);
-            this._tailMarker._enableRenderImmediate();
             this._tailLabel = new maptalks.Label(ms, param['coordinate'], this.options['labelOptions'])
                 .addTo(this._measureMarkerLayer);
-            this._tailLabel._enableRenderImmediate();
         }
         this._tailMarker.setCoordinates(param['coordinate']);
         this._tailLabel.setContent(ms);
@@ -192,7 +190,6 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         }
         this._addClearMarker(this._lastVertex.getCoordinates(), size['width']);
         var geo = param['geometry'].copy();
-        geo._enableRenderImmediate();
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getLength();
     },
