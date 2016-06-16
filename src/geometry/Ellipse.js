@@ -163,7 +163,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
+        var coordinates = Z.GeoJSON.toNumberArrays([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates

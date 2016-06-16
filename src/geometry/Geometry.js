@@ -21,9 +21,9 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             'NOT_ADD_TO_LAYER':'This operation needs geometry to be on a layer.'
         },
         'zh-CN':{
-            'DUPLICATE_LAYER':'Geometryä¸èƒ½è¢«é‡å¤æ·»åŠ åˆ°å¤šä¸ªå›¾å±‚ä¸Š.',
-            'INVALID_GEOMETRY_IN_COLLECTION':'æ·»åŠ åˆ°é›†åˆä¸­çš„Geometryæ˜¯ä¸åˆæ³•çš„, index:',
-            'NOT_ADD_TO_LAYER':'Geometryå¿…é¡»æ·»åŠ åˆ°æŸä¸ªå›¾å±‚ä¸Šæ‰èƒ½ä½œæ­¤æ“ä½œ.'
+            'DUPLICATE_LAYER':'Geometry²»ÄÜ±»ÖØ¸´Ìí¼Óµ½¶à¸öÍ¼²ãÉÏ.',
+            'INVALID_GEOMETRY_IN_COLLECTION':'Ìí¼Óµ½¼¯ºÏÖĞµÄGeometryÊÇ²»ºÏ·¨µÄ, index:',
+            'NOT_ADD_TO_LAYER':'Geometry±ØĞëÌí¼Óµ½Ä³¸öÍ¼²ãÉÏ²ÅÄÜ×÷´Ë²Ù×÷.'
         }
     },
     /** @lends maptalks.Geometry */
@@ -119,7 +119,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Gets geometry's id. Id is set by setId or constructor options.
-     * @returns {String|Number} geometryçš„id
+     * @returns {String|Number} geometryµÄid
      */
     getId:function () {
         return this._id;
@@ -134,7 +134,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     setId:function (id) {
         var oldId = this.getId();
         this._id = id;
-        //FIXME _idchangedæ²¡æœ‰è¢«å›¾å±‚ç›‘å¬, layer.getGeometryByIdä¼šå‡ºç°bug
+        //FIXME _idchangedÃ»ÓĞ±»Í¼²ã¼àÌı, layer.getGeometryById»á³öÏÖbug
         /**
          * idchange event.
          *
@@ -477,7 +477,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     copy:function () {
         var json = this.toJSON();
-        //FIXME symbolä¿¡æ¯æ²¡æœ‰è¢«æ‹·è´è¿‡æ¥
+        //FIXME symbolĞÅÏ¢Ã»ÓĞ±»¿½±´¹ıÀ´
         var ret = Z.Geometry.fromJSON(json);
         //restore visibility
         ret.options['visible'] = true;
@@ -601,9 +601,9 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @return {Object} profile json object
      */
     toJSON:function (options) {
-        //ä¸€ä¸ªGraphicçš„profile
+        //Ò»¸öGraphicµÄprofile
         /*
-            //å› ä¸ºå“åº”å‡½æ•°æ— æ³•è¢«åºåˆ—åŒ–, æ‰€ä»¥menu, äº‹ä»¶listenerç­‰æ— æ³•è¢«åŒ…å«åœ¨graphicä¸­
+            //ÒòÎªÏìÓ¦º¯ÊıÎŞ·¨±»ĞòÁĞ»¯, ËùÒÔmenu, ÊÂ¼şlistenerµÈÎŞ·¨±»°üº¬ÔÚgraphicÖĞ
         }*/
         if (!options) {
             options = {};
@@ -663,14 +663,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
     },
 
-    //è°ƒç”¨prepareæ—¶,layerå·²ç»æ³¨å†Œåˆ°mapä¸Š
+    //µ÷ÓÃprepareÊ±,layerÒÑ¾­×¢²áµ½mapÉÏ
     _bindLayer:function (layer) {
-         //Geometryä¸å…è®¸è¢«é‡å¤æ·»åŠ åˆ°å¤šä¸ªå›¾å±‚ä¸Š
+         //Geometry²»ÔÊĞí±»ÖØ¸´Ìí¼Óµ½¶à¸öÍ¼²ãÉÏ
         if (this.getLayer()) {
             throw new Error(this.exceptions['DUPLICATE_LAYER']);
         }
         this._layer = layer;
-        //å¦‚æœæŠ•å½±å‘ç”Ÿæ”¹å˜,åˆ™æ¸…é™¤æ‰æ‰€æœ‰çš„æŠ•å½±åæ ‡å±æ€§
+        //Èç¹ûÍ¶Ó°·¢Éú¸Ä±ä,ÔòÇå³ıµôËùÓĞµÄÍ¶Ó°×ø±êÊôĞÔ
         this._clearProjection();
         this.callInitHooks();
     },
@@ -754,7 +754,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return this._internalId;
     },
 
-    //åªèƒ½è¢«å›¾å±‚è°ƒç”¨
+    //Ö»ÄÜ±»Í¼²ãµ÷ÓÃ
     _setInternalId:function (id) {
         this._internalId = id;
     },
@@ -774,7 +774,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return null;
     },
 
-    //è·å–geometryæ ·å¼ä¸­ä¾èµ–çš„å¤–éƒ¨å›¾ç‰‡èµ„æº
+    //»ñÈ¡geometryÑùÊ½ÖĞÒÀÀµµÄÍâ²¿Í¼Æ¬×ÊÔ´
     _getExternalResources:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
@@ -928,7 +928,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     _exportGeoJSONGeometry:function () {
         var points = this.getCoordinates();
-        var coordinates = Z.GeoJSON.toGeoJSONCoordinates(points);
+        var coordinates = Z.GeoJSON.toNumberArrays(points);
         return {
             'type'        : this.getType(),
             'coordinates' : coordinates
@@ -951,9 +951,9 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 });
 
 /**
- * Produce a geometry from a [profile json]{@link maptalks.Geometry#toJSON}
+ * Produce a geometry from one or more [profile json]{@link maptalks.Geometry#toJSON} or GeoJSON.
  * @static
- * @param  {Object} json - a geometry's profile json
+ * @param  {Object} json - a geometry's profile json or a geojson
  * @return {maptalks.Geometry} geometry
  * @example
  * var profile = {
@@ -977,6 +977,17 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     var marker = maptalks.Geometry.fromJSON(profile);
  */
 Z.Geometry.fromJSON = function (json) {
+    if (Z.Util.isArray(json)) {
+        var result = [];
+        for (var i = 0, len = json.length; i < len; i++) {
+            result.push(Z.Geometry.fromJSON(json[i]));
+        }
+        return result;
+    }
+
+    if (json && !json['feature']) {
+        return Z.GeoJSON.fromGeoJSON(json);
+    }
     var geometry;
     if (json['subType']) {
         geometry = Z[json['subType']]._fromJSON(json);
@@ -999,33 +1010,12 @@ Z.Geometry.fromJSON = function (json) {
     return geometry;
 };
 
-/**
- * Produce a geometry from a GeoJSON object
- * @static
- * @param  {Object} json - a GeoJSON object
- * @return {maptalks.Geometry} geometry
- * @example
- * var marker = maptalks.Geometry.fromGeoJSON({"type":"Point", "coordinates":[100,0]});
- * @example
- * var feature = maptalks.Geometry.fromGeoJSON({
- *     "type":"Feature",
- *     "geometry":{
- *         "type":"Point",
- *         "coordinates":[100,0]
- *      },
- *      "properties":{"foo":"val"}
- * });
- */
-Z.Geometry.fromGeoJSON = function (geoJSON) {
-    return Z.GeoJSON.fromGeoJSON(geoJSON);
-};
 
 Z.Geometry._getMarkerPathURL = function (symbol) {
     if (!symbol['markerPath']) {
         return null;
     }
-    var op,
-        styles =  Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
+    var op, styles =  Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
     if (Z.Util.isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];
@@ -1033,8 +1023,7 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     if (Z.Util.isNumber(symbol['opacity'])) {
         op *= symbol['opacity'];
     }
-    var p,
-        svgStyles = {};
+    var p, svgStyles = {};
     if (styles) {
         for (p in styles['stroke']) {
             if (styles['stroke'].hasOwnProperty(p)) {
@@ -1055,24 +1044,24 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     var pathes = Z.Util.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
     var i, path, pathesToRender = [];
     for (i = 0; i < pathes.length; i++) {
-        var pathObj = Z.Util.isString(pathes[i]) ? {'path' : pathes[i]} : pathes[i];
-        path = Z.Util.extend({}, pathObj, svgStyles);
+        path = Z.Util.isString(pathes[i]) ? {'path' : pathes[i]} : pathes[i];
+        path = Z.Util.extend({}, path, svgStyles);
         path['d'] = path['path'];
         delete path['path'];
         pathesToRender.push(path);
     }
-    var svgContent = ['<svg version="1.1"', 'xmlns="http://www.w3.org/2000/svg"'];
+    var svg = ['<svg version="1.1"', 'xmlns="http://www.w3.org/2000/svg"'];
     if (op < 1) {
-        svgContent.push('opacity="' + op + '"');
+        svg.push('opacity="' + op + '"');
     }
     if (symbol['markerWidth'] && symbol['markerHeight']) {
-        svgContent.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
+        svg.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
     }
     if (symbol['markerPathWidth'] && symbol['markerPathHeight']) {
-        svgContent.push('viewBox="0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
+        svg.push('viewBox="0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
     }
-    svgContent.push('preserveAspectRatio="none"');
-    svgContent.push('><defs></defs>');
+    svg.push('preserveAspectRatio="none"');
+    svg.push('><defs></defs>');
 
     for (i = 0; i < pathesToRender.length; i++) {
         var strPath = '<path ';
@@ -1082,9 +1071,9 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
             }
         }
         strPath += '></path>';
-        svgContent.push(strPath);
+        svg.push(strPath);
     }
-    svgContent.push('</svg>');
-    var b64 = 'data:image/svg+xml;base64,' + Z.Util.btoa(svgContent.join(' '));
+    svg.push('</svg>');
+    var b64 = 'data:image/svg+xml;base64,' + Z.Util.btoa(svg.join(' '));
     return b64;
 };

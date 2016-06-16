@@ -1,6 +1,6 @@
 /**
  * @classdesc
- * A layer for managing and rendering geometrie.
+ * A layer for managing and rendering geometries.
  * @class
  * @category layer
  * @extends {maptalks.OverlayLayer}
@@ -36,7 +36,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
 
     setStyle: function (style) {
         this._style = style;
-        this._cookedStyles = this._cookStyle(style);
+        this._cookedStyles = this._compileStyle(style);
         this.forEach(function (geometry) {
             this._styleGeometry(geometry);
         }, this);
@@ -71,9 +71,9 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         return false;
     },
 
-    _cookStyle: function (styles) {
+    _compileStyle: function (styles) {
         if (!Z.Util.isArray(styles)) {
-            return this._cookStyle([styles]);
+            return this._compileStyle([styles]);
         }
         var cooked = [];
         for (var i = 0; i < styles.length; i++) {
