@@ -978,9 +978,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
  */
 Z.Geometry.fromJSON = function (json) {
     if (Z.Util.isArray(json)) {
-        var result = [];
+        var result = [], c;
         for (var i = 0, len = json.length; i < len; i++) {
-            result.push(Z.Geometry.fromJSON(json[i]));
+            c = Z.Geometry.fromJSON(json[i]);
+            if (Z.Util.isArray(json)) {
+                result = result.concat(c);
+            } else {
+                result.push(c);
+            }
         }
         return result;
     }
