@@ -182,9 +182,13 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             style = this.getStyle ? this.getStyle() : null;
         for (var i = 0, len = geometries.length; i < len; i++) {
             geo = geometries[i];
-            if (!geo || !(geo instanceof Z.Geometry)) {
+            if (!(geo instanceof Z.Geometry)) {
+                geo = Z.Geometry.fromJSON(geo);
+            }
+            if (!geo) {
                 throw new Error(this.exceptions['INVALID_GEOMETRY']);
             }
+
 
             geoId = geo.getId();
             if (!Z.Util.isNil(geoId)) {

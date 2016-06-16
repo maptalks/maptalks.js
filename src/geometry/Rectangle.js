@@ -199,7 +199,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
+        var coordinates = Z.GeoJSON.toNumberArrays([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates

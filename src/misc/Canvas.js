@@ -89,7 +89,9 @@ Z.Canvas = {
                 fillTexture = canvas;
             }
             if (!fillTexture) {
-                console.warn('img not found for', fillImgUrl);
+                if (!Z.Browser.phantomjs) {
+                    console.warn('img not found for', fillImgUrl);
+                }
             } else {
                 ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
             }
@@ -182,7 +184,7 @@ Z.Canvas = {
         }
         if (imageTexture) {
             ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
-        } else {
+        } else if (!Z.Browser.phantomjs) {
             console.warn('img not found for', imgUrl);
         }
     },

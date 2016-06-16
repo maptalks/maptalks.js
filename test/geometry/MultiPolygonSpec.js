@@ -34,7 +34,7 @@ describe('MultiPolygonSpec', function() {
             var multiPolygon = new Z.MultiPolygon(points);
             var coordinates = multiPolygon.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = Z.GeoJSON.toGeoJSONCoordinates(coordinates);
+            var geojsonCoordinates = Z.GeoJSON.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 

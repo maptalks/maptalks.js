@@ -178,7 +178,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = Z.GeoJSON.toGeoJSONCoordinates([this.getShell()]);
+        var coordinates = Z.GeoJSON.toNumberArrays([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates

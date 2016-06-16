@@ -12,14 +12,14 @@ Z.GeoJSON = {
      * @param  {String|Object|Object[]} json - json objects or json string
      * @return {maptalks.Geometry|maptalks.Geometry[]}
      */
-    fromGeoJSON:function (geoJSON) {
+    toGeometry:function (geoJSON) {
         if (Z.Util.isString(geoJSON)) {
             geoJSON = Z.Util.parseJSON(geoJSON);
         }
         if (Z.Util.isArray(geoJSON)) {
             var resultGeos = [];
             for (var i = 0, len = geoJSON.length; i < len; i++) {
-                var geo = this._fromGeoJSONInstance(geoJSON[i]);
+                var geo = this._convert(geoJSON[i]);
                 if (Z.Util.isArray(geo)) {
                     resultGeos = resultGeos.concat(geo);
                 } else {
@@ -28,7 +28,7 @@ Z.GeoJSON = {
             }
             return resultGeos;
         } else {
-            var resultGeo = this._fromGeoJSONInstance(geoJSON);
+            var resultGeo = this._convert(geoJSON);
             return resultGeo;
         }
 
@@ -40,9 +40,9 @@ Z.GeoJSON = {
      * @return {Number[]|Number[][]}
      * @example
      * // result is [[100,0], [101,1]]
-     * var jsonCoords = maptalks.GeoJSON.toGeoJSONCoordinates([new maptalks.Coordinate(100,0), new maptalks.Coordinate(101,1)]);
+     * var jsonCoords = maptalks.GeoJSON.toNumberArrays([new maptalks.Coordinate(100,0), new maptalks.Coordinate(101,1)]);
      */
-    toGeoJSONCoordinates:function (coordinates) {
+    toNumberArrays:function (coordinates) {
         if (!Z.Util.isArray(coordinates)) {
             return [coordinates.x, coordinates.y];
         }
@@ -56,7 +56,7 @@ Z.GeoJSON = {
      * @param  {Number[]|Number[][]} coordinates - coordinates to convert
      * @return {maptalks.Coordinate|maptalks.Coordinate[]}
      */
-    fromGeoJSONCoordinates:function (coordinates) {
+    toCoordinates:function (coordinates) {
         if (Z.Util.isNumber(coordinates[0]) && Z.Util.isNumber(coordinates[1])) {
             return new Z.Coordinate(coordinates);
         }
@@ -67,7 +67,7 @@ Z.GeoJSON = {
                 if (Z.Util.isNumber(child[0])) {
                     result.push(new Z.Coordinate(child));
                 } else {
-                    result.push(this.fromGeoJSONCoordinates(child));
+                    result.push(this.toCoordinates(child));
                 }
             } else {
                 result.push(new Z.Coordinate(child));
@@ -82,7 +82,7 @@ Z.GeoJSON = {
      * @return {maptalks.Geometry}
      * @private
      */
-    _fromGeoJSONInstance:function (geoJSONObj) {
+    _convert:function (geoJSONObj) {
         if (!geoJSONObj || Z.Util.isNil(geoJSONObj['type'])) {
             return null;
         }
@@ -91,7 +91,7 @@ Z.GeoJSON = {
         var type = geoJSONObj['type'];
         if (type === 'Feature') {
             var geoJSONGeo = geoJSONObj['geometry'];
-            var geometry = this._fromGeoJSONInstance(geoJSONGeo);
+            var geometry = this._convert(geoJSONGeo);
             if (!geometry) {
                 return null;
             }
@@ -104,7 +104,7 @@ Z.GeoJSON = {
                 return null;
             }
             //返回geometry数组
-            var result = this.fromGeoJSON(features);
+            var result = Z.GeoJSON.toGeometry(features);
             return result;
         } else if (Z.Util.indexOfArray(type,
             ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
@@ -118,7 +118,7 @@ Z.GeoJSON = {
             var mGeos = [];
             var size = geometries.length;
             for (var i = 0; i < size; i++) {
-                mGeos.push(this._fromGeoJSONInstance(geometries[i]));
+                mGeos.push(this._convert(geometries[i]));
             }
             return new Z.GeometryCollection(mGeos, options);
         } else if (type === 'Circle') {
