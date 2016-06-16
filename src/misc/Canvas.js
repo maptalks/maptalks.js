@@ -184,10 +184,8 @@ Z.Canvas = {
         }
         if (imageTexture) {
             ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
-        } else {
-            if (!Z.Browser.phantomjs) {
-                console.warn('img not found for', imgUrl);
-            }
+        } else if (!Z.Browser.phantomjs) {
+            console.warn('img not found for', imgUrl);
         }
     },
 
