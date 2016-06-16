@@ -986,7 +986,7 @@ Z.Geometry.fromJSON = function (json) {
     }
 
     if (json && !json['feature']) {
-        return Z.GeoJSON.fromGeoJSON(json);
+        return Z.GeoJSON.toGeometry(json);
     }
     var geometry;
     if (json['subType']) {
@@ -996,7 +996,7 @@ Z.Geometry.fromJSON = function (json) {
         }
     } else {
         var feature = json['feature'];
-        geometry = Z.GeoJSON.fromGeoJSON(feature);
+        geometry = Z.GeoJSON.toGeometry(feature);
         if (json['options']) {
             geometry.config(json['options']);
         }
