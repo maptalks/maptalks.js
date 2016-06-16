@@ -46,7 +46,7 @@ Z.Canvas = {
         if (!Z.Util.isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
             ctx.lineWidth = strokeWidth;
         }
-        var strokeColor = style['lineColor'] || style['linePatternFile'] || Z.Symbolizer.DEFAULT_STROKE_COLOR;
+        var strokeColor = style['linePatternFile'] || style['lineColor'] || Z.Symbolizer.DEFAULT_STROKE_COLOR;
         if (Z.Util.isCssUrl(strokeColor) && resources) {
             Z.Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
@@ -72,7 +72,7 @@ Z.Canvas = {
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-        var fill = style['polygonFill'] || style['polygonPatternFile'] || Z.Symbolizer.DEFAULT_FILL_COLOR;
+        var fill = style['polygonPatternFile'] || style['polygonFill'] || Z.Symbolizer.DEFAULT_FILL_COLOR;
         if (Z.Util.isCssUrl(fill)) {
             var fillImgUrl = Z.Util.extractCssUrl(fill);
             var fillTexture = resources.getImage([fillImgUrl, null, null]);
@@ -88,7 +88,12 @@ Z.Canvas = {
                 Z.Canvas.image(canvas.getContext('2d'), fillTexture, 0, 0, w, h);
                 fillTexture = canvas;
             }
-            ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
+            if (!fillTexture) {
+                console.warn('img not found for', fillImgUrl);
+            } else {
+                ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
+            }
+
         } else if (Z.Util.isGradient(fill)) {
             if (style['polygonGradientExtent']) {
                 ctx.fillStyle = Z.Canvas._createGradient(ctx, fill, style['polygonGradientExtent']);
@@ -177,6 +182,8 @@ Z.Canvas = {
         }
         if (imageTexture) {
             ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
+        } else {
+            console.warn('img not found for', imgUrl);
         }
     },
 
@@ -195,6 +202,8 @@ Z.Canvas = {
             ctx.globalAlpha *= fillOpacity;
         }
         if (isPattern) {
+            x = Z.Util.round(x);
+            y = Z.Util.round(y);
             ctx.translate(x, y);
         }
         ctx.fill();
@@ -241,6 +250,7 @@ Z.Canvas = {
             }
         } catch (error) {
             console.warn('error when drawing image on canvas:', error);
+            console.warn(img);
         }
 
     },
@@ -298,6 +308,8 @@ Z.Canvas = {
             ctx.globalAlpha *= strokeOpacity;
         }
         if (isPattern) {
+            x = Z.Util.round(x);
+            y = Z.Util.round(y);
             ctx.translate(x, y);
         }
         ctx.stroke();

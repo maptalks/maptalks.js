@@ -665,6 +665,99 @@ Z.Util = {
 
     isGradient: function (g) {
         return g && Z.Util.isArrayHasData(g['colorStops']);
+    },
+
+    /**
+     * Get external resources from the given symbol
+     * @param  {Object} symbol      - symbol
+     * @return {String[]}           - resource urls
+     */
+    getExternalResources: function (symbol) {
+        if (!symbol) {
+            return null;
+        }
+        var symbols = symbol;
+        if (!Z.Util.isArray(symbol)) {
+            symbols = [symbol];
+        }
+        var resources = [];
+        var props = Z.Symbolizer.resourceProperties,
+            ii, res, resSizeProp;
+        for (var i = symbols.length - 1; i >= 0; i--) {
+            symbol = symbols[i];
+            if (!symbol) {
+                continue;
+            }
+            for (ii = 0; ii < props.length; ii++) {
+                res = symbol[props[ii]];
+                if (!res) {
+                    continue;
+                }
+                if (res.indexOf('url(') >= 0) {
+                    res = Z.Util.extractCssUrl(res);
+                }
+                resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
+                resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
+            }
+            if (symbol['markerType'] === 'path' && symbol['markerPath']) {
+                resources.push([Z.Geometry._getMarkerPathURL(symbol), symbol['markerWidth'], symbol['markerHeight']]);
+            }
+        }
+        return resources;
+    },
+
+     /**
+     * Convert symbol's resources' urls from relative path to an absolute path.
+     * @param  {Object} symbol
+     * @private
+     */
+    convertResourceUrl: function (symbol) {
+        if (!symbol) {
+            return null;
+        }
+
+        function absolute(base, relative) {
+            var stack = base.split('/'),
+                parts = relative.split('/');
+            if (relative.indexOf('/') === 0) {
+                return stack.slice(0, 3).join('/') + relative;
+            } else {
+                stack.pop(); // remove current file name (or empty string)
+                             // (omit if "base" is the current folder without trailing slash)
+                for (var i = 0; i < parts.length; i++) {
+                    if (parts[i] === '.')
+                        continue;
+                    if (parts[i] === '..')
+                        stack.pop();
+                    else
+                        stack.push(parts[i]);
+                }
+                return stack.join('/');
+            }
+
+        }
+        var s = Z.Util.extend({}, symbol);
+        if (Z.node) {
+            return s;
+        }
+        var props = Z.Symbolizer.resourceProperties;
+        var res, isCssStyle = false;
+        for (var ii = 0, len = props.length; ii < len; ii++) {
+            res = s[props[ii]];
+            if (!res) {
+                continue;
+            }
+            isCssStyle = false;
+            if (res.indexOf('url(') >= 0) {
+                res = Z.Util.extractCssUrl(res);
+                isCssStyle = true;
+            }
+            if (!Z.Util.isURL(res)) {
+                res = absolute(location.href, res);
+                s[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
+            }
+        }
+        return s;
     }
 
 };

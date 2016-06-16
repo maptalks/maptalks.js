@@ -696,26 +696,35 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {string|maptalks.Layer} layer - id of the layer or a layer object
      * @return {maptalks.Map} this
      */
-    removeLayer: function (layer) {
-        if (!(layer instanceof Z.Layer)) {
-            layer = this.getLayer(layer);
-        }
-        if (!layer) {
+    removeLayer: function (layers) {
+        if (!layers) {
             return this;
         }
-        var map = layer.getMap();
-        if (!map || map !== this) {
-            return this;
+        if (!Z.Util.isArray(layers)) {
+            return this.removeLayer([layers]);
         }
-        this._removeLayer(layer, this._layers);
-        if (this._loaded) {
-            layer._onRemove();
+        for (var i = 0, len = layers.length; i < len; i++) {
+            var layer = layers[i];
+            if (!(layer instanceof Z.Layer)) {
+                layer = this.getLayer(layer);
+            }
+            if (!layer) {
+                continue;
+            }
+            var map = layer.getMap();
+            if (!map || map !== this) {
+                continue;
+            }
+            this._removeLayer(layer, this._layers);
+            if (this._loaded) {
+                layer._onRemove();
+            }
+            var id = layer.getId();
+            if (this._layerCache) {
+                delete this._layerCache[id];
+            }
+            layer.fire('remove');
         }
-        var id = layer.getId();
-        if (this._layerCache) {
-            delete this._layerCache[id];
-        }
-        layer.fire('remove');
         return this;
     },
 

@@ -137,12 +137,6 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             result['markerFillOpacity'] *= s['markerOpacity'];
             result['markerLineOpacity'] *= s['markerOpacity'];
         }
-        if (result['markerFillPatternFile']) {
-            delete result['markerFill'];
-        }
-        if (result['markerLinePatternFile']) {
-            delete result['markerLineColor'];
-        }
         return result;
     },
 
