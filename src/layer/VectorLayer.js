@@ -56,8 +56,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
     },
 
     _styleGeometry: function (geometry) {
-        var symbol = geometry.getSymbol(),
-            g = Z.Util.getFilterFeature(geometry);
+        var g = Z.Util.getFilterFeature(geometry);
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
             if (this._cookedStyles[i]['filter'](g) === true) {
                 geometry._setExternSymbol(this._cookedStyles[i]['symbol']);
