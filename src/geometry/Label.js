@@ -110,13 +110,15 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
 
     setSymbol:function (symbol) {
         if (!symbol || symbol === this.options['symbol']) {
+            this._labelSymbolChanged = false;
             symbol = {};
+        } else {
+            this._labelSymbolChanged = true;
         }
         var cooked = this._prepareSymbol(symbol);
         var s = this._getDefaultLabelSymbol();
         Z.Util.extend(s, cooked);
         this._symbol = s;
-        this._labelSymbolChanged = true;
         this._refresh();
         return this;
     },

@@ -50,21 +50,16 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         delete this._style;
         delete this._cookedStyles;
         this.forEach(function (geometry) {
-            geometry.setSymbol(geometry._symbolBeforeStyle);
-            delete geometry._symbolBeforeStyle;
+            geometry._setExternSymbol(null);
         }, this);
         return this;
     },
 
     _styleGeometry: function (geometry) {
-        var symbol = geometry.getSymbol(),
-            g = Z.Util.getFilterFeature(geometry);
+        var g = Z.Util.getFilterFeature(geometry);
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
             if (this._cookedStyles[i]['filter'](g) === true) {
-                if (!geometry._symbolBeforeStyle) {
-                    geometry._symbolBeforeStyle = symbol;
-                }
-                geometry.setSymbol(this._cookedStyles[i]['symbol']);
+                geometry._setExternSymbol(this._cookedStyles[i]['symbol']);
                 return true;
             }
         }

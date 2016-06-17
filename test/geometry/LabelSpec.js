@@ -97,7 +97,7 @@ describe('LabelSpec', function() {
             var vector = new maptalks.Label(label,center);
             vector.setSymbol(null);
             //null symbol is allowed, means set to default symbol.
-            expect(vector.getSymbol()).not.to.be.empty();
+            expect(vector.getSymbol()).not.to.be.ok();
             layer = new Z.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
