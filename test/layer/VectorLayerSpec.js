@@ -168,7 +168,7 @@ describe('VectorLayer', function() {
             for (var i = 0; i < points.length; i++) {
                 var hit = hitIndex.indexOf(i);
                 if (hitIndex.indexOf(i) >= 0) {
-                    expect(points[i].getSymbol()).to.be.eql(symbols[hit]);
+                    expect(points[i]._getInternalSymbol()).to.be.eql(symbols[hit]);
                 } else {
                     expect(points[i].getSymbol()).to.be.eql(defaultSymbols[i]);
                 }
@@ -177,7 +177,7 @@ describe('VectorLayer', function() {
             var geoAddLater = points[hitIndex[0]].copy();
             geoAddLater.setSymbol(null);
             layer.addGeometry(geoAddLater);
-            expect(geoAddLater.getSymbol()).to.be.eql(symbols[0]);
+            expect(geoAddLater._getInternalSymbol()).to.be.eql(symbols[0]);
 
             var profile = layer.toJSON();
             for (var i = 0; i < profile.geometries.length; i++) {
@@ -229,6 +229,38 @@ describe('VectorLayer', function() {
                     symbol : symbol2
                 },
             ], [1, 2], [symbol, symbol2]);
+        });
+        it('symbol first', function() {
+            var symbol = {
+                'markerType' : 'ellipse',
+                'markerWidth' : 20,
+                'markerHeight' : 20
+            };
+            var styleSymbol = {
+                'markerFile' : 'http://www.foo.com/foo.png'
+            };
+            var vectors = new maptalks.VectorLayer('symbol-style', {'drawImmediate' : true})
+                        .setStyle({
+                             filter : ['==', '$type', 'Point'],
+                             symbol : styleSymbol
+                            })
+                        .addTo(map);
+            var geometries = [
+                new maptalks.Marker(map.getCenter(), {
+                    'symbol' : symbol
+                }),
+                new maptalks.Marker(map.getCenter()),
+            ];
+            vectors.addGeometry(geometries);
+            expect(geometries[0].getSymbol()).to.be.eql(symbol);
+            expect(geometries[0]._getInternalSymbol()).to.be.eql(symbol);
+            expect(geometries[1].getSymbol()).not.to.be.ok();
+            expect(geometries[1]._getInternalSymbol()).to.be.eql(styleSymbol);
+            vectors.removeStyle();
+            expect(geometries[0].getSymbol()).to.be.eql(symbol);
+            expect(geometries[0]._getInternalSymbol()).to.be.eql(symbol);
+            expect(geometries[1].getSymbol()).not.to.be.ok();
+            expect(geometries[1]._getInternalSymbol()).not.to.be.eql(styleSymbol);
         });
     });
 

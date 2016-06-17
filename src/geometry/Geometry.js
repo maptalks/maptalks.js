@@ -687,13 +687,26 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
     },
 
+    /**
+     * Sets a external symbol to the geometry, e.g. style from VectorLayer's setStyle
+     * @private
+     * @param {Object} symbol - external symbol
+     */
+    _setExternSymbol: function (symbol) {
+        this._externSymbol = this._prepareSymbol(symbol);
+        this._onSymbolChanged();
+        return this;
+    },
+
     _getInternalSymbol:function () {
-        if (!this._symbol) {
-            if (this.options['symbol']) {
-                return this.options['symbol'];
-            }
+        if (this._symbol) {
+            return this._symbol;
+        } else if (this._externSymbol) {
+            return this._externSymbol;
+        } else if (this.options['symbol']) {
+            return this.options['symbol'];
         }
-        return this._symbol;
+        return null;
     },
 
 
