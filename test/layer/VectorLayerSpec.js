@@ -32,7 +32,7 @@ describe('VectorLayer', function() {
     describe('add to map', function () {
         it('add again', function (done) {
             layer = new maptalks.VectorLayer('v')
-                .addGeometry(new maptalks.Marker(map.getCenter()));
+                .addGeometry(new maptalks.Marker(map.getCenter())).addTo(map);
             expect(layer.getCount()).to.be(1);
             map.removeLayer(layer);
             expect(layer.getCount()).to.be(1);

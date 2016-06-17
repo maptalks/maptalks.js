@@ -1,4 +1,3 @@
-// var utils = require('./Specjs');
 
 describe('API', function () {
 
@@ -727,10 +726,6 @@ describe('API', function () {
         function getPainter() {}
 
         it('fromJson', function() {
-            // TODO
-        });
-
-        it('fromGeoJSON', function() {
             // TODO
         });
 

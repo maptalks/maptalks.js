@@ -47,7 +47,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
             this._projectRings();
             return this;
         }
-        var rings = Z.GeoJSON.fromGeoJSONCoordinates(coordinates);
+        var rings = Z.GeoJSON.toCoordinates(coordinates);
         var len = rings.length;
         if (!Z.Util.isArray(rings[0])) {
             this._coordinates = this._trimRing(rings);

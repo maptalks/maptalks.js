@@ -133,6 +133,14 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return this._clear();
     },
 
+    _initCache: function () {
+        if (!this._geoCache) {
+            this._geoCache = {};
+            this._geoMap = {};
+            this._counter = 0;
+        }
+    },
+
     _getGeometryById:function (id) {
         if (Z.Util.isNil(id) || id === '') {
             return null;
@@ -175,6 +183,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         } else if (!Z.Util.isArrayHasData(geometries)) {
             return this;
         }
+        this._initCache();
         var fitCounter = 0;
         var centerSum = new Z.Coordinate(0, 0);
         var extent = null,
@@ -182,10 +191,12 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             style = this.getStyle ? this.getStyle() : null;
         for (var i = 0, len = geometries.length; i < len; i++) {
             geo = geometries[i];
-            if (!geo || !(geo instanceof Z.Geometry)) {
+            if (!(geo instanceof Z.Geometry)) {
+                geo = Z.Geometry.fromJSON(geo);
+            }
+            if (!geo) {
                 throw new Error(this.exceptions['INVALID_GEOMETRY']);
             }
-
             geoId = geo.getId();
             if (!Z.Util.isNil(geoId)) {
                 if (!Z.Util.isNil(this._geoMap[geoId])) {
@@ -283,8 +294,5 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
 });
 
 Z.OverlayLayer.addInitHook(function () {
-    this._geoCache = {};
-    this._geoMap = {};
-    this._resources = {};
-    this._counter = 0;
+    this._initCache();
 });

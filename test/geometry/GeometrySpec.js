@@ -241,7 +241,7 @@ function registerGeometryCommonTest(geometry,_context) {
     //                 "name" : "gcj02"
     //             }
     //         };
-    //         var parsed = Z.GeoJSON.fromGeoJSON(json);
+    //         var parsed = Z.GeoJSON.toGeometry(json);
 
     //         expect(parsed.getCRS()).to.eql(json.crs);
     //     });

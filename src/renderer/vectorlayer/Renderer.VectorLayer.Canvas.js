@@ -269,3 +269,6 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
 
 Z.VectorLayer.registerRenderer('canvas', Z.renderer.vectorlayer.Canvas);
 
+if (Z.GeoJSONLayer) {
+    Z.GeoJSONLayer.registerRenderer('canvas', Z.renderer.vectorlayer.Canvas);
+}

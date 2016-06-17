@@ -44,7 +44,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
             this._setPrjCoordinates(null);
             return this;
         }
-        this._coordinates = Z.GeoJSON.fromGeoJSONCoordinates(coordinates);
+        this._coordinates = Z.GeoJSON.toCoordinates(coordinates);
         if (this.getMap()) {
             this._setPrjCoordinates(this._projectCoords(this._coordinates));
         } else {

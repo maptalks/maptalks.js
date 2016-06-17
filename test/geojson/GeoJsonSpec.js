@@ -105,16 +105,16 @@ describe('GeoJSON', function() {
         var geoJSONCoords = [
             [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
         ];
-        var result = Z.GeoJSON.fromGeoJSONCoordinates(geoJSONCoords);
+        var result = Z.GeoJSON.toCoordinates(geoJSONCoords);
         expect(result).to.have.length(geoJSONCoords.length);
         expect(result[0]).to.eql(new Z.Coordinate(geoJSONCoords[0]));
-        var reverse = Z.GeoJSON.toGeoJSONCoordinates(result);
+        var reverse = Z.GeoJSON.toNumberArrays(result);
         expect(reverse).to.eql(geoJSONCoords);
     });
 
     describe('parse FeatureCollection',function(){
         var fJsons = featureCollectionGeoJSON['features'];
-        var features = Z.GeoJSON.fromGeoJSON(featureCollectionGeoJSON);
+        var features = Z.GeoJSON.toGeometry(featureCollectionGeoJSON);
         it('parse FeatureCollection', function() {
             expect(features).to.have.length(3);
             expect(features[0]).to.an(Z.Marker);
@@ -129,7 +129,7 @@ describe('GeoJSON', function() {
     });
 
     describe('parse GeoJSON Objects', function() {
-        var geometries = Z.GeoJSON.fromGeoJSON(geoJSONs);
+        var geometries = Z.GeoJSON.toGeometry(geoJSONs);
         beforeEach(function() {
         });
 
