@@ -140,21 +140,20 @@
         return this.get(url, cb);
     };
 
+
     /**
-     * Load a script and evaluates.
-     * @param {String} url          - script's url
+     * Load a json.
+     * @param {String} url          - json's url
      * @param {Function} callback   - callback function when completed.
      * @static
      */
-    Ajax.getScript = function (url, cb) {
-        var callback = function (responseText) {
-            Z.Util.globalEval(responseText);
-            if (cb) {
-                cb();
-            }
+    Ajax.getJSON = function (url, cb) {
+        var callback = function (err, resp) {
+            var data = resp ? Z.Util.parseJSON(resp) : null;
+            cb(err, data);
         };
         return Ajax.getResource(url, callback);
     };
 
-    Z.Ajax = Ajax;
+    Z.Util.getJSON = Ajax.getJSON;
 })();
