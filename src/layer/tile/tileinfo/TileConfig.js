@@ -55,10 +55,11 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
 
     getTileIndex:function (point, res) {
         var tileSystem = this.tileSystem, tileSize = this['tileSize'],
-            transOrigin = tileSystem['transOrigin'];
+            transOrigin = tileSystem['transOrigin'],
+            delta = 1E-7;
 
-        var tileX = Math.floor((point.x - transOrigin.x) / (tileSize['width'] * res));
-        var tileY = -Math.floor((point.y - transOrigin.y) / (tileSize['height'] * res));
+        var tileX = Math.floor(delta + (point.x - transOrigin.x) / (tileSize['width'] * res));
+        var tileY = -Math.floor(delta + (point.y - transOrigin.y) / (tileSize['height'] * res));
 
         return {'x':tileSystem['scale']['x'] * tileX, 'y':tileSystem['scale']['y'] * tileY};
     },

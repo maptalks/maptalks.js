@@ -157,7 +157,8 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     },
 
     setSymbol:function (symbol) {
-        this._symbol = this._prepareSymbol(symbol);
+        symbol = this._prepareSymbol(symbol);
+        this._symbol = symbol;
         this.forEach(function (geometry) {
             geometry.setSymbol(symbol);
         });
@@ -169,6 +170,16 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         this.forEach(function (geometry) {
             geometry.config(config);
         });
+    },
+
+    _setExternSymbol:function (symbol) {
+        symbol = this._prepareSymbol(symbol);
+        this._externSymbol = symbol;
+        this.forEach(function (geometry) {
+            geometry._setExternSymbol(symbol);
+        });
+        this._onSymbolChanged();
+        return this;
     },
 
     /**
