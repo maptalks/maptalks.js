@@ -79,18 +79,19 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         var fill = symbol['markerFill']||'#3398CC';
         var lineColor = symbol['markerLineColor']||'#ffffff';
         var spacing = symbol['textLineSpacing']||0;
-        var editor = Z.DomUtil.createEl('span');
+        var editor = Z.DomUtil.createEl('div');
         editor.contentEditable = true;
-        editor.style.cssText ='background:'+fill+';'+
-            'border:1px solid '+lineColor+';'+
-            'color:'+textColor+';'+
-            'font-size:'+textSize+'px;'+
-            'width:'+(width - spacing)+'px;'+
-            'height:'+(height - spacing) +'px;'+
-            'min-height:'+height+'px;'+
-            '_height:'+height+'px;'+
+        editor.style.cssText ='background: '+fill+';'+
+            'border: 1px solid '+lineColor+';'+
+            'color: '+textColor+';'+
+            'font-size: '+textSize+'px;'+
+            'width: '+(width + 10)+'px;'+
+            // 'height: '+(height - spacing) +'px;'+
+            // 'min-height: '+(height - spacing)+'px;'+
+            // 'max-height: 300px;'+
             'margin-left: auto;'+
             'margin-right: auto;'+
+            'line-height: '+(textSize+spacing)+'px;'+
             'outline: 0;'+
             'word-wrap: break-word;'+
             'overflow-x: hidden;'+
@@ -100,7 +101,6 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         editor.innerText = content;
         Z.DomUtil.on(editor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
         Z.DomUtil.on(editor, 'blur', this.endEditText, this);
-        this.getMap().on('click', this.endEditText, this);
         return editor;
     }
 

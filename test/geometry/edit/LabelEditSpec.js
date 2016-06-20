@@ -6,7 +6,8 @@ describe('#LabelEdit', function () {
     var layer;
     function getLabel() {
         var label = new maptalks.Label('I am a Text', map.getCenter()).addTo(layer);
-        label.setSymbol();
+        var symbol = label.defaultSymbol;
+        label.setSymbol(symbol);
         return label;
     }
 
