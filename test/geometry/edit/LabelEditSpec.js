@@ -4,6 +4,11 @@ describe('#LabelEdit', function () {
     var map;
     var center = new Z.Coordinate(118.846825, 32.046534);
     var layer;
+    function getLabel() {
+        var label = new maptalks.Label('I am a Text', map.getCenter()).addTo(layer);
+        label.setSymbol();
+        return label;
+    }
 
     beforeEach(function() {
         var setups = commonSetupMap(center, null);
@@ -20,13 +25,65 @@ describe('#LabelEdit', function () {
     });
 
     describe('edit label', function() {
-        it('start edit label',function() {
-            var label = new maptalks.Label('I am a Text', map.getCenter()).addTo(layer);
+        it('edit content',function() {
+            var label = getLabel();
+            label.on('edittextstart', startEdit);
+            label.on('edittextend', endEdit);
             label.startEditText();
             expect(label.isEditingText()).to.be.ok;
+            function startEdit(param) {
+                var dom = label.getEditor();
+                Z.DomUtil.on(dom, 'keyup', function(ev){
+                    var oEvent = ev || event;
+                    var char = String.fromCharCode(oEvent.keyCode);
+                    if(oEvent.shiftKey) {
+                        if(char == '1') {
+                            char = '!';
+                        }
+                    }
+                    dom.innerText += char;
+                });
+                happen.keyup(dom, {
+                    shiftKey: true,
+                    keyCode: 49
+                });
+                label.endEditText();
+                expect(label.isEditingText()).to.not.be.ok;
+            }
+            function endEdit(param) {
+                expect(label.getContent()).to.eql('I am a Text!');
+            }
+        });
+
+        it('edit content with “Enter” key',function() {
+            var label = getLabel();
+            var size = label.getSize();
+            label.on('edittextstart', startEdit);
+            label.on('edittextend', endEdit);
+            label.startEditText();
+            expect(label.isEditingText()).to.be.ok;
+            function startEdit(param) {
+                var dom = label.getEditor();
+                Z.DomUtil.on(dom, 'keyup', function(ev){
+                    var oEvent = ev || event;
+                    if(oEvent.keyCode === 13) {
+                        dom.innerText += '\n';
+                    }
+                });
+                happen.keyup(dom, {
+                    keyCode: 13
+                });
+                label.endEditText();
+                expect(label.isEditingText()).to.not.be.ok;
+            }
+            function endEdit(param) {
+                var symbol = label.getSymbol();
+                var textSize = symbol['textSize']||12;
+                var spacing = symbol['textLineSpacing']||0;
+                expect(label.getSize()['height']).to.eql(size['height']+textSize+spacing);
+            }
         });
 
     });
-
 
 });

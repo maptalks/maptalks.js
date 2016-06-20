@@ -18,7 +18,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
     endEditText: function() {
         if(this._textEditor) {
             this.getMap().off('click', this.endEditText, this);
-            var content = this._textEditor.value;
+            var content = this._textEditor.innerText;
             this.setContent(content);
             this.show();
             Z.DomUtil.removeDomNode(this._container);
@@ -40,6 +40,10 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         return false;
     },
 
+    getEditor: function() {
+        return this._textEditor;
+    },
+
     _prepareEditor:function () {
         var map = this.getMap();
         var zIndex = map._panels.control.style.zIndex + 1;
@@ -48,9 +52,10 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         this._container.style.cssText = 'position:absolute;top:' + viewPoint['y']
                                     + 'px;left:' + viewPoint['x'] + 'px;z-index:' + zIndex + ';';
         map._panels.ui.appendChild(this._container);
-        this._textEditor = this._createInputDom();
+        this._textEditor = this._createEditor();
         this._container.appendChild(this._textEditor);
     },
+
 
     _computeViewPoint: function () {
         var map = this.getMap();
@@ -64,7 +69,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         return viewPoint;
     },
 
-    _createInputDom: function () {
+    _createEditor: function () {
         var labelSize = this.getSize();
         var symbol = this.getSymbol();
         var width = labelSize['width']||100;
@@ -74,14 +79,16 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         var fill = symbol['markerFill']||'#3398CC';
         var lineColor = symbol['markerLineColor']||'#ffffff';
         var spacing = symbol['textLineSpacing']||0;
-        var inputDom = Z.DomUtil.createEl('textarea');
-        inputDom.style.cssText ='background:'+fill+';'+
+        var editor = Z.DomUtil.createEl('span');
+        editor.contentEditable = true;
+        editor.style.cssText ='background:'+fill+';'+
             'border:1px solid '+lineColor+';'+
             'color:'+textColor+';'+
             'font-size:'+textSize+'px;'+
             'width:'+(width - spacing)+'px;'+
             'height:'+(height - spacing) +'px;'+
             'min-height:'+height+'px;'+
+            '_height:'+height+'px;'+
             'margin-left: auto;'+
             'margin-right: auto;'+
             'outline: 0;'+
@@ -90,14 +97,11 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             'overflow-y: auto;'+
             '-webkit-user-modify: read-write-plaintext-only;';
         var content = this.getContent();
-        inputDom.value = content;
-        Z.DomUtil.on(inputDom, 'mousedown dblclick', Z.DomUtil.stopPropagation);
+        editor.innerText = content;
+        Z.DomUtil.on(editor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
+        Z.DomUtil.on(editor, 'blur', this.endEditText, this);
         this.getMap().on('click', this.endEditText, this);
-        var me = this;
-        Z.DomUtil.on(inputDom, 'blur', function (param) {
-            me.endEditText();
-        });
-        return inputDom;
+        return editor;
     }
 
 });
