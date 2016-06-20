@@ -122,4 +122,18 @@ describe('SymbolSpec', function() {
         map.addLayer(vectorLayer);
     });
 
+    it('collection can _setExternSymbol', function() {
+        var symbol = {
+            'markerType' : 'ellipse',
+            'markerWidth' : 10,
+            'markerHeight' : 10
+        }
+        var markers = new maptalks.MultiPoint([[0, 0], [0, 1]]);
+        markers._setExternSymbol(symbol);
+        var children = markers.getGeometries();
+        for (var i = 0; i < children.length; i++) {
+            expect(children[i]._getInternalSymbol()).to.be.eql(symbol);
+        }
+    });
+
 });
