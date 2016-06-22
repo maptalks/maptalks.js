@@ -62,7 +62,7 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
         this.draggable.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)
             .on('dragging', this._onDragging, this)
-            .on('dragend', this._onDragEnd, this)
+            .on('dragend', this._onDragEnd, this);
 
         if (this.options['draggable']) {
             this.draggable.enable();
