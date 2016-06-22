@@ -45,7 +45,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             return;
         }
         this.target.on('click', this._endDrag, this);
-        this._preCoordDragged = param['coordinate'];
+        this._lastPos = param['coordinate'];
         this._prepareMap();
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
@@ -164,17 +164,17 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             return;
         }
         var axis = this._shadow.options['draggableAxis'];
-        var currentCoord = eventParam['coordinate'];
-        if (!this._preCoordDragged) {
-            this._preCoordDragged = currentCoord;
+        var currentPos = eventParam['coordinate'];
+        if (!this._lastPos) {
+            this._lastPos = currentPos;
         }
-        var dragOffset = currentCoord.substract(this._preCoordDragged);
+        var dragOffset = currentPos.substract(this._lastPos);
         if (axis === 'x') {
             dragOffset.y = 0;
         } else if (axis === 'y') {
             dragOffset.x = 0;
         }
-        this._preCoordDragged = currentCoord;
+        this._lastPos = currentPos;
         this._shadow.translate(dragOffset);
         if (!target.options['dragShadow']) {
             target.translate(dragOffset);
@@ -230,7 +230,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             map.getLayer(this.dragStageLayerId).removeGeometry(this._shadowConnectors);
             delete this._shadowConnectors;
         }
-        delete this._preCoordDragged;
+        delete this._lastPos;
 
         //restore map status
         map._trySetCursor('default');
