@@ -59,15 +59,20 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
 
         this.draggable = new Z.Handler.Drag(dom);
 
-        this.draggable.on('dragstart', this._onDragStart, this);
-        this.draggable.on('dragging', this._onDragging, this);
-        this.draggable.on('dragend', this._onDragEnd, this);
+        this.draggable.on('mousedown', this._onMouseDown, this)
+            .on('dragstart', this._onDragStart, this)
+            .on('dragging', this._onDragging, this)
+            .on('dragend', this._onDragEnd, this)
 
         if (this.options['draggable']) {
             this.draggable.enable();
         }
 
         return dom;
+    },
+
+    _onMouseDown: function (param) {
+        Z.DomUtil.stopPropagation(param['domEvent']);
     },
 
     _onDragStart:function (param) {

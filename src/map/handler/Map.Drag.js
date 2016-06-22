@@ -8,19 +8,19 @@ Z.Map.Drag = Z.Handler.extend({
         if (!map) { return; }
         this.dom = map._panels.mapWrapper || map._containerDOM;
         this._dragHandler = new Z.Handler.Drag(this.dom);
-        map.on(this._dragHandler.START.join(' '), this._onMouseDown, this);
-
-        this._dragHandler.on('dragstart', this._onDragStart, this);
-        this._dragHandler.on('dragging', this._onDragging, this);
-        this._dragHandler.on('dragend', this._onDragEnd, this);
-
-        this._dragHandler.enable();
+        this._dragHandler.on('mousedown', this._onMouseDown, this)
+            .on('dragstart', this._onDragStart, this)
+            .on('dragging', this._onDragging, this)
+            .on('dragend', this._onDragEnd, this)
+            .enable();
     },
 
     removeHooks: function () {
-        var map = this.target;
-        map.off(this._dragHandler.START.join(' '), this._onMouseDown, this);
-        this._dragHandler.disable();
+        this._dragHandler.off('mousedown', this._onMouseDown, this)
+                .off('dragstart', this._onDragStart, this)
+                .off('dragging', this._onDragging, this)
+                .off('dragend', this._onDragEnd, this)
+                .disable();
         delete this._dragHandler;
     },
 
