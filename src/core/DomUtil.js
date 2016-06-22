@@ -196,6 +196,15 @@ Z.DomUtil = {
         return this;
     },
 
+    preventSelection: function (dom) {
+        dom.onselectstart = function () {
+            return false;
+        };
+        dom.ondragstart = function () { return false; };
+        dom.setAttribute('unselectable', 'on');
+        return this;
+    },
+
     /**
      * Get the dom element's current position or offset its position by offset
      * @param  {HTMLElement} dom - HTMLElement

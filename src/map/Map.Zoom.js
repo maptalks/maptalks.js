@@ -1,5 +1,6 @@
 Z.Map.include(/** @lends maptalks.Map.prototype */{
     _zoom:function (nextZoomLevel, origin, startScale) {
+        if (!this.options['zoomable']) { return; }
         this._originZoomLevel = this.getZoom();
         nextZoomLevel = this._checkZoomLevel(nextZoomLevel);
         this._onZoomStart(nextZoomLevel);
@@ -12,7 +13,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     },
 
     _zoomAnimation:function (nextZoomLevel, origin, startScale) {
-        if (!this.options['enableZoom']) { return; }
+        if (!this.options['zoomable']) { return; }
         if (Z.Util.isNil(startScale)) {
             startScale = 1;
         }

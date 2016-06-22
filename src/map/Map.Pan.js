@@ -14,7 +14,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         var map = this;
         coordinate = new Z.Coordinate(coordinate);
         var dest = this.coordinateToViewPoint(coordinate),
-            current = this.offsetPlatform();
+            current = this.coordinateToViewPoint(this.getCenter());
         return this._panBy(dest.substract(current), options, function () {
             var c = map.getProjection().project(coordinate);
             map._setPrjCenterAndMove(c);

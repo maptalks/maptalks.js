@@ -59,7 +59,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @property {Boolean} [options.layerTransforming=true] - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
      * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
      * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
-     * @property {Boolean} [options.enableZoom=true]                - whether to enable map zooming.
+     * @property {Boolean} [options.zoomable=true]                - whether to enable map zooming.
      * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow opening on this map.
      * @property {Boolean} [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
      * @property {Boolean} [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
@@ -98,7 +98,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         //default pan animation duration
         'panAnimationDuration' : 600,
 
-        'enableZoom':true,
+        'zoomable':true,
         'enableInfoWindow':true,
 
         'hitDetect' : (function () { return !Z.Browser.mobile; })(),
@@ -1152,7 +1152,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
          */
         this._fireEvent('moveend');
         if (!this._verifyExtent(this.getCenter())) {
-            this.panTo(this._originCenter);
+            var moveTo = this._originCenter;
+            if (!this._verifyExtent(moveTo)) {
+                moveTo = this.getMaxExtent().getCenter();
+            }
+            this.panTo(moveTo);
         }
     },
 

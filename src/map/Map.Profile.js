@@ -57,9 +57,6 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         var baseLayer = this.getBaseLayer();
         if ((Z.Util.isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
             profile['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
-            // if (!Z.Util.isNil(options['baseLayer']) && !options['baseLayer']) {
-            //     profile['baseLayer']['options']['visible'] = false;
-            // }
         }
         var extraLayerOptions = {};
         if (options['clipExtent']) {
@@ -76,6 +73,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         if (Z.Util.isNil(options['layers']) || (options['layers'] && !Z.Util.isArray(options['layers']))) {
             layers = this.getLayers();
             for (i = 0, len = layers.length; i < len; i++) {
+                if (!layers[i].toJSON) {
+                    continue;
+                }
                 opts = Z.Util.extend({}, Z.Util.isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
                 layersJSON.push(layers[i].toJSON(opts));
             }
@@ -83,6 +83,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         } else if (Z.Util.isArrayHasData(options['layers'])) {
             layers = options['layers'];
             for (i = 0; i < layers.length; i++) {
+                if (!layers[i].toJSON) {
+                    continue;
+                }
                 var exportOption = layers[i];
                 var layer = this.getLayer(exportOption['id']);
                 opts = Z.Util.extend({}, exportOption['options'], extraLayerOptions);
