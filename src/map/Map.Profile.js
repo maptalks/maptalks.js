@@ -83,11 +83,11 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         } else if (Z.Util.isArrayHasData(options['layers'])) {
             layers = options['layers'];
             for (i = 0; i < layers.length; i++) {
-                if (!layers[i].toJSON) {
-                    continue;
-                }
                 var exportOption = layers[i];
                 var layer = this.getLayer(exportOption['id']);
+                if (!layer.toJSON) {
+                    continue;
+                }
                 opts = Z.Util.extend({}, exportOption['options'], extraLayerOptions);
                 layersJSON.push(layer.toJSON(opts));
             }
