@@ -239,11 +239,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
             panels[name] = c;
             if (!enableSelect) {
-                c['onselectstart'] = function () {
-                    return false;
-                };
-                c['ondragstart'] = function () { return false; };
-                c.setAttribute('unselectable', 'on');
+                Z.DomUtil.preventSelection(c);
             }
             return c;
         }

@@ -52,8 +52,12 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         var actual = event.touches ? event.touches[0] : event;
         this.startPos = new Z.Point(actual.clientX, actual.clientY);
         //2015-10-26 fuzhen 改为document, 解决鼠标移出地图容器后的不可控现象
-        Z.DomUtil.on(document, this.MOVE[event.type], this.onMouseMove, this);
-        Z.DomUtil.on(document, this.END[event.type], this.onMouseUp, this);
+        Z.DomUtil.on(document, this.MOVE[event.type], this.onMouseMove, this)
+            .on(document, this.END[event.type], this.onMouseUp, this);
+        this.fire('mousedown', {
+            'domEvent' : event,
+            'mousePos': new Z.Point(actual.clientX, actual.clientY)
+        });
     },
 
     onMouseMove:function (event) {
