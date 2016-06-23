@@ -224,31 +224,44 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
     _containsPoint: function (point, tolerance) {
         var t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pxExtent = this._getPainter().getViewExtent().expand(t);
+        function isContains(points) {
+            var c = Z.GeoUtils.pointInsidePolygon(point, points);
+            if (c) {
+                return c;
+            }
+
+            var i, j, p1, p2,
+                len = points.length;
+
+            for (i = 0, j = len - 1; i < len; j = i++) {
+                p1 = points[i];
+                p2 = points[j];
+
+                if (Z.GeoUtils.distanceToSegment(point, p1, p2) <= t) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         point = new Z.Point(point.x, point.y);
 
         if (!pxExtent.contains(point)) { return false; }
 
         // screen points
-        var points = this._prjToViewPoint(this._getPrjCoordinates());
-
-        var c = Z.GeoUtils.pointInsidePolygon(point, points);
-        if (c) {
-            return c;
-        }
-
-        var i, j, p1, p2,
-            len = points.length;
-
-        for (i = 0, j = len - 1; i < len; j = i++) {
-            p1 = points[i];
-            p2 = points[j];
-
-            if (Z.GeoUtils.distanceToSegment(point, p1, p2) <= t) {
-                return true;
+        var points = this._getPathViewPoints(this._getPrjCoordinates()),
+            isSplitted = Z.Util.isArray(points[0]);
+        if (isSplitted) {
+            for (var i = 0; i < points.length; i++) {
+                if (isContains(points[i])) {
+                    return true;
+                }
             }
+            return false;
+        } else {
+            return isContains(points);
         }
 
-        return false;
     }
 });

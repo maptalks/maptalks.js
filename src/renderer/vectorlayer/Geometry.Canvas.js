@@ -75,7 +75,7 @@ if (Z.Browser.canvas) {
             //draw a triangle arrow
 
             var prjVertexes = this._getPrjCoordinates();
-            var points = this._prjToViewPoint(prjVertexes);
+            var points = this._getPathViewPoints(prjVertexes);
 
             var me = this;
             var fn = function (_ctx, _points, _lineOpacity, _fillOpacity, _dasharray) {
@@ -109,18 +109,34 @@ if (Z.Browser.canvas) {
     Z.Polygon.include({
         _getRenderCanvasResources:function () {
             var prjVertexes = this._getPrjCoordinates(),
-                points = this._prjToViewPoint(prjVertexes);
+                points = this._getPathViewPoints(prjVertexes),
+                //splitted by anti-meridian
+                isSplitted = points.length > 0 && Z.Util.isArray(points[0]);
+            if (isSplitted) {
+                points = [[points[0]], [points[1]]];
+            }
             var prjHoles = this._getPrjHoles();
             var holePoints = [];
             if (Z.Util.isArrayHasData(prjHoles)) {
+                var hole;
                 for (var i = 0; i < prjHoles.length; i++) {
-                    var holPoints = this._prjToViewPoint(prjHoles[i]);
-                    holePoints.push(holPoints);
+                    hole = this._getPathViewPoints(prjHoles[i]);
+                    if (isSplitted) {
+                        if (Z.Util.isArray(hole)) {
+                            points[0].push(hole[0]);
+                            points[1].push(hole[1]);
+                        } else {
+                            points[0].push(hole);
+                        }
+                    } else {
+                        holePoints.push(hole);
+                    }
+
                 }
             }
             var resource =  {
                 'fn' : Z.Canvas.polygon,
-                'context' : [[points].concat(holePoints)]
+                'context' : [isSplitted ? points : [points].concat(holePoints)]
             };
             return resource;
         }

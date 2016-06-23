@@ -221,7 +221,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @property {maptalks.Point} viewPoint       - view point of the event
                   * @property {Event} domEvent                 - dom event
                   */
-                 'touchend ',
+                 'touchend',
 
     _registerDOMEvents: function (dom) {
         Z.DomUtil.on(dom, this._domEvents, this._onDomEvents, this);
@@ -267,8 +267,8 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
             return;
         }
         this.target.on('click', this._endDrag, this);
-        this._preCoordDragged = param['coordinate'];
-        this._prepareMap();
+        this._lastPos = param['coordinate'];
+
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
         /**
@@ -285,46 +285,37 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
         this.target.fire('dragstart', param);
     },
 
-    _prepareMap:function () {
-        var map = this.target.getMap();
-        this._mapDraggable = map.options['draggable'];
-        map.config({
-            'draggable' : false
-        });
-    },
-
     _prepareDragHandler:function () {
-        var map = this.target.getMap();
-        this._dragHandler = new Z.Handler.Drag(map._panels.mapWrapper || map._containerDOM);
+        this._dragHandler = new Z.Handler.Drag(this.target._getDOM());
+        this._dragHandler.on('mousedown', this._onMouseDown, this);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
     },
 
+    _onMouseDown: function (param) {
+        Z.DomUtil.stopPropagation(param['domEvent']);
+    },
+
     _dragging: function (param) {
-        var target = this.target;
-        var map = target.getMap(),
-            eventParam = map._parseEvent(param['domEvent']);
-        var domEvent = eventParam['domEvent'];
+        var target = this.target,
+            map = target.getMap(),
+            eventParam = map._parseEvent(param['domEvent']),
+            domEvent = eventParam['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
-
-        if (!this._moved) {
-            this._moved = true;
+        if (!this._isDragging) {
             this._isDragging = true;
             return;
         }
-
-        var currentCoord = eventParam['coordinate'];
-        if (!this._preCoordDragged) {
-            this._preCoordDragged = currentCoord;
+        var currentPos = eventParam['coordinate'];
+        if (!this._lastPos) {
+            this._lastPos = currentPos;
         }
-        var dragOffset = currentCoord.substract(this._preCoordDragged);
-        this._preCoordDragged = currentCoord;
-
+        var dragOffset = currentPos.substract(this._lastPos);
+        this._lastPos = currentPos;
         this.target.setCoordinates(this.target.getCoordinates().add(dragOffset));
-
         eventParam['dragOffset'] = dragOffset;
 
         /**
@@ -350,25 +341,12 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
             this._dragHandler.disable();
             delete this._dragHandler;
         }
+        delete this._lastPos;
+        this._isDragging = false;
         if (!map) {
             return;
         }
-        var eventParam;
-        if (map) {
-            eventParam = map._parseEvent(param['domEvent']);
-        }
-
-        delete this._preCoordDragged;
-
-        if (Z.Util.isNil(this._mapDraggable)) {
-            this._mapDraggable = true;
-        }
-        map.config({
-            'draggable': this._mapDraggable
-        });
-
-        delete this._mapDraggable;
-        this._isDragging = false;
+        var eventParam = map._parseEvent(param['domEvent']);
         /**
          * dragend event
          * @event maptalks.ui.UIMarker#dragend

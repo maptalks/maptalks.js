@@ -94,9 +94,9 @@ describe('EllipseSpec', function() {
         });
     });
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
         var vector = new Z.Ellipse(center,100,50);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
     it("Ellipse._containsPoint", function() {

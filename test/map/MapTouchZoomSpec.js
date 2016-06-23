@@ -48,8 +48,7 @@ describe('MapTouchZoomSpec', function () {
 
         }
 
-        before(function () {});
-        after(function () {});
+
         it('zoomin', function(done) {
             var z = map.getZoom();
             testTouchZoom([{

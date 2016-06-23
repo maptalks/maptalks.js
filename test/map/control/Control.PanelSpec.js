@@ -31,14 +31,11 @@ describe("Control.Panel", function() {
     });
 
      function dragPanel(panel) {
-        var domPosition = Z.DomUtil.getPagePosition(panel.getContainer());
-        var point = new Z.Point(0,0).add(domPosition);
-        var requestAnimFn = Z.Util.requestAnimFrame;
+        var dom = panel.getContainer().childNodes[0],
+            domPosition = Z.DomUtil.getPagePosition(dom),
+            point = new Z.Point(0,0).add(domPosition);
         //replace original requestAnimFrame to immediate execution.
-        Z.Util.requestAnimFrame=function(fn) {
-            fn();
-        };
-        happen.mousedown(panel.getContainer(),{
+        happen.mousedown(dom,{
                 'clientX':point.x,
                 'clientY':point.y
                 });
@@ -49,25 +46,24 @@ describe("Control.Panel", function() {
                 });
         };
         happen.mouseup(document);
-        Z.Util.requestAnimFrame = requestAnimFn;
     }
 
-    // it("panel can be dragged", function() {
-    //     var position = {//放置panel的位置
-    //             top: '150',
-    //             left: '150'
-    //         };
-    //     var panel = new maptalks.control.Panel({
-    //         position : position,
-    //         draggable: true,//能否拖动
-    //         custom: false, //content值能否为html
-    //         content: '面板内容'
-    //     });
-    //     map.addControl(panel);
+    it("panel can be dragged", function() {
+        var position = {//放置panel的位置
+                top: '150',
+                left: '150'
+            };
+        var panel = new maptalks.control.Panel({
+            position : position,
+            draggable: true,//能否拖动
+            custom: false, //content值能否为html
+            content: '面板内容'
+        });
+        map.addControl(panel);
 
-    //     dragPanel(panel);
+        dragPanel(panel);
 
-    //     expect(panel.getPosition()).not.to.be.eql(position);
-    // });
+        expect(panel.getPosition()).not.to.be.eql(position);
+    });
 
 });

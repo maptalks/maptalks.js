@@ -41,12 +41,12 @@ describe('MultiPolylineSpec', function() {
 
     });
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
         var points = [
                 [ [100.0, 0.0], [101.0, 1.0] ],
                 [ [102.0, 2.0], [103.0, 3.0] ]
             ];
         var vector = new Z.MultiPolyline(points);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 });

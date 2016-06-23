@@ -185,15 +185,15 @@ function registerGeometryCommonTest(geometry,_context) {
         it('it has center',function() {
             var center = geometry.getCenter();
             expect(center).to.be.a(Z.Coordinate);
-            expect(center.x).to.be.ok();
-            expect(center.y).to.be.ok();
+            expect(center.x).to.be.a('number');
+            expect(center.y).to.be.a('number');
 
             setupGeometry();
 
             center = geometry.getCenter();
             expect(center).to.be.a(Z.Coordinate);
-            expect(center.x).to.be.ok();
-            expect(center.y).to.be.ok();
+            expect(center.x).to.be.a('number');
+            expect(center.y).to.be.a('number');
 
             teardownGeometry();
         });

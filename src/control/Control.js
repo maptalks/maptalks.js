@@ -52,6 +52,10 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
     },
 
     initialize: function (options) {
+        if (options && options['position']) {
+            var p = Z.Util.extend({}, options['position']);
+            options['position'] = p;
+        }
         Z.Util.setOptions(this, options);
     },
 

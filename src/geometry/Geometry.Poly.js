@@ -9,7 +9,7 @@ Z.Geometry.Poly = {
      * @returns {maptalks.Point[]}
      * @private
      */
-    _prjToViewPoint:function (prjCoords) {
+    _getPathViewPoints:function (prjCoords) {
         var result = [];
         if (!Z.Util.isArrayHasData(prjCoords)) {
             return result;
@@ -17,82 +17,66 @@ Z.Geometry.Poly = {
         var map = this.getMap(),
             fullExtent = map.getFullExtent(),
             projection = this._getProjection();
-
-        var isAntiMeridian = this.options['antiMeridian'];
-
-        var isClipping = map.options['clipFullExtent'],
+        var anti = this.options['antiMeridian'],
+            isClip = map.options['clipFullExtent'],
             isSimplify = this.getLayer() && this.getLayer().options['enableSimplify'],
-            tolerance,
-            is2dArray = Z.Util.isArray(prjCoords[0]);
-
-        if (isSimplify) {
-            var pxTolerance = 2;
-            tolerance = map._getResolution() * pxTolerance;
-        }
-        if (!is2dArray && isSimplify) {
+            tolerance = 2 * map._getResolution(),
+            isMulti = Z.Util.isArray(prjCoords[0]);
+        if (isSimplify && !isMulti) {
             prjCoords = Z.Simplify.simplify(prjCoords, tolerance, false);
         }
-        var p, vpoints, pp;
-        for (var i = 0, len = prjCoords.length; i < len; i++) {
+        var i, len, p, pre, current, dx, dy, my,
+            part1 = [], part2 = [], part = part1;
+        for (i = 0, len = prjCoords.length; i < len; i++) {
             p = prjCoords[i];
-            if (Z.Util.isNil(p) || (isClipping && !fullExtent.contains(p))) {
+            if (isMulti) {
+                part.push(this._getPathViewPoints(p));
                 continue;
             }
-            if (is2dArray) {
-                if (!Z.Util.isArrayHasData(p)) {
-                    result.push([]);
-                    continue;
-                }
-                if (isSimplify) {
-                    p = Z.Simplify.simplify(p, tolerance, false);
-                }
-                vpoints = [];
-                for (var j = 0, jlen = p.length; j < jlen; j++) {
-                    pp = p[j];
-                    if (Z.Util.isNil(p[j])) {
-                        continue;
-                    }
-                    if (j > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
-                        pp = this._antiMeridian(pp, p[j - 1], projection, isAntiMeridian);
-                    }
-                    vpoints.push(map._prjToViewPoint(pp));
-                }
-                delete this._preAntiMeridianCoord;
-                result.push(vpoints);
-            } else {
-                if (i > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
-                    p = this._antiMeridian(p, prjCoords[i - 1], projection, isAntiMeridian);
-                }
-                pp = map._prjToViewPoint(p);
-                result.push(pp);
+            if (Z.Util.isNil(p) || (isClip && !fullExtent.contains(p))) {
+                continue;
             }
+            if (i > 0 && (anti === 'continuous' || anti === 'split')) {
+                pre = projection.unproject(prjCoords[i - 1]);
+                current = projection.unproject(p);
+                dx = current.x - pre.x;
+                dy = current.y - pre.y;
+                if (Math.abs(dx) > 180) {
+                    if (anti === 'continuous') {
+                        current = this._anti(current, dx);
+                        p = projection.project(current);
+                    } else if (anti === 'split') {
+                        if (dx > 0) {
+                            my = pre.y + dy * (pre.x - (-180)) / dx;
+                            part.push(map.coordinateToViewPoint(new Z.Coordinate(-180, my)));
+                            part = part === part1 ? part2 : part1;
+                            part.push(map.coordinateToViewPoint(new Z.Coordinate(180, my)));
+                        } else {
+                            my = pre.y + dy * (180 - pre.x) / dx;
+                            part.push(map.coordinateToViewPoint(new Z.Coordinate(180, my)));
+                            part = part === part1 ? part2 : part1;
+                            part.push(map.coordinateToViewPoint(new Z.Coordinate(-180, my)));
+                        }
+                    }
+                }
+            }
+            part.push(map._prjToViewPoint(p));
         }
-        delete this._preAntiMeridianCoord;
+        if (part2.length > 0) {
+            result = [part1, part2];
+        } else {
+            result = part;
+        }
         return result;
     },
 
-    _antiMeridian:function (p, preCoord, projection, isAntiMeridian) {
-        var pre;
-        //cache last projected coordinate, to improve some perf.
-        if (this._preAntiMeridianCoord) {
-            pre = this._preAntiMeridianCoord;
+    _anti: function (c, dx) {
+        if (dx > 0) {
+            c._substract(180 * 2, 0);
         } else {
-            pre = projection ? projection.unproject(preCoord) : preCoord;
+            c._add(180 * 2, 0);
         }
-        var current = projection ? projection.unproject(p) : p;
-        var d = current.x - pre.x;
-        if (isAntiMeridian === 'continuous') {
-            if (Math.abs(d) > 180) {
-                if (d > 0) {
-                    current._substract(180 * 2, 0);
-                } else {
-                    current._add(180 * 2, 0);
-                }
-                p = projection ? projection.unproject(current) : current;
-            }
-        }
-        this._preAntiMeridianCoord = current;
-        return p;
+        return c;
     },
 
     _setPrjCoordinates:function (prjPoints) {
@@ -171,7 +155,7 @@ Z.Geometry.Poly = {
         if (!Z.Util.isArrayHasData(ring)) {
             return null;
         }
-        var rings = ring;
+        var rings = [ring];
         if (this.hasHoles && this.hasHoles()) {
             rings = rings.concat(this.getHoles());
         }
@@ -185,28 +169,22 @@ Z.Geometry.Poly = {
       * @private
       */
     _computeCoordsExtent: function (coords) {
-        var result = null;
-        var ext,
-            isAntiMeridian = this.options['antiMeridian'];
+        var result = null,
+            anti = this.options['antiMeridian'];
+        var ext, p, dx;
         for (var i = 0, len = coords.length; i < len; i++) {
-            var p;
-            if (Z.Util.isArray(coords[i])) {
-                for (var j = 0, jlen = coords[i].length; j < jlen; j++) {
-                    p = coords[i][j];
-                    if (j > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
-                        p = this._antiMeridian(p, coords[i][j - 1], null, isAntiMeridian);
+            for (var j = 0, jlen = coords[i].length; j < jlen; j++) {
+                p = coords[i][j];
+                if (j > 0 && anti) {
+                    dx = p.x - coords[i][j - 1].x;
+                    if (Math.abs(dx) > 180) {
+                        p = this._anti(p, dx);
                     }
-                    ext = new Z.Extent(p, p);
-                    result = ext.combine(result);
-                }
-            } else {
-                p = coords[i];
-                if (i > 0 && (isAntiMeridian && isAntiMeridian !== 'default')) {
-                    p = this._antiMeridian(p, coords[i - 1], null, isAntiMeridian);
                 }
                 ext = new Z.Extent(p, p);
                 result = ext.combine(result);
             }
+
         }
         return result;
     }

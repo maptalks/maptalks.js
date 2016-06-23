@@ -36,7 +36,7 @@ function runTests(target, _context) {
             type = 'Map';
         }
 
-        function before() {
+        function prepareGeometry() {
             if (!(target instanceof maptalks.Geometry)) {
                 return;
             }
@@ -76,7 +76,7 @@ function runTests(target, _context) {
 
         context('Type of ' + type, function() {
             it('setMenuAndOpen', function() {
-                before();
+                prepareGeometry();
                 target.setMenu({
                         items: items,
                         width: 250
@@ -88,7 +88,7 @@ function runTests(target, _context) {
             });
 
             it('get menu', function() {
-                before();
+                prepareGeometry();
                 target.setMenu({
                         items: items,
                         width: 250
@@ -98,7 +98,7 @@ function runTests(target, _context) {
             });
 
             it('remove menu', function() {
-                before();
+                prepareGeometry();
                 target.setMenu({
                         items: items,
                         width: 250
@@ -108,7 +108,7 @@ function runTests(target, _context) {
             });
 
             it('custom menu', function() {
-                before();
+                prepareGeometry();
                 target.setMenu({
                         custom : true,
                         items: '<ul><li>item1</li><li>--</li><li>item2</li></ul>',
@@ -131,7 +131,7 @@ function runTests(target, _context) {
                 ul.appendChild(li1);
                 ul.appendChild(li2);
                 ul.appendChild(li3);
-                before();
+                prepareGeometry();
                 target.setMenu({
                         custom : true,
                         items: ul,
@@ -144,7 +144,7 @@ function runTests(target, _context) {
             });
 
             it('setMenuItems', function() {
-                before();
+                prepareGeometry();
                 target.setMenuItems(items);
                 target.openMenu();
                 assertItems();
@@ -153,7 +153,7 @@ function runTests(target, _context) {
             });
 
             it('openMenu with a coordinate', function() {
-                before();
+                prepareGeometry();
                 target.setMenuItems(items);
                 target.openMenu(target.getCenter());
                 assertItems();
@@ -165,7 +165,7 @@ function runTests(target, _context) {
                 if (target instanceof Z.Sector) {
                     return;
                 }
-                before();
+                prepareGeometry();
                 target.setMenu({
                         items: items,
                         width: 250
@@ -180,7 +180,7 @@ function runTests(target, _context) {
                 // if (target instanceof Z.Sector) {
                 //     return;
                 // }
-                // before();
+                // prepareGeometry();
                 // target.setMenuItems(items);
                 // target.startEdit();
                 // setTimeout(function() {
@@ -196,7 +196,7 @@ function runTests(target, _context) {
             it('callback will be called when item is clicked', function() {
                 var spy1 = sinon.spy();
                 var spy2 = sinon.spy();
-                before();
+                prepareGeometry();
                 target.setMenuItems([
                     {item: 'item1', click: spy1},
                     '-',
@@ -214,7 +214,7 @@ function runTests(target, _context) {
             });
 
             it('return false to keep the menu open', function() {
-                before();
+                prepareGeometry();
                 target.setMenuItems([
                     {
                         item: 'item1',

@@ -54,8 +54,8 @@ describe('MultiPointSpec', function() {
     });
 
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
         var vector = new Z.MultiPoint([center]);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 });

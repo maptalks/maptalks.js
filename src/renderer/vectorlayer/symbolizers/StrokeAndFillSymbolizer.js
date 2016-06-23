@@ -30,9 +30,21 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         if (Z.Util.isGradient(style['polygonFill'])) {
             style['polygonGradientExtent'] = this.geometry._getPainter().getContainerExtent()._round();
         }
-        Z.Canvas.prepareCanvas(ctx, style, resources);
-        canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
-            style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
+
+        var points = canvasResources['context'][0],
+            isSplitted = points.length === 1 && Z.Util.isArray(points[1]);
+        if (isSplitted) {
+            for (var i = 0; i < points.length; i++) {
+                Z.Canvas.prepareCanvas(ctx, style, resources);
+                canvasResources['fn'].apply(this, [ctx].concat([points[i]]).concat([
+                    style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
+            }
+        } else {
+            Z.Canvas.prepareCanvas(ctx, style, resources);
+            canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
+                style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
+        }
+
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash([]);
         }

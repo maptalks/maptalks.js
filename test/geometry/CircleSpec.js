@@ -108,9 +108,9 @@ describe('CircleSpec', function() {
         });
     });
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
         var vector = new Z.Circle(center,100);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
     it("Circle._containsPoint", function() {

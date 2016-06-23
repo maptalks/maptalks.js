@@ -73,8 +73,22 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
     },
 
     _containsPoint: function (point, tolerance) {
+        var t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance;
+        function isContains(points) {
+            var i, p1, p2,
+                len = points.length;
+
+            for (i = 0, len = points.length; i < len - 1; i++) {
+                p1 = points[i];
+                p2 = points[i + 1];
+
+                if (Z.GeoUtils.distanceToSegment(point, p1, p2) <= t) {
+                    return true;
+                }
+            }
+            return false;
+        }
         var map = this.getMap(),
-            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             extent = this._getPrjExtent(),
             nw = new Z.Coordinate(extent.xmin, extent.ymax),
             se = new Z.Coordinate(extent.xmax, extent.ymin),
@@ -90,21 +104,19 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         if (!pxExtent.contains(point)) { return false; }
 
         // screen points
-        var points = this._prjToViewPoint(this._getPrjCoordinates());
-
-        var i, p1, p2,
-            len = points.length;
-
-        for (i = 0, len = points.length; i < len - 1; i++) {
-            p1 = points[i];
-            p2 = points[i + 1];
-
-            if (Z.GeoUtils.distanceToSegment(point, p1, p2) <= t) {
-                return true;
+        var points = this._getPathViewPoints(this._getPrjCoordinates()),
+            isSplitted = points.length > 0 && Z.Util.isArray(points[0]);
+        if (isSplitted) {
+            for (var i = 0; i < points.length; i++) {
+                if (isContains(points[i])) {
+                    return true;
+                }
             }
+            return false;
+        } else {
+            return isContains(points);
         }
 
-        return false;
     }
 
 });
