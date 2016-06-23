@@ -27,8 +27,7 @@ describe('#MapScrollZoomSpec', function () {
 
     describe('scroll map', function() {
 
-        before(function () {  });
-        after(function () {  });
+
         it('scroll up to zoomin', function(done) {
             var z = map.getZoom();
             var onZoomEnd = function() {

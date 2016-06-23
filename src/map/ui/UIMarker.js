@@ -286,7 +286,6 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
     },
 
     _prepareDragHandler:function () {
-        var map = this.target.getMap();
         this._dragHandler = new Z.Handler.Drag(this.target._getDOM());
         this._dragHandler.on('mousedown', this._onMouseDown, this);
         this._dragHandler.on('dragging', this._dragging, this);

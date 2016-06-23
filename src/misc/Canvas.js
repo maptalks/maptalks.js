@@ -148,15 +148,6 @@ Z.Canvas = {
             gradient.addColorStop.apply(gradient, stop);
         });
         return gradient;
-        /*{
-           type : 'linear/radial',
-           places : [],
-           colorStops : [
-              [0, 'red'],
-              [0.5, 'blue'],
-              [1, 'green']
-           ]
-        }*/
     },
 
     _setStrokePattern: function (ctx, strokePattern, strokeWidth, resources) {
@@ -440,6 +431,8 @@ Z.Canvas = {
                 fillPolygon(points, i, op);
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'source-over';
+                } else {
+                    ctx.fillStyle = '#fff';
                 }
                 Z.Canvas._stroke(ctx, 0);
             }
@@ -459,6 +452,8 @@ Z.Canvas = {
                 if (i > 0) {
                     //return to default compositeOperation to display strokes.
                     ctx.globalCompositeOperation = 'source-over';
+                } else {
+                    ctx.fillStyle = '#fff';
                 }
             }
             Z.Canvas._stroke(ctx, lineOpacity);

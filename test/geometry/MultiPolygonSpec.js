@@ -46,7 +46,7 @@ describe('MultiPolygonSpec', function() {
 
     });
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
         var points = [
                 [
                     [[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]
@@ -57,6 +57,6 @@ describe('MultiPolygonSpec', function() {
                 ]
             ];
         var vector = new Z.MultiPolygon(points);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 });

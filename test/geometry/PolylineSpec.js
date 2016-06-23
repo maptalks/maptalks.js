@@ -85,14 +85,14 @@ describe('PolylineSpec', function() {
         });
     });
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
         var points = [
                 {x: 0, y: 0},
                 {x: 0, y: 10},
                 {x: 0, y: 80}
             ];
             var vector = new Z.Polyline(points);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
     it("Rectangle._containsPoint", function() {

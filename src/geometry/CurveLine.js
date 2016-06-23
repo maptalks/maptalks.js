@@ -24,7 +24,7 @@ Z.CurveLine = Z.LineString.extend({
     _getRenderCanvasResources:function () {
         //draw a triangle arrow
         var prjVertexes = this._getPrjCoordinates();
-        var points = this._prjToViewPoint(prjVertexes);
+        var points = this._getPathViewPoints(prjVertexes);
         var arcDegree = this.options['arcDegree'],
             curveType = this.options['curveType'];
         var me = this;

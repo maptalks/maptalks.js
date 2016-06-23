@@ -31,8 +31,8 @@ function genAllTypeGeometries() {
                 //线端点坐标数组
                 [[121.48416288620015,31.24488412311837],[121.48394830947899,31.242664302121515],[121.48595460182202,31.242535881128543],[121.48695238357557,31.244838259576046],[121.48944147354125,31.24487495041167],[121.49018176322932,31.242664302121515],[121.49290688758839,31.242765204207824],[121.49358280426011,31.245040058995645],[121.49601825004554,31.245159303904526],[121.49715550666777,31.242921143583686]],
                 //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-                {curveType:3, arcDegree:120, arrowStyle:'classic', arrowPlacement:'point'}),
-        new Z.Polygon([
+                {curveType:3, arrowStyle:'classic', arrowPlacement:'point'}),
+        new maptalks.Polygon([
             [
                 {x: 121.111, y: 30.111},
                 {x: 122.222, y: 30.111},
@@ -40,7 +40,7 @@ function genAllTypeGeometries() {
                 {x: 121.111, y: 30.333}
             ]
         ]),
-        new Z.MultiPolyline([
+        new maptalks.MultiPolyline([
             [
                 {x: 121.111, y: 30.111},
                 {x: 121.222, y: 30.222}
@@ -50,7 +50,7 @@ function genAllTypeGeometries() {
                 {x: 121.444, y: 30.444}
             ]
         ]),
-        new Z.MultiPolygon([
+        new maptalks.MultiPolygon([
             [
                 [
                     {x: 121.111, y: 30.111},
@@ -144,6 +144,23 @@ var GeoSymbolTester = {
                 "markerDx": 0,
                 "markerDy": 0
             },
+             {
+                "markerPlacement":"line", //point | line | interior
+
+                //marker-type中定义了若干cartoCSS中没有的属性值
+                "markerType": "ellipse", //<----- ellipse | triangle | square | bar等,默认ellipse
+                "markerOpacity": 1,
+                "markerFill": "#ff0000",
+                "markerFillOpacity": 1,
+                "markerLineColor": "#0000ff",
+                "markerLineWidth": 1,
+                "markerLineOpacity": 1,
+                "markerWidth": 30,
+                "markerHeight": 30,
+
+                "markerDx": 0,
+                "markerDy": 0
+            },
             {
                 "markerPlacement":"point", //point | line | interior
                 "markerType": "path", //<----- ellipse | triangle | square | bar等,默认ellipse
@@ -177,30 +194,7 @@ var GeoSymbolTester = {
                 "textHorizontalAlignment" : "middle", //left | middle | right | auto
                 "textVerticalAlignment"   : "middle",   // top | middle | bottom | auto
                 "textAlign"                : "left" //left | right | center | auto
-            }/*,
-            {
-                "shield-placement"  : "point", // point | vertex | line | interior
-
-                "shield-file"       : "images/control/2.png",
-
-                "shield-name"       : "文本标注：[marker_name]",
-                "shield-face-name"  : "arial",
-                "shield-size"       :  12,
-                "shield-fill"       : "#550033",
-                "shield-opacity"    :  1,
-                "shield-text-opacity": 1,
-                "shield-halo-fill"  : "#fff",
-                "shield-halo-radius": 0,
-
-                "shield-dx"         :  0,
-                "shield-dy"         :  0,
-                "shield-text-dx"    :  0,
-                "shield-text-dy"    :  0,
-
-                "shield-horizontal-alignment"   : "middle", //left | middle | right | auto
-                "shield-vertical-alignment"     : "middle",   // top | middle | bottom | auto
-                "shield-justify-alignment"      : "left" //left | right | center | auto
-            }*/
+            }
     ],
 
     lineAndFill: {
@@ -216,32 +210,51 @@ var GeoSymbolTester = {
                 "polygonOpacity"       : 1
             },
 
-    testGeoSymbols:function(geometry, map) {
-        // enable debug symbolizer
-        geometry.config('debug', true);
-        geometry.remove();
-        var layer = new maptalks.VectorLayer("symboltest_layer_svg");
-        layer.config('drawImmediate' , true);
-        map.addLayer(layer);
-        layer.addGeometry(geometry);
-        var i;
+    testGeoSymbols:function(geometry, map, done) {
+        var counter = 0;
+        function getLayer (id) {
+            counter++;
+            var layer = map.getLayer(id) || new maptalks.VectorLayer(id, {'debug' : true}).addTo(map);
+            layer.on('layerload', onLayerLoad);
+            return layer;
+        }
+        function onLayerLoad () {
+            counter--;
+            if (counter === 0) {
+                done();
+            }
+        }
         for (i = this.markerSymbols.length - 1; i >= 0; i--) {
-            geometry.setSymbol(this.markerSymbols[i]);
+            geometry.copy().setSymbol(this.markerSymbols[i]).addTo(getLayer('symbol_test_' + i));
         }
         if (!(geometry instanceof Z.Marker) && !(geometry instanceof Z.MultiPoint)) {
-            geometry.setSymbol(this.lineAndFill);
+            geometry.copy().setSymbol(this.lineAndFill).addTo(getLayer('symbol_test_linefill'));
         }
-        geometry.remove();
-        layer = new maptalks.VectorLayer("symboltest_layer_canvas",{"render":"canvas"});
-        layer.config('drawImmediate' , true);
-        map.addLayer(layer);
-        layer.addGeometry(geometry);
-        for (i = this.markerSymbols.length - 1; i >= 0; i--) {
-            geometry.setSymbol(this.markerSymbols[i]);
-        }
-        if (!(geometry instanceof Z.Marker) && !(geometry instanceof Z.MultiPoint)) {
-            geometry.setSymbol(this.lineAndFill);
-        }
+        // // enable debug symbolizer
+        // geometry.config('debug', true);
+        // geometry.remove();
+        // var layer = map.getLayer("symboltest_layer_svg") || new maptalks.VectorLayer("symboltest_layer_svg").addTo(map);
+        // layer.config('drawImmediate' , true);
+        // // map.addLayer(layer);
+        // layer.addGeometry(geometry);
+        // var i;
+        // for (i = this.markerSymbols.length - 1; i >= 0; i--) {
+        //     geometry.setSymbol(this.markerSymbols[i]);
+        // }
+        // if (!(geometry instanceof Z.Marker) && !(geometry instanceof Z.MultiPoint)) {
+        //     geometry.setSymbol(this.lineAndFill);
+        // }
+        // geometry.remove();
+        // layer = map.getLayer("symboltest_layer_canvas") || new maptalks.VectorLayer("symboltest_layer_canvas",{"render":"canvas"}).addTo(map);
+        // layer.config('drawImmediate' , true);
+        // // map.addLayer(layer);
+        // layer.addGeometry(geometry);
+        // for (i = this.markerSymbols.length - 1; i >= 0; i--) {
+        //     geometry.setSymbol(this.markerSymbols[i]);
+        // }
+        // if (!(geometry instanceof Z.Marker) && !(geometry instanceof Z.MultiPoint)) {
+        //     geometry.setSymbol(this.lineAndFill);
+        // }
     }
 };
 

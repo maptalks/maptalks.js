@@ -99,7 +99,7 @@ describe('PolygonSpec', function() {
         });
     });
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
         var points = [
                 [
                     {x: 0, y: 0},
@@ -109,7 +109,7 @@ describe('PolygonSpec', function() {
                 ]
             ];
             var vector = new Z.Polygon(points);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
     it("Polygon._containsPoint", function() {
@@ -142,16 +142,16 @@ describe('PolygonSpec', function() {
     });
 
     it('can be a anti-meridian polygon',function() {
-         var points = [
-        [[179,10],[-170,10],[-169, -10],[179, -10]],
-        [[180,5],[-175,5],[-171, -5],[180, -5]]
-        ];
+        var points = [
+            [[179,10],[-170,10],[-169, -10],[179, -10]],
+            [[180,5],[-175,5],[-171, -5],[180, -5]]
+            ];
         var vector = new Z.Polygon(points,{antiMeridian : 'continuous',});
         layer.addGeometry(vector);
 
         var points2 = [
-        [[179,10],[168,10],[167, -10],[179, -10]]
-        ];
+            [[179,10],[168,10],[167, -10],[179, -10]]
+            ];
         var comparison = new Z.Polygon(points2);
         layer.addGeometry(comparison);
 

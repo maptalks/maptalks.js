@@ -119,9 +119,9 @@ describe('SectorSpec', function() {
         });
     });
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
         var vector = new Z.Sector(center, 1, 0, 270);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
     it("Sector._containsPoint", function() {

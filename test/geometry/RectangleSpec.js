@@ -120,8 +120,8 @@ describe('RectangleSpec', function() {
         });
     });
 
-    it('can have various symbols',function() {
+    it('can have various symbols',function(done) {
          var vector = new Z.Rectangle(center, 1, 1);
-        GeoSymbolTester.testGeoSymbols(vector, map);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 });

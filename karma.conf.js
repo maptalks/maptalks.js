@@ -83,7 +83,7 @@ module.exports = function(config) {
       'karma-mocha',
       'karma-expect',
       'karma-expect-maptalks',
-      'karma-sinon-ie'
+      'karma-sinon'
     ],
 
     customLaunchers: {
