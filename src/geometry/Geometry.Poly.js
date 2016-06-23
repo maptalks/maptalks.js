@@ -171,12 +171,12 @@ Z.Geometry.Poly = {
     _computeCoordsExtent: function (coords) {
         var result = null,
             anti = this.options['antiMeridian'];
-        var ext,p;
+        var ext, p, dx;
         for (var i = 0, len = coords.length; i < len; i++) {
             for (var j = 0, jlen = coords[i].length; j < jlen; j++) {
                 p = coords[i][j];
                 if (j > 0 && anti) {
-                    dx = p.x - coords[i][j-1].x;
+                    dx = p.x - coords[i][j - 1].x;
                     if (Math.abs(dx) > 180) {
                         p = this._anti(p, dx);
                     }
