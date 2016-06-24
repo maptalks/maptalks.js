@@ -32,7 +32,8 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         }
 
         var points = canvasResources['context'][0],
-            isSplitted = points.length === 1 && Z.Util.isArray(points[1]);
+            isSplitted = (this.geometry instanceof Z.Polygon && points.length === 2 && Z.Util.isArray(points[0][0])) ||
+                        (this.geometry instanceof Z.LineString  && points.length === 2 && Z.Util.isArray(points[0]));
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
                 Z.Canvas.prepareCanvas(ctx, style, resources);
