@@ -37,25 +37,32 @@ Z.Geometry.Poly = {
                 continue;
             }
             if (i > 0 && (anti === 'continuous' || anti === 'split')) {
-                pre = projection.unproject(prjCoords[i - 1]);
                 current = projection.unproject(p);
-                dx = current.x - pre.x;
-                dy = current.y - pre.y;
-                if (Math.abs(dx) > 180) {
-                    if (anti === 'continuous') {
-                        current = this._anti(current, dx);
-                        p = projection.project(current);
-                    } else if (anti === 'split') {
-                        if (dx > 0) {
-                            my = pre.y + dy * (pre.x - (-180)) / dx;
-                            part.push(map.coordinateToViewPoint(new Z.Coordinate(-180, my)));
-                            part = part === part1 ? part2 : part1;
-                            part.push(map.coordinateToViewPoint(new Z.Coordinate(180, my)));
-                        } else {
-                            my = pre.y + dy * (180 - pre.x) / dx;
-                            part.push(map.coordinateToViewPoint(new Z.Coordinate(180, my)));
-                            part = part === part1 ? part2 : part1;
-                            part.push(map.coordinateToViewPoint(new Z.Coordinate(-180, my)));
+                if (anti === 'split' || !pre) {
+                    pre = projection.unproject(prjCoords[i - 1]);
+                }
+                if (pre && current) {
+                    dx = current.x - pre.x;
+                    dy = current.y - pre.y;
+                    if (Math.abs(dx) > 180) {
+                        if (anti === 'continuous') {
+                            current = this._anti(current, dx);
+                            pre = current;
+                            p = projection.project(current);
+                        } else if (anti === 'split') {
+                            if (dx > 0) {
+                                my = pre.y + dy * (pre.x - (-180)) / (360 - dx) * (pre.y > current.y ? -1 : 1);
+                                part.push(map.coordinateToViewPoint(new Z.Coordinate(-180, my)));
+                                part = part === part1 ? part2 : part1;
+                                part.push(map.coordinateToViewPoint(new Z.Coordinate(180, my)));
+
+                            } else {
+                                my = pre.y + dy * (180 - pre.x) / (360 + dx) * (pre.y > current.y ? 1 : -1);
+                                part.push(map.coordinateToViewPoint(new Z.Coordinate(180, my)));
+                                part = part === part1 ? part2 : part1;
+                                part.push(map.coordinateToViewPoint(new Z.Coordinate(-180, my)));
+
+                            }
                         }
                     }
                 }
@@ -72,11 +79,10 @@ Z.Geometry.Poly = {
 
     _anti: function (c, dx) {
         if (dx > 0) {
-            c._substract(180 * 2, 0);
+            return c.substract(180 * 2, 0);
         } else {
-            c._add(180 * 2, 0);
+            return c.add(180 * 2, 0);
         }
-        return c;
     },
 
     _setPrjCoordinates:function (prjPoints) {
@@ -171,14 +177,18 @@ Z.Geometry.Poly = {
     _computeCoordsExtent: function (coords) {
         var result = null,
             anti = this.options['antiMeridian'];
-        var ext, p, dx;
+        var ext, p, dx, pre;
         for (var i = 0, len = coords.length; i < len; i++) {
             for (var j = 0, jlen = coords[i].length; j < jlen; j++) {
                 p = coords[i][j];
                 if (j > 0 && anti) {
-                    dx = p.x - coords[i][j - 1].x;
+                    if (!pre) {
+                        pre = coords[i][j - 1];
+                    }
+                    dx = p.x - pre.x;
                     if (Math.abs(dx) > 180) {
                         p = this._anti(p, dx);
+                        pre = p;
                     }
                 }
                 ext = new Z.Extent(p, p);
