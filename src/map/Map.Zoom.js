@@ -80,6 +80,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
           * @property {Number} to                      - zoom level zooming to
           */
         this._fireEvent('zoomend', {'from' : _originZoomLevel, 'to': nextZoomLevel});
+        this.checkSize();
     },
 
 
