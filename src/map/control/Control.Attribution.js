@@ -21,13 +21,11 @@ Z.control.Attribution = Z.Control.extend(/** @lends maptalks.control.Attribution
             'bottom': '0',
             'right': '0'
         },
-        'content' : '<a href="http://www.maptalks.org" target="_blank" style="text-decoration:none;cursor: pointer;color: #6490C4; ">Powered By Maptalks</a>'
+        'content' : '<a href="http://www.maptalks.org" target="_blank">Powered By MapTalks</a>'
     },
 
-
     buildOn: function () {
-        this._attributionContainer = Z.DomUtil.createEl('div');
-        Z.DomUtil.setStyle(this._attributionContainer, 'display: inline-block;');
+        this._attributionContainer = Z.DomUtil.createEl('div', 'maptalks-attribution');
         this._update();
         return this._attributionContainer;
     },

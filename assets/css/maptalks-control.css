@@ -47,3 +47,7 @@
 .maptalks-panel .maptalks-panel-content { padding: 10px; min-width: 200px; min-height: 60px;}
 .maptalks-panel a.maptalks-close { display: block; width: 6px; height: 7px; background: url(../images/control/close-2.png) no-repeat; position: absolute; top: 10px; right: 10px;}
 .maptalks-panel a.maptalks-close:hover { opacity: 0.5;}
+
+.maptalks-attribution {display: inline-block;opacity: 0.7;background:#fff; background-color: rgba(255,255,255,0.7);padding:0 5px 2px 5px;font-size:13px;font-family: "microsoft yahei","Helvetica Neue", Helvetica, sans-serif;}
+.maptalks-attribution a {text-decoration: none; color : #0078A8;}
+.maptalks-attribution a:hover {text-decoration: underline;}
