@@ -83,7 +83,7 @@ Z.Util.extend(Z.View.prototype, {
             throw new Error('must provide a valid projection in map\'s view.');
         }
         projection = Z.Util.extend({}, Z.projection.Common, projection);
-        if (!projection.measureLength){
+        if (!projection.measureLength) {
             Z.Util.extend(projection, Z.MeasurerUtil.DEFAULT);
         }
         this._projection = projection;
