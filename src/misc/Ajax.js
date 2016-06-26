@@ -156,4 +156,6 @@
     };
 
     Z.Util.getJSON = Ajax.getJSON;
+
+    Z.Ajax = Ajax;
 })();
