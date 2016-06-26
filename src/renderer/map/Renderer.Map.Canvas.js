@@ -212,15 +212,15 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
     _getCountOfGeosToDraw: function () {
         var layers = this._getAllLayerToTransform(),
-            geos,
+            geos, renderer,
             total = 0;
         for (var i = layers.length - 1; i >= 0; i--) {
+            renderer = layers[i]._getRenderer();
             if ((layers[i] instanceof Z.VectorLayer) &&
-                layers[i].isVisible() &&
-                !layers[i].isEmpty()) {
-                geos = layers[i]._getRenderer()._geosToDraw;
+                layers[i].isVisible() && !layers[i].isEmpty() && renderer._hasPointSymbolizer) {
+                geos = renderer._geosToDraw;
                 if (geos) {
-                    total += layers[i]._getRenderer()._geosToDraw.length;
+                    total += renderer._geosToDraw.length;
                 }
             }
         }

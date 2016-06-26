@@ -82,12 +82,19 @@ Z.Util.extend(Z.View.prototype, {
         if (!projection || Z.Util.isString(projection)) {
             throw new Error('must provide a valid projection in map\'s view.');
         }
+        projection = Z.Util.extend({}, Z.projection.Common, projection);
+        if (!projection.measureLength) {
+            Z.Util.extend(projection, Z.MeasurerUtil.DEFAULT);
+        }
         this._projection = projection;
-        var resolutions = this.options['resolutions'];
+        var defaultView,
+            resolutions = this.options['resolutions'];
         if (!resolutions) {
-            var defaultView = this.defaultView[projection['code']];
-            if (defaultView) {
-                resolutions = defaultView['resolutions'];
+            if (projection['code']) {
+                defaultView = this.defaultView[projection['code']];
+                if (defaultView) {
+                    resolutions = defaultView['resolutions'];
+                }
             }
             if (!resolutions) {
                 throw new Error('must provide valid resolutions in map\'s view.');
@@ -96,8 +103,13 @@ Z.Util.extend(Z.View.prototype, {
         this._resolutions = resolutions;
         var fullExtent = this.options['fullExtent'];
         if (!fullExtent) {
-            fullExtent = this.defaultView[projection['code']]['fullExtent'];
-            if (!resolutions) {
+            if (projection['code']) {
+                defaultView = this.defaultView[projection['code']];
+                if (defaultView) {
+                    fullExtent = defaultView['fullExtent'];
+                }
+            }
+            if (!fullExtent) {
                 throw new Error('must provide a valid fullExtent in map\'s view.');
             }
         }
@@ -106,8 +118,8 @@ Z.Util.extend(Z.View.prototype, {
         //set left, right, top, bottom value
         Z.Util.extend(this._fullExtent, fullExtent);
 
-        var a = fullExtent['right'] > fullExtent['left'] ? 1 : -1,
-            b = fullExtent['top'] > fullExtent['bottom'] ? -1 : 1;
+        var a = fullExtent['right'] >= fullExtent['left'] ? 1 : -1,
+            b = fullExtent['top'] >= fullExtent['bottom'] ? -1 : 1;
         this._transformation = new Z.Transformation([a, b, 0, 0]);
     },
 
