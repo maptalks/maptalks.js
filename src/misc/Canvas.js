@@ -17,8 +17,8 @@ Z.Canvas = {
         ctx.lineWidth = 1;
         ctx.lineCap = 'butt';
         ctx.lineJoin = 'miter';
-        ctx.strokeStyle = 'rgba(0,0,0,1)';//'rgba(71,76,248,1)';//this.getRgba('#474cf8',1);
-        ctx.fillStyle = 'rgba(255,255,255,0)';//this.getRgba('#ffffff',0);
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.fillStyle = 'rgba(255,255,255,0)';
         ctx.textAlign = 'start';
         ctx.textBaseline = 'top';
         var fontSize = 11;
@@ -58,9 +58,8 @@ Z.Canvas = {
                 ctx.strokeStyle = 'rgba(0,0,0,1)';
             }
         } else {
-            var color = Z.Canvas.getRgba(strokeColor, 1);
-            if (ctx.strokeStyle !== color) {
-                ctx.strokeStyle = color;
+            if (ctx.strokeStyle !== strokeColor) {
+                ctx.strokeStyle = strokeColor;
             }
         }
         if (style['lineJoin'] && ctx.lineJoin !== style['lineJoin']) {
@@ -103,9 +102,8 @@ Z.Canvas = {
                 ctx.fillStyle = 'rgba(255,255,255,0)';
             }
         } else {
-            var fillColor = this.getRgba(fill, 1);
-            if (ctx.fillStyle !== fillColor) {
-                ctx.fillStyle = fillColor;
+            if (ctx.fillStyle !== fill) {
+                ctx.fillStyle = fill;
             }
         }
     },
@@ -276,7 +274,7 @@ Z.Canvas = {
             ctx.lineCap = 'round';
             var lineWidth = (textHaloRadius * 2 - 1);
             ctx.lineWidth = Z.Util.round(lineWidth);
-            ctx.strokeStyle = Z.Canvas.getRgba(textHaloFill, 1);
+            ctx.strokeStyle = textHaloFill;
             ctx.strokeText(text, pt.x, pt.y);
             ctx.lineWidth = 1;
             ctx.miterLimit = 10; //default

@@ -21,7 +21,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.geometry = geometry;
         var style = this.translate();
         this.style = this._defineStyle(style);
-        this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
+        this.strokeAndFill = this._defineStyle(Z.symbolizer.VectorMarkerSymbolizer.translateLineAndFill(style));
     },
 
     symbolize:function (ctx, resources) {
@@ -128,7 +128,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         return result;
     },
 
-    translate:function () {
+    translate: function () {
         var s = this.symbol;
         var d = this.defaultSymbol;
         var result = Z.Util.extend({}, d, s);
@@ -138,26 +138,26 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             result['markerLineOpacity'] *= s['markerOpacity'];
         }
         return result;
-    },
-
-    translateLineAndFill: function (s) {
-        var result = {
-            'lineColor' : s['markerLineColor'] || s['markerLinePatternFile'],
-            'lineWidth' : s['markerLineWidth'],
-            'lineOpacity' : s['markerLineOpacity'],
-            'lineDasharray': null,
-            'lineCap' : 'butt',
-            'lineJoin' : 'round',
-            'polygonFill' : s['markerFill'] || s['markerFillPatternFile'],
-            'polygonOpacity' : s['markerFillOpacity']
-        };
-        if (result['lineWidth'] === 0) {
-            result['lineOpacity'] = 0;
-        }
-        return result;
     }
 });
 
+
+Z.symbolizer.VectorMarkerSymbolizer.translateLineAndFill = function (s) {
+    var result = {
+        'lineColor' : s['markerLineColor'] || s['markerLinePatternFile'],
+        'lineWidth' : s['markerLineWidth'],
+        'lineOpacity' : s['markerLineOpacity'],
+        'lineDasharray': null,
+        'lineCap' : 'butt',
+        'lineJoin' : 'round',
+        'polygonFill' : s['markerFill'] || s['markerFillPatternFile'],
+        'polygonOpacity' : s['markerFillOpacity']
+    };
+    if (result['lineWidth'] === 0) {
+        result['lineOpacity'] = 0;
+    }
+    return result;
+};
 
 Z.symbolizer.VectorMarkerSymbolizer.test = function (symbol) {
     if (!symbol) {

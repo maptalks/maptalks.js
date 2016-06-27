@@ -16,8 +16,8 @@ Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
             'lineWidth' : 1,
             'lineOpacity' : 1,
 
-            'polygonFill' : '#ffffff',
-            'polygonOpacity' : 0,
+            'polygonFill' : '#808080', //default color in cartoCSS
+            'polygonOpacity' : 1,
             'opacity' : 1
         }
     },
