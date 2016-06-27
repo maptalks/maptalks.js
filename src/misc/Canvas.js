@@ -57,10 +57,8 @@ Z.Canvas = {
             } else {
                 ctx.strokeStyle = 'rgba(0,0,0,1)';
             }
-        } else {
-            if (ctx.strokeStyle !== strokeColor) {
-                ctx.strokeStyle = strokeColor;
-            }
+        } else if (ctx.strokeStyle !== strokeColor) {
+            ctx.strokeStyle = strokeColor;
         }
         if (style['lineJoin'] && ctx.lineJoin !== style['lineJoin']) {
             ctx.lineJoin = style['lineJoin'];
@@ -101,10 +99,8 @@ Z.Canvas = {
             } else {
                 ctx.fillStyle = 'rgba(255,255,255,0)';
             }
-        } else {
-            if (ctx.fillStyle !== fill) {
-                ctx.fillStyle = fill;
-            }
+        } else if (ctx.fillStyle !== fill) {
+            ctx.fillStyle = fill;
         }
     },
 
