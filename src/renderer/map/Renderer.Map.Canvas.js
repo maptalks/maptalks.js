@@ -456,7 +456,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
 
         if (this._isCanvasContainer) {
-            map.on('_moving', function () {
+            map.on('_moving _moveend', function () {
                 this.render();
             }, this);
         } else {
