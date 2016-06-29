@@ -87,7 +87,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
          * @property {String} type - add
          * @property {maptalks.Control} target - the control instance
          */
-        this.fire('add');
+        this.fire('add', {'dom' : controlContainer});
         return this;
     },
 

@@ -28,12 +28,6 @@ Z.control.Scale = Z.Control.extend(/** @lends maptalks.control.Scale.prototype *
         'imperial': false
     },
 
-    statics: {
-        'maptalks-control-scale' : 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
-                          'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
-                          ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);'
-    },
-
     buildOn: function (map) {
         this._map = map;
         this._scaleContainer = Z.DomUtil.createEl('div');
@@ -51,11 +45,14 @@ Z.control.Scale = Z.Control.extend(/** @lends maptalks.control.Scale.prototype *
     },
 
     _addScales: function () {
+        var css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
+                          'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
+                          ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
         if (this.options['metric']) {
-            this._mScale = Z.DomUtil.createElOn('div', Z.control.Scale['maptalks-control-scale'], this._scaleContainer);
+            this._mScale = Z.DomUtil.createElOn('div', css, this._scaleContainer);
         }
         if (this.options['imperial']) {
-            this._iScale = Z.DomUtil.createElOn('div', Z.control.Scale['maptalks-control-scale'], this._scaleContainer);
+            this._iScale = Z.DomUtil.createElOn('div', css, this._scaleContainer);
         }
     },
 

@@ -56,12 +56,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         return Z.ui.UIComponent.prototype.show.call(this, coordinates || this._markerCoord);
     },
 
-    _getDomOffset: function () {
-        var size = this.getSize();
-        return new Z.Point(-size['width'] / 2, -size['height'] / 2);
-    },
-
-    _createDOM: function () {
+    buildOn: function () {
         var dom;
         if (Z.Util.isString(this.options['content'])) {
             dom = Z.DomUtil.createEl('div');
@@ -71,6 +66,11 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         }
         this._registerDOMEvents(dom);
         return dom;
+    },
+
+    getOffset: function () {
+        var size = this.getSize();
+        return new Z.Point(-size['width'] / 2, -size['height'] / 2);
     },
 
     _onDOMRemove: function () {

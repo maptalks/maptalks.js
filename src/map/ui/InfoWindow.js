@@ -76,7 +76,7 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         return this.options['title'];
     },
 
-    _createDOM: function () {
+    buildOn: function () {
         var dom;
         if (this.options['custom']) {
             if (Z.Util.isString(this.options['content'])) {
@@ -101,7 +101,7 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         }
     },
 
-    _getDomOffset:function () {
+    getOffset:function () {
         var size = this.getSize();
         var o = new Z.Point(-size['width'] / 2, -size['height'])._add(-4, -12);
         if (this.getOwner() instanceof Z.Marker) {

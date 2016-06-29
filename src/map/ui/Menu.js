@@ -55,7 +55,7 @@
             return this.options['items'];
         },
 
-        _createDOM:function () {
+        buildOn:function () {
             if (this.options['custom']) {
                 if (Z.Util.isString(this.options['items'])) {
                     var container = Z.DomUtil.createEl('div');
@@ -82,8 +82,14 @@
          * @return {maptalks.Point} offset
          * @private
          */
-        _getDomOffset:function () {
+        getOffset:function () {
             return new Z.Point(-17, 10);
+        },
+
+        getEvents: function () {
+            return {
+                '_zoomstart _zoomend _movestart _dblclick _click' : this.hide
+            };
         },
 
         _createMenuItemDom: function () {
@@ -124,12 +130,6 @@
                 width = defaultWidth;
             }
             return width;
-        },
-
-        _getEvents: function () {
-            return {
-                '_zoomstart _zoomend _movestart _dblclick _click' : this.hide
-            };
         }
     });
 
