@@ -9,13 +9,13 @@ Z.ui = {};
  * Some instance methods subclasses needs to implement:
  *
  * 1. Optional, UI Dom's pixel offset from UI's coordinate
- * function _getDomOffset : maptalks.Point
+ * function getOffset : maptalks.Point
  *
  * 2. Method to create UI's Dom element
- * function _createDOM : HTMLElement
+ * function buildOn : HTMLElement
  *
  * 3 Optional, to provide an event map to register event listeners.
- * function _getEvents : void
+ * function getEvents : void
  *
  * @class
  * @category ui
@@ -78,18 +78,18 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             throw new Error('UI\'s show coordinate is invalid');
         }
         this.fire('showstart');
+        var map = this.getMap(),
+            container = this._getUIContainer();
         if (!this.__uiDOM) {
             this._switchEvents('on');
         }
         this._coordinate = coordinate;
         this._removePrevDOM();
-        var dom = this.__uiDOM = this._createDOM();
+        var dom = this.__uiDOM = this.buildOn(map);
         if (!dom) {
             this.fire('showend');
             return this;
         }
-        var map = this.getMap(),
-            container = this._getUIContainer();
 
         this._measureSize(dom);
 
@@ -174,8 +174,8 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     _getPosition : function () {
         var p = this.getMap().coordinateToViewPoint(this._coordinate)
                     ._add(this.options['dx'], this.options['dy']);
-        if (this._getDomOffset) {
-            var o = this._getDomOffset();
+        if (this.getOffset) {
+            var o = this.getOffset();
             if (o) { p._add(o); }
         }
         return p;
@@ -286,8 +286,8 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
 
     _switchEvents: function (to) {
         var events = this._getDefaultEvents();
-        if (this._getEvents) {
-            Z.Util.extend(events, this._getEvents());
+        if (this.getEvents) {
+            Z.Util.extend(events, this.getEvents());
         }
         if (events) {
             var map = this.getMap();
@@ -314,8 +314,8 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             point = this.getMap().coordinateToViewPoint(this._coordinate),
             matrix = param['matrix']['view'];
         var p = matrix.applyToPointInstance(point)._add(this.options['dx'], this.options['dy']);
-        if (this._getDomOffset) {
-            var o = this._getDomOffset();
+        if (this.getOffset) {
+            var o = this.getOffset();
             if (o) { p._add(o); }
         }
         dom.style.left = p.x + 'px';

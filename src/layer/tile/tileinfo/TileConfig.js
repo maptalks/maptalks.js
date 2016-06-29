@@ -10,10 +10,6 @@
  */
 Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
 
-    statics : {
-
-    },
-
         //根据不同的语言定义不同的错误信息
     exceptionDefs:{
         'en-US':{
