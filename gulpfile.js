@@ -34,7 +34,7 @@ gulp.task('scripts', function() {
       .pipe(footer('\n})();'))
       .pipe(gulp.dest('./dist'))
       .pipe(rename({suffix: '.min'}))
-      .pipe(uglify())
+//      .pipe(uglify())
       .pipe(gulp.dest('./dist'))
       .pipe(gzip())
       .pipe(gulp.dest('./dist'));
