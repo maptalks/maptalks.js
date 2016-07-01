@@ -95,6 +95,13 @@ describe('ExtentSpec', function() {
 
         });
 
+        it('intersects2', function() {
+            var e1 = new maptalks.Extent(1, 1, 5, 5);
+            var e2 = new maptalks.Extent(2, 2, 6, 6);
+
+            expect(e1.intersects(e2)).to.be.ok();
+        });
+
         it('contains',function() {
             var ext1 = new Z.Extent(1,1,4,4);
 
@@ -130,6 +137,34 @@ describe('ExtentSpec', function() {
             var empty = new Z.Extent();
             expanded = empty.expand(1);
             expect(expanded.equals(new Z.Extent(-1,-1,1,1))).to.be.ok();
+        });
+
+        it('static.combine', function() {
+            var e1 = new maptalks.Extent(2, 2, 5, 5);
+            var e2 = new maptalks.Extent(3, 3, 6, 6);
+            var combined =e1.combine(e2);
+
+            expect(combined.xmin).to.eql(2);
+            expect(combined.ymin).to.eql(2);
+            expect(combined.xmax).to.eql(6);
+            expect(combined.ymax).to.eql(6);
+        });
+
+        it('static.expand', function() {
+            var extent = new maptalks.Extent(2, 2, 6, 6);
+            var e1 = extent.expand(1);
+            var e2 = extent.expand(-2);
+            var e3 = extent.expand(-3);
+
+            expect(e1.xmin).to.eql(1);
+            expect(e1.ymin).to.eql(1);
+            expect(e1.xmax).to.eql(7);
+            expect(e1.ymax).to.eql(7);
+
+            expect(e2.xmin).to.eql(4);
+            expect(e2.ymin).to.eql(4);
+            expect(e2.xmax).to.eql(4);
+            expect(e2.ymax).to.eql(4);
         });
     });
 

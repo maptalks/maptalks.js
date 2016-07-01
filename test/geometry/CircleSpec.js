@@ -1,6 +1,6 @@
 // var CommonSpec = require('./CommonSpec');
 
-describe('CircleSpec', function() {
+describe('#Circle', function() {
 
     var container;
     var map;
@@ -14,6 +14,7 @@ describe('CircleSpec', function() {
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.canvasContainer;
+        layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
     afterEach(function() {
@@ -21,12 +22,55 @@ describe('CircleSpec', function() {
         removeContainer(container)
     });
 
-    describe('geometry fires events', function() {
-        it('svg events', function() {
-            var vector = new Z.Circle(center, 1);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
+    it('setCoordinates', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
+        circle.setCoordinates({x: 1, y: 1});
+        expect(circle.getCoordinates().toArray()).to.be.eql([1, 1])
+    });
 
+    it('getCenter', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
+        var got = circle.getCenter();
+
+        expect(got.x).to.eql(0);
+        expect(got.y).to.eql(0);
+    });
+
+    it('getExtent', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
+        var extent = circle.getExtent();
+        expect(extent.getWidth()).to.be.above(0);
+        expect(extent.getHeight()).to.be.above(0);
+    });
+
+    it('getSize', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 100);
+        layer.addGeometry(circle);
+        var size = circle.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
+
+    it('setRadius/getRadius', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
+
+        expect(circle.getRadius()).to.eql(1);
+
+        circle.setRadius(20);
+
+        expect(circle.getRadius()).to.eql(20);
+    });
+
+    it('getShell', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
+        var shell = circle.getShell();
+
+        expect(shell).to.have.length(circle.options.numberOfShellPoints);
+    });
+
+    describe('geometry fires events', function() {
         it('canvas events', function() {
             var vector = new Z.Circle(center, 1);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());

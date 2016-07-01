@@ -1,4 +1,4 @@
-describe('PolygonSpec', function() {
+describe('#Polygon', function() {
 
     var container;
     var map;
@@ -19,6 +19,116 @@ describe('PolygonSpec', function() {
     afterEach(function() {
         map.removeLayer(layer);
         removeContainer(container)
+    });
+
+    it('getCenter', function() {
+        var rings = [
+            [
+                {x: -1, y: 1},
+                {x: 1, y: 1},
+                {x: 1, y: -1},
+                {x: -1, y: -1}
+            ]
+        ];
+        var polygon = new maptalks.Polygon(rings);
+        var got = polygon.getCenter();
+
+        expect(got).to.closeTo(new maptalks.Coordinate([0, 0]));
+    });
+
+    it('getExtent', function() {
+        var rings = [
+            [
+                {x: 20, y: 0},
+                {x: 20, y: 10},
+                {x: 0, y: 10},
+                {x: 0, y: 0}
+            ]
+        ];
+        var polygon = new maptalks.Polygon(rings);
+
+        var extent = polygon.getExtent();
+        expect(extent.getWidth()).to.be.above(0);
+        expect(extent.getHeight()).to.be.above(0);
+    });
+
+    it('getSize', function() {
+        var rings = [
+            [
+                {x: 20, y: 0},
+                {x: 20, y: 10},
+                {x: 0, y: 10},
+                {x: 0, y: 0}
+            ]
+        ];
+        var polygon = new maptalks.Polygon(rings);
+        layer.addGeometry(polygon);
+        var size = polygon.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
+    it('getCoordinates', function() {
+        var rings = [
+            {x: 20, y: 0},
+            {x: 20, y: 10},
+            {x: 0, y: 10},
+            {x: 0, y: 0}
+        ];
+        var holes = [
+            {x: 1, y: 1},
+            {x: 3, y: 2},
+            {x: 2, y: 3}
+        ];
+        var polygon = new maptalks.Polygon([rings, holes]);
+
+        rings.push(rings[0]);
+        holes.push(holes[0]);
+        expect(polygon.getCoordinates()[0]).to.eql(rings);
+        expect(polygon.getCoordinates()[1]).to.eql(holes);
+    });
+
+    it('setCoordinates', function() {
+        var rings = [
+            {x: 20, y: 0},
+            {x: 20, y: 10},
+            {x: 0, y: 10},
+            {x: 0, y: 0}
+        ];
+        var holes = [
+            {x: 1, y: 1},
+            {x: 3, y: 2},
+            {x: 2, y: 3}
+        ];
+        var polygon = new maptalks.Polygon([[]]);
+        polygon.setCoordinates([rings, holes]);
+
+        rings.push(rings[0]);
+        holes.push(holes[0]);
+        expect(polygon.getCoordinates()[0]).to.eql(rings);
+        expect(polygon.getCoordinates()[1]).to.eql(holes);
+    });
+
+    it('hasHoles', function() {
+        var rings = [
+            {x: 20, y: 0},
+            {x: 20, y: 10},
+            {x: 0, y: 10},
+            {x: 0, y: 0}
+        ];
+        var holes = [
+            {x: 1, y: 1},
+            {x: 3, y: 2},
+            {x: 2, y: 3}
+        ];
+        var polygon = new maptalks.Polygon([rings]);
+
+        expect(polygon.hasHoles()).to.not.be.ok();
+
+        polygon.setCoordinates([rings, holes]);
+
+        expect(polygon.hasHoles()).to.be.ok();
     });
 
     describe('constructor', function() {
@@ -76,14 +186,6 @@ describe('PolygonSpec', function() {
     });
 
     describe('geometry fires events', function() {
-        it('svg events', function() {
-            var points = [
-                [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ],
-                [ [100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2] ]
-            ];
-            var vector = new Z.Polygon(points);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
 
         it('canvas events', function() {
             var points = [
@@ -158,5 +260,9 @@ describe('PolygonSpec', function() {
         var size = vector.getSize();
         var compared = comparison.getSize();
         expect(size).to.be.eql(compared);
+
+        // expect(vector.getLength()).to.be.eql(comparison.getLength());
+
+        // expect(vector.getArea()).to.be.eql(comparison.getArea());
     });
 });

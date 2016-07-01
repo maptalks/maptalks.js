@@ -1,4 +1,4 @@
-describe('RectangleSpec', function() {
+describe('#Rectangle', function() {
 
     var container;
     var map;
@@ -21,13 +21,70 @@ describe('RectangleSpec', function() {
         removeContainer(container)
     });
 
-    describe('geometry fires events', function() {
-        it('svg events', function() {
-            var vector = new Z.Rectangle(center, 1, 1);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
+    it('setCoordinates', function () {
+        var rect = new maptalks.Rectangle({x: 0, y: 0}, 200, 100);
+        rect.setCoordinates([180, -70]);
+        expect(rect.getCoordinates().toArray()).to.be.eql([180, -70]);
+    });
 
-        it('canvas events', function() {
+    it('getCenter', function() {
+        var rect = new maptalks.Rectangle({x: 0, y: 0}, 200, 100);
+        var got = rect.getCenter();
+        expect(got).to.closeTo(new maptalks.Coordinate([0.000898, -0.000449]));
+    });
+
+    it('getExtent', function() {
+        var rect = new maptalks.Rectangle({x: 0, y: 0}, 200, 100);
+        var extent = rect.getExtent();
+        expect(extent.getWidth()).to.be.above(0);
+        expect(extent.getHeight()).to.be.above(0);
+    });
+
+    it('getSize', function() {
+        var rect = new maptalks.Rectangle({x: 0, y: 0}, 200, 100);
+        layer.addGeometry(rect);
+        var size = rect.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
+    it('getNw/getWidth/getHeight', function() {
+        var rect = new maptalks.Rectangle({x: 0, y: 0}, 200, 100);
+        var nw = rect.getCoordinates();
+        var w = rect.getWidth();
+        var h = rect.getHeight();
+
+        expect(nw).to.eql({x: 0, y: 0});
+        expect(w).to.eql(200);
+        expect(h).to.eql(100);
+    });
+
+    it('setNw/getWidth/getHeight', function() {
+        var rect = new maptalks.Rectangle({x: 0, y: 0}, 200, 100);
+        rect.setCoordinates({x: -180, y: 75});
+        rect.setWidth(401);
+        rect.setHeight(201);
+        var nw = rect.getCoordinates();
+        var w = rect.getWidth();
+        var h = rect.getHeight();
+
+        expect(nw).to.eql({x: -180, y: 75});
+        expect(w).to.eql(401);
+        expect(h).to.eql(201);
+    });
+
+    it('getShell', function() {
+        var rect = new maptalks.Rectangle({x: 0, y: 0}, 200, 100);
+        layer.addGeometry(rect);
+        var points = rect.getShell();
+
+        expect(points).to.have.length(5);
+        expect(points[0]).to.eql(points[4]);
+    });
+
+    describe('geometry fires events', function() {
+        it('events', function() {
             var vector = new Z.Rectangle(center, 1, 1);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });

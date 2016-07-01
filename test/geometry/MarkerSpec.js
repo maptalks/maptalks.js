@@ -1,25 +1,70 @@
-describe('Marker', function() {
+describe('#Marker', function() {
 
     var container;
     var map;
     var tile;
     var center = new Z.Coordinate(118.846825, 32.046534);
     var canvasContainer;
+    var layer;
 
     beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.mapPlatform;
+        layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
     afterEach(function() {
+        map.removeLayer('v');
+        layer = null;
         removeContainer(container)
     });
 
-    describe("symbol", function() {
+    it('setCoordinates', function() {
+        var marker = new maptalks.Marker([0, 0]);
+        marker.setCoordinates([1, 1]);
+        expect(marker.getCoordinates().toArray()).to.be.eql([1, 1]);
+    });
 
-        var layer;
+    it('getCenter', function() {
+        var marker = new maptalks.Marker({x: 0, y: 0});
+        expect(marker.getCenter().toArray()).to.be.eql([0, 0]);
+    });
+
+    it('getExtent', function() {
+        var marker = new maptalks.Marker({x: 0, y: 0});
+
+        expect(marker.getExtent().toJSON()).to.be.eql({xmin : 0, xmax : 0, ymin : 0, ymax : 0});
+
+    });
+
+    it('getSize', function() {
+        var marker = new maptalks.Marker(map.getCenter());
+        layer.addGeometry(marker);
+        var size = marker.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
+    it('show/hide/isVisible', function() {
+        var marker = new maptalks.Marker({x: 0, y: 0});
+        layer.addGeometry(marker);
+        marker.show();
+        marker.hide();
+        expect(marker.isVisible()).not.to.be.ok();
+    });
+
+    it('remove', function() {
+        var marker = new maptalks.Marker({x: 0, y: 0});
+        layer.addGeometry(marker);
+        marker.remove();
+
+        expect(marker.getLayer()).to.be(null);
+    });
+
+    describe("symbol", function() {
 
         beforeEach(function() {
             layer = new Z.VectorLayer('id');
@@ -128,11 +173,6 @@ describe('Marker', function() {
     });
 
     describe('events', function() {
-        it('svg events', function() {
-            var vector = new Z.Marker(center);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
-
         it('canvas events', function() {
             var vector = new Z.Marker(center);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());

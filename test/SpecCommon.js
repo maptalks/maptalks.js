@@ -40,7 +40,7 @@ function genAllTypeGeometries() {
                 {x: 121.111, y: 30.333}
             ]
         ]),
-        new maptalks.MultiPolyline([
+        new maptalks.MultiLineString([
             [
                 {x: 121.111, y: 30.111},
                 {x: 121.222, y: 30.222}
@@ -260,7 +260,6 @@ var GeoSymbolTester = {
 
 /**
  * geometry事件测试类
- * testSVGEvents测试SVG类图层上的事件响应
  * testCanvasEvents测试Canvas类图层上的事件响应
  * @type {Object}
  */
@@ -270,20 +269,6 @@ var GeoEventsTester = function() {
 GeoEventsTester.prototype = {
     //happen 支持的事件种类
     eventsToTest : 'click mousedown mouseup dblclick', //mousemove
-
-    testSVGEvents:function(geometry, map) {
-        return;
-        var layer = new Z.VectorLayer('event_test_layer_svg');
-        map.addLayer(layer);
-        if (!this.spy) {
-            this.spy = sinon.spy(this,'_eventCallBack');
-        }
-        var vector = geometry;
-        vector.on(this.eventsToTest, this._eventCallBack);
-        layer.addGeometry(vector);
-        var dom = vector._getPainter().getSvgDom()[0];
-        this._verifyGeometryEvents(dom);
-    },
 
     testCanvasEvents:function(vector, map, testPoint) {
         var layer = new Z.VectorLayer('event_test_layer_canvas',{'render':'canvas'});

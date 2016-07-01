@@ -1,5 +1,5 @@
-// var CommonSpec = require('./CommonSpec');
-describe('EllipseSpec', function() {
+
+describe('#Ellipse', function() {
 
     var container;
     var map;
@@ -13,6 +13,7 @@ describe('EllipseSpec', function() {
        container = setups.container;
        map = setups.map;
        canvasContainer = map._panels.canvasContainer;
+       layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
     afterEach(function() {
@@ -20,12 +21,65 @@ describe('EllipseSpec', function() {
         removeContainer(container)
     });
 
-    describe('geometry fires events', function() {
-        it('svg events', function() {
-            var vector = new Z.Ellipse(center, 1,1);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
+    it('setCoordinates', function() {
+        var ellipse = new maptalks.Ellipse({x: 0, y: 0}, 1, 1);
 
+        ellipse.setCoordinates({x: -180, y: -75});
+        expect(ellipse.getCoordinates().toArray()).to.be.eql([-180, -75]);
+    });
+
+    it('getCenter', function() {
+        var ellipse = new maptalks.Ellipse({x: 0, y: 0}, 1, 1);
+        var got = ellipse.getCenter();
+
+        expect(got.x).to.eql(0);
+        expect(got.y).to.eql(0);
+    });
+
+    it('getExtent', function() {
+        var ellipse = new maptalks.Ellipse({x: 0, y: 0}, 1, 1);
+        var extent = ellipse.getExtent();
+        expect(extent.getWidth()).to.be.above(0);
+        expect(extent.getHeight()).to.be.above(0);
+    });
+
+    it('getSize', function() {
+        var ellipse = new maptalks.Ellipse({x: 0, y: 0}, 100, 100);
+        layer.addGeometry(ellipse);
+        var size = ellipse.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
+    it('getWidth/getHeight]', function() {
+        var ellipse = new maptalks.Ellipse({x: 0, y: 0}, 1, 1);
+        var w = ellipse.getWidth();
+        var h = ellipse.getHeight();
+
+        expect(w).to.eql(1);
+        expect(h).to.eql(1);
+    });
+
+    it('setWidth/setHeight', function() {
+        var ellipse = new maptalks.Ellipse({x: 0, y: 0}, 1, 1);
+        ellipse.setWidth(100);
+        ellipse.setHeight(200);
+        var w = ellipse.getWidth();
+        var h = ellipse.getHeight();
+
+        expect(w).to.eql(100);
+        expect(h).to.eql(200);
+    });
+
+    it('getShell', function() {
+        var ellipse = new maptalks.Ellipse({x: 0, y: 0}, 1, 1);
+        var shell = ellipse.getShell();
+
+        expect(shell).to.have.length(ellipse.options.numberOfShellPoints);
+    });
+
+    describe('geometry fires events', function() {
         it('canvas events', function() {
             var vector = new Z.Ellipse(center, 1,1);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());

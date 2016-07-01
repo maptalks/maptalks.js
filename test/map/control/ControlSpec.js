@@ -1,9 +1,9 @@
-describe("Control Common Test", function() {
+describe("Control Common Tests", function() {
 
     var container;
     var map;
     var tile,control;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -14,13 +14,13 @@ describe("Control Common Test", function() {
             zoom: 17,
             center: center
         };
-        map = new Z.Map(container, option);
-        tile = new Z.TileLayer('tile', {
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
         });
-        control = new Z.control.Scale({
+        control = new maptalks.control.Scale({
             metric: true,
             imperial: true
         });
@@ -31,15 +31,47 @@ describe("Control Common Test", function() {
         removeContainer(container)
     });
 
+    function buildOn() {
+        return maptalks.DomUtil.createEl('div');
+    }
+
+    it('addTo', function() {
+        var control = new maptalks.Control({
+            id: 'id1',
+            position: {top: 10, left: 10}
+        });
+        control.buildOn = buildOn;
+
+        expect(function () {
+            control.addTo(map);
+        }).to.not.throwException();
+    });
+
+    it('setPosition', function() {
+        var control = new maptalks.Control({
+            id: 'id1',
+            position: {top: 10, left: 10}
+        });
+        control.buildOn = buildOn;
+        control.addTo(map);
+        var pos = {
+            top: 20,
+            left: 30
+        };
+
+        control.setPosition(pos);
+        expect(control.getPosition()).to.be.eql(pos);
+    });
+
     it("has common methods", function() {
-        expect(control.getContainerPoint() instanceof Z.Point).to.be.ok();
+        expect(control.getContainerPoint() instanceof maptalks.Point).to.be.ok();
         control.hide();
         expect(control.getContainer().style.display==='none').to.be.ok();
         control.show();
         expect(control.getContainer().style.display==='').to.be.ok();
         var position = control.getPosition();
         expect(position).not.to.be.empty();
-        control.setPosition(Z.Control['top_right']);
+        control.setPosition(maptalks.Control['top_right']);
         expect(control.getPosition()).not.to.be.eql(position);
         control.remove();
         expect(control.getContainer()).not.to.be.ok();

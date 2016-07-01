@@ -86,6 +86,18 @@ describe('#DistanceTool and AreaTool', function () {
             var result = distanceTool.getLastMeasure();
             expect(result).to.be.eql(0);
         });
+
+        it('enable/disable', function() {
+            var tool = new maptalks.DistanceTool().addTo(map).disable();
+            tool.disable();
+            measure();
+            var result = tool.getLastMeasure();
+            expect(result).to.be(0);
+            tool.enable();
+            measure();
+            result = tool.getLastMeasure();
+            expect(result).to.be.above(0);
+        });
     });
 
     describe('test areaTool', function() {
@@ -124,6 +136,17 @@ describe('#DistanceTool and AreaTool', function () {
             expect(measureLayers).to.have.length(0);
             var result = areaTool.getLastMeasure();
             expect(result).to.be.eql(0);
+        });
+
+        it('enable/disable', function() {
+            var tool = new maptalks.AreaTool().addTo(map).disable();
+            measure();
+            var result = tool.getLastMeasure();
+            expect(result).to.be(0);
+            tool.enable();
+            measure();
+            result = tool.getLastMeasure();
+            expect(result).to.be.above(0);
         });
     });
 

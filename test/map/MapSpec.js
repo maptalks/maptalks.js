@@ -36,12 +36,49 @@ describe('#Map', function () {
     });
 
     describe('status', function() {
+        it('getSize', function () {
+            var size = map.getSize();
+
+            expect(size).to.have.property('width');
+            expect(size).to.have.property('height');
+            expect(size.width).to.be.above(0);
+            expect(size.height).to.be.above(0);
+        });
+
+        it('getExtent', function () {
+            var extent = map.getExtent();
+
+            expect(extent).to.not.be(null);
+            expect(extent).to.be.an(maptalks.Extent);
+        });
+
+        it('getZoom', function () {
+            var zoom = map.getZoom();
+            expect(zoom).to.be.eql(17);
+        });
+
+
+
         it('isLoaded',function() {
             expect(map.isLoaded()).to.be.ok();
         });
 
         it('is rendered by canvas',function() {
             expect(map.isCanvasRender()).to.be.ok();
+        });
+    });
+
+    describe('conversions', function () {
+        it('coordinateToContainerPoint', function () {
+            var point = map.coordinateToContainerPoint({x: 1, y: 1});
+
+            expect(point).to.be.a(maptalks.Point);
+        });
+
+        it('containerPointToCoordinate', function () {
+            var coord = map.containerPointToCoordinate(new maptalks.Point(0, 0));
+
+            expect(coord).to.be.a(maptalks.Coordinate);
         });
     });
 
@@ -186,6 +223,14 @@ describe('#Map', function () {
 
             expect(map.zoomIn().getZoom()).to.equal(cur + 1);
             expect(map.zoomOut().getZoom()).to.equal(cur);
+        });
+
+        it('getFitZoom', function () {
+            var extent = map.getExtent();
+            var zoom = map.getZoom();
+            var fitZoom = map.getFitZoom(extent);
+
+            expect(fitZoom).to.eql(zoom);
         });
     });
 
@@ -362,5 +407,83 @@ describe('#Map', function () {
             map.setBaseLayer(layer);
             expect(map.getBaseLayer()).to.be.eql(layer);
         });
+    });
+
+    describe('Map.FullScreen', function() {
+
+        it('requestFullScreen', function(done) {
+            expect(function () {
+                map.requestFullScreen();
+                done();
+            }).to.not.throwException();
+        });
+
+        it('cancelFullScreen', function(done) {
+            expect(function () {
+                map.cancelFullScreen();
+                done();
+            }).to.not.throwException();
+        });
+
+    });
+
+    describe('Map.Topo', function() {
+
+        it('computeLength', function() {
+            var lonlat1 = new Z.Coordinate([0, 0]);
+            var lonlat2 = new Z.Coordinate([1, 1]);
+            var distance = map.computeLength(lonlat1, lonlat2);
+
+            expect(distance).to.be.above(0);
+        });
+
+        it('computeGeodesicLength', function() {
+            var all = genAllTypeGeometries();
+
+            for (var i = 0; i < all.length; i++) {
+                var g = all[i];
+                var len = map.computeGeometryLength(g);
+                expect(len).to.be.a('number');
+            }
+        });
+
+        it('computeGeodesicArea', function() {
+            var all = genAllTypeGeometries();
+
+            for (var i = 0; i < all.length; i++) {
+                var g = all[i];
+                var area = map.computeGeometryArea(g);
+                expect(area).to.be.a('number');
+            }
+        });
+
+        it('identify', function(done) {
+            var layer = new Z.VectorLayer('id');
+            var geometries = genAllTypeGeometries();
+            //var point = map.coordinateToContainerPoint(center);
+            layer.addGeometry(geometries, true);
+            map.addLayer(layer);
+
+            map.identify({
+                coordinate: center,
+                layers: [layer]
+            }, function (geos) {
+                expect(geos.length).to.be.above(0);
+                done();
+            });
+        });
+
+    });
+
+    it('toDataURL', function () {
+        var data = map.toDataURL();
+        expect(data).not.to.be.ok();
+        var layer = new Z.VectorLayer('id');
+        var geometries = genAllTypeGeometries();
+        layer.addGeometry(geometries, true);
+        map.addLayer(layer);
+        data = map.toDataURL();
+        var expected = 'data:image/png;base64';
+        expect(data.substring(0, expected.length)).to.be.eql(expected);
     });
 });
