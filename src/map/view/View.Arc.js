@@ -14,7 +14,7 @@
 
             origin=tileInfo['origin'],
             tileSystem = [1, -1, origin['x'], origin['y']];
-
+        delete fullExtent['spatialReference'];
         return {
             'view' : {
                 'resolutions' : resolutions,
@@ -26,7 +26,7 @@
     }
 
     Z.View.loadArcgis = function (url, cb, context) {
-        if (Z.Util.isString(url)) {
+        if (Z.Util.isString(url) && url.substring(0, 1) !== '{') {
             maptalks.Ajax.getJSON(url, function (err, json) {
                 if (err) {
                     if (context) {
@@ -44,6 +44,9 @@
                 }
             });
         } else {
+            if (Z.Util.isString(url)) {
+                url = Z.Util.parseJSON(url);
+            }
             var view = parse(url);
             if (context) {
                 cb.call(context, null, view)
