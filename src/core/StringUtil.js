@@ -103,7 +103,7 @@ Z.StringUtil = {
      */
     splitTextToRow: function (text, style) {
         var font = Z.symbolizer.TextMarkerSymbolizer.getFont(style),
-            lineSpacing = style['textLineSpacing'] || 0;
+            lineSpacing = style['textLineSpacing'] || 0,
             rawTextSize = Z.StringUtil.stringLength(text, font),
             textWidth = rawTextSize['width'],
             textHeight = rawTextSize['height'],
