@@ -20,7 +20,6 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
      */
     endEditText: function() {
         if(this._textEditor) {
-            this.getMap().off('click', this.endEditText, this);
             var content = this._textEditor.innerText;
             this.setContent(content);
             this.show();
