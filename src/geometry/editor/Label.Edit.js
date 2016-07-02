@@ -3,9 +3,9 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
      * Start to edit the label text
      * @return {maptalks.Label} this
      */
-    startEditText: function() {
+    startEditText: function () {
         if (!this.getMap()) {
-            return;
+            return this;
         }
         this.hide();
         this.endEditText();
@@ -18,8 +18,8 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
      * End label text edit.
      * @return {maptalks.Label} this
      */
-    endEditText: function() {
-        if(this._textEditor) {
+    endEditText: function () {
+        if (this._textEditor) {
             var content = this._textEditor.innerText;
             this.setContent(content);
             this.show();
@@ -44,7 +44,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         return false;
     },
 
-    getEditor: function() {
+    getEditor: function () {
         return this._textEditor;
     },
 
@@ -53,8 +53,8 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             zIndex = map._panels.control.style.zIndex + 1,
             viewPoint = this._computeViewPoint();
         this._container = Z.DomUtil.createEl('div');
-        this._container.style.cssText = 'position:absolute;top:' + viewPoint['y']
-                                    + 'px;left:' + viewPoint['x'] + 'px;z-index:' + zIndex + ';';
+        this._container.style.cssText = 'position:absolute;top:' + viewPoint['y'] +
+                                    'px;left:' + viewPoint['x'] + 'px;z-index:' + zIndex + ';';
         map._panels.ui.appendChild(this._container);
         this._textEditor = this._createEditor();
         this._container.appendChild(this._textEditor);
@@ -77,7 +77,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         var labelSize = this.getSize(),
             symbol = this._getInternalSymbol() || {},
             width = labelSize['width'] || 100,
-            height = labelSize['height'] || 100,
+            // height = labelSize['height'] || 100,
             textColor = symbol['textFill'] || '#000000',
             textSize = symbol['textSize'] || 12,
             fill = symbol['markerFill'] || '#3398CC',
@@ -85,21 +85,21 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             spacing = symbol['textLineSpacing'] || 0,
             editor = Z.DomUtil.createEl('div');
         editor.contentEditable = true;
-        editor.style.cssText ='background: '+fill+';'+
-            'border: 1px solid '+lineColor+';'+
-            'color: '+textColor+';'+
-            'font-size: '+textSize+'px;'+
-            'width: '+(width + 10)+'px;'+
+        editor.style.cssText = 'background: ' + fill + ';' +
+            'border: 1px solid ' + lineColor + ';' +
+            'color: ' + textColor + ';' +
+            'font-size: ' + textSize + 'px;' +
+            'width: ' + (width + 10) + 'px;' +
             // 'height: '+(height - spacing) +'px;'+
             // 'min-height: '+(height - spacing)+'px;'+
             // 'max-height: 300px;'+
-            'margin-left: auto;'+
-            'margin-right: auto;'+
-            'line-height: '+(textSize+spacing)+'px;'+
-            'outline: 0;'+
-            'word-wrap: break-word;'+
-            'overflow-x: hidden;'+
-            'overflow-y: auto;'+
+            'margin-left: auto;' +
+            'margin-right: auto;' +
+            'line-height: ' + (textSize + spacing) + 'px;' +
+            'outline: 0;' +
+            'word-wrap: break-word;' +
+            'overflow-x: hidden;' +
+            'overflow-y: auto;' +
             '-webkit-user-modify: read-write-plaintext-only;';
         var content = this.getContent();
         editor.innerText = content;
