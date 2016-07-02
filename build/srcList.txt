@@ -72,6 +72,7 @@
 ../src/geometry/editor/GeometryEditor.js
 ../src/geometry/editor/Label.Edit.js
 ../src/map/view/View.js
+../src/map/view/View.Arc.js
 ../src/map/Map.js
 ../src/map/Map.Pan.js
 ../src/map/Map.Zoom.js
