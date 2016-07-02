@@ -1,4 +1,4 @@
-describe('MultiPointSpec', function() {
+describe('#MultiPoint', function() {
 
     var container;
     var map;
@@ -19,6 +19,33 @@ describe('MultiPointSpec', function() {
         removeContainer(container)
     });
 
+    it('setCoordinates', function () {
+        var points = new maptalks.MultiPoint([[0, 0], [1, 1], [2, 2]]);
+        points.setCoordinates([[0, 0]]);
+        expect(maptalks.GeoJSON.toNumberArrays(points.getCoordinates())).to.be.eql([[0, 0]]);
+    });
+
+    it('getCenter', function() {
+        var points = new maptalks.MultiPoint([[0, 0], [1, 1], [2, 2]]);
+        expect(points.getCenter().toArray()).to.eql([1, 1]);
+    });
+
+    it('getExtent', function() {
+        var points = new maptalks.MultiPoint([[0, 0], [1, 1], [2, 2]]);
+        var extent = points.getExtent();
+        expect(extent.getWidth()).to.be.above(0);
+        expect(extent.getHeight()).to.be.above(0);
+    });
+
+    it('getSize', function() {
+        var points = new maptalks.MultiPoint([[0, 0], [1, 1], [2, 2]]);
+        layer.addGeometry(points);
+        var size = points.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
     describe('constructor', function() {
 
         it('normal constructor', function() {
@@ -34,18 +61,8 @@ describe('MultiPointSpec', function() {
         });
 
     });
-
     describe('geometry fires events', function() {
-        it('svg events', function() {
-            var vector = new Z.MultiPoint([center]);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
-
-
-    });
-
-    describe('geometry fires canvas events', function() {
-         it('canvas events', function() {
+         it('events', function() {
             var vector = new Z.MultiPoint([center]);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });

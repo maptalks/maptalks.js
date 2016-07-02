@@ -1,4 +1,4 @@
-describe('GeometryCollectionSpec', function() {
+describe('#GeometryCollection', function() {
 
     var container;
     var map;
@@ -17,6 +17,63 @@ describe('GeometryCollectionSpec', function() {
     afterEach(function() {
         map.removeLayer(layer);
         removeContainer(container)
+    });
+
+    it('getCenter', function() {
+        var geometries = genAllTypeGeometries();
+        var collection = new maptalks.GeometryCollection(geometries);
+
+        expect(collection.getCenter()).to.not.be(null);
+    });
+
+    it('getExtent', function() {
+        var geometries = genAllTypeGeometries();
+        var collection = new maptalks.GeometryCollection(geometries);
+
+        var extent = collection.getExtent();
+        expect(extent.getWidth()).to.be.above(0);
+        expect(extent.getHeight()).to.be.above(0);
+    });
+
+    it('getSize', function() {
+        var geometries = genAllTypeGeometries();
+        var collection = new maptalks.GeometryCollection(geometries);
+        layer.addGeometry(collection);
+        var size = collection.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
+    it('remove', function() {
+        var geometries = genAllTypeGeometries();
+        var collection = new maptalks.GeometryCollection(geometries);
+        layer.addGeometry(collection);
+        collection.remove();
+
+        expect(collection.getLayer()).to.be(null);
+    });
+
+    it('getGeometries/setGeometries', function() {
+        var collection = new maptalks.GeometryCollection([]);
+
+        expect(collection.getGeometries()).to.be.empty();
+
+        var geometries = genAllTypeGeometries();
+        collection.setGeometries(geometries);
+
+        expect(collection.getGeometries()).to.eql(geometries);
+    });
+
+    it('isEmpty', function() {
+        var collection = new maptalks.GeometryCollection([]);
+
+        expect(collection.isEmpty()).to.be.ok();
+
+        var geometries = genAllTypeGeometries();
+        collection.setGeometries(geometries);
+
+        expect(collection.isEmpty()).to.not.be.ok();
     });
 
     describe('constructor', function() {

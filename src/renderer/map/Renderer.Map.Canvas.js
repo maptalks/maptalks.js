@@ -170,6 +170,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     },
 
     toDataURL:function (mimeType) {
+        if (!this._canvas) {
+            return null;
+        }
         return this._canvas.toDataURL(mimeType);
     },
 

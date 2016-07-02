@@ -1,4 +1,4 @@
-describe('PolylineSpec', function() {
+describe('#LineString', function() {
 
     var container;
     var map;
@@ -20,6 +20,71 @@ describe('PolylineSpec', function() {
         map.removeLayer(layer);
         removeContainer(container)
     });
+
+    it('getCenter', function() {
+        var polyline = new maptalks.LineString([
+          {x: 0, y: 0},
+          {x: 120, y: 0}
+        ]);
+        var got = polyline.getCenter();
+        expect(got.x).to.eql(60);
+        expect(got.y).to.eql(0);
+    });
+
+    it('getExtent', function() {
+        var polyline = new maptalks.LineString([
+          {x: 0, y: 0},
+          {x: 120, y: 10}
+        ]);
+
+        var extent = polyline.getExtent();
+        expect(extent.getWidth()).to.be.above(0);
+        expect(extent.getHeight()).to.be.above(0);
+    });
+
+    it('getSize', function() {
+        var polyline = new maptalks.LineString([
+          {x: 0, y: 0},
+          {x: 10, y: 10},
+          {x: 20, y: 30}
+        ]);
+        layer.addGeometry(polyline);
+        var size = polyline.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
+
+    it('getCoordinates', function() {
+        var path = [
+          {x: 0, y: 0},
+          {x: 10, y: 10},
+          {x: 20, y: 30}
+        ];
+        var polyline = new maptalks.LineString(path);
+        layer.addGeometry(polyline);
+        var coords = polyline.getCoordinates();
+
+        for(var i = 0; i < coords.length; i++) {
+            expect(coords[i]).to.closeTo(path[i]);
+        }
+        // expect(polyline.getCoordinates()).to.eql(path);
+    });
+
+    it('setCoordinates', function() {
+        var path = [
+          {x: 0, y: 0},
+          {x: 10, y: 10},
+          {x: 20, y: 30}
+        ];
+        var polyline = new maptalks.LineString([]);
+        layer.addGeometry(polyline);
+        polyline.setCoordinates(path);
+
+        expect(polyline.getCoordinates()).to.eql(path);
+    });
+
 
     describe('constructor', function() {
 
@@ -64,17 +129,7 @@ describe('PolylineSpec', function() {
     });
 
     describe('geometry fires events', function() {
-        it('svg events', function() {
-            var points = [
-                {x: 0, y: 0},
-                {x: 0, y: 10},
-                {x: 0, y: 80}
-            ];
-            var vector = new Z.Polyline(points);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
-
-        it('canvas events', function() {
+        it('events', function() {
             var points = [
                 {x: 0, y: 0},
                 {x: 0, y: 10},

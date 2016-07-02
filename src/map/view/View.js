@@ -113,8 +113,18 @@ Z.Util.extend(Z.View.prototype, {
                 throw new Error('must provide a valid fullExtent in map\'s view.');
             }
         }
-        this._fullExtent = new Z.Extent(new Z.Coordinate(fullExtent['left'], fullExtent['top']),
+        if (!Z.Util.isNil(fullExtent['left'])) {
+            this._fullExtent = new Z.Extent(new Z.Coordinate(fullExtent['left'], fullExtent['top']),
                             new Z.Coordinate(fullExtent['right'], fullExtent['bottom']));
+        } else {
+            //xmin, ymin, xmax, ymax
+            this._fullExtent = new Z.Extent(fullExtent);
+            fullExtent['left'] = fullExtent['xmin'];
+            fullExtent['right'] = fullExtent['xmax'];
+            fullExtent['top'] = fullExtent['ymax'];
+            fullExtent['bottom'] = fullExtent['ymin'];
+        }
+
         //set left, right, top, bottom value
         Z.Util.extend(this._fullExtent, fullExtent);
 

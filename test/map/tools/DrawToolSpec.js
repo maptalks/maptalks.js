@@ -182,4 +182,71 @@ describe('#DrawTool', function () {
         });
     });
 
+    describe('common methods', function () {
+        it('enable/disable', function() {
+            var drawTool = new maptalks.DrawTool({
+                mode: 'LineString',
+                symbol: {
+                    strokeSymbol: {
+                        stroke: '#ff0000',
+                        'stroke-width': 3,
+                        opacity: 0.6
+                    }
+                }
+            });
+            drawTool.addTo(map);
+
+            expect(function () {
+                 drawTool.disable();
+                 drawTool.enable();
+             }).to.not.throwException();
+        });
+
+        it('setMode', function (done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof Z.Ellipse).to.be.ok();
+                expect(param.geometry.getWidth()).to.above(0);
+                expect(param.geometry.getHeight()).to.above(0);
+                done();
+            }
+            var drawTool = new Z.DrawTool({
+                mode : 'Rectangle'
+            });
+            drawTool.addTo(map);
+            drawTool.setMode('Ellipse');
+            drawTool.on('drawend', drawEnd);
+            dragDraw();
+        });
+
+        it('setSymbol', function(done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof Z.Ellipse).to.be.ok();
+                expect(param.geometry.getWidth()).to.above(0);
+                expect(param.geometry.getHeight()).to.above(0);
+                done();
+            }
+            var drawTool = new maptalks.DrawTool({
+                mode: 'Ellipse'
+            });
+            drawTool.addTo(map);
+            var symbol = {
+                'lineColor': '#ff0000',
+                'lineWidth': 3
+            };
+            drawTool.setSymbol(symbol);
+            drawTool.on('drawend', drawEnd);
+            dragDraw();
+        });
+
+        it('getSymbol', function() {
+            var drawTool = new maptalks.DrawTool({
+                mode: 'LineString'
+            });
+            drawTool.addTo(map);
+
+            expect(drawTool.getSymbol()).to.not.be(null);
+        });
+    });
+
+
 });

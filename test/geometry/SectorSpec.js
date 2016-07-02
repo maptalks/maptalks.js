@@ -1,4 +1,4 @@
-describe('SectorSpec', function() {
+describe('#Sector', function() {
 
     var container;
     var map;
@@ -21,12 +21,70 @@ describe('SectorSpec', function() {
         removeContainer(container)
     });
 
-    describe('geometry fires events', function() {
-        it('svg events', function() {
-            var vector = new Z.Sector(center, 1, 0, 270);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
+    it('setCoordinates', function() {
+        var sector = new maptalks.Sector({x: 0, y: 0}, 1, 30, 60);
+        sector.setCoordinates({x: 180, y: -75});
+        expect(sector.getCoordinates().toArray()).to.be.eql([180, -75]);
+    });
 
+    it('getCenter', function() {
+        var sector = new maptalks.Sector({x: 0, y: 0}, 1, 30, 60);
+        var got = sector.getCenter();
+
+        expect(got.x).to.eql(0);
+        expect(got.y).to.eql(0);
+    });
+
+    it('getExtent', function() {
+        var sector = new maptalks.Sector({x: 0, y: 0}, 1, 30, 60);
+        var extent = sector.getExtent();
+        expect(extent.getWidth()).to.be.above(0);
+        expect(extent.getHeight()).to.be.above(0);
+    });
+
+    it('getSize', function() {
+        var sector = new maptalks.Sector({x: 0, y: 0}, 1, 30, 60);
+        layer.addGeometry(sector);
+        var size = sector.getSize();
+
+        expect(size.width).to.be.above(0);
+        expect(size.height).to.be.above(0);
+    });
+
+
+    it('getRadius/getStartAngle/getEndAngle', function() {
+        var sector = new maptalks.Sector({x: 0, y: 0}, 1, 30, 60);
+        var r = sector.getRadius();
+        var s = sector.getStartAngle();
+        var e = sector.getEndAngle();
+
+        expect(r).to.eql(1);
+        expect(s).to.eql(30);
+        expect(e).to.eql(60);
+    });
+
+    it('setRadius/setStartAngle/setEndAngle', function() {
+        var sector = new maptalks.Sector({x: 0, y: 0}, 1, 30, 60);
+        sector.setRadius(2);
+        sector.setStartAngle(60);
+        sector.setEndAngle(120);
+        var r = sector.getRadius();
+        var s = sector.getStartAngle();
+        var e = sector.getEndAngle();
+
+        expect(r).to.eql(2);
+        expect(s).to.eql(60);
+        expect(e).to.eql(120);
+    });
+
+    it('getShell', function() {
+        var sector = new maptalks.Sector({x: 0, y: 0}, 1, 30, 60);
+        var shell = sector.getShell();
+
+        expect(shell).to.have.length(sector.options.numberOfShellPoints);
+    });
+
+    describe('geometry fires events', function() {
         it('canvas events', function() {
             var vector = new Z.Sector(center, 1, 0, 270);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());

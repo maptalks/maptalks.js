@@ -20,11 +20,6 @@ describe('LabelSpec', function() {
     });
 
     describe('label fires events', function() {
-        it('svg events', function() {
-            var vector = new maptalks.Label('test label', center);
-            new GeoEventsTester().testSVGEvents(vector, map);
-        });
-
         it('canvas events', function() {
             var vector = new maptalks.Label('test label', center);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
