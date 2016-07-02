@@ -1,6 +1,8 @@
 machine:
   environment:
     COVERALLS_SERVICE_NAME : circleci
+  node:
+    version: 4.1.0
 test:
   post:
     - gulp coveralls
