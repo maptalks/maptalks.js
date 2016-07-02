@@ -187,8 +187,10 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
             }
             var align = this.options['boxTextAlign'];
             if (align) {
-                var textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
-                textAlignPoint = textAlignPoint._add(Z.Util.getValueOrDefault(symbol['textDx'], 0), Z.Util.getValueOrDefault(symbol['textDy'], 0));
+                var textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
+                    dx = symbol['textDx'] || 0,
+                    dy = symbol['textDy'] || 0;
+                textAlignPoint = textAlignPoint._add(dx, dy);
                 symbol['markerDx'] = textAlignPoint.x;
                 symbol['markerDy'] = textAlignPoint.y + size['height'] / 2;
                 if (align === 'left') {

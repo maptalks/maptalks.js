@@ -84,11 +84,11 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var s = this.symbol;
         return {
             'markerFile' : s['markerFile'],
-            'markerWidth' : Z.Util.getValueOrDefault(s['markerWidth'], null),
-            'markerHeight' : Z.Util.getValueOrDefault(s['markerHeight'], null),
-            'markerOpacity' : Z.Util.getValueOrDefault(s['markerOpacity'], 1),
-            'markerDx' : Z.Util.getValueOrDefault(s['markerDx'], 0),
-            'markerDy' : Z.Util.getValueOrDefault(s['markerDy'], 0)
+            'markerWidth' : s['markerWidth'],
+            'markerHeight' : s['markerHeight'],
+            'markerOpacity' : s['markerOpacity'] || 1,
+            'markerDx' : s['markerDx'] || 0,
+            'markerDy' : s['markerDy'] || 0
         };
     }
 });

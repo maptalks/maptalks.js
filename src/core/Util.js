@@ -446,15 +446,6 @@ Z.Util = {
     isObject: function (obj) {
         return typeof obj === 'object' && !!obj;
     },
-    /*
-     * Get the value or default if the value is null or undefined.
-     * @param {*} value        - value
-     * @param {*} defaultValue - default value
-     * @returns {*}
-     */
-    getValueOrDefault: function (value, defaultValue) {
-        return (Z.Util.isNil(value)) ? defaultValue : value;
-    },
 
     /*
      * 判断数组中是否包含obj
