@@ -102,29 +102,30 @@ Z.StringUtil = {
      * @return {Object[]} the object's structure: {rowNum: rowNum, textSize: textSize, rows: textRows}
      */
     splitTextToRow: function (text, style) {
-        var font = Z.symbolizer.TextMarkerSymbolizer.getFont(style);
-        var lineSpacing = Z.Util.getValueOrDefault(style['textLineSpacing'], 0);
-        var rawTextSize = Z.StringUtil.stringLength(text, font);
-        var textWidth = rawTextSize['width'];
-        var textHeight = rawTextSize['height'];
-        var wrapChar = Z.Util.getValueOrDefault(style['textWrapCharacter'], null);
-        var wrapWidth = style['textWrapWidth'];
+        var font = Z.symbolizer.TextMarkerSymbolizer.getFont(style),
+            lineSpacing = style['textLineSpacing'] || 0,
+            rawTextSize = Z.StringUtil.stringLength(text, font),
+            textWidth = rawTextSize['width'],
+            textHeight = rawTextSize['height'],
+            wrapChar = style['textWrapCharacter'],
+            wrapWidth = style['textWrapWidth'],
+            textRows = [];
         if (!wrapWidth || wrapWidth > textWidth) { wrapWidth = textWidth; }
-        var textRows = [];
         if (!Z.Util.isString(text)) {
             text += '';
         }
         var actualWidth = 0, size, i, len;
         if (wrapChar && text.indexOf(wrapChar) >= 0) {
-            var texts = text.split(wrapChar);
+            var texts = text.split(wrapChar),
+                t, tSize, tWidth, contents, ii;
             for (i = 0, len = texts.length; i < len; i++) {
-                var t = texts[i];
+                t = texts[i];
                 //TODO stringLength is expensive, should be reduced here.
-                var tSize = Z.StringUtil.stringLength(t, font);
-                var tWidth = tSize['width'];
+                tSize = Z.StringUtil.stringLength(t, font);
+                tWidth = tSize['width'];
                 if (tWidth > wrapWidth) {
-                    var contents = Z.StringUtil.splitContent(t, tWidth, wrapWidth);
-                    for (var ii = 0; ii < contents.length; ii++) {
+                    contents = Z.StringUtil.splitContent(t, tWidth, wrapWidth);
+                    for (ii = 0; ii < contents.length; ii++) {
                         size = Z.StringUtil.stringLength(contents[ii], font);
                         if (size['width'] > actualWidth) { actualWidth = size['width']; }
                         textRows.push({'text':contents[ii], 'size':size});
