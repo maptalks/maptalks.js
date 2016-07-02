@@ -1,18 +1,15 @@
 (function () {
     function parse(arcConf) {
-        var version=arcConf['currentVersion'];
-        var tileInfo=arcConf['tileInfo'],
+        var tileInfo = arcConf['tileInfo'],
             tileSize = {'width' : tileInfo['cols'], 'height' : tileInfo['rows']},
             resolutions = [],
-            lods = tileInfo["lods"];
+            lods = tileInfo['lods'];
         for (var i = 0, len = lods.length; i < len; i++) {
             resolutions.push(lods[i]['resolution']);
         }
-        var maxZoom = resolutions.length-1,
-            minZoom = 0,
-            fullExtent = arcConf['fullExtent'],
+        var fullExtent = arcConf['fullExtent'],
 
-            origin=tileInfo['origin'],
+            origin = tileInfo['origin'],
             tileSystem = [1, -1, origin['x'], origin['y']];
         delete fullExtent['spatialReference'];
         return {
@@ -30,7 +27,7 @@
             maptalks.Ajax.getJSON(url, function (err, json) {
                 if (err) {
                     if (context) {
-                        cb.call(context, err)
+                        cb.call(context, err);
                     } else {
                         cb(err);
                     }
@@ -38,7 +35,7 @@
                 }
                 var view = parse(json);
                 if (context) {
-                    cb.call(context, null, view)
+                    cb.call(context, null, view);
                 } else {
                     cb(null, view);
                 }
@@ -49,13 +46,13 @@
             }
             var view = parse(url);
             if (context) {
-                cb.call(context, null, view)
+                cb.call(context, null, view);
             } else {
                 cb(null, view);
             }
 
         }
         return this;
-    }
+    };
 
 })();
