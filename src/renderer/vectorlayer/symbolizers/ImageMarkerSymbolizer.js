@@ -84,8 +84,8 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var s = this.symbol;
         return {
             'markerFile' : s['markerFile'],
-            'markerWidth' : s['markerWidth'],
-            'markerHeight' : s['markerHeight'],
+            'markerWidth' : s['markerWidth'] || null,
+            'markerHeight' : s['markerHeight'] || null,
             'markerOpacity' : s['markerOpacity'] || 1,
             'markerDx' : s['markerDx'] || 0,
             'markerDy' : s['markerDy'] || 0
