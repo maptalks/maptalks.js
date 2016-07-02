@@ -21,9 +21,9 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             'NOT_ADD_TO_LAYER':'This operation needs geometry to be on a layer.'
         },
         'zh-CN':{
-            'DUPLICATE_LAYER':'Geometry²»ÄÜ±»ÖØ¸´Ìí¼Óµ½¶à¸öÍ¼²ãÉÏ.',
-            'INVALID_GEOMETRY_IN_COLLECTION':'Ìí¼Óµ½¼¯ºÏÖĞµÄGeometryÊÇ²»ºÏ·¨µÄ, index:',
-            'NOT_ADD_TO_LAYER':'Geometry±ØĞëÌí¼Óµ½Ä³¸öÍ¼²ãÉÏ²ÅÄÜ×÷´Ë²Ù×÷.'
+            'DUPLICATE_LAYER':'Geometryä¸èƒ½è¢«é‡å¤æ·»åŠ åˆ°å¤šä¸ªå›¾å±‚ä¸Š.',
+            'INVALID_GEOMETRY_IN_COLLECTION':'æ·»åŠ åˆ°é›†åˆä¸­çš„Geometryæ˜¯ä¸åˆæ³•çš„, index:',
+            'NOT_ADD_TO_LAYER':'Geometryå¿…é¡»æ·»åŠ åˆ°æŸä¸ªå›¾å±‚ä¸Šæ‰èƒ½ä½œæ­¤æ“ä½œ.'
         }
     },
     /** @lends maptalks.Geometry */
@@ -119,7 +119,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Gets geometry's id. Id is set by setId or constructor options.
-     * @returns {String|Number} geometryµÄid
+     * @returns {String|Number} geometryçš„id
      */
     getId:function () {
         return this._id;
@@ -134,7 +134,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     setId:function (id) {
         var oldId = this.getId();
         this._id = id;
-        //FIXME _idchangedÃ»ÓĞ±»Í¼²ã¼àÌı, layer.getGeometryById»á³öÏÖbug
+        //FIXME _idchangedæ²¡æœ‰è¢«å›¾å±‚ç›‘å¬, layer.getGeometryByIdä¼šå‡ºç°bug
         /**
          * idchange event.
          *
@@ -477,7 +477,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     copy:function () {
         var json = this.toJSON();
-        //FIXME symbolĞÅÏ¢Ã»ÓĞ±»¿½±´¹ıÀ´
+        //FIXME symbolä¿¡æ¯æ²¡æœ‰è¢«æ‹·è´è¿‡æ¥
         var ret = Z.Geometry.fromJSON(json);
         //restore visibility
         ret.options['visible'] = true;
@@ -601,9 +601,9 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @return {Object} profile json object
      */
     toJSON:function (options) {
-        //Ò»¸öGraphicµÄprofile
+        //ä¸€ä¸ªGraphicçš„profile
         /*
-            //ÒòÎªÏìÓ¦º¯ÊıÎŞ·¨±»ĞòÁĞ»¯, ËùÒÔmenu, ÊÂ¼şlistenerµÈÎŞ·¨±»°üº¬ÔÚgraphicÖĞ
+            //å› ä¸ºå“åº”å‡½æ•°æ— æ³•è¢«åºåˆ—åŒ–, æ‰€ä»¥menu, äº‹ä»¶listenerç­‰æ— æ³•è¢«åŒ…å«åœ¨graphicä¸­
         }*/
         if (!options) {
             options = {};
@@ -663,14 +663,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
     },
 
-    //µ÷ÓÃprepareÊ±,layerÒÑ¾­×¢²áµ½mapÉÏ
+    //è°ƒç”¨prepareæ—¶,layerå·²ç»æ³¨å†Œåˆ°mapä¸Š
     _bindLayer:function (layer) {
-         //Geometry²»ÔÊĞí±»ÖØ¸´Ìí¼Óµ½¶à¸öÍ¼²ãÉÏ
+         //Geometryä¸å…è®¸è¢«é‡å¤æ·»åŠ åˆ°å¤šä¸ªå›¾å±‚ä¸Š
         if (this.getLayer()) {
             throw new Error(this.exceptions['DUPLICATE_LAYER']);
         }
         this._layer = layer;
-        //Èç¹ûÍ¶Ó°·¢Éú¸Ä±ä,ÔòÇå³ıµôËùÓĞµÄÍ¶Ó°×ø±êÊôĞÔ
+        //å¦‚æœæŠ•å½±å‘ç”Ÿæ”¹å˜,åˆ™æ¸…é™¤æ‰æ‰€æœ‰çš„æŠ•å½±åæ ‡å±æ€§
         this._clearProjection();
         this.callInitHooks();
     },
@@ -767,7 +767,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return this._internalId;
     },
 
-    //Ö»ÄÜ±»Í¼²ãµ÷ÓÃ
+    //åªèƒ½è¢«å›¾å±‚è°ƒç”¨
     _setInternalId:function (id) {
         this._internalId = id;
     },
@@ -787,7 +787,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return null;
     },
 
-    //»ñÈ¡geometryÑùÊ½ÖĞÒÀÀµµÄÍâ²¿Í¼Æ¬×ÊÔ´
+    //è·å–geometryæ ·å¼ä¸­ä¾èµ–çš„å¤–éƒ¨å›¾ç‰‡èµ„æº
     _getExternalResources:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
