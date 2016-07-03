@@ -12,11 +12,11 @@ Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
      */
     options:{
         'symbol':{
-            'lineColor' : '#000000',
+            'lineColor' : '#000',
             'lineWidth' : 1,
             'lineOpacity' : 1,
 
-            'polygonFill' : '#808080', //default color in cartoCSS
+            'polygonFill' : '#fff', //default color in cartoCSS
             'polygonOpacity' : 1,
             'opacity' : 1
         }

@@ -5,14 +5,14 @@ describe('#DrawTool', function () {
     var container,eventContainer;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     function drawLine() {
         var center = map.getCenter();
 
-        var domPosition = Z.DomUtil.getPagePosition(container);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        var requestAnimFn = Z.Util.requestAnimFrame;
+        var requestAnimFn = maptalks.Util.requestAnimFrame;
 
         happen.click(eventContainer,{
                 'clientX':point.x,
@@ -41,7 +41,7 @@ describe('#DrawTool', function () {
     function dragDraw() {
         var center = map.getCenter();
 
-        var domPosition = Z.DomUtil.getPagePosition(container);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.mousedown(eventContainer,{
                 'clientX':point.x,
@@ -61,7 +61,7 @@ describe('#DrawTool', function () {
     function drawPoint() {
         var center = map.getCenter();
 
-        var domPosition = Z.DomUtil.getPagePosition(container);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.click(eventContainer,{
                 'clientX':point.x,
@@ -82,14 +82,14 @@ describe('#DrawTool', function () {
     describe('draw geometries', function() {
         it('throw exception with an undefined mode', function() {
             expect(function() {
-                var drawTool = new Z.DrawTool({
+                var drawTool = new maptalks.DrawTool({
                 });
             }).to.throwException();
         });
 
         it('throw exception with an invalid mode', function() {
             expect(function() {
-                var drawTool = new Z.DrawTool({
+                var drawTool = new maptalks.DrawTool({
                     mode : 'invalidMode'
                 });
             }).to.throwException();
@@ -97,11 +97,11 @@ describe('#DrawTool', function () {
 
         it('can draw a marker', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof Z.Marker).to.be.ok();
+                expect(param.geometry instanceof maptalks.Marker).to.be.ok();
                 expect(param.geometry.getCoordinates()).to.be.closeTo(map.getCenter());
                 done();
             }
-            var drawTool = new Z.DrawTool({
+            var drawTool = new maptalks.DrawTool({
                 mode : 'Point'
             });
             drawTool.addTo(map);
@@ -111,11 +111,11 @@ describe('#DrawTool', function () {
 
         it('can draw linestring', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof Z.LineString).to.be.ok();
+                expect(param.geometry instanceof maptalks.LineString).to.be.ok();
                 expect(param.geometry.getLength()).to.above(0);
                 done();
             }
-            var drawTool = new Z.DrawTool({
+            var drawTool = new maptalks.DrawTool({
                 mode : 'LineString'
             });
             drawTool.addTo(map);
@@ -125,11 +125,11 @@ describe('#DrawTool', function () {
 
         it('can draw Polygon', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof Z.Polygon).to.be.ok();
+                expect(param.geometry instanceof maptalks.Polygon).to.be.ok();
                 expect(param.geometry.getArea()).to.above(0);
                 done();
             }
-            var drawTool = new Z.DrawTool({
+            var drawTool = new maptalks.DrawTool({
                 mode : 'Polygon'
             });
             drawTool.addTo(map);
@@ -139,11 +139,11 @@ describe('#DrawTool', function () {
 
         it('can draw circle', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof Z.Circle).to.be.ok();
+                expect(param.geometry instanceof maptalks.Circle).to.be.ok();
                 expect(param.geometry.getRadius()).to.above(0);
                 done();
             }
-            var drawTool = new Z.DrawTool({
+            var drawTool = new maptalks.DrawTool({
                 mode : 'Circle'
             });
             drawTool.addTo(map);
@@ -153,12 +153,12 @@ describe('#DrawTool', function () {
 
         it('can draw Rectangle', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof Z.Rectangle).to.be.ok();
+                expect(param.geometry instanceof maptalks.Rectangle).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
                 done();
             }
-            var drawTool = new Z.DrawTool({
+            var drawTool = new maptalks.DrawTool({
                 mode : 'Rectangle'
             });
             drawTool.addTo(map);
@@ -168,12 +168,12 @@ describe('#DrawTool', function () {
 
         it('can draw Ellipse', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof Z.Ellipse).to.be.ok();
+                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
                 done();
             }
-            var drawTool = new Z.DrawTool({
+            var drawTool = new maptalks.DrawTool({
                 mode : 'Ellipse'
             });
             drawTool.addTo(map);
@@ -204,12 +204,12 @@ describe('#DrawTool', function () {
 
         it('setMode', function (done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof Z.Ellipse).to.be.ok();
+                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
                 done();
             }
-            var drawTool = new Z.DrawTool({
+            var drawTool = new maptalks.DrawTool({
                 mode : 'Rectangle'
             });
             drawTool.addTo(map);
@@ -218,9 +218,21 @@ describe('#DrawTool', function () {
             dragDraw();
         });
 
+        it('setMode after disable', function () {
+            var drawTool = new maptalks.DrawTool({
+                mode : 'Rectangle'
+            });
+            drawTool.addTo(map);
+            drawTool.disable();
+            var spy = sinon.spy(drawTool, '_switchEvents');
+            drawTool.setMode('Ellipse');
+
+            expect(spy.callCount).to.be(1);
+        });
+
         it('setSymbol', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof Z.Ellipse).to.be.ok();
+                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
                 done();

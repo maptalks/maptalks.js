@@ -14,10 +14,16 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
+        if (geometry instanceof Z.Marker) {
+            return;
+        }
         this.style = this._defineStyle(this.translate());
     },
 
     symbolize:function (ctx, resources) {
+        if (this.geometry instanceof Z.Marker) {
+            return;
+        }
         var style = this.style;
         if (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0) {
             return;
@@ -52,6 +58,9 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
     },
 
     getViewExtent:function () {
+        if (this.geometry instanceof Z.Marker) {
+            return null;
+        }
         var map = this.getMap();
         var extent = this.geometry._getPrjExtent();
         if (!extent) {
