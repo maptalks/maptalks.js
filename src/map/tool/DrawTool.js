@@ -11,12 +11,11 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
     options:{
         'symbol' : {
-            'lineColor':'#000000',
+            'lineColor':'#000',
             'lineWidth':2,
             'lineOpacity':1,
-            'lineDasharray': '',
-            'polygonFill' : '#ffffff',
-            'polygonOpacity' : 0
+            'polygonFill' : '#fff',
+            'polygonOpacity' : 0.3
         },
         'mode' : null,
         'once' : false
@@ -40,7 +39,9 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         this._switchEvents('off');
         this.options['mode'] = mode;
         this._checkMode();
-        this._switchEvents('on');
+        if (this.isEnabled()) {
+            this._switchEvents('on');
+        }
         return this;
     },
 
@@ -74,6 +75,17 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         return this;
     },
 
+    /**
+     * Get current mode of draw tool
+     * @return {String} mode
+     */
+    getMode: function () {
+        if (this.options['mode']) {
+            return this.options['mode'].toLowerCase();
+        }
+        return null;
+    },
+
     _onAdd: function () {
         this._checkMode();
     },
@@ -94,13 +106,13 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     _checkMode: function () {
-        if (!this.options['mode']) {
+        var mode = this.getMode();
+        if (!mode) {
             throw new Error('drawtool\'s mode is null.');
         }
         var modes = ['circle', 'ellipse', 'rectangle', 'point', 'linestring', 'polygon'];
-        this.options['mode'] = this.options['mode'].toLowerCase();
         for (var i = 0; i < modes.length; i++) {
-            if (this.options['mode'] === modes[i]) {
+            if (mode === modes[i]) {
                 return true;
             }
         }
@@ -139,7 +151,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     _getEvents: function () {
-        var mode = this.options['mode'];
+        var mode = this.getMode();
         if (mode === 'polygon' || mode === 'linestring') {
             return {
                 'click' : this._clickForPath,
@@ -192,7 +204,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         } else {
             var path = this._getLonlats();
             path.push(coordinate);
-            if (this.options['mode'] === 'polygon' && path.length === 3) {
+            if (this.getMode() === 'polygon' && path.length === 3) {
                 var polygon = new Z.Polygon([path]);
                 if (symbol) {
                     var pSymbol = Z.Util.extendSymbol(symbol, {'lineOpacity':0});
@@ -245,7 +257,8 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         path.push(coordinate);
         if (path.length < 2) { return; }
         //去除重复的端点
-        var nIndexes = [];
+        var nIndexes = [],
+            mode = this.getMode();
         var i, len;
         for (i = 1, len = path.length; i < len; i++) {
             if (path[i].x === path[i - 1].x && path[i].y === path[i - 1].y) {
@@ -256,7 +269,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             path.splice(nIndexes[i], 1);
         }
 
-        if (path.length < 2 || (this.options['mode'] === 'polygon' && path.length < 3)) {
+        if (path.length < 2 || (mode === 'polygon' && path.length < 3)) {
             return;
         }
         this._geometry.remove();
@@ -267,7 +280,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         if (this._polygon) {
             this._polygon.remove();
         }
-        if (this.options['mode'] === 'polygon') {
+        if (mode === 'polygon') {
             this._geometry = new Z.Polygon([path]);
             var symbol = this.getSymbol();
             if (symbol) {
@@ -287,7 +300,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             var geometry = me._geometry;
             var _map = me._map;
             var center;
-            switch (me.options['mode']) {
+            switch (me.getMode()) {
             case 'circle':
                 if (!geometry) {
                     geometry = new Z.Circle(coordinate, 0);
@@ -464,7 +477,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         if (!param['geometry'] && this._geometry) {
             param['geometry'] = this._geometry;
         }
-        this.fire(eventName, param);
+        Z.MapTool.prototype._fireEvent.call(this, eventName, param);
     }
 
 });

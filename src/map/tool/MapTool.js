@@ -70,13 +70,23 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
             return this;
         }
         this._enabled = false;
-        if (!this._map) { return this; }
         this._switchEvents('off');
         if (this._onDisable) {
             this._onDisable();
         }
         this._fireEvent('disable');
         return this;
+    },
+
+    /**
+     * Returns whether the tool is enabled
+     * @return {Boolean} true | false
+     */
+    isEnabled: function () {
+        if (!this._enabled) {
+            return false;
+        }
+        return true;
     },
 
     _registerEvents: function () {
@@ -92,5 +102,12 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
                 }
             }
         }
+    },
+
+    _fireEvent:function (eventName, param) {
+        if (!param) {
+            param = {};
+        }
+        this.fire(eventName, param);
     }
 });
