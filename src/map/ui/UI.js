@@ -123,10 +123,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @return {maptalks.ui.UIComponent} this
      */
     hide:function () {
-        if (!this._getDOM()) {
+        if (!this.getDOM()) {
             return this;
         }
-        this._getDOM().style.display = 'none';
+        this.getDOM().style.display = 'none';
         this.fire('hide');
         return this;
     },
@@ -136,7 +136,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @returns {Boolean} true|false
      */
     isVisible:function () {
-        return this._getDOM() && this._getDOM().style.display !== 'none';
+        return this.getDOM() && this.getDOM().style.display !== 'none';
     },
 
     /**
@@ -171,6 +171,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         return this._owner;
     },
 
+    getDOM : function () {
+        return this.__uiDOM;
+    },
+
     _getPosition : function () {
         var p = this.getMap().coordinateToViewPoint(this._coordinate)
                     ._add(this.options['dx'], this.options['dy']);
@@ -181,13 +185,9 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         return p;
     },
 
-    _getDOM : function () {
-        return this.__uiDOM;
-    },
-
     _autoPan : function () {
         var map = this.getMap(),
-            dom = this._getDOM();
+            dom = this.getDOM();
         var point = new Z.Point(parseInt(dom.style.left), parseInt(dom.style.top));
         var mapSize = map.getSize(),
             mapWidth = mapSize['width'],
@@ -307,10 +307,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     _onZooming : function (param) {
-        if (!this.isVisible() || !this._getDOM()) {
+        if (!this.isVisible() || !this.getDOM()) {
             return;
         }
-        var dom = this._getDOM(),
+        var dom = this.getDOM(),
             point = this.getMap().coordinateToViewPoint(this._coordinate),
             matrix = param['matrix']['view'];
         var p = matrix.applyToPointInstance(point)._add(this.options['dx'], this.options['dy']);
@@ -323,10 +323,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     _onZoomEnd : function () {
-        if (!this.isVisible() || !this._getDOM()) {
+        if (!this.isVisible() || !this.getDOM()) {
             return;
         }
-        var dom = this._getDOM(),
+        var dom = this.getDOM(),
             p = this._getPosition();
         dom.style.left = p.x + 'px';
         dom.style.top  = p.y + 'px';

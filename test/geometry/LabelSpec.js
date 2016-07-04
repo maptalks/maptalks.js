@@ -1,6 +1,6 @@
 // var CommonSpec = require('./CommonSpec');
 
-describe('LabelSpec', function() {
+describe('#Label', function() {
 
     var container;
     var map;
