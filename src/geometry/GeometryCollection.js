@@ -380,6 +380,33 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         return anchors;
     },
 
+    _getExternalResources:function () {
+        if (this.isEmpty()) {
+            return null;
+        }
+        var i, l, ii, ll;
+        var geometries = this.getGeometries(),
+            resources = [], symbol, res, cache = {}, key;
+        for (i = 0, l = geometries.length; i < l; i++) {
+            if (!geometries[i]) {
+                continue;
+            }
+            symbol = geometries[i]._getInternalSymbol();
+            res = Z.Util.getExternalResources(this._interpolateSymbol(symbol));
+            if (!res) {
+                continue;
+            }
+            for (ii = 0, ll = res.length; ii < ll; ii++) {
+                key = res[ii].join();
+                if (!cache[key]) {
+                    resources.push(res[ii]);
+                    cache[key] = 1;
+                }
+            }
+        }
+        return resources;
+    },
+
 //----------覆盖Geometry中的编辑相关方法-----------------
 
 

@@ -76,6 +76,12 @@ describe('#GeometryCollection', function() {
         expect(collection.isEmpty()).to.not.be.ok();
     });
 
+    it('getExternalResource', function () {
+        var collection = new maptalks.GeometryCollection([new maptalks.Marker(center)]);
+        var resources = collection._getExternalResources();
+        expect(resources).to.have.length(1);
+    });
+
     describe('constructor', function() {
 
         it('normal constructor', function() {
