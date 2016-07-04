@@ -393,10 +393,13 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
             }
             symbol = geometries[i]._getInternalSymbol();
             res = Z.Util.getExternalResources(this._interpolateSymbol(symbol));
+            if (!res) {
+                continue;
+            }
             for (ii = 0, ll = res.length; ii < ll; ii++) {
-                key = res[i].join();
+                key = res[ii].join();
                 if (!cache[key]) {
-                    resources.push(res[i]);
+                    resources.push(res[ii]);
                     cache[key] = 1;
                 }
             }
