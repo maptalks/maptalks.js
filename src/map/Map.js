@@ -925,14 +925,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Map} this
      */
     checkSize:function () {
-        if (!this._loaded) {
-            return this;
-        }
         if (this._resizeTimeout) {
             clearTimeout(this._resizeTimeout);
         }
         var me = this,
-            justStart = (Z.Util.now() - this._initTime) < 1500,
+            justStart = ((Z.Util.now() - this._initTime) < 1500) && this.width === 0 && this.height === 0,
             center = me.getCenter();
         function resize() {
             var watched = me._getContainerDomSize();
