@@ -4,7 +4,7 @@ Z.Geometry.mergeOptions({
 
     'dragShadow' : true,
 
-    'draggableAxis' : null
+    'dragOnAxis' : null
 });
 
 /**
@@ -163,7 +163,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         if (!this._shadow) {
             return;
         }
-        var axis = this._shadow.options['draggableAxis'];
+        var axis = this._shadow.options['dragOnAxis'];
         var currentPos = eventParam['coordinate'];
         if (!this._lastPos) {
             this._lastPos = currentPos;

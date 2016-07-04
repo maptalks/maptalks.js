@@ -384,15 +384,22 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         if (this.isEmpty()) {
             return null;
         }
+        var i, l, ii, ll;
         var geometries = this.getGeometries(),
-            resources = [], symbol, res;
-        for (var i = 0, len = geometries.length; i < len; i++) {
+            resources = [], symbol, res, cache = {}, key;
+        for (i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
             symbol = geometries[i]._getInternalSymbol();
             res = Z.Util.getExternalResources(this._interpolateSymbol(symbol));
-            resources = resources.concat(res);
+            for (ii = 0, ll = res.length; ii < ll; ii++) {
+                key = res[i].join();
+                if (!cache[key]) {
+                    resources.push(res[i]);
+                    cache[key] = 1;
+                }
+            }
         }
         return resources;
     },

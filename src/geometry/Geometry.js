@@ -76,7 +76,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @property {String} [options.measure=EPSG:4326]       - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
      * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
      * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
-     * @property {Boolean} [options.draggableAxis=null] - if set, geometry can only be dragged along the specified axis, possible values: x, y
+     * @property {Boolean} [options.dragOnAxis=null] - if set, geometry can only be dragged along the specified axis, possible values: x, y
      */
     options:{
         'id'        : null,

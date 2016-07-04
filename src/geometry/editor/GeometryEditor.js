@@ -260,7 +260,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         var handle = new Z.Marker(coordinate, {
             'draggable' : true,
             'dragShadow' : false,
-            'draggableAxis' : opts['axis'],
+            'dragOnAxis' : opts['axis'],
             'cursor'    : opts['cursor'],
             'symbol'    : symbol
         });
@@ -314,7 +314,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             'w-resize',            'e-resize',
             'sw-resize', 's-resize', 'se-resize'
         ];
-        //defines draggableAxis of resize handle
+        //defines dragOnAxis of resize handle
         var axis = [
             null, 'y', null,
             'x',       'x',
