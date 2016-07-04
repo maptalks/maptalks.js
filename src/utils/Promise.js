@@ -2,13 +2,13 @@ if (typeof Promise !== 'undefined') {
     //built in Promise
     Z.Promise = Promise;
 } else {
-// zousan - A Lightning Fast, Yet Very Small Promise A+ Compliant Implementation
-// https://github.com/bluejava/zousan
-// Version 2.2.2
+    // zousan - A Lightning Fast, Yet Very Small Promise A+ Compliant Implementation
+    // https://github.com/bluejava/zousan
+    // Version 2.2.2
 
-/* jshint asi: true, browser: true */
-/* global setImmediate, console */
-(function(_global){
+    /* jshint asi: true, browser: true */
+    /* global setImmediate, console */
+    (function(_global){
 
         "use strict";
 
@@ -294,5 +294,5 @@ if (typeof Promise !== 'undefined') {
         // make soon accessable from Zousan
         // Zousan.soon = soon;
 
-    })(/*typeof global != "undefined" ? global : this*//* by maptalks*/Z);   // jshint ignore:line
+    })(Z);   // jshint ignore:line
 }
