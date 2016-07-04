@@ -925,10 +925,15 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Map} this
      */
     checkSize:function () {
+        if (!this._loaded) {
+            return this;
+        }
         if (this._resizeTimeout) {
             clearTimeout(this._resizeTimeout);
         }
-        var me = this;
+        var me = this,
+            justStart = (Z.Util.now() - this._initTime) < 1500,
+            center = me.getCenter();
         function resize() {
             var watched = me._getContainerDomSize();
             var oldHeight = me.height;
@@ -939,7 +944,9 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             me._updateMapSize(watched);
             var resizeOffset = new Z.Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
             me._offsetCenterByPixel(resizeOffset);
-
+            if (justStart) {
+                me.setCenter(center);
+            }
             /**
              * resize event when map container's size changes
              * @event maptalks.Map#resize
@@ -952,10 +959,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
         this._resizeTimeout = setTimeout(function () {
             resize();
-            setTimeout(function () {
-                resize();
-            }, 1);
-
+            if (!justStart) {
+                setTimeout(function () {
+                    resize();
+                }, 1);
+            }
         }, 100);
 
         return this;
@@ -1186,6 +1194,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._loadAllLayers();
         this._loaded = true;
         this._callOnLoadHooks();
+        this._initTime = Z.Util.now();
         this._fireEvent('load');
     },
 
