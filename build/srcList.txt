@@ -13,7 +13,6 @@
 ../src/utils/Ajax.js
 ../src/utils/FeatureFilter.js
 ../src/utils/FunctionType.js
-../src/utils/Promise.js
 ../src/geo/Coordinate.js
 ../src/geo/Point.js
 ../src/geo/Size.js
@@ -40,6 +39,7 @@
 ../src/map/tool/AreaTool.js
 ../src/layer/tile/tileinfo/TileSystem.js
 ../src/layer/tile/tileinfo/TileConfig.js
+../src/utils/Promise.js
 ../src/renderer/Renderable.js
 ../src/layer/Layer.js
 ../src/layer/tile/TileLayer.js
