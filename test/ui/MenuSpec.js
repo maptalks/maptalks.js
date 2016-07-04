@@ -84,7 +84,7 @@ function runTests(target, _context) {
                 target.openMenu();
                 assertItems();
                 target.closeMenu();
-                expect(target._menu._getDOM().style.display).to.be.eql('none');
+                expect(target._menu.getDOM().style.display).to.be.eql('none');
             });
 
             it('get menu', function() {
@@ -117,7 +117,7 @@ function runTests(target, _context) {
                 target.openMenu();
                 assertItems();
                 target.closeMenu();
-                expect(target._menu._getDOM().style.display).to.be.eql('none');
+                expect(target._menu.getDOM().style.display).to.be.eql('none');
             });
 
             it('custom menu 2', function() {
@@ -140,7 +140,7 @@ function runTests(target, _context) {
                 target.openMenu();
                 assertItems();
                 target.closeMenu();
-                expect(target._menu._getDOM().style.display).to.be.eql('none');
+                expect(target._menu.getDOM().style.display).to.be.eql('none');
             });
 
             it('setMenuItems', function() {
@@ -149,7 +149,7 @@ function runTests(target, _context) {
                 target.openMenu();
                 assertItems();
                 target.closeMenu();
-                expect(target._menu._getDOM().style.display).to.be.eql('none');
+                expect(target._menu.getDOM().style.display).to.be.eql('none');
             });
 
             it('openMenu with a coordinate', function() {
@@ -158,7 +158,7 @@ function runTests(target, _context) {
                 target.openMenu(target.getCenter());
                 assertItems();
                 target.closeMenu();
-                expect(target._menu._getDOM().style.display).to.be.eql('none');
+                expect(target._menu.getDOM().style.display).to.be.eql('none');
             });
 
             it('openMenu by click', function() {
@@ -173,7 +173,7 @@ function runTests(target, _context) {
                 rightclick();
                 assertItems();
                 target.closeMenu();
-                expect(target._menu._getDOM().style.display).to.be.eql('none');
+                expect(target._menu.getDOM().style.display).to.be.eql('none');
             });
 
             it('openMenu by click when target is being edited', function(done) {
@@ -187,7 +187,7 @@ function runTests(target, _context) {
                 //     rightclick();
                 //     assertItems();
                 //     target.closeMenu();
-                //     expect(target._menu._getDOM().style.display).to.be.eql('none');
+                //     expect(target._menu.getDOM().style.display).to.be.eql('none');
                 //     done();
                 // }, 20);
                 done();
@@ -228,7 +228,7 @@ function runTests(target, _context) {
                 var itemEles = document.getElementsByTagName('li');
                 itemEles[0].click();
 
-                expect(target._menu._getDOM().style.display).not.to.be.eql('none');
+                expect(target._menu.getDOM().style.display).not.to.be.eql('none');
 
             });
 

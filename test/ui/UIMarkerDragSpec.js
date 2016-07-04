@@ -9,7 +9,7 @@ describe('#UIMarkerDrag', function () {
         marker.on('mousedown', spy);
         var domPosition = Z.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(marker.getCoordinates()).add(domPosition);
-        happen.mousedown(marker._getDOM(),{
+        happen.mousedown(marker.getDOM(),{
                 'clientX':point.x,
                 'clientY':point.y
                 });

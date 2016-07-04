@@ -74,7 +74,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
     },
 
     _onDOMRemove: function () {
-        var dom = this._getDOM();
+        var dom = this.getDOM();
         this._removeDOMEvents(dom);
     },
 
@@ -286,7 +286,7 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
     },
 
     _prepareDragHandler:function () {
-        this._dragHandler = new Z.Handler.Drag(this.target._getDOM());
+        this._dragHandler = new Z.Handler.Drag(this.target.getDOM());
         this._dragHandler.on('mousedown', this._onMouseDown, this);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);

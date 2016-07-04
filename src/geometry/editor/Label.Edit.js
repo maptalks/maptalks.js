@@ -25,8 +25,8 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             this.show();
             Z.DomUtil.off(this._textEditor, 'mousedown dblclick', Z.DomUtil.stopPropagation)
                 .off(this._textEditor, 'blur', this.endEditText, this);
-            Z.DomUtil.removeDomNode(this._container);
-            delete this._container;
+            this._editUIMarker.remove();
+            delete this._editUIMarker;
             delete this._textEditor;
             this.fire('edittextend', this);
         }
@@ -38,39 +38,23 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
      * @return {Boolean}
      */
     isEditingText: function () {
-        if (this._container) {
+        if (this._textEditor) {
             return true;
         }
         return false;
     },
 
-    getEditor: function () {
-        return this._textEditor;
+    getTextEditor: function () {
+        return this._editUIMarker;
     },
 
     _prepareEditor:function () {
-        var map = this.getMap(),
-            zIndex = map._panels.control.style.zIndex + 1,
-            viewPoint = this._computeViewPoint();
-        this._container = Z.DomUtil.createEl('div');
-        this._container.style.cssText = 'position:absolute;top:' + viewPoint['y'] +
-                                    'px;left:' + viewPoint['x'] + 'px;z-index:' + zIndex + ';';
-        map._panels.ui.appendChild(this._container);
-        this._textEditor = this._createEditor();
-        this._container.appendChild(this._textEditor);
-    },
-
-
-    _computeViewPoint: function () {
-        var map = this.getMap(),
-            symbol = this._getInternalSymbol(),
-            labelSize = this.getSize(),
-            dx = symbol['textDx'] || 0,
-            dy = symbol['textDy'] || 0,
-            align = Z.StringUtil.getAlignPoint(labelSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment'])
-                    .add(dx, dy),
-            viewPoint = map.coordinateToViewPoint(this.getCenter()).add(align);
-        return viewPoint;
+        var map = this.getMap();
+        var editContainer = this._createEditor();
+        this._textEditor = editContainer;
+        this._editUIMarker = new maptalks.ui.UIMarker(this.getCoordinates(), {
+            'content' : editContainer
+        }).addTo(map).show();
     },
 
     _createEditor: function () {

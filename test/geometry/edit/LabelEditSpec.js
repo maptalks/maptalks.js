@@ -31,7 +31,7 @@ describe('#LabelEdit', function () {
 
             function startEdit(param) {
                 expect(label.isEditingText()).to.be.ok();
-                var dom = label.getEditor();
+                var dom = label.getTextEditor().getDOM();
                 Z.DomUtil.on(dom, 'keyup', function(ev){
                     var oEvent = ev || event;
                     var char = String.fromCharCode(oEvent.keyCode);
@@ -62,7 +62,7 @@ describe('#LabelEdit', function () {
             label.startEditText();
             expect(label.isEditingText()).to.be.ok;
             function startEdit(param) {
-                var dom = label.getEditor();
+                var dom = label.getTextEditor().getDOM();
                 Z.DomUtil.on(dom, 'keyup', function(ev){
                     var oEvent = ev || event;
                     if(oEvent.keyCode === 13) {
