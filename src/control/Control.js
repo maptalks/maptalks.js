@@ -227,6 +227,10 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
 
 });
 
+Z.Map.mergeOptions({
+
+    'control' : true
+});
 
 Z.Map.include(/** @lends maptalks.Map.prototype */{
     /**
@@ -236,7 +240,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      */
     addControl: function (control) {
         //map container is a canvas, can't add control on it.
-        if (this._containerDOM.getContext) {
+        if (!this.options['control'] || this._containerDOM.getContext) {
             return this;
         }
         control.addTo(this);

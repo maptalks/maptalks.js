@@ -56,14 +56,17 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
         var map = this.getMap(),
             dom = container || this.getDOM(),
             extent = map.getExtent();
-        this._overview = new Z.Map(dom, {
+        var options = map.config();
+        Z.Util.extend(options, {
             'center' : map.getCenter(),
             'zoom'   : this._getOverviewZoom(),
             'scrollWheelZoom' : false,
             'checkSize' : false,
             'doubleClickZoom' : false,
-            'touchZoom' : false
+            'touchZoom' : false,
+            'control' : false
         });
+        this._overview = new Z.Map(dom, options);
         this._updateBaseLayer();
         this._perspective = new Z.Polygon(extent.toArray(), {
             'draggable' : true,
