@@ -77,7 +77,7 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
 
     _onDragStart:function (param) {
         this._startPos = param['mousePos'];
-        this._startPosition = Z.Util.extend({}, this.options['position']);
+        this._startPosition = Z.Util.extend({}, this.getPosition());
     },
 
     _onDragging:function (param) {
@@ -85,21 +85,20 @@ Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype *
         var offset = pos.substract(this._startPos);
 
         var startPosition = this._startPosition;
-        var position = this.options['position'];
+        var position = this.getPosition();
         if (!Z.Util.isNil(position['top'])) {
-            position['top'] = startPosition['top'] + offset.y;
+            position['top'] = +startPosition['top'] + offset.y;
         }
         if (!Z.Util.isNil(position['bottom'])) {
-            position['bottom'] = startPosition['bottom'] - offset.y;
+            position['bottom'] = +startPosition['bottom'] - offset.y;
         }
         if (!Z.Util.isNil(position['left'])) {
-            position['left'] = startPosition['left'] + offset.x;
+            position['left'] = +startPosition['left'] + offset.x;
         }
         if (!Z.Util.isNil(position['right'])) {
-            position['right'] = startPosition['right'] - offset.x;
+            position['right'] = +startPosition['right'] - offset.x;
         }
-
-        this._updatePosition();
+        this.setPosition(position);
     },
 
     _onDragEnd:function () {

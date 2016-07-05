@@ -30,10 +30,8 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
     },
 
     initialize: function (options) {
-        if (options && options['position']) {
-            var p = this._parse(options['position']);
-            p = Z.Util.extend({}, p);
-            options['position'] = p;
+        if (options && options['position'] && !Z.Util.isString(options['position'])) {
+            options['position'] = Z.Util.extend({}, options['position']);
         }
         Z.Util.setOptions(this, options);
     },
@@ -83,7 +81,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @return {Object}
      */
     getPosition: function () {
-        return Z.Util.extend({}, this.options['position']);
+        return Z.Util.extend({}, this._parse(this.options['position']));
     },
 
     /**
@@ -93,8 +91,11 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @fires maptalks.Control#positionupdate
      */
     setPosition: function (position) {
-        position = this._parse(position);
-        this.options['position'] = Z.Util.extend({}, position);
+        if (Z.Util.isString(position)) {
+            this.options['position'] = position;
+        } else {
+            this.options['position'] = Z.Util.extend({}, position);
+        }
         this._updatePosition();
         return this;
     },
