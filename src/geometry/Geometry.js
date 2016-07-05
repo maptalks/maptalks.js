@@ -226,6 +226,22 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
+     * update geometry's symbol with the given symbol and geometry's current symbol.
+     * @param  {Object} symbol - symbol to update
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#symbolchange
+     */
+    updateSymbol: function (symbol) {
+        var s = this.getSymbol();
+        if (s) {
+            s = Z.Util.extendSymbol(s, symbol);
+        } else {
+            s = symbol;
+        }
+        return this.setSymbol(s);
+    },
+
+    /**
      * Returns the first coordinate of the geometry.
      * @return {maptalks.Coordinate} First Coordinate
      */

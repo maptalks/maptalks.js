@@ -37,6 +37,23 @@ describe('SymbolSpec', function() {
         }
     });
 
+    it('updateSymbol', function () {
+        var expected = {
+            "markerType" : "ellipse",
+            "markerWidth":20,
+            "markerHeight":30
+        };
+        var marker = new maptalks.Marker(center);
+        marker.updateSymbol({
+            "markerType" : "cross",
+            "markerWidth":20,
+            "markerHeight":30
+        }).updateSymbol({
+             "markerType" : "ellipse",
+        });
+        expect(marker.getSymbol()).to.be.eql(expected);
+    });
+
     it('marker file', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
         var marker = new maptalks.Marker([100,0], {
