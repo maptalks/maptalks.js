@@ -39,6 +39,7 @@ Z.Map.Drag = Z.Handler.extend({
         if (this.target._panAnimating) {
             this.target._enablePanAnimation = false;
         }
+        Z.DomUtil.preventDefault(param['domEvent']);
     },
 
     _onDragStart:function (param) {
@@ -61,7 +62,7 @@ Z.Map.Drag = Z.Handler.extend({
         if (this._ignore(param)) {
             return;
         }
-        Z.DomUtil.preventDefault(param['domEvent']);
+        //Z.DomUtil.preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
         }
@@ -81,7 +82,7 @@ Z.Map.Drag = Z.Handler.extend({
         if (this._ignore(param)) {
             return;
         }
-        Z.DomUtil.preventDefault(param['domEvent']);
+        //Z.DomUtil.preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
         }
