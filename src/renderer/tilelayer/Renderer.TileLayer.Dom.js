@@ -344,6 +344,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     _getEvents:function () {
         var events = {
             '_zoomstart'    : this._onZoomStart,
+            '_touchzoomstart' : this._onTouchZoomStart,
             '_zoomend'      : this._onZoomEnd,
             '_moveend _resize' : this.render,
             '_movestart'    : this._onMoveStart
@@ -374,6 +375,10 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
 
     _onMoveStart: function () {
         // this._fadeAnimated = false;
+    },
+
+    _onTouchZoomStart: function () {
+        this._pruneTiles(true);
     },
 
     _onZoomStart: function () {

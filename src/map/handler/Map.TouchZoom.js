@@ -64,7 +64,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
         var matrix = renderer.getZoomMatrix(scale, origin, Z.Browser.retina);
         renderer.transform(matrix);
 
-        Z.DomUtil.preventDefault(event);
+        // Z.DomUtil.preventDefault(event);
     },
 
     _onTouchEnd:function () {
