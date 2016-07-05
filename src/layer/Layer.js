@@ -273,10 +273,10 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         }
 
         if (mask instanceof Z.Marker) {
-            mask.setSymbol(Z.Util.extendSymbol(mask.getSymbol(), {
+            mask.updateSymbol({
                 'markerLineWidth': 0,
                 'markerFillOpacity': 1
-            }));
+            });
         } else {
             mask.setSymbol({
                 'lineWidth':0,
