@@ -7,7 +7,7 @@
  * @memberOf maptalks.control
  * @name Scale
  * @param {Object} [options=null] - construct options
- * @param {Object} [options.position=maptalks.Control.bottom_left]  - position of the scale control.
+ * @param {String|Object}   [options.position="bottom-left"]  - position of the scale control.
  * @param {Number} [options.maxWidth=100]               - max width of the scale control.
  * @param {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
  * @param {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
@@ -16,13 +16,13 @@ Z.control.Scale = Z.Control.extend(/** @lends maptalks.control.Scale.prototype *
 
     /**
      * @property {Object} [options=null] - options
-     * @property {Object} [options.position=maptalks.Control.bottom_left]  - position of the scale control.
+     * @property {String|Object}   [options.position="bottom-left"]  - position of the scale control.
      * @property {Number} [options.maxWidth=100]               - max width of the scale control.
      * @property {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
      * @property {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
      */
     options:{
-        'position' : Z.Control['bottom_left'],
+        'position' : 'bottom-left',
         'maxWidth': 100,
         'metric': true,
         'imperial': false

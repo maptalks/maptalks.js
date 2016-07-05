@@ -420,7 +420,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             delete this._canvasBg;
             this._clearCanvas();
         }, this);
-        if (typeof window !== 'undefined') {
+        if (map.options['checkSize'] && (typeof window !== 'undefined')) {
             Z.DomUtil.on(window, 'resize', this._onResize, this);
         }
         if (!Z.Browser.mobile && Z.Browser.canvas) {

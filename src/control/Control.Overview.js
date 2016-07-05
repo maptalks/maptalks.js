@@ -10,6 +10,8 @@
  */
 Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.prototype */{
 
+    loadDelay : 1600,
+
     /**
      * @param {Object} options - options
      * @param {Object} [options.position={"bottom":0,"right":0}] - position of the control
@@ -36,14 +38,21 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
         var container = Z.DomUtil.createEl('div');
         container.style.cssText = 'border:1px solid #000;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
         if (map.isLoaded()) {
-            this._initOverview(container);
+            this._initOverview();
         } else {
             map.on('load', this._initOverview, this);
         }
         return container;
     },
 
-    _initOverview : function (container) {
+    _initOverview : function () {
+        var me = this;
+        setTimeout(function () {
+            me._createOverview();
+        }, this.loadDelay);
+    },
+
+    _createOverview : function (container) {
         var map = this.getMap(),
             dom = container || this.getDOM(),
             extent = map.getExtent();
@@ -51,6 +60,7 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
             'center' : map.getCenter(),
             'zoom'   : this._getOverviewZoom(),
             'scrollWheelZoom' : false,
+            'checkSize' : false,
             'doubleClickZoom' : false,
             'touchZoom' : false
         });
@@ -67,14 +77,15 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
         })
         .on('dragstart', this._onDragStart, this)
         .on('dragend', this._onDragEnd, this);
-        map.on('moveend zoomend', this._update, this)
+        map.on('resize moveend zoomend', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this);
         new Z.VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
+        this.fire('load');
     },
 
     _onRemove : function (map) {
         map.off('load', this._initOverview, this)
-            .off('moveend zoomend', this._update, this)
+            .off('resize moveend zoomend', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this);
     },
 

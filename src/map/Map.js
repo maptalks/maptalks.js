@@ -107,6 +107,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         'minZoom' : null,
         'maxExtent' : null,
 
+        'checkSize' : true,
+
         'renderer' : 'canvas'
     },
 

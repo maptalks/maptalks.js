@@ -7,7 +7,7 @@
  * @memberOf maptalks.control
  * @name Zoom
  * @param {Object}   options - construct options
- * @param {Object}   [options.position=maptalks.Control.top_left]  - position of the zoom control.
+ * @param {String|Object}   [options.position="top-left"]  - position of the zoom control.
  * @param {Boolean}  [options.slider=true]                         - Whether to display the slider
  * @param {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
  */
@@ -15,12 +15,12 @@ Z.control.Zoom = Z.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
 
     /**
      * @property {Object}   options - options
-     * @property {Object}   [options.position=maptalks.Control.top_left]  - position of the zoom control.
+     * @property {String|Object}   [options.position="top-left"]  - position of the zoom control.
      * @property {Boolean}  [options.slider=true]                         - Whether to display the slider
      * @property {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
      */
     options:{
-        'position'  : Z.Control['top_left'],
+        'position'  : 'top-left',
         'slider'    : true,
         'zoomLevel' : true
     },

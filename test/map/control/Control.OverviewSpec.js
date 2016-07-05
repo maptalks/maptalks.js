@@ -1,5 +1,5 @@
 describe("Control.Overview", function() {
-
+    maptalks.control.Overview.prototype.loadDelay = 1;
     var container;
     var map;
     var tile;
@@ -41,8 +41,8 @@ describe("Control.Overview", function() {
     });
 
     it("baseLayer", function (done) {
-        map.on('baselayerload', function () {
-            var overview = map.overviewControl;
+        var overview = map.overviewControl;
+        overview.on('load', function () {
             expect(overview._overview.getBaseLayer()).to.be.ok();
             done();
         });
@@ -51,10 +51,11 @@ describe("Control.Overview", function() {
     });
 
     it("remove", function (done) {
-        expect(map.listens('zoomend')).to.be(1);
-        expect(map.listens('moveend')).to.be(1);
-        map.on('baselayerload', function () {
-            var overview = map.overviewControl;
+        var overview = map.overviewControl;
+
+        overview.on('load', function () {
+            expect(map.listens('zoomend')).to.be(1);
+            expect(map.listens('moveend')).to.be(1);
             overview.remove();
             expect(map.listens('moveend')).to.be(0);
             expect(map.listens('zoomend')).to.be(0);
@@ -64,21 +65,28 @@ describe("Control.Overview", function() {
     });
 
     it("move", function (done) {
-        map.on('moveend', function () {
-            var overview = map.overviewControl;
-            expect(overview._overview.getCenter().toArray()).to.be.eql([0, 0]);
-            done();
+        var overview = map.overviewControl;
+        overview.on('load', function () {
+            map.on('moveend', function () {
+                expect(overview._overview.getCenter().toArray()).to.be.eql([0, 0]);
+                done();
+            });
+            map.setCenter([0, 0]);
         });
-        map.setCenter([0, 0]);
+
     });
 
     it("zoom", function (done) {
         var overview = map.overviewControl;
-        var zoom = overview._overview.getZoom();
-        overview._overview.on('zoomend', function () {
+
+        overview.on('load', function () {
+            var zoom = overview._overview.getZoom();
+            overview._overview.on('zoomend', function () {
             expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
-            done();
+                done();
+            });
+            map.zoomIn();
         });
-        map.zoomIn();
+
     });
 });

@@ -71,7 +71,7 @@ describe("Control Common Tests", function() {
         expect(control.getContainer().style.display==='').to.be.ok();
         var position = control.getPosition();
         expect(position).not.to.be.empty();
-        control.setPosition(maptalks.Control['top_right']);
+        control.setPosition('top-right');
         expect(control.getPosition()).not.to.be.eql(position);
         control.remove();
         expect(control.getContainer()).not.to.be.ok();
