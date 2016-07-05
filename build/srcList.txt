@@ -125,4 +125,5 @@
 ../src/control/Control.Scale.js
 ../src/control/Control.Panel.js
 ../src/control/Control.Toolbar.js
+../src/control/Control.Overview.js
 ../src/export.js

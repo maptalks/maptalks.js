@@ -1,6 +1,6 @@
 /**
  * @classdesc
- * A control to allows to display attribution data in a small text box on the map.
+ * A control to allows to display attribution content in a small text box on the map.
  * @class
  * @category control
  * @extends maptalks.Control
@@ -19,7 +19,7 @@ Z.control.Attribution = Z.Control.extend(/** @lends maptalks.control.Attribution
     options:{
         'position' : {
             'bottom': '0',
-            'right': '0'
+            'left': '0'
         },
         'content' : '<a href="http://www.maptalks.org" target="_blank">Powered By MapTalks</a>'
     },
@@ -42,7 +42,7 @@ Z.control.Attribution = Z.Control.extend(/** @lends maptalks.control.Attribution
     },
 
     _update: function () {
-        if (!this._map) { return; }
+        if (!this.getMap()) { return; }
         this._attributionContainer.innerHTML = this.options['content'];
     }
 });

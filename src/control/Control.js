@@ -20,41 +20,18 @@ Z.control = {};
 Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
     includes: [Z.Eventable],
 
-    statics: /** @lends maptalks.Control */{
-        /**
-         * Predefined position constant: {'top': '20','left': '20'}
-         * @constant
-         * @type {Object}
-         */
-        'top_left' : {'top': '20', 'left': '20'},
-        /**
-         * Predefined position constant: {'top': '40','right': '60'}
-         * @constant
-         * @type {Object}
-         */
-        'top_right' : {'top': '40', 'right': '60'},
-        /**
-         * Predefined position constant: {'bottom': '20','left': '60'}
-         * @constant
-         * @type {Object}
-         */
-        'bottom_left' : {'bottom': '20', 'left': '60'},
-        /**
-         * Predefined position constant: {'bottom': '20','right': '60'}
-         * @constant
-         * @type {Object}
-         */
-        'bottom_right' : {'bottom': '20', 'right': '60'}
-    },
-
-    options:{
-
+    statics : {
+        'positions' : {
+            'top-left' : {'top': '20', 'left': '20'},
+            'top-right' : {'top': '40', 'right': '60'},
+            'bottom-left' : {'bottom': '20', 'left': '60'},
+            'bottom-right' : {'bottom': '20', 'right': '60'}
+        }
     },
 
     initialize: function (options) {
-        if (options && options['position']) {
-            var p = Z.Util.extend({}, options['position']);
-            options['position'] = p;
+        if (options && options['position'] && !Z.Util.isString(options['position'])) {
+            options['position'] = Z.Util.extend({}, options['position']);
         }
         Z.Util.setOptions(this, options);
     },
@@ -73,10 +50,10 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         Z.DomUtil.setStyle(this.__ctrlContainer, 'position:absolute');
         Z.DomUtil.addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
         // Z.DomUtil.on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', Z.DomUtil.stopPropagation)
-        var controlDom = this.buildOn(map);
-        if (controlDom) {
+        this._controlDom = this.buildOn(map);
+        if (this._controlDom) {
             this._updatePosition();
-            this.__ctrlContainer.appendChild(controlDom);
+            this.__ctrlContainer.appendChild(this._controlDom);
             controlContainer.appendChild(this.__ctrlContainer);
         }
         /**
@@ -104,7 +81,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @return {Object}
      */
     getPosition: function () {
-        return Z.Util.extend({}, this.options['position']);
+        return Z.Util.extend({}, this._parse(this.options['position']));
     },
 
     /**
@@ -114,7 +91,11 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @fires maptalks.Control#positionupdate
      */
     setPosition: function (position) {
-        this.options['position'] = Z.Util.extend({}, position);
+        if (Z.Util.isString(position)) {
+            this.options['position'] = position;
+        } else {
+            this.options['position'] = Z.Util.extend({}, position);
+        }
         this._updatePosition();
         return this;
     },
@@ -124,7 +105,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      * @return {maptalks.Point}
      */
     getContainerPoint:function () {
-        var position = this.options['position'];
+        var position = this.getPosition();
 
         var size = this._map.getSize();
         var x, y;
@@ -147,6 +128,14 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
      */
     getContainer: function () {
         return this.__ctrlContainer;
+    },
+
+    /**
+     * Get DOM element of the control
+     * @return {HTMLElement}
+     */
+    getDOM: function () {
+        return this._controlDom;
     },
 
     /**
@@ -202,8 +191,20 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         return this;
     },
 
+    _parse: function (position) {
+        var p = position;
+        if (Z.Util.isString(position)) {
+            p = Z.Control['positions'][p];
+        }
+        return p;
+    },
+
     _updatePosition: function () {
-        var position = this.options['position'];
+        var position = this.getPosition();
+        if (!position) {
+            //default one
+            position = {'top': '20', 'left': '20'};
+        }
         for (var p in position) {
             if (position.hasOwnProperty(p)) {
                 position[p] = parseInt(position[p]);
@@ -220,7 +221,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
          * @property {Object} position - Position of the control, eg:{"top" : 100, "left" : 50}
          */
         this.fire('positionupdate', {
-            'position' : Z.Util.extend({}, this.options['position'])
+            'position' : Z.Util.extend({}, position)
         });
     }
 

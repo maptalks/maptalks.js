@@ -107,6 +107,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         'minZoom' : null,
         'maxExtent' : null,
 
+        'checkSize' : true,
+
         'renderer' : 'canvas'
     },
 
@@ -590,6 +592,12 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             this._fireEvent('baselayerchangestart');
             this._baseLayer.remove();
         }
+        if (!baseLayer) {
+            delete this._baseLayer;
+            this._fireEvent('baselayerchangeend');
+            this._fireEvent('setbaselayer');
+            return this;
+        }
         if (baseLayer instanceof Z.TileLayer) {
             baseLayer.config({
                 'renderWhenPanning':true
@@ -611,6 +619,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (this._loaded) {
             this._baseLayer.load();
         }
+        this._fireEvent('setbaselayer');
         return this;
     },
 
@@ -688,6 +697,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 layer.load();
             }
         }
+        this._fireEvent('addlayer', {'layers' : layers});
         return this;
     },
 
@@ -725,6 +735,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             }
             layer.fire('remove');
         }
+        this._fireEvent('removelayer', {'layers' : layers});
         return this;
     },
 
