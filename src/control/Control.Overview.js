@@ -45,9 +45,9 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
 
     _initOverview : function (container) {
         var map = this.getMap(),
-            container = container || this.getDOM(),
+            dom = container || this.getDOM(),
             extent = map.getExtent();
-        this._overview = new Z.Map(container, {
+        this._overview = new Z.Map(dom, {
             'center' : map.getCenter(),
             'zoom'   : this._getOverviewZoom(),
             'scrollWheelZoom' : false,
@@ -69,7 +69,7 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
         .on('dragend', this._onDragEnd, this);
         map.on('moveend zoomend', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this);
-        var v = new Z.VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
+        new Z.VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
     },
 
     _onRemove : function (map) {
@@ -82,15 +82,16 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
         var map = this.getMap(),
             zoom = map.getZoom(),
             minZoom = map.getMinZoom(),
-            level = this.options['level']            ;
+            level = this.options['level'];
+        var i;
         if (level > 0) {
-            for (var i = level; i > 0; i--) {
+            for (i = level; i > 0; i--) {
                 if (zoom - i >= minZoom) {
                     return zoom - i;
                 }
             }
         } else {
-            for (var i = level; i < 0; i++) {
+            for (i = level; i < 0; i++) {
                 if (zoom - i >= minZoom) {
                     return zoom - i;
                 }
@@ -105,7 +106,7 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
         this.getMap().config('draggable', false);
     },
 
-    _onDragEnd : function (param) {
+    _onDragEnd : function () {
         var center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
@@ -115,13 +116,12 @@ Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.pr
     _update : function () {
         this._perspective.setCoordinates(this.getMap().getExtent().toArray());
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
-        // this._overview.panTo();
     },
 
     _updateBaseLayer: function () {
         var map = this.getMap();
         if (map.getBaseLayer()) {
-            this._overview.setBaseLayer(Z.Layer.fromJSON(map.getBaseLayer().toJSON()))
+            this._overview.setBaseLayer(Z.Layer.fromJSON(map.getBaseLayer().toJSON()));
         } else {
             this._overview.setBaseLayer(null);
         }
