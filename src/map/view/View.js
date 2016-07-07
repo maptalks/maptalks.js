@@ -138,6 +138,11 @@ Z.Util.extend(Z.View.prototype, {
     },
 
     getResolution:function (z) {
+        if (z < 0) {
+            z = 0;
+        } else if (z > this._resolutions.length - 1) {
+            z = this._resolutions.length - 1;
+        }
         return this._resolutions[z];
     },
 

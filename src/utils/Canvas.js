@@ -32,6 +32,7 @@ Z.Canvas = {
     },
 
     prepareCanvasFont:function (ctx, style) {
+        ctx.textBaseline = 'top';
         ctx.font = Z.symbolizer.TextMarkerSymbolizer.getFont(style);
         var fill = style['textFill'];
         if (!fill) { fill = Z.Symbolizer.DEFAULT_TEXT_COLOR; }
