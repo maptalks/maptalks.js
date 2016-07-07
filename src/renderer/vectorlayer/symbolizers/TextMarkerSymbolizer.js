@@ -1,6 +1,8 @@
 Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     defaultSymbol:{
         'textFaceName'      : 'monospace',
+        'textWeight'        : 'normal', //'bold', 'bolder'
+        'textStyle'         : 'normal', //'italic', 'oblique'
         'textSize'          : 10,
         'textFont'          : null,
         'textFill'          : '#000',
@@ -158,6 +160,9 @@ Z.symbolizer.TextMarkerSymbolizer.getFont = function (style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
-        return style['textSize'] + 'px ' + (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
+        return (style['textStyle'] ? style['textStyle'] + ' ': '') +
+            (style['textWeight'] ? style['textWeight'] + ' ': '') +
+            style['textSize'] + 'px ' +
+            (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
     }
 };
