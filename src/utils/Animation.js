@@ -293,6 +293,10 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
             this.startTime = options['startTime'] ? options['startTime'] : now;
         }
         this._playStartTime = Math.max(now, this.startTime);
+        if (this.playState === 'paused') {
+            this._playStartTime -= this.currentTime;
+        }
+        this.playState = 'running';
         this._run();
         return this;
     },
@@ -302,7 +306,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
      */
     pause:function () {
         this.playState = 'paused';
-        this.duration = this.duration - this.currentTime;
+        //this.duration = this.duration - this.currentTime;
         return this;
     },
     /**
@@ -340,6 +344,9 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
             setTimeout(Z.Util.bind(this._run, this), this.startTime - now);
         } else if (this.playState === 'running') {
             this._animeFrameId = Z.Animation._requestAnimFrame(function () {
+                if (me.playState !== 'running') {
+                    return;
+                }
                 me.currentTime = now - me._playStartTime;
                 if (step) {
                     step(frame);
