@@ -160,8 +160,8 @@ Z.symbolizer.TextMarkerSymbolizer.getFont = function (style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
-        return (style['textStyle'] ? style['textStyle'] + ' ': '') +
-            (style['textWeight'] ? style['textWeight'] + ' ': '') +
+        return (style['textStyle'] ? style['textStyle'] + ' ' : '') +
+            (style['textWeight'] ? style['textWeight'] + ' ' : '') +
             style['textSize'] + 'px ' +
             (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
     }

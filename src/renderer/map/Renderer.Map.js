@@ -99,31 +99,21 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
         if (!this.map._panels.mapPlatform) {
             return this;
         }
-        var mapPlatform = this.map._panels.mapPlatform;
-        Z.DomUtil.offsetDom(mapPlatform, this.map.offsetPlatform().add(offset)._round());
+        var mapPlatform = this.map._panels.mapPlatform,
+            layer = this.map._panels.layer,
+            pos = this.map.offsetPlatform().add(offset)._round();
+        Z.DomUtil.offsetDom(mapPlatform, pos);
+        Z.DomUtil.offsetDom(layer, pos);
         return this;
     },
 
     resetContainer:function () {
         this.map._resetMapViewPoint();
         if (this.map._panels.mapPlatform) {
-            Z.DomUtil.offsetDom(this.map._panels.mapPlatform, new Z.Point(0, 0));
-            this._resetCanvasContainer();
+            var pos = new Z.Point(0, 0);
+            Z.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
+            Z.DomUtil.offsetDom(this.map._panels.layer, pos);
         }
-    },
-
-    _resetCanvasContainer: function () {
-        var mapPos = this.map.offsetPlatform();
-        var pos = mapPos.multi(-1)._round();
-        this.map._panels.canvasContainer._pos = pos;
-        Z.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
-    },
-
-    _getCanvasContainerPos: function () {
-        if (this.map._panels && this.map._panels.canvasContainer) {
-            return this.map._panels.canvasContainer._pos;
-        }
-        return null;
     },
 
     onZoomEnd:function () {

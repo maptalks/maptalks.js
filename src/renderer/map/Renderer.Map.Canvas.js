@@ -263,16 +263,17 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;');
 
         mapPlatform.style.zIndex = 300;
-        canvasContainer.style.zIndex = 100;
+        canvasContainer.style.zIndex = 280;
+        layer.style.zIndex = 100;
         ui.style.zIndex = 300;
         control.style.zIndex = 400;
 
         containerDOM.appendChild(mapWrapper);
 
         mapPlatform.appendChild(ui);
-        mapPlatform.appendChild(canvasContainer);
-        mapPlatform.appendChild(layer);
         mapWrapper.appendChild(mapPlatform);
+        mapWrapper.appendChild(canvasContainer);
+        mapWrapper.appendChild(layer);
         mapWrapper.appendChild(control);
 
         this.resetContainer();
@@ -289,13 +290,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
         }
-        var containerPos = this._getCanvasContainerPos();
-        if (containerPos) {
-            var offset = this.map.offsetPlatform().multi(-1)._substract(containerPos);
-            if (Z.Browser.retina) { offset._multi(2); }
-            point = point.add(offset);
 
-        }
         //opacity of the layer image
         var op = layer.options['opacity'];
         if (!Z.Util.isNumber(op)) {
@@ -461,18 +456,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             };
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-
-
-        if (this._isCanvasContainer) {
-            map.on('_moving _moveend', function () {
-                this.render();
-            }, this);
-        } else {
-            map.on('_moveend', function () {
-                this._resetCanvasContainer();
-                this.render();
-            }, this);
-        }
+        map.on('_moving _moveend', function () {
+            this.render();
+        }, this);
     }
 });
 
