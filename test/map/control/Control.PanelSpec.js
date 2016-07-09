@@ -34,7 +34,6 @@ describe("Control.Panel", function() {
         var dom = panel.getContainer().childNodes[0],
             domPosition = Z.DomUtil.getPagePosition(dom),
             point = new Z.Point(0,0).add(domPosition);
-        //replace original requestAnimFrame to immediate execution.
         happen.mousedown(dom,{
                 'clientX':point.x,
                 'clientY':point.y
