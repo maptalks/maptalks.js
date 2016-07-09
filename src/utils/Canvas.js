@@ -127,7 +127,7 @@ Z.Canvas = {
         } else if (g['type'] === 'radial') {
             if (!places) {
                 var c = extent.getCenter()._round();
-                places = [c.x, c.y, c.x - min.x, c.x, c.y, 0];
+                places = [c.x, c.y, Math.abs(c.x - min.x), c.x, c.y, 0];
             } else {
                 if (places.length !== 6) {
                     throw new Error('A radial gradient\'s places should have 6 numbers.');
