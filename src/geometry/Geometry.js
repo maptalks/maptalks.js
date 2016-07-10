@@ -232,11 +232,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @fires maptalks.Geometry#symbolchange
      */
     updateSymbol: function (symbol) {
+        if (!symbol) {
+            return this;
+        }
         var s = this.getSymbol();
         if (s) {
             s = Z.Util.extendSymbol(s, symbol);
         } else {
-            s = symbol;
+            s = Z.Util.extendSymbol(this._getInternalSymbol(), symbol);
         }
         return this.setSymbol(s);
     },
