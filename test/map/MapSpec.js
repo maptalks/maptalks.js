@@ -476,14 +476,15 @@ describe('#Map', function () {
     });
 
     it('toDataURL', function () {
+        var expected = 'data:image/png;base64';
         var data = map.toDataURL();
-        expect(data).not.to.be.ok();
+        expect(data.substring(0, expected.length)).to.be.eql(expected);
         var layer = new Z.VectorLayer('id');
         var geometries = genAllTypeGeometries();
         layer.addGeometry(geometries, true);
         map.addLayer(layer);
         data = map.toDataURL();
-        var expected = 'data:image/png;base64';
+
         expect(data.substring(0, expected.length)).to.be.eql(expected);
     });
 });
