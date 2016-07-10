@@ -52,6 +52,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
         }
 
+        this._drawCenterCross();
         this.map._fireEvent('renderend', {'context' : this._context});
     },
 
@@ -91,6 +92,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 if (player.playState === 'finished') {
                     this._afterTransform(matrix);
                     if (this._context) { this._context.restore(); }
+                    this._drawCenterCross();
                     fn.call(this);
                 } else if (player.playState === 'running') {
                     this.transform(matrix, layersToTransform);
@@ -106,6 +108,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      * @param  {maptalks.Layer[]} layersToTransform 参与变换和绘制的图层
      */
     transform:function (matrix, layersToTransform) {
+        this.map._fireEvent('renderstart', {'context' : this._context});
+
         var mwidth = this._canvas.width,
             mheight = this._canvas.height;
         var layers = layersToTransform || this._getAllLayerToTransform();
@@ -144,6 +148,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (!transformLayers) {
             this._context.restore();
         }
+
+        this._drawCenterCross();
+        this.map._fireEvent('renderend', {'context' : this._context});
     },
 
     updateMapSize:function (mSize) {
@@ -153,12 +160,12 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var panels = this.map._panels;
         panels.mapWrapper.style.width = width + 'px';
         panels.mapWrapper.style.height = height + 'px';
-        panels.mapPlatform.style.width = width + 'px';
-        panels.mapPlatform.style.height = height + 'px';
+        // panels.mapPlatform.style.width = width + 'px';
+        // panels.mapPlatform.style.height = height + 'px';
         panels.canvasContainer.style.width = width + 'px';
         panels.canvasContainer.style.height = height + 'px';
-        panels.control.style.width = width + 'px';
-        panels.control.style.height = height + 'px';
+        // panels.control.style.width = width + 'px';
+        // panels.control.style.height = height + 'px';
         this._updateCanvasSize();
     },
 
@@ -276,6 +283,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         mapWrapper.appendChild(layer);
         mapWrapper.appendChild(control);
 
+        this._createCanvas();
+
         this.resetContainer();
         var mapSize = this.map._getContainerDomSize();
         this.updateMapSize(mapSize);
@@ -347,6 +356,20 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             var scale = this._canvasBgRes / map._getResolution();
             var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Z.Browser.retina ? 2 : 1);
             Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
+        }
+    },
+
+    _drawCenterCross: function () {
+        if (this.map.options['centerCross']) {
+            var p = new Z.Point(this._canvas.width / 2, this._canvas.height / 2)._round();
+            this._context.strokeStyle = '#ff0000';
+            this._context.lineWidth = 2;
+            this._context.beginPath();
+            this._context.moveTo(p.x - 5, p.y);
+            this._context.lineTo(p.x + 5, p.y);
+            this._context.moveTo(p.x, p.y - 5);
+            this._context.lineTo(p.x, p.y + 5);
+            this._context.stroke();
         }
     },
 

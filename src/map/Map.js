@@ -81,6 +81,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
      */
     options:{
+        'centerCross' : false,
+
         'clipFullExtent' : false,
 
         'zoomAnimation' : true,
@@ -1200,6 +1202,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._resetMapStatus();
         this._registerDomEvents();
         this._loadAllLayers();
+        this._getRenderer().onLoad();
         this._loaded = true;
         this._callOnLoadHooks();
         this._initTime = Z.Util.now();
