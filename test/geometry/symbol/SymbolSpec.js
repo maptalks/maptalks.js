@@ -44,11 +44,22 @@ describe('SymbolSpec', function() {
             "markerHeight":30
         };
         var marker = new maptalks.Marker(center);
-        marker.updateSymbol({
+        marker.setSymbol({
             "markerType" : "cross",
             "markerWidth":20,
             "markerHeight":30
         }).updateSymbol({
+             "markerType" : "ellipse",
+        });
+        expect(marker.getSymbol()).to.be.eql(expected);
+    });
+
+    it('updateSymbol directly', function () {
+
+        var marker = new maptalks.Marker(center);
+        var expected = maptalks.Util.extend({}, marker._getInternalSymbol());
+        expected.markerType = 'ellipse';
+        marker.updateSymbol({
              "markerType" : "ellipse",
         });
         expect(marker.getSymbol()).to.be.eql(expected);

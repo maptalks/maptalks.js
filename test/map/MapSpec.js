@@ -476,8 +476,9 @@ describe('#Map', function () {
     });
 
     it('toDataURL', function () {
+        var expected = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAHUlEQVQIHQESAO3/AAAAAAAAAAAAAAAAAAAAAAAAABIAAb8w61kAAAAASUVORK5CYII=';
         var data = map.toDataURL();
-        expect(data).not.to.be.ok();
+        expect(data).to.be.eql(expected);
         var layer = new Z.VectorLayer('id');
         var geometries = genAllTypeGeometries();
         layer.addGeometry(geometries, true);
