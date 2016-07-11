@@ -423,8 +423,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      * @ignore
      */
     _onResize:function () {
-        delete this._canvasBg;
-        this.map.checkSize();
+        Z.Util.cancelAnimFrame(this._resizeRequest);
+        this._resizeRequest = Z.Util.requestAnimFrame(
+            Z.Util.bind(function () {
+                delete this._canvasBg;
+                this.map.checkSize();
+            },this)
+        );
     },
 
     _registerEvents:function () {
@@ -444,7 +449,15 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this._clearCanvas();
         }, this);
         if (map.options['checkSize'] && (typeof window !== 'undefined')) {
-            Z.DomUtil.on(window, 'resize', this._onResize, this);
+            // Z.DomUtil.on(window, 'resize', this._onResize, this);
+            this._resizeInterval = setInterval(Z.Util.bind(function () {
+                if (!map._containerDOM.parentNode) {
+                    //is deleted
+                    clearInterval(this._resizeInterval);
+                } else {
+                    this._onResize();
+                }
+            }, this), 1000);
         }
         if (!Z.Browser.mobile && Z.Browser.canvas) {
             this._onMapMouseMove = function (param) {
