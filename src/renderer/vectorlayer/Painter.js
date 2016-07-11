@@ -275,8 +275,8 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         if (!this.getMap()) {
             return;
         }
-        if (this.geometry.isVisible()) {
-            var layer = this.geometry.getLayer();
+        var layer = this.geometry.getLayer();
+        if (this.geometry.isVisible() && (layer instanceof Z.VectorLayer)) {
             if (layer.isCanvasRender()) {
                 this._requestToRender();
             } else {
