@@ -45,8 +45,8 @@ Z.Rectangle.include({
             }
             return [points, null];
         } else {
-            var domNw = this.getMap()._prjToViewPoint(this._getPrjCoordinates());
-            return [[domNw], null];
+            var c = this.getMap().coordinateToViewPoint(this.getCenter());
+            return [[c], null];
         }
     },
 
