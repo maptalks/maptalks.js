@@ -628,16 +628,18 @@ Z.Util = {
             sources = [{}];
         }
         if (Z.Util.isArray(symbol)) {
-            var s, dest, i, ii, len, ilen;
+            var s, dest, i, ii, l, ll;
             var result = [];
-            for (i = 0, len = symbol.length; i < len; i++) {
+            for (i = 0, l = symbol.length; i < l; i++) {
                 s = symbol[i];
                 dest = {};
-                for (ii = 0, ilen = sources.length; ii < ilen; ii++) {
+                for (ii = 0, ll = sources.length; ii < ll; ii++) {
                     if (!Z.Util.isArray(sources[ii])) {
                         Z.Util.extend(dest, s, sources[ii]);
                     } else if (!Z.Util.isNil(sources[ii][i])) {
                         Z.Util.extend(dest, s, sources[ii][i]);
+                    } else {
+                        Z.Util.extend(dest, s);
                     }
                 }
                 result.push(dest);

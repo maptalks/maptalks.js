@@ -933,48 +933,33 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Checks if the map container size changed and updates the map if so.<br>
-     * It is called in a setTimeout call.
+     * Checks if the map container size changed and updates the map if so.
      * @return {maptalks.Map} this
      */
     checkSize:function () {
-        if (this._resizeTimeout) {
-            clearTimeout(this._resizeTimeout);
-        }
-        var me = this,
-            justStart = ((Z.Util.now() - this._initTime) < 1500) && this.width === 0 && this.height === 0,
-            center = me.getCenter();
-        function resize() {
-            var watched = me._getContainerDomSize();
-            var oldHeight = me.height;
-            var oldWidth = me.width;
-            if (watched['width'] === oldWidth && watched['height'] === oldHeight) {
-                return;
-            }
-            me._updateMapSize(watched);
-            var resizeOffset = new Z.Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
-            me._offsetCenterByPixel(resizeOffset);
-            if (justStart) {
-                me.setCenter(center);
-            }
-            /**
-             * resize event when map container's size changes
-             * @event maptalks.Map#resize
-             * @type {Object}
-             * @property {String} type - resize
-             * @property {maptalks.Map} target - map fires the event
-             */
-            me._fireEvent('resize');
-        }
+        var justStart = ((Z.Util.now() - this._initTime) < 1500) && this.width === 0 && this.height === 0;
 
-        this._resizeTimeout = setTimeout(function () {
-            resize();
-            if (!justStart) {
-                setTimeout(function () {
-                    resize();
-                }, 1);
-            }
-        }, 100);
+        var watched = this._getContainerDomSize(),
+            oldHeight = this.height,
+            oldWidth = this.width;
+        if (watched['width'] === oldWidth && watched['height'] === oldHeight) {
+            return this;
+        }
+        var center = this.getCenter();
+        this._updateMapSize(watched);
+        var resizeOffset = new Z.Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
+        this._offsetCenterByPixel(resizeOffset);
+        if (justStart) {
+            this.setCenter(center);
+        }
+        /**
+         * resize event when map container's size changes
+         * @event maptalks.Map#resize
+         * @type {Object}
+         * @property {String} type - resize
+         * @property {maptalks.Map} target - map fires the event
+         */
+        this._fireEvent('resize');
 
         return this;
     },

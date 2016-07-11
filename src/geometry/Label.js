@@ -59,7 +59,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         'boxAutoSize'  :   true,
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
-        'boxPadding'   :   new Z.Size(12, 8),
+        'boxPadding'   :   {'width' : 12, 'height' : 8},
         'boxTextAlign' :   'middle'
     },
 

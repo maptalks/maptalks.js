@@ -23,8 +23,8 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             var content = this._textEditor.innerText;
             this.setContent(content);
             this.show();
-            Z.DomUtil.off(this._textEditor, 'mousedown dblclick', Z.DomUtil.stopPropagation)
-                .off(this._textEditor, 'blur', this.endEditText, this);
+            Z.DomUtil.off(this._textEditor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
+            this.getMap().off('mousedown', this.endEditText, this);
             this._editUIMarker.remove();
             delete this._editUIMarker;
             delete this._textEditor;
@@ -52,6 +52,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         var map = this.getMap();
         var editContainer = this._createEditor();
         this._textEditor = editContainer;
+        map.on('mousedown',  this.endEditText, this);
         this._editUIMarker = new maptalks.ui.UIMarker(this.getCoordinates(), {
             'content' : editContainer
         }).addTo(map).show();
@@ -87,8 +88,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             '-webkit-user-modify: read-write-plaintext-only;';
         var content = this.getContent();
         editor.innerText = content;
-        Z.DomUtil.on(editor, 'mousedown dblclick', Z.DomUtil.stopPropagation)
-            .on(editor, 'blur', this.endEditText, this);
+        Z.DomUtil.on(editor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
         return editor;
     }
 

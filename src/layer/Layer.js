@@ -272,7 +272,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
             throw new Error('mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon');
         }
 
-        if (mask instanceof Z.Marker) {
+        /*if (mask instanceof Z.Marker) {
             mask.updateSymbol({
                 'markerLineWidth': 0,
                 'markerFillOpacity': 1
@@ -282,7 +282,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
                 'lineWidth':0,
                 'polygonOpacity':1
             });
-        }
+        }*/
         mask._bindLayer(this);
         this._mask = mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
