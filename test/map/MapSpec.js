@@ -333,6 +333,13 @@ describe('#Map', function () {
             expect(spy.called).to.not.be.ok();
         });
 
+        it('fire resize when dom\'s size is changed', function (done) {
+            map.on('resize', function(param) {
+                done();
+            });
+            container.style.width = '10px';
+        });
+
     });
 
     describe('#setBaseLayer', function() {

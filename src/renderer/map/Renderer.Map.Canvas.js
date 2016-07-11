@@ -428,7 +428,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             Z.Util.bind(function () {
                 delete this._canvasBg;
                 this.map.checkSize();
-            },this)
+            }, this)
         );
     },
 

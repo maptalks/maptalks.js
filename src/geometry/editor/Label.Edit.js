@@ -24,7 +24,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             this.setContent(content);
             this.show();
             Z.DomUtil.off(this._textEditor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
-            map.off('mousedown',  this.endEditText, this);
+            this.getMap().off('mousedown', this.endEditText, this);
             this._editUIMarker.remove();
             delete this._editUIMarker;
             delete this._textEditor;
