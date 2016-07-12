@@ -3,7 +3,7 @@
  * Class for panel controls.
  * @class
  * @category control
- * @extends maptalks.Control
+ * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Panel
  * @param {Object} options - construct options
@@ -12,7 +12,7 @@
  * @param {String|HTMLElement} options.content          - panel's content, can be a dom element or a string.
  * @param {Boolean} [options.closeButton=true]          - whether to display the close button on the panel.
  */
-Z.control.Panel = Z.Control.extend(/** @lends maptalks.control.Panel.prototype */{
+Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.prototype */{
 
     /**
      * @property {Object} options - options

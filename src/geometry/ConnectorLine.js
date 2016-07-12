@@ -4,8 +4,8 @@
  * @class
  * @category geometry
  * @extends maptalks.CurveLine
- * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} src     - source to connect
- * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} target  - target to connect
+ * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} src     - source to connect
+ * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} target  - target to connect
  * @param {Object} [options=null]                   - construct options, also support options defined in the parent class [maptalks.CurveLine]{@link maptalks.CurveLine#options}
  * @param {Number} [options.curveType=0]            - curve type of the connector
  * @param {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
@@ -31,7 +31,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
 
     /**
      * Gets the source of the connector line.
-     * @return {maptalks.Geometry|maptalks.Control|maptalks.UIComponent}
+     * @return {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent}
      */
     getConnectSource:function () {
         return this._connSource;
@@ -39,7 +39,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
 
     /**
      * Sets the source to the connector line.
-     * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} src
+     * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} src
      * @return {maptalks.ConnectorLine} this
      */
     setConnectSource:function (src) {
@@ -52,7 +52,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
 
     /**
      * Gets the target of the connector line.
-     * @return {maptalks.Geometry|maptalks.Control|maptalks.UIComponent}
+     * @return {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent}
      */
     getConnectTarget:function () {
         return this._connTarget;
@@ -60,7 +60,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
 
     /**
      * Sets the target to the connector line.
-     * @param {maptalks.Geometry|maptalks.Control|maptalks.UIComponent} target
+     * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} target
      * @return {maptalks.ConnectorLine} this
      */
     setConnectTarget:function (target) {
@@ -124,8 +124,8 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         if (!this._connSource || !this._connTarget) {
             return;
         }
-        if ((this._connSource instanceof Z.Control || this._connSource.isVisible()) &&
-            (this._connTarget instanceof Z.Control || this._connTarget.isVisible())) {
+        if ((this._connSource instanceof Z.control.Control || this._connSource.isVisible()) &&
+            (this._connTarget instanceof Z.control.Control || this._connTarget.isVisible())) {
             this._updateCoordinates();
             this.show();
         }
@@ -162,8 +162,8 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
         }
     },
     _isEditingOrDragging:function () {
-        return ((!(this._connSource instanceof Z.Control) && this._connSource._isEditingOrDragging()) ||
-            (!(this._connTarget instanceof Z.Control) && this._connTarget._isEditingOrDragging()));
+        return ((!(this._connSource instanceof Z.control.Control) && this._connSource._isEditingOrDragging()) ||
+            (!(this._connTarget instanceof Z.control.Control) && this._connTarget._isEditingOrDragging()));
     }
 });
 

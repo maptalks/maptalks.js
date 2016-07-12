@@ -36,7 +36,7 @@ describe("Control Common Tests", function() {
     }
 
     it('addTo', function() {
-        var control = new maptalks.Control({
+        var control = new maptalks.control.Control({
             id: 'id1',
             position: {top: 10, left: 10}
         });
@@ -48,7 +48,7 @@ describe("Control Common Tests", function() {
     });
 
     it('setPosition', function() {
-        var control = new maptalks.Control({
+        var control = new maptalks.control.Control({
             id: 'id1',
             position: {top: 10, left: 10}
         });

@@ -3,7 +3,7 @@
  * Based on the implementation in Leaflet, a simple scale control that shows the scale of the current center of screen in metric (m/km) and imperial (mi/ft) systems.
  * @class
  * @category control
- * @extends maptalks.Control
+ * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Scale
  * @param {Object} [options=null] - construct options
@@ -12,7 +12,7 @@
  * @param {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
  * @param {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
  */
-Z.control.Scale = Z.Control.extend(/** @lends maptalks.control.Scale.prototype */{
+Z.control.Scale = Z.control.Control.extend(/** @lends maptalks.control.Scale.prototype */{
 
     /**
      * @property {Object} [options=null] - options
