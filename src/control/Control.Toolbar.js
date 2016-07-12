@@ -3,7 +3,7 @@
  * A toolbar control of the map.
  * @class
  * @category control
- * @extends maptalks.Control
+ * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Toolbar
  * @param {Object}   options - construct options
@@ -11,7 +11,7 @@
  * @param {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
  * @param {Object[]} options.items                                  - items on the toolbar
  */
-Z.control.Toolbar = Z.Control.extend(/** @lends maptalks.control.Toolbar.prototype */{
+Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar.prototype */{
 
     /**
      * @property {Object}   options - options

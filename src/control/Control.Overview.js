@@ -3,12 +3,12 @@
  * A control to allows to display attribution data in a small text box on the map.
  * @class
  * @category control
- * @extends maptalks.Control
+ * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Attribution
  * @param {Object} options - construct options
  */
-Z.control.Overview = Z.Control.extend(/** @lends maptalks.control.Attribution.prototype */{
+Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Attribution.prototype */{
 
     loadDelay : 1600,
 

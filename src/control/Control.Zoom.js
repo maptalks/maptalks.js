@@ -3,7 +3,7 @@
  * A zoom control with buttons to zoomin/zoomout and a slider indicator for the zoom level.
  * @class
  * @category control
- * @extends maptalks.Control
+ * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Zoom
  * @param {Object}   options - construct options
@@ -11,7 +11,7 @@
  * @param {Boolean}  [options.slider=true]                         - Whether to display the slider
  * @param {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
  */
-Z.control.Zoom = Z.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
+Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
 
     /**
      * @property {Object}   options - options

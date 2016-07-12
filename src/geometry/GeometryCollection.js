@@ -35,7 +35,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
             for (var i = geometries.length - 1; i >= 0; i--) {
                 geometries[i]._initOptions(this.config());
                 geometries[i]._setParent(this);
-                geometries[i].setEventParent(this);
+                geometries[i]._setEventParent(this);
                 geometries[i].setSymbol(this.getSymbol());
             }
         }

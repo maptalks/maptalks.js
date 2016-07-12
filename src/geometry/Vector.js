@@ -4,6 +4,7 @@
  * @category geometry
  * @abstract
  * @extends maptalks.Geometry
+ * @protected
  */
 Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
     /**

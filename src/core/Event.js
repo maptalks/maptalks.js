@@ -166,8 +166,9 @@ Z.Eventable = {
      * Set a event parent to handle all the events
      * @param {Any} parent - event parent
      * @return {Any} this
+     * @private
      */
-    setEventParent:function (parent) {
+    _setEventParent:function (parent) {
         this._eventParent = parent;
         return this;
     },

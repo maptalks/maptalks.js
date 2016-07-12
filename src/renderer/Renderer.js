@@ -1,5 +1,6 @@
-    /**
+/**
  * @namespace
+ * @protected
  */
 Z.renderer = {};
 

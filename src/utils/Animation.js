@@ -373,6 +373,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
  * @category animation
  * @memberOf maptalks.animation
  * @name Easing
+ * @protected
  */
 Z.animation.Easing = {
         /**
@@ -438,6 +439,7 @@ Z.animation.Easing = {
  * @category animation
  * @memberOf maptalks.animation
  * @name Frame
+ * @protected
  * @param {Object} state  - animation state
  * @param {Object} styles - styles to animate
  */

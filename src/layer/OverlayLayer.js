@@ -5,6 +5,7 @@
  * @category layer
  * @abstract
  * @extends {maptalks.Layer}
+ * @protected
  */
 Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     exceptionDefs:{

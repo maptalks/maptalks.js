@@ -138,6 +138,7 @@
      * @mixin
      * @memberOf maptalks.ui
      * @name Menu.Mixin
+     * @protected
      */
     Z.ui.Menu.Mixin = {
         /**

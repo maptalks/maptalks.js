@@ -114,6 +114,8 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
  * @return {maptalks.Map}
  * @static
  * @function
+ * @example
+ * var map = maptalks.Map.fromJSON('map', mapProfile);
  */
 Z.Map.fromJSON = function (container, profile, options) {
     if (!container || !profile) {

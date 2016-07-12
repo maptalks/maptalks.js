@@ -3,11 +3,11 @@
  * A control for map navigation.
  * @class
  * @category control
- * @extends maptalks.Control
+ * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Nav
  */
-Z.control.Nav = Z.Control.extend(/** @lends maptalks.control.Nav.prototype */{
+Z.control.Nav = Z.control.Control.extend(/** @lends maptalks.control.Nav.prototype */{
 
     options:{
         'position' : 'top-left'

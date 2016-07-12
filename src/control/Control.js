@@ -9,6 +9,8 @@ Z.control = {};
  * @category control
  * @abstract
  * @extends maptalks.Class
+ * @memberOf maptalks.control
+ * @name  Control
  *
  * @mixes maptalks.Eventable
  *
@@ -17,7 +19,7 @@ Z.control = {};
  * //or you can also
  * map.addControl(control);
  */
-Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
+Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype */{
     includes: [Z.Eventable],
 
     statics : {
@@ -39,8 +41,8 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
     /**
      * Adds the control to a map.
      * @param {maptalks.Map} map
-     * @returns {maptalks.Control} this
-     * @fires maptalks.Control#add
+     * @returns {maptalks.control.Control} this
+     * @fires maptalks.control.Control#add
      */
     addTo: function (map) {
         this.remove();
@@ -59,10 +61,10 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         /**
          * add event.
          *
-         * @event maptalks.Control#add
+         * @event maptalks.control.Control#add
          * @type {Object}
          * @property {String} type - add
-         * @property {maptalks.Control} target - the control instance
+         * @property {maptalks.control.Control} target - the control instance
          */
         this.fire('add', {'dom' : controlContainer});
         return this;
@@ -87,8 +89,8 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
     /**
      * update the control's position
      * @param {Object} position - e.g.{'top': '40','left': '60'}
-     * @return {maptalks.Control} this
-     * @fires maptalks.Control#positionupdate
+     * @return {maptalks.control.Control} this
+     * @fires maptalks.control.Control#positionupdate
      */
     setPosition: function (position) {
         if (Z.Util.isString(position)) {
@@ -140,7 +142,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
 
     /**
      * Show
-     * @return {maptalks.Control} this
+     * @return {maptalks.control.Control} this
      */
     show: function () {
         this.__ctrlContainer.style.display = '';
@@ -149,7 +151,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
 
     /**
      * Hide
-     * @return {maptalks.Control} this
+     * @return {maptalks.control.Control} this
      */
     hide: function () {
         this.__ctrlContainer.style.display = 'none';
@@ -166,8 +168,8 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
 
     /**
      * Remove itself from the map
-     * @return {maptalks.Control} this
-     * @fires maptalks.Control#remove
+     * @return {maptalks.control.Control} this
+     * @fires maptalks.control.Control#remove
      */
     remove: function () {
         if (!this._map) {
@@ -182,10 +184,10 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         /**
          * remove event.
          *
-         * @event maptalks.Control#remove
+         * @event maptalks.control.Control#remove
          * @type {Object}
          * @property {String} type - remove
-         * @property {maptalks.Control} target - the control instance
+         * @property {maptalks.control.Control} target - the control instance
          */
         this.fire('remove');
         return this;
@@ -194,7 +196,7 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
     _parse: function (position) {
         var p = position;
         if (Z.Util.isString(position)) {
-            p = Z.Control['positions'][p];
+            p = Z.control.Control['positions'][p];
         }
         return p;
     },
@@ -214,10 +216,10 @@ Z.Control = Z.Class.extend(/** @lends maptalks.Control.prototype */{
         /**
          * Control's position update event.
          *
-         * @event maptalks.Control#positionupdate
+         * @event maptalks.control.Control#positionupdate
          * @type {Object}
          * @property {String} type - positionupdate
-         * @property {maptalks.Control} target - the control instance
+         * @property {maptalks.control.Control} target - the control instance
          * @property {Object} position - Position of the control, eg:{"top" : 100, "left" : 50}
          */
         this.fire('positionupdate', {
@@ -235,7 +237,7 @@ Z.Map.mergeOptions({
 Z.Map.include(/** @lends maptalks.Map.prototype */{
     /**
      * Add a control on the map.
-     * @param {maptalks.Control} control - contorl to add
+     * @param {maptalks.control.Control} control - contorl to add
      * @return {maptalks.Map} this
      */
     addControl: function (control) {
@@ -249,7 +251,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     /**
      * Remove a control from the map.
-     * @param {maptalks.Control} control - control to remove
+     * @param {maptalks.control.Control} control - control to remove
      * @return {maptalks.Map} this
      */
     removeControl: function (control) {
