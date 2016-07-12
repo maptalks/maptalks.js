@@ -6,7 +6,7 @@
  * @abstract
  * @extends maptalks.Class
  * @mixes maptalks.Eventable
- * @mixes maptalks.Renderable
+ * @protected
  */
 Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
@@ -393,5 +393,3 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 });
 
 Z.Util.extend(Z.Layer, Z.Renderable);
-
-

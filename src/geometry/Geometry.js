@@ -10,6 +10,7 @@
  * @mixins maptalks.Eventable
  * @mixins maptalks.Handlerable
  * @mixins maptalks.ui.Menu.Mixin
+ * @protected
  */
 Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     includes: [Z.Eventable, Z.Handlerable],
