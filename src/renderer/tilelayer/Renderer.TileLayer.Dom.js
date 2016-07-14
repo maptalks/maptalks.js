@@ -141,6 +141,16 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
 
     _tileReady: function (err, tile) {
         if (err) {
+            /**
+             * tileerror event, fired when layer is 'dom' rendered and a tile errors
+             *
+             * @event maptalks.TileLayer#tileerror
+             * @type {Object}
+             * @property {String} type - tileerror
+             * @property {maptalks.TileLayer} target - tile layer
+             * @property {String} err  - error message
+             * @property {Object} tile - tile
+             */
             this._layer.fire('tileerror', {
                 error: err,
                 tile: tile
@@ -158,6 +168,15 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             this._pruneTiles();
         }
 
+        /**
+         * tileload event, fired when layer is 'dom' rendered and a tile is loaded
+         *
+         * @event maptalks.TileLayer#tileload
+         * @type {Object}
+         * @property {String} type - tileload
+         * @property {maptalks.TileLayer} target - tile layer
+         * @property {Object} tile - tile
+         */
         this._layer.fire('tileload', {
             tile: tile
         });
@@ -282,8 +301,15 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
 
         delete this._tiles[key];
 
-        // @event tileunload: TileEvent
-        // Fired when a tile is removed (e.g. when a tile goes off the screen).
+        /**
+         * tileunload event, fired when layer is 'dom' rendered and a tile is removed
+         *
+         * @event maptalks.TileLayer#tileunload
+         * @type {Object}
+         * @property {String} type - tileunload
+         * @property {maptalks.TileLayer} target - tile layer
+         * @property {Object} tile - tile
+         */
         this._layer.fire('tileunload', {
             tile: tile
         });

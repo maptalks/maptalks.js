@@ -6,9 +6,19 @@
  * @mixes   {maptalks.Geometry.Poly}
  * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the line string
  * @param {Object} [options=null] - specific construct options for LineString, also support options defined in [Vector]{@link maptalks.Vector#options} and [Geometry]{@link maptalks.Geometry#options}
- * @param {Number} [options.antiMeridian=default]            - antimeridian
- * @param {Number} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
- * @param {Number} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
+ * @param {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the linestring when it cross the 180 or -180 longtitude line.
+ * @param {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
+ * @param {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
+ * @param {*} options.* - any other option defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
+ * @example
+ * var line = new maptalks.LineString(
+ *     [
+ *         [121.4594221902467, 31.241237891628657],
+ *         [121.46371372467041, 31.242265291152066],
+ *         [121.46727569824205, 31.238706037961997],
+ *         [121.47019394165014, 31.24145804961012]
+ *     ]
+ * ).addTo(layer);
  */
 Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.prototype */{
     includes:[Z.Geometry.Poly],
@@ -16,13 +26,14 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
     type:Z.Geometry['TYPE_LINESTRING'],
 
     /**
-    * @property {Object} [options=null] - specific construct options for LineString, also support options defined in [Vector]{@link maptalks.Vector#options} and [Geometry]{@link maptalks.Geometry#options}
-    * @property {Number} [options.antiMeridian=default]            - antimeridian
-    * @property {Number} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
-    * @property {Number} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
+    * @property {Object} [options=null]
+    * @property {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the linestring when it cross the 180 or -180 longtitude line.
+    * @property {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
+    * @property {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
+    * @property {*} options.* - any other option defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
     */
     options:{
-        'antiMeridian' : 'default',
+        'antiMeridian' : 'continuous',
         'arrowStyle' : null,
         'arrowPlacement' : 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
     },
@@ -35,7 +46,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
     /**
      * Set new coordinates to the line string
      * @param {maptalks.Coordinate[]|Number[][]} coordinates - new coordinates
-     * @fires maptalks.Geometry#shapechange
+     * @fires maptalks.LineString#shapechange
      * @return {maptalks.LineString} this
      */
     setCoordinates:function (coordinates) {

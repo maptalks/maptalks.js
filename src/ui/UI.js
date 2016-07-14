@@ -3,19 +3,19 @@
  */
 Z.ui = {};
 /**
+ * Some instance methods subclasses needs to implement:  <br>
+ *  <br>
+ * 1. Optional, returns the Dom element's position offset  <br>
+ * function getOffset : maptalks.Point  <br>
+ *  <br>
+ * 2. Method to create UI's Dom element  <br>
+ * function buildOn : HTMLElement  <br>
+ *  <br>
+ * 3 Optional, to provide an event map to register event listeners.  <br>
+ * function getEvents : void  <br>
  * @classdesc
- * Base class for all the ui component classes.
- *
- * Some instance methods subclasses needs to implement:
- *
- * 1. Optional, UI Dom's pixel offset from UI's coordinate
- * function getOffset : maptalks.Point
- *
- * 2. Method to create UI's Dom element
- * function buildOn : HTMLElement
- *
- * 3 Optional, to provide an event map to register event listeners.
- * function getEvents : void
+ * Base class for all the UI component classes, a UI component is a HTMLElement positioned with geographic coordinate. <br>
+ * It is abstract and not intended to be instantiated.
  *
  * @class
  * @category ui
@@ -29,10 +29,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
 
     /**
      * @property {Object} options
-     * @property {Boolean} [options.eventsToStop='mousedown dblclick']  - events to stop propagation from UI's Dom.
+     * @property {Boolean} [options.eventsToStop='mousedown dblclick']  - UI's dom events to stop propagation.
      * @property {Number}  [options.dx=0]     - pixel offset on x axis
      * @property {Number}  [options.dy=0]     - pixel offset on y axis
      * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened UI.
+     * @property {Boolean} [options.single=true]    - whether the UI is a global single one, only one UI will be shown at the same time if set to true.
      */
     options:{
         'eventsToStop' : 'mousedown dblclick',
@@ -50,14 +51,24 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * Adds the UI Component to a geometry or a map
      * @param {maptalks.Geometry|maptalks.Map} owner - geometry or map to addto.
      * @returns {maptalks.ui.UIComponent} this
+     * @fires maptalks.ui.UIComponent#add
      */
     addTo:function (owner) {
         this._owner = owner;
+        /**
+         * add event.
+         *
+         * @event maptalks.ui.UIComponent#add
+         * @type {Object}
+         * @property {String} type - add
+         * @property {maptalks.ui.UIComponent} target - UIComponent
+         */
+        this.fire('add');
         return this;
     },
 
     /**
-     * Get the map instance it displayed
+     * Get the map it added to
      * @return {maptalks.Map} map instance
      * @override
      */
@@ -70,13 +81,23 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
 
     /**
      * Show the UI Component, if it is a global single one, it will close previous one.
-     * @param {maptalks.Coordinate} - coordinate to show
+     * @param {maptalks.Coordinate} coordinate - coordinate to show
      * @return {maptalks.ui.UIComponent} this
+     * @fires maptalks.ui.UIComponent#showstart
+     * @fires maptalks.ui.UIComponent#showend
      */
     show: function (coordinate) {
         if (!coordinate) {
             throw new Error('UI\'s show coordinate is invalid');
         }
+        /**
+         * showstart event.
+         *
+         * @event maptalks.ui.UIComponent#showstart
+         * @type {Object}
+         * @property {String} type - showstart
+         * @property {maptalks.ui.UIComponent} target - UIComponent
+         */
         this.fire('showstart');
         var map = this.getMap(),
             container = this._getUIContainer();
@@ -87,6 +108,14 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         this._removePrevDOM();
         var dom = this.__uiDOM = this.buildOn(map);
         if (!dom) {
+            /**
+             * showend event.
+             *
+             * @event maptalks.ui.UIComponent#showend
+             * @type {Object}
+             * @property {String} type - showend
+             * @property {maptalks.ui.UIComponent} target - UIComponent
+             */
             this.fire('showend');
             return this;
         }
@@ -121,18 +150,27 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     /**
      * Hide the UI Component.
      * @return {maptalks.ui.UIComponent} this
+     * @fires maptalks.ui.UIComponent#hide
      */
     hide:function () {
         if (!this.getDOM()) {
             return this;
         }
         this.getDOM().style.display = 'none';
+        /**
+         * hide event.
+         *
+         * @event maptalks.ui.UIComponent#hide
+         * @type {Object}
+         * @property {String} type - hide
+         * @property {maptalks.ui.UIComponent} target - UIComponent
+         */
         this.fire('hide');
         return this;
     },
 
     /**
-     * Decide whether the component is open
+     * Decide whether the ui component is open
      * @returns {Boolean} true|false
      */
     isVisible:function () {
@@ -142,6 +180,8 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     /**
      * Remove the UI Component
      * @return {maptalks.ui.UIComponent} this
+     * @fires maptalks.ui.UIComponent#hide
+     * @fires maptalks.ui.UIComponent#remove
      */
     remove: function () {
         this.hide();
@@ -151,6 +191,14 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         if (!this._singleton() && this.__uiDOM) {
             this._removePrevDOM();
         }
+        /**
+         * remove event.
+         *
+         * @event maptalks.ui.UIComponent#remove
+         * @type {Object}
+         * @property {String} type - remove
+         * @property {maptalks.ui.UIComponent} target - UIComponent
+         */
         this.fire('remove');
         return this;
     },

@@ -1,11 +1,11 @@
 /**
  * @classdesc
- * Base class of all the layers that can add/remove geometries.
+ * Base class of all the layers that can add/remove geometries. <br>
+ * It is abstract and not intended to be instantiated.
  * @class
  * @category layer
  * @abstract
  * @extends {maptalks.Layer}
- * @protected
  */
 Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     exceptionDefs:{
@@ -30,9 +30,9 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
-     * Get all the geometries on the layer or the ones filtered.
-     * @param {Function} filter  - a function to filter the layer
-     * @param {Object} context   - context of the filter context
+     * Get all the geometries or the ones filtered if a filter function is provided.
+     * @param {Function} [filter=undefined]  - a function to filter the geometries
+     * @param {Object} [context=undefined]   - context of the filter function, value to use as this when executing filter.
      * @return {maptalks.Geometry[]}
      */
     getGeometries:function (filter, context) {
@@ -51,9 +51,9 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
-     * Travels among the geometries the layer has.
+     * Executes the provided callback once for each geometry present in the layer in order.
      * @param  {Function} fn - a callback function
-     * @param  {*} context   - callback's context
+     * @param  {*} [context=undefined]   - callback's context, value to use as this when executing callback.
      * @return {maptalks.OverlayLayer} this
      */
     forEach:function (fn, context) {
@@ -72,10 +72,10 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
-     * creates a GeometryCollection with all elements that pass the test implemented by the provided function.
+     * Creates a GeometryCollection with all the geometries that pass the test implemented by the provided function.
      * @param  {Function} fn      - Function to test each geometry
-     * @param  {*} context        - Function's context
-     * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
+     * @param  {*} [context=undefined]  - Function's context, value to use as this when executing function.
+     * @return {maptalks.GeometryCollection} A GeometryCollection with all the geometries that pass the test
      */
     filter: function (fn, context) {
         var selected = [];
@@ -110,7 +110,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     /**
      * Adds one or more geometries to the layer
      * @param {maptalks.Geometry|maptalks.Geometry[]} geometries - one or more geometries
-     * @param {Boolean} fitView                                  - automatically set the map to a fit center and zoom for the geometries
+     * @param {Boolean} [fitView=false]  - automatically set the map to a fit center and zoom for the geometries
      * @return {maptalks.OverlayLayer} this
      */
     addGeometry:function (geometries, fitView) {
@@ -208,6 +208,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             internalId = Z.Util.GUID();
             //内部全局唯一的id
             geo._setInternalId(internalId);
+            geo.on('idchange', this._onGeometryIdChange, this);
             this._geoCache[internalId] = geo;
             this._counter++;
             geo._bindLayer(this);
@@ -227,7 +228,16 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             if (style) {
                 this._styleGeometry(geo);
             }
-            geo._fireEvent('addend', {'geometry':geo});
+            /**
+             * add event.
+             *
+             * @event maptalks.Geometry#add
+             * @type {Object}
+             * @property {String} type - add
+             * @property {maptalks.Geometry} target - geometry
+             * @property {maptalks.Layer} layer - the layer added to.
+             */
+            geo._fireEvent('add', {'layer':this});
         }
         var map = this.getMap();
         if (map) {
@@ -238,6 +248,15 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 map.setCenterAndZoom(center, z);
             }
         }
+        /**
+         * addgeo event.
+         *
+         * @event maptalks.OverlayLayer#addgeo
+         * @type {Object}
+         * @property {String} type - addgeo
+         * @property {maptalks.OverlayLayer} target - layer
+         * @property {maptalks.Geometry[]} geometries - the geometries to add
+         */
         this.fire('addgeo', {'geometries':geometries});
         return this;
     },
@@ -253,6 +272,15 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             if (!geometries[i] || this !== geometries[i].getLayer()) continue;
             geometries[i].remove();
         }
+        /**
+         * removegeo event.
+         *
+         * @event maptalks.OverlayLayer#removegeo
+         * @type {Object}
+         * @property {String} type - removegeo
+         * @property {maptalks.OverlayLayer} target - layer
+         * @property {maptalks.Geometry[]} geometries - the geometries to remove
+         */
         this.fire('removegeo', {'geometries':geometries});
         return this;
     },
@@ -263,8 +291,28 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         });
         this._geoMap = {};
         this._geoCache = {};
+        /**
+         * clear event.
+         *
+         * @event maptalks.OverlayLayer#clear
+         * @type {Object}
+         * @property {String} type - clear
+         * @property {maptalks.OverlayLayer} target - layer
+         */
         this.fire('clear');
         return this;
+    },
+
+    _onGeometryIdChange: function (param) {
+        if (!Z.Util.isNil(param['new'])) {
+            if (this._geoMap[param['new']]) {
+                throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + param['new']);
+            }
+            this._geoMap[param['new']] = param['target'];
+        }
+        if (!Z.Util.isNil(param['old'])) {
+            delete this._geoMap[param['old']];
+        }
     },
 
     /**
@@ -278,6 +326,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         if (this !== geometry.getLayer()) {
             return;
         }
+        geometry.off('idchange', this._onGeometryIdChange, this);
         var internalId = geometry._getInternalId();
         if (Z.Util.isNil(internalId)) {
             return;

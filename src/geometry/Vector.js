@@ -1,10 +1,11 @@
 /**
- * @classdesc Base class for all the geometry classes besides [maptalks.Marker]{@link maptalks.Marker}. <br/>
+ * @classdesc
+ * Base class for all the geometry classes besides [maptalks.Marker]{@link maptalks.Marker}. <br/>
+ * It is abstract and not intended to be instantiated.
  * @class
  * @category geometry
  * @abstract
  * @extends maptalks.Geometry
- * @protected
  */
 Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
     /**

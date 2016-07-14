@@ -1,23 +1,26 @@
 /**
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.
  * @mixin
+ * @memberOf maptalks
+ * @name Eventable
  */
 Z.Eventable = {
     /**
      * Register a handler function to be called whenever this event is fired.
      *
-     * @param {String} eventTypeArr     - event types to register, seperated by space if more than one.
+     * @param {String} eventsOn                  - event types to register, seperated by space if more than one.
      * @param {Function} handler                 - handler function to be called
      * @param {Object} [context=null]            - the context of the handler
      * @return {*} this
-     * @instance
+     * @example
+     * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
      */
-    on: function (eventTypeArr, handler, context) {
-        if (!eventTypeArr || !handler) { return this; }
+    on: function (eventsOn, handler, context) {
+        if (!eventsOn || !handler) { return this; }
         if (!this._eventMap) {
             this._eventMap = {};
         }
-        var eventTypes = eventTypeArr.split(' ');
+        var eventTypes = eventsOn.split(' ');
         var eventType;
         if (!context) { context = this; }
         var handlerChain, i, len;
@@ -44,13 +47,14 @@ Z.Eventable = {
     /**
      * Same as on, except the listener will only get fired once and then removed.
      *
-     * @param {String} eventTypeArr     - event types to register, seperated by space if more than one.
+     * @param {String} eventTypes                - event types to register, seperated by space if more than one.
      * @param {Function} handler                 - listener handler
      * @param {Object} [context=null]            - the context of the handler
      * @return {*} this
-     * @instance
+     * @example
+     * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
      */
-    once: function (eventTypeArr, handler, context) {
+    once: function (eventTypes, handler, context) {
         var me = this;
         var called = false;
         function onceHandler() {
@@ -59,23 +63,24 @@ Z.Eventable = {
             }
             called = true;
             handler.apply(this, arguments);
-            me.off(eventTypeArr, onceHandler, this);
+            me.off(eventTypes, onceHandler, this);
         }
-        return this.on(eventTypeArr, onceHandler, context);
+        return this.on(eventTypes, onceHandler, context);
     },
 
     /**
      * Unregister the event handler for the specified event types.
      *
-     * @param {String} eventTypeArr    - event types to unregister, seperated by space if more than one.
+     * @param {String} eventsOff                - event types to unregister, seperated by space if more than one.
      * @param {Function} handler                - listener handler
      * @param {Object} [context=null]           - the context of the handler
      * @return {*} this
-     * @instance
+     * @example
+     * foo.off('mousedown mousemove mouseup', onMouseEvent, foo);
      */
-    off:function (eventTypeArr, handler, context) {
-        if (!eventTypeArr || !this._eventMap || !handler) { return this; }
-        var eventTypes = eventTypeArr.split(' ');
+    off:function (eventsOff, handler, context) {
+        if (!eventsOff || !this._eventMap || !handler) { return this; }
+        var eventTypes = eventsOff.split(' ');
         var eventType, handlerChain;
         if (!context) { context = this; }
         var i;
@@ -104,11 +109,12 @@ Z.Eventable = {
     },
 
     /**
-     * Returns true if any listener registered for the event type.
+     * Returns listener's count registered for the event type.
      *
-     * @param {String} eventType - event type
-     * @return {Boolean}
-     * @instance
+     * @param {String} eventType        - an event type
+     * @param {Function} [hanlder=null] - listener function
+     * @param {Object} [context=null]   - the context of the handler
+     * @return {Number}
      */
     listens:function (eventType, handler, context) {
         if (!this._eventMap || !Z.Util.isString(eventType)) { return 0; }
@@ -132,7 +138,6 @@ Z.Eventable = {
     * Copy all the event listener to the target object
     * @param {Object} target - target object to copy to.
     * @return {*} this
-    * @instance
     */
     copyEventListeners: function (target) {
         var eventMap = target._eventMap;
@@ -153,7 +158,6 @@ Z.Eventable = {
      * @param  {String} eventType - an event type to fire
      * @param  {Object} param     - parameters for the listener function.
      * @return {*} this
-     * @instance
      */
     fire:function () {
         if (this._eventParent) {
@@ -210,12 +214,11 @@ Z.Eventable = {
 /**
 * Alias for [on]{@link maptalks.Eventable.on}
 *
-* @param {String} eventTypeArr     - event types to register, seperated by space if more than one.
+* @param {String} eventTypes     - event types to register, seperated by space if more than one.
 * @param {Function} handler                 - handler function to be called
 * @param {Object} [context=null]            - the context of the handler
 * @return {*} this
 * @function
-* @instance
 * @memberOf maptalks.Eventable
 * @name addEventListener
 */
@@ -223,12 +226,11 @@ Z.Eventable.addEventListener = Z.Eventable.on;
 /**
  * Alias for [off]{@link maptalks.Eventable.off}
  *
- * @param {String} eventTypeArr    - event types to unregister, seperated by space if more than one.
+ * @param {String} eventTypes    - event types to unregister, seperated by space if more than one.
  * @param {Function} handler                - listener handler
  * @param {Object} [context=null]           - the context of the handler
  * @return {*} this
  * @function
- * @instance
  * @memberOf maptalks.Eventable
  * @name removeEventListener
  */

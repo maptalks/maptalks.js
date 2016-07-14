@@ -8,8 +8,9 @@
  * oy : y of the origin point of the world's projected coordinate system <br>
  * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}
  * @class
- * @category layer
- * @protected
+ * @category geo
+ * @example
+ * var ts = new maptalks.TileSystem([1, -1, -20037508.34, 20037508.34]);
  */
 Z.TileSystem = function (sx, sy, ox, oy) {
     if (Z.Util.isArray(sx)) {

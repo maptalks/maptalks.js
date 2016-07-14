@@ -1,12 +1,13 @@
 /**
  * @classdesc
- * Base class for all the layers, defines common methods that all the layer classes share.
+ * Base class for all the layers, defines common methods that all the layer classes share. <br>
+ * It is abstract and not intended to be instantiated.
+ *
  * @class
  * @category layer
  * @abstract
  * @extends maptalks.Class
  * @mixes maptalks.Eventable
- * @protected
  */
 Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 

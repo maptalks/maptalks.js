@@ -10,19 +10,21 @@
  * @param {Number} radius           - radius of the sector
  * @param {Number} startAngle       - start angle of the sector
  * @param {Number} endAngle         - end angle of the sector
- * @param {Object} [options=null]   - specific construct options for sector, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+ * @param {Object} [options=null]   - specific construct options for sector
  * @param {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the sector's shell coordinates as a polygon.
+ * @param {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
  * @example
  * var sector = new maptalks.Sector([100, 0], 1000, 30, 120, {
- *     id : 'sector-id'
+ *     id : 'sector0'
  * });
  */
 Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
     includes:[Z.Geometry.Center],
 
     /**
-     * @property {Object} options - specific options of sector, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+     * @property {Object} options -
      * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the sector to a polygon.
+     * @property {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
      */
     options:{
         'numberOfShellPoints':60
@@ -49,7 +51,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * Set a new radius to the sector
      * @param {Number} radius - new radius
      * @return {maptalks.Sector} this
-     * @fires maptalks.Geometry#shapechange
+     * @fires maptalks.Sector#shapechange
      */
     setRadius:function (radius) {
         this._radius = radius;
@@ -69,7 +71,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * Set a new start angle to the sector
      * @param {Number} startAngle
      * @return {maptalks.Sector} this
-     * @fires maptalksGeometry#shapechange
+     * @fires maptalks.Sector#shapechange
      */
     setStartAngle:function (startAngle) {
         this.startAngle = startAngle;
@@ -89,7 +91,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * Set a new end angle to the sector
      * @param {Number} endAngle
      * @return {maptalks.Sector} this
-     * @fires maptalksGeometry#shapechange
+     * @fires maptalks.Sector#shapechange
      */
     setEndAngle:function (endAngle) {
         this.endAngle = endAngle;

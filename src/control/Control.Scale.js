@@ -11,6 +11,13 @@
  * @param {Number} [options.maxWidth=100]               - max width of the scale control.
  * @param {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
  * @param {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
+ * @example
+ * var scale = new maptalks.control.Scale({
+ *     position : 'bottom-left',
+ *     maxWidth : 160,
+ *     metric : true,
+ *     imperial : true
+ * }).addTo(map);
  */
 Z.control.Scale = Z.control.Control.extend(/** @lends maptalks.control.Scale.prototype */{
 

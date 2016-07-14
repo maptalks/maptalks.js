@@ -14,15 +14,13 @@
  * @param {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
  * @param {Boolean} [options.boxPadding=maptalks.Size(12,8)] - padding of the label text to the border of the background box.
  * @param {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
+ * @param {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
  * @example
- * var label = new maptalks.Label('This is a label',[100,0]);
- * label.addTo(vectorLayer);
+ * var label = new maptalks.Label('This is a label',[100,0])
+ *     .addTo(layer);
  */
 Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
-    /**
-     * @property {Object} defaultSymbol Default symbol of the label text
-     * @static
-     */
+
     defaultSymbol : {
         'textFaceName'  : 'monospace',
         'textSize': 12,
@@ -33,10 +31,6 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         'textVerticalAlignment': 'middle' //top middle bottom
     },
 
-    /**
-     * @property {Object} defaultSymbol Default symbol of the background box
-     * @static
-     */
     defaultBoxSymbol:{
         'markerType':'square',
         'markerLineColor': '#ff0000',
@@ -51,8 +45,9 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
      * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
      * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
      * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
-     * @property {Boolean} [options.boxPadding=maptalks.Size(12,8)] - padding of the label text to the border of the background box.
+     * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
      * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
+     * @property {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
      */
     options: {
         'box'          :   true,

@@ -248,27 +248,6 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         this._loaded = false;
     },
 
-    _requestMapToRender: function () {
-        if (this.getMap()) {
-            if (this._context) {
-                this._layer.fire('renderend', {'context' : this._context});
-            }
-            this.getMap()._getRenderer().render();
-        }
-    },
-
-    _fireLoadedEvent: function () {
-        this._loaded = true;
-        if (this._layer) {
-            this._layer.fire('layerload');
-        }
-    },
-
-    _complete: function () {
-        this._requestMapToRender();
-        this._fireLoadedEvent();
-    },
-
     _createCanvas:function () {
         if (this._canvas) {
             return;
@@ -337,8 +316,55 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         mask._getPainter().paint();
         this._context.clip();
         this._clipped = true;
+        /**
+         * renderstart event, fired when layer starts to render.
+         *
+         * @event maptalks.Layer#renderstart
+         * @type {Object}
+         * @property {String} type              - renderstart
+         * @property {maptalks.Layer} target    - layer
+         * @property {CanvasRenderingContext2D} context - canvas's context
+         */
         this._layer.fire('renderstart', {'context' : this._context});
         return maskViewExtent;
+    },
+
+    _requestMapToRender: function () {
+        if (this.getMap()) {
+            if (this._context) {
+                /**
+                 * renderend event, fired when layer ends rendering.
+                 *
+                 * @event maptalks.Layer#renderend
+                 * @type {Object}
+                 * @property {String} type              - renderend
+                 * @property {maptalks.Layer} target    - layer
+                 * @property {CanvasRenderingContext2D} context - canvas's context
+                 */
+                this._layer.fire('renderend', {'context' : this._context});
+            }
+            this.getMap()._getRenderer().render();
+        }
+    },
+
+    _fireLoadedEvent: function () {
+        this._loaded = true;
+        if (this._layer) {
+            /**
+             * layerload event, fired when layer is loaded.
+             *
+             * @event maptalks.Layer#layerload
+             * @type {Object}
+             * @property {String} type - layerload
+             * @property {maptalks.Layer} target - layer
+             */
+            this._layer.fire('layerload');
+        }
+    },
+
+    _complete: function () {
+        this._requestMapToRender();
+        this._fireLoadedEvent();
     },
 
     getPaintContext:function () {

@@ -17,9 +17,9 @@ Z.projection.EPSG4326 = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
      */
     code : 'EPSG:4326',
     project:function (p) {
-        return new Z.Coordinate(p.x, p.y);
+        return new Z.Coordinate(p);
     },
     unproject:function (p) {
-        return new Z.Coordinate(p.x, p.y);
+        return new Z.Coordinate(p);
     }
 }, Z.measurer.WGS84Sphere);

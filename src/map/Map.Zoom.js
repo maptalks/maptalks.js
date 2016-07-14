@@ -58,6 +58,15 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     _onZoomStart: function (nextZoomLevel) {
         this._zooming = true;
         this._enablePanAnimation = false;
+        /**
+          * zoomstart event
+          * @event maptalks.Map#zoomstart
+          * @type {Object}
+          * @property {String} type                    - zoomstart
+          * @property {maptalks.Map} target            - the map fires event
+          * @property {Number} from                    - zoom level zooming from
+          * @property {Number} to                      - zoom level zooming to
+          */
         this._fireEvent('zoomstart', {'from' : this._originZoomLevel, 'to': nextZoomLevel});
     },
 
@@ -75,7 +84,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
           * @event maptalks.Map#zoomend
           * @type {Object}
           * @property {String} type                    - zoomend
-          * @property {String} target                  - the map fires event
+          * @property {maptalks.Map} target            - the map fires event
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */

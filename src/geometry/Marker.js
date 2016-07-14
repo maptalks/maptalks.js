@@ -7,20 +7,28 @@
  * @mixes maptalks.Geometry.Center
  * @param {maptalks.Coordinate} center      - center of the marker
  * @param {Object} [options=null]           - specific construct options for marker, also support options defined in [Geometry]{@link maptalks.Geometry#options}
- * @param {Object} [options.symbol=object]  - default symbol of the marker.
+ * @param {Object} [options.id=null]        - id of the marker.
+ * @param {Object} [options.symbol=null]    - symbol of the marker.
+ * @param {Object} [options.property=null]  - properties
+ * @param {*} options.* - any other option defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
  * @example
  * var marker = new maptalks.Marker([100, 0], {
- *     id : 'marker-id'
+ *     'id' : 'marker0',
+ *     'symbol' : {
+ *         'markerFile'  : 'foo.png',
+ *         'markerWidth' : 20,
+ *         'markerHeight': 20,
+ *     },
+ *     'properties' : {
+ *         'foo' : 'value'
+ *     }
  * });
  */
 Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
     includes:[Z.Geometry.Center],
 
     type: Z.Geometry['TYPE_POINT'],
-    /**
-     * @property {Object} [options=null]           - options for marker, also support options defined in [Geometry]{@link maptalks.Geometry#options}
-     * @property {Object} [options.symbol=object]  - default symbol of the marker.
-     */
+
     options:{
         'symbol': {
             'markerType'    : 'path',

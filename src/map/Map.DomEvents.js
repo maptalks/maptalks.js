@@ -5,7 +5,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#mousedown
                       * @type {Object}
                       * @property {String} type                    - mousedown
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -17,7 +17,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#mouseup
                       * @type {Object}
                       * @property {String} type                    - mouseup
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -29,7 +29,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#mouseover
                       * @type {Object}
                       * @property {String} type                    - mouseover
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -41,7 +41,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#mouseout
                       * @type {Object}
                       * @property {String} type                    - mouseout
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -53,7 +53,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#mousemove
                       * @type {Object}
                       * @property {String} type                    - mousemove
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -65,7 +65,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#click
                       * @type {Object}
                       * @property {String} type                    - click
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -77,7 +77,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#dblclick
                       * @type {Object}
                       * @property {String} type                    - dblclick
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -89,7 +89,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#contextmenu
                       * @type {Object}
                       * @property {String} type                    - contextmenu
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -101,7 +101,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#keypress
                       * @type {Object}
                       * @property {String} type                    - keypress
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -113,7 +113,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#touchstart
                       * @type {Object}
                       * @property {String} type                    - touchstart
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -125,7 +125,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#touchmove
                       * @type {Object}
                       * @property {String} type                    - touchmove
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event
@@ -137,7 +137,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                       * @event maptalks.Map#touchend
                       * @type {Object}
                       * @property {String} type                    - touchend
-                      * @property {String} target                  - the map fires event
+                      * @property {maptalks.Map} target            - the map fires event
                       * @property {maptalks.Coordinate} coordinate - coordinate of the event
                       * @property {maptalks.Point} containerPoint  - container point of the event
                       * @property {maptalks.Point} viewPoint       - view point of the event

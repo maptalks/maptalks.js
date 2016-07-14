@@ -4,11 +4,41 @@
  * @class
  * @category maptool
  * @extends maptalks.DistanceTool
- * @param {options} [options=null]          - construct options, including options defined in [DistanceTool]{@link maptalks.DistanceTool}
- * @param {options} [options.symbol=null]   - symbol of lines drawn during measuring
+ * @param {options} [options=null] - construct options
+ * @param {String} [options.language=zh-CN]         - language of the distance tool, zh-CN or en-US
+ * @param {Boolean} [options.metric=true]           - display result in metric system
+ * @param {Boolean} [options.imperial=false]        - display result in imperial system.
+ * @param {Object}  [options.symbol=null]           - symbol of the line
+ * @param {Object}  [options.vertexSymbol=null]     - symbol of the vertice
+ * @param {Object}  [options.labelOptions=null]     - construct options of the vertice labels.
+ * @example
+ * var areaTool = new maptalks.AreaTool({
+ *     'once' : true,
+ *     'symbol': {
+ *       'lineColor' : '#34495e',
+ *       'lineWidth' : 2
+ *     },
+ *     'vertexSymbol' : {
+ *       'markerType'        : 'ellipse',
+ *       'markerFill'        : '#1bbc9b',
+ *       'markerLineColor'   : '#000',
+ *       'markerLineWidth'   : 3,
+ *       'markerWidth'       : 10,
+ *      'markerHeight'      : 10
+ *    },
+ *    'language' : 'en-US'
+ *  }).addTo(map);
  */
 Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
-
+    /**
+     * @property {options} options
+     * @property {String}  options.language         - language of the distance tool, zh-CN or en-US
+     * @property {Boolean} options.metric           - display result in metric system
+     * @property {Boolean} options.imperial         - display result in imperial system.
+     * @property {Object}  options.symbol           - symbol of the line
+     * @property {Object}  options.vertexSymbol     - symbol of the vertice
+     * @property {Object}  options.labelOptions     - construct options of the vertice labels.
+     */
     options:{
         'mode' : 'Polygon',
         'symbol' : {

@@ -21,9 +21,17 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     },
 
     /**
-     * 基于Canvas的渲染方法, layers总定义了要渲染的图层
+     * Renders the layers
      */
     render:function () {
+         /**
+          * renderstart event, an event fired when map starts to render.
+          * @event maptalks.Map#renderstart
+          * @type {Object}
+          * @property {String} type                    - renderstart
+          * @property {maptalks.Map} target            - the map fires event
+          * @property {CanvasRenderingContext2D} context  - canvas context
+          */
         this.map._fireEvent('renderstart', {'context' : this._context});
         if (!this._canvas) {
             this._createCanvas();
@@ -53,6 +61,14 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
 
         this._drawCenterCross();
+        /**
+          * renderend event, an event fired when map ends rendering.
+          * @event maptalks.Map#renderend
+          * @type {Object}
+          * @property {String} type                      - renderend
+          * @property {maptalks.Map} target              - the map fires event
+          * @property {CanvasRenderingContext2D} context - canvas context
+          */
         this.map._fireEvent('renderend', {'context' : this._context});
     },
 
@@ -96,6 +112,14 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     fn.call(this);
                 } else if (player.playState === 'running') {
                     this.transform(matrix, layersToTransform);
+                    /**
+                      * zooming event
+                      * @event maptalks.Map#zooming
+                      * @type {Object}
+                      * @property {String} type                    - zooming
+                      * @property {maptalks.Map} target            - the map fires event
+                      * @property {Matrix} matrix                  - transforming matrix
+                      */
                     map._fireEvent('zooming', {'matrix' : matrix});
                 }
             }, this)

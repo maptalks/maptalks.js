@@ -1,4 +1,5 @@
 /**
+ * @classdesc
  * GeoJSON utilities
  * @class
  * @category geometry
@@ -10,7 +11,44 @@ Z.GeoJSON = {
     /**
      * Convert one or more GeoJSON objects to a geometry
      * @param  {String|Object|Object[]} json - json objects or json string
-     * @return {maptalks.Geometry|maptalks.Geometry[]}
+     * @return {maptalks.Geometry|maptalks.Geometry[]} a geometry array when input is a FeatureCollection
+     * @example
+     * var collection = {
+     *      "type": "FeatureCollection",
+     *      "features": [
+     *          { "type": "Feature",
+     *            "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+     *            "properties": {"prop0": "value0"}
+     *           },
+     *           { "type": "Feature",
+     *             "geometry": {
+     *                 "type": "LineString",
+     *                 "coordinates": [
+     *                     [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
+     *                 ]
+     *             },
+     *             "properties": {
+     *                 "prop0": "value0",
+     *                 "prop1": 0.0
+     *             }
+     *           },
+     *           { "type": "Feature",
+     *             "geometry": {
+     *                 "type": "Polygon",
+     *                 "coordinates": [
+     *                     [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+     *                       [100.0, 1.0], [100.0, 0.0] ]
+     *                 ]
+     *             },
+     *             "properties": {
+     *                 "prop0": "value0",
+     *                 "prop1": {"this": "that"}
+     *             }
+     *          }
+     *      ]
+     *  }
+     *  // a geometry array.
+     *  var geometries = maptalks.GeoJSON.toGeometry(collection);
      */
     toGeometry:function (geoJSON) {
         if (Z.Util.isString(geoJSON)) {
@@ -40,7 +78,7 @@ Z.GeoJSON = {
      * @return {Number[]|Number[][]}
      * @example
      * // result is [[100,0], [101,1]]
-     * var jsonCoords = maptalks.GeoJSON.toNumberArrays([new maptalks.Coordinate(100,0), new maptalks.Coordinate(101,1)]);
+     * var numCoords = maptalks.GeoJSON.toNumberArrays([new maptalks.Coordinate(100,0), new maptalks.Coordinate(101,1)]);
      */
     toNumberArrays:function (coordinates) {
         if (!Z.Util.isArray(coordinates)) {
@@ -55,6 +93,8 @@ Z.GeoJSON = {
      * Convert one or more GeoJSON style coordiantes to maptalks.Coordinate objects
      * @param  {Number[]|Number[][]} coordinates - coordinates to convert
      * @return {maptalks.Coordinate|maptalks.Coordinate[]}
+     * @example
+     * var coordinates = maptalks.GeoJSON.toCoordinates([[100,0], [101,1]]);
      */
     toCoordinates:function (coordinates) {
         if (Z.Util.isNumber(coordinates[0]) && Z.Util.isNumber(coordinates[1])) {

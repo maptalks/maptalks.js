@@ -5,6 +5,13 @@
  * @category geometry
  * @extends maptalks.Geometry
  * @param {maptalks.Geometry[]} geometries - GeometryCollection's geometries
+ * @param {Object} [options=null] - options defined in [nmaptalks.Geometry]{@link maptalks.Geometry#options}
+ * @example
+ * var marker = new maptalks.Marker([0, 0]),
+ *     line = new maptalks.LineString([[0, 0], [0, 1]]),
+ *     polygon = new maptalks.Polygon([[0, 0], [0, 1], [1, 3]]);
+ * var collection = new maptalks.GeometryCollection([marker, line, polygon])
+ *     .addTo(layer);
  */
 Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.prototype */{
     type:Z.Geometry['TYPE_GEOMETRYCOLLECTION'],
@@ -27,6 +34,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * Set new geometries to the geometry collection
      * @param {maptalks.Geometry[]} geometries
      * @return {maptalks.GeometryCollection} this
+     * @fires maptalks.GeometryCollection#shapechange
      */
     setGeometries:function (_geometries) {
         var geometries = this._checkGeometries(_geometries);
@@ -49,7 +57,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
 
     /**
      * Get geometries of the geometry collection
-     * @return {maptalks.Geometry[]}
+     * @return {maptalks.Geometry[]} geometries
      */
     getGeometries:function () {
         if (!this._geometries) {
@@ -59,9 +67,9 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     },
 
     /**
-     * Travels among the geometries the collection has.
-     * @param  {Function} fn - a callback function
-     * @param  {*} context   - callback's context
+     * Executes the provided callback once for each geometry present in the collection in order.
+     * @param  {Function} fn             - a callback function
+     * @param  {*} [context=undefined]   - callback's context
      * @return {maptalks.GeometryCollection} this
      */
     forEach: function (fn, context) {
@@ -80,9 +88,9 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     },
 
     /**
-     * creates a GeometryCollection with all elements that pass the test implemented by the provided function.
+     * Creates a GeometryCollection with all elements that pass the test implemented by the provided function.
      * @param  {Function} fn      - Function to test each geometry
-     * @param  {*} context        - Function's context
+     * @param  {*} [context=undefined]    - Function's context
      * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
      */
     filter: function () {
@@ -120,8 +128,9 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     /**
      * remove itself from the layer if any.
      * @returns {maptalks.Geometry} this
-     * @fires maptalks.Geometry#removestart
-     * @fires maptalks.Geometry#remove
+     * @fires maptalks.GeometryCollection#removestart
+     * @fires maptalks.GeometryCollection#remove
+     * @fires maptalks.GeometryCollection#removeend
      */
     remove:function () {
         this.forEach(function (geometry) {
@@ -133,7 +142,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     /**
      * Show the geometry collection.
      * @return {maptalks.GeometryCollection} this
-     * @fires maptalks.Geometry#show
+     * @fires maptalks.GeometryCollection#show
      */
     show:function () {
         this.options['visible'] = true;
@@ -146,7 +155,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     /**
      * Hide the geometry collection.
      * @return {maptalks.GeometryCollection} this
-     * @fires maptalks.Geometry#hide
+     * @fires maptalks.GeometryCollection#hide
      */
     hide:function () {
         this.options['visible'] = false;

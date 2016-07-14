@@ -96,10 +96,19 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
         return this;
     },
 
+    /**
+     * Add the extent with a coordinate or a point.
+     * @param {maptalks.Coordinate|maptalks.Point} p - point or coordinate to add
+     * @returns {maptalks.Extent} a new extent
+     */
     add: function (p) {
         return new this.constructor(this['xmin'] + p.x, this['ymin'] + p.y, this['xmax'] + p.x, this['ymax'] + p.y);
     },
 
+    /**
+     * Round the extent
+     * @return {maptalks.Extent} rounded extent
+     */
     round:function () {
         return new this.constructor(Z.Util.round(this['xmin']), Z.Util.round(this['ymin']),
             Z.Util.round(this['xmax']), Z.Util.round(this['ymax']));

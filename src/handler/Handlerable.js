@@ -9,6 +9,7 @@ Z.Handlerable = {
      * @param {String} name       - name of the handler
      * @param {maptalks.Handler}  - handler class
      * @return {*} this
+     * @protected
      */
     addHandler: function (name, handlerClass) {
         if (!handlerClass) { return this; }
@@ -35,6 +36,7 @@ Z.Handlerable = {
      * Removes a handler
      * @param {String} name       - name of the handler
      * @return {*} this
+     * @protected
      */
     removeHandler: function (name) {
         if (!name) { return this; }
