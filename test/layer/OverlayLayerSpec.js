@@ -85,6 +85,32 @@ describe('#OverlayLayer', function() {
             expect(layer.getGeometryById('')).to.be(null);
         });
 
+        it('Geometry\'s id changed', function() {
+            var layer = new maptalks.VectorLayer('vector');
+            layer.setId('id');
+            // map.addLayer(layer);
+            var geometry = new maptalks.Polygon([
+                [
+                    {x: 121.111, y: 30.111},
+                    {x: 121.222, y: 30.222},
+                    {x: 121.333, y: 30.333}
+                ]
+            ]);
+            layer.addGeometry(geometry);
+            geometry.setId('id');
+            geometry.setId('new-id');
+            expect(layer.getGeometryById('new-id')).to.not.be(null);
+            expect(layer.getGeometryById('id')).to.be(null);
+
+            geometry.setId(null);
+            expect(layer.getGeometryById('new-id')).to.be(null);
+            expect(layer.getGeometryById('id')).to.be(null);
+
+            geometry.remove();
+            expect(layer.getGeometryById('new-id')).to.be(null);
+            expect(layer.getGeometryById('id')).to.be(null);
+        });
+
         it('removeGeometry', function() {
             var layer = new maptalks.VectorLayer('layer');
             layer.setId('id');
