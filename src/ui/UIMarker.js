@@ -1,22 +1,38 @@
 /**
- * @classdesc
- * Class for UI Marker, a html based marker positioned by geographic coordinate.
+ * As it's renderered by HTMLElement such as a DIV, it: <br>
+ * 1. always on the top of all the map layers <br>
+ * 2. can't be snapped as it's not drawn on the canvas. <br>
  *
- * As it's an actual html element, it:
- * 1. always on the top of all the map layers
- * 2. can't be snapped as it's not drawn on the canvas.
+ * @classdesc
+ * Class for UI Marker, a html based marker positioned by geographic coordinate. <br>
  *
  * @class
  * @category ui
  * @extends maptalks.ui.UIComponent
  * @param {Object} options - construct options
+ * @param {Boolean} [options.draggable=false]  - if the marker can be dragged.
+ * @param {Number}  [options.single=false]     - if the marker is a global single one.
+ * @param {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
  * @memberOf maptalks.ui
  * @name UIMarker
+ * @example
+ * var dom = document.createElement('div');
+ * dom.innerHTML = 'hello ui marker';
+ * var marker = new maptalks.ui.UIMarker([0, 0], {
+ *      draggable : true,
+ *      content : dom
+ *  }).addTo(map);
  */
 Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototype */{
 
     includes: [Z.Handlerable],
 
+    /**
+     * @property {Object} options - construct options
+     * @property {Boolean} [options.draggable=false]  - if the marker can be dragged.
+     * @property {Number}  [options.single=false]     - if the marker is a global single one.
+     * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
+     */
     options : {
         'draggable': false,
         'single' : false,
@@ -28,34 +44,87 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         Z.Util.setOptions(this, options);
     },
 
+    /**
+     * Sets the coordinates
+     * @param {maptalks.Coordinate} coordinates - UIMarker's coordinate
+     * @returns {maptalks.ui.UIMarker} this
+     * @fires maptalks.ui.UIMarker#positionchange
+     */
     setCoordinates: function (coordinates) {
         this._markerCoord = coordinates;
+        /**
+         * positionchange event.
+         *
+         * @event maptalks.ui.UIMarker#positionchange
+         * @type {Object}
+         * @property {String} type - positionchange
+         * @property {maptalks.ui.UIMarker} target - ui marker
+         */
+        this.fire('positionchange');
         if (this.isVisible()) {
             this.show();
         }
         return this;
     },
 
+    /**
+     * Gets the coordinates
+     * @return {maptalks.Coordinate} coordinates
+     */
     getCoordinates: function () {
         return this._markerCoord;
     },
 
+    /**
+     * Sets the content of the UIMarker
+     * @param {String|HTMLElement} content - UIMarker's content
+     * @returns {maptalks.ui.UIMarker} this
+     * @fires maptalks.ui.UIMarker#contentchange
+     */
     setContent: function (content) {
+        var old = this.options['content'];
         this.options['content'] = content;
+        /**
+         * contentchange event.
+         *
+         * @event maptalks.ui.UIMarker#contentchange
+         * @type {Object}
+         * @property {String} type - contentchange
+         * @property {maptalks.ui.UIMarker} target - ui marker
+         * @property {String|HTMLElement} old      - old content
+         * @property {String|HTMLElement} new      - new content
+         */
+        this.fire('contentchange', {'old' : old, 'new' : content});
         if (this.isVisible()) {
             this.show();
         }
         return this;
     },
 
+    /**
+     * Gets the content of the UIMarker
+     * @return {String|HTMLElement} content
+     */
     getContent: function () {
         return this.options['content'];
     },
 
-    show: function (coordinates) {
-        return Z.ui.UIComponent.prototype.show.call(this, coordinates || this._markerCoord);
+    /**
+     * Show the UIMarker
+     * @returns {maptalks.ui.UIMarker} this
+     * @fires maptalks.ui.UIMarker#showstart
+     * @fires maptalks.ui.UIMarker#showend
+     */
+    show: function () {
+        return Z.ui.UIComponent.prototype.show.call(this, this._markerCoord);
     },
 
+    /**
+     * A callback method to build UIMarker's HTMLElement
+     * @protected
+     * @param {maptalks.Map} map - map to be built on
+     * @return {HTMLElement} UIMarker's HTMLElement
+     */
     buildOn: function () {
         var dom;
         if (Z.Util.isString(this.options['content'])) {
@@ -68,6 +137,11 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         return dom;
     },
 
+    /**
+     * Gets UIMarker's HTMLElement's position offset, it's caculated dynamically accordiing to its actual size.
+     * @protected
+     * @return {maptalks.Point} offset
+     */
     getOffset: function () {
         var size = this.getSize();
         return new Z.Point(-size['width'] / 2, -size['height'] / 2);
@@ -83,7 +157,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#mousedown
                   * @type {Object}
                   * @property {String} type                    - mousedown
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -95,7 +169,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#mouseup
                   * @type {Object}
                   * @property {String} type                    - mouseup
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -107,7 +181,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#mouseover
                   * @type {Object}
                   * @property {String} type                    - mouseover
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -119,7 +193,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#mouseout
                   * @type {Object}
                   * @property {String} type                    - mouseout
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -131,7 +205,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#mousemove
                   * @type {Object}
                   * @property {String} type                    - mousemove
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -143,7 +217,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#click
                   * @type {Object}
                   * @property {String} type                    - click
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -155,7 +229,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#dblclick
                   * @type {Object}
                   * @property {String} type                    - dblclick
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -167,7 +241,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#contextmenu
                   * @type {Object}
                   * @property {String} type                    - contextmenu
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -179,7 +253,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#keypress
                   * @type {Object}
                   * @property {String} type                    - keypress
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -191,7 +265,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#touchstart
                   * @type {Object}
                   * @property {String} type                    - touchstart
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -203,7 +277,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#touchmove
                   * @type {Object}
                   * @property {String} type                    - touchmove
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -215,7 +289,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                   * @event maptalks.ui.UIMarker#touchend
                   * @type {Object}
                   * @property {String} type                    - touchend
-                  * @property {String} target                  - the map fires event
+                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
                   * @property {maptalks.Coordinate} coordinate - coordinate of the event
                   * @property {maptalks.Point} containerPoint  - container point of the event
                   * @property {maptalks.Point} viewPoint       - view point of the event
@@ -276,7 +350,7 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
          * @event maptalks.ui.UIMarker#dragstart
          * @type {Object}
          * @property {String} type                    - dragstart
-         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
          * @property {maptalks.Coordinate} coordinate - coordinate of the event
          * @property {maptalks.Point} containerPoint  - container point of the event
          * @property {maptalks.Point} viewPoint       - view point of the event
@@ -323,7 +397,7 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
          * @event maptalks.ui.UIMarker#dragging
          * @type {Object}
          * @property {String} type                    - dragging
-         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
          * @property {maptalks.Coordinate} coordinate - coordinate of the event
          * @property {maptalks.Point} containerPoint  - container point of the event
          * @property {maptalks.Point} viewPoint       - view point of the event
@@ -352,7 +426,7 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
          * @event maptalks.ui.UIMarker#dragend
          * @type {Object}
          * @property {String} type                    - dragend
-         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
          * @property {maptalks.Coordinate} coordinate - coordinate of the event
          * @property {maptalks.Point} containerPoint  - container point of the event
          * @property {maptalks.Point} viewPoint       - view point of the event
@@ -375,7 +449,7 @@ Z.ui.UIMarker.addInitHook('addHandler', 'draggable', Z.ui.UIMarker.Drag);
 Z.ui.UIMarker.include(/** @lends maptalks.ui.UIMarker.prototype */{
     /**
      * Whether the uimarker is being dragged.
-     * @reutrn {Boolean}
+     * @returns {Boolean}
      */
     isDragging: function () {
         if (this['draggable']) {

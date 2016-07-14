@@ -55,6 +55,10 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
         return this;
     },
 
+    /**
+     * Like math.round, rounding the point's xy.
+     * @return {maptalks.Point} rounded point
+     */
     round:function () {
         return new Z.Point(Z.Util.round(this.x), Z.Util.round(this.y));
     },
@@ -152,12 +156,16 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
         return new Z.Point(this.x * ratio, this.y * ratio);
     },
 
+    /**
+     * Whether the point is NaN
+     * @return {Boolean}
+     */
     isNaN:function () {
         return isNaN(this.x) || isNaN(this.y);
     },
 
     /**
-     * toJSON
+     * Convert the point to a json object {x : .., y : ..}
      * @return {Object} json
      */
     toJSON: function () {

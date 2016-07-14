@@ -36,6 +36,13 @@ Z.Map.TouchZoom = Z.Handler.extend({
             .addDomEvent(document, 'touchend', this._onTouchEnd, this);
 
         Z.DomUtil.preventDefault(event);
+        /**
+          * touchzoomstart event
+          * @event maptalks.Map#touchzoomstart
+          * @type {Object}
+          * @property {String} type                    - touchzoomstart
+          * @property {maptalks.Map} target            - the map fires event
+          */
         map._fireEvent('touchzoomstart');
     },
 
@@ -63,7 +70,15 @@ Z.Map.TouchZoom = Z.Handler.extend({
 
         var matrix = renderer.getZoomMatrix(scale, origin, Z.Browser.retina);
         renderer.transform(matrix);
-
+        /**
+          * touchzooming event
+          * @event maptalks.Map#touchzooming
+          * @type {Object}
+          * @property {String} type                    - touchzooming
+          * @property {maptalks.Map} target            - the map fires event
+          * @property {Matrix} matrix                  - transforming matrix
+          */
+        map._fireEvent('touchzooming', {'matrix': matrix});
         // Z.DomUtil.preventDefault(event);
     },
 
@@ -84,6 +99,13 @@ Z.Map.TouchZoom = Z.Handler.extend({
         if (zoom === -1) {
             zoom = map.getZoom();
         }
+        /**
+          * touchzoomend event
+          * @event maptalks.Map#touchzoomend
+          * @type {Object}
+          * @property {String} type                    - touchzoomend
+          * @property {maptalks.Map} target            - the map fires event
+          */
         map._fireEvent('touchzoomend');
         map._zoomAnimation(zoom, this._preOrigin, this._scale);
     }

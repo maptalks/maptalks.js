@@ -1,7 +1,9 @@
 Z.Label.include(/** @lends maptalks.Label.prototype */{
     /**
-     * Start to edit the label text
+     * Start to edit the label text, editing will be ended automatically whenever map is clicked.
+     *
      * @return {maptalks.Label} this
+     * @fires maptalks.Label#edittextstart
      */
     startEditText: function () {
         if (!this.getMap()) {
@@ -10,13 +12,22 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         this.hide();
         this.endEditText();
         this._prepareEditor();
-        this.fire('edittextstart', this);
+        /**
+         * edittextstart when starting to edit label's text content
+         * @event maptalks.Label#edittextstart
+         * @type {Object}
+         * @property {String} type - edittextstart
+         * @property {maptalks.Label} target - label fires the event
+         */
+        this._fireEvent('edittextstart');
         return this;
     },
 
     /**
      * End label text edit.
+     *
      * @return {maptalks.Label} this
+     * @fires maptalks.Label#edittextend
      */
     endEditText: function () {
         if (this._textEditor) {
@@ -28,13 +39,21 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             this._editUIMarker.remove();
             delete this._editUIMarker;
             delete this._textEditor;
-            this.fire('edittextend', this);
+            /**
+             * edittextend when ended editing label's text content
+             * @event maptalks.Label#edittextend
+             * @type {Object}
+             * @property {String} type - edittextend
+             * @property {maptalks.Label} target - label fires the event
+             */
+            this._fireEvent('edittextend');
         }
         return this;
     },
 
     /**
-     * Whether the label is being edited text.
+     * Whether the label's text is being edited.
+     *
      * @return {Boolean}
      */
     isEditingText: function () {
@@ -44,6 +63,11 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         return false;
     },
 
+    /**
+     * Get the text editor which is a [maptalks.ui.UIMarker]{@link maptalks.ui.UIMarker}
+     *
+     * @return {maptalks.ui.UIMarker} text editor
+     */
     getTextEditor: function () {
         return this._editUIMarker;
     },

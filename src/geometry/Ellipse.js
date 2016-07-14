@@ -9,16 +9,22 @@
  * @param {maptalks.Coordinate} center  - center of the ellipse
  * @param {Number} width                - width of the ellipse
  * @param {Number} height                - height of the ellipse
- * @param {Object} [options=null]   - specific construct options for ellipse, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+ * @param {Object} [options=null]   - specific construct options for ellipse
  * @param {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
+ * @param {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
  * @example
  * var ellipse = new maptalks.Ellipse([100, 0], 1000, 500, {
- *     id : 'ellipse-id'
+ *     id : 'ellipse0'
  * });
  */
 Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     includes:[Z.Geometry.Center],
 
+    /**
+     * @property {Object} [options=null]
+     * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
+     * @property {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
+     */
     options:{
         'numberOfShellPoints':60
     },
@@ -42,7 +48,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     /**
      * Set new width to ellipse
      * @param {Number} width - new width
-     * @fires maptalks.Geometry#shapechange
+     * @fires maptalks.Ellipse#shapechange
      * @return {maptalks.Ellipse} this
      */
     setWidth:function (width) {
@@ -62,7 +68,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     /**
      * Set new height to ellipse
      * @param {Number} height - new height
-     * @fires maptalks.Geometry#shapechange
+     * @fires maptalks.Ellipse#shapechange
      * @return {maptalks.Ellipse} this
      */
     setHeight:function (height) {
@@ -72,7 +78,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     },
 
     /**
-     * Gets the shell of the circle as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Circle#options}
+     * Gets the shell of the ellipse as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Circle#options}
      * @return {maptalks.Coordinate[]} - shell coordinates
      */
     getShell:function () {

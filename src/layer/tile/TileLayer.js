@@ -5,12 +5,44 @@
  * @category layer
  * @extends maptalks.Layer
  * @param {String|Number} id - tile layer's id
- * @param {Object} [options=null] - construct options
- * @param {Boolean} [options.debug=false] - if set to true, tile's border will be drawn and tile's xyz coordinate will be drawn on the left top corner.
+ * @param {Object}              [options=null] - construct options
+ * @param {String}              [options.errorTileUrl=null] - tile's url when error
+ * @param {String}              options.urlTemplate         - url templates
+ * @param {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
+ * @param {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
+ * @param {String}              [options.crossOrigin=null]  - tile Image's corssOrigin
+ * @param {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
+ * @param {maptalks.TileSystem} [options.tileSystem=null]   - tile system
+ * @param {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+ * @param {String}              [options.baseLayerRenderer='dom']        - renderer when it is used as base layer.
+ * @param {String}              [options.renderer='canvas']              - renderer, 'dom' or 'canvas'
  * @param {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
+ * @example
+ * new maptalks.TileLayer("tile",{
+        urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        subdomains:['a','b','c']
+    })
  */
 Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
+    /**
+     * @property {Object}              options                     - TileLayer's options
+     * @property {String}              [options.errorTileUrl=null] - tile's url when error
+     * @property {String}              options.urlTemplate         - url templates
+     * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
+     * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
+     * @property {String}              [options.crossOrigin=null]  - tile Image's corssOrigin
+     * @property {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
+     * @property {maptalks.TileSystem} [options.tileSystem=null]   - tile system
+     * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+     * @property {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
+     * @example
+     * tileLayer.config('debug', true);
+     * tileLayer.config({
+     *     'urlTemplate' : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+     *     'subdomains'  : ['a', 'b', 'c']
+     * });
+     */
     options: {
         'errorTileUrl'  : null,
         'urlTemplate'   : null,
@@ -57,6 +89,14 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         if (this._renderer) {
             this._renderer.clear();
         }
+        /**
+         * clear event, fired when tile layer is cleared.
+         *
+         * @event maptalks.TileLayer#clear
+         * @type {Object}
+         * @property {String} type - clear
+         * @property {maptalks.TileLayer} target - tile layer
+         */
         this.fire('clear');
         return this;
     },

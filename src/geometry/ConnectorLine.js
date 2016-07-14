@@ -1,21 +1,38 @@
 /**
- * A connector line geometry can connect geometries and ui components with each other. <br>
- * Can be
+ * @classdesc
+ * A connector line geometry can connect geometries or ui components with each other. <br>
+ *
  * @class
  * @category geometry
  * @extends maptalks.CurveLine
  * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} src     - source to connect
  * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} target  - target to connect
- * @param {Object} [options=null]                   - construct options, also support options defined in the parent class [maptalks.CurveLine]{@link maptalks.CurveLine#options}
- * @param {Number} [options.curveType=0]            - curve type of the connector
+ * @param {Object} [options=null]                   - construct options
+ * @param {Number} [options.curveType=0]            - curve type of the connector, same as [maptalks.CurveLine]{@link maptalks.CurveLine}
  * @param {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
+ * @param {*} options.* - any other option defined in [maptalks.CurveLine]{@link maptalks.CurveLine#options}
+ * @example
+ * var src = new maptalks.Marker([0,0]).addTo(layer),
+ *      dst = new maptalks.Marker([1,0]).addTo(layer),
+ *      line = new maptalks.ConnectorLine(src, dst, {
+ *         curveType : 0, //0, 1, 2, 3
+ *         arcDegree : 120,
+ *         showOn : 'always', //'moving', 'click', 'mouseover', 'always'
+ *         arrowStyle : 'classic',
+ *         arrowPlacement : 'vertex-last', //vertex-first, vertex-last, vertex-firstlast, point
+ *         symbol: {
+ *           lineColor: '#34495e',
+ *           lineWidth: 2
+ *        }
+ *      }).addTo(layer);
  */
-Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.CurveLine.prototype */{
+Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.ConnectorLine.prototype */{
 
     /**
-     * @property {Object} options - specific options of circle, also support options defined in the parent class [maptalks.CurveLine]{@link maptalks.CurveLine#options}
-     * @param {Number} [options.curveType=0] - curve type of the connector
-     * @param {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
+     * @property {Object} options
+     * @property {Number} [options.curveType=0] - curve type of the connector
+     * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
+     * @property {*} options.* - any other option defined in [maptalks.CurveLine]{@link maptalks.CurveLine#options}
      */
     options: {
         curveType : 0,

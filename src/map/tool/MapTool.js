@@ -1,20 +1,21 @@
 /**
  * @classdesc
  * The parent class for all the map tools
+ * It is abstract and not intended to be instantiated.
  * @class
  * @abstract
  * @category maptool
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
- * @param {options} [options=null] - construct options
  */
 Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
     includes: [Z.Eventable],
 
     /**
-     * Adds the map tool to a map instance.
+     * Adds the map tool to a map.
      * @param {maptalks.Map} map
      * @return {maptalks.MapTool} this
+     * @fires maptalks.MapTool#add
      */
     addTo: function (map) {
         if (!map) {
@@ -31,10 +32,22 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         this.enable();
         map[key] = this;
 
+        /**
+         * add event.
+         *
+         * @event maptalks.MapTool#add
+         * @type {Object}
+         * @property {String} type - add
+         * @property {maptalks.MapTool} target - map tool
+         */
         this._fireEvent('add');
         return this;
     },
 
+    /**
+     * Gets the map it added to.
+     * @return {maptalks.Map} map
+     */
     getMap:function () {
         return this._map;
     },
@@ -42,6 +55,7 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
     /**
      * Enable the map tool.
      * @return {maptalks.MapTool} this
+     * @fires maptalks.MapTool#enable
      */
     enable:function () {
         var map = this._map;
@@ -57,6 +71,14 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         if (this._onEnable) {
             this._onEnable();
         }
+        /**
+         * enable event.
+         *
+         * @event maptalks.MapTool#enable
+         * @type {Object}
+         * @property {String} type - enable
+         * @property {maptalks.MapTool} target - map tool
+         */
         this._fireEvent('enable');
         return this;
     },
@@ -64,6 +86,7 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
     /**
      * Disable the map tool
      * @return {maptalks.MapTool} this
+     * @fires maptalks.MapTool#disable
      */
     disable:function () {
         if (!this._enabled || !this._map) {
@@ -74,6 +97,14 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         if (this._onDisable) {
             this._onDisable();
         }
+        /**
+         * disable event.
+         *
+         * @event maptalks.MapTool#disable
+         * @type {Object}
+         * @property {String} type - disable
+         * @property {maptalks.MapTool} target - map tool
+         */
         this._fireEvent('disable');
         return this;
     },

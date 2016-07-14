@@ -1,14 +1,27 @@
 Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
-     * Animate the geometry according to the given options.
-     * @param  {Object}   styles   - styles to animate
-     * @param  {Object}   options  - animation options
-     * @param  {Function} callback - step function when animating
+     * Animate the geometry
+     *
+     * @param  {Object}   styles          - styles to animate
+     * @param  {Object}   [options=null]  - animation options
+     * @param  {Object}   [options.speed=1000]      - duration
+     * @param  {Object}   [options.startTime=null]  - time to start animation in ms
+     * @param  {Object}   [options.easing=linear]   - animation easing: in, out, inAndOut, linear, upAndDown
+     * @param  {Function} [step=null]               - step function when animating
      * @return {maptalks.animation.Player} animation player
+     * @example
+     * var player = marker.animate({
+     *     'symbol': {
+     *         'markerHeight': 82
+     *      }
+     * }, {
+     *     'speed': 2000
+     * });
+     * player.pause();
      */
-    animate:function (styles, options, callback) {
+    animate:function (styles, options, step) {
         if (Z.Util.isFunction(options)) {
-            callback = options;
+            step = options;
             options = null;
         }
         var map = this.getMap(),
@@ -54,16 +67,16 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                 }
             }
             this._fireAnimateEvent(player.playState);
-            if (callback) {
-                callback(frame);
+            if (step) {
+                step(frame);
             }
         }, this));
 
         return player.play();
     },
     /**
-     * prepare styles for animation
-     * @return {Object} symbol to animate
+     * Prepare styles for animation
+     * @return {Object} styles
      * @private
      */
     _prepareAnimationStyles:function (styles) {

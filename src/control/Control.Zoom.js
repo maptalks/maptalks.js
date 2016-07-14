@@ -10,6 +10,12 @@
  * @param {String|Object}   [options.position="top-left"]  - position of the zoom control.
  * @param {Boolean}  [options.slider=true]                         - Whether to display the slider
  * @param {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
+ * @example
+ * var zoomControl = new maptalks.control.Zoom({
+ *     position : 'top-left',
+ *     slider : true,
+ *     zoomLevel : false
+ * }).addTo(map);
  */
 Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
 

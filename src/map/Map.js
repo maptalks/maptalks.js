@@ -13,25 +13,15 @@
  * @param {Object} options - construct options
  * @param {(Number[]|maptalks.Coordinate)} options.center - initial center of the map.
  * @param {Number} options.zoom - initial zoom of the map.
- * @param {Object} [options.view=null] - map's view state, default is the common-used by google map or osm<br/>
- *                               use projection EPSG:3857 with resolutions
+ * @param {Object} [options.view=null] - map's view config, default is using projection EPSG:3857 with resolutions used by google map/osm.
  * @param {maptalks.Layer} [options.baseLayer=null] - base layer that will be set to map initially.
  * @param {maptalks.Layer[]} [options.layers=null] - layers that will be added to map initially.
  * @param {*} options.* - any other option defined in [Map.options]{@link maptalks.Map#options}
  *
  * @mixes maptalks.Eventable
  * @mixes maptalks.Handlerable
- * @mixins maptalks.ui.Menu.Mixin
+ * @mixes maptalks.ui.Menu.Mixin
  *
- * @fires maptalks.Map#load
- * @fires maptalks.Map#viewchange
- * @fires maptalks.Map#baselayerload
- * @fires maptalks.Map#baselayerchangestart
- * @fires maptalks.Map#baselayerchangeend
- * @fires maptalks.Map#resize
- * @fires maptalks.Map#movestart
- * @fires maptalks.Map#moving
- * @fires maptalks.Map#moveend
  * @classdesc
  * The central class of the library, to create a map on a container.
  * @example
@@ -50,32 +40,34 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * @property {Object} options                                   - map's options, options must be updated by config method, eg: map.config('zoomAnimation', false);
+     * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
      * @property {Boolean} [options.clipFullExtent=false]           - clip geometries outside map's full extent
      * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
-     * @property {Number}  [options.zoomAnimationDuration=250]      - zoom animation duration.
+     * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
      * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
      * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
      * @property {Boolean} [options.layerTransforming=true] - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
      * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
      * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
-     * @property {Boolean} [options.zoomable=true]                - whether to enable map zooming.
-     * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow opening on this map.
+     * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
+     * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
+     * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
      * @property {Boolean} [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
      * @property {Boolean} [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
      * @property {maptalks.Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
      *
-     * options merged from handlers:
      * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
      * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
      * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
      * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
      * @property {Boolean} [options.autoBorderPanning=false]                - whether to pan the map automatically if mouse moves on the border of the map
-     * @property {Boolean} [options.geometryEvents=false]                   - enable/disable firing geometry events
+     * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
      *
-     * options merged from controls:
+     * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
      * @property {Boolean|Object} [options.attributionControl=false]        - display the attribution control on the map if set to true or a object as the control construct option.
      * @property {Boolean|Object} [options.zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
      * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
+     * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
      *
      * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
      */
@@ -151,14 +143,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         } else {
             this._containerDOM = container;
             if (Z.node) {
-                //node环境中map的containerDOM即为模拟Canvas容器, 例如node-canvas
-                //获取模拟Canvas类的类型, 用以在各图层的渲染器中构造Canvas
+                //Reserve container's constructor in node for canvas creating.
                 this.CanvasClass = this._containerDOM.constructor;
             }
         }
 
-
-        //Layer of Details, always derived from baseLayer
         this._panels = {};
 
         //Layers
@@ -222,7 +211,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Get the view of the Map.
-     * @return {Object} map's view
+     * @return {maptalks.View} map's view
      */
     getView: function () {
         if (!this._view) {
@@ -237,12 +226,25 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * 1. the projection.<br>
      * 2. zoom levels and resolutions. <br>
      * 3. full extent.<br>
-     * there are some [predefined views]{@link http://www.foo.com}, and surely you can [define a custom one.]{@link http://www.foo.com}
-     * @param {Object} view - view settings
+     * There are some [predefined views]{@link http://www.foo.com}, and surely you can [define a custom one.]{@link http://www.foo.com}.<br>
+     * View can also be set by map.config('view', view);
+     * @param {maptalks.View} view - view settings
      * @returns {maptalks.Map} this
+     * @fires maptalks.Map#viewchange
+     * @example
+     *  map.setView({
+            projection:'EPSG:4326',
+            resolutions: (function() {
+                var resolutions = [];
+                for (var i=0; i < 19; i++) {
+                    resolutions[i] = 180/(Math.pow(2, i)*128);
+                }
+                return resolutions;
+            })()
+        });
      */
     setView:function (view) {
-        var oldView = this._view;
+        var oldView = this.options['view'];
         if (oldView && !view) {
             return this;
         }
@@ -255,7 +257,17 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             this.options['view']['projection'] = projection['code'];
         }
         this._resetMapStatus();
-        this._fireEvent('viewchange');
+        /**
+         * viewchange event, fired when map's view is updated.
+         *
+         * @event maptalks.Map#viewchange
+         * @type {Object}
+         * @property {String} type - viewchange
+         * @property {maptalks.Map} target - map
+         * @property {maptalks.Map} old - the old view
+         * @property {maptalks.Map} new - the new view changed to
+         */
+        this._fireEvent('viewchange', {'old' : oldView, 'new' : Z.Util.extend({}, this.options['view'])});
         return this;
     },
 
@@ -274,7 +286,14 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Get the projection of the map. <br>
-     * Projection is an algorithm for map projection, e.g. well-known [Mercator Projection]{@link https://en.wikipedia.org/wiki/Mercator_projection}
+     * Projection is an algorithm for map projection, e.g. well-known [Mercator Projection]{@link https://en.wikipedia.org/wiki/Mercator_projection} <br>
+     * A projection must have 2 methods: <br>
+     * 1. project(coordinate) - project the input coordinate <br>
+     * 2. unproject(coordinate) - unproject the input coordinate <br>
+     * Projection also contains measuring method usually extended from a measurer: <br>
+     * 1. measureLength(coord1, coord2) - compute length between 2 coordinates.  <br>
+     * 2. measureArea(coords[]) - compute area of the input coordinates. <br>
+     * 3. locate(coord, distx, disty) - compute the coordinate from the coord with xdist on axis x and ydist on axis y.
      * @return {Object}
      */
     getProjection:function () {
@@ -282,8 +301,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Get map's full extent, e.g. the world's full extent. <br>
-     * Any geometries outside this extent will be clipped if clipFullExtent options is set true
+     * Get map's full extent, which is defined in map's view. <br>
+     * eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
      * @return {maptalks.Extent}
      */
     getFullExtent:function () {
@@ -291,9 +310,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Set map's cursor style, same with CSS.
+     * Set map's cursor style, cursor style is same with CSS.
      * @param {String} cursor - cursor style
      * @returns {maptalks.Map} this
+     * @example
+     * map.setCursor('url(cursor.png) 4 12, auto');
      */
     setCursor:function (cursor) {
         delete this._cursor;
@@ -372,6 +393,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Sets the max extent that the map is restricted to.
      * @param {maptalks.Extent}
      * @return {maptalks.Map} this
+     * @example
+     * map.setMaxExtent(map.getExtent());
      */
     setMaxExtent:function (extent) {
         if (extent) {
@@ -399,7 +422,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Caculate the target zoom if scaling from "fromZoom" by "scale"
      * @param  {Number} scale
      * @param  {Number} fromZoom
-     * @return {Number}
+     * @return {Number} zoom fit for scale starting from fromZoom
      */
     getZoomForScale:function (scale, fromZoom) {
         if (Z.Util.isNil(fromZoom)) {
@@ -420,7 +443,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Sets the zoom of the map
+     * Sets zoom of the map
      * @param {Number} zoom
      * @returns {maptalks.Map} this
      */
@@ -530,13 +553,13 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Caculate the zoom level that contains the given extent with the maximum zoom level possible.
      * @param {maptalks.Extent} extent
-     * @return {Number}
+     * @return {Number} zoom fit for the extent
      */
     getFitZoom: function (extent) {
         if (!extent || !(extent instanceof Z.Extent)) {
             return this._zoomLevel;
         }
-        //点类型
+        //It's a point
         if (extent['xmin'] === extent['xmax'] && extent['ymin'] === extent['ymax']) {
             return this.getMaxZoom();
         }
@@ -585,17 +608,44 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Some events will be thrown such as baselayerchangestart, baselayerload, baselayerchangeend.
      * @param  {maptalks.Layer} baseLayer - new base layer
      * @return {maptalks.Map} this
+     * @fires maptalks.Map#setbaselayer
+     * @fires maptalks.Map#baselayerchangestart
+     * @fires maptalks.Map#baselayerchangeend
      */
     setBaseLayer:function (baseLayer) {
         var isChange = false;
         if (this._baseLayer) {
             isChange = true;
+            /**
+             * baselayerchangestart event, fired when base layer is changed.
+             *
+             * @event maptalks.Map#baselayerchangestart
+             * @type {Object}
+             * @property {String} type - baselayerchangestart
+             * @property {maptalks.Map} target - map
+             */
             this._fireEvent('baselayerchangestart');
             this._baseLayer.remove();
         }
         if (!baseLayer) {
             delete this._baseLayer;
+            /**
+             * baselayerchangeend event, fired when base layer is changed.
+             *
+             * @event maptalks.Map#baselayerchangeend
+             * @type {Object}
+             * @property {String} type - baselayerchangeend
+             * @property {maptalks.Map} target - map
+             */
             this._fireEvent('baselayerchangeend');
+            /**
+             * setbaselayer event, fired when base layer is set.
+             *
+             * @event maptalks.Map#setbaselayer
+             * @type {Object}
+             * @property {String} type - setbaselayer
+             * @property {maptalks.Map} target - map
+             */
             this._fireEvent('setbaselayer');
             return this;
         }
@@ -610,6 +660,14 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         baseLayer._bindMap(this, -1);
         this._baseLayer = baseLayer;
         function onbaseLayerload() {
+            /**
+             * baselayerload event, fired when base layer is loaded.
+             *
+             * @event maptalks.Map#baselayerload
+             * @type {Object}
+             * @property {String} type - baselayerload
+             * @property {maptalks.Map} target - map
+             */
             this._fireEvent('baselayerload');
             if (isChange) {
                 isChange = false;
@@ -627,21 +685,34 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Remove the base layer from the map
      * @return {maptalks.Map} this
+     * @fires maptalks.Map#baselayerremove
      */
     removeBaseLayer: function ()  {
         if (this._baseLayer) {
             this._baseLayer.remove();
             delete this._baseLayer;
+            /**
+             * baselayerremove event, fired when base layer is removed.
+             *
+             * @event maptalks.Map#baselayerremove
+             * @type {Object}
+             * @property {String} type - baselayerremove
+             * @property {maptalks.Map} target - map
+             */
             this._fireEvent('baselayerremove');
         }
         return this;
     },
 
     /**
-     * Get the layers of the map, not including base layer (by getBaseLayer). <br>
-     * A filter function can be given to exclude certain layers, eg exclude all the VectorLayers.
-     * @param {function} [filter=null] - a filter function of layers, return false to exclude the given layer.
+     * Get the layers of the map, except base layer (which should be by getBaseLayer). <br>
+     * A filter function can be given to filter layers, e.g. exclude all the VectorLayers.
+     * @param {Function} [filter=undefined] - a filter function of layers, return false to exclude the given layer.
      * @return {maptalks.Layer[]}
+     * @example
+     * var vectorLayers = map.getLayers(function (layer) {
+     *     return (layer instanceof maptalks.VectorLayer);
+     * });
      */
     getLayers:function (filter) {
         return this._getLayers(function (layer) {
@@ -669,8 +740,9 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Add a new layer on the top of the map.
-     * @param  {maptalks.Layer} layer - Any valid layer object
+     * @param  {maptalks.Layer|maptalks.Layer[]} layer - one or more layers to add
      * @return {maptalks.Map} this
+     * @fires maptalks.Map#addlayer
      */
     addLayer:function (layers) {
         if (!layers) {
@@ -698,14 +770,24 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 layer.load();
             }
         }
+        /**
+         * addlayer event, fired when adding layers.
+         *
+         * @event maptalks.Map#addlayer
+         * @type {Object}
+         * @property {String} type - addlayer
+         * @property {maptalks.Map} target - map
+         * @property {maptalks.Layer[]} layers - layers to add
+         */
         this._fireEvent('addlayer', {'layers' : layers});
         return this;
     },
 
     /**
      * Remove a layer from the map
-     * @param  {string|maptalks.Layer} layer - id of the layer or a layer object
+     * @param  {String|String[]|maptalks.Layer|maptalks.Layer[]} layer - one or more layers or layer ids
      * @return {maptalks.Map} this
+     * @fires maptalks.Map#removelayer
      */
     removeLayer: function (layers) {
         if (!layers) {
@@ -736,6 +818,15 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             }
             layer.fire('remove');
         }
+        /**
+         * removelayer event, fired when removing layers.
+         *
+         * @event maptalks.Map#removelayer
+         * @type {Object}
+         * @property {String} type - removelayer
+         * @property {maptalks.Map} target - map
+         * @property {maptalks.Layer[]} layers - layers to remove
+         */
         this._fireEvent('removelayer', {'layers' : layers});
         return this;
     },
@@ -744,6 +835,10 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * Sort layers according to the order provided, the last will be on the top.
      * @param  {string[]|maptalks.Layer[]} layers - layers or layer ids to sort
      * @return {maptalks.Map} this
+     * @example
+     * map.addLayer([layer1, layer2, layer3]);
+     * map.sortLayers([layer2, layer3, layer1]);
+     * map.sortLayers(['3', '2', '1']); // sort by layer ids.
      */
     sortLayers:function (layers) {
         if (!layers || !Z.Util.isArray(layers)) {
@@ -772,7 +867,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Exports image from the map's canvas.
-     * @param {Object} options - options
+     * @param {Object} [options=undefined] - options
      * @param {String} [options.mimeType=image/png] - mime type of the image
      * @param {Boolean} [options.save=false] - whether pop a file save dialog to save the export image.
      * @param {String} [options.filename=export] - specify the file name, if options.save is true.
@@ -812,10 +907,13 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Converts a coordinate to the 2D point in the specific zoom level.
+     * Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
+     * The 2D point's coordinate system's origin is the same with map's origin.
      * @param  {maptalks.Coordinate} coordinate - coordinate
-     * @param  {Number} zoom       - zoom level
+     * @param  {Number} [zoom=undefined]       - zoom level
      * @return {maptalks.Point}  2D point
+     * @example
+     * var point = map.coordinateToPoint(new maptalks.Coordinate(121.3, 29.1));
      */
     coordinateToPoint: function (coordinate, zoom) {
         var prjCoord = this.getProjection().project(coordinate);
@@ -823,10 +921,12 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Converts a 2D point to a coordinate
+     * Converts a 2D point in current zoom or a specific zoom to a coordinate.
      * @param  {maptalks.Point} point - 2D point
      * @param  {Number} zoom  - zoom level
      * @return {maptalks.Coordinate} coordinate
+     * @example
+     * var coord = map.pointToCoordinate(new maptalks.Point(4E6, 3E4));
      */
     pointToCoordinate: function (point, zoom) {
         var prjCoord = this._pointToPrj(point, zoom);
@@ -834,8 +934,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Converts a geographical coordinate to the [view point]{@link http://www.foo.com}.<br>
-     * It is useful for placing overlays or ui controls on the map.
+     * Converts a geographical coordinate to view point.<br>
+     * A view point is a point relative to map's mapPlatform panel's position. <br>
      * @param {maptalks.Coordinate} coordinate
      * @return {maptalks.Point}
      */
@@ -853,7 +953,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Convert a geographical coordinate to the container point.
+     * Convert a geographical coordinate to the container point. <br>
+     *  A container point is a point relative to map container's top-left corner. <br>
      * @param {maptalks.Coordinate}
      * @return {maptalks.Point}
      */
@@ -893,7 +994,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Converts a view points extent to the geographic extent.
+     * Converts a view point extent to the geographic extent.
      * @param  {maptalks.PointExtent} viewExtent - view points extent
      * @return {maptalks.Extent}  geographic extent
      */
@@ -919,7 +1020,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Converts a container points extent to the geographic extent.
+     * Converts a container point extent to the geographic extent.
      * @param  {maptalks.PointExtent} containerExtent - containeproints extent
      * @return {maptalks.Extent}  geographic extent
      */
@@ -934,6 +1035,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Checks if the map container size changed and updates the map if so.
      * @return {maptalks.Map} this
+     * @fires maptalks.Map#resize
      */
     checkSize:function () {
         var justStart = ((Z.Util.now() - this._initTime) < 1500) && this.width === 0 && this.height === 0;
@@ -964,7 +1066,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Converts a geographical distance to the pixel length.<br>
+     * Converts geographical distances to the pixel length.<br>
      * The value varis with difference zoom level.
      *
      * @param  {Number} xDist - distance on X axis.
@@ -986,11 +1088,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Converts pixel length to geographical distance.
+     * Converts pixel size to geographical distance.
      *
-     * @param  {Number} width -
-     * @param  {Number} height 纵轴像素长度
-     * @return {Number}  distance
+     * @param  {Number} width - pixel width
+     * @param  {Number} height - pixel height
+     * @return {Number}  distance - Geographical distance
      */
     pixelToDistance:function (width, height) {
         var projection = this.getProjection();
@@ -1007,18 +1109,18 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * 返回距离coordinate坐标距离为dx, dy的坐标
-     * @param  {maptalks.Coordinate} coordinate 坐标
-     * @param  {Number} dx         x轴上的距离, 地图CRS为经纬度时,单位为米, 地图CRS为像素时, 单位为像素
-     * @param  {Number} dy         y轴上的距离, 地图CRS为经纬度时,单位为米, 地图CRS为像素时, 单位为像素
-     * @return {maptalks.Coordinate}            新的坐标
+     * Computes the coordinate from the given coordinate with xdist on axis x and ydist on axis y.
+     * @param  {maptalks.Coordinate} coordinate - source coordinate
+     * @param  {Number} dx           - distance on X axis from the source coordinate
+     * @param  {Number} dy           - distance on Y axis from the source coordinate
+     * @return {maptalks.Coordinate} Result coordinate
      */
     locate:function (coordinate, dx, dy) {
         return this.getProjection().locate(new Z.Coordinate(coordinate), dx, dy);
     },
 
     /**
-    * Returns an object with different map panels (to build customized layers or overlays).
+    * Returns an object of map panels.
     * @returns {Object}
     */
     getPanel: function () {
@@ -1115,7 +1217,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         });
     },
 
-
+    /**
+     * The callback function when move started
+     * @private
+     * @fires maptalks.Map#movestart
+     */
     _onMoveStart:function () {
         this._originCenter = this.getCenter();
         this._enablePanAnimation = false;
@@ -1190,6 +1296,14 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         this._loaded = true;
         this._callOnLoadHooks();
         this._initTime = Z.Util.now();
+        /**
+         * load event, fired when the map completes loading.
+         *
+         * @event maptalks.Map#load
+         * @type {Object}
+         * @property {String} type - load
+         * @property {maptalks.Map} target - map
+         */
         this._fireEvent('load');
     },
 

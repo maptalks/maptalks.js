@@ -8,9 +8,9 @@
  * @param {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
  * @param {Number}  [options.width=300]     - default width
  * @param {Number}  [options.minHeight=120] - minimun height
- * @param {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
+ * @param {Boolean} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
  * @param {String}  [options.title=null]    - title of the infowindow.
- * @param {String}  options.content         - content of the infowindow.
+ * @param {String|HTMLElement}  options.content - content of the infowindow.
  * @memberOf maptalks.ui
  * @name InfoWindow
  */
@@ -21,9 +21,9 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
      * @property {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
      * @property {Number}  [options.width=300]     - default width
      * @property {Number}  [options.minHeight=120] - minimun height
-     * @property {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
+     * @property {Boolean} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
      * @property {String}  [options.title=null]    - title of the infowindow.
-     * @property {String}  options.content         - content of the infowindow.
+     * @property {String|HTMLElement}  options.content - content of the infowindow.
      */
     options: {
         'autoPan'   : true,
@@ -38,9 +38,22 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
      * Set the content of the infowindow.
      * @param {String|HTMLElement} content - content of the infowindow.
      * return {maptalks.ui.InfoWindow} this
+     * @fires maptalks.ui.InfoWindow#contentchange
      */
     setContent:function (content) {
+        var old = this.options['content'];
         this.options['content'] = content;
+        /**
+         * contentchange event.
+         *
+         * @event maptalks.ui.InfoWindow#contentchange
+         * @type {Object}
+         * @property {String} type - contentchange
+         * @property {maptalks.ui.InfoWindow} target - InfoWindow
+         * @property {String|HTMLElement} old      - old content
+         * @property {String|HTMLElement} new      - new content
+         */
+        this.fire('contentchange', {'old' : old, 'new' : content});
         if (this.isVisible()) {
             this.show(this._coordinate);
         }
@@ -59,9 +72,22 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
      * Set the title of the infowindow.
      * @param {String|HTMLElement} title - title of the infowindow.
      * return {maptalks.ui.InfoWindow} this
+     * @fires maptalks.ui.InfoWindow#titlechange
      */
     setTitle:function (title) {
+        var old = title;
         this.options['title'] = title;
+        /**
+         * titlechange event.
+         *
+         * @event maptalks.ui.InfoWindow#titlechange
+         * @type {Object}
+         * @property {String} type - titlechange
+         * @property {maptalks.ui.InfoWindow} target - InfoWindow
+         * @property {String} old      - old content
+         * @property {String} new      - new content
+         */
+        this.fire('contentchange', {'old' : old, 'new' : title});
         if (this.isVisible()) {
             this.show(this._coordinate);
         }

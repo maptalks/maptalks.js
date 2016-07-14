@@ -1,8 +1,13 @@
 Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
-     * Set info window settings to the geometry
-     * @param {Object} options - construct [options]{@link maptalks.ui.InfoWindow#options} for the info window
+     * Set an InfoWindow to the geometry
+     * @param {Object} options - construct [options]{@link maptalks.ui.InfoWindow#options} for the InfoWindow
      * @return {maptalks.Geometry} this
+     * @example
+     * geometry.setInfoWindow({
+     *     title    : 'This is a title',
+     *     content  : '<div style="color:#f00">This is content of the InfoWindow</div>'
+     * });
      */
     setInfoWindow:function (options) {
         this._infoWinOptions = Z.Util.extend({}, options);
@@ -16,7 +21,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Get info window's instance of infowindow if it has been already created.
+     * Get the InfoWindow instance.
      * @return {maptalks.ui.InfoWindow}
      */
     getInfoWindow:function () {
@@ -27,8 +32,8 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Open the info window.
-     * @param  {maptalks.Coordinate} [coordinate=null] - coordinate to open the info window
+     * Open the InfoWindow, default on the center of the geometry.
+     * @param  {maptalks.Coordinate} [coordinate=null] - coordinate to open the InfoWindow
      * @return {maptalks.Geometry} this
      */
     openInfoWindow:function (coordinate) {
@@ -50,7 +55,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * close the info window
+     * Close the InfoWindow
      * @return {maptalks.Geometry} this
      */
     closeInfoWindow:function () {
@@ -61,7 +66,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * remove the info window
+     * Remove the InfoWindow
      * @return {maptalks.Geometry} this
      */
     removeInfoWindow:function () {

@@ -7,6 +7,21 @@
  * @mixins maptalks.Geometry.Poly
  * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
  * @param {Object} [options=null] - specific construct options for Polygon, also support options defined in [Vector]{@link maptalks.Vector#options} and [Geometry]{@link maptalks.Geometry#options}
+ * @param {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
+ * @param {*} options.* - any other option defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
+ * @example
+ * var polygon = new maptalks.Polygon(
+ *      [
+ *          [
+ *              [121.48053653961283, 31.24244899384889],
+ *              [121.48049362426856, 31.238559229494186],
+ *              [121.49032123809872, 31.236210614999653],
+ *              [121.49366863494917, 31.242926029397037],
+ *              [121.48577221160967, 31.243880093267567],
+ *              [121.48053653961283, 31.24244899384889]
+ *          ]
+ *      ]
+ *  ).addTo(layer);
  */
 Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
@@ -24,10 +39,11 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
     },
 
     /**
-     * @property {String} [options.antiMeridian=default] - antiMeridian
+     * @property {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
+     * @property {*} options.* - any other option defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
      */
     options:{
-        'antiMeridian' : 'default'
+        'antiMeridian' : 'continuous'
     },
 
     initialize:function (coordinates, opts) {
@@ -37,8 +53,10 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
     /**
      * Set coordinates to the polygon
+     *
      * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - new coordinates
      * @return {maptalks.Polygon} this
+     * @fires maptalks.Polygon#shapechange
      */
     setCoordinates:function (coordinates) {
         if (!coordinates) {
@@ -71,6 +89,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
     /**
      * Gets polygons's coordinates
+     *
      * @returns {maptalks.Coordinate[][]}
      */
     getCoordinates:function () {
@@ -88,7 +107,8 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
     },
 
     /**
-     * Gets shell coordinates of the polygon
+     * Gets shell's coordinates of the polygon
+     *
      * @returns {maptalks.Coordinate[]}
      */
     getShell:function () {
@@ -109,6 +129,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
     /**
      * Whether the polygon has any holes inside.
+     *
      * @returns {Boolean}
      */
     hasHoles:function () {

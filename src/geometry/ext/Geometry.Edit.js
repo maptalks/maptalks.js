@@ -30,7 +30,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Whether the geometry collection is being edited.
+     * Whether the geometry is being edited.
      * @return {Boolean}
      */
     isEditing: function () {

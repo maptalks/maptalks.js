@@ -3,6 +3,12 @@
  * e.g. <br>
  * a geographical point with a certain latitude and longitude <br>
  * a point in a indoor room
+ * @example
+ * var coord = new maptalks.Coordinate(0, 0);
+ * @example
+ * var coord = new maptalks.Coordinate([0,0]);
+ * @example
+ * var coord = new maptalks.Coordinate({x:0, y:0});
  * @class
  * @category basic types
  * @param {Number} x - x value
@@ -125,6 +131,10 @@ Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype *
         return this.x === c2.x && this.y === c2.y;
     },
 
+    /**
+     * Whether the coordinate is NaN
+     * @return {Boolean}
+     */
     isNaN:function () {
         return isNaN(this.x) || isNaN(this.y);
     },
@@ -138,7 +148,7 @@ Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype *
     },
 
     /**
-     * toJSON
+     * Convert the coordinate to a json object {x : .., y : ..}
      * @return {Object} json
      */
     toJSON: function () {

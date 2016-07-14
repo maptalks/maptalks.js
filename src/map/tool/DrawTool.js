@@ -1,14 +1,32 @@
 /**
  * @classdesc
- * A map tool to help draw geometries on the map
+ * A map tool to help draw geometries
  * @class
  * @category maptool
- * @extends maptalks.Class
+ * @extends maptalks.MapTool
  * @mixins maptalks.Eventable
- * @param {options} [options=null] - construct options
+ * @param {Object} [options=null] - construct options
+ * @param {String} [options.mode=null]   - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
+ * @param {Object} [options.symbol=null] - symbol of the geometries drawn
+ * @param {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+ * @example
+ * var drawTool = new maptalks.DrawTool({
+ *     mode : 'Polygon',
+ *     symbol : {
+ *         'lineColor' : '#000',
+ *         'lineWidth' : 5
+ *     },
+ *     once : true
+ * }).addTo(map);
  */
 Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
+    /**
+     * @property {Object} [options=null] - construct options
+     * @property {String} [options.mode=null]   - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
+     * @property {Object} [options.symbol=null] - symbol of the geometries drawn
+     * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+     */
     options:{
         'symbol' : {
             'lineColor':'#000',
@@ -27,8 +45,19 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     /**
-     * 设置绘图模式
-     * @param {Number} mode 绘图模式
+     * Get current mode of draw tool
+     * @return {String} mode
+     */
+    getMode: function () {
+        if (this.options['mode']) {
+            return this.options['mode'].toLowerCase();
+        }
+        return null;
+    },
+
+    /**
+     * Set mode of the draw tool
+     * @param {String} mode - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
      * @expose
      */
     setMode:function (mode) {
@@ -46,9 +75,8 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     /**
-     * 获得drawtool的绘制样式
-     * @return {Object} 绘制样式
-     * @expose
+     * Get symbol of the draw tool
+     * @return {Object} symbol
      */
     getSymbol:function () {
         var symbol = this.options['symbol'];
@@ -60,9 +88,9 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     /**
-     * 设置drawtool的绘制样式
-     * @param {Object} symbol 绘制样式
-     * @expose
+     * Set draw tool's symbol
+     * @param {Object} symbol - symbol set
+     * @returns {maptalks.DrawTool} this
      */
     setSymbol:function (symbol) {
         if (!symbol) {
@@ -73,17 +101,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             this._geometry.setSymbol(symbol);
         }
         return this;
-    },
-
-    /**
-     * Get current mode of draw tool
-     * @return {String} mode
-     */
-    getMode: function () {
-        if (this.options['mode']) {
-            return this.options['mode'].toLowerCase();
-        }
-        return null;
     },
 
     _onAdd: function () {
@@ -196,9 +213,16 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             }
             this._addGeometryToStage(this._geometry);
             /**
-             * drawstart event
+             * drawstart event.
+             *
              * @event maptalks.DrawTool#drawstart
              * @type {Object}
+             * @property {String} type - drawstart
+             * @property {maptalks.DrawTool} target - draw tool
+             * @property {maptalks.Coordinate} coordinate - coordinate of the event
+             * @property {maptalks.Point} containerPoint  - container point of the event
+             * @property {maptalks.Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
              */
             this._fireEvent('drawstart', param);
         } else {
@@ -218,9 +242,17 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             this._setLonlats(path);
 
             /**
-             * 触发drawvertex事件：端点绘制事件，当为多边形或者多折线绘制了一个新的端点后会触发此事件
+             * drawvertex event.
+             *
              * @event maptalks.DrawTool#drawvertex
              * @type {Object}
+             * @property {String} type - drawvertex
+             * @property {maptalks.DrawTool} target - draw tool
+             * @property {maptalks.Geometry} geometry - geometry drawn
+             * @property {maptalks.Coordinate} coordinate - coordinate of the event
+             * @property {maptalks.Point} containerPoint  - container point of the event
+             * @property {maptalks.Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
              */
             this._fireEvent('drawvertex', param);
 
@@ -245,6 +277,19 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             this._movingTail.setCoordinates(tailPath);
         }
         param['geometry'] = this._geometry;
+        /**
+         * mousemove event.
+         *
+         * @event maptalks.DrawTool#mousemove
+         * @type {Object}
+         * @property {String} type - mousemove
+         * @property {maptalks.DrawTool} target - draw tool
+         * @property {maptalks.Geometry} geometry - geometry drawn
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
         this._fireEvent('mousemove', param);
     },
 
@@ -387,11 +432,19 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             param = {};
         }
         param['geometry'] = target;
-          /**
-           * 绘制结束事件
-           * @event maptalks.DrawTool#drawend
-           * @type {Object}
-           */
+        /**
+         * drawend event.
+         *
+         * @event maptalks.DrawTool#drawend
+         * @type {Object}
+         * @property {String} type - drawend
+         * @property {maptalks.DrawTool} target - draw tool
+         * @property {maptalks.Geometry} geometry - geometry drawn
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
         this._fireEvent('drawend', param);
         if (this.options['once']) {
             this.disable();

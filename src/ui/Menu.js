@@ -8,21 +8,25 @@
     };
 
     /**
+     * Menu items is set to options.items or by setItems method. <br>
+     * <br>
+     * Normally items is a object array, containing: <br>
+     * 1. item object: {'item': 'This is a menu text', 'click': function() {alert('oops! You clicked!');)}} <br>
+     * 2. minus string "-", which will draw a splitor line on the menu. <br>
+     * <br>
+     * If options.custom is set to true, the menu is considered as a customized one. Then items is the customized html codes or HTMLElement. <br>
+     *
      * @classdesc
      * Class for context menu, useful for interactions with right clicks on the map.
-     *
-     * Menu items is set to options.items or by setItems method.
-     *
-     * Normally items is a object array, containing:
-     * 1. item object: {'item': 'This is a menu text', 'click': function() {alert('oops! You clicked!');)}}
-     * 2. minus string "-", which will draw a splitor line on the menu.
-     *
-     * If options.custom is set to true, the menu is considered as a customized one. Then items is the customized html codes or HTMLElement.
-     *
      * @class
      * @category ui
      * @extends maptalks.ui.UIComponent
      * @param {Object} options - construct options
+     * @param {Object} options
+     * @param {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened menu.
+     * @param {Number}  [options.width=160]      - default width
+     * @param {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized menu, customized html codes or a HTMLElement is set to items.
+     * @param {Object[]|String|HTMLElement}  options.items   - html code or a html element is options.custom is true. Or a menu items array, containing: item objects, "-" as a splitor line
      * @memberOf maptalks.ui
      * @name Menu
      */
@@ -41,6 +45,14 @@
          * Set the items of the menu.
          * @param {Object[]|String|HTMLElement} items - items of the menu
          * return {maptalks.ui.Menu} this
+         * @example
+         * menu.setItems([
+         *      //return false to prevent event propagation
+         *     {'item': 'Query', 'click': function() {alert('Query Clicked!'); return false;}},
+         *     '-',
+         *     {'item': 'Edit', 'click': function() {alert('Edit Clicked!')}},
+         *     {'item': 'About', 'click': function() {alert('About Clicked!')}}
+         * ]);
          */
         setItems: function (items) {
             this.options['items'] = items;
@@ -55,6 +67,11 @@
             return this.options['items'];
         },
 
+        /**
+         * Create the menu DOM.
+         * @protected
+         * @return {HTMLElement} menu's DOM
+         */
         buildOn:function () {
             if (this.options['custom']) {
                 if (Z.Util.isString(this.options['items'])) {
@@ -138,13 +155,24 @@
      * @mixin
      * @memberOf maptalks.ui
      * @name Menu.Mixin
-     * @protected
      */
     Z.ui.Menu.Mixin = {
         /**
         * Set a context menu
         * @param {Object} options - menu options
         * @return {*} this
+        * @example
+        * foo.setMenu({
+        *  'width'  : 160,
+        *  'custom' : false,
+        *  'items' : [
+        *      //return false to prevent event propagation
+        *     {'item': 'Query', 'click': function() {alert('Query Clicked!'); return false;}},
+        *     '-',
+        *     {'item': 'Edit', 'click': function() {alert('Edit Clicked!')}},
+        *     {'item': 'About', 'click': function() {alert('About Clicked!')}}
+        *    ]
+        *});
         */
         setMenu: function (options) {
             this._menuOptions = options;
@@ -158,7 +186,7 @@
         },
 
         /**
-        * Open the context menu
+        * Open the context menu, default on the center of the geometry or map.
         * @param {maptalks.Coordinate} [coordinate=null] - coordinate to open the context menu
         * @return {*} this
         */
@@ -254,7 +282,7 @@
          * 如果注册过contextmenu事件, 则不做任何操作
          * @param  {*} param [description]
          * @return {*}       [description]
-         * @default
+         * @private
          */
         _defaultOpenMenu:function (param) {
             if (this.listens('contextmenu') > 1) {

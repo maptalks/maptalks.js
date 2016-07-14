@@ -8,10 +8,10 @@
  * @param {maptalks.Coordinate} coordinates  - northwest of the rectangle
  * @param {Number} width                     - width of the rectangle
  * @param {Number} height                    - height of the rectangle
- * @param {Object} [options=null]            - options defined in [Polygon]{@link maptalks.Polygon#options}
+ * @param {Object} [options=null]            - options defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
  * @example
  * var rectangle = new maptalks.Rectangle([100, 0], 1000, 500, {
- *     id : 'rectangle-id'
+ *     id : 'rectangle0'
  * });
  */
 Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
@@ -36,7 +36,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
      * Set a new coordinate for northwest of the rectangle
      * @param {maptalks.Coordinate} nw - coordinates of new northwest
      * @return {maptalks.Rectangle} this
-     * @fires maptalks.Geometry#positionchange
+     * @fires maptalks.Rectangle#positionchange
      */
     setCoordinates:function (nw) {
         this._coordinates = new Z.Coordinate(nw);
@@ -61,7 +61,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
     /**
      * Set new width to the rectangle
      * @param {Number} width - new width
-     * @fires maptalks.Geometry#shapechange
+     * @fires maptalks.Rectangle#shapechange
      * @return {maptalks.Rectangle} this
      */
     setWidth:function (width) {
@@ -81,7 +81,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
     /**
      * Set new height to rectangle
      * @param {Number} height - new height
-     * @fires maptalks.Geometry#shapechange
+     * @fires maptalks.Rectangle#shapechange
      * @return {maptalks.Rectangle} this
      */
     setHeight:function (height) {

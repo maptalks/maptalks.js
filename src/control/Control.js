@@ -5,6 +5,7 @@ Z.control = {};
 
 /**
  * Base class for all the map controls, you can extend it to build your own customized Control.
+ * It is abstract and not intended to be instantiated.
  * @class
  * @category control
  * @abstract
@@ -13,11 +14,6 @@ Z.control = {};
  * @name  Control
  *
  * @mixes maptalks.Eventable
- *
- * @example
- * control.addTo(map);
- * //or you can also
- * map.addControl(control);
  */
 Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype */{
     includes: [Z.Eventable],
@@ -88,9 +84,9 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
 
     /**
      * update the control's position
-     * @param {Object} position - e.g.{'top': '40','left': '60'}
+     * @param {String|Object} position - can be one of 'top-left', 'top-right', 'bottom-left', 'bottom-right' or a position object like {'top': 40,'left': 60}
      * @return {maptalks.control.Control} this
-     * @fires maptalks.control.Control#positionupdate
+     * @fires maptalks.control.Control#positionchange
      */
     setPosition: function (position) {
         if (Z.Util.isString(position)) {
@@ -103,7 +99,7 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
     },
 
     /**
-     * Get container point of the control.
+     * Get the container point of the control.
      * @return {maptalks.Point}
      */
     getContainerPoint:function () {
@@ -125,7 +121,8 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
     },
 
     /**
-     * Get the container HTML dom element of the control.
+     * Get the control's container.
+     * Container is a div element wrapping the control's dom and decides the control's position and display.
      * @return {HTMLElement}
      */
     getContainer: function () {
@@ -133,7 +130,7 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
     },
 
     /**
-     * Get DOM element of the control
+     * Get html dom element of the control
      * @return {HTMLElement}
      */
     getDOM: function () {
@@ -181,6 +178,7 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
         }
         delete this._map;
         delete this.__ctrlContainer;
+        delete this._controlDom;
         /**
          * remove event.
          *
@@ -205,7 +203,7 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
         var position = this.getPosition();
         if (!position) {
             //default one
-            position = {'top': '20', 'left': '20'};
+            position = {'top': 20, 'left': 20};
         }
         for (var p in position) {
             if (position.hasOwnProperty(p)) {
@@ -216,13 +214,13 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
         /**
          * Control's position update event.
          *
-         * @event maptalks.control.Control#positionupdate
+         * @event maptalks.control.Control#positionchange
          * @type {Object}
-         * @property {String} type - positionupdate
+         * @property {String} type - positionchange
          * @property {maptalks.control.Control} target - the control instance
          * @property {Object} position - Position of the control, eg:{"top" : 100, "left" : 50}
          */
-        this.fire('positionupdate', {
+        this.fire('positionchange', {
             'position' : Z.Util.extend({}, position)
         });
     }
@@ -255,6 +253,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Map} this
      */
     removeControl: function (control) {
+        if (!control || control.getMap() !== this) {
+            return this;
+        }
         control.remove();
         return this;
     }

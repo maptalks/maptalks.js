@@ -58,16 +58,25 @@ Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
         this['height'] = Z.Util.round(this['height']);
         return this;
     },
+
+    /**
+     * Converts the size object to a [maptalks.Point]{maptalks.Point}
+     * @return {maptalks.Point} point
+     */
     toPoint:function () {
         return new Z.Point(this['width'], this['height']);
     },
 
+    /**
+     * Converts the size object to a array [width, height]
+     * @return {Number[]}
+     */
     toArray: function () {
         return [this['width'], this['height']];
     },
 
     /**
-     * toJSON
+     * Convert the size object to a json object {width : .., height : ..}
      * @return {Object} json
      */
     toJSON: function () {

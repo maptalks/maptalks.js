@@ -10,6 +10,24 @@
  * @param {String|Object}   [options.position="top-right"]  - position of the toolbar control.
  * @param {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
  * @param {Object[]} options.items                                  - items on the toolbar
+ * @example
+ * var toolbar = new maptalks.control.Toolbar({
+ *     position : 'top-right',
+ *     items: [
+ *          {
+ *            item: 'item1',
+ *            click: function () {
+ *              alert('item1 clicked');
+ *            }
+ *          },
+ *          {
+ *            item: 'item2',
+ *            click: function () {
+ *              alert('item2 clicked');
+ *            }
+ *          }
+ *      ]
+ * }).addTo(map);
  */
 Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar.prototype */{
 

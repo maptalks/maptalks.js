@@ -1,16 +1,16 @@
 /**
  * @classdesc
  * Base class for all the geometries, it is not intended to be instantiated but extended. <br/>
- * It defines common methods that all the geometry classes share.
+ * It defines common methods that all the geometry classes share. <br>
+ * It is abstract and not intended to be instantiated.
  *
  * @class
  * @category geometry
  * @abstract
  * @extends maptalks.Class
- * @mixins maptalks.Eventable
- * @mixins maptalks.Handlerable
- * @mixins maptalks.ui.Menu.Mixin
- * @protected
+ * @mixes maptalks.Eventable
+ * @mixes maptalks.Handlerable
+ * @mixes maptalks.ui.Menu.Mixin
  */
 Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     includes: [Z.Eventable, Z.Handlerable],
@@ -68,16 +68,16 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * @property {Object} options                       - geometry options
-     * @property {Boolean} [options.id=null]           - id of the geometry
+     * @property {Boolean} [options.id=null]            - id of the geometry
      * @property {Boolean} [options.visible=true]       - whether the geometry is visible.
-     * @property {Boolean} [options.editable=true]       - whether the geometry can be edited.
-     * @property {String} [options.cursor=null]       - cursor style when mouseover the geometry, same as the definition in CSS.
-     * @property {Number} [options.shadowBlue=0]       - level of the shadow around the geometry, see [MDN's explanation]{@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur}
-     * @property {String} [options.shadowColor=black]       - color of the shadow around the geometry, a CSS style color
-     * @property {String} [options.measure=EPSG:4326]       - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
+     * @property {Boolean} [options.editable=true]      - whether the geometry can be edited.
+     * @property {String} [options.cursor=null]         - cursor style when mouseover the geometry, same as the definition in CSS.
+     * @property {Number} [options.shadowBlue=0]        - level of the shadow around the geometry, see [MDN's explanation]{@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur}
+     * @property {String} [options.shadowColor=black]   - color of the shadow around the geometry, a CSS style color
+     * @property {String} [options.measure=EPSG:4326]   - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
      * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
      * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
-     * @property {Boolean} [options.dragOnAxis=null] - if set, geometry can only be dragged along the specified axis, possible values: x, y
+     * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
      */
     options:{
         'id'        : null,
@@ -90,10 +90,59 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
+     * Returns the first coordinate of the geometry.
+     *
+     * @return {maptalks.Coordinate} First Coordinate
+     */
+    getFirstCoordinate:function () {
+        if (this instanceof Z.GeometryCollection) {
+            var geometries = this.getGeometries();
+            if (!geometries || !Z.Util.isArrayHasData(geometries)) {
+                return null;
+            }
+            return geometries[0].getFirstCoordinate();
+        }
+        var coordinates = this.getCoordinates();
+        if (!Z.Util.isArray(coordinates)) {
+            return coordinates;
+        }
+        var first = coordinates;
+        do {
+            first = first[0];
+        } while (Z.Util.isArray(first));
+        return first;
+    },
+
+    /**
+     * Returns the last coordinate of the geometry.
+     *
+     * @return {maptalks.Coordinate} Last Coordinate
+     */
+    getLastCoordinate:function () {
+        if (this instanceof Z.GeometryCollection) {
+            var geometries = this.getGeometries();
+            if (!geometries || !Z.Util.isArrayHasData(geometries)) {
+                return null;
+            }
+            return geometries[geometries.length - 1].getLastCoordinate();
+        }
+        var coordinates = this.getCoordinates();
+        if (!Z.Util.isArray(coordinates)) {
+            return coordinates;
+        }
+        var last = coordinates;
+        do {
+            last = last[last.length - 1];
+        } while (Z.Util.isArray(last));
+        return last;
+    },
+
+    /**
      * Adds the geometry to a layer
      * @param {maptalks.Layer} layer    - layer add to
-     * @param {Boolean} fitview         - automatically set the map to a fit center and zoom for the geometry
+     * @param {Boolean} [fitview=false] - automatically set the map to a fit center and zoom for the geometry
      * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#add
      */
     addTo:function (layer, fitview) {
         layer.addGeometry(this, fitview);
@@ -135,7 +184,6 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     setId:function (id) {
         var oldId = this.getId();
         this._id = id;
-        //FIXME _idchanged没有被图层监听, layer.getGeometryById会出现bug
         /**
          * idchange event.
          *
@@ -227,73 +275,50 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * update geometry's symbol with the given symbol and geometry's current symbol.
-     * @param  {Object} symbol - symbol to update
+     * Update geometry's current symbol.
+     *
+     * @param  {Object} props - symbol properties to update
      * @return {maptalks.Geometry} this
      * @fires maptalks.Geometry#symbolchange
+     * @example
+     * var marker = new maptalks.Marker([0, 0], {
+     *    symbol : {
+     *       markerType : 'ellipse',
+     *       markerWidth : 20,
+     *       markerHeight : 30
+     *    }
+     * });
+     * // update symbol's markerWidth to 40
+     * marker.updateSymbol({
+     *     markerWidth : 40
+     * });
      */
-    updateSymbol: function (symbol) {
-        if (!symbol) {
+    updateSymbol: function (props) {
+        if (!props) {
             return this;
         }
         var s = this.getSymbol();
         if (s) {
-            s = Z.Util.extendSymbol(s, symbol);
+            s = Z.Util.extendSymbol(s, props);
         } else {
-            s = Z.Util.extendSymbol(this._getInternalSymbol(), symbol);
+            s = Z.Util.extendSymbol(this._getInternalSymbol(), props);
         }
         return this.setSymbol(s);
     },
 
     /**
-     * Returns the first coordinate of the geometry.
-     * @return {maptalks.Coordinate} First Coordinate
+     * Get the geographical center of the geometry.
+     *
+     * @returns {maptalks.Coordinate}
      */
-    getFirstCoordinate:function () {
-        if (this instanceof Z.GeometryCollection) {
-            var geometries = this.getGeometries();
-            if (!geometries || !Z.Util.isArrayHasData(geometries)) {
-                return null;
-            }
-            return geometries[0].getFirstCoordinate();
-        }
-        var coordinates = this.getCoordinates();
-        if (!Z.Util.isArray(coordinates)) {
-            return coordinates;
-        }
-        var first = coordinates;
-        do {
-            first = first[0];
-        } while (Z.Util.isArray(first));
-        return first;
+    getCenter:function () {
+        return this._computeCenter(this._getMeasurer()).copy();
     },
 
     /**
-     * Returns the last coordinate of the geometry.
-     * @return {maptalks.Coordinate} Last Coordinate
-     */
-    getLastCoordinate:function () {
-        if (this instanceof Z.GeometryCollection) {
-            var geometries = this.getGeometries();
-            if (!geometries || !Z.Util.isArrayHasData(geometries)) {
-                return null;
-            }
-            return geometries[geometries.length - 1].getLastCoordinate();
-        }
-        var coordinates = this.getCoordinates();
-        if (!Z.Util.isArray(coordinates)) {
-            return coordinates;
-        }
-        var last = coordinates;
-        do {
-            last = last[last.length - 1];
-        } while (Z.Util.isArray(last));
-        return last;
-    },
-
-    /**
-     * Get the geometry's extent
-     * @returns {maptalksExtent} geometry's extent
+     * Get the geometry's geographical extent
+     *
+     * @returns {maptalks.Extent} geometry's extent
      */
     getExtent:function () {
         var prjExt = this._getPrjExtent();
@@ -303,24 +328,11 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         } else {
             return this._computeExtent(this._getMeasurer());
         }
-
     },
 
     /**
-     * Whehter the geometry contains the input container point.
-     * @param  {maptalks.Point} point - input container point
-     * @param  {Number} t - tolerance in pixel
-     * @return {Boolean}
-     */
-    containsPoint: function (containerPoint, t) {
-        if (!this.getMap()) {
-            throw new Error('The geometry is required to be on a map to perform "containsPoint".');
-        }
-        return this._containsPoint(this.getMap().containerPointToViewPoint(containerPoint), t);
-    },
-
-    /**
-     * Get size in pixel of the geometry, size may vary in different zoom levels.
+     * Get pixel size of the geometry, which may vary in different zoom levels.
+     *
      * @returns {maptalks.Size}
      */
     getSize: function () {
@@ -334,15 +346,26 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Get the geographical center of the geometry.
-     * @returns {maptalks.Coordinate}
+     * Whehter the geometry contains the input container point.
+     *
+     * @param  {maptalks.Point} point - input container point
+     * @param  {Number} [t=undefined] - tolerance in pixel
+     * @return {Boolean}
+     * @example
+     * var circle = new maptalks.Circle([0, 0], 1000)
+     *     .addTo(layer);
+     * var contains = circle.containsPoint([400, 300]);
      */
-    getCenter:function () {
-        return this._computeCenter(this._getMeasurer()).copy();
+    containsPoint: function (containerPoint, t) {
+        if (!this.getMap()) {
+            throw new Error('The geometry is required to be on a map to perform "containsPoint".');
+        }
+        return this._containsPoint(this.getMap().containerPointToViewPoint(new maptalks.Point(containerPoint)), t);
     },
 
     /**
      * Show the geometry.
+     *
      * @return {maptalks.Geometry} this
      * @fires maptalks.Geometry#show
      */
@@ -368,6 +391,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Hide the geometry
+     *
      * @return {maptalks.Geometry} this
      * @fires maptalks.Geometry#hide
      */
@@ -393,6 +417,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Whether the geometry is visible
+     *
      * @returns {Boolean}
      */
     isVisible:function () {
@@ -420,8 +445,11 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Translate or move the geometry by the given offset.
+     *
      * @param  {maptalks.Coordinate} offset - translate offset
      * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#positionchange
+     * @fires maptalks.Geometry#shapechange
      */
     translate:function (offset) {
         if (!offset) {
@@ -446,7 +474,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * flash the geometry, show and hide by certain internal for times of count.
+     * Flash the geometry, show and hide by certain internal for times of count.
      *
      * @param {Number} [interval=100]     - interval of flash, in millisecond (ms)
      * @param {Number} [count=4]          - flash times
@@ -497,7 +525,6 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     copy:function () {
         var json = this.toJSON();
-        //FIXME symbol信息没有被拷贝过来
         var ret = Z.Geometry.fromJSON(json);
         //restore visibility
         ret.options['visible'] = true;
@@ -528,6 +555,15 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
         this._unbind();
         /**
+         * removeend event.
+         *
+         * @event maptalks.Geometry#removeend
+         * @type {Object}
+         * @property {String} type - removeend
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         */
+        this._fireEvent('removeend');
+        /**
          * remove event.
          *
          * @event maptalks.Geometry#remove
@@ -540,7 +576,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Exports a GeoJSON [geometry]{@link http://geojson.org/geojson-spec.html#feature-objects} (part of a feature) out of the geometry.
+     * Exports [geometry]{@link http://geojson.org/geojson-spec.html#feature-objects} out of a GeoJSON feature.
      * @return {Object} GeoJSON Geometry
      */
     toGeoJSONGeometry:function () {
@@ -549,7 +585,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Exports a GeoJSON feature out of the geometry.
+     * Exports a GeoJSON feature.
      * @param {Object} [opts=null]              - export options
      * @param {Boolean} [opts.geometry=true]    - whether export geometry
      * @param {Boolean} [opts.properties=true]  - whether export properties
@@ -683,14 +719,13 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
     },
 
-    //调用prepare时,layer已经注册到map上
+    //bind the geometry to a layer
     _bindLayer:function (layer) {
-         //Geometry不允许被重复添加到多个图层上
+        //check dupliaction
         if (this.getLayer()) {
             throw new Error(this.exceptions['DUPLICATE_LAYER']);
         }
         this._layer = layer;
-        //如果投影发生改变,则清除掉所有的投影坐标属性
         this._clearProjection();
         this.callInitHooks();
     },

@@ -11,6 +11,14 @@
  * @param {Boolean} [options.custom=false]              - whether the panel's content is customized .
  * @param {String|HTMLElement} options.content          - panel's content, can be a dom element or a string.
  * @param {Boolean} [options.closeButton=true]          - whether to display the close button on the panel.
+ * @example
+ * var panel = new maptalks.control.Panel({
+ *     position : {'bottom': '0', 'right': '0'},
+ *     draggable : true,
+ *     custom : false,
+ *     content : '<div class="map-panel">hello maptalks.</div>',
+ *     closeButton : true
+ * }).addTo(map);
  */
 Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.prototype */{
 
@@ -107,14 +115,15 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
     },
 
     /**
-     * 获取panel端点数组
+     * Get the connect points of panel for connector lines.
+     * @private
      */
     _getConnectPoints: function () {
         var map = this._map;
         var containerPoint = this.getContainerPoint();
-        var controlContainer = this.getContainer(),
-            width = controlContainer.clientWidth,
-            height = controlContainer.clientHeight;
+        var dom = this.getDOM(),
+            width = dom.clientWidth,
+            height = dom.clientHeight;
 
         var anchors = [
             //top center

@@ -5,16 +5,29 @@
  * @category layer
  * @extends {maptalks.OverlayLayer}
  * @param {String|Number} id - layer's id
- * @param {Object} [options=null] - construct options
- * @param {Boolean} [options.debug=false] - whether the geometries on the layer is in debug mode.
- * @param {Boolean} [options.enableSimplify=false] - whether to simplify geometries before rendering.
- * @param {String} [options.cursor=default] - the cursor style of the layer
- * @param {Boolean} [options.geometryEvents=true] - enable/disable firing geometry events
- * @param {Number} [options.thresholdOfTransforming=50] - threshold of points number to update points while transforming.
- * @param {*} options.* - any other option defined in [maptalks.Layer]{@link maptalks.Layer#options}
+ * @param {Object}  [options=null] - construct options
+ * @param {Boolean} [options.debug=false]           - whether the geometries on the layer is in debug mode.
+ * @param {Boolean} [options.enableSimplify=false]  - whether to simplify geometries before rendering.
+ * @param {String}  [options.cursor=default]        - the cursor style of the layer
+ * @param {Boolean} [options.geometryEvents=true]   - enable/disable firing geometry events
+ * @param {Number}  [options.thresholdOfTransforming=50] - threshold of geometry count to update while transforming.
+ * @param {Boolean} [options.drawOnce=false]        - layer will be only draw once at each zoom, and won't be redrawn when moving, this is useful with a static map with a lot of geometries to draw.
+ * @param {Boolean} [options.defaultIconSize=[20, 20]] - default size of a marker's icon
+ * @param {Boolean} [options.cacheSvgOnCanvas=true]   - whether to cache svg icons on a canvas, this will fix svg's opacity problem on IE and MS Edge browser.
+ * @param {*} options.* - any other option defined in [maptalks.OverlayLayer]{@link maptalks.OverlayLayer#options}
  */
 Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
-
+    /**
+     * @property {Object}  options - VectorLayer's options
+     * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
+     * @property {Boolean} options.enableSimplify=false  - whether to simplify geometries before rendering.
+     * @property {String}  options.cursor=default        - the cursor style of the layer
+     * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events
+     * @property {Number}  options.thresholdOfTransforming=50 - threshold of geometry count to update while transforming.
+     * @property {Boolean} options.drawOnce=false        - layer will be only draw once at each zoom, and won't be redrawn when moving, this is useful with a static map with a lot of geometries to draw.
+     * @property {Boolean} options.defaultIconSize=[20, 20] - default size of a marker's icon
+     * @property {*} options.* - any other option defined in [maptalks.OverlayLayer]{@link maptalks.OverlayLayer#options}
+     */
     options:{
         'debug'                     : false,
         'enableSimplify'            : true,
@@ -27,6 +40,10 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'cacheSvgOnCanvas'          : true
     },
 
+    /**
+     * Gets layer's style.
+     * @return {Object|Object[]} layer's style
+     */
     getStyle: function () {
         if (!this._style) {
             return null;
@@ -34,15 +51,48 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         return this._style;
     },
 
+    /**
+     * Sets style to the layer, styling the geometries satisfying the condition with style's symbol
+     *
+     * @param {Object|Object[]} style - layer's style
+     * @returns {maptalks.VectorLayer} this
+     * @fires maptalks.VectorLayer#setstyle
+     * @example
+     * layer.setStyle([
+        {
+          'filter': ['==', 'count', 100],
+          'symbol': {'markerFile' : 'foo1.png'}
+        },
+        {
+          'filter': ['==', 'count', 200],
+          'symbol': {'markerFile' : 'foo2.png'}
+        }
+      ]);
+     */
     setStyle: function (style) {
         this._style = style;
         this._cookedStyles = this._compileStyle(style);
         this.forEach(function (geometry) {
             this._styleGeometry(geometry);
         }, this);
+        /**
+         * setstyle event.
+         *
+         * @event maptalks.VectorLayer#setstyle
+         * @type {Object}
+         * @property {String} type - setstyle
+         * @property {maptalks.VectorLayer} target - layer
+         * @property {Object|Object[]}       style - style to set
+         */
+        this.fire('setstyle', {'style' : style});
         return this;
     },
 
+    /**
+     * Removes layers' style
+     * @returns {maptalks.VectorLayer} this
+     * @fires maptalks.VectorLayer#removestyle
+     */
     removeStyle: function () {
         if (!this._style) {
             return this;
@@ -52,6 +102,15 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         this.forEach(function (geometry) {
             geometry._setExternSymbol(null);
         }, this);
+        /**
+         * removestyle event.
+         *
+         * @event maptalks.VectorLayer#removestyle
+         * @type {Object}
+         * @property {String} type - removestyle
+         * @property {maptalks.VectorLayer} target - layer
+         */
+        this.fire('removestyle');
         return this;
     },
 
