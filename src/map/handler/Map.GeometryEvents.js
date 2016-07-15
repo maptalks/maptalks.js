@@ -45,6 +45,9 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         var eventType = domEvent.type,
             containerPoint = Z.DomUtil.getEventContainerPoint(domEvent, map._containerDOM),
             coordinate = map.containerPointToCoordinate(containerPoint);
+        if (eventType === 'touchstart') {
+            Z.DomUtil.preventDefault(domEvent);
+        }
         var geometryCursorStyle = null;
         var identifyOptions = {
             'includeInternals' : true,
