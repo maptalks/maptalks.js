@@ -39,7 +39,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     //redraw all the geometries with transform matrix
     //this may bring low performance if number of geometries is large.
     transform: function (matrix) {
-        if (this._layer.options['drawOnce'] || this._layer.getMask()) {
+        if (Z.Browser.mobile || this._layer.options['drawOnce'] || this._layer.getMask()) {
             return false;
         }
         //determin whether this layer should be transformed.
