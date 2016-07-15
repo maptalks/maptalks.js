@@ -1222,7 +1222,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      * @fires maptalks.Map#movestart
      */
-    _onMoveStart:function () {
+    _onMoveStart:function (param) {
         this._originCenter = this.getCenter();
         this._enablePanAnimation = false;
         this._moving = true;
@@ -1233,22 +1233,30 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
          * @type {Object}
          * @property {String} type - movestart
          * @property {maptalks.Map} target - map fires the event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('movestart');
+        this._fireEvent('movestart', this._parseEvent(param ? param['domEvent'] : null, 'movestart'));
     },
 
-    _onMoving:function () {
+    _onMoving:function (param) {
         /**
          * moving event
          * @event maptalks.Map#moving
          * @type {Object}
          * @property {String} type - moving
          * @property {maptalks.Map} target - map fires the event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('moving');
+        this._fireEvent('moving', this._parseEvent(param ? param['domEvent'] : null, 'moving'));
     },
 
-    _onMoveEnd:function () {
+    _onMoveEnd:function (param) {
         this._moving = false;
         this._trySetCursor('default');
         /**
@@ -1257,8 +1265,12 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
          * @type {Object}
          * @property {String} type - moveend
          * @property {maptalks.Map} target - map fires the event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('moveend');
+        this._fireEvent('moveend', this._parseEvent(param ? param['domEvent'] : null, 'moveend'));
         if (!this._verifyExtent(this.getCenter())) {
             var moveTo = this._originCenter;
             if (!this._verifyExtent(moveTo)) {
