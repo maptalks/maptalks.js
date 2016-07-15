@@ -181,6 +181,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     },
 
     _parseEvent:function (e, type) {
+        if (!e) {
+            return null;
+        }
         var eventParam = {
             'domEvent': e
         };
