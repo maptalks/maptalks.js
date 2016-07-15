@@ -17,9 +17,14 @@
             post: function (options, postData, cb) {
                 var reqOpts = urlParser.parse(options.url);
                 reqOpts.method = 'POST';
-                if (options.headers) {
-                    reqOpts.headers = options.headers;
+                if (!options.headers) {
+                    options.headers = {};
                 }
+                if (!options.headers['Content-Type']) {
+                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+                }
+                reqOpts.headers = options.headers;
+
                 var req = this._getClient(reqOpts.protocol).request(reqOpts, this._wrapCallback(cb));
 
                 req.on('error', cb);
@@ -69,7 +74,13 @@
             post: function (options, postData, cb) {
                 var client = this._getClient(cb);
                 client.open('POST', options.url, true);
-                if (options.headers && 'setRequestHeader' in client) {
+                if (!options.headers) {
+                    options.headers = {};
+                }
+                if (!options.headers['Content-Type']) {
+                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+                }
+                if ('setRequestHeader' in client) {
                     for (var p in options.headers) {
                         if (options.headers.hasOwnProperty(p)) {
                             client.setRequestHeader(p, options.headers[p]);
