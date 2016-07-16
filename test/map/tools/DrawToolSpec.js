@@ -49,13 +49,13 @@ describe('#DrawTool', function () {
                 });
         for (var i = 0; i < 10; i++) {
             happen.mousemove(eventContainer,{
-                'clientX':point.x+i,
-                'clientY':point.y+i
+                'clientX':point.x-i,
+                'clientY':point.y-i
                 });
         };
         happen.mouseup(eventContainer,{
-                'clientX':point.x+10,
-                'clientY':point.y+10
+                'clientX':point.x-10,
+                'clientY':point.y-10
                 });
     }
     function drawPoint() {
@@ -152,10 +152,17 @@ describe('#DrawTool', function () {
         });
 
         it('can draw Rectangle', function(done) {
+            var first;
+            function drawStart(param) {
+                first = param.coordinate;
+            }
             function drawEnd(param) {
                 expect(param.geometry instanceof maptalks.Rectangle).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
+                var nw = param.geometry.getCoordinates();
+                expect(nw.x < first.x).to.be.ok();
+                expect(nw.y > first.y).to.be.ok();
                 done();
             }
             var drawTool = new maptalks.DrawTool({
@@ -163,8 +170,10 @@ describe('#DrawTool', function () {
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
+            drawTool.on('drawstart', drawStart);
             dragDraw();
         });
+
 
         it('can draw Ellipse', function(done) {
             function drawEnd(param) {

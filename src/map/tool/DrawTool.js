@@ -339,12 +339,17 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     _mousedownToDraw : function (param) {
-        var me = this;
+        var me = this,
+            firstPoint = this._getMouseContainerPoint(param);
+        if (!this._isValidContainerPoint(firstPoint)) { return false; }
+        var firstCoord = this._containerPointToLonlat(firstPoint);
+
         function genGeometry(coordinate) {
-            var symbol = me.getSymbol();
-            var geometry = me._geometry;
-            var _map = me._map;
-            var center;
+            var symbol = me.getSymbol(),
+                geometry = me._geometry,
+                map = me._map,
+                center;
+
             switch (me.getMode()) {
             case 'circle':
                 if (!geometry) {
@@ -354,7 +359,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
                     break;
                 }
                 center = geometry.getCenter();
-                var radius = _map.computeLength(center, coordinate);
+                var radius = map.computeLength(center, coordinate);
                 geometry.setRadius(radius);
                 break;
             case 'ellipse':
@@ -365,8 +370,8 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
                     break;
                 }
                 center = geometry.getCenter();
-                var rx = _map.computeLength(center, new Z.Coordinate({x:coordinate.x, y:center.y}));
-                var ry = _map.computeLength(center, new Z.Coordinate({x:center.x, y:coordinate.y}));
+                var rx = map.computeLength(center, new Z.Coordinate({x:coordinate.x, y:center.y}));
+                var ry = map.computeLength(center, new Z.Coordinate({x:center.x, y:coordinate.y}));
                 geometry.setWidth(rx * 2);
                 geometry.setHeight(ry * 2);
                 break;
@@ -377,9 +382,15 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
                     me._addGeometryToStage(geometry);
                     break;
                 }
-                var nw = geometry.getCoordinates();
-                var width = _map.computeLength(nw, new Z.Coordinate({x:coordinate.x, y:nw.y}));
-                var height = _map.computeLength(nw, new Z.Coordinate({x:nw.x, y:coordinate.y}));
+                var width = map.computeLength(firstCoord, new Z.Coordinate({x:coordinate.x, y:firstCoord.y})),
+                    height = map.computeLength(firstCoord, new Z.Coordinate({x:firstCoord.x, y:coordinate.y}));
+                var cnw = map.coordinateToContainerPoint(firstCoord),
+                    cc = map.coordinateToContainerPoint(coordinate);
+                var x = Math.min(cnw.x, cc.x),
+                    y = Math.min(cnw.y, cc.y);
+                if (x !== cnw.x || y !== cnw.y) {
+                    geometry.setCoordinates(map.containerPointToCoordinate(new Z.Point(x, y)));
+                }
                 geometry.setWidth(width);
                 geometry.setHeight(height);
                 break;
@@ -391,9 +402,9 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             if (!this._geometry) {
                 return false;
             }
-            var containerPoint = this._getMouseContainerPoint(_event);
-            if (!this._isValidContainerPoint(containerPoint)) { return false; }
-            var coordinate = this._containerPointToLonlat(containerPoint);
+            var current = this._getMouseContainerPoint(_event);
+            if (!this._isValidContainerPoint(current)) { return false; }
+            var coordinate = this._containerPointToLonlat(current);
             genGeometry(coordinate);
             return false;
         }
@@ -401,9 +412,9 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             if (!this._geometry) {
                 return false;
             }
-            var containerPoint = this._getMouseContainerPoint(_event);
-            if (this._isValidContainerPoint(containerPoint)) {
-                var coordinate = this._containerPointToLonlat(containerPoint);
+            var current = this._getMouseContainerPoint(_event);
+            if (this._isValidContainerPoint(current)) {
+                var coordinate = this._containerPointToLonlat(current);
                 genGeometry(coordinate);
             }
             this._map.off('mousemove', onMouseMove, this);
@@ -411,11 +422,9 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             this._endDraw(param);
             return false;
         };
-        var containerPoint = this._getMouseContainerPoint(param);
-        if (!this._isValidContainerPoint(containerPoint)) { return false; }
-        var coordinate = this._containerPointToLonlat(containerPoint);
+
         this._fireEvent('drawstart', param);
-        genGeometry(coordinate);
+        genGeometry(firstCoord);
         this._map.on('mousemove', onMouseMove, this);
         this._map.on('mouseup', onMouseUp, this);
         return false;
