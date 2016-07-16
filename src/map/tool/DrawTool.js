@@ -378,19 +378,18 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             case 'rectangle':
                 if (!geometry) {
                     geometry = new Z.Rectangle(coordinate, 0, 0);
+
                     geometry.setSymbol(symbol);
                     me._addGeometryToStage(geometry);
                     break;
                 }
-                var width = map.computeLength(firstCoord, new Z.Coordinate({x:coordinate.x, y:firstCoord.y})),
-                    height = map.computeLength(firstCoord, new Z.Coordinate({x:firstCoord.x, y:coordinate.y}));
+                var width = map.computeLength(firstCoord, new Z.Coordinate(coordinate.x, firstCoord.y)),
+                    height = map.computeLength(firstCoord, new Z.Coordinate(firstCoord.x, coordinate.y));
                 var cnw = map.coordinateToContainerPoint(firstCoord),
                     cc = map.coordinateToContainerPoint(coordinate);
                 var x = Math.min(cnw.x, cc.x),
                     y = Math.min(cnw.y, cc.y);
-                if (x !== cnw.x || y !== cnw.y) {
-                    geometry.setCoordinates(map.containerPointToCoordinate(new Z.Point(x, y)));
-                }
+                geometry.setCoordinates(map.containerPointToCoordinate(new Z.Point(x, y)));
                 geometry.setWidth(width);
                 geometry.setHeight(height);
                 break;
