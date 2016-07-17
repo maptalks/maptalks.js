@@ -196,7 +196,9 @@ function testRemoveHide(geometry, _context) {
             }
             var testPoints = getTestPoints(geometry);
             layer.addGeometry(geometry);
-            geometry.once('editstart', function() {
+            geometry.startEdit();
+            var editLayer = (geometry instanceof maptalks.GeometryCollection) ? geometry.getGeometries()[0]._editor._editStageLayer : geometry._editor._editStageLayer;
+            editLayer.once('layerload', function() {
                 if (layer.isEmpty()) {
                     return;
                 }
@@ -210,7 +212,6 @@ function testRemoveHide(geometry, _context) {
                 });
                 geometry.remove();
             });
-            geometry.startEdit();
         });
     });
 }

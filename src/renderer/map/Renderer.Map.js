@@ -105,6 +105,9 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             pos = this.map.offsetPlatform().add(offset)._round();
         Z.DomUtil.offsetDom(mapPlatform, pos);
         Z.DomUtil.offsetDom(layer, pos);
+        if (Z.Browser.mobile) {
+            Z.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
+        }
         return this;
     },
 
@@ -114,6 +117,9 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             var pos = new Z.Point(0, 0);
             Z.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
             Z.DomUtil.offsetDom(this.map._panels.layer, pos);
+            if (Z.Browser.mobile) {
+                Z.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
+            }
         }
     },
 

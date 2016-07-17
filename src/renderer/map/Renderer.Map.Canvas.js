@@ -152,7 +152,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             var renderer = layers[i]._getRenderer();
             if (renderer) {
                 var transformed = false;
-                if (renderer.transform) {
+                if (renderer.transform && !(renderer.isCanvasRender() && Z.Browser.mobile)) {
                     transformed = renderer.transform(matrix);
                 }
                 if (transformLayers && !transformed) {
@@ -516,9 +516,21 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             };
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-        map.on('_moving _moveend', function () {
+        map.on('_moveend', function () {
+            if (Z.Browser.mobile) {
+                Z.DomUtil.offsetDom(this._canvas, map.offsetPlatform().multi(-1));
+            }
             this.render();
         }, this);
+        if (!Z.Browser.mobile) {
+            map.on('_moving', function () {
+                this.render();
+            }, this);
+        } else {
+            map.on('_zoomend', function () {
+                Z.DomUtil.offsetDom(this._canvas, new Z.Point(0, 0));
+            }, this);
+        }
     }
 });
 

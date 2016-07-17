@@ -14,7 +14,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     initialize:function (layer) {
         this._layer = layer;
         this._tiles = {};
-        this._fadeAnimated = true;
+        this._fadeAnimated = !Z.Browser.mobile && true;
     },
 
     getMap:function () {
@@ -408,7 +408,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     _onZoomStart: function () {
-        this._fadeAnimated = true;
+        this._fadeAnimated = !Z.Browser.mobile && true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
         if (!this._canTransform()) {
