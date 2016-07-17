@@ -307,13 +307,18 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         if (!param['target'] || param['target'].getLayer() !== this) {
             return;
         }
+        if (param['new'] === param['old']) {
+            if (this._geoMap[param['old']] && this._geoMap[param['old']] === param['target']) {
+                return;
+            }
+        }
         if (!Z.Util.isNil(param['new'])) {
             if (this._geoMap[param['new']]) {
                 throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + param['new']);
             }
             this._geoMap[param['new']] = param['target'];
         }
-        if (!Z.Util.isNil(param['old']) && param['old'] !== param['new']) {
+        if (!Z.Util.isNil(param['old']) && param['new'] !== param['old']) {
             delete this._geoMap[param['old']];
         }
     },
