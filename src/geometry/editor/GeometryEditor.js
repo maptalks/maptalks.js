@@ -66,7 +66,9 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         if (geometry._getParent()) {
             shadow.copyEventListeners(geometry._getParent());
         }
-        shadow.off('idchange', geometry.getLayer()._onGeometryIdChange, geometry.getLayer());
+        if (geometry.getLayer()._onGeometryIdChange) {
+            shadow.off('idchange', geometry.getLayer()._onGeometryIdChange, geometry.getLayer());
+        }
         //drag shadow by center handle instead.
         shadow.setId(null).config({'draggable': false});
 
