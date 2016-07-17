@@ -102,6 +102,10 @@ describe('#OverlayLayer', function() {
             expect(layer.getGeometryById('new-id')).to.not.be(null);
             expect(layer.getGeometryById('id')).to.be(null);
 
+            //new id is the same with old id
+            geometry.setId('new-id');
+            expect(layer.getGeometryById('new-id')).to.not.be(null);
+
             geometry.setId(null);
             expect(layer.getGeometryById('new-id')).to.be(null);
             expect(layer.getGeometryById('id')).to.be(null);

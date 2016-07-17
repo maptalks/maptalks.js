@@ -42,7 +42,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         var guid = Z.Util.GUID();
         this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + guid);
         if (!this._editStageLayer) {
-            this._editStageLayer = new Z.VectorLayer(this.editStageLayerIdPrefix + guid, {'drawImmediate' : true});
+            this._editStageLayer = new Z.VectorLayer(this.editStageLayerIdPrefix + guid);
             map.addLayer(this._editStageLayer);
         }
     },
@@ -62,9 +62,11 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
         //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
         shadow.copyEventListeners(geometry);
+        //unregister idchange listener
         if (geometry._getParent()) {
             shadow.copyEventListeners(geometry._getParent());
         }
+        shadow.off('idchange', geometry.getLayer()._onGeometryIdChange, geometry.getLayer());
         //drag shadow by center handle instead.
         shadow.setId(null).config({'draggable': false});
 

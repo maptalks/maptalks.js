@@ -304,13 +304,16 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     _onGeometryIdChange: function (param) {
+        if (!param['target'] || param['target'].getLayer() !== this) {
+            return;
+        }
         if (!Z.Util.isNil(param['new'])) {
             if (this._geoMap[param['new']]) {
                 throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + param['new']);
             }
             this._geoMap[param['new']] = param['target'];
         }
-        if (!Z.Util.isNil(param['old'])) {
+        if (!Z.Util.isNil(param['old']) && param['old'] !== param['new']) {
             delete this._geoMap[param['old']];
         }
     },
