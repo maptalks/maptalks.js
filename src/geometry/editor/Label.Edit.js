@@ -78,8 +78,8 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         this._textEditor = editContainer;
         map.on('mousedown',  this.endEditText, this);
         var symbol = this._getInternalSymbol() || {},
-            dx = symbol['textDx'] || 0,
-            dy = symbol['textDy'] || 0;
+            dx = symbol['textDx'] - 2 || 0,
+            dy = symbol['textDy'] - 2 || 0;
         this._editUIMarker = new maptalks.ui.UIMarker(this.getCoordinates(), {
             'content' : editContainer,
             'dx' : dx,
@@ -91,25 +91,25 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         var labelSize = this.getSize(),
             symbol = this._getInternalSymbol() || {},
             width = labelSize['width'] || 100,
-            // height = labelSize['height'] || 100,
             textColor = symbol['textFill'] || '#000000',
             textSize = symbol['textSize'] || 12,
+            height = labelSize['height'] || textSize,
             fill = symbol['markerFill'] || '#3398CC',
             lineColor = symbol['markerLineColor'] || '#ffffff',
             spacing = symbol['textLineSpacing'] || 0,
             editor = Z.DomUtil.createEl('div');
             editor.contentEditable = true;
             editor.style.cssText = 'background: ' + fill + ';' +
-            'border: 1px solid ' + lineColor + ';' +
+            'border: 1px solid #ff0000;' +
             'color: ' + textColor + ';' +
             'font-size: ' + textSize + 'px;' +
-            'width: ' + (width + 10) + 'px;' +
-            // 'height: '+(height - spacing) +'px;'+
+            'width: ' + (width - 2) + 'px;' +
+            'height: '+(height - 2) +'px;'+
             // 'min-height: '+(height - spacing)+'px;'+
             // 'max-height: 300px;'+
             'margin-left: auto;' +
             'margin-right: auto;' +
-            'line-height: ' + (textSize + spacing) + 'px;' +
+            'line-height: ' + (height - 2) + 'px;' +
             'outline: 0;' +
             'word-wrap: break-word;' +
             'overflow-x: hidden;' +
