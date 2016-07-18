@@ -77,8 +77,13 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         var editContainer = this._createEditor();
         this._textEditor = editContainer;
         map.on('mousedown',  this.endEditText, this);
+        var symbol = this._getInternalSymbol() || {},
+            dx = symbol['textDx'] || 0,
+            dy = symbol['textDy'] || 0;
         this._editUIMarker = new maptalks.ui.UIMarker(this.getCoordinates(), {
-            'content' : editContainer
+            'content' : editContainer,
+            'dx' : dx,
+            'dy' : dy
         }).addTo(map).show();
     },
 
@@ -93,8 +98,8 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             lineColor = symbol['markerLineColor'] || '#ffffff',
             spacing = symbol['textLineSpacing'] || 0,
             editor = Z.DomUtil.createEl('div');
-        editor.contentEditable = true;
-        editor.style.cssText = 'background: ' + fill + ';' +
+            editor.contentEditable = true;
+            editor.style.cssText = 'background: ' + fill + ';' +
             'border: 1px solid ' + lineColor + ';' +
             'color: ' + textColor + ';' +
             'font-size: ' + textSize + 'px;' +
