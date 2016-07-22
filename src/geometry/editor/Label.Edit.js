@@ -85,6 +85,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             'dx' : dx,
             'dy' : dy
         }).addTo(map).show();
+        this._setCursorToLast(this._textEditor);
     },
 
     _createEditor: function () {
@@ -109,16 +110,41 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
             // 'max-height: 300px;'+
             'margin-left: auto;' +
             'margin-right: auto;' +
-            'line-height: ' + (height - 2) + 'px;' +
+            'line-height: '+(textSize+spacing)+'px;' +
             'outline: 0;' +
             'word-wrap: break-word;' +
             'overflow-x: hidden;' +
-            'overflow-y: auto;' +
+            'overflow-y: hidden;' +
             '-webkit-user-modify: read-write-plaintext-only;';
         var content = this.getContent();
         editor.innerText = content;
         Z.DomUtil.on(editor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
+        editor.onkeyup =  function(event) {
+            var h = editor.style.height;
+            if(h)
+                h = h.substring(0, h.indexOf('px'));
+            else
+                h = 0;
+            if(event.keyCode == 13) {
+                editor.style.height = (parseInt(h) + textSize) +'px';
+            }
+        };
         return editor;
+    },
+
+    _setCursorToLast: function(obj) {
+        if (window.getSelection) {
+            obj.focus();
+            var range = window.getSelection();
+            range.selectAllChildren(obj);
+            range.collapseToEnd();
+        }
+        else if (document.selection) {
+            var range = document.selection.createRange();
+            range.moveToElementText(obj);
+            range.collapse(false);
+            range.select();
+        }
     }
 
 });
