@@ -157,6 +157,8 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
     _refresh:function () {
         var symbol = this.getSymbol() || this._getDefaultLabelSymbol();
         symbol['textName'] = this._content;
+        symbol['textDx'] = 0;
+        symbol['textDy'] = 0;
         if (this.options['box']) {
             if (!symbol['markerType']) {
                 symbol['markerType'] = 'square';
@@ -180,21 +182,22 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
                     symbol['markerHeight'] = this.options['boxMinHeight'];
                 }
             }
-            var align = this.options['boxTextAlign'];
+            var align = this.options['boxTextAlign'] || 'middle';
             if (align) {
-                var textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
-                    dx = symbol['textDx'] || 0,
-                    dy = symbol['textDy'] || 0;
-                textAlignPoint = textAlignPoint._add(dx, dy);
-                symbol['markerDx'] = textAlignPoint.x;
-                symbol['markerDy'] = textAlignPoint.y + size['height'] / 2;
+                symbol['markerDx'] = 0, symbol['markerDy'] = 0;
                 if (align === 'left') {
-                    symbol['markerDx'] += symbol['markerWidth'] / 2 - padding['width'];
+                    symbol['markerDx'] -= (size['width'] / 2 + padding['width']);
                 } else if (align === 'right') {
-                    symbol['markerDx'] -= symbol['markerWidth'] / 2 - size['width'] - padding['width'];
-                } else {
-                    symbol['markerDx'] += size['width'] / 2;
+                    symbol['markerDx'] += (size['width']/2 + padding['width']);
                 }
+            }
+            var textAlign = symbol['textHorizontalAlignment'];
+            symbol['textDx'] = symbol['markerDx'] || 0;
+            symbol['textDy'] = symbol['markerDy'] || 0;
+            if (textAlign === 'left') {
+                symbol['textDx'] -= size['width']/2;
+            } else if (textAlign === 'right') {
+                symbol['textDx'] += size['width']/2;
             }
         }
         this._symbol = symbol;

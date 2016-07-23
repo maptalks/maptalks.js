@@ -164,11 +164,11 @@ Z.StringUtil = {
     getAlignPoint:function (size, horizontalAlignment, verticalAlignment) {
         var width = size['width'], height = size['height'];
         var alignW, alignH;
-        if (horizontalAlignment === 'left') {
+        if (horizontalAlignment === 'right') {
             alignW = -width;
         } else if (horizontalAlignment === 'middle') {
             alignW = -width / 2;
-        } else if (horizontalAlignment === 'right') {
+        } else if (horizontalAlignment === 'left') {
             alignW = 0;
         }
         if (verticalAlignment === 'top') {
