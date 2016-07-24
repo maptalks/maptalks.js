@@ -47,29 +47,30 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             tileCache = this._tileCache,
             tileSize = layer.getTileSize();
 
-        this._viewExtent = tileGrid['fullExtent'];
+        this._extent2D = tileGrid['fullExtent'];
+        this._viewExtent = tileGrid['viewExtent'];
         if (!this._canvas) {
             this._createCanvas();
         }
         this._resizeCanvas(tileGrid['fullExtent'].getSize());
-        var maskViewExtent = this._prepareCanvas();
-        if (maskViewExtent && !maskViewExtent.intersects(this._viewExtent)) {
+        var mask2DExtent = this._prepareCanvas();
+        if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
             this._complete();
             return;
         }
 
         //遍历瓦片
         this._totalTileToLoad = this._tileToLoadCounter = 0;
-        var tile, tileId, cached, tileViewExtent;
+        var tile, tileId, cached, tile2DExtent;
         for (var i = tiles.length - 1; i >= 0; i--) {
             tile = tiles[i];
             tileId = tiles[i]['id'];
             //如果缓存中已存有瓦片, 则从不再请求而从缓存中读取.
             cached = tileRended[tileId] || tileCache.get(tileId);
-            tileViewExtent = new Z.PointExtent(tile['viewPoint'],
-                                tile['viewPoint'].add(tileSize.toPoint()));
-            if (!this._viewExtent.intersects(tileViewExtent)) {
-                continue;
+            tile2DExtent = new Z.PointExtent(tile['2dPoint'],
+                                tile['2dPoint'].add(tileSize.toPoint()));
+            if (!this._extent2D.intersects(tile2DExtent)) {
+                 continue;
             }
             this._totalTileToLoad++;
             if (cached) {
@@ -103,9 +104,12 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
                 gradualOpacity = 1;
             }
         }
-        var size = this._viewExtent.getSize();
-        var point = this._viewExtent.getMin();
-        return {'image':this._canvas, 'layer':this._layer, 'point':this.getMap().viewPointToContainerPoint(point), 'size':size, 'opacity':gradualOpacity};
+        var canvasImage = Z.renderer.Canvas.prototype.getCanvasImage.apply(this, arguments);
+        canvasImage['opacity'] = gradualOpacity;
+        return canvasImage;
+        // var size = this._extent2D.getSize();
+        // var point = this._extent2D.getMin();
+        // return {'image':this._canvas, 'layer':this._layer, 'point':this.getMap()._pointToContainerPoint(point), 'size':size, 'opacity':gradualOpacity};
     },
 
     _scheduleLoadTileQueue:function () {
@@ -155,7 +159,10 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         tileImage.width = tileSize['width'];
         tileImage.height = tileSize['height'];
         tileImage[this.propertyOfTileId] = tileId;
-        tileImage[this.propertyOfPointOnTile] = tile['viewPoint'];
+        tileImage[this.propertyOfPointOnTile] = {
+            'viewPoint' : tile['viewPoint'],
+            '2dPoint' : tile['2dPoint']
+        };
         tileImage[this.propertyOfTileZoom] = tile['zoom'];
         tileImage.onload = onTileLoad;
         tileImage.onabort = onTileError;
@@ -207,12 +214,12 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
         this._tileToLoadCounter--;
         var point = tileImage[this.propertyOfPointOnTile];
-        this._drawTile(point, tileImage);
+        this._drawTile(point['viewPoint'], tileImage);
 
         if (!Z.node) {
             var tileSize = this._layer.getTileSize();
-            var viewExtent = this.getMap()._getViewExtent();
-            if (viewExtent.intersects(new Z.PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
+            var mapExtent = this.getMap()._get2DExtent();
+            if (mapExtent.intersects(new Z.PointExtent(point['2dPoint'], point['2dPoint'].add(tileSize['width'], tileSize['height'])))) {
                 this._requestMapToRender();
             }
         }

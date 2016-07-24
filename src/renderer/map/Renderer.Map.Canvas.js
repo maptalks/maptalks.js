@@ -104,14 +104,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 'speed'  : options.duration
             },
             Z.Util.bind(function (frame) {
-                matrix = this.getZoomMatrix(frame.styles['scale'], options.origin, Z.Browser.retina);
                 if (player.playState === 'finished') {
                     this._afterTransform(matrix);
                     if (this._context) { this._context.restore(); }
                     this._drawCenterCross();
                     fn.call(this);
                 } else if (player.playState === 'running') {
-                    this.transform(matrix, layersToTransform);
+                    matrix = this._transformZooming(options.origin, frame.styles['scale'], layersToTransform);
                     /**
                       * zooming event
                       * @event maptalks.Map#zooming
@@ -214,6 +213,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         return null;
     },
 
+    _transformZooming: function (origin, scale, layersToTransform) {
+        var matrix = map._generateMatrices(origin, scale);
+        this._zoomingMatrix = matrix;
+        this.transform(matrix, layersToTransform);
+        return matrix;
+    },
+
     _beforeTransform: function () {
         var map = this.map;
         // redraw the map to prepare for zoom transforming.
@@ -233,13 +239,15 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     },
 
     _afterTransform: function (matrix) {
-        delete this._transMatrix;
         this._clearCanvas();
         this._applyTransform(matrix);
         this._drawBackground();
     },
 
     _applyTransform : function (matrix) {
+        if (!matrix) {
+            return;
+        }
         matrix = Z.Browser.retina ? matrix['retina'] : matrix['container'];
         matrix.applyToContext(this._context);
     },
@@ -323,7 +331,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
         }
-
         //opacity of the layer image
         var op = layer.options['opacity'];
         if (!Z.Util.isNumber(op)) {

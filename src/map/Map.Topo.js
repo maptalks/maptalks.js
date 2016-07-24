@@ -62,7 +62,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 layers.push(reqLayers[i]);
             }
         }
-        var point = this.coordinateToViewPoint(opts['coordinate'])._round();
+        var point = this.coordinateToPoint(opts['coordinate'])._round();
         var fn = callback,
             filter = opts['filter'];
         var hits = [],
@@ -81,7 +81,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 if (!geo || !geo.isVisible()) {
                     continue;
                 }
-                var pxExtent = !geo._getPainter() ? null : geo._getPainter().getViewExtent();
+                var pxExtent = !geo._getPainter() ? null : geo._getPainter().get2DExtent();
                 if (!pxExtent || !pxExtent.contains(point)) {
                     continue;
                 }

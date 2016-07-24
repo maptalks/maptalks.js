@@ -55,7 +55,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
          * @event maptalks.Geometry#dragstart
          * @type {Object}
          * @property {String} type                    - dragstart
-         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.Geometry} target       - the geometry fires event
          * @property {maptalks.Coordinate} coordinate - coordinate of the event
          * @property {maptalks.Point} containerPoint  - container point of the event
          * @property {maptalks.Point} viewPoint       - view point of the event
@@ -187,7 +187,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
          * @event maptalks.Geometry#dragging
          * @type {Object}
          * @property {String} type                    - dragging
-         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.Geometry} target       - the geometry fires event
          * @property {maptalks.Coordinate} coordinate - coordinate of the event
          * @property {maptalks.Point} containerPoint  - container point of the event
          * @property {maptalks.Point} viewPoint       - view point of the event
@@ -250,7 +250,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
          * @event maptalks.Geometry#dragend
          * @type {Object}
          * @property {String} type                    - dragend
-         * @property {String} target                  - the geometry fires event
+         * @property {maptalks.Geometry} target       - the geometry fires event
          * @property {maptalks.Coordinate} coordinate - coordinate of the event
          * @property {maptalks.Point} containerPoint  - container point of the event
          * @property {maptalks.Point} viewPoint       - view point of the event

@@ -1,5 +1,5 @@
 
-describe('GeoJSONLayer', function() {
+describe('#GeoJSONLayer', function() {
     //examples are from geoJSON.org
     var geoJSONs = [
 

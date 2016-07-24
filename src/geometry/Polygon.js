@@ -244,7 +244,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
     _containsPoint: function (point, tolerance) {
         var t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
-            pxExtent = this._getPainter().getViewExtent().expand(t);
+            pxExtent = this._getPainter().get2DExtent().expand(t);
         function isContains(points) {
             var c = Z.GeoUtils.pointInsidePolygon(point, points);
             if (c) {
@@ -271,7 +271,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         if (!pxExtent.contains(point)) { return false; }
 
         // screen points
-        var points = this._getPathViewPoints(this._getPrjCoordinates()),
+        var points = this._getPath2DPoints(this._getPrjCoordinates()),
             isSplitted = Z.Util.isArray(points[0]);
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {

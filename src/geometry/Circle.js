@@ -83,7 +83,7 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
     },
 
     _containsPoint: function (point, tolerance) {
-        var center = this._getCenterViewPoint(),
+        var center = this._getCenter2DPoint(),
             size = this.getSize(),
             t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pc = new Z.Point(center.x, center.y),

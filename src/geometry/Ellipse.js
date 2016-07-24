@@ -118,7 +118,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
             b = pb.height,
             c = Math.sqrt(Math.abs(a * a - b * b)),
             xfocus = a >= b;
-        var center = this._getCenterViewPoint();
+        var center = this._getCenter2DPoint();
         var f1, f2, d;
         if (xfocus) {
             f1 = new Z.Point(center.x - c, center.y);

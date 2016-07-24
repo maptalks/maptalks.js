@@ -340,15 +340,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!map) {
             return null;
         }
-        var pxExtent = this._getPainter().getViewExtent();
-        return new Z.Size(Math.round(Math.abs(pxExtent['xmax'] - pxExtent['xmin'])),
-            Math.round(Math.abs(pxExtent['ymax'] - pxExtent['ymin'])));
+        var pxExtent = this._getPainter().get2DExtent();
+        return pxExtent.getSize()._round();
     },
 
     /**
      * Whehter the geometry contains the input container point.
      *
-     * @param  {maptalks.Point} point - input container point
+     * @param  {maptalks.Point|maptalks.Coordinate} point - input container point or coordinate
      * @param  {Number} [t=undefined] - tolerance in pixel
      * @return {Boolean}
      * @example
@@ -358,9 +357,12 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     containsPoint: function (containerPoint, t) {
         if (!this.getMap()) {
-            throw new Error('The geometry is required to be on a map to perform "containsPoint".');
+            throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
-        return this._containsPoint(this.getMap().containerPointToViewPoint(new maptalks.Point(containerPoint)), t);
+        if (containerPoint instanceof Z.Coordinate) {
+            containerPoint = this.getMap().coordinateToContainerPoint(containerPoint);
+        }
+        return this._containsPoint(this.getMap()._containerPointToPoint(new maptalks.Point(containerPoint)), t);
     },
 
     /**

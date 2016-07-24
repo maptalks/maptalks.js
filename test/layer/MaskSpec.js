@@ -83,7 +83,7 @@ describe('Spec of Masks', function() {
 
             it('can set mask', function(done) {
                 layerToTest.once('layerload', function() {
-                    expect(layerToTest).to.be.painted(-20);
+                    expect(layerToTest).to.be.painted(-20, 0);
                     testMask(layerToTest, done);
                 });
             });
@@ -92,7 +92,7 @@ describe('Spec of Masks', function() {
                 layerToTest.once('layerload', function() {
                     layerToTest.once('layerload', function() {
                         layerToTest.once('layerload', function() {
-                            expect(layerToTest).to.be.painted(-20);
+                            expect(layerToTest).to.be.painted(-20, 0);
                             expect(layerToTest).to.be.painted();
                             done();
                         });

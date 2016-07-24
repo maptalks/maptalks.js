@@ -161,7 +161,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
     _containsPoint: function (point, tolerance) {
         var map = this.getMap(),
             t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
-            sp = map.coordinateToViewPoint(this._coordinates),
+            sp = map.coordinateToPoint(this._coordinates),
             pxSize = map.distanceToPixel(this._width, this._height);
 
         var pxMin = new Z.Point(sp.x, sp.y),

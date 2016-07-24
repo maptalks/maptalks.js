@@ -16,31 +16,6 @@ Z.renderer.map = {};
  */
 Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prototype */{
 
-    /**
-     * get Transform Matrix for zooming
-     * @param  {Number} scale  scale
-     * @param  {Point} origin Transform Origin
-     */
-    getZoomMatrix:function (scale, origin, retina) {
-        //matrix for layers to transform
-        var view = this.map.containerPointToViewPoint(origin);
-        var matrices  = {
-            'container' : new Z.Matrix().translate(origin.x, origin.y)
-                        .scaleU(scale).translate(-origin.x, -origin.y),
-            'view'      : new Z.Matrix().translate(view.x, view.y)
-                        .scaleU(scale).translate(-view.x, -view.y)
-        };
-
-        if (retina) {
-            origin = origin.multi(2);
-            matrices['retina'] = new Z.Matrix().translate(origin.x, origin.y)
-                        .scaleU(scale).translate(-origin.x, -origin.y);
-        }
-        // var scale = matrices['container'].decompose()['scale'];
-        matrices['scale'] = {x:scale, y:scale};
-        return matrices;
-    },
-
     panAnimation:function (distance, t, onFinish) {
         distance = new Z.Point(distance);
         var map = this.map;
