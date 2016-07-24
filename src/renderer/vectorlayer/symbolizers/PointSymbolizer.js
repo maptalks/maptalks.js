@@ -10,8 +10,8 @@
  */
 Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
     get2DExtent: function () {
-        var extent = new Z.PointExtent();
-        var markerExtent = this.getMarkerExtent();
+        var extent = new Z.PointExtent(),
+            markerExtent = this.getMarkerExtent();
         var min = markerExtent.getMin(),
             max = markerExtent.getMax();
         var renderPoints = this._getRenderPoints()[0];
@@ -34,7 +34,7 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
         var map = this.getMap(),
             points = this._getRenderPoints()[0],
             matrices = this.geometry._getPainter().getTransformMatrix(),
-            matrix = matrices ? matrices['2d'] : null,
+            matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null,
             dxdy = this.getDxDy(),
             layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin();
@@ -45,9 +45,9 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
         var containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
             return point.substract(layerPoint)._add(dxdy);
         });
-            if (matrix) {
+        if (matrix) {
             return matrix.applyToArray(containerPoints);
-            }
+        }
         return containerPoints;
     },
 

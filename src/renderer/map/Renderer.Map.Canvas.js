@@ -214,7 +214,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     },
 
     _transformZooming: function (origin, scale, layersToTransform) {
-        var matrix = map._generateMatrices(origin, scale);
+        var matrix = this.map._generateMatrices(origin, scale);
         this._zoomingMatrix = matrix;
         this.transform(matrix, layersToTransform);
         return matrix;
