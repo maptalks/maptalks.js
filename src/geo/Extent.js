@@ -237,6 +237,14 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
 
 
     __combine:function (extent) {
+        if (extent instanceof Z.Point) {
+            extent = {
+                'xmin' : extent.x,
+                'xmax' : extent.x,
+                'ymin' : extent.y,
+                'ymax' : extent.y
+            };
+        }
         var xmin = this['xmin'];
         if (!Z.Util.isNumber(xmin)) {
             xmin = extent['xmin'];

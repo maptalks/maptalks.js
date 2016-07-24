@@ -188,8 +188,15 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
 
     getContainerExtent : function () {
         var map = this.getMap(),
+            matrix = this.getTransformMatrix(),
             extent2D = this.get2DExtent();
         var containerExtent = new Z.PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
+        if (matrix) {
+            //FIXME not right for markers
+            var min = matrix['container'].applyToPointInstance(containerExtent.getMin());
+            var max = matrix['container'].applyToPointInstance(containerExtent.getMax());
+            containerExtent = new Z.PointExtent(min, max);
+        }
         return containerExtent;
     },
 

@@ -34,16 +34,34 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var strokeAndFill = this.strokeAndFill;
+        var gradientExtent = null,
+            strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
         if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
-            strokeAndFill['lineGradientExtent'] = this.geometry._getPainter().getContainerExtent()._expand(strokeAndFill['lineWidth'])._round();
+            gradientExtent = this._getGraidentExtent(cookedPoints);
+            strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth'])._round();
         }
         if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
-            strokeAndFill['polygonGradientExtent'] = this.geometry._getPainter().getContainerExtent()._round();
+            if (!gradientExtent) {
+                gradientExtent = this._getGraidentExtent(cookedPoints);
+            }
+            strokeAndFill['polygonGradientExtent'] = gradientExtent._round();
         }
         Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         this._drawMarkers(ctx, cookedPoints);
+    },
+
+    _getGraidentExtent: function (points) {
+        var e = new Z.PointExtent(),
+            m = this.getMarkerExtent();
+        for (var i = points.length - 1; i >= 0; i--) {
+            e._combine(points[i]);
+        }
+        e['xmin'] += m['xmin'];
+        e['ymin'] += m['ymin'];
+        e['xmax'] += m['xmax'];
+        e['ymax'] += m['ymax'];
+        return e;
     },
 
     _drawMarkers: function (ctx, cookedPoints) {

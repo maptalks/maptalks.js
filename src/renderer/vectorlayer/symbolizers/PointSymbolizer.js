@@ -11,14 +11,15 @@
 Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
     get2DExtent: function () {
         var extent = new Z.PointExtent(),
-            markerExtent = this.getMarkerExtent();
-        var min = markerExtent.getMin(),
-            max = markerExtent.getMax();
+            m = this.getMarkerExtent();
         var renderPoints = this._getRenderPoints()[0];
         for (var i = renderPoints.length - 1; i >= 0; i--) {
-            var point = renderPoints[i];
-            extent = extent.combine(new Z.PointExtent(point.add(min), point.add(max)));
+            extent._combine(renderPoints[i]);
         }
+        extent['xmin'] += m['xmin'];
+        extent['ymin'] += m['ymin'];
+        extent['xmax'] += m['xmax'];
+        extent['ymax'] += m['ymax'];
         return extent;
     },
 
