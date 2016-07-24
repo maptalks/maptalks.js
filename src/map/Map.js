@@ -1265,7 +1265,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         matrix['container'] = new Z.Matrix().translate(origin.x, origin.y)
                         .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
 
-        var origin = origin.multi(2);
+        origin = origin.multi(2);
         matrix['retina'] = new Z.Matrix().translate(origin.x, origin.y)
                     .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
         matrix['inverse']['container'] = matrix['container'].inverse();

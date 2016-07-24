@@ -100,7 +100,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
         var zoom = this.getMap().getZoom();
         if (this._levelContainers[zoom]) {
-                Z.DomUtil.setTransform(this._levelContainers[zoom], matrices['view']);
+            Z.DomUtil.setTransform(this._levelContainers[zoom], matrices['view']);
             // Z.DomUtil.setTransform(this._levelContainers[zoom], new Z.Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
         }
         return false;

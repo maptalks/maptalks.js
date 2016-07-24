@@ -167,7 +167,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         var mapW = map.width,
             mapH = map.height,
-            containerCenter = new Z.Point(mapW/2, mapH/2),
+            containerCenter = new Z.Point(mapW / 2, mapH / 2),
             containerExtent = map.getContainerExtent();
 
         //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
@@ -197,12 +197,12 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                     tileId = [tileIndex['y'], tileIndex['x'], zoom, tileLeft, tileTop].join('__'),
                     tileViewPoint = new Z.Point(tileLeft, tileTop),
                     tileDesc = {
-                    'url' : tileUrl,
-                    'viewPoint': tileViewPoint,
-                    '2dPoint' : map._viewPointToPoint(tileViewPoint),
-                    'id'  : tileId,
-                    'zoom' : zoom
-                };
+                        'url' : tileUrl,
+                        'viewPoint': tileViewPoint,
+                        '2dPoint' : map._viewPointToPoint(tileViewPoint),
+                        'id'  : tileId,
+                        'zoom' : zoom
+                    };
                 tiles.push(tileDesc);
                 viewExtent = viewExtent.combine(new Z.PointExtent(
                         tileDesc['viewPoint'],

@@ -32,8 +32,7 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
      * @return {maptalks.Point[]}
      */
     _getRenderContainerPoints: function () {
-        var map = this.getMap(),
-            points = this._getRenderPoints()[0],
+        var points = this._getRenderPoints()[0],
             matrices = this.geometry._getPainter().getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null,

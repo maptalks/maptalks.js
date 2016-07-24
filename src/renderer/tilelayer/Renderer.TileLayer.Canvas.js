@@ -70,7 +70,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             tile2DExtent = new Z.PointExtent(tile['2dPoint'],
                                 tile['2dPoint'].add(tileSize.toPoint()));
             if (!this._extent2D.intersects(tile2DExtent)) {
-                 continue;
+                continue;
             }
             this._totalTileToLoad++;
             if (cached) {
