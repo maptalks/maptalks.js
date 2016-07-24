@@ -157,8 +157,6 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
     _refresh:function () {
         var symbol = this.getSymbol() || this._getDefaultLabelSymbol();
         symbol['textName'] = this._content;
-        symbol['textDx'] = 0;
-        symbol['textDy'] = 0;
         if (this.options['box']) {
             if (!symbol['markerType']) {
                 symbol['markerType'] = 'square';
@@ -184,7 +182,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
             }
             var align = this.options['boxTextAlign'] || 'middle';
             if (align) {
-                symbol['markerDx'] = 0, symbol['markerDy'] = 0;
+                symbol['markerDx'] = symbol['markerDx'] || 0, symbol['markerDy'] = symbol['markerDy'] || 0;
                 if (align === 'left') {
                     symbol['markerDx'] -= (size['width'] / 2 + padding['width']);
                 } else if (align === 'right') {
@@ -192,12 +190,14 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
                 }
             }
             var textAlign = symbol['textHorizontalAlignment'];
-            symbol['textDx'] = symbol['markerDx'] || 0;
-            symbol['textDy'] = symbol['markerDy'] || 0;
-            if (textAlign === 'left') {
-                symbol['textDx'] -= size['width']/2;
-            } else if (textAlign === 'right') {
-                symbol['textDx'] += size['width']/2;
+            if(textAlign) {
+                symbol['textDx'] = symbol['markerDx'] || 0;
+                symbol['textDy'] = symbol['markerDy'] || 0;
+                if (textAlign === 'left') {
+                    symbol['textDx'] -= symbol['markerWidth']/2;
+                } else if (textAlign === 'right') {
+                    symbol['textDx'] += symbol['markerWidth']/2;
+                }
             }
         }
         this._symbol = symbol;
