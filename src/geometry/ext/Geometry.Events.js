@@ -45,6 +45,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
             eventParam['containerPoint'] = containerPoint;
             eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
+            eventParam['2DPoint'] = map._containerPointToPoint(containerPoint);
         }
         return eventParam;
     },
@@ -65,7 +66,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
          * @event maptalks.Geometry#mouseover
          * @type {Object}
          * @property {String} type                    - mouseover
-         * @property {String} target                  - the geometry fires mouseover
+         * @property {maptalks.Geometry} target       - the geometry fires mouseover
          * @property {maptalks.Coordinate} coordinate - coordinate of the event
          * @property {maptalks.Point} containerPoint  - container point of the event
          * @property {maptalks.Point} viewPoint       - view point of the event
@@ -90,7 +91,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
          * @event maptalks.Geometry#mouseout
          * @type {Object}
          * @property {String} type                    - mouseout
-         * @property {String} target                  - the geometry fires mouseout
+         * @property {maptalks.Geometry} target       - the geometry fires mouseout
          * @property {maptalks.Coordinate} coordinate - coordinate of the event
          * @property {maptalks.Point} containerPoint  - container point of the event
          * @property {maptalks.Point} viewPoint       - view point of the event

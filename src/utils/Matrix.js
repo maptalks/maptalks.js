@@ -667,6 +667,9 @@ Z.Matrix.prototype = {
 	 * @returns {boolean}
 	 */
 	isEqual: function(m) {
+        if (!m) {
+            return false;
+        }
 
 		var me = this,
 			q = me._q;

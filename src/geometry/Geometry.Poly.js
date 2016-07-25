@@ -9,7 +9,7 @@ Z.Geometry.Poly = {
      * @returns {maptalks.Point[]}
      * @private
      */
-    _getPathViewPoints:function (prjCoords) {
+    _getPath2DPoints:function (prjCoords) {
         var result = [];
         if (!Z.Util.isArrayHasData(prjCoords)) {
             return result;
@@ -30,7 +30,7 @@ Z.Geometry.Poly = {
         for (i = 0, len = prjCoords.length; i < len; i++) {
             p = prjCoords[i];
             if (isMulti) {
-                part.push(this._getPathViewPoints(p));
+                part.push(this._getPath2DPoints(p));
                 continue;
             }
             if (Z.Util.isNil(p) || (isClip && !fullExtent.contains(p))) {
@@ -52,22 +52,22 @@ Z.Geometry.Poly = {
                         } else if (anti === 'split') {
                             if (dx > 0) {
                                 my = pre.y + dy * (pre.x - (-180)) / (360 - dx) * (pre.y > current.y ? -1 : 1);
-                                part.push(map.coordinateToViewPoint(new Z.Coordinate(-180, my)));
+                                part.push(map.coordinateToPoint(new Z.Coordinate(-180, my)));
                                 part = part === part1 ? part2 : part1;
-                                part.push(map.coordinateToViewPoint(new Z.Coordinate(180, my)));
+                                part.push(map.coordinateToPoint(new Z.Coordinate(180, my)));
 
                             } else {
                                 my = pre.y + dy * (180 - pre.x) / (360 + dx) * (pre.y > current.y ? 1 : -1);
-                                part.push(map.coordinateToViewPoint(new Z.Coordinate(180, my)));
+                                part.push(map.coordinateToPoint(new Z.Coordinate(180, my)));
                                 part = part === part1 ? part2 : part1;
-                                part.push(map.coordinateToViewPoint(new Z.Coordinate(-180, my)));
+                                part.push(map.coordinateToPoint(new Z.Coordinate(-180, my)));
 
                             }
                         }
                     }
                 }
             }
-            part.push(map._prjToViewPoint(p));
+            part.push(map._prjToPoint(p));
         }
         if (part2.length > 0) {
             result = [part1, part2];

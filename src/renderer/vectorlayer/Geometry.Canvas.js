@@ -5,7 +5,7 @@ if (Z.Browser.canvas) {
         _getRenderCanvasResources:function () {
             var map = this.getMap();
             var pcenter = this._getPrjCoordinates();
-            var pt = map._prjToViewPoint(pcenter);
+            var pt = map._prjToPoint(pcenter);
             var size = this._getRenderSize();
             return {
                 'fn' : Z.Canvas.ellipse,
@@ -21,7 +21,7 @@ if (Z.Browser.canvas) {
     Z.Rectangle.include({
         _getRenderCanvasResources:function () {
             var map = this.getMap();
-            var pt = map._prjToViewPoint(this._getPrjCoordinates());
+            var pt = map._prjToPoint(this._getPrjCoordinates());
             var size = this._getRenderSize();
             return {
                 'fn' : Z.Canvas.rectangle,
@@ -34,7 +34,7 @@ if (Z.Browser.canvas) {
         _getRenderCanvasResources:function () {
             var map = this.getMap();
             var pcenter = this._getPrjCoordinates();
-            var pt = map._prjToViewPoint(pcenter);
+            var pt = map._prjToPoint(pcenter);
             var size = this._getRenderSize();
             return {
                 'fn' : Z.Canvas.sector,
@@ -75,7 +75,7 @@ if (Z.Browser.canvas) {
             //draw a triangle arrow
 
             var prjVertexes = this._getPrjCoordinates();
-            var points = this._getPathViewPoints(prjVertexes);
+            var points = this._getPath2DPoints(prjVertexes);
 
             var me = this;
             var fn = function (_ctx, _points, _lineOpacity, _fillOpacity, _dasharray) {
@@ -109,7 +109,7 @@ if (Z.Browser.canvas) {
     Z.Polygon.include({
         _getRenderCanvasResources:function () {
             var prjVertexes = this._getPrjCoordinates(),
-                points = this._getPathViewPoints(prjVertexes),
+                points = this._getPath2DPoints(prjVertexes),
                 //splitted by anti-meridian
                 isSplitted = points.length > 0 && Z.Util.isArray(points[0]);
             if (isSplitted) {
@@ -120,7 +120,7 @@ if (Z.Browser.canvas) {
             if (Z.Util.isArrayHasData(prjHoles)) {
                 var hole;
                 for (var i = 0; i < prjHoles.length; i++) {
-                    hole = this._getPathViewPoints(prjHoles[i]);
+                    hole = this._getPath2DPoints(prjHoles[i]);
                     if (isSplitted) {
                         if (Z.Util.isArray(hole)) {
                             points[0].push(hole[0]);

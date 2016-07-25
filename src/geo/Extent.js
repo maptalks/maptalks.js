@@ -105,6 +105,23 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
         return new this.constructor(this['xmin'] + p.x, this['ymin'] + p.y, this['xmax'] + p.x, this['ymax'] + p.y);
     },
 
+    _substract: function (p) {
+        this['xmin'] -= p.x;
+        this['ymin'] -= p.y;
+        this['xmax'] -= p.x;
+        this['ymax'] -= p.y;
+        return this;
+    },
+
+    /**
+     * Substract the extent with a coordinate or a point.
+     * @param {maptalks.Coordinate|maptalks.Point} p - point or coordinate to substract
+     * @returns {maptalks.Extent} a new extent
+     */
+    substract: function (p) {
+        return new this.constructor(this['xmin'] - p.x, this['ymin'] - p.y, this['xmax'] - p.x, this['ymax'] - p.y);
+    },
+
     /**
      * Round the extent
      * @return {maptalks.Extent} rounded extent
@@ -220,6 +237,14 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
 
 
     __combine:function (extent) {
+        if (extent instanceof Z.Point) {
+            extent = {
+                'xmin' : extent.x,
+                'xmax' : extent.x,
+                'ymin' : extent.y,
+                'ymax' : extent.y
+            };
+        }
         var xmin = this['xmin'];
         if (!Z.Util.isNumber(xmin)) {
             xmin = extent['xmin'];

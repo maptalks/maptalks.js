@@ -119,6 +119,7 @@ var GeoSymbolTester = {
             {
                 "markerPlacement":"point", //point | line | interior
                 "markerFile"   : "images/control/2.png",
+                "markerRotation" : 30,
                 //设定marker-file后, 只有下面的属性起作用
                 "markerWidth"  : 20,
                 "markerHeight" : 20,
@@ -129,7 +130,7 @@ var GeoSymbolTester = {
             },
             {
                 "markerPlacement":"point", //point | line | interior
-
+                "markerRotation" : 30,
                 //marker-type中定义了若干cartoCSS中没有的属性值
                 "markerType": "ellipse", //<----- ellipse | triangle | square | bar等,默认ellipse
                 "markerOpacity": 1,
@@ -179,7 +180,7 @@ var GeoSymbolTester = {
             },
             {
                 "textPlacement"    : "point", // point | vertex | line | interior
-
+                "textRotation" : 30,
                 "textName"         : "文本标注：[marker_name]",
                 "textFaceName"    : "arial",
                 "textSize"         : 12,

@@ -34,73 +34,116 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
-        if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
-            strokeAndFill['lineGradientExtent'] = this.geometry._getPainter().getContainerExtent()._expand(strokeAndFill['lineWidth'])._round();
-        }
-        if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
-            strokeAndFill['polygonGradientExtent'] = this.geometry._getPainter().getContainerExtent()._round();
-        }
-        Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
-        this._drawMarkers(ctx, cookedPoints);
+        this._drawMarkers(ctx, cookedPoints, resources);
     },
 
-    _drawMarkers: function (ctx, cookedPoints) {
-        var style = this.style, strokeAndFill = this.strokeAndFill,
-            markerType = style['markerType'].toLowerCase(),
-            vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(markerType,
-                            style['markerWidth'], style['markerHeight']),
-            lineOpacity = strokeAndFill['lineOpacity'], fillOpacity = strokeAndFill['polygonOpacity'],
-            j;
-        var width = style['markerWidth'],
-            height = style['markerHeight'],
-            point, lineCap, angle;
+    _getGraidentExtent: function (points) {
+        var e = new Z.PointExtent(),
+            m = this.getMarkerExtent();
+        for (var i = points.length - 1; i >= 0; i--) {
+            e._combine(points[i]);
+        }
+        e['xmin'] += m['xmin'];
+        e['ymin'] += m['ymin'];
+        e['xmax'] += m['xmax'];
+        e['ymax'] += m['ymax'];
+        return e;
+    },
+
+    _drawMarkers: function (ctx, cookedPoints, resources) {
+        var strokeAndFill = this.strokeAndFill,
+            point, gradientExtent;
+        var gradient = Z.Util.isGradient(strokeAndFill['lineColor']) || Z.Util.isGradient(strokeAndFill['polygonFill']);
+        if (!gradient) {
+            Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+        }
+
         for (var i = cookedPoints.length - 1; i >= 0; i--) {
             point = cookedPoints[i];
-            if (markerType === 'ellipse' || markerType === 'circle') {
-                 //ellipse default
-                Z.Canvas.ellipse(ctx, point, width / 2, height / 2, lineOpacity, fillOpacity);
-            } else if (markerType === 'cross' || markerType === 'x') {
-                for (j = vectorArray.length - 1; j >= 0; j--) {
-                    vectorArray[j]._add(point);
-                }
-                //线类型
-                Z.Canvas.path(ctx, vectorArray.slice(0, 2), lineOpacity);
-                Z.Canvas.path(ctx, vectorArray.slice(2, 4), lineOpacity);
-            } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'triangle') {
-                if (markerType === 'bar') {
-                    point = point.add(0, -style['markerLineWidth'] / 2);
-                }
-                for (j = vectorArray.length - 1; j >= 0; j--) {
-                    vectorArray[j]._add(point);
-                }
-                //面类型
-                Z.Canvas.polygon(ctx, vectorArray, lineOpacity, fillOpacity);
-            } else if (markerType === 'pin') {
-                point = point.add(0, -style['markerLineWidth'] / 2);
-                for (j = vectorArray.length - 1; j >= 0; j--) {
-                    vectorArray[j]._add(point);
-                }
-                lineCap = ctx.lineCap;
-                ctx.lineCap = 'round'; //set line cap to round to close the pin bottom
-                Z.Canvas.bezierCurveAndFill(ctx, vectorArray, lineOpacity, fillOpacity);
-                ctx.lineCap = lineCap;
-            } else if (markerType === 'pie') {
-                point = point.add(0, -style['markerLineWidth'] / 2);
-                angle = Math.atan(width / 2 / height) * 180 / Math.PI;
-                lineCap = ctx.lineCap;
-                ctx.lineCap = 'round';
-                Z.Canvas.sector(ctx, point, height, [90 - angle, 90 + angle], lineOpacity, fillOpacity);
-                ctx.lineCap = lineCap;
-            } else {
-                throw new Error('unsupported markerType: ' + markerType);
+            var origin = this._rotate(ctx, point, this._getRotationAt(i));
+            if (origin) {
+                point = origin;
             }
+            if (gradient) {
+                if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
+                    gradientExtent = this._getGraidentExtent(point);
+                    strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth'])._round();
+                }
+                if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
+                    if (!gradientExtent) {
+                        gradientExtent = this._getGraidentExtent(point);
+                    }
+                    strokeAndFill['polygonGradientExtent'] = gradientExtent._round();
+                }
+                Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+            }
+            this._drawVectorMarker(ctx, point);
+            if (origin) {
+                ctx.restore();
+            }
+        }
+    },
+
+    _drawVectorMarker: function (ctx, point) {
+        var style = this.style, strokeAndFill = this.strokeAndFill,
+            markerType = style['markerType'].toLowerCase(),
+            vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(markerType, style['markerWidth'], style['markerHeight']),
+            lineOpacity = strokeAndFill['lineOpacity'], fillOpacity = strokeAndFill['polygonOpacity'],
+            j, lineCap, angle;
+        var width = style['markerWidth'],
+            height = style['markerHeight'];
+        if (markerType === 'ellipse' || markerType === 'circle') {
+             //ellipse default
+            Z.Canvas.ellipse(ctx, point, width / 2, height / 2, lineOpacity, fillOpacity);
+        } else if (markerType === 'cross' || markerType === 'x') {
+            for (j = vectorArray.length - 1; j >= 0; j--) {
+                vectorArray[j]._add(point);
+            }
+            //线类型
+            Z.Canvas.path(ctx, vectorArray.slice(0, 2), lineOpacity);
+            Z.Canvas.path(ctx, vectorArray.slice(2, 4), lineOpacity);
+        } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'triangle') {
+            if (markerType === 'bar') {
+                point = point.add(0, -style['markerLineWidth'] / 2);
+            }
+            for (j = vectorArray.length - 1; j >= 0; j--) {
+                vectorArray[j]._add(point);
+            }
+            //面类型
+            Z.Canvas.polygon(ctx, vectorArray, lineOpacity, fillOpacity);
+        } else if (markerType === 'pin') {
+            point = point.add(0, -style['markerLineWidth'] / 2);
+            for (j = vectorArray.length - 1; j >= 0; j--) {
+                vectorArray[j]._add(point);
+            }
+            lineCap = ctx.lineCap;
+            ctx.lineCap = 'round'; //set line cap to round to close the pin bottom
+            Z.Canvas.bezierCurveAndFill(ctx, vectorArray, lineOpacity, fillOpacity);
+            ctx.lineCap = lineCap;
+        } else if (markerType === 'pie') {
+            point = point.add(0, -style['markerLineWidth'] / 2);
+            angle = Math.atan(width / 2 / height) * 180 / Math.PI;
+            lineCap = ctx.lineCap;
+            ctx.lineCap = 'round';
+            Z.Canvas.sector(ctx, point, height, [90 - angle, 90 + angle], lineOpacity, fillOpacity);
+            ctx.lineCap = lineCap;
+        } else {
+            throw new Error('unsupported markerType: ' + markerType);
         }
     },
 
     getPlacement:function () {
         return this.symbol['markerPlacement'];
+    },
+
+    getRotation: function () {
+        var r = this.style['markerRotation'];
+        if (!Z.Util.isNumber(r)) {
+            return null;
+        }
+        //to radian
+        return r * Math.PI / 180;
     },
 
     getDxDy:function () {

@@ -2,7 +2,7 @@ var Symboling = {};
 //有中心点的图形的共同方法
 Symboling.Center = {
     _getRenderPoints:function () {
-        return [[this._getCenterViewPoint()], null];
+        return [[this._getCenter2DPoint()], null];
     }
 };
 /**
@@ -41,11 +41,11 @@ Z.Rectangle.include({
             var shell = this.getShell();
             var points = [];
             for (var i = 0, len = shell.length; i < len; i++) {
-                points.push(this.getMap().coordinateToViewPoint(shell[i]));
+                points.push(this.getMap().coordinateToPoint(shell[i]));
             }
             return [points, null];
         } else {
-            var c = this.getMap().coordinateToViewPoint(this.getCenter());
+            var c = this.getMap().coordinateToPoint(this.getCenter());
             return [[c], null];
         }
     },
@@ -63,7 +63,7 @@ Symboling.Poly = {
         var map = this.getMap();
         var points, rotations = null;
         if (placement === 'point') {
-            points = this._getPathViewPoints(this._getPrjCoordinates());
+            points = this._getPath2DPoints(this._getPrjCoordinates());
             if (points && points.length > 0 && Z.Util.isArray(points[0])) {
                 //anti-meridian
                 points = points[0].concat(points[1]);
@@ -71,7 +71,7 @@ Symboling.Poly = {
         } else if (placement === 'line') {
             points = [];
             rotations = [];
-            var vertice = this._getPathViewPoints(this._getPrjCoordinates()),
+            var vertice = this._getPath2DPoints(this._getPrjCoordinates()),
                 isSplitted =  vertice.length > 0 && Z.Util.isArray(vertice[0]);
             var i, len;
             if (isSplitted) {

@@ -187,10 +187,9 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         var geometry = this._geometry,
             map = this.getMap(),
             outline = this._editOutline;
-
-        var pixelExtent = geometry._getPainter().getViewExtent(),
+        var pixelExtent = geometry._getPainter().get2DExtent(),
             size = pixelExtent.getSize();
-        var nw = map.viewPointToCoordinate(pixelExtent.getMin());
+        var nw = map.pointToCoordinate(pixelExtent.getMin());
         var width = map.pixelToDistance(size['width'], 0),
             height = map.pixelToDistance(0, size['height']);
         if (!outline) {
@@ -344,7 +343,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         var anchorIndexes = {};
         var me = this, map = this.getMap();
         var fnLocateHandles = function () {
-            var pExt = geometry._getPainter().getViewExtent(),
+            var pExt = geometry._getPainter().get2DExtent(),
                 anchors = getResizeAnchors(pExt);
             for (var i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist
@@ -361,7 +360,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
                     }
                 }
                 var anchor = anchors[i],
-                    coordinate = map.viewPointToCoordinate(anchor);
+                    coordinate = map.pointToCoordinate(anchor);
                 if (resizeHandles.length < anchors.length - blackList.length) {
                     var handle = me.createHandle(coordinate, {
                         'markerType' : 'square',
@@ -473,7 +472,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             }
 
             //caculate width and height
-            var viewCenter = marker._getCenterViewPoint().add(dxdy),
+            var viewCenter = marker._getCenter2DPoint().add(dxdy),
                 symbol = marker._getInternalSymbol();
             var wh = handleViewPoint.substract(viewCenter);
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
@@ -504,7 +503,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             circle = this._geometry;
         var map = this.getMap();
         this._createResizeHandles(null, function (handleViewPoint) {
-            var viewCenter = shadow._getCenterViewPoint();
+            var viewCenter = shadow._getCenter2DPoint();
             var wh = handleViewPoint.substract(viewCenter);
             var w = Math.abs(wh.x),
                 h = Math.abs(wh.y);
@@ -583,7 +582,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
                 viewCenter = map._prjToViewPoint(shadow._getPrjCoordinates());
             } else {
                 r = 2;
-                viewCenter = shadow._getCenterViewPoint();
+                viewCenter = shadow._getCenter2DPoint();
             }
             var wh = handleViewPoint.substract(viewCenter);
             var ability = resizeAbilities[i];

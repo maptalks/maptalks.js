@@ -369,13 +369,17 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         return new Z.Size(this.width, this.height);
     },
 
+    getContainerExtent: function () {
+        return new Z.PointExtent(0, 0, this.width, this.height);
+    },
+
     /**
      * Get the geographical extent of map's current view extent.
      *
      * @return {maptalks.Extent}
      */
     getExtent:function () {
-        return this.viewToExtent(this._getViewExtent());
+        return this._pointToExtent(this._get2DExtent());
     },
 
     /**
@@ -906,6 +910,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         return null;
     },
 
+
     /**
      * Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
      * The 2D point's coordinate system's origin is the same with map's origin.
@@ -994,42 +999,16 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-     * Converts a view point extent to the geographic extent.
-     * @param  {maptalks.PointExtent} viewExtent - view points extent
-     * @return {maptalks.Extent}  geographic extent
-     */
-    viewToExtent:function (viewExtent) {
-        var projection = this.getProjection();
-        if (!projection) {
-            return null;
-        }
-        var res = this._getResolution();
-        if (Z.Util.isNil(res)) {
-            return null;
-        }
-        var viewCenter = this._getViewExtent().getCenter();
-        var prjCenter = this._getPrjCenter();
-        var min = viewExtent.getMin();
-        var max = viewExtent.getMax();
-
-        var dist1 = viewCenter.substract(min),
-            dist2 = viewCenter.substract(max);
-        var c1 = projection.unproject(new Z.Coordinate(prjCenter.x - dist1.x * res, prjCenter.y + dist1.y * res));
-        var c2 = projection.unproject(new Z.Coordinate(prjCenter.x - dist2.x * res, prjCenter.y + dist2.y * res));
-        return new Z.Extent(c1, c2);
-    },
-
-    /**
      * Converts a container point extent to the geographic extent.
      * @param  {maptalks.PointExtent} containerExtent - containeproints extent
      * @return {maptalks.Extent}  geographic extent
      */
     containerToExtent:function (containerExtent) {
-        var viewExtent = new Z.PointExtent(
-                this.containerPointToViewPoint(containerExtent.getMin()),
-                this.containerPointToViewPoint(containerExtent.getMax())
+        var extent2D = new Z.PointExtent(
+                this._containerPointToPoint(containerExtent.getMin()),
+                this._containerPointToPoint(containerExtent.getMax())
             );
-        return this.viewToExtent(viewExtent);
+        return this._pointToExtent(extent2D);
     },
 
     /**
@@ -1182,12 +1161,43 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.PointExtent}
      * @private
      */
-    _getViewExtent:function () {
-        var size = this.getSize();
-        var offset = this.offsetPlatform();
-        var min = new Z.Point(0, 0);
-        var max = new Z.Point(size['width'], size['height']);
-        return new Z.PointExtent(min.substract(offset), max.substract(offset));
+    _get2DExtent:function () {
+        var c1 = this._containerPointToPoint(new Z.Point(0, 0)),
+            c2 = this._containerPointToPoint(new Z.Point(0, this.width)),
+            c3 = this._containerPointToPoint(new Z.Point(this.width, this.height)),
+            c4 = this._containerPointToPoint(new Z.Point(0, this.height));
+        var xmin = Math.min(c1.x, c2.x, c3.x, c4.x),
+            xmax = Math.max(c1.x, c2.x, c3.x, c4.x),
+            ymin = Math.min(c1.y, c2.y, c3.y, c4.y),
+            ymax = Math.max(c1.y, c2.y, c3.y, c4.y);
+        return new Z.PointExtent(xmin, ymin, xmax, ymax);
+    },
+
+    /**
+     * Converts a view point extent to the geographic extent.
+     * @param  {maptalks.PointExtent} extent2D - view points extent
+     * @return {maptalks.Extent}  geographic extent
+     * @protected
+     */
+    _pointToExtent:function (extent2D) {
+        var projection = this.getProjection();
+        if (!projection) {
+            return null;
+        }
+        var res = this._getResolution();
+        if (Z.Util.isNil(res)) {
+            return null;
+        }
+        var extent = this._get2DExtent().getCenter(),
+            prjCenter = this._getPrjCenter(),
+            min = extent2D.getMin(),
+            max = extent2D.getMax();
+
+        var dist1 = extent.substract(min),
+            dist2 = extent.substract(max);
+        var c1 = projection.unproject(new Z.Coordinate(prjCenter.x - dist1.x * res, prjCenter.y + dist1.y * res)),
+            c2 = projection.unproject(new Z.Coordinate(prjCenter.x - dist2.x * res, prjCenter.y + dist2.y * res));
+        return new Z.Extent(c1, c2);
     },
 
     _setPrjCenterAndMove:function (pcenter) {
@@ -1215,6 +1225,66 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         layerList.sort(function (a, b) {
             return a.getZIndex() - b.getZIndex();
         });
+    },
+
+
+    _genViewMatrix : function (origin, scale, rotate) {
+        if (!rotate) {
+            rotate = 0;
+        }
+        this._generatingMatrix = true;
+        if (origin instanceof Z.Coordinate) {
+            origin = this.coordinateToContainerPoint(origin);
+        }
+        var point = this._containerPointToPoint(origin),
+            viewPoint = this.containerPointToViewPoint(origin);
+
+        var matrices = {
+            '2dPoint' : point,
+            'view' : new Z.Matrix().translate(viewPoint.x, viewPoint.y)
+                    .scaleU(scale).rotate(rotate).translate(-viewPoint.x, -viewPoint.y),
+            '2d' : new Z.Matrix().translate(point.x, point.y)
+                    .scaleU(scale).rotate(rotate).translate(-point.x, -point.y)
+        };
+        matrices['inverse'] = {
+            '2d' : matrices['2d'].inverse(),
+            'view' : matrices['view'].inverse()
+        };
+        this._generatingMatrix = false;
+        return matrices;
+    },
+
+    _fillMatrices: function (matrix, scale, rotate) {
+        if (!rotate) {
+            rotate = 0;
+        }
+        this._generatingMatrix = true;
+        var origin = this._pointToContainerPoint(matrix['2dPoint']);
+        //matrix for layers to transform
+        // var view = origin.substract(mapViewPoint);
+        matrix['container'] = new Z.Matrix().translate(origin.x, origin.y)
+                        .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
+
+        origin = origin.multi(2);
+        matrix['retina'] = new Z.Matrix().translate(origin.x, origin.y)
+                    .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
+        matrix['inverse']['container'] = matrix['container'].inverse();
+        matrix['inverse']['retina'] = matrix['retina'].inverse();
+        // var scale = matrix['container'].decompose()['scale'];
+        matrix['scale'] = {x:scale, y:scale};
+        this._generatingMatrix = false;
+    },
+
+    /**
+     * get Transform Matrix for zooming
+     * @param  {Number} scale  scale
+     * @param  {Point} origin Transform Origin
+     * @private
+     */
+    _generateMatrices:function (origin, scale, rotate) {
+        var viewMatrix = this._genViewMatrix(origin, scale, rotate);
+        this._fillMatrices(viewMatrix, scale, rotate);
+        return viewMatrix;
     },
 
     /**
@@ -1463,9 +1533,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @returns {maptalks.Coordinate} the new projected center.
      */
     _offsetCenterByPixel:function (pixel) {
-        var posX = this.width / 2 - pixel.x,
-            posY = this.height / 2 - pixel.y;
-        var pCenter = this._containerPointToPrj(new Z.Point(posX, posY));
+        var pos = new Z.Point(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
+        var pCenter = this._containerPointToPrj(pos);
         this._setPrjCenter(pCenter);
         return pCenter;
     },
@@ -1537,15 +1606,12 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * transform container point to geographical projected coordinate
      *
-     * @param  {maptalks.Point} containerPointt
+     * @param  {maptalks.Point} containerPoint
      * @return {maptalks.Coordinate}
      * @private
      */
     _containerPointToPrj:function (containerPoint) {
-        var centerPoint = this._prjToPoint(this._getPrjCenter());
-        //容器的像素坐标方向是固定方向的, 和html标准一致, 即从左到右增大, 从上到下增大
-        var point = new Z.Point(centerPoint.x + containerPoint.x - this.width / 2, centerPoint.y + containerPoint.y - this.height / 2);
-        return this._pointToPrj(point);
+        return this._pointToPrj(this._containerPointToPoint(containerPoint));
     },
 
     /**
@@ -1565,12 +1631,15 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      */
     _prjToContainerPoint:function (pCoordinate) {
-        var centerPoint = this._prjToPoint(this._getPrjCenter());
-        var point = this._prjToPoint(pCoordinate);
-        return new Z.Point(
-            this.width / 2 + point.x - centerPoint.x,
-            this.height / 2 + point.y - centerPoint.y
+        var centerPoint = this._prjToPoint(this._getPrjCenter()),
+            point = this._prjToPoint(pCoordinate),
+            centerContainerPoint = new Z.Point(this.width / 2, this.height / 2);
+        var result = new Z.Point(
+            centerContainerPoint.x + point.x - centerPoint.x,
+            centerContainerPoint.y + point.y - centerPoint.y
             );
+
+        return result;
     },
 
     /**
@@ -1589,6 +1658,21 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!containerPoint) { return null; }
         var platformOffset = this.offsetPlatform();
         return containerPoint._substract(platformOffset);
+    },
+
+    _pointToContainerPoint: function (point) {
+        return this._prjToContainerPoint(this._pointToPrj(point));
+    },
+
+    _containerPointToPoint: function (containerPoint) {
+        var centerPoint = this._prjToPoint(this._getPrjCenter()),
+            centerContainerPoint = new Z.Point(this.width / 2, this.height / 2);
+        //容器的像素坐标方向是固定方向的, 和html标准一致, 即从左到右增大, 从上到下增大
+        return new Z.Point(centerPoint.x + containerPoint.x - centerContainerPoint.x, centerPoint.y + containerPoint.y - centerContainerPoint.y);
+    },
+
+    _viewPointToPoint: function (viewPoint) {
+        return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint));
     }
 });
 

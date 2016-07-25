@@ -223,9 +223,13 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         return this.__uiDOM;
     },
 
-    _getPosition : function () {
-        var p = this.getMap().coordinateToViewPoint(this._coordinate)
+    _getViewPoint : function () {
+        return this.getMap().coordinateToViewPoint(this._coordinate)
                     ._add(this.options['dx'], this.options['dy']);
+    },
+
+    _getPosition : function () {
+        var p = this._getViewPoint();
         if (this.getOffset) {
             var o = this.getOffset();
             if (o) { p._add(o); }

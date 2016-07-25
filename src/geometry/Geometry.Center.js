@@ -33,14 +33,14 @@ Z.Geometry.Center = {
     },
 
     //Gets view point of the geometry's center
-    _getCenterViewPoint:function () {
+    _getCenter2DPoint:function () {
         var pcenter = this._getPrjCoordinates();
         if (!pcenter) { return null; }
         var map = this.getMap();
         if (!map) {
             return null;
         }
-        return map._prjToViewPoint(pcenter);
+        return map._prjToPoint(pcenter);
     },
 
     _getPrjCoordinates:function () {
