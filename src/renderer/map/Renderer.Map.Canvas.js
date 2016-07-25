@@ -43,8 +43,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this._clearCanvas();
         }
 
-        var mwidth = this._canvas.width,
-            mheight = this._canvas.height;
         this._drawBackground();
 
         for (var i = 0, len = layers.length; i < len; i++) {
@@ -55,7 +53,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             if (renderer && renderer.getRenderZoom() === zoom) {
                 var layerImage = this._getLayerImage(layers[i]);
                 if (layerImage && layerImage['image']) {
-                    this._drawLayerCanvasImage(layers[i], layerImage, mwidth, mheight);
+                    this._drawLayerCanvasImage(layers[i], layerImage);
                 }
             }
         }
@@ -133,8 +131,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     transform:function (matrix, layersToTransform) {
         this.map._fireEvent('renderstart', {'context' : this._context});
 
-        var mwidth = this._canvas.width,
-            mheight = this._canvas.height;
         var layers = layersToTransform || this._getAllLayerToTransform();
         this._clearCanvas();
         //automatically disable updatePointsWhileTransforming with mobile browsers.
@@ -150,22 +146,28 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
             var renderer = layers[i]._getRenderer();
             if (renderer) {
-                var transformed = false;
-                if (renderer.transform && !(renderer.isCanvasRender() && Z.Browser.mobile)) {
-                    transformed = renderer.transform(matrix);
-                }
-                if (transformLayers && !transformed) {
-                    this._context.save();
-                    this._applyTransform(matrix);
+                if (renderer.isCanvasRender()) {
+                    var transformed = false;
+                    if (transformLayers && renderer.transform && !Z.Browser.mobile) {
+                        transformed = renderer.transform(matrix);
+                    }
+                    if (transformLayers && !transformed) {
+                        this._context.save();
+                        this._applyTransform(matrix);
+                    }
+
+                    var layerImage = this._getLayerImage(layers[i]);
+                    if (layerImage && layerImage['image']) {
+                        this._drawLayerCanvasImage(layers[i], layerImage);
+                    }
+                    if (transformLayers && !transformed) {
+                        this._context.restore();
+                    }
+                } else {
+                    //e.g. baseTileLayer renderered by DOM
+                    renderer.transform(matrix);
                 }
 
-                var layerImage = this._getLayerImage(layers[i]);
-                if (layerImage && layerImage['image']) {
-                    this._drawLayerCanvasImage(layers[i], layerImage, mwidth, mheight);
-                }
-                if (transformLayers && !transformed) {
-                    this._context.restore();
-                }
             }
         }
         if (!transformLayers) {
@@ -229,8 +231,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 baseLayerImage = this._getLayerImage(baseLayer);
             //zoom animation with better performance, only animate baseLayer, ignore other layers.
             if (baseLayerImage) {
-                var width = this._canvas.width, height = this._canvas.height;
-                this._drawLayerCanvasImage(baseLayer, baseLayerImage, width, height);
+                this._drawLayerCanvasImage(baseLayer, baseLayerImage);
             }
         } else {
             //default zoom animation, animate all the layers.
@@ -322,8 +323,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this.updateMapSize(mapSize);
     },
 
-    _drawLayerCanvasImage:function (layer, layerImage, mwidth, mheight) {
-        if (!layer || !layerImage || mwidth === 0 || mheight === 0) {
+    _drawLayerCanvasImage:function (layer, layerImage) {
+        if (!layer || !layerImage) {
             return;
         }
         var point = layerImage['point'].multi(Z.Browser.retina ? 2 : 1);
