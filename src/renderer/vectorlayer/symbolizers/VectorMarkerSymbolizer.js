@@ -34,10 +34,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var gradientExtent = null,
-            strokeAndFill = this.strokeAndFill;
         this._prepareContext(ctx);
-
         this._drawMarkers(ctx, cookedPoints, resources);
     },
 
@@ -57,23 +54,30 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _drawMarkers: function (ctx, cookedPoints, resources) {
         var strokeAndFill = this.strokeAndFill,
             point, gradientExtent;
+        var gradient = Z.Util.isGradient(strokeAndFill['lineColor']) || Z.Util.isGradient(strokeAndFill['polygonFill']);
+        if (!gradient) {
+            Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+        }
+
         for (var i = cookedPoints.length - 1; i >= 0; i--) {
             point = cookedPoints[i];
             var origin = this._rotate(ctx, point, this._getRotationAt(i));
             if (origin) {
                 point = origin;
             }
-            if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
-                gradientExtent = this._getGraidentExtent(point);
-                strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth'])._round();
-            }
-            if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
-                if (!gradientExtent) {
+            if (gradient) {
+                if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
                     gradientExtent = this._getGraidentExtent(point);
+                    strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth'])._round();
                 }
-                strokeAndFill['polygonGradientExtent'] = gradientExtent._round();
+                if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
+                    if (!gradientExtent) {
+                        gradientExtent = this._getGraidentExtent(point);
+                    }
+                    strokeAndFill['polygonGradientExtent'] = gradientExtent._round();
+                }
+                Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
             }
-            Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
             this._drawVectorMarker(ctx, point);
             if (origin) {
                 ctx.restore();
@@ -84,12 +88,11 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _drawVectorMarker: function (ctx, point) {
         var style = this.style, strokeAndFill = this.strokeAndFill,
             markerType = style['markerType'].toLowerCase(),
-            vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(markerType,
-                            style['markerWidth'], style['markerHeight']),
+            vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(markerType, style['markerWidth'], style['markerHeight']),
             lineOpacity = strokeAndFill['lineOpacity'], fillOpacity = strokeAndFill['polygonOpacity'],
             j, lineCap, angle;
         var width = style['markerWidth'],
-            height = style['markerHeight']
+            height = style['markerHeight'];
         if (markerType === 'ellipse' || markerType === 'circle') {
              //ellipse default
             Z.Canvas.ellipse(ctx, point, width / 2, height / 2, lineOpacity, fillOpacity);
