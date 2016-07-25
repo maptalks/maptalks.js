@@ -85,10 +85,10 @@
                 var dom = Z.DomUtil.createEl('div');
                 Z.DomUtil.addClass(dom, 'maptalks-menu');
                 dom.style.width = this._getMenuWidth() + 'px';
-                var arrow = Z.DomUtil.createEl('em');
-                Z.DomUtil.addClass(arrow, 'maptalks-ico');
+                /*var arrow = Z.DomUtil.createEl('em');
+                Z.DomUtil.addClass(arrow, 'maptalks-ico');*/
                 var menuItems = this._createMenuItemDom();
-                dom.appendChild(arrow);
+                // dom.appendChild(arrow);
                 dom.appendChild(menuItems);
                 return dom;
             }
@@ -100,7 +100,17 @@
          * @private
          */
         getOffset:function () {
-            return new Z.Point(-17, 10);
+            var mapSize = this.getMap().getSize(),
+                p = this.getMap().viewPointToContainerPoint(this._getViewPoint()),
+                size = this.getSize();
+            var dx = 0, dy = 0;
+            if (p.x + size['width'] > mapSize['width']) {
+                dx = -size['width'];
+            }
+            if (p.y + size['height'] > mapSize['height']) {
+                dy = -size['height'];
+            }
+            return new Z.Point(dx, dy);
         },
 
         getEvents: function () {
