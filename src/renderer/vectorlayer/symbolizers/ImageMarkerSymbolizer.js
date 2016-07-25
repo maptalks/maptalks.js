@@ -1,5 +1,13 @@
 Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
+    defaultSymbol:{
+        'markerOpacity' : 1,
+        'markerWidth' : null,
+        'markerHeight' : null,
+        'markerDx': 0,
+        'markerDy': 0
+    },
+
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
         this.geometry = geometry;
@@ -44,12 +52,21 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= style['markerOpacity'];
         }
+        var p;
         for (var i = 0, len = cookedPoints.length; i < len; i++) {
+            p = cookedPoints[i];
+            var origin = this._rotate(ctx, p, this._getRotationAt(i));
+            if (origin) {
+                p = origin;
+            }
             //图片定位到中心底部
             Z.Canvas.image(ctx, img,
-                cookedPoints[i].x - width / 2,
-                cookedPoints[i].y - height,
+                p.x - width / 2,
+                p.y - height,
                 width, height);
+            if (origin) {
+                ctx.restore();
+            }
         }
         if (alpha !== undefined) {
             ctx.globalAlpha = alpha;
@@ -63,6 +80,15 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     getPlacement:function () {
         return this.symbol['markerPlacement'];
+    },
+
+    getRotation: function () {
+        var r = this.style['markerRotation'];
+        if (!Z.Util.isNumber(r)) {
+            return null;
+        }
+        //to radian
+        return r * Math.PI / 180;
     },
 
     getDxDy:function () {
@@ -81,15 +107,9 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     translate:function () {
-        var s = this.symbol;
-        return {
-            'markerFile' : s['markerFile'],
-            'markerWidth' : s['markerWidth'] || null,
-            'markerHeight' : s['markerHeight'] || null,
-            'markerOpacity' : s['markerOpacity'] || 1,
-            'markerDx' : s['markerDx'] || 0,
-            'markerDy' : s['markerDy'] || 0
-        };
+        var s = this.symbol,
+            d = this.defaultSymbol;
+        return Z.Util.extend({}, d, s);
     }
 });
 

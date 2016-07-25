@@ -51,7 +51,25 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
         return containerPoints;
     },
 
-    _getRotations: function () {
-        return this._getRenderPoints()[1];
+    _getRotationAt: function (i) {
+        var r = this.getRotation(),
+            rotations = this._getRenderPoints()[1];
+        if (!rotations) {
+            return r;
+        }
+        if (!r) {
+            r = 0;
+        }
+        return rotations[i] + r;
+    },
+
+    _rotate: function (ctx, origin, rotation) {
+        if (!Z.Util.isNil(rotation)) {
+            ctx.save();
+            ctx.translate(origin.x, origin.y);
+            ctx.rotate(rotation);
+            return new Z.Point(0, 0);
+        }
+        return null;
     }
 });

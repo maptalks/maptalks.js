@@ -40,7 +40,6 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!Z.Util.isArrayHasData(cookedPoints)) {
             return;
         }
-        var rotations = this._getRotations();
         var style = this.style,
             strokeAndFill = this.strokeAndFill;
         var textContent = Z.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
@@ -51,14 +50,12 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var p;
         for (var i = 0, len = cookedPoints.length; i < len; i++) {
             p = cookedPoints[i];
-            if (rotations && !Z.Util.isNil(rotations[i])) {
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(rotations[i]);
-                p = new Z.Point(0, 0);
+            var origin = this._rotate(ctx, p, this._getRotationAt(i));
+            if (origin) {
+                p = origin;
             }
             Z.Canvas.text(ctx, textContent, p, style, this.textDesc);
-            if (rotations && !Z.Util.isNil(rotations[i])) {
+            if (origin) {
                 ctx.restore();
             }
         }
@@ -66,6 +63,15 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     getPlacement:function () {
         return this.symbol['textPlacement'];
+    },
+
+    getRotation: function () {
+        var r = this.style['textRotation'];
+        if (!Z.Util.isNumber(r)) {
+            return null;
+        }
+        //to radian
+        return r * Math.PI / 180;
     },
 
     getDxDy:function () {
