@@ -52,8 +52,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
      * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
      * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
-     * @property {Boolean} [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
-     * @property {Boolean} [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
+     * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
+     * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
      * @property {maptalks.Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
      *
      * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
@@ -1163,7 +1163,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      */
     _get2DExtent:function () {
         var c1 = this._containerPointToPoint(new Z.Point(0, 0)),
-            c2 = this._containerPointToPoint(new Z.Point(0, this.width)),
+            c2 = this._containerPointToPoint(new Z.Point(this.width, 0)),
             c3 = this._containerPointToPoint(new Z.Point(this.width, this.height)),
             c4 = this._containerPointToPoint(new Z.Point(0, this.height));
         var xmin = Math.min(c1.x, c2.x, c3.x, c4.x),
@@ -1180,24 +1180,10 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @protected
      */
     _pointToExtent:function (extent2D) {
-        var projection = this.getProjection();
-        if (!projection) {
-            return null;
-        }
-        var res = this._getResolution();
-        if (Z.Util.isNil(res)) {
-            return null;
-        }
-        var extent = this._get2DExtent().getCenter(),
-            prjCenter = this._getPrjCenter(),
-            min = extent2D.getMin(),
-            max = extent2D.getMax();
-
-        var dist1 = extent.substract(min),
-            dist2 = extent.substract(max);
-        var c1 = projection.unproject(new Z.Coordinate(prjCenter.x - dist1.x * res, prjCenter.y + dist1.y * res)),
-            c2 = projection.unproject(new Z.Coordinate(prjCenter.x - dist2.x * res, prjCenter.y + dist2.y * res));
-        return new Z.Extent(c1, c2);
+        return new Z.Extent(
+            this.pointToCoordinate(extent2D.getMin()),
+            this.pointToCoordinate(extent2D.getMax())
+        );
     },
 
     _setPrjCenterAndMove:function (pcenter) {
