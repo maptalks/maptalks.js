@@ -379,14 +379,24 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _getEvents: function () {
         return {
+            '_zoomstart' : this._onZoomStart,
             '_zoomend' : this._onZoomEnd,
             '_resize'  : this._onResize,
+            '_movestart' : this._onMoveStart,
             '_moveend' : this._onMoveEnd
         };
     },
 
+    _onZoomStart: function () {
+
+    },
+
     _onZoomEnd: function () {
         this.render();
+    },
+
+    _onMoveStart: function () {
+
     },
 
     _onMoveEnd: function () {
