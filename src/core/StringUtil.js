@@ -31,7 +31,7 @@ Z.StringUtil = {
      * @return {maptalks.Size}
      */
     stringLength:function (text, font) {
-        var ruler = Z.StringUtil._getStrRuler();
+        var ruler = Z.DomUtil._getDomRuler('span');
         ruler.style.font = font;
         ruler.innerHTML = text;
         var result = new Z.Size(ruler.clientWidth, ruler.clientHeight);
@@ -40,13 +40,6 @@ Z.StringUtil = {
         Z.DomUtil.removeDomNode(ruler);
         return result;
 
-    },
-
-    _getStrRuler:function () {
-        var span = document.createElement('span');
-        span.style.cssText = 'position:absolute;left:-10000px;top:-10000px;';
-        document.body.appendChild(span);
-        return span;
     },
 
     /**
@@ -114,18 +107,18 @@ Z.StringUtil = {
         if (!Z.Util.isString(text)) {
             text += '';
         }
-        var actualWidth = 0, size, i, len;
+        var actualWidth = 0, size, i, l;
         if (wrapChar && text.indexOf(wrapChar) >= 0) {
             var texts = text.split(wrapChar),
-                t, tSize, tWidth, contents, ii;
-            for (i = 0, len = texts.length; i < len; i++) {
+                t, tSize, tWidth, contents, ii, ll;
+            for (i = 0, l = texts.length; i < l; i++) {
                 t = texts[i];
                 //TODO stringLength is expensive, should be reduced here.
                 tSize = Z.StringUtil.stringLength(t, font);
                 tWidth = tSize['width'];
                 if (tWidth > wrapWidth) {
                     contents = Z.StringUtil.splitContent(t, tWidth, wrapWidth);
-                    for (ii = 0; ii < contents.length; ii++) {
+                    for (ii = 0, ll = contents.length; ii < ll; ii++) {
                         size = Z.StringUtil.stringLength(contents[ii], font);
                         if (size['width'] > actualWidth) { actualWidth = size['width']; }
                         textRows.push({'text':contents[ii], 'size':size});

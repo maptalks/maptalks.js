@@ -38,6 +38,7 @@ Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar
      * @property {Object[]} options.items                                  - items on the toolbar
      */
     options:{
+        'height' : 28,
         'vertical' : false,
         'position' : 'top-right',
         'items'     : {
@@ -70,8 +71,19 @@ Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar
             for (var i = 0, len = items.length; i < len; i++) {
                 var item = items[i];
                 var li = Z.DomUtil.createEl('li');
-                li.innerHTML = item['item'];
+                if (this.options['height'] !== 28) {
+                    li.style.lineHeight = this.options['height'] + 'px';
+                }
+                li.style.height = this.options['height'] + 'px';
                 li.style.cursor = 'pointer';
+                if (Z.DomUtil.isHTML(item['item'])) {
+                    li.style.textAlign = 'center';
+                    var itemSize = Z.DomUtil.measureDom('div', item['item']);
+                    //vertical-middle
+                    li.innerHTML = '<div style="margin-top:' + (this.options['height'] - itemSize['height']) / 2 + 'px;">' + item['item'] + '</div>';
+                } else {
+                    li.innerHTML = item['item'];
+                }
                 if (item['click']) {
                     Z.DomUtil.on(li, 'click', (onButtonClick)(item['click'], i, null, li));
                 }
