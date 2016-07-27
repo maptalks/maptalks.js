@@ -78,10 +78,19 @@ describe('#Sector', function() {
     });
 
     it('getShell', function() {
-        var sector = new maptalks.Sector({x: 0, y: 0}, 1, 30, 60);
+        var sector = new maptalks.Sector({x: 0, y: 0}, 1000, 0, 90);
         var shell = sector.getShell();
 
         expect(shell).to.have.length(sector.options.numberOfShellPoints);
+        var num = sector.options.numberOfShellPoints;
+        expect(shell).to.have.length(num);
+        expect(map.computeLength(shell[0], [0, 0])).to.be.eql(sector.getRadius());
+        expect(shell[0].x).to.be.above(0);
+        expect(shell[0].y).to.be.eql(0);
+
+        expect(map.computeLength(shell[shell.length-1], [0, 0])).to.be.eql(sector.getRadius());
+        expect(shell[shell.length-1].y).to.be.above(0);
+        expect(shell[shell.length-1].x).to.be.approx(0, 1E-10);
     });
 
     describe('geometry fires events', function() {

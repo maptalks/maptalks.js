@@ -549,6 +549,29 @@ Z.DomUtil = {
             (scale ? ' scale(' + scale + ')' : '');
 
         return this;
+    },
+
+    isHTML: function (str) {
+        return /<[a-z\][\s\S]*>/i.test(str);
+    },
+
+    measureDom: function (parentTag, dom) {
+        var ruler = Z.DomUtil._getDomRuler(parentTag);
+        if (Z.Util.isString(dom)) {
+            ruler.innerHTML = dom;
+        } else {
+            ruler.appendChild(dom);
+        }
+        var result = new Z.Size(ruler.clientWidth, ruler.clientHeight);
+        Z.DomUtil.removeDomNode(ruler);
+        return result;
+    },
+
+    _getDomRuler:function (tag) {
+        var span = document.createElement(tag);
+        span.style.cssText = 'position:absolute;left:-10000px;top:-10000px;';
+        document.body.appendChild(span);
+        return span;
     }
 
 };

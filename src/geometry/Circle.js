@@ -59,15 +59,16 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
      * @return {maptalks.Coordinate[]} - shell coordinates
      */
     getShell:function () {
-        var measurer = this._getMeasurer();
-        var center = this.getCoordinates();
-        var numberOfPoints = this.options['numberOfShellPoints'];
-        var radius = this.getRadius();
-        var shell = [];
+        var measurer = this._getMeasurer(),
+            center = this.getCoordinates(),
+            numberOfPoints = this.options['numberOfShellPoints'],
+            radius = this.getRadius();
+        var shell = [],
+            rad, dx, dy;
         for (var i = 0; i < numberOfPoints; i++) {
-            var rad = (360 * i / numberOfPoints) * Math.PI / 180;
-            var dx = radius * Math.cos(rad);
-            var dy = radius * Math.sin(rad);
+            rad = (360 * i / numberOfPoints) * Math.PI / 180;
+            dx = radius * Math.cos(rad);
+            dy = radius * Math.sin(rad);
             var vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }

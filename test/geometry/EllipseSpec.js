@@ -73,10 +73,22 @@ describe('#Ellipse', function() {
     });
 
     it('getShell', function() {
-        var ellipse = new maptalks.Ellipse({x: 0, y: 0}, 1, 1);
+        var ellipse = new maptalks.Ellipse([0, 0], 1000, 800);
         var shell = ellipse.getShell();
 
-        expect(shell).to.have.length(ellipse.options.numberOfShellPoints);
+        var num = ellipse.options.numberOfShellPoints;
+        expect(shell).to.have.length(num);
+        var sumx = 0, sumy = 0, len = shell.length;
+        for (var i = 0; i < len; i++) {
+            sumx += shell[i].x;
+            sumy += shell[i].y;
+        }
+        expect(sumx / len).to.be.approx(0);
+        expect(sumy / len).to.be.approx(0);
+        expect(map.computeLength(shell[0], [0, 0])).to.be.eql(ellipse.getWidth() / 2);
+        expect(map.computeLength(shell[num / 4], [0, 0])).to.be.eql(ellipse.getHeight() / 2);
+        expect(map.computeLength(shell[num * 3 / 4], [0, 0])).to.be.eql(ellipse.getHeight() / 2);
+        expect(map.computeLength(shell[num / 2], [0, 0])).to.be.eql(ellipse.getWidth() / 2);
     });
 
     describe('geometry fires events', function() {
