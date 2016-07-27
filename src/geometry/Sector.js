@@ -110,10 +110,11 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
             radius = this.getRadius(),
             shell = [],
             angle = this.getEndAngle() - this.getStartAngle();
+        var rad, dx, dy;
         for (var i = 0; i < numberOfPoints; i++) {
-            var rad = (angle * i / numberOfPoints + this.getStartAngle()) * Math.PI / 180;
-            var dx = radius * Math.cos(rad);
-            var dy = radius * Math.sin(rad);
+            rad = (angle * i / (numberOfPoints - 1) + this.getStartAngle()) * Math.PI / 180;
+            dx = radius * Math.cos(rad);
+            dy = radius * Math.sin(rad);
             var vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
