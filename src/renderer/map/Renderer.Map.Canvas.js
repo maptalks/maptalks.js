@@ -164,8 +164,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                         this._context.restore();
                     }
                 } else {
-                    //e.g. baseTileLayer renderered by DOM
-                    renderer.transform(matrix);
+                    if (renderer.transform) {
+                        //e.g. baseTileLayer renderered by DOM
+                        renderer.transform(matrix);
+                    }
                 }
 
             }
