@@ -41,8 +41,12 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _getGraidentExtent: function (points) {
         var e = new Z.PointExtent(),
             m = this.getMarkerExtent();
-        for (var i = points.length - 1; i >= 0; i--) {
-            e._combine(points[i]);
+        if (Z.Util.isArray(points)) {
+            for (var i = points.length - 1; i >= 0; i--) {
+                e._combine(points[i]);
+            }
+        } else {
+            e._combine(points);
         }
         e['xmin'] += m['xmin'];
         e['ymin'] += m['ymin'];
