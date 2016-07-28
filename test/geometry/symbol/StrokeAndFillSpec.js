@@ -317,27 +317,23 @@ describe('StrokeAndFillSpec', function() {
             var circle = new maptalks.Marker(center, {
                 symbol:{
                     'markerType' : 'ellipse',
-                    'markerFillColor' : {
+                    'markerFill' : {
                         type : 'linear',
                         colorStops : [
                             [0.00, 'red'],
-                            [1 / 6, 'orange'],
-                            [2 / 6, 'yellow'],
-                            [3 / 6, 'green'],
-                            [4 / 6, 'aqua'],
-                            [5 / 6, 'blue'],
                             [1.00, 'white'],
                         ]
                     },
                     'markerFillOpacity' : 1,
                     'markerWidth' : 20,
-                    'markerHeight' : 20,
-                    'markerDx' : - 50
+                    'markerHeight' : 20
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(v).to.be.painted(-50);
+                expect(v).to.be.painted(-9, 0, [255, 18, 18]);
+                expect(v).to.be.painted(-5, 0, [255, 67, 67]);
+                expect(v).to.be.painted(8, 0, [255, 225, 225]);
                 done();
             })
             v.addGeometry(circle);
