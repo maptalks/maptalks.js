@@ -500,7 +500,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     Z.Util.cancelAnimFrame(this._hitDetectTimeout);
                 }
                 this._hitDetectTimeout = Z.Util.requestAnimFrame(function () {
-                    var vp = param['viewPoint'];
+                    var vp = param['point2d'];
                     var layers = map._getLayers();
                     var hit = false,
                         cursor;
