@@ -302,6 +302,7 @@ GeoEventsTester.prototype = {
         expect(param.containerPoint).to.be.ok();
         expect(param.coordinate).to.be.ok();
         expect(param.domEvent).to.be.ok();
+        expect(param.point2d).to.be.ok();
     },
 
     _verifyGeometryEvents:function(dom,options) {

@@ -194,6 +194,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
                 eventParam['containerPoint'] = containerPoint;
                 eventParam['viewPoint'] = this.containerPointToViewPoint(containerPoint);
+                eventParam['point2d'] = this._containerPointToPoint(containerPoint);
             }
         }
         return eventParam;
