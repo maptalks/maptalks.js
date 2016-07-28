@@ -9,16 +9,17 @@
  * @extends {maptalks.symbolizer.CanvasSymbolizer}
  */
 Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
-    getViewExtent: function () {
-        var extent = new Z.PointExtent();
-        var markerExtent = this.getMarkerExtent();
-        var min = markerExtent.getMin(),
-            max = markerExtent.getMax();
+    get2DExtent: function () {
+        var extent = new Z.PointExtent(),
+            m = this.getMarkerExtent();
         var renderPoints = this._getRenderPoints()[0];
         for (var i = renderPoints.length - 1; i >= 0; i--) {
-            var point = renderPoints[i];
-            extent = extent.combine(new Z.PointExtent(point.add(min), point.add(max)));
+            extent._combine(renderPoints[i]);
         }
+        extent['xmin'] += m['xmin'];
+        extent['ymin'] += m['ymin'];
+        extent['xmax'] += m['xmax'];
+        extent['ymax'] += m['ymax'];
         return extent;
     },
 
@@ -36,13 +37,13 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null,
             dxdy = this.getDxDy(),
-            layerViewPoint = this.geometry.getLayer()._getRenderer()._viewExtent.getMin();
+            layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin();
         if (matrix) {
             dxdy = new Z.Point(dxdy.x / scale.x, dxdy.y / scale.y);
         }
 
         var containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
-            return point.substract(layerViewPoint)._add(dxdy);
+            return point.substract(layerPoint)._add(dxdy);
         });
         if (matrix) {
             return matrix.applyToArray(containerPoints);
@@ -50,7 +51,25 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
         return containerPoints;
     },
 
-    _getRotations: function () {
-        return this._getRenderPoints()[1];
+    _getRotationAt: function (i) {
+        var r = this.getRotation(),
+            rotations = this._getRenderPoints()[1];
+        if (!rotations) {
+            return r;
+        }
+        if (!r) {
+            r = 0;
+        }
+        return rotations[i] + r;
+    },
+
+    _rotate: function (ctx, origin, rotation) {
+        if (!Z.Util.isNil(rotation)) {
+            ctx.save();
+            ctx.translate(origin.x, origin.y);
+            ctx.rotate(rotation);
+            return new Z.Point(0, 0);
+        }
+        return null;
     }
 });

@@ -14,8 +14,8 @@ describe('#Map', function () {
 
     beforeEach(function() {
         container = document.createElement('div');
-        container.style.width = '2px';
-        container.style.height = '2px';
+        container.style.width = '4px';
+        container.style.height = '3px';
         document.body.appendChild(container);
         var option = {
             zoomAnimation:false,
@@ -46,10 +46,28 @@ describe('#Map', function () {
         });
 
         it('getExtent', function () {
-            var extent = map.getExtent();
+            var extent = map.getExtent(),
+                projection = map.getProjection(),
+                res = map._getResolution(),
+                size = map.getSize();
 
             expect(extent).to.not.be(null);
             expect(extent).to.be.an(maptalks.Extent);
+
+            var min = projection.project(extent.getMin()),
+                max = projection.project(extent.getMax());
+            expect((max.x - min.x) / res).to.be.approx(size.width);
+            expect((max.y - min.y) / res).to.be.approx(size.height);
+        });
+
+        it('_get2DExtent', function () {
+            var extent = map._get2DExtent(),
+                size = map.getSize();
+
+            expect(extent).to.not.be(null);
+            expect(extent).to.be.an(maptalks.PointExtent);
+            expect(extent.getWidth()).to.be.eql(size.width);
+            expect(extent.getHeight()).to.be.eql(size.height);
         });
 
         it('getZoom', function () {

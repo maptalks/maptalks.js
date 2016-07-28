@@ -104,16 +104,17 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      * @return {maptalks.Coordinate[]} - shell coordinates
      */
     getShell:function () {
-        var measurer = this._getMeasurer();
-        var center = this.getCoordinates();
-        var numberOfPoints = this.options['numberOfShellPoints'];
-        var radius = this.getRadius();
-        var shell = [];
-        var angle = this.getEndAngle() - this.getStartAngle();
+        var measurer = this._getMeasurer(),
+            center = this.getCoordinates(),
+            numberOfPoints = this.options['numberOfShellPoints'],
+            radius = this.getRadius(),
+            shell = [],
+            angle = this.getEndAngle() - this.getStartAngle();
+        var rad, dx, dy;
         for (var i = 0; i < numberOfPoints; i++) {
-            var rad = (angle * i / numberOfPoints + this.getStartAngle()) * Math.PI / 180;
-            var dx = radius * Math.cos(rad);
-            var dy = radius * Math.sin(rad);
+            rad = (angle * i / (numberOfPoints - 1) + this.getStartAngle()) * Math.PI / 180;
+            dx = radius * Math.cos(rad);
+            dy = radius * Math.sin(rad);
             var vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
@@ -130,7 +131,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
     },
 
     _containsPoint: function (point, tolerance) {
-        var center = this._getCenterViewPoint(),
+        var center = this._getCenter2DPoint(),
             t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
             pc = center,

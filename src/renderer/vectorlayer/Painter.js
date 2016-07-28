@@ -88,7 +88,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         var matrices = this.getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null;
-        var layerViewPoint = this.geometry.getLayer()._getRenderer()._viewExtent.getMin(),
+        var layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin(),
             context = this._rendResources['context'],
             transContext = [],
         //refer to Geometry.Canvas
@@ -97,14 +97,14 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         //convert view points to container points needed by canvas
         if (Z.Util.isArray(points)) {
             containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
-                var cp = point.substract(layerViewPoint);
+                var cp = point.substract(layerPoint);
                 if (matrix) {
                     return matrix.applyToPointInstance(cp);
                 }
                 return cp;
             });
         } else if (points instanceof Z.Point) {
-            containerPoints = points.substract(layerViewPoint);
+            containerPoints = points.substract(layerPoint);
             if (matrix) {
                 containerPoints = matrix.applyToPointInstance(containerPoints);
             }
@@ -171,32 +171,31 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     },
 
     //需要实现的接口方法
-    getViewExtent:function () {
-        if (!this._viewExtent) {
+    get2DExtent:function () {
+        if (!this._extent2D) {
             if (this.symbolizers) {
-                var viewExtent = new Z.PointExtent();
+                var _extent2D = new Z.PointExtent();
                 var len = this.symbolizers.length - 1;
                 for (var i = len; i >= 0; i--) {
-                    viewExtent._combine(this.symbolizers[i].getViewExtent());
+                    _extent2D._combine(this.symbolizers[i].get2DExtent());
                 }
-                viewExtent._round();
-                this._viewExtent = viewExtent;
+                _extent2D._round();
+                this._extent2D = _extent2D;
             }
         }
-        return this._viewExtent;
+        return this._extent2D;
     },
 
     getContainerExtent : function () {
-        var layerViewPoint = this.geometry.getLayer()._getRenderer()._viewExtent.getMin(),
-            viewExtent = this.getViewExtent();
-        var matrices = this.getTransformMatrix(),
-            matrix = matrices ? matrices['container'] : null;
-        var containerExtent = viewExtent.add(layerViewPoint._multi(-1));
+        var map = this.getMap(),
+            matrix = this.getTransformMatrix(),
+            extent2D = this.get2DExtent();
+        var containerExtent = new Z.PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
         if (matrix) {
-            containerExtent = new Z.PointExtent(
-                    matrix.applyToPointInstance(containerExtent.getMin()),
-                    matrix.applyToPointInstance(containerExtent.getMax())
-                    );
+            //FIXME not right for markers
+            var min = matrix['container'].applyToPointInstance(containerExtent.getMin());
+            var max = matrix['container'].applyToPointInstance(containerExtent.getMax());
+            containerExtent = new Z.PointExtent(min, max);
         }
         return containerExtent;
     },
@@ -303,7 +302,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     _removeCache:function () {
         delete this._renderPoints;
         delete this._rendResources;
-        delete this._viewExtent;
+        delete this._extent2D;
     }
 });
 

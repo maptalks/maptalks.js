@@ -82,19 +82,27 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      * @return {maptalks.Coordinate[]} - shell coordinates
      */
     getShell:function () {
-        var measurer = this._getMeasurer();
-        var center = this.getCoordinates();
-        var numberOfPoints = this.options['numberOfShellPoints'];
-        var width = this.getWidth(),
+        var measurer = this._getMeasurer(),
+            center = this.getCoordinates(),
+            numberOfPoints = this.options['numberOfShellPoints'],
+            width = this.getWidth(),
             height = this.getHeight();
         var shell = [];
-        var s = Math.pow(width, 2) * Math.pow(height, 2),
-            sx = Math.pow(width, 2),
-            sy = Math.pow(height, 2);
+        var s = Math.pow(width / 2, 2) * Math.pow(height / 2, 2),
+            sx = Math.pow(width / 2, 2),
+            sy = Math.pow(height / 2, 2);
+        var deg, rad, dx, dy;
         for (var i = 0; i < numberOfPoints; i++) {
-            var rad = (360 * i / numberOfPoints) * Math.PI / 180;
-            var dx = Math.sqrt(s / (sx * Math.pow(Math.tan(rad), 2) + sy));
-            var dy = Math.sqrt(s / (sy * Math.pow(1 / Math.tan(rad), 2) + sx));
+            deg = 360 * i / numberOfPoints;
+            rad = deg * Math.PI / 180;
+            dx = Math.sqrt(s / (sx * Math.pow(Math.tan(rad), 2) + sy));
+            dy = Math.sqrt(s / (sy * Math.pow(1 / Math.tan(rad), 2) + sx));
+            if (deg > 90 && deg < 270) {
+                dx *= -1;
+            }
+            if (deg > 180 && deg < 360) {
+                dy *= -1;
+            }
             var vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
@@ -118,7 +126,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
             b = pb.height,
             c = Math.sqrt(Math.abs(a * a - b * b)),
             xfocus = a >= b;
-        var center = this._getCenterViewPoint();
+        var center = this._getCenter2DPoint();
         var f1, f2, d;
         if (xfocus) {
             f1 = new Z.Point(center.x - c, center.y);

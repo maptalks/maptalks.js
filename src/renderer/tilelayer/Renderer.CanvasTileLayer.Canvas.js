@@ -15,7 +15,7 @@ Z.renderer.canvastilelayer.Canvas = Z.renderer.tilelayer.Canvas.extend({
             'url' : tile['url'],
             'viewPoint' : tile['viewPoint'],
             'zoom' : tile['zoom'],
-            'extent' : map.viewToExtent(new Z.PointExtent(tile['viewPoint'], tile['viewPoint'].add(tileSize.toPoint())))
+            'extent' : map._pointToExtent(new Z.PointExtent(tile['2dPoint'], tile['2dPoint'].add(tileSize.toPoint())))
         }, function (error) {
             if (error) {
                 onTileError.call(tileCanvas);

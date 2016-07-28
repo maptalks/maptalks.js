@@ -1,5 +1,5 @@
 
-describe('GeoJSONLayer', function() {
+describe('#GeoJSONLayer', function() {
     //examples are from geoJSON.org
     var geoJSONs = [
 
@@ -113,22 +113,6 @@ describe('GeoJSONLayer', function() {
         removeContainer(container);
     });
 
-
-    it('add again', function (done) {
-        var count = geoJSONs.length + 2;
-        var layer = new maptalks.GeoJSONLayer('v', geoJSONs).addTo(map);
-        expect(layer.getCount()).to.be(count);
-        map.removeLayer(layer);
-        expect(layer.getCount()).to.be(count);
-        layer.on('layerload', function () {
-            expect(layer.getCount()).to.be(count);
-            expect(layer).to.be.painted(0, -1);
-            done();
-        });
-        map.addLayer(layer);
-    });
-
-
     it('from/toJSON', function () {
         var count = geoJSONs.length + 2,
             pos = geoJSONs.length - 1;
@@ -142,4 +126,21 @@ describe('GeoJSONLayer', function() {
         expect(layer2).to.be.a(maptalks.GeoJSONLayer);
         expect(layer2.getCount()).to.be.eql(count);
     });
+
+    it('add again', function (done) {
+        var count = geoJSONs.length + 2;
+        var layer = new maptalks.GeoJSONLayer('v', geoJSONs).addTo(map);
+        expect(layer.getCount()).to.be(count);
+        map.removeLayer(layer);
+        expect(layer.getCount()).to.be(count);
+        layer.on('layerload', function () {
+            expect(layer.getCount()).to.be(count);
+            expect(layer).to.be.painted(0, -5);
+            done();
+        });
+        map.addLayer(layer);
+    });
+
+
+
 });

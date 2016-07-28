@@ -6,7 +6,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * Caculate distance of two coordinates.
      * @param {Number[]|maptalks.Coordinate} coord1 - coordinate 1
      * @param {Number[]|maptalks.Coordinate} coord2 - coordinate 2
-     * @return {Number} distance
+     * @return {Number} distance, unit is meter
+     * @example
+     * var distance = map.computeLength([0, 0], [0, 20]);
      */
     computeLength: function (coord1, coord2) {
         if (!this.getProjection()) { return null; }
@@ -19,7 +21,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     /**
      * Caculate a geometry's length.
      * @param {maptalks.Geometry} geometry - geometry to caculate
-     * @return {Number} length
+     * @return {Number} length, unit is meter
      */
     computeGeometryLength:function (geometry) {
         return geometry._computeGeodesicLength(this.getProjection());
@@ -28,7 +30,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     /**
      * Caculate a geometry's area.
      * @param  {maptalks.Geometry} geometry - geometry to caculate
-     * @return {Number} area
+     * @return {Number} area, unit is sq.meter
      */
     computeGeometryArea:function (geometry) {
         return geometry._computeGeodesicArea(this.getProjection());
@@ -44,6 +46,14 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
      * @param {Boolean}  [opts.includeInternals=false] - whether to identify the internal layers.
      * @param {Function} callback           - the callback function using the result geometries as the parameter.
      * @return {maptalks.Map} this
+     * @example
+     * map.identify({
+     *      coordinate: [0, 0],
+     *      layers: [layer],
+     *      success: function(geos){
+     *          console.log(geos);
+     *      }
+     *  });
      */
     identify: function (opts, callback) {
         if (!opts) {
@@ -62,7 +72,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 layers.push(reqLayers[i]);
             }
         }
-        var point = this.coordinateToViewPoint(opts['coordinate'])._round();
+        var point = this.coordinateToPoint(new Z.Coordinate(opts['coordinate']))._round();
         var fn = callback,
             filter = opts['filter'];
         var hits = [],
@@ -81,7 +91,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 if (!geo || !geo.isVisible()) {
                     continue;
                 }
-                var pxExtent = !geo._getPainter() ? null : geo._getPainter().getViewExtent();
+                var pxExtent = !geo._getPainter() ? null : geo._getPainter().get2DExtent();
                 if (!pxExtent || !pxExtent.contains(point)) {
                     continue;
                 }

@@ -125,18 +125,17 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             return;
         }
         this._prepareToDraw();
-        var viewExtent = this._viewExtent,
-            maskViewExtent = this._prepareCanvas();
-        if (maskViewExtent) {
-            if (!maskViewExtent.intersects(viewExtent)) {
+        var extent2D = this._extent2D,
+            maskExtent2D = this._prepareCanvas();
+        if (maskExtent2D) {
+            if (!maskExtent2D.intersects(extent2D)) {
                 this._fireLoadedEvent();
                 return;
             }
-            viewExtent = viewExtent.intersection(maskViewExtent);
+            extent2D = extent2D.intersection(maskExtent2D);
         }
-        this._displayExtent = viewExtent;
+        this._displayExtent = extent2D;
         this._forEachGeo(this._checkGeo, this);
-
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._getPainter().paint(matrix);
         }
@@ -155,8 +154,8 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             return;
         }
         var painter = geo._getPainter(),
-            viewExtent = painter.getViewExtent();
-        if (!viewExtent || !viewExtent.intersects(this._displayExtent)) {
+            extent2D = painter.get2DExtent();
+        if (!extent2D || !extent2D.intersects(this._displayExtent)) {
             return;
         }
         this._isBlank = false;
@@ -190,13 +189,13 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             if (!this._canvasCache) {
                 this._canvasCache = {};
             }
-            if (this._viewExtent) {
+            if (this._extent2D) {
                 this._complete();
                 return;
             } else if (this._canvasCache[zoom]) {
                 this._canvas = this._canvasCache[zoom].canvas;
                 var center = map._prjToPoint(map._getPrjCenter());
-                this._viewExtent = this._canvasCache[zoom].viewExtent.add(this._canvasCache[zoom].center.substract(center));
+                this._extent2D = this._canvasCache[zoom].extent2D.add(this._canvasCache[zoom].center.substract(center));
                 this._complete();
                 return;
             } else {
@@ -208,7 +207,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             if (!this._canvasCache[zoom]) {
                 this._canvasCache[zoom] = {
                     'canvas'       : this._canvas,
-                    'viewExtent'   : this._viewExtent,
+                    'extent2D'   : this._extent2D,
                     'center'       : map._prjToPoint(map._getPrjCenter())
                 };
             }
@@ -217,7 +216,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     },
 
     _onZoomEnd: function () {
-        delete this._viewExtent;
+        delete this._extent2D;
         if (this._layer.isVisible()) {
             this._layer.forEach(function (geo) {
                 geo._onZoomEnd();
@@ -248,7 +247,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             this.render();
         } else {
             delete this._canvasCache;
-            delete this._viewExtent;
+            delete this._extent2D;
             this._prepareRender();
             this._drawImmediate();
         }

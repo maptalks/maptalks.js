@@ -68,7 +68,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
 
         var renderer = map._getRenderer();
 
-        var matrix = renderer.getZoomMatrix(scale, origin, Z.Browser.retina);
+        var matrix = map._generateMatrices(origin, scale);
         renderer.transform(matrix);
         /**
           * touchzooming event

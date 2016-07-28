@@ -38,7 +38,7 @@ describe('VectorLayer', function() {
             expect(layer.getCount()).to.be(1);
             layer.on('layerload', function () {
                 expect(layer.getCount()).to.be(1);
-                expect(layer).to.be.painted(0, -1);
+                expect(layer).to.be.painted(0, -5);
                 done();
             });
             map.addLayer(layer);
