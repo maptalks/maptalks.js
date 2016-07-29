@@ -128,7 +128,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         var me = this;
         function onTileLoad() {
             if (!Z.node) {
-                me._tileCache && me._tileCache.add(this[me.propertyOfTileId], this);
+                if (me._tileCache) { me._tileCache.add(this[me.propertyOfTileId], this); }
                 me._tileRended[this[me.propertyOfTileId]] = this;
             }
             me._drawTileAndRequest(this);
@@ -299,11 +299,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     _onRemove: function () {
         delete this._viewExtent;
         delete this._mapRender;
-        delete this._layer;
         delete this._tileCache;
         delete this._tileRended;
         delete this._tileQueue;
-        delete this._mapRender;
     }
 });
 
