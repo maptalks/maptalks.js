@@ -240,7 +240,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             }
                 //这一行代码取消注释后, 会造成dblclick无法响应, 可能是存在循环调用,造成浏览器无法正常响应事件
             this._setLonlats(path);
-
+            param['geometry'] = this.getMode() === 'polygon' ? path.length >= 3 ? new Z.Polygon(path) : new Z.LineString(path) : new Z.LineString(path);
             /**
              * drawvertex event.
              *
@@ -276,7 +276,8 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         } else {
             this._movingTail.setCoordinates(tailPath);
         }
-        param['geometry'] = this._geometry;
+        path = path.concat([coordinate]);
+        param['geometry'] = this.getMode() === 'polygon' ? path.length >= 3 ? new Z.Polygon(path) : new Z.LineString(path) : new Z.LineString(path);
         /**
          * mousemove event.
          *
@@ -405,6 +406,8 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             if (!this._isValidContainerPoint(current)) { return false; }
             var coordinate = this._containerPointToLonlat(current);
             genGeometry(coordinate);
+            param['geometry'] = this._geometry;
+            this._fireEvent('mousemove', param);
             return false;
         }
         var onMouseUp = function (_event) {
