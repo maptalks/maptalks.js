@@ -76,7 +76,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
     },
 
     _computeGeodesicLength:function (measurer) {
-        return Z.GeoUtils.computeLength(this.getCoordinates(), measurer);
+        return Z.GeoUtil._computeLength(this.getCoordinates(), measurer);
     },
 
     _computeGeodesicArea:function () {
@@ -93,7 +93,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
                 p1 = points[i];
                 p2 = points[i + 1];
 
-                if (Z.GeoUtils.distanceToSegment(point, p1, p2) <= t) {
+                if (Z.GeoUtil.distanceToSegment(point, p1, p2) <= t) {
                     return true;
                 }
             }

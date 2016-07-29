@@ -254,7 +254,9 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     },
 
     _onRemove:function () {
+        this._clearTimeout();
         delete this._canvasCache;
+        delete this._geosToDraw;
     },
 
     _clearTimeout:function () {

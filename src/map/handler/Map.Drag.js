@@ -6,8 +6,8 @@ Z.Map.Drag = Z.Handler.extend({
     addHooks: function () {
         var map = this.target;
         if (!map) { return; }
-        this.dom = map._panels.mapWrapper || map._containerDOM;
-        this._dragHandler = new Z.Handler.Drag(this.dom);
+        var dom = map._panels.mapWrapper || map._containerDOM;
+        this._dragHandler = new Z.Handler.Drag(dom);
         this._dragHandler.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)
             .on('dragging', this._onDragging, this)
@@ -21,6 +21,7 @@ Z.Map.Drag = Z.Handler.extend({
                 .off('dragging', this._onDragging, this)
                 .off('dragend', this._onDragEnd, this)
                 .disable();
+        this._dragHandler.remove();
         delete this._dragHandler;
     },
 

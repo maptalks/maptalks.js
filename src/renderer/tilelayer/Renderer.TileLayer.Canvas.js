@@ -17,7 +17,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     initialize:function (layer) {
         this._layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
-        this._tileCache = new Z.TileLayer.TileCache();
+        if (!Z.node || !this._layer.options['cacheTiles']) {
+            this._tileCache = new Z.TileLayer.TileCache();
+        }
         this._tileQueue = {};
     },
 
@@ -66,7 +68,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             tile = tiles[i];
             tileId = tiles[i]['id'];
             //如果缓存中已存有瓦片, 则从不再请求而从缓存中读取.
-            cached = tileRended[tileId] || tileCache.get(tileId);
+            cached = tileRended[tileId] || tileCache ? tileCache.get(tileId) : null;
             tile2DExtent = new Z.PointExtent(tile['2dPoint'],
                                 tile['2dPoint'].add(tileSize.toPoint()));
             if (!this._extent2D.intersects(tile2DExtent)) {
@@ -126,7 +128,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         var me = this;
         function onTileLoad() {
             if (!Z.node) {
-                me._tileCache.add(this[me.propertyOfTileId], this);
+                if (me._tileCache) { me._tileCache.add(this[me.propertyOfTileId], this); }
                 me._tileRended[this[me.propertyOfTileId]] = this;
             }
             me._drawTileAndRequest(this);
@@ -140,7 +142,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
                 tileId = p.split('@')[0];
                 tile = this._tileQueue[p];
                 delete this._tileQueue[p];
-                if (!this._tileCache[tileId]) {
+                if (!this._tileCache || !this._tileCache[tileId]) {
                     this._loadTile(tileId, tile, onTileLoad, onTileError);
                 } else {
                     this._drawTileAndRequest(this._tileCache[tileId]);
@@ -295,9 +297,11 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     },
 
     _onRemove: function () {
-        delete this._tileCache;
-        delete this._tileQueue;
+        delete this._viewExtent;
         delete this._mapRender;
+        delete this._tileCache;
+        delete this._tileRended;
+        delete this._tileQueue;
     }
 });
 

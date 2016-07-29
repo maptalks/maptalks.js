@@ -66,6 +66,8 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         'tileSystem' : null,
         'debug'      : false,
 
+        'cacheTiles' : true,
+
         'baseLayerRenderer' : (function () { return Z.node ? 'canvas' : 'dom'; })(),
 
         'renderer'   : 'canvas'

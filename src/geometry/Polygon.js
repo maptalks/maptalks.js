@@ -223,7 +223,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         }
         var result = 0;
         for (var i = 0, len = rings.length; i < len; i++) {
-            result += Z.GeoUtils.computeLength(rings[i], measurer);
+            result += Z.GeoUtil._computeLength(rings[i], measurer);
         }
         return result;
     },
@@ -246,7 +246,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         var t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pxExtent = this._getPainter().get2DExtent().expand(t);
         function isContains(points) {
-            var c = Z.GeoUtils.pointInsidePolygon(point, points);
+            var c = Z.GeoUtil.pointInsidePolygon(point, points);
             if (c) {
                 return c;
             }
@@ -258,7 +258,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
                 p1 = points[i];
                 p2 = points[j];
 
-                if (Z.GeoUtils.distanceToSegment(point, p1, p2) <= t) {
+                if (Z.GeoUtil.distanceToSegment(point, p1, p2) <= t) {
                     return true;
                 }
             }

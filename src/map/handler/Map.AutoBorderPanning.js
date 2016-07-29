@@ -9,15 +9,15 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
     step : 4,
 
     addHooks: function () {
-        this._dom = this.target._containerDOM;
-        Z.DomUtil.on(this._dom, 'mousemove', this._onMouseMove, this);
-        Z.DomUtil.on(this._dom, 'mouseout', this._onMouseOut, this);
+        this.dom = this.target._containerDOM;
+        Z.DomUtil.on(this.dom, 'mousemove', this._onMouseMove, this);
+        Z.DomUtil.on(this.dom, 'mouseout', this._onMouseOut, this);
     },
 
     removeHooks: function () {
         this._cancelPan();
-        Z.DomUtil.off(this._dom, 'mousemove', this._onMouseMove, this);
-        Z.DomUtil.off(this._dom, 'mouseout', this._onMouseOut, this);
+        Z.DomUtil.off(this.dom, 'mousemove', this._onMouseMove, this);
+        Z.DomUtil.off(this.dom, 'mouseout', this._onMouseOut, this);
     },
 
     _onMouseMove: function (event) {

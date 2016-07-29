@@ -133,10 +133,9 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         }
 
         this._loaded = false;
-        this._container = container;
 
-        if (Z.Util.isString(this._container)) {
-            this._containerDOM = document.getElementById(this._container);
+        if (Z.Util.isString(container)) {
+            this._containerDOM = document.getElementById(container);
             if (!this._containerDOM) {
                 throw new Error('invalid container: \'' + container + '\'');
             }
@@ -1104,6 +1103,26 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     */
     getPanel: function () {
         return this._getRenderer().getPanel();
+    },
+
+    remove: function () {
+        this._registerDomEvents(true);
+        this._clearHandlers();
+        this.removeBaseLayer();
+        var layers = this.getLayers();
+        for (var i = 0; i < layers.length; i++) {
+            layers[i].remove();
+        }
+        if (this._getRenderer()) {
+            this._getRenderer().remove();
+        }
+        this._clearAllListeners();
+        if (this._containerDOM && this._containerDOM.innerHTML) {
+            this._containerDOM.innerHTML = '';
+        }
+        delete this._panels;
+        delete this._containerDOM;
+        return this;
     },
 
 //-----------------------------------------------------------

@@ -64,7 +64,7 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
         if (toMeasure instanceof Z.Geometry) {
             area = map.computeGeometryArea(toMeasure);
         } else if (Z.Util.isArray(toMeasure)) {
-            area = Z.GeoUtils.computeArea(toMeasure, map.getProjection());
+            area = Z.GeoUtil._computeArea(toMeasure, map.getProjection());
         }
         this._lastMeasure = area;
         var units;

@@ -47,7 +47,7 @@ Z.Handlerable = {
             if (hit >= 0) {
                 this._handlers.splice(hit, 1);
             }
-            this[name].disable();
+            this[name].remove();
             delete this[name];
         }
         return this;
@@ -55,7 +55,8 @@ Z.Handlerable = {
 
     _clearHandlers: function () {
         for (var i = 0, len = this._handlers.length; i < len; i++) {
-            this._handlers[i].disable();
+            this._handlers[i].remove();
         }
+        this._handlers = [];
     }
 };
