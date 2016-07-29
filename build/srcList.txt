@@ -29,7 +29,7 @@
 ../src/geo/projection/Projection.EPSG4326.js
 ../src/geo/projection/Projection.Baidu.js
 ../src/geo/projection/Projection.IDENTITY.js
-../src/geo/utils/GeoUtils.js
+../src/geo/utils/GeoUtil.js
 ../src/geo/utils/SimplifyUtil.js
 ../src/handler/Handler.js
 ../src/handler/Handlerable.js
