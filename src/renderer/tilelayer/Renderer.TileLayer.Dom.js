@@ -36,6 +36,8 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     remove:function () {
+        delete this._tiles;
+        delete this._layer;
         this._removeLayerContainer();
     },
 
@@ -364,6 +366,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         if (this._container) {
             Z.DomUtil.removeDomNode(this._container);
         }
+        delete this._container;
         delete this._levelContainers;
     },
 
