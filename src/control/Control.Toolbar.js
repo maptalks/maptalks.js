@@ -131,7 +131,7 @@ Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar
             var li = Z.DomUtil.createEl('li');
             li.innerHTML = '<a href="javascript:;">' + child['item'] + '</a>';
             li.style.cursor = 'pointer';
-            li.style.width = liWidth + 'px';// 16 for li padding
+            li.style.width = (liWidth + 24) + 'px';// 20 for text-intent
             Z.DomUtil.on(li.childNodes[0], 'click', (onButtonClick)(child['click'], index, i));
             menuUL.appendChild(li);
         }
