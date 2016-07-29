@@ -163,11 +163,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     if (transformLayers && !transformed) {
                         this._context.restore();
                     }
-                } else {
-                    if (renderer.transform) {
-                        //e.g. baseTileLayer renderered by DOM
-                        renderer.transform(matrix);
-                    }
+                } else if (renderer.transform) {
+                    //e.g. baseTileLayer renderered by DOM
+                    renderer.transform(matrix);
                 }
 
             }
