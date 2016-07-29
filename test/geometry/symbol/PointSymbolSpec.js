@@ -82,6 +82,25 @@ describe('PointSymbolSpec', function() {
     });
 
     describe('placement', function() {
+        it('default placement', function() {
+            var p = map.coordinateToContainerPoint(map.getCenter()),
+                c1 = map.containerPointToCoordinate(p.add(-10, -10)),
+                c2 = map.containerPointToCoordinate(p.add(10, -10)),
+                c3 = map.containerPointToCoordinate(p.add(10, 10)),
+                c4 = map.containerPointToCoordinate(p.add(-10, 10));
+            var circle = new maptalks.Polygon([c1, c2, c3, c4], {
+                'symbol' : {
+                    'lineOpacity' : 0,
+                    'markerType' : 'ellipse',
+                    'markerWidth': 3,
+                    'markerHeight': 3
+                }
+            });
+            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
+            expect(v).to.be.painted();
+            expect(v).to.be.painted(0, 0);
+        });
+
         it('point placement', function() {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),

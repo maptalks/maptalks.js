@@ -45,7 +45,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
             eventParam['containerPoint'] = containerPoint;
             eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
-            eventParam['2DPoint'] = map._containerPointToPoint(containerPoint);
+            eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
         }
         return eventParam;
     },

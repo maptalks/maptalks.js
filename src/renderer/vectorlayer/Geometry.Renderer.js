@@ -100,7 +100,7 @@ Symboling.Poly = {
         } else {
             var center = this.getCenter();
             var pcenter = this._getProjection().project(center);
-            points = [map._prjToViewPoint(pcenter)];
+            points = [map._prjToPoint(pcenter)];
         }
         return [points, rotations];
     }
