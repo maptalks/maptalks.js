@@ -445,10 +445,20 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
     },
 
+    /**
+     * Get zIndex of the geometry, default is 0
+     * @return {Number} zIndex
+     */
     getZIndex: function () {
         return this._zIndex;
     },
 
+    /**
+     * Set a new zIndex to Geometry
+     * @param {Number} zIndex - new zIndex
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#zindexchange
+     */
     setZIndex: function (zIndex) {
         var old = this._zIndex;
         this._zIndex = zIndex;
@@ -466,6 +476,11 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return this;
     },
 
+    /**
+     * Bring the geometry on the top
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#zindexchange
+     */
     bringToFront: function () {
         var layer = this.getLayer();
         if (!layer || !(layer instanceof Z.OverlayLayer)) {
@@ -476,6 +491,11 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         return this;
     },
 
+    /**
+     * Bring the geometry to the back
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#zindexchange
+     */
     bringToBack: function () {
         var layer = this.getLayer();
         if (!layer || !(layer instanceof Z.OverlayLayer)) {
