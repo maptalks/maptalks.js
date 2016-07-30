@@ -6,10 +6,10 @@
  */
 Z.Util = {
     /**
-     * @property {Number} guid
+     * @property {Number} uid
      * @static
      */
-    guid: 0,
+    uid: 0,
 
     now:function () {
         if (!Date.now) {
@@ -164,18 +164,10 @@ Z.Util = {
 
     /**
      * Generate a global UID, not a real UUID, just a auto increment key with a prefix.
-     * @return {String}
+     * @return {Number}
      */
-    GUID: function () {
-        return '___MAPTALKS_GLOBAL_' + (Z.Util.guid++);
-    },
-
-    // return unique ID of an object
-    stamp: function (obj) {
-        /*eslint-disable camelcase*/
-        obj._maptalks_id = obj._maptalks_id || Z.Util.GUID();
-        return obj._maptalks_id;
-        /*eslint-enable camelcase*/
+    UID: function () {
+        return Z.Util.uid++;
     },
 
     /**
