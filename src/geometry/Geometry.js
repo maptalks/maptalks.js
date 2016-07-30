@@ -454,7 +454,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
-     * Set a new zIndex to Geometry
+     * Set a new zIndex to Geometry and fire zindexchange event (will cause layer to sort geometries and render)
      * @param {Number} zIndex - new zIndex
      * @return {maptalks.Geometry} this
      * @fires maptalks.Geometry#zindexchange
@@ -463,7 +463,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var old = this._zIndex;
         this._zIndex = zIndex;
         /**
-         * zindexchange event.
+         * zindexchange event, fired when geometry's zIndex is changed.
          *
          * @event maptalks.Geometry#zindexchange
          * @type {Object}
@@ -473,6 +473,18 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
          * @property {String|Number} new        - new zIndex
          */
         this._fireEvent('zindexchange', {'old':old, 'new':zIndex});
+        return this;
+    },
+
+    /**
+     * Only set a new zIndex to Geometry without firing zindexchange event. <br>
+     * Can be useful to improve perf when a lot of geometries' zIndex need to be updated. <br>
+     * When updated N geometries, You can use setZIndexSilently with (N-1) geometries and use setZIndex with the last geometry for layer to sort and render.
+     * @param {Number} zIndex - new zIndex
+     * @return {maptalks.Geometry} this
+     */
+    setZIndexSilently: function (zIndex) {
+        this._zIndex = zIndex;
         return this;
     },
 

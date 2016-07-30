@@ -87,7 +87,7 @@ describe('#Geometry.zindex', function() {
         layer.on('layerload', function () {
             if (counter === 0) {
                 expect(layer).to.be.painted(0, 0, [0, 0, 255]);
-                blue.setZIndex(-1);
+                blue.setZIndexSilently(-1);
                 red.setZIndex(1);
                 expect(layer.getGeometries()).to.be.eql([blue, green, red]);
                 counter++;
