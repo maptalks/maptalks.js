@@ -377,6 +377,9 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     _onGeometryZIndexChange: function (param) {
         if (param['old'] !== param['new']) {
             this._sortGeometries();
+            if (this._getRenderer()) {
+                this._getRenderer().render();
+            }
         }
     },
 
