@@ -170,7 +170,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
 
     _getGeometries:function (filter, context) {
         if (!filter) {
-            return this._geoList;
+            return this._geoList.slice(0);
         }
         var result = [],
             geometry, filtered;
