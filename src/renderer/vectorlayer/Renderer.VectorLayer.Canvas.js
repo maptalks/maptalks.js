@@ -55,9 +55,9 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
 
     checkResources:function (geometries) {
         if (!this._painted && !geometries) {
-            geometries = this._layer._geoCache;
+            geometries = this._layer._geoList;
         }
-        if (!geometries) {
+        if (!geometries || !Z.Util.isArrayHasData(geometries)) {
             return null;
         }
         var me = this,
@@ -79,16 +79,8 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             }
         }
 
-        if (Z.Util.isArrayHasData(geometries)) {
-            for (var i = geometries.length - 1; i >= 0; i--) {
-                checkGeo(geometries[i]);
-            }
-        } else {
-            for (var p in geometries) {
-                if (geometries.hasOwnProperty(p)) {
-                    checkGeo(geometries[p]);
-                }
-            }
+        for (var i = geometries.length - 1; i >= 0; i--) {
+            checkGeo(geometries[i]);
         }
         return resources;
     },

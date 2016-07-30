@@ -164,9 +164,9 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
 
     _msOnDrawStart:function (param) {
         var map = this.getMap();
-        var guid = Z.Util.GUID();
-        var layerId = 'distancetool_' + guid;
-        var markerLayerId = 'distancetool_markers_' + guid;
+        var uid = Z.Util.UID();
+        var layerId = 'distancetool_' + uid;
+        var markerLayerId = 'distancetool_markers_' + uid;
         if (!map.getLayer(layerId)) {
             this._measureLineLayer = new maptalks.VectorLayer(layerId, {'drawImmediate' : true}).addTo(map);
             this._measureMarkerLayer = new maptalks.VectorLayer(markerLayerId, {'drawImmediate' : true}).addTo(map);

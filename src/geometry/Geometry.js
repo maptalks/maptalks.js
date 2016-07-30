@@ -445,6 +445,47 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
     },
 
+    getZIndex: function () {
+        return this._zIndex;
+    },
+
+    setZIndex: function (zIndex) {
+        var old = this._zIndex;
+        this._zIndex = zIndex;
+        /**
+         * zindexchange event.
+         *
+         * @event maptalks.Geometry#zindexchange
+         * @type {Object}
+         * @property {String} type - zindexchange
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {String|Number} old        - old zIndex
+         * @property {String|Number} new        - new zIndex
+         */
+        this._fireEvent('zindexchange', {'old':old, 'new':zIndex});
+        return this;
+    },
+
+    bringToFront: function () {
+        var layer = this.getLayer();
+        if (!layer || !(layer instanceof Z.OverlayLayer)) {
+            return this;
+        }
+        var topZ = layer.getLastGeometry().getZIndex();
+        this.setZIndex(topZ + 1);
+        return this;
+    },
+
+    bringToBack: function () {
+        var layer = this.getLayer();
+        if (!layer || !(layer instanceof Z.OverlayLayer)) {
+            return this;
+        }
+        var bottomZ = layer.getFirstGeometry().getZIndex();
+        this.setZIndex(bottomZ - 1);
+        return this;
+    },
+
     /**
      * Translate or move the geometry by the given offset.
      *
@@ -719,6 +760,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!Z.Util.isNil(id)) {
             this.setId(id);
         }
+        this._zIndex = 0;
     },
 
     //bind the geometry to a layer
