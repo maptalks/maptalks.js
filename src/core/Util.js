@@ -749,6 +749,8 @@ Z.Util = {
 
 };
 
+Z.Util.GUID = Z.Util.UID;
+
 
     //RequestAnimationFrame, inspired by Leaflet
 (function () {
