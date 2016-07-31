@@ -69,7 +69,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
                 'markerLineColor' : '#b4b3b3',
                 'textDx' : 15
             },
-            'boxPadding'   :   new Z.Size(6, 4)
+            'boxPadding'   :   {'width' : 6, 'height' : 4}
         }
     },
 
@@ -121,7 +121,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         if (toMeasure instanceof Z.Geometry) {
             length = map.computeGeometryLength(toMeasure);
         } else if (Z.Util.isArray(toMeasure)) {
-            length = Z.GeoUtils.computeLength(toMeasure, map.getProjection());
+            length = Z.GeoUtil._computeLength(toMeasure, map.getProjection());
         }
         this._lastMeasure = length;
         var units;
@@ -164,9 +164,9 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
 
     _msOnDrawStart:function (param) {
         var map = this.getMap();
-        var guid = Z.Util.GUID();
-        var layerId = 'distancetool_' + guid;
-        var markerLayerId = 'distancetool_markers_' + guid;
+        var uid = Z.Util.UID();
+        var layerId = 'distancetool_' + uid;
+        var markerLayerId = 'distancetool_markers_' + uid;
         if (!map.getLayer(layerId)) {
             this._measureLineLayer = new maptalks.VectorLayer(layerId, {'drawImmediate' : true}).addTo(map);
             this._measureMarkerLayer = new maptalks.VectorLayer(markerLayerId, {'drawImmediate' : true}).addTo(map);

@@ -39,10 +39,10 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
 
     _prepareEditStageLayer:function () {
         var map = this.getMap();
-        var guid = Z.Util.GUID();
-        this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + guid);
+        var uid = Z.Util.UID();
+        this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + uid);
         if (!this._editStageLayer) {
-            this._editStageLayer = new Z.VectorLayer(this.editStageLayerIdPrefix + guid);
+            this._editStageLayer = new Z.VectorLayer(this.editStageLayerIdPrefix + uid);
             map.addLayer(this._editStageLayer);
         }
     },

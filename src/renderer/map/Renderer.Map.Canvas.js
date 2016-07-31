@@ -163,11 +163,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                     if (transformLayers && !transformed) {
                         this._context.restore();
                     }
-                } else {
-                    if (renderer.transform) {
-                        //e.g. baseTileLayer renderered by DOM
-                        renderer.transform(matrix);
-                    }
+                } else if (renderer.transform) {
+                    //e.g. baseTileLayer renderered by DOM
+                    renderer.transform(matrix);
                 }
 
             }
@@ -208,6 +206,19 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             return null;
         }
         return this._canvas.toDataURL(mimeType);
+    },
+
+    remove: function () {
+        if (this._resizeInterval) {
+            clearInterval(this._resizeInterval);
+        }
+        delete this._context;
+        delete this._canvas;
+        delete this.map;
+        delete this._canvasBgRes;
+        delete this._canvasBgCoord;
+        delete this._canvasBg;
+        delete this._zoomingMatrix;
     },
 
     _getLayerImage: function (layer) {
@@ -482,7 +493,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             delete this._canvasBg;
             this._clearCanvas();
         }, this);
-        if (map.options['checkSize'] && (typeof window !== 'undefined')) {
+        if (map.options['checkSize'] && !Z.node && (typeof window !== 'undefined')) {
             // Z.DomUtil.on(window, 'resize', this._onResize, this);
             this._resizeInterval = setInterval(Z.Util.bind(function () {
                 if (!map._containerDOM.parentNode) {

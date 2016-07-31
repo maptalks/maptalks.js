@@ -3,7 +3,7 @@
  * @class
  * @protected
  */
-Z.GeoUtils = {
+Z.GeoUtil = {
     /**
      * caculate the distance from a point to a segment.
      * @param {maptalks.Point} p
@@ -58,7 +58,7 @@ Z.GeoUtils = {
         return c;
     },
 
-    computeLength:function (coordinates, measurer) {
+    _computeLength:function (coordinates, measurer) {
         var result = 0;
         for (var i = 0, len = coordinates.length; i < len - 1; i++) {
             result += measurer.measureLength(coordinates[i], coordinates[i + 1]);
@@ -66,7 +66,7 @@ Z.GeoUtils = {
         return result;
     },
 
-    computeArea:function (coordinates, measurer) {
+    _computeArea:function (coordinates, measurer) {
         return measurer.measureArea(coordinates);
     }
 };

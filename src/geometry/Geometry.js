@@ -446,6 +446,79 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     /**
+     * Get zIndex of the geometry, default is 0
+     * @return {Number} zIndex
+     */
+    getZIndex: function () {
+        return this._zIndex;
+    },
+
+    /**
+     * Set a new zIndex to Geometry and fire zindexchange event (will cause layer to sort geometries and render)
+     * @param {Number} zIndex - new zIndex
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#zindexchange
+     */
+    setZIndex: function (zIndex) {
+        var old = this._zIndex;
+        this._zIndex = zIndex;
+        /**
+         * zindexchange event, fired when geometry's zIndex is changed.
+         *
+         * @event maptalks.Geometry#zindexchange
+         * @type {Object}
+         * @property {String} type - zindexchange
+         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {String|Number} old        - old zIndex
+         * @property {String|Number} new        - new zIndex
+         */
+        this._fireEvent('zindexchange', {'old':old, 'new':zIndex});
+        return this;
+    },
+
+    /**
+     * Only set a new zIndex to Geometry without firing zindexchange event. <br>
+     * Can be useful to improve perf when a lot of geometries' zIndex need to be updated. <br>
+     * When updated N geometries, You can use setZIndexSilently with (N-1) geometries and use setZIndex with the last geometry for layer to sort and render.
+     * @param {Number} zIndex - new zIndex
+     * @return {maptalks.Geometry} this
+     */
+    setZIndexSilently: function (zIndex) {
+        this._zIndex = zIndex;
+        return this;
+    },
+
+    /**
+     * Bring the geometry on the top
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#zindexchange
+     */
+    bringToFront: function () {
+        var layer = this.getLayer();
+        if (!layer || !(layer instanceof Z.OverlayLayer)) {
+            return this;
+        }
+        var topZ = layer.getLastGeometry().getZIndex();
+        this.setZIndex(topZ + 1);
+        return this;
+    },
+
+    /**
+     * Bring the geometry to the back
+     * @return {maptalks.Geometry} this
+     * @fires maptalks.Geometry#zindexchange
+     */
+    bringToBack: function () {
+        var layer = this.getLayer();
+        if (!layer || !(layer instanceof Z.OverlayLayer)) {
+            return this;
+        }
+        var bottomZ = layer.getFirstGeometry().getZIndex();
+        this.setZIndex(bottomZ - 1);
+        return this;
+    },
+
+    /**
      * Translate or move the geometry by the given offset.
      *
      * @param  {maptalks.Coordinate} offset - translate offset
@@ -719,6 +792,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!Z.Util.isNil(id)) {
             this.setId(id);
         }
+        this._zIndex = 0;
     },
 
     //bind the geometry to a layer

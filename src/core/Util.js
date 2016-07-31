@@ -6,10 +6,10 @@
  */
 Z.Util = {
     /**
-     * @property {Number} guid
+     * @property {Number} uid
      * @static
      */
-    guid: 0,
+    uid: 0,
 
     now:function () {
         if (!Date.now) {
@@ -164,18 +164,10 @@ Z.Util = {
 
     /**
      * Generate a global UID, not a real UUID, just a auto increment key with a prefix.
-     * @return {String}
+     * @return {Number}
      */
-    GUID: function () {
-        return '___MAPTALKS_GLOBAL_' + (Z.Util.guid++);
-    },
-
-    // return unique ID of an object
-    stamp: function (obj) {
-        /*eslint-disable camelcase*/
-        obj._maptalks_id = obj._maptalks_id || Z.Util.GUID();
-        return obj._maptalks_id;
-        /*eslint-enable camelcase*/
+    UID: function () {
+        return Z.Util.uid++;
     },
 
     /**
@@ -733,7 +725,8 @@ Z.Util = {
         if (Z.node) {
             return s;
         }
-        var props = Z.Symbolizer.resourceProperties;
+        var props = Z.Symbolizer.resourceProperties,
+            embed = 'data:';
         var res, isCssStyle = false;
         for (var ii = 0, len = props.length; ii < len; ii++) {
             res = s[props[ii]];
@@ -745,7 +738,8 @@ Z.Util = {
                 res = Z.Util.extractCssUrl(res);
                 isCssStyle = true;
             }
-            if (!Z.Util.isURL(res)) {
+            if (!Z.Util.isURL(res) &&
+                (res.length <= embed.length || res.substring(0, embed.length) !== embed)) {
                 res = absolute(location.href, res);
                 s[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
             }

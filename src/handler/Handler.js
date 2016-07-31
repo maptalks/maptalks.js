@@ -42,5 +42,11 @@ Z.Handler = Z.Class.extend(/** @lends maptalks.Handler.prototype */{
      */
     enabled: function () {
         return !!this._enabled;
+    },
+
+    remove: function () {
+        this.disable();
+        delete this.target;
+        delete this.dom;
     }
 });

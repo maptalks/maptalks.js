@@ -333,6 +333,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
             this._renderer.remove();
             delete this._renderer;
         }
+        delete this._mask;
         delete this.map;
     },
 

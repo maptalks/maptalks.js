@@ -3,7 +3,7 @@ describe('#Geometry', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var context = {
         map:map,
@@ -15,7 +15,7 @@ describe('#Geometry', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new Z.VectorLayer('canvas',{'render':'canvas'});
+        layer = new maptalks.VectorLayer('canvas');
         map.addLayer(layer);
         context.map = map;
         context.layer = layer;
@@ -63,7 +63,7 @@ describe('#Geometry', function() {
 //测试Geometry的公共方法
 function registerGeometryCommonTest(geometry,_context) {
     function setupGeometry() {
-        // var layer = new Z.VectorLayer('common_test_layer');
+        // var layer = new maptalks.VectorLayer('common_test_layer');
         if (geometry.getLayer()) {
             geometry.remove();
         }
@@ -88,7 +88,7 @@ function registerGeometryCommonTest(geometry,_context) {
 
         it('Layer',function() {
             expect(geometry.getLayer()).to.not.be.ok();
-            var layer = new Z.VectorLayer('id');
+            var layer = new maptalks.VectorLayer('id');
             layer.addGeometry(geometry);
             expect(geometry.getLayer()).to.be.ok();
             //delete
@@ -135,7 +135,7 @@ function registerGeometryCommonTest(geometry,_context) {
     context(type+':can be measured.',function() {
         it('it has geodesic length',function() {
             var length = geometry.getLength();
-            if (geometry instanceof Z.Marker) {
+            if (geometry instanceof maptalks.Marker) {
                 expect(length===0).to.be.ok();
             } else {
                 expect(length>0).to.be.ok();
@@ -144,7 +144,7 @@ function registerGeometryCommonTest(geometry,_context) {
         });
 
         it('it has geodesic area',function() {
-            var types = [Z.Polygon, Z.MultiPolygon];
+            var types = [maptalks.Polygon, maptalks.MultiPolygon];
             var area = geometry.getArea();
             var hit = false;
             for (var i=0, len=types.length;i<len;i++) {
@@ -165,7 +165,7 @@ function registerGeometryCommonTest(geometry,_context) {
             setupGeometry();
 
             var extent = geometry.getExtent();
-            expect(extent).to.be.a(Z.Extent);
+            expect(extent).to.be.a(maptalks.Extent);
             expect(extent).to.not.be.empty();
 
             teardownGeometry();
@@ -175,7 +175,7 @@ function registerGeometryCommonTest(geometry,_context) {
             setupGeometry();
 
             var size = geometry.getSize();
-            expect(size).to.be.a(Z.Size);
+            expect(size).to.be.a(maptalks.Size);
             expect(size.width).to.be.above(0);
             expect(size.height).to.be.above(0);
 
@@ -184,14 +184,14 @@ function registerGeometryCommonTest(geometry,_context) {
 
         it('it has center',function() {
             var center = geometry.getCenter();
-            expect(center).to.be.a(Z.Coordinate);
+            expect(center).to.be.a(maptalks.Coordinate);
             expect(center.x).to.be.a('number');
             expect(center.y).to.be.a('number');
 
             setupGeometry();
 
             center = geometry.getCenter();
-            expect(center).to.be.a(Z.Coordinate);
+            expect(center).to.be.a(maptalks.Coordinate);
             expect(center.x).to.be.a('number');
             expect(center.y).to.be.a('number');
 
@@ -241,13 +241,13 @@ function registerGeometryCommonTest(geometry,_context) {
     //                 "name" : "gcj02"
     //             }
     //         };
-    //         var parsed = Z.GeoJSON.toGeometry(json);
+    //         var parsed = maptalks.GeoJSON.toGeometry(json);
 
     //         expect(parsed.getCRS()).to.eql(json.crs);
     //     });
 
     //     it ('has crs',function() {
-    //         var coordinateType = Z.CRS.GCJ02;
+    //         var coordinateType = maptalks.CRS.GCJ02;
     //         var json = geometry.setCRS(coordinateType).toGeoJSON();
     //         expect(json['crs']).to.be.ok();
     //         expect(json['crs']).to.eql({"type":"cnCoordinateType","properties":{"name":"gcj02"}});
@@ -257,7 +257,7 @@ function registerGeometryCommonTest(geometry,_context) {
     context(type+':remove',function() {
         it ('remove from layer',function() {
             //layer not on map
-            var layer = new Z.VectorLayer('svg');
+            var layer = new maptalks.VectorLayer('svg');
             layer.addGeometry(geometry);
             expect(geometry.getLayer()).to.be.ok();
             expect(geometry.getMap()).to.not.be.ok();
@@ -271,7 +271,7 @@ function registerGeometryCommonTest(geometry,_context) {
             geometry.remove();
             expect(geometry.getLayer()).to.not.be.ok();
 
-            var canvasLayer = new Z.VectorLayer('event_test_canvas',{'render':'canvas'});
+            var canvasLayer = new maptalks.VectorLayer('event_test_canvas',{'render':'canvas'});
             canvasLayer.addGeometry(geometry);
             _context.map.addLayer(canvasLayer);
 
@@ -292,7 +292,7 @@ function registerGeometryCommonTest(geometry,_context) {
             expect(painter).to.be.ok();
             geometry.remove();
 
-            var canvasLayer = new Z.VectorLayer('event_test_canvas',{'render':'canvas'});
+            var canvasLayer = new maptalks.VectorLayer('event_test_canvas',{'render':'canvas'});
             canvasLayer.addGeometry(geometry);
             _context.map.addLayer(canvasLayer);
 
@@ -306,7 +306,7 @@ function registerGeometryCommonTest(geometry,_context) {
             var oldSymbol = geometry.getSymbol();
 
             var type = geometry.getType();
-            if (type === Z.Geometry.TYPE_POINT) {
+            if (type === maptalks.Geometry.TYPE_POINT) {
                 var symbol = {
                     'markerFile':'http://foo.com/foo.png'
                 };
@@ -341,17 +341,17 @@ function registerGeometryCommonTest(geometry,_context) {
 
         it('getMeasurer',function() {
             var measurer = geometry._getMeasurer();
-            expect(measurer).to.be(Z.measurer.WGS84Sphere);
+            expect(measurer).to.be(maptalks.measurer.WGS84Sphere);
 
             geometry.config('measure', 'identity');
 
             measurer = geometry._getMeasurer();
-            expect(measurer).to.be(Z.measurer.Identity);
+            expect(measurer).to.be(maptalks.measurer.Identity);
 
             geometry.config('measure', 'baidu');
 
             measurer = geometry._getMeasurer();
-            expect(measurer).to.be(Z.measurer.BaiduSphere);
+            expect(measurer).to.be(maptalks.measurer.BaiduSphere);
         });
     });
     var spy;

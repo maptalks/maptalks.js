@@ -202,7 +202,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
                 if (url[2]) { url[2] *= 2; }
             }
             img.onload = function () {
-                me._cacheResource(url, this);
+                me._cacheResource(url, img);
                 resolve({});
             };
             img.onabort = function (err) {

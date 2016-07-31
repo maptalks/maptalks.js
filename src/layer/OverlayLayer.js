@@ -40,14 +40,34 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
+     * Get the first geometry, the geometry at the bottom.
+     * @return {maptalks.Geometry} first geometry
+     */
+    getFirstGeometry: function () {
+        if (this._geoList.length === 0) {
+            return null;
+        }
+        return this._geoList[0];
+    },
+
+    /**
+     * Get the last geometry, the geometry on the top
+     * @return {maptalks.Geometry} last geometry
+     */
+    getLastGeometry: function () {
+        var len = this._geoList.length;
+        if (len === 0) {
+            return null;
+        }
+        return this._geoList[len - 1];
+    },
+
+    /**
      * Get count of the geometries
      * @return {Number} count
      */
     getCount: function () {
-        if (!this._counter) {
-            return 0;
-        }
-        return this._counter;
+        return this._geoList.length;
     },
 
     /**
@@ -57,15 +77,12 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @return {maptalks.OverlayLayer} this
      */
     forEach:function (fn, context) {
-        var cache = this._geoCache;
-        var counter = 0;
-        for (var g in cache) {
-            if (cache.hasOwnProperty(g)) {
-                if (!context) {
-                    fn(cache[g], counter++);
-                } else {
-                    fn.call(context, cache[g], counter++);
-                }
+        var copyOnWrite = this._geoList.slice(0);
+        for (var i = 0, l = copyOnWrite.length; i < l; i++) {
+            if (!context) {
+                fn(copyOnWrite[i], i);
+            } else {
+                fn.call(context, copyOnWrite[i], i);
             }
         }
         return this;
@@ -104,7 +121,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @return {Boolean}
      */
     isEmpty:function () {
-        return this._counter === 0;
+        return this._geoList.length === 0;
     },
 
     /**
@@ -135,10 +152,9 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     _initCache: function () {
-        if (!this._geoCache) {
-            this._geoCache = {};
+        if (!this._geoList) {
+            this._geoList = [];
             this._geoMap = {};
-            this._counter = 0;
         }
     },
 
@@ -153,23 +169,19 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     _getGeometries:function (filter, context) {
-        var cache = this._geoCache;
+        if (!filter) {
+            return this._geoList.slice(0);
+        }
         var result = [],
-            geometry;
-        for (var p in cache) {
-            if (cache.hasOwnProperty(p)) {
-                geometry = cache[p];
-                if (filter) {
-                    var filtered;
-                    if (context) {
-                        filtered = filter.call(context, geometry);
-                    } else {
-                        filtered = filter(geometry);
-                    }
-                    if (!filtered) {
-                        continue;
-                    }
-                }
+            geometry, filtered;
+        for (var i = 0, l = this._geoList.length; i < l; i++) {
+            geometry = this._geoList[i];
+            if (context) {
+                filtered = filter.call(context, geometry);
+            } else {
+                filtered = filter(geometry);
+            }
+            if (filtered) {
                 result.push(geometry);
             }
         }
@@ -205,12 +217,14 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 }
                 this._geoMap[geoId] = geo;
             }
-            internalId = Z.Util.GUID();
+            internalId = Z.Util.UID();
             //内部全局唯一的id
             geo._setInternalId(internalId);
             geo.on('idchange', this._onGeometryIdChange, this);
-            this._geoCache[internalId] = geo;
-            this._counter++;
+            geo.on('zindexchange', this._onGeometryZIndexChange, this);
+            // this._geoList[internalId] = geo;
+            this._geoList.push(geo);
+
             geo._bindLayer(this);
             if (fitView) {
                 geoCenter = geo.getCenter();
@@ -239,6 +253,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
              */
             geo._fireEvent('add', {'layer':this});
         }
+        this._sortGeometries();
         var map = this.getMap();
         if (map) {
             this._getRenderer().render(geometries);
@@ -259,6 +274,20 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
          */
         this.fire('addgeo', {'geometries':geometries});
         return this;
+    },
+
+    _sortGeometries: function () {
+        var me = this;
+        this._geoList.sort(function (a, b) {
+            return me._compare(a, b);
+        });
+    },
+
+    _compare: function (a, b) {
+        if (a._zIndex === b._zIndex) {
+            return a._getInternalId() - b._getInternalId();
+        }
+        return a._zIndex - b._zIndex;
     },
 
     _removeGeometry:function (geometries) {
@@ -285,12 +314,34 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return this;
     },
 
+    //binarySearch
+    _findInList: function (geo) {
+        var len = this._geoList.length;
+        if (len === 0) {
+            return -1;
+        }
+        var low = 0, high = len - 1, middle;
+        while (low <= high) {
+            middle = Math.floor((low + high) / 2);
+            if (this._geoList[middle] === geo) {
+                return middle;
+            } else if (this._compare(this._geoList[middle], geo) > 0) {
+                high = middle - 1;
+            } else {
+                low = middle + 1;
+            }
+        }
+        return -1;
+    },
+
     _clear:function () {
+        this._clearing = true;
         this.forEach(function (geo) {
             geo.remove();
         });
         this._geoMap = {};
-        this._geoCache = {};
+        this._geoList = [];
+        this._clearing = false;
         /**
          * clear event.
          *
@@ -323,6 +374,15 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         }
     },
 
+    _onGeometryZIndexChange: function (param) {
+        if (param['old'] !== param['new']) {
+            this._sortGeometries();
+            if (this._getRenderer()) {
+                this._getRenderer().render();
+            }
+        }
+    },
+
     /**
      * Called when geometry is being removed to clear the context concerned.
      * @param  {maptalks.Geometry} geometry - the geometry instance to remove
@@ -335,6 +395,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             return;
         }
         geometry.off('idchange', this._onGeometryIdChange, this);
+        geometry.off('zindexchange', this._onGeometryZIndexChange, this);
         var internalId = geometry._getInternalId();
         if (Z.Util.isNil(internalId)) {
             return;
@@ -343,8 +404,13 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         if (!Z.Util.isNil(geoId)) {
             delete this._geoMap[geoId];
         }
-        delete this._geoCache[internalId];
-        this._counter--;
+        if (!this._clearing) {
+            var idx = this._findInList(geometry);
+            if (idx >= 0) {
+                this._geoList.splice(idx, 1);
+            }
+        }
+
         if (this._getRenderer()) {
             this._getRenderer().render();
         }
