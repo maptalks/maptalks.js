@@ -72,7 +72,10 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     setId:function (id) {
         //TODO 设置id可能造成map无法找到layer
         var old = this._id;
-        this._id = id + '';
+        if (!Z.Util.isNil(id)) {
+            id = id + '';
+        }
+        this._id = ;
         /**
          * idchange event.
          *
