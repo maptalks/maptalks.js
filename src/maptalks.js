@@ -1,9 +1,10 @@
-// Z is the root namespace used internally, and will be exported later as maptalks.
+
 /**
  * @namespace
  * @alias maptalks
  */
 var Z = {};
+// Z is the root namespace used internally, and will be exported as maptalks.
 
 /**
  * @property {boolean} node - whether running in nodejs.
