@@ -75,7 +75,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!Z.Util.isNil(id)) {
             id = id + '';
         }
-        this._id = ;
+        this._id = id;
         /**
          * idchange event.
          *
