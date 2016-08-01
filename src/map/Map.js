@@ -719,7 +719,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      */
     getLayers:function (filter) {
         return this._getLayers(function (layer) {
-            if (layer === this._baseLayer || layer.getId().indexOf(Z.internalLayerPrefix) >= 0) {
+            if (layer === this._baseLayer || (layer.getId() + '').indexOf(Z.internalLayerPrefix) >= 0) {
                 return false;
             }
             if (filter) {
