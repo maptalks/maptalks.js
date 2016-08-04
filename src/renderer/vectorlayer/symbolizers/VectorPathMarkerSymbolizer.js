@@ -15,6 +15,10 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
         }
     },
 
+    _prepareContext: function () {
+        //for VectorPathMarkerSymbolizer, opacity is already added into SVG element.
+    },
+
     _getImage:function (resources) {
         return !resources ? null : resources.getImage(this._url);
     }
