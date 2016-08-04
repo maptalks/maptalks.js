@@ -57,7 +57,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Get the layer id
-     * @returns {String|Number} id
+     * @returns {String} id
      */
     getId:function () {
         return this._id;
@@ -65,7 +65,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Set a new id to the layer
-     * @param {String|Number} id - new layer id
+     * @param {String} id - new layer id
      * @return {maptalks.Layer} this
      * @fires maptalks.Layer#idchange
      */
@@ -83,8 +83,8 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
          * @type {Object}
          * @property {String} type - idchange
          * @property {maptalks.Layer} target    - the layer fires the event
-         * @property {String|Number} old        - value of the old id
-         * @property {String|Number} new        - value of the new id
+         * @property {String} old        - value of the old id
+         * @property {String} new        - value of the new id
          */
         this.fire('idchange', {'old':old, 'new':id});
         return this;
