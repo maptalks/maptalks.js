@@ -19,6 +19,31 @@ describe('#Layer', function() {
         removeContainer(container)
     });
 
+    describe('id methods', function() {
+        it('id will be converted to string', function() {
+            var layer1 = new maptalks.TileLayer(1);
+            expect(layer1.getId()).to.be.eql('1');
+        });
+
+        it('id can be null or undefined', function() {
+            var layer1 = new maptalks.TileLayer(null);
+            expect(layer1.getId() === null).to.be.ok();
+            layer1.setId(undefined);
+            expect(layer1.getId() === undefined).to.be.ok();
+        });
+
+        it('null id can\'t be added to map', function () {
+            var layer1 = new maptalks.TileLayer(null);
+            try {
+                map.addLayer(layer1);
+                expect(false).to.be.ok();
+            } catch (err) {
+
+            }
+
+        });
+    });
+
     describe('change order of layers', function() {
 
         it('bring a layer to front', function() {
