@@ -30,7 +30,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             symbols = [geoSymbol];
         }
         var symbol, symbolizer;
-        for (var ii = 0, ll = symbols.length; ii < ll; ii++) {
+        for (var ii = symbols.length - 1; ii >= 0; ii--) {
             symbol = symbols[ii];
             for (var i = regSymbolizers.length - 1; i >= 0; i--) {
                 if (regSymbolizers[i].test(symbol)) {
@@ -150,9 +150,10 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         if (!contexts || !this.symbolizers) {
             return;
         }
+
         this._matrix = matrix;
         this._prepareShadow(contexts[0]);
-        for (var i = 0, l = this.symbolizers.length; i < l; i++) {
+        for (var i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._painted = true;
