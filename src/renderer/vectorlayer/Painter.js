@@ -22,7 +22,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      * @return {*} [description]
      */
     _createSymbolizers:function () {
-        var geoSymbol = this._getSymbol(),
+        var geoSymbol = this.getSymbol(),
             symbolizers = [],
             regSymbolizers = Z.Painter.registerSymbolizers,
             symbols = geoSymbol;
@@ -138,7 +138,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         return resources;
     },
 
-    _getSymbol:function () {
+    getSymbol:function () {
         return this.geometry._getInternalSymbol();
     },
 
@@ -225,7 +225,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
                 this.paint();
             }
         } else {
-            this._removeCache();
+            this.removeCache();
             this._refreshSymbolizers();
             this._eachSymbolizer(function (symbolizer) {
                 symbolizer.show();
@@ -241,13 +241,13 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         this._requestToRender();
     },
 
-    onZoomEnd:function () {
-        this._removeCache();
+    _onZoomEnd:function () {
+        this.removeCache();
         this._refreshSymbolizers();
     },
 
     repaint:function () {
-        this._removeCache();
+        this.removeCache();
         this._refreshSymbolizers();
         if (this.geometry.isVisible()) {
             this._requestToRender();
@@ -280,7 +280,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      * symbol发生变化后, 刷新symbol
      */
     refreshSymbol:function () {
-        this._removeCache();
+        this.removeCache();
         this._removeSymbolizers();
         this.symbolizers = this._createSymbolizers();
         if (!this.getMap()) {
@@ -297,7 +297,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     },
 
     remove:function () {
-        this._removeCache();
+        this.removeCache();
         this._removeSymbolizers();
     },
 
@@ -309,9 +309,9 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     },
 
     /**
-     * 删除缓存属性
+     * delete painter's caches
      */
-    _removeCache:function () {
+    removeCache:function () {
         delete this._renderPoints;
         delete this._rendResources;
         delete this._extent2D;

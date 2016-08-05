@@ -59,7 +59,7 @@ Z.Map.ScrollWheelZoom = Z.Handler.extend({
         var preScale = map._getResolution(map.getZoom())/map._getResolution(preZoom);
         var render = map._getRenderer();
         var me = this;
-        render.onZoomStart(preScale, scale, zoomPoint, 100, function() {
+        render.animateZoom(preScale, scale, zoomPoint, 100, function() {
             me._scaling = false;
             map._zoom(me._targetZoom, zoomPoint);
             me._wheelExecutor = setTimeout(function () {

@@ -68,7 +68,7 @@ Z.Eventable = {
             return this._switch('on', once);
         }
         var evetTypes = eventTypes.split(' ');
-        for (i = 0, l = evetTypes.length; i < l; i++) {
+        for (var i = 0, l = evetTypes.length; i < l; i++) {
             this.on(evetTypes[i], this._wrapOnceHandler(evetTypes[i], handler, context));
         }
         return this;

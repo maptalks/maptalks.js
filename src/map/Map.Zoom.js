@@ -42,7 +42,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             transOrigin = new Z.Point(this.width / 2, this.height / 2);
         }
         var duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
-        this._getRenderer().onZoomStart(
+        this._getRenderer().animateZoom(
             {
                 startScale : startScale,
                 endScale : endScale,
@@ -77,7 +77,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         }
         var _originZoomLevel = this._originZoomLevel;
         this._originZoomLevel = nextZoomLevel;
-        this._getRenderer().onZoomEnd();
+        this._getRenderer()._onZoomEnd();
         this._zooming = false;
         /**
           * zoomend event
