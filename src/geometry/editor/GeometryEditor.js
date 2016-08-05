@@ -59,7 +59,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         this.prepare();
         //edits are applied to a shadow of geometry to improve performance.
         var shadow = geometry.copy();
-        shadow.setSymbol(geometry.._getInternalSymbol());
+        shadow.setSymbol(geometry._getInternalSymbol());
         //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
         //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
         shadow.copyEventListeners(geometry);
