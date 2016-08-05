@@ -376,13 +376,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 canvasImage = context;
             }
         }
-        try {
-            this._context.drawImage(canvasImage, Z.Util.round(point.x), Z.Util.round(point.y));
-        } catch (err) {
-            console.warn('error when drawing layer image.');
-            console.warn(err);
-        }
-
+        this._context.drawImage(canvasImage, Z.Util.round(point.x), Z.Util.round(point.y));
         this._context.globalAlpha = alpha;
     },
 

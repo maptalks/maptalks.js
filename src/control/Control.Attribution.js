@@ -27,7 +27,7 @@ Z.control.Attribution = Z.control.Control.extend(/** @lends maptalks.control.Att
             'bottom': 0,
             'left': 0
         },
-        'content' : '<a href="http://www.maptalks.org" target="_blank">Powered By MapTalks</a>'
+        'content' : 'Powered By <a href="http://www.maptalks.org" target="_blank">MapTalks</a>'
     },
 
     buildOn: function () {
