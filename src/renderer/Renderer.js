@@ -189,7 +189,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             crossOrigin = this._layer.options['crossOrigin'];
         return function (resolve) {
             if (resources.isResourceLoaded(url)) {
-                resolve({});
+                resolve(url);
                 return;
             }
             var img = new Image();
@@ -203,14 +203,14 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             }
             img.onload = function () {
                 me._cacheResource(url, img);
-                resolve({});
+                resolve(url);
             };
             img.onabort = function (err) {
                 console.warn('image loading aborted: ' + url[0]);
                 if (err) {
                     console.warn(err);
                 }
-                resolve({});
+                resolve(url);
             };
             img.onerror = function (err) {
                 // console.warn('image loading failed: ' + url[0]);
@@ -218,7 +218,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
                     console.warn(err);
                 }
                 resources.markErrorResource(url);
-                resolve({});
+                resolve(url);
             };
             Z.Util.loadImage(img,  url);
         };
