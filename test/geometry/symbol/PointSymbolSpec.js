@@ -103,21 +103,78 @@ describe('PointSymbolSpec', function() {
 
         it('point placement', function() {
             var p = map.coordinateToContainerPoint(map.getCenter()),
+                c1 = map.containerPointToCoordinate(p.add(-10, -10)),
+                c2 = map.containerPointToCoordinate(p.add(10, -10)),
+                c3 = map.containerPointToCoordinate(p.add(10, 10)),
+                c4 = map.containerPointToCoordinate(p.add(-10, 10));
+            var circle = new maptalks.Polygon([c1, c2, c3, c4], {
+                'symbol' : {
+                    'lineOpacity' : 0,
+                    'markerPlacement' : 'point',
+                    'markerType' : 'ellipse',
+                    'markerWidth': 3,
+                    'markerHeight': 3
+                }
+            });
+            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
+            expect(v).to.be.painted();
+            expect(v).to.be.painted(0, 0);
+        });
+
+        it('vertex placement', function() {
+            var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
             var line = new maptalks.LineString([map.getCenter(), c2, c3], {
                 'symbol' : {
-                    'markerPlacement' : 'point',
                     'lineOpacity' : 0,
+                    'markerPlacement' : 'vertex',
                     'markerType' : 'ellipse',
                     'markerWidth': 3,
                     'markerHeight': 3
-                },
-
+                }
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
             expect(v).to.be.painted();
             expect(v).to.be.painted(10, 0);
+            expect(v).to.be.painted(20, 0);
+        });
+
+        it('vertex-first placement', function() {
+            var p = map.coordinateToContainerPoint(map.getCenter()),
+                c2 = map.containerPointToCoordinate(p.add(10, 0)),
+                c3 = map.containerPointToCoordinate(p.add(20, 0));
+            var line = new maptalks.LineString([map.getCenter(), c2, c3], {
+                'symbol' : {
+                    'lineOpacity' : 0,
+                    'markerPlacement' : 'vertex-first',
+                    'markerType' : 'ellipse',
+                    'markerWidth': 3,
+                    'markerHeight': 3
+                }
+            });
+            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            expect(v).to.be.painted();
+            expect(v).not.to.be.painted(10, 0);
+            expect(v).not.to.be.painted(20, 0);
+        });
+
+        it('vertex-last placement', function() {
+            var p = map.coordinateToContainerPoint(map.getCenter()),
+                c2 = map.containerPointToCoordinate(p.add(10, 0)),
+                c3 = map.containerPointToCoordinate(p.add(20, 0));
+            var line = new maptalks.LineString([map.getCenter(), c2, c3], {
+                'symbol' : {
+                    'lineOpacity' : 0,
+                    'markerPlacement' : 'vertex-last',
+                    'markerType' : 'ellipse',
+                    'markerWidth': 3,
+                    'markerHeight': 3
+                }
+            });
+            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            expect(v).not.to.be.painted();
+            expect(v).not.to.be.painted(10, 0);
             expect(v).to.be.painted(20, 0);
         });
 
@@ -127,8 +184,8 @@ describe('PointSymbolSpec', function() {
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
             var line = new maptalks.LineString([map.getCenter(), c2, c3], {
                 'symbol' : {
-                    'markerPlacement' : 'line',
                     'lineOpacity' : 0,
+                    'markerPlacement' : 'line',
                     'markerType' : 'ellipse',
                     'markerWidth': 2,
                     'markerHeight': 2

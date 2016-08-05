@@ -37,7 +37,7 @@ Z.Sector.include(Symboling.Center, {
 //----------------------------------------------------
 Z.Rectangle.include({
     _getRenderPoints:function (placement) {
-        if (placement === 'point') {
+        if (placement === 'vertex') {
             var shell = this.getShell();
             var points = [];
             for (var i = 0, len = shell.length; i < len; i++) {
@@ -62,7 +62,7 @@ Symboling.Poly = {
     _getRenderPoints:function (placement) {
         var map = this.getMap();
         var points, rotations = null;
-        if (placement === 'point') {
+        if (placement === 'vertex') {
             points = this._getPath2DPoints(this._getPrjCoordinates());
             if (points && points.length > 0 && Z.Util.isArray(points[0])) {
                 //anti-meridian
@@ -97,9 +97,14 @@ Symboling.Poly = {
                 }
             }
 
+        } else if (placement === 'vertex-first') {
+            var first = this._getPrjCoordinates()[0];
+            points = [map._prjToPoint(first)];
+        } else if (placement === 'vertex-last') {
+            var last = this._getPrjCoordinates()[this._getPrjCoordinates().length - 1];
+            points = [map._prjToPoint(last)];
         } else {
-            var center = this.getCenter();
-            var pcenter = this._getProjection().project(center);
+            var pcenter = this._getProjection().project(this.getCenter());
             points = [map._prjToPoint(pcenter)];
         }
         return [points, rotations];

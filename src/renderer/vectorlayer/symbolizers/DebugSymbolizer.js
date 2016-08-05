@@ -12,7 +12,7 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     getPlacement:function () {
-        return 'center';
+        return 'point';
     },
 
     getDxDy:function () {
