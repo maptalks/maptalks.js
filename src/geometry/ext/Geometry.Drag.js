@@ -91,6 +91,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         }
 
         this._shadow = target.copy();
+        this._shadow.setSymbol(target._getInternalSymbol());
         var shadow = this._shadow;
         if (target.options['dragShadow']) {
             var symbol = Z.Util.decreaseSymbolOpacity(shadow._getInternalSymbol(), 0.5);
