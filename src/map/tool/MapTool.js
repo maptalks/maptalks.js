@@ -127,11 +127,7 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
     _switchEvents: function (to) {
         var events = this._getEvents();
         if (events) {
-            for (var p in events) {
-                if (events.hasOwnProperty(p)) {
-                    this._map[to](p, events[p], this);
-                }
-            }
+            this._map[to](events, this);
         }
     },
 

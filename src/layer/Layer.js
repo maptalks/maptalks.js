@@ -345,9 +345,8 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         this.map = map;
         this.setZIndex(zIndex);
         this._registerEvents();
-        if (this._getEvents && this._getEvents()) {
-            this._switchEvents('on', this);
-        }
+        this._switchEvents('on', this);
+
         this.fire('add');
     },
 
@@ -367,15 +366,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     _switchEvents: function (to, emitter) {
         if (emitter && emitter._getEvents) {
-            var events = emitter._getEvents();
-            if (events) {
-                var map = this.getMap();
-                for (var p in events) {
-                    if (events.hasOwnProperty(p)) {
-                        map[to](p, events[p], emitter);
-                    }
-                }
-            }
+            this.getMap()[to](emitter._getEvents(), emitter);
         }
     },
 

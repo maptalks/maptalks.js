@@ -98,7 +98,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
         }
     },
 
-    onZoomEnd:function () {
+    _onZoomEnd:function () {
         this.resetContainer();
     },
 

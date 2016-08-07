@@ -1678,7 +1678,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
     _viewPointToPoint: function (viewPoint) {
         return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint));
-    }
+    },
+
+    _pointToViewPoint: function (point) {
+        return this._prjToViewPoint(this._pointToPrj(point));
+    },
 });
 
 

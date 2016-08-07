@@ -34,13 +34,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
           */
         this.map._fireEvent('renderstart', {'context' : this._context});
         if (!this._canvas) {
-            this._createCanvas();
+            this.createCanvas();
         }
         var zoom = this.map.getZoom();
         var layers = this._getAllLayerToTransform();
 
         if (!this._updateCanvasSize()) {
-            this._clearCanvas();
+            this.clearCanvas();
         }
 
         this._drawBackground();
@@ -70,13 +70,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this.map._fireEvent('renderend', {'context' : this._context});
     },
 
-    onZoomStart:function (options, fn) {
+    animateZoom:function (options, fn) {
         if (Z.Browser.ielt9) {
             fn.call(this);
             return;
         }
         var map = this.map;
-        this._clearCanvas();
+        this.clearCanvas();
         if (!map.options['zoomAnimation']) {
             fn.call(this);
             return;
@@ -132,7 +132,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this.map._fireEvent('renderstart', {'context' : this._context});
 
         var layers = layersToTransform || this._getAllLayerToTransform();
-        this._clearCanvas();
+        this.clearCanvas();
         //automatically disable updatePointsWhileTransforming with mobile browsers.
         var transformLayers = !Z.Browser.mobile && this.map.options['layerTransforming'];
         if (!transformLayers) {
@@ -253,7 +253,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     },
 
     _afterTransform: function (matrix) {
-        this._clearCanvas();
+        this.clearCanvas();
         this._applyTransform(matrix);
         this._drawBackground();
     },
@@ -329,7 +329,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         mapWrapper.appendChild(layer);
         mapWrapper.appendChild(control);
 
-        this._createCanvas();
+        this.createCanvas();
 
         this.resetContainer();
         var mapSize = this.map._getContainerDomSize();
@@ -416,7 +416,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         return this.map._getLayers();
     },
 
-    _clearCanvas:function () {
+    clearCanvas:function () {
         if (!this._canvas) {
             return;
         }
@@ -446,7 +446,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         return true;
     },
 
-    _createCanvas:function () {
+    createCanvas:function () {
         if (this._isCanvasContainer) {
             this._canvas = this.map._containerDOM;
         } else {
@@ -485,7 +485,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
         map.on('_zoomstart', function () {
             delete this._canvasBg;
-            this._clearCanvas();
+            this.clearCanvas();
         }, this);
         if (map.options['checkSize'] && !Z.node && (typeof window !== 'undefined')) {
             // Z.DomUtil.on(window, 'resize', this._onResize, this);

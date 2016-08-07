@@ -97,7 +97,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             j, lineCap, angle;
         var width = style['markerWidth'],
             height = style['markerHeight'];
-        if (markerType === 'ellipse' || markerType === 'circle') {
+        if (markerType === 'ellipse') {
              //ellipse default
             Z.Canvas.ellipse(ctx, point, width / 2, height / 2, lineOpacity, fillOpacity);
         } else if (markerType === 'cross' || markerType === 'x') {

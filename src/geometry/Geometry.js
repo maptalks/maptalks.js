@@ -972,7 +972,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     _onZoomEnd:function () {
         if (this._painter) {
-            this._painter.onZoomEnd();
+            this._painter._onZoomEnd();
         }
     },
 

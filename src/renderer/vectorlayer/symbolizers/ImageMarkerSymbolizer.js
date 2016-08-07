@@ -44,7 +44,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             if (!resources.isResourceLoaded(imgURL)) {
                 resources.addResource(imgURL, img);
             }
-            this.geometry._getPainter()._removeCache();
+            this.geometry._getPainter().removeCache();
         }
         var alpha;
         if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer) &&

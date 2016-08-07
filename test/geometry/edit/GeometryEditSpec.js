@@ -11,11 +11,6 @@ describe('#GeometryEdit', function () {
         if (offset) {
             point._add(offset);
         }
-        var requestAnimFn = Z.Util.requestAnimFrame;
-        //replace original requestAnimFrame to immediate execution.
-        Z.Util.requestAnimFrame=function(fn) {
-            fn();
-        };
         happen.mousedown(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y
@@ -27,7 +22,6 @@ describe('#GeometryEdit', function () {
                 });
         };
         happen.mouseup(document);
-        Z.Util.requestAnimFrame = requestAnimFn;
     }
 
     beforeEach(function() {
@@ -41,7 +35,7 @@ describe('#GeometryEdit', function () {
     });
 
     afterEach(function() {
-        removeContainer(container)
+        // removeContainer(container)
     });
 
     describe('edit all kinds of geometries',function() {
@@ -107,8 +101,8 @@ describe('#GeometryEdit', function () {
             var size = marker.getSize();
             dragGeometry(marker, new maptalks.Point(size.width/2,0));
             var symbol = marker.getSymbol();
-            expect(symbol.markerWidth).not.to.be.eql(20);
-            expect(symbol.markerHeight).not.to.be.eql(20);
+            expect(symbol.markerWidth).to.be.approx(23.92957382);
+            expect(symbol.markerHeight).to.be.approx(42.99999999);
         });
 
         it('resize a circle',function() {
@@ -117,16 +111,16 @@ describe('#GeometryEdit', function () {
             var size = circle.getSize();
             dragGeometry(circle, new maptalks.Point(size.width/2,0));
             var r = circle.getRadius();
-            expect(r).not.to.be.eql(1000);
+            expect(r).to.be.eql(1009.3324);
         });
 
         it('resize a ellipse',function() {
             var ellipse = new maptalks.Ellipse(map.getCenter(), 1000, 500).addTo(layer);
             ellipse.startEdit();
             var size = ellipse.getSize();
-            dragGeometry(ellipse, new maptalks.Point(size.width/2,0));
-            var r = ellipse.getWidth();
-            expect(r).not.to.be.eql(1000);
+            dragGeometry(ellipse, new maptalks.Point(size.width/2, size.height/2));
+            expect(ellipse.getWidth()).to.be.eql(1018.479);
+            expect(ellipse.getHeight()).to.be.eql(518.4748);
         });
 
         it('resize a rectangle',function() {
@@ -134,19 +128,22 @@ describe('#GeometryEdit', function () {
             rect.startEdit();
             var size = rect.getSize();
             dragGeometry(rect, new maptalks.Point(size.width/2,size.height/2));
-            var r = rect.getHeight();
-            expect(r).not.to.be.eql(500);
+            expect(rect.getWidth()).to.be.eql(1009.3324);
+            expect(rect.getHeight()).to.be.eql(509.2744);
         });
 
-        it('change a polygon\'s vertex',function() {
+        it('change a polygon vertex',function() {
             var rect = new maptalks.Rectangle(map.getCenter(), 1000, 500).addTo(layer);
             var shell = rect.getShell();
             var polygon = new maptalks.Polygon(rect.getShell()).addTo(layer);
             var o = polygon.toGeoJSON();
             polygon.startEdit();
             var size = polygon.getSize();
+            console.log(size);
             dragGeometry(polygon, new maptalks.Point(size.width/2,size.height/2));
-            expect(polygon.toGeoJSON()).not.to.eqlGeoJSON(o);
+            expect(polygon.toGeoJSON()).not.to.be.eqlGeoJSON(o);
+            var expected = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[118.84682500000001,32.046534],[118.85742312186674,32.046534],[118.85751916135895,32.041960573990714],[118.84682500000001,32.04204242358055],[118.84682500000001,32.046534]]]},"properties":null};
+            expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
         });
 
     });
