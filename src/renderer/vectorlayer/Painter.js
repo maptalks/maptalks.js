@@ -322,7 +322,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
 Z.Painter.registerSymbolizers = [
     Z.symbolizer.StrokeAndFillSymbolizer,
     Z.symbolizer.ImageMarkerSymbolizer,
-    Z.symbolizer.VectorMarkerSymbolizer,
     Z.symbolizer.VectorPathMarkerSymbolizer,
+    Z.symbolizer.VectorMarkerSymbolizer,
     Z.symbolizer.TextMarkerSymbolizer
 ];

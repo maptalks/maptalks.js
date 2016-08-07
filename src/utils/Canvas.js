@@ -264,35 +264,34 @@ Z.Canvas = {
     },
 
     _textOnLine: function (ctx, text, pt, textHaloRadius, textHaloFill, textHaloOp) {
-        if (textHaloOp === 0 || textHaloRadius === 0) {
-            return;
-        }
-        //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
-        //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
-        if (textHaloOp) {
-            var alpha = ctx.globalAlpha;
-            ctx.globalAlpha *= textHaloOp;
-        }
-
         pt = pt._round();
         ctx.textBaseline = 'top';
-        if (textHaloRadius) {
-            ctx.miterLimit = 2;
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
-            var lineWidth = (textHaloRadius * 2 - 1);
-            ctx.lineWidth = Z.Util.round(lineWidth);
-            ctx.strokeStyle = textHaloFill;
-            ctx.strokeText(text, pt.x, pt.y);
-            ctx.lineWidth = 1;
-            ctx.miterLimit = 10; //default
-        }
+        if (textHaloOp !== 0 && textHaloRadius !== 0) {
+            //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
+            //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
+            if (textHaloOp) {
+                var alpha = ctx.globalAlpha;
+                ctx.globalAlpha *= textHaloOp;
+            }
 
+
+            if (textHaloRadius) {
+                ctx.miterLimit = 2;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+                var lineWidth = (textHaloRadius * 2 - 1);
+                ctx.lineWidth = Z.Util.round(lineWidth);
+                ctx.strokeStyle = textHaloFill;
+                ctx.strokeText(text, pt.x, pt.y);
+                ctx.lineWidth = 1;
+                ctx.miterLimit = 10; //default
+            }
+
+            if (textHaloOp) {
+                ctx.globalAlpha = alpha;
+            }
+        }
         ctx.fillText(text, pt.x, pt.y);
-
-        if (textHaloOp) {
-            ctx.globalAlpha = alpha;
-        }
     },
 
     fillText:function (ctx, text, point, rgba) {
