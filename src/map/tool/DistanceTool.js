@@ -231,18 +231,18 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         var endMarker = new maptalks.Marker(coordinates, {
             'symbol' : [
                 {
-                    'markerType' : 'x',
-                    'markerWidth' : 10,
-                    'markerHeight' : 10,
-                    'markerDx' : 20 + dx
-                },
-                {
                     'markerType' : 'square',
                     'markerFill' : '#ffffff',
                     'markerLineColor' : '#b4b3b3',
                     'markerLineWidth' : 2,
                     'markerWidth' : 15,
                     'markerHeight' : 15,
+                    'markerDx' : 20 + dx
+                },
+                {
+                    'markerType' : 'x',
+                    'markerWidth' : 10,
+                    'markerHeight' : 10,
                     'markerDx' : 20 + dx
                 }
             ]
