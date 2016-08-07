@@ -24,8 +24,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     },
 
     clear:function () {
-        this._clearCanvas();
-        this._requestMapToRender();
+        this.clearCanvas();
+        this.requestMapToRender();
     },
 
     clearExecutors:function () {
@@ -36,7 +36,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         var layer = this._layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
-            this._complete();
+            this.completeRender();
             return;
         }
         if (!this._tileRended) {
@@ -52,12 +52,12 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         this._extent2D = tileGrid['fullExtent'];
         this._viewExtent = tileGrid['viewExtent'];
         if (!this._canvas) {
-            this._createCanvas();
+            this.createCanvas();
         }
-        this._resizeCanvas(tileGrid['fullExtent'].getSize());
-        var mask2DExtent = this._prepareCanvas();
+        this.resizeCanvas(tileGrid['fullExtent'].getSize());
+        var mask2DExtent = this.prepareCanvas();
         if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
-            this._complete();
+            this.completeRender();
             return;
         }
 
@@ -86,10 +86,10 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
 
         if (this._tileToLoadCounter === 0) {
-            this._complete();
+            this.completeRender();
         } else {
             if (this._tileToLoadCounter < this._totalTileToLoad) {
-                this._requestMapToRender();
+                this.requestMapToRender();
             }
             this._scheduleLoadTileQueue();
         }
@@ -222,7 +222,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             var tileSize = this._layer.getTileSize();
             var mapExtent = this.getMap()._get2DExtent();
             if (mapExtent.intersects(new Z.PointExtent(point['2dPoint'], point['2dPoint'].add(tileSize['width'], tileSize['height'])))) {
-                this._requestMapToRender();
+                this.requestMapToRender();
             }
         }
         if (this._tileToLoadCounter === 0) {
@@ -234,9 +234,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         //In browser, map will be requested to render once a tile was loaded.
         //but in node, map will be requested to render when the layer is loaded.
         if (Z.node) {
-            this._requestMapToRender();
+            this.requestMapToRender();
         }
-        this._fireLoadedEvent();
+        this.fireLoadedEvent();
     },
 
     /**
@@ -252,7 +252,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             return;
         }
         if (!Z.node) {
-            this._requestMapToRender();
+            this.requestMapToRender();
         }
         this._tileToLoadCounter--;
         if (this._tileToLoadCounter === 0) {
@@ -263,7 +263,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     /**
      * @override
      */
-    _requestMapToRender:function () {
+    requestMapToRender:function () {
         if (Z.node) {
             if (this.getMap() && !this.getMap()._isBusy()) {
                 this._mapRender.render();
@@ -288,11 +288,6 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
 
     _onZoomEnd: function () {
         this._gradualLoading = true;
-        this.render();
-    },
-
-    _onResize: function () {
-        this._resizeCanvas();
         this.render();
     },
 

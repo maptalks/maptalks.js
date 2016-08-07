@@ -22,18 +22,19 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      * @return {*} [description]
      */
     _createSymbolizers:function () {
-        var geoSymbol = this._getSymbol();
-        var symbolizers = [];
-        var regSymbolizers = Z.Painter.registerSymbolizers;
-        var symbols = geoSymbol;
+        var geoSymbol = this.getSymbol(),
+            symbolizers = [],
+            regSymbolizers = Z.Painter.registerSymbolizers,
+            symbols = geoSymbol;
         if (!Z.Util.isArray(geoSymbol)) {
             symbols = [geoSymbol];
         }
-        for (var ii = 0; ii < symbols.length; ii++) {
-            var symbol = symbols[ii];
+        var symbol, symbolizer;
+        for (var ii = symbols.length - 1; ii >= 0; ii--) {
+            symbol = symbols[ii];
             for (var i = regSymbolizers.length - 1; i >= 0; i--) {
                 if (regSymbolizers[i].test(symbol)) {
-                    var symbolizer = new regSymbolizers[i](symbol, this.geometry);
+                    symbolizer = new regSymbolizers[i](symbol, this.geometry);
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Z.symbolizer.PointSymbolizer) {
                         this._hasPointSymbolizer = true;
@@ -45,6 +46,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
         this._debugSymbolizer = new Z.symbolizer.DebugSymbolizer(symbol, this.geometry);
+        this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
     },
 
@@ -136,7 +138,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         return resources;
     },
 
-    _getSymbol:function () {
+    getSymbol:function () {
         return this.geometry._getInternalSymbol();
     },
 
@@ -148,14 +150,24 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         if (!contexts || !this.symbolizers) {
             return;
         }
+
         this._matrix = matrix;
-        var args = contexts.concat([this]);
+        this._prepareShadow(contexts[0]);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
-            var symbolizer = this.symbolizers[i];
-            symbolizer.symbolize.apply(symbolizer, args);
+            this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._painted = true;
-        this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, args);
+        this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
+    },
+
+    _prepareShadow: function (ctx) {
+        if (this._hasShadow) {
+            ctx.shadowBlur = this.geometry.options['shadowBlur'];
+            ctx.shadowColor = this.geometry.options['shadowColor'];
+        } else {
+            ctx.shadowBlur = null;
+            ctx.shadowColor = null;
+        }
     },
 
     _eachSymbolizer:function (fn, context) {
@@ -213,7 +225,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
                 this.paint();
             }
         } else {
-            this._removeCache();
+            this.removeCache();
             this._refreshSymbolizers();
             this._eachSymbolizer(function (symbolizer) {
                 symbolizer.show();
@@ -229,13 +241,13 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         this._requestToRender();
     },
 
-    onZoomEnd:function () {
-        this._removeCache();
+    _onZoomEnd:function () {
+        this.removeCache();
         this._refreshSymbolizers();
     },
 
     repaint:function () {
-        this._removeCache();
+        this.removeCache();
         this._refreshSymbolizers();
         if (this.geometry.isVisible()) {
             this._requestToRender();
@@ -268,7 +280,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      * symbol发生变化后, 刷新symbol
      */
     refreshSymbol:function () {
-        this._removeCache();
+        this.removeCache();
         this._removeSymbolizers();
         this.symbolizers = this._createSymbolizers();
         if (!this.getMap()) {
@@ -285,7 +297,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     },
 
     remove:function () {
-        this._removeCache();
+        this.removeCache();
         this._removeSymbolizers();
     },
 
@@ -297,9 +309,9 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     },
 
     /**
-     * 删除缓存属性
+     * delete painter's caches
      */
-    _removeCache:function () {
+    removeCache:function () {
         delete this._renderPoints;
         delete this._rendResources;
         delete this._extent2D;

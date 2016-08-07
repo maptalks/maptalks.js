@@ -418,7 +418,7 @@ Z.Util = {
      * @return {Boolean}
      */
     isNil:function (obj) {
-        return (typeof (obj) === 'undefined' || obj === null);
+        return obj == null;
     },
 
     /*
@@ -510,7 +510,7 @@ Z.Util = {
         if (!Z.Util.isString(str)) {
             return 0;
         }
-        if (str.substring(0, 4) === 'http') {
+        if (str.indexOf('http://') === 0 || str.indexOf('https://') === 0) {
             return 3;
         }
         if (Z.Util.cssUrlRe.test(str)) {
@@ -649,7 +649,7 @@ Z.Util = {
     },
 
     isGradient: function (g) {
-        return g && Z.Util.isArrayHasData(g['colorStops']);
+        return g && g['colorStops'];
     },
 
     /**
@@ -727,21 +727,19 @@ Z.Util = {
         }
         var props = Z.Symbolizer.resourceProperties,
             embed = 'data:';
-        var res, isCssStyle = false;
+        var res;
         for (var ii = 0, len = props.length; ii < len; ii++) {
             res = s[props[ii]];
             if (!res) {
                 continue;
             }
-            isCssStyle = false;
             if (res.indexOf('url(') >= 0) {
                 res = Z.Util.extractCssUrl(res);
-                isCssStyle = true;
             }
             if (!Z.Util.isURL(res) &&
                 (res.length <= embed.length || res.substring(0, embed.length) !== embed)) {
                 res = absolute(location.href, res);
-                s[props[ii]] = isCssStyle ? 'url("' + res + '")' : res;
+                s[props[ii]] = res;
             }
         }
         return s;

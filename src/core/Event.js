@@ -17,21 +17,24 @@ Z.Eventable = {
      */
     on: function (eventsOn, handler, context) {
         if (!eventsOn || !handler) { return this; }
+        if (!Z.Util.isString(eventsOn)) {
+            return this._switch('on', eventsOn, handler);
+        }
         if (!this._eventMap) {
             this._eventMap = {};
         }
         var eventTypes = eventsOn.split(' ');
-        var eventType;
+        var evtType;
         if (!context) { context = this; }
-        var handlerChain, i, len;
-        for (var j = 0, jl = eventTypes.length; j < jl; j++) {
-            eventType = eventTypes[j].toLowerCase();
-            handlerChain = this._eventMap[eventType];
+        var handlerChain, i, l;
+        for (var ii = 0, ll = eventTypes.length; ii < ll; ii++) {
+            evtType = eventTypes[ii].toLowerCase();
+            handlerChain = this._eventMap[evtType];
             if (!handlerChain) {
                 handlerChain = [];
-                this._eventMap[eventType] = handlerChain;
+                this._eventMap[evtType] = handlerChain;
             }
-            for (i = 0, len = handlerChain.length; i < len; i++) {
+            for (i = 0, l = handlerChain.length; i < l; i++) {
                 if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
                     return this;
                 }
@@ -55,17 +58,37 @@ Z.Eventable = {
      * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
      */
     once: function (eventTypes, handler, context) {
+        if (!Z.Util.isString(eventTypes)) {
+            var once = {};
+            for (var p in eventTypes) {
+                if (eventTypes.hasOwnProperty(p)) {
+                    once[p] = this._wrapOnceHandler(p, eventTypes[p], context);
+                }
+            }
+            return this._switch('on', once);
+        }
+        var evetTypes = eventTypes.split(' ');
+        for (var i = 0, l = evetTypes.length; i < l; i++) {
+            this.on(evetTypes[i], this._wrapOnceHandler(evetTypes[i], handler, context));
+        }
+        return this;
+    },
+
+    _wrapOnceHandler: function (evtType, handler, context) {
         var me = this;
         var called = false;
-        function onceHandler() {
+        return function onceHandler() {
             if (called) {
                 return;
             }
             called = true;
-            handler.apply(this, arguments);
-            me.off(eventTypes, onceHandler, this);
-        }
-        return this.on(eventTypes, onceHandler, context);
+            if (context) {
+                handler.apply(context, arguments);
+            } else {
+                handler.apply(this, arguments);
+            }
+            me.off(evtType, onceHandler, this);
+        };
     },
 
     /**
@@ -80,6 +103,9 @@ Z.Eventable = {
      */
     off:function (eventsOff, handler, context) {
         if (!eventsOff || !this._eventMap || !handler) { return this; }
+        if (!Z.Util.isString(eventsOff)) {
+            return this._switch('off', eventsOff, handler);
+        }
         var eventTypes = eventsOff.split(' ');
         var eventType, handlerChain;
         if (!context) { context = this; }
@@ -92,6 +118,15 @@ Z.Eventable = {
                 if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
                     handlerChain.splice(i, 1);
                 }
+            }
+        }
+        return this;
+    },
+
+    _switch: function (to, eventKeys, context) {
+        for (var p in eventKeys) {
+            if (eventKeys.hasOwnProperty(p)) {
+                this[to](p, eventKeys[p], context);
             }
         }
         return this;

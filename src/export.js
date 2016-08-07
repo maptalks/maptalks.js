@@ -10,7 +10,7 @@ function exportMaptalks() {
     window['maptalks'] = Z;
 }
 
-if (Z.node) {
+if (typeof module !== 'undefined' && module.exports) {
     exports = module.exports = Z;
 } else if (typeof define === 'function' && define.amd) {
     define(Z);

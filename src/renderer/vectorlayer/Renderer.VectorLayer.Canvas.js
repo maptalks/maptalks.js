@@ -24,7 +24,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         var me = this;
         this._clearTimeout();
         if (this._layer.isEmpty()) {
-            this._complete();
+            this.completeRender();
             return;
         }
         if (this._layer.options['drawImmediate']) {
@@ -109,19 +109,19 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         var layer = this._layer;
         if (layer.isEmpty()) {
             this._resources = new Z.renderer.Canvas.Resources();
-            this._fireLoadedEvent();
+            this.fireLoadedEvent();
             return;
         }
         if (!layer.isVisible()) {
-            this._fireLoadedEvent();
+            this.fireLoadedEvent();
             return;
         }
         this._prepareToDraw();
         var extent2D = this._extent2D,
-            maskExtent2D = this._prepareCanvas();
+            maskExtent2D = this.prepareCanvas();
         if (maskExtent2D) {
             if (!maskExtent2D.intersects(extent2D)) {
-                this._fireLoadedEvent();
+                this.fireLoadedEvent();
                 return;
             }
             extent2D = extent2D.intersection(maskExtent2D);
@@ -172,8 +172,8 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
         var map = this.getMap();
         if (!this._layer.isVisible() || this._layer.isEmpty()) {
-            this._clearCanvas();
-            this._complete();
+            this.clearCanvas();
+            this.completeRender();
             return;
         }
         var zoom = this.getMap().getZoom();
@@ -182,13 +182,13 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                 this._canvasCache = {};
             }
             if (this._extent2D) {
-                this._complete();
+                this.completeRender();
                 return;
             } else if (this._canvasCache[zoom]) {
                 this._canvas = this._canvasCache[zoom].canvas;
                 var center = map._prjToPoint(map._getPrjCenter());
                 this._extent2D = this._canvasCache[zoom].extent2D.add(this._canvasCache[zoom].center.substract(center));
-                this._complete();
+                this.completeRender();
                 return;
             } else {
                 delete this._canvas;
@@ -204,7 +204,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                 };
             }
         }
-        this._complete();
+        this.completeRender();
     },
 
     _onZoomEnd: function () {
@@ -217,9 +217,9 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!this._painted) {
             this.render();
         } else {
-            //_prepareRender is called in render not in _drawImmediate.
-            //Thus _prepareRender needs to be called here
-            this._prepareRender();
+            //prepareRender is called in render not in _drawImmediate.
+            //Thus prepareRender needs to be called here
+            this.prepareRender();
             this._drawImmediate();
         }
     },
@@ -228,19 +228,19 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!this._painted) {
             this.render();
         } else {
-            this._prepareRender();
+            this.prepareRender();
             this._drawImmediate();
         }
     },
 
     _onResize: function () {
-        this._resizeCanvas();
+        this.resizeCanvas();
         if (!this._painted) {
             this.render();
         } else {
             delete this._canvasCache;
             delete this._extent2D;
-            this._prepareRender();
+            this.prepareRender();
             this._drawImmediate();
         }
     },

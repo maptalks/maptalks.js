@@ -469,8 +469,8 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
          * @type {Object}
          * @property {String} type - zindexchange
          * @property {maptalks.Geometry} target - the geometry fires the event
-         * @property {String|Number} old        - old zIndex
-         * @property {String|Number} new        - new zIndex
+         * @property {Number} old        - old zIndex
+         * @property {Number} new        - new zIndex
          */
         this._fireEvent('zindexchange', {'old':old, 'new':zIndex});
         return this;
@@ -972,7 +972,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     _onZoomEnd:function () {
         if (this._painter) {
-            this._painter.onZoomEnd();
+            this._painter._onZoomEnd();
         }
     },
 

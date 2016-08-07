@@ -5,7 +5,9 @@ dist/examples
 dist/Plugins
 dist/maptalks.*.js
 dist/maptalks.min.js
+dist/plugins
 dist/*.gz
+dist/*.zip
 coverage/
 doc/
 src/

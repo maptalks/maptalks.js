@@ -59,6 +59,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         this.prepare();
         //edits are applied to a shadow of geometry to improve performance.
         var shadow = geometry.copy();
+        shadow.setSymbol(geometry._getInternalSymbol());
         //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
         //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
         shadow.copyEventListeners(geometry);
@@ -472,7 +473,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             }
 
             //caculate width and height
-            var viewCenter = marker._getCenter2DPoint().add(dxdy),
+            var viewCenter = map._pointToViewPoint(marker._getCenter2DPoint()).add(dxdy),
                 symbol = marker._getInternalSymbol();
             var wh = handleViewPoint.substract(viewCenter);
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
@@ -503,7 +504,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             circle = this._geometry;
         var map = this.getMap();
         this._createResizeHandles(null, function (handleViewPoint) {
-            var viewCenter = shadow._getCenter2DPoint();
+            var viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
             var wh = handleViewPoint.substract(viewCenter);
             var w = Math.abs(wh.x),
                 h = Math.abs(wh.y);
@@ -582,7 +583,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
                 viewCenter = map._prjToViewPoint(shadow._getPrjCoordinates());
             } else {
                 r = 2;
-                viewCenter = shadow._getCenter2DPoint();
+                viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
             }
             var wh = handleViewPoint.substract(viewCenter);
             var ability = resizeAbilities[i];
