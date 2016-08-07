@@ -6,9 +6,11 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         'lineOpacity' : 1,
         'lineDasharray': [],
         'lineCap' : 'butt', //“butt”, “square”, “round”
-        'lineJoin' : 'round', //“bevel”, “round”, “miter”
+        'lineJoin' : 'miter', //“bevel”, “round”, “miter”
+        'linePatternFile' : null,
         'polygonFill': null,
-        'polygonOpacity': 0
+        'polygonOpacity': 0,
+        'polygonPatternFile' : null
     },
 
     initialize:function (symbol, geometry) {

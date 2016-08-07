@@ -186,8 +186,9 @@ var GeoSymbolTester = {
                 "textSize"         : 12,
                 "textFill"         : "#550033",
                 "textOpacity"      : 1,
-                "textHaloFill"  : "#fff",
-                "textHaloRadius": 5,
+                "textHaloFill"    : "#fff",
+                "textHaloRadius"  : 5,
+                "textHaloOpacity" : 0.5,
 
                 "textDx"           : 0,
                 "textDy"           : 0,
