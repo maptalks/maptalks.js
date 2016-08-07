@@ -77,15 +77,26 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         var editContainer = this._createEditor();
         this._textEditor = editContainer;
         map.on('mousedown',  this.endEditText, this);
-        var symbol = this._getInternalSymbol() || {},
-            dx = symbol['textDx'] - 2 || 0,
-            dy = symbol['textDy'] - 2 || 0;
+        var offset = this._getEditorOffset();
         this._editUIMarker = new maptalks.ui.UIMarker(this.getCoordinates(), {
             'content' : editContainer,
-            'dx' : dx,
-            'dy' : dy
+            'dx' : offset.dx,
+            'dy' : offset.dy
         }).addTo(map).show();
         this._setCursorToLast(this._textEditor);
+    },
+
+    _getEditorOffset: function() {
+        var symbol = this._getInternalSymbol() || {}, dx = 0, dy = 0;
+        var textAlign = symbol['textHorizontalAlignment'];
+        if(textAlign === 'middle') {
+            dx = symbol['textDx'] - 2 || 0, dy = symbol['textDy'] - 2 || 0;
+        } else if(textAlign === 'left') {
+            dx = symbol['markerDx'] + symbol['textDx'] - 2 || 0, dy = symbol['markerDy']- 2 || 0;
+        } else {
+            dx = symbol['markerDx']- 2 || 0, dy = symbol['markerDy']- 2 || 0;
+        }
+        return {'dx' : dx, 'dy' : dy};
     },
 
     _createEditor: function () {
