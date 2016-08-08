@@ -886,7 +886,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         }
         var save = options['save'];
         var renderer = this._getRenderer();
-        if (renderer) {
+        if (renderer && renderer.toDataURL) {
             var file = options['filename'];
             if (!file) {
                 file = 'export';

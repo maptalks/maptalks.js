@@ -9,7 +9,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         'lineJoin' : 'miter', //“bevel”, “round”, “miter”
         'linePatternFile' : null,
         'polygonFill': null,
-        'polygonOpacity': 0,
+        'polygonOpacity': 1,
         'polygonPatternFile' : null
     },
 
@@ -112,6 +112,9 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         Z.Util.extend(result, d, s);
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;
+        }
+        if (this.geometry instanceof Z.LineString) {
+            result['polygonFill'] = result['lineColor'];
         }
         return result;
     }
