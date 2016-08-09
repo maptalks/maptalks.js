@@ -92,7 +92,7 @@ Z.Label.include(/** @lends maptalks.Label.prototype */{
         if(textAlign === 'middle') {
             dx = symbol['textDx'] - 2 || 0, dy = symbol['textDy'] - 2 || 0;
         } else if(textAlign === 'left') {
-            dx = symbol['markerDx'] + symbol['textDx'] - 2 || 0, dy = symbol['markerDy']- 2 || 0;
+            dx = symbol['markerDx']- 2 || 0, dy = symbol['markerDy']- 2 || 0;
         } else {
             dx = symbol['markerDx']- 2 || 0, dy = symbol['markerDy']- 2 || 0;
         }
