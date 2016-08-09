@@ -1164,7 +1164,7 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     if (!symbol['markerPath']) {
         return null;
     }
-    var op, styles =  Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
+    var op = 1, styles =  Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
     if (Z.Util.isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];
@@ -1203,9 +1203,9 @@ Z.Geometry._getMarkerPathURL = function (symbol) {
     if (op < 1) {
         svg.push('opacity="' + op + '"');
     }
-    if (symbol['markerWidth'] && symbol['markerHeight']) {
-        svg.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
-    }
+    // if (symbol['markerWidth'] && symbol['markerHeight']) {
+    //     svg.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
+    // }
     if (symbol['markerPathWidth'] && symbol['markerPathHeight']) {
         svg.push('viewBox="0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
     }
