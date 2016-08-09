@@ -652,6 +652,21 @@ Z.Util = {
         return g && g['colorStops'];
     },
 
+    getGradientStamp: function (g) {
+        var keys = [g['type']];
+        if (g['places']) {
+            keys.push(g['places'].join());
+        }
+        if (g['colorStops']) {
+            var stops = [];
+            for (var i = g['colorStops'].length - 1; i >= 0; i--) {
+                stops.push(g['colorStops'][i].join());
+            }
+            keys.push(stops.join(';'));
+        }
+        return keys.join('-');
+    },
+
     /**
      * Get external resources from the given symbol
      * @param  {Object} symbol      - symbol

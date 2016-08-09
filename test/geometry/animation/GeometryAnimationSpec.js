@@ -45,10 +45,12 @@ describe('#GeometryAnimation', function () {
                 var symbol = marker.getSymbol();
                 expect(symbol.markerWidth).to.be.eql(20);
                 expect(symbol.markerHeight).to.be.eql(30);
+                expect(symbol.markerType).to.be.eql('x');
                 done();
             }
             marker.animate({
                 symbol : {
+                    'markerType' : 'x', // string type property
                     'markerWidth' : 20,
                     'markerHeight' : 30
                 }

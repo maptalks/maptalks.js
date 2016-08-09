@@ -20,7 +20,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         return true;
     },
 
-    render:function () {
+    render:function (isCheckRes) {
         this.prepareRender();
         if (!this.getMap()) {
             return;
@@ -29,24 +29,43 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             this.completeRender();
             return;
         }
-        if (this.checkResources) {
+        if (this.checkResources && isCheckRes) {
             var me = this, args = arguments;
             var resources = this.checkResources.apply(this, args);
             if (Z.Util.isArrayHasData(resources)) {
                 this.loadResources(resources).then(function () {
                     if (me._layer) {
-                        me.draw.apply(me, args);
+                        me._tryToDraw.apply(me, args);
                     }
                 });
             } else {
-                this.draw.apply(this, args);
+                this._tryToDraw.apply(this, args);
             }
         } else {
-            this.draw.apply(this, arguments);
+            this._tryToDraw.apply(this, arguments);
+        }
+    },
+
+    _tryToDraw:function () {
+        this._clearTimeout();
+        if (this._layer.isEmpty && this._layer.isEmpty()) {
+            this.completeRender();
+            return;
+        }
+        var me = this, args = arguments;
+        if (this._layer.options['drawImmediate']) {
+            this.draw.apply(this, args);
+        } else {
+            this._animReqId = Z.Util.requestAnimFrame(function () {
+                if (me._layer) {
+                    me.draw.apply(me, args);
+                }
+            });
         }
     },
 
     remove: function () {
+        this._clearTimeout();
         if (this._onRemove) {
             this._onRemove();
         }
@@ -393,7 +412,8 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     _onZoomEnd: function () {
-        this.render();
+        this.prepareRender();
+        this.draw();
     },
 
     _onMoveStart: function () {
@@ -405,12 +425,21 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     _onMoveEnd: function () {
-        this.render();
+        this.prepareRender();
+        this.draw();
     },
 
     _onResize: function () {
         this.resizeCanvas();
-        this.render();
+        this.prepareRender();
+        this.draw();
+    },
+
+    _clearTimeout:function () {
+        if (this._animReqId) {
+            //clearTimeout(this._animReqId);
+            Z.Util.cancelAnimFrame(this._animReqId);
+        }
     }
 });
 

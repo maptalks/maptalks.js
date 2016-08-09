@@ -34,7 +34,6 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
         'thresholdOfTransforming'    : 150,
-        'drawImmediate'             : false,
         'drawOnce'                  : false,
         'defaultIconSize'           : [20, 20],
         'cacheSvgOnCanvas'          : true
