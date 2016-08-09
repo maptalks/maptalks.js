@@ -131,59 +131,68 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         }
         var cooked = [];
         for (var i = 0; i < styles.length; i++) {
-            cooked.push({
-                'filter' : Z.Util.createFilter(styles[i]['filter']),
-                'symbol' : styles[i].symbol
-            });
+            if (styles[i]['filter'] === true) {
+                cooked.push({
+                    'filter' : function () { return true; },
+                    'symbol' : styles[i].symbol
+                });
+            } else {
+                cooked.push({
+                    'filter' : Z.Util.createFilter(styles[i]['filter']),
+                    'symbol' : styles[i].symbol
+                });
+            }
         }
         return cooked;
+    },
+
+    /**
+     * Export the vector layer's profile json. <br>
+     * @param  {Object} [options=null] - export options
+     * @param  {Object} [options.geometries=null] - If not null and the layer is a [OverlayerLayer]{@link maptalks.OverlayLayer},
+     *                                            the layer's geometries will be exported with the given "options.geometries" as a parameter of geometry's toJSON.
+     * @param  {maptalks.Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
+     * @return {Object} layer's profile JSON
+     */
+    toJSON: function (options) {
+        if (!options) {
+            options = {};
+        }
+        var profile = {
+            'type'    : 'VectorLayer',
+            'id'      : this.getId(),
+            'options' : this.config()
+        };
+        if ((Z.Util.isNil(options['style']) || options['style']) && this.getStyle()) {
+            profile['style'] = this.getStyle();
+        }
+        if (Z.Util.isNil(options['geometries']) || options['geometries']) {
+            var clipExtent;
+            if (options['clipExtent']) {
+                clipExtent = new Z.Extent(options['clipExtent']);
+            }
+            var geoJSONs = [];
+            var geometries = this.getGeometries(),
+                geoExt,
+                json;
+            for (var i = 0, len = geometries.length; i < len; i++) {
+                geoExt = geometries[i].getExtent();
+                if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
+                    continue;
+                }
+                json = geometries[i].toJSON(options['geometries']);
+                if (json['symbol'] && this.getStyle()) {
+                    json['symbol'] = geometries[i]._symbolBeforeStyle ? Z.Util.extend({}, geometries[i]._symbolBeforeStyle) : null;
+                }
+                geoJSONs.push(json);
+            }
+            profile['geometries'] = geoJSONs;
+        }
+        return profile;
     }
 });
 
-/**
- * Export the vector layer's profile json. <br>
- * @param  {Object} [options=null] - export options
- * @param  {Object} [options.geometries=null] - If not null and the layer is a [OverlayerLayer]{@link maptalks.OverlayLayer},
- *                                            the layer's geometries will be exported with the given "options.geometries" as a parameter of geometry's toJSON.
- * @param  {maptalks.Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
- * @return {Object} layer's profile JSON
- */
-Z.VectorLayer.prototype.toJSON = function (options) {
-    if (!options) {
-        options = {};
-    }
-    var profile = {
-        'type'    : 'VectorLayer',
-        'id'      : this.getId(),
-        'options' : this.config()
-    };
-    if ((Z.Util.isNil(options['style']) || options['style']) && this.getStyle()) {
-        profile['style'] = this.getStyle();
-    }
-    if (Z.Util.isNil(options['geometries']) || options['geometries']) {
-        var clipExtent;
-        if (options['clipExtent']) {
-            clipExtent = new Z.Extent(options['clipExtent']);
-        }
-        var geoJSONs = [];
-        var geometries = this.getGeometries(),
-            geoExt,
-            json;
-        for (var i = 0, len = geometries.length; i < len; i++) {
-            geoExt = geometries[i].getExtent();
-            if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
-                continue;
-            }
-            json = geometries[i].toJSON(options['geometries']);
-            if (json['symbol'] && this.getStyle()) {
-                json['symbol'] = geometries[i]._symbolBeforeStyle ? Z.Util.extend({}, geometries[i]._symbolBeforeStyle) : null;
-            }
-            geoJSONs.push(json);
-        }
-        profile['geometries'] = geoJSONs;
-    }
-    return profile;
-};
+
 
 /**
  * Reproduce a VectorLayer from layer's profile JSON.

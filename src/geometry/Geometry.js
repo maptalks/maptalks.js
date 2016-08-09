@@ -747,7 +747,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Get the geographic length of the geometry.
-     * @returns {Number} geographic length
+     * @returns {Number} geographic length, unit is meter
      */
     getLength:function () {
         return this._computeGeodesicLength(this._getMeasurer());
@@ -755,7 +755,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Get the geographic area of the geometry.
-     * @returns {Number} geographic area
+     * @returns {Number} geographic area, unit is sq.meter
      * @expose
      */
     getArea:function () {

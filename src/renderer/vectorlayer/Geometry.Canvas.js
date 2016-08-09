@@ -46,25 +46,29 @@ if (Z.Browser.canvas) {
     //----------------------------------------------------
 
     Z.Polyline.include({
+        arrowStyles : {
+            'classic' : [2, 5]
+        },
+
         _arrow: function (ctx, prePoint, point, opacity, arrowStyle) {
-            if (arrowStyle !== 'classic') {
+            var style = this.arrowStyles[arrowStyle];
+            if (!style) {
                 return;
             }
             var lineWidth = this._getInternalSymbol()['lineWidth'];
-            if (!lineWidth) {
+            if (!lineWidth || lineWidth < 3) {
                 lineWidth = 3;
             }
-            //TODO 箭头与线宽度的比率相差近四倍,导致不太协调
-            lineWidth = lineWidth / 2;
-            var arrowWidth = lineWidth * 3,
-                arrowHeight = lineWidth * 4,
-                hh = arrowHeight / 2,
+
+            var arrowWidth = lineWidth * style[0],
+                arrowHeight = lineWidth * style[1],
+                hh = arrowHeight,
                 hw = arrowWidth / 2;
 
-            var v0 = new Z.Point(0, -hh),
+            var v0 = new Z.Point(0, lineWidth),
                 v1 = new Z.Point(Z.Util.round(-hw), Z.Util.round(hh)),
                 v2 = new Z.Point(Z.Util.round(hw), Z.Util.round(hh));
-            var pts = [v0, v1, v2];
+            var pts = [v0, v1, v2, v0];
             var angle = Math.atan2(point.x - prePoint.x, prePoint.y - point.y);
             var matrix = new Z.Matrix().translate(point.x, point.y).rotate(angle);
             var ptsToDraw = matrix.applyToArray(pts);

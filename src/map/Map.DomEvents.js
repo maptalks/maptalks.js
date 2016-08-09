@@ -163,14 +163,14 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     },
 
     _ignoreEvent: function (domEvent) {
-        //ignore events originated from control doms.
+        //ignore events originated from control and ui doms.
         if (!domEvent || !this._panels.control) {
             return false;
         }
         var target = domEvent.srcElement || domEvent.target;
         if (target) {
             while (target && target !== this._containerDOM) {
-                if (target.className === 'maptalks-control') {
+                if (target.className === 'maptalks-control' || target.className === 'maptalks-ui') {
                     return true;
                 }
                 target = target.parentNode;

@@ -67,7 +67,7 @@ describe('#Marker', function() {
     describe("symbol", function() {
 
         beforeEach(function() {
-            layer = new Z.VectorLayer('id');
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
         });
 
@@ -93,7 +93,7 @@ describe('#Marker', function() {
             var marker = new Z.Marker(center, {
                 symbol: {
                     textName: 'texxxxxt',
-                    font: 'monospace'
+                    textFaceName: 'monospace'
                 }
             });
 
@@ -104,7 +104,7 @@ describe('#Marker', function() {
 
 
         it("can be vector", function() {
-            var types = ['circle', 'triangle', 'cross', 'diamond', 'square', 'x', 'bar'];
+            var types = ['ellipse', 'triangle', 'cross', 'diamond', 'square', 'x', 'bar'];
 
             expect(function () {
                 for(var i = 0; i < types.length; i++) {
@@ -112,22 +112,6 @@ describe('#Marker', function() {
                         symbol: {
                             markerType: types[i],
                             markerLineDasharray: [20, 10, 5, 5, 5, 10]
-                        }
-                    });
-                    layer.addGeometry(marker);
-                }
-            }).to.not.throwException();
-        });
-
-        it("can be shield", function() {
-            var types = ['label', 'tip'];
-
-            expect(function () {
-                for(var i = 0; i < types.length; i++) {
-                    var marker = new Z.Marker(center, {
-                        symbol: {
-                            shieldType: types[i],
-                            shieldName: types[i] + 'Shield'
                         }
                     });
                     layer.addGeometry(marker);
