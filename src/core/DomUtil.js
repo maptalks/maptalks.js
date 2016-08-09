@@ -229,54 +229,11 @@ Z.DomUtil = {
      * @return {Object}     屏幕坐标
      */
     getPagePosition:function (obj) {
-        if (obj.getBoundingClientRect) {
-            var docEl = document.documentElement;
-            var rect = obj.getBoundingClientRect();
-            return new Z.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
-        }
-        var topValue = 0, leftValue = 0;
-        if (!obj) {
-            console.error('obj is null');
-        }
-        leftValue += parseInt(obj.offsetLeft, 0);
-        topValue += parseInt(obj.offsetTop, 0);
-        obj = obj.offsetParent;
-        while (obj) {
-            leftValue += parseInt(obj.offsetLeft, 0);
-            topValue += parseInt(obj.offsetTop, 0);
-            obj = obj.offsetParent;
-        }
-        return new Z.Point(leftValue, topValue);
+        var docEl = document.documentElement;
+        var rect = obj.getBoundingClientRect();
+        return new Z.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
     },
 
-    /**
-     * 获取事件触发页面的屏幕坐标
-     * @param  {Event} ev 事件
-     * @return {Object} 屏幕坐标
-     */
-    getEventPagePosition:function (ev) {
-        ev = ev || window.event;
-        if (ev.touches && ev.touches.length > 0) {
-            return new Z.Point(ev.touches[0].pageX, ev.touches[0].pageY);
-        } else if (ev.changedTouches && ev.changedTouches.length > 0) {
-            //touchend
-            return new Z.Point(ev.changedTouches[0].pageX, ev.changedTouches[0].pageY);
-        } else if (ev.pageX || ev.pageY) {
-            return new Z.Point(ev.pageX, ev.pageY);
-        } else {
-            //解决是否定义DOCTYPE W3C DTD标准取值滚动条参数
-            var dBody = document.body;//无标准这有效
-            var dElement = document.documentElement;//有标准这有效
-            var scrollLeft = dElement.scrollLeft ? dElement.scrollLeft : dBody.scrollLeft;
-            var clientLeft = dElement.clientLeft ? dElement.clientLeft : dBody.clientLeft;
-            var scrollTop = dElement.scrollTop ? dElement.scrollTop : dBody.scrollTop;
-            var clientTop = dElement.clientTop ? dElement.clientTop : dBody.clientTop;
-            return new Z.Point(
-                ev.clientX + scrollLeft - clientLeft,
-                ev.clientY + scrollTop  - clientTop
-            );
-        }
-    },
 
     /**
      * 获取鼠标在容器上相对容器左上角的坐标值
@@ -287,9 +244,11 @@ Z.DomUtil = {
         if (!ev) {
             ev = window.event;
         }
-        var domScreenPos = Z.DomUtil.getPagePosition(dom);
-        var mousePagePos = Z.DomUtil.getEventPagePosition(ev);
-        return mousePagePos._substract(domScreenPos);
+        var rect = dom.getBoundingClientRect();
+
+        return new Z.Point(
+            ev.clientX - rect.left - dom.clientLeft,
+            ev.clientY - rect.top - dom.clientTop);
     },
 
     /**
@@ -548,6 +507,11 @@ Z.DomUtil = {
                 'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)') +
             (scale ? ' scale(' + scale + ')' : '');
 
+        return this;
+    },
+
+    removeTransform: function (el) {
+        el.style[Z.DomUtil.TRANSFORM] =  null;
         return this;
     },
 

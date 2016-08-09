@@ -133,7 +133,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
         var layers = layersToTransform || this._getAllLayerToTransform();
         this.clearCanvas();
-        //automatically disable updatePointsWhileTransforming with mobile browsers.
+        //automatically disable layerTransforming with mobile browsers.
         var transformLayers = !Z.Browser.mobile && this.map.options['layerTransforming'];
         if (!transformLayers) {
             this._context.save();
@@ -148,7 +148,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             if (renderer) {
                 if (renderer.isCanvasRender()) {
                     var transformed = false;
-                    if (transformLayers && renderer.transform && !Z.Browser.mobile) {
+                    if (transformLayers && renderer.transform) {
                         transformed = renderer.transform(matrix);
                     }
                     if (transformLayers && !transformed) {
