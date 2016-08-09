@@ -510,6 +510,11 @@ Z.DomUtil = {
         return this;
     },
 
+    removeTransform: function (el) {
+        el.style[Z.DomUtil.TRANSFORM] =  null;
+        return this;
+    },
+
     isHTML: function (str) {
         return /<[a-z\][\s\S]*>/i.test(str);
     },
