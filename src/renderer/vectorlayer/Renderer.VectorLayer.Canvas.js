@@ -79,7 +79,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     },
 
     checkResources:function (geometries) {
-        if (!this._painted && !geometries) {
+        if (!this._painted && !Z.Util.isArray(geometries)) {
             geometries = this._layer._geoList;
         }
         if (!geometries || !Z.Util.isArrayHasData(geometries)) {
