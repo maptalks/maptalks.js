@@ -62,7 +62,7 @@ Z.Animation = {
                     clazz = val.constructor;
                     values = [new clazz(0, 0), val];
                 } else {
-                    throw new Error(val + ' is not supported in animation styles.');
+                    values = [val, val]
                 }
             }
             //val is a array and val[0] is the start value and val[1] is the destination value.
@@ -89,7 +89,7 @@ Z.Animation = {
                 }
                 return [v1, v2.substract(v1), v2];
             } else {
-                throw new Error(values + ' is not supported in animation styles.');
+                return [v1, 0, v2]
             }
         }
 
@@ -149,6 +149,10 @@ Z.Animation = {
             var result = {};
             for (var p in _dStyles) {
                 if (_dStyles.hasOwnProperty(p)) {
+                    if (_startStyles[p] === destStyles[p]) {
+                        result[p] = _startStyles[p];
+                        continue;
+                    }
                     var s = _startStyles[p], d = _dStyles[p];
                     if (Z.Util.isNumber(d)) {
                         //e.g. radius, width, height
