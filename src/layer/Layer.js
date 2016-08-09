@@ -28,6 +28,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         //图层是否可见
         'visible':true,
         'opacity': 1,
+        'drawImmediate' : false,
         'renderer' : 'canvas'
     },
 

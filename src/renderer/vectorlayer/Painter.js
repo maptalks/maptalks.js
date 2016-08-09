@@ -268,7 +268,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         }
         var layer = geometry.getLayer(),
             renderer = layer._getRenderer();
-        if (!renderer || !(layer instanceof Z.VectorLayer)) {
+        if (!renderer || !(layer instanceof Z.OverlayLayer)) {
             return;
         }
         if (layer.isCanvasRender()) {

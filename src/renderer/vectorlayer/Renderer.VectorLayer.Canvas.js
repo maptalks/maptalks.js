@@ -21,19 +21,44 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
      * @param  {Boolean} ignorePromise   whether escape step of promise
      */
     draw:function () {
-        var me = this;
-        this._clearTimeout();
-        if (this._layer.isEmpty()) {
+        if (!this.getMap()) {
+            return;
+        }
+        var map = this.getMap();
+        if (!this._layer.isVisible() || this._layer.isEmpty()) {
+            this.clearCanvas();
             this.completeRender();
             return;
         }
-        if (this._layer.options['drawImmediate']) {
-            this._drawImmediate();
-        } else {
-            this._renderTimeout = Z.Util.requestAnimFrame(function () {
-                me._drawImmediate();
-            });
+        var zoom = this.getMap().getZoom();
+        if (this._layer.options['drawOnce']) {
+            if (!this._canvasCache) {
+                this._canvasCache = {};
+            }
+            if (this._extent2D) {
+                this.completeRender();
+                return;
+            } else if (this._canvasCache[zoom]) {
+                this._canvas = this._canvasCache[zoom].canvas;
+                var center = map._prjToPoint(map._getPrjCenter());
+                this._extent2D = this._canvasCache[zoom].extent2D.add(this._canvasCache[zoom].center.substract(center));
+                this.completeRender();
+                return;
+            } else {
+                delete this._canvas;
+            }
         }
+        this._drawGeos();
+        if (this._layer.options['drawOnce']) {
+            if (!this._canvasCache[zoom]) {
+                this._canvasCache[zoom] = {
+                    'canvas'       : this._canvas,
+                    'extent2D'   : this._extent2D,
+                    'center'       : map._prjToPoint(map._getPrjCenter())
+                };
+            }
+        }
+        this.completeRender();
     },
 
     //redraw all the geometries with transform matrix
@@ -162,51 +187,6 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         this._layer.forEach(fn, context);
     },
 
-    /**
-     * Renderer the layer immediately.
-     */
-    _drawImmediate:function () {
-        this._clearTimeout();
-        if (!this.getMap()) {
-            return;
-        }
-        var map = this.getMap();
-        if (!this._layer.isVisible() || this._layer.isEmpty()) {
-            this.clearCanvas();
-            this.completeRender();
-            return;
-        }
-        var zoom = this.getMap().getZoom();
-        if (this._layer.options['drawOnce']) {
-            if (!this._canvasCache) {
-                this._canvasCache = {};
-            }
-            if (this._extent2D) {
-                this.completeRender();
-                return;
-            } else if (this._canvasCache[zoom]) {
-                this._canvas = this._canvasCache[zoom].canvas;
-                var center = map._prjToPoint(map._getPrjCenter());
-                this._extent2D = this._canvasCache[zoom].extent2D.add(this._canvasCache[zoom].center.substract(center));
-                this.completeRender();
-                return;
-            } else {
-                delete this._canvas;
-            }
-        }
-        this._drawGeos();
-        if (this._layer.options['drawOnce']) {
-            if (!this._canvasCache[zoom]) {
-                this._canvasCache[zoom] = {
-                    'canvas'       : this._canvas,
-                    'extent2D'   : this._extent2D,
-                    'center'       : map._prjToPoint(map._getPrjCenter())
-                };
-            }
-        }
-        this.completeRender();
-    },
-
     _onZoomEnd: function () {
         delete this._extent2D;
         if (this._layer.isVisible()) {
@@ -217,10 +197,10 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!this._painted) {
             this.render();
         } else {
-            //prepareRender is called in render not in _drawImmediate.
+            //prepareRender is called in render not in draw.
             //Thus prepareRender needs to be called here
             this.prepareRender();
-            this._drawImmediate();
+            this.draw();
         }
     },
 
@@ -229,7 +209,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             this.render();
         } else {
             this.prepareRender();
-            this._drawImmediate();
+            this.draw();
         }
     },
 
@@ -241,21 +221,13 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             delete this._canvasCache;
             delete this._extent2D;
             this.prepareRender();
-            this._drawImmediate();
+            this.draw();
         }
     },
 
     _onRemove:function () {
-        this._clearTimeout();
         delete this._canvasCache;
         delete this._geosToDraw;
-    },
-
-    _clearTimeout:function () {
-        if (this._renderTimeout) {
-            //clearTimeout(this._renderTimeout);
-            Z.Util.cancelAnimFrame(this._renderTimeout);
-        }
     }
 });
 
