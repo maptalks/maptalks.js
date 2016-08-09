@@ -50,7 +50,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
                 if (!Z.Util.isNil(zIndex)) {
                     this._renderer.setZIndex(zIndex);
                 }
-                this._renderer.render();
+                this._renderer.render(true);
             }
         }
         return this;

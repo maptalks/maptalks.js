@@ -20,7 +20,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         return true;
     },
 
-    render:function () {
+    render:function (isCheckRes) {
         this.prepareRender();
         if (!this.getMap()) {
             return;
@@ -29,7 +29,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             this.completeRender();
             return;
         }
-        if (this.checkResources) {
+        if (this.checkResources && isCheckRes) {
             var me = this, args = arguments;
             var resources = this.checkResources.apply(this, args);
             if (Z.Util.isArrayHasData(resources)) {

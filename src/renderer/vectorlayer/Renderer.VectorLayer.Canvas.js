@@ -195,7 +195,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             });
         }
         if (!this._painted) {
-            this.render();
+            this.render(true);
         } else {
             //prepareRender is called in render not in draw.
             //Thus prepareRender needs to be called here
@@ -206,7 +206,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
 
     _onMoveEnd: function () {
         if (!this._painted) {
-            this.render();
+            this.render(true);
         } else {
             this.prepareRender();
             this.draw();
@@ -216,7 +216,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     _onResize: function () {
         this.resizeCanvas();
         if (!this._painted) {
-            this.render();
+            this.render(true);
         } else {
             delete this._canvasCache;
             delete this._extent2D;

@@ -260,7 +260,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         });
     },
 
-    _requestToRender:function () {
+    _requestToRender:function (isCheckRes) {
         var geometry = this.geometry,
             map = geometry.getMap();
         if (!map || map._isBusy()) {
@@ -272,7 +272,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             return;
         }
         if (layer.isCanvasRender()) {
-            renderer.render([geometry]);
+            renderer.render(isCheckRes ? [geometry] : null);
         }
     },
 
@@ -289,7 +289,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         var layer = this.geometry.getLayer();
         if (this.geometry.isVisible() && (layer instanceof Z.VectorLayer)) {
             if (layer.isCanvasRender()) {
-                this._requestToRender();
+                this._requestToRender(true);
             } else {
                 this.paint();
             }
