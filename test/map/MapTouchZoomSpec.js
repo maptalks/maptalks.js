@@ -52,19 +52,19 @@ describe('MapTouchZoomSpec', function () {
         it('zoomin', function(done) {
             var z = map.getZoom();
             testTouchZoom([{
-                            pageX : centerPoint.x-10,
-                            pageY : centerPoint.y-10,
+                            clientX : centerPoint.x-10,
+                            clientY : centerPoint.y-10,
                         },
                         {
-                            pageX : centerPoint.x+10,
-                            pageY : centerPoint.y+10,
+                            clientX : centerPoint.x+10,
+                            clientY : centerPoint.y+10,
                         }],[{
-                            pageX : centerPoint.x-1,
-                            pageY : centerPoint.y-1,
+                            clientX : centerPoint.x-1,
+                            clientY : centerPoint.y-1,
                         },
                         {
-                            pageX : centerPoint.x+1,
-                            pageY : centerPoint.y+1,
+                            clientX : centerPoint.x+1,
+                            clientY : centerPoint.y+1,
                         }],function(){
                             var z2 = map.getZoom();
                             expect(z < z2).to.be.ok();
@@ -75,19 +75,19 @@ describe('MapTouchZoomSpec', function () {
         it('zoomout', function(done) {
             var z = map.getZoom();
             testTouchZoom([{
-                            pageX : centerPoint.x-1,
-                            pageY : centerPoint.y-1,
+                            clientX : centerPoint.x-1,
+                            clientY : centerPoint.y-1,
                         },
                         {
-                            pageX : centerPoint.x+1,
-                            pageY : centerPoint.y+1,
+                            clientX : centerPoint.x+1,
+                            clientY : centerPoint.y+1,
                         }],[{
-                            pageX : centerPoint.x-10,
-                            pageY : centerPoint.y-10,
+                            clientX : centerPoint.x-10,
+                            clientY : centerPoint.y-10,
                         },
                         {
-                            pageX : centerPoint.x+10,
-                            pageY : centerPoint.y+10,
+                            clientX : centerPoint.x+10,
+                            clientY : centerPoint.y+10,
                         }],function(){
                             var z2 = map.getZoom();
                             expect(z > z2).to.be.ok();
@@ -100,19 +100,19 @@ describe('MapTouchZoomSpec', function () {
             map.config('touchZoom',false);
             var spy = sinon.spy();
             testTouchZoom([{
-                            pageX : centerPoint.x-10,
-                        pageY : centerPoint.y-10,
+                            clientX : centerPoint.x-10,
+                        clientY : centerPoint.y-10,
                     },
                     {
-                        pageX : centerPoint.x+10,
-                        pageY : centerPoint.y+10,
+                        clientX : centerPoint.x+10,
+                        clientY : centerPoint.y+10,
                     }],[{
-                        pageX : centerPoint.x-1,
-                        pageY : centerPoint.y-1,
+                        clientX : centerPoint.x-1,
+                        clientY : centerPoint.y-1,
                     },
                     {
-                        pageX : centerPoint.x+1,
-                        pageY : centerPoint.y+1,
+                        clientX : centerPoint.x+1,
+                        clientY : centerPoint.y+1,
                     }],spy);
 
             setTimeout(function() {

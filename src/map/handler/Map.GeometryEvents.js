@@ -43,7 +43,8 @@ Z.Map.GeometryEvents = Z.Handler.extend({
             return;
         }
         var eventType = domEvent.type,
-            containerPoint = Z.DomUtil.getEventContainerPoint(domEvent, map._containerDOM),
+            actual = domEvent.touches ? domEvent.touches[0] : domEvent,
+            containerPoint = Z.DomUtil.getEventContainerPoint(actual, map._containerDOM),
             coordinate = map.containerPointToCoordinate(containerPoint);
         if (eventType === 'touchstart') {
             Z.DomUtil.preventDefault(domEvent);
