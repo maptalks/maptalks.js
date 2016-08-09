@@ -20,6 +20,8 @@ Z.Animation = {
         'fast'   : 500
     },
 
+
+
     /**
      * resolve styles for animation, get a style group of start style, styles to animate and end styles.
      * @param  {Object} styles - styles to resolve
@@ -62,7 +64,7 @@ Z.Animation = {
                     clazz = val.constructor;
                     values = [new clazz(0, 0), val];
                 } else {
-                    values = [val, val]
+                    values = [val, val];
                 }
             }
             //val is a array and val[0] is the start value and val[1] is the destination value.
@@ -89,7 +91,7 @@ Z.Animation = {
                 }
                 return [v1, v2.substract(v1), v2];
             } else {
-                return [v1, 0, v2]
+                return [v1, 0, v2];
             }
         }
 
