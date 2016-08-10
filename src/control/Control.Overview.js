@@ -95,8 +95,8 @@ Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overvi
         this.fire('load');
     },
 
-    _onRemove : function (map) {
-        map.off('load', this._initOverview, this)
+    onRemove : function () {
+        this.getMap().off('load', this._initOverview, this)
             .off('resize moveend zoomend', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this);
     },

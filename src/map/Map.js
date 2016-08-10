@@ -821,7 +821,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             }
             this._removeLayer(layer, this._layers);
             if (this._loaded) {
-                layer._onRemove();
+                layer.onRemove();
             }
             var id = layer.getId();
             if (this._layerCache) {

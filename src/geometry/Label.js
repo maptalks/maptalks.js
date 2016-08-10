@@ -203,13 +203,10 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
 
     _registerEvents: function () {
         this.on('shapechange', this._refresh, this);
-        this.on('remove', this._onLabelRemove, this);
-        return this;
     },
 
-    _onLabelRemove:function () {
+    onRemove:function () {
         this.off('shapechange', this._refresh, this);
-        this.off('remove', this._onLabelRemove, this);
     }
 });
 

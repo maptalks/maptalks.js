@@ -66,8 +66,8 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     remove: function () {
         this._clearTimeout();
-        if (this._onRemove) {
-            this._onRemove();
+        if (this.onRemove) {
+            this.onRemove();
         }
         delete this._canvas;
         delete this._context;

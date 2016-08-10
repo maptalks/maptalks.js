@@ -46,9 +46,8 @@ Z.control.Scale = Z.control.Control.extend(/** @lends maptalks.control.Scale.pro
         return this._scaleContainer;
     },
 
-    _onRemove: function () {
-        var map = this.getMap();
-        map.off('zoomend', this._update, this);
+    onRemove: function () {
+        this.getMap().off('zoomend', this._update, this);
     },
 
     _addScales: function () {

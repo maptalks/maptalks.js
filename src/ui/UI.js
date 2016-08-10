@@ -186,6 +186,9 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     remove: function () {
         this.hide();
         this._switchEvents('off');
+        if (this.onRemove){
+            this.onRemove();
+        }
         delete this._owner;
         delete this._map;
         if (!this._singleton() && this.__uiDOM) {

@@ -60,7 +60,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.ConnectorLine.prototype
      * @return {maptalks.ConnectorLine} this
      */
     setConnectSource:function (src) {
-        this._onRemove();
+        this.onRemove();
         this._connSource = src;
         this._updateCoordinates();
         this._registEvents();
@@ -81,7 +81,7 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.ConnectorLine.prototype
      * @return {maptalks.ConnectorLine} this
      */
     setConnectTarget:function (target) {
-        this._onRemove();
+        this.onRemove();
         this._connTarget = target;
         this._updateCoordinates();
         this._registEvents();
@@ -124,13 +124,13 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.ConnectorLine.prototype
         }
     },
 
-    _onRemove: function () {
+    onRemove: function () {
         Z.Util.removeFromArray(this, this._connSource.__connectors);
         Z.Util.removeFromArray(this, this._connTarget.__connectors);
         this._connSource.off('dragging positionchange', this._updateCoordinates, this)
-                        .off('remove', this._onRemove, this);
+                        .off('remove', this.onRemove, this);
         this._connTarget.off('dragging positionchange', this._updateCoordinates, this)
-                        .off('remove', this._onRemove, this);
+                        .off('remove', this.onRemove, this);
         this._connSource.off('dragstart mousedown mouseover', this._showConnect, this);
         this._connSource.off('dragend mouseup mouseout', this.hide, this);
         this._connSource.off('show', this._showConnect, this).off('hide', this.hide, this);

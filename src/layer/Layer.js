@@ -329,7 +329,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         return true;
     },
 
-    _onRemove:function () {
+    onRemove:function () {
         this._switchEvents('off', this);
         this._removeEvents();
         if (this._renderer) {

@@ -291,7 +291,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         this.render();
     },
 
-    _onRemove: function () {
+    onRemove: function () {
         delete this._viewExtent;
         delete this._mapRender;
         delete this._tileCache;

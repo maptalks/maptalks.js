@@ -885,8 +885,8 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             this.endEdit();
         }
         this._removePainter();
-        if (this._onRemove) {
-            this._onRemove();
+        if (this.onRemove) {
+            this.onRemove();
         }
         layer._onGeometryRemove(this);
         delete this._layer;
