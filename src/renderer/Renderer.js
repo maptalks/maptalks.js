@@ -245,7 +245,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     _cacheResource: function (url, img) {
-        if (!this._layer) {
+        if (!this._layer || !this._resources) {
             return;
         }
         var w = url[1], h = url[2];

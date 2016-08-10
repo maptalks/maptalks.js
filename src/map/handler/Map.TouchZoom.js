@@ -107,7 +107,12 @@ Z.Map.TouchZoom = Z.Handler.extend({
           * @property {maptalks.Map} target            - the map fires event
           */
         map._fireEvent('touchzoomend');
-        map._zoomAnimation(zoom, this._preOrigin, this._scale);
+        if (zoom === map.getZoom()) {
+            //remove scale transform
+            map._getRenderer().transform(null);
+        } else {
+            map._zoomAnimation(zoom, this._preOrigin, this._scale);
+        }
     }
 });
 

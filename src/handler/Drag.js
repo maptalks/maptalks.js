@@ -108,20 +108,21 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         } else if (window.captureEvents) {
             window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
         }
+        var param = {
+            'domEvent' : event
+        };
+        if (Z.Util.isNumber(actual.clientX)) {
+            param['mousePos'] = new Z.Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
+        }
         if (this.moved/* && this.moving*/) {
             /**
              * 触发dragend事件
              * @event dragend
              * @return {Object} mousePos: {'left': 0px, 'top': 0px}
              */
-            this.fire('dragend', {
-                'domEvent' : event,
-                'mousePos': new Z.Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0))
-            });
+            this.fire('dragend', param);
         }
-        this.fire('mouseup', {
-            'domEvent' : event,
-            'mousePos': new Z.Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0))
-        });
+
+        this.fire('mouseup', param);
     }
 });

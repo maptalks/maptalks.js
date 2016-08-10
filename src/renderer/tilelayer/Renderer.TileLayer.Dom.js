@@ -87,12 +87,14 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             tile.current = true;
             queue.push(tile);
         }
+        var container = this._getTileContainer();
+        Z.DomUtil.removeTransform(container);
         if (queue.length > 0) {
             var fragment = document.createDocumentFragment();
             for (i = 0; i < queue.length; i++) {
                 fragment.appendChild(this._loadTile(queue[i]));
             }
-            this._getTileContainer().appendChild(fragment);
+            container.appendChild(fragment);
         }
     },
 
@@ -102,7 +104,11 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
         var zoom = this.getMap().getZoom();
         if (this._levelContainers[zoom]) {
-            Z.DomUtil.setTransform(this._levelContainers[zoom], matrices['view']);
+            if (matrices) {
+                Z.DomUtil.setTransform(this._levelContainers[zoom], matrices['view']);
+            } else {
+                Z.DomUtil.removeTransform(this._levelContainers[zoom]);
+            }
             // Z.DomUtil.setTransform(this._levelContainers[zoom], new Z.Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
         }
         return false;

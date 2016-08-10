@@ -433,6 +433,8 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         }
         var res = this._getResolution(fromZoom),
             resolutions = this._getResolutions(),
+            minZoom = this.getMinZoom(),
+            maxZoom = this.getMaxZoom(),
             min = Number.MAX_VALUE,
             hit = -1;
         for (var i = resolutions.length - 1; i >= 0; i--) {
@@ -441,6 +443,12 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 min = test;
                 hit = i;
             }
+        }
+        if (Z.Util.isNumber(minZoom) && hit < minZoom) {
+            hit = minZoom;
+        }
+        if (Z.Util.isNumber(maxZoom) && hit > maxZoom) {
+            hit = maxZoom;
         }
         return hit;
     },
