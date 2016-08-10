@@ -4,7 +4,7 @@
  * A label is used to draw text (with a box background if specified) on a particular coordinate.
  * @class
  * @category geometry
- * @extends maptalks.Marker
+ * @extends maptalks.TextMarker
  * @param {String} content                          - Label's text content
  * @param {maptalks.Coordinate} coordinates         - center
  * @param {Object} [options=null]                   - construct options, includes options defined in [Marker]{@link maptalks.Marker#options}
@@ -19,7 +19,7 @@
  * var label = new maptalks.Label('This is a label',[100,0])
  *     .addTo(layer);
  */
-Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
+Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
 
     defaultSymbol : {
         'textFaceName'  : 'microsoft yahei',
@@ -58,94 +58,6 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
         'boxTextAlign' :   'middle'
     },
 
-    initialize: function (content, coordinates, options) {
-        this._content = content;
-        this._coordinates = new Z.Coordinate(coordinates);
-        this._initOptions(options);
-        this._registerEvents();
-        this._refresh();
-    },
-
-    /**
-     * Get text content of the label
-     * @returns {String}
-     */
-    getContent: function () {
-        return this._content;
-    },
-
-    /**
-     * Set a new text content to the label
-     * @return {maptalks.Label} this
-     * @fires maptalks.Label#contentchange
-     */
-    setContent: function (content) {
-        var old = this._content;
-        this._content = content;
-        this._refresh();
-        /**
-         * an event when changing label's text content
-         * @event maptalks.Label#contentchange
-         * @type {Object}
-         * @property {String} type - contentchange
-         * @property {maptalks.Label} target - label fires the event
-         * @property {String} old - old content
-         * @property {String} new - new content
-         */
-        this._fireEvent('contentchange', {'old':old, 'new':content});
-        return this;
-    },
-
-    getSymbol: function () {
-        if (this._labelSymbolChanged) {
-            return Z.Geometry.prototype.getSymbol.call(this);
-        }
-        return null;
-    },
-
-    setSymbol:function (symbol) {
-        if (!symbol || symbol === this.options['symbol']) {
-            this._labelSymbolChanged = false;
-            symbol = {};
-        } else {
-            this._labelSymbolChanged = true;
-        }
-        var cooked = this._prepareSymbol(symbol);
-        var s = this._getDefaultLabelSymbol();
-        Z.Util.extend(s, cooked);
-        this._symbol = s;
-        this._refresh();
-        return this;
-    },
-
-    onConfig:function (conf) {
-        var isRefresh = false;
-        for (var p in conf) {
-            if (conf.hasOwnProperty(p)) {
-                if (p.indexOf('box') >= 0) {
-                    isRefresh = true;
-                    break;
-                }
-            }
-        }
-        if (isRefresh) {
-            this._refresh();
-        }
-    },
-
-    _getInternalSymbol:function () {
-        return this._symbol;
-    },
-
-    _getDefaultLabelSymbol: function () {
-        var s = {};
-        Z.Util.extend(s, this.defaultSymbol);
-        if (this.options['box']) {
-            Z.Util.extend(s, this.defaultBoxSymbol);
-        }
-        return s;
-    },
-
     _toJSON:function (options) {
         return {
             'feature' : this.toGeoJSON(options),
@@ -180,39 +92,25 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
                     symbol['markerHeight'] = this.options['boxMinHeight'];
                 }
             }
-            var align = this.options['boxTextAlign'] || 'middle';
+            var align = this.options['boxTextAlign'];
             if (align) {
-                symbol['markerDx'] = symbol['markerDx'] || 0, symbol['markerDy'] = symbol['markerDy'] || 0;
+                var textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
+                    dx = symbol['textDx'] || 0,
+                    dy = symbol['textDy'] || 0;
+                textAlignPoint = textAlignPoint._add(dx, dy);
+                symbol['markerDx'] = textAlignPoint.x;
+                symbol['markerDy'] = textAlignPoint.y + size['height'] / 2;
                 if (align === 'left') {
-                    symbol['markerDx'] -= (size['width'] / 2 + padding['width']);
+                    symbol['markerDx'] += symbol['markerWidth'] / 2 - padding['width'];
                 } else if (align === 'right') {
-                    symbol['markerDx'] += (size['width']/2 + padding['width']);
-                }
-            }
-            var textAlign = symbol['textHorizontalAlignment'];
-            if(textAlign) {
-                symbol['textDx'] = symbol['markerDx'] || 0;
-                symbol['textDy'] = symbol['markerDy'] || 0;
-                if (textAlign === 'left') {
-                    symbol['textDx'] -= symbol['markerWidth']/2;
-                } else if (textAlign === 'right') {
-                    symbol['textDx'] += symbol['markerWidth']/2;
+                    symbol['markerDx'] -= symbol['markerWidth'] / 2 - size['width'] - padding['width'];
+                } else {
+                    symbol['markerDx'] += size['width'] / 2;
                 }
             }
         }
         this._symbol = symbol;
         this._onSymbolChanged();
-    },
-
-    _registerEvents: function () {
-        this.on('shapechange', this._refresh, this);
-        this.on('remove', this._onLabelRemove, this);
-        return this;
-    },
-
-    _onLabelRemove:function () {
-        this.off('shapechange', this._refresh, this);
-        this.off('remove', this._onLabelRemove, this);
     }
 });
 

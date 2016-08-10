@@ -56,8 +56,9 @@
 ../src/geometry/Geometry.Center.js
 ../src/geometry/Geometry.Poly.js
 ../src/geometry/Marker.js
-../src/geometry/TextBox.js
+../src/geometry/TextMarker.js
 ../src/geometry/Label.js
+../src/geometry/TextBox.js
 ../src/geometry/Polygon.js
 ../src/geometry/LineString.js
 ../src/geometry/CurveLine.js
@@ -73,7 +74,9 @@
 ../src/geometry/MultiPolygon.js
 ../src/geometry/GeoJSON.js
 ../src/geometry/editor/GeometryEditor.js
-../src/geometry/editor/Label.Edit.js
+../src/geometry/editor/TextMarkerEditor.js
+../src/geometry/editor/LabelEditor.js
+../src/geometry/editor/TextBoxEditor.js
 ../src/map/view/View.js
 ../src/map/view/View.Arc.js
 ../src/map/Map.js
