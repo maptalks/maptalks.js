@@ -91,13 +91,13 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
                 }
             }
             var textAlign = symbol['textHorizontalAlignment'];
-            if(textAlign) {
+            if (textAlign) {
                 symbol['textDx'] = symbol['markerDx'] || 0;
                 symbol['textDy'] = symbol['markerDy'] || 0;
                 if (textAlign === 'left') {
-                    symbol['textDx'] -= symbol['markerWidth']/2;
+                    symbol['textDx'] -= symbol['markerWidth'] / 2;
                 } else if (textAlign === 'right') {
-                    symbol['textDx'] += symbol['markerWidth']/2;
+                    symbol['textDx'] += symbol['markerWidth'] / 2;
                 }
             }
         }
