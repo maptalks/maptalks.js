@@ -19,7 +19,7 @@
  * var label = new maptalks.Label('This is a label',[100,0])
  *     .addTo(layer);
  */
-Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
+Z.TextBox = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
 
     defaultSymbol : {
         'textFaceName'  : 'microsoft yahei',
@@ -50,12 +50,10 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
      * @property {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
      */
     options: {
-        'box'          :   true,
         'boxAutoSize'  :   true,
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
-        'boxPadding'   :   {'width' : 12, 'height' : 8},
-        'boxTextAlign' :   'middle'
+        'boxPadding'   :   {'width' : 12, 'height' : 8}
     },
 
     initialize: function (content, coordinates, options) {
@@ -149,7 +147,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
     _toJSON:function (options) {
         return {
             'feature' : this.toGeoJSON(options),
-            'subType' : 'Label',
+            'subType' : 'TextBox',
             'content' : this._content
         };
     },
@@ -180,15 +178,6 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
                     symbol['markerHeight'] = this.options['boxMinHeight'];
                 }
             }
-            var align = this.options['boxTextAlign'] || 'middle';
-            if (align) {
-                symbol['markerDx'] = symbol['markerDx'] || 0, symbol['markerDy'] = symbol['markerDy'] || 0;
-                if (align === 'left') {
-                    symbol['markerDx'] -= (size['width'] / 2 + padding['width']);
-                } else if (align === 'right') {
-                    symbol['markerDx'] += (size['width']/2 + padding['width']);
-                }
-            }
             var textAlign = symbol['textHorizontalAlignment'];
             if(textAlign) {
                 symbol['textDx'] = symbol['markerDx'] || 0;
@@ -216,9 +205,9 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
     }
 });
 
-Z.Label._fromJSON = function (json) {
+Z.TextBox._fromJSON = function (json) {
     var feature = json['feature'];
-    var label = new Z.Label(json['content'], feature['geometry']['coordinates'], json['options']);
-    label.setProperties(feature['properties']);
-    return label;
+    var textBox = new Z.TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
+    textBox.setProperties(feature['properties']);
+    return textBox;
 };

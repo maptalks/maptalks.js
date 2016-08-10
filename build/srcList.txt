@@ -56,6 +56,7 @@
 ../src/geometry/Geometry.Center.js
 ../src/geometry/Geometry.Poly.js
 ../src/geometry/Marker.js
+../src/geometry/TextBox.js
 ../src/geometry/Label.js
 ../src/geometry/Polygon.js
 ../src/geometry/LineString.js
