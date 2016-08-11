@@ -212,6 +212,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
         }
+        if (this._resizeFrame) {
+            Z.Util.cancelAnimFrame(this._resizeFrame);
+        }
         delete this._context;
         delete this._canvas;
         delete this.map;
@@ -457,15 +460,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this._context = this._canvas.getContext('2d');
     },
 
-    /**
-     * 设置地图的watcher, 用来监视地图容器的大小变化
-     * @ignore
-     */
-    onResize:function () {
-        Z.Util.cancelAnimFrame(this._resizeRequest);
-        this._resizeRequest = Z.Util.requestAnimFrame(
+    _checkSize:function () {
+        Z.Util.cancelAnimFrame(this._resizeFrame);
+        this._resizeFrame = Z.Util.requestAnimFrame(
             Z.Util.bind(function () {
-                delete this._canvasBg;
                 this.map.checkSize();
             }, this)
         );
@@ -482,19 +480,21 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 delete this._canvasBg;
             }
         }, this);
-
+        map.on('_resize', function () {
+            delete this._canvasBg;
+        }, this);
         map.on('_zoomstart', function () {
             delete this._canvasBg;
             this.clearCanvas();
         }, this);
         if (map.options['checkSize'] && !Z.node && (typeof window !== 'undefined')) {
-            // Z.DomUtil.on(window, 'resize', this.onResize, this);
+            // Z.DomUtil.on(window, 'resize', this._checkSize, this);
             this._resizeInterval = setInterval(Z.Util.bind(function () {
                 if (!map._containerDOM.parentNode) {
                     //is deleted
                     clearInterval(this._resizeInterval);
                 } else {
-                    this.onResize();
+                    this._checkSize();
                 }
             }, this), 1000);
         }
