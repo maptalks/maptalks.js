@@ -108,7 +108,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     onEnable:function () {
-
         var map = this.getMap();
         this._mapDraggable = map.options['draggable'];
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
@@ -119,6 +118,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             'doubleClickZoom':false
         });
         this._drawToolLayer = this._getDrawLayer();
+        this._loadResources();
         return this;
     },
 
@@ -151,16 +151,14 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         return this;
     },
 
-    _loadResources:function (onComplete) {
+
+    _loadResources:function () {
         var symbol = this.getSymbol();
         var resources = Z.Util.getExternalResources(symbol);
         if (Z.Util.isArrayHasData(resources)) {
             //load external resources at first
-            this._drawToolLayer._getRenderer().loadResources(resources).then(Z.Util.bind(onComplete, this));
-        } else {
-            onComplete.call(this);
+            this._drawToolLayer._getRenderer().loadResources(resources);
         }
-
     },
 
     _getProjection:function () {
