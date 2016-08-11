@@ -146,7 +146,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
             var renderer = layers[i]._getRenderer();
             if (renderer) {
-                if (renderer.isCanvasRender()) {
+                if (renderer.isCanvasRender && renderer.isCanvasRender()) {
                     var transformed = false;
                     if (transformLayers && renderer.transform) {
                         transformed = renderer.transform(matrix);

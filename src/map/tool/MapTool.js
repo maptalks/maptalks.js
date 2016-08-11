@@ -1,7 +1,14 @@
 /**
  * @classdesc
- * The parent class for all the map tools
+ * <pre>
+ * The parent class for all the map tools.
  * It is abstract and not intended to be instantiated.
+ * Some interface methods to implement:
+ * 1. onAdd: optional, a callback method to do some prepares before enabled when the map tool is added to a map
+ * 2. onEnable: optional, called when the map tool is enabled, used to setup the context such as adding more event listeners other than the map, disabling map's default handlers (draggable, scrollWheelZoom, etc) and creating temporary layers.
+ * 3. getEvents: required, provide an event map to register event listeners on the map.
+ * 4. onDisable: optional, called when the map tool is disabled, used to cleanup such as unregistering event listeners, enable map's original handlers and remove temporary layers.
+ * </pre>
  * @class
  * @abstract
  * @category maptool
@@ -62,12 +69,8 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         if (!map || this._enabled) { return this; }
         this._enabled = true;
         this._switchEvents('off');
-        if (this._loadResources) {
-            this._loadResources(this._registerEvents);
-        } else {
-            this._registerEvents();
-        }
 
+        this._registerEvents();
         if (this.onEnable) {
             this.onEnable();
         }
