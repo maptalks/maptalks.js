@@ -360,11 +360,26 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
     },
 
     _prepareDragHandler:function () {
-        this._dragHandler = new Z.Handler.Drag(this.target.getDOM());
+        this._dragHandler = new Z.Handler.Drag(this.target.getDOM(), {
+            'cancelOn' : Z.Util.bind(this._cancelOn, this)
+        });
         this._dragHandler.on('mousedown', this._onMouseDown, this);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
+    },
+
+    _cancelOn: function (domEvent) {
+        var target = domEvent.srcElement || domEvent.target,
+            tagName = target.tagName.toLowerCase();
+        if (tagName === 'button' ||
+            tagName === 'input' ||
+            tagName === 'select' ||
+            tagName === 'option' ||
+            tagName === 'textarea') {
+            return true;
+        }
+        return false;
     },
 
     _onMouseDown: function (param) {

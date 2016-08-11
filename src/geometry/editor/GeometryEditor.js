@@ -424,7 +424,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             }
         }
         if (!marker._canEdit()) {
-            console.warn('A marker can\'t be resized with symbol:', marker.getSymbol());
+            Z.Util.warn('A marker can\'t be resized with symbol:', marker.getSymbol());
             return;
         }
         //only image marker and vector marker can be edited now.

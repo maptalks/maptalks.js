@@ -5,6 +5,31 @@
  * @protected
  */
 Z.Util = {
+    log: function () {
+        return Z.Util._print.apply(Z.Util, ['log'].concat(Array.prototype.slice.call(arguments)));
+    },
+
+    warn: function () {
+        return Z.Util._print.apply(Z.Util, ['warn'].concat(Array.prototype.slice.call(arguments)));
+    },
+
+    error: function () {
+        return Z.Util._print.apply(Z.Util, ['error'].concat(Array.prototype.slice.call(arguments)));
+    },
+
+    _print: function (level) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        if (typeof console !== 'undefined' && console[level] !== undefined) {
+            try {
+                console[level].apply(console, args);
+            } catch (e) {
+                var log = Function.prototype.bind.call(console[level], console);
+                log.apply(console, args);
+            }
+        }
+        return this;
+    },
+
     /**
      * @property {Number} uid
      * @static

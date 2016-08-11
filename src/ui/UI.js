@@ -13,6 +13,10 @@ Z.ui = {};
  *  <br>
  * 3 Optional, to provide an event map to register event listeners.  <br>
  * function getEvents : void  <br>
+ * 4 Optional, a callback when dom is removed.  <br>
+ * function onDomRemove : void  <br>
+ * 5 Optional, a callback when UI Component is removed.  <br>
+ * function onRemove : void  <br>
  * @classdesc
  * Base class for all the UI component classes, a UI component is a HTMLElement positioned with geographic coordinate. <br>
  * It is abstract and not intended to be instantiated.
@@ -88,7 +92,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      */
     show: function (coordinate) {
         if (!coordinate) {
-            throw new Error('UI\'s show coordinate is invalid');
+            if (this._coordinate) {
+                coordinate = this._coordinate;
+            } else {
+                throw new Error('UI\'s show coordinate is invalid');
+            }
         }
         /**
          * showstart event.

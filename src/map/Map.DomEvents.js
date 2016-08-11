@@ -180,7 +180,8 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         var target = domEvent.srcElement || domEvent.target;
         if (target) {
             while (target && target !== this._containerDOM) {
-                if (target.className === 'maptalks-control' || target.className === 'maptalks-ui') {
+                if (target.className &&
+                    (target.className.indexOf('maptalks-control') >= 0 || target.className.indexOf('maptalks-ui') >= 0)) {
                     return true;
                 }
                 target = target.parentNode;
