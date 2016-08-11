@@ -19,14 +19,10 @@ Z.Util = {
 
     _print: function (level) {
         var args = Array.prototype.slice.call(arguments, 1);
-        if (typeof(console) !== 'undefined' && console[level] !== undefined)
-        {
-            try
-            {
+        if (typeof console !== 'undefined' && console[level] !== undefined) {
+            try {
                 console[level].apply(console, args);
-            }
-            catch (e)
-            {
+            } catch (e) {
                 var log = Function.prototype.bind.call(console[level], console);
                 log.apply(console, args);
             }
