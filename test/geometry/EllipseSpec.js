@@ -85,10 +85,10 @@ describe('#Ellipse', function() {
         }
         expect(sumx / len).to.be.approx(0);
         expect(sumy / len).to.be.approx(0);
-        expect(map.computeLength(shell[0], [0, 0])).to.be.eql(ellipse.getWidth() / 2);
-        expect(map.computeLength(shell[num / 4], [0, 0])).to.be.eql(ellipse.getHeight() / 2);
-        expect(map.computeLength(shell[num * 3 / 4], [0, 0])).to.be.eql(ellipse.getHeight() / 2);
-        expect(map.computeLength(shell[num / 2], [0, 0])).to.be.eql(ellipse.getWidth() / 2);
+        expect(map.computeLength(shell[0], [0, 0])).to.be.approx(ellipse.getWidth() / 2);
+        expect(map.computeLength(shell[num / 4], [0, 0])).to.be.approx(ellipse.getHeight() / 2);
+        expect(map.computeLength(shell[num * 3 / 4], [0, 0])).to.be.approx(ellipse.getHeight() / 2);
+        expect(map.computeLength(shell[num / 2], [0, 0])).to.be.approx(ellipse.getWidth() / 2);
     });
 
     describe('geometry fires events', function() {

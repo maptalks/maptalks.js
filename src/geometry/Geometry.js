@@ -341,7 +341,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             return null;
         }
         var pxExtent = this._getPainter().get2DExtent();
-        return pxExtent.getSize()._round();
+        return pxExtent.getSize();
     },
 
     /**

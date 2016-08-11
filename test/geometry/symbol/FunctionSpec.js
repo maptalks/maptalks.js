@@ -50,7 +50,7 @@ describe('FunctionTypeSpec', function() {
         });
         layer.once('layerload', function() {
             expect(marker.getMap()).to.be.ok();
-            expect(marker.getSize().width).to.be.eql(3);
+            expect(marker.getSize().width).to.be.eql(3.25);
             done();
         });
         layer.addGeometry(marker);

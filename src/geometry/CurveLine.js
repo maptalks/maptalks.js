@@ -57,7 +57,8 @@ Z.CurveLine = Z.LineString.extend({
             var i, len = _points.length;
             _ctx.beginPath();
             for (i = 0; i < len; i += degree) {
-                var p = _points[i].round();
+                // var p = _points[i].round();
+                var p = _points[i];
                 if (i === 0) {
                     _ctx.moveTo(p.x, p.y);
                 }
