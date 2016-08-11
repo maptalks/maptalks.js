@@ -75,8 +75,8 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
         var tileLeft = tileIndex['x'] * tileSize['width'];
         var tileTop = tileIndex['y'] * tileSize['height'];
 
-        var offsetLeft = Math.round(point.x / res - tileSystem['scale']['x'] * tileLeft);
-        var offsetTop = Math.round(point.y / res + tileSystem['scale']['y'] * tileTop);
+        var offsetLeft = point.x / res - tileSystem['scale']['x'] * tileLeft;
+        var offsetTop = point.y / res + tileSystem['scale']['y'] * tileTop;
 
             //如果x方向为左大右小
         if (tileSystem['scale']['x'] < 0) {

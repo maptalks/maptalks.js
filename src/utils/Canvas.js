@@ -279,8 +279,7 @@ Z.Canvas = {
                 ctx.miterLimit = 2;
                 ctx.lineJoin = 'round';
                 ctx.lineCap = 'round';
-                var lineWidth = (textHaloRadius * 2 - 1);
-                ctx.lineWidth = Z.Util.round(lineWidth);
+                ctx.lineWidth = (textHaloRadius * 2 - 1);
                 ctx.strokeStyle = textHaloFill;
                 ctx.strokeText(text, pt.x, pt.y);
                 ctx.lineWidth = 1;
