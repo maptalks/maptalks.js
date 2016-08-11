@@ -92,7 +92,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      */
     show: function (coordinate) {
         if (!coordinate) {
-            throw new Error('UI\'s show coordinate is invalid');
+            if (this._coordinate) {
+                coordinate = this._coordinate;
+            } else {
+                throw new Error('UI\'s show coordinate is invalid');
+            }
         }
         /**
          * showstart event.
