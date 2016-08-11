@@ -13,6 +13,17 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     includes: Z.Eventable,
 
+    exceptionDefs:{
+        'en-US':{
+            'INVALID_RENDERER':'Invalid renderer for Layer:',
+            'INVALID_MASK' : 'mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon.'
+        },
+        'zh-CN':{
+            'INVALID_RENDERER':'不合法的renderer:',
+            'INVALID_MASK' : '不合法的图层mask, mask 只能为Vector Marker, Polygon或者MultiPolygon.'
+        }
+    },
+
     /**
      * @property {Object}  [options=null] - base options of layer.
      * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
@@ -45,13 +56,11 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         if (!this.getMap()) { return this; }
         this._initRenderer();
         var zIndex = this.getZIndex();
-        if (this._prepareLoad()) {
-            if (this._renderer) {
-                if (!Z.Util.isNil(zIndex)) {
-                    this._renderer.setZIndex(zIndex);
-                }
-                this._renderer.render(true);
+        if (this.onAdd()) {
+            if (!Z.Util.isNil(zIndex)) {
+                this._renderer.setZIndex(zIndex);
             }
+            this._renderer.render(true);
         }
         return this;
     },
@@ -258,6 +267,18 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         return this;
     },
 
+    onRemove:function () {
+        this._switchEvents('off', this);
+        this._removeEvents();
+        if (this._renderer) {
+            this._switchEvents('off', this._renderer);
+            this._renderer.remove();
+            delete this._renderer;
+        }
+        delete this._mask;
+        delete this.map;
+    },
+
     /**
      * Get the mask geometry of the layer
      * @return {maptalks.Geometry}
@@ -274,7 +295,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     setMask:function (mask) {
         if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
                 mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
-            throw new Error('mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon');
+            throw new Error(this.exceptions['INVALID_MASK']);
         }
 
         /*if (mask instanceof Z.Marker) {
@@ -314,31 +335,19 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         return this;
     },
 
-    _refreshMask: function () {
-        if (this._mask) {
-            this._mask._onZoomEnd();
-        }
-    },
-
     /**
      * Prepare Layer's loading, this is a method intended to be overrided by subclasses.
-     * @return {Boolean} true to continue, false to cease.
+     * @return {Boolean} true to continue loading, false to cease.
      * @protected
      */
-    _prepareLoad:function () {
+    onAdd:function () {
         return true;
     },
 
-    onRemove:function () {
-        this._switchEvents('off', this);
-        this._removeEvents();
-        if (this._renderer) {
-            this._switchEvents('off', this._renderer);
-            this._renderer.remove();
-            delete this._renderer;
+    _refreshMask: function () {
+        if (this._mask) {
+            this._mask.onZoomEnd();
         }
-        delete this._mask;
-        delete this.map;
     },
 
     _bindMap:function (map, zIndex) {
@@ -358,7 +367,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         }
         var clazz = this.constructor.getRendererClass(renderer);
         if (!clazz) {
-            return;
+            throw new Error(this.exceptions['INVALID_RENDERER'] + renderer);
         }
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
@@ -366,8 +375,8 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     },
 
     _switchEvents: function (to, emitter) {
-        if (emitter && emitter._getEvents) {
-            this.getMap()[to](emitter._getEvents(), emitter);
+        if (emitter && emitter.getEvents) {
+            this.getMap()[to](emitter.getEvents(), emitter);
         }
     },
 

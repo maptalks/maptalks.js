@@ -673,7 +673,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             pVertex.x = nVertex.x;
             pVertex.y = nVertex.y;
             shadow._updateCache();
-            shadow._onShapeChanged();
+            shadow.onShapeChanged();
             var nextIndex;
             if (index === 0) {
                 nextIndex = newVertexHandles.length - 1;

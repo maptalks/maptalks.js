@@ -87,7 +87,7 @@ Z.Geometry.Poly = {
 
     _setPrjCoordinates:function (prjPoints) {
         this._prjCoords = prjPoints;
-        this._onShapeChanged();
+        this.onShapeChanged();
     },
 
     _getPrjCoordinates:function () {

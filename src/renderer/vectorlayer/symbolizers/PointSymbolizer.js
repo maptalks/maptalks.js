@@ -24,7 +24,7 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
     },
 
     _getRenderPoints: function () {
-        return this.geometry._getPainter()._getRenderPoints(this.getPlacement());
+        return this.geometry._getPainter().getRenderPoints(this.getPlacement());
     },
 
     /**

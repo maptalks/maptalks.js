@@ -105,7 +105,7 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
     getContainerPoint:function () {
         var position = this.getPosition();
 
-        var size = this._map.getSize();
+        var size = this.getMap().getSize();
         var x, y;
         if (!Z.Util.isNil(position['top'])) {
             x = position['top'];

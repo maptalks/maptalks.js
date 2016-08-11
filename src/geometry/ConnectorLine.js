@@ -177,10 +177,6 @@ Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.ConnectorLine.prototype
         } else {
             this._showConnect();
         }
-    },
-    _isEditingOrDragging:function () {
-        return ((!(this._connSource instanceof Z.control.Control) && this._connSource._isEditingOrDragging()) ||
-            (!(this._connTarget instanceof Z.control.Control) && this._connTarget._isEditingOrDragging()));
     }
 });
 

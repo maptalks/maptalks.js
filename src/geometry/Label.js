@@ -198,7 +198,7 @@ Z.Label = Z.Marker.extend(/** @lends maptalks.Label.prototype */{
             }
         }
         this._symbol = symbol;
-        this._onSymbolChanged();
+        this.onSymbolChanged();
     },
 
     _registerEvents: function () {

@@ -147,7 +147,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         return new Z.Point(-size['width'] / 2, -size['height'] / 2);
     },
 
-    _onDOMRemove: function () {
+    onDomRemove: function () {
         var dom = this.getDOM();
         this._removeDOMEvents(dom);
     },

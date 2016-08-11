@@ -349,11 +349,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             this._center = center;
             return this;
         }
-        this._onMoveStart();
+        this.onMoveStart();
         var projection = this.getProjection();
         var _pcenter = projection.project(center);
         this._setPrjCenterAndMove(_pcenter);
-        this._onMoveEnd();
+        this.onMoveEnd();
         return this;
     },
 
@@ -1133,6 +1133,69 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         return this;
     },
 
+    /**
+     * The callback function when move started
+     * @private
+     * @fires maptalks.Map#movestart
+     */
+    onMoveStart:function (param) {
+        this._originCenter = this.getCenter();
+        this._enablePanAnimation = false;
+        this._moving = true;
+        this._trySetCursor('move');
+        /**
+         * movestart event
+         * @event maptalks.Map#movestart
+         * @type {Object}
+         * @property {String} type - movestart
+         * @property {maptalks.Map} target - map fires the event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('movestart', this._parseEvent(param ? param['domEvent'] : null, 'movestart'));
+    },
+
+    onMoving:function (param) {
+        /**
+         * moving event
+         * @event maptalks.Map#moving
+         * @type {Object}
+         * @property {String} type - moving
+         * @property {maptalks.Map} target - map fires the event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('moving', this._parseEvent(param ? param['domEvent'] : null, 'moving'));
+    },
+
+    onMoveEnd:function (param) {
+        this._moving = false;
+        this._trySetCursor('default');
+        /**
+         * moveend event
+         * @event maptalks.Map#moveend
+         * @type {Object}
+         * @property {String} type - moveend
+         * @property {maptalks.Map} target - map fires the event
+         * @property {maptalks.Coordinate} coordinate - coordinate of the event
+         * @property {maptalks.Point} containerPoint  - container point of the event
+         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('moveend', this._parseEvent(param ? param['domEvent'] : null, 'moveend'));
+        if (!this._verifyExtent(this.getCenter())) {
+            var moveTo = this._originCenter;
+            if (!this._verifyExtent(moveTo)) {
+                moveTo = this.getMaxExtent().getCenter();
+            }
+            this.panTo(moveTo);
+        }
+    },
+
 //-----------------------------------------------------------
 
     /**
@@ -1298,69 +1361,6 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         var viewMatrix = this._genViewMatrix(origin, scale, rotate);
         this._fillMatrices(viewMatrix, scale, rotate);
         return viewMatrix;
-    },
-
-    /**
-     * The callback function when move started
-     * @private
-     * @fires maptalks.Map#movestart
-     */
-    _onMoveStart:function (param) {
-        this._originCenter = this.getCenter();
-        this._enablePanAnimation = false;
-        this._moving = true;
-        this._trySetCursor('move');
-        /**
-         * movestart event
-         * @event maptalks.Map#movestart
-         * @type {Object}
-         * @property {String} type - movestart
-         * @property {maptalks.Map} target - map fires the event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        this._fireEvent('movestart', this._parseEvent(param ? param['domEvent'] : null, 'movestart'));
-    },
-
-    _onMoving:function (param) {
-        /**
-         * moving event
-         * @event maptalks.Map#moving
-         * @type {Object}
-         * @property {String} type - moving
-         * @property {maptalks.Map} target - map fires the event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        this._fireEvent('moving', this._parseEvent(param ? param['domEvent'] : null, 'moving'));
-    },
-
-    _onMoveEnd:function (param) {
-        this._moving = false;
-        this._trySetCursor('default');
-        /**
-         * moveend event
-         * @event maptalks.Map#moveend
-         * @type {Object}
-         * @property {String} type - moveend
-         * @property {maptalks.Map} target - map fires the event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        this._fireEvent('moveend', this._parseEvent(param ? param['domEvent'] : null, 'moveend'));
-        if (!this._verifyExtent(this.getCenter())) {
-            var moveTo = this._originCenter;
-            if (!this._verifyExtent(moveTo)) {
-                moveTo = this.getMaxExtent().getCenter();
-            }
-            this.panTo(moveTo);
-        }
     },
 
     /**

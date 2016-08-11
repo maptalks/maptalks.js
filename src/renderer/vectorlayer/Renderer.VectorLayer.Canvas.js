@@ -121,7 +121,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
      */
     show: function () {
         this._layer.forEach(function (geo) {
-            geo._onZoomEnd();
+            geo.onZoomEnd();
         });
         Z.renderer.Canvas.prototype.show.apply(this, arguments);
     },
@@ -187,11 +187,11 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         this._layer.forEach(fn, context);
     },
 
-    _onZoomEnd: function () {
+    onZoomEnd: function () {
         delete this._extent2D;
         if (this._layer.isVisible()) {
             this._layer.forEach(function (geo) {
-                geo._onZoomEnd();
+                geo.onZoomEnd();
             });
         }
         if (!this._painted) {
@@ -204,7 +204,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
     },
 
-    _onMoveEnd: function () {
+    onMoveEnd: function () {
         if (!this._painted) {
             this.render(true);
         } else {
@@ -213,7 +213,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
     },
 
-    _onResize: function () {
+    onResize: function () {
         this.resizeCanvas();
         if (!this._painted) {
             this.render(true);

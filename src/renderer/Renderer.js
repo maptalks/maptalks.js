@@ -119,7 +119,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     show: function () {
         var mask = this._layer.getMask();
         if (mask) {
-            mask._onZoomEnd();
+            mask.onZoomEnd();
         }
         this.render();
     },
@@ -396,40 +396,40 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         return [this._context, this._resources];
     },
 
-    _getEvents: function () {
+    getEvents: function () {
         return {
-            '_zoomstart' : this._onZoomStart,
-            '_zoomend' : this._onZoomEnd,
-            '_resize'  : this._onResize,
-            '_movestart' : this._onMoveStart,
-            '_moving' : this._onMoving,
-            '_moveend' : this._onMoveEnd
+            '_zoomstart' : this.onZoomStart,
+            '_zoomend' : this.onZoomEnd,
+            '_resize'  : this.onResize,
+            '_movestart' : this.onMoveStart,
+            '_moving' : this.onMoving,
+            '_moveend' : this.onMoveEnd
         };
     },
 
-    _onZoomStart: function () {
+    onZoomStart: function () {
 
     },
 
-    _onZoomEnd: function () {
+    onZoomEnd: function () {
         this.prepareRender();
         this.draw();
     },
 
-    _onMoveStart: function () {
+    onMoveStart: function () {
 
     },
 
-    _onMoving: function () {
+    onMoving: function () {
 
     },
 
-    _onMoveEnd: function () {
+    onMoveEnd: function () {
         this.prepareRender();
         this.draw();
     },
 
-    _onResize: function () {
+    onResize: function () {
         this.resizeCanvas();
         this.prepareRender();
         this.draw();

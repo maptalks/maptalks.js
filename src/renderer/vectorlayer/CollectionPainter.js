@@ -71,10 +71,10 @@ Z.CollectionPainter = Z.Class.extend(/** @lends maptalks.CollectionPainter.proto
         });
     },
 
-    _onZoomEnd:function () {
+    onZoomEnd:function () {
         var args = arguments;
         this._eachPainter(function (painter) {
-            painter._onZoomEnd.apply(painter, args);
+            painter.onZoomEnd.apply(painter, args);
         });
     },
 

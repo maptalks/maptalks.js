@@ -55,7 +55,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      */
     setRadius:function (radius) {
         this._radius = radius;
-        this._onShapeChanged();
+        this.onShapeChanged();
         return this;
     },
 
@@ -75,7 +75,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      */
     setStartAngle:function (startAngle) {
         this.startAngle = startAngle;
-        this._onShapeChanged();
+        this.onShapeChanged();
         return this;
     },
 
@@ -95,7 +95,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
      */
     setEndAngle:function (endAngle) {
         this.endAngle = endAngle;
-        this._onShapeChanged();
+        this.onShapeChanged();
         return this;
     },
 

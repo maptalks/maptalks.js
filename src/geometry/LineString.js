@@ -59,7 +59,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         if (this.getMap()) {
             this._setPrjCoordinates(this._projectCoords(this._coordinates));
         } else {
-            this._onShapeChanged();
+            this.onShapeChanged();
         }
         return this;
     },

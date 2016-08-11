@@ -26,8 +26,8 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         if (map[key]) {
             map[key].disable();
         }
-        if (this._onAdd) {
-            this._onAdd();
+        if (this.onAdd) {
+            this.onAdd();
         }
         this.enable();
         map[key] = this;
@@ -68,8 +68,8 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
             this._registerEvents();
         }
 
-        if (this._onEnable) {
-            this._onEnable();
+        if (this.onEnable) {
+            this.onEnable();
         }
         /**
          * enable event.
@@ -94,8 +94,8 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
         }
         this._enabled = false;
         this._switchEvents('off');
-        if (this._onDisable) {
-            this._onDisable();
+        if (this.onDisable) {
+            this.onDisable();
         }
         /**
          * disable event.
@@ -125,7 +125,7 @@ Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
     },
 
     _switchEvents: function (to) {
-        var events = this._getEvents();
+        var events = this.getEvents();
         if (events) {
             this._map[to](events, this);
         }
