@@ -259,7 +259,8 @@ describe('#Polygon', function() {
 
         var size = vector.getSize();
         var compared = comparison.getSize();
-        expect(size).to.be.eql(compared);
+        expect(size.width).to.be.approx(compared.width);
+        expect(size.height).to.be.approx(compared.height);
 
         // expect(vector.getLength()).to.be.eql(comparison.getLength());
 

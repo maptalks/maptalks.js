@@ -331,9 +331,9 @@ describe('StrokeAndFillSpec', function() {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                expect(v).to.be.painted(-9, 0, [255, 18, 18]);
-                expect(v).to.be.painted(-5, 0, [255, 67, 67]);
-                expect(v).to.be.painted(8, 0, [255, 225, 225]);
+                expect(v).to.be.painted(-9, 0, [255, 24, 24]);
+                expect(v).to.be.painted(-5, 0, [255, 73, 73]);
+                expect(v).to.be.painted(8, 0, [255, 231, 231]);
                 done();
             })
             v.addGeometry(circle);

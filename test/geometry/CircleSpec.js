@@ -76,10 +76,10 @@ describe('#Circle', function() {
         }
         expect(sumx / len).to.be.approx(0);
         expect(sumy / len).to.be.approx(0);
-        expect(map.computeLength(shell[0], [0, 0])).to.be.eql(circle.getRadius());
-        expect(map.computeLength(shell[num / 4], [0, 0])).to.be.eql(circle.getRadius());
-        expect(map.computeLength(shell[num * 3 / 4], [0, 0])).to.be.eql(circle.getRadius());
-        expect(map.computeLength(shell[num / 2], [0, 0])).to.be.eql(circle.getRadius());
+        expect(map.computeLength(shell[0], [0, 0])).to.be.approx(circle.getRadius());
+        expect(map.computeLength(shell[num / 4], [0, 0])).to.be.approx(circle.getRadius());
+        expect(map.computeLength(shell[num * 3 / 4], [0, 0])).to.be.approx(circle.getRadius());
+        expect(map.computeLength(shell[num / 2], [0, 0])).to.be.approx(circle.getRadius());
     });
 
     describe('geometry fires events', function() {

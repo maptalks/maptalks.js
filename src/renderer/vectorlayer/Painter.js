@@ -191,7 +191,6 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
                 for (var i = len; i >= 0; i--) {
                     _extent2D._combine(this.symbolizers[i].get2DExtent());
                 }
-                _extent2D._round();
                 this._extent2D = _extent2D;
             }
         }
