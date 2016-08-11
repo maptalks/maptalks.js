@@ -102,7 +102,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
     },
 
     _getRenderResources:function () {
-        return this.geometry._getPainter()._getRenderResources();
+        return this.geometry._getPainter().getRenderResources();
     },
 
     translate:function () {

@@ -376,13 +376,13 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         delete this._levelContainers;
     },
 
-    _getEvents:function () {
+    getEvents:function () {
         var events = {
-            '_zoomstart'    : this._onZoomStart,
+            '_zoomstart'    : this.onZoomStart,
             '_touchzoomstart' : this._onTouchZoomStart,
-            '_zoomend'      : this._onZoomEnd,
+            '_zoomend'      : this.onZoomEnd,
             '_moveend _resize' : this.render,
-            '_movestart'    : this._onMoveStart
+            '_movestart'    : this.onMoveStart
         };
         if (!this._onMapMoving && this._layer.options['renderWhenPanning']) {
             var rendSpan = this._layer.options['renderSpanWhenPanning'];
@@ -408,7 +408,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         return Z.Browser.any3d || Z.Browser.ie9;
     },
 
-    _onMoveStart: function () {
+    onMoveStart: function () {
         // this._fadeAnimated = false;
     },
 
@@ -416,7 +416,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         this._pruneTiles(true);
     },
 
-    _onZoomStart: function () {
+    onZoomStart: function () {
         this._fadeAnimated = !Z.Browser.mobile && true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
@@ -425,7 +425,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         }
     },
 
-    _onZoomEnd: function (param) {
+    onZoomEnd: function (param) {
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }

@@ -270,7 +270,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     setSymbol:function (symbol) {
         this._symbol = this._prepareSymbol(symbol);
-        this._onSymbolChanged();
+        this.onSymbolChanged();
         return this;
     },
 
@@ -756,7 +756,6 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     /**
      * Get the geographic area of the geometry.
      * @returns {Number} geographic area, unit is sq.meter
-     * @expose
      */
     getArea:function () {
         return this._computeGeodesicArea(this._getMeasurer());
@@ -825,7 +824,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     _setExternSymbol: function (symbol) {
         this._externSymbol = this._prepareSymbol(symbol);
-        this._onSymbolChanged();
+        this.onSymbolChanged();
         return this;
     },
 
@@ -885,10 +884,10 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             this.endEdit();
         }
         this._removePainter();
-        if (this._onRemove) {
-            this._onRemove();
+        if (this.onRemove) {
+            this.onRemove();
         }
-        layer._onGeometryRemove(this);
+        layer.onRemoveGeometry(this);
         delete this._layer;
         delete this._internalId;
         delete this._extent;
@@ -970,17 +969,13 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         delete this._painter;
     },
 
-    _onZoomEnd:function () {
+    onZoomEnd:function () {
         if (this._painter) {
-            this._painter._onZoomEnd();
+            this._painter.onZoomEnd();
         }
     },
 
-    _isEditingOrDragging:function () {
-        return ((this.isEditing && this.isEditing()) || (this.isDragging && this.isDragging()));
-    },
-
-    _onShapeChanged:function () {
+    onShapeChanged:function () {
         this._extent = null;
         var painter = this._getPainter();
         if (painter) {
@@ -997,7 +992,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         this._fireEvent('shapechange');
     },
 
-    _onPositionChanged:function () {
+    onPositionChanged:function () {
         this._extent = null;
         var painter = this._getPainter();
         if (painter) {
@@ -1014,7 +1009,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         this._fireEvent('positionchange');
     },
 
-    _onSymbolChanged:function () {
+    onSymbolChanged:function () {
         var painter = this._getPainter();
         if (painter) {
             painter.refreshSymbol();
@@ -1160,7 +1155,7 @@ Z.Geometry.fromJSON = function (json) {
 };
 
 
-Z.Geometry._getMarkerPathURL = function (symbol) {
+Z.Geometry.getMarkerPathBase64 = function (symbol) {
     if (!symbol['markerPath']) {
         return null;
     }

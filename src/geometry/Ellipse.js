@@ -53,7 +53,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      */
     setWidth:function (width) {
         this.width = width;
-        this._onShapeChanged();
+        this.onShapeChanged();
         return this;
     },
 
@@ -73,7 +73,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
      */
     setHeight:function (height) {
         this.height = height;
-        this._onShapeChanged();
+        this.onShapeChanged();
         return this;
     },
 

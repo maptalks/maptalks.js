@@ -113,6 +113,13 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         return this;
     },
 
+    onAddGeometry: function (geo) {
+        var style = this.getStyle();
+        if (style) {
+            this._styleGeometry(geo);
+        }
+    },
+
     _styleGeometry: function (geometry) {
         var g = Z.Util.getFilterFeature(geometry);
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {

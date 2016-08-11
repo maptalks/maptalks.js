@@ -461,7 +461,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      * 设置地图的watcher, 用来监视地图容器的大小变化
      * @ignore
      */
-    _onResize:function () {
+    onResize:function () {
         Z.Util.cancelAnimFrame(this._resizeRequest);
         this._resizeRequest = Z.Util.requestAnimFrame(
             Z.Util.bind(function () {
@@ -488,13 +488,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this.clearCanvas();
         }, this);
         if (map.options['checkSize'] && !Z.node && (typeof window !== 'undefined')) {
-            // Z.DomUtil.on(window, 'resize', this._onResize, this);
+            // Z.DomUtil.on(window, 'resize', this.onResize, this);
             this._resizeInterval = setInterval(Z.Util.bind(function () {
                 if (!map._containerDOM.parentNode) {
                     //is deleted
                     clearInterval(this._resizeInterval);
                 } else {
-                    this._onResize();
+                    this.onResize();
                 }
             }, this), 1000);
         }

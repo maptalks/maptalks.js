@@ -26,7 +26,13 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @return {maptalks.Geometry}
      */
     getGeometryById:function (id) {
-        return this._getGeometryById(id);
+        if (Z.Util.isNil(id) || id === '') {
+            return null;
+        }
+        if (!this._geoMap[id]) {
+            return null;
+        }
+        return this._geoMap[id];
     },
 
     /**
@@ -36,7 +42,23 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @return {maptalks.Geometry[]}
      */
     getGeometries:function (filter, context) {
-        return this._getGeometries(filter, context);
+        if (!filter) {
+            return this._geoList.slice(0);
+        }
+        var result = [],
+            geometry, filtered;
+        for (var i = 0, l = this._geoList.length; i < l; i++) {
+            geometry = this._geoList[i];
+            if (context) {
+                filtered = filter.call(context, geometry);
+            } else {
+                filtered = filter(geometry);
+            }
+            if (filtered) {
+                result.push(geometry);
+            }
+        }
+        return result;
     },
 
     /**
@@ -131,68 +153,9 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @return {maptalks.OverlayLayer} this
      */
     addGeometry:function (geometries, fitView) {
-        return this._addGeometry(geometries, fitView);
-    },
-
-    /**
-     * Removes one or more geometries from the layer
-     * @param  {String|String[]|maptalks.Geometry|maptalks.Geometry[]} geometries - geometry ids or geometries to remove
-     * @returns {maptalks.OverlayLayer} this
-     */
-    removeGeometry:function (geometries) {
-        return this._removeGeometry(geometries);
-    },
-
-    /**
-     * Clear all geometries in this layer
-     * @returns {maptalks.OverlayLayer} this
-     */
-    clear:function () {
-        return this._clear();
-    },
-
-    _initCache: function () {
-        if (!this._geoList) {
-            this._geoList = [];
-            this._geoMap = {};
-        }
-    },
-
-    _getGeometryById:function (id) {
-        if (Z.Util.isNil(id) || id === '') {
-            return null;
-        }
-        if (!this._geoMap[id]) {
-            return null;
-        }
-        return this._geoMap[id];
-    },
-
-    _getGeometries:function (filter, context) {
-        if (!filter) {
-            return this._geoList.slice(0);
-        }
-        var result = [],
-            geometry, filtered;
-        for (var i = 0, l = this._geoList.length; i < l; i++) {
-            geometry = this._geoList[i];
-            if (context) {
-                filtered = filter.call(context, geometry);
-            } else {
-                filtered = filter(geometry);
-            }
-            if (filtered) {
-                result.push(geometry);
-            }
-        }
-        return result;
-    },
-
-
-    _addGeometry:function (geometries, fitView) {
         if (!geometries) { return this; }
         if (!Z.Util.isArray(geometries)) {
-            return this._addGeometry([geometries], fitView);
+            return this.addGeometry([geometries], fitView);
         } else if (!Z.Util.isArrayHasData(geometries)) {
             return this;
         }
@@ -200,8 +163,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         var fitCounter = 0;
         var centerSum = new Z.Coordinate(0, 0);
         var extent = null,
-            geo, geoId, internalId, geoCenter, geoExtent,
-            style = this.getStyle ? this.getStyle() : null;
+            geo, geoId, internalId, geoCenter, geoExtent;
         for (var i = 0, len = geometries.length; i < len; i++) {
             geo = geometries[i];
             if (!(geo instanceof Z.Geometry)) {
@@ -239,8 +201,8 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                     fitCounter++;
                 }
             }
-            if (style) {
-                this._styleGeometry(geo);
+            if (this.onAddGeometry) {
+                this.onAddGeometry(geo);
             }
             /**
              * add event.
@@ -276,23 +238,14 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return this;
     },
 
-    _sortGeometries: function () {
-        var me = this;
-        this._geoList.sort(function (a, b) {
-            return me._compare(a, b);
-        });
-    },
-
-    _compare: function (a, b) {
-        if (a._zIndex === b._zIndex) {
-            return a._getInternalId() - b._getInternalId();
-        }
-        return a._zIndex - b._zIndex;
-    },
-
-    _removeGeometry:function (geometries) {
+    /**
+     * Removes one or more geometries from the layer
+     * @param  {String|String[]|maptalks.Geometry|maptalks.Geometry[]} geometries - geometry ids or geometries to remove
+     * @returns {maptalks.OverlayLayer} this
+     */
+    removeGeometry:function (geometries) {
         if (!Z.Util.isArray(geometries)) {
-            return this._removeGeometry([geometries]);
+            return this.removeGeometry([geometries]);
         }
         for (var i = geometries.length - 1; i >= 0; i--) {
             if (!(geometries[i] instanceof Z.Geometry)) {
@@ -314,27 +267,11 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return this;
     },
 
-    //binarySearch
-    _findInList: function (geo) {
-        var len = this._geoList.length;
-        if (len === 0) {
-            return -1;
-        }
-        var low = 0, high = len - 1, middle;
-        while (low <= high) {
-            middle = Math.floor((low + high) / 2);
-            if (this._geoList[middle] === geo) {
-                return middle;
-            } else if (this._compare(this._geoList[middle], geo) > 0) {
-                high = middle - 1;
-            } else {
-                low = middle + 1;
-            }
-        }
-        return -1;
-    },
-
-    _clear:function () {
+    /**
+     * Clear all geometries in this layer
+     * @returns {maptalks.OverlayLayer} this
+     */
+    clear:function () {
         this._clearing = true;
         this.forEach(function (geo) {
             geo.remove();
@@ -354,41 +291,12 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return this;
     },
 
-    _onGeometryIdChange: function (param) {
-        if (!param['target'] || param['target'].getLayer() !== this) {
-            return;
-        }
-        if (param['new'] === param['old']) {
-            if (this._geoMap[param['old']] && this._geoMap[param['old']] === param['target']) {
-                return;
-            }
-        }
-        if (!Z.Util.isNil(param['new'])) {
-            if (this._geoMap[param['new']]) {
-                throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + param['new']);
-            }
-            this._geoMap[param['new']] = param['target'];
-        }
-        if (!Z.Util.isNil(param['old']) && param['new'] !== param['old']) {
-            delete this._geoMap[param['old']];
-        }
-    },
-
-    _onGeometryZIndexChange: function (param) {
-        if (param['old'] !== param['new']) {
-            this._sortGeometries();
-            if (this._getRenderer()) {
-                this._getRenderer().render();
-            }
-        }
-    },
-
     /**
      * Called when geometry is being removed to clear the context concerned.
      * @param  {maptalks.Geometry} geometry - the geometry instance to remove
-     * @private
+     * @protected
      */
-    _onGeometryRemove:function (geometry) {
+    onRemoveGeometry:function (geometry) {
         if (!geometry) { return; }
         //考察geometry是否属于该图层
         if (this !== geometry.getLayer()) {
@@ -413,6 +321,87 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
 
         if (this._getRenderer()) {
             this._getRenderer().render();
+        }
+    },
+
+    _initCache: function () {
+        if (!this._geoList) {
+            this._geoList = [];
+            this._geoMap = {};
+        }
+    },
+
+    _sortGeometries: function () {
+        var me = this;
+        this._geoList.sort(function (a, b) {
+            return me._compare(a, b);
+        });
+    },
+
+    _compare: function (a, b) {
+        if (a._zIndex === b._zIndex) {
+            return a._getInternalId() - b._getInternalId();
+        }
+        return a._zIndex - b._zIndex;
+    },
+
+    //binarySearch
+    _findInList: function (geo) {
+        var len = this._geoList.length;
+        if (len === 0) {
+            return -1;
+        }
+        var low = 0, high = len - 1, middle;
+        while (low <= high) {
+            middle = Math.floor((low + high) / 2);
+            if (this._geoList[middle] === geo) {
+                return middle;
+            } else if (this._compare(this._geoList[middle], geo) > 0) {
+                high = middle - 1;
+            } else {
+                low = middle + 1;
+            }
+        }
+        return -1;
+    },
+
+    _onGeometryIdChange: function (param) {
+        if (!param['target']) {
+            return;
+        }
+        if (param['target'].getLayer() !== this) {
+            param['target'].off('idchange', this._onGeometryIdChange, this);
+            return;
+        }
+        if (param['new'] === param['old']) {
+            if (this._geoMap[param['old']] && this._geoMap[param['old']] === param['target']) {
+                return;
+            }
+        }
+        if (!Z.Util.isNil(param['new'])) {
+            if (this._geoMap[param['new']]) {
+                throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + param['new']);
+            }
+            this._geoMap[param['new']] = param['target'];
+        }
+        if (!Z.Util.isNil(param['old']) && param['new'] !== param['old']) {
+            delete this._geoMap[param['old']];
+        }
+    },
+
+    _onGeometryZIndexChange: function (param) {
+        if (!param['target']) {
+            return;
+        }
+        if (param['target'].getLayer() !== this) {
+            param['target'].off('zindexchange', this._onGeometryIdChange, this);
+            return;
+        }
+        if (param['old'] !== param['new']) {
+            this._sortGeometries();
+            if (this._getRenderer()) {
+                this._getRenderer().render();
+            }
         }
     }
 });

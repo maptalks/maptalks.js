@@ -42,7 +42,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
         this._coordinates = new Z.Coordinate(nw);
 
         if (!this._coordinates || !this.getMap()) {
-            this._onPositionChanged();
+            this.onPositionChanged();
             return this;
         }
         var projection = this._getProjection();
@@ -66,7 +66,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
      */
     setWidth:function (width) {
         this._width = width;
-        this._onShapeChanged();
+        this.onShapeChanged();
         return this;
     },
 
@@ -86,7 +86,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
      */
     setHeight:function (height) {
         this._height = height;
-        this._onShapeChanged();
+        this.onShapeChanged();
         return this;
     },
 
@@ -137,7 +137,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
 
     _setPrjCoordinates:function (pnw) {
         this._pnw = pnw;
-        this._onPositionChanged();
+        this.onPositionChanged();
     },
 
 

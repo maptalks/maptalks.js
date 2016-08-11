@@ -700,7 +700,7 @@ Z.Util = {
                 resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
             }
             if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-                resources.push([Z.Geometry._getMarkerPathURL(symbol), symbol['markerWidth'], symbol['markerHeight']]);
+                resources.push([Z.Geometry.getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']]);
             }
         }
         return resources;

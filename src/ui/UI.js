@@ -126,7 +126,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             map[this._uiDomKey()] = dom;
         }
 
-        var point = this._getPosition();
+        var point = this.getPosition();
 
         dom.style.position = 'absolute';
         dom.style.left = point.x + 'px';
@@ -186,11 +186,14 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     remove: function () {
         this.hide();
         this._switchEvents('off');
-        delete this._owner;
-        delete this._map;
+        if (this.onRemove) {
+            this.onRemove();
+        }
         if (!this._singleton() && this.__uiDOM) {
             this._removePrevDOM();
         }
+        delete this._owner;
+        delete this._map;
         /**
          * remove event.
          *
@@ -223,18 +226,18 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         return this.__uiDOM;
     },
 
-    _getViewPoint : function () {
-        return this.getMap().coordinateToViewPoint(this._coordinate)
-                    ._add(this.options['dx'], this.options['dy']);
-    },
-
-    _getPosition : function () {
+    getPosition : function () {
         var p = this._getViewPoint();
         if (this.getOffset) {
             var o = this.getOffset();
             if (o) { p._add(o); }
         }
         return p;
+    },
+
+    _getViewPoint : function () {
+        return this.getMap().coordinateToViewPoint(this._coordinate)
+                    ._add(this.options['dx'], this.options['dy']);
     },
 
     _autoPan : function () {
@@ -288,8 +291,8 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @private
      */
     _removePrevDOM:function () {
-        if (this._onDOMRemove) {
-            this._onDOMRemove();
+        if (this.onDomRemove) {
+            this.onDomRemove();
         }
         if (this._singleton()) {
             var map = this.getMap(),
@@ -353,12 +356,12 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
 
     _getDefaultEvents: function () {
         return {
-            'zooming' : this._onZooming,
-            'zoomend' : this._onZoomEnd
+            'zooming' : this.onZooming,
+            'zoomend' : this.onZoomEnd
         };
     },
 
-    _onZooming : function (param) {
+    onZooming : function (param) {
         if (!this.isVisible() || !this.getDOM()) {
             return;
         }
@@ -374,12 +377,12 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         dom.style.top  = p.y + 'px';
     },
 
-    _onZoomEnd : function () {
+    onZoomEnd : function () {
         if (!this.isVisible() || !this.getDOM()) {
             return;
         }
         var dom = this.getDOM(),
-            p = this._getPosition();
+            p = this.getPosition();
         dom.style.left = p.x + 'px';
         dom.style.top  = p.y + 'px';
     }

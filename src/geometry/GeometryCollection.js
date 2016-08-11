@@ -50,7 +50,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         this._geometries = geometries;
         if (this.getLayer()) {
             this._bindGeometriesToLayer();
-            this._onShapeChanged();
+            this.onShapeChanged();
         }
         return this;
     },
@@ -171,7 +171,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         this.forEach(function (geometry) {
             geometry.setSymbol(symbol);
         });
-        this._onSymbolChanged();
+        this.onSymbolChanged();
         return this;
     },
 
@@ -187,7 +187,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         this.forEach(function (geometry) {
             geometry._setExternSymbol(symbol);
         });
-        this._onSymbolChanged();
+        this.onSymbolChanged();
         return this;
     },
 

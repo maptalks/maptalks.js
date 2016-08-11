@@ -24,7 +24,7 @@ Z.Geometry.Center = {
         }
         this._coordinates = center;
         if (!this.getMap()) {
-            this._onPositionChanged();
+            this.onPositionChanged();
             return this;
         }
         var projection = this._getProjection();
@@ -57,7 +57,7 @@ Z.Geometry.Center = {
     //Set center by projected coordinates
     _setPrjCoordinates:function (pcenter) {
         this._pcenter = pcenter;
-        this._onPositionChanged();
+        this.onPositionChanged();
     },
 
     //update cached variables if geometry is updated.

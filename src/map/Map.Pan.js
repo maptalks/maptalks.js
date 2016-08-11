@@ -38,7 +38,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             return this;
         }
         offset = new Z.Point(offset).multi(-1);
-        this._onMoveStart();
+        this.onMoveStart();
         if (!options) {
             options = {};
         }
@@ -47,11 +47,11 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         } else {
             this.offsetPlatform(offset);
             this._offsetCenterByPixel(offset);
-            this._onMoving();
+            this.onMoving();
             if (cb) {
                 cb();
             }
-            this._onMoveEnd();
+            this.onMoveEnd();
         }
         return this;
     },

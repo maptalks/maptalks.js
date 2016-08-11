@@ -38,7 +38,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                 if (!map._enablePanAnimation) {
                     player.finish();
                     map._panAnimating = false;
-                    map._onMoveEnd();
+                    map.onMoveEnd();
                     return;
                 }
 
@@ -51,18 +51,18 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
                     map.offsetPlatform(offset);
                     map._offsetCenterByPixel(offset);
                     preDist = dist;
-                    map._onMoving();
+                    map.onMoving();
                 } else if (player.playState === 'finished') {
                     map._panAnimating = false;
                     if (onFinish) {
                         onFinish();
                     }
-                    map._onMoveEnd();
+                    map.onMoveEnd();
                 }
             });
             player.play();
         } else {
-            map._onMoveEnd();
+            map.onMoveEnd();
         }
     },
 
@@ -98,7 +98,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
         }
     },
 
-    _onZoomEnd:function () {
+    onZoomEnd:function () {
         this.resetContainer();
     },
 

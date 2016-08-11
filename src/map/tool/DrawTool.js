@@ -103,11 +103,11 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         return this;
     },
 
-    _onAdd: function () {
+    onAdd: function () {
         this._checkMode();
     },
 
-    _onEnable:function () {
+    onEnable:function () {
 
         var map = this.getMap();
         this._mapDraggable = map.options['draggable'];
@@ -136,7 +136,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         throw new Error('invalid mode for drawtool : ' + this.options['mode']);
     },
 
-    _onDisable:function () {
+    onDisable:function () {
         var map = this.getMap();
         map.config({
             'autoBorderPanning' : this._autoBorderPanning,
@@ -167,7 +167,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         return this._map.getProjection();
     },
 
-    _getEvents: function () {
+    getEvents: function () {
         var mode = this.getMode();
         if (mode === 'polygon' || mode === 'linestring') {
             return {

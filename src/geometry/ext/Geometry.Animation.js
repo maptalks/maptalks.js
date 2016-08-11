@@ -35,7 +35,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
 
         var player = Z.Animation.animate(stylesToAnimate, options, Z.Util.bind(function (frame) {
             if (!this._animationStarted && isFocusing) {
-                map._onMoveStart();
+                map.onMoveStart();
             }
             var styles = frame.styles;
             for (var p in styles) {
@@ -61,9 +61,9 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                 var pcenter = projection.project(this.getCenter());
                 map._setPrjCenterAndMove(pcenter);
                 if (player.playState !== 'running') {
-                    map._onMoveEnd();
+                    map.onMoveEnd();
                 } else {
-                    map._onMoving();
+                    map.onMoving();
                 }
             }
             this._fireAnimateEvent(player.playState);

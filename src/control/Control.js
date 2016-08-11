@@ -105,7 +105,7 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
     getContainerPoint:function () {
         var position = this.getPosition();
 
-        var size = this._map.getSize();
+        var size = this.getMap().getSize();
         var x, y;
         if (!Z.Util.isNil(position['top'])) {
             x = position['top'];
@@ -173,8 +173,8 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
             return this;
         }
         Z.DomUtil.removeDomNode(this.__ctrlContainer);
-        if (this._onRemove) {
-            this._onRemove(this._map);
+        if (this.onRemove) {
+            this.onRemove();
         }
         delete this._map;
         delete this.__ctrlContainer;

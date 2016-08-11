@@ -50,7 +50,7 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
      */
     setRadius:function (radius) {
         this._radius = radius;
-        this._onShapeChanged();
+        this.onShapeChanged();
         return this;
     },
 
