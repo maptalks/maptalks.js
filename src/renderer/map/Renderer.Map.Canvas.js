@@ -379,7 +379,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 canvasImage = context;
             }
         }
-        this._context.drawImage(canvasImage, Z.Util.round(point.x), Z.Util.round(point.y));
+        this._context.drawImage(canvasImage, point.x, point.y);
         this._context.globalAlpha = alpha;
     },
 
@@ -403,7 +403,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
     _drawCenterCross: function () {
         if (this.map.options['centerCross']) {
-            var p = new Z.Point(this._canvas.width / 2, this._canvas.height / 2)._round();
+            var p = new Z.Point(this._canvas.width / 2, this._canvas.height / 2);
             this._context.strokeStyle = '#ff0000';
             this._context.lineWidth = 2;
             this._context.beginPath();

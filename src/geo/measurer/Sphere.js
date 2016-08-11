@@ -9,7 +9,7 @@ Z.Util.extend(Z.measurer.Sphere.prototype, {
         if (!c1 || !c2) { return 0; }
         var b = this.rad(c1.y), d = this.rad(c2.y), e = b - d, f = this.rad(c1.x) - this.rad(c2.x);
         b = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(e / 2), 2) + Math.cos(b) * Math.cos(d) * Math.pow(Math.sin(f / 2), 2))); b *= this.radius;
-        return Math.round(b * 1E4) / 1E4;
+        return Math.round(b * 1E6) / 1E6;
     },
     measureArea:function (coordinates) {
         var a = this.radius * Math.PI / 180,

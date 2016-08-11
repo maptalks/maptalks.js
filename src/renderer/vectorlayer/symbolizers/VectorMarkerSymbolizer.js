@@ -72,13 +72,13 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             if (gradient) {
                 if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
                     gradientExtent = this._getGraidentExtent(point);
-                    strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth'])._round();
+                    strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth']);
                 }
                 if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
                     if (!gradientExtent) {
                         gradientExtent = this._getGraidentExtent(point);
                     }
-                    strokeAndFill['polygonGradientExtent'] = gradientExtent._round();
+                    strokeAndFill['polygonGradientExtent'] = gradientExtent;
                 }
                 Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
             }

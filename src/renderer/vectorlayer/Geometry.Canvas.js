@@ -66,7 +66,7 @@ if (Z.Browser.canvas) {
                 hw = arrowWidth / 2;
 
             var v0 = new Z.Point(0, lineWidth),
-                v1 = new Z.Point(Z.Util.round(-hw), Z.Util.round(hh)),
+                v1 = new Z.Point(-Z.Util.round(hw), Z.Util.round(hh)),
                 v2 = new Z.Point(Z.Util.round(hw), Z.Util.round(hh));
             var pts = [v0, v1, v2, v0];
             var angle = Math.atan2(point.x - prePoint.x, prePoint.y - point.y);
