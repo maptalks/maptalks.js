@@ -163,7 +163,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             }
         } catch (error) {
             if (!this._errorThrown) {
-                console.warn('hit detect failed with tainted canvas, some geometries have external resources in another domain:\n', error);
+                Z.Util.warn('hit detect failed with tainted canvas, some geometries have external resources in another domain:\n', error);
                 this._errorThrown = true;
             }
             //usually a CORS error will be thrown if the canvas uses resources from other domain.
@@ -225,16 +225,16 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
                 resolve(url);
             };
             img.onabort = function (err) {
-                console.warn('image loading aborted: ' + url[0]);
+                Z.Util.warn('image loading aborted: ' + url[0]);
                 if (err) {
-                    console.warn(err);
+                    Z.Util.warn(err);
                 }
                 resolve(url);
             };
             img.onerror = function (err) {
-                // console.warn('image loading failed: ' + url[0]);
+                // Z.Util.warn('image loading failed: ' + url[0]);
                 if (err && !Z.Browser.phantomjs) {
-                    console.warn(err);
+                    Z.Util.warn(err);
                 }
                 resources.markErrorResource(url);
                 resolve(url);
