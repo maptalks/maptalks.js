@@ -155,10 +155,20 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     },
 
     _handleDOMEvent: function (e) {
+        var type = e.type;
+        if (type === 'mousedown' || type === 'click') {
+            var button = e.button;
+            if (button === 2) {
+                type = 'contextmenu';
+            }
+        }
+        //阻止右键菜单
+        if (type === 'contextmenu') {
+            Z.DomUtil.preventDefault(e);
+        }
         if (this._ignoreEvent(e)) {
             return;
         }
-        var type = e.type;
         this._fireDOMEvent(this, e, type);
     },
 
@@ -202,17 +212,6 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     _fireDOMEvent: function (target, e, type) {
         var eventParam = this._parseEvent(e, type);
-
-        //阻止右键菜单
-        if (type === 'contextmenu') {
-            Z.DomUtil.preventDefault(e);
-        }
-        if (type === 'mousedown' || type === 'click') {
-            var button = e.button;
-            if (button === 2) {
-                type = 'contextmenu';
-            }
-        }
         this._fireEvent(type, eventParam);
     }
 });
