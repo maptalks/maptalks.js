@@ -461,7 +461,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
             if (blackList && Z.Util.indexOfArray(i, blackList) >= 0) {
                 //need to change marker's coordinates
-                var newCoordinates = map.viewPointToCoordinate(handleViewPoint);
+                var newCoordinates = map.viewPointToCoordinate(handleViewPoint.substract(dxdy));
                 var coordinates = marker.getCoordinates();
                 newCoordinates.x = coordinates.x;
                 marker.setCoordinates(newCoordinates);
@@ -476,6 +476,9 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             var viewCenter = map._pointToViewPoint(marker._getCenter2DPoint()).add(dxdy),
                 symbol = marker._getInternalSymbol();
             var wh = handleViewPoint.substract(viewCenter);
+            if (handleViewPoint.y > viewCenter.y) {
+                wh.y = 0;
+            }
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
             var r = blackList ? 1 : 2;
             var width = Math.abs(wh.x) * 2,
