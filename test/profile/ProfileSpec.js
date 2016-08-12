@@ -244,6 +244,36 @@ describe('#Map Profile', function () {
         })
     });
 
+    describe('profile GeometryCollection', function () {
+        it('profile a MultiLineString', function () {
+            var expected = {"feature":{"type":"Feature","geometry":{"type":"MultiLineString","coordinates":[[[121.111,30.111],[121.222,30.222]],[[121.333,30.333],[121.444,30.444]]]},"properties":{"foo":"bla"}},"options":{},"symbol":{"lineColor":"#f00","polygonFill":"#000"}};
+            var mls = new maptalks.MultiLineString([
+                [
+                    {x: 121.111, y: 30.111},
+                    {x: 121.222, y: 30.222}
+                ],
+                [
+                    {x: 121.333, y: 30.333},
+                    {x: 121.444, y: 30.444}
+                ]
+            ],{
+                symbol : {
+                    lineColor : '#f00',
+                    polygonFill : '#000'
+                },
+                properties : {
+                    foo : 'bla'
+                }
+            });
+            var json = mls.toJSON();
+            expect(json).to.be.eql(expected);
+
+            var copy = maptalks.Geometry.fromJSON(json);
+            var json2 = copy.toJSON();
+            expect(json2).to.be.eql(json);
+        });
+    });
+
     describe('profile CurveLine and Label',function() {
         it('profile CurveLine',function() {
             var curve = new maptalks.CurveLine(

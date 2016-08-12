@@ -153,7 +153,7 @@ Z.Canvas = {
         } else {
             imageTexture = resources.getImage([imgUrl + '-texture', null, strokeWidth]);
             if (!imageTexture) {
-                var imageRes = resources.getImage([imgUrl, null, strokeWidth]);
+                var imageRes = resources.getImage([imgUrl, null, null]);
                 if (imageRes) {
                     var w;
                     if (!imageRes.width || !imageRes.height) {

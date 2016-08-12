@@ -1,6 +1,6 @@
 Z.Map.include(/** @lends maptalks.Map.prototype */{
     _zoom:function (nextZoomLevel, origin, startScale) {
-        if (!this.options['zoomable']) { return; }
+        if (!this.options['zoomable'] || this._zooming) { return; }
         this._originZoomLevel = this.getZoom();
         nextZoomLevel = this._checkZoomLevel(nextZoomLevel);
         this.onZoomStart(nextZoomLevel);
@@ -13,7 +13,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     },
 
     _zoomAnimation:function (nextZoomLevel, origin, startScale) {
-        if (!this.options['zoomable']) { return; }
+        if (!this.options['zoomable'] || this._zooming) { return; }
         if (Z.Util.isNil(startScale)) {
             startScale = 1;
         }

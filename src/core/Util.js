@@ -275,6 +275,19 @@ Z.Util = {
         return wrapperFn;
     },
 
+    executeWhen: function (fn, when) {
+        var exe = function () {
+            if (when()) {
+                fn();
+            } else {
+                Z.Util.requestAnimFrame(exe);
+            }
+        };
+
+        exe();
+        return this;
+    },
+
     removeFromArray:function (obj, array) {
         for (var i = array.length - 1; i >= 0; i--) {
             if (array[i] === obj) {
