@@ -199,7 +199,12 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             'domEvent': e
         };
         if (type !== 'keypress') {
-            var actual = e.touches ? e.touches[0] : e;
+            if (type === 'touchend') {
+                var a = 1;
+            }
+            var actual = e.touches && e.touches.length > 0 ?
+                e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
+                e.changedTouches[0] : e;
             if (actual) {
                 var containerPoint = Z.DomUtil.getEventContainerPoint(actual, this._containerDOM);
                 eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
