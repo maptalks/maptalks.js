@@ -459,11 +459,16 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @returns {maptalks.Map} this
      */
     setZoom:function (zoom) {
-        if (this.options['zoomAnimation']) {
-            this._zoomAnimation(zoom);
-        } else {
-            this._zoom(zoom);
-        }
+        var me = this;
+        Z.Util.executeWhen(function () {
+            if (me.options['zoomAnimation']) {
+                me._zoomAnimation(zoom);
+            } else {
+                me._zoom(zoom);
+            }
+        }, function () {
+            return !me._zooming;
+        });
         return this;
     },
 
@@ -529,7 +534,12 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Map} this
      */
     zoomIn: function () {
-        this.setZoom(this.getZoom() + 1);
+        var me = this;
+        Z.Util.executeWhen(function () {
+            me.setZoom(me.getZoom() + 1);
+        }, function () {
+            return !me._zooming;
+        });
         return this;
     },
 
@@ -538,21 +548,26 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {maptalks.Map} this
      */
     zoomOut: function () {
-        this.setZoom(this.getZoom() - 1);
+        var me = this;
+        Z.Util.executeWhen(function () {
+            me.setZoom(me.getZoom() - 1);
+        }, function () {
+            return !me._zooming;
+        });
         return this;
     },
 
     /**
      * Sets the center and zoom at the same time.
      * @param {maptalks.Coordinate} center
-     * @param {Number} zoomLevel
+     * @param {Number} zoom
      * @return {maptalks.Map} this
      */
-    setCenterAndZoom:function (center, zoomLevel) {
-        if (this._zoomLevel !== zoomLevel) {
+    setCenterAndZoom:function (center, zoom) {
+        if (this._zoomLevel !== zoom) {
             this.setCenter(center);
-            if (!Z.Util.isNil(zoomLevel)) {
-                this.setZoom(zoomLevel);
+            if (!Z.Util.isNil(zoom)) {
+                this.setZoom(zoom);
             }
         } else {
             this.setCenter(center);

@@ -243,6 +243,43 @@ describe('#Map', function () {
             expect(map.zoomOut().getZoom()).to.equal(cur);
         });
 
+        it('zoom in/out with animation', function(done) {
+            map.setBaseLayer(tile);
+            map.config('zoomAnimation', true);
+            var cur = map.getZoom();
+            var count = 0;
+            map.on('zoomend', function () {
+                if (count < 2) {
+                    count++;
+                } else {
+                    expect(map.getZoom()).to.be.eql(cur + 1);
+                    done();
+                }
+            });
+            map.zoomIn();
+            map.zoomIn();
+            map.zoomOut();
+            expect(map.getZoom()).to.be.eql(cur);
+        });
+
+        it('setZoom with animation', function (done) {
+            map.setBaseLayer(tile);
+            map.config('zoomAnimation', true);
+            var cur = map.getZoom();
+            var count = 0;
+            map.on('zoomend', function () {
+                if (count < 1) {
+                    count++;
+                } else {
+                    expect(map.getZoom()).to.be.eql(13);
+                    done();
+                }
+            });
+            map.setZoom(6);
+            map.setZoom(13);
+            expect(map.getZoom()).to.be.eql(cur);
+        });
+
         it('getFitZoom', function () {
             var extent = map.getExtent();
             var zoom = map.getZoom();

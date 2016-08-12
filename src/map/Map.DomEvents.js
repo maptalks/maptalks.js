@@ -199,9 +199,6 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             'domEvent': e
         };
         if (type !== 'keypress') {
-            if (type === 'touchend') {
-                var a = 1;
-            }
             var actual = e.touches && e.touches.length > 0 ?
                 e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
                 e.changedTouches[0] : e;
