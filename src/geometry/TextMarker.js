@@ -12,7 +12,7 @@
 Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
     defaultSymbol : {
-        'textFaceName'  : 'microsoft yahei',
+        'textFaceName'  : 'monospace',
         'textSize': 12,
         'textWrapBefore': false,
         'textWrapCharacter': '\n',

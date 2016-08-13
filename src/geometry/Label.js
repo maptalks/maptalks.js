@@ -21,24 +21,6 @@
  */
 Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
 
-    defaultSymbol : {
-        'textFaceName'  : 'microsoft yahei',
-        'textSize': 12,
-        'textWrapBefore': false,
-        'textWrapCharacter': '\n',
-        'textLineSpacing': 8,
-        'textHorizontalAlignment': 'middle', //left middle right
-        'textVerticalAlignment': 'middle' //top middle bottom
-    },
-
-    defaultBoxSymbol:{
-        'markerType':'square',
-        'markerLineColor': '#ff0000',
-        'markerLineWidth': 2,
-        'markerLineOpacity': 1,
-        'markerFill': '#ffffff'
-    },
-
     /**
      * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
      * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
