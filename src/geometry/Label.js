@@ -110,7 +110,7 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
             }
         }
         this._symbol = symbol;
-        this._onSymbolChanged();
+        this.onSymbolChanged();
     }
 });
 

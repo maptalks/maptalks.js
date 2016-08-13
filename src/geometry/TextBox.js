@@ -102,7 +102,7 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
             }
         }
         this._symbol = symbol;
-        this._onSymbolChanged();
+        this.onSymbolChanged();
     }
 });
 
