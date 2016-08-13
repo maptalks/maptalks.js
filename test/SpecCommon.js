@@ -1,14 +1,14 @@
 function genAllTypeGeometries() {
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var w = 200, h = 200, r = 200;
     return [
-        new Z.Marker(center),
+        new maptalks.Marker(center),
         new maptalks.Label('test label', center),
-        new Z.Circle(center, r),
-        new Z.Ellipse(center, w, h),
-        new Z.Rectangle(center, w, h),
-        new Z.Sector(center, r, 90, 180),
-        new Z.Polyline([
+        new maptalks.Circle(center, r),
+        new maptalks.Ellipse(center, w, h),
+        new maptalks.Rectangle(center, w, h),
+        new maptalks.Sector(center, r, 90, 180),
+        new maptalks.LineString([
             {x: 121.111, y: 30.111},
             {x: 121.222, y: 30.222}
         ]),
@@ -85,9 +85,9 @@ function commonSetupMap(center, baseLayer) {
         zoom: 17,
         center: center
     };
-    var map = new Z.Map(container, option);
+    var map = new maptalks.Map(container, option);
     if (baseLayer === undefined) {
-        var tile = new Z.TileLayer('tile', {
+        var tile = new maptalks.TileLayer('tile', {
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
         });
@@ -229,7 +229,7 @@ var GeoSymbolTester = {
         for (i = this.markerSymbols.length - 1; i >= 0; i--) {
             geometry.copy().setSymbol(this.markerSymbols[i]).addTo(getLayer('symbol_test_' + i));
         }
-        if (!(geometry instanceof Z.Marker) && !(geometry instanceof Z.MultiPoint)) {
+        if (!(geometry instanceof maptalks.Marker) && !(geometry instanceof maptalks.MultiPoint)) {
             geometry.copy().setSymbol(this.lineAndFill).addTo(getLayer('symbol_test_linefill'));
         }
         // // enable debug symbolizer
@@ -243,7 +243,7 @@ var GeoSymbolTester = {
         // for (i = this.markerSymbols.length - 1; i >= 0; i--) {
         //     geometry.setSymbol(this.markerSymbols[i]);
         // }
-        // if (!(geometry instanceof Z.Marker) && !(geometry instanceof Z.MultiPoint)) {
+        // if (!(geometry instanceof maptalks.Marker) && !(geometry instanceof maptalks.MultiPoint)) {
         //     geometry.setSymbol(this.lineAndFill);
         // }
         // geometry.remove();
@@ -254,7 +254,7 @@ var GeoSymbolTester = {
         // for (i = this.markerSymbols.length - 1; i >= 0; i--) {
         //     geometry.setSymbol(this.markerSymbols[i]);
         // }
-        // if (!(geometry instanceof Z.Marker) && !(geometry instanceof Z.MultiPoint)) {
+        // if (!(geometry instanceof maptalks.Marker) && !(geometry instanceof maptalks.MultiPoint)) {
         //     geometry.setSymbol(this.lineAndFill);
         // }
     }
@@ -273,7 +273,7 @@ GeoEventsTester.prototype = {
     eventsToTest : 'click mousedown mouseup dblclick', //mousemove
 
     testCanvasEvents:function(vector, map, testPoint) {
-        var layer = new Z.VectorLayer('event_test_layer_canvas',{'render':'canvas'});
+        var layer = new maptalks.VectorLayer('event_test_layer_canvas',{'render':'canvas'});
         if (!layer.isCanvasRender()) {
             return;
         }
@@ -285,7 +285,7 @@ GeoEventsTester.prototype = {
         layer.addGeometry(vector);
         var point = map.coordinateToContainerPoint(testPoint);
         var dom = map._panels.mapPlatform;
-        var domPosition = Z.DomUtil.getPagePosition(dom);
+        var domPosition = maptalks.DomUtil.getPagePosition(dom);
         point._add(domPosition);
         this._verifyGeometryEvents(dom,
             {

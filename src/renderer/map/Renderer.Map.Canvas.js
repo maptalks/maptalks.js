@@ -146,7 +146,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
             var renderer = layers[i]._getRenderer();
             if (renderer) {
-                if (renderer.isCanvasRender()) {
+                if (renderer.isCanvasRender && renderer.isCanvasRender()) {
                     var transformed = false;
                     if (transformLayers && renderer.transform) {
                         transformed = renderer.transform(matrix);
@@ -211,6 +211,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     remove: function () {
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
+        }
+        if (this._resizeFrame) {
+            Z.Util.cancelAnimFrame(this._resizeFrame);
         }
         delete this._context;
         delete this._canvas;
@@ -376,7 +379,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 canvasImage = context;
             }
         }
-        this._context.drawImage(canvasImage, Z.Util.round(point.x), Z.Util.round(point.y));
+        this._context.drawImage(canvasImage, point.x, point.y);
         this._context.globalAlpha = alpha;
     },
 
@@ -400,7 +403,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
     _drawCenterCross: function () {
         if (this.map.options['centerCross']) {
-            var p = new Z.Point(this._canvas.width / 2, this._canvas.height / 2)._round();
+            var p = new Z.Point(this._canvas.width / 2, this._canvas.height / 2);
             this._context.strokeStyle = '#ff0000';
             this._context.lineWidth = 2;
             this._context.beginPath();
@@ -457,15 +460,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this._context = this._canvas.getContext('2d');
     },
 
-    /**
-     * 设置地图的watcher, 用来监视地图容器的大小变化
-     * @ignore
-     */
-    _onResize:function () {
-        Z.Util.cancelAnimFrame(this._resizeRequest);
-        this._resizeRequest = Z.Util.requestAnimFrame(
+    _checkSize:function () {
+        Z.Util.cancelAnimFrame(this._resizeFrame);
+        this._resizeFrame = Z.Util.requestAnimFrame(
             Z.Util.bind(function () {
-                delete this._canvasBg;
                 this.map.checkSize();
             }, this)
         );
@@ -482,19 +480,21 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 delete this._canvasBg;
             }
         }, this);
-
+        map.on('_resize', function () {
+            delete this._canvasBg;
+        }, this);
         map.on('_zoomstart', function () {
             delete this._canvasBg;
             this.clearCanvas();
         }, this);
         if (map.options['checkSize'] && !Z.node && (typeof window !== 'undefined')) {
-            // Z.DomUtil.on(window, 'resize', this._onResize, this);
+            // Z.DomUtil.on(window, 'resize', this._checkSize, this);
             this._resizeInterval = setInterval(Z.Util.bind(function () {
                 if (!map._containerDOM.parentNode) {
                     //is deleted
                     clearInterval(this._resizeInterval);
                 } else {
-                    this._onResize();
+                    this._checkSize();
                 }
             }, this), 1000);
         }

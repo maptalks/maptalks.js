@@ -72,13 +72,13 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             if (gradient) {
                 if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
                     gradientExtent = this._getGraidentExtent(point);
-                    strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth'])._round();
+                    strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth']);
                 }
                 if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
                     if (!gradientExtent) {
                         gradientExtent = this._getGraidentExtent(point);
                     }
-                    strokeAndFill['polygonGradientExtent'] = gradientExtent._round();
+                    strokeAndFill['polygonGradientExtent'] = gradientExtent;
                 }
                 Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
             }
@@ -248,8 +248,8 @@ Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles = function (s) {
 
 Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints = function (markerType, width, height) {
         //half height and half width
-    var hh = Math.round(height / 2),
-        hw = Math.round(width / 2);
+    var hh = height / 2,
+        hw = width / 2;
     var left = 0, top = 0;
     var v0, v1, v2, v3;
     if (markerType === 'triangle') {

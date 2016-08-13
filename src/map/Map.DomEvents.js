@@ -155,10 +155,20 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     },
 
     _handleDOMEvent: function (e) {
+        var type = e.type;
+        if (type === 'mousedown' || type === 'click') {
+            var button = e.button;
+            if (button === 2) {
+                type = 'contextmenu';
+            }
+        }
+        //阻止右键菜单
+        if (type === 'contextmenu') {
+            Z.DomUtil.preventDefault(e);
+        }
         if (this._ignoreEvent(e)) {
             return;
         }
-        var type = e.type;
         this._fireDOMEvent(this, e, type);
     },
 
@@ -170,7 +180,8 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         var target = domEvent.srcElement || domEvent.target;
         if (target) {
             while (target && target !== this._containerDOM) {
-                if (target.className === 'maptalks-control' || target.className === 'maptalks-ui') {
+                if (target.className && target.className.indexOf &&
+                    (target.className.indexOf('maptalks-control') >= 0 || target.className.indexOf('maptalks-ui') >= 0)) {
                     return true;
                 }
                 target = target.parentNode;
@@ -188,7 +199,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             'domEvent': e
         };
         if (type !== 'keypress') {
-            var actual = e.touches ? e.touches[0] : e;
+            var actual = e.touches && e.touches.length > 0 ?
+                e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
+                e.changedTouches[0] : e;
             if (actual) {
                 var containerPoint = Z.DomUtil.getEventContainerPoint(actual, this._containerDOM);
                 eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
@@ -202,17 +215,6 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     _fireDOMEvent: function (target, e, type) {
         var eventParam = this._parseEvent(e, type);
-
-        //阻止右键菜单
-        if (type === 'contextmenu') {
-            Z.DomUtil.preventDefault(e);
-        }
-        if (type === 'mousedown' || type === 'click') {
-            var button = e.button;
-            if (button === 2) {
-                type = 'contextmenu';
-            }
-        }
         this._fireEvent(type, eventParam);
     }
 });

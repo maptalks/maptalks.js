@@ -360,7 +360,7 @@ function registerGeometryCommonTest(geometry,_context) {
             var map = _context.map;
             map.config('zoomAnimation',false);
             setupGeometry();
-            spy = sinon.spy(geometry,'_onZoomEnd');
+            spy = sinon.spy(geometry,'onZoomEnd');
             map.zoomOut();
             expect(spy.called).to.be.ok();
         });

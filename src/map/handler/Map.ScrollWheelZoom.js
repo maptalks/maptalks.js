@@ -63,8 +63,7 @@ Z.Map.ScrollWheelZoom = Z.Handler.extend({
             me._scaling = false;
             map._zoom(me._targetZoom, zoomPoint);
             me._wheelExecutor = setTimeout(function () {
-                console.log('zoomend');
-                map._onZoomEnd(me._targetZoom);
+                map.onZoomEnd(me._targetZoom);
                 delete me._targetZoom;
             },100);
         });

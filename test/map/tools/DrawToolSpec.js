@@ -102,7 +102,17 @@ describe('#DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'Point'
+                mode : 'Point',
+                symbol : {
+                    "markerPlacement":"point",
+                    "markerFile"   : "images/control/2.png",
+                    "markerRotation" : 30,
+                    "markerWidth"  : 20,
+                    "markerHeight" : 20,
+                    "markerOpacity": 1,
+                    "markerDx"     : 0,
+                    "markerDy"     : 0
+                }
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);

@@ -281,17 +281,17 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         });
     },
 
-    _onMoveEnd: function () {
+    onMoveEnd: function () {
         this._gradualLoading = false;
-        this.render();
+        Z.renderer.Canvas.prototype.onMoveEnd.apply(this, arguments);
     },
 
-    _onZoomEnd: function () {
+    onZoomEnd: function () {
         this._gradualLoading = true;
-        this.render();
+        Z.renderer.Canvas.prototype.onZoomEnd.apply(this, arguments);
     },
 
-    _onRemove: function () {
+    onRemove: function () {
         delete this._viewExtent;
         delete this._mapRender;
         delete this._tileCache;

@@ -65,10 +65,11 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
             dom.appendChild(panelContent);
         }
 
-        this.draggable = new Z.Handler.Drag(dom);
+        this.draggable = new Z.Handler.Drag(dom, {
+            'cancelOn' : Z.Util.bind(this._cancelOn, this)
+        });
 
-        this.draggable.on('mousedown', this._onMouseDown, this)
-            .on('dragstart', this._onDragStart, this)
+        this.draggable.on('dragstart', this._onDragStart, this)
             .on('dragging', this._onDragging, this)
             .on('dragend', this._onDragEnd, this);
 
@@ -79,8 +80,17 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
         return dom;
     },
 
-    _onMouseDown: function (param) {
-        Z.DomUtil.stopPropagation(param['domEvent']);
+    _cancelOn: function (domEvent) {
+        var target = domEvent.srcElement || domEvent.target,
+            tagName = target.tagName.toLowerCase();
+        if (tagName === 'button' ||
+            tagName === 'input' ||
+            tagName === 'select' ||
+            tagName === 'option' ||
+            tagName === 'textarea') {
+            return true;
+        }
+        return false;
     },
 
     _onDragStart:function (param) {

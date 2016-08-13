@@ -88,7 +88,7 @@ Z.Canvas = {
             }
             if (!fillTexture) {
                 if (!Z.Browser.phantomjs) {
-                    console.warn('img not found for', fillImgUrl);
+                    Z.Util.warn('img not found for', fillImgUrl);
                 }
             } else {
                 ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
@@ -153,7 +153,7 @@ Z.Canvas = {
         } else {
             imageTexture = resources.getImage([imgUrl + '-texture', null, strokeWidth]);
             if (!imageTexture) {
-                var imageRes = resources.getImage([imgUrl, null, strokeWidth]);
+                var imageRes = resources.getImage([imgUrl, null, null]);
                 if (imageRes) {
                     var w;
                     if (!imageRes.width || !imageRes.height) {
@@ -171,7 +171,7 @@ Z.Canvas = {
         if (imageTexture) {
             ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
         } else if (!Z.Browser.phantomjs) {
-            console.warn('img not found for', imgUrl);
+            Z.Util.warn('img not found for', imgUrl);
         }
     },
 
@@ -193,8 +193,8 @@ Z.Canvas = {
             ctx.globalAlpha *= fillOpacity;
         }
         if (isPattern) {
-            x = Z.Util.round(x);
-            y = Z.Util.round(y);
+            // x = Z.Util.round(x);
+            // y = Z.Util.round(y);
             ctx.translate(x, y);
         }
         ctx.fill();
@@ -231,17 +231,17 @@ Z.Canvas = {
     },
 
     image:function (ctx, img, x, y, width, height) {
-        x = Z.Util.round(x);
-        y = Z.Util.round(y);
+        // x = Z.Util.round(x);
+        // y = Z.Util.round(y);
         try {
             if (Z.Util.isNumber(width) && Z.Util.isNumber(height)) {
-                ctx.drawImage(img, x, y, Z.Util.round(width), Z.Util.round(height));
+                ctx.drawImage(img, x, y, width, height);
             } else {
                 ctx.drawImage(img, x, y);
             }
         } catch (error) {
-            console.warn('error when drawing image on canvas:', error);
-            console.warn(img);
+            Z.Util.warn('error when drawing image on canvas:', error);
+            Z.Util.warn(img);
         }
 
     },
@@ -264,7 +264,7 @@ Z.Canvas = {
     },
 
     _textOnLine: function (ctx, text, pt, textHaloRadius, textHaloFill, textHaloOp) {
-        pt = pt._round();
+        // pt = pt._round();
         ctx.textBaseline = 'top';
         if (textHaloOp !== 0 && textHaloRadius !== 0) {
             //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
@@ -279,8 +279,7 @@ Z.Canvas = {
                 ctx.miterLimit = 2;
                 ctx.lineJoin = 'round';
                 ctx.lineCap = 'round';
-                var lineWidth = (textHaloRadius * 2 - 1);
-                ctx.lineWidth = Z.Util.round(lineWidth);
+                ctx.lineWidth = (textHaloRadius * 2 - 1);
                 ctx.strokeStyle = textHaloFill;
                 ctx.strokeText(text, pt.x, pt.y);
                 ctx.lineWidth = 1;
@@ -310,8 +309,8 @@ Z.Canvas = {
             ctx.globalAlpha *= strokeOpacity;
         }
         if (isPattern) {
-            x = Z.Util.round(x);
-            y = Z.Util.round(y);
+            // x = Z.Util.round(x);
+            // y = Z.Util.round(y);
             ctx.translate(x, y);
         }
         ctx.stroke();
@@ -388,7 +387,7 @@ Z.Canvas = {
         var isPatternLine = (ignoreStrokePattern === true ? false : Z.Canvas._isPattern(ctx.strokeStyle));
         var point, prePoint, nextPoint;
         for (var i = 0, len = points.length; i < len; i++) {
-            point = points[i]._round();
+            point = points[i]/*._round()*/;
             if (!isDashed || ctx.setLineDash) { //IE9+
                 if (i === 0) {
                     ctx.moveTo(point.x, point.y);
@@ -396,7 +395,7 @@ Z.Canvas = {
                     ctx.lineTo(point.x, point.y);
                 }
                 if (isPatternLine && i > 0) {
-                    prePoint = points[i - 1]._round();
+                    prePoint = points[i - 1]/*._round()*/;
                     fillWithPattern(prePoint, point);
                     ctx.beginPath();
                     ctx.moveTo(point.x, point.y);
@@ -405,7 +404,7 @@ Z.Canvas = {
                 if (i === len - 1) {
                     break;
                 }
-                nextPoint = points[i + 1]._round();
+                nextPoint = points[i + 1]/*._round()*/;
                 drawDashLine(point, nextPoint, lineDashArray, isPatternLine);
             }
         }
@@ -515,7 +514,8 @@ Z.Canvas = {
         var endAngle = startAngle + a;
 
         ctx.beginPath();
-        ctx.arc(Z.Util.round(cx), Z.Util.round(cy), Z.Util.round(r), startAngle, endAngle);
+        // ctx.arc(Z.Util.round(cx), Z.Util.round(cy), Z.Util.round(r), startAngle, endAngle);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
     },
 
     _lineTo:function (ctx, p) {
@@ -524,7 +524,7 @@ Z.Canvas = {
 
     bezierCurveAndFill:function (ctx, points, lineOpacity, fillOpacity) {
         ctx.beginPath();
-        var start = points[0]._round();
+        var start = points[0]/*._round()*/;
         ctx.moveTo(start.x, start.y);
         Z.Canvas._bezierCurveTo.apply(Z.Canvas, [ctx].concat(points.splice(1)));
         Z.Canvas.fillCanvas(ctx, fillOpacity);
@@ -532,15 +532,15 @@ Z.Canvas = {
     },
 
     _bezierCurveTo:function (ctx, p1, p2, p3) {
-        p1 = p1._round();
-        p2 = p2._round();
-        p3 = p3._round();
+        // p1 = p1._round();
+        // p2 = p2._round();
+        // p3 = p3._round();
         ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
     },
 
     _quadraticCurveTo:function (ctx, p1, p2) {
-        p1 = p1._round();
-        p2 = p2._round();
+        // p1 = p1._round();
+        // p2 = p2._round();
         ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y);
     },
 
@@ -561,11 +561,11 @@ Z.Canvas = {
             Z.Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
             Z.Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
         }
-        pt = pt._round();
+        // pt = pt._round();
         if (width === height) {
             //如果高宽相同,则直接绘制圆形, 提高效率
             ctx.beginPath();
-            ctx.arc(pt.x, pt.y, Z.Util.round(width), 0, 2 * Math.PI);
+            ctx.arc(pt.x, pt.y, width, 0, 2 * Math.PI);
             Z.Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
             Z.Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
         } else {
@@ -575,10 +575,9 @@ Z.Canvas = {
     },
 
     rectangle:function (ctx, pt, size, lineOpacity, fillOpacity) {
-        pt = pt._round();
+        // pt = pt._round();
         ctx.beginPath();
-        ctx.rect(pt.x, pt.y,
-            Z.Util.round(size['width']), Z.Util.round(size['height']));
+        ctx.rect(pt.x, pt.y, size['width'], size['height']);
         Z.Canvas.fillCanvas(ctx, fillOpacity, pt.x, pt.y);
         Z.Canvas._stroke(ctx, lineOpacity, pt.x, pt.y);
     },
@@ -597,7 +596,7 @@ Z.Canvas = {
             Z.Canvas.fillCanvas(ctx, fillOpacity, x - radius, y - radius);
             Z.Canvas._stroke(ctx, lineOpacity, x - radius, y - radius);
         }
-        pt = pt._round();
+        // pt = pt._round();
         sector(ctx, pt.x, pt.y, size, startAngle, endAngle);
     },
 

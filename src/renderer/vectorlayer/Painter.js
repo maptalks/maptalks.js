@@ -65,7 +65,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      * for point symbolizers
      * @return {maptalks.Point[]} points to render
      */
-    _getRenderPoints:function (placement) {
+    getRenderPoints:function (placement) {
         if (!this._renderPoints) {
             this._renderPoints = {};
         }
@@ -82,7 +82,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      * for strokeAndFillSymbolizer
      * @return {Object[]} resources to render vector
      */
-    _getRenderResources:function () {
+    getRenderResources:function () {
         if (!this._rendResources) {
             //render resources geometry returned are based on view points.
             this._rendResources = this.geometry._getRenderCanvasResources();
@@ -191,7 +191,6 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
                 for (var i = len; i >= 0; i--) {
                     _extent2D._combine(this.symbolizers[i].get2DExtent());
                 }
-                _extent2D._round();
                 this._extent2D = _extent2D;
             }
         }
@@ -241,7 +240,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         this._requestToRender();
     },
 
-    _onZoomEnd:function () {
+    onZoomEnd:function () {
         this.removeCache();
         this._refreshSymbolizers();
     },

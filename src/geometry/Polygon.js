@@ -143,12 +143,12 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
     _projectRings:function () {
         if (!this.getMap()) {
-            this._onShapeChanged();
+            this.onShapeChanged();
             return;
         }
         this._prjCoords = this._projectCoords(this._coordinates);
         this._prjHoles = this._projectCoords(this._holes);
-        this._onShapeChanged();
+        this.onShapeChanged();
     },
 
     _cleanRing:function (ring) {

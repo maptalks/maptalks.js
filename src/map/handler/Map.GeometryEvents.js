@@ -42,9 +42,14 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         if (layers.length === 0) {
             return;
         }
-        var eventType = domEvent.type,
-            actual = domEvent.touches ? domEvent.touches[0] : domEvent,
-            containerPoint = Z.DomUtil.getEventContainerPoint(actual, map._containerDOM),
+        var eventType = domEvent.type;
+        var actual = domEvent.touches && domEvent.touches.length > 0 ?
+            domEvent.touches[0] : domEvent.changedTouches && domEvent.changedTouches.length > 0 ?
+            domEvent.changedTouches[0] : domEvent;
+        if (!actual) {
+            return;
+        }
+        var containerPoint = Z.DomUtil.getEventContainerPoint(actual, map._containerDOM),
             coordinate = map.containerPointToCoordinate(containerPoint);
         if (eventType === 'touchstart') {
             Z.DomUtil.preventDefault(domEvent);

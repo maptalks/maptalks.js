@@ -7,7 +7,9 @@ Z.Map.Drag = Z.Handler.extend({
         var map = this.target;
         if (!map) { return; }
         var dom = map._panels.mapWrapper || map._containerDOM;
-        this._dragHandler = new Z.Handler.Drag(dom);
+        this._dragHandler = new Z.Handler.Drag(dom, {
+            'cancelOn' : Z.Util.bind(this._cancelOn, this)
+        });
         this._dragHandler.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)
             .on('dragging', this._onDragging, this)
@@ -25,18 +27,25 @@ Z.Map.Drag = Z.Handler.extend({
         delete this._dragHandler;
     },
 
+    _cancelOn: function (domEvent) {
+        if (this._ignore(domEvent)) {
+            return true;
+        }
+        return false;
+    },
+
     _ignore: function (param) {
-        if (!param || !param.domEvent) {
+        if (!param) {
             return false;
         }
-        return this.target._ignoreEvent(param.domEvent);
+        if (param.domEvent) {
+            param = param.domEvent;
+        }
+        return this.target._ignoreEvent(param);
     },
 
 
     _onMouseDown:function (param) {
-        if (this._ignore(param)) {
-            return;
-        }
         if (this.target._panAnimating) {
             this.target._enablePanAnimation = false;
         }
@@ -44,9 +53,6 @@ Z.Map.Drag = Z.Handler.extend({
     },
 
     _onDragStart:function (param) {
-        if (this._ignore(param)) {
-            return;
-        }
         var map = this.target;
         this.startDragTime = new Date().getTime();
         var domOffset = map.offsetPlatform();
@@ -56,13 +62,10 @@ Z.Map.Drag = Z.Handler.extend({
         this.preY = param['mousePos'].y;
         this.startX = this.preX;
         this.startY = this.preY;
-        map._onMoveStart(param);
+        map.onMoveStart(param);
     },
 
     _onDragging:function (param) {
-        if (this._ignore(param)) {
-            return;
-        }
         //Z.DomUtil.preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
@@ -76,13 +79,10 @@ Z.Map.Drag = Z.Handler.extend({
         var offset = new Z.Point(nextLeft, nextTop)._substract(mapPos);
         map.offsetPlatform(offset);
         map._offsetCenterByPixel(offset);
-        map._onMoving(param);
+        map.onMoving(param);
     },
 
     _onDragEnd:function (param) {
-        if (this._ignore(param)) {
-            return;
-        }
         //Z.DomUtil.preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
@@ -105,9 +105,8 @@ Z.Map.Drag = Z.Handler.extend({
             t = 5 * t * (Math.abs(distance.x) + Math.abs(distance.y)) / 600;
             map._panAnimation(distance._multi(2 / 3), t);
         } else {
-            map._onMoveEnd(param);
+            map.onMoveEnd(param);
         }
-
     }
 });
 

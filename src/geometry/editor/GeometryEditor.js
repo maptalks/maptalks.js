@@ -424,7 +424,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             }
         }
         if (!marker._canEdit()) {
-            console.warn('A marker can\'t be resized with symbol:', marker.getSymbol());
+            Z.Util.warn('A marker can\'t be resized with symbol:', marker.getSymbol());
             return;
         }
         //only image marker and vector marker can be edited now.
@@ -461,7 +461,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
             if (blackList && Z.Util.indexOfArray(i, blackList) >= 0) {
                 //need to change marker's coordinates
-                var newCoordinates = map.viewPointToCoordinate(handleViewPoint);
+                var newCoordinates = map.viewPointToCoordinate(handleViewPoint.substract(dxdy));
                 var coordinates = marker.getCoordinates();
                 newCoordinates.x = coordinates.x;
                 marker.setCoordinates(newCoordinates);
@@ -476,6 +476,9 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             var viewCenter = map._pointToViewPoint(marker._getCenter2DPoint()).add(dxdy),
                 symbol = marker._getInternalSymbol();
             var wh = handleViewPoint.substract(viewCenter);
+            if (handleViewPoint.y > viewCenter.y) {
+                wh.y = 0;
+            }
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
             var r = blackList ? 1 : 2;
             var width = Math.abs(wh.x) * 2,
@@ -673,7 +676,7 @@ Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype *
             pVertex.x = nVertex.x;
             pVertex.y = nVertex.y;
             shadow._updateCache();
-            shadow._onShapeChanged();
+            shadow.onShapeChanged();
             var nextIndex;
             if (index === 0) {
                 nextIndex = newVertexHandles.length - 1;

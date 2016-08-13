@@ -21,8 +21,9 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         MSPointerDown: 'touchmove'
     },
 
-    initialize:function (dom) {
+    initialize:function (dom, options) {
         this.dom = dom;
+        this.options = options;
     },
 
     enable:function () {
@@ -39,6 +40,9 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
     onMouseDown:function (event) {
         if (Z.Util.isNumber(event.button) && event.button === 2) {
             //不响应右键事件
+            return;
+        }
+        if (this.options && this.options['cancelOn'] && this.options['cancelOn'](event) === true) {
             return;
         }
         var dom = this.dom;

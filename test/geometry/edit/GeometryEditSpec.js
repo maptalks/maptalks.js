@@ -101,7 +101,7 @@ describe('#GeometryEdit', function () {
             var size = marker.getSize();
             dragGeometry(marker, new maptalks.Point(size.width/2,0));
             var symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(23.92957382);
+            expect(symbol.markerWidth).to.be.approx(24);
             expect(symbol.markerHeight).to.be.approx(42.99999999);
         });
 
@@ -111,7 +111,7 @@ describe('#GeometryEdit', function () {
             var size = circle.getSize();
             dragGeometry(circle, new maptalks.Point(size.width/2,0));
             var r = circle.getRadius();
-            expect(r).to.be.eql(1009.3324);
+            expect(r).to.be.eql(1009.71534);
         });
 
         it('resize a ellipse',function() {
@@ -119,8 +119,8 @@ describe('#GeometryEdit', function () {
             ellipse.startEdit();
             var size = ellipse.getSize();
             dragGeometry(ellipse, new maptalks.Point(size.width/2, size.height/2));
-            expect(ellipse.getWidth()).to.be.eql(1018.479);
-            expect(ellipse.getHeight()).to.be.eql(518.4748);
+            expect(ellipse.getWidth()).to.be.approx(1019.25888);
+            expect(ellipse.getHeight()).to.be.approx(519.2216);
         });
 
         it('resize a rectangle',function() {
@@ -128,8 +128,8 @@ describe('#GeometryEdit', function () {
             rect.startEdit();
             var size = rect.getSize();
             dragGeometry(rect, new maptalks.Point(size.width/2,size.height/2));
-            expect(rect.getWidth()).to.be.eql(1009.3324);
-            expect(rect.getHeight()).to.be.eql(509.2744);
+            expect(rect.getWidth()).to.be.approx(1009.568100);
+            expect(rect.getHeight()).to.be.approx(509.59216);
         });
 
         it('change a polygon vertex',function() {

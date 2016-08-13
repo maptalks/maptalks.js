@@ -5,6 +5,31 @@
  * @protected
  */
 Z.Util = {
+    log: function () {
+        return Z.Util._print.apply(Z.Util, ['log'].concat(Array.prototype.slice.call(arguments)));
+    },
+
+    warn: function () {
+        return Z.Util._print.apply(Z.Util, ['warn'].concat(Array.prototype.slice.call(arguments)));
+    },
+
+    error: function () {
+        return Z.Util._print.apply(Z.Util, ['error'].concat(Array.prototype.slice.call(arguments)));
+    },
+
+    _print: function (level) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        if (typeof console !== 'undefined' && console[level] !== undefined) {
+            try {
+                console[level].apply(console, args);
+            } catch (e) {
+                var log = Function.prototype.bind.call(console[level], console);
+                log.apply(console, args);
+            }
+        }
+        return this;
+    },
+
     /**
      * @property {Number} uid
      * @static
@@ -248,6 +273,19 @@ Z.Util = {
         };
 
         return wrapperFn;
+    },
+
+    executeWhen: function (fn, when) {
+        var exe = function () {
+            if (when()) {
+                fn();
+            } else {
+                Z.Util.requestAnimFrame(exe);
+            }
+        };
+
+        exe();
+        return this;
     },
 
     removeFromArray:function (obj, array) {
@@ -700,7 +738,7 @@ Z.Util = {
                 resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
             }
             if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-                resources.push([Z.Geometry._getMarkerPathURL(symbol), symbol['markerWidth'], symbol['markerHeight']]);
+                resources.push([Z.Geometry.getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']]);
             }
         }
         return resources;

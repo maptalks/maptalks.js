@@ -66,8 +66,8 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     remove: function () {
         this._clearTimeout();
-        if (this._onRemove) {
-            this._onRemove();
+        if (this.onRemove) {
+            this.onRemove();
         }
         delete this._canvas;
         delete this._context;
@@ -119,7 +119,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     show: function () {
         var mask = this._layer.getMask();
         if (mask) {
-            mask._onZoomEnd();
+            mask.onZoomEnd();
         }
         this.render();
     },
@@ -163,7 +163,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             }
         } catch (error) {
             if (!this._errorThrown) {
-                console.warn('hit detect failed with tainted canvas, some geometries have external resources in another domain:\n', error);
+                Z.Util.warn('hit detect failed with tainted canvas, some geometries have external resources in another domain:\n', error);
                 this._errorThrown = true;
             }
             //usually a CORS error will be thrown if the canvas uses resources from other domain.
@@ -225,16 +225,16 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
                 resolve(url);
             };
             img.onabort = function (err) {
-                console.warn('image loading aborted: ' + url[0]);
+                Z.Util.warn('image loading aborted: ' + url[0]);
                 if (err) {
-                    console.warn(err);
+                    Z.Util.warn(err);
                 }
                 resolve(url);
             };
             img.onerror = function (err) {
-                // console.warn('image loading failed: ' + url[0]);
+                // Z.Util.warn('image loading failed: ' + url[0]);
                 if (err && !Z.Browser.phantomjs) {
-                    console.warn(err);
+                    Z.Util.warn(err);
                 }
                 resources.markErrorResource(url);
                 resolve(url);
@@ -396,40 +396,40 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         return [this._context, this._resources];
     },
 
-    _getEvents: function () {
+    getEvents: function () {
         return {
-            '_zoomstart' : this._onZoomStart,
-            '_zoomend' : this._onZoomEnd,
-            '_resize'  : this._onResize,
-            '_movestart' : this._onMoveStart,
-            '_moving' : this._onMoving,
-            '_moveend' : this._onMoveEnd
+            '_zoomstart' : this.onZoomStart,
+            '_zoomend' : this.onZoomEnd,
+            '_resize'  : this.onResize,
+            '_movestart' : this.onMoveStart,
+            '_moving' : this.onMoving,
+            '_moveend' : this.onMoveEnd
         };
     },
 
-    _onZoomStart: function () {
+    onZoomStart: function () {
 
     },
 
-    _onZoomEnd: function () {
+    onZoomEnd: function () {
         this.prepareRender();
         this.draw();
     },
 
-    _onMoveStart: function () {
+    onMoveStart: function () {
 
     },
 
-    _onMoving: function () {
+    onMoving: function () {
 
     },
 
-    _onMoveEnd: function () {
+    onMoveEnd: function () {
         this.prepareRender();
         this.draw();
     },
 
-    _onResize: function () {
+    onResize: function () {
         this.resizeCanvas();
         this.prepareRender();
         this.draw();

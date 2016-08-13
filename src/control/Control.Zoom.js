@@ -83,7 +83,7 @@ Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.proto
     },
 
     _update:function () {
-        var map = this._map;
+        var map = this.getMap();
         if (this._sliderBox) {
             var pxUnit = 10;
             var totalRange = (map.getMaxZoom() - map.getMinZoom()) * pxUnit;
@@ -100,7 +100,7 @@ Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.proto
     },
 
     _registerDomEvents:function () {
-        var map = this._map;
+        var map = this.getMap();
         if (this._zoomInButton) {
             Z.DomUtil.on(this._zoomInButton, 'click', map.zoomIn, map);
         }
@@ -110,9 +110,14 @@ Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.proto
         //TODO slider dot拖放缩放逻辑还没有实现
     },
 
-    _onRemove: function () {
+    onRemove: function () {
         var map = this.getMap();
-        map.off('_zoomend _zoomstart', this._onZoomEnd, this);
+        if (this._zoomInButton) {
+            Z.DomUtil.off(this._zoomInButton, 'click', map.zoomIn, map);
+        }
+        if (this._zoomOutButton) {
+            Z.DomUtil.off(this._zoomOutButton, 'click', map.zoomOut, map);
+        }
     }
 });
 

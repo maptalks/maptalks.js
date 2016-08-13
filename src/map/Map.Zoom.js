@@ -1,19 +1,19 @@
 Z.Map.include(/** @lends maptalks.Map.prototype */{
     _zoom:function (nextZoomLevel, origin, startScale) {
-        if (!this.options['zoomable']) { return; }
+        if (!this.options['zoomable'] || this._zooming) { return; }
         this._originZoomLevel = this.getZoom();
         nextZoomLevel = this._checkZoomLevel(nextZoomLevel);
-        this._onZoomStart(nextZoomLevel);
+        this.onZoomStart(nextZoomLevel);
         var zoomOffset;
         if (origin) {
             origin = new Z.Point(this.width / 2, this.height / 2);
             zoomOffset = this._getZoomCenterOffset(nextZoomLevel, origin, startScale);
         }
-        this._onZoomEnd(nextZoomLevel, zoomOffset);
+        this.onZoomEnd(nextZoomLevel, zoomOffset);
     },
 
     _zoomAnimation:function (nextZoomLevel, origin, startScale) {
-        if (!this.options['zoomable']) { return; }
+        if (!this.options['zoomable'] || this._zooming) { return; }
         if (Z.Util.isNil(startScale)) {
             startScale = 1;
         }
@@ -25,7 +25,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             return;
         }
 
-        this._onZoomStart(nextZoomLevel);
+        this.onZoomStart(nextZoomLevel);
         if (!origin) {
             origin = new Z.Point(this.width / 2, this.height / 2);
         }
@@ -50,12 +50,12 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 duration : duration
             },
             function () {
-                me._onZoomEnd(nextZoomLevel, zoomOffset);
+                me.onZoomEnd(nextZoomLevel, zoomOffset);
             }
         );
     },
 
-    _onZoomStart: function (nextZoomLevel) {
+    onZoomStart: function (nextZoomLevel) {
         this._zooming = true;
         this._enablePanAnimation = false;
         /**
@@ -70,14 +70,14 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         this._fireEvent('zoomstart', {'from' : this._originZoomLevel, 'to': nextZoomLevel});
     },
 
-    _onZoomEnd:function (nextZoomLevel, zoomOffset) {
+    onZoomEnd:function (nextZoomLevel, zoomOffset) {
         this._zoomLevel = nextZoomLevel;
         if (zoomOffset) {
             this._offsetCenterByPixel(zoomOffset._multi(-1));
         }
         var _originZoomLevel = this._originZoomLevel;
         this._originZoomLevel = nextZoomLevel;
-        this._getRenderer()._onZoomEnd();
+        this._getRenderer().onZoomEnd();
         this._zooming = false;
         /**
           * zoomend event
