@@ -3,7 +3,7 @@ Z.renderer.canvastilelayer = {};
 Z.renderer.canvastilelayer.Canvas = Z.renderer.tilelayer.Canvas.extend({
     _loadTile:function (tileId, tile, onTileLoad, onTileError) {
         var tileSize = this._layer.getTileSize(),
-            canvasClass = this._canvas.constructor,
+            canvasClass = this.canvas.constructor,
             map = this.getMap();
         var r = Z.Browser.retina ? 2 : 1;
         var tileCanvas = Z.Canvas.createCanvas(tileSize['width'] * r, tileSize['height'] * r, canvasClass);

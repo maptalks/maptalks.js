@@ -39,20 +39,20 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
                 this.completeRender();
                 return;
             } else if (this._canvasCache[zoom]) {
-                this._canvas = this._canvasCache[zoom].canvas;
+                this.canvas = this._canvasCache[zoom].canvas;
                 var center = map._prjToPoint(map._getPrjCenter());
                 this._extent2D = this._canvasCache[zoom].extent2D.add(this._canvasCache[zoom].center.substract(center));
                 this.completeRender();
                 return;
             } else {
-                delete this._canvas;
+                delete this.canvas;
             }
         }
         this._drawGeos();
         if (this._layer.options['drawOnce']) {
             if (!this._canvasCache[zoom]) {
                 this._canvasCache[zoom] = {
-                    'canvas'       : this._canvas,
+                    'canvas'       : this.canvas,
                     'extent2D'   : this._extent2D,
                     'center'       : map._prjToPoint(map._getPrjCenter())
                 };
@@ -93,11 +93,11 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             if (!Z.Util.isArrayHasData(res)) {
                 return;
             }
-            if (!me._resources) {
+            if (!me.resources) {
                 resources = resources.concat(res);
             } else {
                 for (ii = 0; ii < res.length; ii++) {
-                    if (!me._resources.isResourceLoaded(res[ii])) {
+                    if (!me.resources.isResourceLoaded(res[ii])) {
                         resources.push(res[ii]);
                     }
                 }
@@ -133,7 +133,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
         var layer = this._layer;
         if (layer.isEmpty()) {
-            this._resources = new Z.renderer.Canvas.Resources();
+            this.resources = new Z.renderer.Canvas.Resources();
             this.fireLoadedEvent();
             return;
         }
