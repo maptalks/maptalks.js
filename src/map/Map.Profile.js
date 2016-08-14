@@ -17,10 +17,10 @@ Z.Layer.fromJSON = function (layerJSON) {
     } else if (layerType === 'tile') {
         layerType = layerJSON['type'] = 'TileLayer';
     }
-    if (typeof Z[layerType] === 'undefined' || !Z[layerType]._fromJSON) {
+    if (typeof Z[layerType] === 'undefined' || !Z[layerType].fromJSON) {
         throw new Error('unsupported layer type:' + layerType);
     }
-    return Z[layerType]._fromJSON(layerJSON);
+    return Z[layerType].fromJSON(layerJSON);
 };
 
 Z.Map.include(/** @lends maptalks.Map.prototype */{

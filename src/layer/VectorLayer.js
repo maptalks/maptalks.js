@@ -208,7 +208,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
  * @private
  * @function
  */
-Z.VectorLayer._fromJSON = function (profile) {
+Z.VectorLayer.fromJSON = function (profile) {
     if (!profile || profile['type'] !== 'VectorLayer') { return null; }
     var layer = new Z.VectorLayer(profile['id'], profile['options']);
     var geoJSONs = profile['geometries'];

@@ -225,7 +225,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
 
 });
 
-Z.Rectangle._fromJSON = function (json) {
+Z.Rectangle.fromJSON = function (json) {
     var feature = json['feature'];
     var rect = new Z.Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
     rect.setProperties(feature['properties']);
