@@ -267,18 +267,6 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         return this;
     },
 
-    onRemove:function () {
-        this._switchEvents('off', this);
-        this._removeEvents();
-        if (this._renderer) {
-            this._switchEvents('off', this._renderer);
-            this._renderer.remove();
-            delete this._renderer;
-        }
-        delete this._mask;
-        delete this.map;
-    },
-
     /**
      * Get the mask geometry of the layer
      * @return {maptalks.Geometry}
@@ -372,6 +360,21 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
+    },
+
+    _doRemove:function () {
+        if (this.onRemove) {
+            this.onRemove();
+        }
+        this._switchEvents('off', this);
+        this._removeEvents();
+        if (this._renderer) {
+            this._switchEvents('off', this._renderer);
+            this._renderer.remove();
+            delete this._renderer;
+        }
+        delete this._mask;
+        delete this.map;
     },
 
     _switchEvents: function (to, emitter) {

@@ -12,13 +12,13 @@
 Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.prototype */{
 
     initialize:function (layer) {
-        this._layer = layer;
+        this.layer = layer;
         this._tiles = {};
         this._fadeAnimated = !Z.Browser.mobile && true;
     },
 
     getMap:function () {
-        return this._layer.getMap();
+        return this.layer.getMap();
     },
 
     show: function () {
@@ -37,7 +37,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
 
     remove:function () {
         delete this._tiles;
-        delete this._layer;
+        delete this.layer;
         this._removeLayerContainer();
     },
 
@@ -58,7 +58,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     render:function () {
-        var layer = this._layer;
+        var layer = this.layer;
         if (!this._container) {
             this._createLayerContainer();
         }
@@ -120,7 +120,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     _createTile: function (tile, done) {
-        var tileSize = this._layer.getTileSize();
+        var tileSize = this.layer.getTileSize();
         var tileImage = Z.DomUtil.createEl('img');
 
         tile['el'] = tileImage;
@@ -128,8 +128,8 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         Z.DomUtil.on(tileImage, 'load', Z.Util.bind(this._tileOnLoad, this, done, tile));
         Z.DomUtil.on(tileImage, 'error', Z.Util.bind(this._tileOnError, this, done, tile));
 
-        if (this._layer.options['crossOrigin']) {
-            tile.crossOrigin = this._layer.options['crossOrigin'];
+        if (this.layer.options['crossOrigin']) {
+            tile.crossOrigin = this.layer.options['crossOrigin'];
         }
 
         tileImage.style.position = 'absolute';
@@ -159,7 +159,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
              * @property {String} err  - error message
              * @property {Object} tile - tile
              */
-            this._layer.fire('tileerror', {
+            this.layer.fire('tileerror', {
                 error: err,
                 tile: tile
             });
@@ -185,12 +185,12 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
          * @property {maptalks.TileLayer} target - tile layer
          * @property {Object} tile - tile
          */
-        this._layer.fire('tileload', {
+        this.layer.fire('tileload', {
             tile: tile
         });
 
         if (this._noTilesToLoad()) {
-            this._layer.fire('layerload');
+            this.layer.fire('layerload');
 
             if (Z.Browser.ielt9) {
                 Z.Util.requestAnimFrame(this._pruneTiles, this);
@@ -217,7 +217,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     _tileOnError: function (done, tile) {
-        var errorUrl = this._layer.options['errorTileUrl'];
+        var errorUrl = this.layer.options['errorTileUrl'];
         if (errorUrl) {
             tile['el'].src = errorUrl;
         } else {
@@ -234,7 +234,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             return;
         }
 
-        Z.DomUtil.setOpacity(this._container, this._layer.options['opacity']);
+        Z.DomUtil.setOpacity(this._container, this.layer.options['opacity']);
 
         var now = Z.Util.now(),
             nextFrame = false;
@@ -273,7 +273,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
         var key,
             zoom = map.getZoom();
 
-        if (!this._layer.isVisible()) {
+        if (!this.layer.isVisible()) {
             this._removeAllTiles();
             return;
         }
@@ -318,7 +318,7 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
          * @property {maptalks.TileLayer} target - tile layer
          * @property {Object} tile - tile
          */
-        this._layer.fire('tileunload', {
+        this.layer.fire('tileunload', {
             tile: tile
         });
     },
@@ -384,8 +384,8 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
             '_moveend _resize' : this.render,
             '_movestart'    : this.onMoveStart
         };
-        if (!this._onMapMoving && this._layer.options['renderWhenPanning']) {
-            var rendSpan = this._layer.options['renderSpanWhenPanning'];
+        if (!this._onMapMoving && this.layer.options['renderWhenPanning']) {
+            var rendSpan = this.layer.options['renderSpanWhenPanning'];
             if (Z.Util.isNumber(rendSpan) && rendSpan >= 0) {
                 if (rendSpan > 0) {
                     this._onMapMoving = Z.Util.throttle(function () {

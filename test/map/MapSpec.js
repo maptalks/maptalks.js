@@ -441,11 +441,11 @@ describe('#Map', function () {
             function onRenderEnd() {
                 if (baseLoaded) {
                     if (!baseRemoved) {
-                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer()._canvas)).to.be.ok();
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer().canvas)).to.be.ok();
                         baseRemoved = true;
                         map.removeBaseLayer();
                     } else {
-                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer()._canvas)).not.to.be.ok();
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer().canvas)).not.to.be.ok();
                         done();
                     }
                 }
@@ -475,10 +475,10 @@ describe('#Map', function () {
             function onRenderEnd() {
                 if (!baseRemoved) {
                     if (baseLoaded) {
-                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer()._canvas)).to.be.ok();
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer().canvas)).to.be.ok();
                     }
                 } else {
-                    expect(isDrawn(size.width/2, size.height/2, map._getRenderer()._canvas)).not.to.be.ok();
+                    expect(isDrawn(size.width/2, size.height/2, map._getRenderer().canvas)).not.to.be.ok();
                     done();
                 }
             }
