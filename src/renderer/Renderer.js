@@ -73,7 +73,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         delete this.context;
         delete this._extent2D;
         delete this.resources;
-        Z.renderer.Canvas.prototype.requestMapToRender.call(this);
+        this.requestMapToRender();
         delete this.layer;
     },
 
@@ -82,10 +82,6 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             return null;
         }
         return this.layer.getMap();
-    },
-
-    getLayer:function () {
-        return this.layer;
     },
 
     getCanvasImage:function () {
@@ -194,7 +190,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
                     continue;
                 }
                 cache[url.join('-')] = 1;
-                if (!resources.isResourceLoaded(url)) {
+                if (!resources.isResourceLoaded(url, true)) {
                     //closure it to preserve url's value
                     promises.push(new Z.Promise(this._promiseResource(url)));
                 }
@@ -207,7 +203,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         var me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
         return function (resolve) {
-            if (resources.isResourceLoaded(url)) {
+            if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
                 return;
             }
@@ -326,7 +322,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         } else {
             this.clearCanvas();
         }
-        var mask = this.getLayer().getMask();
+        var mask = this.layer.getMask();
         if (!mask) {
             return null;
         }
@@ -461,7 +457,7 @@ Z.Util.extend(Z.renderer.Canvas.Resources.prototype, {
         };
     },
 
-    isResourceLoaded:function (url) {
+    isResourceLoaded:function (url, checkSVG) {
         if (this._errors[this._getImgUrl(url)]) {
             return true;
         }
@@ -469,7 +465,7 @@ Z.Util.extend(Z.renderer.Canvas.Resources.prototype, {
         if (!img) {
             return false;
         }
-        if (+url[1] > img.width || +url[2] > img.height) {
+        if (checkSVG && Z.Util.isSVG(url[0]) && (+url[1] > img.width || +url[2] > img.height)) {
             return false;
         }
         return true;
