@@ -25,7 +25,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         if (!this.getMap()) {
             return;
         }
-        if (!this._layer.isVisible()) {
+        if (!this.layer.isVisible()) {
             this.completeRender();
             return;
         }
@@ -34,7 +34,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             var resources = this.checkResources.apply(this, args);
             if (Z.Util.isArrayHasData(resources)) {
                 this.loadResources(resources).then(function () {
-                    if (me._layer) {
+                    if (me.layer) {
                         me._tryToDraw.apply(me, args);
                     }
                 });
@@ -48,16 +48,16 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _tryToDraw:function () {
         this._clearTimeout();
-        if (this._layer.isEmpty && this._layer.isEmpty()) {
+        if (this.layer.isEmpty && this.layer.isEmpty()) {
             this.completeRender();
             return;
         }
         var me = this, args = arguments;
-        if (this._layer.options['drawImmediate']) {
+        if (this.layer.options['drawImmediate']) {
             this.draw.apply(this, args);
         } else {
             this._animReqId = Z.Util.requestAnimFrame(function () {
-                if (me._layer) {
+                if (me.layer) {
                     me.draw.apply(me, args);
                 }
             });
@@ -74,25 +74,25 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         delete this._extent2D;
         delete this.resources;
         Z.renderer.Canvas.prototype.requestMapToRender.call(this);
-        delete this._layer;
+        delete this.layer;
     },
 
     getMap: function () {
-        if (!this._layer) {
+        if (!this.layer) {
             return null;
         }
-        return this._layer.getMap();
+        return this.layer.getMap();
     },
 
     getLayer:function () {
-        return this._layer;
+        return this.layer;
     },
 
     getCanvasImage:function () {
         if (!this.canvas) {
             return null;
         }
-        if ((this._layer.isEmpty && this._layer.isEmpty()) || !this._extent2D) {
+        if ((this.layer.isEmpty && this.layer.isEmpty()) || !this._extent2D) {
             return null;
         }
         if (this.isBlank && this.isBlank()) {
@@ -103,7 +103,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             point = this._extent2D.getMin(),
             containerPoint = map._pointToContainerPoint(point);
 
-        return {'image':this.canvas, 'layer':this._layer, 'point': containerPoint, 'size':size};
+        return {'image':this.canvas, 'layer':this.layer, 'point': containerPoint, 'size':size};
     },
 
     isLoaded:function () {
@@ -117,7 +117,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
      * 显示图层
      */
     show: function () {
-        var mask = this._layer.getMask();
+        var mask = this.layer.getMask();
         if (mask) {
             mask.onZoomEnd();
         }
@@ -146,7 +146,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
      * @return {Boolean}       true|false
      */
     hitDetect:function (point) {
-        if (!this.context || (this._layer.isEmpty && this._layer.isEmpty()) || this._errorThrown) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
             return false;
         }
         var extent2D = this.getMap()._get2DExtent();
@@ -205,7 +205,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _promiseResource: function (url) {
         var me = this, resources = this.resources,
-            crossOrigin = this._layer.options['crossOrigin'];
+            crossOrigin = this.layer.options['crossOrigin'];
         return function (resolve) {
             if (resources.isResourceLoaded(url)) {
                 resolve(url);
@@ -245,17 +245,17 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     _cacheResource: function (url, img) {
-        if (!this._layer || !this.resources) {
+        if (!this.layer || !this.resources) {
             return;
         }
         var w = url[1], h = url[2];
-        if (this._layer.options['cacheSvgOnCanvas'] && Z.Util.isSVG(url[0]) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
+        if (this.layer.options['cacheSvgOnCanvas'] && Z.Util.isSVG(url[0]) === 1 && (Z.Browser.edge || Z.Browser.ie)) {
             //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
             if (Z.Util.isNil(w)) {
-                w = img.width || this._layer.options['defaultIconSize'][0];
+                w = img.width || this.layer.options['defaultIconSize'][0];
             }
             if (Z.Util.isNil(h)) {
-                h = img.height || this._layer.options['defaultIconSize'][1];
+                h = img.height || this.layer.options['defaultIconSize'][1];
             }
             var canvas = Z.Canvas.createCanvas(w, h);
             Z.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
@@ -347,7 +347,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
          * @property {maptalks.Layer} target    - layer
          * @property {CanvasRenderingContext2D} context - canvas's context
          */
-        this._layer.fire('renderstart', {'context' : this.context});
+        this.layer.fire('renderstart', {'context' : this.context});
         return maskExtent2D;
     },
 
@@ -367,7 +367,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
                  * @property {maptalks.Layer} target    - layer
                  * @property {CanvasRenderingContext2D} context - canvas's context
                  */
-                this._layer.fire('renderend', {'context' : this.context});
+                this.layer.fire('renderend', {'context' : this.context});
             }
             this.getMap()._getRenderer().render();
         }
@@ -375,7 +375,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     fireLoadedEvent: function () {
         this._loaded = true;
-        if (this._layer) {
+        if (this.layer) {
             /**
              * layerload event, fired when layer is loaded.
              *
@@ -384,7 +384,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
              * @property {String} type - layerload
              * @property {maptalks.Layer} target - layer
              */
-            this._layer.fire('layerload');
+            this.layer.fire('layerload');
         }
     },
 

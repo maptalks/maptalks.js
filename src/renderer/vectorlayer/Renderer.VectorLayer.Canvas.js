@@ -11,7 +11,7 @@
 Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.vectorlayer.Canvas.prototype */{
 
     initialize:function (layer) {
-        this._layer = layer;
+        this.layer = layer;
         this._painted = false;
     },
 
@@ -25,13 +25,13 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             return;
         }
         var map = this.getMap();
-        if (!this._layer.isVisible() || this._layer.isEmpty()) {
+        if (!this.layer.isVisible() || this.layer.isEmpty()) {
             this.clearCanvas();
             this.completeRender();
             return;
         }
         var zoom = this.getMap().getZoom();
-        if (this._layer.options['drawOnce']) {
+        if (this.layer.options['drawOnce']) {
             if (!this._canvasCache) {
                 this._canvasCache = {};
             }
@@ -49,7 +49,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             }
         }
         this._drawGeos();
-        if (this._layer.options['drawOnce']) {
+        if (this.layer.options['drawOnce']) {
             if (!this._canvasCache[zoom]) {
                 this._canvasCache[zoom] = {
                     'canvas'       : this.canvas,
@@ -64,14 +64,14 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     //redraw all the geometries with transform matrix
     //this may bring low performance if number of geometries is large.
     transform: function (matrix) {
-        if (Z.Browser.mobile || this._layer.options['drawOnce'] || this._layer.getMask()) {
+        if (Z.Browser.mobile || this.layer.options['drawOnce'] || this.layer.getMask()) {
             return false;
         }
         //determin whether this layer should be transformed.
         //if all the geometries to render are vectors including polygons and linestrings,
         //disable transforming won't reduce user experience.
         if (!this._hasPointSymbolizer ||
-            this.getMap()._getRenderer()._getCountOfGeosToDraw() > this._layer.options['thresholdOfTransforming']) {
+            this.getMap()._getRenderer()._getCountOfGeosToDraw() > this.layer.options['thresholdOfTransforming']) {
             return false;
         }
         this._drawGeos(matrix);
@@ -80,7 +80,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
 
     checkResources:function (geometries) {
         if (!this._painted && !Z.Util.isArray(geometries)) {
-            geometries = this._layer._geoList;
+            geometries = this.layer._geoList;
         }
         if (!geometries || !Z.Util.isArrayHasData(geometries)) {
             return null;
@@ -120,7 +120,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
      * @override
      */
     show: function () {
-        this._layer.forEach(function (geo) {
+        this.layer.forEach(function (geo) {
             geo.onZoomEnd();
         });
         Z.renderer.Canvas.prototype.show.apply(this, arguments);
@@ -131,7 +131,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!map) {
             return;
         }
-        var layer = this._layer;
+        var layer = this.layer;
         if (layer.isEmpty()) {
             this.resources = new Z.renderer.Canvas.Resources();
             this.fireLoadedEvent();
@@ -184,13 +184,13 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
 
 
     _forEachGeo: function (fn, context) {
-        this._layer.forEach(fn, context);
+        this.layer.forEach(fn, context);
     },
 
     onZoomEnd: function () {
         delete this._extent2D;
-        if (this._layer.isVisible()) {
-            this._layer.forEach(function (geo) {
+        if (this.layer.isVisible()) {
+            this.layer.forEach(function (geo) {
                 geo.onZoomEnd();
             });
         }
