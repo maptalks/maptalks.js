@@ -73,7 +73,8 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         delete this.context;
         delete this._extent2D;
         delete this.resources;
-        this.requestMapToRender();
+        // requestMapToRender may be overrided, e.g. renderer.TileLayer.Canvas
+        Z.renderer.Canvas.prototype.requestMapToRender.call(this);
         delete this.layer;
     },
 
