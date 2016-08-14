@@ -144,7 +144,7 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
 
 });
 
-Z.Circle._fromJSON = function (json) {
+Z.Circle.fromJSON = function (json) {
     var feature = json['feature'];
     var circle = new Z.Circle(json['coordinates'], json['radius'], json['options']);
     circle.setProperties(feature['properties']);

@@ -114,7 +114,7 @@ Z.CurveLine = Z.LineString.extend({
     }
 });
 
-Z.CurveLine._fromJSON = function (json) {
+Z.CurveLine.fromJSON = function (json) {
     var feature = json['feature'];
     var curveLine = new Z.CurveLine(feature['geometry']['coordinates'], json['options']);
     curveLine.setProperties(feature['properties']);

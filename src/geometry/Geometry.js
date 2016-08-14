@@ -1134,7 +1134,7 @@ Z.Geometry.fromJSON = function (json) {
     }
     var geometry;
     if (json['subType']) {
-        geometry = Z[json['subType']]._fromJSON(json);
+        geometry = Z[json['subType']].fromJSON(json);
         if (!Z.Util.isNil(json['feature']['id'])) {
             geometry.setId(json['feature']['id']);
         }

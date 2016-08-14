@@ -59,7 +59,7 @@ Z.GeoJSONLayer = Z.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype
  * @private
  * @function
  */
-Z.GeoJSONLayer._fromJSON = function (profile) {
+Z.GeoJSONLayer.fromJSON = function (profile) {
     if (!profile || profile['type'] !== 'GeoJSONLayer') { return null; }
     var layer = new Z.GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
     if (profile['style']) {
