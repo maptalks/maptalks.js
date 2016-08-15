@@ -8,7 +8,7 @@
  * @param {maptalks._shadow} geometry 待编辑图形
  * @param {Object} opts 属性
  */
-Z.GeometryEditor = Z.Class.extend(/** @lends maptalks.GeometryEditor.prototype */{
+Z.Geometry.Editor = Z.Class.extend(/** @lends maptalks.Geometry.Editor.prototype */{
     includes: [Z.Eventable],
 
     editStageLayerIdPrefix : Z.internalLayerPrefix + '_edit_stage_',

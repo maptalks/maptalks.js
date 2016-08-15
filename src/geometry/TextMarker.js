@@ -29,22 +29,6 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         'markerFill': '#ffffff'
     },
 
-    /**
-     * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
-     * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
-     * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
-     * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
-     * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
-     * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
-     * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
-     * @property {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
-     */
-    options: {
-        'boxAutoSize'  :   true,
-        'boxMinWidth'  :   0,
-        'boxMinHeight' :   0,
-        'boxPadding'   :   {'width' : 12, 'height' : 8}
-    },
 
     initialize: function (content, coordinates, options) {
         this._content = content;
@@ -85,7 +69,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
     },
 
     getSymbol: function () {
-        if (this._SymbolChanged) {
+        if (this._textSymbolChanged) {
             return Z.Geometry.prototype.getSymbol.call(this);
         }
         return null;
@@ -93,13 +77,13 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
     setSymbol:function (symbol) {
         if (!symbol || symbol === this.options['symbol']) {
-            this._SymbolChanged = false;
+            this._textSymbolChanged = false;
             symbol = {};
         } else {
-            this._SymbolChanged = true;
+            this._textSymbolChanged = true;
         }
         var cooked = this._prepareSymbol(symbol);
-        var s = this._getDefaultLabelSymbol();
+        var s = this._getDefaultTextSymbol();
         Z.Util.extend(s, cooked);
         this._symbol = s;
         this._refresh();
@@ -121,11 +105,37 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         }
     },
 
+    _getBoxSize: function (symbol) {
+        if (!symbol['markerType']) {
+            symbol['markerType'] = 'square';
+        }
+        var size, width, height;
+        var padding = this.options['boxPadding'];
+        if (this.options['boxAutoSize'] || this.options['boxTextAlign']) {
+            size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
+        }
+        if (this.options['boxAutoSize']) {
+            width = size['width'] + padding['width'] * 2;
+            height = size['height'] + padding['height'] * 2;
+        }
+        if (this.options['boxMinWidth']) {
+            if (!width || width < this.options['boxMinWidth']) {
+                width = this.options['boxMinWidth'];
+            }
+        }
+        if (this.options['boxMinHeight']) {
+            if (!height || height < this.options['boxMinHeight']) {
+                height = this.options['boxMinHeight'];
+            }
+        }
+        return [new Z.Size(width, height), size];
+    },
+
     _getInternalSymbol:function () {
         return this._symbol;
     },
 
-    _getDefaultLabelSymbol: function () {
+    _getDefaultTextSymbol: function () {
         var s = {};
         Z.Util.extend(s, this.defaultSymbol);
         if (this.options['box']) {
@@ -136,12 +146,9 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
     _registerEvents: function () {
         this.on('shapechange', this._refresh, this);
-        this.on('remove', this._onTextMarkerRemove, this);
-        return this;
     },
 
-    _onTextMarkerRemove:function () {
+    onRemove:function () {
         this.off('shapechange', this._refresh, this);
-        this.off('remove', this._onTextMarkerRemove, this);
     }
 });

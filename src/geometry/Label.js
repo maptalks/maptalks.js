@@ -49,45 +49,31 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
     },
 
     _refresh:function () {
-        var symbol = this.getSymbol() || this._getDefaultLabelSymbol();
+        var symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
         if (this.options['box']) {
-            if (!symbol['markerType']) {
-                symbol['markerType'] = 'square';
-            }
-            var size;
-            var padding = this.options['boxPadding'];
-            if (this.options['boxAutoSize'] || this.options['boxTextAlign']) {
-                size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
-            }
-            if (this.options['boxAutoSize']) {
-                symbol['markerWidth'] = size['width'] + padding['width'] * 2;
-                symbol['markerHeight'] = size['height'] + padding['height'] * 2;
-            }
-            if (this.options['boxMinWidth']) {
-                if (!symbol['markerWidth'] || symbol['markerWidth'] < this.options['boxMinWidth']) {
-                    symbol['markerWidth'] = this.options['boxMinWidth'];
-                }
-            }
-            if (this.options['boxMinHeight']) {
-                if (!symbol['markerHeight'] || symbol['markerHeight'] < this.options['boxMinHeight']) {
-                    symbol['markerHeight'] = this.options['boxMinHeight'];
-                }
-            }
+            var sizes = this._getBoxSize(symbol),
+                boxSize = sizes[0],
+                textSize = sizes[1],
+                padding = this.options['boxPadding'];
+
+            symbol['markerWidth'] = boxSize['width'];
+            symbol['markerHeight'] = boxSize['height'];
+
             var align = this.options['boxTextAlign'];
             if (align) {
-                var textAlignPoint = Z.StringUtil.getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
+                var textAlignPoint = Z.StringUtil.getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
                     dx = symbol['textDx'] || 0,
                     dy = symbol['textDy'] || 0;
                 textAlignPoint = textAlignPoint._add(dx, dy);
                 symbol['markerDx'] = textAlignPoint.x;
-                symbol['markerDy'] = textAlignPoint.y + size['height'] / 2;
+                symbol['markerDy'] = textAlignPoint.y + textSize['height'] / 2;
                 if (align === 'left') {
                     symbol['markerDx'] += symbol['markerWidth'] / 2 - padding['width'];
                 } else if (align === 'right') {
-                    symbol['markerDx'] -= symbol['markerWidth'] / 2 - size['width'] - padding['width'];
+                    symbol['markerDx'] -= symbol['markerWidth'] / 2 - textSize['width'] - padding['width'];
                 } else {
-                    symbol['markerDx'] += size['width'] / 2;
+                    symbol['markerDx'] += textSize['width'] / 2;
                 }
             }
         }
@@ -100,5 +86,6 @@ Z.Label.fromJSON = function (json) {
     var feature = json['feature'];
     var label = new Z.Label(json['content'], feature['geometry']['coordinates'], json['options']);
     label.setProperties(feature['properties']);
+    label.setId(feature['id']);
     return label;
 };

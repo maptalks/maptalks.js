@@ -22,16 +22,13 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
 
     /**
      * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
-     * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
      * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
      * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
      * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
      * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
-     * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
      * @property {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
      */
     options: {
-        'box'          :   true,
         'boxAutoSize'  :   true,
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
@@ -47,50 +44,60 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
     },
 
     _refresh:function () {
-        var symbol = this.getSymbol() || this._getDefaultLabelSymbol();
+        var symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
-        if (this.options['box']) {
-            if (!symbol['markerType']) {
-                symbol['markerType'] = 'square';
-            }
-            var size;
-            var padding = this.options['boxPadding'];
-            if (this.options['boxAutoSize'] || this.options['boxTextAlign']) {
-                size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
-            }
-            if (this.options['boxAutoSize']) {
-                symbol['markerWidth'] = size['width'] + padding['width'] * 2;
-                symbol['markerHeight'] = size['height'] + padding['height'] * 2;
-            }
-            if (this.options['boxMinWidth']) {
-                if (!symbol['markerWidth'] || symbol['markerWidth'] < this.options['boxMinWidth']) {
-                    symbol['markerWidth'] = this.options['boxMinWidth'];
-                }
-            }
-            if (this.options['boxMinHeight']) {
-                if (!symbol['markerHeight'] || symbol['markerHeight'] < this.options['boxMinHeight']) {
-                    symbol['markerHeight'] = this.options['boxMinHeight'];
-                }
-            }
-            var textAlign = symbol['textHorizontalAlignment'];
-            if (textAlign) {
-                symbol['textDx'] = symbol['markerDx'] || 0;
-                symbol['textDy'] = symbol['markerDy'] || 0;
-                if (textAlign === 'left') {
-                    symbol['textDx'] -= symbol['markerWidth'] / 2;
-                } else if (textAlign === 'right') {
-                    symbol['textDx'] += symbol['markerWidth'] / 2;
-                }
+
+        var sizes = this._getBoxSize(symbol),
+            boxSize = sizes[0];
+
+        symbol['markerWidth'] = boxSize['width'];
+        symbol['markerHeight'] = boxSize['height'];
+
+        var textAlign = symbol['textHorizontalAlignment'];
+        if (textAlign) {
+            symbol['textDx'] = symbol['markerDx'] || 0;
+            if (textAlign === 'left') {
+                symbol['textDx'] -= symbol['markerWidth'] / 2;
+            } else if (textAlign === 'right') {
+                symbol['textDx'] += symbol['markerWidth'] / 2;
             }
         }
+
+        var vAlign = symbol['textVerticalAlignment'];
+        if (vAlign) {
+            symbol['textDy'] = symbol['markerDy'] || 0;
+            if (vAlign === 'top') {
+                symbol['textDy'] -= symbol['markerHeight'] / 2;
+            } else if (vAlign === 'bottom') {
+                symbol['textDy'] += symbol['markerHeight'] / 2;
+            }
+        }
+
         this._symbol = symbol;
         this.onSymbolChanged();
+    },
+
+    _getInternalSymbol: function () {
+        //In TextBox, textHorizontalAlignment's meaning is textAlign in the box which is reversed from original textHorizontalAlignment.
+        var textSymbol = Z.Util.extend({}, this._symbol);
+        if (textSymbol['textHorizontalAlignment'] === 'left') {
+            textSymbol['textHorizontalAlignment'] = 'right';
+        } else if (textSymbol['textHorizontalAlignment'] === 'right') {
+            textSymbol['textHorizontalAlignment'] = 'left';
+        }
+        if (textSymbol['textVerticalAlignment'] === 'top') {
+            textSymbol['textVerticalAlignment'] = 'bottom';
+        } else if (textSymbol['textVerticalAlignment'] === 'bottom') {
+            textSymbol['textVerticalAlignment'] = 'top';
+        }
+        return textSymbol;
     }
 });
 
-Z.TextBox._fromJSON = function (json) {
+Z.TextBox.fromJSON = function (json) {
     var feature = json['feature'];
     var textBox = new Z.TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
     textBox.setProperties(feature['properties']);
+    textBox.setId(feature['id']);
     return textBox;
 };
