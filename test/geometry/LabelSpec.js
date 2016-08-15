@@ -12,6 +12,7 @@ describe('#Label', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
+        map.removeBaseLayer();
     });
 
     afterEach(function() {
@@ -123,6 +124,72 @@ describe('#Label', function() {
         });
     });
 
+    describe('alignment', function () {
+        it('left', function () {
+            var vector = new maptalks.TextBox('■■■', center, {
+                symbol : {
+                    'markerFillOpacity' : 0,
+                    'markerLineOpacity' : 0,
+                    'textHorizontalAlignment' : 'left'
+                }
+            });
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var size = vector.getSize();
+            expect(layer).to.be.painted(-Math.floor(size.width/2) + 4, 0);
+            expect(layer).not.to.be.painted(Math.floor(size.width/2) - 4, 0);
+        });
+
+        it('right', function () {
+            var vector = new maptalks.TextBox('■■■', center, {
+                symbol : {
+                    'markerFillOpacity' : 0,
+                    'markerLineOpacity' : 0,
+                    'textHorizontalAlignment' : 'right'
+                }
+            });
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var size = vector.getSize();
+            expect(layer).to.be.painted(Math.floor(size.width/2) - 4, 0);
+            expect(layer).not.to.be.painted(-Math.floor(size.width/2) + 4, 0);
+        });
+
+        it('top', function () {
+            var vector = new maptalks.TextBox('■■■', center, {
+                symbol : {
+                    'markerFillOpacity' : 0,
+                    'markerLineOpacity' : 0,
+                    'textVerticalAlignment' : 'top'
+                }
+            });
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var size = vector.getSize();
+            expect(layer).to.be.painted(0, -Math.floor(size.height / 2) + 6);
+            expect(layer).not.to.be.painted(0, Math.floor(size.height / 2) - 6);
+        });
+
+        it('bottom', function () {
+            var vector = new maptalks.TextBox('■■■', center, {
+                symbol : {
+                    'markerFillOpacity' : 0,
+                    'markerLineOpacity' : 0,
+                    'textVerticalAlignment' : 'bottom'
+                }
+            });
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var size = vector.getSize();
+            expect(layer).to.be.painted(0, Math.floor(size.height / 2) - 5);
+            expect(layer).not.to.be.painted(0, -Math.floor(size.height / 2) + 5);
+        });
+    });
+
     describe('can config',function() {
         it("configs",function() {
             var vector = new maptalks.Label('label',center);
@@ -130,6 +197,16 @@ describe('#Label', function() {
             expect(defaultConfig).to.be.empty();
 
         });
+    });
+
+    it('autoSize', function () {
+        var vector = new maptalks.Label('■■■', center, {
+            box:true,
+            boxAutoSize: true
+        });
+        var symbol = vector._getInternalSymbol();
+        expect(symbol.markerWidth).to.be.above(5);
+        expect(symbol.markerHeight).to.be.above(5);
     });
 
     it('can edit', function() {

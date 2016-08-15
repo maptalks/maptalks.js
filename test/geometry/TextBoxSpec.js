@@ -12,6 +12,7 @@ describe('#TextBox', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
+        map.removeBaseLayer();
     });
 
     afterEach(function() {
@@ -109,6 +110,89 @@ describe('#TextBox', function() {
             expect(defaultConfig).to.be.empty();
 
         });
+    });
+
+    describe('alignment', function () {
+        it('left', function () {
+            var vector = new maptalks.TextBox('■■■', center, {
+                symbol : {
+                    'markerWidth' : 100,
+                    'markerHeight' : 50,
+                    'markerFillOpacity' : 0,
+                    'markerLineOpacity' : 0,
+                    'textHorizontalAlignment' : 'left'
+                }
+            });
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var size = vector.getSize();
+            expect(layer).to.be.painted(-Math.floor(100/2) + 2, 0);
+             expect(layer).not.to.be.painted(Math.floor(100/2) - 2, 0);
+        });
+
+        it('right', function () {
+            var vector = new maptalks.TextBox('■■■', center, {
+                symbol : {
+                    'markerWidth' : 100,
+                    'markerHeight' : 50,
+                    'markerFillOpacity' : 0,
+                    'markerLineOpacity' : 0,
+                    'textHorizontalAlignment' : 'right'
+                }
+            });
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var size = vector.getSize();
+            expect(layer).to.be.painted(Math.floor(100/2) - 3, 0);
+            expect(layer).not.to.be.painted(-Math.floor(100/2) + 3, 0);
+        });
+
+        it('top', function () {
+            var vector = new maptalks.TextBox('■■■', center, {
+                symbol : {
+                    'markerWidth' : 100,
+                    'markerHeight' : 50,
+                    'markerFillOpacity' : 0,
+                    'markerLineOpacity' : 0,
+                    'textVerticalAlignment' : 'top'
+                }
+            });
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var size = vector.getSize();
+            expect(layer).to.be.painted(0, -50/2 + 6);
+            expect(layer).not.to.be.painted(0, 50/2 - 6);
+        });
+
+        it('bottom', function () {
+            var vector = new maptalks.TextBox('■■■', center, {
+                symbol : {
+                    'markerWidth' : 100,
+                    'markerHeight' : 50,
+                    'markerFillOpacity' : 0,
+                    'markerLineOpacity' : 0,
+                    'textVerticalAlignment' : 'bottom'
+                }
+            });
+            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var size = vector.getSize();
+            expect(layer).to.be.painted(0, 50/2 - 5);
+            expect(layer).not.to.be.painted(0, -50/2 + 5);
+        });
+    });
+
+    it('autoSize', function () {
+        var vector = new maptalks.TextBox('■■■', center, {
+            boxAutoSize: true
+        });
+        var symbol = vector._getInternalSymbol();
+        expect(symbol.markerWidth).to.be.above(5);
+        expect(symbol.markerHeight).to.be.above(5);
     });
 
     it('can edit', function() {

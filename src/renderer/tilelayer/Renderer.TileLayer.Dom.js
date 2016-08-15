@@ -148,6 +148,9 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
     },
 
     _tileReady: function (err, tile) {
+        if (!this.layer) {
+            return;
+        }
         if (err) {
             /**
              * tileerror event, fired when layer is 'dom' rendered and a tile errors

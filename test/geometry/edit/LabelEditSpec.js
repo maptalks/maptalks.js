@@ -1,4 +1,4 @@
-describe('#LabelEdit', function () {
+describe('LabelEdit', function () {
     var container, eventContainer;
     var map;
     var center = new Z.Coordinate(118.846825, 32.046534);
