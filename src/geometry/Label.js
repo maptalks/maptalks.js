@@ -59,7 +59,6 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
 
             //if no boxSize then use text's size in default
             if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
-                var padding = this.options['boxPadding'];
                 var width = textSize['width'] + padding['width'] * 2,
                     height = textSize['height'] + padding['height'] * 2;
                 boxSize = new Z.Size(width, height);
