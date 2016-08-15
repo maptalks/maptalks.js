@@ -22,14 +22,14 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
 
     /**
      * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
-     * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
+     * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the background box automatically to fit for the label text.
      * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
      * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
      * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
      * @property {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
      */
     options: {
-        'boxAutoSize'  :   true,
+        'boxAutoSize'  :   false,
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
         'boxPadding'   :   {'width' : 12, 'height' : 8}
