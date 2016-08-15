@@ -75,8 +75,6 @@
 ../src/geometry/GeoJSON.js
 ../src/geometry/editor/GeometryEditor.js
 ../src/geometry/editor/TextMarkerEditor.js
-../src/geometry/editor/LabelEditor.js
-../src/geometry/editor/TextBoxEditor.js
 ../src/map/view/View.js
 ../src/map/view/View.Arc.js
 ../src/map/Map.js

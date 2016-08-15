@@ -10,7 +10,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             return this;
         }
         this.endEdit();
-        this._editor = new Z.GeometryEditor(this, opts);
+        this._editor = new Z.Geometry.Editor(this, opts);
         this._editor.start();
         this.fire('editstart');
         return this;
