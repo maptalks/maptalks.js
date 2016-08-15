@@ -43,6 +43,7 @@ Z.TextMarker.Editor = {
             this.getMap().off('mousedown', this.endEditText, this);
             this._editUIMarker.remove();
             delete this._editUIMarker;
+            delete this._textEditor.onkeyup;
             delete this._textEditor;
             /**
              * edittextend when ended editing text content
@@ -90,15 +91,18 @@ Z.TextMarker.Editor = {
         this._setCursorToLast(this._textEditor);
     },
 
-    _getEditorOffset: function() {
+    _getEditorOffset: function () {
         var symbol = this._getInternalSymbol() || {}, dx = 0, dy = 0;
         var textAlign = symbol['textHorizontalAlignment'];
-        if(textAlign === 'middle') {
-            dx = symbol['textDx'] - 2 || 0, dy = symbol['textDy'] - 2 || 0;
-        } else if(textAlign === 'left') {
-            dx = symbol['markerDx'] - 2 || 0, dy = symbol['markerDy'] - 2 || 0;
+        if (textAlign === 'middle') {
+            dx = symbol['textDx'] - 2 || 0;
+            dy = symbol['textDy'] - 2 || 0;
+        } else if (textAlign === 'left') {
+            dx = symbol['markerDx'] - 2 || 0;
+            dy = symbol['markerDy'] - 2 || 0;
         } else {
-            dx = symbol['markerDx'] - 2 || 0, dy = symbol['markerDy'] - 2 || 0;
+            dx = symbol['markerDx'] - 2 || 0;
+            dy = symbol['markerDy'] - 2 || 0;
         }
         return {'dx' : dx, 'dy' : dy};
     },
@@ -111,21 +115,21 @@ Z.TextMarker.Editor = {
             textSize = symbol['textSize'] || 12,
             height = labelSize['height'] || textSize,
             fill = symbol['markerFill'] || '#3398CC',
-            lineColor = symbol['markerLineColor'] || '#ffffff',
-            spacing = symbol['textLineSpacing'] || 0,
-            editor = Z.DomUtil.createEl('div');
-            editor.contentEditable = true;
-            editor.style.cssText = 'background: ' + fill + ';' +
+            // lineColor = symbol['markerLineColor'] || '#ffffff',
+            spacing = symbol['textLineSpacing'] || 0;
+        var editor = Z.DomUtil.createEl('div');
+        editor.contentEditable = true;
+        editor.style.cssText = 'background: ' + fill + ';' +
             'border: 1px solid #ff0000;' +
             'color: ' + textColor + ';' +
             'font-size: ' + textSize + 'px;' +
             'width: ' + (width - 2) + 'px;' +
-            'height: '+(height - 2) +'px;'+
+            'height: ' + (height - 2) + 'px;' +
             // 'min-height: '+(height - spacing)+'px;'+
             // 'max-height: 300px;'+
             'margin-left: auto;' +
             'margin-right: auto;' +
-            'line-height: '+(textSize+spacing)+'px;' +
+            'line-height: ' + (textSize + spacing) + 'px;' +
             'outline: 0;' +
             'word-wrap: break-word;' +
             'overflow-x: hidden;' +
@@ -134,28 +138,27 @@ Z.TextMarker.Editor = {
         var content = this.getContent();
         editor.innerText = content;
         Z.DomUtil.on(editor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
-        editor.onkeyup =  function(event) {
+        editor.onkeyup =  function (event) {
             var h = editor.style.height;
-            if(h)
-                h = h.substring(0, h.indexOf('px'));
-            else
+            if (!h) {
                 h = 0;
-            if(event.keyCode == 13) {
-                editor.style.height = (parseInt(h) + textSize) +'px';
+            }
+            if (event.keyCode === 13) {
+                editor.style.height = (parseInt(h) + textSize) + 'px';
             }
         };
         return editor;
     },
 
-    _setCursorToLast: function(obj) {
+    _setCursorToLast: function (obj) {
+        var range;
         if (window.getSelection) {
             obj.focus();
-            var range = window.getSelection();
+            range = window.getSelection();
             range.selectAllChildren(obj);
             range.collapseToEnd();
-        }
-        else if (document.selection) {
-            var range = document.selection.createRange();
+        } else if (document.selection) {
+            range = document.selection.createRange();
             range.moveToElementText(obj);
             range.collapse(false);
             range.select();

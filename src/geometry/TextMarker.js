@@ -109,7 +109,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';
         }
-        var size, width ,height;
+        var size, width, height;
         var padding = this.options['boxPadding'];
         if (this.options['boxAutoSize'] || this.options['boxTextAlign']) {
             size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];

@@ -48,9 +48,7 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
         symbol['textName'] = this._content;
 
         var sizes = this._getBoxSize(symbol),
-            boxSize = sizes[0],
-            textSize = sizes[1],
-            padding = this.options['boxPadding'];
+            boxSize = sizes[0];
 
         symbol['markerWidth'] = boxSize['width'];
         symbol['markerHeight'] = boxSize['height'];
