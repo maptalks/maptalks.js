@@ -58,11 +58,20 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
         var textAlign = symbol['textHorizontalAlignment'];
         if (textAlign) {
             symbol['textDx'] = symbol['markerDx'] || 0;
-            symbol['textDy'] = symbol['markerDy'] || 0;
             if (textAlign === 'left') {
                 symbol['textDx'] -= symbol['markerWidth'] / 2;
             } else if (textAlign === 'right') {
                 symbol['textDx'] += symbol['markerWidth'] / 2;
+            }
+        }
+
+        var vAlign = symbol['textVerticalAlignment'];
+        if (vAlign) {
+            symbol['textDy'] = symbol['markerDy'] || 0;
+            if (vAlign === 'top') {
+                symbol['textDy'] -= symbol['markerHeight'] / 2;
+            } else if (vAlign === 'bottom') {
+                symbol['textDy'] += symbol['markerHeight'] / 2;
             }
         }
 
@@ -77,6 +86,11 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
             textSymbol['textHorizontalAlignment'] = 'right';
         } else if (textSymbol['textHorizontalAlignment'] === 'right') {
             textSymbol['textHorizontalAlignment'] = 'left';
+        }
+        if (textSymbol['textVerticalAlignment'] === 'top') {
+            textSymbol['textVerticalAlignment'] = 'bottom';
+        } else if (textSymbol['textVerticalAlignment'] === 'bottom') {
+            textSymbol['textVerticalAlignment'] = 'top';
         }
         return textSymbol;
     }
