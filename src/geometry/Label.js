@@ -96,7 +96,7 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
     }
 });
 
-Z.Label._fromJSON = function (json) {
+Z.Label.fromJSON = function (json) {
     var feature = json['feature'];
     var label = new Z.Label(json['content'], feature['geometry']['coordinates'], json['options']);
     label.setProperties(feature['properties']);
