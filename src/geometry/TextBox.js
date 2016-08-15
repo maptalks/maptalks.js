@@ -22,14 +22,14 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
 
     /**
      * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
-     * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
+     * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the background box automatically to fit for the label text.
      * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
      * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
      * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
      * @property {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
      */
     options: {
-        'boxAutoSize'  :   true,
+        'boxAutoSize'  :   false,
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
         'boxPadding'   :   {'width' : 12, 'height' : 8}
@@ -48,10 +48,22 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
         symbol['textName'] = this._content;
 
         var sizes = this._getBoxSize(symbol),
-            boxSize = sizes[0];
+            boxSize = sizes[0],
+            textSize = sizes[1];
 
-        symbol['markerWidth'] = boxSize['width'];
-        symbol['markerHeight'] = boxSize['height'];
+        //if no boxSize then use text's size in default
+        if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
+            var padding = this.options['boxPadding'];
+            var width = textSize['width'] + padding['width'] * 2,
+                height = textSize['height'] + padding['height'] * 2;
+            boxSize = new Z.Size(width, height);
+            symbol['markerWidth'] = boxSize['width'];
+            symbol['markerHeight'] = boxSize['height'];
+        }  else if (boxSize) {
+            symbol['markerWidth'] = boxSize['width'];
+            symbol['markerHeight'] = boxSize['height'];
+        }
+
 
         var textAlign = symbol['textHorizontalAlignment'];
         if (textAlign) {

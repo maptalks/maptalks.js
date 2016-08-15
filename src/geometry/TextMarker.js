@@ -109,12 +109,10 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';
         }
-        var size, width, height;
-        var padding = this.options['boxPadding'];
-        if (this.options['boxAutoSize'] || this.options['boxTextAlign']) {
-            size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'];
-        }
+        var size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'],
+            width, height;
         if (this.options['boxAutoSize']) {
+            var padding = this.options['boxPadding'];
             width = size['width'] + padding['width'] * 2;
             height = size['height'] + padding['height'] * 2;
         }
@@ -128,7 +126,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
                 height = this.options['boxMinHeight'];
             }
         }
-        return [new Z.Size(width, height), size];
+        return [width && height ? new Z.Size(width, height) : null, size];
     },
 
     _getInternalSymbol:function () {
