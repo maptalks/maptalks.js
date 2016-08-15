@@ -32,8 +32,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
           * @property {maptalks.Map} target            - the map fires event
           * @property {CanvasRenderingContext2D} context  - canvas context
           */
-        this.map._fireEvent('renderstart', {'context' : this._context});
-        if (!this._canvas) {
+        this.map._fireEvent('renderstart', {'context' : this.context});
+        if (!this.canvas) {
             this.createCanvas();
         }
         var zoom = this.map.getZoom();
@@ -67,7 +67,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
           * @property {maptalks.Map} target              - the map fires event
           * @property {CanvasRenderingContext2D} context - canvas context
           */
-        this.map._fireEvent('renderend', {'context' : this._context});
+        this.map._fireEvent('renderend', {'context' : this.context});
     },
 
     animateZoom:function (options, fn) {
@@ -92,7 +92,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this._beforeTransform();
         }
 
-        if (this._context) { this._context.save(); }
+        if (this.context) { this.context.save(); }
         var player = Z.Animation.animate(
             {
                 'scale'  : [options.startScale, options.endScale]
@@ -104,7 +104,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             Z.Util.bind(function (frame) {
                 if (player.playState === 'finished') {
                     this._afterTransform(matrix);
-                    if (this._context) { this._context.restore(); }
+                    if (this.context) { this.context.restore(); }
                     this._drawCenterCross();
                     fn.call(this);
                 } else if (player.playState === 'running') {
@@ -129,14 +129,14 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
      * @param  {maptalks.Layer[]} layersToTransform 参与变换和绘制的图层
      */
     transform:function (matrix, layersToTransform) {
-        this.map._fireEvent('renderstart', {'context' : this._context});
+        this.map._fireEvent('renderstart', {'context' : this.context});
 
         var layers = layersToTransform || this._getAllLayerToTransform();
         this.clearCanvas();
         //automatically disable layerTransforming with mobile browsers.
         var transformLayers = !Z.Browser.mobile && this.map.options['layerTransforming'];
         if (!transformLayers) {
-            this._context.save();
+            this.context.save();
             this._applyTransform(matrix);
         }
 
@@ -152,7 +152,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                         transformed = renderer.transform(matrix);
                     }
                     if (transformLayers && !transformed) {
-                        this._context.save();
+                        this.context.save();
                         this._applyTransform(matrix);
                     }
 
@@ -161,7 +161,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                         this._drawLayerCanvasImage(layers[i], layerImage);
                     }
                     if (transformLayers && !transformed) {
-                        this._context.restore();
+                        this.context.restore();
                     }
                 } else if (renderer.transform) {
                     //e.g. baseTileLayer renderered by DOM
@@ -171,11 +171,11 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }
         }
         if (!transformLayers) {
-            this._context.restore();
+            this.context.restore();
         }
 
         this._drawCenterCross();
-        this.map._fireEvent('renderend', {'context' : this._context});
+        this.map._fireEvent('renderend', {'context' : this.context});
     },
 
     updateMapSize:function (mSize) {
@@ -202,10 +202,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     },
 
     toDataURL:function (mimeType) {
-        if (!this._canvas) {
+        if (!this.canvas) {
             return null;
         }
-        return this._canvas.toDataURL(mimeType);
+        return this.canvas.toDataURL(mimeType);
     },
 
     remove: function () {
@@ -215,8 +215,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (this._resizeFrame) {
             Z.Util.cancelAnimFrame(this._resizeFrame);
         }
-        delete this._context;
-        delete this._canvas;
+        delete this.context;
+        delete this.canvas;
         delete this.map;
         delete this._canvasBgRes;
         delete this._canvasBgCoord;
@@ -266,7 +266,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             return;
         }
         matrix = Z.Browser.retina ? matrix['retina'] : matrix['container'];
-        matrix.applyToContext(this._context);
+        matrix.applyToContext(this.context);
     },
 
     _getCountOfGeosToDraw: function () {
@@ -363,13 +363,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (imgOp <= 0) {
             return;
         }
-        var alpha = this._context.globalAlpha;
+        var alpha = this.context.globalAlpha;
 
         if (op < 1) {
-            this._context.globalAlpha *= op;
+            this.context.globalAlpha *= op;
         }
         if (imgOp < 1) {
-            this._context.globalAlpha *= imgOp;
+            this.context.globalAlpha *= imgOp;
         }
 
         if (Z.node) {
@@ -379,8 +379,8 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
                 canvasImage = context;
             }
         }
-        this._context.drawImage(canvasImage, point.x, point.y);
-        this._context.globalAlpha = alpha;
+        this.context.drawImage(canvasImage, point.x, point.y);
+        this.context.globalAlpha = alpha;
     },
 
     _storeBackground: function (baseLayerImage) {
@@ -397,21 +397,21 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         if (this._canvasBg) {
             var scale = this._canvasBgRes / map._getResolution();
             var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Z.Browser.retina ? 2 : 1);
-            Z.Canvas.image(this._context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
+            Z.Canvas.image(this.context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
         }
     },
 
     _drawCenterCross: function () {
         if (this.map.options['centerCross']) {
-            var p = new Z.Point(this._canvas.width / 2, this._canvas.height / 2);
-            this._context.strokeStyle = '#ff0000';
-            this._context.lineWidth = 2;
-            this._context.beginPath();
-            this._context.moveTo(p.x - 5, p.y);
-            this._context.lineTo(p.x + 5, p.y);
-            this._context.moveTo(p.x, p.y - 5);
-            this._context.lineTo(p.x, p.y + 5);
-            this._context.stroke();
+            var p = new Z.Point(this.canvas.width / 2, this.canvas.height / 2);
+            this.context.strokeStyle = '#ff0000';
+            this.context.lineWidth = 2;
+            this.context.beginPath();
+            this.context.moveTo(p.x - 5, p.y);
+            this.context.lineTo(p.x + 5, p.y);
+            this.context.moveTo(p.x, p.y - 5);
+            this.context.lineTo(p.x, p.y + 5);
+            this.context.stroke();
         }
     },
 
@@ -420,19 +420,19 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     },
 
     clearCanvas:function () {
-        if (!this._canvas) {
+        if (!this.canvas) {
             return;
         }
-        Z.Canvas.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
+        Z.Canvas.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
     },
 
     _updateCanvasSize: function () {
-        if (!this._canvas || this._isCanvasContainer) {
+        if (!this.canvas || this._isCanvasContainer) {
             return false;
         }
         var map = this.map;
         var mapSize = map.getSize();
-        var canvas = this._canvas;
+        var canvas = this.canvas;
         var r = Z.Browser.retina ? 2 : 1;
         if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
             return false;
@@ -451,13 +451,13 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
     createCanvas:function () {
         if (this._isCanvasContainer) {
-            this._canvas = this.map._containerDOM;
+            this.canvas = this.map._containerDOM;
         } else {
-            this._canvas = Z.DomUtil.createEl('canvas');
+            this.canvas = Z.DomUtil.createEl('canvas');
             this._updateCanvasSize();
-            this.map._panels.canvasContainer.appendChild(this._canvas);
+            this.map._panels.canvasContainer.appendChild(this.canvas);
         }
-        this._context = this._canvas.getContext('2d');
+        this.context = this.canvas.getContext('2d');
     },
 
     _checkSize:function () {
@@ -533,7 +533,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         map.on('_moveend', function () {
             if (Z.Browser.mobile) {
-                Z.DomUtil.offsetDom(this._canvas, map.offsetPlatform().multi(-1));
+                Z.DomUtil.offsetDom(this.canvas, map.offsetPlatform().multi(-1));
             }
             this.render();
         }, this);
@@ -543,7 +543,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             }, this);
         } else {
             map.on('_zoomend', function () {
-                Z.DomUtil.offsetDom(this._canvas, new Z.Point(0, 0));
+                Z.DomUtil.offsetDom(this.canvas, new Z.Point(0, 0));
             }, this);
         }
     }

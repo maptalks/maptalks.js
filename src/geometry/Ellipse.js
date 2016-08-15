@@ -203,7 +203,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
 
 });
 
-Z.Ellipse._fromJSON = function (json) {
+Z.Ellipse.fromJSON = function (json) {
     var feature = json['feature'];
     var ellipse = new Z.Ellipse(json['coordinates'], json['width'], json['height'], json['options']);
     ellipse.setProperties(feature['properties']);

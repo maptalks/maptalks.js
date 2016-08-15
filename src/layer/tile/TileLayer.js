@@ -293,7 +293,7 @@ Z.TileLayer.prototype.toJSON = function () {
  * @private
  * @function
  */
-Z.TileLayer._fromJSON = function (layerJSON) {
+Z.TileLayer.fromJSON = function (layerJSON) {
     if (!layerJSON || layerJSON['type'] !== 'TileLayer') { return null; }
     return new Z.TileLayer(layerJSON['id'], layerJSON['options']);
 };

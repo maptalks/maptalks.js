@@ -208,7 +208,7 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
 
 });
 
-Z.Sector._fromJSON = function (json) {
+Z.Sector.fromJSON = function (json) {
     var feature = json['feature'];
     var sector = new Z.Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], json['options']);
     sector.setProperties(feature['properties']);
