@@ -48,10 +48,22 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
         symbol['textName'] = this._content;
 
         var sizes = this._getBoxSize(symbol),
-            boxSize = sizes[0];
+            boxSize = sizes[0],
+            textSize = sizes[1];
 
-        symbol['markerWidth'] = boxSize['width'];
-        symbol['markerHeight'] = boxSize['height'];
+        //if no boxSize then use text's size in default
+        if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
+            var padding = this.options['boxPadding'];
+            var width = textSize['width'] + padding['width'] * 2,
+                height = textSize['height'] + padding['height'] * 2;
+            boxSize = new Z.Size(width, height);
+            symbol['markerWidth'] = boxSize['width'];
+            symbol['markerHeight'] = boxSize['height'];
+        }  else if (boxSize) {
+            symbol['markerWidth'] = boxSize['width'];
+            symbol['markerHeight'] = boxSize['height'];
+        }
+
 
         var textAlign = symbol['textHorizontalAlignment'];
         if (textAlign) {
