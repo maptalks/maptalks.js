@@ -20,7 +20,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         'markerDy': 0
     },
 
-    padding : [2, 4],
+    padding : [2, 2],
 
     initialize:function (symbol, geometry) {
         this.symbol = symbol;
@@ -53,14 +53,14 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _drawMarkers: function (ctx, cookedPoints, resources) {
 
         var strokeAndFill = this.strokeAndFill,
-            point, gradientExtent;
+            point, origin;
         var gradient = Z.Util.isGradient(strokeAndFill['lineColor']) || Z.Util.isGradient(strokeAndFill['polygonFill']);
         if (!gradient) {
             Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         }
         for (var i = cookedPoints.length - 1; i >= 0; i--) {
             point = cookedPoints[i];
-            var origin = this._rotate(ctx, point, this._getRotationAt(i));
+            origin = this._rotate(ctx, point, this._getRotationAt(i));
             if (origin) {
                 point = origin;
             }
@@ -75,7 +75,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _drawMarkersWithCache: function (ctx, cookedPoints, resources) {
         var stamp = this._stampSymbol(),
             lineWidth = this.strokeAndFill['lineWidth'] ? this.strokeAndFill['lineWidth'] : 0,
-           shadow = this.geometry.options['shadowBlur'],
+            shadow = this.geometry.options['shadowBlur'],
             w = this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0],
             h = this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1];
         var image = resources.getImage(stamp);
@@ -83,20 +83,14 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             image = this._createMarkerImage(ctx, resources);
             resources.addResource([stamp, w, h], image);
         }
-        var strokeAndFill = this.strokeAndFill,
-            point, gradientExtent;
-        // var gradient = Z.Util.isGradient(strokeAndFill['lineColor']) || Z.Util.isGradient(strokeAndFill['polygonFill']);
-        // if (!gradient) {
-        //     Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
-        // }
-        var anchor = this._getAnchor();
+        var point, origin,
+            anchor = this._getAnchor();
         for (var i = cookedPoints.length - 1; i >= 0; i--) {
             point = cookedPoints[i].substract(anchor);
-            var origin = this._rotate(ctx, point, this._getRotationAt(i));
+            origin = this._rotate(ctx, point, this._getRotationAt(i));
             if (origin) {
                 point = origin;
             }
-
             Z.Canvas.image(ctx, image, point.x, point.y, w, h);
             if (origin) {
                 ctx.restore();
