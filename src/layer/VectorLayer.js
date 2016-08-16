@@ -11,7 +11,6 @@
  * @param {String}  [options.cursor=default]        - the cursor style of the layer
  * @param {Boolean} [options.geometryEvents=true]   - enable/disable firing geometry events
  * @param {Number}  [options.thresholdOfTransforming=50] - threshold of geometry count to update while transforming.
- * @param {Boolean} [options.drawOnce=false]        - layer will be only draw once at each zoom, and won't be redrawn when moving, this is useful with a static map with a lot of geometries to draw.
  * @param {Boolean} [options.defaultIconSize=[20, 20]] - default size of a marker's icon
  * @param {Boolean} [options.cacheSvgOnCanvas=true]   - whether to cache svg icons on a canvas, this will fix svg's opacity problem on IE and MS Edge browser.
  * @param {*} options.* - any other option defined in [maptalks.OverlayLayer]{@link maptalks.OverlayLayer#options}
@@ -24,7 +23,6 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
      * @property {String}  options.cursor=default        - the cursor style of the layer
      * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events
      * @property {Number}  options.thresholdOfTransforming=50 - threshold of geometry count to update while transforming.
-     * @property {Boolean} options.drawOnce=false        - layer will be only draw once at each zoom, and won't be redrawn when moving, this is useful with a static map with a lot of geometries to draw.
      * @property {Boolean} options.defaultIconSize=[20, 20] - default size of a marker's icon
      * @property {*} options.* - any other option defined in [maptalks.OverlayLayer]{@link maptalks.OverlayLayer#options}
      */
@@ -34,7 +32,6 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'cursor'                    : 'pointer',
         'geometryEvents'            : true,
         'thresholdOfTransforming'    : 150,
-        'drawOnce'                  : false,
         'defaultIconSize'           : [20, 20],
         'cacheSvgOnCanvas'          : false
     },
