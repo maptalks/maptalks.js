@@ -29,6 +29,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             this.completeRender();
             return;
         }
+        if (!this.resources) {
+            this.resources = new Z.renderer.Canvas.Resources();
+        }
         if (this.checkResources && isCheckRes) {
             var me = this, args = arguments;
             var resources = this.checkResources.apply(this, args);
@@ -178,9 +181,6 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
      * @param  {Object} context         - callback's context
      */
     loadResources:function (resourceUrls) {
-        if (!this.resources) {
-            this.resources = new Z.renderer.Canvas.Resources();
-        }
         var resources = this.resources,
             promises = [];
         if (Z.Util.isArrayHasData(resourceUrls)) {
