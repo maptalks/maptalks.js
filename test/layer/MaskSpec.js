@@ -37,7 +37,7 @@ describe('Spec of Masks', function() {
 
     function testMask(layer, done) {
         layer.once('layerload', function() {
-            expect(layer).not.to.be.painted(-7);
+            expect(layer).not.to.be.painted(-7, 0);
             expect(layer).to.be.painted();
             done();
         });
