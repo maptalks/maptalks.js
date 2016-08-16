@@ -128,10 +128,6 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             throw new Error(this.exceptions['INVALID_OPTION']);
         }
 
-        if (!options['center']) {
-            throw new Error(this.exceptions['INVALID_CENTER']);
-        }
-
         this._loaded = false;
 
         if (Z.Util.isString(container)) {
@@ -145,6 +141,18 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
                 //Reserve container's constructor in node for canvas creating.
                 this.CanvasClass = this._containerDOM.constructor;
             }
+        }
+
+        if (!Z.node) {
+            if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
+                if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
+                    throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
+                }
+            }
+        }
+
+        if (!options['center']) {
+            throw new Error(this.exceptions['INVALID_CENTER']);
         }
 
         this._panels = {};
