@@ -82,7 +82,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 break;
             }
             var layer = layers[i];
-            if (!layer || !layer.getMap() || (!opts['includeInternals'] && layer.getId().indexOf(Z.internalLayerPrefix) >= 0)) {
+            if (!layer || !layer.getMap() || !layer.isVisible() ||(!opts['includeInternals'] && layer.getId().indexOf(Z.internalLayerPrefix) >= 0)) {
                 continue;
             }
             var allGeos = layers[i].getGeometries();
