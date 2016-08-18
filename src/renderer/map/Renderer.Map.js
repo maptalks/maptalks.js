@@ -77,7 +77,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
         }
         var mapPlatform = this.map._panels.mapPlatform,
             layer = this.map._panels.layer,
-            pos = this.map.offsetPlatform().add(offset);
+            pos = this.map.offsetPlatform().add(offset)._round();
         Z.DomUtil.offsetDom(mapPlatform, pos);
         Z.DomUtil.offsetDom(layer, pos);
         if (Z.Browser.mobile) {
