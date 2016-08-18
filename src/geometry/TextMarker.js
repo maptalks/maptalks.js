@@ -18,7 +18,10 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         'textWrapCharacter': '\n',
         'textLineSpacing': 8,
         'textHorizontalAlignment': 'middle', //left middle right
-        'textVerticalAlignment': 'middle' //top middle bottom
+        'textVerticalAlignment': 'middle', //top middle bottom
+        'textOpacity' : 1,
+        'textDx' : 0,
+        'textDy' : 0
     },
 
     defaultBoxSymbol:{
@@ -26,7 +29,8 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         'markerLineColor': '#ff0000',
         'markerLineWidth': 2,
         'markerLineOpacity': 1,
-        'markerFill': '#ffffff'
+        'markerFill': '#ffffff',
+        'markerOpacity' : 1
     },
 
 

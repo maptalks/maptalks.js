@@ -552,6 +552,23 @@ describe('#Map', function () {
             });
         });
 
+        it('identify on invisible layers', function(done) {
+            var layer = new maptalks.VectorLayer('id');
+            var geometries = genAllTypeGeometries();
+            //var point = map.coordinateToContainerPoint(center);
+            layer.addGeometry(geometries, true);
+            layer.hide();
+            map.addLayer(layer);
+
+            map.identify({
+                coordinate: center,
+                layers: [layer]
+            }, function (geos) {
+                expect(geos.length).to.be.eql(0);
+                done();
+            });
+        });
+
     });
 
     it('toDataURL', function () {
