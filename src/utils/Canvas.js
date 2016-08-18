@@ -151,7 +151,8 @@ Z.Canvas = {
         if (Z.node) {
             imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
         } else {
-            imageTexture = resources.getImage([imgUrl + '-texture', null, strokeWidth]);
+            var key = imgUrl + '-texture' + '-' + strokeWidth;
+            imageTexture = resources.getImage(key);
             if (!imageTexture) {
                 var imageRes = resources.getImage([imgUrl, null, null]);
                 if (imageRes) {
@@ -163,7 +164,7 @@ Z.Canvas = {
                     }
                     var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
                     Z.Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
-                    resources.addResource([imgUrl + '-texture', null, strokeWidth], patternCanvas);
+                    resources.addResource([key, null, strokeWidth], patternCanvas);
                     imageTexture = patternCanvas;
                 }
             }
