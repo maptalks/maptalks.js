@@ -151,7 +151,7 @@ Z.Canvas = {
         if (Z.node) {
             imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
         } else {
-            var key = imgUrl + '-texture' + '-' + strokeWidth;
+            var key = imgUrl + '-texture-' + strokeWidth;
             imageTexture = resources.getImage(key);
             if (!imageTexture) {
                 var imageRes = resources.getImage([imgUrl, null, null]);
