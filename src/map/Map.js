@@ -1141,7 +1141,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {Object}
      */
     getPanels: function () {
-       return this._panels;
+        return this._panels;
     },
 
     remove: function () {
