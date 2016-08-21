@@ -194,7 +194,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this._updateCanvasSize();
     },
 
-    getPanel: function () {
+    getMainPanel: function () {
         if (this._isCanvasContainer) {
             return this.map._containerDOM;
         }
@@ -316,10 +316,12 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;', true);
         var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
         var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;');
+        var frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
         var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;');
 
         mapPlatform.style.zIndex = 300;
-        canvasContainer.style.zIndex = 280;
+        frontLayer.style.zIndex = 201;
+        canvasContainer.style.zIndex = 200;
         layer.style.zIndex = 100;
         ui.style.zIndex = 300;
         control.style.zIndex = 400;
@@ -330,6 +332,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         mapWrapper.appendChild(mapPlatform);
         mapWrapper.appendChild(canvasContainer);
         mapWrapper.appendChild(layer);
+        mapWrapper.appendChild(frontLayer);
         mapWrapper.appendChild(control);
 
         this.createCanvas();

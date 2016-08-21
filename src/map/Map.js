@@ -1129,11 +1129,19 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
-    * Returns an object of map panels.
-    * @returns {Object}
+    * Return map's main panel
+    * @returns {HTMLElement}
     */
-    getPanel: function () {
-        return this._getRenderer().getPanel();
+    getMainPanel: function () {
+        return this._getRenderer().getMainPanel();
+    },
+
+    /**
+     * Returns map panels.
+     * @return {Object}
+     */
+    getPanels: function () {
+       return this._panels;
     },
 
     remove: function () {
@@ -1263,7 +1271,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     _setCursorToPanel:function (cursor) {
-        var panel = this.getPanel();
+        var panel = this.getMainPanel();
         if (panel && panel.style) {
             panel.style.cursor = cursor;
         }

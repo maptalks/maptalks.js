@@ -60,7 +60,7 @@ Z.Class.extend = function (props) {
 
     // inherit parent's statics
     for (var i in this) {
-        if (i[0] !== '_' && this.hasOwnProperty(i) && i !== 'prototype') {
+        if (i[0] !== '_' && this.hasOwnProperty(i) && i !== 'prototype' && !(this[i] instanceof Z.Class)) {
             NewClass[i] = this[i];
         }
     }
