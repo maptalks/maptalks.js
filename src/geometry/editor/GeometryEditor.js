@@ -476,7 +476,7 @@ Z.Geometry.Editor = Z.Class.extend(/** @lends maptalks.Geometry.Editor.prototype
             var viewCenter = map._pointToViewPoint(marker._getCenter2DPoint()).add(dxdy),
                 symbol = marker._getInternalSymbol();
             var wh = handleViewPoint.substract(viewCenter);
-            if (handleViewPoint.y > viewCenter.y) {
+            if (blackList && handleViewPoint.y > viewCenter.y) {
                 wh.y = 0;
             }
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
