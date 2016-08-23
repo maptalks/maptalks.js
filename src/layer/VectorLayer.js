@@ -36,7 +36,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'thresholdOfTransforming'    : 150,
         'drawOnce'                  : false,
         'defaultIconSize'           : [20, 20],
-        'cacheSvgOnCanvas'          : true
+        'cacheSvgOnCanvas'          : false
     },
 
     /**
