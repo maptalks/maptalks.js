@@ -67,7 +67,3 @@ Z.GeoJSONLayer.fromJSON = function (profile) {
     }
     return layer;
 };
-
-
-//renderer should be registered here, but Z.renderer.vectorlayer.Canvas is defined in Renderer.VectorLayer.Canvas.js
-//Z.GeoJSONLayer.registerRenderer('canvas', Z.renderer.vectorlayer.Canvas);
