@@ -402,3 +402,11 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 });
 
 Z.Util.extend(Z.Layer, Z.Renderable);
+
+Z.Layer.extend = function (props) {
+    var NewLayer = Z.Class.extend.call(this, props);
+    if (this._regRenderers) {
+        NewLayer._regRenderers = Z.Util.extend({}, this._regRenderers);
+    }
+    return NewLayer;
+};
