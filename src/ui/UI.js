@@ -251,6 +251,9 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     _autoPan : function () {
         var map = this.getMap(),
             dom = this.getDOM();
+        if (map._moving || map._panAnimating) {
+            return;
+        }
         var point = new Z.Point(parseInt(dom.style.left), parseInt(dom.style.top));
         var mapSize = map.getSize(),
             mapWidth = mapSize['width'],
