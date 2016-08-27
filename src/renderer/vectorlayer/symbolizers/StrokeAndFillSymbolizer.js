@@ -32,8 +32,9 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         }
         var canvasResources = this._getRenderResources();
         this._prepareContext(ctx);
-        var isGradient = Z.Util.isGradient(style['lineColor']);
-        if (isGradient && style['lineColor']['places']) {
+        var isGradient = Z.Util.isGradient(style['lineColor']),
+            isPath = (this.geometry.constructor === Z.Polygon) || (this.geometry instanceof Z.LineString);
+        if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.geometry._getPainter().getContainerExtent()._expand(style['lineWidth']);
         }
         if (Z.Util.isGradient(style['polygonFill'])) {
@@ -46,7 +47,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
                 Z.Canvas.prepareCanvas(ctx, style, resources);
-                if (isGradient && !style['lineColor']['places']) {
+                if (isGradient && isPath && !style['lineColor']['places']) {
                     this._createGradient(ctx, points[i], style['lineColor']);
                 }
                 canvasResources['fn'].apply(this, [ctx].concat([points[i]]).concat([
@@ -54,7 +55,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
             }
         } else {
             Z.Canvas.prepareCanvas(ctx, style, resources);
-            if (isGradient && !style['lineColor']['places']) {
+            if (isGradient && isPath && !style['lineColor']['places']) {
                 this._createGradient(ctx, points, style['lineColor']);
             }
             canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
