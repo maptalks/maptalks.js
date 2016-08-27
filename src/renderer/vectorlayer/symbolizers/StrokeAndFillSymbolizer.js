@@ -128,7 +128,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
     _createGradient: function (ctx, points, lineColor) {
         var len = points.length;
-        var grad = ctx.createLinearGradient(points[0].x, points[0].y, points[len-1].x, points[len-1].y);
+        var grad = ctx.createLinearGradient(points[0].x, points[0].y, points[len - 1].x, points[len - 1].y);
         lineColor['colorStops'].forEach(function (stop) {
             grad.addColorStop.apply(grad, stop);
         });
