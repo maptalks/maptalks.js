@@ -665,11 +665,11 @@ Z.Util = {
                 dest = {};
                 for (ii = 0, ll = sources.length; ii < ll; ii++) {
                     if (!Z.Util.isArray(sources[ii])) {
-                        Z.Util.extend(dest, s, sources[ii]);
+                        Z.Util.extend(dest, s, sources[ii] ? sources[ii] : {});
                     } else if (!Z.Util.isNil(sources[ii][i])) {
                         Z.Util.extend(dest, s, sources[ii][i]);
                     } else {
-                        Z.Util.extend(dest, s);
+                        Z.Util.extend(dest, s ? s : {});
                     }
                 }
                 result.push(dest);
