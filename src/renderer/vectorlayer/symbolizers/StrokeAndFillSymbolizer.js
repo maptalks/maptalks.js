@@ -32,7 +32,8 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         }
         var canvasResources = this._getRenderResources();
         this._prepareContext(ctx);
-        if (Z.Util.isGradient(style['lineColor'])) {
+        var isGradient = Z.Util.isGradient(style['lineColor']);
+        if (isGradient && style['lineColor']['places']) {
             style['lineGradientExtent'] = this.geometry._getPainter().getContainerExtent()._expand(style['lineWidth']);
         }
         if (Z.Util.isGradient(style['polygonFill'])) {
@@ -45,13 +46,19 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
                 Z.Canvas.prepareCanvas(ctx, style, resources);
+                if (isGradient && !style['lineColor']['places']) {
+                    this._createGradient(ctx, points[i], style['lineColor']);
+                }
                 canvasResources['fn'].apply(this, [ctx].concat([points[i]]).concat([
-                    style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
+                    style['lineOpacity'], style['polygonOpacity'], style['lineDasharray'], style['lineColor']]));
             }
         } else {
             Z.Canvas.prepareCanvas(ctx, style, resources);
+            if (isGradient && !style['lineColor']['places']) {
+                this._createGradient(ctx, points, style['lineColor']);
+            }
             canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
-                style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
+                style['lineOpacity'], style['polygonOpacity'], style['lineDasharray'], style['lineColor']]));
         }
 
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
@@ -117,6 +124,15 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
             result['polygonFill'] = result['lineColor'];
         }
         return result;
+    },
+
+    _createGradient: function (ctx, points, lineColor) {
+        var len = points.length;
+        var grad = ctx.createLinearGradient(points[0].x, points[0].y, points[len-1].x, points[len-1].y);
+        lineColor['colorStops'].forEach(function (stop) {
+            grad.addColorStop.apply(grad, stop);
+        });
+        ctx.strokeStyle = grad;
     }
 
 });
