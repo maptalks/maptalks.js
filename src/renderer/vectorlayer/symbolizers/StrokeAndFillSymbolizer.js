@@ -50,7 +50,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
                     this._createGradient(ctx, points[i], style['lineColor']);
                 }
                 canvasResources['fn'].apply(this, [ctx].concat([points[i]]).concat([
-                    style['lineOpacity'], style['polygonOpacity'], style['lineDasharray'], style['lineColor']]));
+                    style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
             }
         } else {
             Z.Canvas.prepareCanvas(ctx, style, resources);
@@ -58,7 +58,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
                 this._createGradient(ctx, points, style['lineColor']);
             }
             canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
-                style['lineOpacity'], style['polygonOpacity'], style['lineDasharray'], style['lineColor']]));
+                style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
         }
 
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
