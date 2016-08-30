@@ -113,6 +113,17 @@ describe('#GeoJSONLayer', function() {
         removeContainer(container);
     });
 
+    it('create', function () {
+        var count = geoJSONs.length + 2,
+            pos = geoJSONs.length - 1;
+        var layer = new maptalks.GeoJSONLayer('v', {'visible' : true}).addTo(map);
+        layer.addData(geoJSONs);
+        var json = layer.toJSON();
+        expect(json).to.be.ok();
+        expect(json['geojson']).to.have.length(count);
+        expect(json['geojson'].slice(0, pos)).to.be.eql(geoJSONs.slice(0, pos));
+    });
+
     it('from/toJSON', function () {
         var count = geoJSONs.length + 2,
             pos = geoJSONs.length - 1;

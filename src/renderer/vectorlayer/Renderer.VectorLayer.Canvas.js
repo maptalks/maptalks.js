@@ -24,13 +24,11 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!this.getMap()) {
             return;
         }
-        var map = this.getMap();
         if (!this.layer.isVisible() || this.layer.isEmpty()) {
             this.clearCanvas();
             this.completeRender();
             return;
         }
-        var zoom = this.getMap().getZoom();
 
         this._drawGeos();
 
