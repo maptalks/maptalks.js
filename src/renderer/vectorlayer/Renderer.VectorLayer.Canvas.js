@@ -24,47 +24,21 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!this.getMap()) {
             return;
         }
-        var map = this.getMap();
         if (!this.layer.isVisible() || this.layer.isEmpty()) {
             this.clearCanvas();
             this.completeRender();
             return;
         }
-        var zoom = this.getMap().getZoom();
-        if (this.layer.options['drawOnce']) {
-            if (!this._canvasCache) {
-                this._canvasCache = {};
-            }
-            if (this._extent2D) {
-                this.completeRender();
-                return;
-            } else if (this._canvasCache[zoom]) {
-                this.canvas = this._canvasCache[zoom].canvas;
-                var center = map._prjToPoint(map._getPrjCenter());
-                this._extent2D = this._canvasCache[zoom].extent2D.add(this._canvasCache[zoom].center.substract(center));
-                this.completeRender();
-                return;
-            } else {
-                delete this.canvas;
-            }
-        }
+
         this._drawGeos();
-        if (this.layer.options['drawOnce']) {
-            if (!this._canvasCache[zoom]) {
-                this._canvasCache[zoom] = {
-                    'canvas'       : this.canvas,
-                    'extent2D'   : this._extent2D,
-                    'center'       : map._prjToPoint(map._getPrjCenter())
-                };
-            }
-        }
+
         this.completeRender();
     },
 
     //redraw all the geometries with transform matrix
     //this may bring low performance if number of geometries is large.
     transform: function (matrix) {
-        if (Z.Browser.mobile || this.layer.options['drawOnce'] || this.layer.getMask()) {
+        if (Z.Browser.mobile || this.layer.getMask()) {
             return false;
         }
         //determin whether this layer should be transformed.

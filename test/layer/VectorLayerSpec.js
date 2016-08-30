@@ -86,7 +86,7 @@ describe('VectorLayer', function() {
         });
     });
 
-    it('set drawOnce option', function(done) {
+    /*it('set drawOnce option', function(done) {
         layer.clear();
         layer.config({
             'drawOnce' : true,
@@ -115,7 +115,7 @@ describe('VectorLayer', function() {
         expect(function() {
             layer.addGeometry(geometries);
         }).to.not.throwException();
-    });
+    });*/
 
     describe('can setStyle', function() {
         function testStyle(style, hitIndex, symbols) {
