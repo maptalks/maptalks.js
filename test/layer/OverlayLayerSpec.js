@@ -171,6 +171,32 @@ describe('#OverlayLayer', function() {
             var geometries = layer.getGeometries();
             expect(geometries).to.be.empty();
         });
+
+        it('getExtent', function() {
+            var layer = new maptalks.VectorLayer('layer');
+            layer.setId('id');
+            expect(layer.getExtent()).not.to.be.ok();
+            // map.addLayer(layer);
+            var polygon = new maptalks.Polygon([
+                [
+                    {x: 121.111, y: 30.111},
+                    {x: 121.222, y: 30.222},
+                    {x: 121.333, y: 30.333}
+                ]
+            ]);
+            polygon.setId('polygon');
+            var polyline = new maptalks.Polyline([
+                {x: 121.111, y: 30.111},
+                {x: 121.222, y: 30.222}
+            ]);
+            polyline.setId('polyline');
+            layer.addGeometry(polygon);
+            layer.addGeometry(polyline);
+
+            var extent = polygon.getExtent().combine(polyline.getExtent());
+
+            expect(layer.getExtent().toJSON()).to.be.eql(extent.toJSON());
+        });
     });
 
     describe('visibility', function() {
