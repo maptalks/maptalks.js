@@ -192,7 +192,6 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         if (!this._painted) {
             this.render(true);
         } else {
-            delete this._canvasCache;
             delete this._extent2D;
             this.prepareRender();
             this.draw();
@@ -200,7 +199,6 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
     },
 
     onRemove:function () {
-        delete this._canvasCache;
         delete this._geosToDraw;
     }
 });
