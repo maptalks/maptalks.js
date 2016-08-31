@@ -287,6 +287,16 @@ describe('#Map', function () {
 
             expect(fitZoom).to.eql(zoom);
         });
+
+        it('fit to extent', function (done) {
+            var extent = new maptalks.Marker(map.getCenter()).getExtent();
+            var maxZoom = map.getMaxZoom();
+            map.once('zoomend', function () {
+                expect(maxZoom).to.be.eql(map.getZoom());
+                done();
+            });
+            map.fitExtent(extent);
+        });
     });
 
     describe('#addLayer', function() {
