@@ -68,5 +68,5 @@ Z.CanvasLayer.registerRenderer('canvas', Z.renderer.Canvas.extend({
     onResize: function (param) {
         this.layer.onResize(param),
         Z.renderer.Canvas.prototype.onResize.call(this);
-    },
-}););
+    }
+}));
