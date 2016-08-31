@@ -40,33 +40,33 @@ Z.CanvasLayer.registerRenderer('canvas', Z.renderer.Canvas.extend({
         this.fireLoadedEvent();
     },
 
-    remove:function() {
+    remove: function () {
         delete this._drawContext;
         maptalks.renderer.Canvas.prototype.remove.call(this);
     },
 
     onZoomStart: function (param) {
-        this.layer.onZoomStart(param),
+        this.layer.onZoomStart(param);
         Z.renderer.Canvas.prototype.onZoomStart.call(this);
     },
 
     onZoomEnd: function (param) {
-        this.layer.onZoomEnd(param),
+        this.layer.onZoomEnd(param);
         Z.renderer.Canvas.prototype.onZoomEnd.call(this);
     },
 
     onMoveStart: function (param) {
-        this.layer.onMoveStart(param),
+        this.layer.onMoveStart(param);
         Z.renderer.Canvas.prototype.onMoveStart.call(this);
     },
 
     onMoveEnd: function (param) {
-        this.layer.onMoveEnd(param),
+        this.layer.onMoveEnd(param);
         Z.renderer.Canvas.prototype.onMoveEnd.call(this);
     },
 
     onResize: function (param) {
-        this.layer.onResize(param),
+        this.layer.onResize(param);
         Z.renderer.Canvas.prototype.onResize.call(this);
     }
 }));
