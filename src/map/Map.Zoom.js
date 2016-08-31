@@ -72,7 +72,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     onZoomEnd:function (nextZoomLevel, zoomOffset) {
         this._zoomLevel = nextZoomLevel;
-        if (zoomOffset) {
+        if (zoomOffset && (zoomOffset.x !== 0 || zoomOffset.y !== 0)) {
             this._offsetCenterByPixel(zoomOffset._multi(-1));
         }
         var _originZoomLevel = this._originZoomLevel;
@@ -89,7 +89,6 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
           * @property {Number} to                      - zoom level zooming to
           */
         this._fireEvent('zoomend', {'from' : _originZoomLevel, 'to': nextZoomLevel});
-        this.checkSize();
     },
 
 

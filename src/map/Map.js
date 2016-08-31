@@ -630,6 +630,23 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
+     * Set the map to be fit for the given extent with the max zoom level possible.
+     * @param  {maptalks.Extent} extent - extent
+     * @param  {Number} zoomOffset - zoom offset
+     * @return {maptalks.Map} - this
+     */
+    fitExtent: function (extent, zoomOffset) {
+        if (!extent) {
+            return this;
+        }
+        zoomOffset = zoomOffset || 0;
+        var zoom = this.getFitZoom(extent);
+        zoom += zoomOffset;
+        var center = new Z.Extent(extent).getCenter();
+        return this.setCenterAndZoom(center, zoom);
+    },
+
+    /**
      * Get the base layer of the map.
      * @return {maptalks.Layer}
      */

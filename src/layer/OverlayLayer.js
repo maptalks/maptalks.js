@@ -93,6 +93,21 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     /**
+     * Get extent of all the geometries in the layer, return null if the layer is empty.
+     * @return {maptalks.Extent} - extent of the layer
+     */
+    getExtent: function () {
+        if (this.getCount() === 0) {
+            return null;
+        }
+        var extent = new Z.Extent();
+        this.forEach(function (g) {
+            extent._combine(g.getExtent());
+        });
+        return extent;
+    },
+
+    /**
      * Executes the provided callback once for each geometry present in the layer in order.
      * @param  {Function} fn - a callback function
      * @param  {*} [context=undefined]   - callback's context, value to use as this when executing callback.
