@@ -92,7 +92,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this._beforeTransform();
         }
 
-        if (this.context) { this.context.save(); }
         var player = Z.Animation.animate(
             {
                 'scale'  : [options.startScale, options.endScale]
@@ -104,7 +103,6 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             Z.Util.bind(function (frame) {
                 if (player.playState === 'finished') {
                     this._afterTransform(matrix);
-                    if (this.context) { this.context.restore(); }
                     this._drawCenterCross();
                     fn.call(this);
                 } else if (player.playState === 'running') {
@@ -259,6 +257,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         this.clearCanvas();
         this._applyTransform(matrix);
         this._drawBackground();
+        this.context.setTransform(1, 0, 0, 1, 0, 0);
     },
 
     _applyTransform : function (matrix) {
@@ -465,6 +464,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
     _checkSize:function () {
         Z.Util.cancelAnimFrame(this._resizeFrame);
+        if (this.map._zooming || this.map._moving || this.map._panAnimating) {
+            return;
+        }
         this._resizeFrame = Z.Util.requestAnimFrame(
             Z.Util.bind(function () {
                 this.map.checkSize();

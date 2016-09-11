@@ -44,7 +44,7 @@ gulp.task('styles',function() {
    return gulp.src(styles)
         .pipe(concat('maptalks.css'))
         .pipe(cssnano())
-        .pipe(gulp.dest('./dist/css'));
+        .pipe(gulp.dest('./dist/'));
 });
 
 

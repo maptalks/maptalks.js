@@ -128,8 +128,8 @@ Z.Util = {
             w   = imgDesc[1],
             h   = imgDesc[2];
         try {
-            if (Z.Util.isSVG(url)) {
-                Z.Util._convertSVG2PNG(url, w, h, onLoadComplete);
+            if (Z.Util.isSVG(url) && Z.Util.convertSVG) {
+                Z.Util.convertSVG(url, w, h, onLoadComplete);
             } else if (Z.Util.isURL(url)) {
                 //canvas-node的Image对象
                 this._loadRemoteImage(img, url, onLoadComplete);
@@ -175,12 +175,6 @@ Z.Util = {
     _loadLocalImage:function (img, url, onComplete) {
         //local file
         require('fs').readFile(url, onComplete);
-    },
-
-    _convertSVG2PNG:function (url, w, h, onComplete) {
-        //use svg2img to convert svg to png.
-        //https://github.com/FuZhenn/node-svg2img
-        require('svg2img')(url, {'width':w, 'height':h}, onComplete);
     },
 
     fixPNG:function () {
@@ -665,11 +659,11 @@ Z.Util = {
                 dest = {};
                 for (ii = 0, ll = sources.length; ii < ll; ii++) {
                     if (!Z.Util.isArray(sources[ii])) {
-                        Z.Util.extend(dest, s, sources[ii]);
+                        Z.Util.extend(dest, s, sources[ii] ? sources[ii] : {});
                     } else if (!Z.Util.isNil(sources[ii][i])) {
                         Z.Util.extend(dest, s, sources[ii][i]);
                     } else {
-                        Z.Util.extend(dest, s);
+                        Z.Util.extend(dest, s ? s : {});
                     }
                 }
                 result.push(dest);

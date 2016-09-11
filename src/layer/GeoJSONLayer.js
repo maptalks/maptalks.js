@@ -13,9 +13,29 @@ Z.GeoJSONLayer = Z.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype
 
     initialize: function (id, json, options) {
         this.setId(id);
+        if (json && !Z.Util.isArray(json)) {
+            if (!json['type']) {
+                //is options
+                options = json;
+                json = null;
+            }
+        }
         Z.Util.setOptions(this, options);
+        if (json) {
+            var geometries = this._parse(json);
+            this.addGeometry(geometries);
+        }
+    },
+
+    /**
+     * Add geojson data to the layer
+     * @param {Object|Object[]} json - GeoJSON data
+     * @return {maptalks.GeoJSONLayer} this
+     */
+    addData: function (json) {
         var geometries = this._parse(json);
         this.addGeometry(geometries);
+        return this;
     },
 
     _parse: function (json) {
@@ -67,7 +87,3 @@ Z.GeoJSONLayer.fromJSON = function (profile) {
     }
     return layer;
 };
-
-
-//renderer should be registered here, but Z.renderer.vectorlayer.Canvas is defined in Renderer.VectorLayer.Canvas.js
-//Z.GeoJSONLayer.registerRenderer('canvas', Z.renderer.vectorlayer.Canvas);

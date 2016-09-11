@@ -46,7 +46,6 @@
 ../src/layer/tile/CanvasTileLayer.js
 ../src/layer/OverlayLayer.js
 ../src/layer/VectorLayer.js
-../src/layer/GeoJSONLayer.js
 ../src/geometry/Geometry.js
 ../src/geometry/ext/Geometry.Edit.js
 ../src/geometry/ext/Geometry.Drag.js
@@ -113,6 +112,7 @@
 ../src/renderer/vectorlayer/Geometry.Canvas.js
 ../src/renderer/vectorlayer/Painter.js
 ../src/renderer/vectorlayer/CollectionPainter.js
+../src/layer/GeoJSONLayer.js
 ../src/ui/UI.js
 ../src/ui/UIMarker.js
 ../src/ui/InfoWindow.js
