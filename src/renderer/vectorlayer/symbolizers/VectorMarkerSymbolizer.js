@@ -128,7 +128,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 Z.Util.isGradient(this.style['markerLineColor']) ? Z.Util.getGradientStamp(this.style['markerLineColor']) : this.style['markerLineColor'],
                 this.style['markerLineWidth'],
                 this.style['markerLineOpacity'],
-                this.style['markerLineDasharray'].join(','),
+                this.style['markerLineDasharray'] ? this.style['markerLineDasharray'].join(',') : '',
                 this.style['markerLinePatternFile'],
                 this.style['markerWidth'],
                 this.style['markerHeight']
