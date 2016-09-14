@@ -170,9 +170,9 @@ Z.TextMarker.Editor = {
 
     _filterContent: function(content) {
         var result = '';
-        var pattern = new RegExp(/[\v \f \t \b]/, 'ig');
+        var pattern = /\\[v f t b]{1}/gi;
+        var enterPattern = /[\r\n]+$/gi;
         result = content.replace(pattern, '');
-        var enterPattern = new RegExp(/[\r\n]+$/,'ig');
         result = result.replace(enterPattern, '');
         return result;
     }

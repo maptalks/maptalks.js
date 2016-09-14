@@ -41,12 +41,12 @@ describe('LabelEdit', function () {
                         }
                     }
                     dom.innerText += char;
+                    label.endEditText();
                 });
                 happen.keyup(dom, {
                     shiftKey: true,
                     keyCode: 49
                 });
-                label.endEditText();
                 expect(label.isEditingText()).to.not.be.ok();
             }
             function endEdit(param) {
@@ -60,7 +60,6 @@ describe('LabelEdit', function () {
             label.on('edittextstart', startEdit);
             label.on('edittextend', endEdit);
             label.startEditText();
-            expect(label.isEditingText()).to.be.ok;
             function startEdit(param) {
                 var dom = label.getTextEditor().getDOM();
                 Z.DomUtil.on(dom, 'keyup', function(ev){
@@ -68,12 +67,22 @@ describe('LabelEdit', function () {
                     if(oEvent.keyCode === 13) {
                         dom.innerText += '\n';
                     }
+                    var char = String.fromCharCode(oEvent.keyCode);
+                    if(oEvent.shiftKey) {
+                        if(char == '1') {
+                            char = '!';
+                            dom.innerText += char;
+                            label.endEditText();
+                        }
+                    }
                 });
                 happen.keyup(dom, {
                     keyCode: 13
                 });
-                label.endEditText();
-                expect(label.isEditingText()).to.not.be.ok;
+                happen.keyup(dom, {
+                    shiftKey: true,
+                    keyCode: 49
+                });
             }
             function endEdit(param) {
                 var symbol = label._getInternalSymbol(),

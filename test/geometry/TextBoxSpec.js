@@ -205,4 +205,15 @@ describe('#TextBox', function() {
         vector.endEditText();
         expect(vector.isEditingText()).not.to.be.ok();
     });
+
+    it('edit with special characters', function() {
+        var vector = new maptalks.TextBox('textbox\r\n',center);
+        layer = new Z.VectorLayer('id');
+        map.addLayer(layer);
+        layer.addGeometry(vector);
+        vector.startEditText();
+        expect(vector.isEditingText()).to.be.ok();
+        vector.endEditText();
+        expect(vector.isEditingText()).not.to.be.ok();
+    });
 });
