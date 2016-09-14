@@ -20,7 +20,16 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
     },
 
     _getImage:function (resources) {
-        return !resources ? null : resources.getImage(this._url);
+        if (resources && resources.isResourceLoaded(this._url)) {
+            return resources.getImage(this._url);
+        }
+        var image = new Image();
+        image.src = this._url[0];
+        if (resources) {
+            resources.addResource(this._url, image);
+        }
+        return image;
+        // return resources ? resources.getImage(this._url) : null;
     }
 });
 

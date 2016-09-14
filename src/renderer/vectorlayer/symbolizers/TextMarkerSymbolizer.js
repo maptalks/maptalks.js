@@ -90,10 +90,12 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             size = this.textDesc['size'];
         var alignPoint = Z.StringUtil.getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
         var alignW = alignPoint.x, alignH = alignPoint.y;
-        return new Z.PointExtent(
+        var result = new Z.PointExtent(
             dxdy.add(alignW, alignH),
             dxdy.add(alignW + size['width'], alignH + size['height'])
         );
+        result['origin'] = new Z.Point(alignW + size['width'], alignH + size['height']);
+        return result;
     },
 
     translate:function () {
