@@ -80,6 +80,52 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
         return dom;
     },
 
+    /**
+     * update control container
+     * @return {maptalks.control.Panel} this
+     */
+    update: function () {
+        if (this.draggable) {
+            this.draggable.disable();
+            delete this.draggable;
+        }
+        return Z.control.Control.prototype.update.call(this);
+    },
+
+    /**
+     * Set the content of the Panel.
+     * @param {String|HTMLElement} content - content of the infowindow.
+     * return {maptalks.control.Panel} this
+     * @fires maptalks.control.Panel#contentchange
+     */
+    setContent:function (content) {
+        var old = this.options['content'];
+        this.options['content'] = content;
+        /**
+         * contentchange event.
+         *
+         * @event maptalks.control.Panel#contentchange
+         * @type {Object}
+         * @property {String} type - contentchange
+         * @property {maptalks.control.Panel} target - Panel
+         * @property {String|HTMLElement} old      - old content
+         * @property {String|HTMLElement} new      - new content
+         */
+        this.fire('contentchange', {'old' : old, 'new' : content});
+        if (this.isVisible()) {
+            this.update();
+        }
+        return this;
+    },
+
+    /**
+     * Get content of  the infowindow.
+     * @return {String|HTMLElement} - content of the infowindow
+     */
+    getContent:function () {
+        return this.options['content'];
+    },
+
     _cancelOn: function (domEvent) {
         var target = domEvent.srcElement || domEvent.target,
             tagName = target.tagName.toLowerCase();

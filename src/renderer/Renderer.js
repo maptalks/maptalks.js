@@ -325,10 +325,12 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         }
         var mask = this.layer.getMask();
         if (!mask) {
+            this.layer.fire('renderstart', {'context' : this.context});
             return null;
         }
         var maskExtent2D = mask._getPainter().get2DExtent();
         if (!maskExtent2D.intersects(this._extent2D)) {
+            this.layer.fire('renderstart', {'context' : this.context});
             return maskExtent2D;
         }
         this.context.save();

@@ -48,12 +48,8 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
         Z.DomUtil.setStyle(this.__ctrlContainer, 'position:absolute');
         Z.DomUtil.addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
         // Z.DomUtil.on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', Z.DomUtil.stopPropagation)
-        this._controlDom = this.buildOn(map);
-        if (this._controlDom) {
-            this._updatePosition();
-            this.__ctrlContainer.appendChild(this._controlDom);
-            controlContainer.appendChild(this.__ctrlContainer);
-        }
+        this.update();
+        controlContainer.appendChild(this.__ctrlContainer);
         /**
          * add event.
          *
@@ -63,6 +59,20 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
          * @property {maptalks.control.Control} target - the control instance
          */
         this.fire('add', {'dom' : controlContainer});
+        return this;
+    },
+
+    /**
+     * update control container
+     * @return {maptalks.control.Control} this
+     */
+    update: function () {
+        this.__ctrlContainer.innerHTML = '';
+        this._controlDom = this.buildOn(this.getMap());
+        if (this._controlDom) {
+            this._updatePosition();
+            this.__ctrlContainer.appendChild(this._controlDom);
+        }
         return this;
     },
 

@@ -26,8 +26,27 @@ describe("Control.Panel", function() {
             content: '面板内容'
         });
         map.addControl(panel);
+        expect(panel.getContainer().innerHTML).to.be.eql(
+            '<div class="maptalks-panel"><a class="maptalks-close" href="javascript:;"></a><div class="maptalks-panel-content">面板内容</div></div>');
+    });
 
-        expect(panel.getContainer().innerHTML).not.to.be.empty();
+    it("update a panel", function() {
+        var panel = new maptalks.control.Panel({
+            position : {//放置panel的位置
+                top: '150',
+                left: '150'
+            },
+            draggable: true,//能否拖动
+            custom: false, //content值能否为html
+            content: '面板内容'
+        });
+        map.addControl(panel);
+
+        var content = 'changed';
+        panel.setContent(content);
+        expect(panel.getContent()).to.be.eql(content);
+        expect(panel.getContainer().innerHTML).to.be.eql(
+            '<div class="maptalks-panel"><a class="maptalks-close" href="javascript:;"></a><div class="maptalks-panel-content">changed</div></div>');
     });
 
      function dragPanel(panel) {
