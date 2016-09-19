@@ -37,13 +37,14 @@ Z.TextMarker.Editor = {
     endEditText: function () {
         if (this._textEditor) {
             var content = this._textEditor.innerText;
+            content = this._filterContent(content);
             this.setContent(content);
             this.show();
             Z.DomUtil.off(this._textEditor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
             this.getMap().off('mousedown', this.endEditText, this);
             this._editUIMarker.remove();
             delete this._editUIMarker;
-            delete this._textEditor.onkeyup;
+            this._textEditor.onkeyup = null;
             delete this._textEditor;
             /**
              * edittextend when ended editing text content
@@ -114,19 +115,18 @@ Z.TextMarker.Editor = {
             textColor = symbol['textFill'] || '#000000',
             textSize = symbol['textSize'] || 12,
             height = labelSize['height'] || textSize,
+            lineColor = symbol['markerLineColor'] || '#cccccc',
             fill = symbol['markerFill'] || '#3398CC',
-            // lineColor = symbol['markerLineColor'] || '#ffffff',
-            spacing = symbol['textLineSpacing'] || 0;
+            spacing = symbol['textLineSpacing'] || 0,
+            opacity = symbol['markerFillOpacity'];
         var editor = Z.DomUtil.createEl('div');
         editor.contentEditable = true;
         editor.style.cssText = 'background: ' + fill + ';' +
-            'border: 1px solid #ff0000;' +
+            'border: 1px solid ' + lineColor + ';' +
             'color: ' + textColor + ';' +
             'font-size: ' + textSize + 'px;' +
             'width: ' + (width - 2) + 'px;' +
             'height: ' + (height - 2) + 'px;' +
-            // 'min-height: '+(height - spacing)+'px;'+
-            // 'max-height: 300px;'+
             'margin-left: auto;' +
             'margin-right: auto;' +
             'line-height: ' + (textSize + spacing) + 'px;' +
@@ -163,6 +163,14 @@ Z.TextMarker.Editor = {
             range.collapse(false);
             range.select();
         }
+    },
+
+    _filterContent: function(content) {
+        var pattern = /\\[v f t b]{1}/gi;
+        var enterPattern = /[\r\n]+$/gi;
+        var result = content.replace(pattern, '');
+        result = result.replace(enterPattern, '');
+        return result;
     }
 };
 

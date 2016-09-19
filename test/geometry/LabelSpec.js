@@ -219,4 +219,16 @@ describe('#Label', function() {
         vector.endEditText();
         expect(vector.isEditingText()).not.to.be.ok();
     });
+
+    it('edit with special characters', function() {
+        var vector = new maptalks.Label('label\r\n',center);
+        layer = new Z.VectorLayer('id');
+        map.addLayer(layer);
+        layer.addGeometry(vector);
+        vector.startEditText();
+        expect(vector.isEditingText()).to.be.ok();
+        vector.endEditText();
+        expect(vector.isEditingText()).not.to.be.ok();
+        expect(vector.getContent()).to.be.eql('label');
+    });
 });
