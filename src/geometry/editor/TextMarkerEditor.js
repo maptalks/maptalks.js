@@ -1,7 +1,6 @@
 
 /**
- * @memberOf maptalks.TextMarker
- * @name TextMarker.Edit
+ * @mixin maptalks.TextMarker.Edit
  */
 Z.TextMarker.Editor = {
     /**

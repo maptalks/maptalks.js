@@ -5,6 +5,7 @@
  * @class
  * @category geometry
  * @extends maptalks.TextMarker
+ * @mixes maptalks.TextMarker.Editor
  * @param {String} content                          - TextBox's text content
  * @param {maptalks.Coordinate} coordinates         - center
  * @param {Object} [options=null]                   - construct options, includes options defined in [Marker]{@link maptalks.Marker#options}
