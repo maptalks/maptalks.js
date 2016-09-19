@@ -115,21 +115,18 @@ Z.TextMarker.Editor = {
             textColor = symbol['textFill'] || '#000000',
             textSize = symbol['textSize'] || 12,
             height = labelSize['height'] || textSize,
+            lineColor = symbol['markerLineColor'] || '#cccccc',
             fill = symbol['markerFill'] || '#3398CC',
-            // lineColor = symbol['markerLineColor'] || '#ffffff',
             spacing = symbol['textLineSpacing'] || 0,
             opacity = symbol['markerFillOpacity'];
         var editor = Z.DomUtil.createEl('div');
         editor.contentEditable = true;
         editor.style.cssText = 'background: ' + fill + ';' +
-            'border: 1px solid #ff0000;' +
-            'filter:Alpha(opacity='+ opacity +');' +
+            'border: 1px solid ' + lineColor + ';' +
             'color: ' + textColor + ';' +
             'font-size: ' + textSize + 'px;' +
             'width: ' + (width - 2) + 'px;' +
             'height: ' + (height - 2) + 'px;' +
-            // 'min-height: '+(height - spacing)+'px;'+
-            // 'max-height: 300px;'+
             'margin-left: auto;' +
             'margin-right: auto;' +
             'line-height: ' + (textSize + spacing) + 'px;' +
@@ -169,10 +166,9 @@ Z.TextMarker.Editor = {
     },
 
     _filterContent: function(content) {
-        var result = '';
         var pattern = /\\[v f t b]{1}/gi;
         var enterPattern = /[\r\n]+$/gi;
-        result = content.replace(pattern, '');
+        var result = content.replace(pattern, '');
         result = result.replace(enterPattern, '');
         return result;
     }

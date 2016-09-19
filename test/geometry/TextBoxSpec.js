@@ -215,5 +215,6 @@ describe('#TextBox', function() {
         expect(vector.isEditingText()).to.be.ok();
         vector.endEditText();
         expect(vector.isEditingText()).not.to.be.ok();
+        expect(vector.getContent()).to.be.eql('textbox');
     });
 });
