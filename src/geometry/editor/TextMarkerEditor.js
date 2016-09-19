@@ -44,7 +44,7 @@ Z.TextMarker.Editor = {
             this.getMap().off('mousedown', this.endEditText, this);
             this._editUIMarker.remove();
             delete this._editUIMarker;
-            delete this._textEditor.onkeyup;
+            this._textEditor.onkeyup = null;
             delete this._textEditor;
             /**
              * edittextend when ended editing text content
