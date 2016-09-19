@@ -8,6 +8,7 @@
     "url": "https://github.com/MapTalks/maptalks.js.git"
   },
   "scripts": {
+    "report-coverage": "codecov",
     "lint": "eslint src/**/*.js",
     "test": "gulp test --cov",
     "pretest": "npm run lint"
