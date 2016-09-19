@@ -8,6 +8,7 @@
     "url": "https://github.com/MapTalks/maptalks.js.git"
   },
   "scripts": {
+    "report-coverage": "codecov",
     "lint": "eslint src/**/*.js",
     "test": "gulp test --cov",
     "pretest": "npm run lint"
@@ -22,7 +23,6 @@
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.0.0",
-    "gulp-coveralls": "^0.1.4",
     "gulp-cssnano": "^2.1.0",
     "gulp-footer": "^1.0.5",
     "gulp-gzip": "^1.2.0",
