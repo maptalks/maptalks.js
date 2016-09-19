@@ -203,7 +203,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             }
             this._sprite = {
                 'canvas' : canvas,
-                'origin' : origin
+                'offset' : origin
             };
         }
         this._genSprite = false;
