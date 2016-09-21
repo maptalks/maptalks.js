@@ -121,7 +121,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         if (mask) {
             mask.onZoomEnd();
         }
-        this.render();
+        this.render(true);
     },
 
     /**

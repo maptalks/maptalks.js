@@ -43,6 +43,17 @@ describe('VectorLayer', function() {
             });
             map.addLayer(layer);
         });
+
+        it('add, hide and show', function (done) {
+            layer = new maptalks.VectorLayer('v')
+                .addGeometry(new maptalks.Marker(map.getCenter())).hide().addTo(map);
+            layer.on('layerload', function () {
+                expect(layer.getCount()).to.be(1);
+                expect(layer).to.be.painted(0, -5);
+                done();
+            });
+            layer.show();
+        });
     });
 
     describe('can addGeometry', function() {
