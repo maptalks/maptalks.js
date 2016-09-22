@@ -41,6 +41,14 @@
          */
         options: defaultOptions,
 
+        addTo:function (owner) {
+            if (owner._menu && owner._menu !== this) {
+                owner.removeMenu();
+            }
+            owner._menu = this;
+            return Z.ui.UIComponent.prototype.addTo.apply(this, arguments);
+        },
+
         /**
          * Set the items of the menu.
          * @param {Object[]|String|HTMLElement} items - items of the menu
