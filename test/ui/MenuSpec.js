@@ -26,6 +26,49 @@ describe('ContextMenu Tests', function() {
         runTests.call(this, geometries[i], context);
     }
 
+    it('hide when geometry is hided', function() {
+        map.removeLayer('vector');
+        var layer = new maptalks.VectorLayer('vector');
+        var target = new maptalks.Marker(map.getCenter());
+        layer.addGeometry(target).addTo(map);
+        var items = [
+                {item: 'item1', click: function(){}},
+                '-',
+                {item: 'item2', click: function(){}}
+            ];
+
+        target.setMenu({
+                items: items,
+                width: 250
+            });
+        target.openMenu();
+        expect(target._menu.isVisible()).to.be.ok();
+        target.hide();
+        expect(target._menu.isVisible()).not.to.be.ok();
+        expect(target._menu.getDOM().style.display).to.be.eql('none');
+    });
+
+    it('hide when layer is hided', function() {
+        map.removeLayer('vector');
+        var layer = new maptalks.VectorLayer('vector');
+        var target = new maptalks.Marker(map.getCenter());
+        layer.addGeometry(target).addTo(map);
+        var items = [
+                {item: 'item1', click: function(){}},
+                '-',
+                {item: 'item2', click: function(){}}
+            ];
+
+        target.setMenu({
+                items: items,
+                width: 250
+            });
+        target.openMenu();
+        expect(target._menu.isVisible()).to.be.ok();
+        layer.hide();
+        expect(target._menu.isVisible()).not.to.be.ok();
+        expect(target._menu.getDOM().style.display).to.be.eql('none');
+    });
 });
 
 function runTests(target, _context) {

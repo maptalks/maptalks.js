@@ -1,4 +1,4 @@
-describe("Geometry.Infowindow", function() {
+describe("Geometry.InfoWindow", function() {
 
     var container;
     var map;
@@ -106,6 +106,42 @@ describe("Geometry.Infowindow", function() {
                 geo.removeInfoWindow();
                 expect(geo.getInfoWindow()).not.to.be.ok();
             }
+        });
+
+        it('hide when geometry is hided', function() {
+            var options = {
+                title: 'title',
+                content: 'content'
+            };
+            var geo = new maptalks.Marker(map.getCenter());
+            layer.addGeometry(geo);
+
+            geo.setInfoWindow(options);
+            geo.openInfoWindow();
+            var w = geo.getInfoWindow();
+            expect(w.isVisible()).to.be.ok();
+
+            geo.hide();
+
+            expect(w.isVisible()).not.to.be.ok();
+        });
+
+        it('hide when layer is hided', function() {
+            var options = {
+                title: 'title',
+                content: 'content'
+            };
+            var geo = new maptalks.Marker(map.getCenter());
+            layer.addGeometry(geo);
+
+            geo.setInfoWindow(options);
+            geo.openInfoWindow();
+            var w = geo.getInfoWindow();
+            expect(w.isVisible()).to.be.ok();
+
+            layer.hide();
+
+            expect(w.isVisible()).not.to.be.ok();
         });
 
     });
