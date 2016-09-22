@@ -339,6 +339,13 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         }
     },
 
+    hide: function () {
+        for (var i = 0, l = this._geoList.length; i < l; i++) {
+            this._geoList[i].onHide();
+        }
+        return Z.Layer.prototype.hide.call(this);
+    },
+
     _initCache: function () {
         if (!this._geoList) {
             this._geoList = [];

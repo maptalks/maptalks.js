@@ -400,6 +400,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     hide:function () {
         this.options['visible'] = false;
         if (this.getMap()) {
+            this.onHide();
             var painter = this._getPainter();
             if (painter) {
                 painter.hide();
@@ -967,6 +968,11 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             this._painter.remove();
         }
         delete this._painter;
+    },
+
+    onHide: function () {
+        this.closeMenu();
+        this.closeInfoWindow();
     },
 
     onZoomEnd:function () {
