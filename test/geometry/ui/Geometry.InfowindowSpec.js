@@ -144,6 +144,24 @@ describe("Geometry.InfoWindow", function() {
             expect(w.isVisible()).not.to.be.ok();
         });
 
+        it('create and hide when layer is hided', function() {
+            var options = {
+                title: 'title',
+                content: 'content'
+            };
+            var infoWindow = new maptalks.ui.InfoWindow(options);
+            var geo = new maptalks.Marker(map.getCenter());
+            layer.addGeometry(geo);
+
+            infoWindow.addTo(geo);
+            infoWindow.show(geo.getCenter())
+            var w = geo.getInfoWindow();
+            expect(w.isVisible()).to.be.ok();
+
+            layer.hide();
+
+            expect(w.isVisible()).not.to.be.ok();
+        });
     });
 
 });
