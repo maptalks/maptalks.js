@@ -77,6 +77,9 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @override
      */
     getMap:function () {
+        if (!this._owner) {
+            return null;
+        }
         if (this._owner instanceof Z.Map) {
             return this._owner;
         }
@@ -91,6 +94,10 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @fires maptalks.ui.UIComponent#showend
      */
     show: function (coordinate) {
+        var map = this.getMap();
+        if (!map) {
+            return this;
+        }
         if (!coordinate) {
             if (this._coordinate) {
                 coordinate = this._coordinate;
@@ -107,8 +114,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
          * @property {maptalks.ui.UIComponent} target - UIComponent
          */
         this.fire('showstart');
-        var map = this.getMap(),
-            container = this._getUIContainer();
+        var container = this._getUIContainer();
         if (!this.__uiDOM) {
             this._switchEvents('on');
         }
@@ -161,7 +167,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @fires maptalks.ui.UIComponent#hide
      */
     hide:function () {
-        if (!this.getDOM()) {
+        if (!this.getDOM() || !this.getMap()) {
             return this;
         }
         this.getDOM().style.display = 'none';
@@ -192,6 +198,9 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @fires maptalks.ui.UIComponent#remove
      */
     remove: function () {
+        if (!this._owner) {
+            return this;
+        }
         this.hide();
         this._switchEvents('off');
         if (this.onRemove) {
@@ -201,7 +210,6 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             this._removePrevDOM();
         }
         delete this._owner;
-        delete this._map;
         /**
          * remove event.
          *
@@ -235,6 +243,9 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     getPosition : function () {
+        if (!this.getMap()) {
+            return null;
+        }
         var p = this._getViewPoint();
         if (this.getOffset) {
             var o = this.getOffset();
@@ -373,7 +384,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     onZooming : function (param) {
-        if (!this.isVisible() || !this.getDOM()) {
+        if (!this.isVisible() || !this.getDOM() || !this.getMap()) {
             return;
         }
         var dom = this.getDOM(),
@@ -389,7 +400,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     onZoomEnd : function () {
-        if (!this.isVisible() || !this.getDOM()) {
+        if (!this.isVisible() || !this.getDOM() || !this.getMap()) {
             return;
         }
         var dom = this.getDOM(),
