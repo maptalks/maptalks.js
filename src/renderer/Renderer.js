@@ -461,6 +461,9 @@ Z.Util.extend(Z.renderer.Canvas.Resources.prototype, {
     },
 
     isResourceLoaded:function (url, checkSVG) {
+        if (!url) {
+            return false;
+        }
         if (this._errors[this._getImgUrl(url)]) {
             return true;
         }
