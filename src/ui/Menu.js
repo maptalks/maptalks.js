@@ -108,6 +108,9 @@
          * @private
          */
         getOffset:function () {
+            if (!this.getMap()) {
+                return null;
+            }
             var mapSize = this.getMap().getSize(),
                 p = this.getMap().viewPointToContainerPoint(this._getViewPoint()),
                 size = this.getSize();
