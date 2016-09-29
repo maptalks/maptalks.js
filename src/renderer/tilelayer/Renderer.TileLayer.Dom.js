@@ -201,8 +201,9 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
                 if (this._pruneTimeout) {
                     clearTimeout(this._pruneTimeout);
                 }
-                var timeout = this.getMap() ? this.getMap().options['zoomAnimationDuration'] : 250,
-                    pruneLevels = this.getMap() ? !this.getMap().options['zoomBackground'] : true;
+                var map = this.getMap();
+                var timeout = map ? map.options['zoomAnimationDuration'] : 250,
+                    pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
                 // to trigger a pruning.
                 this._pruneTimeout = setTimeout(Z.Util.bind(this._pruneTiles, this, pruneLevels), timeout + 100);
