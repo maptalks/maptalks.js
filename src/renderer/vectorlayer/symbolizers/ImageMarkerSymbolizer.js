@@ -27,8 +27,8 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
         var img = this._getImage(resources);
         if (!img) {
-            if (!Z.Browser.phantomjs) {
-                Z.Util.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
+            if (!Z.Browser.phantomjs && console) {
+                console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
             }
             return;
         }

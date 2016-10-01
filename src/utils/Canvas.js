@@ -87,8 +87,8 @@ Z.Canvas = {
                 fillTexture = canvas;
             }
             if (!fillTexture) {
-                if (!Z.Browser.phantomjs) {
-                    Z.Util.warn('img not found for', fillImgUrl);
+                if (!Z.Browser.phantomjs && console) {
+                    console.warn('img not found for', fillImgUrl);
                 }
             } else {
                 ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
@@ -171,8 +171,8 @@ Z.Canvas = {
         }
         if (imageTexture) {
             ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
-        } else if (!Z.Browser.phantomjs) {
-            Z.Util.warn('img not found for', imgUrl);
+        } else if (!Z.Browser.phantomjs && console) {
+            console.warn('img not found for', imgUrl);
         }
     },
 
@@ -241,10 +241,11 @@ Z.Canvas = {
                 ctx.drawImage(img, x, y);
             }
         } catch (error) {
-            Z.Util.warn('error when drawing image on canvas:', error);
-            Z.Util.warn(img);
+            if (console) {
+                console.warn('error when drawing image on canvas:', error);
+                console.warn(img);
+            }
         }
-
     },
 
     text:function (ctx, text, pt, style, textDesc) {
