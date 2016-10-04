@@ -208,15 +208,11 @@ Z.Util.extend(Z.Extent.prototype, /** @lends maptalks.Extent.prototype */{
      * @param  {maptalks.Coordinate|Number[]} coordinate - input point
      * @returns {Boolean}
      */
-    contains: function (coordinate) {
-        var x, y;
-        var c = new this._clazz(coordinate);
-        x = c.x;
-        y = c.y;
-        return (x >= this.xmin) &&
-            (x <= this.xmax) &&
-            (y >= this.ymin) &&
-            (y <= this.ymax);
+    contains: function (c) {
+        return (c.x >= this.xmin) &&
+            (c.x <= this.xmax) &&
+            (c.y >= this.ymin) &&
+            (c.y <= this.ymax);
     },
 
     /**

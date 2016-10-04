@@ -44,7 +44,10 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             if (!resources.isResourceLoaded(imgURL)) {
                 resources.addResource(imgURL, img);
             }
-            this.geometry._getPainter().removeCache();
+            var painter = this.geometry._getPainter();
+            if (!painter.isSpriting()) {
+                painter.removeCache();
+            }
         }
         var alpha;
         if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer) &&
@@ -93,16 +96,20 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     getDxDy:function () {
         var s = this.style;
-        var dx = s['markerDx'],
-            dy = s['markerDy'];
+        var dx = s['markerDx'] || 0,
+            dy = s['markerDy'] || 0;
         return new Z.Point(dx, dy);
     },
 
-    getMarkerExtent:function () {
-        var width = this.style['markerWidth'],
-            height = this.style['markerHeight'];
+    getMarkerExtent:function (resources) {
+        var url = this.style['markerFile'],
+            img = resources ? resources.getImage(url) : null;
+        var width = this.style['markerWidth'] || (img ? img.width : 0),
+            height = this.style['markerHeight'] || (img ? img.height : 0);
         var dxdy = this.getDxDy();
         var extent = new Z.PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
+        extent['origin'] = new Z.Point(width / 2, height);
+        extent['offset'] = new Z.Point(0, -height / 2)._add(dxdy);
         return extent;
     },
 

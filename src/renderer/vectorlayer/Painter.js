@@ -70,7 +70,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             this._renderPoints = {};
         }
         if (!placement) {
-            placement = 'default';
+            placement = 'point';
         }
         if (!this._renderPoints[placement]) {
             this._renderPoints[placement] = this.geometry._getRenderPoints(placement);
@@ -152,12 +152,90 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         }
 
         this._matrix = matrix;
+        this.symbolize(matrix, contexts);
+    },
+
+    symbolize: function (matrix, contexts) {
         this._prepareShadow(contexts[0]);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._painted = true;
         this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
+    },
+
+    getSprite: function (resources) {
+        if (!(this.geometry instanceof Z.Marker)) {
+            return null;
+        }
+        this._genSprite = true;
+        if (!this._sprite) {
+            var extent = new Z.PointExtent();
+            var origin, offset;
+            this.symbolizers.forEach(function (s) {
+                var markerExtent = s.getMarkerExtent(resources);
+                extent._combine(markerExtent);
+                if (!origin) {
+                    origin = markerExtent.origin;
+                } else {
+                    var max = extent.getMax();
+                    if (markerExtent.origin.x > max.x) {
+                        origin.x = markerExtent.origin.x;
+                    }
+                    if (markerExtent.origin.y > max.y) {
+                        origin.y = markerExtent.origin.y;
+                    }
+                }
+
+                if (!offset) {
+                    offset = markerExtent.offset;
+                } else {
+                    // this symbolizer's offset is at the same direction with the overall symbol's,
+                    if (offset.x * markerExtent.offset.x > 0) {
+                        offset.x = Math.max(Math.abs(offset.x), Math.abs(markerExtent.offset.x)) * offset.x / Math.abs(offset.x);
+                    } else {
+                        offset.x = offset.x + markerExtent.offset.x;
+                    }
+
+                    // this symbolizer's offset is at the opposite direction with the overall symbol's.
+                    if (offset.y * markerExtent.offset.y > 0) {
+                        offset.y = Math.max(Math.abs(offset.y), Math.abs(markerExtent.offset.y)) * offset.y / Math.abs(offset.y);
+                    } else {
+                        offset.y = offset.y + markerExtent.offset.y;
+                    }
+                }
+            });
+
+            var canvas = Z.Canvas.createCanvas(extent.getWidth(), extent.getHeight(), this.getMap() ? this.getMap().CanvasClass : null);
+            var bak;
+            if (this._renderPoints) {
+                bak = this._renderPoints['point'];
+            } else {
+                this._renderPoints = {};
+            }
+            var contexts = [canvas.getContext('2d'), resources];
+            // this.symbolize(null, [canvas.getContext('2d'), resources]);
+            this._prepareShadow(canvas.getContext('2d'));
+            for (var i = this.symbolizers.length - 1; i >= 0; i--) {
+                var markerExtent = this.symbolizers[i].getMarkerExtent(resources);
+                var sOffset = markerExtent.origin.substract(origin);
+                this._renderPoints['point'] = [[origin.add(sOffset)]];
+                this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
+            }
+            if (bak) {
+                this._renderPoints['point'] = bak;
+            }
+            this._sprite = {
+                'canvas' : canvas,
+                'offset' : offset
+            };
+        }
+        this._genSprite = false;
+        return this._sprite;
+    },
+
+    isSpriting: function () {
+        return this._genSprite;
     },
 
     _prepareShadow: function (ctx) {
@@ -314,6 +392,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         delete this._renderPoints;
         delete this._rendResources;
         delete this._extent2D;
+        delete this._sprite;
     }
 });
 
