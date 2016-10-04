@@ -677,9 +677,10 @@ Z.Util = {
     /**
      * Get external resources from the given symbol
      * @param  {Object} symbol      - symbol
+     * @param  {Boolean} toAbsolute - whether convert url to aboslute
      * @return {String[]}           - resource urls
      */
-    getExternalResources: function (symbol) {
+    getExternalResources: function (symbol, toAbsolute) {
         if (!symbol) {
             return null;
         }
@@ -694,6 +695,9 @@ Z.Util = {
             symbol = symbols[i];
             if (!symbol) {
                 continue;
+            }
+            if (toAbsolute) {
+                symbol = Z.Util.convertResourceUrl(symbol);
             }
             for (ii = 0; ii < props.length; ii++) {
                 res = symbol[props[ii]];
@@ -765,6 +769,40 @@ Z.Util = {
             }
         }
         return s;
+    },
+
+    /**
+     * Compile layer's style, styles to symbolize layer's geometries, e.g.<br>
+     * <pre>
+     * [
+     *   {
+     *     'filter' : ['==', 'foo', 'val'],
+     *     'symbol' : {'markerFile':'foo.png'}
+     *   }
+     * ]
+     * </pre>
+     * @param  {Object|Object[]} styles - style to compile
+     * @return {Object[]}       compiled styles
+     */
+    compileStyle: function (styles) {
+        if (!Z.Util.isArray(styles)) {
+            return Z.Util.compileStyle([styles]);
+        }
+        var compiled = [];
+        for (var i = 0; i < styles.length; i++) {
+            if (styles[i]['filter'] === true) {
+                compiled.push({
+                    'filter' : function () { return true; },
+                    'symbol' : styles[i].symbol
+                });
+            } else {
+                compiled.push({
+                    'filter' : Z.Util.createFilter(styles[i]['filter']),
+                    'symbol' : styles[i].symbol
+                });
+            }
+        }
+        return compiled;
     }
 
 };

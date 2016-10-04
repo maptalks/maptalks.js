@@ -261,9 +261,11 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (markerType  === 'bar' || markerType  === 'pie' || markerType  === 'pin') {
             result = new Z.PointExtent(dxdy.add(-width / 2, -height), dxdy.add(width / 2, 0));
             result['origin'] = new Z.Point(width / 2, height);
+            result['offset'] = new Z.Point(0, -height / 2)._add(dxdy);
         } else {
             result = new Z.PointExtent(dxdy.add(-width / 2, -height / 2), dxdy.add(width / 2, height / 2));
             result['origin'] = new Z.Point(width / 2, height / 2);
+            result['offset'] = new Z.Point(0, 0)._add(dxdy);
         }
         if (this.style['markerLineWidth']) {
             result._expand(this.style['markerLineWidth'] / 2);
