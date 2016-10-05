@@ -171,41 +171,11 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         this._genSprite = true;
         if (!this._sprite) {
             var extent = new Z.PointExtent();
-            var origin, offset;
             this.symbolizers.forEach(function (s) {
                 var markerExtent = s.getMarkerExtent(resources);
                 extent._combine(markerExtent);
-                if (!origin) {
-                    origin = markerExtent.origin;
-                } else {
-                    var max = extent.getMax();
-                    if (markerExtent.origin.x > max.x) {
-                        origin.x = markerExtent.origin.x;
-                    }
-                    if (markerExtent.origin.y > max.y) {
-                        origin.y = markerExtent.origin.y;
-                    }
-                }
-
-                if (!offset) {
-                    offset = markerExtent.offset;
-                } else {
-                    // this symbolizer's offset is at the same direction with the overall symbol's,
-                    if (offset.x * markerExtent.offset.x > 0) {
-                        offset.x = Math.max(Math.abs(offset.x), Math.abs(markerExtent.offset.x)) * offset.x / Math.abs(offset.x);
-                    } else {
-                        offset.x = offset.x + markerExtent.offset.x;
-                    }
-
-                    // this symbolizer's offset is at the opposite direction with the overall symbol's.
-                    if (offset.y * markerExtent.offset.y > 0) {
-                        offset.y = Math.max(Math.abs(offset.y), Math.abs(markerExtent.offset.y)) * offset.y / Math.abs(offset.y);
-                    } else {
-                        offset.y = offset.y + markerExtent.offset.y;
-                    }
-                }
             });
-
+            var origin = extent.getMin().multi(-1);
             var canvas = Z.Canvas.createCanvas(extent.getWidth(), extent.getHeight(), this.getMap() ? this.getMap().CanvasClass : null);
             var bak;
             if (this._renderPoints) {
@@ -214,12 +184,10 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
                 this._renderPoints = {};
             }
             var contexts = [canvas.getContext('2d'), resources];
-            // this.symbolize(null, [canvas.getContext('2d'), resources]);
             this._prepareShadow(canvas.getContext('2d'));
             for (var i = this.symbolizers.length - 1; i >= 0; i--) {
-                var markerExtent = this.symbolizers[i].getMarkerExtent(resources);
-                var sOffset = markerExtent.origin.substract(origin);
-                this._renderPoints['point'] = [[origin.add(sOffset)]];
+                var dxdy = this.symbolizers[i].getDxDy();
+                this._renderPoints['point'] = [[origin.add(dxdy)]];
                 this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
             }
             if (bak) {
@@ -227,7 +195,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             }
             this._sprite = {
                 'canvas' : canvas,
-                'offset' : offset
+                'offset' : extent.getCenter()
             };
         }
         this._genSprite = false;

@@ -29,6 +29,70 @@ describe('#Sprite', function() {
         image.src = url;
     });
 
+    it('image sprite without markerWidth and markerHeight', function(done) {
+        var url = 'http://localhost:12345/resources/pattern.png';
+        var marker = new maptalks.Marker([0, 0], {
+            symbol : {
+                'markerFile' : url,
+                'markerDx' : 10,
+                'markerDy' : 5
+            }
+        });
+        var symbol = marker.getSymbol();
+        var image = new Image();
+        image.onload = function () {
+            var resources = new maptalks.renderer.Canvas.Resources();
+            resources.addResource([url], image);
+            var sprite = marker._getPainter().getSprite(resources);
+            var canvas = sprite.canvas;
+            expect(canvas).to.be.ok();
+            expect(sprite.offset.x).to.be.eql(0 + 10);
+            expect(sprite.offset.y).to.be.eql(-image.height / 2 + 5);
+            expect(canvas.getContext('2d').getImageData(10, 10, 1, 1).data[3]).to.be.above(0);
+            expect(canvas.width).to.be.eql(image.width);
+            expect(canvas.height).to.be.eql(image.height);
+            done();
+        }
+        image.src = url;
+    });
+
+    it('composite symbol sprite', function(done) {
+        var url = 'http://localhost:12345/resources/pattern.png';
+        var marker = new maptalks.Marker([0, 0], {
+            symbol : [
+                {
+                    'markerFile' : url,
+                    'markerWidth' : 20,
+                    'markerHeight' : 20,
+                    'markerDx' : 50,
+                    'markerDy' : 5
+                },
+                {
+                    'markerType' : 'ellipse',
+                    'markerWidth' : 80,
+                    'markerHeight' : 70
+                }
+
+            ]
+        });
+        var symbol = marker.getSymbol();
+        var image = new Image();
+        image.onload = function () {
+            var resources = new maptalks.renderer.Canvas.Resources();
+            resources.addResource([url], image);
+            var sprite = marker._getPainter().getSprite(resources);
+            var canvas = sprite.canvas;
+            expect(canvas).to.be.ok();
+            expect(sprite.offset.x).to.be.eql(9.75);
+            expect(sprite.offset.y).to.be.eql(0);
+            expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
+            expect(canvas.width).to.be.eql(80 / 2 + 50 + 20 / 2);
+            expect(canvas.height).to.be.eql(71);
+            done();
+        }
+        image.src = url;
+    });
+
     it('vector marker sprite: ellipse', function() {
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
