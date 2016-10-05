@@ -41,7 +41,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             return;
         }
         this._prepareContext(ctx);
-        if (this.geometry.getLayer().getMask() === this.geometry ||
+        if (this.geometry._getPainter().isSpriting() || this.geometry.getLayer().getMask() === this.geometry ||
             this.geometry.getLayer().options['cacheVectorOnCanvas'] === false) {
             this._drawMarkers(ctx, cookedPoints, resources);
         } else {
@@ -264,7 +264,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             result = new Z.PointExtent(dxdy.add(-width / 2, -height / 2), dxdy.add(width / 2, height / 2));
         }
         if (this.style['markerLineWidth']) {
-            result = result.expand(this.style['markerLineWidth'] / 2);
+            result._expand(this.style['markerLineWidth'] / 2);
         }
         return result;
     },

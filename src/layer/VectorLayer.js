@@ -39,6 +39,15 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'cacheSvgOnCanvas'          : false
     },
 
+    initialize:function (id, opts) {
+        var options = Z.Util.extend({}, opts);
+        if (options['style']) {
+            this.setStyle(options['style']);
+            delete options['style'];
+        }
+        Z.Layer.prototype.initialize.call(this, id, options);
+    },
+
     /**
      * Gets layer's style.
      * @return {Object|Object[]} layer's style
@@ -70,7 +79,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
      */
     setStyle: function (style) {
         this._style = style;
-        this._cookedStyles = this._compileStyle(style);
+        this._cookedStyles = Z.Util.compileStyle(style);
         this.forEach(function (geometry) {
             this._styleGeometry(geometry);
         }, this);
@@ -129,27 +138,6 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
             }
         }
         return false;
-    },
-
-    _compileStyle: function (styles) {
-        if (!Z.Util.isArray(styles)) {
-            return this._compileStyle([styles]);
-        }
-        var cooked = [];
-        for (var i = 0; i < styles.length; i++) {
-            if (styles[i]['filter'] === true) {
-                cooked.push({
-                    'filter' : function () { return true; },
-                    'symbol' : styles[i].symbol
-                });
-            } else {
-                cooked.push({
-                    'filter' : Z.Util.createFilter(styles[i]['filter']),
-                    'symbol' : styles[i].symbol
-                });
-            }
-        }
-        return cooked;
     },
 
     /**

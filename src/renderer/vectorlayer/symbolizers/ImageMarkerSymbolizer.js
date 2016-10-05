@@ -27,8 +27,8 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
         var img = this._getImage(resources);
         if (!img) {
-            if (!Z.Browser.phantomjs) {
-                Z.Util.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
+            if (!Z.Browser.phantomjs && console) {
+                console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
             }
             return;
         }
@@ -44,7 +44,10 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             if (!resources.isResourceLoaded(imgURL)) {
                 resources.addResource(imgURL, img);
             }
-            this.geometry._getPainter().removeCache();
+            var painter = this.geometry._getPainter();
+            if (!painter.isSpriting()) {
+                painter.removeCache();
+            }
         }
         var alpha;
         if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer) &&
@@ -93,17 +96,18 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     getDxDy:function () {
         var s = this.style;
-        var dx = s['markerDx'],
-            dy = s['markerDy'];
+        var dx = s['markerDx'] || 0,
+            dy = s['markerDy'] || 0;
         return new Z.Point(dx, dy);
     },
 
-    getMarkerExtent:function () {
-        var width = this.style['markerWidth'],
-            height = this.style['markerHeight'];
+    getMarkerExtent:function (resources) {
+        var url = this.style['markerFile'],
+            img = resources ? resources.getImage(url) : null;
+        var width = this.style['markerWidth'] || (img ? img.width : 0),
+            height = this.style['markerHeight'] || (img ? img.height : 0);
         var dxdy = this.getDxDy();
-        var extent = new Z.PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
-        return extent;
+        return new Z.PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
     },
 
     translate:function () {

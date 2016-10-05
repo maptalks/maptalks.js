@@ -126,16 +126,22 @@ describe('#GeometryCollection', function() {
             var points = genPoints();
             var collection = new maptalks.GeometryCollection(points);
             var symbol = {
-                'markeFile' : 'test',
+                'markerFile' : 'test',
                 'markerWidth' : 40,
                 'markerHeight' : 50
             };
+            var expected = {
+                'markerFile' : 'http://localhost:12345/test',
+                'markerWidth' : 40,
+                'markerHeight' : 50
+            };
+
             collection.setSymbol(symbol);
 
             var counter = 0;
             collection.forEach(function(geometry) {
                 counter++;
-                expect(geometry.getSymbol()).to.be.eql(symbol);
+                expect(geometry.getSymbol()).to.be.eql(expected);
             });
             expect(counter).to.be.eql(points.length);
         });

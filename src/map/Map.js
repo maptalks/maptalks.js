@@ -376,6 +376,10 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         return new Z.Size(this.width, this.height);
     },
 
+    /**
+     * Get container extent of the map
+     * @return {maptalks.PointExtent}
+     */
     getContainerExtent: function () {
         return new Z.PointExtent(0, 0, this.width, this.height);
     },
@@ -387,6 +391,19 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      */
     getExtent:function () {
         return this._pointToExtent(this._get2DExtent());
+    },
+
+    /**
+     * Get the projected geographical extent of map's current view extent.
+     *
+     * @return {maptalks.Extent}
+     */
+    getProjExtent: function () {
+        var extent2D = this._get2DExtent();
+        return new Z.Extent(
+            this._pointToPrj(extent2D.getMin()),
+            this._pointToPrj(extent2D.getMax())
+        );
     },
 
     /**
