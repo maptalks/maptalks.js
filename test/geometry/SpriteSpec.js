@@ -1,7 +1,7 @@
 describe('#Sprite', function() {
 
     it('image sprite', function(done) {
-        var url = 'http://localhost:12345/resources/red01.png';
+        var url = 'http://localhost:12345/resources/pattern.png';
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
                 'markerFile' : url,
@@ -44,21 +44,6 @@ describe('#Sprite', function() {
         expect(sprite.height).to.be.eql(symbol.markerHeight + 1); // +1 cos of lineWidth
     });
 
-    it('text marker sprite', function() {
-        var marker = new maptalks.Marker([0, 0], {
-            symbol : {
-                'textName' : '■■■■■■■■■',
-                'textSize' : 20,
-                'textDx' : 10,
-                'textDy' : 20
-            }
-        });
-        var symbol = marker.getSymbol();
-        var sprite = marker._getPainter().getSprite().canvas;
-        expect(sprite).to.be.ok();
-        expect(sprite.getContext('2d').getImageData(10, 10, 1, 1).data[3]).to.be.above(0);
-    });
-
     it('vector path marker sprite', function(done) {
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
@@ -78,12 +63,42 @@ describe('#Sprite', function() {
             }
         });
         var symbol = marker.getSymbol();
-        var sprite = marker._getPainter().getSprite().canvas;
 
+        if (maptalks.Browser.phantomjs) {
+            // unlike chrome, in phantomjs, the image with svg base64 can't be loaded immediately.
+            var url = maptalks.Geometry.getMarkerPathBase64(symbol);
+            var img = new Image();
+            img.onload = function () {
+                var sprite = marker._getPainter().getSprite().canvas;
+                expect(sprite).to.be.ok();
+                expect(sprite.getContext('2d').getImageData(40, 15, 1, 1).data[3]).to.be.above(0);
+                expect(sprite.width).to.be.eql(symbol.markerWidth);
+                expect(sprite.height).to.be.eql(symbol.markerHeight);
+                done();
+            }
+            img.src = url;
+        } else{
+            var sprite = marker._getPainter().getSprite().canvas;
+            expect(sprite).to.be.ok();
+            expect(sprite.getContext('2d').getImageData(40, 15, 1, 1).data[3]).to.be.above(0);
+            expect(sprite.width).to.be.eql(symbol.markerWidth);
+            expect(sprite.height).to.be.eql(symbol.markerHeight);
+            done();
+        }
+    });
+
+    it('text marker sprite', function() {
+        var marker = new maptalks.Marker([0, 0], {
+            symbol : {
+                'textName' : '■■■■■■■■■',
+                'textSize' : 20,
+                'textDx' : 10,
+                'textDy' : 20
+            }
+        });
+        var symbol = marker.getSymbol();
+        var sprite = marker._getPainter().getSprite().canvas;
         expect(sprite).to.be.ok();
-        expect(sprite.getContext('2d').getImageData(40, 15, 1, 1).data[3]).to.be.above(0);
-        expect(sprite.width).to.be.eql(symbol.markerWidth);
-        expect(sprite.height).to.be.eql(symbol.markerHeight);
-        done();
+        expect(sprite.getContext('2d').getImageData(10, 10, 1, 1).data[3]).to.be.above(0);
     });
 });

@@ -13,8 +13,6 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
         if (Z.Util.isNil(this.style['markerHeight'])) {
             this.style['markerHeight'] = 80;
         }
-        this._pathImage = new Image();
-        this._pathImage.src = this._url[0];
     },
 
     _prepareContext: function () {
@@ -25,10 +23,13 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
         if (resources && resources.isResourceLoaded(this._url)) {
             return resources.getImage(this._url);
         }
+        var image = new Image();
+        image.src = this._url[0];
         if (resources) {
-            resources.addResource(this._url, this._pathImage);
+            resources.addResource(this._url, image);
         }
-        return this._pathImage;
+        return image;
+        // return resources ? resources.getImage(this._url) : null;
     }
 });
 
