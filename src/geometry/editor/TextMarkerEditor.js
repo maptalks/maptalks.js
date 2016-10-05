@@ -116,8 +116,8 @@ Z.TextMarker.Editor = {
             height = labelSize['height'] || textSize,
             lineColor = symbol['markerLineColor'] || '#cccccc',
             fill = symbol['markerFill'] || '#3398CC',
-            spacing = symbol['textLineSpacing'] || 0,
-            opacity = symbol['markerFillOpacity'];
+            spacing = symbol['textLineSpacing'] || 0;
+            // opacity = symbol['markerFillOpacity'];
         var editor = Z.DomUtil.createEl('div');
         editor.contentEditable = true;
         editor.style.cssText = 'background: ' + fill + ';' +
@@ -164,7 +164,7 @@ Z.TextMarker.Editor = {
         }
     },
 
-    _filterContent: function(content) {
+    _filterContent: function (content) {
         var pattern = /\\[v f t b]{1}/gi;
         var enterPattern = /[\r\n]+$/gi;
         var result = content.replace(pattern, '');

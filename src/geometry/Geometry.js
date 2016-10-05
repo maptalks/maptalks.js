@@ -953,7 +953,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     _getPainter:function () {
-        if (this.getMap() && !this._painter) {
+        if (!this._painter) {
             if (this instanceof Z.GeometryCollection) {
                 this._painter = new Z.CollectionPainter(this);
             } else {

@@ -22,11 +22,11 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     symbolize:function (ctx) {
         var geometry = this.geometry,
             layer = geometry.getLayer();
-        if (!geometry.options['debug'] && !layer.options['debug']) {
+        if (!geometry.options['debug'] && (layer && !layer.options['debug'])) {
             return;
         }
         var map = this.getMap();
-        if (map._zooming) {
+        if (!map || map._zooming) {
             return;
         }
         Z.Canvas.prepareCanvas(ctx, this.styles);

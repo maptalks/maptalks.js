@@ -70,7 +70,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             this._renderPoints = {};
         }
         if (!placement) {
-            placement = 'default';
+            placement = 'point';
         }
         if (!this._renderPoints[placement]) {
             this._renderPoints[placement] = this.geometry._getRenderPoints(placement);
@@ -152,12 +152,56 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         }
 
         this._matrix = matrix;
+        this.symbolize(matrix, contexts);
+    },
+
+    symbolize: function (matrix, contexts) {
         this._prepareShadow(contexts[0]);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._painted = true;
         this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
+    },
+
+    getSprite: function (resources) {
+        if (!(this.geometry instanceof Z.Marker)) {
+            return null;
+        }
+        this._genSprite = true;
+        if (!this._sprite) {
+            var extent = new Z.PointExtent();
+            this.symbolizers.forEach(function (s) {
+                var markerExtent = s.getMarkerExtent(resources);
+                extent._combine(markerExtent);
+            });
+            var origin = extent.getMin().multi(-1);
+            var canvas = Z.Canvas.createCanvas(extent.getWidth(), extent.getHeight(), this.getMap() ? this.getMap().CanvasClass : null);
+            var bak;
+            if (this._renderPoints) {
+                bak = this._renderPoints;
+            }
+            var contexts = [canvas.getContext('2d'), resources];
+            this._prepareShadow(canvas.getContext('2d'));
+            for (var i = this.symbolizers.length - 1; i >= 0; i--) {
+                var dxdy = this.symbolizers[i].getDxDy();
+                this._renderPoints = {'point' : [[origin.add(dxdy)]]};
+                this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
+            }
+            if (bak) {
+                this._renderPoints = bak;
+            }
+            this._sprite = {
+                'canvas' : canvas,
+                'offset' : extent.getCenter()
+            };
+        }
+        this._genSprite = false;
+        return this._sprite;
+    },
+
+    isSpriting: function () {
+        return this._genSprite;
     },
 
     _prepareShadow: function (ctx) {
@@ -314,6 +358,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         delete this._renderPoints;
         delete this._rendResources;
         delete this._extent2D;
+        delete this._sprite;
     }
 });
 
