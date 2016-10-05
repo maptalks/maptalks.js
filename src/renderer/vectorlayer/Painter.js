@@ -179,19 +179,17 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             var canvas = Z.Canvas.createCanvas(extent.getWidth(), extent.getHeight(), this.getMap() ? this.getMap().CanvasClass : null);
             var bak;
             if (this._renderPoints) {
-                bak = this._renderPoints['point'];
-            } else {
-                this._renderPoints = {};
+                bak = this._renderPoints;
             }
             var contexts = [canvas.getContext('2d'), resources];
             this._prepareShadow(canvas.getContext('2d'));
             for (var i = this.symbolizers.length - 1; i >= 0; i--) {
                 var dxdy = this.symbolizers[i].getDxDy();
-                this._renderPoints['point'] = [[origin.add(dxdy)]];
+                this._renderPoints = {'point' : [[origin.add(dxdy)]]};
                 this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
             }
             if (bak) {
-                this._renderPoints['point'] = bak;
+                this._renderPoints = bak;
             }
             this._sprite = {
                 'canvas' : canvas,
