@@ -1,9 +1,10 @@
 describe('#Sprite', function() {
 
     it('image sprite', function(done) {
+        var url = 'http://localhost:12345/resources/red01.png';
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
-                'markerFile' : '../resources/red01.png',
+                'markerFile' : url,
                 'markerWidth' : 80,
                 'markerHeight' : 60,
                 'markerDx' : 10,
@@ -14,7 +15,7 @@ describe('#Sprite', function() {
         var image = new Image();
         image.onload = function () {
             var resources = new maptalks.renderer.Canvas.Resources();
-            resources.addResource(['http://resources/red01.png'], image);
+            resources.addResource([url], image);
             var sprite = marker._getPainter().getSprite(resources).canvas;
             expect(sprite).to.be.ok();
             expect(sprite.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
@@ -22,7 +23,7 @@ describe('#Sprite', function() {
             expect(sprite.height).to.be.eql(symbol.markerHeight);
             done();
         }
-        image.src = '../resources/red01.png';
+        image.src = url;
     });
 
     it('vector marker sprite', function() {
@@ -56,7 +57,6 @@ describe('#Sprite', function() {
         var sprite = marker._getPainter().getSprite().canvas;
         expect(sprite).to.be.ok();
         expect(sprite.getContext('2d').getImageData(10, 10, 1, 1).data[3]).to.be.above(0);
-        console.log(sprite.width, sprite.height)
     });
 
     it('vector path marker sprite', function(done) {
@@ -79,11 +79,11 @@ describe('#Sprite', function() {
         });
         var symbol = marker.getSymbol();
         var sprite = marker._getPainter().getSprite().canvas;
+
         expect(sprite).to.be.ok();
-        expect(sprite.getContext('2d').getImageData(40, 10, 1, 1).data[3]).to.be.above(0);
+        expect(sprite.getContext('2d').getImageData(40, 15, 1, 1).data[3]).to.be.above(0);
         expect(sprite.width).to.be.eql(symbol.markerWidth);
         expect(sprite.height).to.be.eql(symbol.markerHeight);
         done();
-
     });
 });
