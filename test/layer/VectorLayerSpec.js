@@ -1,6 +1,6 @@
 // var utils = require('../SpecUtils.js');
 
-describe('VectorLayer', function() {
+describe('#VectorLayer', function() {
 
     var container;
     var map;

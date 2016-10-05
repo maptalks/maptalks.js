@@ -78,9 +78,6 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
       ]);
      */
     setStyle: function (style) {
-        if (style && !Z.Util.isArray(style)) {
-            style = [style];
-        }
         this._style = style;
         this._cookedStyles = Z.Util.compileStyle(style);
         this.forEach(function (geometry) {
