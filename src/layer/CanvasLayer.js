@@ -5,6 +5,7 @@
  * @category layer
  * @extends {maptalks.Layer}
  * @param {String|Number} id - layer's id
+ * @param {Object} options - options defined in [Layer.options]{@link maptalks.Layer#options}
  */
 Z.CanvasLayer = Z.Layer.extend({
 
