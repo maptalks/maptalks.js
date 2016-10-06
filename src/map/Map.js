@@ -349,10 +349,10 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!center) {
             return this;
         }
+        center = new Z.Coordinate(center);
         if (!this._verifyExtent(center)) {
             return this;
         }
-        center = new Z.Coordinate(center);
         if (!this._loaded) {
             this._center = center;
             return this;
@@ -1598,7 +1598,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!maxExt) {
             return true;
         }
-        return maxExt.contains(new Z.Coordinate(center));
+        return maxExt.contains(center);
     },
 
     /**
