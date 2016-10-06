@@ -73,40 +73,24 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             }
         }
         var point = this.coordinateToPoint(new Z.Coordinate(opts['coordinate']))._round();
-        var fn = callback,
-            filter = opts['filter'];
-        var hits = [],
-            isEnd = false;
+        var options = Z.Util.extend({}, opts);
+        var hits = [];
         for (i = layers.length - 1; i >= 0; i--) {
-            if (isEnd) {
+            if (opts['count'] && hits.length >= opts['count']) {
                 break;
             }
             var layer = layers[i];
             if (!layer || !layer.getMap() || !layer.isVisible() || (!opts['includeInternals'] && layer.getId().indexOf(Z.internalLayerPrefix) >= 0)) {
                 continue;
             }
-            var allGeos = layers[i].getGeometries();
-            for (var j = allGeos.length - 1; j >= 0; j--) {
-                var geo = allGeos[j];
-                if (!geo || !geo.isVisible()) {
-                    continue;
+            if (layer.identify) {
+                if (opts['count']) {
+                    options['count'] = opts['count'] - hits.length;
                 }
-                var pxExtent = !geo._getPainter() ? null : geo._getPainter().get2DExtent();
-                if (!pxExtent || !pxExtent._round().contains(point)) {
-                    continue;
-                }
-                if (geo._containsPoint(point) && (!filter || (filter && filter(geo)))) {
-                    hits.push(geo);
-                    if (opts['count']) {
-                        if (hits.length >= opts['count']) {
-                            isEnd = true;
-                            break;
-                        }
-                    }
-                }
+                hits = hits.concat(layer.identify(point, options));
             }
         }
-        fn.call(this, hits);
+        callback.call(this, hits);
         return this;
     }
 
