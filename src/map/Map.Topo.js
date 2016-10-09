@@ -72,7 +72,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 layers.push(reqLayers[i]);
             }
         }
-        var point = this.coordinateToPoint(new Z.Coordinate(opts['coordinate']))._round();
+        var point = this.coordinateToPoint(new Z.Coordinate(opts['coordinate']));
         var options = Z.Util.extend({}, opts);
         var hits = [];
         for (i = layers.length - 1; i >= 0; i--) {
