@@ -1,20 +1,14 @@
 /**
  * @classdesc
- * Represents point type geometry for text labels.<br>
- * A label is used to draw text (with a box background if specified) on a particular coordinate.
+ * Represents point type geometry for text boxes.<br>
+ * A TextBox is used to draw a box with text inside on a particular coordinate.
  * @class
  * @category geometry
  * @extends maptalks.TextMarker
  * @mixes maptalks.TextMarker.Editor
  * @param {String} content                          - TextBox's text content
  * @param {maptalks.Coordinate} coordinates         - center
- * @param {Object} [options=null]                   - construct options, includes options defined in [Marker]{@link maptalks.Marker#options}
- * @param {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
- * @param {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
- * @param {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
- * @param {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
- * @param {Boolean} [options.boxPadding=maptalks.Size(12,8)] - padding of the textBox text to the border of the background box.
- * @param {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
+ * @param {Object} [options=null]                   - construct options defined in [maptalks.TextBox]{@link maptalks.TextBox#options}
  * @example
  * var textBox = new maptalks.TextBox('This is a textBox',[100,0])
  *     .addTo(layer);
@@ -22,12 +16,11 @@
 Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
 
     /**
-     * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
-     * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the background box automatically to fit for the label text.
-     * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
-     * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
-     * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
-     * @property {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
+     * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link maptalks.Marker#options}
+     * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the box automatically to fit for the textbox's text.
+     * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the box.
+     * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
+     * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the text to the border of the box.
      */
     options: {
         'boxAutoSize'  :   false,

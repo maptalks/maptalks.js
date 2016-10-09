@@ -573,7 +573,7 @@ Z.DomUtil.off = Z.DomUtil.removeDomEvent;
 
     /**
      * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
-     * @property
+     * @property {String} TRANSFORM
      * @memberOf maptalks.DomUtil
      * @type {String}
      */

@@ -6,11 +6,7 @@
  * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Panel
- * @param {Object} options - construct options
- * @param {Boolean} [options.draggable=true]            - whether the panel can be dragged
- * @param {Boolean} [options.custom=false]              - whether the panel's content is customized .
- * @param {String|HTMLElement} options.content          - panel's content, can be a dom element or a string.
- * @param {Boolean} [options.closeButton=true]          - whether to display the close button on the panel.
+ * @param {Object} [options=null] - options defined in [maptalks.control.Panel]{@link maptalks.control.Panel#options}
  * @example
  * var panel = new maptalks.control.Panel({
  *     position : {'bottom': '0', 'right': '0'},
@@ -24,16 +20,14 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
 
     /**
      * @property {Object} options - options
+     * @property {Object} [options.position='top-right']       - position of the control
      * @property {Boolean} [options.draggable=true]            - whether the panel can be dragged
      * @property {Boolean} [options.custom=false]              - whether the panel's content is customized .
      * @property {String|HTMLElement} options.content          - panel's content, can be a dom element or a string.
      * @property {Boolean} [options.closeButton=true]          - whether to display the close button on the panel.
      */
     options:{
-        'position' : {
-            'top'       : '0',
-            'right'     : '0'
-        },
+        'position'      : 'top-right',
         'draggable'     : true,
         'custom'        : false,
         'content'       : '',

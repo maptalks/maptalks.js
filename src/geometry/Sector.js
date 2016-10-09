@@ -10,9 +10,7 @@
  * @param {Number} radius           - radius of the sector
  * @param {Number} startAngle       - start angle of the sector
  * @param {Number} endAngle         - end angle of the sector
- * @param {Object} [options=null]   - specific construct options for sector
- * @param {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the sector's shell coordinates as a polygon.
- * @param {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
+ * @param {Object} [options=null]   - construct options defined in [maptalks.Sector]{@link maptalks.Sector#options}
  * @example
  * var sector = new maptalks.Sector([100, 0], 1000, 30, 120, {
  *     id : 'sector0'
@@ -24,7 +22,6 @@ Z.Sector = Z.Polygon.extend(/** @lends maptalks.Sector.prototype */{
     /**
      * @property {Object} options -
      * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the sector to a polygon.
-     * @property {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
      */
     options:{
         'numberOfShellPoints':60

@@ -9,9 +9,7 @@
  * @param {maptalks.Coordinate} center  - center of the ellipse
  * @param {Number} width                - width of the ellipse
  * @param {Number} height                - height of the ellipse
- * @param {Object} [options=null]   - specific construct options for ellipse
- * @param {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
- * @param {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
+ * @param {Object}  [options=null] - construct options defined in [maptalks.Ellipse]{@link maptalks.Ellipse#options}
  * @example
  * var ellipse = new maptalks.Ellipse([100, 0], 1000, 500, {
  *     id : 'ellipse0'
@@ -23,7 +21,6 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     /**
      * @property {Object} [options=null]
      * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
-     * @property {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
      */
     options:{
         'numberOfShellPoints':60

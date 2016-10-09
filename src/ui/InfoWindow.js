@@ -4,13 +4,7 @@
  * @class
  * @category ui
  * @extends maptalks.ui.UIComponent
- * @param {Object} options
- * @param {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
- * @param {Number}  [options.width=300]     - default width
- * @param {Number}  [options.minHeight=120] - minimun height
- * @param {Boolean} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
- * @param {String}  [options.title=null]    - title of the infowindow.
- * @param {String|HTMLElement}  options.content - content of the infowindow.
+ * @param {Object} options - options defined in [maptalks.ui.InfoWindow]{@link maptalks.ui.InfoWindow#options}
  * @memberOf maptalks.ui
  * @name InfoWindow
  */
@@ -153,6 +147,16 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
             }
         }
         return o;
+    },
+
+    show: function () {
+        if (!this.getMap()) {
+            return this;
+        }
+        if (!this.getMap().options['enableInfoWindow']) {
+            return this;
+        }
+        return Z.ui.UIComponent.prototype.show.apply(this, arguments);
     },
 
     _getWindowWidth:function () {

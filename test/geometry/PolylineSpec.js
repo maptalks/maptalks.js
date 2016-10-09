@@ -170,7 +170,7 @@ describe('#LineString', function() {
 
         happen.click(canvasContainer, {
             clientX: 400 + 8,
-            clientY: 300 + 8 - 3
+            clientY: 300 + 8 - 2
         });
         expect(spy.called).to.be.ok();
     });

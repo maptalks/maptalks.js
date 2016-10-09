@@ -6,7 +6,7 @@
  * @extends maptalks.GeometryCollection
  * @mixes maptalks.Geometry.MultiPoly
  * @param {Number[][][]|maptalks.Coordinate[][]|maptalks.LineString[]} data - construct data, coordinates or a array of linestrings
- * @param {Object} [options=null]           - options defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
+ * @param {Object} [options=null]           - options defined in [maptalks.MultiLineString]{@link maptalks.MultiLineString#options}
  * @example
  * var multiLineString = new maptalks.MultiLineString(
  *      [

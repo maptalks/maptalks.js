@@ -8,7 +8,7 @@
  * @param {maptalks.Coordinate} coordinates  - northwest of the rectangle
  * @param {Number} width                     - width of the rectangle
  * @param {Number} height                    - height of the rectangle
- * @param {Object} [options=null]            - options defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
+ * @param {Object} [options=null]            - options defined in [maptalks.Rectangle]{@link maptalks.Rectangle#options}
  * @example
  * var rectangle = new maptalks.Rectangle([100, 0], 1000, 500, {
  *     id : 'rectangle0'

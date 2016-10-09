@@ -6,7 +6,7 @@
  * @extends maptalks.GeometryCollection
  * @mixes maptalks.Geometry.MultiPoly
  * @param {Number[][]|maptalks.Coordinate[]|maptalks.Marker[]} data - construct data, coordinates or a array of markers
- * @param {Object} [options=null] - options defined in [nmaptalks.Geometry]{@link maptalks.Geometry#options}
+ * @param {Object} [options=null] - options defined in [nmaptalks.MultiPoint]{@link maptalks.MultiPoint#options}
  * @example
  * var multiPoint = new maptalks.MultiPoint(
  *     [

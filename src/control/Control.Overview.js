@@ -6,11 +6,7 @@
  * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Overview
- * @param {Object} [options=undefined] - construct options
- * @param {Object} [options.position={"bottom":0,"right":0}] - position of the control
- * @param {Number} [options.level=4]  - the zoom level of the overview
- * @param {Object} [options.size={"width":300, "height":200}  - size of the Control
- * @param {Object} [options.style={"color":"#1bbc9b"}] - style of the control, color is the overview rectangle's color
+ * @param {Object} [options=null] - options defined in [maptalks.control.Overview]{@link maptalks.control.Overview#options}
  * @example
  * var overview = new maptalks.control.Overview({
  *     position : {'bottom': '0', 'right': '0'},
@@ -23,17 +19,14 @@ Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overvi
 
     /**
      * @property {Object} options - options
-     * @property {Object} [options.position={"bottom":0,"right":0}] - position of the control
+     * @property {Object} [options.position='bottom-right'] - position of the control
      * @property {Number} [options.level=4]  - the zoom level of the overview
      * @property {Object} [options.size={"width":300, "height":200}  - size of the Control
      * @property {Object} [options.style={"color":"#1bbc9b"}] - style of the control, color is the overview rectangle's color
      */
     options:{
         'level' : 4,
-        'position' : {
-            'bottom': '0',
-            'right': '0'
-        },
+        'position' : 'bottom-right',
         'size' : {
             'width' : 300,
             'height' : 200

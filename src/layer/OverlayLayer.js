@@ -346,6 +346,39 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return Z.Layer.prototype.hide.call(this);
     },
 
+    /**
+     * Identify the geometries on the given container point
+     * @param  {maptalks.Point} point   - container point
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.count=null] - result count
+     * @return {maptalks.Geometry[]} geometries identified
+     */
+    identify: function (point, options) {
+        var geometries = this._geoList,
+            filter = options ? options.filter : null,
+            extent2d,
+            hits = [];
+        for (var i = geometries.length - 1; i >= 0; i--) {
+            var geo = geometries[i];
+            if (!geo || !geo.isVisible() || !geo._getPainter()) {
+                continue;
+            }
+            extent2d = geo._getPainter().get2DExtent();
+            if (!extent2d || !extent2d.contains(point)) {
+                continue;
+            }
+            if (geo._containsPoint(point) && (!filter || filter(geo))) {
+                hits.push(geo);
+                if (options['count']) {
+                    if (hits.length >= options['count']) {
+                        break;
+                    }
+                }
+            }
+        }
+        return hits;
+    },
+
     _initCache: function () {
         if (!this._geoList) {
             this._geoList = [];

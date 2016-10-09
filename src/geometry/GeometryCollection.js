@@ -5,7 +5,7 @@
  * @category geometry
  * @extends maptalks.Geometry
  * @param {maptalks.Geometry[]} geometries - GeometryCollection's geometries
- * @param {Object} [options=null] - options defined in [nmaptalks.Geometry]{@link maptalks.Geometry#options}
+ * @param {Object} [options=null] - options defined in [nmaptalks.GeometryCollection]{@link maptalks.GeometryCollection#options}
  * @example
  * var marker = new maptalks.Marker([0, 0]),
  *     line = new maptalks.LineString([[0, 0], [0, 1]]),

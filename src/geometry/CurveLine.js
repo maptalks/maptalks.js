@@ -4,13 +4,14 @@
  * @category geometry
  * @extends {maptalks.LineString}
  * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the line string
- * @param {Object} options - construct options of LineString, specific construct options for CurveLine
- * @param {Number} [options.curveType=1]            - curve type of the curve line: 0 - straight line; 1: circle arc; 2: quadratic bezier curve; 3: cubic bezier curve
- * @param {Number} [options.arcDegree=90]           - arc's degree if curveType is 1 (circle arc).
- * @param {*} options.* - any other option defined in [maptalks.LineString]{@link maptalks.LineString#options}
+ * @param {Object} [options=null]   - construct options defined in [maptalks.CurveLine]{@link maptalks.CurveLine#options}
  * @example
  * var curve = new maptalks.CurveLine(
- *     [[121.47083767181408,31.214448123476995],[121.4751292062378,31.215475523000404],[121.47869117980943,31.211916269810335]],
+ *     [
+ *         [121.47083767181408,31.214448123476995],
+ *         [121.4751292062378,31.215475523000404],
+ *         [121.47869117980943,31.211916269810335]
+ *     ],
  *     {
  *         curveType : 1,
  *         arcDegree : 120,
@@ -20,12 +21,11 @@
  *     }
  * ).addTo(layer);
  */
-Z.CurveLine = Z.LineString.extend({
+Z.CurveLine = Z.LineString.extend(/** @lends maptalks.CurveLine.prototype */{
     /**
      * @property {Object} options
      * @property {Number} [options.curveType=1]            - curve type of the curve line: 0 - straight line; 1: circle arc; 2: quadratic curve; 3: bezier curve
      * @property {Number} [options.arcDegree=90]           - arc's degree if curveType is 1 (circle arc).
-     * @property {*} options.* - any other option defined in [maptalks.LineString]{@link maptalks.LineString#options}
      */
     options:{
         'curveType'   : 1,

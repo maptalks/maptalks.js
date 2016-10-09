@@ -21,12 +21,7 @@
      * @class
      * @category ui
      * @extends maptalks.ui.UIComponent
-     * @param {Object} options - construct options
-     * @param {Object} options
-     * @param {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened menu.
-     * @param {Number}  [options.width=160]      - default width
-     * @param {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized menu, customized html codes or a HTMLElement is set to items.
-     * @param {Object[]|String|HTMLElement}  options.items   - html code or a html element is options.custom is true. Or a menu items array, containing: item objects, "-" as a splitor line
+     * @param {Object} options - options defined in [maptalks.ui.Menu]{@link maptalks.ui.Menu#options}
      * @memberOf maptalks.ui
      * @name Menu
      */

@@ -2,6 +2,7 @@
 
 var minimist = require('minimist'),
   gulp   = require('gulp'),
+  del    = require('del'),
   header = require('gulp-header'),
   footer = require('gulp-footer'),
   concat = require('gulp-concat'),
@@ -134,6 +135,9 @@ gulp.task('reload',['scripts'], function() {
 });
 
 gulp.task('doc', function (cb) {
+    del([
+        'doc/api/**/*'
+      ]);
     var conf = require('./jsdoc.json');
     var cmd = 'jsdoc';
     var args = ['-c','jsdoc.json'].concat(['API.md']).concat(sources);

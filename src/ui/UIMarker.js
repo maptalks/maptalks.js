@@ -9,10 +9,7 @@
  * @class
  * @category ui
  * @extends maptalks.ui.UIComponent
- * @param {Object} options - construct options
- * @param {Boolean} [options.draggable=false]  - if the marker can be dragged.
- * @param {Number}  [options.single=false]     - if the marker is a global single one.
- * @param {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
+ * @param {Object} options - options defined in [maptalks.ui.UIMarker]{@link maptalks.ui.UIMarker#options}
  * @memberOf maptalks.ui
  * @name UIMarker
  * @example

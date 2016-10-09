@@ -6,10 +6,7 @@
  * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Toolbar
- * @param {Object}   options - construct options
- * @param {String|Object}   [options.position="top-right"]  - position of the toolbar control.
- * @param {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
- * @param {Object[]} options.items                                  - items on the toolbar
+ * @param {Object} [options=null] - options defined in [maptalks.control.Toolbar]{@link maptalks.control.Toolbar#options}
  * @example
  * var toolbar = new maptalks.control.Toolbar({
  *     position : 'top-right',
@@ -33,7 +30,7 @@ Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar
 
     /**
      * @property {Object}   options - options
-     * @property {String|Object}   [options.position="top-right"]  - position of the toolbar control.
+     * @property {String|Object}   [options.position="top-right"]          - position of the toolbar control.
      * @property {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
      * @property {Object[]} options.items                                  - items on the toolbar
      */

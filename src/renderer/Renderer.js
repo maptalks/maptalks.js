@@ -280,6 +280,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             this.context.scale(2, 2);
         }
         Z.Canvas.setDefaultCanvasSetting(this.context);
+        if (this.onCanvasCreate) {
+            this.onCanvasCreate();
+        }
     },
 
     resizeCanvas:function (canvasSize) {

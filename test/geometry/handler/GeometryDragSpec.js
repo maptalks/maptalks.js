@@ -17,10 +17,7 @@ describe('#GeometryDrag', function () {
         var domPosition = Z.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(geometry.getCenter()).add(domPosition);
         var requestAnimFn = Z.Util.requestAnimFrame;
-        //replace original requestAnimFrame to immediate execution.
-        Z.Util.requestAnimFrame=function(fn) {
-            fn();
-        };
+
 
         happen.mousedown(eventContainer,{
                 'clientX':point.x,
@@ -36,7 +33,6 @@ describe('#GeometryDrag', function () {
             };
         }
         happen.mouseup(document);
-        Z.Util.requestAnimFrame = requestAnimFn;
     }
 
     function dragMap() {
