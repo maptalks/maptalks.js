@@ -8,9 +8,7 @@
  * @mixes maptalks.Geometry.Center
  * @param {maptalks.Coordinate} center - center of the circle
  * @param {Number} radius           - radius of the circle
- * @param {Object} [options=null]   - specific construct options for circle
- * @param {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the circle's shell coordinates as a polygon.
- * @param {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
+ * @param {Object} [options=null]   - construct options defined in [maptalks.Circle]{@link maptalks.Circle#options}
  * @example
  * var circle = new maptalks.Circle([100, 0], 1000, {
  *     id : 'circle0'
@@ -20,9 +18,8 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
     includes:[Z.Geometry.Center],
 
     /**
-     * @property {Object} options - specific options of circle, also support options defined in [Polygon]{@link maptalks.Polygon#options}
+     * @property {Object} options
      * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the circle to a polygon.
-     * @property {*} options.* - any other option defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
      */
     options:{
         'numberOfShellPoints':60

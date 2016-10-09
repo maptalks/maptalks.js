@@ -31,7 +31,11 @@
         baseLayer : new maptalks.TileLayer("base",{
             urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             subdomains:['a','b','c']
-        })
+        }),
+        layers : [
+            new VectorLayer('v')
+            .addGeometry(new maptalks.Marker([180, 0]))
+        ]
     });
  */
 Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
@@ -39,14 +43,14 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     includes: [Z.Eventable, Z.Handlerable],
 
     /**
-     * @property {Object} options                                   - map's options, options must be updated by config method, eg: map.config('zoomAnimation', false);
+     * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
      * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
      * @property {Boolean} [options.clipFullExtent=false]           - clip geometries outside map's full extent
      * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
      * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
      * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
      * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
-     * @property {Boolean} [options.layerTransforming=true] - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
+     * @property {Boolean} [options.layerTransforming=true]         - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
      * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
      * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
      * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.

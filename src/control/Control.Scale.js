@@ -6,11 +6,7 @@
  * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Scale
- * @param {Object} [options=null] - construct options
- * @param {String|Object}   [options.position="bottom-left"]  - position of the scale control.
- * @param {Number} [options.maxWidth=100]               - max width of the scale control.
- * @param {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
- * @param {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
+ * @param {Object} [options=null] - options defined in [maptalks.control.Scale]{@link maptalks.control.Scale#options}
  * @example
  * var scale = new maptalks.control.Scale({
  *     position : 'bottom-left',

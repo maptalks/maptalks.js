@@ -4,10 +4,9 @@
  * @class
  * @category layer
  * @extends {maptalks.VectorLayer}
- * @param {String|Number} id - layer's id
- * @param {Object}        json - GeoJSON objects
- * @param {Object} [options=null] - construct options
- * @param {*} options.* - any other option defined in [maptalks.VectorLayer]{@link maptalks.VectorLayer#options}
+ * @param {String|Number} id        - layer's id
+ * @param {Object}        json      - GeoJSON objects
+ * @param {Object} [options=null]   - construct options defined in [maptalks.GeoJSONLayer]{@link maptalks.GeoJSONLayer#options}
  */
 Z.GeoJSONLayer = Z.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype */{
 

@@ -8,7 +8,10 @@
  * @name Nav
  */
 Z.control.Nav = Z.control.Control.extend(/** @lends maptalks.control.Nav.prototype */{
-
+    /**
+     * @property {Object} options - options
+     * @property {Object} [options.position='top-left'}] - position of the control
+     */
     options:{
         'position' : 'top-left'
     },

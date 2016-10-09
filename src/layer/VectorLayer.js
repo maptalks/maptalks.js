@@ -5,16 +5,9 @@
  * @category layer
  * @extends {maptalks.OverlayLayer}
  * @param {String|Number} id - layer's id
- * @param {Object}  [options=null] - construct options
- * @param {Boolean} [options.debug=false]           - whether the geometries on the layer is in debug mode.
- * @param {Boolean} [options.enableSimplify=false]  - whether to simplify geometries before rendering.
- * @param {String}  [options.cursor=default]        - the cursor style of the layer
- * @param {Boolean} [options.geometryEvents=true]   - enable/disable firing geometry events
- * @param {Number}  [options.thresholdOfTransforming=50] - threshold of geometry count to update while transforming.
- * @param {Boolean} [options.defaultIconSize=[20, 20]] - default size of a marker's icon
- * @param {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.
- * @param {Boolean} [options.cacheSvgOnCanvas=true]   - whether to cache svg icons on a canvas, this will fix svg's opacity problem on IE and MS Edge browser.
- * @param {*} options.* - any other option defined in [maptalks.OverlayLayer]{@link maptalks.OverlayLayer#options}
+ * @param {Object}  [options=null]          - construct options
+ * @param {Object}  [options.style=null]    - vectorlayer's style
+ * @param {*}  [options.*=null]             - options defined in [maptalks.VectorLayer]{@link maptalks.VectorLayer#options}
  */
 Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
     /**
@@ -26,7 +19,6 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
      * @property {Number}  options.thresholdOfTransforming=50 - threshold of geometry count to update while transforming.
      * @property {Boolean} options.defaultIconSize=[20, 20] - default size of a marker's icon
      * @property {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.
-     * @property {*} options.* - any other option defined in [maptalks.OverlayLayer]{@link maptalks.OverlayLayer#options}
      */
     options:{
         'debug'                     : false,

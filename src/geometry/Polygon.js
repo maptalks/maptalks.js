@@ -6,9 +6,7 @@
  * @extends maptalks.Vector
  * @mixins maptalks.Geometry.Poly
  * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
- * @param {Object} [options=null] - specific construct options for Polygon, also support options defined in [Vector]{@link maptalks.Vector#options} and [Geometry]{@link maptalks.Geometry#options}
- * @param {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
- * @param {*} options.* - any other option defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
+ * @param {Object} [options=null] - construct options defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
  * @example
  * var polygon = new maptalks.Polygon(
  *      [
@@ -39,8 +37,7 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
     },
 
     /**
-     * @property {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
-     * @property {*} options.* - any other option defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
+     * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
      */
     options:{
         'antiMeridian' : 'continuous'

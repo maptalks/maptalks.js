@@ -6,11 +6,7 @@
  * @extends maptalks.Geometry
  * @mixes maptalks.Geometry.Center
  * @param {maptalks.Coordinate} center      - center of the marker
- * @param {Object} [options=null]           - specific construct options for marker, also support options defined in [Geometry]{@link maptalks.Geometry#options}
- * @param {Object} [options.id=null]        - id of the marker.
- * @param {Object} [options.symbol=null]    - symbol of the marker.
- * @param {Object} [options.property=null]  - properties
- * @param {*} options.* - any other option defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
+ * @param {Object} [options=null]           - construct options defined in [maptalks.Marker]{@link maptalks.Marker#options}
  * @example
  * var marker = new maptalks.Marker([100, 0], {
  *     'id' : 'marker0',
@@ -46,7 +42,10 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
     },
 
     initialize:function (coordinates, opts) {
-        this._coordinates = new Z.Coordinate(coordinates);
+        if (coordinates && !(coordinates instanceof Z.Coordinate)) {
+            coordinates = new Z.Coordinate(coordinates);
+        }
+        this._coordinates = coordinates;
         this._initOptions(opts);
     },
 

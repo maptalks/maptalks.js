@@ -8,14 +8,7 @@
  * @mixes maptalks.TextMarker.Editor
  * @param {String} content                          - Label's text content
  * @param {maptalks.Coordinate} coordinates         - center
- * @param {Object} [options=null]                   - construct options, includes options defined in [Marker]{@link maptalks.Marker#options}
- * @param {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
- * @param {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
- * @param {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
- * @param {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
- * @param {Boolean} [options.boxPadding=maptalks.Size(12,8)] - padding of the label text to the border of the background box.
- * @param {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
- * @param {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
+ * @param {Object} [options=null]                   - construct options defined in [maptalks.Label]{@link maptalks.Label#options}
  * @example
  * var label = new maptalks.Label('This is a label',[100,0])
  *     .addTo(layer);
@@ -30,7 +23,6 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
      * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
      * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
      * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
-     * @property {*} options.* - any other option defined in [maptalks.Marker]{@link maptalks.Marker#options}
      */
     options: {
         'box'          :   true,

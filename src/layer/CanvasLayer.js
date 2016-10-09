@@ -1,30 +1,46 @@
 /**
+ * CanvasLayer provides some interface methods for canvas context operations. <br>
+ * You can use it directly, but can't ser/dser a CanvasLayer with json in this way. <br>
+ * It is more recommended to extend it with a subclass and implement canvas paintings inside the subclass.
  * @classdesc
- * A layer to draw on HTML5 2D Canvas.
+ * A layer with a HTML5 2D canvas context.
+ * @example
+ *  var layer = new maptalks.CanvasLayer('canvas');
+ *
+ *  layer.prepareToDraw = function (context) {
+ *      var size = map.getSize();
+ *      return [size.width, size.height]
+ *  };
+ *
+ *  layer.draw = function (context, width, height) {
+ *      context.fillStyle = "#f00";
+ *      context.fillRect(0, 0, w, h);
+ *  };
+ *  layer.addTo(map);
  * @class
  * @category layer
  * @extends {maptalks.Layer}
  * @param {String|Number} id - layer's id
- * @param {Object} options - options defined in [Layer.options]{@link maptalks.Layer#options}
+ * @param {Object} options - options defined in [options]{@link maptalks.CanvasLayer#options}
  */
-Z.CanvasLayer = Z.Layer.extend({
+Z.CanvasLayer = Z.Layer.extend(/** @lends maptalks.CanvasLayer.prototype */{
 
     /**
-     * An interface function called only once before the first draw, useful for preparation.
+     * An optional interface function called only once before the first draw, useful for preparing your canvas operations.
      * @param  {CanvasRenderingContext2D } context - CanvasRenderingContext2D of the layer canvas.
      * @return {Object[]} objects that will be passed to function draw(context, ..) as parameters.
      */
     prepareToDraw: function () {},
 
     /**
-     * The interface function to draw things on the layer canvas.
+     * The required interface function to draw things on the layer canvas.
      * @param  {CanvasRenderingContext2D} context - CanvasRenderingContext2D of the layer canvas.
      * @param  {*} params.. - parameters returned by function prepareToDraw(context).
      */
     draw: function () {},
 
     /**
-     * Ask the map to redraw the layer canvas
+     * Ask the map to redraw the layer canvas without firing any event.
      * @return {maptalks.CanvasLayer} this
      */
     requestMapToRender: function () {
@@ -46,31 +62,31 @@ Z.CanvasLayer = Z.Layer.extend({
     },
 
     /**
-     * The event callback for map's zoomstart event
+     * The event callback for map's zoomstart event.
      * @param  {Object} param - event parameter
      */
     onZoomStart: function () {},
 
     /**
-     * The event callback for map's zoomend event
+     * The event callback for map's zoomend event.
      * @param  {Object} param - event parameter
      */
     onZoomEnd: function () {},
 
     /**
-     * The event callback for map's movestart event
+     * The event callback for map's movestart event.
      * @param  {Object} param - event parameter
      */
     onMoveStart: function () {},
 
     /**
-     * The event callback for map's moveend event
+     * The event callback for map's moveend event.
      * @param  {Object} param - event parameter
      */
     onMoveEnd: function () {},
 
     /**
-     * The event callback for map's resize event
+     * The event callback for map's resize event.
      * @param  {Object} param - event parameter
      */
     onResize: function () {}

@@ -6,10 +6,7 @@
  * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Zoom
- * @param {Object}   options - construct options
- * @param {String|Object}   [options.position="top-left"]  - position of the zoom control.
- * @param {Boolean}  [options.slider=true]                         - Whether to display the slider
- * @param {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
+ * @param {Object} [options=null] - options defined in [maptalks.control.Zoom]{@link maptalks.control.Zoom#options}
  * @example
  * var zoomControl = new maptalks.control.Zoom({
  *     position : 'top-left',

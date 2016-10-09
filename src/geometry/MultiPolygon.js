@@ -7,7 +7,7 @@
  * @extends maptalks.GeometryCollection
  * @mixes maptalks.Geometry.MultiPoly
  * @param {Number[][][][]|maptalks.Coordinate[][][]|maptalks.Polygon[]} data - construct data, coordinates or a array of polygons
- * @param {Object} [options=null]           - options defined in [maptalks.Geometry]{@link maptalks.Geometry#options}
+ * @param {Object} [options=null]           - options defined in [maptalks.MultiPolygon]{@link maptalks.MultiPolygon#options}
  * @example
  * var multiPolygon = new maptalks.MultiPolygon(
  *       [

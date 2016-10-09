@@ -7,7 +7,6 @@
  * @category geometry
  * @abstract
  * @extends maptalks.Marker
- * @name TextMarker
  */
 Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 

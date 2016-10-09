@@ -6,9 +6,7 @@
  * @extends maptalks.control.Control
  * @memberOf maptalks.control
  * @name Attribution
- * @param {Object} [options=undefined] - construct options
- * @param {Object} [options.position={'bottom': 0, 'left': 0} - position of the control
- * @param {String} [options.content=maptalks] - content of the attribution control, HTML format
+ * @param {Object} [options=null] - options defined in [maptalks.control.Attribution]{@link maptalks.control.Attribution#options}
  * @example
  * var attribution = new maptalks.control.Attribution({
  *     position : 'bottom-left',
@@ -18,15 +16,12 @@
 Z.control.Attribution = Z.control.Control.extend(/** @lends maptalks.control.Attribution.prototype */{
 
     /**
-     * @param {Object} options - options
-     * @param {Object} options.position - position of the control
-     * @param {String} options.content  - content of the attribution control, HTML format
+     * @property {Object} options - options
+     * @property {Object} [options.position='bottom-left'] - position of the control
+     * @property {String} [options.content='Powered By <a href="http://www.maptalks.org" target="_blank">MapTalks</a>']  - content of the attribution control, HTML format
      */
     options:{
-        'position' : {
-            'bottom': 0,
-            'left': 0
-        },
+        'position' : 'bottom-left',
         'content' : 'Powered By <a href="http://www.maptalks.org" target="_blank">MapTalks</a>'
     },
 

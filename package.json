@@ -11,7 +11,8 @@
     "report-coverage": "codecov",
     "lint": "eslint src/**/*.js",
     "test": "gulp test --cov",
-    "pretest": "npm run lint"
+    "pretest": "npm run lint",
+    "doc": "gulp doc"
   },
   "main": "dist/maptalks.js",
   "style": "dist/maptalks.css",
@@ -43,7 +44,8 @@
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
     "phantomjs-prebuilt": "^2.1.6",
-    "sinon": "^1.14.1"
+    "sinon": "^1.14.1",
+    "del": "^2.2.2"
   },
   "dependencies": {}
 }

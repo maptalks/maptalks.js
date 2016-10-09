@@ -7,14 +7,11 @@
  * @extends maptalks.CurveLine
  * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} src     - source to connect
  * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} target  - target to connect
- * @param {Object} [options=null]                   - construct options
- * @param {Number} [options.curveType=0]            - curve type of the connector, same as [maptalks.CurveLine]{@link maptalks.CurveLine}
- * @param {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
- * @param {*} options.* - any other option defined in [maptalks.CurveLine]{@link maptalks.CurveLine#options}
+ * @param {Object} [options=null]                   - construct options defined in [maptalks.ConnectorLine]{@link maptalks.ConnectorLine#options}
  * @example
  * var src = new maptalks.Marker([0,0]).addTo(layer),
- *      dst = new maptalks.Marker([1,0]).addTo(layer),
- *      line = new maptalks.ConnectorLine(src, dst, {
+ *     dst = new maptalks.Marker([1,0]).addTo(layer),
+ *     line = new maptalks.ConnectorLine(src, dst, {
  *         curveType : 0, //0, 1, 2, 3
  *         arcDegree : 120,
  *         showOn : 'always', //'moving', 'click', 'mouseover', 'always'
@@ -24,15 +21,14 @@
  *           lineColor: '#34495e',
  *           lineWidth: 2
  *        }
- *      }).addTo(layer);
+ *     }).addTo(layer);
  */
 Z.ConnectorLine = Z.CurveLine.extend(/** @lends maptalks.ConnectorLine.prototype */{
 
     /**
-     * @property {Object} options
+     * @property {Object} options - ConnectorLine's options
      * @property {Number} [options.curveType=0] - curve type of the connector
      * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
-     * @property {*} options.* - any other option defined in [maptalks.CurveLine]{@link maptalks.CurveLine#options}
      */
     options: {
         curveType : 0,
