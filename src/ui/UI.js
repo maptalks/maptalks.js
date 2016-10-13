@@ -49,7 +49,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         'autoPan' : false,
         'single' : true,
         'animation' : 'scale',
-        'animationDuration' : 300,
+        'animationDuration' : 500,
         'animationDelay' : 0
     },
 
@@ -153,22 +153,12 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         dom.style.left = point.x + 'px';
         dom.style.top  = point.y + 'px';
 
-        var fade = false,
-            scale = false;
-        var animations = this.options['animation'] ? this.options['animation'].split(',') : [];
-        for (var i = 0; i < animations.length; i++) {
-            var trim = Z.StringUtil.trim(animations[i]);
-            if (trim === 'fade') {
-                fade = true;
-            } else if (trim === 'scale') {
-                scale = true;
-            }
-        }
+        var anim = this._getAnimation();
 
-        if (fade) {
+        if (anim.fade) {
             dom.style.opacity = 0;
         }
-        if (scale) {
+        if (anim.scale) {
             if (this.getTransformOrigin) {
                 var origin = this.getTransformOrigin();
                 dom.style[Z.DomUtil.TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
@@ -189,24 +179,17 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             this._autoPan();
         }
 
-        var transition = null;
-        if (fade) {
-            transition = 'opacity ' + this.options['animationDuration'] + 'ms';
-        }
-        if (scale) {
-            transition = transition ? transition + ',' : '';
-            transition += 'transform ' + this.options['animationDuration'] + 'ms';
-        }
 
+        var transition = anim.transition;
         if (transition) {
             var animFn = function () {
                 if (transition) {
                     dom.style[Z.DomUtil.TRANSITION] = transition;
                 }
-                if (fade) {
+                if (anim.fade) {
                     dom.style.opacity = 1;
                 }
-                if (scale) {
+                if (anim.scale) {
                     dom.style[Z.DomUtil.TRANSFORM] = 'scale(1)';
                 }
             };
@@ -230,7 +213,24 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         if (!this.getDOM() || !this.getMap()) {
             return this;
         }
-        this.getDOM().style.display = 'none';
+
+        var anim = this._getAnimation(),
+            dom = this.getDOM();
+        if (anim.fade) {
+            dom.style.opacity = 0;
+        }
+        if (anim.scale) {
+            dom.style[Z.DomUtil.TRANSFORM] = 'scale(0)';
+        }
+
+        if (!anim.anim) {
+            dom.style.display = 'none';
+        } else {
+            setTimeout(function () {
+                dom.style.display = 'none';
+            }, this.options['animationDuration']);
+        }
+
         /**
          * hide event.
          *
@@ -312,6 +312,33 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             if (o) { p._add(o); }
         }
         return p;
+    },
+
+    _getAnimation: function () {
+        var anim = {
+            'fade' : false,
+            'scale': false
+        };
+        var animations = this.options['animation'] ? this.options['animation'].split(',') : [];
+        for (var i = 0; i < animations.length; i++) {
+            var trim = Z.StringUtil.trim(animations[i]);
+            if (trim === 'fade') {
+                anim.fade = true;
+            } else if (trim === 'scale') {
+                anim.scale = true;
+            }
+        }
+        var transition = null;
+        if (anim.fade) {
+            transition = 'opacity ' + this.options['animationDuration'] + 'ms';
+        }
+        if (anim.scale) {
+            transition = transition ? transition + ',' : '';
+            transition += 'transform ' + this.options['animationDuration'] + 'ms';
+        }
+        anim.transition = transition;
+        anim.anim = (transition !== null);
+        return anim;
     },
 
     _getViewPoint : function () {
