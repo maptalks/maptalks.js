@@ -1,4 +1,4 @@
-describe('UIMarker Tests', function() {
+describe('#UIMarker', function() {
     var container;
     var map;
     var tile;
@@ -62,7 +62,8 @@ describe('UIMarker Tests', function() {
 
     it('can hide', function() {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : '<div id="uimarker">marker</div>'
+            content : '<div id="uimarker">marker</div>',
+            animation : null
         });
         marker.addTo(map).show();
         marker.hide();

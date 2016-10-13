@@ -37,7 +37,8 @@ describe('#Map', function () {
 
             var options = {
                 title: 'title',
-                content: 'content'
+                content: 'content',
+                animation : null
             };
             var win = new maptalks.ui.InfoWindow(options);
             win.addTo(map);
@@ -106,6 +107,7 @@ describe('#Map', function () {
 
         it('show/hide/isVisible', function() {
             var options = {
+                animation : null,
                 position: null,
                 beforeOpen: null,
                 items: [
