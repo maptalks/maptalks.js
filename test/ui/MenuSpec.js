@@ -1,4 +1,4 @@
-describe('ContextMenu Tests', function() {
+describe('#ContextMenu', function() {
     var container;
     var map;
     var tile;
@@ -39,6 +39,7 @@ describe('ContextMenu Tests', function() {
 
         target.setMenu({
                 items: items,
+                animation : null,
                 width: 250
             });
         target.openMenu();
@@ -61,6 +62,7 @@ describe('ContextMenu Tests', function() {
 
         target.setMenu({
                 items: items,
+                animation : null,
                 width: 250
             });
         target.openMenu();
@@ -87,6 +89,9 @@ function runTests(target, _context) {
             if (target.getLayer()) {target.remove();}
             map.removeLayer('vector');
             var layer = new maptalks.VectorLayer('vector');
+            target.setMenu({
+                'animation' : null
+            });
             layer.addGeometry(target).addTo(map);
         }
 
@@ -122,6 +127,7 @@ function runTests(target, _context) {
                 prepareGeometry();
                 target.setMenu({
                         items: items,
+                        animation : null,
                         width: 250
                     });
                 target.openMenu();
@@ -134,6 +140,7 @@ function runTests(target, _context) {
                 prepareGeometry();
                 target.setMenu({
                         items: items,
+                        animation : null,
                         width: 250
                     });
                 var items = target.getMenuItems();
@@ -144,6 +151,7 @@ function runTests(target, _context) {
                 prepareGeometry();
                 target.setMenu({
                         items: items,
+                        animation : null,
                         width: 250
                     });
                 target.removeMenu();
@@ -153,6 +161,7 @@ function runTests(target, _context) {
             it('custom menu', function() {
                 prepareGeometry();
                 target.setMenu({
+                        animation : null,
                         custom : true,
                         items: '<ul><li>item1</li><li>--</li><li>item2</li></ul>',
                         width: 250
@@ -176,6 +185,7 @@ function runTests(target, _context) {
                 ul.appendChild(li3);
                 prepareGeometry();
                 target.setMenu({
+                        animation : null,
                         custom : true,
                         items: ul,
                         width: 250
@@ -211,6 +221,7 @@ function runTests(target, _context) {
                 prepareGeometry();
                 target.setMenu({
                         items: items,
+                        animation : null,
                         width: 250
                     });
                 rightclick();
