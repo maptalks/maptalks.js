@@ -20,9 +20,9 @@ if (!Z.node) {
             webkit3d = ('WebKitCSSMatrix' in window) && ('m11' in new window.WebKitCSSMatrix()) && !android23,
             gecko3d = 'MozPerspective' in doc.style,
             opera12 = 'OTransition' in doc.style,
-            any3d = !window.L_DISABLE_3D && (ie3d || webkit3d || gecko3d) && !opera12 && !phantomjs;
+            any3d = (ie3d || webkit3d || gecko3d) && !opera12 && !phantomjs;
 
-        var touch = !window.L_NO_TOUCH && !phantomjs && (pointer || 'ontouchstart' in window ||
+        var touch = !phantomjs && (pointer || 'ontouchstart' in window ||
                 (window.DocumentTouch && document instanceof window.DocumentTouch));
 
         Z.Browser = {
@@ -60,7 +60,6 @@ if (!Z.node) {
             ie10: (ie && document.documentMode === 10),
             canvas: (!!document.createElement('canvas').getContext)
         };
-        Z.Browser.translateDom = (Z.Browser.any3d && !ie);
     }());
 } else {
     //usually in node

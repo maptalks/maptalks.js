@@ -144,6 +144,16 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
         return new Z.Point(-size['width'] / 2, -size['height'] / 2);
     },
 
+    /**
+     * Gets UIMarker's transform origin for animation transform
+     * @protected
+     * @return {maptalks.Point} transform origin
+     */
+    getTransformOrigin: function () {
+        var size = this.getSize();
+        return new Z.Point(size['width'] / 2, size['height'] / 2);
+    },
+
     onDomRemove: function () {
         var dom = this.getDOM();
         this._removeDOMEvents(dom);
