@@ -17,7 +17,7 @@ Z.Class = function () {
  * @return {maptalks.Class}
  * @static
  * @example
- *  var MyClass = L.Class.extend({
+ *  var MyClass = maptalks.Class.extend({
         initialize: function (greeter) {
             this.greeter = greeter;
             // class constructor

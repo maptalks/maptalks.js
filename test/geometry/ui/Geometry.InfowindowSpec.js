@@ -1,4 +1,4 @@
-describe("Geometry.InfoWindow", function() {
+describe("#Geometry.InfoWindow", function() {
 
     var container;
     var map;
@@ -161,6 +161,23 @@ describe("Geometry.InfoWindow", function() {
             layer.hide();
 
             expect(w.isVisible()).not.to.be.ok();
+        });
+
+        it('animate', function () {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : 'fade,scale',
+                animationDuration : 100
+            };
+            var infoWindow = new maptalks.ui.InfoWindow(options);
+            var geo = new maptalks.Marker(map.getCenter());
+            layer.addGeometry(geo);
+
+            infoWindow.addTo(geo);
+            infoWindow.show(geo.getCenter())
+            expect(infoWindow.getDOM().style.opacity).to.be.eql(1);
+            expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
         });
     });
 

@@ -137,9 +137,26 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         }
     },
 
+    /**
+     * Gets InfoWindow's transform origin for animation transform
+     * @protected
+     * @return {maptalks.Point} transform origin
+     */
+    getTransformOrigin: function () {
+        var size = this.getSize();
+        var o = new Z.Point(size['width'] / 2, size['height']);
+        if (!this.options['custom']) {
+            o._add(4, 12);
+        }
+        return o;
+    },
+
     getOffset:function () {
         var size = this.getSize();
-        var o = new Z.Point(-size['width'] / 2, -size['height'])._add(-4, -12);
+        var o = new Z.Point(-size['width'] / 2, -size['height']);
+        if (!this.options['custom']) {
+            o._substract(4, 12);
+        }
         if (this.getOwner() instanceof Z.Marker) {
             var markerSize = this.getOwner().getSize();
             if (markerSize) {

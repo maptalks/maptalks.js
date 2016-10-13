@@ -38,13 +38,19 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
      * @property {Number}  [options.dy=0]     - pixel offset on y axis
      * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened UI.
      * @property {Boolean} [options.single=true]    - whether the UI is a global single one, only one UI will be shown at the same time if set to true.
+     * @property {Boolean} [options.animation=null]         - fade | scale | fade,scale, add animation effect when showing and hiding.
+     * @property {Number}  [options.animationDuration=300]  - animation duration, in milliseconds.
+     * @property {Number}  [options.animationDelay=0]       - time delay for animation, in milliseconds.
      */
     options:{
         'eventsToStop' : 'mousedown dblclick',
         'dx'     : 0,
         'dy'     : 0,
         'autoPan' : false,
-        'single' : true
+        'single' : true,
+        'animation' : 'scale',
+        'animationDuration' : 300,
+        'animationDelay' : 0
     },
 
     initialize: function (options) {
@@ -121,6 +127,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         this._coordinate = coordinate;
         this._removePrevDOM();
         var dom = this.__uiDOM = this.buildOn(map);
+
         if (!dom) {
             /**
              * showend event.
@@ -145,6 +152,30 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         dom.style.position = 'absolute';
         dom.style.left = point.x + 'px';
         dom.style.top  = point.y + 'px';
+
+        var fade = false,
+            scale = false;
+        var animations = this.options['animation'] ? this.options['animation'].split(',') : [];
+        for (var i = 0; i < animations.length; i++) {
+            var trim = Z.StringUtil.trim(animations[i]);
+            if (trim === 'fade') {
+                fade = true;
+            } else if (trim === 'scale') {
+                scale = true;
+            }
+        }
+
+        if (fade) {
+            dom.style.opacity = 0;
+        }
+        if (scale) {
+            if (this.getTransformOrigin) {
+                var origin = this.getTransformOrigin();
+                dom.style[Z.DomUtil.TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
+            }
+            dom.style[Z.DomUtil.TRANSFORM] = 'scale(0)';
+        }
+
         dom.style.display = '';
 
         container.appendChild(dom);
@@ -157,6 +188,35 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         if (this.options['autoPan']) {
             this._autoPan();
         }
+
+        var transition = null;
+        if (fade) {
+            transition = 'opacity ' + this.options['animationDuration'] + 'ms';
+        }
+        if (scale) {
+            transition = transition ? transition + ',' : '';
+            transition += 'transform ' + this.options['animationDuration'] + 'ms';
+        }
+
+        if (transition) {
+            var animFn = function () {
+                if (transition) {
+                    dom.style[Z.DomUtil.TRANSITION] = transition;
+                }
+                if (fade) {
+                    dom.style.opacity = 1;
+                }
+                if (scale) {
+                    dom.style[Z.DomUtil.TRANSFORM] = 'scale(1)';
+                }
+            };
+            if (this.options['animationDelay']) {
+                setTimeout(animFn, this.options['animationDelay']);
+            } else {
+                animFn();
+            }
+        }
+
         this.fire('showend');
         return this;
     },

@@ -503,9 +503,8 @@ Z.DomUtil = {
         var pos = offset || new Z.Point(0, 0);
         el.style[Z.DomUtil.TRANSFORM] =
             (Z.Browser.ie3d ?
-                'translate(' + pos.x + 'px,' + pos.y + 'px)' :
-                'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)') +
-            (scale ? ' scale(' + scale + ')' : '');
+                'translate(' + pos.x + 'px,' + pos.y + 'px)' + (scale ? ' scale(' + scale + ')' : '') :
+                'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)') + (scale ? ' scale(' + scale + ')' : '');
 
         return this;
     },
@@ -580,6 +579,23 @@ Z.DomUtil.off = Z.DomUtil.removeDomEvent;
     Z.DomUtil.TRANSFORM = Z.DomUtil.testProp(
             ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
 
+    /**
+     * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
+     * @property {String} TRANSFORMORIGIN
+     * @memberOf maptalks.DomUtil
+     * @type {String}
+     */
+    Z.DomUtil.TRANSFORMORIGIN = Z.DomUtil.testProp(
+            ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']);
+
+    /**
+     * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
+     * @property {String} TRANSITION
+     * @memberOf maptalks.DomUtil
+     * @type {String}
+     */
+    Z.DomUtil.TRANSITION = Z.DomUtil.testProp(
+            ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
 
 })();
 
