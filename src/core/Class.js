@@ -54,9 +54,7 @@ Z.Class.extend = function (props) {
             self.callInitHooks();
         }
 
-        if (self !== this) {
-            return self;
-        }
+        return self;
     };
 
     var parentProto = NewClass.__super__ = this.prototype;
