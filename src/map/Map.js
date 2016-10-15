@@ -1713,15 +1713,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      */
     _prjToContainerPoint:function (pCoordinate) {
-        var centerPoint = this._prjToPoint(this._getPrjCenter()),
-            point = this._prjToPoint(pCoordinate),
-            centerContainerPoint = new Z.Point(this.width / 2, this.height / 2);
-        var result = new Z.Point(
-            centerContainerPoint.x + point.x - centerPoint.x,
-            centerContainerPoint.y + point.y - centerPoint.y
-            );
-
-        return result;
+        return this._pointToContainerPoint(this._prjToPoint(pCoordinate));
     },
 
     /**
@@ -1743,7 +1735,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     _pointToContainerPoint: function (point) {
-        return this._prjToContainerPoint(this._pointToPrj(point));
+        var centerPoint = this._prjToPoint(this._getPrjCenter());
+        return new Z.Point(
+            this.width / 2 + point.x - centerPoint.x,
+            this.height / 2 + point.y - centerPoint.y
+        );
     },
 
     _containerPointToPoint: function (containerPoint) {

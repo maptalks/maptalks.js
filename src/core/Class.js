@@ -38,15 +38,23 @@ Z.Class.extend = function (props) {
 
     // extended class with the new prototype
     var NewClass = function () {
+        var self = this;
+        if (!(this instanceof NewClass)) {
+            // fix consructing without new silently
+            self = Z.Util.create(NewClass.prototype);
+        }
+
         // call the constructor
-        if (this.initialize) {
-            this.initialize.apply(this, arguments);
+        if (self.initialize) {
+            self.initialize.apply(self, arguments);
         }
 
         // call all constructor hooks
-        if (this._initHooks) {
-            this.callInitHooks();
+        if (self._initHooks) {
+            self.callInitHooks();
         }
+
+        return self;
     };
 
     var parentProto = NewClass.__super__ = this.prototype;
@@ -114,9 +122,9 @@ Z.Class.extend = function (props) {
     };
 
     /**
-     * Get options without any parameter or update one (key, value) or more options (object).<br>
-     * If the instance has a handler of the same name with the option key, the handler will be enabled or disabled when the option is updated.
-     * @param  {object|string} options - options to update
+     * Get a shallow copy of or update Class's options.<br>
+     * If the instance has a handler of the same name with the given option key, the handler will be enabled or disabled when the option is updated.
+     * @param  {object|string} options - options to update, leave empty to get a shallow copy of options.
      * @return {object|this}
      */
     proto.config = function (conf) {
@@ -130,14 +138,14 @@ Z.Class.extend = function (props) {
             return config;
         } else {
             if (arguments.length === 2) {
-                var convert = {};
-                convert[conf] = arguments[1];
-                conf = convert;
+                var t = {};
+                t[conf] = arguments[1];
+                conf = t;
             }
             for (var i in conf) {
                 if (conf.hasOwnProperty(i)) {
                     this.options[i] = conf[i];
-                    //handler
+                    // enable/disable handler
                     if (this[i] && (this[i] instanceof Z.Handler)) {
                         if (conf[i]) {
                             this[i].enable();
@@ -169,7 +177,7 @@ Z.Class.include = function () {
     for (var j = 0, len = sources.length; j < len; j++) {
         Z.Util.extend(this.prototype, sources[j]);
     }
-
+    return this;
 };
 
 /**
@@ -179,6 +187,7 @@ Z.Class.include = function () {
  */
 Z.Class.mergeOptions = function (options) {
     Z.Util.extend(this.prototype.options, options);
+    return this;
 };
 
 /**
@@ -195,4 +204,5 @@ Z.Class.addInitHook = function (fn) { // (Function) || (String, args...)
 
     this.prototype._initHooks = this.prototype._initHooks || [];
     this.prototype._initHooks.push(init);
+    return this;
 };
