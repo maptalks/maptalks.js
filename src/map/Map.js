@@ -1106,7 +1106,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @fires maptalks.Map#resize
      */
     checkSize:function () {
-        var justStart = ((Z.Util.now() - this._initTime) < 1500) && this.width === 0 && this.height === 0;
+        var justStart = ((Z.Util.now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
 
         var watched = this._getContainerDomSize(),
             oldHeight = this.height,
@@ -1119,7 +1119,9 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         var resizeOffset = new Z.Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
         this._offsetCenterByPixel(resizeOffset);
         if (justStart) {
+            this._eventSuppressed = true;
             this.setCenter(center);
+            this._eventSuppressed = false;
         }
         /**
          * resize event when map container's size changes
@@ -1469,6 +1471,9 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     _fireEvent:function (eventName, param) {
+        if (this._eventSuppressed) {
+            return;
+        }
         //fire internal events at first
         this.fire('_' + eventName, param);
         this.fire(eventName, param);
