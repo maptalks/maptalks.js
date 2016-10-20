@@ -35,10 +35,10 @@ Z.CollectionPainter = Z.Class.extend(/** @lends maptalks.CollectionPainter.proto
         });
     },
 
-    get2DExtent:function () {
+    get2DExtent:function (resources) {
         var  extent = new Z.PointExtent();
         this._eachPainter(function (painter) {
-            extent = extent.combine(painter.get2DExtent());
+            extent = extent.combine(painter.get2DExtent(resources));
         });
         return extent;
     },

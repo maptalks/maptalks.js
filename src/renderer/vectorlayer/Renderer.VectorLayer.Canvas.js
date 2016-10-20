@@ -107,7 +107,6 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         }
         var layer = this.layer;
         if (layer.isEmpty()) {
-            this.resources = new Z.renderer.Canvas.Resources();
             this.fireLoadedEvent();
             return;
         }
@@ -145,7 +144,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
             return;
         }
         var painter = geo._getPainter(),
-            extent2D = painter.get2DExtent();
+            extent2D = painter.get2DExtent(this.resources);
         if (!extent2D || !extent2D.intersects(this._displayExtent)) {
             return;
         }

@@ -141,19 +141,32 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
     },
 
     //破坏性方法
-    _multi: function (ratio) {
-        this.x *= ratio;
-        this.y *= ratio;
+    _multi: function (n) {
+        this.x *= n;
+        this.y *= n;
         return this;
     },
 
     /**
      * Returns the result of multiplication of the current point by the given number.
-     * @param {Number} ratio - ratio to multi
+     * @param {Number} n - number to multi
      * @return {maptalks.Point} result
      */
-    multi: function (ratio) {
-        return new Z.Point(this.x * ratio, this.y * ratio);
+    multi: function (n) {
+        return new Z.Point(this.x * n, this.y * n);
+    },
+
+    /**
+     * Returns the result of division of the current point by the given number.
+     * @param {Number} n - number to div
+     * @return {maptalks.Point} result
+     */
+    div: function (n) {
+        return this.multi(1 / n);
+    },
+
+    _div: function (n) {
+        return this._multi(1 / n);
     },
 
     /**

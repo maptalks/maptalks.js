@@ -38,6 +38,15 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
             if (Z.Util.isArrayHasData(resources)) {
                 this.loadResources(resources).then(function () {
                     if (me.layer) {
+                        /**
+                         * resourceload event, fired when external resources of the layer complete loading.
+                         *
+                         * @event maptalks.Layer#resourceload
+                         * @type {Object}
+                         * @property {String} type              - resourceload
+                         * @property {maptalks.Layer} target    - layer
+                         */
+                        me.layer.fire('resourceload');
                         me._tryToDraw.apply(me, args);
                     }
                 });
