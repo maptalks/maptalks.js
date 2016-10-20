@@ -22,9 +22,10 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     padding : [2, 2],
 
-    initialize:function (symbol, geometry) {
+    initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
+        this.painter = painter;
         var style = this.translate();
         this.style = this._defineStyle(style);
         this.strokeAndFill = this._defineStyle(Z.symbolizer.VectorMarkerSymbolizer.translateLineAndFill(style));
@@ -41,7 +42,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             return;
         }
         this._prepareContext(ctx);
-        if (this.geometry._getPainter().isSpriting() || this.geometry.getLayer().getMask() === this.geometry ||
+        if (this.getPainter().isSpriting() || this.geometry.getLayer().getMask() === this.geometry ||
             this.geometry.getLayer().options['cacheVectorOnCanvas'] === false) {
             this._drawMarkers(ctx, cookedPoints, resources);
         } else {

@@ -6,9 +6,10 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         'lineWidth' : 1
     },
 
-    initialize:function (symbol, geometry) {
+    initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
+        this.painter = painter;
     },
 
     getPlacement:function () {
@@ -33,7 +34,7 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var op = this.styles['lineOpacity'];
 
         //outline
-        var pixelExtent = geometry._getPainter().getContainerExtent();
+        var pixelExtent = this.getPainter().getContainerExtent();
         var nw = pixelExtent.getMin(),
             size = pixelExtent.getSize();
         Z.Canvas.rectangle(ctx, nw, size, op, 0);

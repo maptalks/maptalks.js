@@ -24,7 +24,7 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
     },
 
     _getRenderPoints: function () {
-        return this.geometry._getPainter().getRenderPoints(this.getPlacement());
+        return this.getPainter().getRenderPoints(this.getPlacement());
     },
 
     /**
@@ -32,7 +32,7 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
      * @return {maptalks.Point[]}
      */
     _getRenderContainerPoints: function () {
-        var painter = this.geometry._getPainter(),
+        var painter = this.getPainter(),
             points = this._getRenderPoints()[0];
         if (painter.isSpriting()) {
             return points;

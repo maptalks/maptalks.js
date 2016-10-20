@@ -22,6 +22,10 @@ Z.symbolizer = {};
 Z.Symbolizer = Z.Class.extend(/** @lends maptalks.Symbolizer.prototype */{
     getMap:function () {
         return this.geometry.getMap();
+    },
+
+    getPainter: function () {
+        return this.painter;
     }
 });
 

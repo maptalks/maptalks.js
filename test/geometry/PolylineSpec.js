@@ -3,7 +3,7 @@ describe('#LineString', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -11,7 +11,7 @@ describe('#LineString', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         canvasContainer = map._panels.canvasContainer;
     });
@@ -90,15 +90,15 @@ describe('#LineString', function() {
 
         it('normal constructor', function() {
             var points = [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ];
-            var polyline = new Z.Polyline(points);
+            var polyline = new maptalks.Polyline(points);
             var coordinates = polyline.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = Z.GeoJSON.toNumberArrays(coordinates);
+            var geojsonCoordinates = maptalks.GeoJSON.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 
         it('can be empty.',function() {
-            var polyline = new Z.Polyline();
+            var polyline = new maptalks.Polyline();
             expect(polyline.getCoordinates()).to.have.length(0);
         });
 
@@ -106,26 +106,26 @@ describe('#LineString', function() {
 
     describe('getCenter', function() {
         it('should返回笛卡尔坐标系上的点集合的中心点', function() {
-            var polyline = new Z.Polyline([
+            var polyline = new maptalks.Polyline([
                 {x: 0, y: 0},
                 {x: 0, y: 10},
                 {x: 0, y: 80}
             ]);
             layer.addGeometry(polyline);
 
-            expect(polyline.getCenter()).to.closeTo(new Z.Coordinate(0, 30));
+            expect(polyline.getCenter()).to.closeTo(new maptalks.Coordinate(0, 30));
         });
     });
 
     it('getExtent', function() {
-        var polyline = new Z.Polyline([
+        var polyline = new maptalks.Polyline([
             {x: 0, y: 0},
             {x: 0, y: 10},
             {x: 0, y: 80}
         ]);
         // layer.addGeometry(polyline);
 
-        expect(polyline.getExtent()).to.eql(new Z.Extent(0, 0, 0, 80));
+        expect(polyline.getExtent()).to.eql(new maptalks.Extent(0, 0, 0, 80));
     });
 
     describe('geometry fires events', function() {
@@ -135,7 +135,7 @@ describe('#LineString', function() {
                 {x: 0, y: 10},
                 {x: 0, y: 80}
             ];
-            var vector = new Z.Polyline(points);
+            var vector = new maptalks.Polyline(points);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
@@ -146,13 +146,13 @@ describe('#LineString', function() {
                 {x: 0, y: 10},
                 {x: 0, y: 80}
             ];
-            var vector = new Z.Polyline(points);
+            var vector = new maptalks.Polyline(points);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
     it("Rectangle._containsPoint", function() {
         layer.clear();
-        var geometry = new Z.Rectangle(center, 20, 10, {
+        var geometry = new maptalks.Rectangle(center, 20, 10, {
             symbol: {
                 'lineWidth': 6
             }
@@ -174,4 +174,23 @@ describe('#LineString', function() {
         });
         expect(spy.called).to.be.ok();
     });
+
+    it('bug: create with dynamic textSize', function () {
+        // bug desc:
+        // when creating a linestring with dynamic textsize, geometry._getPainter() will create a textMarkerSymbolizer.
+        // the dynamic textSize in the symbol will read map's zoom, which is still null.
+        //
+        // fix:
+        // forbidden to getPainter when geometry is not added to a map.
+        var points = [
+                {x: 0, y: 0},
+                {x: 0, y: 10},
+                {x: 0, y: 80}
+            ];
+        var symbol = {"lineWidth":1,"lineColor":"#000","textName":"{count}","textSize":{"type":"interval","stops":[[0,0],[16,5],[17,10],[18,20],[19,40]]}};
+        new maptalks.LineString(points, {
+            'symbol' : symbol,
+            'properties' : {'count' : 1}
+        });
+    })
 });

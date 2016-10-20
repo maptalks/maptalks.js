@@ -25,9 +25,10 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         'textAlign'               : 'center' //left | right | center | auto
     },
 
-    initialize:function (symbol, geometry) {
+    initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
+        this.painter = painter;
         var style = this.translate();
         this.style = this._defineStyle(style);
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));

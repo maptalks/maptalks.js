@@ -80,5 +80,12 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
 
     _computeGeodesicArea:function () {
         return 0;
+    },
+
+    _getSprite: function (resources) {
+        if (this._getPainter()) {
+            return this._getPainter().getSprite(resources);
+        }
+        return new Z.Painter(this).getSprite(resources);
     }
 });

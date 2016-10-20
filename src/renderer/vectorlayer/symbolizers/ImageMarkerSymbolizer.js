@@ -8,9 +8,10 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         'markerDy': 0
     },
 
-    initialize:function (symbol, geometry) {
+    initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
+        this.painter = painter;
         this.style = this._defineStyle(this.translate());
     },
 
@@ -44,7 +45,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             if (!resources.isResourceLoaded(imgURL)) {
                 resources.addResource(imgURL, img);
             }
-            var painter = this.geometry._getPainter();
+            var painter = this.getPainter();
             if (!painter.isSpriting()) {
                 painter.removeCache();
             }
