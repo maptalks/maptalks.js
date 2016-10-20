@@ -13,9 +13,10 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         'polygonPatternFile' : null
     },
 
-    initialize:function (symbol, geometry) {
+    initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
+        this.painter = painter;
         if (geometry instanceof Z.Marker) {
             return;
         }
@@ -35,10 +36,10 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         var isGradient = Z.Util.isGradient(style['lineColor']),
             isPath = (this.geometry.constructor === Z.Polygon) || (this.geometry instanceof Z.LineString);
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
-            style['lineGradientExtent'] = this.geometry._getPainter().getContainerExtent()._expand(style['lineWidth']);
+            style['lineGradientExtent'] = this.getPainter().getContainerExtent()._expand(style['lineWidth']);
         }
         if (Z.Util.isGradient(style['polygonFill'])) {
-            style['polygonGradientExtent'] = this.geometry._getPainter().getContainerExtent();
+            style['polygonGradientExtent'] = this.getPainter().getContainerExtent();
         }
 
         var points = canvasResources['context'][0],
@@ -110,7 +111,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
     },
 
     _getRenderResources:function () {
-        return this.geometry._getPainter().getRenderResources();
+        return this.getPainter().getRenderResources();
     },
 
     translate:function () {

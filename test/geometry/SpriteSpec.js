@@ -16,7 +16,7 @@ describe('#Sprite', function() {
         image.onload = function () {
             var resources = new maptalks.renderer.Canvas.Resources();
             resources.addResource([url], image);
-            var sprite = marker._getPainter().getSprite(resources);
+            var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
             expect(canvas).to.be.ok();
             expect(sprite.offset.x).to.be.eql(0 + 10);
@@ -43,7 +43,7 @@ describe('#Sprite', function() {
         image.onload = function () {
             var resources = new maptalks.renderer.Canvas.Resources();
             resources.addResource([url], image);
-            var sprite = marker._getPainter().getSprite(resources);
+            var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
             expect(canvas).to.be.ok();
             expect(sprite.offset.x).to.be.eql(0 + 10);
@@ -80,7 +80,7 @@ describe('#Sprite', function() {
         image.onload = function () {
             var resources = new maptalks.renderer.Canvas.Resources();
             resources.addResource([url], image);
-            var sprite = marker._getPainter().getSprite(resources);
+            var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
             expect(canvas).to.be.ok();
             expect(sprite.offset.x).to.be.eql(9.75);
@@ -104,7 +104,7 @@ describe('#Sprite', function() {
             }
         });
         var symbol = marker.getSymbol();
-        var sprite = marker._getPainter().getSprite();
+        var sprite = marker._getSprite();
         var canvas = sprite.canvas;
         expect(canvas).to.be.ok();
         expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
@@ -125,7 +125,7 @@ describe('#Sprite', function() {
             }
         });
         var symbol = marker.getSymbol();
-        var sprite = marker._getPainter().getSprite();
+        var sprite = marker._getSprite();
         var canvas = sprite.canvas;
         expect(canvas).to.be.ok();
         expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
@@ -160,7 +160,7 @@ describe('#Sprite', function() {
             var url = maptalks.Geometry.getMarkerPathBase64(symbol);
             var img = new Image();
             img.onload = function () {
-                var sprite = marker._getPainter().getSprite();
+                var sprite = marker._getSprite();
                 var canvas = sprite.canvas;
                 expect(sprite.offset.x).to.be.eql(0 + 10);
                 expect(sprite.offset.y).to.be.eql(-70 / 2 + 5);
@@ -171,7 +171,7 @@ describe('#Sprite', function() {
             }
             img.src = url;
         } else{
-            var sprite = marker._getPainter().getSprite();
+            var sprite = marker._getSprite();
             var canvas = sprite.canvas;
             expect(sprite.offset.x).to.be.eql(0 + 10);
             expect(sprite.offset.y).to.be.eql(-70 / 2 + 5);
@@ -193,7 +193,7 @@ describe('#Sprite', function() {
             }
         });
         var symbol = marker.getSymbol();
-        var sprite = marker._getPainter().getSprite().canvas;
+        var sprite = marker._getSprite().canvas;
         expect(sprite).to.be.ok();
         expect(sprite.getContext('2d').getImageData(10, 10, 1, 1).data[3]).to.be.above(0);
     });

@@ -34,7 +34,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             symbol = symbols[ii];
             for (var i = regSymbolizers.length - 1; i >= 0; i--) {
                 if (regSymbolizers[i].test(symbol)) {
-                    symbolizer = new regSymbolizers[i](symbol, this.geometry);
+                    symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Z.symbolizer.PointSymbolizer) {
                         this._hasPointSymbolizer = true;
@@ -346,6 +346,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
 
     _removeSymbolizers:function () {
         this._eachSymbolizer(function (symbolizer) {
+            delete symbolizer.painter;
             symbolizer.remove();
         });
         delete this.symbolizers;
