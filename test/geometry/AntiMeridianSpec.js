@@ -1,5 +1,5 @@
 
-describe('AntiMeridianSpec', function() {
+describe('#AntiMeridianSpec', function() {
 
     var container;
     var map;

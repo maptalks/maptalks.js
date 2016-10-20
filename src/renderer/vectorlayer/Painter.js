@@ -45,7 +45,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         if (symbolizers.length === 0) {
             throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
-        this._debugSymbolizer = new Z.symbolizer.DebugSymbolizer(symbol, this.geometry);
+        this._debugSymbolizer = new Z.symbolizer.DebugSymbolizer(symbol, this.geometry, this);
         this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
     },
