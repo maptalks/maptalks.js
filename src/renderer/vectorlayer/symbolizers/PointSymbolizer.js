@@ -9,9 +9,9 @@
  * @extends {maptalks.symbolizer.CanvasSymbolizer}
  */
 Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
-    get2DExtent: function () {
+    get2DExtent: function (resources) {
         var extent = new Z.PointExtent(),
-            m = this.getMarkerExtent();
+            m = this.getMarkerExtent(resources);
         var renderPoints = this._getRenderPoints()[0];
         for (var i = renderPoints.length - 1; i >= 0; i--) {
             extent._combine(renderPoints[i]);

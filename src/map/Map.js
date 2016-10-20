@@ -651,6 +651,27 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     /**
+     * Get map's resolution
+     * @param {Number} zoom - zoom or current zoom if not given
+     * @return {Number} resolution
+     */
+    getResolution:function (zoom) {
+        return this._getResolution(zoom);
+    },
+
+    /**
+     * Get scale of resolutions from zoom to max zoom
+     * @param {Number} zoom - zoom or current zoom if not given
+     * @return {Number} scale
+     */
+    getScale: function (zoom) {
+        var z = (zoom === undefined ? this.getZoom() : zoom);
+        var max = this._getResolution(this.getMaxZoom()),
+            res = this._getResolution(z);
+        return res / max;
+    },
+
+    /**
      * Set the map to be fit for the given extent with the max zoom level possible.
      * @param  {maptalks.Extent} extent - extent
      * @param  {Number} zoomOffset - zoom offset
@@ -1085,7 +1106,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
      * @fires maptalks.Map#resize
      */
     checkSize:function () {
-        var justStart = ((Z.Util.now() - this._initTime) < 1500) && this.width === 0 && this.height === 0;
+        var justStart = ((Z.Util.now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
 
         var watched = this._getContainerDomSize(),
             oldHeight = this.height,
@@ -1098,7 +1119,9 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         var resizeOffset = new Z.Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
         this._offsetCenterByPixel(resizeOffset);
         if (justStart) {
+            this._eventSuppressed = true;
             this.setCenter(center);
+            this._eventSuppressed = false;
         }
         /**
          * resize event when map container's size changes
@@ -1317,14 +1340,15 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
 
      /**
      * Get map's extent in view points.
+     * @param {Number} zoom - zoom
      * @return {maptalks.PointExtent}
      * @private
      */
-    _get2DExtent:function () {
-        var c1 = this._containerPointToPoint(new Z.Point(0, 0)),
-            c2 = this._containerPointToPoint(new Z.Point(this.width, 0)),
-            c3 = this._containerPointToPoint(new Z.Point(this.width, this.height)),
-            c4 = this._containerPointToPoint(new Z.Point(0, this.height));
+    _get2DExtent:function (zoom) {
+        var c1 = this._containerPointToPoint(new Z.Point(0, 0), zoom),
+            c2 = this._containerPointToPoint(new Z.Point(this.width, 0), zoom),
+            c3 = this._containerPointToPoint(new Z.Point(this.width, this.height), zoom),
+            c4 = this._containerPointToPoint(new Z.Point(0, this.height), zoom);
         var xmin = Math.min(c1.x, c2.x, c3.x, c4.x),
             xmax = Math.max(c1.x, c2.x, c3.x, c4.x),
             ymin = Math.min(c1.y, c2.y, c3.y, c4.y),
@@ -1447,6 +1471,9 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     _fireEvent:function (eventName, param) {
+        if (this._eventSuppressed) {
+            return;
+        }
         //fire internal events at first
         this.fire('_' + eventName, param);
         this.fire(eventName, param);
@@ -1742,11 +1769,12 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         );
     },
 
-    _containerPointToPoint: function (containerPoint) {
-        var centerPoint = this._prjToPoint(this._getPrjCenter()),
-            centerContainerPoint = new Z.Point(this.width / 2, this.height / 2);
+    _containerPointToPoint: function (containerPoint, zoom) {
+        var centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
+            scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
+
         //容器的像素坐标方向是固定方向的, 和html标准一致, 即从左到右增大, 从上到下增大
-        return new Z.Point(centerPoint.x + containerPoint.x - centerContainerPoint.x, centerPoint.y + containerPoint.y - centerContainerPoint.y);
+        return new Z.Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
     },
 
     _viewPointToPoint: function (viewPoint) {

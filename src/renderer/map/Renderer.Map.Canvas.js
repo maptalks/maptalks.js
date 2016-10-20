@@ -314,6 +314,7 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         var mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
         var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;', true);
         var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
+        var mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;top:0px;left:0px;');
         var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;');
         var frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
         var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;');
@@ -329,9 +330,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
 
         mapPlatform.appendChild(ui);
         mapWrapper.appendChild(mapPlatform);
-        mapWrapper.appendChild(canvasContainer);
-        mapWrapper.appendChild(layer);
-        mapWrapper.appendChild(frontLayer);
+        mapAllLayers.appendChild(layer);
+        mapAllLayers.appendChild(canvasContainer);
+        mapAllLayers.appendChild(frontLayer);
+        mapWrapper.appendChild(mapAllLayers);
         mapWrapper.appendChild(control);
 
         this.createCanvas();

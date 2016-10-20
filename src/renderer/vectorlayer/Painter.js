@@ -227,13 +227,13 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     },
 
     //需要实现的接口方法
-    get2DExtent:function () {
+    get2DExtent:function (resources) {
         if (!this._extent2D) {
             if (this.symbolizers) {
                 var _extent2D = new Z.PointExtent();
                 var len = this.symbolizers.length - 1;
                 for (var i = len; i >= 0; i--) {
-                    _extent2D._combine(this.symbolizers[i].get2DExtent());
+                    _extent2D._combine(this.symbolizers[i].get2DExtent(resources));
                 }
                 this._extent2D = _extent2D;
             }
@@ -244,7 +244,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     getContainerExtent : function () {
         var map = this.getMap(),
             matrix = this.getTransformMatrix(),
-            extent2D = this.get2DExtent();
+            extent2D = this.get2DExtent(this.resources);
         var containerExtent = new Z.PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
         if (matrix) {
             //FIXME not right for markers

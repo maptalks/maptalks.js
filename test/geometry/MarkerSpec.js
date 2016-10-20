@@ -3,7 +3,7 @@ describe('#Marker', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var canvasContainer;
     var layer;
 
@@ -67,7 +67,7 @@ describe('#Marker', function() {
     describe("symbol", function() {
 
         beforeEach(function() {
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
         });
 
@@ -76,9 +76,9 @@ describe('#Marker', function() {
         });
 
         it("can be icon", function() {
-            var marker = new Z.Marker(center, {
+            var marker = new maptalks.Marker(center, {
                 symbol: {
-                    markerFile: Z.prefix + 'images/control/2.png',
+                    markerFile: maptalks.prefix + 'images/control/2.png',
                     markerWidth: 30,
                     markerHeight: 22
                 }
@@ -90,7 +90,7 @@ describe('#Marker', function() {
         });
 
         it("can be text", function() {
-            var marker = new Z.Marker(center, {
+            var marker = new maptalks.Marker(center, {
                 symbol: {
                     textName: 'texxxxxt',
                     textFaceName: 'monospace'
@@ -108,7 +108,7 @@ describe('#Marker', function() {
 
             expect(function () {
                 for(var i = 0; i < types.length; i++) {
-                    var marker = new Z.Marker(center, {
+                    var marker = new maptalks.Marker(center, {
                         symbol: {
                             markerType: types[i],
                             markerLineDasharray: [20, 10, 5, 5, 5, 10]
@@ -125,7 +125,7 @@ describe('#Marker', function() {
 
         it('fires symbolchange event', function() {
             var spy = sinon.spy();
-            var marker = new Z.Marker(center);
+            var marker = new maptalks.Marker(center);
             marker.on('symbolchange', spy);
             marker.setSymbol({
                 'markerType' : 'ellipse',
@@ -158,28 +158,28 @@ describe('#Marker', function() {
 
     describe('events', function() {
         it('canvas events', function() {
-            var vector = new Z.Marker(center);
+            var vector = new maptalks.Marker(center);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
 
     it('can have various symbols',function(done) {
-        var vector = new Z.Marker(center);
+        var vector = new maptalks.Marker(center);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
-    it("Marker._containsPoint", function() {
+    it("Marker.containsPoint", function() {
 
-        var geometry = new Z.Marker(center, {
+        var geometry = new maptalks.Marker(center, {
             symbol: {
-                markerFile : Z.prefix + 'images/control/2.png',
+                markerFile : maptalks.prefix + 'images/control/2.png',
                 markerHeight : 30,
                 markerWidth : 22,
                 dx : 0,
                 dy : 0
             }
         });
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(geometry);
 
@@ -192,6 +192,20 @@ describe('#Marker', function() {
         });
 
         //expect(spy.called).to.be.ok();
+    });
+
+    it('get image marker\'s extent', function (done) {
+        var geometry = new maptalks.Marker(map.getExtent().getMin().substract(1E-7, 0), {
+            symbol: {
+                markerFile : maptalks.prefix + 'images/control/2.png'
+            }
+        });
+        layer = new maptalks.VectorLayer('id').addGeometry(geometry);
+        layer.on('renderend', function () {
+            expect(layer._getRenderer()._geosToDraw.length).to.be.ok();
+            done();
+        });
+        map.addLayer(layer);
     });
 
 });
