@@ -667,7 +667,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
     getScale: function (zoom) {
         var z = (zoom === undefined ? this.getZoom() : zoom);
         var max = this._getResolution(this.getMaxZoom()),
-            res = this._getResolution(zoom);
+            res = this._getResolution(z);
         return res / max;
     },
 
