@@ -33,7 +33,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         for (var ii = symbols.length - 1; ii >= 0; ii--) {
             symbol = symbols[ii];
             for (var i = regSymbolizers.length - 1; i >= 0; i--) {
-                if (regSymbolizers[i].test(symbol)) {
+                if (regSymbolizers[i].test(symbol, this.geometry)) {
                     symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Z.symbolizer.PointSymbolizer) {
@@ -169,7 +169,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             return null;
         }
         this._genSprite = true;
-        if (!this._sprite) {
+        if (!this._sprite && this.symbolizers.length > 0) {
             var extent = new Z.PointExtent();
             this.symbolizers.forEach(function (s) {
                 var markerExtent = s.getMarkerExtent(resources);
