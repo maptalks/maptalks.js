@@ -81,9 +81,12 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         for (var i = geometries.length - 1; i >= 0; i--) {
             checkGeo(geometries[i]);
         }
-
-        if (this.layer.getStyle()) {
-            this.layer.getStyle().forEach(function (s) {
+        var style = this.layer.getStyle();
+        if (style) {
+            if (!Z.Util.isArray(style)) {
+                style = [style];
+            }
+            style.forEach(function (s) {
                 var res = maptalks.Util.getExternalResources(s['symbol'], true);
                 if (res) {
                     for (ii = 0; ii < res.length; ii++) {
