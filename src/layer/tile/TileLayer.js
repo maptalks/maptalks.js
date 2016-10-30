@@ -215,9 +215,6 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
             return this.options['errorTileUrl'];
         }
         var urlTemplate = this.options['urlTemplate'];
-        if (Z.Util.isFunction(urlTemplate)) {
-            return urlTemplate(x, y, z);
-        }
         var domain = '';
         if (this.options['subdomains']) {
             var subdomains = this.options['subdomains'];
@@ -229,6 +226,9 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                 }
                 domain = subdomains[s];
             }
+        }
+        if (Z.Util.isFunction(urlTemplate)) {
+            return urlTemplate(x, y, z, domain);
         }
         var data = {
             'x' : x,
