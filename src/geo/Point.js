@@ -178,6 +178,14 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
     },
 
     /**
+     * Convert the point to a number array [x, y]
+     * @return {Number[]} number array
+     */
+    toArray:function () {
+        return [this.x, this.y];
+    },
+
+    /**
      * Convert the point to a json object {x : .., y : ..}
      * @return {Object} json
      */
