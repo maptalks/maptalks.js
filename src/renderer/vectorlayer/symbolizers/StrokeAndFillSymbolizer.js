@@ -139,8 +139,11 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
 });
 
-Z.symbolizer.StrokeAndFillSymbolizer.test = function (symbol) {
+Z.symbolizer.StrokeAndFillSymbolizer.test = function (symbol, geometry) {
     if (!symbol) {
+        return false;
+    }
+    if (geometry && (geometry instanceof Z.Marker)) {
         return false;
     }
     for (var p in symbol) {
