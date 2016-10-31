@@ -83,11 +83,13 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             if (!layer || !layer.getMap() || !layer.isVisible() || (!opts['includeInternals'] && layer.getId().indexOf(Z.internalLayerPrefix) >= 0)) {
                 continue;
             }
-            if (layer.identify) {
-                if (opts['count']) {
-                    options['count'] = opts['count'] - hits.length;
+            var layerHits = layer.identify(point, options);
+            if (layerHits) {
+                if (Z.Util.isArray(layerHits)) {
+                    hits = hits.concat(layerHits);
+                } else {
+                    hits.push(layerHits);
                 }
-                hits = hits.concat(layer.identify(point, options));
             }
         }
         callback.call(this, hits);
