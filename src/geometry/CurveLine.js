@@ -39,78 +39,74 @@ Z.CurveLine = Z.LineString.extend(/** @lends maptalks.CurveLine.prototype */{
         };
     },
 
-    _getRenderCanvasResources:function () {
-        //draw a triangle arrow
+    _getPaintParams: function () {
         var prjVertexes = this._getPrjCoordinates();
         var points = this._getPath2DPoints(prjVertexes);
+        return [points];
+    },
+
+    // paint method on canvas
+    _paintOn: function (ctx, points, lineOpacity) {
         var arcDegree = this.options['arcDegree'],
             curveType = this.options['curveType'];
-        var me = this;
-        var fn = function (_ctx, _points, _lineOpacity) {
-            var curveFn, degree;
-            switch (curveType) {
-            case 0 : curveFn = Z.Canvas._lineTo; degree = 1; break;
-            case 1 : curveFn = Z.Canvas._arcBetween; degree = 1; break;
-            case 2 : curveFn = Z.Canvas._quadraticCurveTo; degree = 2; break;
-            case 3 : curveFn = Z.Canvas._bezierCurveTo; degree = 3; break;
+        var curveFn, degree;
+        switch (curveType) {
+        case 0 : curveFn = Z.Canvas._lineTo; degree = 1; break;
+        case 1 : curveFn = Z.Canvas._arcBetween; degree = 1; break;
+        case 2 : curveFn = Z.Canvas._quadraticCurveTo; degree = 2; break;
+        case 3 : curveFn = Z.Canvas._bezierCurveTo; degree = 3; break;
+        }
+        var i, len = points.length;
+        ctx.beginPath();
+        for (i = 0; i < len; i += degree) {
+            // var p = points[i].round();
+            var p = points[i];
+            if (i === 0) {
+                ctx.moveTo(p.x, p.y);
             }
-            var i, len = _points.length;
-            _ctx.beginPath();
-            for (i = 0; i < len; i += degree) {
-                // var p = _points[i].round();
-                var p = _points[i];
-                if (i === 0) {
-                    _ctx.moveTo(p.x, p.y);
+            var left = len - i;
+            if (left <= degree) {
+                if (left === 2) {
+                    p = points[len - 1];
+                    ctx.lineTo(p.x, p.y);
+                } else if (left === 3) {
+                    Z.Canvas._quadraticCurveTo(ctx, points[len - 2], points[len - 1]);
                 }
-                var left = len - i;
-                if (left <= degree) {
-                    if (left === 2) {
-                        p = _points[len - 1];
-                        _ctx.lineTo(p.x, p.y);
-                    } else if (left === 3) {
-                        Z.Canvas._quadraticCurveTo(_ctx, _points[len - 2], _points[len - 1]);
-                    }
-                } else {
-                    var points = [];
-                    for (var ii = 0; ii < degree; ii++) {
-                        points.push(_points[i + ii + 1]);
-                    }
-                    var args = [_ctx].concat(points);
-                    if (curveFn === Z.Canvas._arcBetween) {
-                        //arc start point
-                        args.splice(1, 0, p);
-                        args = args.concat([arcDegree]);
-                    }
-                    curveFn.apply(Z.Canvas, args);
-                    Z.Canvas._stroke(_ctx, this.style['lineOpacity']);
+            } else {
+                var pts = [];
+                for (var ii = 0; ii < degree; ii++) {
+                    pts.push(points[i + ii + 1]);
                 }
+                var args = [ctx].concat(pts);
+                if (curveFn === Z.Canvas._arcBetween) {
+                    //arc start point
+                    args.splice(1, 0, p);
+                    args = args.concat([arcDegree]);
+                }
+                curveFn.apply(Z.Canvas, args);
+                Z.Canvas._stroke(ctx, lineOpacity);
             }
-            Z.Canvas._stroke(_ctx, this.style['lineOpacity']);
-            if (_ctx.setLineDash) {
-                //remove line dash effect if any
-                _ctx.setLineDash([]);
+        }
+        Z.Canvas._stroke(ctx, lineOpacity);
+        if (ctx.setLineDash) {
+            //remove line dash effect if any
+            ctx.setLineDash([]);
+        }
+        if (this.options['arrowStyle'] && points.length >= 2) {
+            var placement = this.options['arrowPlacement'];
+            if (placement === 'vertex-first' || placement === 'vertex-firstlast') {
+                this._arrow(ctx, points[1], points[0], lineOpacity, this.options['arrowStyle']);
             }
-            if (me.options['arrowStyle'] && _points.length >= 2) {
-                var placement = me.options['arrowPlacement'];
-                if (placement === 'vertex-first' || placement === 'vertex-firstlast') {
-                    me._arrow(_ctx, _points[1], _points[0], _lineOpacity, me.options['arrowStyle']);
-                }
-                if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
-                    me._arrow(_ctx, _points[_points.length - 2], _points[_points.length - 1], _lineOpacity, me.options['arrowStyle']);
-                }
-                //besizerCurves doesn't have point arrows
-                if ((curveType === 0 || curveType === 1) && placement === 'point') {
-                    for (i = 0, len = _points.length - 1; i < len; i++) {
-                        me._arrow(_ctx, _points[i], _points[i + 1], _lineOpacity, me.options['arrowStyle']);
-                    }
+            if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
+                this._arrow(ctx, points[points.length - 2], points[points.length - 1], lineOpacity, this.options['arrowStyle']);
+            }
+            //besizerCurves doesn't have point arrows
+            if ((curveType === 0 || curveType === 1) && placement === 'point') {
+                for (i = 0, len = points.length - 1; i < len; i++) {
+                    this._arrow(ctx, points[i], points[i + 1], lineOpacity, this.options['arrowStyle']);
                 }
             }
-
-        };
-        return {
-            'fn' : fn,
-            'context' : [points]
-        };
+        }
     }
 });
 

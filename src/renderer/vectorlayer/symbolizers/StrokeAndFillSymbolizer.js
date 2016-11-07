@@ -31,7 +31,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         if (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0) {
             return;
         }
-        var canvasResources = this._getRenderResources();
+        var paintParams = this._getPaintParams();
         this._prepareContext(ctx);
         var isGradient = Z.Util.isGradient(style['lineColor']),
             isPath = (this.geometry.constructor === Z.Polygon) || (this.geometry instanceof Z.LineString);
@@ -42,7 +42,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
             style['polygonGradientExtent'] = this.getPainter().getContainerExtent();
         }
 
-        var points = canvasResources['context'][0],
+        var points = paintParams[0],
             isSplitted = (this.geometry instanceof Z.Polygon && points.length === 2 && Z.Util.isArray(points[0][0])) ||
                         (this.geometry instanceof Z.LineString  && points.length === 2 && Z.Util.isArray(points[0]));
         if (isSplitted) {
@@ -51,15 +51,14 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
                 if (isGradient && isPath && !style['lineColor']['places']) {
                     this._createGradient(ctx, points[i], style['lineColor']);
                 }
-                canvasResources['fn'].apply(this, [ctx].concat([points[i]]).concat([
-                    style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
+                this.geometry._paintOn(ctx, points[i], style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
             }
         } else {
             Z.Canvas.prepareCanvas(ctx, style, resources);
             if (isGradient && isPath && !style['lineColor']['places']) {
                 this._createGradient(ctx, points, style['lineColor']);
             }
-            canvasResources['fn'].apply(this, [ctx].concat(canvasResources['context']).concat([
+            this.geometry._paintOn.apply(this.geometry, [ctx].concat(paintParams).concat([
                 style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
         }
 
@@ -110,8 +109,8 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         return this._pxExtent._expand(this.style['lineWidth'] / 2);
     },
 
-    _getRenderResources:function () {
-        return this.getPainter().getRenderResources();
+    _getPaintParams:function () {
+        return this.getPainter().getPaintParams();
     },
 
     translate:function () {
