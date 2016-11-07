@@ -36,7 +36,7 @@ Z.Canvas = {
         ctx.font = Z.symbolizer.TextMarkerSymbolizer.getFont(style);
         var fill = style['textFill'];
         if (!fill) { fill = Z.Symbolizer.DEFAULT_TEXT_COLOR; }
-        ctx.fillStyle = this.getRgba(fill, style['textOpacity']);
+        ctx.fillStyle = Z.Canvas.getRgba(fill, style['textOpacity']);
     },
 
     prepareCanvas:function (ctx, style, resources) {
@@ -162,7 +162,7 @@ Z.Canvas = {
                     } else {
                         w = Z.Util.round(imageRes.width * strokeWidth / imageRes.height);
                     }
-                    var patternCanvas = this.createCanvas(w, strokeWidth, ctx.canvas.constructor);
+                    var patternCanvas = Z.Canvas.createCanvas(w, strokeWidth, ctx.canvas.constructor);
                     Z.Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
                     resources.addResource([key, null, strokeWidth], patternCanvas);
                     imageTexture = patternCanvas;
@@ -250,7 +250,7 @@ Z.Canvas = {
 
     text:function (ctx, text, pt, style, textDesc) {
         // pt = pt.add(new Z.Point(style['textDx'], style['textDy']));
-        this._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
+        Z.Canvas._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
     },
 
     _textOnMultiRow: function (ctx, texts, style, point, splitTextSize, textSize) {

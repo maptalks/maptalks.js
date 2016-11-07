@@ -43,7 +43,10 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             }
         }
         if (symbolizers.length === 0) {
-            throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
+            if (console) {
+                console.warn('invalid symbol for geometry(' + (this.geometry ? this.geometry.getType() + ':' + this.geometry.getId() : '') + ') to draw : ' + JSON.stringify(geoSymbol));
+            }
+            // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
         this._debugSymbolizer = new Z.symbolizer.DebugSymbolizer(symbol, this.geometry, this);
         this._hasShadow = this.geometry.options['shadowBlur'] > 0;
@@ -82,19 +85,19 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      * for strokeAndFillSymbolizer
      * @return {Object[]} resources to render vector
      */
-    getRenderResources:function () {
-        if (!this._rendResources) {
+    getPaintParams:function () {
+        if (!this._paintParams) {
             //render resources geometry returned are based on view points.
-            this._rendResources = this.geometry._getRenderCanvasResources();
+            this._paintParams = this.geometry._getPaintParams();
         }
         var matrices = this.getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null;
         var layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin(),
-            context = this._rendResources['context'],
-            transContext = [],
+            paintParams = this._paintParams,
+            tPaintParams = [], // transformed params
         //refer to Geometry.Canvas
-            points = context[0],
+            points = paintParams[0],
             containerPoints;
         //convert view points to container points needed by canvas
         if (Z.Util.isArray(points)) {
@@ -111,31 +114,26 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
                 containerPoints = matrix.applyToPointInstance(containerPoints);
             }
         }
-        transContext.push(containerPoints);
+        tPaintParams.push(containerPoints);
 
         //scale width ,height or radius if geometry has
-        for (var i = 1, len = context.length; i < len; i++) {
+        for (var i = 1, len = paintParams.length; i < len; i++) {
             if (matrix) {
-                if (Z.Util.isNumber(context[i]) || (context[i] instanceof Z.Size)) {
-                    if (Z.Util.isNumber(context[i])) {
-                        transContext.push(scale.x * context[i]);
+                if (Z.Util.isNumber(paintParams[i]) || (paintParams[i] instanceof Z.Size)) {
+                    if (Z.Util.isNumber(paintParams[i])) {
+                        tPaintParams.push(scale.x * paintParams[i]);
                     } else {
-                        transContext.push(new Z.Size(context[i].width * scale.x, context[i].height * scale.y));
+                        tPaintParams.push(new Z.Size(paintParams[i].width * scale.x, paintParams[i].height * scale.y));
                     }
                 } else {
-                    transContext.push(context[i]);
+                    tPaintParams.push(paintParams[i]);
                 }
             } else {
-                transContext.push(context[i]);
+                tPaintParams.push(paintParams[i]);
             }
         }
 
-        var resources = {
-            'fn' : this._rendResources['fn'],
-            'context' : transContext
-        };
-
-        return resources;
+        return tPaintParams;
     },
 
     getSymbol:function () {
@@ -357,7 +355,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      */
     removeCache:function () {
         delete this._renderPoints;
-        delete this._rendResources;
+        delete this._paintParams;
         delete this._extent2D;
         delete this._sprite;
     }

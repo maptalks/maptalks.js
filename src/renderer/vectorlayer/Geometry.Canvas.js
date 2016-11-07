@@ -2,16 +2,15 @@
 if (Z.Browser.canvas) {
 
     var ellipseReources = {
-        _getRenderCanvasResources:function () {
+        _getPaintParams: function () {
             var map = this.getMap();
             var pcenter = this._getPrjCoordinates();
             var pt = map._prjToPoint(pcenter);
             var size = this._getRenderSize();
-            return {
-                'fn' : Z.Canvas.ellipse,
-                'context' : [pt, size['width'], size['height']]
-            };
-        }
+            return [pt, size['width'], size['height']];
+        },
+
+        _paintOn: Z.Canvas.ellipse
     };
 
     Z.Ellipse.include(ellipseReources);
@@ -19,28 +18,23 @@ if (Z.Browser.canvas) {
     Z.Circle.include(ellipseReources);
     //----------------------------------------------------
     Z.Rectangle.include({
-        _getRenderCanvasResources:function () {
+        _getPaintParams: function () {
             var map = this.getMap();
             var pt = map._prjToPoint(this._getPrjCoordinates());
             var size = this._getRenderSize();
-            return {
-                'fn' : Z.Canvas.rectangle,
-                'context' : [pt, size]
-            };
-        }
+            return [pt, size];
+        },
+        _paintOn: Z.Canvas.rectangle
     });
     //----------------------------------------------------
     Z.Sector.include({
-        _getRenderCanvasResources:function () {
+        _getPaintParams: function () {
             var map = this.getMap();
-            var pcenter = this._getPrjCoordinates();
-            var pt = map._prjToPoint(pcenter);
+            var pt = map._prjToPoint(this._getPrjCoordinates());
             var size = this._getRenderSize();
-            return {
-                'fn' : Z.Canvas.sector,
-                'context' : [pt, size['width'], [this.getStartAngle(), this.getEndAngle()]]
-            };
-        }
+            return [pt, size['width'], [this.getStartAngle(), this.getEndAngle()]];
+        },
+        _paintOn: Z.Canvas.sector
 
     });
     //----------------------------------------------------
@@ -75,43 +69,37 @@ if (Z.Browser.canvas) {
             Z.Canvas.polygon(ctx, ptsToDraw, opacity, opacity);
         },
 
-        _getRenderCanvasResources:function () {
-            //draw a triangle arrow
-
+        _getPaintParams: function () {
             var prjVertexes = this._getPrjCoordinates();
             var points = this._getPath2DPoints(prjVertexes);
+            return [points];
+        },
 
-            var me = this;
-            var fn = function (_ctx, _points, _lineOpacity, _fillOpacity, _dasharray) {
-                Z.Canvas.path(_ctx, _points, _lineOpacity, null, _dasharray);
-                if (_ctx.setLineDash && Z.Util.isArrayHasData(_dasharray)) {
-                    //remove line dash effect if any
-                    _ctx.setLineDash([]);
+        _paintOn:function (ctx, points, lineOpacity, fillOpacity, dasharray) {
+            Z.Canvas.path(ctx, points, lineOpacity, null, dasharray);
+            if (ctx.setLineDash && Z.Util.isArrayHasData(dasharray)) {
+                //remove line dash effect if any
+                ctx.setLineDash([]);
+            }
+            if (this.options['arrowStyle'] && points.length >= 2) {
+                var placement = this.options['arrowPlacement'];
+                if (placement === 'vertex-first' || placement === 'vertex-firstlast') {
+                    this._arrow(ctx, points[1], points[0], lineOpacity, this.options['arrowStyle']);
                 }
-                if (me.options['arrowStyle'] && _points.length >= 2) {
-                    var placement = me.options['arrowPlacement'];
-                    if (placement === 'vertex-first' || placement === 'vertex-firstlast') {
-                        me._arrow(_ctx, _points[1], _points[0], _lineOpacity, me.options['arrowStyle']);
-                    }
-                    if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
-                        me._arrow(_ctx, _points[_points.length - 2], _points[_points.length - 1], _lineOpacity, me.options['arrowStyle']);
-                    }
-                    if (placement === 'point') {
-                        for (var i = 0, len = _points.length - 1; i < len; i++) {
-                            me._arrow(_ctx, _points[i], _points[i + 1], _lineOpacity, me.options['arrowStyle']);
-                        }
+                if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
+                    this._arrow(ctx, points[points.length - 2], points[points.length - 1], lineOpacity, this.options['arrowStyle']);
+                }
+                if (placement === 'point') {
+                    for (var i = 0, len = points.length - 1; i < len; i++) {
+                        this._arrow(ctx, points[i], points[i + 1], lineOpacity, this.options['arrowStyle']);
                     }
                 }
-            };
-            return {
-                'fn' : fn,
-                'context' : [points]
-            };
+            }
         }
     });
 
     Z.Polygon.include({
-        _getRenderCanvasResources:function () {
+        _getPaintParams: function () {
             var prjVertexes = this._getPrjCoordinates(),
                 points = this._getPath2DPoints(prjVertexes),
                 //splitted by anti-meridian
@@ -138,11 +126,8 @@ if (Z.Browser.canvas) {
 
                 }
             }
-            var resource =  {
-                'fn' : Z.Canvas.polygon,
-                'context' : [isSplitted ? points : [points].concat(holePoints)]
-            };
-            return resource;
-        }
+            return [isSplitted ? points : [points].concat(holePoints)];
+        },
+        _paintOn: Z.Canvas.polygon
     });
 }
