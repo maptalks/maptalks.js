@@ -80,6 +80,29 @@ describe('SymbolSpec', function() {
         expect(res[0][1]).to.be.eql(20);
         expect(res[0][2]).to.be.eql(30);
     });
+
+    it('marker path', function() {
+        var expected = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
+        var marker = new maptalks.Marker([100,0], {
+            symbol:{
+                'markerType'    : 'path',
+                'markerPath'    : [
+                    {
+                        'path' : 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
+                        'fill' : '#DE3333'
+                    }
+                ],
+                "markerWidth":20,
+                "markerHeight":30
+            }
+        });
+        var res = marker._getExternalResources();
+        expect(res).to.have.length(1);
+        expect(res[0][0]).to.be.eql(expected);
+        expect(res[0][1]).to.be.eql(20);
+        expect(res[0][2]).to.be.eql(30);
+    });
+
     it('line pattern file', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
         var line = new maptalks.Polygon([[100,0],[101,1],[105,10],[100,0]], {
@@ -164,4 +187,54 @@ describe('SymbolSpec', function() {
         }
     });
 
+    it('function type markerFile', function () {
+        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/';
+        var marker = new maptalks.Marker([100,0], {
+            symbol:{
+                "markerFile" : {
+                    property:'count',
+                    type:'interval',
+                    stops: [
+                        [0, 'resources/x.svg'],
+                        [9, 'resources/x1.svg'],
+                        [99, 'resources/x2.svg']
+                    ]
+                },
+                "markerWidth":20,
+                "markerHeight":30
+            }
+        });
+        var res = marker._getExternalResources();
+        expect(res).to.have.length(3);
+        expect(res[0]).to.be.eql([expected + 'x.svg', 20, 30]);
+        expect(res[1]).to.be.eql([expected + 'x1.svg', 20, 30]);
+        expect(res[2]).to.be.eql([expected + 'x2.svg', 20, 30]);
+    });
+
+    it('function type markerPath', function() {
+        var expected0 = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
+        var expected1 = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
+        var marker = new maptalks.Marker([100,0], {
+            symbol:{
+                'markerType'    : 'path',
+                'markerPath'    : {
+                    property:'count',
+                    type:'interval',
+                    stops: [
+                        [0, 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z'],
+                        [9, {
+                            'path' : 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
+                            'fill' : '#DE3333'
+                        }]
+                    ]
+                },
+                "markerWidth":20,
+                "markerHeight":30
+            }
+        });
+        var res = marker._getExternalResources();
+        expect(res).to.have.length(2);
+        expect(res[0]).to.be.eql([expected0, 20, 30]);
+        expect(res[1]).to.be.eql([expected1, 20, 30]);
+    });
 });

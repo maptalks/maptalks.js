@@ -199,6 +199,17 @@
             }
         }
         return result;
+    };
+
+    Z.Util.getFunctionTypeResources = function (t) {
+        if (!t || !t.stops) {
+            return null;
+        }
+        var res = [];
+        for (var i = 0, l = t.stops.length; i < l; i++) {
+            res.push(t.stops[i][1]);
+        }
+        return res;
     }
 
 })();

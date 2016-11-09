@@ -888,7 +888,9 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (this.onRemove) {
             this.onRemove();
         }
-        layer.onRemoveGeometry(this);
+        if (layer.onRemoveGeometry) {
+            layer.onRemoveGeometry(this);
+        }
         delete this._layer;
         delete this._internalId;
         delete this._extent;
@@ -922,34 +924,8 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _getExternalResources:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = Z.Util.getExternalResources(this._interpolateSymbol(symbol));
+        var resources = Z.Util.getExternalResources(symbol);
         return resources;
-    },
-
-    _interpolateSymbol: function (symbol) {
-        var result;
-        if (Z.Util.isArray(symbol)) {
-            result = [];
-            for (var i = 0; i < symbol.length; i++) {
-                result.push(this._interpolateSymbol(symbol[i]));
-            }
-            return result;
-        }
-        result = {};
-        for (var p in symbol) {
-            if (symbol.hasOwnProperty(p)) {
-                if (Z.Util.isFunctionDefinition(symbol[p])) {
-                    if (!this.getMap()) {
-                        result[p] = null;
-                    } else {
-                        result[p] = Z.Util.interpolated(symbol[p])(this.getMap().getZoom(), this.getProperties());
-                    }
-                } else {
-                    result[p] = symbol[p];
-                }
-            }
-        }
-        return result;
     },
 
     _getPainter:function () {
