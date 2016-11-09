@@ -391,11 +391,7 @@ Z.Canvas = {
         for (var i = 0, len = points.length; i < len; i++) {
             point = points[i]/*._round()*/;
             if (!isDashed || ctx.setLineDash) { //IE9+
-                if (i === 0) {
-                    ctx.moveTo(point.x, point.y);
-                } else {
-                    ctx.lineTo(point.x, point.y);
-                }
+                ctx.lineTo(point.x, point.y);
                 if (isPatternLine && i > 0) {
                     prePoint = points[i - 1]/*._round()*/;
                     fillWithPattern(prePoint, point);
@@ -414,6 +410,7 @@ Z.Canvas = {
 
     path:function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
         Z.Canvas._path(ctx, points, lineDashArray, lineOpacity);
         Z.Canvas._stroke(ctx, lineOpacity);
     },
@@ -477,6 +474,7 @@ Z.Canvas = {
             ring = ring.concat([ring[0]]);
         }
         ctx.beginPath();
+        ctx.moveTo(ring[0].x, ring[0].y);
         Z.Canvas._path(ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern);
         if (!isPatternLine) {
             ctx.closePath();
@@ -491,7 +489,7 @@ Z.Canvas = {
      * @param  {Number} degree arc degree between p1 and p2
      */
     _arcBetween : function (ctx, p1, p2, degree) {
-        var a = degree * Math.PI / 180,
+        var a = degree,
             dist = p1.distanceTo(p2),
             //radius of circle
             r = dist / 2 / Math.sin(a / 2);
@@ -516,7 +514,6 @@ Z.Canvas = {
         var endAngle = startAngle + a;
 
         ctx.beginPath();
-        // ctx.arc(Z.Util.round(cx), Z.Util.round(cy), Z.Util.round(r), startAngle, endAngle);
         ctx.arc(cx, cy, r, startAngle, endAngle);
     },
 
@@ -534,17 +531,9 @@ Z.Canvas = {
     },
 
     _bezierCurveTo:function (ctx, p1, p2, p3) {
-        // p1 = p1._round();
-        // p2 = p2._round();
-        // p3 = p3._round();
         ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
     },
 
-    _quadraticCurveTo:function (ctx, p1, p2) {
-        // p1 = p1._round();
-        // p2 = p2._round();
-        ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y);
-    },
 
     //各种图形的绘制方法
     ellipse:function (ctx, pt, width, height, lineOpacity, fillOpacity) {
@@ -555,10 +544,10 @@ Z.Canvas = {
             ctx.beginPath();
            //从椭圆的左端点开始顺时针绘制四条三次贝塞尔曲线
             ctx.moveTo(x - a, y);
-            Z.Canvas._bezierCurveTo(ctx, new Z.Point(x - a, y - oy), new Z.Point(x - ox, y - b), new Z.Point(x, y - b));
-            Z.Canvas._bezierCurveTo(ctx, new Z.Point(x + ox, y - b), new Z.Point(x + a, y - oy), new Z.Point(x + a, y));
-            Z.Canvas._bezierCurveTo(ctx, new Z.Point(x + a, y + oy), new Z.Point(x + ox, y + b), new Z.Point(x, y + b));
-            Z.Canvas._bezierCurveTo(ctx, new Z.Point(x - ox, y + b), new Z.Point(x - a, y + oy), new Z.Point(x - a, y));
+            ctx.bezierCurveTo(x - a, y - oy, x - ox, y - b, x, y - b);
+            ctx.bezierCurveTo(x + ox, y - b, x + a, y - oy, x + a, y);
+            ctx.bezierCurveTo(x + a, y + oy, x + ox, y + b, x, y + b);
+            ctx.bezierCurveTo(x - ox, y + b, x - a, y + oy, x - a, y);
             ctx.closePath();
             Z.Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
             Z.Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);

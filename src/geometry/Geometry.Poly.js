@@ -197,5 +197,14 @@ Z.Geometry.Poly = {
 
         }
         return result;
+    },
+
+    _get2DLength: function () {
+        var vertexes = this._getPath2DPoints(this._getPrjCoordinates());
+        var len = 0;
+        for (var i = 1, l = vertexes.length; i < l; i++) {
+            len += vertexes[i].distanceTo(vertexes[i - 1]);
+        }
+        return len;
     }
 };

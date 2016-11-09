@@ -44,6 +44,21 @@ if (Z.Browser.canvas) {
             'classic' : [2, 5]
         },
 
+        _getArrowPoints: function (prePoint, point, lineWidth, arrowStyle) {
+            var arrowWidth = lineWidth * arrowStyle[0],
+                arrowHeight = lineWidth * arrowStyle[1],
+                hh = arrowHeight,
+                hw = arrowWidth / 2;
+
+            var v0 = new Z.Point(0, lineWidth),
+                v1 = new Z.Point(-hw, hh),
+                v2 = new Z.Point(hw, hh);
+            var pts = [v0, v1, v2, v0];
+            var angle = Math.atan2(point.x - prePoint.x, prePoint.y - point.y);
+            var matrix = new Z.Matrix().translate(point.x, point.y).rotate(angle);
+            return matrix.applyToArray(pts);
+        },
+
         _arrow: function (ctx, prePoint, point, opacity, arrowStyle) {
             var style = this.arrowStyles[arrowStyle];
             if (!style) {
@@ -54,19 +69,9 @@ if (Z.Browser.canvas) {
                 lineWidth = 3;
             }
 
-            var arrowWidth = lineWidth * style[0],
-                arrowHeight = lineWidth * style[1],
-                hh = arrowHeight,
-                hw = arrowWidth / 2;
+            var pts = this._getArrowPoints(prePoint, point, lineWidth, style);
 
-            var v0 = new Z.Point(0, lineWidth),
-                v1 = new Z.Point(-hw, hh),
-                v2 = new Z.Point(hw, hh);
-            var pts = [v0, v1, v2, v0];
-            var angle = Math.atan2(point.x - prePoint.x, prePoint.y - point.y);
-            var matrix = new Z.Matrix().translate(point.x, point.y).rotate(angle);
-            var ptsToDraw = matrix.applyToArray(pts);
-            Z.Canvas.polygon(ctx, ptsToDraw, opacity, opacity);
+            Z.Canvas.polygon(ctx, pts, opacity, opacity);
         },
 
         _getPaintParams: function () {
@@ -77,12 +82,15 @@ if (Z.Browser.canvas) {
 
         _paintOn:function (ctx, points, lineOpacity, fillOpacity, dasharray) {
             Z.Canvas.path(ctx, points, lineOpacity, null, dasharray);
-            if (ctx.setLineDash && Z.Util.isArrayHasData(dasharray)) {
+            this._paintArrow(ctx, points, lineOpacity, this.options['arrowPlacement']);
+        },
+
+        _paintArrow: function (ctx, points, lineOpacity, placement) {
+            if (ctx.setLineDash) {
                 //remove line dash effect if any
                 ctx.setLineDash([]);
             }
             if (this.options['arrowStyle'] && points.length >= 2) {
-                var placement = this.options['arrowPlacement'];
                 if (placement === 'vertex-first' || placement === 'vertex-firstlast') {
                     this._arrow(ctx, points[1], points[0], lineOpacity, this.options['arrowStyle']);
                 }
