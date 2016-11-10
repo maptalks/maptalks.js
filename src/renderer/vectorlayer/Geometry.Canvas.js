@@ -39,24 +39,23 @@ if (Z.Browser.canvas) {
     });
     //----------------------------------------------------
 
-    Z.Polyline.include({
+    Z.LineString.include({
         arrowStyles : {
-            'classic' : [2, 5]
+            'classic' : [3, 4]
         },
 
         _getArrowPoints: function (prePoint, point, lineWidth, arrowStyle) {
-            var arrowWidth = lineWidth * arrowStyle[0],
-                arrowHeight = lineWidth * arrowStyle[1],
-                hh = arrowHeight,
-                hw = arrowWidth / 2;
+            var width = lineWidth * arrowStyle[0],
+                height = lineWidth * arrowStyle[1],
+                hw = width / 2;
 
-            var v0 = new Z.Point(0, lineWidth),
-                v1 = new Z.Point(-hw, hh),
-                v2 = new Z.Point(hw, hh);
-            var pts = [v0, v1, v2, v0];
-            var angle = Math.atan2(point.x - prePoint.x, prePoint.y - point.y);
-            var matrix = new Z.Matrix().translate(point.x, point.y).rotate(angle);
-            return matrix.applyToArray(pts);
+            var normal = point.substract(prePoint)._unit();
+            var p1 = point.add(normal.multi(height));
+            normal._perp();
+            var p0 = point.add(normal.multi(hw));
+            normal._multi(-1);
+            var p2 = point.add(normal.multi(hw));
+            return [p0, p1, p2, p0];
         },
 
         _arrow: function (ctx, prePoint, point, opacity, arrowStyle) {
@@ -70,6 +69,8 @@ if (Z.Browser.canvas) {
             }
 
             var pts = this._getArrowPoints(prePoint, point, lineWidth, style);
+
+            ctx.fillStyle = ctx.strokeStyle;
 
             Z.Canvas.polygon(ctx, pts, opacity, opacity);
         },
