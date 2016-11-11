@@ -676,11 +676,17 @@ Z.Util = {
 
     getSymbolStamp: function (symbol) {
         var keys = [];
+        if (Z.Util.isArray(symbol)) {
+            for (var i = 0; i < symbol.length; i++) {
+                keys.push(Z.Util.getSymbolStamp(symbol[i]));
+            }
+            return '[ ' + keys.join(' , ') + ' ]';
+        }
         for (var p in symbol) {
             if (symbol.hasOwnProperty(p)) {
                 if (!Z.Util.isFunction(symbol[p])) {
                     if (Z.Util.isGradient(symbol[p])) {
-                        keys.push(p + '=' + Z.Util.getGradientStamp(symbol(p)));
+                        keys.push(p + '=' + Z.Util.getGradientStamp(symbol[p]));
                     } else {
                         keys.push(p + '=' + symbol[p]);
                     }

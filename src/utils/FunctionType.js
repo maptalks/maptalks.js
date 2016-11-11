@@ -168,6 +168,13 @@
         if (!obj) {
             return null;
         }
+        if (Z.Util.isArray(obj)) {
+            var multResult = [];
+            for (var i = 0; i < obj.length; i++) {
+                multResult.push(Z.Util.loadFunctionTypes(obj[i], argFn));
+            }
+            return multResult;
+        }
         var result = {},
             props = [], p;
         for (p in obj) {
