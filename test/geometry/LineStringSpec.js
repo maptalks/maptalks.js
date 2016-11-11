@@ -192,5 +192,30 @@ describe('#LineString', function() {
             'symbol' : symbol,
             'properties' : {'count' : 1}
         });
-    })
+    });
+
+    describe('animateShow', function () {
+        it('animateShow', function (done) {
+            layer = new maptalks.VectorLayer('id2');
+            var polyline = new maptalks.LineString([
+                  map.getCenter(),
+                  map.getCenter().add(0.01, 0.01)
+                ],{
+                    'visible' : false
+                });
+            layer.once('layerload', function () {
+                expect(layer._getRenderer().isBlank()).to.be.ok();
+                polyline.animateShow({
+                    'duration' : 100
+                });
+                setTimeout(function () {
+                    expect(layer).to.be.painted();
+                    done();
+                }, 101);
+            });
+            layer.addGeometry(polyline).addTo(map);
+
+        });
+    });
+
 });

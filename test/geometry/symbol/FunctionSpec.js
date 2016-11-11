@@ -155,4 +155,47 @@ describe('FunctionTypeSpec', function() {
         var s = interpolateSymbol(marker, marker.getSymbol());
         expect(s.markerWidth).not.to.be.ok();
     });
+
+    it('interpolate a composite symbol', function (done) {
+        var marker = new maptalks.Marker([100,0], {
+            symbol:[
+                {
+                    "markerFile" : "resources/x.svg",
+                    "markerWidth": {
+                        property:'foo',
+                        stops: [
+                            [{zoom : 1, value: 1}, 15],
+                            [{zoom : map.getZoom(), value: 5}, 18],
+                            [{zoom : 18, value: 18},20]
+                        ]
+                    },
+                    "markerHeight":30
+                },
+                {
+                    "markerFile" : "resources/x.svg",
+                    "markerWidth": 10,
+                    "markerHeight":{
+                        property:'foo',
+                        stops: [
+                            [{zoom : 1, value: 1}, 15],
+                            [{zoom : map.getZoom(), value: 5}, 40],
+                            [{zoom : 18, value: 18},20]
+                        ]
+                    },
+                }
+
+            ],
+            properties:{
+                'foo' : 5
+            }
+        });
+        layer.once('layerload', function() {
+            expect(marker.getMap()).to.be.ok();
+            expect(marker.getSize().width).to.be.eql(18);
+            expect(marker.getSize().height).to.be.eql(40);
+            console.log(marker.getSize())
+            done();
+        });
+        layer.addGeometry(marker);
+    });
 });
