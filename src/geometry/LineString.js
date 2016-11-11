@@ -70,6 +70,66 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         return this._coordinates;
     },
 
+    animateShow: function (options) {
+        if (!options) {
+            options = {};
+        }
+        var coordinates = this.getCoordinates();
+        var duration = options['duration'] || 1000;
+        var length = this.getLength();
+        var easing = options['easing'] || 'out';
+        this.setCoordinates([]);
+        var player = Z.Animation.animate({'t' : duration}, {'speed' : duration, 'easing' : easing}, Z.Util.bind(function (frame) {
+            if (!this.getMap()) {
+                player.finish();
+                this.setCoordinates(coordinates);
+                return;
+            }
+            this._drawAnimFrame(frame.styles.t, duration, length, coordinates);
+        }, this));
+        player.play();
+        return this;
+    },
+
+    _drawAnimFrame: function (t, duration, length, coordinates) {
+        if (t === 0) {
+            this.setCoordinates([]);
+            return;
+        }
+        var map = this.getMap();
+        var targetLength = t / duration * length;
+        if (!this._animIdx) {
+            this._animIdx = 0;
+            this._animLenSoFar = 0;
+            this.show();
+        }
+        var i, l;
+        var segLen = 0;
+        for (i = this._animIdx, l = coordinates.length; i < l - 1; i++) {
+            segLen = map.computeLength(coordinates[i], coordinates[i + 1]);
+            if (this._animLenSoFar + segLen > targetLength) {
+                break;
+            }
+            this._animLenSoFar += segLen;
+        }
+        this._animIdx = i;
+        if (this._animIdx >= l - 1) {
+            this.setCoordinates(coordinates);
+            return;
+        }
+        var idx = this._animIdx;
+        var p1 = coordinates[idx], p2 = coordinates[idx + 1],
+            span = targetLength - this._animLenSoFar,
+            r = span / segLen;
+        var x = p1.x + (p2.x - p1.x) * r,
+            y = p1.y + (p2.y - p1.y) * r,
+            targetCoord = new maptalks.Coordinate(x, y);
+        var animCoords = coordinates.slice(0, this._animIdx + 1);
+        animCoords.push(targetCoord);
+
+        this.setCoordinates(animCoords);
+    },
+
     _computeGeodesicLength:function (measurer) {
         return Z.GeoUtil._computeLength(this.getCoordinates(), measurer);
     },

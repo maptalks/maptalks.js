@@ -21,6 +21,32 @@ describe('FunctionTypeSpec', function() {
         removeContainer(container);
     });
 
+    function interpolateSymbol(geo, symbol) {
+        var result;
+        if (Z.Util.isArray(symbol)) {
+            result = [];
+            for (var i = 0; i < symbol.length; i++) {
+                result.push(interpolateSymbol(symbol[i]));
+            }
+            return result;
+        }
+        result = {};
+        for (var p in symbol) {
+            if (symbol.hasOwnProperty(p)) {
+                if (Z.Util.isFunctionDefinition(symbol[p])) {
+                    if (!geo.getMap()) {
+                        result[p] = null;
+                    } else {
+                        result[p] = Z.Util.interpolated(symbol[p])(geo.getMap().getZoom(), geo.getProperties());
+                    }
+                } else {
+                    result[p] = symbol[p];
+                }
+            }
+        }
+        return result;
+    }
+
     it('markerWidth interpolating with zoom', function(done) {
         var marker = new maptalks.Marker([100,0], {
             symbol:{
@@ -69,7 +95,7 @@ describe('FunctionTypeSpec', function() {
             }
         });
         layer.addGeometry(marker);
-        var s = marker._interpolateSymbol(marker.getSymbol());
+        var s = interpolateSymbol(marker, marker.getSymbol());
         expect(s.markerFill).to.be.eql('red');
     });
 
@@ -126,7 +152,50 @@ describe('FunctionTypeSpec', function() {
                 "markerHeight":30
             }
         });
-        var s = marker._interpolateSymbol(marker.getSymbol());
+        var s = interpolateSymbol(marker, marker.getSymbol());
         expect(s.markerWidth).not.to.be.ok();
+    });
+
+    it('interpolate a composite symbol', function (done) {
+        var marker = new maptalks.Marker([100,0], {
+            symbol:[
+                {
+                    "markerFile" : "resources/x.svg",
+                    "markerWidth": {
+                        property:'foo',
+                        stops: [
+                            [{zoom : 1, value: 1}, 15],
+                            [{zoom : map.getZoom(), value: 5}, 18],
+                            [{zoom : 18, value: 18},20]
+                        ]
+                    },
+                    "markerHeight":30
+                },
+                {
+                    "markerFile" : "resources/x.svg",
+                    "markerWidth": 10,
+                    "markerHeight":{
+                        property:'foo',
+                        stops: [
+                            [{zoom : 1, value: 1}, 15],
+                            [{zoom : map.getZoom(), value: 5}, 40],
+                            [{zoom : 18, value: 18},20]
+                        ]
+                    },
+                }
+
+            ],
+            properties:{
+                'foo' : 5
+            }
+        });
+        layer.once('layerload', function() {
+            expect(marker.getMap()).to.be.ok();
+            expect(marker.getSize().width).to.be.eql(18);
+            expect(marker.getSize().height).to.be.eql(40);
+            console.log(marker.getSize())
+            done();
+        });
+        layer.addGeometry(marker);
     });
 });

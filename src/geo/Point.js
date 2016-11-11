@@ -194,5 +194,44 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
             x : this.x,
             y : this.y
         };
+    },
+
+    /**
+     * Return the magitude of this point: this is the Euclidean
+     * distance from the 0, 0 coordinate to this point's x and y
+     * coordinates.
+     * @return {Number} magnitude
+     */
+    mag: function () {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    },
+
+    /**
+     * Calculate this point but as a unit vector from 0, 0, meaning
+     * that the distance from the resulting point to the 0, 0
+     * coordinate will be equal to 1 and the angle from the resulting
+     * point to the 0, 0 coordinate will be the same as before.
+     * @return {maptalks.Point} unit vector point
+     */
+    unit: function () { return this.copy()._unit(); },
+
+    _unit: function () {
+        this._div(this.mag());
+        return this;
+    },
+
+    /**
+     * Compute a perpendicular point, where the new y coordinate
+     * is the old x coordinate and the new x coordinate is the old y
+     * coordinate multiplied by -1
+     * @return {maptalks.Point} perpendicular point
+     */
+    perp: function () { return this.copy()._perp(); },
+
+    _perp: function () {
+        var y = this.y;
+        this.y = this.x;
+        this.x = -y;
+        return this;
     }
 });

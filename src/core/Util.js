@@ -669,9 +669,31 @@ Z.Util = {
             for (var i = g['colorStops'].length - 1; i >= 0; i--) {
                 stops.push(g['colorStops'][i].join());
             }
-            keys.push(stops.join(';'));
+            keys.push(stops.join(','));
         }
-        return keys.join('-');
+        return keys.join('_');
+    },
+
+    getSymbolStamp: function (symbol) {
+        var keys = [];
+        if (Z.Util.isArray(symbol)) {
+            for (var i = 0; i < symbol.length; i++) {
+                keys.push(Z.Util.getSymbolStamp(symbol[i]));
+            }
+            return '[ ' + keys.join(' , ') + ' ]';
+        }
+        for (var p in symbol) {
+            if (symbol.hasOwnProperty(p)) {
+                if (!Z.Util.isFunction(symbol[p])) {
+                    if (Z.Util.isGradient(symbol[p])) {
+                        keys.push(p + '=' + Z.Util.getGradientStamp(symbol[p]));
+                    } else {
+                        keys.push(p + '=' + symbol[p]);
+                    }
+                }
+            }
+        }
+        return keys.join(';');
     },
 
     /**
@@ -690,8 +712,10 @@ Z.Util = {
         }
         var resources = [];
         var props = Z.Symbolizer.resourceProperties,
-            ii, res, resSizeProp;
-        for (var i = symbols.length - 1; i >= 0; i--) {
+            i, ii, iii, res, resSizeProp;
+        var w = Z.Util.isFunctionDefinition(symbol['markerWidth']) ? null : symbol['markerWidth'],
+            h = Z.Util.isFunctionDefinition(symbol['markerHeight']) ? null : symbol['markerHeight'];
+        for (i = symbols.length - 1; i >= 0; i--) {
             symbol = symbols[i];
             if (!symbol) {
                 continue;
@@ -701,17 +725,35 @@ Z.Util = {
             }
             for (ii = 0; ii < props.length; ii++) {
                 res = symbol[props[ii]];
+                if (Z.Util.isFunctionDefinition(res)) {
+                    res = Z.Util.getFunctionTypeResources(res);
+                }
                 if (!res) {
                     continue;
                 }
-                if (res.indexOf('url(') >= 0) {
-                    res = Z.Util.extractCssUrl(res);
+                if (!Z.Util.isArray(res)) {
+                    res = [res];
                 }
-                resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
-                resources.push([res, symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
+                for (iii = 0; iii < res.length; iii++) {
+                    if (res[iii].indexOf('url(') >= 0) {
+                        res[iii] = Z.Util.extractCssUrl(res[iii]);
+                    }
+                    resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
+                    resources.push([res[iii], symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
+                }
             }
             if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-                resources.push([Z.Geometry.getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']]);
+                if (Z.Util.isFunctionDefinition(symbol['markerPath'])) {
+                    res = Z.Util.getFunctionTypeResources(symbol['markerPath']);
+                    var path = symbol['markerPath'];
+                    for (iii = 0; iii < res.length; iii++) {
+                        symbol['markerPath'] = res[iii];
+                        resources.push([Z.Geometry.getMarkerPathBase64(symbol), w, h]);
+                    }
+                    symbol['markerPath'] = path;
+                } else {
+                    resources.push([Z.Geometry.getMarkerPathBase64(symbol), w, h]);
+                }
             }
         }
         return resources;
@@ -727,48 +769,59 @@ Z.Util = {
             return null;
         }
 
-        function absolute(base, relative) {
-            var stack = base.split('/'),
-                parts = relative.split('/');
-            if (relative.indexOf('/') === 0) {
-                return stack.slice(0, 3).join('/') + relative;
-            } else {
-                stack.pop(); // remove current file name (or empty string)
-                             // (omit if "base" is the current folder without trailing slash)
-                for (var i = 0; i < parts.length; i++) {
-                    if (parts[i] === '.')
-                        continue;
-                    if (parts[i] === '..')
-                        stack.pop();
-                    else
-                        stack.push(parts[i]);
-                }
-                return stack.join('/');
-            }
-
-        }
         var s = Z.Util.extend({}, symbol);
         if (Z.node) {
             return s;
         }
-        var props = Z.Symbolizer.resourceProperties,
-            embed = 'data:';
+        var props = Z.Symbolizer.resourceProperties;
         var res;
         for (var ii = 0, len = props.length; ii < len; ii++) {
             res = s[props[ii]];
             if (!res) {
                 continue;
             }
-            if (res.indexOf('url(') >= 0) {
-                res = Z.Util.extractCssUrl(res);
-            }
-            if (!Z.Util.isURL(res) &&
-                (res.length <= embed.length || res.substring(0, embed.length) !== embed)) {
-                res = absolute(location.href, res);
-                s[props[ii]] = res;
-            }
+            s[props[ii]] = this._convertUrlToAbsolute(res);
         }
         return s;
+    },
+
+    _convertUrlToAbsolute: function (res) {
+        if (Z.Util.isFunctionDefinition(res)) {
+            var stops = res.stops;
+            for (var i = 0; i < stops.length; i++) {
+                stops[i][1] = Z.Util._convertUrlToAbsolute(stops[i][1]);
+            }
+            return res;
+        }
+        var embed = 'data:';
+        if (res.indexOf('url(') >= 0) {
+            res = Z.Util.extractCssUrl(res);
+        }
+        if (!Z.Util.isURL(res) &&
+            (res.length <= embed.length || res.substring(0, embed.length) !== embed)) {
+            res = this._absolute(location.href, res);
+        }
+        return res;
+    },
+
+    _absolute: function (base, relative) {
+        var stack = base.split('/'),
+            parts = relative.split('/');
+        if (relative.indexOf('/') === 0) {
+            return stack.slice(0, 3).join('/') + relative;
+        } else {
+            stack.pop(); // remove current file name (or empty string)
+                         // (omit if "base" is the current folder without trailing slash)
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i] === '.')
+                    continue;
+                if (parts[i] === '..')
+                    stack.pop();
+                else
+                    stack.push(parts[i]);
+            }
+            return stack.join('/');
+        }
     },
 
     /**

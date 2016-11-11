@@ -46,66 +46,85 @@ Z.CurveLine = Z.LineString.extend(/** @lends maptalks.CurveLine.prototype */{
     },
 
     // paint method on canvas
-    _paintOn: function (ctx, points, lineOpacity) {
-        var arcDegree = this.options['arcDegree'],
-            curveType = this.options['curveType'];
-        var curveFn, degree;
-        switch (curveType) {
-        case 0 : curveFn = Z.Canvas._lineTo; degree = 1; break;
-        case 1 : curveFn = Z.Canvas._arcBetween; degree = 1; break;
-        case 2 : curveFn = Z.Canvas._quadraticCurveTo; degree = 2; break;
-        case 3 : curveFn = Z.Canvas._bezierCurveTo; degree = 3; break;
-        }
-        var i, len = points.length;
+    _paintOn: function (ctx, points, lineOpacity, fillOpacity, dasharray) {
+        var curveType = this.options['curveType'];
         ctx.beginPath();
-        for (i = 0; i < len; i += degree) {
-            // var p = points[i].round();
-            var p = points[i];
-            if (i === 0) {
-                ctx.moveTo(p.x, p.y);
-            }
-            var left = len - i;
-            if (left <= degree) {
-                if (left === 2) {
-                    p = points[len - 1];
-                    ctx.lineTo(p.x, p.y);
-                } else if (left === 3) {
-                    Z.Canvas._quadraticCurveTo(ctx, points[len - 2], points[len - 1]);
-                }
-            } else {
-                var pts = [];
-                for (var ii = 0; ii < degree; ii++) {
-                    pts.push(points[i + ii + 1]);
-                }
-                var args = [ctx].concat(pts);
-                if (curveFn === Z.Canvas._arcBetween) {
-                    //arc start point
-                    args.splice(1, 0, p);
-                    args = args.concat([arcDegree]);
-                }
-                curveFn.apply(Z.Canvas, args);
-                Z.Canvas._stroke(ctx, lineOpacity);
-            }
+        if (curveType === 1) {
+            this._arc(ctx, points, lineOpacity);
+        } else if (curveType === 0) {
+            Z.Canvas.path(ctx, points, lineOpacity, null, dasharray);
+        } else if (curveType === 2) {
+            ctx.moveTo(points[0].x, points[0].y);
+            this._quadraticCurve(ctx, points, lineOpacity);
+        } else if (curveType === 3) {
+            ctx.moveTo(points[0].x, points[0].y);
+            this._bezierCurve(ctx, points, lineOpacity);
         }
         Z.Canvas._stroke(ctx, lineOpacity);
-        if (ctx.setLineDash) {
-            //remove line dash effect if any
-            ctx.setLineDash([]);
+        var placement = this.options['arrowPlacement'];
+        // bezier curves doesn't support point arrows.
+        if ((curveType === 2 || curveType === 3) && placement === 'point') {
+            placement = 'vertex-last';
         }
-        if (this.options['arrowStyle'] && points.length >= 2) {
-            var placement = this.options['arrowPlacement'];
-            if (placement === 'vertex-first' || placement === 'vertex-firstlast') {
-                this._arrow(ctx, points[1], points[0], lineOpacity, this.options['arrowStyle']);
+        this._paintArrow(ctx, points, lineOpacity, placement);
+    },
+
+    _arc: function (ctx, points, lineOpacity) {
+        var degree = this.options['arcDegree']  * Math.PI / 180;
+        for (var i = 1, l = points.length; i < l; i++) {
+            Z.Canvas._arcBetween(ctx, points[i - 1], points[i], degree);
+            Z.Canvas._stroke(ctx, lineOpacity);
+        }
+    },
+
+    // reference:
+    // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
+    _quadraticCurve: function (ctx, points) {
+        var i, len = points.length;
+        if (len <= 2) {
+            Z.Canvas._path(ctx, points);
+            return;
+        }
+        var xc, yc;
+        for (i = 1; i < len - 2; i++) {
+            xc = (points[i].x + points[i + 1].x) / 2;
+            yc = (points[i].y + points[i + 1].y) / 2;
+            ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+        }
+            // curve through the last two points
+        ctx.quadraticCurveTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
+    },
+
+    _bezierCurve: function (ctx, points) {
+        var i, len = points.length;
+        if (len <= 2) {
+            Z.Canvas._path(ctx, points);
+            return;
+        }
+        var f = 0.3;
+        var t = 0.6;
+
+        var m = 0;
+        var dx1 = 0;
+        var dy1 = 0;
+        var dx2, dy2;
+        var curP, nexP;
+        var preP = points[0];
+        for (i = 1; i < len; i++) {
+            curP = points[i];
+            nexP = points[i + 1];
+            if (nexP) {
+                m = (nexP.y - preP.y) / (nexP.x - preP.x);
+                dx2 = (nexP.x - curP.x) * -f;
+                dy2 = dx2 * m * t;
+            } else {
+                dx2 = 0;
+                dy2 = 0;
             }
-            if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
-                this._arrow(ctx, points[points.length - 2], points[points.length - 1], lineOpacity, this.options['arrowStyle']);
-            }
-            //besizerCurves doesn't have point arrows
-            if ((curveType === 0 || curveType === 1) && placement === 'point') {
-                for (i = 0, len = points.length - 1; i < len; i++) {
-                    this._arrow(ctx, points[i], points[i + 1], lineOpacity, this.options['arrowStyle']);
-                }
-            }
+            ctx.bezierCurveTo(preP.x - dx1, preP.y - dy1, curP.x + dx2, curP.y + dy2, curP.x, curP.y);
+            dx1 = dx2;
+            dy1 = dy2;
+            preP = curP;
         }
     }
 });

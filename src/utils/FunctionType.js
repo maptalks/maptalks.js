@@ -168,6 +168,13 @@
         if (!obj) {
             return null;
         }
+        if (Z.Util.isArray(obj)) {
+            var multResult = [];
+            for (var i = 0; i < obj.length; i++) {
+                multResult.push(Z.Util.loadFunctionTypes(obj[i], argFn));
+            }
+            return multResult;
+        }
         var result = {},
             props = [], p;
         for (p in obj) {
@@ -199,6 +206,17 @@
             }
         }
         return result;
+    };
+
+    Z.Util.getFunctionTypeResources = function (t) {
+        if (!t || !t.stops) {
+            return null;
+        }
+        var res = [];
+        for (var i = 0, l = t.stops.length; i < l; i++) {
+            res.push(t.stops[i][1]);
+        }
+        return res;
     }
 
 })();

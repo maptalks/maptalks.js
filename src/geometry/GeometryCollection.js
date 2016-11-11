@@ -401,7 +401,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
                 continue;
             }
             symbol = geometries[i]._getInternalSymbol();
-            res = Z.Util.getExternalResources(this._interpolateSymbol(symbol));
+            res = Z.Util.getExternalResources(symbol);
             if (!res) {
                 continue;
             }

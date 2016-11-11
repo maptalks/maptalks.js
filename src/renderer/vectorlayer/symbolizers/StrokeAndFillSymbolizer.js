@@ -2,7 +2,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
     defaultSymbol:{
         'lineColor' : '#000000',
-        'lineWidth' : 1,
+        'lineWidth' : 2,
         'lineOpacity' : 1,
         'lineDasharray': [],
         'lineCap' : 'butt', //“butt”, “square”, “round”
@@ -43,23 +43,31 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         }
 
         var points = paintParams[0],
-            isSplitted = (this.geometry instanceof Z.Polygon && points.length === 2 && Z.Util.isArray(points[0][0])) ||
-                        (this.geometry instanceof Z.LineString  && points.length === 2 && Z.Util.isArray(points[0]));
+            isSplitted = (this.geometry instanceof Z.Polygon && points.length > 1 && Z.Util.isArray(points[0][0])) ||
+                        (this.geometry instanceof Z.LineString  && points.length > 1 && Z.Util.isArray(points[0]));
+        var params;
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
                 Z.Canvas.prepareCanvas(ctx, style, resources);
                 if (isGradient && isPath && !style['lineColor']['places']) {
                     this._createGradient(ctx, points[i], style['lineColor']);
                 }
-                this.geometry._paintOn(ctx, points[i], style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
+                params = [ctx, points[i]];
+                if (paintParams.length > 1) {
+                    params.push.apply(params, paintParams.slice(1));
+                }
+                params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
+                this.geometry._paintOn.apply(this.geometry, params);
             }
         } else {
             Z.Canvas.prepareCanvas(ctx, style, resources);
             if (isGradient && isPath && !style['lineColor']['places']) {
                 this._createGradient(ctx, points, style['lineColor']);
             }
-            this.geometry._paintOn.apply(this.geometry, [ctx].concat(paintParams).concat([
-                style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']]));
+            params = [ctx];
+            params.push.apply(params, paintParams);
+            params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
+            this.geometry._paintOn.apply(this.geometry, params);
         }
 
         if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
@@ -121,9 +129,9 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;
         }
-        if (this.geometry instanceof Z.LineString) {
-            result['polygonFill'] = result['lineColor'];
-        }
+        // if (this.geometry instanceof Z.LineString) {
+        //     result['polygonFill'] = result['lineColor'];
+        // }
         return result;
     },
 
