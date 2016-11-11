@@ -80,6 +80,11 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         var easing = options['easing'] || 'out';
         this.setCoordinates([]);
         var player = Z.Animation.animate({'t' : duration}, {'speed' : duration, 'easing' : easing}, Z.Util.bind(function (frame) {
+            if (!this.getMap()) {
+                player.finish();
+                this.setCoordinates(coordinates);
+                return;
+            }
             this._drawAnimFrame(frame.styles.t, duration, length, coordinates);
         }, this));
         player.play();
