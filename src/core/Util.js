@@ -715,7 +715,7 @@ Z.Util = {
             i, ii, iii, res, resSizeProp;
         var w = Z.Util.isFunctionDefinition(symbol['markerWidth']) ? null : symbol['markerWidth'],
             h = Z.Util.isFunctionDefinition(symbol['markerHeight']) ? null : symbol['markerHeight'];
-        for (var i = symbols.length - 1; i >= 0; i--) {
+        for (i = symbols.length - 1; i >= 0; i--) {
             symbol = symbols[i];
             if (!symbol) {
                 continue;
@@ -773,8 +773,7 @@ Z.Util = {
         if (Z.node) {
             return s;
         }
-        var props = Z.Symbolizer.resourceProperties,
-            embed = 'data:';
+        var props = Z.Symbolizer.resourceProperties;
         var res;
         for (var ii = 0, len = props.length; ii < len; ii++) {
             res = s[props[ii]];

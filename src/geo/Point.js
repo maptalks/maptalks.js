@@ -213,7 +213,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * point to the 0, 0 coordinate will be the same as before.
      * @return {maptalks.Point} unit vector point
      */
-    unit:    function() { return this.copy()._unit(); },
+    unit: function () { return this.copy()._unit(); },
 
     _unit: function () {
         this._div(this.mag());
@@ -226,9 +226,9 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * coordinate multiplied by -1
      * @return {maptalks.Point} perpendicular point
      */
-    perp:    function() { return this.copy()._perp(); },
+    perp: function () { return this.copy()._perp(); },
 
-    _perp: function() {
+    _perp: function () {
         var y = this.y;
         this.y = this.x;
         this.x = -y;
