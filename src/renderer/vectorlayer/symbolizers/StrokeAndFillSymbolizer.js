@@ -2,7 +2,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
     defaultSymbol:{
         'lineColor' : '#000000',
-        'lineWidth' : 1,
+        'lineWidth' : 2,
         'lineOpacity' : 1,
         'lineDasharray': [],
         'lineCap' : 'butt', //“butt”, “square”, “round”

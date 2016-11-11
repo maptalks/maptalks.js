@@ -206,12 +206,14 @@ describe('#LineString', function() {
             layer.once('layerload', function () {
                 expect(layer._getRenderer().isBlank()).to.be.ok();
                 polyline.animateShow({
-                    'duration' : 100
+                    'duration' : 100,
+                    'easing' : 'out'
                 });
+                // polyline.show();
                 setTimeout(function () {
-                    expect(layer).to.be.painted();
+                    expect(layer).to.be.painted(0, 0);
                     done();
-                }, 101);
+                }, 80);
             });
             layer.addGeometry(polyline).addTo(map);
 
