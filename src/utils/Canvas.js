@@ -296,7 +296,9 @@ Z.Canvas = {
     },
 
     fillText:function (ctx, text, point, rgba) {
-        ctx.fillStyle = rgba;
+        if (rgba) {
+            ctx.fillStyle = rgba;
+        }
         ctx.fillText(text, point.x, point.y);
     },
 
