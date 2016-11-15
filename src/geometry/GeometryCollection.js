@@ -175,6 +175,14 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         return this;
     },
 
+    updateSymbol: function (symbol) {
+        this.forEach(function (geometry) {
+            geometry.updateSymbol(symbol);
+        });
+        this.onSymbolChanged();
+        return this;
+    },
+
     onConfig:function (config) {
         this.forEach(function (geometry) {
             geometry.config(config);
