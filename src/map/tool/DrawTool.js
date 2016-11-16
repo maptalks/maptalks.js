@@ -202,7 +202,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
     _clickForPath:function (param) {
         var registerMode = this._getRegisterMode();
-        var containerPoint = this._getMouseContainerPoint(param);
         var coordinate = param['coordinate'];
         var symbol = this.getSymbol();
         if (!this._geometry) {
