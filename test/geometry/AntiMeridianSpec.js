@@ -34,17 +34,17 @@ describe('#AntiMeridianSpec', function() {
                 [[179,10],[-170,10],[-169, -10],[179, -10]],
                 {antiMeridian : 'split', arrowStyle:'classic', arrowPlacement : 'point'}
             ),
-            new maptalks.CurveLine(
+            new maptalks.QuadBezierCurve(
                     //线端点坐标数组
                     [[179,10],[-170,10],[-169, -10],[179, -10]],
                     //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-                    {curveType:2, arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'split'}
+                    {arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'split'}
             ),
-            new maptalks.CurveLine(
+            new maptalks.CubicBezierCurve(
                     //线端点坐标数组
                     [[179,10],[-170,10],[-169, -10],[179, -10]],
                     //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-                    {curveType:3, arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'continuous'}
+                    {arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'continuous'}
             ),
             //a continuous anti-meridian polygon with a hole
             new maptalks.Polygon([

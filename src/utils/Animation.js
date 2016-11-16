@@ -342,8 +342,13 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
         }
         var me = this;
         var now = Z.Util.now();
+        var elapsed = now - this._playStartTime;
+        if (this._options['repeat'] && elapsed >= this.duration) {
+            this._playStartTime = now;
+            elapsed = 0;
+        }
         //elapsed, duration
-        var frame = this._animation(now - this._playStartTime, this.duration);
+        var frame = this._animation(elapsed, this.duration);
         this.playState = frame.state['playState'];
         var step = this._stepFn;
         if (this.playState === 'idle') {

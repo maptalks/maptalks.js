@@ -162,12 +162,21 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 type = 'contextmenu';
             }
         }
-        //阻止右键菜单
+        // prevent default contextmenu
         if (type === 'contextmenu') {
             Z.DomUtil.preventDefault(e);
         }
         if (this._ignoreEvent(e)) {
             return;
+        }
+        // ignore click lasted for more than 300ms.
+        if (type === 'mousedown') {
+            this._mouseDownTime = Z.Util.now();
+        } else if (type === 'click' && this._mouseDownTime) {
+            var now = Z.Util.now();
+            if (now - this._mouseDownTime > 300) {
+                return;
+            }
         }
         this._fireDOMEvent(this, e, type);
     },
