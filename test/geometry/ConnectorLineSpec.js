@@ -27,7 +27,7 @@ describe('#ConnectorLineSpec', function() {
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
                 for (var ii = 0; ii < geometries.length; ii++) {
-                    var conn = new maptalks.ConnectorLine(geometries[i],geometries[ii]);
+                    var conn = new maptalks.ConnectorLine(geometries[i], geometries[ii]);
                     layer.addGeometry(conn);
                     expect(conn.getConnectSource()).to.be.eql(geometries[i]);
                     expect(conn.getConnectTarget()).to.be.eql(geometries[ii]);
@@ -52,7 +52,7 @@ describe('#ConnectorLineSpec', function() {
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
 
-                    var conn = new maptalks.ConnectorLine(geometries[i],panel);
+                    var conn = new maptalks.ArcConnectorLine(geometries[i], panel);
                     layer.addGeometry(conn);
                     expect(conn.getConnectSource()).to.be.eql(geometries[i]);
                     expect(conn.getConnectTarget()).to.be.eql(panel);

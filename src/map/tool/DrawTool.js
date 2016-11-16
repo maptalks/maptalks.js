@@ -65,6 +65,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             this._geometry.remove();
             delete this._geometry;
         }
+        this._clearStage();
         this._switchEvents('off');
         this.options['mode'] = mode;
         this._checkMode();
@@ -118,22 +119,13 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             'doubleClickZoom':false
         });
         this._drawToolLayer = this._getDrawLayer();
+        this._clearStage();
         this._loadResources();
         return this;
     },
 
     _checkMode: function () {
-        var mode = this.getMode();
-        if (!mode) {
-            throw new Error('drawtool\'s mode is null.');
-        }
-        var modes = ['circle', 'ellipse', 'rectangle', 'point', 'linestring', 'polygon'];
-        for (var i = 0; i < modes.length; i++) {
-            if (mode === modes[i]) {
-                return true;
-            }
-        }
-        throw new Error('invalid mode for drawtool : ' + this.options['mode']);
+        this._getRegisterMode();
     },
 
     onDisable:function () {
@@ -165,19 +157,28 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         return this._map.getProjection();
     },
 
-    getEvents: function () {
+    _getRegisterMode: function () {
         var mode = this.getMode();
-        if (mode === 'polygon' || mode === 'linestring') {
+        var registerMode = Z.DrawTool.getRegisterMode(mode);
+        if (!registerMode) {
+            throw new Error(mode + ' is not a valid mode of maptalks.DrawTool.');
+        }
+        return registerMode;
+    },
+
+    getEvents: function () {
+        var action = this._getRegisterMode()['action'];
+        if (action === 'clickDblclick') {
             return {
                 'click' : this._clickForPath,
                 'mousemove' : this._mousemoveForPath,
                 'dblclick'  : this._dblclickForPath
             };
-        } else if (mode === 'point') {
+        } else if (action === 'click') {
             return {
                 'click' : this._clickForPoint
             };
-        } else {
+        } else if (action === 'drag') {
             return {
                 'mousedown' : this._mousedownToDraw
             };
@@ -190,25 +191,27 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
     },
 
     _clickForPoint: function (param) {
-        var geometry = new Z.Marker(param['coordinate']);
+        var registerMode = this._getRegisterMode();
+        this._currentGeo = registerMode['create'](param['coordinate']);
+        this._geometry = this._currentGeo;
         if (this.options['symbol'] && this.options.hasOwnProperty('symbol')) {
-            geometry.setSymbol(this.options['symbol']);
+            this._geometry.setSymbol(this.options['symbol']);
         }
-        this._geometry = geometry;
         this._endDraw();
     },
 
     _clickForPath:function (param) {
+        var registerMode = this._getRegisterMode();
         var containerPoint = this._getMouseContainerPoint(param);
         var coordinate = this._containerPointToLonlat(containerPoint);
         var symbol = this.getSymbol();
         if (!this._geometry) {
-            //无论画线还是多边形, 都是从线开始的
-            this._geometry = new Z.Polyline([coordinate]);
-
+            this._clickCoords = [coordinate];
+            this._geometry = registerMode['create'](this._clickCoords);
             if (symbol) {
                 this._geometry.setSymbol(symbol);
             }
+            this._currentGeo = this._geometry.copy();
             this._addGeometryToStage(this._geometry);
             /**
              * drawstart event.
@@ -224,21 +227,8 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
              */
             this._fireEvent('drawstart', param);
         } else {
-            var path = this._getLonlats();
-            path.push(coordinate);
-            if (this.getMode() === 'polygon' && path.length === 3) {
-                var polygon = new Z.Polygon([path]);
-                if (symbol) {
-                    var pSymbol = Z.Util.extendSymbol(symbol, {'lineOpacity':0});
-                    polygon.setSymbol(pSymbol);
-                }
-                this._polygon = polygon;
-                this._addGeometryToStage(polygon);
-
-            }
-                //这一行代码取消注释后, 会造成dblclick无法响应, 可能是存在循环调用,造成浏览器无法正常响应事件
-            this._setLonlats(path);
-            param['geometry'] = this.getMode() === 'polygon' ? path.length >= 3 ? new Z.Polygon(path) : new Z.LineString(path) : new Z.LineString(path);
+            this._clickCoords.push(coordinate);
+            this._currentGeo = registerMode['update'](this._clickCoords, this._geometry);
             /**
              * drawvertex event.
              *
@@ -259,11 +249,12 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
     _mousemoveForPath : function (param) {
         if (!this._geometry) { return; }
+        var registerMode = this._getRegisterMode();
         var containerPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(containerPoint)) { return; }
         var coordinate = this._containerPointToLonlat(containerPoint);
 
-        var path = this._getLonlats();
+        var path = this._clickCoords;
         var tailPath = [path[path.length - 1], coordinate];
         if (!this._movingTail) {
             var symbol = Z.Util.decreaseSymbolOpacity(this.getSymbol(), 0.5);
@@ -274,8 +265,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         } else {
             this._movingTail.setCoordinates(tailPath);
         }
-        path = path.concat([coordinate]);
-        param['geometry'] = this.getMode() === 'polygon' ? path.length >= 3 ? new Z.Polygon(path) : new Z.LineString(path) : new Z.LineString(path);
+        registerMode['update'](path.concat([coordinate]), this._currentGeo);
         /**
          * mousemove event.
          *
@@ -296,8 +286,9 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         if (!this._geometry) { return; }
         var containerPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(containerPoint)) { return; }
+        var registerMode = this._getRegisterMode();
         var coordinate = this._containerPointToLonlat(containerPoint);
-        var path = this._getLonlats();
+        var path = this._clickCoords; //this._getLonlats();
         path.push(coordinate);
         if (path.length < 2) { return; }
         //去除重复的端点
@@ -313,31 +304,15 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             path.splice(nIndexes[i], 1);
         }
 
-        if (path.length < 2 || (mode === 'polygon' && path.length < 3)) {
+        if (path.length < 2 || (this._currentGeo && (this._currentGeo instanceof Z.Polygon) && path.length < 3)) {
             return;
         }
-        this._geometry.remove();
-        if (this._movingTail) {
-            this._movingTail.remove();
-        }
-        delete this._movingTail;
-        if (this._polygon) {
-            this._polygon.remove();
-        }
-        if (mode === 'polygon') {
-            this._geometry = new Z.Polygon([path]);
-            var symbol = this.getSymbol();
-            if (symbol) {
-                this._geometry.setSymbol(symbol);
-            }
-            this._addGeometryToStage(this._geometry);
-        } else {
-            this._geometry.setCoordinates(path);
-        }
+        this._currentGeo = registerMode['update'](path, this._geometry);
         this._endDraw(param);
     },
 
     _mousedownToDraw : function (param) {
+        var registerMode = this._getRegisterMode();
         var me = this,
             firstPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(firstPoint)) { return false; }
@@ -345,56 +320,17 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
 
         function genGeometry(coordinate) {
             var symbol = me.getSymbol(),
-                geometry = me._geometry,
-                map = me._map,
-                center;
-
-            switch (me.getMode()) {
-            case 'circle':
-                if (!geometry) {
-                    geometry = new Z.Circle(coordinate, 0);
-                    geometry.setSymbol(symbol);
-                    me._addGeometryToStage(geometry);
-                    break;
-                }
-                center = geometry.getCenter();
-                var radius = map.computeLength(center, coordinate);
-                geometry.setRadius(radius);
-                break;
-            case 'ellipse':
-                if (!geometry) {
-                    geometry = new Z.Ellipse(coordinate, 0, 0);
-                    geometry.setSymbol(symbol);
-                    me._addGeometryToStage(geometry);
-                    break;
-                }
-                center = geometry.getCenter();
-                var rx = map.computeLength(center, new Z.Coordinate({x:coordinate.x, y:center.y}));
-                var ry = map.computeLength(center, new Z.Coordinate({x:center.x, y:coordinate.y}));
-                geometry.setWidth(rx * 2);
-                geometry.setHeight(ry * 2);
-                break;
-            case 'rectangle':
-                if (!geometry) {
-                    geometry = new Z.Rectangle(coordinate, 0, 0);
-
-                    geometry.setSymbol(symbol);
-                    me._addGeometryToStage(geometry);
-                    break;
-                }
-                var width = map.computeLength(firstCoord, new Z.Coordinate(coordinate.x, firstCoord.y)),
-                    height = map.computeLength(firstCoord, new Z.Coordinate(firstCoord.x, coordinate.y));
-                var cnw = map.coordinateToContainerPoint(firstCoord),
-                    cc = map.coordinateToContainerPoint(coordinate);
-                var x = Math.min(cnw.x, cc.x),
-                    y = Math.min(cnw.y, cc.y);
-                geometry.setCoordinates(map.containerPointToCoordinate(new Z.Point(x, y)));
-                geometry.setWidth(width);
-                geometry.setHeight(height);
-                break;
+                geometry = me._geometry;
+            var clazz;
+            if (!geometry) {
+                geometry = registerMode['create'](coordinate);
+                geometry.setSymbol(symbol);
+                me._currentGeo = geometry.copy();
+                me._addGeometryToStage(geometry);
+            } else {
+                me._currentGeo = registerMode['update'](coordinate, geometry);
             }
             me._geometry = geometry;
-
         }
         function onMouseMove(_event) {
             if (!this._geometry) {
@@ -404,7 +340,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
             if (!this._isValidContainerPoint(current)) { return false; }
             var coordinate = this._containerPointToLonlat(current);
             genGeometry(coordinate);
-            param['geometry'] = this._geometry;
             this._fireEvent('mousemove', param);
             return false;
         }
@@ -434,13 +369,12 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         if (!this._geometry) {
             return;
         }
-        var target = this._geometry.copy();
-        this._geometry.remove();
-        delete this._geometry;
+        var geometry = this._currentGeo;
+        this._clearStage();
         if (!param) {
             param = {};
         }
-        param['geometry'] = target;
+        this._currentGeo = geometry;
         /**
          * drawend event.
          *
@@ -455,9 +389,18 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('drawend', param);
+        delete this._currentGeo;
         if (this.options['once']) {
             this.disable();
         }
+    },
+
+    _clearStage: function () {
+        this._getDrawLayer().clear();
+        delete this._geometry;
+        delete this._movingTail;
+        delete this._currentGeo;
+        delete this._clickCoords;
     },
 
     /**
@@ -475,7 +418,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         if (this._geometry instanceof Z.Polygon) {
             this._geometry.setCoordinates([lonlats]);
 
-        } else if (this._geometry instanceof Z.Polyline) {
+        } else if (this._geometry instanceof Z.LineString) {
             this._geometry.setCoordinates(lonlats);
         }
         if (this._polygon) {
@@ -536,10 +479,156 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         if (!param) {
             param = {};
         }
-        if (!param['geometry'] && this._geometry) {
-            param['geometry'] = this._geometry;
+        if (this._currentGeo) {
+            param['geometry'] = this._currentGeo.copy();
         }
         Z.MapTool.prototype._fireEvent.call(this, eventName, param);
     }
 
+});
+
+Z.DrawTool.registerMode = function (name, modeAction) {
+    if (!Z.DrawTool._registeredMode) {
+        Z.DrawTool._registeredMode = {};
+    }
+    Z.DrawTool._registeredMode[name.toLowerCase()] = modeAction;
+}
+
+Z.DrawTool.getRegisterMode = function (name) {
+    if (Z.DrawTool._registeredMode) {
+        return Z.DrawTool._registeredMode[name.toLowerCase()];
+    }
+    return null;
+}
+
+Z.DrawTool.registerMode('circle', {
+    'action' : 'drag',
+    'geometryClass' : Z.Circle,
+    'create' : function (coordinate) {
+        return new Z.Circle(coordinate, 0);
+    },
+    'update' : function (coordinate, geometry) {
+        var map = geometry.getMap();
+        var center = geometry.getCenter();
+        var radius = map.computeLength(center, coordinate);
+        geometry.setRadius(radius);
+        return geometry;
+    }
+});
+
+Z.DrawTool.registerMode('ellipse', {
+    'action' : 'drag',
+    'geometryClass' : Z.Ellipse,
+    'create' : function (coordinate) {
+        return Z.Ellipse(coordinate, 0, 0);
+    },
+    'update' : function (coordinate, geometry) {
+        var map = geometry.getMap();
+        var center = geometry.getCenter();
+        var rx = map.computeLength(center, new Z.Coordinate({x:coordinate.x, y:center.y}));
+        var ry = map.computeLength(center, new Z.Coordinate({x:center.x, y:coordinate.y}));
+        geometry.setWidth(rx * 2);
+        geometry.setHeight(ry * 2);
+        return geometry;
+    }
+});
+
+Z.DrawTool.registerMode('rectangle', {
+    'action' : 'drag',
+    'geometryClass' : Z.Rectangle,
+    'create' : function (coordinate) {
+        var rect = Z.Rectangle(coordinate, 0, 0);
+        rect._firstClick = coordinate;
+        return rect;
+    },
+    'update' : function (coordinate, geometry) {
+        var firstCoord = geometry._firstClick;
+        var map = geometry.getMap();
+        var width = map.computeLength(firstCoord, new Z.Coordinate(coordinate.x, firstCoord.y)),
+            height = map.computeLength(firstCoord, new Z.Coordinate(firstCoord.x, coordinate.y));
+        var cnw = map.coordinateToContainerPoint(firstCoord),
+            cc = map.coordinateToContainerPoint(coordinate);
+        var x = Math.min(cnw.x, cc.x),
+            y = Math.min(cnw.y, cc.y);
+        geometry.setCoordinates(map.containerPointToCoordinate(new Z.Point(x, y)));
+        geometry.setWidth(width);
+        geometry.setHeight(height);
+        return geometry;
+    }
+});
+
+Z.DrawTool.registerMode('point', {
+    'action' : 'click',
+    'create' : function (coordinate) {
+        return new Z.Marker(coordinate);
+    },
+});
+
+Z.DrawTool.registerMode('polygon', {
+    'action' : 'clickDblclick',
+    'create' : function (path) {
+        return new Z.LineString(path);
+    },
+    'update' : function (path, geometry) {
+        var symbol = geometry.getSymbol();
+        geometry.setCoordinates(path);
+        if (path.length >= 3) {
+            var layer = geometry.getLayer();
+            var polygon = layer.getGeometryById('polygon');
+            if (!polygon) {
+                polygon = new Z.Polygon([path], {
+                    'id' : 'polygon'
+                });
+                if (symbol) {
+                    var pSymbol = Z.Util.extendSymbol(symbol, {'lineOpacity':0});
+                    polygon.setSymbol(pSymbol);
+                }
+                polygon.addTo(layer);
+            }
+            polygon.setCoordinates(path);
+        }
+        return new Z.Polygon(path, {
+            'symbol' : symbol
+        });
+    }
+});
+
+Z.DrawTool.registerMode('linestring', {
+    'action' : 'clickDblclick',
+    'create' : function (path) {
+        return new Z.LineString(path);
+    },
+    'update' : function (path, geometry) {
+        return geometry.setCoordinates(path);
+    }
+});
+
+Z.DrawTool.registerMode('arccurve', {
+    'action' : 'clickDblclick',
+    'create' : function (path) {
+        return new Z.ArcCurve(path);
+    },
+    'update' : function (path, geometry) {
+        return geometry.setCoordinates(path);
+    }
+});
+
+Z.DrawTool.registerMode('quadbeziercurve', {
+    'action' : 'clickDblclick',
+    'create' : function (path) {
+        return new Z.QuadBezierCurve(path);
+    },
+    'update' : function (path, geometry) {
+        return geometry.setCoordinates(path);
+    }
+});
+
+Z.DrawTool.registerMode('cubicbeziercurve', {
+    'action' : 'clickDblclick',
+    'create' : function (path) {
+        return new Z.CubicBezierCurve(path);
+    },
+    'update' : function (path, geometry) {
+        return geometry.setCoordinates(path);
+    }
 });

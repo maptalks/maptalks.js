@@ -15,7 +15,7 @@ describe('#GeometryDrag', function () {
         geometry.on('mousedown', spy);
 
         var domPosition = Z.DomUtil.getPagePosition(container);
-        var point = map.coordinateToContainerPoint(geometry.getCenter()).add(domPosition);
+        var point = map.coordinateToContainerPoint(geometry.getFirstCoordinate()).add(domPosition);
         var requestAnimFn = Z.Util.requestAnimFrame;
 
 
@@ -81,7 +81,7 @@ describe('#GeometryDrag', function () {
 
             for (var i = 0; i < geometries.length; i++) {
                 var geo = geometries[i];
-                if (geo instanceof Z.GeometryCollection || geo instanceof Z.Sector  || geo instanceof Z.CurveLine) {
+                if (geo instanceof Z.GeometryCollection || geo instanceof Z.Sector) {
                     //not fit for geometry collection's test.
                     continue;
                 }

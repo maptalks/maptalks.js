@@ -44,7 +44,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         }
         if (symbolizers.length === 0) {
             if (console) {
-                console.warn('invalid symbol for geometry(' + (this.geometry ? this.geometry.getType() + ':' + this.geometry.getId() : '') + ') to draw : ' + JSON.stringify(geoSymbol));
+                console.warn('invalid symbol for geometry(' + (this.geometry ? this.geometry.getType() + (this.geometry.getId() ? ':' + his.geometry.getId() : '') : '') + ') to draw : ' + JSON.stringify(geoSymbol));
             }
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }

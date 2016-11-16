@@ -60,7 +60,10 @@
 ../src/geometry/TextBox.js
 ../src/geometry/Polygon.js
 ../src/geometry/LineString.js
-../src/geometry/CurveLine.js
+../src/geometry/Curve.js
+../src/geometry/ArcCurve.js
+../src/geometry/QuadBezierCurve.js
+../src/geometry/CubicBezierCurve.js
 ../src/geometry/ConnectorLine.js
 ../src/geometry/Ellipse.js
 ../src/geometry/Circle.js
@@ -114,6 +117,7 @@
 ../src/renderer/vectorlayer/CollectionPainter.js
 ../src/layer/GeoJSONLayer.js
 ../src/layer/CanvasLayer.js
+../src/layer/ThreeLayer.js
 ../src/ui/UI.js
 ../src/ui/UIMarker.js
 ../src/ui/InfoWindow.js

@@ -276,11 +276,10 @@ describe('#Map Profile', function () {
 
     describe('profile CurveLine and Label',function() {
         it('profile CurveLine',function() {
-            var curve = new maptalks.CurveLine(
+            var curve = new maptalks.ArcCurve(
                 //线端点坐标数组
                 [[121.48416288620015,31.24488412311837],[121.48394830947899,31.242664302121515],[121.48595460182202,31.242535881128543],[121.48695238357557,31.244838259576046],[121.48944147354125,31.24487495041167],[121.49018176322932,31.242664302121515],[121.49290688758839,31.242765204207824],[121.49358280426011,31.245040058995645],[121.49601825004554,31.245159303904526],[121.49715550666777,31.242921143583686]],
-                //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-                {draggable: true, curveType:1, arcDegree:120});
+                {draggable: true, arcDegree:120});
             curve.setProperties({
                 'foo' : 1
             });
@@ -290,11 +289,53 @@ describe('#Map Profile', function () {
             });
             var json = curve.toJSON();
             var deser = maptalks.Geometry.fromJSON(json);
-            expect(deser instanceof maptalks.CurveLine).to.be.ok();
+            expect(deser instanceof maptalks.ArcCurve).to.be.ok();
             var options = deser.config();
             expect(options.draggable).to.be.ok();
-            expect(options.curveType).to.be.eql(1);
-            expect(options.arcDegree).to.be.eql(120);
+            expect(deser.getCoordinates()).to.be.eql(curve.getCoordinates());
+            expect(deser.getProperties()).to.be.eql(curve.getProperties());
+            expect(deser.getSymbol()).to.be.eql(curve.getSymbol());
+        });
+
+        it('profile Quadaric Bezier CurveLine',function() {
+            var curve = new maptalks.QuadBezierCurve(
+                //线端点坐标数组
+                [[121.48416288620015,31.24488412311837],[121.48394830947899,31.242664302121515],[121.48595460182202,31.242535881128543],[121.48695238357557,31.244838259576046],[121.48944147354125,31.24487495041167],[121.49018176322932,31.242664302121515],[121.49290688758839,31.242765204207824],[121.49358280426011,31.245040058995645],[121.49601825004554,31.245159303904526],[121.49715550666777,31.242921143583686]],
+                {draggable: true});
+            curve.setProperties({
+                'foo' : 1
+            });
+            curve.setSymbol({
+                'lineWidth' : 2,
+                'lineColor' : '#ff0000'
+            });
+            var json = curve.toJSON();
+            var deser = maptalks.Geometry.fromJSON(json);
+            expect(deser instanceof maptalks.QuadBezierCurve).to.be.ok();
+            var options = deser.config();
+            expect(options.draggable).to.be.ok();
+            expect(deser.getCoordinates()).to.be.eql(curve.getCoordinates());
+            expect(deser.getProperties()).to.be.eql(curve.getProperties());
+            expect(deser.getSymbol()).to.be.eql(curve.getSymbol());
+        });
+
+        it('profile Cubic Bezier CurveLine',function() {
+            var curve = new maptalks.CubicBezierCurve(
+                //线端点坐标数组
+                [[121.48416288620015,31.24488412311837],[121.48394830947899,31.242664302121515],[121.48595460182202,31.242535881128543],[121.48695238357557,31.244838259576046],[121.48944147354125,31.24487495041167],[121.49018176322932,31.242664302121515],[121.49290688758839,31.242765204207824],[121.49358280426011,31.245040058995645],[121.49601825004554,31.245159303904526],[121.49715550666777,31.242921143583686]],
+                {draggable: true});
+            curve.setProperties({
+                'foo' : 1
+            });
+            curve.setSymbol({
+                'lineWidth' : 2,
+                'lineColor' : '#ff0000'
+            });
+            var json = curve.toJSON();
+            var deser = maptalks.Geometry.fromJSON(json);
+            expect(deser instanceof maptalks.CubicBezierCurve).to.be.ok();
+            var options = deser.config();
+            expect(options.draggable).to.be.ok();
             expect(deser.getCoordinates()).to.be.eql(curve.getCoordinates());
             expect(deser.getProperties()).to.be.eql(curve.getProperties());
             expect(deser.getSymbol()).to.be.eql(curve.getSymbol());
