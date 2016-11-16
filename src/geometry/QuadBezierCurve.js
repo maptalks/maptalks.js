@@ -28,7 +28,7 @@ Z.QuadBezierCurve = Z.Curve.extend(/** @lends maptalks.QuadBezierCurve.prototype
     },
 
     // paint method on canvas
-    _paintOn: function (ctx, points, lineOpacity, fillOpacity, dasharray) {
+    _paintOn: function (ctx, points, lineOpacity) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         this._quadraticCurve(ctx, points, lineOpacity);

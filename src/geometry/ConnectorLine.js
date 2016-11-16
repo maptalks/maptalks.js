@@ -1,4 +1,4 @@
-(function() {
+(function () {
     /**
      * Mixin of connector line methods.
      * @mixin

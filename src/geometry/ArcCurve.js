@@ -37,7 +37,7 @@ Z.ArcCurve = Z.Curve.extend(/** @lends maptalks.ArcCurve.prototype */{
     },
 
     // paint method on canvas
-    _paintOn: function (ctx, points, lineOpacity, fillOpacity, dasharray) {
+    _paintOn: function (ctx, points, lineOpacity) {
         ctx.beginPath();
         this._arc(ctx, points, lineOpacity);
         Z.Canvas._stroke(ctx, lineOpacity);

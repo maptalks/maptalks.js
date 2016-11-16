@@ -183,6 +183,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
                 'mousedown' : this._mousedownToDraw
             };
         }
+        return null;
     },
 
     _addGeometryToStage:function (geometry) {
@@ -292,8 +293,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         path.push(coordinate);
         if (path.length < 2) { return; }
         //去除重复的端点
-        var nIndexes = [],
-            mode = this.getMode();
+        var nIndexes = [];
         var i, len;
         for (i = 1, len = path.length; i < len; i++) {
             if (path[i].x === path[i - 1].x && path[i].y === path[i - 1].y) {
@@ -321,7 +321,6 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         function genGeometry(coordinate) {
             var symbol = me.getSymbol(),
                 geometry = me._geometry;
-            var clazz;
             if (!geometry) {
                 geometry = registerMode['create'](coordinate);
                 geometry.setSymbol(symbol);
@@ -492,14 +491,14 @@ Z.DrawTool.registerMode = function (name, modeAction) {
         Z.DrawTool._registeredMode = {};
     }
     Z.DrawTool._registeredMode[name.toLowerCase()] = modeAction;
-}
+};
 
 Z.DrawTool.getRegisterMode = function (name) {
     if (Z.DrawTool._registeredMode) {
         return Z.DrawTool._registeredMode[name.toLowerCase()];
     }
     return null;
-}
+};
 
 Z.DrawTool.registerMode('circle', {
     'action' : 'drag',
