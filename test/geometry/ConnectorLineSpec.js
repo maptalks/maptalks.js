@@ -60,6 +60,39 @@ describe('#ConnectorLineSpec', function() {
             }
         });
 
+        it('remove connector line', function() {
+            layer = new Z.VectorLayer('id');
+            map.addLayer(layer);
+            var geometries = genAllTypeGeometries();
+            layer.addGeometry(geometries);
+            for (var i = 0; i < geometries.length; i++) {
+                for (var ii = 0; ii < geometries.length; ii++) {
+                    var conn = new maptalks.ConnectorLine(geometries[i], geometries[ii]);
+                    layer.addGeometry(conn);
+                    conn.remove();
+                    expect(conn.getLayer()).not.to.be.ok();
+                }
+            }
+        });
+
+        it('setConnectSource and setConnectTarget', function() {
+            layer = new Z.VectorLayer('id');
+            map.addLayer(layer);
+            var geometries = genAllTypeGeometries();
+            layer.addGeometry(geometries);
+            for (var i = 0; i < geometries.length; i++) {
+                for (var ii = 0; ii < geometries.length; ii++) {
+                    var conn = new maptalks.ConnectorLine();
+                    expect(conn.getConnectSource()).not.to.be.ok();
+                    expect(conn.getConnectTarget()).not.to.be.ok();
+                    conn.setConnectSource(geometries[i]);
+                    conn.setConnectTarget(geometries[ii]);
+                    expect(conn.getConnectSource()).to.be.eql(geometries[i]);
+                    expect(conn.getConnectTarget()).to.be.eql(geometries[ii]);
+                    layer.addGeometry(conn);
+                }
+            }
+        });
     });
 
 

@@ -7,10 +7,15 @@
     var connectorLineMixin = {
 
         initialize: function (src, target, options) {
+            if (arguments.length === 1) {
+                options = src;
+                src = null;
+                target = null;
+            }
             this._connSource = src;
             this._connTarget = target;
-            this._registEvents();
             this._initOptions(options);
+            this._registEvents();
         },
 
         /**
@@ -27,8 +32,10 @@
          * @return {maptalks.ConnectorLine} this
          */
         setConnectSource:function (src) {
+            var target = this._connTarget;
             this.onRemove();
             this._connSource = src;
+            this._connTarget = target;
             this._updateCoordinates();
             this._registEvents();
             return this;
@@ -48,7 +55,9 @@
          * @return {maptalks.ConnectorLine} this
          */
         setConnectTarget:function (target) {
+            var src = this._connSource;
             this.onRemove();
+            this._connSource = src;
             this._connTarget = target;
             this._updateCoordinates();
             this._registEvents();
@@ -57,13 +66,16 @@
 
         _updateCoordinates:function () {
             var map = this.getMap();
-            if (!map) {
+            if (!map && this._connSource) {
                 map = this._connSource.getMap();
             }
-            if (!map) {
+            if (!map && this._connTarget) {
                 map = this._connTarget.getMap();
             }
             if (!map) {
+                return;
+            }
+            if (!this._connSource || !this._connTarget) {
                 return;
             }
             var srcPoints = this._connSource._getConnectPoints();
@@ -92,16 +104,24 @@
         },
 
         onRemove: function () {
-            Z.Util.removeFromArray(this, this._connSource.__connectors);
-            Z.Util.removeFromArray(this, this._connTarget.__connectors);
-            this._connSource.off('dragging positionchange', this._updateCoordinates, this)
-                            .off('remove', this.onRemove, this);
-            this._connTarget.off('dragging positionchange', this._updateCoordinates, this)
-                            .off('remove', this.onRemove, this);
-            this._connSource.off('dragstart mousedown mouseover', this._showConnect, this);
-            this._connSource.off('dragend mouseup mouseout', this.hide, this);
-            this._connSource.off('show', this._showConnect, this).off('hide', this.hide, this);
-            this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
+            if (this._connSource) {
+                if (this._connSource.__connectors) {
+                    Z.Util.removeFromArray(this, this._connSource.__connectors);
+                }
+                this._connSource.off('dragging positionchange', this._updateCoordinates, this)
+                                .off('remove', this.onRemove, this);
+                this._connSource.off('dragstart mousedown mouseover', this._showConnect, this);
+                this._connSource.off('dragend mouseup mouseout', this.hide, this);
+                this._connSource.off('show', this._showConnect, this).off('hide', this.hide, this);
+                delete this._connSource;
+            }
+            if (this._connTarget) {
+                Z.Util.removeFromArray(this, this._connTarget.__connectors);
+                this._connTarget.off('dragging positionchange', this._updateCoordinates, this)
+                                .off('remove', this.onRemove, this);
+                this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
+                delete this._connTarget;
+            }
         },
 
         _showConnect:function () {
@@ -116,6 +136,9 @@
         },
 
         _registEvents: function () {
+            if (!this._connSource || !this._connTarget) {
+                return;
+            }
             if (!this._connSource.__connectors) {
                 this._connSource.__connectors = [];
             }
