@@ -5,6 +5,7 @@
  * @category layer
  * @extends {maptalks.OverlayLayer}
  * @param {String|Number} id - layer's id
+ * @param {maptalks.Geometry|maptalks.Geometry[]} [geometries=null] - geometries to add
  * @param {Object}  [options=null]          - construct options
  * @param {Object}  [options.style=null]    - vectorlayer's style
  * @param {*}  [options.*=null]             - options defined in [maptalks.VectorLayer]{@link maptalks.VectorLayer#options}
@@ -31,13 +32,20 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         'cacheSvgOnCanvas'          : false
     },
 
-    initialize:function (id, opts) {
+    initialize:function (id, geometries, opts) {
+        if (geometries && (!(geometries instanceof Z.Geometry) && !(Z.Util.isArray(geometries)))) {
+            opts = geometries;
+            geometries = null;
+        }
         var options = Z.Util.extend({}, opts);
         if (options['style']) {
             this.setStyle(options['style']);
             delete options['style'];
         }
         Z.Layer.prototype.initialize.call(this, id, options);
+        if (geometries) {
+            this.addGeometry(geometries);
+        }
     },
 
     /**

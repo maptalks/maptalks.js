@@ -1,18 +1,119 @@
 /**
  * @classdesc
+ * A parent renderer class for OverlayLayer to inherit by OverlayLayer's subclasses.
+ * @class
+ * @protected
+ * @memberOf maptalks.renderer.overlaylayer
+ * @name Canvas
+ * @extends {maptalks.renderer.Canvas}
+ */
+Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
+
+    // geometries can be: true | [geometries] | null
+    // true: check layer's all geometries if the checking is the first time.
+    // [geometries] : the additional geometries needs to be checked.
+    // null : no checking.
+    //
+    // possible memory leaks:
+    // 1. if geometries' symbols with external resources change frequently,
+    // resources of old symbols will still be stored.
+    // 2. removed geometries' resources won't be removed.
+    checkResources:function (geometries) {
+        if (!this._resourceChecked && !Z.Util.isArray(geometries)) {
+            geometries = this.layer._geoList;
+        }
+        if (!geometries || !Z.Util.isArrayHasData(geometries)) {
+            return [];
+        }
+        var me = this,
+            resources = [];
+        var res;
+        function checkGeo(geo) {
+            res = geo._getExternalResources();
+            if (!Z.Util.isArrayHasData(res)) {
+                return;
+            }
+            if (!me.resources) {
+                resources = resources.concat(res);
+            } else {
+                for (var ii = 0; ii < res.length; ii++) {
+                    if (!me.resources.isResourceLoaded(res[ii])) {
+                        resources.push(res[ii]);
+                    }
+                }
+            }
+        }
+
+        for (var i = geometries.length - 1; i >= 0; i--) {
+            checkGeo(geometries[i]);
+        }
+        this._resourceChecked = true;
+        return resources;
+    },
+
+    onGeometryAdd: function (geometries) {
+        this.render(geometries);
+    },
+
+    onGeometryRemove: function () {
+        this.render();
+    },
+
+    onGeometrySymbolChange: function (geometries) {
+        this.render(geometries);
+    },
+
+    onGeometryShapeChange: function () {
+        this.render();
+    },
+
+    onGeometryPositionChange: function () {
+        this.render();
+    },
+
+    onGeometryZIndexChange: function () {
+        this.render();
+    }
+});
+
+
+/**
+ * @classdesc
  * Renderer class based on HTML5 Canvas2D for VectorLayers
  * @class
  * @protected
  * @memberOf maptalks.renderer.vectorlayer
  * @name Canvas
- * @extends {maptalks.renderer.Canvas}
+ * @extends {maptalks.renderer.overlaylayer.Canvas}
  * @param {maptalks.VectorLayer} layer - layer of the renderer
  */
-Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.vectorlayer.Canvas.prototype */{
+Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends Z.renderer.vectorlayer.Canvas.prototype */{
 
     initialize:function (layer) {
         this.layer = layer;
         this._painted = false;
+    },
+
+    checkResources: function () {
+        var me = this;
+        var resources = Z.renderer.overlaylayer.Canvas.prototype.checkResources.apply(this, arguments);
+        var style = this.layer.getStyle();
+        if (style) {
+            if (!Z.Util.isArray(style)) {
+                style = [style];
+            }
+            style.forEach(function (s) {
+                var res = maptalks.Util.getExternalResources(s['symbol'], true);
+                if (res) {
+                    for (var ii = 0; ii < res.length; ii++) {
+                        if (!me.resources.isResourceLoaded(res[ii])) {
+                            resources.push(res[ii]);
+                        }
+                    }
+                }
+            });
+        }
+        return resources;
     },
 
     /**
@@ -52,54 +153,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.v
         return true;
     },
 
-    checkResources:function (geometries) {
-        if (!this._painted && !Z.Util.isArray(geometries)) {
-            geometries = this.layer._geoList;
-        }
-        if (!geometries || !Z.Util.isArrayHasData(geometries)) {
-            return null;
-        }
-        var me = this,
-            resources = [];
-        var res, ii;
-        function checkGeo(geo) {
-            res = geo._getExternalResources();
-            if (!Z.Util.isArrayHasData(res)) {
-                return;
-            }
-            if (!me.resources) {
-                resources = resources.concat(res);
-            } else {
-                for (ii = 0; ii < res.length; ii++) {
-                    if (!me.resources.isResourceLoaded(res[ii])) {
-                        resources.push(res[ii]);
-                    }
-                }
-            }
-        }
 
-        for (var i = geometries.length - 1; i >= 0; i--) {
-            checkGeo(geometries[i]);
-        }
-        var style = this.layer.getStyle();
-        if (style) {
-            if (!Z.Util.isArray(style)) {
-                style = [style];
-            }
-            style.forEach(function (s) {
-                var res = maptalks.Util.getExternalResources(s['symbol'], true);
-                if (res) {
-                    for (ii = 0; ii < res.length; ii++) {
-                        if (!me.resources.isResourceLoaded(res[ii])) {
-                            resources.push(res[ii]);
-                        }
-                    }
-                }
-            });
-        }
-
-        return resources;
-    },
 
 
     isBlank: function () {
