@@ -9,8 +9,17 @@
  */
 Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
 
+    // geometries can be: true | [geometries] | null
+    // true: check layer's all geometries if the checking is the first time.
+    // [geometries] : the additional geometries needs to be checked.
+    // null : no checking.
+    //
+    // possible memory leaks:
+    // 1. if geometries' symbols with external resources change frequently,
+    // resources of old symbols will still be stored.
+    // 2. removed geometries' resources won't be removed.
     checkResources:function (geometries) {
-        if (!this._painted && !Z.Util.isArray(geometries)) {
+        if (!this._resourceChecked && !Z.Util.isArray(geometries)) {
             geometries = this.layer._geoList;
         }
         if (!geometries || !Z.Util.isArrayHasData(geometries)) {
@@ -18,7 +27,7 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
         }
         var me = this,
             resources = [];
-        var res, ii;
+        var res;
         function checkGeo(geo) {
             res = geo._getExternalResources();
             if (!Z.Util.isArrayHasData(res)) {
@@ -27,7 +36,7 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
             if (!me.resources) {
                 resources = resources.concat(res);
             } else {
-                for (ii = 0; ii < res.length; ii++) {
+                for (var ii = 0; ii < res.length; ii++) {
                     if (!me.resources.isResourceLoaded(res[ii])) {
                         resources.push(res[ii]);
                     }
@@ -38,7 +47,7 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
         for (var i = geometries.length - 1; i >= 0; i--) {
             checkGeo(geometries[i]);
         }
-
+        this._resourceChecked = true;
         return resources;
     },
 
@@ -46,12 +55,12 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
         this.render(geometries);
     },
 
-    onGeometryRemove: function (geometry) {
-        this.render(geometry);
+    onGeometryRemove: function () {
+        this.render();
     },
 
-    onGeometrySymbolChange: function (geometry) {
-        this.render(geometry);
+    onGeometrySymbolChange: function (geometries) {
+        this.render(geometries);
     },
 
     onGeometryShapeChange: function () {
@@ -85,7 +94,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends
         this._painted = false;
     },
 
-    checkResources: function (geometries) {
+    checkResources: function () {
         var me = this;
         var resources = Z.renderer.overlaylayer.Canvas.prototype.checkResources.apply(this, arguments);
         var style = this.layer.getStyle();
@@ -96,7 +105,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends
             style.forEach(function (s) {
                 var res = maptalks.Util.getExternalResources(s['symbol'], true);
                 if (res) {
-                    for (ii = 0; ii < res.length; ii++) {
+                    for (var ii = 0; ii < res.length; ii++) {
                         if (!me.resources.isResourceLoaded(res[ii])) {
                             resources.push(res[ii]);
                         }
