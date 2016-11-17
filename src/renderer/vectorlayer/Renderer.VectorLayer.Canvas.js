@@ -282,6 +282,14 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends
 
     onRemove:function () {
         delete this._geosToDraw;
+    },
+
+    onGeometryPropertiesChange: function (geometries) {
+        if (geometries) {
+            for (var i = 0; i < geometries.length; i++) {
+                this.layer._styleGeometry(geometries[i]);
+            }
+        }
     }
 });
 
