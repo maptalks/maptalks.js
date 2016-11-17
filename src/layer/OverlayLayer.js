@@ -341,7 +341,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         }
 
         if (this._getRenderer()) {
-            this._getRenderer().onGeometryRemove(geometry);
+            this._getRenderer().onGeometryRemove([geometry]);
         }
     },
 
@@ -455,7 +455,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         if (param['old'] !== param['new']) {
             this._sortGeometries();
             if (this._getRenderer()) {
-                this._getRenderer().onGeometryZIndexChange(param['target']);
+                this._getRenderer().onGeometryZIndexChange([param['target']]);
             }
         }
     },
@@ -466,7 +466,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             return;
         }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometryPositionChange(param['target']);
+            this._getRenderer().onGeometryPositionChange([param['target']]);
         }
     },
 
@@ -476,7 +476,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             return;
         }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometryShapeChange(param['target']);
+            this._getRenderer().onGeometryShapeChange([param['target']]);
         }
     },
 
@@ -486,7 +486,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             return;
         }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometrySymbolChange(param['target']);
+            this._getRenderer().onGeometrySymbolChange([param['target']]);
         }
     }
 });
