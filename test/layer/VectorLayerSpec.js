@@ -117,6 +117,192 @@ describe('#VectorLayer', function() {
         });
     });
 
+    describe('paint geometry', function () {
+        beforeEach(function() {
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+        });
+
+        afterEach(function() {
+            map.removeLayer(layer);
+        });
+
+        it('paint a geometry', function(done) {
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.on('layerload', function () {
+                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                done();
+            });
+            layer.addGeometry(circle);
+        });
+
+        it('update symbol', function(done) {
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.once('layerload', function () {
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, 0, [0, 255, 0]);
+                    done();
+                });
+                circle.setSymbol({
+                    'polygonFill' : '#0f0'
+                });
+
+            });
+            layer.addGeometry(circle);
+        });
+
+        it('show', function(done) {
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                },
+                visible : false
+            });
+            layer.once('layerload', function () {
+                expect(layer).not.to.be.painted(0, 0);
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, 0);
+                    done();
+                });
+                circle.show();
+
+            });
+            layer.addGeometry(circle);
+        });
+
+        it('hide', function(done) {
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0);
+                layer.once('layerload', function () {
+                    expect(layer).not.to.be.painted(0, 0);
+                    done();
+                });
+                circle.hide();
+
+            });
+            layer.addGeometry(circle);
+        });
+
+        it('remove', function(done) {
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0);
+                layer.once('layerload', function () {
+                    expect(layer).not.to.be.painted(0, 0);
+                    done();
+                });
+                circle.remove();
+
+            });
+            layer.addGeometry(circle);
+        });
+
+        it('change position', function(done) {
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0);
+                layer.once('layerload', function () {
+                    expect(layer).not.to.be.painted(0, 0);
+                    done();
+                });
+                circle.setCoordinates([0, 0]);
+
+            });
+            layer.addGeometry(circle);
+        });
+
+        it('change shape', function(done) {
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0);
+                layer.once('layerload', function () {
+                    expect(layer).not.to.be.painted(0, 0);
+                    done();
+                });
+                circle.setRadius(0);
+            });
+            layer.addGeometry(circle);
+        });
+
+        it('change zindex', function(done) {
+            var circle1 = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            var circle2 = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#0f0'
+                }
+            });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0, [0, 255, 0]);
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                    done();
+                });
+                circle1.bringToFront();
+            });
+            layer.addGeometry([circle1, circle2]);
+        });
+
+        it('change properties', function (done) {
+            layer.setStyle([{
+                    filter : ['==', 'foo', 1],
+                    symbol : {
+                        'polygonFill' : '#f00'
+                    }
+                },
+                {
+                    filter : ['==', 'foo', 2],
+                    symbol : {
+                        'polygonFill' : '#0f0'
+                    }
+            }]);
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                properties : {
+                    'foo' : 1
+                }
+            });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, 0, [0, 255, 0]);
+                    done();
+                });
+                circle.setProperties({
+                    'foo' : 2
+                });
+            });
+            layer.addGeometry(circle);
+        });
+    });
+
     describe('can setStyle', function() {
         function testStyle(style, hitIndex, symbols) {
             layer.clear();

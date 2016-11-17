@@ -73,6 +73,18 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
 
     onGeometryZIndexChange: function () {
         this.render();
+    },
+
+    onGeometryShow: function () {
+        this.render();
+    },
+
+    onGeometryHide: function () {
+        this.render();
+    },
+
+    onGeometryPropertiesChange: function () {
+        this.render();
     }
 });
 
@@ -270,6 +282,14 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends
 
     onRemove:function () {
         delete this._geosToDraw;
+    },
+
+    onGeometryPropertiesChange: function (geometries) {
+        if (geometries) {
+            for (var i = 0; i < geometries.length; i++) {
+                this.layer._styleGeometry(geometries[i]);
+            }
+        }
     }
 });
 
