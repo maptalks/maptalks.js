@@ -199,6 +199,9 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             geo._setInternalId(internalId);
             geo.on('idchange', this._onGeometryIdChange, this);
             geo.on('zindexchange', this._onGeometryZIndexChange, this);
+            geo.on('positionchange', this._onGeometryPositionChange, this);
+            geo.on('shapechange', this._onGeometryShapeChange, this);
+            geo.on('symbolchange', this._onGeometrySymbolChange, this);
             // this._geoList[internalId] = geo;
             this._geoList.push(geo);
 
@@ -233,7 +236,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         this._sortGeometries();
         var map = this.getMap();
         if (map) {
-            this._getRenderer().render(geometries);
+            this._getRenderer().onGeometryAdd(geometries);
             if (fitView && extent) {
                 var z = map.getFitZoom(extent);
                 var center = centerSum._multi(1 / fitCounter);
@@ -319,6 +322,9 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         }
         geometry.off('idchange', this._onGeometryIdChange, this);
         geometry.off('zindexchange', this._onGeometryZIndexChange, this);
+        geometry.off('positionchange', this._onGeometryPositionChange, this);
+        geometry.off('shapechange', this._onGeometryShapeChange, this);
+        geometry.off('symbolchange', this._onGeometrySymbolChange, this);
         var internalId = geometry._getInternalId();
         if (Z.Util.isNil(internalId)) {
             return;
@@ -335,7 +341,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         }
 
         if (this._getRenderer()) {
-            this._getRenderer().render();
+            this._getRenderer().onGeometryRemove(geometry);
         }
     },
 
@@ -421,9 +427,6 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     _onGeometryIdChange: function (param) {
-        if (!param['target']) {
-            return;
-        }
         if (param['target'].getLayer() !== this) {
             param['target'].off('idchange', this._onGeometryIdChange, this);
             return;
@@ -445,18 +448,45 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     },
 
     _onGeometryZIndexChange: function (param) {
-        if (!param['target']) {
-            return;
-        }
         if (param['target'].getLayer() !== this) {
-            param['target'].off('zindexchange', this._onGeometryIdChange, this);
+            param['target'].off('zindexchange', this.onGeometryZIndexChange, this);
             return;
         }
         if (param['old'] !== param['new']) {
             this._sortGeometries();
             if (this._getRenderer()) {
-                this._getRenderer().render();
+                this._getRenderer().onGeometryZIndexChange(param['target']);
             }
+        }
+    },
+
+    _onGeometryPositionChange: function (param) {
+        if (param['target'].getLayer() !== this) {
+            param['target'].off('positionchange', this._onGeometryPositionChange, this);
+            return;
+        }
+        if (this._getRenderer()) {
+            this._getRenderer().onGeometryPositionChange(param['target']);
+        }
+    },
+
+    _onGeometryShapeChange: function (param) {
+        if (param['target'].getLayer() !== this) {
+            param['target'].off('shapechange', this._onGeometryShapeChange, this);
+            return;
+        }
+        if (this._getRenderer()) {
+            this._getRenderer().onGeometryShapeChange(param['target']);
+        }
+    },
+
+    _onGeometrySymbolChange: function (param) {
+        if (param['target'].getLayer() !== this) {
+            param['target'].off('symbolchange', this._onGeometrySymbolChange, this);
+            return;
+        }
+        if (this._getRenderer()) {
+            this._getRenderer().onGeometrySymbolChange(param['target']);
         }
     }
 });

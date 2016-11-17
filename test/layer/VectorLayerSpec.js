@@ -29,6 +29,26 @@ describe('#VectorLayer', function() {
         removeContainer(container);
     });
 
+    describe('creation', function () {
+        it('create', function () {
+            var layer = new maptalks.VectorLayer('v');
+            expect(layer.getCount()).to.be.eql(0);
+            expect(layer.options['cursor']).to.be.eql('pointer');
+        });
+
+        it('create with geometries', function () {
+            var layer = new maptalks.VectorLayer('v', {'cursor' : 'default'});
+            expect(layer.getCount()).to.be.eql(0);
+            expect(layer.options['cursor']).to.be.eql('default');
+        });
+
+        it('create with geometries', function () {
+            var layer = new maptalks.VectorLayer('v', [maptalks.Marker(map.getCenter()), maptalks.Marker(map.getCenter())], {'cursor' : 'default'});
+            expect(layer.getCount()).to.be.eql(2);
+            expect(layer.options['cursor']).to.be.eql('default');
+        });
+    });
+
     describe('add to map', function () {
         it('add again', function (done) {
             layer = new maptalks.VectorLayer('v')
@@ -96,37 +116,6 @@ describe('#VectorLayer', function() {
             expect(geo).to.be.ok();
         });
     });
-
-    /*it('set drawOnce option', function(done) {
-        layer.clear();
-        layer.config({
-            'drawOnce' : true,
-            'drawImmediate' : true
-        });
-        map.addLayer(layer);
-        var geometries = genAllTypeGeometries();
-
-        map.on('moveend', function() {
-            map.removeLayer(layer);
-            done();
-        });
-        var counter = 0;
-        map.on('zoomend', function() {
-            if (counter === 0) {
-                map.zoomIn();
-                counter++;
-            } else {
-                map.panBy(new maptalks.Point(10,10));
-            }
-
-        });
-        layer.on('layerload', function() {
-            map.zoomOut();
-        })
-        expect(function() {
-            layer.addGeometry(geometries);
-        }).to.not.throwException();
-    });*/
 
     describe('can setStyle', function() {
         function testStyle(style, hitIndex, symbols) {
