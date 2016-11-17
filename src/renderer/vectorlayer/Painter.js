@@ -272,14 +272,12 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
                 symbolizer.show();
             });
         }
-        this._requestToRender();
     },
 
     hide:function () {
         this._eachSymbolizer(function (symbolizer) {
             symbolizer.hide();
         });
-        this._requestToRender();
     },
 
     onZoomEnd:function () {
@@ -290,31 +288,12 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     repaint:function () {
         this.removeCache();
         this._refreshSymbolizers();
-        if (this.geometry.isVisible()) {
-            this._requestToRender();
-        }
     },
 
     _refreshSymbolizers:function () {
         this._eachSymbolizer(function (symbolizer) {
             symbolizer.refresh();
         });
-    },
-
-    _requestToRender:function (isCheckRes) {
-        var geometry = this.geometry,
-            map = geometry.getMap();
-        if (!map || map._isBusy()) {
-            return;
-        }
-        var layer = geometry.getLayer(),
-            renderer = layer._getRenderer();
-        if (!renderer || !(layer instanceof Z.OverlayLayer)) {
-            return;
-        }
-        if (layer.isCanvasRender()) {
-            renderer.render(isCheckRes ? [geometry] : null);
-        }
     },
 
     /**
@@ -329,9 +308,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         }
         var layer = this.geometry.getLayer();
         if (this.geometry.isVisible() && (layer instanceof Z.VectorLayer)) {
-            if (layer.isCanvasRender()) {
-                this._requestToRender(true);
-            } else {
+            if (!layer.isCanvasRender()) {
                 this.paint();
             }
         }

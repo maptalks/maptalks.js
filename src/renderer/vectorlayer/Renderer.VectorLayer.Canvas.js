@@ -73,6 +73,18 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
 
     onGeometryZIndexChange: function () {
         this.render();
+    },
+
+    onGeometryShow: function () {
+        this.render();
+    },
+
+    onGeometryHide: function () {
+        this.render();
+    },
+
+    onGeometryPropertiesChange: function () {
+        this.render();
     }
 });
 
