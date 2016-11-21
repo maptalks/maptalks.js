@@ -39,24 +39,6 @@ Z.QuadBezierCurve = Z.Curve.extend(/** @lends maptalks.QuadBezierCurve.prototype
             placement = 'vertex-last';
         }
         this._paintArrow(ctx, points, lineOpacity, placement);
-    },
-
-    // reference:
-    // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
-    _quadraticCurve: function (ctx, points) {
-        var i, len = points.length;
-        if (len <= 2) {
-            Z.Canvas._path(ctx, points);
-            return;
-        }
-        var xc, yc;
-        for (i = 1; i < len - 2; i++) {
-            xc = (points[i].x + points[i + 1].x) / 2;
-            yc = (points[i].y + points[i + 1].y) / 2;
-            ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-        }
-            // curve through the last two points
-        ctx.quadraticCurveTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
     }
 });
 
