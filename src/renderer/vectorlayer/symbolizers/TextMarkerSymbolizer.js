@@ -1,29 +1,4 @@
 Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
-    defaultSymbol:{
-        'textFaceName'      : 'monospace',
-        'textWeight'        : 'normal', //'bold', 'bolder'
-        'textStyle'         : 'normal', //'italic', 'oblique'
-        'textSize'          : 10,
-        'textFont'          : null,
-        'textFill'          : '#000',
-        'textOpacity'       : 1,
-
-        'textHaloFill'      : '#ffffff',
-        'textHaloRadius'    : 0,
-        'textHaloOpacity'   : 1,
-
-        'textWrapWidth'     : null,
-        'textWrapBefore'    : false,
-        'textWrapCharacter' : null,
-        'textLineSpacing'   : 0,
-
-        'textDx'            : 0,
-        'textDy'            : 0,
-
-        'textHorizontalAlignment' : 'middle', //left | middle | right | auto
-        'textVerticalAlignment'   : 'middle',   // top | middle | bottom | auto
-        'textAlign'               : 'center' //left | right | center | auto
-    },
 
     initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
@@ -99,9 +74,33 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     translate:function () {
         var s = this.symbol;
-        var d = this.defaultSymbol;
-        var result = Z.Util.extend({}, d, s);
-        result['textName'] = s['textName'];
+        var result = {
+            'textName'          : s['textName'],
+            'textFaceName'      : Z.Util.getValueOrDefault(s['textFaceName'], 'monospace'),
+            'textWeight'        : Z.Util.getValueOrDefault(s['textWeight'], 'normal'), //'bold', 'bolder'
+            'textStyle'         : Z.Util.getValueOrDefault(s['textStyle'], 'normal'), //'italic', 'oblique'
+            'textSize'          : Z.Util.getValueOrDefault(s['textSize'], 10),
+            'textFont'          : Z.Util.getValueOrDefault(s['textFont'], null),
+            'textFill'          : Z.Util.getValueOrDefault(s['textFill'], '#000'),
+            'textOpacity'       : Z.Util.getValueOrDefault(s['textOpacity'], 1),
+
+            'textHaloFill'      : Z.Util.getValueOrDefault(s['textHaloFill'], '#ffffff'),
+            'textHaloRadius'    : Z.Util.getValueOrDefault(s['textHaloRadius'], 0),
+            'textHaloOpacity'   : Z.Util.getValueOrDefault(s['textHaloOpacity'], 1),
+
+            'textWrapWidth'     : Z.Util.getValueOrDefault(s['textWrapWidth'], null),
+            'textWrapBefore'    : Z.Util.getValueOrDefault(s['textWrapBefore'], false),
+            'textWrapCharacter' : Z.Util.getValueOrDefault(s['textWrapCharacter'], null),
+            'textLineSpacing'   : Z.Util.getValueOrDefault(s['textLineSpacing'], 0),
+
+            'textDx'            : Z.Util.getValueOrDefault(s['textDx'], 0),
+            'textDy'            : Z.Util.getValueOrDefault(s['textDy'], 0),
+
+            'textHorizontalAlignment' : Z.Util.getValueOrDefault(s['textHorizontalAlignment'], 'middle'), //left | middle | right | auto
+            'textVerticalAlignment'   : Z.Util.getValueOrDefault(s['textVerticalAlignment'], 'middle'),   // top | middle | bottom | auto
+            'textAlign'               : Z.Util.getValueOrDefault(s['textAlign'], 'center') //left | right | center | auto
+        };
+
         return result;
     },
 

@@ -1758,6 +1758,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
 
         //容器的像素坐标方向是固定方向的, 和html标准一致, 即从左到右增大, 从上到下增大
+
         return new Z.Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
     },
 
