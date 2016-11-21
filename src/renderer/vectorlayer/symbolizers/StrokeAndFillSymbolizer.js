@@ -32,6 +32,9 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
             return;
         }
         var paintParams = this._getPaintParams();
+        if (!paintParams) {
+            return;
+        }
         this._prepareContext(ctx);
         var isGradient = Z.Util.isGradient(style['lineColor']),
             isPath = (this.geometry.constructor === Z.Polygon) || (this.geometry instanceof Z.LineString);
@@ -154,7 +157,8 @@ Z.symbolizer.StrokeAndFillSymbolizer.test = function (symbol, geometry) {
         return false;
     }
     for (var p in symbol) {
-        if (p.indexOf('polygon') >= 0 || p.indexOf('line') >= 0) {
+        var f = p.slice(0, 4);
+        if (f === 'line' || f === 'poly') {
             return true;
         }
     }

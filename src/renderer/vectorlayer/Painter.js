@@ -87,8 +87,11 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
      */
     getPaintParams:function () {
         if (!this._paintParams) {
-            //render resources geometry returned are based on view points.
+            //render resources geometry returned are based on 2d points.
             this._paintParams = this.geometry._getPaintParams();
+        }
+        if (!this._paintParams) {
+            return null;
         }
         var matrices = this.getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
@@ -206,7 +209,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         if (this._hasShadow) {
             ctx.shadowBlur = this.geometry.options['shadowBlur'];
             ctx.shadowColor = this.geometry.options['shadowColor'];
-        } else {
+        } else if (ctx.shadowBlur) {
             ctx.shadowBlur = null;
             ctx.shadowColor = null;
         }

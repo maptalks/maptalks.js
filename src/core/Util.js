@@ -56,9 +56,9 @@ Z.Util = {
 
     isSVG:function (url) {
         var prefix = 'data:image/svg+xml';
-        if (url.length > 4 && url.substring(url.length - 4) === '.svg') {
+        if (url.length > 4 && url.slice(-4) === '.svg') {
             return 1;
-        } else if (url.substring(0, prefix.length) === prefix) {
+        } else if (url.slice(0, prefix.length) === prefix) {
             return 2;
         }
         return 0;
@@ -321,6 +321,10 @@ Z.Util = {
         return -1;
     },
 
+    getValueOrDefault: function (v, d) {
+        return v === undefined ? d : v;
+    },
+
     /**
      * Shallow comparison of two objects <br>
      * borrowed from expect.js
@@ -499,7 +503,8 @@ Z.Util = {
         if (!url) {
             return false;
         }
-        if (url.indexOf('http://') >= 0 || url.indexOf('https://') >= 0 || url.indexOf('blob:') >= 0) {
+        var head = url.slice(0, 6);
+        if (head === 'http:/' || head === 'https:') {
             return true;
         }
         return false;
@@ -517,7 +522,8 @@ Z.Util = {
         if (!Z.Util.isString(str)) {
             return 0;
         }
-        if (str.indexOf('http://') === 0 || str.indexOf('https://') === 0) {
+        var head = str.slice(0, 6);
+        if (head === 'http:/' || head === 'https:') {
             return 3;
         }
         if (Z.Util.cssUrlRe.test(str)) {
@@ -735,7 +741,7 @@ Z.Util = {
                     res = [res];
                 }
                 for (iii = 0; iii < res.length; iii++) {
-                    if (res[iii].indexOf('url(') >= 0) {
+                    if (res[iii].slice(0, 4) === 'url(') {
                         res[iii] = Z.Util.extractCssUrl(res[iii]);
                     }
                     resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
@@ -769,7 +775,7 @@ Z.Util = {
             return null;
         }
 
-        var s = Z.Util.extend({}, symbol);
+        var s = symbol;
         if (Z.node) {
             return s;
         }
@@ -794,7 +800,7 @@ Z.Util = {
             return res;
         }
         var embed = 'data:';
-        if (res.indexOf('url(') >= 0) {
+        if (res.slice(0, 4) === 'url(') {
             res = Z.Util.extractCssUrl(res);
         }
         if (!Z.Util.isURL(res) &&
@@ -807,7 +813,7 @@ Z.Util = {
     _absolute: function (base, relative) {
         var stack = base.split('/'),
             parts = relative.split('/');
-        if (relative.indexOf('/') === 0) {
+        if (relative.slice(0, 1) === 0) {
             return stack.slice(0, 3).join('/') + relative;
         } else {
             stack.pop(); // remove current file name (or empty string)

@@ -90,16 +90,6 @@ Z.Class.extend = function (props) {
         props.options = Z.Util.extend(Z.Util.create(proto.options), props.options);
     }
 
-    // exception definitions
-    if (props.exceptionDefs) {
-        var lang = Z.Browser.language;
-        if (lang !== 'zh-CN') {
-            lang = 'en-US'; //only support chinese and english now;
-        }
-        Z.Util.extend(proto, {exceptions:props.exceptionDefs[lang]});
-        delete props.exceptionDefs;
-    }
-
     // mix given properties into the prototype
     Z.Util.extend(proto, props);
 

@@ -109,27 +109,11 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         'renderer' : 'canvas'
     },
 
-    //Exception definitions in English and Chinese.
-    exceptionDefs:{
-        'en-US':{
-            'INVALID_OPTION':'Invalid options provided.',
-            'INVALID_CENTER':'Invalid Center',
-            'INVALID_LAYER_ID':'Invalid id for the layer',
-            'DUPLICATE_LAYER_ID':'the id of the layer is duplicate with another layer'
-        },
-        'zh-CN':{
-            'INVALID_OPTION':'æ— æ•ˆçš„option.',
-            'INVALID_CENTER':'æ— æ•ˆçš„ä¸­å¿ƒç‚¹',
-            'INVALID_LAYER_ID':'å›¾å±‚çš„idæ— æ•ˆ',
-            'DUPLICATE_LAYER_ID':'é‡å¤çš„å›¾å±‚id'
-        }
-    },
-
 
     initialize:function (container, options) {
 
         if (!options) {
-            throw new Error(this.exceptions['INVALID_OPTION']);
+            throw new Error('Invalid options when creating map.');
         }
 
         this._loaded = false;
@@ -137,7 +121,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (Z.Util.isString(container)) {
             this._containerDOM = document.getElementById(container);
             if (!this._containerDOM) {
-                throw new Error('invalid container: \'' + container + '\'');
+                throw new Error('invalid container when creating map: \'' + container + '\'');
             }
         } else {
             this._containerDOM = container;
@@ -156,7 +140,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         }
 
         if (!options['center']) {
-            throw new Error(this.exceptions['INVALID_CENTER']);
+            throw new Error('Invalid center when creating map.');
         }
 
         this._panels = {};
@@ -851,10 +835,10 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
             var layer = layers[i];
             var id = layer.getId();
             if (Z.Util.isNil(id)) {
-                throw new Error(this.exceptions['INVALID_LAYER_ID'] + ':' + id);
+                throw new Error('Invalid id for the layer: ' + id);
             }
             if (this._layerCache[id]) {
-                throw new Error(this.exceptions['DUPLICATE_LAYER_ID'] + ':' + id);
+                throw new Error('Duplicate layer id in the map: ' + id);
             }
             this._layerCache[id] = layer;
             layer._bindMap(this, this._layers.length);
@@ -1169,7 +1153,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!projection) {
             return null;
         }
-        //è®¡ç®—å‰åˆ·æ–°scales
+        //¼ÆËãÇ°Ë¢ĞÂscales
         var center = this.getCenter(),
             pcenter = this._getPrjCenter(),
             res = this._getResolution();
@@ -1773,7 +1757,7 @@ Z.Map = Z.Class.extend(/** @lends maptalks.Map.prototype */{
         var centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
 
-        //å®¹å™¨çš„åƒç´ åæ ‡æ–¹å‘æ˜¯å›ºå®šæ–¹å‘çš„, å’Œhtmlæ ‡å‡†ä¸€è‡´, å³ä»å·¦åˆ°å³å¢å¤§, ä»ä¸Šåˆ°ä¸‹å¢å¤§
+        //ÈİÆ÷µÄÏñËØ×ø±ê·½ÏòÊÇ¹Ì¶¨·½ÏòµÄ, ºÍhtml±ê×¼Ò»ÖÂ, ¼´´Ó×óµ½ÓÒÔö´ó, ´ÓÉÏµ½ÏÂÔö´ó
         return new Z.Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
     },
 

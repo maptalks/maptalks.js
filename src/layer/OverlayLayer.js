@@ -8,17 +8,6 @@
  * @extends {maptalks.Layer}
  */
 Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
-    exceptionDefs:{
-        'en-US':{
-            'DUPLICATE_GEOMETRY_ID':'Duplicate ID for the geometry',
-            'INVALID_GEOMETRY':'invalid geometry to add to layer.'
-        },
-        'zh-CN':{
-            'DUPLICATE_GEOMETRY_ID':'重复的Geometry ID',
-            'INVALID_GEOMETRY':'不合法的Geometry, 无法被加入图层.'
-        }
-    },
-
 
     /**
      * Get a geometry by its id
@@ -185,30 +174,21 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 geo = Z.Geometry.fromJSON(geo);
             }
             if (!geo) {
-                throw new Error(this.exceptions['INVALID_GEOMETRY']);
+                throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
             }
             geoId = geo.getId();
             if (!Z.Util.isNil(geoId)) {
                 if (!Z.Util.isNil(this._geoMap[geoId])) {
-                    throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + geoId);
+                    throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + geoId + ', at index:' + i);
                 }
                 this._geoMap[geoId] = geo;
             }
             internalId = Z.Util.UID();
             //内部全局唯一的id
             geo._setInternalId(internalId);
-            geo.on('idchange', this._onGeometryIdChange, this);
-            geo.on('zindexchange', this._onGeometryZIndexChange, this);
-            geo.on('positionchange', this._onGeometryPositionChange, this);
-            geo.on('shapechange', this._onGeometryShapeChange, this);
-            geo.on('symbolchange', this._onGeometrySymbolChange, this);
-            geo.on('show', this._onGeometryShow, this);
-            geo.on('hide', this._onGeometryHide, this);
-            geo.on('propertieschange', this._onGeometryPropertiesChange, this);
-            // this._geoList[internalId] = geo;
             this._geoList.push(geo);
 
-            geo._bindLayer(this);
+
             if (fitView) {
                 geoCenter = geo.getCenter();
                 geoExtent = geo.getExtent();
@@ -225,6 +205,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             if (this.onAddGeometry) {
                 this.onAddGeometry(geo);
             }
+            geo._bindLayer(this);
             /**
              * add event.
              *
@@ -323,14 +304,6 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         if (this !== geometry.getLayer()) {
             return;
         }
-        geometry.off('idchange', this._onGeometryIdChange, this);
-        geometry.off('zindexchange', this._onGeometryZIndexChange, this);
-        geometry.off('positionchange', this._onGeometryPositionChange, this);
-        geometry.off('shapechange', this._onGeometryShapeChange, this);
-        geometry.off('symbolchange', this._onGeometrySymbolChange, this);
-        geometry.off('show', this._onGeometryShow, this);
-        geometry.off('hide', this._onGeometryHide, this);
-        geometry.off('propertieschange', this._onGeometryPropertiesChange, this);
         var internalId = geometry._getInternalId();
         if (Z.Util.isNil(internalId)) {
             return;
@@ -432,11 +405,31 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         return -1;
     },
 
-    _onGeometryIdChange: function (param) {
-        if (param['target'].getLayer() !== this) {
-            param['target'].off('idchange', this._onGeometryIdChange, this);
+    _onGeometryEvent: function (param) {
+        if (!param || !param['target']) {
             return;
         }
+        var type = param['type'];
+        if (type === 'idchange') {
+            this._onGeometryIdChange(param);
+        } else if (type === 'zindexchange') {
+            this._onGeometryZIndexChange(param);
+        } else if (type === 'positionchange') {
+            this._onGeometryPositionChange(param);
+        } else if (type === 'shapechange') {
+            this._onGeometryShapeChange(param);
+        } else if (type === 'symbolchange') {
+            this._onGeometrySymbolChange(param);
+        } else if (type === 'show') {
+            this._onGeometryShow(param);
+        } else if (type === 'hide') {
+            this._onGeometryHide(param);
+        } else if (type === 'propertieschange') {
+            this._onGeometryPropertiesChange(param);
+        }
+    },
+
+    _onGeometryIdChange: function (param) {
         if (param['new'] === param['old']) {
             if (this._geoMap[param['old']] && this._geoMap[param['old']] === param['target']) {
                 return;
@@ -444,85 +437,58 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         }
         if (!Z.Util.isNil(param['new'])) {
             if (this._geoMap[param['new']]) {
-                throw new Error(this.exceptions['DUPLICATE_GEOMETRY_ID'] + ':' + param['new']);
+                throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + param['new']);
             }
             this._geoMap[param['new']] = param['target'];
         }
         if (!Z.Util.isNil(param['old']) && param['new'] !== param['old']) {
             delete this._geoMap[param['old']];
         }
+
     },
 
     _onGeometryZIndexChange: function (param) {
-        if (param['target'].getLayer() !== this) {
-            param['target'].off('zindexchange', this.onGeometryZIndexChange, this);
-            return;
-        }
         if (param['old'] !== param['new']) {
             this._sortGeometries();
             if (this._getRenderer()) {
-                this._getRenderer().onGeometryZIndexChange([param['target']]);
+                this._getRenderer().onGeometryZIndexChange(param);
             }
         }
     },
 
     _onGeometryPositionChange: function (param) {
-        if (param['target'].getLayer() !== this) {
-            param['target'].off('positionchange', this._onGeometryPositionChange, this);
-            return;
-        }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometryPositionChange([param['target']]);
+            this._getRenderer().onGeometryPositionChange(param);
         }
     },
 
     _onGeometryShapeChange: function (param) {
-        if (param['target'].getLayer() !== this) {
-            param['target'].off('shapechange', this._onGeometryShapeChange, this);
-            return;
-        }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometryShapeChange([param['target']]);
+            this._getRenderer().onGeometryShapeChange(param);
         }
     },
 
     _onGeometrySymbolChange: function (param) {
-        if (param['target'].getLayer() !== this) {
-            param['target'].off('symbolchange', this._onGeometrySymbolChange, this);
-            return;
-        }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometrySymbolChange([param['target']]);
+            this._getRenderer().onGeometrySymbolChange(param);
         }
     },
 
     _onGeometryShow: function (param) {
-        if (param['target'].getLayer() !== this) {
-            param['target'].off('show', this._onGeometryShow, this);
-            return;
-        }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometryShow([param['target']]);
+            this._getRenderer().onGeometryShow(param);
         }
     },
 
     _onGeometryHide: function (param) {
-        if (param['target'].getLayer() !== this) {
-            param['target'].off('hide', this._onGeometryHide, this);
-            return;
-        }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometryHide([param['target']]);
+            this._getRenderer().onGeometryHide(param);
         }
     },
 
     _onGeometryPropertiesChange: function (param) {
-        if (param['target'].getLayer() !== this) {
-            param['target'].off('propertieschange', this._onGeometryPropertiesChange, this);
-            return;
-        }
         if (this._getRenderer()) {
-            this._getRenderer().onGeometryPropertiesChange([param['target']]);
+            this._getRenderer().onGeometryPropertiesChange(param);
         }
     }
 });

@@ -97,7 +97,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         var isRefresh = false;
         for (var p in conf) {
             if (conf.hasOwnProperty(p)) {
-                if (p.indexOf('box') >= 0) {
+                if (p.slice(0, 3) === 'box') {
                     isRefresh = true;
                     break;
                 }

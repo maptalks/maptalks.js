@@ -14,7 +14,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
     /**
      * @property {Object}  options - VectorLayer's options
      * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
-     * @property {Boolean} options.enableSimplify=false  - whether to simplify geometries before rendering.
+     * @property {Boolean} options.enableSimplify=true   - whether to simplify geometries before rendering.
      * @property {String}  options.cursor=default        - the cursor style of the layer
      * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events
      * @property {Number}  options.thresholdOfTransforming=50 - threshold of geometry count to update while transforming.
@@ -130,6 +130,9 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
     },
 
     _styleGeometry: function (geometry) {
+        if (!this._cookedStyles) {
+            return false;
+        }
         var g = Z.Util.getFilterFeature(geometry);
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
             if (this._cookedStyles[i]['filter'](g) === true) {

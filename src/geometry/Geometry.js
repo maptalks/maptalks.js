@@ -15,18 +15,6 @@
 Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     includes: [Z.Eventable, Z.Handlerable],
 
-    exceptionDefs:{
-        'en-US':{
-            'DUPLICATE_LAYER':'Geometry cannot be added to two or more layers at the same time.',
-            'INVALID_GEOMETRY_IN_COLLECTION':'Geometry is not valid for collection,index:',
-            'NOT_ADD_TO_LAYER':'This operation needs geometry to be on a layer.'
-        },
-        'zh-CN':{
-            'DUPLICATE_LAYER':'Geometry不能被重复添加到多个图层上.',
-            'INVALID_GEOMETRY_IN_COLLECTION':'添加到集合中的Geometry是不合法的, index:',
-            'NOT_ADD_TO_LAYER':'Geometry必须添加到某个图层上才能作此操作.'
-        }
-    },
     /** @lends maptalks.Geometry */
     statics:{
         /**
@@ -799,23 +787,25 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _bindLayer:function (layer) {
         //check dupliaction
         if (this.getLayer()) {
-            throw new Error(this.exceptions['DUPLICATE_LAYER']);
+            throw new Error('Geometry cannot be added to two or more layers at the same time.');
         }
         this._layer = layer;
         this._clearProjection();
-        this.callInitHooks();
+        // this.callInitHooks();
     },
 
     _prepareSymbol:function (symbol) {
         if (Z.Util.isArray(symbol)) {
             var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
-                cookedSymbols.push(Z.Util.convertResourceUrl(symbol[i]));
+                cookedSymbols.push(Z.Util.convertResourceUrl(Z.Util.extend({}, symbol[i])));
             }
             return cookedSymbols;
-        } else {
+        } else if (symbol){
+            symbol = Z.Util.extend({}, symbol);
             return Z.Util.convertResourceUrl(symbol);
         }
+        return null;
     },
 
     /**
@@ -877,10 +867,17 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!layer) {
             return;
         }
+
+        if (this._animPlayer) {
+            this._animPlayer.finish();
+            return;
+        }
+
         //contextmenu
         this._unbindMenu();
         //infowindow
         this._unbindInfoWindow();
+
         if (this.isEditing()) {
             this.endEdit();
         }
@@ -1022,6 +1019,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     _fireEvent:function (eventName, param) {
+        if (this.getLayer() && this.getLayer()._onGeometryEvent) {
+            if (!param) {
+                param = {};
+            }
+            param['type'] = eventName;
+            param['target'] = this;
+            this.getLayer()._onGeometryEvent(param);
+        }
         this.fire(eventName, param);
     },
 
