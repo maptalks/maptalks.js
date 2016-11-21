@@ -801,7 +801,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                 cookedSymbols.push(Z.Util.convertResourceUrl(Z.Util.extend({}, symbol[i])));
             }
             return cookedSymbols;
-        } else if (symbol){
+        } else if (symbol) {
             symbol = Z.Util.extend({}, symbol);
             return Z.Util.convertResourceUrl(symbol);
         }

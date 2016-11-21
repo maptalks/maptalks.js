@@ -418,7 +418,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         var drawLayerId = Z.internalLayerPrefix + 'drawtool';
         var drawToolLayer = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
-            drawToolLayer = new Z.VectorLayer(drawLayerId, { 'enableSimplify' : false });
+            drawToolLayer = new Z.VectorLayer(drawLayerId, {'enableSimplify' : false});
             this._map.addLayer(drawToolLayer);
         }
         return drawToolLayer;
