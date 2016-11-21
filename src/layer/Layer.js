@@ -23,13 +23,14 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      */
     options:{
         //最大最小可视范围, null表示不受限制
-        'minZoom':null,
-        'maxZoom':null,
+        'minZoom': null,
+        'maxZoom': null,
         //图层是否可见
-        'visible':true,
+        'visible': true,
         'opacity': 1,
         'drawImmediate' : false,
-        'globalCompositeOperation' : null,//'lighter',
+        // context.globalCompositeOperation, 'source-in' in default
+        'globalCompositeOperation' : null,
         'renderer' : 'canvas'
     },
 
