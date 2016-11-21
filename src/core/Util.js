@@ -719,8 +719,7 @@ Z.Util = {
         var resources = [];
         var props = Z.Symbolizer.resourceProperties,
             i, ii, iii, res, resSizeProp;
-        var w = Z.Util.isFunctionDefinition(symbol['markerWidth']) ? null : symbol['markerWidth'],
-            h = Z.Util.isFunctionDefinition(symbol['markerHeight']) ? null : symbol['markerHeight'];
+        var w, h;
         for (i = symbols.length - 1; i >= 0; i--) {
             symbol = symbols[i];
             if (!symbol) {
@@ -749,6 +748,8 @@ Z.Util = {
                 }
             }
             if (symbol['markerType'] === 'path' && symbol['markerPath']) {
+                w = Z.Util.isFunctionDefinition(symbol['markerWidth']) ? 200 : symbol['markerWidth'];
+                h = Z.Util.isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
                 if (Z.Util.isFunctionDefinition(symbol['markerPath'])) {
                     res = Z.Util.getFunctionTypeResources(symbol['markerPath']);
                     var path = symbol['markerPath'];
