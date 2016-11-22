@@ -41,7 +41,7 @@ Z.ArcCurve = Z.Curve.extend(/** @lends maptalks.ArcCurve.prototype */{
         ctx.beginPath();
         this._arc(ctx, points, lineOpacity);
         Z.Canvas._stroke(ctx, lineOpacity);
-        this._paintArrow(ctx, points, lineOpacity, this.options['arrowPlacement']);
+        this._paintArrow(ctx, points, lineOpacity);
     }
 });
 

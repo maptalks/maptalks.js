@@ -249,8 +249,6 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
             return false;
         }
 
-        point = new Z.Point(point.x, point.y);
-
         if (!pxExtent.contains(point)) { return false; }
 
         // screen points

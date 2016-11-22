@@ -348,9 +348,12 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             if (!geo || !geo.isVisible() || !geo._getPainter()) {
                 continue;
             }
-            extent2d = geo._getPainter().get2DExtent();
-            if (!extent2d || !extent2d.contains(point)) {
-                continue;
+            if (!(geo instanceof Z.LineString) || !geo.options['arrowStyle']) {
+                // Except for LineString with arrows
+                extent2d = geo._getPainter().get2DExtent();
+                if (!extent2d || !extent2d.contains(point)) {
+                    continue;
+                }
             }
             if (geo._containsPoint(point) && (!filter || filter(geo))) {
                 hits.push(geo);

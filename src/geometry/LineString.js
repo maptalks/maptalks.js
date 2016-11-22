@@ -154,6 +154,24 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
             }
             return false;
         }
+
+        if (t < 2) {
+            t = 2;
+        }
+
+        // check arrow
+        var points;
+        if (this.options['arrowStyle']) {
+            var lineWidth = this._getInternalSymbol()['lineWidth'];
+            points = this._getPath2DPoints(this._getPrjCoordinates(), true);
+            var arrows = this._getArrows(points, lineWidth, tolerance ? tolerance : 2);
+            for (var ii = arrows.length - 1; ii >= 0; ii--) {
+                if (Z.GeoUtil.pointInsidePolygon(point, arrows[ii])) {
+                    return true;
+                }
+            }
+        }
+
         var map = this.getMap(),
             extent = this._getPrjExtent(),
             nw = new Z.Coordinate(extent.xmin, extent.ymax),
@@ -162,18 +180,13 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
             pxMax = map._prjToPoint(se),
             pxExtent = new Z.PointExtent(pxMin.x - t, pxMin.y - t,
                                     pxMax.x + t, pxMax.y + t);
-        if (t < 2) {
-            t = 2;
-        }
-        point = new Z.Point(point.x, point.y);
 
         if (!pxExtent.contains(point)) { return false; }
 
-        // screen points
-        var points = this._getPath2DPoints(this._getPrjCoordinates()),
-            isSplitted = points.length > 0 && Z.Util.isArray(points[0]);
+        points = points || this._getPath2DPoints(this._getPrjCoordinates());
+        var isSplitted = points.length > 0 && Z.Util.isArray(points[0]);
         if (isSplitted) {
-            for (var i = 0; i < points.length; i++) {
+            for (var i = 0, l = points.length; i < l; i++) {
                 if (isContains(points[i])) {
                     return true;
                 }
