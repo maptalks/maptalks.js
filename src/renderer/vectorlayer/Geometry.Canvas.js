@@ -76,11 +76,16 @@ if (Z.Browser.canvas) {
             return this.options['arrowPlacement'];
         },
 
-        _getArrows: function (points, lineWidth, tolerance) {
+        _getArrowStyle: function () {
             var arrowStyle = this.options['arrowStyle'];
             if (arrowStyle) {
-                arrowStyle = Z.Util.isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
+                return Z.Util.isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
             }
+            return null;
+        },
+
+        _getArrows: function (points, lineWidth, tolerance) {
+            var arrowStyle = this._getArrowStyle();
             if (!arrowStyle || points.length < 2) {
                 return null;
             }

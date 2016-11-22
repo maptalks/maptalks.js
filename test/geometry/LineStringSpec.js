@@ -166,7 +166,7 @@ describe('#LineString', function() {
         expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1))).not.to.be.ok();
     });
 
-    /*it('containsPoint with arrow of vertex-first', function () {
+    it('containsPoint with arrow of vertex-first', function () {
         var lineWidth = 8;
         var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
             arrowStyle : 'classic',
@@ -178,9 +178,9 @@ describe('#LineString', function() {
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp.add(-lineWidth * 4, 0))).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth * 4 - 2, 0))).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth * 4 - 3, 0))).not.to.be.ok();
-    });*/
+        expect(line.containsPoint(cp.add(-lineWidth * 4 - 4, 0))).to.be.ok();
+        expect(line.containsPoint(cp.add(-lineWidth * 4 - 5, 0))).not.to.be.ok();
+    });
 
     it('containsPoint with arrow of point', function () {
         var lineWidth = 8;
@@ -193,10 +193,10 @@ describe('#LineString', function() {
         });
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
-        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + 1))).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + 2))).not.to.be.ok();
-        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + 1)))).to.be.ok();
-        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + 2)))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + lineWidth / 2 + 1))).to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + lineWidth / 2 + 2))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + lineWidth / 2 + 1)))).to.be.ok();
+        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + lineWidth / 2 + 2)))).not.to.be.ok();
     });
 
     it('bug: create with dynamic textSize', function () {
