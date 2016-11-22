@@ -83,12 +83,39 @@ describe('#Rectangle', function() {
         expect(points[0]).to.eql(points[4]);
     });
 
+    it("containsPoint", function() {
+        layer.clear();
+        var geometry = new maptalks.Rectangle(center, 20, 10, {
+            symbol: {
+                'lineWidth': 6
+            }
+        });
+        layer.addGeometry(geometry);
+
+        var spy = sinon.spy();
+        geometry.on('click', spy);
+
+        happen.click(canvasContainer, {
+            clientX: 400 + 8,
+            clientY: 300 + 8 - 4
+        });
+        expect(spy.called).to.not.be.ok();
+
+        happen.click(canvasContainer, {
+            clientX: 400 + 8,
+            clientY: 300 + 8 - 2
+        });
+        expect(spy.called).to.be.ok();
+    });
+
     describe('geometry fires events', function() {
         it('events', function() {
             var vector = new Z.Rectangle(center, 1, 1);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
+
+
 
     describe('change shape and position',function() {
         it('events',function() {

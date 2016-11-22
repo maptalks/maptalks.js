@@ -150,29 +150,53 @@ describe('#LineString', function() {
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
-    it("Rectangle._containsPoint", function() {
-        layer.clear();
-        var geometry = new maptalks.Rectangle(center, 20, 10, {
-            symbol: {
-                'lineWidth': 6
+    it('containsPoint', function () {
+        var lineWidth = 8;
+        var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
+            symbol : {
+                'lineWidth' : lineWidth
             }
         });
-        layer.addGeometry(geometry);
+        layer.addGeometry(line);
+        var cp = map.coordinateToContainerPoint(map.getCenter());
+        expect(line.containsPoint(cp)).to.be.ok();
+        expect(line.containsPoint(cp.add(-lineWidth / 2, 0))).to.be.ok();
+        expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2))).to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1))).not.to.be.ok();
+    });
 
-        var spy = sinon.spy();
-        geometry.on('click', spy);
-
-        happen.click(canvasContainer, {
-            clientX: 400 + 8,
-            clientY: 300 + 8 - 4
+    it('containsPoint with arrow of vertex-first', function () {
+        var lineWidth = 8;
+        var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
+            arrowStyle : 'classic',
+            arrowPlacement : 'vertex-first',
+            symbol : {
+                'lineWidth' : lineWidth
+            }
         });
-        expect(spy.called).to.not.be.ok();
+        layer.addGeometry(line);
+        var cp = map.coordinateToContainerPoint(map.getCenter());
+        expect(line.containsPoint(cp.add(-lineWidth * 4, 0))).to.be.ok();
+        expect(line.containsPoint(cp.add(-lineWidth * 4 - 4, 0))).to.be.ok();
+        expect(line.containsPoint(cp.add(-lineWidth * 4 - 5, 0))).not.to.be.ok();
+    });
 
-        happen.click(canvasContainer, {
-            clientX: 400 + 8,
-            clientY: 300 + 8 - 2
+    it('containsPoint with arrow of point', function () {
+        var lineWidth = 8;
+        var line = new maptalks.LineString([map.getCenter().substract(0.1, 0), map.getCenter(), map.getCenter().add(0.1, 0)], {
+            arrowStyle : 'classic',
+            arrowPlacement : 'point',
+            symbol : {
+                'lineWidth' : lineWidth
+            }
         });
-        expect(spy.called).to.be.ok();
+        layer.addGeometry(line);
+        var cp = map.coordinateToContainerPoint(map.getCenter());
+        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + lineWidth / 2 + 1))).to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + lineWidth / 2 + 2))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + lineWidth / 2 + 1)))).to.be.ok();
+        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + lineWidth / 2 + 2)))).not.to.be.ok();
     });
 
     it('bug: create with dynamic textSize', function () {

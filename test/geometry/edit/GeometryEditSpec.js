@@ -138,13 +138,31 @@ describe('#GeometryEdit', function () {
             var o = polygon.toGeoJSON();
             polygon.startEdit();
             var size = polygon.getSize();
-            console.log(size);
             dragGeometry(polygon, new maptalks.Point(size.width/2,size.height/2));
             expect(polygon.toGeoJSON()).not.to.be.eqlGeoJSON(o);
             var expected = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[118.84682500000001,32.046534],[118.85742312186674,32.046534],[118.85751916135895,32.041960573990714],[118.84682500000001,32.04204242358055],[118.84682500000001,32.046534]]]},"properties":null};
             expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
         });
 
+        it('update symbol when editing', function (done) {
+            var rect = new maptalks.Circle(map.getCenter(), 1000, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            }).addTo(layer);
+            rect.startEdit();
+            var editStage = rect._editor._editStageLayer;
+            editStage.once('layerload', function () {
+                expect(editStage).to.be.painted(0, 20, [255, 0, 0]);
+                editStage.once('layerload', function () {
+                    expect(editStage).to.be.painted(0, 20, [255, 255, 0]);
+                    done();
+                });
+                rect.updateSymbol({
+                    'polygonFill' : '#ff0'
+                });
+            })
+        });
     });
 
 

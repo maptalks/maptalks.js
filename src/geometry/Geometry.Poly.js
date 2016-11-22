@@ -9,7 +9,7 @@ Z.Geometry.Poly = {
      * @returns {maptalks.Point[]}
      * @private
      */
-    _getPath2DPoints:function (prjCoords) {
+    _getPath2DPoints:function (prjCoords, disableSimplify) {
         var result = [];
         if (!Z.Util.isArrayHasData(prjCoords)) {
             return result;
@@ -19,7 +19,7 @@ Z.Geometry.Poly = {
             projection = this._getProjection();
         var anti = this.options['antiMeridian'],
             isClip = map.options['clipFullExtent'],
-            isSimplify = this.getLayer() && this.getLayer().options['enableSimplify'],
+            isSimplify = !disableSimplify && this.getLayer() && this.getLayer().options['enableSimplify'],
             tolerance = 2 * map._getResolution(),
             isMulti = Z.Util.isArray(prjCoords[0]);
         if (isSimplify && !isMulti) {

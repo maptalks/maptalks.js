@@ -34,12 +34,7 @@ Z.CubicBezierCurve = Z.Curve.extend(/** @lends maptalks.CubicBezierCurve.prototy
         ctx.moveTo(points[0].x, points[0].y);
         this._bezierCurve(ctx, points, lineOpacity);
         Z.Canvas._stroke(ctx, lineOpacity);
-        var placement = this.options['arrowPlacement'];
-        // bezier curves doesn't support point arrows.
-        if (placement === 'point') {
-            placement = 'vertex-last';
-        }
-        this._paintArrow(ctx, points, lineOpacity, placement);
+        this._paintArrow(ctx, points, lineOpacity);
     }
 });
 
