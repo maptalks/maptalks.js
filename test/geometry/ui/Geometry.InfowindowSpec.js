@@ -54,6 +54,23 @@ describe("#Geometry.InfoWindow", function() {
         map.zoomIn();
     });
 
+    it('close when layer is removed', function (done) {
+        var marker = new maptalks.Marker(center);
+        marker.addTo(layer);
+        var options = {
+            title: 'title',
+            content: 'content',
+            animation : false
+        };
+        marker.setInfoWindow(options);
+        marker.openInfoWindow();
+        var w = marker.getInfoWindow();
+        expect(w.isVisible()).to.be.ok();
+        layer.remove();
+        expect(w.isVisible()).not.to.be.ok();
+        done();
+    });
+
     describe("all kinds of geometries can have a infowindow", function() {
         it('set a infowindow', function() {
             var options = {

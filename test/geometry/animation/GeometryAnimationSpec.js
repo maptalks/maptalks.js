@@ -24,7 +24,7 @@ describe('#GeometryAnimation', function () {
             for (var i = 0; i < geometries.length; i++) {
                 var player = geometries[i].animate({
                     translate:new Z.Coordinate(0.01,0.01)
-                }, cmp);
+                }, {speed : 500}, cmp);
             };
 
 
@@ -146,6 +146,10 @@ describe('#GeometryAnimation', function () {
                         'markerWidth' : 10,
                         'markerHeight' : 10
                     }
+                },
+                {
+                    speed: 500,
+                    easing : 'in'
                 });
             }).to.throwException();
         });

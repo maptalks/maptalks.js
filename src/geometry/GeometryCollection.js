@@ -16,15 +16,6 @@
 Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.prototype */{
     type:Z.Geometry['TYPE_GEOMETRYCOLLECTION'],
 
-    exceptionDefs:{
-        'en-US':{
-            'INVALID_GEOMETRY':'invalid geometry for collection.'
-        },
-        'zh-CN':{
-            'INVALID_GEOMETRY':'无效的Geometry被加入到collection中.'
-        }
-    },
-
     initialize:function (geometries, opts) {
         this._initOptions(opts);
         this.setGeometries(geometries);
@@ -222,16 +213,17 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @private
      */
     _checkGeometries:function (geometries) {
+        var invalidGeoError = 'The geometry added to collection is invalid.';
         if (geometries && !Z.Util.isArray(geometries)) {
             if (geometries instanceof Z.Geometry) {
                 return [geometries];
             } else {
-                throw new Error(this.exceptions['INVALID_GEOMETRY']);
+                throw new Error(invalidGeoError);
             }
         } else if (Z.Util.isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
                 if (!(geometries[i] instanceof Z.Geometry)) {
-                    throw new Error(this.exceptions['INVALID_GEOMETRY']);
+                    throw new Error(invalidGeoError + ' Index: ' + i);
                 }
             }
             return geometries;

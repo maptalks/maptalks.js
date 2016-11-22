@@ -10,16 +10,6 @@
  */
 Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
 
-        //根据不同的语言定义不同的错误信息
-    exceptionDefs:{
-        'en-US':{
-            'INVALID_TILESYSTEM':'Invalid TileSystem'
-        },
-        'zh-CN':{
-            'INVALID_TILESYSTEM':'无效的TileSystem'
-        }
-    },
-
 
     initialize:function (tileSystem, fullExtent, tileSize) {
         this.tileSize = tileSize;
@@ -35,7 +25,7 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
         }
 
         if (!tileSystem) {
-            throw new Error(this.exceptions['INVALID_TILESYSTEM']);
+            throw new Error('Invalid TileSystem');
         }
         this.tileSystem = tileSystem;
 

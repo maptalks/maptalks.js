@@ -53,7 +53,7 @@ Z.Geometry.MultiPoly = {
         if (Z.Util.isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
                 if (geometries[i] && !(geometries[i] instanceof this.GeometryType)) {
-                    throw new Error(this.exceptions['INVALID_GEOMETRY_IN_COLLECTION'] + i);
+                    throw new Error('Geometry is not valid for collection, index:' + i);
                 }
             }
         }

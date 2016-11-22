@@ -16,10 +16,15 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      *      }
      * }, {
      *     'speed': 2000
+     * }, function (frame) {
+     *     console.log(frame);
      * });
      * player.pause();
      */
     animate:function (styles, options, step) {
+        if (this._animPlayer) {
+            this._animPlayer.finish();
+        }
         if (Z.Util.isFunction(options)) {
             step = options;
             options = null;
@@ -40,7 +45,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             var styles = frame.styles;
             for (var p in styles) {
                 if (p !== 'symbol' && p !== 'translate' && styles.hasOwnProperty(p)) {
-                    var fnName = 'set' + p[0].toUpperCase() + p.substring(1);
+                    var fnName = 'set' + p[0].toUpperCase() + p.slice(1);
                     this[fnName](styles[p]);
                 }
             }
@@ -71,8 +76,8 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                 step(frame);
             }
         }, this));
-
-        return player.play();
+        this._animPlayer = player;
+        return this._animPlayer.play();
     },
     /**
      * Prepare styles for animation

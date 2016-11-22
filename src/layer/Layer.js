@@ -13,17 +13,6 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     includes: Z.Eventable,
 
-    exceptionDefs:{
-        'en-US':{
-            'INVALID_RENDERER':'Invalid renderer for Layer:',
-            'INVALID_MASK' : 'mask has to be a Marker with vector symbol, a Polygon or a MultiPolygon.'
-        },
-        'zh-CN':{
-            'INVALID_RENDERER':'不合法的renderer:',
-            'INVALID_MASK' : '不合法的图层mask, mask 只能为Vector Marker, Polygon或者MultiPolygon.'
-        }
-    },
-
     /**
      * @property {Object}  [options=null] - base options of layer.
      * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
@@ -34,12 +23,14 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      */
     options:{
         //最大最小可视范围, null表示不受限制
-        'minZoom':null,
-        'maxZoom':null,
+        'minZoom': null,
+        'maxZoom': null,
         //图层是否可见
-        'visible':true,
+        'visible': true,
         'opacity': 1,
         'drawImmediate' : false,
+        // context.globalCompositeOperation, 'source-in' in default
+        'globalCompositeOperation' : null,
         'renderer' : 'canvas'
     },
 
@@ -283,7 +274,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     setMask:function (mask) {
         if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
                 mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
-            throw new Error(this.exceptions['INVALID_MASK']);
+            throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }
 
         /*if (mask instanceof Z.Marker) {
@@ -355,7 +346,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         }
         var clazz = this.constructor.getRendererClass(renderer);
         if (!clazz) {
-            throw new Error(this.exceptions['INVALID_RENDERER'] + renderer);
+            throw new Error('Invalid renderer for Layer(' + this.getId() + '):' + renderer);
         }
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());

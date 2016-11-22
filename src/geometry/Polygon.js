@@ -27,15 +27,6 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
 
     type:Z.Geometry['TYPE_POLYGON'],
 
-    exceptionDefs:{
-        'en-US':{
-            'INVALID_COORDINATES':'invalid coordinates for polygon.'
-        },
-        'zh-CN':{
-            'INVALID_COORDINATES':'对于多边形无效的坐标.'
-        }
-    },
-
     /**
      * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
      */
@@ -168,14 +159,9 @@ Z.Polygon = Z.Vector.extend(/** @lends maptalks.Polygon.prototype */{
         }
         var lastPoint = ring[ring.length - 1];
         var isClose = true;
-        // var least = 4;
         if (ring[0].x !== lastPoint.x || ring[0].y !== lastPoint.y) {
-            // least = 3;
             isClose = false;
         }
-        // if (ring.length < least) {
-            //throw new Error(this.exceptions['INVALID_COORDINATES']+', ring length is only '+ring.length);
-        // }
         return isClose;
     },
 

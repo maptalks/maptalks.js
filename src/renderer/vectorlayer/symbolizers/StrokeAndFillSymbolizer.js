@@ -1,18 +1,5 @@
 Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
-    defaultSymbol:{
-        'lineColor' : '#000000',
-        'lineWidth' : 2,
-        'lineOpacity' : 1,
-        'lineDasharray': [],
-        'lineCap' : 'butt', //“butt”, “square”, “round”
-        'lineJoin' : 'miter', //“bevel”, “round”, “miter”
-        'linePatternFile' : null,
-        'polygonFill': null,
-        'polygonOpacity': 1,
-        'polygonPatternFile' : null
-    },
-
     initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
@@ -32,6 +19,9 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
             return;
         }
         var paintParams = this._getPaintParams();
+        if (!paintParams) {
+            return;
+        }
         this._prepareContext(ctx);
         var isGradient = Z.Util.isGradient(style['lineColor']),
             isPath = (this.geometry.constructor === Z.Polygon) || (this.geometry instanceof Z.LineString);
@@ -123,15 +113,25 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
     translate:function () {
         var s = this.symbol;
-        var d = this.defaultSymbol;
-        var result = {};
-        Z.Util.extend(result, d, s);
+        var result = {
+            'lineColor'         : Z.Util.getValueOrDefault(s['lineColor'], '#000'),
+            'lineWidth'         : Z.Util.getValueOrDefault(s['lineWidth'], 2),
+            'lineOpacity'       : Z.Util.getValueOrDefault(s['lineOpacity'], 1),
+            'lineDasharray'     : Z.Util.getValueOrDefault(s['lineDasharray'], []),
+            'lineCap'           : Z.Util.getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
+            'lineJoin'          : Z.Util.getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
+            'linePatternFile'   : Z.Util.getValueOrDefault(s['linePatternFile'], null),
+            'polygonFill'       : Z.Util.getValueOrDefault(s['polygonFill'], null),
+            'polygonOpacity'    : Z.Util.getValueOrDefault(s['polygonOpacity'], 1),
+            'polygonPatternFile': Z.Util.getValueOrDefault(s['polygonPatternFile'], null)
+        };
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;
         }
-        // if (this.geometry instanceof Z.LineString) {
-        //     result['polygonFill'] = result['lineColor'];
-        // }
+        // fill of arrow
+        if ((this.geometry instanceof Z.LineString) && !result['polygonFill']) {
+            result['polygonFill'] = result['lineColor'];
+        }
         return result;
     },
 
@@ -154,7 +154,8 @@ Z.symbolizer.StrokeAndFillSymbolizer.test = function (symbol, geometry) {
         return false;
     }
     for (var p in symbol) {
-        if (p.indexOf('polygon') >= 0 || p.indexOf('line') >= 0) {
+        var f = p.slice(0, 4);
+        if (f === 'line' || f === 'poly') {
             return true;
         }
     }

@@ -1,13 +1,5 @@
 Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
-    defaultSymbol:{
-        'markerOpacity' : 1,
-        'markerWidth' : null,
-        'markerHeight' : null,
-        'markerDx': 0,
-        'markerDy': 0
-    },
-
     initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
@@ -112,9 +104,15 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     translate:function () {
-        var s = this.symbol,
-            d = this.defaultSymbol;
-        return Z.Util.extend({}, d, s);
+        var s = this.symbol;
+        return {
+            'markerFile'    : s['markerFile'],
+            'markerOpacity' : Z.Util.getValueOrDefault(s['markerOpacity'], 1),
+            'markerWidth'   : Z.Util.getValueOrDefault(s['markerWidth'], null),
+            'markerHeight'  : Z.Util.getValueOrDefault(s['markerHeight'], null),
+            'markerDx'      : Z.Util.getValueOrDefault(s['markerDx'], 0),
+            'markerDy'      : Z.Util.getValueOrDefault(s['markerDy'], 0)
+        };
     }
 });
 

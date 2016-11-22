@@ -23,20 +23,23 @@ Z.Eventable = {
         if (!this._eventMap) {
             this._eventMap = {};
         }
-        var eventTypes = eventsOn.split(' ');
+        var eventTypes = eventsOn.toLowerCase().split(' ');
         var evtType;
         if (!context) { context = this; }
         var handlerChain, i, l;
         for (var ii = 0, ll = eventTypes.length; ii < ll; ii++) {
-            evtType = eventTypes[ii].toLowerCase();
+            evtType = eventTypes[ii];
             handlerChain = this._eventMap[evtType];
             if (!handlerChain) {
                 handlerChain = [];
                 this._eventMap[evtType] = handlerChain;
             }
-            for (i = 0, l = handlerChain.length; i < l; i++) {
-                if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
-                    return this;
+            l = handlerChain.length;
+            if (l > 0) {
+                for (i = 0; i < l; i++) {
+                    if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
+                        return this;
+                    }
                 }
             }
             handlerChain.push({
@@ -154,7 +157,7 @@ Z.Eventable = {
     listens:function (eventType, handler, context) {
         if (!this._eventMap || !Z.Util.isString(eventType)) { return 0; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain) { return 0; }
+        if (!handlerChain || handlerChain.length === 0) { return 0; }
         var count = 0;
         for (var i = 0, len = handlerChain.length; i < len; i++) {
             if (handler) {
@@ -223,7 +226,7 @@ Z.Eventable = {
         param['type'] = eventType;
         param['target'] = this;
         //in case of deleting a listener in a execution, copy the handlerChain to execute.
-        var queue = [].concat(handlerChain),
+        var queue = handlerChain.slice(0),
             context, bubble, passed;
         for (var i = 0, len = queue.length; i < len; i++) {
             if (!queue[i]) { continue; }

@@ -42,14 +42,6 @@ Z.ArcCurve = Z.Curve.extend(/** @lends maptalks.ArcCurve.prototype */{
         this._arc(ctx, points, lineOpacity);
         Z.Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity, this.options['arrowPlacement']);
-    },
-
-    _arc: function (ctx, points, lineOpacity) {
-        var degree = this.options['arcDegree']  * Math.PI / 180;
-        for (var i = 1, l = points.length; i < l; i++) {
-            Z.Canvas._arcBetween(ctx, points[i - 1], points[i], degree);
-            Z.Canvas._stroke(ctx, lineOpacity);
-        }
     }
 });
 

@@ -59,7 +59,8 @@ if (Z.Browser.canvas) {
         },
 
         _arrow: function (ctx, prePoint, point, opacity, arrowStyle) {
-            var style = this.arrowStyles[arrowStyle];
+            var style = Z.Util.isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
+
             if (!style) {
                 return;
             }

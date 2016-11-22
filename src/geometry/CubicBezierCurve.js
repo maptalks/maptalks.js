@@ -40,41 +40,6 @@ Z.CubicBezierCurve = Z.Curve.extend(/** @lends maptalks.CubicBezierCurve.prototy
             placement = 'vertex-last';
         }
         this._paintArrow(ctx, points, lineOpacity, placement);
-    },
-
-    // reference:
-    // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
-    _bezierCurve: function (ctx, points) {
-        var i, len = points.length;
-        if (len <= 2) {
-            Z.Canvas._path(ctx, points);
-            return;
-        }
-        var f = 0.3;
-        var t = 0.6;
-
-        var m = 0;
-        var dx1 = 0;
-        var dy1 = 0;
-        var dx2, dy2;
-        var curP, nexP;
-        var preP = points[0];
-        for (i = 1; i < len; i++) {
-            curP = points[i];
-            nexP = points[i + 1];
-            if (nexP) {
-                m = (nexP.y - preP.y) / (nexP.x - preP.x);
-                dx2 = (nexP.x - curP.x) * -f;
-                dy2 = dx2 * m * t;
-            } else {
-                dx2 = 0;
-                dy2 = 0;
-            }
-            ctx.bezierCurveTo(preP.x - dx1, preP.y - dy1, curP.x + dx2, curP.y + dy2, curP.x, curP.y);
-            dx1 = dx2;
-            dy1 = dy2;
-            preP = curP;
-        }
     }
 });
 

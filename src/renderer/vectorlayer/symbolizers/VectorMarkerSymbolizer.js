@@ -1,25 +1,5 @@
 Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
-    defaultSymbol:{
-        'markerType': 'ellipse', //<----- ellipse | cross | x | triangle | diamond | square | bar | pin等,默认ellipse
-
-        'markerFill': '#0000ff', //blue as cartoCSS
-        'markerFillOpacity': 1,
-        'markerFillPatternFile' : null,
-        'markerLineColor': '#000000', //black
-        'markerLineWidth': 1,
-        'markerLineOpacity': 1,
-        'markerLineDasharray':[],
-        'markerLinePatternFile' : null,
-
-
-        'markerWidth': 10,
-        'markerHeight': 10,
-
-        'markerDx': 0,
-        'markerDy': 0
-    },
-
     padding : [2, 2],
 
     initialize:function (symbol, geometry, painter) {
@@ -272,8 +252,23 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     translate: function () {
         var s = this.symbol;
-        var d = this.defaultSymbol;
-        var result = Z.Util.extend({}, d, s);
+        var result = {
+            'markerType'            : Z.Util.getValueOrDefault(s['markerType'], 'ellipse'), //<----- ellipse | cross | x | triangle | diamond | square | bar | pin等,默认ellipse
+            'markerFill'            : Z.Util.getValueOrDefault(s['markerFill'], '#0000ff'), //blue as cartoCSS
+            'markerFillOpacity'     : Z.Util.getValueOrDefault(s['markerFillOpacity'], 1),
+            'markerFillPatternFile' : Z.Util.getValueOrDefault(s['markerFillPatternFile'], null),
+            'markerLineColor'       : Z.Util.getValueOrDefault(s['markerLineColor'], '#000000'), //black
+            'markerLineWidth'       : Z.Util.getValueOrDefault(s['markerLineWidth'], 1),
+            'markerLineOpacity'     : Z.Util.getValueOrDefault(s['markerLineOpacity'], 1),
+            'markerLineDasharray'   : Z.Util.getValueOrDefault(s['markerLineDasharray'], []),
+            'markerLinePatternFile' : Z.Util.getValueOrDefault(s['markerLinePatternFile'], null),
+
+            'markerWidth'           : Z.Util.getValueOrDefault(s['markerWidth'], 10),
+            'markerHeight'          : Z.Util.getValueOrDefault(s['markerHeight'], 10),
+
+            'markerDx'              : Z.Util.getValueOrDefault(s['markerDx'], 0),
+            'markerDy'              : Z.Util.getValueOrDefault(s['markerDy'], 0)
+        };
         //markerOpacity覆盖fillOpacity和lineOpacity
         if (Z.Util.isNumber(s['markerOpacity'])) {
             result['markerFillOpacity'] *= s['markerOpacity'];

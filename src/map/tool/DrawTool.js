@@ -252,6 +252,9 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         var coordinate = param['coordinate'];
         var registerMode = this._getRegisterMode();
         var path = this._clickCoords;
+        if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
+            return;
+        }
         registerMode['update'](path.concat([coordinate]), this._geometry);
         /**
          * mousemove event.
@@ -415,7 +418,7 @@ Z.DrawTool = Z.MapTool.extend(/** @lends maptalks.DrawTool.prototype */{
         var drawLayerId = Z.internalLayerPrefix + 'drawtool';
         var drawToolLayer = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
-            drawToolLayer = new Z.VectorLayer(drawLayerId);
+            drawToolLayer = new Z.VectorLayer(drawLayerId, {'enableSimplify' : false});
             this._map.addLayer(drawToolLayer);
         }
         return drawToolLayer;
