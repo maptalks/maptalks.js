@@ -254,10 +254,10 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var s = this.symbol;
         var result = {
             'markerType'            : Z.Util.getValueOrDefault(s['markerType'], 'ellipse'), //<----- ellipse | cross | x | triangle | diamond | square | bar | pin等,默认ellipse
-            'markerFill'            : Z.Util.getValueOrDefault(s['markerFill'], '#0000ff'), //blue as cartoCSS
+            'markerFill'            : Z.Util.getValueOrDefault(s['markerFill'], '#00f'), //blue as cartoCSS
             'markerFillOpacity'     : Z.Util.getValueOrDefault(s['markerFillOpacity'], 1),
             'markerFillPatternFile' : Z.Util.getValueOrDefault(s['markerFillPatternFile'], null),
-            'markerLineColor'       : Z.Util.getValueOrDefault(s['markerLineColor'], '#000000'), //black
+            'markerLineColor'       : Z.Util.getValueOrDefault(s['markerLineColor'], '#000'), //black
             'markerLineWidth'       : Z.Util.getValueOrDefault(s['markerLineWidth'], 1),
             'markerLineOpacity'     : Z.Util.getValueOrDefault(s['markerLineOpacity'], 1),
             'markerLineDasharray'   : Z.Util.getValueOrDefault(s['markerLineDasharray'], []),

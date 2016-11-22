@@ -151,7 +151,7 @@ Z.Geometry.Editor = Z.Class.extend(/** @lends maptalks.Geometry.Editor.prototype
     _getGeometryEvents: function () {
         return {
             'symbolchange' : this._onGeometrySymbolChange
-        }
+        };
     },
 
     _switchGeometryEvents: function (oper) {

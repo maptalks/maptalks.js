@@ -108,13 +108,14 @@ Z.TextMarker.Editor = {
     },
 
     _createEditor: function () {
+        var content = this.getContent();
         var labelSize = this.getSize(),
             symbol = this._getInternalSymbol() || {},
-            width = labelSize['width'] || 100,
+            width = (content && content.length > 0) ? (Math.max(labelSize['width'], this.options['boxMinWidth']) || 100) : 100,
             textColor = symbol['textFill'] || '#000000',
             textSize = symbol['textSize'] || 12,
-            height = labelSize['height'] || textSize,
-            lineColor = symbol['markerLineColor'] || '#cccccc',
+            height = Math.max(labelSize['height'], this.options['boxMinHeight']) || textSize * 1.5,
+            lineColor = symbol['markerLineColor'] || '#000',
             fill = symbol['markerFill'] || '#3398CC',
             spacing = symbol['textLineSpacing'] || 0;
             // opacity = symbol['markerFillOpacity'];
@@ -134,7 +135,7 @@ Z.TextMarker.Editor = {
             'overflow-x: hidden;' +
             'overflow-y: hidden;' +
             '-webkit-user-modify: read-write-plaintext-only;';
-        var content = this.getContent();
+
         editor.innerText = content;
         Z.DomUtil.on(editor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
         editor.onkeyup =  function (event) {
