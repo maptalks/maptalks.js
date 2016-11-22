@@ -63,17 +63,16 @@ Z.Geometry.Editor = Z.Class.extend(/** @lends maptalks.Geometry.Editor.prototype
         //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
         //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
         shadow.copyEventListeners(geometry);
-        //unregister idchange listener
         if (geometry._getParent()) {
             shadow.copyEventListeners(geometry._getParent());
-        }
-        if (geometry.getLayer()._onGeometryIdChange) {
-            shadow.off('idchange', geometry.getLayer()._onGeometryIdChange, geometry.getLayer());
         }
         //drag shadow by center handle instead.
         shadow.setId(null).config({'draggable': false});
 
         this._shadow = shadow;
+
+        this._switchGeometryEvents('on');
+
         geometry.hide();
         if (geometry instanceof Z.Marker ||
                 geometry instanceof Z.Circle ||
@@ -111,6 +110,7 @@ Z.Geometry.Editor = Z.Class.extend(/** @lends maptalks.Geometry.Editor.prototype
      * @return {*} [description]
      */
     stop:function () {
+        this._switchGeometryEvents('off');
         var map = this.getMap();
         if (!map) {
             return;
@@ -146,6 +146,27 @@ Z.Geometry.Editor = Z.Class.extend(/** @lends maptalks.Geometry.Editor.prototype
             return false;
         }
         return this.editing;
+    },
+
+    _getGeometryEvents: function () {
+        return {
+            'symbolchange' : this._onGeometrySymbolChange
+        }
+    },
+
+    _switchGeometryEvents: function (oper) {
+        if (this._geometry) {
+            var events = this._getGeometryEvents();
+            for (var p in events) {
+                this._geometry[oper](p, events[p], this);
+            }
+        }
+    },
+
+    _onGeometrySymbolChange: function (param) {
+        if (this._shadow) {
+            this._shadow.setSymbol(param['target']._getInternalSymbol());
+        }
     },
 
     _onShadowDragEnd:function () {
