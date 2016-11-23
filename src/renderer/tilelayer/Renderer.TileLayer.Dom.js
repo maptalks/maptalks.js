@@ -142,6 +142,10 @@ Z.renderer.tilelayer.Dom = Z.Class.extend(/** @lends Z.renderer.tilelayer.Dom.pr
 
         Z.DomUtil.setOpacity(tileImage, 0);
 
+        if (this.layer.options['cssFilter']) {
+            tileImage.style[Z.DomUtil.CSSFILTER] = this.layer.options['cssFilter'];
+        }
+
         tileImage.src = tile['url'];
 
         return tileImage;

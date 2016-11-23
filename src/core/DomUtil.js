@@ -597,6 +597,15 @@ Z.DomUtil.off = Z.DomUtil.removeDomEvent;
     Z.DomUtil.TRANSITION = Z.DomUtil.testProp(
             ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
 
+    /**
+     * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
+     * @property {String} FILTER
+     * @memberOf maptalks.DomUtil
+     * @type {String}
+     */
+    Z.DomUtil.CSSFILTER = Z.DomUtil.testProp(
+            ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']);
+
 })();
 
 

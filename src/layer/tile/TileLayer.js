@@ -38,6 +38,8 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
         'renderSpanWhenPanning' : (function () { return Z.Browser.mobile ? -1 : 100; })(),
 
+        'cssFilter' : null,
+
         'crossOrigin' : null,
 
         'tileSize' : {
