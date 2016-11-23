@@ -122,6 +122,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         this.fire('showstart');
         var container = this._getUIContainer();
         if (!this.__uiDOM) {
+            // first time
             this._switchEvents('on');
         }
         this._coordinate = coordinate;
@@ -453,11 +454,20 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         if (this.getEvents) {
             Z.Util.extend(events, this.getEvents());
         }
+        var p;
         if (events) {
             var map = this.getMap();
-            for (var p in events) {
+            for (p in events) {
                 if (events.hasOwnProperty(p)) {
                     map[to](p, events[p], this);
+                }
+            }
+        }
+        var ownerEvents = this._getOwnerEvents();
+        if (this._owner && ownerEvents) {
+            for (p in ownerEvents) {
+                if (ownerEvents.hasOwnProperty(p)) {
+                    this._owner[to](p, ownerEvents[p], this);
                 }
             }
         }
@@ -468,6 +478,21 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             'zooming' : this.onZooming,
             'zoomend' : this.onZoomEnd
         };
+    },
+
+    _getOwnerEvents: function () {
+        if (this._owner && (this._owner instanceof Z.Geometry)) {
+            return {
+                'positionchange' : this.onGeometryPositionChange
+            };
+        }
+        return null;
+    },
+
+    onGeometryPositionChange: function (param) {
+        if (this._owner && this.getDOM() && this.isVisible()) {
+            this.show(param['target'].getCenter());
+        }
     },
 
     onZooming : function (param) {
