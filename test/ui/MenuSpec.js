@@ -49,6 +49,33 @@ describe('#ContextMenu', function() {
         expect(target._menu.getDOM().style.display).to.be.eql('none');
     });
 
+    it('move when geometry is moved', function() {
+        map.removeLayer('vector');
+        var layer = new maptalks.VectorLayer('vector');
+        var target = new maptalks.Marker(map.getCenter());
+        layer.addGeometry(target).addTo(map);
+        var items = [
+                {item: 'item1', click: function(){}},
+                '-',
+                {item: 'item2', click: function(){}}
+            ];
+
+        target.setMenu({
+                items: items,
+                animation : null,
+                width: 250
+            });
+        target.openMenu();
+        var w = target._menu;
+        var pos1 = w.getPosition();
+
+        target.setCoordinates(map.getCenter().add(0.1, 0.1));
+
+        var pos2 = w.getPosition();
+        expect(w.isVisible()).to.be.ok();
+        expect(pos2.toArray()).not.to.be.eql(pos1.toArray());
+    });
+
     it('hide when layer is hided', function() {
         map.removeLayer('vector');
         var layer = new maptalks.VectorLayer('vector');

@@ -185,6 +185,28 @@ describe("#Geometry.InfoWindow", function() {
             expect(w.isVisible()).not.to.be.ok();
         });
 
+        it('move when geometry is moved', function() {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : null
+            };
+            var geo = new maptalks.Marker(map.getCenter());
+            layer.addGeometry(geo);
+
+            geo.setInfoWindow(options);
+            geo.openInfoWindow();
+
+            var w = geo.getInfoWindow();
+            var pos1 = w.getPosition();
+
+            geo.setCoordinates(map.getCenter().add(0.1, 0.1));
+
+            var pos2 = w.getPosition();
+            expect(w.isVisible()).to.be.ok();
+            expect(pos2.toArray()).not.to.be.eql(pos1.toArray());
+        });
+
         it('animate', function (done) {
             var options = {
                 title: 'title',
