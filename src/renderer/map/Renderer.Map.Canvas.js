@@ -376,6 +376,10 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
             this.context.globalAlpha *= imgOp;
         }
 
+        if (layer.options['cssFilter']) {
+            this.context.filter = layer.options['cssFilter'];
+        }
+
         if (Z.node) {
             var context = canvasImage.getContext('2d');
             if (context.getSvg) {
@@ -385,6 +389,9 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
         }
         this.context.drawImage(canvasImage, point.x, point.y);
         this.context.globalAlpha = alpha;
+        if (this.context.filter !== 'none') {
+            this.context.filter = 'none';
+        }
     },
 
     _storeBackground: function (baseLayerImage) {
@@ -399,9 +406,16 @@ Z.renderer.map.Canvas = Z.renderer.map.Renderer.extend(/** @lends Z.renderer.map
     _drawBackground:function () {
         var map = this.map;
         if (this._canvasBg) {
+            var baseLayer = this.map.getBaseLayer();
+            if (baseLayer.options['cssFilter']) {
+                this.context.filter = baseLayer.options['cssFilter'];
+            }
             var scale = this._canvasBgRes / map._getResolution();
             var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Z.Browser.retina ? 2 : 1);
             Z.Canvas.image(this.context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
+            if (this.context.filter !== 'none') {
+                this.context.filter = 'none';
+            }
         }
     },
 
