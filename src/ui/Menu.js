@@ -1,5 +1,8 @@
 (function () {
     var defaultOptions = {
+        'animation' : null,
+        'animationDelay' : 10,
+        'animationOnHide' : false,
         'eventsToStop' : 'mousedown dblclick click',
         'autoPan': false,
         'width'  : 160,
@@ -119,6 +122,10 @@
             return new Z.Point(dx, dy);
         },
 
+        getTransformOrigin: function () {
+            return this.getOffset()._multi(-1);
+        },
+
         getEvents: function () {
             return {
                 '_zoomstart _zoomend _movestart _dblclick _click' : this.hide
@@ -127,12 +134,17 @@
 
         _createMenuItemDom: function () {
             var me = this;
+            var map = this.getMap();
             var ul = Z.DomUtil.createEl('ul');
             Z.DomUtil.addClass(ul, 'maptalks-menu-items');
             var items = this.getItems();
             function onMenuClick(index) {
-                return function () {
-                    var result = this._callback({'target':me, 'owner':me._owner, 'index':index});
+                return function (e) {
+                    var param = map._parseEvent(e, 'click');
+                    param['target'] = me;
+                    param['owner']  = me._owner;
+                    param['index']  = index;
+                    var result = this._callback(param);
                     if (result === false) {
                         return;
                     }
@@ -228,18 +240,14 @@
         * @return {*} this
         */
         setMenuItems: function (items) {
-            if (this._menuOptions) {
-                if (Z.Util.isArray(items)) {
-                    this._menuOptions['custom'] = false;
-                }
-                this._menuOptions['items'] = items;
+            if (!this._menuOptions) {
+                this._menuOptions = {};
             }
-            if (this._menu) {
-                if (Z.Util.isArray(items)) {
-                    this._menu.config('custom', false);
-                }
-                this._menu.setItems(items);
+            if (Z.Util.isArray(items)) {
+                this._menuOptions['custom'] = false;
             }
+            this._menuOptions['items'] = items;
+            this.setMenu(this._menuOptions);
             return this;
         },
 

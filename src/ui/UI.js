@@ -49,6 +49,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         'autoPan' : false,
         'single' : true,
         'animation' : 'scale',
+        'animationOnHide' : true,
         'animationDuration' : 500,
         'animationDelay' : 0
     },
@@ -154,6 +155,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         dom.style.left = point.x + 'px';
         dom.style.top  = point.y + 'px';
 
+        dom.style[Z.DomUtil.TRANSITION] = null;
+
+        container.appendChild(dom);
+
+
         var anim = this._getAnimation();
 
         if (anim.fade) {
@@ -168,8 +174,6 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         }
 
         dom.style.display = '';
-
-        container.appendChild(dom);
 
         if (this.options['eventsToStop']) {
             Z.DomUtil.on(dom, this.options['eventsToStop'], Z.DomUtil.stopPropagation);
@@ -217,6 +221,9 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
 
         var anim = this._getAnimation(),
             dom = this.getDOM();
+        if (!this.options['animationOnHide']) {
+            anim.anim = false;
+        }
         if (anim.fade) {
             dom.style.opacity = 0;
         }

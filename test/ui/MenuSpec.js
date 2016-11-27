@@ -116,9 +116,6 @@ function runTests(target, _context) {
             if (target.getLayer()) {target.remove();}
             map.removeLayer('vector');
             var layer = new maptalks.VectorLayer('vector');
-            target.setMenu({
-                'animation' : null
-            });
             layer.addGeometry(target).addTo(map);
         }
 
@@ -150,7 +147,7 @@ function runTests(target, _context) {
         }
 
         context('Type of ' + type, function() {
-            it('setMenuAndOpen', function() {
+            it('setMenu and open', function() {
                 prepareGeometry();
                 target.setMenu({
                         items: items,
@@ -161,6 +158,30 @@ function runTests(target, _context) {
                 assertItems();
                 target.closeMenu();
                 expect(target._menu.getDOM().style.display).to.be.eql('none');
+            });
+
+            it('setMenu and open with animation', function(done) {
+                prepareGeometry();
+                target.setMenu({
+                        items: items,
+                        animation : 'scale',
+                        animationDuration : 20,
+                        animationOnHide   : true,
+                        width: 250
+                    });
+                target.openMenu();
+                expect(target._menu.getDOM().style.display).to.be.eql('');
+                expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
+                setTimeout(function () {
+                    assertItems();
+                    expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
+                    target.closeMenu();
+                    expect(target._menu.getDOM().style.display).to.be.eql('');
+                    setTimeout(function () {
+                        expect(target._menu.getDOM().style.display).to.be.eql('none');
+                        done();
+                    }, 21);
+                }, 21);
             });
 
             it('get menu', function() {
