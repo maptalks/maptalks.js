@@ -25,7 +25,6 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
      * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
      */
     options: {
-        'box'          :   true,
         'boxAutoSize'  :   true,
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,

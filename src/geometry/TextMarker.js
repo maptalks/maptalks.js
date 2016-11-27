@@ -10,6 +10,10 @@
  */
 Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
+    options : {
+        'box' : true,
+    },
+
     defaultSymbol : {
         'textFaceName'  : 'monospace',
         'textSize': 12,
@@ -25,10 +29,10 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
     defaultBoxSymbol:{
         'markerType':'square',
-        'markerLineColor': '#ff0000',
+        'markerLineColor': '#f00',
         'markerLineWidth': 2,
         'markerLineOpacity': 1,
-        'markerFill': '#ffffff',
+        'markerFill': '#fff',
         'markerOpacity' : 1
     },
 
