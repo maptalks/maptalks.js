@@ -16,6 +16,7 @@ Z.renderer = {};
  * @extends {maptalks.Class}
  */
 Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype */{
+
     isCanvasRender:function () {
         return true;
     },
@@ -60,7 +61,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
 
     _tryToDraw:function () {
         this._clearTimeout();
-        if (this.layer.isEmpty && this.layer.isEmpty()) {
+        if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
             this.completeRender();
             return;
         }
@@ -285,6 +286,9 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
         var r = Z.Browser.retina ? 2 : 1;
         this.canvas = Z.Canvas.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
         this.context = this.canvas.getContext('2d');
+        if (this.layer.options['globalCompositeOperation']) {
+            this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
+        }
         if (Z.Browser.retina) {
             this.context.scale(2, 2);
         }
@@ -427,8 +431,7 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     onZoomEnd: function () {
-        this.prepareRender();
-        this.draw();
+        this._drawOnEvent();
     },
 
     onMoveStart: function () {
@@ -440,14 +443,19 @@ Z.renderer.Canvas = Z.Class.extend(/** @lends maptalks.renderer.Canvas.prototype
     },
 
     onMoveEnd: function () {
-        this.prepareRender();
-        this.draw();
+        this._drawOnEvent();
     },
 
     onResize: function () {
         this.resizeCanvas();
+        this._drawOnEvent();
+    },
+
+    _drawOnEvent: function () {
         this.prepareRender();
-        this.draw();
+        if (this.layer.isVisible()) {
+            this.draw();
+        }
     },
 
     _clearTimeout:function () {
