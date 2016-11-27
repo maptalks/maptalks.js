@@ -7,7 +7,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
 
     addHooks: function () {
         var map = this.target;
-        var dom = map._panels.mapLayers || map._containerDOM;
+        var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
             Z.DomUtil.on(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
@@ -16,7 +16,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
 
     removeHooks: function () {
         var map = this.target;
-        var dom = map._panels.mapLayers || map._containerDOM;
+        var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
             Z.DomUtil.off(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
@@ -91,6 +91,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         }
 
         function fireGeometryEvent(geometries) {
+            var prevent = false;
             var i;
             if (eventType === 'mousemove') {
                 var geoMap = {};
@@ -99,7 +100,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
                         geoMap[geometries[i]._getInternalId()] = geometries[i];
                         geometries[i]._onEvent(domEvent);
                         //the first geometry is on the top, so ignore the latter cursors.
-                        geometries[i]._onMouseOver(domEvent);
+                        prevent = geometries[i]._onMouseOver(domEvent);
                     }
                 }
 
@@ -130,9 +131,10 @@ Z.Map.GeometryEvents = Z.Handler.extend({
 
             } else {
                 if (!geometries || geometries.length === 0) { return; }
-                // for (i = geometries.length - 1; i >= 0; i--) {
-                geometries[geometries.length - 1]._onEvent(domEvent);
-                // }
+                prevent = geometries[geometries.length - 1]._onEvent(domEvent);
+            }
+            if (prevent) {
+                Z.DomUtil.stopPropagation(domEvent);
             }
         }
 
