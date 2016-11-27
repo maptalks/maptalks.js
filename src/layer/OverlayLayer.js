@@ -170,11 +170,11 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             geo, geoId, internalId, geoCenter, geoExtent;
         for (var i = 0, len = geometries.length; i < len; i++) {
             geo = geometries[i];
-            if (!(geo instanceof Z.Geometry)) {
-                geo = Z.Geometry.fromJSON(geo);
-            }
             if (!geo) {
                 throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
+            }
+            if (!(geo instanceof Z.Geometry)) {
+                geo = Z.Geometry.fromJSON(geo);
             }
             geoId = geo.getId();
             if (!Z.Util.isNil(geoId)) {
