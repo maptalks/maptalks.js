@@ -118,6 +118,7 @@
 ../src/layer/GeoJSONLayer.js
 ../src/layer/CanvasLayer.js
 ../src/layer/ThreeLayer.js
+../src/layer/ParticleLayer.js
 ../src/ui/UI.js
 ../src/ui/UIMarker.js
 ../src/ui/InfoWindow.js
