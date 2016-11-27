@@ -126,7 +126,8 @@ describe('#Label', function() {
 
     describe('alignment', function () {
         it('left', function () {
-            var vector = new maptalks.TextBox('■■■', center, {
+            var vector = new maptalks.Label('■■■', center, {
+                box : false,
                 symbol : {
                     'markerFillOpacity' : 0,
                     'markerLineOpacity' : 0,
@@ -137,12 +138,14 @@ describe('#Label', function() {
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
-            expect(layer).to.be.painted(-Math.floor(size.width/2) + 4, 0);
-            expect(layer).not.to.be.painted(Math.floor(size.width/2) - 4, 0);
+            expect(layer).to.be.painted(-3, 0);
+            expect(layer).to.be.painted(-Math.floor(size.width/2), 0);
+            expect(layer).not.to.be.painted(3, 0);
         });
 
         it('right', function () {
-            var vector = new maptalks.TextBox('■■■', center, {
+            var vector = new maptalks.Label('■■■', center, {
+                box : false,
                 symbol : {
                     'markerFillOpacity' : 0,
                     'markerLineOpacity' : 0,
@@ -153,12 +156,14 @@ describe('#Label', function() {
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
-            expect(layer).to.be.painted(Math.floor(size.width/2) - 4, 0);
-            expect(layer).not.to.be.painted(-Math.floor(size.width/2) + 4, 0);
+            expect(layer).to.be.painted(3, 0);
+            expect(layer).to.be.painted(Math.floor(size.width/2), 0);
+            expect(layer).not.to.be.painted(-3, 0);
         });
 
         it('top', function () {
-            var vector = new maptalks.TextBox('■■■', center, {
+            var vector = new maptalks.Label('■■■', center, {
+                box : false,
                 symbol : {
                     'markerFillOpacity' : 0,
                     'markerLineOpacity' : 0,
@@ -169,12 +174,14 @@ describe('#Label', function() {
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
-            expect(layer).to.be.painted(0, -Math.floor(size.height / 2) + 6);
-            expect(layer).not.to.be.painted(0, Math.floor(size.height / 2) - 6);
+            expect(layer).to.be.painted(0, -5);
+            expect(layer).to.be.painted(0, -Math.floor(size.height / 2));
+            expect(layer).not.to.be.painted(0, 5);
         });
 
         it('bottom', function () {
-            var vector = new maptalks.TextBox('■■■', center, {
+            var vector = new maptalks.Label('■■■', center, {
+                box : false,
                 symbol : {
                     'markerFillOpacity' : 0,
                     'markerLineOpacity' : 0,
@@ -185,8 +192,9 @@ describe('#Label', function() {
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
-            expect(layer).to.be.painted(0, Math.floor(size.height / 2) - 5);
-            expect(layer).not.to.be.painted(0, -Math.floor(size.height / 2) + 5);
+            expect(layer).to.be.painted(0, 6);
+            expect(layer).to.be.painted(0, Math.floor(size.height / 2));
+            expect(layer).not.to.be.painted(0, -5);
         });
     });
 

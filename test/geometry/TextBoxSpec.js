@@ -115,6 +115,7 @@ describe('#TextBox', function() {
     describe('alignment', function () {
         it('left', function () {
             var vector = new maptalks.TextBox('■■■', center, {
+                box : false,
                 symbol : {
                     'markerWidth' : 100,
                     'markerHeight' : 50,
@@ -133,6 +134,7 @@ describe('#TextBox', function() {
 
         it('right', function () {
             var vector = new maptalks.TextBox('■■■', center, {
+                box : false,
                 symbol : {
                     'markerWidth' : 100,
                     'markerHeight' : 50,
@@ -151,6 +153,7 @@ describe('#TextBox', function() {
 
         it('top', function () {
             var vector = new maptalks.TextBox('■■■', center, {
+                box : false,
                 symbol : {
                     'markerWidth' : 100,
                     'markerHeight' : 50,
@@ -169,6 +172,7 @@ describe('#TextBox', function() {
 
         it('bottom', function () {
             var vector = new maptalks.TextBox('■■■', center, {
+                box : false,
                 symbol : {
                     'markerWidth' : 100,
                     'markerHeight' : 50,
