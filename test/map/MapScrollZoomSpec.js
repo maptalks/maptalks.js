@@ -4,7 +4,7 @@ describe('#MapScrollZoomSpec', function () {
     var container,mapPlatform;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var delay;
     function scrollMap( delta) {
        happen.once(container, {

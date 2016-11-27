@@ -2,7 +2,7 @@
  * @namespace
  * @protected
  */
-Z.measurer = {};
+maptalks.measurer = {};
 
 /**
  * Utilities with measurers.<br>
@@ -11,7 +11,7 @@ Z.measurer = {};
  * @category geo
  * @protected
  */
-Z.MeasurerUtil = {
+maptalks.MeasurerUtil = {
     /**
      * Get a measurer instance.
      * @param  {String} name - code of the measurer: 'EPSG:4326', 'Identity', 'BAIDU'
@@ -19,16 +19,16 @@ Z.MeasurerUtil = {
      */
     getInstance:function (name) {
         if (!name) {
-            return Z.MeasurerUtil.DEFAULT;
+            return maptalks.MeasurerUtil.DEFAULT;
         }
-        for (var p in Z.measurer) {
-            if (Z.measurer.hasOwnProperty(p)) {
-                var mName = Z.measurer[p]['measure'];
+        for (var p in maptalks.measurer) {
+            if (maptalks.measurer.hasOwnProperty(p)) {
+                var mName = maptalks.measurer[p]['measure'];
                 if (!mName) {
                     continue;
                 }
                 if (name.toLowerCase() === mName.toLowerCase()) {
-                    return Z.measurer[p];
+                    return maptalks.measurer[p];
                 }
             }
         }
@@ -39,5 +39,5 @@ Z.MeasurerUtil = {
      * The default measurer: WGS84Sphere
      * @type {Object}
      */
-    DEFAULT: Z.measurer.WGS84Sphere
+    DEFAULT: maptalks.measurer.WGS84Sphere
 };

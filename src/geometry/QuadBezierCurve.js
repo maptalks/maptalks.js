@@ -18,7 +18,7 @@
  *     }
  * ).addTo(layer);
  */
-Z.QuadBezierCurve = Z.Curve.extend(/** @lends maptalks.QuadBezierCurve.prototype */{
+maptalks.QuadBezierCurve = maptalks.Curve.extend(/** @lends maptalks.QuadBezierCurve.prototype */{
 
     _toJSON: function (options) {
         return {
@@ -32,7 +32,7 @@ Z.QuadBezierCurve = Z.Curve.extend(/** @lends maptalks.QuadBezierCurve.prototype
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         this._quadraticCurve(ctx, points, lineOpacity);
-        Z.Canvas._stroke(ctx, lineOpacity);
+        maptalks.Canvas._stroke(ctx, lineOpacity);
 
         this._paintArrow(ctx, points, lineOpacity);
     },
@@ -47,9 +47,9 @@ Z.QuadBezierCurve = Z.Curve.extend(/** @lends maptalks.QuadBezierCurve.prototype
     }
 });
 
-Z.QuadBezierCurve.fromJSON = function (json) {
+maptalks.QuadBezierCurve.fromJSON = function (json) {
     var feature = json['feature'];
-    var curve = new Z.QuadBezierCurve(feature['geometry']['coordinates'], json['options']);
+    var curve = new maptalks.QuadBezierCurve(feature['geometry']['coordinates'], json['options']);
     curve.setProperties(feature['properties']);
     return curve;
 };

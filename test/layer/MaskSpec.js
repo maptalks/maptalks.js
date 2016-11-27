@@ -5,7 +5,7 @@ describe('Spec of Masks', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var context = {
     };
 
@@ -18,8 +18,8 @@ describe('Spec of Masks', function() {
             zoom: 17,
             center: center
         };
-        map = new Z.Map(container, option);
-        tile = new Z.TileLayer('tile', {
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
             crossOrigin : 'anonymous',
             baseLayerRenderer : 'canvas',
             urlTemplate : '/resources/tile.png',
@@ -55,14 +55,14 @@ describe('Spec of Masks', function() {
     }
 
     //test tilelayer
-    runTests(new Z.TileLayer('tile', {
+    runTests(new maptalks.TileLayer('tile', {
             crossOrigin : 'anonymous',
             urlTemplate:'/resources/tile.png',
             subdomains:['a','b','c']
         }), context);
 
     //test vectorlayer
-    var vlayer = new Z.VectorLayer('v').addGeometry(new maptalks.Circle(center, 2000, {
+    var vlayer = new maptalks.VectorLayer('v').addGeometry(new maptalks.Circle(center, 2000, {
         symbol : {
             'polygonFill' : '#000',
             'polygonOpacity' : 1

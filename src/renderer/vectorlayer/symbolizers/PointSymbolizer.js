@@ -8,9 +8,9 @@
  * @name PointSymbolizer
  * @extends {maptalks.symbolizer.CanvasSymbolizer}
  */
-Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
+maptalks.symbolizer.PointSymbolizer = maptalks.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
     get2DExtent: function (resources) {
-        var extent = new Z.PointExtent(),
+        var extent = new maptalks.PointExtent(),
             m = this.getMarkerExtent(resources);
         var renderPoints = this._getRenderPoints()[0];
         for (var i = renderPoints.length - 1; i >= 0; i--) {
@@ -43,10 +43,10 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
             dxdy = this.getDxDy(),
             layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin();
         if (matrix) {
-            dxdy = new Z.Point(dxdy.x / scale.x, dxdy.y / scale.y);
+            dxdy = new maptalks.Point(dxdy.x / scale.x, dxdy.y / scale.y);
         }
 
-        var containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
+        var containerPoints = maptalks.Util.mapArrayRecursively(points, function (point) {
             return point.substract(layerPoint)._add(dxdy);
         });
         if (matrix) {
@@ -68,11 +68,11 @@ Z.symbolizer.PointSymbolizer = Z.symbolizer.CanvasSymbolizer.extend(/** @lends m
     },
 
     _rotate: function (ctx, origin, rotation) {
-        if (!Z.Util.isNil(rotation)) {
+        if (!maptalks.Util.isNil(rotation)) {
             ctx.save();
             ctx.translate(origin.x, origin.y);
             ctx.rotate(rotation);
-            return new Z.Point(0, 0);
+            return new maptalks.Point(0, 0);
         }
         return null;
     }

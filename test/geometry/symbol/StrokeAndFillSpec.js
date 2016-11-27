@@ -3,7 +3,7 @@ describe('StrokeAndFillSpec', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 

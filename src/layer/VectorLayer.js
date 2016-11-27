@@ -10,7 +10,7 @@
  * @param {Object}  [options.style=null]    - vectorlayer's style
  * @param {*}  [options.*=null]             - options defined in [maptalks.VectorLayer]{@link maptalks.VectorLayer#options}
  */
-Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
+maptalks.VectorLayer = maptalks.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype */{
     /**
      * @property {Object}  options - VectorLayer's options
      * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
@@ -33,16 +33,16 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
     },
 
     initialize:function (id, geometries, opts) {
-        if (geometries && (!(geometries instanceof Z.Geometry) && !(Z.Util.isArray(geometries)))) {
+        if (geometries && (!(geometries instanceof maptalks.Geometry) && !(maptalks.Util.isArray(geometries)))) {
             opts = geometries;
             geometries = null;
         }
-        var options = Z.Util.extend({}, opts);
+        var options = maptalks.Util.extend({}, opts);
         if (options['style']) {
             this.setStyle(options['style']);
             delete options['style'];
         }
-        Z.Layer.prototype.initialize.call(this, id, options);
+        maptalks.Layer.prototype.initialize.call(this, id, options);
         if (geometries) {
             this.addGeometry(geometries);
         }
@@ -79,7 +79,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
      */
     setStyle: function (style) {
         this._style = style;
-        this._cookedStyles = Z.Util.compileStyle(style);
+        this._cookedStyles = maptalks.Util.compileStyle(style);
         this.forEach(function (geometry) {
             this._styleGeometry(geometry);
         }, this);
@@ -133,7 +133,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
         if (!this._cookedStyles) {
             return false;
         }
-        var g = Z.Util.getFilterFeature(geometry);
+        var g = maptalks.Util.getFilterFeature(geometry);
         for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
             if (this._cookedStyles[i]['filter'](g) === true) {
                 geometry._setExternSymbol(this._cookedStyles[i]['symbol']);
@@ -160,13 +160,13 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
             'id'      : this.getId(),
             'options' : this.config()
         };
-        if ((Z.Util.isNil(options['style']) || options['style']) && this.getStyle()) {
+        if ((maptalks.Util.isNil(options['style']) || options['style']) && this.getStyle()) {
             profile['style'] = this.getStyle();
         }
-        if (Z.Util.isNil(options['geometries']) || options['geometries']) {
+        if (maptalks.Util.isNil(options['geometries']) || options['geometries']) {
             var clipExtent;
             if (options['clipExtent']) {
-                clipExtent = new Z.Extent(options['clipExtent']);
+                clipExtent = new maptalks.Extent(options['clipExtent']);
             }
             var geoJSONs = [];
             var geometries = this.getGeometries(),
@@ -179,7 +179,7 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
                 }
                 json = geometries[i].toJSON(options['geometries']);
                 if (json['symbol'] && this.getStyle()) {
-                    json['symbol'] = geometries[i]._symbolBeforeStyle ? Z.Util.extend({}, geometries[i]._symbolBeforeStyle) : null;
+                    json['symbol'] = geometries[i]._symbolBeforeStyle ? maptalks.Util.extend({}, geometries[i]._symbolBeforeStyle) : null;
                 }
                 geoJSONs.push(json);
             }
@@ -199,14 +199,14 @@ Z.VectorLayer = Z.OverlayLayer.extend(/** @lends maptalks.VectorLayer.prototype 
  * @private
  * @function
  */
-Z.VectorLayer.fromJSON = function (profile) {
+maptalks.VectorLayer.fromJSON = function (profile) {
     if (!profile || profile['type'] !== 'VectorLayer') { return null; }
-    var layer = new Z.VectorLayer(profile['id'], profile['options']);
+    var layer = new maptalks.VectorLayer(profile['id'], profile['options']);
     var geoJSONs = profile['geometries'];
     var geometries = [],
         geo;
     for (var i = 0; i < geoJSONs.length; i++) {
-        geo = Z.Geometry.fromJSON(geoJSONs[i]);
+        geo = maptalks.Geometry.fromJSON(geoJSONs[i]);
         if (geo) {
             geometries.push(geo);
         }

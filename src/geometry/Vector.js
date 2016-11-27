@@ -7,7 +7,7 @@
  * @abstract
  * @extends maptalks.Geometry
  */
-Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
+maptalks.Vector = maptalks.Geometry.extend(/** @lends maptalks.Vector.prototype */{
     /**
      * @property {Object} options - Vector's options
      * @property {Object} options.symbol - Vector's default symbol
@@ -27,10 +27,10 @@ Z.Vector = Z.Geometry.extend(/** @lends maptalks.Vector.prototype */{
     _hitTestTolerance: function () {
         var symbol = this._getInternalSymbol();
         var w;
-        if (Z.Util.isArray(symbol)) {
+        if (maptalks.Util.isArray(symbol)) {
             w = 0;
             for (var i = 0; i < symbol.length; i++) {
-                if (Z.Util.isNumber(symbol[i]['lineWidth'])) {
+                if (maptalks.Util.isNumber(symbol[i]['lineWidth'])) {
                     if (symbol[i]['lineWidth'] > w) {
                         w = symbol[i]['lineWidth'];
                     }

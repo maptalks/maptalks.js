@@ -44,11 +44,11 @@
  *           draggable:true
  * }).addTo(layer);
  */
-Z.MultiPolygon = Z.GeometryCollection.extend(/** @lends maptalks.MultiPolygon.prototype */{
-    includes:[Z.Geometry.MultiPoly],
-    GeometryType:Z.Polygon,
+maptalks.MultiPolygon = maptalks.GeometryCollection.extend(/** @lends maptalks.MultiPolygon.prototype */{
+    includes:[maptalks.Geometry.MultiPoly],
+    GeometryType:maptalks.Polygon,
 
-    type:Z.Geometry['TYPE_MULTIPOLYGON'],
+    type:maptalks.Geometry['TYPE_MULTIPOLYGON'],
 
     initialize:function (data, opts) {
         this._initOptions(opts);

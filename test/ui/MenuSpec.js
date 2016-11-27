@@ -135,7 +135,7 @@ function runTests(target, _context) {
         function rightclick() {
             _context.map.setCenter(target.getFirstCoordinate());
             var eventContainer = _context.map._panels.canvasContainer;
-            var domPosition = Z.DomUtil.getPagePosition(eventContainer);
+            var domPosition = maptalks.DomUtil.getPagePosition(eventContainer);
             var point = _context.map.coordinateToContainerPoint(target.getFirstCoordinate()).add(domPosition);
 
             happen.click(eventContainer,{
@@ -263,7 +263,7 @@ function runTests(target, _context) {
             });
 
             it('openMenu by click', function() {
-                if (target instanceof Z.Sector) {
+                if (target instanceof maptalks.Sector) {
                     return;
                 }
                 prepareGeometry();
@@ -279,7 +279,7 @@ function runTests(target, _context) {
             });
 
             it('openMenu by click when target is being edited', function(done) {
-                // if (target instanceof Z.Sector) {
+                // if (target instanceof maptalks.Sector) {
                 //     return;
                 // }
                 // prepareGeometry();

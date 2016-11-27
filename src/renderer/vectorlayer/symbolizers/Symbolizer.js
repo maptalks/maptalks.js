@@ -2,7 +2,7 @@
  * @namespace
  * @protected
  */
-Z.symbolizer = {};
+maptalks.symbolizer = {};
 /**
  * @classdesc
  * Base class for all the symbolilzers, a symbolizers contains the following methods:
@@ -19,7 +19,7 @@ Z.symbolizer = {};
  * @abstract
  * @protected
  */
-Z.Symbolizer = Z.Class.extend(/** @lends maptalks.Symbolizer.prototype */{
+maptalks.Symbolizer = maptalks.Class.extend(/** @lends maptalks.Symbolizer.prototype */{
     getMap:function () {
         return this.geometry.getMap();
     },
@@ -30,11 +30,11 @@ Z.Symbolizer = Z.Class.extend(/** @lends maptalks.Symbolizer.prototype */{
 });
 
 
-Z.Symbolizer.resourceProperties = [
+maptalks.Symbolizer.resourceProperties = [
     'markerFile', 'polygonPatternFile', 'linePatternFile', 'markerFillPatternFile', 'markerLinePatternFile'
 ];
 
-Z.Symbolizer.resourceSizeProperties = [
+maptalks.Symbolizer.resourceSizeProperties = [
     ['markerWidth', 'markerHeight'], [], [null, 'lineWidth'], [], [null, 'markerLineWidth']
 ];
 
@@ -43,13 +43,13 @@ Z.Symbolizer.resourceSizeProperties = [
  * @static
  * @constant
  */
-Z.Symbolizer.colorProperties = [
+maptalks.Symbolizer.colorProperties = [
     'lineColor', 'polygonFill', 'markerFill', 'markerLineColor', 'textFill'
 ];
 
-Z.Symbolizer.DEFAULT_STROKE_COLOR = '#000';
-Z.Symbolizer.DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
-Z.Symbolizer.DEFAULT_TEXT_COLOR = '#000';
+maptalks.Symbolizer.DEFAULT_STROKE_COLOR = '#000';
+maptalks.Symbolizer.DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
+maptalks.Symbolizer.DEFAULT_TEXT_COLOR = '#000';
 
 /**
  * Test if the property is a property related with coloring
@@ -58,9 +58,9 @@ Z.Symbolizer.DEFAULT_TEXT_COLOR = '#000';
  * @function
  * @return {Boolean}
  */
-Z.Symbolizer.testColor = function (prop) {
-    if (!prop || !Z.Util.isString(prop)) { return false; }
-    if (Z.Util.indexOfArray(prop, Z.Symbolizer.colorProperties) >= 0) {
+maptalks.Symbolizer.testColor = function (prop) {
+    if (!prop || !maptalks.Util.isString(prop)) { return false; }
+    if (maptalks.Util.indexOfArray(prop, maptalks.Symbolizer.colorProperties) >= 0) {
         return true;
     }
     return false;

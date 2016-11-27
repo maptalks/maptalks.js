@@ -1,24 +1,24 @@
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
     'touchZoom': true,
     'touchZoomOrigin' : 'center'
 });
 
 //handler to zoom map by pinching
-Z.Map.TouchZoom = Z.Handler.extend({
+maptalks.Map.TouchZoom = maptalks.Handler.extend({
     addHooks: function () {
-        Z.DomUtil.addDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart, this);
+        maptalks.DomUtil.addDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart, this);
     },
 
     removeHooks: function () {
-        Z.DomUtil.removeDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart);
+        maptalks.DomUtil.removeDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart);
     },
 
     _onTouchStart:function (event) {
         var map = this.target;
         if (!event.touches || event.touches.length !== 2 || map._zooming) { return; }
         var container = map._containerDOM;
-        var p1 = Z.DomUtil.getEventContainerPoint(event.touches[0], container),
-            p2 = Z.DomUtil.getEventContainerPoint(event.touches[1], container);
+        var p1 = maptalks.DomUtil.getEventContainerPoint(event.touches[0], container),
+            p2 = maptalks.DomUtil.getEventContainerPoint(event.touches[1], container);
 
         this._startDist = p1.distanceTo(p2);
         this._startZoom = map.getZoom();
@@ -26,16 +26,16 @@ Z.Map.TouchZoom = Z.Handler.extend({
             this._preOrigin = p1.add(p2)._multi(1 / 2);
         } else {
             var size = map.getSize();
-            this._preOrigin = new Z.Point(size['width'] / 2, size['height'] / 2);
+            this._preOrigin = new maptalks.Point(size['width'] / 2, size['height'] / 2);
         }
 
 
         map._zooming = true;
 
-        Z.DomUtil.addDomEvent(document, 'touchmove', this._onTouchMove, this)
+        maptalks.DomUtil.addDomEvent(document, 'touchmove', this._onTouchMove, this)
             .addDomEvent(document, 'touchend', this._onTouchEnd, this);
 
-        Z.DomUtil.preventDefault(event);
+        maptalks.DomUtil.preventDefault(event);
         /**
           * touchzoomstart event
           * @event maptalks.Map#touchzoomstart
@@ -50,15 +50,15 @@ Z.Map.TouchZoom = Z.Handler.extend({
         var map = this.target;
         if (!event.touches || event.touches.length !== 2 || !map._zooming) { return; }
         var container = map._containerDOM,
-            p1 = Z.DomUtil.getEventContainerPoint(event.touches[0], container),
-            p2 = Z.DomUtil.getEventContainerPoint(event.touches[1], container),
+            p1 = maptalks.DomUtil.getEventContainerPoint(event.touches[0], container),
+            p2 = maptalks.DomUtil.getEventContainerPoint(event.touches[1], container),
             scale = p1.distanceTo(p2) / this._startDist;
         var origin;
         if (map.options['touchZoomOrigin'] === 'pinch') {
             origin = p1.add(p2)._multi(1 / 2);
         } else {
             var size = map.getSize();
-            origin = new Z.Point(size['width'] / 2, size['height'] / 2);
+            origin = new maptalks.Point(size['width'] / 2, size['height'] / 2);
         }
         var offset = this._preOrigin.substract(origin);
         map.offsetPlatform(offset);
@@ -79,7 +79,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
           * @property {Matrix} matrix                  - transforming matrix
           */
         map._fireEvent('touchzooming', {'matrix': matrix});
-        // Z.DomUtil.preventDefault(event);
+        // maptalks.DomUtil.preventDefault(event);
     },
 
     _onTouchEnd:function () {
@@ -90,7 +90,7 @@ Z.Map.TouchZoom = Z.Handler.extend({
         }
         map._zooming = false;
 
-        Z.DomUtil
+        maptalks.DomUtil
             .off(document, 'touchmove', this._onTouchMove, this)
             .off(document, 'touchend', this._onTouchEnd, this);
 
@@ -117,4 +117,4 @@ Z.Map.TouchZoom = Z.Handler.extend({
 });
 
 
-Z.Map.addInitHook('addHandler', 'touchZoom', Z.Map.TouchZoom);
+maptalks.Map.addInitHook('addHandler', 'touchZoom', maptalks.Map.TouchZoom);

@@ -3,7 +3,7 @@ describe("Control.Panel", function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         var setups = commonSetupMap(center);
@@ -51,8 +51,8 @@ describe("Control.Panel", function() {
 
      function dragPanel(panel) {
         var dom = panel.getContainer().childNodes[0],
-            domPosition = Z.DomUtil.getPagePosition(dom),
-            point = new Z.Point(0,0).add(domPosition);
+            domPosition = maptalks.DomUtil.getPagePosition(dom),
+            point = new maptalks.Point(0,0).add(domPosition);
         happen.mousedown(dom,{
                 'clientX':point.x,
                 'clientY':point.y

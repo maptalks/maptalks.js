@@ -5,7 +5,7 @@
  * @author mourner
  * @link https://github.com/mourner/simplify-js
  */
-Z.Simplify = {
+maptalks.Simplify = {
 	// square distance between 2 points
     getSqDist:function (p1, p2) {
 

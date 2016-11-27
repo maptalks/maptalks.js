@@ -13,8 +13,8 @@
  * var collection = new maptalks.GeometryCollection([marker, line, polygon])
  *     .addTo(layer);
  */
-Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.prototype */{
-    type:Z.Geometry['TYPE_GEOMETRYCOLLECTION'],
+maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.GeometryCollection.prototype */{
+    type:maptalks.Geometry['TYPE_GEOMETRYCOLLECTION'],
 
     initialize:function (geometries, opts) {
         this._initOptions(opts);
@@ -30,7 +30,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     setGeometries:function (_geometries) {
         var geometries = this._checkGeometries(_geometries);
         //Set the collection as child geometries' parent.
-        if (Z.Util.isArray(geometries)) {
+        if (maptalks.Util.isArray(geometries)) {
             for (var i = geometries.length - 1; i >= 0; i--) {
                 geometries[i]._initOptions(this.config());
                 geometries[i]._setParent(this);
@@ -85,7 +85,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
      */
     filter: function () {
-        return Z.VectorLayer.prototype.filter.apply(this, arguments);
+        return maptalks.VectorLayer.prototype.filter.apply(this, arguments);
     },
 
     /**
@@ -113,7 +113,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @return {Boolean}
      */
     isEmpty:function () {
-        return !Z.Util.isArrayHasData(this.getGeometries());
+        return !maptalks.Util.isArrayHasData(this.getGeometries());
     },
 
     /**
@@ -127,7 +127,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         this.forEach(function (geometry) {
             geometry._unbind();
         });
-        return Z.Geometry.prototype.remove.apply(this, arguments);
+        return maptalks.Geometry.prototype.remove.apply(this, arguments);
     },
 
     /**
@@ -196,7 +196,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      * @private
      */
     _bindLayer:function () {
-        Z.Geometry.prototype._bindLayer.apply(this, arguments);
+        maptalks.Geometry.prototype._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
     },
 
@@ -214,15 +214,15 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
      */
     _checkGeometries:function (geometries) {
         var invalidGeoError = 'The geometry added to collection is invalid.';
-        if (geometries && !Z.Util.isArray(geometries)) {
-            if (geometries instanceof Z.Geometry) {
+        if (geometries && !maptalks.Util.isArray(geometries)) {
+            if (geometries instanceof maptalks.Geometry) {
                 return [geometries];
             } else {
                 throw new Error(invalidGeoError);
             }
-        } else if (Z.Util.isArray(geometries)) {
+        } else if (maptalks.Util.isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
-                if (!(geometries[i] instanceof Z.Geometry)) {
+                if (!(geometries[i] instanceof maptalks.Geometry)) {
                     throw new Error(invalidGeoError + ' Index: ' + i);
                 }
             }
@@ -273,7 +273,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
         if (counter === 0) {
             return null;
         }
-        return new Z.Coordinate(sumX / counter, sumY / counter);
+        return new maptalks.Coordinate(sumX / counter, sumY / counter);
     },
 
     _containsPoint: function (point, t) {
@@ -381,10 +381,10 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
     _getConnectPoints: function () {
         var extent = this.getExtent();
         var anchors = [
-            new Z.Coordinate(extent.xmin, extent.ymax),
-            new Z.Coordinate(extent.xmax, extent.ymin),
-            new Z.Coordinate(extent.xmin, extent.ymin),
-            new Z.Coordinate(extent.xmax, extent.ymax)
+            new maptalks.Coordinate(extent.xmin, extent.ymax),
+            new maptalks.Coordinate(extent.xmax, extent.ymin),
+            new maptalks.Coordinate(extent.xmin, extent.ymin),
+            new maptalks.Coordinate(extent.xmax, extent.ymax)
         ];
         return anchors;
     },
@@ -401,7 +401,7 @@ Z.GeometryCollection = Z.Geometry.extend(/** @lends maptalks.GeometryCollection.
                 continue;
             }
             symbol = geometries[i]._getInternalSymbol();
-            res = Z.Util.getExternalResources(symbol);
+            res = maptalks.Util.getExternalResources(symbol);
             if (!res) {
                 continue;
             }

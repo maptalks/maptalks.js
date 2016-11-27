@@ -7,7 +7,7 @@
  * @name Canvas
  * @extends {maptalks.renderer.Canvas}
  */
-Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
+maptalks.renderer.overlaylayer.Canvas = maptalks.renderer.Canvas.extend({
 
     // geometries can be: true | [geometries] | null
     // true: check layer's all geometries if the checking is the first time.
@@ -19,10 +19,10 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
     // resources of old symbols will still be stored.
     // 2. removed geometries' resources won't be removed.
     checkResources:function (geometries) {
-        if (!this._resourceChecked && !Z.Util.isArray(geometries)) {
+        if (!this._resourceChecked && !maptalks.Util.isArray(geometries)) {
             geometries = this.layer._geoList;
         }
-        if (!geometries || !Z.Util.isArrayHasData(geometries)) {
+        if (!geometries || !maptalks.Util.isArrayHasData(geometries)) {
             return [];
         }
         var me = this,
@@ -30,7 +30,7 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
         var res;
         function checkGeo(geo) {
             res = geo._getExternalResources();
-            if (!Z.Util.isArrayHasData(res)) {
+            if (!maptalks.Util.isArrayHasData(res)) {
                 return;
             }
             if (!me.resources) {
@@ -99,7 +99,7 @@ Z.renderer.overlaylayer.Canvas = Z.renderer.Canvas.extend({
  * @extends {maptalks.renderer.overlaylayer.Canvas}
  * @param {maptalks.VectorLayer} layer - layer of the renderer
  */
-Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends Z.renderer.vectorlayer.Canvas.prototype */{
+maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.extend(/** @lends maptalks.renderer.vectorlayer.Canvas.prototype */{
 
     initialize:function (layer) {
         this.layer = layer;
@@ -108,10 +108,10 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends
 
     checkResources: function () {
         var me = this;
-        var resources = Z.renderer.overlaylayer.Canvas.prototype.checkResources.apply(this, arguments);
+        var resources = maptalks.renderer.overlaylayer.Canvas.prototype.checkResources.apply(this, arguments);
         var style = this.layer.getStyle();
         if (style) {
-            if (!Z.Util.isArray(style)) {
+            if (!maptalks.Util.isArray(style)) {
                 style = [style];
             }
             style.forEach(function (s) {
@@ -151,7 +151,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends
     //redraw all the geometries with transform matrix
     //this may bring low performance if number of geometries is large.
     transform: function (matrix) {
-        if (Z.Browser.mobile || this.layer.getMask()) {
+        if (maptalks.Browser.mobile || this.layer.getMask()) {
             return false;
         }
         //determin whether this layer should be transformed.
@@ -180,7 +180,7 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends
         this.layer.forEach(function (geo) {
             geo.onZoomEnd();
         });
-        Z.renderer.Canvas.prototype.show.apply(this, arguments);
+        maptalks.renderer.Canvas.prototype.show.apply(this, arguments);
     },
 
     _drawGeos:function (matrix) {
@@ -295,4 +295,4 @@ Z.renderer.vectorlayer.Canvas = Z.renderer.overlaylayer.Canvas.extend(/** @lends
 });
 
 
-Z.VectorLayer.registerRenderer('canvas', Z.renderer.vectorlayer.Canvas);
+maptalks.VectorLayer.registerRenderer('canvas', maptalks.renderer.vectorlayer.Canvas);

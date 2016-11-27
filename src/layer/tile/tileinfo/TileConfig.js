@@ -8,7 +8,7 @@
  * @param {maptalks.Extent} fullExtent      - fullExtent of the tile layer
  * @param {maptalks.Size} tileSize          - tile size
  */
-Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
+maptalks.TileConfig = maptalks.Class.extend(/** @lends maptalks.TileConfig.prototype */{
 
 
     initialize:function (tileSystem, fullExtent, tileSize) {
@@ -18,10 +18,10 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
     },
 
     prepareTileInfo:function (tileSystem, fullExtent) {
-        if (Z.Util.isString(tileSystem)) {
-            tileSystem = Z.TileSystem[tileSystem.toLowerCase()];
-        } else if (Z.Util.isArray(tileSystem)) {
-            tileSystem = new Z.TileSystem(tileSystem);
+        if (maptalks.Util.isString(tileSystem)) {
+            tileSystem = maptalks.TileSystem[tileSystem.toLowerCase()];
+        } else if (maptalks.Util.isArray(tileSystem)) {
+            tileSystem = new maptalks.TileSystem(tileSystem);
         }
 
         if (!tileSystem) {
@@ -34,7 +34,7 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
             b = fullExtent['top'] > fullExtent['bottom'] ? -1 : 1,
             c = tileSystem['origin']['x'],
             d = tileSystem['origin']['y'];
-        this.transformation = new Z.Transformation([a, b, c, d]);
+        this.transformation = new maptalks.Transformation([a, b, c, d]);
             //计算transform后的以像素为单位的原点
         tileSystem['transOrigin'] = this.transformation.transform(tileSystem['origin'], 1);
     },
@@ -123,9 +123,9 @@ Z.TileConfig = Z.Class.extend(/** @lends maptalks.TileConfig.prototype */{
     _getTileFullIndex:function (res) {
         var ext = this.fullExtent;
         var transformation = this.transformation;
-        var nwIndex = this.getTileIndex(transformation.transform(new Z.Coordinate(ext['left'], ext['right']), 1), res);
-        var seIndex = this.getTileIndex(transformation.transform(new Z.Coordinate(ext['right'], ext['bottom']), 1), res);
-        return new Z.Extent(nwIndex, seIndex);
+        var nwIndex = this.getTileIndex(transformation.transform(new maptalks.Coordinate(ext['left'], ext['right']), 1), res);
+        var seIndex = this.getTileIndex(transformation.transform(new maptalks.Coordinate(ext['right'], ext['bottom']), 1), res);
+        return new maptalks.Extent(nwIndex, seIndex);
     },
 
     /**

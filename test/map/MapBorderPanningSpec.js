@@ -5,7 +5,7 @@ describe('#MapBorderPanningSpec', function () {
     var map;
     var tile;
     var clock;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         var setups = commonSetupMap(center);

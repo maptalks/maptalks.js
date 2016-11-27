@@ -106,7 +106,7 @@ describe('#GeoJSONLayer', function() {
             zoom: 17,
             center: [100, 0]
         };
-        map = new Z.Map(container, option);
+        map = new maptalks.Map(container, option);
     });
 
     afterEach(function() {

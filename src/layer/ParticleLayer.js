@@ -17,7 +17,7 @@
  * @param {String|Number} id - layer's id
  * @param {Object} options - options defined in [options]{@link maptalks.CanvasLayer#options}
  */
-Z.ParticleLayer = Z.CanvasLayer.extend({
+maptalks.ParticleLayer = maptalks.CanvasLayer.extend({
     options : {
         'animation' : true,
         'fps' : 70
@@ -34,7 +34,7 @@ Z.ParticleLayer = Z.CanvasLayer.extend({
     draw: function (context) {
         var map = this.getMap(),
             extent = map.getContainerExtent();
-        var points = this.getParticles(Z.Util.now());
+        var points = this.getParticles(maptalks.Util.now());
         if (!points) {
             return;
         }

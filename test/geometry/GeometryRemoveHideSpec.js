@@ -3,7 +3,7 @@ describe('Remove and Hide Geometry', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var context = {
     };
@@ -17,9 +17,9 @@ describe('Remove and Hide Geometry', function() {
             zoom: 17,
             center: center
         };
-        map = new Z.Map(container, option);
+        map = new maptalks.Map(container, option);
 
-        layer = new Z.VectorLayer('canvas');
+        layer = new maptalks.VectorLayer('canvas');
         map.addLayer(layer);
         context.layer = layer;
         context.container = container;

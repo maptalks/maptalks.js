@@ -1,8 +1,8 @@
-Z.measurer.Sphere = function (radius) {
+maptalks.measurer.Sphere = function (radius) {
     this.radius = radius;
 };
 
-Z.Util.extend(Z.measurer.Sphere.prototype, {
+maptalks.Util.extend(maptalks.measurer.Sphere.prototype, {
     rad: function (a) { return a * Math.PI / 180; },
 
     measureLength:function (c1, c2) {
@@ -40,7 +40,7 @@ Z.Util.extend(Z.measurer.Sphere.prototype, {
         ry = ry + sy * (yDist > 0 ? 1 : -1);
         var sx = 2 * Math.sqrt(Math.pow(Math.sin(dx / (2 * this.radius)), 2) / Math.pow(Math.cos(ry), 2));
         rx = rx + sx * (xDist > 0 ? 1 : -1);
-        return new Z.Coordinate(rx * 180 / Math.PI, ry * 180 / Math.PI);
+        return new maptalks.Coordinate(rx * 180 / Math.PI, ry * 180 / Math.PI);
     }
 });
 
@@ -52,9 +52,9 @@ Z.Util.extend(Z.measurer.Sphere.prototype, {
  * @memberOf maptalks.measurer
  * @name WGS84Sphere
  */
-Z.measurer.WGS84Sphere = {
+maptalks.measurer.WGS84Sphere = {
     'measure' : 'EPSG:4326',
-    sphere : new Z.measurer.Sphere(6378137),
+    sphere : new maptalks.measurer.Sphere(6378137),
     /**
      * Measure the length between 2 coordinates.
      * @param  {maptalks.Coordinate} c1
@@ -92,9 +92,9 @@ Z.measurer.WGS84Sphere = {
  * @memberOf maptalks.measurer
  * @name BaiduSphere
  */
-Z.measurer.BaiduSphere = {
+maptalks.measurer.BaiduSphere = {
     'measure' : 'BAIDU',
-    sphere : new Z.measurer.Sphere(6370996.81),
+    sphere : new maptalks.measurer.Sphere(6370996.81),
     /**
      * Measure the length between 2 coordinates.
      * @param  {maptalks.Coordinate} c1

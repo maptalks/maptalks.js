@@ -1,4 +1,4 @@
-Z.Geometry.mergeOptions({
+maptalks.Geometry.mergeOptions({
 
     'draggable': false,
 
@@ -14,10 +14,10 @@ Z.Geometry.mergeOptions({
  * @protected
  * @extends {maptalks.Handler}
  */
-Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype */{
-    dragStageLayerId : Z.internalLayerPrefix + '_drag_stage',
+maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype */{
+    dragStageLayerId : maptalks.internalLayerPrefix + '_drag_stage',
 
-    START: Z.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
+    START: maptalks.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
 
     addHooks: function () {
         this.target.on(this.START.join(' '), this._startDrag, this);
@@ -77,7 +77,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
 
     _prepareDragHandler:function () {
         var map = this.target.getMap();
-        this._dragHandler = new Z.Handler.Drag(map._panels.mapWrapper || map._containerDOM);
+        this._dragHandler = new maptalks.Handler.Drag(map._panels.mapWrapper || map._containerDOM);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
@@ -94,14 +94,14 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
         this._shadow.setSymbol(target._getInternalSymbol());
         var shadow = this._shadow;
         if (target.options['dragShadow']) {
-            var symbol = Z.Util.decreaseSymbolOpacity(shadow._getInternalSymbol(), 0.5);
+            var symbol = maptalks.Util.decreaseSymbolOpacity(shadow._getInternalSymbol(), 0.5);
             shadow.setSymbol(symbol);
         }
         shadow.setId(null);
         //copy connectors
         var shadowConnectors = [];
-        if (Z.ConnectorLine._hasConnectors(target)) {
-            var connectors = Z.ConnectorLine._getConnectors(target);
+        if (maptalks.ConnectorLine._hasConnectors(target)) {
+            var connectors = maptalks.ConnectorLine._getConnectors(target);
 
             for (var i = 0; i < connectors.length; i++) {
                 var targetConn = connectors[i];
@@ -132,7 +132,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(this.dragStageLayerId);
         if (!this._dragStageLayer) {
-            this._dragStageLayer = new Z.VectorLayer(this.dragStageLayerId, {'drawImmediate' : true});
+            this._dragStageLayer = new maptalks.VectorLayer(this.dragStageLayerId, {'drawImmediate' : true});
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
@@ -235,7 +235,7 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
 
         //restore map status
         map._trySetCursor('default');
-        if (Z.Util.isNil(this._mapDraggable)) {
+        if (maptalks.Util.isNil(this._mapDraggable)) {
             this._mapDraggable = true;
         }
         map.config({
@@ -271,9 +271,9 @@ Z.Geometry.Drag = Z.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype *
 
 });
 
-Z.Geometry.addInitHook('addHandler', 'draggable', Z.Geometry.Drag);
+maptalks.Geometry.addInitHook('addHandler', 'draggable', maptalks.Geometry.Drag);
 
-Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
      * Whether the geometry is being dragged.
      * @reutrn {Boolean}

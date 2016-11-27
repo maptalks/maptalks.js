@@ -5,7 +5,7 @@ describe('#ConnectorLineSpec', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
     beforeEach(function() {
@@ -21,7 +21,7 @@ describe('#ConnectorLineSpec', function() {
 
     describe('connect geometries', function() {
         it('can connect geometries with each other', function() {
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
@@ -46,7 +46,7 @@ describe('#ConnectorLineSpec', function() {
                 content: '面板内容'
             });
             map.addControl(panel);
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
@@ -61,7 +61,7 @@ describe('#ConnectorLineSpec', function() {
         });
 
         it('remove connector line', function() {
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
@@ -76,7 +76,7 @@ describe('#ConnectorLineSpec', function() {
         });
 
         it('setConnectSource and setConnectTarget', function() {
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);

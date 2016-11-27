@@ -3,7 +3,7 @@ describe("Control.Overview", function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -15,8 +15,8 @@ describe("Control.Overview", function() {
             center: center,
             overviewControl : true
         };
-        map = new Z.Map(container, option);
-        tile = new Z.TileLayer('tile', {
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]

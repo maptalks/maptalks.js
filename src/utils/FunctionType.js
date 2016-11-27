@@ -154,24 +154,24 @@
     }
 
 
-    Z.Util.isFunctionDefinition = isFunctionDefinition;
+    maptalks.Util.isFunctionDefinition = isFunctionDefinition;
 
-    Z.Util.interpolated = function(parameters) {
+    maptalks.Util.interpolated = function(parameters) {
         return createFunction(parameters, 'exponential');
     };
 
-    Z.Util['piecewise-constant'] = function(parameters) {
+    maptalks.Util['piecewise-constant'] = function(parameters) {
         return createFunction(parameters, 'interval');
     };
 
-    Z.Util.loadFunctionTypes = function (obj, argFn) {
+    maptalks.Util.loadFunctionTypes = function (obj, argFn) {
         if (!obj) {
             return null;
         }
-        if (Z.Util.isArray(obj)) {
+        if (maptalks.Util.isArray(obj)) {
             var multResult = [];
             for (var i = 0; i < obj.length; i++) {
-                multResult.push(Z.Util.loadFunctionTypes(obj[i], argFn));
+                multResult.push(maptalks.Util.loadFunctionTypes(obj[i], argFn));
             }
             return multResult;
         }
@@ -184,13 +184,13 @@
         }
         for (var i = 0, len = props.length; i < len; i++) {
             p = props[i];
-            if (Z.Util.isFunctionDefinition(obj[p])) {
+            if (maptalks.Util.isFunctionDefinition(obj[p])) {
                 result['_' + p] = obj[p];
                 (function (_p) {
                     Object.defineProperty(result, _p, {
                         get: function () {
                             if (!this['__fn_' + _p]) {
-                                this['__fn_' + _p] = Z.Util.interpolated(this['_' + _p]);
+                                this['__fn_' + _p] = maptalks.Util.interpolated(this['_' + _p]);
                             }
                             return this['__fn_' + _p].apply(this, argFn());
                         },
@@ -208,7 +208,7 @@
         return result;
     };
 
-    Z.Util.getFunctionTypeResources = function (t) {
+    maptalks.Util.getFunctionTypeResources = function (t) {
         if (!t || !t.stops) {
             return null;
         }

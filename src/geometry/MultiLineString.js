@@ -33,13 +33,13 @@
  *      }
  * ).addTo(layer);
  */
-Z.MultiLineString = Z.MultiPolyline = Z.GeometryCollection.extend(/** @lends maptalks.MultiLineString.prototype */{
+maptalks.MultiLineString = maptalks.MultiPolyline = maptalks.GeometryCollection.extend(/** @lends maptalks.MultiLineString.prototype */{
 
-    includes:[Z.Geometry.MultiPoly],
+    includes:[maptalks.Geometry.MultiPoly],
 
-    GeometryType:Z.Polyline,
+    GeometryType:maptalks.Polyline,
 
-    type:Z.Geometry['TYPE_MULTILINESTRING'],
+    type:maptalks.Geometry['TYPE_MULTILINESTRING'],
 
     initialize:function (data, opts) {
         this._initOptions(opts);

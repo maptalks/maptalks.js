@@ -8,7 +8,7 @@
  * @abstract
  * @extends maptalks.Marker
  */
-Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
+maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
     options : {
         'box' : true,
@@ -39,7 +39,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
     initialize: function (content, coordinates, options) {
         this._content = content;
-        this._coordinates = new Z.Coordinate(coordinates);
+        this._coordinates = new maptalks.Coordinate(coordinates);
         this._initOptions(options);
         this._registerEvents();
         this._refresh();
@@ -77,7 +77,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
     getSymbol: function () {
         if (this._textSymbolChanged) {
-            return Z.Geometry.prototype.getSymbol.call(this);
+            return maptalks.Geometry.prototype.getSymbol.call(this);
         }
         return null;
     },
@@ -91,7 +91,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         }
         var cooked = this._prepareSymbol(symbol);
         var s = this._getDefaultTextSymbol();
-        Z.Util.extend(s, cooked);
+        maptalks.Util.extend(s, cooked);
         this._symbol = s;
         this._refresh();
         return this;
@@ -116,7 +116,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';
         }
-        var size = Z.StringUtil.splitTextToRow(this._content, symbol)['size'],
+        var size = maptalks.StringUtil.splitTextToRow(this._content, symbol)['size'],
             width, height;
         if (this.options['boxAutoSize']) {
             var padding = this.options['boxPadding'];
@@ -133,7 +133,7 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
                 height = this.options['boxMinHeight'];
             }
         }
-        return [width && height ? new Z.Size(width, height) : null, size];
+        return [width && height ? new maptalks.Size(width, height) : null, size];
     },
 
     _getInternalSymbol:function () {
@@ -142,9 +142,9 @@ Z.TextMarker = Z.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
 
     _getDefaultTextSymbol: function () {
         var s = {};
-        Z.Util.extend(s, this.defaultSymbol);
+        maptalks.Util.extend(s, this.defaultSymbol);
         if (this.options['box']) {
-            Z.Util.extend(s, this.defaultBoxSymbol);
+            maptalks.Util.extend(s, this.defaultBoxSymbol);
         }
         return s;
     },

@@ -3,7 +3,7 @@ describe('#Sector', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -11,7 +11,7 @@ describe('#Sector', function() {
        var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         canvasContainer = map._panels.canvasContainer;
     });
@@ -95,7 +95,7 @@ describe('#Sector', function() {
 
     describe('geometry fires events', function() {
         it('canvas events', function() {
-            var vector = new Z.Sector(center, 1, 0, 270);
+            var vector = new maptalks.Sector(center, 1, 0, 270);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
@@ -104,12 +104,12 @@ describe('#Sector', function() {
         it('events',function() {
             var spy = sinon.spy();
 
-            var vector = new Z.Sector(center, 1, 0, 270);
+            var vector = new maptalks.Sector(center, 1, 0, 270);
             vector.on('shapechange positionchange',spy);
 
             function evaluate() {
                 var rnd = Math.random()*0.001;
-                var coordinates = new Z.Coordinate(center.x+rnd, center.y+rnd);
+                var coordinates = new maptalks.Coordinate(center.x+rnd, center.y+rnd);
 
                 vector.setCoordinates(coordinates);
                 expect(spy.calledOnce).to.be.ok();
@@ -138,13 +138,13 @@ describe('#Sector', function() {
             evaluate();
 
             //svg
-            layer = new Z.VectorLayer('svg');
+            layer = new maptalks.VectorLayer('svg');
             map.addLayer(layer);
             layer.addGeometry(vector);
             evaluate();
             vector.remove();
             //canvas
-            layer = new Z.VectorLayer('canvas',{render:'canvas'});
+            layer = new maptalks.VectorLayer('canvas',{render:'canvas'});
             layer.addGeometry(vector);
             map.addLayer(layer);
             evaluate();
@@ -153,19 +153,19 @@ describe('#Sector', function() {
 
     describe('can be treated as a polygon',function() {
         it('has shell',function() {
-            var vector = new Z.Sector(center, 1, 0, 270);
+            var vector = new maptalks.Sector(center, 1, 0, 270);
             var shell = vector.getShell();
             expect(shell).to.have.length(vector.options['numberOfShellPoints']);
         });
 
         it("but doesn't have holes",function() {
-            var vector = new Z.Sector(center, 1, 0, 270);
+            var vector = new maptalks.Sector(center, 1, 0, 270);
             var holes = vector.getHoles();
             expect(holes).to.not.be.ok();
         });
 
         it("toGeoJSON exported an polygon", function() {
-            var vector = new Z.Sector(center, 1, 0, 270);
+            var vector = new maptalks.Sector(center, 1, 0, 270);
             var geojson = vector.toGeoJSON().geometry ;
             expect(geojson.type).to.be.eql('Polygon');
             expect(geojson.coordinates[0]).to.have.length(vector.options['numberOfShellPoints']);
@@ -174,26 +174,26 @@ describe('#Sector', function() {
 
     describe('compute length and area',function() {
         it('length',function() {
-            var vector = new Z.Sector(center, 1, 0, 270);
+            var vector = new maptalks.Sector(center, 1, 0, 270);
             var length = vector.getLength();
             expect(length).to.be.above(0);
         });
 
         it('area',function() {
-            var vector = new Z.Sector(center, 1, 0, 270);
+            var vector = new maptalks.Sector(center, 1, 0, 270);
             var area = vector.getArea();
             expect(area).to.be.above(0);
         });
     });
 
     it('can have various symbols',function(done) {
-        var vector = new Z.Sector(center, 1, 0, 270);
+        var vector = new maptalks.Sector(center, 1, 0, 270);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
     /*it("Sector._containsPoint", function() {
         layer.clear();
-        var geometry = new Z.Sector(center, 10, 90, 405, {
+        var geometry = new maptalks.Sector(center, 10, 90, 405, {
             symbol: {
                 'lineWidth': 6
             }

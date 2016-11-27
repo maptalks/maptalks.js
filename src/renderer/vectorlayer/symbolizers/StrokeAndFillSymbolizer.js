@@ -1,17 +1,17 @@
-Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
+maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymbolizer.extend({
 
     initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        if (geometry instanceof Z.Marker) {
+        if (geometry instanceof maptalks.Marker) {
             return;
         }
         this.style = this._defineStyle(this.translate());
     },
 
     symbolize:function (ctx, resources) {
-        if (this.geometry instanceof Z.Marker) {
+        if (this.geometry instanceof maptalks.Marker) {
             return;
         }
         var style = this.style;
@@ -23,22 +23,22 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
             return;
         }
         this._prepareContext(ctx);
-        var isGradient = Z.Util.isGradient(style['lineColor']),
-            isPath = (this.geometry.constructor === Z.Polygon) || (this.geometry instanceof Z.LineString);
+        var isGradient = maptalks.Util.isGradient(style['lineColor']),
+            isPath = (this.geometry.constructor === maptalks.Polygon) || (this.geometry instanceof maptalks.LineString);
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.getPainter().getContainerExtent()._expand(style['lineWidth']);
         }
-        if (Z.Util.isGradient(style['polygonFill'])) {
+        if (maptalks.Util.isGradient(style['polygonFill'])) {
             style['polygonGradientExtent'] = this.getPainter().getContainerExtent();
         }
 
         var points = paintParams[0],
-            isSplitted = (this.geometry instanceof Z.Polygon && points.length > 1 && Z.Util.isArray(points[0][0])) ||
-                        (this.geometry instanceof Z.LineString  && points.length > 1 && Z.Util.isArray(points[0]));
+            isSplitted = (this.geometry instanceof maptalks.Polygon && points.length > 1 && maptalks.Util.isArray(points[0][0])) ||
+                        (this.geometry instanceof maptalks.LineString  && points.length > 1 && maptalks.Util.isArray(points[0]));
         var params;
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
-                Z.Canvas.prepareCanvas(ctx, style, resources);
+                maptalks.Canvas.prepareCanvas(ctx, style, resources);
                 if (isGradient && isPath && !style['lineColor']['places']) {
                     this._createGradient(ctx, points[i], style['lineColor']);
                 }
@@ -50,7 +50,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
                 this.geometry._paintOn.apply(this.geometry, params);
             }
         } else {
-            Z.Canvas.prepareCanvas(ctx, style, resources);
+            maptalks.Canvas.prepareCanvas(ctx, style, resources);
             if (isGradient && isPath && !style['lineColor']['places']) {
                 this._createGradient(ctx, points, style['lineColor']);
             }
@@ -60,13 +60,13 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
             this.geometry._paintOn.apply(this.geometry, params);
         }
 
-        if (ctx.setLineDash && Z.Util.isArrayHasData(style['lineDasharray'])) {
+        if (ctx.setLineDash && maptalks.Util.isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash([]);
         }
     },
 
     get2DExtent:function () {
-        if (this.geometry instanceof Z.Marker) {
+        if (this.geometry instanceof maptalks.Marker) {
             return null;
         }
         var map = this.getMap();
@@ -77,8 +77,8 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         // this ugly implementation is to improve perf as we can
         // it tries to avoid creating instances to save cpu consumption.
         if (!this._extMin || !this._extMax) {
-            this._extMin = new Z.Coordinate(0, 0);
-            this._extMax = new Z.Coordinate(0, 0);
+            this._extMin = new maptalks.Coordinate(0, 0);
+            this._extMax = new maptalks.Coordinate(0, 0);
         }
         this._extMin.x = extent['xmin'];
         this._extMin.y = extent['ymin'];
@@ -87,7 +87,7 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
         var min = map._prjToPoint(this._extMin),
             max = map._prjToPoint(this._extMax);
         if (!this._pxExtent) {
-            this._pxExtent = new Z.PointExtent(min, max);
+            this._pxExtent = new maptalks.PointExtent(min, max);
         } else {
             if (min.x < max.x) {
                 this._pxExtent['xmin'] = min.x;
@@ -114,22 +114,22 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
     translate:function () {
         var s = this.symbol;
         var result = {
-            'lineColor'         : Z.Util.getValueOrDefault(s['lineColor'], '#000'),
-            'lineWidth'         : Z.Util.getValueOrDefault(s['lineWidth'], 2),
-            'lineOpacity'       : Z.Util.getValueOrDefault(s['lineOpacity'], 1),
-            'lineDasharray'     : Z.Util.getValueOrDefault(s['lineDasharray'], []),
-            'lineCap'           : Z.Util.getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
-            'lineJoin'          : Z.Util.getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
-            'linePatternFile'   : Z.Util.getValueOrDefault(s['linePatternFile'], null),
-            'polygonFill'       : Z.Util.getValueOrDefault(s['polygonFill'], null),
-            'polygonOpacity'    : Z.Util.getValueOrDefault(s['polygonOpacity'], 1),
-            'polygonPatternFile': Z.Util.getValueOrDefault(s['polygonPatternFile'], null)
+            'lineColor'         : maptalks.Util.getValueOrDefault(s['lineColor'], '#000'),
+            'lineWidth'         : maptalks.Util.getValueOrDefault(s['lineWidth'], 2),
+            'lineOpacity'       : maptalks.Util.getValueOrDefault(s['lineOpacity'], 1),
+            'lineDasharray'     : maptalks.Util.getValueOrDefault(s['lineDasharray'], []),
+            'lineCap'           : maptalks.Util.getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
+            'lineJoin'          : maptalks.Util.getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
+            'linePatternFile'   : maptalks.Util.getValueOrDefault(s['linePatternFile'], null),
+            'polygonFill'       : maptalks.Util.getValueOrDefault(s['polygonFill'], null),
+            'polygonOpacity'    : maptalks.Util.getValueOrDefault(s['polygonOpacity'], 1),
+            'polygonPatternFile': maptalks.Util.getValueOrDefault(s['polygonPatternFile'], null)
         };
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;
         }
         // fill of arrow
-        if ((this.geometry instanceof Z.LineString) && !result['polygonFill']) {
+        if ((this.geometry instanceof maptalks.LineString) && !result['polygonFill']) {
             result['polygonFill'] = result['lineColor'];
         }
         return result;
@@ -146,11 +146,11 @@ Z.symbolizer.StrokeAndFillSymbolizer = Z.symbolizer.CanvasSymbolizer.extend({
 
 });
 
-Z.symbolizer.StrokeAndFillSymbolizer.test = function (symbol, geometry) {
+maptalks.symbolizer.StrokeAndFillSymbolizer.test = function (symbol, geometry) {
     if (!symbol) {
         return false;
     }
-    if (geometry && (geometry instanceof Z.Marker)) {
+    if (geometry && (geometry instanceof maptalks.Marker)) {
         return false;
     }
     for (var p in symbol) {

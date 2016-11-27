@@ -3,14 +3,14 @@ describe('#MultiPolygon', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
     beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
     });
 
@@ -128,15 +128,15 @@ describe('#MultiPolygon', function() {
                     [[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]
                 ]
             ];
-            var multiPolygon = new Z.MultiPolygon(points);
+            var multiPolygon = new maptalks.MultiPolygon(points);
             var coordinates = multiPolygon.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = Z.GeoJSON.toNumberArrays(coordinates);
+            var geojsonCoordinates = maptalks.GeoJSON.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 
         it('can be empty.',function() {
-            var multiPolygon = new Z.MultiPolygon();
+            var multiPolygon = new maptalks.MultiPolygon();
             expect(multiPolygon.getCoordinates()).to.have.length(0);
             expect(multiPolygon.isEmpty()).to.be.ok();
         });
@@ -153,7 +153,7 @@ describe('#MultiPolygon', function() {
                     [[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]
                 ]
             ];
-        var vector = new Z.MultiPolygon(points);
+        var vector = new maptalks.MultiPolygon(points);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 });

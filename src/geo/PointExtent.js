@@ -22,17 +22,17 @@
  * //with another extent
  * var extent2 = new maptalks.PointExtent(extent1);
  */
-Z.PointExtent = function (p1, p2, p3, p4) {
-    this._clazz = Z.Point;
+maptalks.PointExtent = function (p1, p2, p3, p4) {
+    this._clazz = maptalks.Point;
     this._initialize(p1, p2, p3, p4);
 };
 
-Z.Util.extend(Z.PointExtent.prototype, Z.Extent.prototype, /** @lends maptalks.PointExtent.prototype */{
+maptalks.Util.extend(maptalks.PointExtent.prototype, maptalks.Extent.prototype, /** @lends maptalks.PointExtent.prototype */{
     /**
      * Get size of the PointExtent
      * @return {maptalks.Size}
      */
     getSize:function () {
-        return new Z.Size(this.getWidth(), this.getHeight());
+        return new maptalks.Size(this.getWidth(), this.getHeight());
     }
 });

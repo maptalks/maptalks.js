@@ -14,8 +14,8 @@
  *     id : 'circle0'
  * });
  */
-Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
-    includes:[Z.Geometry.Center],
+maptalks.Circle = maptalks.Polygon.extend(/** @lends maptalks.Circle.prototype */{
+    includes:[maptalks.Geometry.Center],
 
     /**
      * @property {Object} options
@@ -26,7 +26,7 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
     },
 
     initialize:function (coordinates, radius, opts) {
-        this._coordinates = new Z.Coordinate(coordinates);
+        this._coordinates = new maptalks.Coordinate(coordinates);
         this._radius = radius;
         this._initOptions(opts);
     },
@@ -83,37 +83,37 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
     _containsPoint: function (point, tolerance) {
         var center = this._getCenter2DPoint(),
             size = this.getSize(),
-            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance;
+            t = maptalks.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance;
         return center.distanceTo(point) <= size.width / 2 + t;
     },
 
     _computeExtent:function (measurer) {
-        if (!measurer || !this._coordinates || Z.Util.isNil(this._radius)) {
+        if (!measurer || !this._coordinates || maptalks.Util.isNil(this._radius)) {
             return null;
         }
 
         var radius = this._radius;
         var p1 = measurer.locate(this._coordinates, radius, radius);
         var p2 = measurer.locate(this._coordinates, -radius, -radius);
-        return new Z.Extent(p1, p2);
+        return new maptalks.Extent(p1, p2);
     },
 
     _computeGeodesicLength:function () {
-        if (Z.Util.isNil(this._radius)) {
+        if (maptalks.Util.isNil(this._radius)) {
             return 0;
         }
         return Math.PI * 2 * this._radius;
     },
 
     _computeGeodesicArea:function () {
-        if (Z.Util.isNil(this._radius)) {
+        if (maptalks.Util.isNil(this._radius)) {
             return 0;
         }
         return Math.PI * Math.pow(this._radius, 2);
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = Z.GeoJSON.toNumberArrays([this.getShell()]);
+        var coordinates = maptalks.GeoJSON.toNumberArrays([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates
@@ -122,7 +122,7 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
 
     _toJSON:function (options) {
         var center = this.getCenter();
-        var opts = Z.Util.extend({}, options);
+        var opts = maptalks.Util.extend({}, options);
         opts.geometry = false;
         var feature = this.toGeoJSON(opts);
         feature['geometry'] = {
@@ -138,9 +138,9 @@ Z.Circle = Z.Polygon.extend(/** @lends maptalks.Circle.prototype */{
 
 });
 
-Z.Circle.fromJSON = function (json) {
+maptalks.Circle.fromJSON = function (json) {
     var feature = json['feature'];
-    var circle = new Z.Circle(json['coordinates'], json['radius'], json['options']);
+    var circle = new maptalks.Circle(json['coordinates'], json['radius'], json['options']);
     circle.setProperties(feature['properties']);
     return circle;
 };

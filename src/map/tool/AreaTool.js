@@ -29,7 +29,7 @@
  *    'language' : 'en-US'
  *  }).addTo(map);
  */
-Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
+maptalks.AreaTool = maptalks.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
     /**
      * @property {options} options
      * @property {String}  options.language         - language of the distance tool, zh-CN or en-US
@@ -52,7 +52,7 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
     },
 
     initialize: function (options) {
-        Z.Util.setOptions(this, options);
+        maptalks.Util.setOptions(this, options);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
@@ -61,10 +61,10 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
     _measure:function (toMeasure) {
         var map = this.getMap();
         var area;
-        if (toMeasure instanceof Z.Geometry) {
+        if (toMeasure instanceof maptalks.Geometry) {
             area = map.computeGeometryArea(toMeasure);
-        } else if (Z.Util.isArray(toMeasure)) {
-            area = Z.GeoUtil._computeArea(toMeasure, map.getProjection());
+        } else if (maptalks.Util.isArray(toMeasure)) {
+            area = maptalks.GeoUtil._computeArea(toMeasure, map.getProjection());
         }
         this._lastMeasure = area;
         var units;
@@ -104,7 +104,7 @@ Z.AreaTool = Z.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
                         .addTo(this._measureMarkerLayer);
         var size = endLabel.getSize();
         if (!size) {
-            size = new Z.Size(10, 10);
+            size = new maptalks.Size(10, 10);
         }
         this._addClearMarker(param['coordinate'], size['width']);
         var geo = param['geometry'].copy();

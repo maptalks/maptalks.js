@@ -1,4 +1,4 @@
-Z.View = function (options) {
+maptalks.View = function (options) {
     if (!options) {
         options = {};
     }
@@ -6,7 +6,7 @@ Z.View = function (options) {
     this._initView();
 };
 
-Z.Util.extend(Z.View.prototype, {
+maptalks.Util.extend(maptalks.View.prototype, {
     defaultView: {
         'EPSG:3857' : {
             'resolutions' : (function () {
@@ -65,26 +65,26 @@ Z.Util.extend(Z.View.prototype, {
     _initView : function () {
         var projection = this.options['projection'];
         if (projection) {
-            if (Z.Util.isString(projection)) {
-                for (var p in Z.projection) {
-                    if (Z.projection.hasOwnProperty(p)) {
-                        var regName = Z.projection[p]['code'];
+            if (maptalks.Util.isString(projection)) {
+                for (var p in maptalks.projection) {
+                    if (maptalks.projection.hasOwnProperty(p)) {
+                        var regName = maptalks.projection[p]['code'];
                         if (regName && regName.toLowerCase() === projection.toLowerCase()) {
-                            projection = Z.projection[p];
+                            projection = maptalks.projection[p];
                             break;
                         }
                     }
                 }
             }
         } else {
-            projection = Z.projection.DEFAULT;
+            projection = maptalks.projection.DEFAULT;
         }
-        if (!projection || Z.Util.isString(projection)) {
+        if (!projection || maptalks.Util.isString(projection)) {
             throw new Error('must provide a valid projection in map\'s view.');
         }
-        projection = Z.Util.extend({}, Z.projection.Common, projection);
+        projection = maptalks.Util.extend({}, maptalks.projection.Common, projection);
         if (!projection.measureLength) {
-            Z.Util.extend(projection, Z.MeasurerUtil.DEFAULT);
+            maptalks.Util.extend(projection, maptalks.MeasurerUtil.DEFAULT);
         }
         this._projection = projection;
         var defaultView,
@@ -113,12 +113,12 @@ Z.Util.extend(Z.View.prototype, {
                 throw new Error('must provide a valid fullExtent in map\'s view.');
             }
         }
-        if (!Z.Util.isNil(fullExtent['left'])) {
-            this._fullExtent = new Z.Extent(new Z.Coordinate(fullExtent['left'], fullExtent['top']),
-                            new Z.Coordinate(fullExtent['right'], fullExtent['bottom']));
+        if (!maptalks.Util.isNil(fullExtent['left'])) {
+            this._fullExtent = new maptalks.Extent(new maptalks.Coordinate(fullExtent['left'], fullExtent['top']),
+                            new maptalks.Coordinate(fullExtent['right'], fullExtent['bottom']));
         } else {
             //xmin, ymin, xmax, ymax
-            this._fullExtent = new Z.Extent(fullExtent);
+            this._fullExtent = new maptalks.Extent(fullExtent);
             fullExtent['left'] = fullExtent['xmin'];
             fullExtent['right'] = fullExtent['xmax'];
             fullExtent['top'] = fullExtent['ymax'];
@@ -126,11 +126,11 @@ Z.Util.extend(Z.View.prototype, {
         }
 
         //set left, right, top, bottom value
-        Z.Util.extend(this._fullExtent, fullExtent);
+        maptalks.Util.extend(this._fullExtent, fullExtent);
 
         var a = fullExtent['right'] >= fullExtent['left'] ? 1 : -1,
             b = fullExtent['top'] >= fullExtent['bottom'] ? -1 : 1;
-        this._transformation = new Z.Transformation([a, b, 0, 0]);
+        this._transformation = new maptalks.Transformation([a, b, 0, 0]);
     },
 
     getResolutions:function () {
@@ -160,7 +160,7 @@ Z.Util.extend(Z.View.prototype, {
 
     getMinZoom:function () {
         for (var i = 0; i < this._resolutions.length; i++) {
-            if (!Z.Util.isNil(this._resolutions[i])) {
+            if (!maptalks.Util.isNil(this._resolutions[i])) {
                 return i;
             }
         }
@@ -169,7 +169,7 @@ Z.Util.extend(Z.View.prototype, {
 
     getMaxZoom:function () {
         for (var i = this._resolutions.length - 1; i >= 0; i--) {
-            if (!Z.Util.isNil(this._resolutions[i])) {
+            if (!maptalks.Util.isNil(this._resolutions[i])) {
                 return i;
             }
         }

@@ -16,10 +16,10 @@
  *     ]
  * ).addTo(layer);
  */
-Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.prototype */{
-    includes:[Z.Geometry.Poly],
+maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends maptalks.LineString.prototype */{
+    includes:[maptalks.Geometry.Poly],
 
-    type:Z.Geometry['TYPE_LINESTRING'],
+    type:maptalks.Geometry['TYPE_LINESTRING'],
 
     /**
     * @property {Object} [options=null]
@@ -50,7 +50,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
             this._setPrjCoordinates(null);
             return this;
         }
-        this._coordinates = Z.GeoJSON.toCoordinates(coordinates);
+        this._coordinates = maptalks.GeoJSON.toCoordinates(coordinates);
         if (this.getMap()) {
             this._setPrjCoordinates(this._projectCoords(this._coordinates));
         } else {
@@ -79,7 +79,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
         var length = this.getLength();
         var easing = options['easing'] || 'out';
         this.setCoordinates([]);
-        var player = Z.Animation.animate({'t' : duration}, {'speed' : duration, 'easing' : easing}, Z.Util.bind(function (frame) {
+        var player = maptalks.Animation.animate({'t' : duration}, {'speed' : duration, 'easing' : easing}, maptalks.Util.bind(function (frame) {
             if (!this.getMap()) {
                 player.finish();
                 this.setCoordinates(coordinates);
@@ -131,7 +131,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
     },
 
     _computeGeodesicLength:function (measurer) {
-        return Z.GeoUtil._computeLength(this.getCoordinates(), measurer);
+        return maptalks.GeoUtil._computeLength(this.getCoordinates(), measurer);
     },
 
     _computeGeodesicArea:function () {
@@ -139,7 +139,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
     },
 
     _containsPoint: function (point, tolerance) {
-        var t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance;
+        var t = maptalks.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance;
         function isContains(points) {
             var i, p1, p2,
                 len = points.length;
@@ -148,7 +148,7 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
                 p1 = points[i];
                 p2 = points[i + 1];
 
-                if (Z.GeoUtil.distanceToSegment(point, p1, p2) <= t) {
+                if (maptalks.GeoUtil.distanceToSegment(point, p1, p2) <= t) {
                     return true;
                 }
             }
@@ -164,11 +164,11 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
 
         var map = this.getMap(),
             extent = this._getPrjExtent(),
-            nw = new Z.Coordinate(extent.xmin, extent.ymax),
-            se = new Z.Coordinate(extent.xmax, extent.ymin),
+            nw = new maptalks.Coordinate(extent.xmin, extent.ymax),
+            se = new maptalks.Coordinate(extent.xmax, extent.ymin),
             pxMin = map._prjToPoint(nw),
             pxMax = map._prjToPoint(se),
-            pxExtent = new Z.PointExtent(pxMin.x - t, pxMin.y - t,
+            pxExtent = new maptalks.PointExtent(pxMin.x - t, pxMin.y - t,
                                     pxMax.x + t, pxMax.y + t);
         if (arrowStyle) {
             pxExtent._expand(Math.max(arrowStyle[0] * lineWidth, arrowStyle[1] * lineWidth));
@@ -181,14 +181,14 @@ Z.LineString = Z.Polyline = Z.Vector.extend(/** @lends maptalks.LineString.proto
             points = this._getPath2DPoints(this._getPrjCoordinates(), true);
             var arrows = this._getArrows(points, lineWidth, (tolerance ? tolerance : 2) + lineWidth / 2);
             for (var ii = arrows.length - 1; ii >= 0; ii--) {
-                if (Z.GeoUtil.pointInsidePolygon(point, arrows[ii])) {
+                if (maptalks.GeoUtil.pointInsidePolygon(point, arrows[ii])) {
                     return true;
                 }
             }
         }
 
         points = points || this._getPath2DPoints(this._getPrjCoordinates());
-        var isSplitted = points.length > 0 && Z.Util.isArray(points[0]);
+        var isSplitted = points.length > 0 && maptalks.Util.isArray(points[0]);
         if (isSplitted) {
             for (var i = 0, l = points.length; i < l; i++) {
                 if (isContains(points[i])) {

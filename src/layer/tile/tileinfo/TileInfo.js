@@ -1,4 +1,4 @@
-Z.TileInfo = {
+maptalks.TileInfo = {
     //谷歌, 必应,高德, 腾讯等地图服务采用的瓦片系统
     'web-mercator' : {
         'tileSystem' : [1, -1, -20037508.34, 20037508.34],
@@ -23,7 +23,7 @@ Z.TileInfo = {
     }
 };
 
-Z['TileInfo'] = {
+maptalks['TileInfo'] = {
     'web-mercator':{
         'projection':'EPSG:3857', //4326 | 3857 | bd09
         'tileSystem' : 'web-mercator',

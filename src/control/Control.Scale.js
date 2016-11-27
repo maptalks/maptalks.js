@@ -15,7 +15,7 @@
  *     imperial : true
  * }).addTo(map);
  */
-Z.control.Scale = Z.control.Control.extend(/** @lends maptalks.control.Scale.prototype */{
+maptalks.control.Scale = maptalks.control.Control.extend(/** @lends maptalks.control.Scale.prototype */{
 
     /**
      * @property {Object} [options=null] - options
@@ -33,7 +33,7 @@ Z.control.Scale = Z.control.Control.extend(/** @lends maptalks.control.Scale.pro
 
     buildOn: function (map) {
         this._map = map;
-        this._scaleContainer = Z.DomUtil.createEl('div');
+        this._scaleContainer = maptalks.DomUtil.createEl('div');
         this._addScales();
         map.on('zoomend', this._update, this);
         if (this._map._loaded) {
@@ -51,10 +51,10 @@ Z.control.Scale = Z.control.Control.extend(/** @lends maptalks.control.Scale.pro
                           'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
                           ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
         if (this.options['metric']) {
-            this._mScale = Z.DomUtil.createElOn('div', css, this._scaleContainer);
+            this._mScale = maptalks.DomUtil.createElOn('div', css, this._scaleContainer);
         }
         if (this.options['imperial']) {
-            this._iScale = Z.DomUtil.createElOn('div', css, this._scaleContainer);
+            this._iScale = maptalks.DomUtil.createElOn('div', css, this._scaleContainer);
         }
     },
 
@@ -113,13 +113,13 @@ Z.control.Scale = Z.control.Control.extend(/** @lends maptalks.control.Scale.pro
     }
 });
 
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
     'scaleControl' : false
 });
 
-Z.Map.addOnLoadHook(function () {
+maptalks.Map.addOnLoadHook(function () {
     if (this.options['scaleControl']) {
-        this.scaleControl = new Z.control.Scale(this.options['scaleControl']);
+        this.scaleControl = new maptalks.control.Scale(this.options['scaleControl']);
         this.addControl(this.scaleControl);
     }
 });

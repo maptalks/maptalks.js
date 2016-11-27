@@ -5,9 +5,9 @@
  * @protected
  * @extends maptalks.Handler
  */
-Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
+maptalks.Handler.Drag = maptalks.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
 
-    START: Z.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
+    START: maptalks.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
     END: {
         mousedown: 'mouseup',
         touchstart: 'touchend',
@@ -28,17 +28,17 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
 
     enable:function () {
         if (!this.dom) { return; }
-        Z.DomUtil.on(this.dom, this.START.join(' '), this.onMouseDown, this);
+        maptalks.DomUtil.on(this.dom, this.START.join(' '), this.onMouseDown, this);
     },
 
 
     disable:function () {
         if (!this.dom) { return; }
-        Z.DomUtil.off(this.dom, this.START.join(' '), this.onMouseDown);
+        maptalks.DomUtil.off(this.dom, this.START.join(' '), this.onMouseDown);
     },
 
     onMouseDown:function (event) {
-        if (Z.Util.isNumber(event.button) && event.button === 2) {
+        if (maptalks.Util.isNumber(event.button) && event.button === 2) {
             //不响应右键事件
             return;
         }
@@ -54,13 +54,13 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         dom['ondragstart'] = function () { return false; };
         this.moved = false;
         var actual = event.touches ? event.touches[0] : event;
-        this.startPos = new Z.Point(actual.clientX, actual.clientY);
+        this.startPos = new maptalks.Point(actual.clientX, actual.clientY);
         //2015-10-26 fuzhen 改为document, 解决鼠标移出地图容器后的不可控现象
-        Z.DomUtil.on(document, this.MOVE[event.type], this.onMouseMove, this)
+        maptalks.DomUtil.on(document, this.MOVE[event.type], this.onMouseMove, this)
             .on(document, this.END[event.type], this.onMouseUp, this);
         this.fire('mousedown', {
             'domEvent' : event,
-            'mousePos': new Z.Point(actual.clientX, actual.clientY)
+            'mousePos': new maptalks.Point(actual.clientX, actual.clientY)
         });
     },
 
@@ -70,7 +70,7 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         }
         var actual = event.touches ? event.touches[0] : event;
 
-        var newPos = new Z.Point(actual.clientX, actual.clientY),
+        var newPos = new maptalks.Point(actual.clientX, actual.clientY),
             offset = newPos.substract(this.startPos);
         if (!offset.x && !offset.y) {
             return;
@@ -94,7 +94,7 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
              */
             this.fire('dragging', {
                 'domEvent' : event,
-                'mousePos': new Z.Point(actual.clientX, actual.clientY)
+                'mousePos': new maptalks.Point(actual.clientX, actual.clientY)
             });
         }
     },
@@ -103,7 +103,7 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         var dom = this.dom;
         var actual = event.changedTouches ? event.changedTouches[0] : event;
         for (var i in this.MOVE) {
-            Z.DomUtil
+            maptalks.DomUtil
                 .off(document, this.MOVE[i], this.onMouseMove, this)
                 .off(document, this.END[i], this.onMouseUp, this);
         }
@@ -115,8 +115,8 @@ Z.Handler.Drag = Z.Handler.extend(/** @lends maptalks.Handler.Drag.prototype */{
         var param = {
             'domEvent' : event
         };
-        if (Z.Util.isNumber(actual.clientX)) {
-            param['mousePos'] = new Z.Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
+        if (maptalks.Util.isNumber(actual.clientX)) {
+            param['mousePos'] = new maptalks.Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
         }
         if (this.moved/* && this.moving*/) {
             /**

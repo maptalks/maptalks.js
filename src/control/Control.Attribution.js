@@ -13,7 +13,7 @@
  *     content : 'hello maptalks'
  * }).addTo(map);
  */
-Z.control.Attribution = Z.control.Control.extend(/** @lends maptalks.control.Attribution.prototype */{
+maptalks.control.Attribution = maptalks.control.Control.extend(/** @lends maptalks.control.Attribution.prototype */{
 
     /**
      * @property {Object} options - options
@@ -26,7 +26,7 @@ Z.control.Attribution = Z.control.Control.extend(/** @lends maptalks.control.Att
     },
 
     buildOn: function () {
-        this._attributionContainer = Z.DomUtil.createEl('div', 'maptalks-attribution');
+        this._attributionContainer = maptalks.DomUtil.createEl('div', 'maptalks-attribution');
         this._update();
         return this._attributionContainer;
     },
@@ -48,14 +48,14 @@ Z.control.Attribution = Z.control.Control.extend(/** @lends maptalks.control.Att
     }
 });
 
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
 
     'attributionControl' : false
 });
 
-Z.Map.addOnLoadHook(function () {
+maptalks.Map.addOnLoadHook(function () {
     if (this.options['attributionControl']) {
-        this.attributionControl = new Z.control.Attribution(this.options['attributionControl']);
+        this.attributionControl = new maptalks.control.Attribution(this.options['attributionControl']);
         this.addControl(this.attributionControl);
     }
 });

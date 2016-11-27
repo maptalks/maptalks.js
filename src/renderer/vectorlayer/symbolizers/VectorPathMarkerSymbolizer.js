@@ -1,17 +1,17 @@
-Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.extend({
+maptalks.symbolizer.VectorPathMarkerSymbolizer = maptalks.symbolizer.ImageMarkerSymbolizer.extend({
 
     initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        this._url = [Z.Geometry.getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
+        this._url = [maptalks.Geometry.getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
         this.style = this._defineStyle(this.translate());
         //IE must have a valid width and height to draw a svg image
         //otherwise, error will be thrown
-        if (Z.Util.isNil(this.style['markerWidth'])) {
+        if (maptalks.Util.isNil(this.style['markerWidth'])) {
             this.style['markerWidth'] = 80;
         }
-        if (Z.Util.isNil(this.style['markerHeight'])) {
+        if (maptalks.Util.isNil(this.style['markerHeight'])) {
             this.style['markerHeight'] = 80;
         }
     },
@@ -35,11 +35,11 @@ Z.symbolizer.VectorPathMarkerSymbolizer = Z.symbolizer.ImageMarkerSymbolizer.ext
 });
 
 
-Z.symbolizer.VectorPathMarkerSymbolizer.test = function (symbol) {
+maptalks.symbolizer.VectorPathMarkerSymbolizer.test = function (symbol) {
     if (!symbol) {
         return false;
     }
-    if (Z.Util.isNil(symbol['markerFile']) && symbol['markerType'] === 'path') {
+    if (maptalks.Util.isNil(symbol['markerFile']) && symbol['markerType'] === 'path') {
         return true;
     }
     return false;

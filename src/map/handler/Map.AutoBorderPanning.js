@@ -1,8 +1,8 @@
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
     'autoBorderPanning': false
 });
 
-Z.Map.AutoBorderPanning = Z.Handler.extend({
+maptalks.Map.AutoBorderPanning = maptalks.Handler.extend({
     //threshold to trigger panning, in px
     threshold : 10,
     //number of px to move when panning is triggered
@@ -10,14 +10,14 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
 
     addHooks: function () {
         this.dom = this.target._containerDOM;
-        Z.DomUtil.on(this.dom, 'mousemove', this._onMouseMove, this);
-        Z.DomUtil.on(this.dom, 'mouseout', this._onMouseOut, this);
+        maptalks.DomUtil.on(this.dom, 'mousemove', this._onMouseMove, this);
+        maptalks.DomUtil.on(this.dom, 'mouseout', this._onMouseOut, this);
     },
 
     removeHooks: function () {
         this._cancelPan();
-        Z.DomUtil.off(this.dom, 'mousemove', this._onMouseMove, this);
-        Z.DomUtil.off(this.dom, 'mouseout', this._onMouseOut, this);
+        maptalks.DomUtil.off(this.dom, 'mousemove', this._onMouseMove, this);
+        maptalks.DomUtil.off(this.dom, 'mouseout', this._onMouseOut, this);
     },
 
     _onMouseMove: function (event) {
@@ -35,7 +35,7 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
             return;
         }
         var step = this.step;
-        var offset = new Z.Point(0, 0);
+        var offset = new maptalks.Point(0, 0);
         if (tests[0] === min) {
             offset.x = -step;
         } else if (tests[1] === min) {
@@ -57,7 +57,7 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
     _cancelPan:function () {
         delete this._stepOffset;
         if (this._animationId) {
-            Z.Util.cancelAnimFrame(this._animationId);
+            maptalks.Util.cancelAnimFrame(this._animationId);
             delete this._animationId;
         }
     },
@@ -67,9 +67,9 @@ Z.Map.AutoBorderPanning = Z.Handler.extend({
             this.target.panBy(this._stepOffset, {
                 'animation':false
             });
-            this._animationId = Z.Util.requestAnimFrame(Z.Util.bind(this._pan, this));
+            this._animationId = maptalks.Util.requestAnimFrame(maptalks.Util.bind(this._pan, this));
         }
     }
 });
 
-Z.Map.addInitHook('addHandler', 'autoBorderPanning', Z.Map.AutoBorderPanning);
+maptalks.Map.addInitHook('addHandler', 'autoBorderPanning', maptalks.Map.AutoBorderPanning);

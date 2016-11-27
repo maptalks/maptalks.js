@@ -12,8 +12,8 @@
  * @mixes maptalks.Handlerable
  * @mixes maptalks.ui.Menu.Mixin
  */
-Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
-    includes: [Z.Eventable, Z.Handlerable],
+maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype */{
+    includes: [maptalks.Eventable, maptalks.Handlerable],
 
     /** @lends maptalks.Geometry */
     statics:{
@@ -83,21 +83,21 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @return {maptalks.Coordinate} First Coordinate
      */
     getFirstCoordinate:function () {
-        if (this instanceof Z.GeometryCollection) {
+        if (this instanceof maptalks.GeometryCollection) {
             var geometries = this.getGeometries();
-            if (!geometries || !Z.Util.isArrayHasData(geometries)) {
+            if (!geometries || !maptalks.Util.isArrayHasData(geometries)) {
                 return null;
             }
             return geometries[0].getFirstCoordinate();
         }
         var coordinates = this.getCoordinates();
-        if (!Z.Util.isArray(coordinates)) {
+        if (!maptalks.Util.isArray(coordinates)) {
             return coordinates;
         }
         var first = coordinates;
         do {
             first = first[0];
-        } while (Z.Util.isArray(first));
+        } while (maptalks.Util.isArray(first));
         return first;
     },
 
@@ -107,21 +107,21 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      * @return {maptalks.Coordinate} Last Coordinate
      */
     getLastCoordinate:function () {
-        if (this instanceof Z.GeometryCollection) {
+        if (this instanceof maptalks.GeometryCollection) {
             var geometries = this.getGeometries();
-            if (!geometries || !Z.Util.isArrayHasData(geometries)) {
+            if (!geometries || !maptalks.Util.isArrayHasData(geometries)) {
                 return null;
             }
             return geometries[geometries.length - 1].getLastCoordinate();
         }
         var coordinates = this.getCoordinates();
-        if (!Z.Util.isArray(coordinates)) {
+        if (!maptalks.Util.isArray(coordinates)) {
             return coordinates;
         }
         var last = coordinates;
         do {
             last = last[last.length - 1];
-        } while (Z.Util.isArray(last));
+        } while (maptalks.Util.isArray(last));
         return last;
     },
 
@@ -209,7 +209,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     setProperties:function (properties) {
         var old = this.properties;
-        this.properties = Z.Util.isObject(properties) ? Z.Util.extend({}, properties) : properties;
+        this.properties = maptalks.Util.isObject(properties) ? maptalks.Util.extend({}, properties) : properties;
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
@@ -240,10 +240,10 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     getSymbol:function () {
         var s = this._symbol;
         if (s) {
-            if (!Z.Util.isArray(s)) {
-                return Z.Util.extend({}, s);
+            if (!maptalks.Util.isArray(s)) {
+                return maptalks.Util.extend({}, s);
             } else {
-                return Z.Util.extendSymbol(s);
+                return maptalks.Util.extendSymbol(s);
             }
         }
         return null;
@@ -287,9 +287,9 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
         var s = this.getSymbol();
         if (s) {
-            s = Z.Util.extendSymbol(s, props);
+            s = maptalks.Util.extendSymbol(s, props);
         } else {
-            s = Z.Util.extendSymbol(this._getInternalSymbol(), props);
+            s = maptalks.Util.extendSymbol(this._getInternalSymbol(), props);
         }
         return this.setSymbol(s);
     },
@@ -312,7 +312,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var prjExt = this._getPrjExtent();
         if (prjExt) {
             var p = this._getProjection();
-            return new Z.Extent(p.unproject(new Z.Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new Z.Coordinate(prjExt['xmax'], prjExt['ymax'])));
+            return new maptalks.Extent(p.unproject(new maptalks.Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new maptalks.Coordinate(prjExt['xmax'], prjExt['ymax'])));
         } else {
             return this._computeExtent(this._getMeasurer());
         }
@@ -347,7 +347,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!this.getMap()) {
             throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
-        if (containerPoint instanceof Z.Coordinate) {
+        if (containerPoint instanceof maptalks.Coordinate) {
             containerPoint = this.getMap().coordinateToContainerPoint(containerPoint);
         }
         return this._containsPoint(this.getMap()._containerPointToPoint(new maptalks.Point(containerPoint)), t);
@@ -419,18 +419,18 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!symbol) {
             return true;
         }
-        if (Z.Util.isArray(symbol)) {
+        if (maptalks.Util.isArray(symbol)) {
             if (symbol.length === 0) {
                 return true;
             }
             for (var i = 0, len = symbol.length; i < len; i++) {
-                if (Z.Util.isNil(symbol[i]['opacity']) || symbol[i]['opacity'] > 0) {
+                if (maptalks.Util.isNil(symbol[i]['opacity']) || symbol[i]['opacity'] > 0) {
                     return true;
                 }
             }
             return false;
         } else {
-            return (Z.Util.isNil(symbol['opacity']) || (Z.Util.isNumber(symbol['opacity']) && symbol['opacity'] > 0));
+            return (maptalks.Util.isNil(symbol['opacity']) || (maptalks.Util.isNumber(symbol['opacity']) && symbol['opacity'] > 0));
         }
     },
 
@@ -484,7 +484,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     bringToFront: function () {
         var layer = this.getLayer();
-        if (!layer || !(layer instanceof Z.OverlayLayer)) {
+        if (!layer || !(layer instanceof maptalks.OverlayLayer)) {
             return this;
         }
         var topZ = layer.getLastGeometry().getZIndex();
@@ -499,7 +499,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     bringToBack: function () {
         var layer = this.getLayer();
-        if (!layer || !(layer instanceof Z.OverlayLayer)) {
+        if (!layer || !(layer instanceof maptalks.OverlayLayer)) {
             return this;
         }
         var bottomZ = layer.getFirstGeometry().getZIndex();
@@ -519,14 +519,14 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (!offset) {
             return this;
         }
-        offset = new Z.Coordinate(offset);
+        offset = new maptalks.Coordinate(offset);
         if (offset.x === 0 && offset.y === 0) {
             return this;
         }
         var coordinates = this.getCoordinates();
         if (coordinates) {
-            if (Z.Util.isArray(coordinates)) {
-                var translated = Z.Util.mapArrayRecursively(coordinates, function (coord) {
+            if (maptalks.Util.isArray(coordinates)) {
+                var translated = maptalks.Util.mapArrayRecursively(coordinates, function (coord) {
                     return coord.add(offset);
                 });
                 this.setCoordinates(translated);
@@ -589,7 +589,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
      */
     copy:function () {
         var json = this.toJSON();
-        var ret = Z.Geometry.fromJSON(json);
+        var ret = maptalks.Geometry.fromJSON(json);
         //restore visibility
         ret.options['visible'] = true;
         return ret;
@@ -663,16 +663,16 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
             'type':'Feature',
             'geometry':null
         };
-        if (Z.Util.isNil(opts['geometry']) || opts['geometry']) {
+        if (maptalks.Util.isNil(opts['geometry']) || opts['geometry']) {
             var geoJSON = this._exportGeoJSONGeometry();
             feature['geometry'] = geoJSON;
         }
         var id = this.getId();
-        if (!Z.Util.isNil(id)) {
+        if (!maptalks.Util.isNil(id)) {
             feature['id'] = id;
         }
         var properties;
-        if (Z.Util.isNil(opts['properties']) || opts['properties']) {
+        if (maptalks.Util.isNil(opts['properties']) || opts['properties']) {
             properties = this._exportProperties();
         }
         feature['properties'] = properties;
@@ -730,7 +730,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         }
         var json = this._toJSON(options);
         var other = this._exportGraphicOptions(options);
-        Z.Util.extend(json, other);
+        maptalks.Util.extend(json, other);
         return json;
     },
 
@@ -767,7 +767,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var symbol = opts['symbol'];
         var properties = opts['properties'];
         var id = opts['id'];
-        Z.Util.setOptions(this, opts);
+        maptalks.Util.setOptions(this, opts);
         delete this.options['symbol'];
         delete this.options['id'];
         delete this.options['properties'];
@@ -777,7 +777,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (properties) {
             this.setProperties(properties);
         }
-        if (!Z.Util.isNil(id)) {
+        if (!maptalks.Util.isNil(id)) {
             this.setId(id);
         }
         this._zIndex = 0;
@@ -795,15 +795,15 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     },
 
     _prepareSymbol:function (symbol) {
-        if (Z.Util.isArray(symbol)) {
+        if (maptalks.Util.isArray(symbol)) {
             var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
-                cookedSymbols.push(Z.Util.convertResourceUrl(Z.Util.extend({}, symbol[i])));
+                cookedSymbols.push(maptalks.Util.convertResourceUrl(maptalks.Util.extend({}, symbol[i])));
             }
             return cookedSymbols;
         } else if (symbol) {
-            symbol = Z.Util.extend({}, symbol);
-            return Z.Util.convertResourceUrl(symbol);
+            symbol = maptalks.Util.extend({}, symbol);
+            return maptalks.Util.convertResourceUrl(symbol);
         }
         return null;
     },
@@ -854,8 +854,8 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
                         ext['xmin'] = tmp;
                     }
                 }
-                this._extent = new Z.Extent(p.project(new Z.Coordinate(ext['xmin'], ext['ymin'])),
-                    p.project(new Z.Coordinate(ext['xmax'], ext['ymax'])));
+                this._extent = new maptalks.Extent(p.project(new maptalks.Coordinate(ext['xmin'], ext['ymin'])),
+                    p.project(new maptalks.Coordinate(ext['xmax'], ext['ymax'])));
             }
 
         }
@@ -906,7 +906,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         if (this._getProjection()) {
             return this._getProjection();
         }
-        return Z.MeasurerUtil.getInstance(this.options['measure']);
+        return maptalks.MeasurerUtil.getInstance(this.options['measure']);
     },
 
     _getProjection:function () {
@@ -921,16 +921,16 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     _getExternalResources:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = Z.Util.getExternalResources(symbol);
+        var resources = maptalks.Util.getExternalResources(symbol);
         return resources;
     },
 
     _getPainter:function () {
         if (!this._painter && this.getMap()) {
-            if (this instanceof Z.GeometryCollection) {
-                this._painter = new Z.CollectionPainter(this);
+            if (this instanceof maptalks.GeometryCollection) {
+                this._painter = new maptalks.CollectionPainter(this);
             } else {
-                this._painter = new Z.Painter(this);
+                this._painter = new maptalks.Painter(this);
             }
         }
         return this._painter;
@@ -1038,13 +1038,13 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     _exportGraphicOptions:function (options) {
         var json = {};
-        if (Z.Util.isNil(options['options']) || options['options']) {
+        if (maptalks.Util.isNil(options['options']) || options['options']) {
             json['options'] = this.config();
         }
-        if (Z.Util.isNil(options['symbol']) || options['symbol']) {
+        if (maptalks.Util.isNil(options['symbol']) || options['symbol']) {
             json['symbol'] = this.getSymbol();
         }
-        if (Z.Util.isNil(options['infoWindow']) || options['infoWindow']) {
+        if (maptalks.Util.isNil(options['infoWindow']) || options['infoWindow']) {
             if (this._infoWinOptions) {
                 json['infoWindow'] = this._infoWinOptions;
             }
@@ -1054,7 +1054,7 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
 
     _exportGeoJSONGeometry:function () {
         var points = this.getCoordinates();
-        var coordinates = Z.GeoJSON.toNumberArrays(points);
+        var coordinates = maptalks.GeoJSON.toNumberArrays(points);
         return {
             'type'        : this.getType(),
             'coordinates' : coordinates
@@ -1065,8 +1065,8 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
         var properties = null;
         var geoProperties = this.getProperties();
         if (geoProperties) {
-            if (Z.Util.isObject(geoProperties)) {
-                properties = Z.Util.extend({}, geoProperties);
+            if (maptalks.Util.isObject(geoProperties)) {
+                properties = maptalks.Util.extend({}, geoProperties);
             } else {
                 geoProperties = properties;
             }
@@ -1102,12 +1102,12 @@ Z.Geometry = Z.Class.extend(/** @lends maptalks.Geometry.prototype */{
     };
     var marker = maptalks.Geometry.fromJSON(profile);
  */
-Z.Geometry.fromJSON = function (json) {
-    if (Z.Util.isArray(json)) {
+maptalks.Geometry.fromJSON = function (json) {
+    if (maptalks.Util.isArray(json)) {
         var result = [], c;
         for (var i = 0, len = json.length; i < len; i++) {
-            c = Z.Geometry.fromJSON(json[i]);
-            if (Z.Util.isArray(json)) {
+            c = maptalks.Geometry.fromJSON(json[i]);
+            if (maptalks.Util.isArray(json)) {
                 result = result.concat(c);
             } else {
                 result.push(c);
@@ -1117,17 +1117,17 @@ Z.Geometry.fromJSON = function (json) {
     }
 
     if (json && !json['feature']) {
-        return Z.GeoJSON.toGeometry(json);
+        return maptalks.GeoJSON.toGeometry(json);
     }
     var geometry;
     if (json['subType']) {
-        geometry = Z[json['subType']].fromJSON(json);
-        if (!Z.Util.isNil(json['feature']['id'])) {
+        geometry = maptalks[json['subType']].fromJSON(json);
+        if (!maptalks.Util.isNil(json['feature']['id'])) {
             geometry.setId(json['feature']['id']);
         }
     } else {
         var feature = json['feature'];
-        geometry = Z.GeoJSON.toGeometry(feature);
+        geometry = maptalks.GeoJSON.toGeometry(feature);
         if (json['options']) {
             geometry.config(json['options']);
         }
@@ -1142,41 +1142,41 @@ Z.Geometry.fromJSON = function (json) {
 };
 
 
-Z.Geometry.getMarkerPathBase64 = function (symbol) {
+maptalks.Geometry.getMarkerPathBase64 = function (symbol) {
     if (!symbol['markerPath']) {
         return null;
     }
-    var op = 1, styles =  Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
+    var op = 1, styles =  maptalks.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
-    if (Z.Util.isNumber(symbol['markerOpacity'])) {
+    if (maptalks.Util.isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];
     }
-    if (Z.Util.isNumber(symbol['opacity'])) {
+    if (maptalks.Util.isNumber(symbol['opacity'])) {
         op *= symbol['opacity'];
     }
     var p, svgStyles = {};
     if (styles) {
         for (p in styles['stroke']) {
             if (styles['stroke'].hasOwnProperty(p)) {
-                if (!Z.Util.isNil(styles['stroke'][p])) {
+                if (!maptalks.Util.isNil(styles['stroke'][p])) {
                     svgStyles[p] = styles['stroke'][p];
                 }
             }
         }
         for (p in styles['fill']) {
             if (styles['fill'].hasOwnProperty(p)) {
-                if (!Z.Util.isNil(styles['fill'][p])) {
+                if (!maptalks.Util.isNil(styles['fill'][p])) {
                     svgStyles[p] = styles['fill'][p];
                 }
             }
         }
     }
 
-    var pathes = Z.Util.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    var pathes = maptalks.Util.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
     var i, path, pathesToRender = [];
     for (i = 0; i < pathes.length; i++) {
-        path = Z.Util.isString(pathes[i]) ? {'path' : pathes[i]} : pathes[i];
-        path = Z.Util.extend({}, path, svgStyles);
+        path = maptalks.Util.isString(pathes[i]) ? {'path' : pathes[i]} : pathes[i];
+        path = maptalks.Util.extend({}, path, svgStyles);
         path['d'] = path['path'];
         delete path['path'];
         pathesToRender.push(path);
@@ -1205,6 +1205,6 @@ Z.Geometry.getMarkerPathBase64 = function (symbol) {
         svg.push(strPath);
     }
     svg.push('</svg>');
-    var b64 = 'data:image/svg+xml;base64,' + Z.Util.btoa(svg.join(' '));
+    var b64 = 'data:image/svg+xml;base64,' + maptalks.Util.btoa(svg.join(' '));
     return b64;
 };

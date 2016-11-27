@@ -1,14 +1,14 @@
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
     'draggable': true
 });
 
-Z.Map.Drag = Z.Handler.extend({
+maptalks.Map.Drag = maptalks.Handler.extend({
     addHooks: function () {
         var map = this.target;
         if (!map) { return; }
         var dom = map._panels.mapWrapper || map._containerDOM;
-        this._dragHandler = new Z.Handler.Drag(dom, {
-            'cancelOn' : Z.Util.bind(this._cancelOn, this)
+        this._dragHandler = new maptalks.Handler.Drag(dom, {
+            'cancelOn' : maptalks.Util.bind(this._cancelOn, this)
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)
@@ -49,7 +49,7 @@ Z.Map.Drag = Z.Handler.extend({
         if (this.target._panAnimating) {
             this.target._enablePanAnimation = false;
         }
-        Z.DomUtil.preventDefault(param['domEvent']);
+        maptalks.DomUtil.preventDefault(param['domEvent']);
     },
 
     _onDragStart:function (param) {
@@ -66,7 +66,7 @@ Z.Map.Drag = Z.Handler.extend({
     },
 
     _onDragging:function (param) {
-        //Z.DomUtil.preventDefault(param['domEvent']);
+        //maptalks.DomUtil.preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
         }
@@ -76,14 +76,14 @@ Z.Map.Drag = Z.Handler.extend({
         var nextLeft = (this.startLeft + mx - this.startX);
         var nextTop = (this.startTop + my - this.startY);
         var mapPos = map.offsetPlatform();
-        var offset = new Z.Point(nextLeft, nextTop)._substract(mapPos);
+        var offset = new maptalks.Point(nextLeft, nextTop)._substract(mapPos);
         map.offsetPlatform(offset);
         map._offsetCenterByPixel(offset);
         map.onMoving(param);
     },
 
     _onDragEnd:function (param) {
-        //Z.DomUtil.preventDefault(param['domEvent']);
+        //maptalks.DomUtil.preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
         }
@@ -101,7 +101,7 @@ Z.Map.Drag = Z.Handler.extend({
         delete this.startY;
 
         if (t < 280 && Math.abs(ySpan) + Math.abs(xSpan) > 5) {
-            var distance = new Z.Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t)).multi(0.5);
+            var distance = new maptalks.Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t)).multi(0.5);
             t = 5 * t * (Math.abs(distance.x) + Math.abs(distance.y)) / 600;
             map._panAnimation(distance._multi(2 / 3), t);
         } else {
@@ -110,4 +110,4 @@ Z.Map.Drag = Z.Handler.extend({
     }
 });
 
-Z.Map.addInitHook('addHandler', 'draggable', Z.Map.Drag);
+maptalks.Map.addInitHook('addHandler', 'draggable', maptalks.Map.Drag);

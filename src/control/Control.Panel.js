@@ -16,7 +16,7 @@
  *     closeButton : true
  * }).addTo(map);
  */
-Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.prototype */{
+maptalks.control.Panel = maptalks.control.Control.extend(/** @lends maptalks.control.Panel.prototype */{
 
     /**
      * @property {Object} options - options
@@ -37,16 +37,16 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
     buildOn: function () {
         var dom;
         if (this.options['custom']) {
-            if (Z.Util.isString(this.options['content'])) {
-                dom = Z.DomUtil.createEl('div');
+            if (maptalks.Util.isString(this.options['content'])) {
+                dom = maptalks.DomUtil.createEl('div');
                 dom.innerHTML = this.options['content'];
             } else {
                 dom = this.options['content'];
             }
         } else {
-            dom = Z.DomUtil.createEl('div', 'maptalks-panel');
+            dom = maptalks.DomUtil.createEl('div', 'maptalks-panel');
             if (this.options['closeButton']) {
-                var closeButton = Z.DomUtil.createEl('a', 'maptalks-close');
+                var closeButton = maptalks.DomUtil.createEl('a', 'maptalks-close');
                 closeButton.href = 'javascript:;';
                 closeButton.onclick = function () {
                     dom.style.display = 'none';
@@ -54,13 +54,13 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
                 dom.appendChild(closeButton);
             }
 
-            var panelContent = Z.DomUtil.createEl('div', 'maptalks-panel-content');
+            var panelContent = maptalks.DomUtil.createEl('div', 'maptalks-panel-content');
             panelContent.innerHTML = this.options['content'];
             dom.appendChild(panelContent);
         }
 
-        this.draggable = new Z.Handler.Drag(dom, {
-            'cancelOn' : Z.Util.bind(this._cancelOn, this)
+        this.draggable = new maptalks.Handler.Drag(dom, {
+            'cancelOn' : maptalks.Util.bind(this._cancelOn, this)
         });
 
         this.draggable.on('dragstart', this._onDragStart, this)
@@ -83,7 +83,7 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
             this.draggable.disable();
             delete this.draggable;
         }
-        return Z.control.Control.prototype.update.call(this);
+        return maptalks.control.Control.prototype.update.call(this);
     },
 
     /**
@@ -135,7 +135,7 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
 
     _onDragStart:function (param) {
         this._startPos = param['mousePos'];
-        this._startPosition = Z.Util.extend({}, this.getPosition());
+        this._startPosition = maptalks.Util.extend({}, this.getPosition());
     },
 
     _onDragging:function (param) {
@@ -144,16 +144,16 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
 
         var startPosition = this._startPosition;
         var position = this.getPosition();
-        if (!Z.Util.isNil(position['top'])) {
+        if (!maptalks.Util.isNil(position['top'])) {
             position['top'] = +startPosition['top'] + offset.y;
         }
-        if (!Z.Util.isNil(position['bottom'])) {
+        if (!maptalks.Util.isNil(position['bottom'])) {
             position['bottom'] = +startPosition['bottom'] - offset.y;
         }
-        if (!Z.Util.isNil(position['left'])) {
+        if (!maptalks.Util.isNil(position['left'])) {
             position['left'] = +startPosition['left'] + offset.x;
         }
-        if (!Z.Util.isNil(position['right'])) {
+        if (!maptalks.Util.isNil(position['right'])) {
             position['right'] = +startPosition['right'] - offset.x;
         }
         this.setPosition(position);
@@ -178,19 +178,19 @@ Z.control.Panel = Z.control.Control.extend(/** @lends maptalks.control.Panel.pro
         var anchors = [
             //top center
             map.containerPointToCoordinate(
-                containerPoint.add(new Z.Point(Math.round(width / 2), 0))
+                containerPoint.add(new maptalks.Point(Math.round(width / 2), 0))
             ),
             //middle right
             map.containerPointToCoordinate(
-                containerPoint.add(new Z.Point(width, Math.round(height / 2)))
+                containerPoint.add(new maptalks.Point(width, Math.round(height / 2)))
             ),
             //bottom center
             map.containerPointToCoordinate(
-                containerPoint.add(new Z.Point(Math.round(width / 2), height))
+                containerPoint.add(new maptalks.Point(Math.round(width / 2), height))
             ),
             //middle left
             map.containerPointToCoordinate(
-                containerPoint.add(new Z.Point(0, Math.round(height / 2)))
+                containerPoint.add(new maptalks.Point(0, Math.round(height / 2)))
             )
 
         ];

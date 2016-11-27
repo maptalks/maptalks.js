@@ -1,28 +1,28 @@
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
     'scrollWheelZoom': true
 });
 
-Z.Map.ScrollWheelZoom = Z.Handler.extend({
+maptalks.Map.ScrollWheelZoom = maptalks.Handler.extend({
     addHooks: function () {
-        Z.DomUtil.addDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll, this);
+        maptalks.DomUtil.addDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll, this);
     },
 
     removeHooks: function () {
-        Z.DomUtil.removeDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll);
+        maptalks.DomUtil.removeDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll);
     },
 
     _onWheelScroll: function (evt) {
         var map = this.target;
         var _containerDOM = map._containerDOM;
-        Z.DomUtil.preventDefault(evt);
-        Z.DomUtil.stopPropagation(evt);
+        maptalks.DomUtil.preventDefault(evt);
+        maptalks.DomUtil.stopPropagation(evt);
         if (map._zooming) { return false; }
         var _levelValue = 0;
         _levelValue += (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             _levelValue *= -1;
         }
-        var mouseOffset = Z.DomUtil.getEventContainerPoint(evt, _containerDOM);
+        var mouseOffset = maptalks.DomUtil.getEventContainerPoint(evt, _containerDOM);
         if (this._wheelExecutor) {
             clearTimeout(this._wheelExecutor);
         }
@@ -35,8 +35,8 @@ Z.Map.ScrollWheelZoom = Z.Handler.extend({
     /*_onWheelScroll: function (evt) {
         var map = this.target;
         var containerDOM = map._containerDOM;
-        Z.DomUtil.preventDefault(evt);
-        Z.DomUtil.stopPropagation(evt);
+        maptalks.DomUtil.preventDefault(evt);
+        maptalks.DomUtil.stopPropagation(evt);
 
         if (map._zooming || this._scaling) {return;}
         if (this._wheelExecutor) {
@@ -48,8 +48,8 @@ Z.Map.ScrollWheelZoom = Z.Handler.extend({
         if (evt.detail) {
             level *= -1;
         }
-        var zoomPoint = Z.DomUtil.getEventContainerPoint(evt, containerDOM);
-        if (Z.Util.isNil(this._targetZoom)) {
+        var zoomPoint = maptalks.DomUtil.getEventContainerPoint(evt, containerDOM);
+        if (maptalks.Util.isNil(this._targetZoom)) {
             this._targetZoom = map.getZoom();
         }
         var preZoom = this._targetZoom;
@@ -71,4 +71,4 @@ Z.Map.ScrollWheelZoom = Z.Handler.extend({
     }*/
 });
 
-Z.Map.addInitHook('addHandler', 'scrollWheelZoom', Z.Map.ScrollWheelZoom);
+maptalks.Map.addInitHook('addHandler', 'scrollWheelZoom', maptalks.Map.ScrollWheelZoom);

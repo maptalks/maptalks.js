@@ -22,8 +22,8 @@
         };
     }
 
-    Z.View.loadArcgis = function (url, cb, context) {
-        if (Z.Util.isString(url) && url.substring(0, 1) !== '{') {
+    maptalks.View.loadArcgis = function (url, cb, context) {
+        if (maptalks.Util.isString(url) && url.substring(0, 1) !== '{') {
             maptalks.Ajax.getJSON(url, function (err, json) {
                 if (err) {
                     if (context) {
@@ -41,8 +41,8 @@
                 }
             });
         } else {
-            if (Z.Util.isString(url)) {
-                url = Z.Util.parseJSON(url);
+            if (maptalks.Util.isString(url)) {
+                url = maptalks.Util.parseJSON(url);
             }
             var view = parse(url);
             if (context) {

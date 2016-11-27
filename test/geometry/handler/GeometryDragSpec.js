@@ -3,20 +3,20 @@ describe('#GeometryDrag', function () {
     var container,eventContainer;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     function dragGeometry(geometry, isMove) {
         map.removeLayer('id');
-        var layer = new Z.VectorLayer('id');
+        var layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
 
         geometry.addTo(layer);
         var spy = sinon.spy();
         geometry.on('mousedown', spy);
 
-        var domPosition = Z.DomUtil.getPagePosition(container);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(geometry.getFirstCoordinate()).add(domPosition);
-        var requestAnimFn = Z.Util.requestAnimFrame;
+        var requestAnimFn = maptalks.Util.requestAnimFrame;
 
 
         happen.mousedown(eventContainer,{
@@ -36,8 +36,8 @@ describe('#GeometryDrag', function () {
     }
 
     function dragMap() {
-        var domPosition = Z.DomUtil.getPagePosition(container);
-        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new Z.Point(30,20));
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new maptalks.Point(30,20));
         happen.mousedown(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y
@@ -81,7 +81,7 @@ describe('#GeometryDrag', function () {
 
             for (var i = 0; i < geometries.length; i++) {
                 var geo = geometries[i];
-                if (geo instanceof Z.GeometryCollection || geo instanceof Z.Sector) {
+                if (geo instanceof maptalks.GeometryCollection || geo instanceof maptalks.Sector) {
                     //not fit for geometry collection's test.
                     continue;
                 }

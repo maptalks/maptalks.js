@@ -9,7 +9,7 @@ describe('#Projection', function () {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -21,8 +21,8 @@ describe('#Projection', function () {
             zoom: 17,
             center: center
         };
-        map = new Z.Map(container, option);
-        tile = new Z.TileLayer('tile', {
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
@@ -51,7 +51,7 @@ describe('#Projection', function () {
         });
 
         it('change center before changing view', function() {
-            var newCenter = new Z.Coordinate(100,0);
+            var newCenter = new maptalks.Coordinate(100,0);
             map.setCenter(newCenter);
             map.setView({
                 projection:'EPSG:4326'

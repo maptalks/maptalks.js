@@ -1,4 +1,4 @@
-Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
+maptalks.symbolizer.ImageMarkerSymbolizer = maptalks.symbolizer.PointSymbolizer.extend({
 
     initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
@@ -14,13 +14,13 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             return;
         }
         var cookedPoints = this._getRenderContainerPoints();
-        if (!Z.Util.isArrayHasData(cookedPoints)) {
+        if (!maptalks.Util.isArrayHasData(cookedPoints)) {
             return;
         }
 
         var img = this._getImage(resources);
         if (!img) {
-            if (!Z.Browser.phantomjs && console) {
+            if (!maptalks.Browser.phantomjs && console) {
                 console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
             }
             return;
@@ -28,7 +28,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this._prepareContext(ctx);
         var width = style['markerWidth'];
         var height = style['markerHeight'];
-        if (!Z.Util.isNumber(width) || !Z.Util.isNumber(height)) {
+        if (!maptalks.Util.isNumber(width) || !maptalks.Util.isNumber(height)) {
             width = img.width;
             height = img.height;
             style['markerWidth'] = width;
@@ -43,8 +43,8 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             }
         }
         var alpha;
-        if (!(this instanceof Z.symbolizer.VectorPathMarkerSymbolizer) &&
-            Z.Util.isNumber(style['markerOpacity']) && style['markerOpacity'] < 1)  {
+        if (!(this instanceof maptalks.symbolizer.VectorPathMarkerSymbolizer) &&
+            maptalks.Util.isNumber(style['markerOpacity']) && style['markerOpacity'] < 1)  {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= style['markerOpacity'];
         }
@@ -56,7 +56,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 p = origin;
             }
             //图片定位到中心底部
-            Z.Canvas.image(ctx, img,
+            maptalks.Canvas.image(ctx, img,
                 p.x - width / 2,
                 p.y - height,
                 width, height);
@@ -80,7 +80,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     getRotation: function () {
         var r = this.style['markerRotation'];
-        if (!Z.Util.isNumber(r)) {
+        if (!maptalks.Util.isNumber(r)) {
             return null;
         }
         //to radian
@@ -91,7 +91,7 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var s = this.style;
         var dx = s['markerDx'] || 0,
             dy = s['markerDy'] || 0;
-        return new Z.Point(dx, dy);
+        return new maptalks.Point(dx, dy);
     },
 
     getMarkerExtent:function (resources) {
@@ -100,28 +100,28 @@ Z.symbolizer.ImageMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var width = this.style['markerWidth'] || (img ? img.width : 0),
             height = this.style['markerHeight'] || (img ? img.height : 0);
         var dxdy = this.getDxDy();
-        return new Z.PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
+        return new maptalks.PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
     },
 
     translate:function () {
         var s = this.symbol;
         return {
             'markerFile'    : s['markerFile'],
-            'markerOpacity' : Z.Util.getValueOrDefault(s['markerOpacity'], 1),
-            'markerWidth'   : Z.Util.getValueOrDefault(s['markerWidth'], null),
-            'markerHeight'  : Z.Util.getValueOrDefault(s['markerHeight'], null),
-            'markerDx'      : Z.Util.getValueOrDefault(s['markerDx'], 0),
-            'markerDy'      : Z.Util.getValueOrDefault(s['markerDy'], 0)
+            'markerOpacity' : maptalks.Util.getValueOrDefault(s['markerOpacity'], 1),
+            'markerWidth'   : maptalks.Util.getValueOrDefault(s['markerWidth'], null),
+            'markerHeight'  : maptalks.Util.getValueOrDefault(s['markerHeight'], null),
+            'markerDx'      : maptalks.Util.getValueOrDefault(s['markerDx'], 0),
+            'markerDy'      : maptalks.Util.getValueOrDefault(s['markerDy'], 0)
         };
     }
 });
 
 
-Z.symbolizer.ImageMarkerSymbolizer.test = function (symbol) {
+maptalks.symbolizer.ImageMarkerSymbolizer.test = function (symbol) {
     if (!symbol) {
         return false;
     }
-    if (!Z.Util.isNil(symbol['markerFile'])) {
+    if (!maptalks.Util.isNil(symbol['markerFile'])) {
         return true;
     }
     return false;

@@ -4,7 +4,7 @@ describe('FunctionTypeSpec', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -23,7 +23,7 @@ describe('FunctionTypeSpec', function() {
 
     function interpolateSymbol(geo, symbol) {
         var result;
-        if (Z.Util.isArray(symbol)) {
+        if (maptalks.Util.isArray(symbol)) {
             result = [];
             for (var i = 0; i < symbol.length; i++) {
                 result.push(interpolateSymbol(symbol[i]));
@@ -33,11 +33,11 @@ describe('FunctionTypeSpec', function() {
         result = {};
         for (var p in symbol) {
             if (symbol.hasOwnProperty(p)) {
-                if (Z.Util.isFunctionDefinition(symbol[p])) {
+                if (maptalks.Util.isFunctionDefinition(symbol[p])) {
                     if (!geo.getMap()) {
                         result[p] = null;
                     } else {
-                        result[p] = Z.Util.interpolated(symbol[p])(geo.getMap().getZoom(), geo.getProperties());
+                        result[p] = maptalks.Util.interpolated(symbol[p])(geo.getMap().getZoom(), geo.getProperties());
                     }
                 } else {
                     result[p] = symbol[p];

@@ -7,7 +7,7 @@
  * @abstract
  * @extends {maptalks.Layer}
  */
-Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
+maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
 
     /**
      * Get a geometry by its id
@@ -15,7 +15,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @return {maptalks.Geometry}
      */
     getGeometryById:function (id) {
-        if (Z.Util.isNil(id) || id === '') {
+        if (maptalks.Util.isNil(id) || id === '') {
             return null;
         }
         if (!this._geoMap[id]) {
@@ -89,7 +89,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         if (this.getCount() === 0) {
             return null;
         }
-        var extent = new Z.Extent();
+        var extent = new maptalks.Extent();
         this.forEach(function (g) {
             extent._combine(g.getExtent());
         });
@@ -122,7 +122,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      */
     filter: function (fn, context) {
         var selected = [];
-        if (Z.Util.isFunction(fn)) {
+        if (maptalks.Util.isFunction(fn)) {
             if (fn) {
                 this.forEach(function (geometry) {
                     if (context ? fn.call(context, geometry) : fn(geometry)) {
@@ -131,15 +131,15 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 });
             }
         } else {
-            var filter = Z.Util.createFilter(fn);
+            var filter = maptalks.Util.createFilter(fn);
             this.forEach(function (geometry) {
-                var g = Z.Util.getFilterFeature(geometry);
+                var g = maptalks.Util.getFilterFeature(geometry);
                 if (filter(g)) {
                     selected.push(geometry);
                 }
             }, this);
         }
-        return selected.length > 0 ? new Z.GeometryCollection(selected) : null;
+        return selected.length > 0 ? new maptalks.GeometryCollection(selected) : null;
     },
 
     /**
@@ -158,14 +158,14 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      */
     addGeometry:function (geometries, fitView) {
         if (!geometries) { return this; }
-        if (!Z.Util.isArray(geometries)) {
+        if (!maptalks.Util.isArray(geometries)) {
             return this.addGeometry([geometries], fitView);
-        } else if (!Z.Util.isArrayHasData(geometries)) {
+        } else if (!maptalks.Util.isArrayHasData(geometries)) {
             return this;
         }
         this._initCache();
         var fitCounter = 0;
-        var centerSum = new Z.Coordinate(0, 0);
+        var centerSum = new maptalks.Coordinate(0, 0);
         var extent = null,
             geo, geoId, internalId, geoCenter, geoExtent;
         for (var i = 0, len = geometries.length; i < len; i++) {
@@ -173,17 +173,17 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             if (!geo) {
                 throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
             }
-            if (!(geo instanceof Z.Geometry)) {
-                geo = Z.Geometry.fromJSON(geo);
+            if (!(geo instanceof maptalks.Geometry)) {
+                geo = maptalks.Geometry.fromJSON(geo);
             }
             geoId = geo.getId();
-            if (!Z.Util.isNil(geoId)) {
-                if (!Z.Util.isNil(this._geoMap[geoId])) {
+            if (!maptalks.Util.isNil(geoId)) {
+                if (!maptalks.Util.isNil(this._geoMap[geoId])) {
                     throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + geoId + ', at index:' + i);
                 }
                 this._geoMap[geoId] = geo;
             }
-            internalId = Z.Util.UID();
+            internalId = maptalks.Util.UID();
             //内部全局唯一的id
             geo._setInternalId(internalId);
             this._geoList.push(geo);
@@ -246,11 +246,11 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
      * @returns {maptalks.OverlayLayer} this
      */
     removeGeometry:function (geometries) {
-        if (!Z.Util.isArray(geometries)) {
+        if (!maptalks.Util.isArray(geometries)) {
             return this.removeGeometry([geometries]);
         }
         for (var i = geometries.length - 1; i >= 0; i--) {
-            if (!(geometries[i] instanceof Z.Geometry)) {
+            if (!(geometries[i] instanceof maptalks.Geometry)) {
                 geometries[i] = this.getGeometryById(geometries[i]);
             }
             if (!geometries[i] || this !== geometries[i].getLayer()) continue;
@@ -305,11 +305,11 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             return;
         }
         var internalId = geometry._getInternalId();
-        if (Z.Util.isNil(internalId)) {
+        if (maptalks.Util.isNil(internalId)) {
             return;
         }
         var geoId = geometry.getId();
-        if (!Z.Util.isNil(geoId)) {
+        if (!maptalks.Util.isNil(geoId)) {
             delete this._geoMap[geoId];
         }
         if (!this._clearing) {
@@ -328,7 +328,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
         for (var i = 0, l = this._geoList.length; i < l; i++) {
             this._geoList[i].onHide();
         }
-        return Z.Layer.prototype.hide.call(this);
+        return maptalks.Layer.prototype.hide.call(this);
     },
 
     /**
@@ -348,7 +348,7 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
             if (!geo || !geo.isVisible() || !geo._getPainter()) {
                 continue;
             }
-            if (!(geo instanceof Z.LineString) || !geo._getArrowStyle()) {
+            if (!(geo instanceof maptalks.LineString) || !geo._getArrowStyle()) {
                 // Except for LineString with arrows
                 extent2d = geo._getPainter().get2DExtent();
                 if (!extent2d || !extent2d.contains(point)) {
@@ -438,13 +438,13 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
                 return;
             }
         }
-        if (!Z.Util.isNil(param['new'])) {
+        if (!maptalks.Util.isNil(param['new'])) {
             if (this._geoMap[param['new']]) {
                 throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + param['new']);
             }
             this._geoMap[param['new']] = param['target'];
         }
-        if (!Z.Util.isNil(param['old']) && param['new'] !== param['old']) {
+        if (!maptalks.Util.isNil(param['old']) && param['new'] !== param['old']) {
             delete this._geoMap[param['old']];
         }
 
@@ -496,6 +496,6 @@ Z.OverlayLayer = Z.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
     }
 });
 
-Z.OverlayLayer.addInitHook(function () {
+maptalks.OverlayLayer.addInitHook(function () {
     this._initCache();
 });

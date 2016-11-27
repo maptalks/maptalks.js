@@ -8,9 +8,9 @@ Symboling.Center = {
 /**
  * 获取symbolizer所需的数据
  */
-Z.Marker.include(Symboling.Center);
+maptalks.Marker.include(Symboling.Center);
 
-Z.Ellipse.include(Symboling.Center, {
+maptalks.Ellipse.include(Symboling.Center, {
     _getRenderSize:function () {
         var w = this.getWidth(),
             h = this.getHeight();
@@ -19,7 +19,7 @@ Z.Ellipse.include(Symboling.Center, {
     }
 });
 
-Z.Circle.include(Symboling.Center, {
+maptalks.Circle.include(Symboling.Center, {
     _getRenderSize:function () {
         var radius = this.getRadius();
         var map = this.getMap();
@@ -27,7 +27,7 @@ Z.Circle.include(Symboling.Center, {
     }
 });
 //----------------------------------------------------
-Z.Sector.include(Symboling.Center, {
+maptalks.Sector.include(Symboling.Center, {
     _getRenderSize:function () {
         var radius = this.getRadius();
         var map = this.getMap();
@@ -35,7 +35,7 @@ Z.Sector.include(Symboling.Center, {
     }
 });
 //----------------------------------------------------
-Z.Rectangle.include({
+maptalks.Rectangle.include({
     _getRenderPoints:function (placement) {
         if (placement === 'vertex') {
             var shell = this.getShell();
@@ -64,7 +64,7 @@ Symboling.Poly = {
         var points, rotations = null;
         if (placement === 'vertex') {
             points = this._getPath2DPoints(this._getPrjCoordinates());
-            if (points && points.length > 0 && Z.Util.isArray(points[0])) {
+            if (points && points.length > 0 && maptalks.Util.isArray(points[0])) {
                 //anti-meridian
                 points = points[0].concat(points[1]);
             }
@@ -72,28 +72,28 @@ Symboling.Poly = {
             points = [];
             rotations = [];
             var vertice = this._getPath2DPoints(this._getPrjCoordinates()),
-                isSplitted =  vertice.length > 0 && Z.Util.isArray(vertice[0]);
+                isSplitted =  vertice.length > 0 && maptalks.Util.isArray(vertice[0]);
             var i, len;
             if (isSplitted) {
                 //anti-meridian splitted
                 var ring, ii, ilen;
                 for (i = 1, len = vertice.length; i < len; i++) {
                     ring = vertice[i];
-                    if (this instanceof Z.Polygon && ring.length > 0 && !ring[0].equals(ring[ring.length - 1])) {
+                    if (this instanceof maptalks.Polygon && ring.length > 0 && !ring[0].equals(ring[ring.length - 1])) {
                         ring.push(ring[0]);
                     }
                     for (ii = 1, ilen = ring.length; ii < ilen; ii++) {
                         points.push(ring[ii].add(ring[ii - 1])._multi(0.5));
-                        rotations.push(Z.Util.computeDegree(ring[ii - 1], ring[ii]));
+                        rotations.push(maptalks.Util.computeDegree(ring[ii - 1], ring[ii]));
                     }
                 }
             } else {
-                if (this instanceof Z.Polygon && vertice.length > 0 && !vertice[0].equals(vertice[vertice.length - 1])) {
+                if (this instanceof maptalks.Polygon && vertice.length > 0 && !vertice[0].equals(vertice[vertice.length - 1])) {
                     vertice.push(vertice[0]);
                 }
                 for (i = 1, len = vertice.length; i < len; i++) {
                     points.push(vertice[i].add(vertice[i - 1])._multi(0.5));
-                    rotations.push(Z.Util.computeDegree(vertice[i - 1], vertice[i]));
+                    rotations.push(maptalks.Util.computeDegree(vertice[i - 1], vertice[i]));
                 }
             }
 
@@ -111,6 +111,6 @@ Symboling.Poly = {
     }
 };
 
-Z.Polyline.include(Symboling.Poly);
+maptalks.Polyline.include(Symboling.Poly);
 
-Z.Polygon.include(Symboling.Poly);
+maptalks.Polygon.include(Symboling.Poly);

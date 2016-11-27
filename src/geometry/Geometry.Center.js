@@ -2,7 +2,7 @@
  * Common methods for geometry classes that base on a center, e.g. Marker, Circle, Ellipse , etc
  * @mixin
  */
-Z.Geometry.Center = {
+maptalks.Geometry.Center = {
     /**
      * Get geometry's center
      * @return {maptalks.Coordinate} - center of the geometry
@@ -18,7 +18,7 @@ Z.Geometry.Center = {
      * @fires maptalks.Geometry#positionchange
      */
     setCoordinates:function (coordinates) {
-        var center = new Z.Coordinate(coordinates);
+        var center = new maptalks.Coordinate(coordinates);
         if (center.equals(this._coordinates)) {
             return this;
         }

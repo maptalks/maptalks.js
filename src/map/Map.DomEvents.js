@@ -1,4 +1,4 @@
-Z.Map.include(/** @lends maptalks.Map.prototype */{
+maptalks.Map.include(/** @lends maptalks.Map.prototype */{
     _registerDomEvents: function (remove) {
         var events = /**
                       * mousedown event
@@ -147,9 +147,9 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         //phantomjs will crash when registering events on canvasContainer
         var dom = this._panels.mapWrapper || this._containerDOM;
         if (remove) {
-            Z.DomUtil.removeDomEvent(dom, events, this._handleDOMEvent, this);
+            maptalks.DomUtil.removeDomEvent(dom, events, this._handleDOMEvent, this);
         } else {
-            Z.DomUtil.addDomEvent(dom, events, this._handleDOMEvent, this);
+            maptalks.DomUtil.addDomEvent(dom, events, this._handleDOMEvent, this);
         }
 
     },
@@ -164,16 +164,16 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         }
         // prevent default contextmenu
         if (type === 'contextmenu') {
-            Z.DomUtil.preventDefault(e);
+            maptalks.DomUtil.preventDefault(e);
         }
         if (this._ignoreEvent(e)) {
             return;
         }
         // ignore click lasted for more than 300ms.
         if (type === 'mousedown') {
-            this._mouseDownTime = Z.Util.now();
+            this._mouseDownTime = maptalks.Util.now();
         } else if (type === 'click' && this._mouseDownTime) {
-            var now = Z.Util.now();
+            var now = maptalks.Util.now();
             if (now - this._mouseDownTime > 300) {
                 return;
             }
@@ -212,7 +212,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
                 e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
                 e.changedTouches[0] : e;
             if (actual) {
-                var containerPoint = Z.DomUtil.getEventContainerPoint(actual, this._containerDOM);
+                var containerPoint = maptalks.DomUtil.getEventContainerPoint(actual, this._containerDOM);
                 eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
                 eventParam['containerPoint'] = containerPoint;
                 eventParam['viewPoint'] = this.containerPointToViewPoint(containerPoint);

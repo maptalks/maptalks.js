@@ -1,4 +1,4 @@
-Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
      * The event handler for all the events.
      * @param  {Event} event - dom event
@@ -10,8 +10,8 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         }
         var eventType = this._getEventTypeToFire(event);
         if (eventType === 'contextmenu' && this.listens('contextmenu')) {
-            Z.DomUtil.stopPropagation(event);
-            Z.DomUtil.preventDefault(event);
+            maptalks.DomUtil.stopPropagation(event);
+            maptalks.DomUtil.preventDefault(event);
         }
         var params = this._getEventParams(event);
         this._fireEvent(eventType, params);
@@ -41,7 +41,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         };
         var actual = e.touches ? e.touches[0] : e;
         if (actual) {
-            var containerPoint = Z.DomUtil.getEventContainerPoint(actual, map._containerDOM);
+            var containerPoint = maptalks.DomUtil.getEventContainerPoint(actual, map._containerDOM);
             eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
             eventParam['containerPoint'] = containerPoint;
             eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);

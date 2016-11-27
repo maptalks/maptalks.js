@@ -2,4 +2,4 @@
  * @namespace
  * @protected
  */
-Z.renderer.tilelayer = {};
+maptalks.renderer.tilelayer = {};

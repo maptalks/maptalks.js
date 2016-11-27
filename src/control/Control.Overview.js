@@ -13,7 +13,7 @@
  *     size : {'width' : 300,'height' : 200}
  * }).addTo(map);
  */
-Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overview.prototype */{
+maptalks.control.Overview = maptalks.control.Control.extend(/** @lends maptalks.control.Overview.prototype */{
 
     loadDelay : 1600,
 
@@ -37,7 +37,7 @@ Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overvi
     },
 
     buildOn: function (map) {
-        var container = Z.DomUtil.createEl('div');
+        var container = maptalks.DomUtil.createEl('div');
         container.style.cssText = 'border:1px solid #000;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
         if (map.isLoaded()) {
             this._initOverview();
@@ -59,7 +59,7 @@ Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overvi
             dom = container || this.getDOM(),
             extent = map.getExtent();
         var options = map.config();
-        Z.Util.extend(options, {
+        maptalks.Util.extend(options, {
             'center' : map.getCenter(),
             'zoom'   : this._getOverviewZoom(),
             'scrollWheelZoom' : false,
@@ -68,9 +68,9 @@ Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overvi
             'touchZoom' : false,
             'control' : false
         });
-        this._overview = new Z.Map(dom, options);
+        this._overview = new maptalks.Map(dom, options);
         this._updateBaseLayer();
-        this._perspective = new Z.Polygon(extent.toArray(), {
+        this._perspective = new maptalks.Polygon(extent.toArray(), {
             'draggable' : true,
             'cursor' : 'move',
             'symbol' : {
@@ -84,7 +84,7 @@ Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overvi
         .on('dragend', this._onDragEnd, this);
         map.on('resize moveend zoomend', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this);
-        new Z.VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
+        new maptalks.VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
         this.fire('load');
     },
 
@@ -137,7 +137,7 @@ Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overvi
     _updateBaseLayer: function () {
         var map = this.getMap();
         if (map.getBaseLayer()) {
-            this._overview.setBaseLayer(Z.Layer.fromJSON(map.getBaseLayer().toJSON()));
+            this._overview.setBaseLayer(maptalks.Layer.fromJSON(map.getBaseLayer().toJSON()));
         } else {
             this._overview.setBaseLayer(null);
         }
@@ -145,13 +145,13 @@ Z.control.Overview = Z.control.Control.extend(/** @lends maptalks.control.Overvi
 
 });
 
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
     'overviewControl' : false
 });
 
-Z.Map.addOnLoadHook(function () {
+maptalks.Map.addOnLoadHook(function () {
     if (this.options['overviewControl']) {
-        this.overviewControl = new Z.control.Overview(this.options['overviewControl']);
+        this.overviewControl = new maptalks.control.Overview(this.options['overviewControl']);
         this.addControl(this.overviewControl);
     }
 });

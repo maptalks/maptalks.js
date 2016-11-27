@@ -26,7 +26,7 @@
  *      ]
  * }).addTo(map);
  */
-Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar.prototype */{
+maptalks.control.Toolbar = maptalks.control.Control.extend(/** @lends maptalks.control.Toolbar.prototype */{
 
     /**
      * @property {Object}   options - options
@@ -45,53 +45,53 @@ Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar
 
     buildOn: function (map) {
         this._map = map;
-        var dom = Z.DomUtil.createEl('div');
-        var ul = Z.DomUtil.createEl('ul', 'maptalks-toolbar-hx');
+        var dom = maptalks.DomUtil.createEl('div');
+        var ul = maptalks.DomUtil.createEl('ul', 'maptalks-toolbar-hx');
         dom.appendChild(ul);
 
         if (this.options['vertical']) {
-            Z.DomUtil.addClass(dom, 'maptalks-toolbar-vertical');
+            maptalks.DomUtil.addClass(dom, 'maptalks-toolbar-vertical');
         } else {
-            Z.DomUtil.addClass(dom, 'maptalks-toolbar-horizonal');
+            maptalks.DomUtil.addClass(dom, 'maptalks-toolbar-horizonal');
         }
         var me = this;
         function onButtonClick(fn, index, childIndex, targetDom) {
             var item = me._getItems()[index];
             return function (e) {
-                Z.DomUtil.stopPropagation(e);
+                maptalks.DomUtil.stopPropagation(e);
                 return fn({'target':item, 'index':index, 'childIndex': childIndex, 'dom': targetDom});
             };
         }
 
         var items = this.options['items'];
-        if (Z.Util.isArrayHasData(items)) {
+        if (maptalks.Util.isArrayHasData(items)) {
             for (var i = 0, len = items.length; i < len; i++) {
                 var item = items[i];
-                var li = Z.DomUtil.createEl('li');
+                var li = maptalks.DomUtil.createEl('li');
                 if (this.options['height'] !== 28) {
                     li.style.lineHeight = this.options['height'] + 'px';
                 }
                 li.style.height = this.options['height'] + 'px';
                 li.style.cursor = 'pointer';
-                if (Z.DomUtil.isHTML(item['item'])) {
+                if (maptalks.DomUtil.isHTML(item['item'])) {
                     li.style.textAlign = 'center';
-                    var itemSize = Z.DomUtil.measureDom('div', item['item']);
+                    var itemSize = maptalks.DomUtil.measureDom('div', item['item']);
                     //vertical-middle
                     li.innerHTML = '<div style="margin-top:' + (this.options['height'] - itemSize['height']) / 2 + 'px;">' + item['item'] + '</div>';
                 } else {
                     li.innerHTML = item['item'];
                 }
                 if (item['click']) {
-                    Z.DomUtil.on(li, 'click', (onButtonClick)(item['click'], i, null, li));
+                    maptalks.DomUtil.on(li, 'click', (onButtonClick)(item['click'], i, null, li));
                 }
-                if (Z.Util.isArrayHasData(item['children'])) {
+                if (maptalks.Util.isArrayHasData(item['children'])) {
                     var dropMenu = this._createDropMenu(i);
                     li.appendChild(dropMenu);
                     li._menu = dropMenu;
-                    Z.DomUtil.on(li, 'mouseover', function () {
+                    maptalks.DomUtil.on(li, 'mouseover', function () {
                         this._menu.style.display = '';
                     });
-                    Z.DomUtil.on(li, 'mouseout', function () {
+                    maptalks.DomUtil.on(li, 'mouseout', function () {
                         this._menu.style.display = 'none';
                     });
                 }
@@ -106,30 +106,30 @@ Z.control.Toolbar = Z.control.Control.extend(/** @lends maptalks.control.Toolbar
         function onButtonClick(fn, index, childIndex) {
             var item = me._getItems()[index]['children'][childIndex];
             return function (e) {
-                Z.DomUtil.stopPropagation(e);
+                maptalks.DomUtil.stopPropagation(e);
                 return fn({'target':item, 'index':index, 'childIndex': childIndex});
             };
         }
-        var menuDom = Z.DomUtil.createEl('div', 'maptalks-dropMenu');
+        var menuDom = maptalks.DomUtil.createEl('div', 'maptalks-dropMenu');
         menuDom.style.display = 'none';
-        menuDom.appendChild(Z.DomUtil.createEl('em', 'maptalks-ico'));
-        var menuUL = Z.DomUtil.createEl('ul');
+        menuDom.appendChild(maptalks.DomUtil.createEl('em', 'maptalks-ico'));
+        var menuUL = maptalks.DomUtil.createEl('ul');
         menuDom.appendChild(menuUL);
         var children = this._getItems()[index]['children'];
         var liWidth = 0, i, len;
         for (i = 0, len = children.length; i < len; i++) {
-            var size = Z.StringUtil.stringLength(children[i]['item'], '12px');
+            var size = maptalks.StringUtil.stringLength(children[i]['item'], '12px');
             if (size.width > liWidth) {
                 liWidth = size.width;
             }
         }
         for (i = 0, len = children.length; i < len; i++) {
             var child = children[i];
-            var li = Z.DomUtil.createEl('li');
+            var li = maptalks.DomUtil.createEl('li');
             li.innerHTML = '<a href="javascript:;">' + child['item'] + '</a>';
             li.style.cursor = 'pointer';
             li.style.width = (liWidth + 24) + 'px';// 20 for text-intent
-            Z.DomUtil.on(li.childNodes[0], 'click', (onButtonClick)(child['click'], index, i));
+            maptalks.DomUtil.on(li.childNodes[0], 'click', (onButtonClick)(child['click'], index, i));
             menuUL.appendChild(li);
         }
         return menuDom;

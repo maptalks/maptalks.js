@@ -1,5 +1,5 @@
 //@namespace
-Z.animation = {};
+maptalks.animation = {};
 
 /**
  * @classdesc
@@ -7,7 +7,7 @@ Z.animation = {};
  * @class
  * @category animation
  */
-Z.Animation = {
+maptalks.Animation = {
     /**
      * @property {Object} speed         - predefined animation speed
      * @property {Number} speed.slow    - 2000ms
@@ -34,12 +34,12 @@ Z.Animation = {
         }
         //resolve a child styles.
         function resolveChild(child) {
-            if (!Z.Util.isArray(child)) {
-                return Z.Animation._resolveStyles(child);
+            if (!maptalks.Util.isArray(child)) {
+                return maptalks.Animation._resolveStyles(child);
             }
             var start = [], d = [], dest = [];
             for (var i = 0; i < child.length; i++) {
-                var styles = Z.Animation._resolveStyles(child[i]);
+                var styles = maptalks.Animation._resolveStyles(child[i]);
                 if (styles) {
                     start.push(styles[0]);
                     d.push(styles[1]);
@@ -57,10 +57,10 @@ Z.Animation = {
             var values = val,
                 clazz;
             //val is just a destination value, so we set start value to 0 or a 0-point or a 0-coordinate.
-            if (!Z.Util.isArray(val)) {
-                if (Z.Util.isNumber(val)) {
+            if (!maptalks.Util.isArray(val)) {
+                if (maptalks.Util.isNumber(val)) {
                     values = [0, val];
-                } else if (val instanceof Z.Point || val instanceof Z.Coordinate) {
+                } else if (val instanceof maptalks.Point || val instanceof maptalks.Coordinate) {
                     clazz = val.constructor;
                     values = [new clazz(0, 0), val];
                 } else {
@@ -70,16 +70,16 @@ Z.Animation = {
             //val is a array and val[0] is the start value and val[1] is the destination value.
             var v1 = values[0],
                 v2 = values[1];
-            if (Z.Util.isNumber(v1) && Z.Util.isNumber(v2)) {
+            if (maptalks.Util.isNumber(v1) && maptalks.Util.isNumber(v2)) {
                 if (v1 === v2) {
                     return null;
                 }
                 return [v1, v2 - v1, v2];
-            } else if (Z.Util.isArray(v1) || v1 instanceof Z.Coordinate || v1 instanceof Z.Point) {
+            } else if (maptalks.Util.isArray(v1) || v1 instanceof maptalks.Coordinate || v1 instanceof maptalks.Point) {
                 // is a coordinate (array or a coordinate) or a point
-                if (Z.Util.isArray(v1)) {
-                    v1 = new Z.Coordinate(v1);
-                    v2 = new Z.Coordinate(v2);
+                if (maptalks.Util.isArray(v1)) {
+                    v1 = new maptalks.Coordinate(v1);
+                    v2 = new maptalks.Coordinate(v2);
                 } else {
                     clazz = v1.constructor;
                     v1 = new clazz(v1);
@@ -96,9 +96,9 @@ Z.Animation = {
         }
 
         function isChild(val) {
-            if (!Z.Util.isArray(val) && val.constructor === Object) {
+            if (!maptalks.Util.isArray(val) && val.constructor === Object) {
                 return true;
-            } else if (Z.Util.isArray(val) && val[0].constructor === Object) {
+            } else if (maptalks.Util.isArray(val) && val[0].constructor === Object) {
                 return true;
             }
             return false;
@@ -135,10 +135,10 @@ Z.Animation = {
         if (!options) {
             options = {};
         }
-        var easing = options['easing'] ? Z.animation.Easing[options['easing']] : Z.animation.Easing.linear;
-        if (!easing) { easing = Z.animation.Easing.linear; }
+        var easing = options['easing'] ? maptalks.animation.Easing[options['easing']] : maptalks.animation.Easing.linear;
+        if (!easing) { easing = maptalks.animation.Easing.linear; }
         var dStyles, startStyles, destStyles;
-        styles = Z.Animation._resolveStyles(styles);
+        styles = maptalks.Animation._resolveStyles(styles);
         if (styles) {
             startStyles = styles[0];
             dStyles = styles[1];
@@ -156,10 +156,10 @@ Z.Animation = {
                         continue;
                     }
                     var s = _startStyles[p], d = _dStyles[p];
-                    if (Z.Util.isNumber(d)) {
+                    if (maptalks.Util.isNumber(d)) {
                         //e.g. radius, width, height
                         result[p] = s + delta * d;
-                    } else if (Z.Util.isArray(d)) {
+                    } else if (maptalks.Util.isArray(d)) {
                         //e.g. a composite symbol, element in array can only be a object.
                         var children = [];
                         for (var i = 0; i < d.length; i++) {
@@ -171,7 +171,7 @@ Z.Animation = {
                         var clazz = d.constructor;
                         if (clazz === Object) {
                             result[p] = deltaStyles(delta, s, d);
-                        } else if (s instanceof Z.Point || s instanceof Z.Coordinate) {
+                        } else if (s instanceof maptalks.Point || s instanceof maptalks.Coordinate) {
                             result[p] = s.add(d.multi(delta));
                         }
                     }
@@ -203,7 +203,7 @@ Z.Animation = {
             }
             state['startStyles'] = startStyles;
             state['destStyles'] = destStyles;
-            return new Z.animation.Frame(state, d);
+            return new maptalks.animation.Frame(state, d);
         };
 
     },
@@ -218,7 +218,7 @@ Z.Animation = {
 
     _a:function () {
         if (!this._animationFrameId) {
-            this._animationFrameId = Z.Util.requestAnimFrame(Z.Util.bind(Z.Animation._run, Z.Animation));
+            this._animationFrameId = maptalks.Util.requestAnimFrame(maptalks.Util.bind(maptalks.Animation._run, maptalks.Animation));
         }
     },
 
@@ -230,7 +230,7 @@ Z.Animation = {
                 running[i]();
             }
             if (this._frameQueue.length) {
-                this._animationFrameId = Z.Util.requestAnimFrame(Z.Util.bind(Z.Animation._run, Z.Animation));
+                this._animationFrameId = maptalks.Util.requestAnimFrame(maptalks.Util.bind(maptalks.Animation._run, maptalks.Animation));
             } else {
                 delete this._animationFrameId;
             }
@@ -248,8 +248,8 @@ Z.Animation = {
         if (!options) {
             options = {};
         }
-        var animation = Z.Animation.framing(styles, options);
-        return new Z.animation.Player(animation, options, step);
+        var animation = maptalks.Animation.framing(styles, options);
+        return new maptalks.animation.Player(animation, options, step);
     }
 };
 
@@ -264,7 +264,7 @@ Z.Animation = {
  * @memberOf maptalks.animation
  * @name Player
  */
-Z.animation.Player = function (animation, options, step) {
+maptalks.animation.Player = function (animation, options, step) {
     this._animation = animation;
     this._options = options;
     this._stepFn = step;
@@ -273,12 +273,12 @@ Z.animation.Player = function (animation, options, step) {
     this.finished = false;
 };
 
-Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player.prototype */{
+maptalks.Util.extend(maptalks.animation.Player.prototype, /** @lends maptalks.animation.Player.prototype */{
     _prepare:function () {
         var options = this._options;
         var duration = options['speed'];
-        if (Z.Util.isString(duration)) { duration = Z.Animation.speed[duration]; }
-        if (!duration) { duration = Z.Animation.speed['normal']; }
+        if (maptalks.Util.isString(duration)) { duration = maptalks.Animation.speed[duration]; }
+        if (!duration) { duration = maptalks.Animation.speed['normal']; }
         this.duration = duration;
     },
     /**
@@ -293,7 +293,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
             this.currentTime = 0;
             this._prepare();
         }
-        var now = Z.Util.now();
+        var now = maptalks.Util.now();
         if (!this.startTime) {
             var options = this._options;
             this.startTime = options['startTime'] ? options['startTime'] : now;
@@ -341,7 +341,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
             return;
         }
         var me = this;
-        var now = Z.Util.now();
+        var now = maptalks.Util.now();
         var elapsed = now - this._playStartTime;
         if (this._options['repeat'] && elapsed >= this.duration) {
             this._playStartTime = now;
@@ -352,9 +352,9 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
         this.playState = frame.state['playState'];
         var step = this._stepFn;
         if (this.playState === 'idle') {
-            setTimeout(Z.Util.bind(this._run, this), this.startTime - now);
+            setTimeout(maptalks.Util.bind(this._run, this), this.startTime - now);
         } else if (this.playState === 'running') {
-            this._animeFrameId = Z.Animation._requestAnimFrame(function () {
+            this._animeFrameId = maptalks.Animation._requestAnimFrame(function () {
                 if (me.playState !== 'running') {
                     return;
                 }
@@ -368,7 +368,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
             this.finished = true;
             //finished
             if (step) {
-                Z.Util.requestAnimFrame(function () {
+                maptalks.Util.requestAnimFrame(function () {
                     step(frame);
                 });
             }
@@ -386,7 +386,7 @@ Z.Util.extend(Z.animation.Player.prototype, /** @lends maptalks.animation.Player
  * @name Easing
  * @protected
  */
-Z.animation.Easing = {
+maptalks.animation.Easing = {
         /**
          * Start slow and speed up.
          * @param {number} t Input between 0 and 1.
@@ -403,7 +403,7 @@ Z.animation.Easing = {
          * @return {number} Output between 0 and 1.
          */
     out : function (t) {
-        return 1 - Z.animation.Easing.in(1 - t);
+        return 1 - maptalks.animation.Easing.in(1 - t);
     },
 
 
@@ -436,9 +436,9 @@ Z.animation.Easing = {
          */
     upAndDown : function (t) {
         if (t < 0.5) {
-            return Z.animation.Easing.inAndOut(2 * t);
+            return maptalks.animation.Easing.inAndOut(2 * t);
         } else {
-            return 1 - Z.animation.Easing.inAndOut(2 * (t - 0.5));
+            return 1 - maptalks.animation.Easing.inAndOut(2 * (t - 0.5));
         }
     }
 };
@@ -454,7 +454,7 @@ Z.animation.Easing = {
  * @param {Object} state  - animation state
  * @param {Object} styles - styles to animate
  */
-Z.animation.Frame = function (state, styles) {
+maptalks.animation.Frame = function (state, styles) {
     this.state = state;
     this.styles = styles;
 };

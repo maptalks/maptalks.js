@@ -5,7 +5,7 @@ describe('#Label', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
     beforeEach(function() {
@@ -36,7 +36,7 @@ describe('#Label', function() {
 
             function evaluate() {
                 var rnd = Math.random()*0.001;
-                var coordinates = new Z.Coordinate(center.x+rnd, center.y+rnd);
+                var coordinates = new maptalks.Coordinate(center.x+rnd, center.y+rnd);
                 var radius = 1000*rnd;
 
                 vector.setCoordinates(coordinates);
@@ -47,7 +47,7 @@ describe('#Label', function() {
 
             evaluate();
 
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             evaluate();
@@ -59,7 +59,7 @@ describe('#Label', function() {
         it("get/set content",function() {
             var label = '中文标签';
             var vector = new maptalks.Label(label,center);
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             expect(vector.getContent()).to.be.eql(label);
@@ -78,7 +78,7 @@ describe('#Label', function() {
             expect(vector.options['boxTextAlign']).to.be.eql('middle');
             vector.config('boxTextAlign','right');
             expect(vector.options['boxTextAlign']).to.be.eql('right');
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             expect(vector.options['boxTextAlign']).to.be.eql('right');
@@ -94,7 +94,7 @@ describe('#Label', function() {
             vector.setSymbol(null);
             //null symbol is allowed, means set to default symbol.
             expect(vector.getSymbol()).not.to.be.ok();
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             var labelSymbol = {
@@ -134,7 +134,7 @@ describe('#Label', function() {
                     'textHorizontalAlignment' : 'left'
                 }
             });
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -152,7 +152,7 @@ describe('#Label', function() {
                     'textHorizontalAlignment' : 'right'
                 }
             });
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -170,7 +170,7 @@ describe('#Label', function() {
                     'textVerticalAlignment' : 'top'
                 }
             });
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -188,7 +188,7 @@ describe('#Label', function() {
                     'textVerticalAlignment' : 'bottom'
                 }
             });
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -219,7 +219,7 @@ describe('#Label', function() {
 
     it('can edit', function() {
         var vector = new maptalks.Label('label',center);
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
         vector.startEditText();
@@ -230,7 +230,7 @@ describe('#Label', function() {
 
     it('edit with special characters', function() {
         var vector = new maptalks.Label('label\r\n',center);
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
         vector.startEditText();

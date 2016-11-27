@@ -3,7 +3,7 @@
  * @mixin
  * @protected
  */
-Z.Renderable = {
+maptalks.Renderable = {
     /**
      * Register a renderer class with the given name.
      * @param  {String} name  - renderer's register key

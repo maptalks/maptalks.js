@@ -8,7 +8,7 @@
  * @extends {maptalks.renderer.Canvas}
  * @param {maptalks.TileLayer} layer - layer of the renderer
  */
-Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.tilelayer.Canvas.prototype */{
+maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends maptalks.renderer.tilelayer.Canvas.prototype */{
 
     propertyOfPointOnTile   : '--maptalks-tile-point',
     propertyOfTileId        : '--maptalks-tile-id',
@@ -17,8 +17,8 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     initialize:function (layer) {
         this.layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
-        if (!Z.node || !this.layer.options['cacheTiles']) {
-            this._tileCache = new Z.TileLayer.TileCache();
+        if (!maptalks.node || !this.layer.options['cacheTiles']) {
+            this._tileCache = new maptalks.TileLayer.TileCache();
         }
         this._tileQueue = {};
     },
@@ -69,7 +69,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             tileId = tiles[i]['id'];
             //如果缓存中已存有瓦片, 则从不再请求而从缓存中读取.
             cached = tileRended[tileId] || tileCache ? tileCache.get(tileId) : null;
-            tile2DExtent = new Z.PointExtent(tile['2dPoint'],
+            tile2DExtent = new maptalks.PointExtent(tile['2dPoint'],
                                 tile['2dPoint'].add(tileSize.toPoint()));
             if (!this._extent2D.intersects(tile2DExtent)) {
                 continue;
@@ -106,7 +106,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
                 gradualOpacity = 1;
             }
         }
-        var canvasImage = Z.renderer.Canvas.prototype.getCanvasImage.apply(this, arguments);
+        var canvasImage = maptalks.renderer.Canvas.prototype.getCanvasImage.apply(this, arguments);
         canvasImage['opacity'] = gradualOpacity;
         return canvasImage;
         // var size = this._extent2D.getSize();
@@ -117,17 +117,17 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     _scheduleLoadTileQueue:function () {
 
         if (this._loadQueueTimeout) {
-            Z.Util.cancelAnimFrame(this._loadQueueTimeout);
+            maptalks.Util.cancelAnimFrame(this._loadQueueTimeout);
         }
 
         var me = this;
-        this._loadQueueTimeout = Z.Util.requestAnimFrame(function () { me._loadTileQueue(); });
+        this._loadQueueTimeout = maptalks.Util.requestAnimFrame(function () { me._loadTileQueue(); });
     },
 
     _loadTileQueue:function () {
         var me = this;
         function onTileLoad() {
-            if (!Z.node) {
+            if (!maptalks.node) {
                 if (me._tileCache) { me._tileCache.add(this[me.propertyOfTileId], this); }
                 me._tileRended[this[me.propertyOfTileId]] = this;
             }
@@ -172,7 +172,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         if (crossOrigin) {
             tileImage.crossOrigin = crossOrigin;
         }
-        Z.Util.loadImage(tileImage, [tile['url']]);
+        maptalks.Util.loadImage(tileImage, [tile['url']]);
     },
 
 
@@ -182,7 +182,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         }
         var tileSize = this.layer.getTileSize();
         var leftTop = this._viewExtent.getMin();
-        Z.Canvas.image(this.context, tileImage,
+        maptalks.Canvas.image(this.context, tileImage,
             point.x - leftTop.x, point.y - leftTop.y,
             tileSize['width'], tileSize['height']);
         if (this.layer.options['debug']) {
@@ -192,9 +192,9 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
             this.context.fillStyle = 'rgb(0,0,0)';
             this.context.strokeWidth = 10;
             this.context.font = '15px monospace';
-            Z.Canvas.rectangle(this.context, p, tileSize, 1, 0);
+            maptalks.Canvas.rectangle(this.context, p, tileSize, 1, 0);
             var xyz = tileImage[this.propertyOfTileId].split('__');
-            Z.Canvas.fillText(this.context, 'x:' + xyz[1] + ',y:' + xyz[0] + ',z:' + xyz[2], p.add(10, 20), 'rgb(0,0,0)');
+            maptalks.Canvas.fillText(this.context, 'x:' + xyz[1] + ',y:' + xyz[0] + ',z:' + xyz[2], p.add(10, 20), 'rgb(0,0,0)');
             this.context.restore();
         }
         tileImage = null;
@@ -218,10 +218,10 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         var point = tileImage[this.propertyOfPointOnTile];
         this._drawTile(point['viewPoint'], tileImage);
 
-        if (!Z.node) {
+        if (!maptalks.node) {
             var tileSize = this.layer.getTileSize();
             var mapExtent = this.getMap()._get2DExtent();
-            if (mapExtent.intersects(new Z.PointExtent(point['2dPoint'], point['2dPoint'].add(tileSize['width'], tileSize['height'])))) {
+            if (mapExtent.intersects(new maptalks.PointExtent(point['2dPoint'], point['2dPoint'].add(tileSize['width'], tileSize['height'])))) {
                 this.requestMapToRender();
             }
         }
@@ -233,7 +233,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     _onTileLoadComplete:function () {
         //In browser, map will be requested to render once a tile was loaded.
         //but in node, map will be requested to render when the layer is loaded.
-        if (Z.node) {
+        if (maptalks.node) {
             this.requestMapToRender();
         }
         this.fireLoadedEvent();
@@ -251,7 +251,7 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
         if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
         }
-        if (!Z.node) {
+        if (!maptalks.node) {
             this.requestMapToRender();
         }
         this._tileToLoadCounter--;
@@ -264,17 +264,17 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
      * @override
      */
     requestMapToRender:function () {
-        if (Z.node) {
+        if (maptalks.node) {
             if (this.getMap() && !this.getMap()._isBusy()) {
                 this._mapRender.render();
             }
             return;
         }
         if (this._mapRenderRequest) {
-            Z.Util.cancelAnimFrame(this._mapRenderRequest);
+            maptalks.Util.cancelAnimFrame(this._mapRenderRequest);
         }
         var me = this;
-        this._mapRenderRequest = Z.Util.requestAnimFrame(function () {
+        this._mapRenderRequest = maptalks.Util.requestAnimFrame(function () {
             if (me.getMap() && !me.getMap()._isBusy()) {
                 me._mapRender.render();
             }
@@ -283,12 +283,12 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
 
     onMoveEnd: function () {
         this._gradualLoading = false;
-        Z.renderer.Canvas.prototype.onMoveEnd.apply(this, arguments);
+        maptalks.renderer.Canvas.prototype.onMoveEnd.apply(this, arguments);
     },
 
     onZoomEnd: function () {
         this._gradualLoading = true;
-        Z.renderer.Canvas.prototype.onZoomEnd.apply(this, arguments);
+        maptalks.renderer.Canvas.prototype.onZoomEnd.apply(this, arguments);
     },
 
     onRemove: function () {
@@ -300,4 +300,4 @@ Z.renderer.tilelayer.Canvas = Z.renderer.Canvas.extend(/** @lends Z.renderer.til
     }
 });
 
-Z.TileLayer.registerRenderer('canvas', Z.renderer.tilelayer.Canvas);
+maptalks.TileLayer.registerRenderer('canvas', maptalks.renderer.tilelayer.Canvas);

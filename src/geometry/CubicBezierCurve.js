@@ -19,7 +19,7 @@
  *     }
  * ).addTo(layer);
  */
-Z.CubicBezierCurve = Z.Curve.extend(/** @lends maptalks.CubicBezierCurve.prototype */{
+maptalks.CubicBezierCurve = maptalks.Curve.extend(/** @lends maptalks.CubicBezierCurve.prototype */{
 
     _toJSON: function (options) {
         return {
@@ -33,14 +33,14 @@ Z.CubicBezierCurve = Z.Curve.extend(/** @lends maptalks.CubicBezierCurve.prototy
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         this._bezierCurve(ctx, points, lineOpacity);
-        Z.Canvas._stroke(ctx, lineOpacity);
+        maptalks.Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity);
     }
 });
 
-Z.CubicBezierCurve.fromJSON = function (json) {
+maptalks.CubicBezierCurve.fromJSON = function (json) {
     var feature = json['feature'];
-    var curve = new Z.CubicBezierCurve(feature['geometry']['coordinates'], json['options']);
+    var curve = new maptalks.CubicBezierCurve(feature['geometry']['coordinates'], json['options']);
     curve.setProperties(feature['properties']);
     return curve;
 };

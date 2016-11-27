@@ -1,2 +1,2 @@
 //internal constants.
-Z.internalLayerPrefix = '_maptalks__internal_layer_';
+maptalks.internalLayerPrefix = '_maptalks__internal_layer_';

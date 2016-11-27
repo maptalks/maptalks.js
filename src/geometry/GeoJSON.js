@@ -6,7 +6,7 @@
 *  @memberOf maptalks
  * @name GeoJSON
  */
-Z.GeoJSON = {
+maptalks.GeoJSON = {
 
     /**
      * Convert one or more GeoJSON objects to a geometry
@@ -51,14 +51,14 @@ Z.GeoJSON = {
      *  var geometries = maptalks.GeoJSON.toGeometry(collection);
      */
     toGeometry:function (geoJSON) {
-        if (Z.Util.isString(geoJSON)) {
-            geoJSON = Z.Util.parseJSON(geoJSON);
+        if (maptalks.Util.isString(geoJSON)) {
+            geoJSON = maptalks.Util.parseJSON(geoJSON);
         }
-        if (Z.Util.isArray(geoJSON)) {
+        if (maptalks.Util.isArray(geoJSON)) {
             var resultGeos = [];
             for (var i = 0, len = geoJSON.length; i < len; i++) {
                 var geo = this._convert(geoJSON[i]);
-                if (Z.Util.isArray(geo)) {
+                if (maptalks.Util.isArray(geo)) {
                     resultGeos = resultGeos.concat(geo);
                 } else {
                     resultGeos.push(geo);
@@ -81,10 +81,10 @@ Z.GeoJSON = {
      * var numCoords = maptalks.GeoJSON.toNumberArrays([new maptalks.Coordinate(100,0), new maptalks.Coordinate(101,1)]);
      */
     toNumberArrays:function (coordinates) {
-        if (!Z.Util.isArray(coordinates)) {
+        if (!maptalks.Util.isArray(coordinates)) {
             return [coordinates.x, coordinates.y];
         }
-        return Z.Util.mapArrayRecursively(coordinates, function (coord) {
+        return maptalks.Util.mapArrayRecursively(coordinates, function (coord) {
             return [coord.x, coord.y];
         });
     },
@@ -97,20 +97,20 @@ Z.GeoJSON = {
      * var coordinates = maptalks.GeoJSON.toCoordinates([[100,0], [101,1]]);
      */
     toCoordinates:function (coordinates) {
-        if (Z.Util.isNumber(coordinates[0]) && Z.Util.isNumber(coordinates[1])) {
-            return new Z.Coordinate(coordinates);
+        if (maptalks.Util.isNumber(coordinates[0]) && maptalks.Util.isNumber(coordinates[1])) {
+            return new maptalks.Coordinate(coordinates);
         }
         var result = [];
         for (var i = 0, len = coordinates.length; i < len; i++) {
             var child = coordinates[i];
-            if (Z.Util.isArray(child)) {
-                if (Z.Util.isNumber(child[0])) {
-                    result.push(new Z.Coordinate(child));
+            if (maptalks.Util.isArray(child)) {
+                if (maptalks.Util.isNumber(child[0])) {
+                    result.push(new maptalks.Coordinate(child));
                 } else {
                     result.push(this.toCoordinates(child));
                 }
             } else {
-                result.push(new Z.Coordinate(child));
+                result.push(new maptalks.Coordinate(child));
             }
         }
         return result;
@@ -123,7 +123,7 @@ Z.GeoJSON = {
      * @private
      */
     _convert:function (json) {
-        if (!json || Z.Util.isNil(json['type'])) {
+        if (!json || maptalks.Util.isNil(json['type'])) {
             return null;
         }
         var options = {};
@@ -144,29 +144,29 @@ Z.GeoJSON = {
                 return null;
             }
             //返回geometry数组
-            var result = Z.GeoJSON.toGeometry(features);
+            var result = maptalks.GeoJSON.toGeometry(features);
             return result;
-        } else if (Z.Util.indexOfArray(type,
+        } else if (maptalks.Util.indexOfArray(type,
             ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
             var clazz = (type === 'Point' ? 'Marker' : type);
-            return new Z[clazz](json['coordinates'], options);
+            return new maptalks[clazz](json['coordinates'], options);
         } else if (type === 'GeometryCollection') {
             var geometries = json['geometries'];
-            if (!Z.Util.isArrayHasData(geometries)) {
-                return new Z.GeometryCollection();
+            if (!maptalks.Util.isArrayHasData(geometries)) {
+                return new maptalks.GeometryCollection();
             }
             var mGeos = [];
             var size = geometries.length;
             for (var i = 0; i < size; i++) {
                 mGeos.push(this._convert(geometries[i]));
             }
-            return new Z.GeometryCollection(mGeos, options);
+            return new maptalks.GeometryCollection(mGeos, options);
         } else if (type === 'Circle') {
-            return new Z.Circle(json['coordinates'], json['radius'], options);
+            return new maptalks.Circle(json['coordinates'], json['radius'], options);
         } else if (type === 'Ellipse' || type === 'Rectangle') {
-            return new Z[type](json['coordinates'], json['width'], json['height'], options);
+            return new maptalks[type](json['coordinates'], json['width'], json['height'], options);
         } else if (type === 'Sector') {
-            return new Z.Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], options);
+            return new maptalks.Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], options);
         }
         return null;
     }

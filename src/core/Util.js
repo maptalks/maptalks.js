@@ -4,7 +4,7 @@
  * @category core
  * @protected
  */
-Z.Util = {
+maptalks.Util = {
     /**
      * @property {Number} uid
      * @static
@@ -46,7 +46,7 @@ Z.Util = {
      */
     setOptions: function (obj, options) {
         if (!obj.hasOwnProperty('options')) {
-            obj.options = obj.options ? Z.Util.create(obj.options) : {};
+            obj.options = obj.options ? maptalks.Util.create(obj.options) : {};
         }
         for (var i in options) {
             obj.options[i] = options[i];
@@ -72,7 +72,7 @@ Z.Util = {
      * @return maptalks.Util
      */
     loadImage:function (img, imgDesc) {
-        if (!Z.node) {
+        if (!maptalks.node) {
             img.src = imgDesc[0];
             return this;
         }
@@ -103,9 +103,9 @@ Z.Util = {
             w   = imgDesc[1],
             h   = imgDesc[2];
         try {
-            if (Z.Util.isSVG(url) && Z.Util.convertSVG) {
-                Z.Util.convertSVG(url, w, h, onLoadComplete);
-            } else if (Z.Util.isURL(url)) {
+            if (maptalks.Util.isSVG(url) && maptalks.Util.convertSVG) {
+                maptalks.Util.convertSVG(url, w, h, onLoadComplete);
+            } else if (maptalks.Util.isURL(url)) {
                 //canvas-node的Image对象
                 this._loadRemoteImage(img, url, onLoadComplete);
             } else {
@@ -161,7 +161,7 @@ Z.Util = {
      * @return {Number}
      */
     UID: function () {
-        return Z.Util.uid++;
+        return maptalks.Util.uid++;
     },
 
     /**
@@ -170,7 +170,7 @@ Z.Util = {
      * @return {Object}
      */
     parseJSON:function (str) {
-        if (!str || !Z.Util.isString(str)) {
+        if (!str || !maptalks.Util.isString(str)) {
             return str;
         }
         return JSON.parse(str);
@@ -249,7 +249,7 @@ Z.Util = {
             if (when()) {
                 fn();
             } else {
-                Z.Util.requestAnimFrame(exe);
+                maptalks.Util.requestAnimFrame(exe);
             }
         };
 
@@ -275,12 +275,12 @@ Z.Util = {
             p, pp;
         for (var i = 0, len = arr.length; i < len; i++) {
             p = arr[i];
-            if (Z.Util.isNil(p)) {
+            if (maptalks.Util.isNil(p)) {
                 result.push(null);
                 continue;
             }
-            if (Z.Util.isArray(p)) {
-                result.push(Z.Util.mapArrayRecursively(p, fn, context));
+            if (maptalks.Util.isArray(p)) {
+                result.push(maptalks.Util.mapArrayRecursively(p, fn, context));
             } else {
                 pp = context ? fn.call(context, p) : fn(p);
                 result.push(pp);
@@ -299,7 +299,7 @@ Z.Util = {
             p, pp;
         for (var i = 0, len = array.length; i < len; i++) {
             p = array[i];
-            if (Z.Util.isNil(p)) {
+            if (maptalks.Util.isNil(p)) {
                 result.push(null);
                 continue;
             }
@@ -310,7 +310,7 @@ Z.Util = {
     },
 
     indexOfArray:function (obj, arr) {
-        if (!Z.Util.isArrayHasData(arr)) {
+        if (!maptalks.Util.isArrayHasData(arr)) {
             return -1;
         }
         for (var i = 0, len = arr.length; i < len; i++) {
@@ -333,7 +333,7 @@ Z.Util = {
      * @return {Boolean}
      */
     objEqual:function (a, b) {
-        return Z.Util._objEqual(a, b);
+        return maptalks.Util._objEqual(a, b);
     },
 
     /**
@@ -344,7 +344,7 @@ Z.Util = {
      * @return {Boolean}
      */
     objDeepEqual:function (a, b) {
-        return Z.Util._objEqual(a, b, true);
+        return maptalks.Util._objEqual(a, b, true);
     },
 
     _objEqual:function (a, b, isDeep) {
@@ -360,7 +360,7 @@ Z.Util = {
             }
             return keys;
         }
-        if (Z.Util.isNil(a) || Z.Util.isNil(b)) {
+        if (maptalks.Util.isNil(a) || maptalks.Util.isNil(b)) {
             return false;
         }
         // an identical "prototype" property.
@@ -387,7 +387,7 @@ Z.Util = {
         if (isDeep) {
             for (i = ka.length - 1; i >= 0; i--) {
                 key = ka[i];
-                if (!Z.Util.objEqual(a[key], b[key])) {
+                if (!maptalks.Util.objEqual(a[key], b[key])) {
                     return false;
                 }
             }
@@ -415,10 +415,10 @@ Z.Util = {
      * @return {Boolean}
      */
     isCoordinate:function (obj) {
-        if (obj instanceof Z.Coordinate) {
+        if (obj instanceof maptalks.Coordinate) {
             return true;
         }
-        /*if (obj && !Z.Util.isNil(obj.x) && !Z.Util.isNil(obj.y)) {
+        /*if (obj && !maptalks.Util.isNil(obj.x) && !maptalks.Util.isNil(obj.y)) {
             return true;
         }*/
         return false;
@@ -478,7 +478,7 @@ Z.Util = {
      * @return {Boolean} true|false
      */
     isString:function (_str) {
-        if (Z.Util.isNil(_str)) { return false; }
+        if (maptalks.Util.isNil(_str)) { return false; }
         return typeof _str === 'string' || (_str.constructor !== null && _str.constructor === String);
     },
 
@@ -519,32 +519,32 @@ Z.Util = {
     cssUrlRe:/^url\(([^\'\"].*[^\'\"])\)$/i,
 
     isCssUrl: function (str) {
-        if (!Z.Util.isString(str)) {
+        if (!maptalks.Util.isString(str)) {
             return 0;
         }
         var head = str.slice(0, 6);
         if (head === 'http:/' || head === 'https:') {
             return 3;
         }
-        if (Z.Util.cssUrlRe.test(str)) {
+        if (maptalks.Util.cssUrlRe.test(str)) {
             return 1;
         }
-        if (Z.Util.cssUrlReWithQuote.test(str)) {
+        if (maptalks.Util.cssUrlReWithQuote.test(str)) {
             return 2;
         }
         return 0;
     },
 
     extractCssUrl: function (str) {
-        var test = Z.Util.isCssUrl(str), matches;
+        var test = maptalks.Util.isCssUrl(str), matches;
         if (test === 3) {
             return str;
         }
         if (test === 1) {
-            matches = Z.Util.cssUrlRe.exec(str);
+            matches = maptalks.Util.cssUrlRe.exec(str);
             return matches[1];
         } else if (test === 2) {
-            matches = Z.Util.cssUrlReWithQuote.exec(str);
+            matches = maptalks.Util.cssUrlReWithQuote.exec(str);
             return matches[2];
         } else {
             // return as is if not an css url
@@ -570,7 +570,7 @@ Z.Util = {
         var str = String(input);
         for (
           // initialize result and counter
-          var block, charCode, idx = 0, map = Z.Util.b64chrs, output = '';
+          var block, charCode, idx = 0, map = maptalks.Util.b64chrs, output = '';
           // if the next str index does not exist:
           //   change the mapping table to "="
           //   check if d has no fractional digits
@@ -611,13 +611,13 @@ Z.Util = {
     decreaseSymbolOpacity:function (symbol, ratio) {
         function s(_symbol, _ratio) {
             var op = _symbol['opacity'];
-            if (Z.Util.isNil(op)) {
+            if (maptalks.Util.isNil(op)) {
                 _symbol['opacity'] = _ratio;
             } else {
                 _symbol['opacity'] *= _ratio;
             }
         }
-        if (Z.Util.isArray(symbol)) {
+        if (maptalks.Util.isArray(symbol)) {
             for (var i = 0; i < symbol.length; i++) {
                 s(symbol[i], ratio);
             }
@@ -632,26 +632,26 @@ Z.Util = {
         if (!sources || !sources.length) {
             sources = [{}];
         }
-        if (Z.Util.isArray(symbol)) {
+        if (maptalks.Util.isArray(symbol)) {
             var s, dest, i, ii, l, ll;
             var result = [];
             for (i = 0, l = symbol.length; i < l; i++) {
                 s = symbol[i];
                 dest = {};
                 for (ii = 0, ll = sources.length; ii < ll; ii++) {
-                    if (!Z.Util.isArray(sources[ii])) {
-                        Z.Util.extend(dest, s, sources[ii] ? sources[ii] : {});
-                    } else if (!Z.Util.isNil(sources[ii][i])) {
-                        Z.Util.extend(dest, s, sources[ii][i]);
+                    if (!maptalks.Util.isArray(sources[ii])) {
+                        maptalks.Util.extend(dest, s, sources[ii] ? sources[ii] : {});
+                    } else if (!maptalks.Util.isNil(sources[ii][i])) {
+                        maptalks.Util.extend(dest, s, sources[ii][i]);
                     } else {
-                        Z.Util.extend(dest, s ? s : {});
+                        maptalks.Util.extend(dest, s ? s : {});
                     }
                 }
                 result.push(dest);
             }
             return result;
         } else {
-            return Z.Util.extend.apply(Z.Util, [{}, symbol].concat(sources));
+            return maptalks.Util.extend.apply(maptalks.Util, [{}, symbol].concat(sources));
         }
     },
 
@@ -682,17 +682,17 @@ Z.Util = {
 
     getSymbolStamp: function (symbol) {
         var keys = [];
-        if (Z.Util.isArray(symbol)) {
+        if (maptalks.Util.isArray(symbol)) {
             for (var i = 0; i < symbol.length; i++) {
-                keys.push(Z.Util.getSymbolStamp(symbol[i]));
+                keys.push(maptalks.Util.getSymbolStamp(symbol[i]));
             }
             return '[ ' + keys.join(' , ') + ' ]';
         }
         for (var p in symbol) {
             if (symbol.hasOwnProperty(p)) {
-                if (!Z.Util.isFunction(symbol[p])) {
-                    if (Z.Util.isGradient(symbol[p])) {
-                        keys.push(p + '=' + Z.Util.getGradientStamp(symbol[p]));
+                if (!maptalks.Util.isFunction(symbol[p])) {
+                    if (maptalks.Util.isGradient(symbol[p])) {
+                        keys.push(p + '=' + maptalks.Util.getGradientStamp(symbol[p]));
                     } else {
                         keys.push(p + '=' + symbol[p]);
                     }
@@ -713,11 +713,11 @@ Z.Util = {
             return null;
         }
         var symbols = symbol;
-        if (!Z.Util.isArray(symbol)) {
+        if (!maptalks.Util.isArray(symbol)) {
             symbols = [symbol];
         }
         var resources = [];
-        var props = Z.Symbolizer.resourceProperties,
+        var props = maptalks.Symbolizer.resourceProperties,
             i, ii, iii, res, resSizeProp;
         var w, h;
         for (i = symbols.length - 1; i >= 0; i--) {
@@ -726,40 +726,40 @@ Z.Util = {
                 continue;
             }
             if (toAbsolute) {
-                symbol = Z.Util.convertResourceUrl(symbol);
+                symbol = maptalks.Util.convertResourceUrl(symbol);
             }
             for (ii = 0; ii < props.length; ii++) {
                 res = symbol[props[ii]];
-                if (Z.Util.isFunctionDefinition(res)) {
-                    res = Z.Util.getFunctionTypeResources(res);
+                if (maptalks.Util.isFunctionDefinition(res)) {
+                    res = maptalks.Util.getFunctionTypeResources(res);
                 }
                 if (!res) {
                     continue;
                 }
-                if (!Z.Util.isArray(res)) {
+                if (!maptalks.Util.isArray(res)) {
                     res = [res];
                 }
                 for (iii = 0; iii < res.length; iii++) {
                     if (res[iii].slice(0, 4) === 'url(') {
-                        res[iii] = Z.Util.extractCssUrl(res[iii]);
+                        res[iii] = maptalks.Util.extractCssUrl(res[iii]);
                     }
-                    resSizeProp = Z.Symbolizer.resourceSizeProperties[ii];
+                    resSizeProp = maptalks.Symbolizer.resourceSizeProperties[ii];
                     resources.push([res[iii], symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
                 }
             }
             if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-                w = Z.Util.isFunctionDefinition(symbol['markerWidth']) ? 200 : symbol['markerWidth'];
-                h = Z.Util.isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
-                if (Z.Util.isFunctionDefinition(symbol['markerPath'])) {
-                    res = Z.Util.getFunctionTypeResources(symbol['markerPath']);
+                w = maptalks.Util.isFunctionDefinition(symbol['markerWidth']) ? 200 : symbol['markerWidth'];
+                h = maptalks.Util.isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
+                if (maptalks.Util.isFunctionDefinition(symbol['markerPath'])) {
+                    res = maptalks.Util.getFunctionTypeResources(symbol['markerPath']);
                     var path = symbol['markerPath'];
                     for (iii = 0; iii < res.length; iii++) {
                         symbol['markerPath'] = res[iii];
-                        resources.push([Z.Geometry.getMarkerPathBase64(symbol), w, h]);
+                        resources.push([maptalks.Geometry.getMarkerPathBase64(symbol), w, h]);
                     }
                     symbol['markerPath'] = path;
                 } else {
-                    resources.push([Z.Geometry.getMarkerPathBase64(symbol), w, h]);
+                    resources.push([maptalks.Geometry.getMarkerPathBase64(symbol), w, h]);
                 }
             }
         }
@@ -777,10 +777,10 @@ Z.Util = {
         }
 
         var s = symbol;
-        if (Z.node) {
+        if (maptalks.node) {
             return s;
         }
-        var props = Z.Symbolizer.resourceProperties;
+        var props = maptalks.Symbolizer.resourceProperties;
         var res;
         for (var ii = 0, len = props.length; ii < len; ii++) {
             res = s[props[ii]];
@@ -793,18 +793,18 @@ Z.Util = {
     },
 
     _convertUrlToAbsolute: function (res) {
-        if (Z.Util.isFunctionDefinition(res)) {
+        if (maptalks.Util.isFunctionDefinition(res)) {
             var stops = res.stops;
             for (var i = 0; i < stops.length; i++) {
-                stops[i][1] = Z.Util._convertUrlToAbsolute(stops[i][1]);
+                stops[i][1] = maptalks.Util._convertUrlToAbsolute(stops[i][1]);
             }
             return res;
         }
         var embed = 'data:';
         if (res.slice(0, 4) === 'url(') {
-            res = Z.Util.extractCssUrl(res);
+            res = maptalks.Util.extractCssUrl(res);
         }
-        if (!Z.Util.isURL(res) &&
+        if (!maptalks.Util.isURL(res) &&
             (res.length <= embed.length || res.substring(0, embed.length) !== embed)) {
             res = this._absolute(location.href, res);
         }
@@ -845,8 +845,8 @@ Z.Util = {
      * @return {Object[]}       compiled styles
      */
     compileStyle: function (styles) {
-        if (!Z.Util.isArray(styles)) {
-            return Z.Util.compileStyle([styles]);
+        if (!maptalks.Util.isArray(styles)) {
+            return maptalks.Util.compileStyle([styles]);
         }
         var compiled = [];
         for (var i = 0; i < styles.length; i++) {
@@ -857,7 +857,7 @@ Z.Util = {
                 });
             } else {
                 compiled.push({
-                    'filter' : Z.Util.createFilter(styles[i]['filter']),
+                    'filter' : maptalks.Util.createFilter(styles[i]['filter']),
                     'symbol' : styles[i].symbol
                 });
             }
@@ -867,17 +867,17 @@ Z.Util = {
 
 };
 
-Z.Util.GUID = Z.Util.UID;
+maptalks.Util.GUID = maptalks.Util.UID;
 
 
     //RequestAnimationFrame, inspired by Leaflet
 (function () {
-    if (Z.node) {
-        Z.Util.requestAnimFrame = function (fn) {
+    if (maptalks.node) {
+        maptalks.Util.requestAnimFrame = function (fn) {
             return setTimeout(fn, 16);
         };
 
-        Z.Util.cancelAnimFrame = clearTimeout;
+        maptalks.Util.cancelAnimFrame = clearTimeout;
         return;
     }
 
@@ -906,11 +906,11 @@ Z.Util.GUID = Z.Util.UID;
         requestFn = timeoutDefer;
         cancelFn =  function (id) { clearTimeout(id); };
     }
-    Z.Util.requestAnimFrame = function (fn) {
+    maptalks.Util.requestAnimFrame = function (fn) {
         return requestFn(fn);
     };
 
-    Z.Util.cancelAnimFrame = function (id) {
+    maptalks.Util.cancelAnimFrame = function (id) {
         if (id) {
             cancelFn(id);
         }
