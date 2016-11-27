@@ -25,6 +25,11 @@
  */
 Z.CanvasLayer = Z.Layer.extend(/** @lends maptalks.CanvasLayer.prototype */{
 
+    options: {
+        'animation' : false,
+        'fps'    : 70
+    },
+
     /**
      * An optional interface function called only once before the first draw, useful for preparing your canvas operations.
      * @param  {CanvasRenderingContext2D } context - CanvasRenderingContext2D of the layer canvas.
@@ -38,6 +43,27 @@ Z.CanvasLayer = Z.Layer.extend(/** @lends maptalks.CanvasLayer.prototype */{
      * @param  {*} params.. - parameters returned by function prepareToDraw(context).
      */
     draw: function () {},
+
+    cancel: function () {
+        if (this._getRenderer()) {
+            this._getRenderer().stopAnimation();
+        }
+        return this;
+    },
+
+    play: function () {
+        if (this._getRenderer()) {
+            this._getRenderer().startAnimation();
+        }
+        return this;
+    },
+
+    clearCanvas: function () {
+        if (this._getRenderer()) {
+            this._getRenderer().clearCanvas();
+        }
+        return this;
+    },
 
     /**
      * Ask the map to redraw the layer canvas without firing any event.
@@ -94,12 +120,8 @@ Z.CanvasLayer = Z.Layer.extend(/** @lends maptalks.CanvasLayer.prototype */{
 });
 
 Z.CanvasLayer.registerRenderer('canvas', Z.renderer.Canvas.extend({
-    initialize: function (layer) {
-        this.layer = layer;
-    },
 
     draw: function () {
-        this.prepareCanvas();
         if (!this._predrawed) {
             this._drawContext = this.layer.prepareToDraw(this.context);
             if (!this._drawContext) {
@@ -107,31 +129,94 @@ Z.CanvasLayer.registerRenderer('canvas', Z.renderer.Canvas.extend({
             }
             this._predrawed = true;
         }
+        this.prepareCanvas();
+        if (this.layer.options['animation']) {
+            if (!this._frame) {
+                this.startAnimation();
+            }
+        } else {
+            this._drawLayer();
+        }
+    },
+
+    _drawLayer: function () {
         this.layer.draw.apply(this.layer, [this.context].concat(this._drawContext));
         this.completeRender();
+        if (this.layer.options['animation']) {
+            this.startAnimation();
+        }
+    },
+
+    startAnimation: function () {
+        var frameFn = Z.Util.bind(this._drawLayer, this);
+        this.stopAnimation();
+        var fps = this.layer.options['fps'];
+        if (fps >= 1000 / 16) {
+            this._frame = Z.Util.requestAnimFrame(frameFn);
+        } else {
+            this._animTimeout = setTimeout(function () {
+                if (Z.Browser.ie9) {
+                    // ie9 doesn't support RAF
+                    frameFn();
+                    this._frame = 1;
+                } else {
+                    this._frame = Z.Util.requestAnimFrame(frameFn);
+                }
+            }.bind(this), 1000 / this.layer.options['fps']);
+        }
+        return this;
+    },
+
+    stopAnimation: function () {
+        if (this._frame) {
+            Z.Util.cancelAnimFrame(this._frame);
+            delete this._frame;
+        }
+        if (this._animTimeout) {
+            clearTimeout(this._animTimeout);
+            delete this._animTimeout;
+        }
+        return this;
+    },
+
+    hide: function () {
+        this.stopAnimation();
+        return maptalks.renderer.Canvas.prototype.hide.call(this);
+    },
+
+    show: function () {
+        if (this.layer && this.layer.options['animation']) {
+            this.startAnimation();
+        }
+        return maptalks.renderer.Canvas.prototype.show.call(this);
     },
 
     remove: function () {
+        this.stopAnimation();
         delete this._drawContext;
-        maptalks.renderer.Canvas.prototype.remove.call(this);
+        return maptalks.renderer.Canvas.prototype.remove.call(this);
     },
 
     onZoomStart: function (param) {
+        this.stopAnimation();
         this.layer.onZoomStart(param);
         Z.renderer.Canvas.prototype.onZoomStart.call(this);
     },
 
     onZoomEnd: function (param) {
+        this.startAnimation();
         this.layer.onZoomEnd(param);
         Z.renderer.Canvas.prototype.onZoomEnd.call(this);
     },
 
     onMoveStart: function (param) {
+        this.stopAnimation();
         this.layer.onMoveStart(param);
         Z.renderer.Canvas.prototype.onMoveStart.call(this);
     },
 
     onMoveEnd: function (param) {
+        this.startAnimation();
         this.layer.onMoveEnd(param);
         Z.renderer.Canvas.prototype.onMoveEnd.call(this);
     },
