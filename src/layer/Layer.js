@@ -349,6 +349,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
             throw new Error('Invalid renderer for Layer(' + this.getId() + '):' + renderer);
         }
         this._renderer = new clazz(this);
+        this._renderer.layer = this;
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
     },
