@@ -14,35 +14,12 @@ Z.Curve = Z.LineString.extend(/** @lends maptalks.Curve.prototype */{
         }
     },
 
-    _getQuadCurvePoints : function (points) {
-        var ctrlPts = [];
-        var i, len = points.length;
-        var xc, yc;
-        for (i = 1; i < len - 1; i++) {
-            xc = (points[i].x + points[i + 1].x) / 2;
-            yc = (points[i].y + points[i + 1].y) / 2;
-            ctrlPts.push(points[i].x, points[i].y, xc, yc);
-        }
-        return ctrlPts;
-    },
-
-    // reference:
-    // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
     _quadraticCurve: function (ctx, points) {
-
         if (points.length <= 2) {
             Z.Canvas._path(ctx, points);
             return;
         }
-        var xc = (points[0].x + points[1].x) / 2,
-            yc = (points[0].y + points[1].y) / 2;
-        ctx.lineTo(xc, yc);
-        var ctrlPts = this._getQuadCurvePoints(points);
-        var i, len = ctrlPts.length;
-        for (i = 0; i < len; i += 4) {
-            ctx.quadraticCurveTo(ctrlPts[i], ctrlPts[i + 1], ctrlPts[i + 2], ctrlPts[i + 3]);
-        }
-        ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+        Z.Canvas.quadraticCurve(ctx, points);
     },
 
     _getCubicCurvePoints: function (points) {

@@ -595,5 +595,34 @@ Z.Canvas = {
 
     _isPattern : function (style) {
         return !Z.Util.isString(style) && !('addColorStop' in style);
+    },
+
+    // reference:
+    // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
+    quadraticCurve: function (ctx, points) {
+        if (!points || points.length <= 2) {
+            return;
+        }
+        var xc = (points[0].x + points[1].x) / 2,
+            yc = (points[0].y + points[1].y) / 2;
+        ctx.lineTo(xc, yc);
+        var ctrlPts = Z.Canvas._getQuadCurvePoints(points);
+        var i, len = ctrlPts.length;
+        for (i = 0; i < len; i += 4) {
+            ctx.quadraticCurveTo(ctrlPts[i], ctrlPts[i + 1], ctrlPts[i + 2], ctrlPts[i + 3]);
+        }
+        ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    },
+
+    _getQuadCurvePoints : function (points) {
+        var ctrlPts = [];
+        var i, len = points.length;
+        var xc, yc;
+        for (i = 1; i < len - 1; i++) {
+            xc = (points[i].x + points[i + 1].x) / 2;
+            yc = (points[i].y + points[i + 1].y) / 2;
+            ctrlPts.push(points[i].x, points[i].y, xc, yc);
+        }
+        return ctrlPts;
     }
 };
