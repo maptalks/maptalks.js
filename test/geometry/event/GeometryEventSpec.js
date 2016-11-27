@@ -50,6 +50,45 @@ describe('Geometry.Events', function() {
         Z.Util.requestAnimFrame = requestAnimFn;
     }
 
+    it('event propagation to map', function () {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = Z.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+
+        var spy = sinon.spy();
+        circle.on('click', spy);
+        var spy2 = sinon.spy();
+        map.on('click', spy2)
+        happen.click(eventContainer,{
+            'clientX':point.x,
+            'clientY':point.y
+            });
+        expect(spy.called).to.be.ok();
+        expect(spy2.called).to.be.ok();
+    });
+
+    it('can stop event\'s propagation', function () {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = Z.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+
+        var circleClicked = false;
+        circle.on('click', function () {
+            circleClicked = true;
+            return false;
+        });
+        var spy = sinon.spy();
+        map.on('click', spy)
+        happen.click(eventContainer,{
+            'clientX':point.x,
+            'clientY':point.y
+            });
+        expect(circleClicked).to.be.ok();
+        expect(spy.called).not.to.be.ok();
+    });
+
     describe('events',function() {
         it('mousemove and mouseout',function(done) {
             var circle = new maptalks.Circle(map.getCenter(), 10);
