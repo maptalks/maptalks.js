@@ -29,7 +29,7 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
 
     defaultBoxSymbol:{
         'markerType':'square',
-        'markerLineColor': '#f00',
+        'markerLineColor': '#000',
         'markerLineWidth': 2,
         'markerLineOpacity': 1,
         'markerFill': '#fff',
@@ -98,18 +98,19 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
     },
 
     onConfig:function (conf) {
-        var isRefresh = false;
+        var needRepaint = false;
         for (var p in conf) {
             if (conf.hasOwnProperty(p)) {
                 if (p.slice(0, 3) === 'box') {
-                    isRefresh = true;
+                    needRepaint = true;
                     break;
                 }
             }
         }
-        if (isRefresh) {
+        if (needRepaint) {
             this._refresh();
         }
+        return maptalks.Marker.prototype.onConfig.apply(this, arguments);
     },
 
     _getBoxSize: function (symbol) {
