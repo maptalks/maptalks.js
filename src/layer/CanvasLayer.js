@@ -44,18 +44,25 @@ maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.pro
      */
     draw: function () {},
 
-    cancel: function () {
+    play: function () {
         if (this._getRenderer()) {
-            this._getRenderer().stopAnimation();
+            this._getRenderer().startAnim();
         }
         return this;
     },
 
-    play: function () {
+    pause: function () {
         if (this._getRenderer()) {
-            this._getRenderer().startAnimation();
+            this._getRenderer().pauseAnim();
         }
         return this;
+    },
+
+    isPlaying : function () {
+        if (this._getRenderer()) {
+            return this._getRenderer().isPlaying();
+        }
+        return false;
     },
 
     clearCanvas: function () {
@@ -142,14 +149,18 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
         this._play();
     },
 
-    startAnimation: function () {
-        this._stopped = false;
+    startAnim: function () {
+        this._paused = false;
         this._play();
     },
 
-    stopAnimation: function () {
+    pauseAnim: function () {
         this._pause();
-        this._stopped = true;
+        this._paused = true;
+    },
+
+    isPlaying : function () {
+        return !maptalks.Util.isNil(this._frame);
     },
 
     hide: function () {
@@ -206,7 +217,7 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
     },
 
     _play : function () {
-        if (this._stopped || !this.layer || !this.layer.options['animation']) {
+        if (this._paused || !this.layer || !this.layer.options['animation']) {
             return;
         }
         var frameFn = maptalks.Util.bind(this._drawLayer, this);

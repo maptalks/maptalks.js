@@ -174,7 +174,7 @@ describe('#ParticleLayer', function() {
         layer.addTo(map);
     });
 
-    it('animation cancel and play', function (done) {
+    it('animation pause and play', function (done) {
         var size = map.getSize();
         layer = new maptalks.ParticleLayer('v', {animation : true});
         var count = 0;
@@ -187,13 +187,15 @@ describe('#ParticleLayer', function() {
             }];
         };
         layer.once('layerload', function () {
-            layer.cancel();
+            layer.pause();
             layer.clearCanvas();
             layer.requestMapToRender();
             layer.completeRender();
+            expect(layer.isPlaying()).not.to.be.ok();
             layer.once('layerload', function () {
                 if (count === 2) {
                     expect(layer).to.be.painted(3, 0, [255, 0, 0]);
+                    expect(layer.isPlaying()).to.be.ok();
                     done();
                 }
             });
