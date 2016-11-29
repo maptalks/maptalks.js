@@ -31,7 +31,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
         'drawImmediate' : false,
         // context.globalCompositeOperation, 'source-in' in default
         'globalCompositeOperation' : null,
-        'renderer' : 'canvas'
+        'renderer' : 'canvas',
+        'dx'       : 0,
+        'dy'       : 0
     },
 
     initialize:function (id, opts) {
@@ -273,21 +275,21 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
      */
     setMask:function (mask) {
         if (!((mask instanceof maptalks.Marker && maptalks.symbolizer.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
-                mask instanceof maptalks.Polygon || mask instanceof maptalks.MultiPolygon)) {
+                mask instanceof maptalks.Polygon)) {
             throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }
 
-        /*if (mask instanceof maptalks.Marker) {
+        if (mask instanceof maptalks.Marker) {
             mask.updateSymbol({
-                'markerLineWidth': 0,
-                'markerFillOpacity': 1
+                'markerLineColor'   : 'rgba(0, 0, 0, 0)',
+                'markerFillOpacity' : 0
             });
         } else {
             mask.setSymbol({
-                'lineWidth':0,
-                'polygonOpacity':1
+                'lineColor'    : 'rgba(0, 0, 0, 0)',
+                'polygonOpacity' : 0
             });
-        }*/
+        }
         mask._bindLayer(this);
         this._mask = mask;
         if (!this.getMap() || this.getMap()._isBusy()) {

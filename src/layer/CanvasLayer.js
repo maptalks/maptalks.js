@@ -139,15 +139,78 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
     _drawLayer: function () {
         this.layer.draw.apply(this.layer, [this.context].concat(this._drawContext));
         this.completeRender();
-        this.startAnimation();
+        this._play();
     },
 
     startAnimation: function () {
-        if (!this.layer || !this.layer.options['animation']) {
+        this._stopped = false;
+        this._play();
+    },
+
+    stopAnimation: function () {
+        this._pause();
+        this._stopped = true;
+    },
+
+    hide: function () {
+        this._pause();
+        return maptalks.renderer.Canvas.prototype.hide.call(this);
+    },
+
+    show: function () {
+        return maptalks.renderer.Canvas.prototype.show.call(this);
+    },
+
+    remove: function () {
+        this._pause();
+        delete this._drawContext;
+        return maptalks.renderer.Canvas.prototype.remove.call(this);
+    },
+
+    onZoomStart: function (param) {
+        this._pause();
+        this.layer.onZoomStart(param);
+        maptalks.renderer.Canvas.prototype.onZoomStart.call(this);
+    },
+
+    onZoomEnd: function (param) {
+        this.layer.onZoomEnd(param);
+        maptalks.renderer.Canvas.prototype.onZoomEnd.call(this);
+    },
+
+    onMoveStart: function (param) {
+        this._pause();
+        this.layer.onMoveStart(param);
+        maptalks.renderer.Canvas.prototype.onMoveStart.call(this);
+    },
+
+    onMoveEnd: function (param) {
+        this.layer.onMoveEnd(param);
+        maptalks.renderer.Canvas.prototype.onMoveEnd.call(this);
+    },
+
+    onResize: function (param) {
+        this.layer.onResize(param);
+        maptalks.renderer.Canvas.prototype.onResize.call(this);
+    },
+
+    _pause : function () {
+        if (this._frame) {
+            maptalks.Util.cancelAnimFrame(this._frame);
+            delete this._frame;
+        }
+        if (this._animTimeout) {
+            clearTimeout(this._animTimeout);
+            delete this._animTimeout;
+        }
+    },
+
+    _play : function () {
+        if (this._stopped || !this.layer || !this.layer.options['animation']) {
             return;
         }
         var frameFn = maptalks.Util.bind(this._drawLayer, this);
-        this.stopAnimation();
+        this._pause();
         var fps = this.layer.options['fps'];
         if (fps >= 1000 / 16) {
             this._frame = maptalks.Util.requestAnimFrame(frameFn);
@@ -162,61 +225,5 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
                 }
             }.bind(this), 1000 / this.layer.options['fps']);
         }
-    },
-
-    stopAnimation: function () {
-        if (this._frame) {
-            maptalks.Util.cancelAnimFrame(this._frame);
-            delete this._frame;
-        }
-        if (this._animTimeout) {
-            clearTimeout(this._animTimeout);
-            delete this._animTimeout;
-        }
-    },
-
-    hide: function () {
-        this.stopAnimation();
-        return maptalks.renderer.Canvas.prototype.hide.call(this);
-    },
-
-    show: function () {
-        this.startAnimation();
-        return maptalks.renderer.Canvas.prototype.show.call(this);
-    },
-
-    remove: function () {
-        this.stopAnimation();
-        delete this._drawContext;
-        return maptalks.renderer.Canvas.prototype.remove.call(this);
-    },
-
-    onZoomStart: function (param) {
-        this.stopAnimation();
-        this.layer.onZoomStart(param);
-        maptalks.renderer.Canvas.prototype.onZoomStart.call(this);
-    },
-
-    onZoomEnd: function (param) {
-        this.layer.onZoomEnd(param);
-        this.startAnimation();
-        maptalks.renderer.Canvas.prototype.onZoomEnd.call(this);
-    },
-
-    onMoveStart: function (param) {
-        this.stopAnimation();
-        this.layer.onMoveStart(param);
-        maptalks.renderer.Canvas.prototype.onMoveStart.call(this);
-    },
-
-    onMoveEnd: function (param) {
-        this.layer.onMoveEnd(param);
-        this.startAnimation();
-        maptalks.renderer.Canvas.prototype.onMoveEnd.call(this);
-    },
-
-    onResize: function (param) {
-        this.layer.onResize(param);
-        maptalks.renderer.Canvas.prototype.onResize.call(this);
     }
 }));

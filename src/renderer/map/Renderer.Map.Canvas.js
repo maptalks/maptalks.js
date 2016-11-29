@@ -193,10 +193,16 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
     },
 
     getMainPanel: function () {
+        if (!this.map) {
+            return null;
+        }
         if (this._isCanvasContainer) {
             return this.map._containerDOM;
         }
-        return this.map._panels.mapWrapper;
+        if (this.map._panels) {
+            return this.map._panels.mapWrapper;
+        }
+        return null;
     },
 
     toDataURL:function (mimeType) {
@@ -386,6 +392,9 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
                  //canvas2svg
                 canvasImage = context;
             }
+        }
+        if (layer.options['dx'] || layer.options['dy']) {
+            point._add(layer.options['dx'], layer.options['dy']);
         }
         this.context.drawImage(canvasImage, point.x, point.y);
         this.context.globalAlpha = alpha;
