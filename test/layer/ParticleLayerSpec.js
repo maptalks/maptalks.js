@@ -1,6 +1,6 @@
 // var utils = require('../SpecUtils.js');
 
-describe('#CanvasLayer', function() {
+describe('#ParticleLayer', function() {
 
     var container;
     var map;
@@ -20,23 +20,25 @@ describe('#CanvasLayer', function() {
     });
 
     afterEach(function() {
+        map.remove();
         removeContainer(container);
     });
 
+    function getParticles() {
+        var size = map.getSize();
+        return [{
+            point : new maptalks.Point(size.width / 2, size.height / 2),
+            r : 50,
+            color : 'rgba(255, 0, 0, 0.1)'
+        }];
+    }
+
     it('add', function (done) {
         var size = map.getSize();
-        layer = new maptalks.CanvasLayer('v');
-        layer.prepareToDraw = function (context) {
-            return [size.width, size.height]
-        };
+        layer = new maptalks.ParticleLayer('v', {animation:false});
+        layer.getParticles = getParticles;
 
-        layer.draw = function (context, w, h) {
-            expect(w).to.be.eql(size.width);
-            expect(h).to.be.eql(size.height);
-            context.fillStyle = "#f00";
-            context.fillRect(0, 0, w, h);
-        };
-        layer.on('layerload', function () {
+        layer.once('layerload', function () {
             expect(layer).to.be.painted(0, 0, [255, 0, 0]);
             done();
         });
@@ -44,11 +46,8 @@ describe('#CanvasLayer', function() {
     });
 
     it('zoom events', function (done) {
-        layer = new maptalks.CanvasLayer('v');
-        layer.draw = function (context) {
-            context.fillStyle = "#f00";
-            context.fillRect(0, 0, 10, 10);
-        };
+        layer = new maptalks.ParticleLayer('v', {animation:false});
+        layer.getParticles = getParticles;
         layer.addTo(map);
         var zoomStartFired = false;
         layer.onZoomStart = function (param) {
@@ -64,11 +63,8 @@ describe('#CanvasLayer', function() {
     });
 
     it('move events', function (done) {
-        layer = new maptalks.CanvasLayer('v');
-        layer.draw = function (context) {
-            context.fillStyle = "#f00";
-            context.fillRect(0, 0, 10, 10);
-        };
+        layer = new maptalks.ParticleLayer('v', {animation:false});
+        layer.getParticles = getParticles;
         layer.addTo(map);
         var moveStartFired = false;
         layer.onMoveStart = function (param) {
@@ -84,11 +80,8 @@ describe('#CanvasLayer', function() {
     });
 
     it('resize events', function (done) {
-        layer = new maptalks.CanvasLayer('v');
-        layer.draw = function (context) {
-            context.fillStyle = "#f00";
-            context.fillRect(0, 0, 10, 10);
-        };
+        layer = new maptalks.ParticleLayer('v', {animation:false});
+        layer.getParticles = getParticles;
         layer.addTo(map);
         var moveStartFired = false;
         layer.onResize = function () {
@@ -98,11 +91,8 @@ describe('#CanvasLayer', function() {
     });
 
     it('remove', function (done) {
-        layer = new maptalks.CanvasLayer('v');
-        layer.draw = function (context) {
-            context.fillStyle = "#f00";
-            context.fillRect(0, 0, 10, 10);
-        };
+        layer = new maptalks.ParticleLayer('v', {animation:false});
+        layer.getParticles = getParticles;
         layer.addTo(map);
         layer.on('layerload', function () {
             map.removeLayer(layer);
@@ -112,22 +102,19 @@ describe('#CanvasLayer', function() {
 
     it('can be masked', function (done) {
         var size = map.getSize();
-        layer = new maptalks.CanvasLayer('v');
-        layer.draw = function (context) {
-            context.fillStyle = "rgba(255, 0, 0, 0.1)";
-            context.fillRect(0, 0, size.width, size.height);
-        };
+        layer = new maptalks.ParticleLayer('v', {animation:false});
+        layer.getParticles = getParticles;
         var maskRadius = 10;
         layer.setMask(new maptalks.Circle(map.getCenter(), maskRadius, {
             symbol : {
                 polygonFill : '#000'
             }
         }));
-        layer.addTo(map);
         layer.once('layerload', function () {
             expect(layer).to.be.painted(0, 0, [255, 0, 0]);
             expect(layer).not.to.be.painted(0, maskRadius + 2);
             done();
         });
+        layer.addTo(map);
     })
 });

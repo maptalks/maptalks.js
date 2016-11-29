@@ -38,8 +38,17 @@ describe('Spec of Masks', function() {
     function testMask(layer, done) {
         layer.once('layerload', function() {
             expect(layer).not.to.be.painted(-7, 0);
-            expect(layer).to.be.painted();
-            done();
+            expect(layer).to.be.painted(0, 0, [0, 0, 0]);
+            layer.once('layerload', function() {
+                expect(layer).not.to.be.painted(-12, 0);
+                expect(layer).to.be.painted(0, 0, [0, 0, 0]);
+                done();
+            });
+            layer.setMask(new maptalks.Circle(map.getCenter(), 10, {
+                symbol : {
+                    'polygonFill' : 'rgba(255, 255, 255, 0.1)'
+                }
+            }));
         });
 
         layer.setMask(new maptalks.Marker(map.getCenter(), {
@@ -47,8 +56,9 @@ describe('Spec of Masks', function() {
                 'markerType' : 'ellipse',
                 'markerWidth' : 10,
                 'markerHeight' : 10,
-                'markerFill' : '#000',
+                'markerFill' : '#fff',
                 'markerFillOpacity' : 1,
+                'markerLineWidth' : 3,
                 'markerDy' : 5
             }
         }));
@@ -64,7 +74,7 @@ describe('Spec of Masks', function() {
     //test vectorlayer
     var vlayer = new maptalks.VectorLayer('v').addGeometry(new maptalks.Circle(center, 2000, {
         symbol : {
-            'polygonFill' : '#000',
+            'polygonFill' : 'rgba(0, 0, 0, 0.1)',
             'polygonOpacity' : 1
         }
     }));
