@@ -118,9 +118,41 @@ describe('#ParticleLayer', function() {
         layer.addTo(map);
     });
 
+    it('show', function (done) {
+        var size = map.getSize();
+        layer = new maptalks.ParticleLayer('v', {visible : false});
+        layer.getParticles = getParticles;
+
+        layer.once('layerload', function () {
+            expect(layer).not.to.be.painted();
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                done();
+            });
+            layer.show();
+        });
+        layer.addTo(map);
+    });
+
+    it('hide', function (done) {
+        var size = map.getSize();
+        layer = new maptalks.ParticleLayer('v');
+        layer.getParticles = getParticles;
+
+        layer.once('layerload', function () {
+            expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            layer.once('hide', function () {
+                expect(layer).not.to.be.painted();
+                done();
+            });
+            layer.hide();
+        });
+        layer.addTo(map);
+    });
+
     it('animation', function (done) {
         var size = map.getSize();
-        layer = new maptalks.ParticleLayer('v', {animation : true});
+        layer = new maptalks.ParticleLayer('v', {animation : true, fps : 20});
         var count = 0;
         layer.getParticles = function (t) {
             var size = map.getSize();
@@ -138,6 +170,36 @@ describe('#ParticleLayer', function() {
                 expect(layer).to.be.painted(3, 0, [255, 0, 0]);
                 done();
             }
+        });
+        layer.addTo(map);
+    });
+
+    it('animation cancel and play', function (done) {
+        var size = map.getSize();
+        layer = new maptalks.ParticleLayer('v', {animation : true});
+        var count = 0;
+        layer.getParticles = function (t) {
+            var size = map.getSize();
+            return [{
+                point : new maptalks.Point(size.width / 2 + (count++) * 2, size.height / 2),
+                r : 6,
+                color : 'rgba(255, 0, 0, 0.1)'
+            }];
+        };
+        layer.once('layerload', function () {
+            layer.cancel();
+            layer.clearCanvas();
+            layer.once('layerload', function () {
+                if (count === 2) {
+                    expect(layer).to.be.painted(3, 0, [255, 0, 0]);
+                    done();
+                }
+            });
+            setTimeout(function () {
+                expect(count).to.be(1);
+                expect(layer).not.to.be.painted(0, 0);
+                layer.play();
+            }, 40)
         });
         layer.addTo(map);
     });

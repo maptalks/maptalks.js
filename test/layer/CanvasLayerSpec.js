@@ -129,5 +129,43 @@ describe('#CanvasLayer', function() {
             expect(layer).not.to.be.painted(0, maskRadius + 2);
             done();
         });
-    })
+    });
+
+    it('show', function (done) {
+        var size = map.getSize();
+        layer = new maptalks.CanvasLayer('v', {visible : false});
+        layer.draw = function (context) {
+            context.fillStyle = "#f00";
+            context.fillRect(0, 0, size.width, size.height);
+        };
+
+        layer.once('layerload', function () {
+            expect(layer).not.to.be.painted();
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                done();
+            });
+            layer.show();
+        });
+        layer.addTo(map);
+    });
+
+    it('hide', function (done) {
+        var size = map.getSize();
+        layer = new maptalks.CanvasLayer('v');
+        layer.draw = function (context) {
+            context.fillStyle = "#f00";
+            context.fillRect(0, 0, size.width, size.height);
+        };
+
+        layer.once('layerload', function () {
+            expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            layer.once('hide', function () {
+                expect(layer).not.to.be.painted();
+                done();
+            });
+            layer.hide();
+        });
+        layer.addTo(map);
+    });
 });

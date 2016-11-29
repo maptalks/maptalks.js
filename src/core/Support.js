@@ -1,6 +1,3 @@
-//根据script查找
-maptalks.prefix = '';
-
 if (!maptalks.node) {
     (function () {
         //解析host地址，插入css和vml定义
@@ -40,29 +37,3 @@ if (!maptalks.node) {
         }
     })();
 }
-
-
-maptalks.Url = function (prefix) {
-    this.prefix = prefix;
-    var parts = this.prefix.split('/');
-    var hostIndex = 2;
-    if (this.prefix.indexOf('http') < 0) {
-        hostIndex = 0;
-    }
-    var hostport = parts[hostIndex];
-    var hostParts = hostport.split(':');
-    this.host = hostParts[0];
-    if (hostParts.length > 1) {
-        this.port = hostParts[1];
-    } else {
-        this.port = 80;
-    }
-};
-
-maptalks.Url.prototype.getHost = function () {
-    return this.host;
-};
-
-maptalks.Url.prototype.getPort = function () {
-    return this.port;
-};
