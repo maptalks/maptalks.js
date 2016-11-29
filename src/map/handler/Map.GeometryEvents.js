@@ -91,7 +91,7 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
         }
 
         function fireGeometryEvent(geometries) {
-            var prevent = false;
+            var propagation = true;
             var i;
             if (eventType === 'mousemove') {
                 var geoMap = {};
@@ -100,7 +100,7 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
                         geoMap[geometries[i]._getInternalId()] = geometries[i];
                         geometries[i]._onEvent(domEvent);
                         //the first geometry is on the top, so ignore the latter cursors.
-                        prevent = geometries[i]._onMouseOver(domEvent);
+                        propagation = geometries[i]._onMouseOver(domEvent);
                     }
                 }
 
@@ -131,9 +131,9 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
 
             } else {
                 if (!geometries || geometries.length === 0) { return; }
-                prevent = geometries[geometries.length - 1]._onEvent(domEvent);
+                propagation = geometries[geometries.length - 1]._onEvent(domEvent);
             }
-            if (prevent) {
+            if (propagation === false) {
                 maptalks.DomUtil.stopPropagation(domEvent);
             }
         }
