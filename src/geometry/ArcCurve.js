@@ -20,7 +20,7 @@
  *     }
  * ).addTo(layer);
  */
-Z.ArcCurve = Z.Curve.extend(/** @lends maptalks.ArcCurve.prototype */{
+maptalks.ArcCurve = maptalks.Curve.extend(/** @lends maptalks.ArcCurve.prototype */{
     /**
      * @property {Object} options
      * @property {Number} [options.arcDegree=90]           - circle arc's degree.
@@ -40,14 +40,14 @@ Z.ArcCurve = Z.Curve.extend(/** @lends maptalks.ArcCurve.prototype */{
     _paintOn: function (ctx, points, lineOpacity) {
         ctx.beginPath();
         this._arc(ctx, points, lineOpacity);
-        Z.Canvas._stroke(ctx, lineOpacity);
+        maptalks.Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity);
     }
 });
 
-Z.ArcCurve.fromJSON = function (json) {
+maptalks.ArcCurve.fromJSON = function (json) {
     var feature = json['feature'];
-    var arc = new Z.ArcCurve(feature['geometry']['coordinates'], json['options']);
+    var arc = new maptalks.ArcCurve(feature['geometry']['coordinates'], json['options']);
     arc.setProperties(feature['properties']);
     return arc;
 };

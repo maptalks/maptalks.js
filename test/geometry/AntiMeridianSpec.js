@@ -4,7 +4,7 @@ describe('#AntiMeridianSpec', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate([179,10]);
+    var center = new maptalks.Coordinate([179,10]);
     var layer;
 
     beforeEach(function() {
@@ -13,7 +13,7 @@ describe('#AntiMeridianSpec', function() {
         map = setups.map;
         map.config('zoomAnimation', false);
         map.setZoom(3);
-        layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+        layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
         map.addLayer(layer);
     });
 

@@ -3,14 +3,14 @@ describe('#GeometryCollection', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
     beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
     });
 
@@ -86,12 +86,12 @@ describe('#GeometryCollection', function() {
 
         it('normal constructor', function() {
             var geometries = genAllTypeGeometries();
-            var collection = new Z.GeometryCollection(geometries);
+            var collection = new maptalks.GeometryCollection(geometries);
             expect(collection.getGeometries()).to.have.length(geometries.length);
         });
 
         it('can be empty.',function() {
-            var collection = new Z.GeometryCollection();
+            var collection = new maptalks.GeometryCollection();
             expect(collection.getGeometries()).to.have.length(0);
             expect(collection.isEmpty()).to.be.ok();
         });
@@ -100,14 +100,14 @@ describe('#GeometryCollection', function() {
 
     describe('collection add to layer',function() {
         var layers = [
-                    new Z.VectorLayer('geometrycollection_test_svg'),
-                    new Z.VectorLayer('geometrycollection_test_canvas',{'render':'canvas'})
+                    new maptalks.VectorLayer('geometrycollection_test_svg'),
+                    new maptalks.VectorLayer('geometrycollection_test_canvas',{'render':'canvas'})
                     ];
         for (var i=0, len=layers.length;i<len;i++) {
             var layer = layers[i];
             it('can be add to layer',function() {
                 var geometries = genAllTypeGeometries();
-                var collection = new Z.GeometryCollection(geometries);
+                var collection = new maptalks.GeometryCollection(geometries);
                 layer.addGeometry(collection);
                 map.addLayer(layer);
             });
@@ -115,7 +115,7 @@ describe('#GeometryCollection', function() {
             it('can be add to layer already on map',function() {
                 map.addLayer(layer);
                 var geometries = genAllTypeGeometries();
-                var collection = new Z.GeometryCollection(geometries);
+                var collection = new maptalks.GeometryCollection(geometries);
                 layer.addGeometry(collection);
             });
         }
@@ -148,21 +148,21 @@ describe('#GeometryCollection', function() {
 
         it('can be updated',function() {
             var geometries = genAllTypeGeometries();
-            var collection = new Z.GeometryCollection(geometries);
+            var collection = new maptalks.GeometryCollection(geometries);
             collection.setGeometries([]);
             expect(collection.getGeometries()).to.have.length(0);
         });
 
         var layers = [
-                    new Z.VectorLayer('geometrycollection_test_svg'),
-                    new Z.VectorLayer('geometrycollection_test_canvas',{'render':'canvas'})
+                    new maptalks.VectorLayer('geometrycollection_test_svg'),
+                    new maptalks.VectorLayer('geometrycollection_test_canvas',{'render':'canvas'})
                     ];
         for (var i=0, len=layers.length;i<len;i++) {
             var layer = layers[i];
             it('can be updated after added to layer',function() {
                 map.addLayer(layer);
                 var geometries = genAllTypeGeometries();
-                var collection = new Z.GeometryCollection(geometries);
+                var collection = new maptalks.GeometryCollection(geometries);
                 layer.addGeometry(collection);
 
                 collection.setGeometries([]);

@@ -16,12 +16,12 @@
  *     ]
  * ).addTo(layer);
  */
-Z.MultiPoint = Z.GeometryCollection.extend(/** @lends maptalks.MultiPoint.prototype */{
-    includes:[Z.Geometry.MultiPoly],
+maptalks.MultiPoint = maptalks.GeometryCollection.extend(/** @lends maptalks.MultiPoint.prototype */{
+    includes:[maptalks.Geometry.MultiPoly],
 
-    GeometryType:Z.Marker,
+    GeometryType:maptalks.Marker,
 
-    type:Z.Geometry['TYPE_MULTIPOINT'],
+    type:maptalks.Geometry['TYPE_MULTIPOINT'],
 
     initialize:function (data, opts) {
         this._initOptions(opts);

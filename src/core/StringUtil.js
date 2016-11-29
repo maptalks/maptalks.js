@@ -4,7 +4,7 @@
  * @category core
  * @protected
  */
-Z.StringUtil = {
+maptalks.StringUtil = {
 
     /**
      * Trim the string
@@ -21,7 +21,7 @@ Z.StringUtil = {
      * @return {String[]}
      */
     splitWords: function (chr) {
-        return Z.StringUtil.trim(chr).split(/\s+/);
+        return maptalks.StringUtil.trim(chr).split(/\s+/);
     },
 
     /**
@@ -31,13 +31,13 @@ Z.StringUtil = {
      * @return {maptalks.Size}
      */
     stringLength:function (text, font) {
-        var ruler = Z.DomUtil._getDomRuler('span');
+        var ruler = maptalks.DomUtil._getDomRuler('span');
         ruler.style.font = font;
         ruler.innerHTML = text;
-        var result = new Z.Size(ruler.clientWidth, ruler.clientHeight);
+        var result = new maptalks.Size(ruler.clientWidth, ruler.clientHeight);
         //if not removed, the canvas container on chrome will turn to unexpected blue background.
         //Reason is unknown.
-        Z.DomUtil.removeDomNode(ruler);
+        maptalks.DomUtil.removeDomNode(ruler);
         return result;
 
     },
@@ -73,12 +73,12 @@ Z.StringUtil = {
      * @return {String}
      */
     replaceVariable: function (str, props) {
-        if (!Z.Util.isObject(props) || !Z.Util.isString(str)) {
+        if (!maptalks.Util.isObject(props) || !maptalks.Util.isString(str)) {
             return str;
         }
-        return str.replace(Z.StringUtil._contentExpRe, function (str, key) {
+        return str.replace(maptalks.StringUtil._contentExpRe, function (str, key) {
             var value = props[key];
-            if (Z.Util.isNil(value)) {
+            if (maptalks.Util.isNil(value)) {
                 return str;
             }
             return value;
@@ -95,16 +95,16 @@ Z.StringUtil = {
      * @return {Object[]} the object's structure: {rowNum: rowNum, textSize: textSize, rows: textRows}
      */
     splitTextToRow: function (text, style) {
-        var font = Z.symbolizer.TextMarkerSymbolizer.getFont(style),
+        var font = maptalks.symbolizer.TextMarkerSymbolizer.getFont(style),
             lineSpacing = style['textLineSpacing'] || 0,
-            rawTextSize = Z.StringUtil.stringLength(text, font),
+            rawTextSize = maptalks.StringUtil.stringLength(text, font),
             textWidth = rawTextSize['width'],
             textHeight = rawTextSize['height'],
             wrapChar = style['textWrapCharacter'],
             wrapWidth = style['textWrapWidth'],
             textRows = [];
         if (!wrapWidth || wrapWidth > textWidth) { wrapWidth = textWidth; }
-        if (!Z.Util.isString(text)) {
+        if (!maptalks.Util.isString(text)) {
             text += '';
         }
         var actualWidth = 0, size, i, l;
@@ -114,12 +114,12 @@ Z.StringUtil = {
             for (i = 0, l = texts.length; i < l; i++) {
                 t = texts[i];
                 //TODO stringLength is expensive, should be reduced here.
-                tSize = Z.StringUtil.stringLength(t, font);
+                tSize = maptalks.StringUtil.stringLength(t, font);
                 tWidth = tSize['width'];
                 if (tWidth > wrapWidth) {
-                    contents = Z.StringUtil.splitContent(t, tWidth, wrapWidth);
+                    contents = maptalks.StringUtil.splitContent(t, tWidth, wrapWidth);
                     for (ii = 0, ll = contents.length; ii < ll; ii++) {
-                        size = Z.StringUtil.stringLength(contents[ii], font);
+                        size = maptalks.StringUtil.stringLength(contents[ii], font);
                         if (size['width'] > actualWidth) { actualWidth = size['width']; }
                         textRows.push({'text':contents[ii], 'size':size});
                     }
@@ -129,9 +129,9 @@ Z.StringUtil = {
                 }
             }
         } else if (textWidth > wrapWidth) {
-            var splitted = Z.StringUtil.splitContent(text, textWidth, wrapWidth);
+            var splitted = maptalks.StringUtil.splitContent(text, textWidth, wrapWidth);
             for (i = 0; i < splitted.length; i++) {
-                size = Z.StringUtil.stringLength(splitted[i], font);
+                size = maptalks.StringUtil.stringLength(splitted[i], font);
                 if (size['width'] > actualWidth) { actualWidth = size['width']; }
                 textRows.push({'text':splitted[i], 'size':size});
             }
@@ -143,7 +143,7 @@ Z.StringUtil = {
         }
 
         var rowNum = textRows.length;
-        var textSize = new Z.Size(actualWidth, textHeight * rowNum + lineSpacing * (rowNum - 1));
+        var textSize = new maptalks.Size(actualWidth, textHeight * rowNum + lineSpacing * (rowNum - 1));
         return {'total': rowNum, 'size': textSize, 'rows': textRows, 'rawSize':rawTextSize};
     },
 
@@ -171,6 +171,6 @@ Z.StringUtil = {
         } else if (verticalAlignment === 'bottom') {
             alignH = 0;
         }
-        return new Z.Point(alignW, alignH);
+        return new maptalks.Point(alignW, alignH);
     }
 };

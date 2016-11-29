@@ -1,4 +1,4 @@
-Z.TileLayer.TileCache = function (capacity) {
+maptalks.TileLayer.TileCache = function (capacity) {
     this._queue = [];
     this._cache = {};
     if (!capacity) {
@@ -7,7 +7,7 @@ Z.TileLayer.TileCache = function (capacity) {
     this.capacity = capacity;
 };
 
-Z.Util.extend(Z.TileLayer.TileCache.prototype, {
+maptalks.Util.extend(maptalks.TileLayer.TileCache.prototype, {
     add:function (key, tile) {
         this._cache[key] = tile;
         this._queue.push(key);

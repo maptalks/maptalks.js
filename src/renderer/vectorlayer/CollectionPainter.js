@@ -5,7 +5,7 @@
  * @protected
  * @param {maptalks.GeometryCollection} geometry - geometry to paint
  */
-Z.CollectionPainter = Z.Class.extend(/** @lends maptalks.CollectionPainter.prototype */{
+maptalks.CollectionPainter = maptalks.Class.extend(/** @lends maptalks.CollectionPainter.prototype */{
     initialize:function (geometry) {
         this.geometry = geometry;
     },
@@ -36,7 +36,7 @@ Z.CollectionPainter = Z.Class.extend(/** @lends maptalks.CollectionPainter.proto
     },
 
     get2DExtent:function (resources) {
-        var  extent = new Z.PointExtent();
+        var  extent = new maptalks.PointExtent();
         this._eachPainter(function (painter) {
             extent = extent.combine(painter.get2DExtent(resources));
         });

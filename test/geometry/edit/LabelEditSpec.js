@@ -1,7 +1,7 @@
 describe('LabelEdit', function () {
     var container, eventContainer;
     var map;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     function getLabel() {
         var label = new maptalks.Label('I am a Text', map.getCenter()).addTo(layer);
@@ -14,7 +14,7 @@ describe('LabelEdit', function () {
         map = setups.map;
         map.config('panAnimation', false);
         eventContainer = map._panels.canvasContainer;
-        layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+        layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
         map.addLayer(layer);
     });
 
@@ -32,7 +32,7 @@ describe('LabelEdit', function () {
             function startEdit(param) {
                 expect(label.isEditingText()).to.be.ok();
                 var dom = label.getTextEditor().getDOM();
-                Z.DomUtil.on(dom, 'keyup', function(ev){
+                maptalks.DomUtil.on(dom, 'keyup', function(ev){
                     var oEvent = ev || event;
                     var char = String.fromCharCode(oEvent.keyCode);
                     if(oEvent.shiftKey) {
@@ -62,7 +62,7 @@ describe('LabelEdit', function () {
             label.startEditText();
             function startEdit(param) {
                 var dom = label.getTextEditor().getDOM();
-                Z.DomUtil.on(dom, 'keyup', function(ev){
+                maptalks.DomUtil.on(dom, 'keyup', function(ev){
                     var oEvent = ev || event;
                     if(oEvent.keyCode === 13) {
                         dom.innerText += '\n';
@@ -89,7 +89,7 @@ describe('LabelEdit', function () {
                     font = maptalks.symbolizer.TextMarkerSymbolizer.getFont(symbol);
                     textSize = symbol['textSize'] || 12,
                     spacing = symbol['textLineSpacing'] || 0;
-                var h = Z.StringUtil.stringLength('test', font).height;
+                var h = maptalks.StringUtil.stringLength('test', font).height;
                 var expected = h * 2 + spacing;
                 expect(label.getSize()['height'] >= expected).to.be.ok();
             }

@@ -9,7 +9,7 @@
  * @mixes maptalks.projection.Common
  * @mixes maptalks.measurer.WGS84Sphere
  */
-Z.projection.EPSG3857 = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.projection.EPSG3857 */{
+maptalks.projection.EPSG3857 = maptalks.Util.extend({}, maptalks.projection.Common, /** @lends maptalks.projection.EPSG3857 */{
     /**
      * "EPSG:3857", Code of the projection, used by [View]{@link maptalks.View} to get projection instance.
      * @type {String}
@@ -31,7 +31,7 @@ Z.projection.EPSG3857 = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
         } else {
             c = Math.log(Math.tan((90 + lat) * rad / 2)) / rad;
         }
-        return new Z.Coordinate(lng * metersPerDegree, c * metersPerDegree);
+        return new maptalks.Coordinate(lng * metersPerDegree, c * metersPerDegree);
     },
 
     unproject: function (pLnglat) {
@@ -46,8 +46,8 @@ Z.projection.EPSG3857 = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
             c = y / metersPerDegree;
             c = (2 * Math.atan(Math.exp(c * rad)) - Math.PI / 2) / rad;
         }
-        return new Z.Coordinate(x / metersPerDegree, c);
+        return new maptalks.Coordinate(x / metersPerDegree, c);
     }
-}, Z.measurer.WGS84Sphere);
+}, maptalks.measurer.WGS84Sphere);
 
-Z.projection.DEFAULT = Z.projection.EPSG3857;
+maptalks.projection.DEFAULT = maptalks.projection.EPSG3857;

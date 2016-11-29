@@ -1,4 +1,4 @@
-Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
+maptalks.symbolizer.DebugSymbolizer = maptalks.symbolizer.PointSymbolizer.extend({
 
     styles:{
         'lineColor':'#000',
@@ -17,7 +17,7 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     },
 
     getDxDy:function () {
-        return new Z.Point(0, 0);
+        return new maptalks.Point(0, 0);
     },
 
     symbolize:function (ctx) {
@@ -30,31 +30,31 @@ Z.symbolizer.DebugSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!map || map._zooming) {
             return;
         }
-        Z.Canvas.prepareCanvas(ctx, this.styles);
+        maptalks.Canvas.prepareCanvas(ctx, this.styles);
         var op = this.styles['lineOpacity'];
 
         //outline
         var pixelExtent = this.getPainter().getContainerExtent();
         var nw = pixelExtent.getMin(),
             size = pixelExtent.getSize();
-        Z.Canvas.rectangle(ctx, nw, size, op, 0);
+        maptalks.Canvas.rectangle(ctx, nw, size, op, 0);
 
         //center cross and id if have any.
         var points = this._getRenderContainerPoints();
 
         var id = this.geometry.getId();
-        var cross = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints('cross', 10, 10);
+        var cross = maptalks.symbolizer.VectorMarkerSymbolizer._getVectorPoints('cross', 10, 10);
         for (var i = 0; i < points.length; i++) {
             var p = points[i];
-            if (!Z.Util.isNil(id)) {
-                Z.Canvas.fillText(ctx, id, p.add(8, -4), 'rgba(0,0,0,1)');
+            if (!maptalks.Util.isNil(id)) {
+                maptalks.Canvas.fillText(ctx, id, p.add(8, -4), 'rgba(0,0,0,1)');
             }
             var c = [];
             for (var ii = 0; ii < cross.length; ii++) {
                 c.push(cross[ii].add(p));
             }
-            Z.Canvas.path(ctx, c.slice(0, 2), op);
-            Z.Canvas.path(ctx, c.slice(2, 4), op);
+            maptalks.Canvas.path(ctx, c.slice(0, 2), op);
+            maptalks.Canvas.path(ctx, c.slice(2, 4), op);
         }
     }
 

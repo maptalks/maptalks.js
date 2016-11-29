@@ -15,8 +15,8 @@
  * @extends maptalks.Class
  * @mixins maptalks.Eventable
  */
-Z.MapTool = Z.Class.extend(/** @lends maptalks.MapTool.prototype */{
-    includes: [Z.Eventable],
+maptalks.MapTool = maptalks.Class.extend(/** @lends maptalks.MapTool.prototype */{
+    includes: [maptalks.Eventable],
 
     /**
      * Adds the map tool to a map.

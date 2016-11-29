@@ -13,7 +13,7 @@
  * var label = new maptalks.Label('This is a label',[100,0])
  *     .addTo(layer);
  */
-Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
+maptalks.Label = maptalks.TextMarker.extend(/** @lends maptalks.Label.prototype */{
 
     /**
      * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
@@ -25,7 +25,6 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
      * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
      */
     options: {
-        'box'          :   true,
         'boxAutoSize'  :   true,
         'boxMinWidth'  :   0,
         'boxMinHeight' :   0,
@@ -54,7 +53,7 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
             if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
                 var width = textSize['width'] + padding['width'] * 2,
                     height = textSize['height'] + padding['height'] * 2;
-                boxSize = new Z.Size(width, height);
+                boxSize = new maptalks.Size(width, height);
                 symbol['markerWidth'] = boxSize['width'];
                 symbol['markerHeight'] = boxSize['height'];
             } else if (boxSize) {
@@ -64,7 +63,7 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
 
             var align = this.options['boxTextAlign'];
             if (align) {
-                var textAlignPoint = Z.StringUtil.getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
+                var textAlignPoint = maptalks.StringUtil.getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
                     dx = symbol['textDx'] || 0,
                     dy = symbol['textDy'] || 0;
                 textAlignPoint = textAlignPoint._add(dx, dy);
@@ -84,9 +83,9 @@ Z.Label = Z.TextMarker.extend(/** @lends maptalks.Label.prototype */{
     }
 });
 
-Z.Label.fromJSON = function (json) {
+maptalks.Label.fromJSON = function (json) {
     var feature = json['feature'];
-    var label = new Z.Label(json['content'], feature['geometry']['coordinates'], json['options']);
+    var label = new maptalks.Label(json['content'], feature['geometry']['coordinates'], json['options']);
     label.setProperties(feature['properties']);
     label.setId(feature['id']);
     return label;

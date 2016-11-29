@@ -8,7 +8,7 @@
  * @memberOf maptalks.ui
  * @name InfoWindow
  */
-Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prototype */{
+maptalks.ui.InfoWindow = maptalks.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prototype */{
 
     /**
      * @property {Object} options
@@ -35,13 +35,13 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
      * @fires maptalks.ui.UIComponent#add
      */
     addTo:function (owner) {
-        if (owner instanceof Z.Geometry) {
+        if (owner instanceof maptalks.Geometry) {
             if (owner.getInfoWindow() && owner.getInfoWindow() !== this) {
                 owner.removeInfoWindow();
             }
             owner._infoWindow = this;
         }
-        return Z.ui.UIComponent.prototype.addTo.apply(this, arguments);
+        return maptalks.ui.UIComponent.prototype.addTo.apply(this, arguments);
     },
 
     /**
@@ -115,15 +115,15 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
     buildOn: function () {
         var dom;
         if (this.options['custom']) {
-            if (Z.Util.isString(this.options['content'])) {
-                dom = Z.DomUtil.createEl('div');
+            if (maptalks.Util.isString(this.options['content'])) {
+                dom = maptalks.DomUtil.createEl('div');
                 dom.innerHTML = this.options['content'];
                 return dom;
             } else {
                 return this.options['content'];
             }
         } else {
-            dom = Z.DomUtil.createEl('div');
+            dom = maptalks.DomUtil.createEl('div');
             dom.className = 'maptalks-msgBox';
             dom.style.width = this._getWindowWidth() + 'px';
             var content = '<em class="maptalks-ico"></em>';
@@ -144,7 +144,7 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
      */
     getTransformOrigin: function () {
         var size = this.getSize();
-        var o = new Z.Point(size['width'] / 2, size['height']);
+        var o = new maptalks.Point(size['width'] / 2, size['height']);
         if (!this.options['custom']) {
             o._add(4, 12);
         }
@@ -153,11 +153,11 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
 
     getOffset:function () {
         var size = this.getSize();
-        var o = new Z.Point(-size['width'] / 2, -size['height']);
+        var o = new maptalks.Point(-size['width'] / 2, -size['height']);
         if (!this.options['custom']) {
             o._substract(4, 12);
         }
-        if (this.getOwner() instanceof Z.Marker) {
+        if (this.getOwner() instanceof maptalks.Marker) {
             var markerSize = this.getOwner().getSize();
             if (markerSize) {
                 o._add(0,  -markerSize['height']);
@@ -173,7 +173,7 @@ Z.ui.InfoWindow = Z.ui.UIComponent.extend(/** @lends maptalks.ui.InfoWindow.prot
         if (!this.getMap().options['enableInfoWindow']) {
             return this;
         }
-        return Z.ui.UIComponent.prototype.show.apply(this, arguments);
+        return maptalks.ui.UIComponent.prototype.show.apply(this, arguments);
     },
 
     _getWindowWidth:function () {

@@ -12,7 +12,7 @@
         subdomains:['a','b','c']
     })
  */
-Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
+maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
     /**
      * @property {Object}              options                     - TileLayer's options
@@ -36,7 +36,9 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         'renderWhenPanning' : false,
         //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
-        'renderSpanWhenPanning' : (function () { return Z.Browser.mobile ? -1 : 100; })(),
+        'renderSpanWhenPanning' : (function () { return maptalks.Browser.mobile ? -1 : 100; })(),
+
+        'cssFilter' : null,
 
         'crossOrigin' : null,
 
@@ -50,7 +52,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         'cacheTiles' : true,
 
-        'baseLayerRenderer' : (function () { return Z.node ? 'canvas' : 'dom'; })()
+        'baseLayerRenderer' : (function () { return maptalks.node ? 'canvas' : 'dom'; })()
     },
 
 
@@ -60,7 +62,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
      */
     getTileSize:function () {
         var size = this.options['tileSize'];
-        return new Z.Size(size['width'], size['height']);
+        return new maptalks.Size(size['width'], size['height']);
     },
 
     /**
@@ -109,9 +111,9 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
      */
     _initTileConfig:function () {
         var map = this.getMap();
-        this._defaultTileConfig = new Z.TileConfig(Z.TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
+        this._defaultTileConfig = new maptalks.TileConfig(maptalks.TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
         if (this.options['tileSystem']) {
-            this._tileConfig = new Z.TileConfig(this.options['tileSystem'], map.getFullExtent(), this.getTileSize());
+            this._tileConfig = new maptalks.TileConfig(this.options['tileSystem'], map.getFullExtent(), this.getTileSize());
         }
     },
 
@@ -149,13 +151,13 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
 
         var mapW = map.width,
             mapH = map.height,
-            containerCenter = new Z.Point(mapW / 2, mapH / 2),
+            containerCenter = new maptalks.Point(mapW / 2, mapH / 2),
             containerExtent = map.getContainerExtent();
 
         //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
         var centerTile =  tileConfig.getCenterTile(map._getPrjCenter(), res),
          //计算中心瓦片的top和left偏移值
-            centerPoint = new Z.Point(mapW / 2 - centerTile['offsetLeft'],
+            centerPoint = new maptalks.Point(mapW / 2 - centerTile['offsetLeft'],
                                                 mapH / 2 - centerTile['offsetTop']);
 
         //中心瓦片上下左右的瓦片数
@@ -167,8 +169,8 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         centerPoint._substract(mapViewPoint)._round();
 
         var tiles = [],
-            viewExtent = new Z.PointExtent(),
-            fullExtent = new Z.PointExtent();
+            viewExtent = new maptalks.PointExtent(),
+            fullExtent = new maptalks.PointExtent();
 
         for (var i = -(left); i < right; i++) {
             for (var j = -(top); j < bottom; j++) {
@@ -177,7 +179,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                     tileLeft = centerPoint.x + tileSize['width'] * i,
                     tileTop = centerPoint.y + tileSize['height'] * j,
                     tileId = [tileIndex['y'], tileIndex['x'], zoom, tileLeft, tileTop].join('__'),
-                    tileViewPoint = new Z.Point(tileLeft, tileTop),
+                    tileViewPoint = new maptalks.Point(tileLeft, tileTop),
                     tileDesc = {
                         'url' : tileUrl,
                         'viewPoint': tileViewPoint,
@@ -186,12 +188,12 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                         'zoom' : zoom
                     };
                 tiles.push(tileDesc);
-                viewExtent = viewExtent.combine(new Z.PointExtent(
+                viewExtent = viewExtent.combine(new maptalks.PointExtent(
                         tileDesc['viewPoint'],
                         tileDesc['viewPoint'].add(tileSize['width'], tileSize['height'])
                         )
                     );
-                fullExtent = fullExtent.combine(new Z.PointExtent(
+                fullExtent = fullExtent.combine(new maptalks.PointExtent(
                         tileDesc['2dPoint'],
                         tileDesc['2dPoint'].add(tileSize['width'], tileSize['height'])
                         )
@@ -218,7 +220,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
         var domain = '';
         if (this.options['subdomains']) {
             var subdomains = this.options['subdomains'];
-            if (Z.Util.isArrayHasData(subdomains)) {
+            if (maptalks.Util.isArrayHasData(subdomains)) {
                 var length = subdomains.length;
                 var s = (x + y) % length;
                 if (s < 0) {
@@ -227,7 +229,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
                 domain = subdomains[s];
             }
         }
-        if (Z.Util.isFunction(urlTemplate)) {
+        if (maptalks.Util.isFunction(urlTemplate)) {
             return urlTemplate(x, y, z, domain);
         }
         var data = {
@@ -256,7 +258,7 @@ Z.TileLayer = Z.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
  * It can be used to reproduce the instance by [fromJSON]{@link maptalks.Layer#fromJSON} method
  * @return {Object} layer's profile JSON
  */
-Z.TileLayer.prototype.toJSON = function () {
+maptalks.TileLayer.prototype.toJSON = function () {
     var profile = {
         'type':'TileLayer',
         'id':this.getId(),
@@ -273,7 +275,7 @@ Z.TileLayer.prototype.toJSON = function () {
  * @private
  * @function
  */
-Z.TileLayer.fromJSON = function (layerJSON) {
+maptalks.TileLayer.fromJSON = function (layerJSON) {
     if (!layerJSON || layerJSON['type'] !== 'TileLayer') { return null; }
-    return new Z.TileLayer(layerJSON['id'], layerJSON['options']);
+    return new maptalks.TileLayer(layerJSON['id'], layerJSON['options']);
 };

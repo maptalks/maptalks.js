@@ -8,18 +8,18 @@
  * @param {Object}        json      - GeoJSON objects
  * @param {Object} [options=null]   - construct options defined in [maptalks.GeoJSONLayer]{@link maptalks.GeoJSONLayer#options}
  */
-Z.GeoJSONLayer = Z.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype */{
+maptalks.GeoJSONLayer = maptalks.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype */{
 
     initialize: function (id, json, options) {
         this.setId(id);
-        if (json && !Z.Util.isArray(json)) {
+        if (json && !maptalks.Util.isArray(json)) {
             if (!json['type']) {
                 //is options
                 options = json;
                 json = null;
             }
         }
-        Z.Util.setOptions(this, options);
+        maptalks.Util.setOptions(this, options);
         if (json) {
             var geometries = this._parse(json);
             this.addGeometry(geometries);
@@ -38,8 +38,8 @@ Z.GeoJSONLayer = Z.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype
     },
 
     _parse: function (json) {
-        json = Z.Util.parseJSON(json);
-        return Z.Geometry.fromJSON(json);
+        json = maptalks.Util.parseJSON(json);
+        return maptalks.Geometry.fromJSON(json);
     },
 
     /**
@@ -51,7 +51,7 @@ Z.GeoJSONLayer = Z.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype
      * @return {Object} layer's profile JSON
      */
     toJSON: function (options) {
-        var profile = Z.VectorLayer.prototype.toJSON.call(this, options);
+        var profile = maptalks.VectorLayer.prototype.toJSON.call(this, options);
         profile['type'] = 'GeoJSONLayer';
         var json = [];
         if (profile['geometries']) {
@@ -78,9 +78,9 @@ Z.GeoJSONLayer = Z.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype
  * @private
  * @function
  */
-Z.GeoJSONLayer.fromJSON = function (profile) {
+maptalks.GeoJSONLayer.fromJSON = function (profile) {
     if (!profile || profile['type'] !== 'GeoJSONLayer') { return null; }
-    var layer = new Z.GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
+    var layer = new maptalks.GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
     if (profile['style']) {
         layer.setStyle(profile['style']);
     }

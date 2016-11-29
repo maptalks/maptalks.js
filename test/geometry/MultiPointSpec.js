@@ -3,14 +3,14 @@ describe('#MultiPoint', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
     beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
     });
 
@@ -50,12 +50,12 @@ describe('#MultiPoint', function() {
 
         it('normal constructor', function() {
             var points = [ [100.0, 0.0], [101.0, 1.0] ];
-            var multiPoint = new Z.MultiPoint(points);
+            var multiPoint = new maptalks.MultiPoint(points);
             expect(multiPoint.getCoordinates()).to.have.length(points.length);
         });
 
         it('can be empty.',function() {
-            var multiPoint = new Z.MultiPoint();
+            var multiPoint = new maptalks.MultiPoint();
             expect(multiPoint.getCoordinates()).to.have.length(0);
             expect(multiPoint.isEmpty()).to.be.ok();
         });
@@ -63,7 +63,7 @@ describe('#MultiPoint', function() {
     });
     describe('geometry fires events', function() {
          it('events', function() {
-            var vector = new Z.MultiPoint([center]);
+            var vector = new maptalks.MultiPoint([center]);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
 
@@ -72,7 +72,7 @@ describe('#MultiPoint', function() {
 
 
     it('can have various symbols',function(done) {
-        var vector = new Z.MultiPoint([center]);
+        var vector = new maptalks.MultiPoint([center]);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 });

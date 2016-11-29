@@ -1,7 +1,7 @@
 /**
  * @namespace
  */
-Z.ui = {};
+maptalks.ui = {};
 /**
  * Some instance methods subclasses needs to implement:  <br>
  *  <br>
@@ -28,8 +28,8 @@ Z.ui = {};
  * @memberOf maptalks.ui
  * @name UIComponent
  */
-Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype */{
-    includes: [Z.Eventable],
+maptalks.ui.UIComponent = maptalks.Class.extend(/** @lends maptalks.ui.UIComponent.prototype */{
+    includes: [maptalks.Eventable],
 
     /**
      * @property {Object} options
@@ -49,12 +49,13 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         'autoPan' : false,
         'single' : true,
         'animation' : 'scale',
+        'animationOnHide' : true,
         'animationDuration' : 500,
         'animationDelay' : 0
     },
 
     initialize: function (options) {
-        Z.Util.setOptions(this, options);
+        maptalks.Util.setOptions(this, options);
     },
 
     /**
@@ -86,7 +87,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         if (!this._owner) {
             return null;
         }
-        if (this._owner instanceof Z.Map) {
+        if (this._owner instanceof maptalks.Map) {
             return this._owner;
         }
         return this._owner.getMap();
@@ -154,6 +155,11 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         dom.style.left = point.x + 'px';
         dom.style.top  = point.y + 'px';
 
+        dom.style[maptalks.DomUtil.TRANSITION] = null;
+
+        container.appendChild(dom);
+
+
         var anim = this._getAnimation();
 
         if (anim.fade) {
@@ -162,17 +168,15 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         if (anim.scale) {
             if (this.getTransformOrigin) {
                 var origin = this.getTransformOrigin();
-                dom.style[Z.DomUtil.TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
+                dom.style[maptalks.DomUtil.TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
             }
-            dom.style[Z.DomUtil.TRANSFORM] = 'scale(0)';
+            dom.style[maptalks.DomUtil.TRANSFORM] = 'scale(0)';
         }
 
         dom.style.display = '';
 
-        container.appendChild(dom);
-
         if (this.options['eventsToStop']) {
-            Z.DomUtil.on(dom, this.options['eventsToStop'], Z.DomUtil.stopPropagation);
+            maptalks.DomUtil.on(dom, this.options['eventsToStop'], maptalks.DomUtil.stopPropagation);
         }
 
         //autoPan
@@ -185,13 +189,13 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         if (transition) {
             var animFn = function () {
                 if (transition) {
-                    dom.style[Z.DomUtil.TRANSITION] = transition;
+                    dom.style[maptalks.DomUtil.TRANSITION] = transition;
                 }
                 if (anim.fade) {
                     dom.style.opacity = 1;
                 }
                 if (anim.scale) {
-                    dom.style[Z.DomUtil.TRANSFORM] = 'scale(1)';
+                    dom.style[maptalks.DomUtil.TRANSFORM] = 'scale(1)';
                 }
             };
             if (this.options['animationDelay']) {
@@ -217,11 +221,14 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
 
         var anim = this._getAnimation(),
             dom = this.getDOM();
+        if (!this.options['animationOnHide']) {
+            anim.anim = false;
+        }
         if (anim.fade) {
             dom.style.opacity = 0;
         }
         if (anim.scale) {
-            dom.style[Z.DomUtil.TRANSFORM] = 'scale(0)';
+            dom.style[maptalks.DomUtil.TRANSFORM] = 'scale(0)';
         }
 
         if (!anim.anim) {
@@ -322,7 +329,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         };
         var animations = this.options['animation'] ? this.options['animation'].split(',') : [];
         for (var i = 0; i < animations.length; i++) {
-            var trim = Z.StringUtil.trim(animations[i]);
+            var trim = maptalks.StringUtil.trim(animations[i]);
             if (trim === 'fade') {
                 anim.fade = true;
             } else if (trim === 'scale') {
@@ -353,7 +360,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         if (map._moving || map._panAnimating) {
             return;
         }
-        var point = new Z.Point(parseInt(dom.style.left), parseInt(dom.style.top));
+        var point = new maptalks.Point(parseInt(dom.style.left), parseInt(dom.style.top));
         var mapSize = map.getSize(),
             mapWidth = mapSize['width'],
             mapHeight = mapSize['height'];
@@ -373,7 +380,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             top = (mapHeight - containerPoint.y - clientHeight) - 30;
         }
         if (top !== 0 || left !== 0) {
-            map._panAnimation(new Z.Point(left, top), 600);
+            map._panAnimation(new maptalks.Point(left, top), 600);
         }
     },
 
@@ -390,7 +397,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
         dom.style.top = -99999 + 'px';
         dom.style.display = '';
         container.appendChild(dom);
-        this._size = new Z.Size(dom.clientWidth, dom.clientHeight);
+        this._size = new maptalks.Size(dom.clientWidth, dom.clientHeight);
         dom.style.display = 'none';
         return this._size;
     },
@@ -408,12 +415,12 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
             var map = this.getMap(),
                 key = this._uiDomKey();
             if (map[key]) {
-                Z.DomUtil.removeDomNode(map[key]);
+                maptalks.DomUtil.removeDomNode(map[key]);
                 delete map[key];
             }
             delete this.__uiDOM;
         } else if (this.__uiDOM) {
-            Z.DomUtil.removeDomNode(this.__uiDOM);
+            maptalks.DomUtil.removeDomNode(this.__uiDOM);
             delete this.__uiDOM;
         }
     },
@@ -436,12 +443,12 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     _getClassName:function () {
-        for (var p in Z.ui) {
-            if (Z.ui.hasOwnProperty(p)) {
+        for (var p in maptalks.ui) {
+            if (maptalks.ui.hasOwnProperty(p)) {
                 if (p === 'UIComponent') {
                     continue;
                 }
-                if (this instanceof (Z.ui[p])) {
+                if (this instanceof (maptalks.ui[p])) {
                     return p;
                 }
             }
@@ -452,7 +459,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     _switchEvents: function (to) {
         var events = this._getDefaultEvents();
         if (this.getEvents) {
-            Z.Util.extend(events, this.getEvents());
+            maptalks.Util.extend(events, this.getEvents());
         }
         var p;
         if (events) {
@@ -481,7 +488,7 @@ Z.ui.UIComponent = Z.Class.extend(/** @lends maptalks.ui.UIComponent.prototype *
     },
 
     _getOwnerEvents: function () {
-        if (this._owner && (this._owner instanceof Z.Geometry)) {
+        if (this._owner && (this._owner instanceof maptalks.Geometry)) {
             return {
                 'positionchange' : this.onGeometryPositionChange
             };

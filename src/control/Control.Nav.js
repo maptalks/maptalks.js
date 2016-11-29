@@ -7,7 +7,7 @@
  * @memberOf maptalks.control
  * @name Nav
  */
-Z.control.Nav = Z.control.Control.extend(/** @lends maptalks.control.Nav.prototype */{
+maptalks.control.Nav = maptalks.control.Control.extend(/** @lends maptalks.control.Nav.prototype */{
     /**
      * @property {Object} options - options
      * @property {Object} [options.position='top-left'}] - position of the control
@@ -22,14 +22,14 @@ Z.control.Nav = Z.control.Control.extend(/** @lends maptalks.control.Nav.prototy
 
 });
 
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
 
     'navControl' : false
 });
 
-Z.Map.addOnLoadHook(function () {
+maptalks.Map.addOnLoadHook(function () {
     if (this.options['navControl']) {
-        this.navControl = new Z.control.Nav(this.options['navControl']);
+        this.navControl = new maptalks.control.Nav(this.options['navControl']);
         this.addControl(this.navControl);
     }
 });

@@ -1,7 +1,7 @@
 //根据script查找
-Z.prefix = '';
+maptalks.prefix = '';
 
-if (!Z.node) {
+if (!maptalks.node) {
     (function () {
         //解析host地址，插入css和vml定义
         var head = document.getElementsByTagName('head')[0];
@@ -17,7 +17,7 @@ if (!Z.node) {
             }
         }
 
-        if (Z.Browser.mobile) {
+        if (maptalks.Browser.mobile) {
             if (viewPortMeta === null) {
                 viewPortMeta = document.createElement('meta');
                 viewPortMeta.setAttribute('name', 'viewport');
@@ -31,7 +31,7 @@ if (!Z.node) {
             }
         }
 
-        if (Z.Browser.ielt9) {
+        if (maptalks.Browser.ielt9) {
             //chrome frame meta标签
             var cfMeta = document.createElement('meta');
             cfMeta.setAttribute('http-equiv', 'X-UA-Compatible');
@@ -42,7 +42,7 @@ if (!Z.node) {
 }
 
 
-Z.Url = function (prefix) {
+maptalks.Url = function (prefix) {
     this.prefix = prefix;
     var parts = this.prefix.split('/');
     var hostIndex = 2;
@@ -59,10 +59,10 @@ Z.Url = function (prefix) {
     }
 };
 
-Z.Url.prototype.getHost = function () {
+maptalks.Url.prototype.getHost = function () {
     return this.host;
 };
 
-Z.Url.prototype.getPort = function () {
+maptalks.Url.prototype.getPort = function () {
     return this.port;
 };

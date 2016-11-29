@@ -13,7 +13,7 @@
  * var textBox = new maptalks.TextBox('This is a textBox',[100,0])
  *     .addTo(layer);
  */
-Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
+maptalks.TextBox = maptalks.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
 
     /**
      * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link maptalks.Marker#options}
@@ -50,7 +50,7 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
             var padding = this.options['boxPadding'];
             var width = textSize['width'] + padding['width'] * 2,
                 height = textSize['height'] + padding['height'] * 2;
-            boxSize = new Z.Size(width, height);
+            boxSize = new maptalks.Size(width, height);
             symbol['markerWidth'] = boxSize['width'];
             symbol['markerHeight'] = boxSize['height'];
         }  else if (boxSize) {
@@ -85,7 +85,7 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
 
     _getInternalSymbol: function () {
         //In TextBox, textHorizontalAlignment's meaning is textAlign in the box which is reversed from original textHorizontalAlignment.
-        var textSymbol = Z.Util.extend({}, this._symbol);
+        var textSymbol = maptalks.Util.extend({}, this._symbol);
         if (textSymbol['textHorizontalAlignment'] === 'left') {
             textSymbol['textHorizontalAlignment'] = 'right';
         } else if (textSymbol['textHorizontalAlignment'] === 'right') {
@@ -100,9 +100,9 @@ Z.TextBox = Z.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
     }
 });
 
-Z.TextBox.fromJSON = function (json) {
+maptalks.TextBox.fromJSON = function (json) {
     var feature = json['feature'];
-    var textBox = new Z.TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
+    var textBox = new maptalks.TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
     textBox.setProperties(feature['properties']);
     textBox.setId(feature['id']);
     return textBox;

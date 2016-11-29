@@ -1,4 +1,4 @@
-Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
      * Set an InfoWindow to the geometry
      * @param {Object} options - construct [options]{@link maptalks.ui.InfoWindow#options} for the InfoWindow
@@ -10,9 +10,9 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * });
      */
     setInfoWindow:function (options) {
-        this._infoWinOptions = Z.Util.extend({}, options);
+        this._infoWinOptions = maptalks.Util.extend({}, options);
         if (this._infoWindow) {
-            Z.Util.setOptions(this._infoWindow, options);
+            maptalks.Util.setOptions(this._infoWindow, options);
         } else if (this.getMap()) {
             this._bindInfoWindow(this._infoWinOptions);
         }
@@ -77,7 +77,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     },
 
     _bindInfoWindow: function (options) {
-        this._infoWindow = new Z.ui.InfoWindow(options);
+        this._infoWindow = new maptalks.ui.InfoWindow(options);
         this._infoWindow.addTo(this);
 
         return this;

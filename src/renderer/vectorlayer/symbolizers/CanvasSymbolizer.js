@@ -8,9 +8,9 @@
  * @name CanvasSymbolizer
  * @extends {maptalks.Symbolizer}
  */
-Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symbolizer.CanvasSymbolizer.prototype */{
+maptalks.symbolizer.CanvasSymbolizer = maptalks.Symbolizer.extend(/** @lends maptalks.symbolizer.CanvasSymbolizer.prototype */{
     _prepareContext:function (ctx) {
-        if (Z.Util.isNumber(this.symbol['opacity'])) {
+        if (maptalks.Util.isNumber(this.symbol['opacity'])) {
             if (ctx.globalAlpha !== this.symbol['opacity']) {
                 ctx.globalAlpha = this.symbol['opacity'];
             }
@@ -41,6 +41,6 @@ Z.symbolizer.CanvasSymbolizer = Z.Symbolizer.extend(/** @lends maptalks.symboliz
             return [me.getMap().getZoom(), me.geometry.getProperties()];
         };
 
-        return Z.Util.loadFunctionTypes(style, argFn);
+        return maptalks.Util.loadFunctionTypes(style, argFn);
     }
 });

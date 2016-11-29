@@ -15,8 +15,8 @@
  *     id : 'ellipse0'
  * });
  */
-Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
-    includes:[Z.Geometry.Center],
+maptalks.Ellipse = maptalks.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
+    includes:[maptalks.Geometry.Center],
 
     /**
      * @property {Object} [options=null]
@@ -28,7 +28,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
 
 
     initialize:function (coordinates, width, height, opts) {
-        this._coordinates = new Z.Coordinate(coordinates);
+        this._coordinates = new maptalks.Coordinate(coordinates);
         this.width = width;
         this.height = height;
         this._initOptions(opts);
@@ -116,7 +116,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
 
     _containsPoint: function (point, tolerance) {
         var map = this.getMap(),
-            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            t = maptalks.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pa = map.distanceToPixel(this.width / 2, 0),
             pb = map.distanceToPixel(0, this.height / 2),
             a = pa.width,
@@ -126,15 +126,15 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
         var center = this._getCenter2DPoint();
         var f1, f2, d;
         if (xfocus) {
-            f1 = new Z.Point(center.x - c, center.y);
-            f2 = new Z.Point(center.x + c, center.y);
+            f1 = new maptalks.Point(center.x - c, center.y);
+            f2 = new maptalks.Point(center.x + c, center.y);
             d = a * 2;
         } else {
-            f1 = new Z.Point(center.x, center.y - c);
-            f2 = new Z.Point(center.x, center.y + c);
+            f1 = new maptalks.Point(center.x, center.y - c);
+            f2 = new maptalks.Point(center.x, center.y + c);
             d = b * 2;
         }
-        point = new Z.Point(point.x, point.y);
+        point = new maptalks.Point(point.x, point.y);
 
         /*
          L1 + L2 = D
@@ -146,18 +146,18 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     },
 
     _computeExtent:function (measurer) {
-        if (!measurer || !this._coordinates || Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
+        if (!measurer || !this._coordinates || maptalks.Util.isNil(this.width) || maptalks.Util.isNil(this.height)) {
             return null;
         }
         var width = this.getWidth(),
             height = this.getHeight();
         var p1 = measurer.locate(this._coordinates, width / 2, height / 2);
         var p2 = measurer.locate(this._coordinates, -width / 2, -height / 2);
-        return new Z.Extent(p1, p2);
+        return new maptalks.Extent(p1, p2);
     },
 
     _computeGeodesicLength:function () {
-        if (Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
+        if (maptalks.Util.isNil(this.width) || maptalks.Util.isNil(this.height)) {
             return 0;
         }
         //L=2πb+4(a-b)
@@ -167,14 +167,14 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     },
 
     _computeGeodesicArea:function () {
-        if (Z.Util.isNil(this.width) || Z.Util.isNil(this.height)) {
+        if (maptalks.Util.isNil(this.width) || maptalks.Util.isNil(this.height)) {
             return 0;
         }
         return Math.PI * this.width * this.height / 4;
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = Z.GeoJSON.toNumberArrays([this.getShell()]);
+        var coordinates = maptalks.GeoJSON.toNumberArrays([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates
@@ -182,7 +182,7 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
     },
 
     _toJSON:function (options) {
-        var opts = Z.Util.extend({}, options);
+        var opts = maptalks.Util.extend({}, options);
         var center = this.getCenter();
         opts.geometry = false;
         var feature = this.toGeoJSON(opts);
@@ -200,9 +200,9 @@ Z.Ellipse = Z.Polygon.extend(/** @lends maptalks.Ellipse.prototype */{
 
 });
 
-Z.Ellipse.fromJSON = function (json) {
+maptalks.Ellipse.fromJSON = function (json) {
     var feature = json['feature'];
-    var ellipse = new Z.Ellipse(json['coordinates'], json['width'], json['height'], json['options']);
+    var ellipse = new maptalks.Ellipse(json['coordinates'], json['width'], json['height'], json['options']);
     ellipse.setProperties(feature['properties']);
     return ellipse;
 };

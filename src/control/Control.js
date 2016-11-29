@@ -1,7 +1,7 @@
 /**
  * @namespace
  */
-Z.control = {};
+maptalks.control = {};
 
 /**
  * Base class for all the map controls, you can extend it to build your own customized Control.
@@ -15,8 +15,8 @@ Z.control = {};
  *
  * @mixes maptalks.Eventable
  */
-Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype */{
-    includes: [Z.Eventable],
+maptalks.control.Control = maptalks.Class.extend(/** @lends maptalks.control.Control.prototype */{
+    includes: [maptalks.Eventable],
 
     statics : {
         'positions' : {
@@ -28,10 +28,10 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
     },
 
     initialize: function (options) {
-        if (options && options['position'] && !Z.Util.isString(options['position'])) {
-            options['position'] = Z.Util.extend({}, options['position']);
+        if (options && options['position'] && !maptalks.Util.isString(options['position'])) {
+            options['position'] = maptalks.Util.extend({}, options['position']);
         }
-        Z.Util.setOptions(this, options);
+        maptalks.Util.setOptions(this, options);
     },
 
     /**
@@ -44,10 +44,10 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
         this.remove();
         this._map = map;
         var controlContainer = map._panels.control;
-        this.__ctrlContainer = Z.DomUtil.createEl('div');
-        Z.DomUtil.setStyle(this.__ctrlContainer, 'position:absolute');
-        Z.DomUtil.addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
-        // Z.DomUtil.on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', Z.DomUtil.stopPropagation)
+        this.__ctrlContainer = maptalks.DomUtil.createEl('div');
+        maptalks.DomUtil.setStyle(this.__ctrlContainer, 'position:absolute');
+        maptalks.DomUtil.addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
+        // maptalks.DomUtil.on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', maptalks.DomUtil.stopPropagation)
         this.update();
         controlContainer.appendChild(this.__ctrlContainer);
         /**
@@ -89,7 +89,7 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
      * @return {Object}
      */
     getPosition: function () {
-        return Z.Util.extend({}, this._parse(this.options['position']));
+        return maptalks.Util.extend({}, this._parse(this.options['position']));
     },
 
     /**
@@ -99,10 +99,10 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
      * @fires maptalks.control.Control#positionchange
      */
     setPosition: function (position) {
-        if (Z.Util.isString(position)) {
+        if (maptalks.Util.isString(position)) {
             this.options['position'] = position;
         } else {
-            this.options['position'] = Z.Util.extend({}, position);
+            this.options['position'] = maptalks.Util.extend({}, position);
         }
         this._updatePosition();
         return this;
@@ -117,17 +117,17 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
 
         var size = this.getMap().getSize();
         var x, y;
-        if (!Z.Util.isNil(position['top'])) {
+        if (!maptalks.Util.isNil(position['top'])) {
             x = position['top'];
-        } else if (!Z.Util.isNil(position['bottom'])) {
+        } else if (!maptalks.Util.isNil(position['bottom'])) {
             x = size['height'] - position['bottom'];
         }
-        if (!Z.Util.isNil(position['left'])) {
+        if (!maptalks.Util.isNil(position['left'])) {
             y = position['left'];
-        } else if (!Z.Util.isNil(position['right'])) {
+        } else if (!maptalks.Util.isNil(position['right'])) {
             y = size['width'] - position['right'];
         }
-        return new Z.Point(x, y);
+        return new maptalks.Point(x, y);
     },
 
     /**
@@ -182,7 +182,7 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
         if (!this._map) {
             return this;
         }
-        Z.DomUtil.removeDomNode(this.__ctrlContainer);
+        maptalks.DomUtil.removeDomNode(this.__ctrlContainer);
         if (this.onRemove) {
             this.onRemove();
         }
@@ -203,8 +203,8 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
 
     _parse: function (position) {
         var p = position;
-        if (Z.Util.isString(position)) {
-            p = Z.control.Control['positions'][p];
+        if (maptalks.Util.isString(position)) {
+            p = maptalks.control.Control['positions'][p];
         }
         return p;
     },
@@ -231,18 +231,18 @@ Z.control.Control = Z.Class.extend(/** @lends maptalks.control.Control.prototype
          * @property {Object} position - Position of the control, eg:{"top" : 100, "left" : 50}
          */
         this.fire('positionchange', {
-            'position' : Z.Util.extend({}, position)
+            'position' : maptalks.Util.extend({}, position)
         });
     }
 
 });
 
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
 
     'control' : true
 });
 
-Z.Map.include(/** @lends maptalks.Map.prototype */{
+maptalks.Map.include(/** @lends maptalks.Map.prototype */{
     /**
      * Add a control on the map.
      * @param {maptalks.control.Control} control - contorl to add

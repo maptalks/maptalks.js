@@ -12,8 +12,8 @@
  * @param {Number} x - x value
  * @param {Number} y - y value
  */
-Z.Point = function (x, y) {
-    if (!Z.Util.isNil(x) && !Z.Util.isNil(y)) {
+maptalks.Point = function (x, y) {
+    if (!maptalks.Util.isNil(x) && !maptalks.Util.isNil(y)) {
         /**
          * @property x {Number} - x value
          */
@@ -22,11 +22,11 @@ Z.Point = function (x, y) {
          * @property y {Number} - y value
          */
         this.y = y;
-    } else if (!Z.Util.isNil(x.x) && !Z.Util.isNil(x.y)) {
+    } else if (!maptalks.Util.isNil(x.x) && !maptalks.Util.isNil(x.y)) {
         //对象
         this.x = x.x;
         this.y = x.y;
-    } else if (Z.Util.isArrayHasData(x)) {
+    } else if (maptalks.Util.isArrayHasData(x)) {
         this.x = x[0];
         this.y = x[1];
     }
@@ -35,7 +35,7 @@ Z.Point = function (x, y) {
     }
 };
 
-Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
+maptalks.Util.extend(maptalks.Point.prototype, /** @lends maptalks.Point.prototype */{
     _abs:function () {
         this.x = Math.abs(this.x);
         this.y = Math.abs(this.y);
@@ -46,12 +46,12 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @return {maptalks.Point} copy
      */
     copy:function () {
-        return new Z.Point(this.x, this.y);
+        return new maptalks.Point(this.x, this.y);
     },
 
     _round:function () {
-        this.x = Z.Util.round(this.x);
-        this.y = Z.Util.round(this.y);
+        this.x = maptalks.Util.round(this.x);
+        this.y = maptalks.Util.round(this.y);
         return this;
     },
 
@@ -60,7 +60,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @return {maptalks.Point} rounded point
      */
     round:function () {
-        return new Z.Point(Z.Util.round(this.x), Z.Util.round(this.y));
+        return new maptalks.Point(maptalks.Util.round(this.x), maptalks.Util.round(this.y));
     },
 
     /**
@@ -85,7 +85,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
 
     //Destructive add
     _add: function (x, y) {
-        if (x instanceof Z.Point) {
+        if (x instanceof maptalks.Point) {
             this.x += x.x;
             this.y += x.y;
         } else {
@@ -102,18 +102,18 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      */
     add: function (x, y) {
         var nx, ny;
-        if (x instanceof Z.Point) {
+        if (x instanceof maptalks.Point) {
             nx = this.x + x.x;
             ny = this.y + x.y;
         } else {
             nx = this.x + x;
             ny = this.y + y;
         }
-        return new Z.Point(nx, ny);
+        return new maptalks.Point(nx, ny);
     },
 
     _substract: function (x, y) {
-        if (x instanceof Z.Point) {
+        if (x instanceof maptalks.Point) {
             this.x -= x.x;
             this.y -= x.y;
         } else {
@@ -130,14 +130,14 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      */
     substract: function (x, y) {
         var nx, ny;
-        if (x instanceof Z.Point) {
+        if (x instanceof maptalks.Point) {
             nx = this.x - x.x;
             ny = this.y - x.y;
         } else {
             nx = this.x - x;
             ny = this.y - y;
         }
-        return new Z.Point(nx, ny);
+        return new maptalks.Point(nx, ny);
     },
 
     //破坏性方法
@@ -153,7 +153,7 @@ Z.Util.extend(Z.Point.prototype, /** @lends maptalks.Point.prototype */{
      * @return {maptalks.Point} result
      */
     multi: function (n) {
-        return new Z.Point(this.x * n, this.y * n);
+        return new maptalks.Point(this.x * n, this.y * n);
     },
 
     /**

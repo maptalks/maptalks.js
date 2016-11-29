@@ -9,7 +9,7 @@
  * @mixes maptalks.projection.Common
  * @mixes maptalks.measurer.WGS84Sphere
  */
-Z.projection.EPSG4326 = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.projection.EPSG4326 */{
+maptalks.projection.EPSG4326 = maptalks.Util.extend({}, maptalks.projection.Common, /** @lends maptalks.projection.EPSG4326 */{
     /**
      * "EPSG:4326", Code of the projection, used by [View]{@link maptalks.View} to get projection instance.
      * @type {String}
@@ -17,9 +17,9 @@ Z.projection.EPSG4326 = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
      */
     code : 'EPSG:4326',
     project:function (p) {
-        return new Z.Coordinate(p);
+        return new maptalks.Coordinate(p);
     },
     unproject:function (p) {
-        return new Z.Coordinate(p);
+        return new maptalks.Coordinate(p);
     }
-}, Z.measurer.WGS84Sphere);
+}, maptalks.measurer.WGS84Sphere);

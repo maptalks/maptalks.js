@@ -1,4 +1,4 @@
-Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
      * Start to edit
      * @param {Object} [options=null]        - edit options
@@ -10,7 +10,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             return this;
         }
         this.endEdit();
-        this._editor = new Z.Geometry.Editor(this, opts);
+        this._editor = new maptalks.Geometry.Editor(this, opts);
         this._editor.start();
         this.fire('editstart');
         return this;

@@ -1,1 +1,1 @@
-Z.Map.include(Z.ui.Menu.Mixin);
+maptalks.Map.include(maptalks.ui.Menu.Mixin);

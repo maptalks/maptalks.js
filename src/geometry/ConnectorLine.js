@@ -98,7 +98,7 @@
                     }
                 }
             }
-            if (!Z.Util.isArrayHasData(oldCoordinates) || (!oldCoordinates[0].equals(c1) || !oldCoordinates[1].equals(c2))) {
+            if (!maptalks.Util.isArrayHasData(oldCoordinates) || (!oldCoordinates[0].equals(c1) || !oldCoordinates[1].equals(c2))) {
                 this.setCoordinates([c1, c2]);
             }
         },
@@ -106,7 +106,7 @@
         onRemove: function () {
             if (this._connSource) {
                 if (this._connSource.__connectors) {
-                    Z.Util.removeFromArray(this, this._connSource.__connectors);
+                    maptalks.Util.removeFromArray(this, this._connSource.__connectors);
                 }
                 this._connSource.off('dragging positionchange', this._updateCoordinates, this)
                                 .off('remove', this.onRemove, this);
@@ -116,7 +116,7 @@
                 delete this._connSource;
             }
             if (this._connTarget) {
-                Z.Util.removeFromArray(this, this._connTarget.__connectors);
+                maptalks.Util.removeFromArray(this, this._connTarget.__connectors);
                 this._connTarget.off('dragging positionchange', this._updateCoordinates, this)
                                 .off('remove', this.onRemove, this);
                 this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
@@ -128,8 +128,8 @@
             if (!this._connSource || !this._connTarget) {
                 return;
             }
-            if ((this._connSource instanceof Z.control.Control || this._connSource.isVisible()) &&
-                (this._connTarget instanceof Z.control.Control || this._connTarget.isVisible())) {
+            if ((this._connSource instanceof maptalks.control.Control || this._connSource.isVisible()) &&
+                (this._connTarget instanceof maptalks.control.Control || this._connTarget.isVisible())) {
                 this._updateCoordinates();
                 this.show();
             }
@@ -193,7 +193,7 @@
      *     }).addTo(layer);
      * @mixes connectorLineMixin
      */
-    Z.ConnectorLine = Z.LineString.extend({
+    maptalks.ConnectorLine = maptalks.LineString.extend({
         includes : [connectorLineMixin],
         /**
          * @property {Object} options - ConnectorLine's options
@@ -205,9 +205,9 @@
     });
 
 
-    Z.Util.extend(Z.ConnectorLine, {
+    maptalks.Util.extend(maptalks.ConnectorLine, {
         _hasConnectors:function (geometry) {
-            return (!Z.Util.isNil(geometry.__connectors) && geometry.__connectors.length > 0);
+            return (!maptalks.Util.isNil(geometry.__connectors) && geometry.__connectors.length > 0);
         },
 
         _getConnectors:function (geometry) {
@@ -239,7 +239,7 @@
      *     }).addTo(layer);
      * @mixes connectorLineMixin
      */
-    Z.ArcConnectorLine = Z.ArcCurve.extend({
+    maptalks.ArcConnectorLine = maptalks.ArcCurve.extend({
         includes : [connectorLineMixin],
 
         /**

@@ -4,7 +4,7 @@
  * @memberOf maptalks
  * @name Eventable
  */
-Z.Eventable = {
+maptalks.Eventable = {
     /**
      * Register a handler function to be called whenever this event is fired.
      *
@@ -17,7 +17,7 @@ Z.Eventable = {
      */
     on: function (eventsOn, handler, context) {
         if (!eventsOn || !handler) { return this; }
-        if (!Z.Util.isString(eventsOn)) {
+        if (!maptalks.Util.isString(eventsOn)) {
             return this._switch('on', eventsOn, handler);
         }
         if (!this._eventMap) {
@@ -61,7 +61,7 @@ Z.Eventable = {
      * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
      */
     once: function (eventTypes, handler, context) {
-        if (!Z.Util.isString(eventTypes)) {
+        if (!maptalks.Util.isString(eventTypes)) {
             var once = {};
             for (var p in eventTypes) {
                 if (eventTypes.hasOwnProperty(p)) {
@@ -106,7 +106,7 @@ Z.Eventable = {
      */
     off:function (eventsOff, handler, context) {
         if (!eventsOff || !this._eventMap || !handler) { return this; }
-        if (!Z.Util.isString(eventsOff)) {
+        if (!maptalks.Util.isString(eventsOff)) {
             return this._switch('off', eventsOff, handler);
         }
         var eventTypes = eventsOff.split(' ');
@@ -136,7 +136,7 @@ Z.Eventable = {
     },
 
     _clearListeners:function (eventType) {
-        if (!this._eventMap || !Z.Util.isString(eventType)) { return; }
+        if (!this._eventMap || !maptalks.Util.isString(eventType)) { return; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
         if (!handlerChain) { return; }
         this._eventMap[eventType] = null;
@@ -155,14 +155,14 @@ Z.Eventable = {
      * @return {Number}
      */
     listens:function (eventType, handler, context) {
-        if (!this._eventMap || !Z.Util.isString(eventType)) { return 0; }
+        if (!this._eventMap || !maptalks.Util.isString(eventType)) { return 0; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
         if (!handlerChain || handlerChain.length === 0) { return 0; }
         var count = 0;
         for (var i = 0, len = handlerChain.length; i < len; i++) {
             if (handler) {
                 if (handler === handlerChain[i].handler &&
-                    (Z.Util.isNil(context) || handlerChain[i].context === context)) {
+                    (maptalks.Util.isNil(context) || handlerChain[i].context === context)) {
                     return 1;
                 }
             } else {
@@ -232,7 +232,7 @@ Z.Eventable = {
             if (!queue[i]) { continue; }
             context = queue[i].context;
             bubble = true;
-            passed = Z.Util.extend({}, param);
+            passed = maptalks.Util.extend({}, param);
             if (context) {
                 bubble = queue[i].handler.call(context, passed);
             } else {
@@ -241,7 +241,7 @@ Z.Eventable = {
             //stops the event propagation if the handler returns false.
             if (bubble === false) {
                 if (param['domEvent']) {
-                    Z.DomUtil.stopPropagation(param['domEvent']);
+                    maptalks.DomUtil.stopPropagation(param['domEvent']);
                 }
             }
         }
@@ -260,7 +260,7 @@ Z.Eventable = {
 * @memberOf maptalks.Eventable
 * @name addEventListener
 */
-Z.Eventable.addEventListener = Z.Eventable.on;
+maptalks.Eventable.addEventListener = maptalks.Eventable.on;
 /**
  * Alias for [off]{@link maptalks.Eventable.off}
  *
@@ -272,4 +272,4 @@ Z.Eventable.addEventListener = Z.Eventable.on;
  * @memberOf maptalks.Eventable
  * @name removeEventListener
  */
-Z.Eventable.removeEventListener = Z.Eventable.off;
+maptalks.Eventable.removeEventListener = maptalks.Eventable.off;

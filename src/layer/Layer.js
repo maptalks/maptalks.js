@@ -9,9 +9,9 @@
  * @extends maptalks.Class
  * @mixes maptalks.Eventable
  */
-Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
+maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
-    includes: Z.Eventable,
+    includes: maptalks.Eventable,
 
     /**
      * @property {Object}  [options=null] - base options of layer.
@@ -36,7 +36,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     initialize:function (id, opts) {
         this.setId(id);
-        Z.Util.setOptions(this, opts);
+        maptalks.Util.setOptions(this, opts);
     },
 
 
@@ -48,7 +48,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
         this._initRenderer();
         var zIndex = this.getZIndex();
         if (this.onAdd()) {
-            if (!Z.Util.isNil(zIndex)) {
+            if (!maptalks.Util.isNil(zIndex)) {
                 this._renderer.setZIndex(zIndex);
             }
             this._renderer.render(true);
@@ -73,7 +73,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     setId:function (id) {
         //TODO 设置id可能造成map无法找到layer
         var old = this._id;
-        if (!Z.Util.isNil(id)) {
+        if (!maptalks.Util.isNil(id)) {
             id = id + '';
         }
         this._id = id;
@@ -229,19 +229,19 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @return {Boolean}
      */
     isVisible:function () {
-        if (Z.Util.isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
+        if (maptalks.Util.isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
             return false;
         }
         var map = this.getMap();
         if (map) {
             var zoom = map.getZoom();
-            if ((!Z.Util.isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom) ||
-                    (!Z.Util.isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
+            if ((!maptalks.Util.isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom) ||
+                    (!maptalks.Util.isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
                 return false;
             }
         }
 
-        if (Z.Util.isNil(this.options['visible'])) {
+        if (maptalks.Util.isNil(this.options['visible'])) {
             this.options['visible'] = true;
         }
         return this.options['visible'];
@@ -272,12 +272,12 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @returns {maptalks.Layer} this
      */
     setMask:function (mask) {
-        if (!((mask instanceof Z.Marker && Z.symbolizer.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
-                mask instanceof Z.Polygon || mask instanceof Z.MultiPolygon)) {
+        if (!((mask instanceof maptalks.Marker && maptalks.symbolizer.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
+                mask instanceof maptalks.Polygon || mask instanceof maptalks.MultiPolygon)) {
             throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }
 
-        /*if (mask instanceof Z.Marker) {
+        /*if (mask instanceof maptalks.Marker) {
             mask.updateSymbol({
                 'markerLineWidth': 0,
                 'markerFillOpacity': 1
@@ -349,6 +349,7 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
             throw new Error('Invalid renderer for Layer(' + this.getId() + '):' + renderer);
         }
         this._renderer = new clazz(this);
+        this._renderer.layer = this;
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
     },
@@ -392,12 +393,12 @@ Z.Layer = Z.Class.extend(/** @lends maptalks.Layer.prototype */{
     }
 });
 
-Z.Util.extend(Z.Layer, Z.Renderable);
+maptalks.Util.extend(maptalks.Layer, maptalks.Renderable);
 
-Z.Layer.extend = function (props) {
-    var NewLayer = Z.Class.extend.call(this, props);
+maptalks.Layer.extend = function (props) {
+    var NewLayer = maptalks.Class.extend.call(this, props);
     if (this._regRenderers) {
-        NewLayer._regRenderers = Z.Util.extend({}, this._regRenderers);
+        NewLayer._regRenderers = maptalks.Util.extend({}, this._regRenderers);
     }
     return NewLayer;
 };

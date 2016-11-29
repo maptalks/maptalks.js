@@ -3,10 +3,10 @@ describe('#GeometryEdit', function () {
     var container, eventContainer;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     function dragGeometry(geometry, offset) {
-        var domPosition = Z.DomUtil.getPagePosition(container);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(geometry.getCenter()).add(domPosition);
         if (offset) {
             point._add(offset);
@@ -30,7 +30,7 @@ describe('#GeometryEdit', function () {
         map = setups.map;
         map.config('panAnimation', false);
         eventContainer = map._panels.canvasContainer;
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
     });
 
@@ -51,7 +51,7 @@ describe('#GeometryEdit', function () {
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
                 var geo = geometries[i];
-                if (geo instanceof Z.GeometryCollection || geo instanceof Z.Sector) {
+                if (geo instanceof maptalks.GeometryCollection || geo instanceof maptalks.Sector) {
                     //not fit for geometry collection's test.
                     continue;
                 }
@@ -61,7 +61,7 @@ describe('#GeometryEdit', function () {
                 expect(geo.getCenter()).not.to.closeTo(center);
                 //geo can only be dragged by center handle.
                 var newCenter = geo.getCenter();
-                dragGeometry(geo, new Z.Point(500,20));
+                dragGeometry(geo, new maptalks.Point(500,20));
                 expect(geo.getCenter()).to.closeTo(newCenter);
             }
         });

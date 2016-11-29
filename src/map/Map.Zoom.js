@@ -1,4 +1,4 @@
-Z.Map.include(/** @lends maptalks.Map.prototype */{
+maptalks.Map.include(/** @lends maptalks.Map.prototype */{
     _zoom:function (nextZoomLevel, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
         this._originZoomLevel = this.getZoom();
@@ -6,7 +6,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         this.onZoomStart(nextZoomLevel);
         var zoomOffset;
         if (origin) {
-            origin = new Z.Point(this.width / 2, this.height / 2);
+            origin = new maptalks.Point(this.width / 2, this.height / 2);
             zoomOffset = this._getZoomCenterOffset(nextZoomLevel, origin, startScale);
         }
         this.onZoomEnd(nextZoomLevel, zoomOffset);
@@ -14,10 +14,10 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
     _zoomAnimation:function (nextZoomLevel, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
-        if (Z.Util.isNil(startScale)) {
+        if (maptalks.Util.isNil(startScale)) {
             startScale = 1;
         }
-        if (Z.Util.isNil(this._originZoomLevel)) {
+        if (maptalks.Util.isNil(this._originZoomLevel)) {
             this._originZoomLevel = this.getZoom();
         }
         nextZoomLevel = this._checkZoomLevel(nextZoomLevel);
@@ -27,7 +27,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
 
         this.onZoomStart(nextZoomLevel);
         if (!origin) {
-            origin = new Z.Point(this.width / 2, this.height / 2);
+            origin = new maptalks.Point(this.width / 2, this.height / 2);
         }
         this._startZoomAnimation(startScale, origin, nextZoomLevel);
     },
@@ -39,7 +39,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         var zoomOffset = this._getZoomCenterOffset(nextZoomLevel, transOrigin, startScale);
         if (zoomOffset.x === 0 && zoomOffset.y === 0) {
             //center is out of maxExtent
-            transOrigin = new Z.Point(this.width / 2, this.height / 2);
+            transOrigin = new maptalks.Point(this.width / 2, this.height / 2);
         }
         var duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
         this._getRenderer().animateZoom(
@@ -105,7 +105,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
     },
 
     _getZoomCenterOffset:function (nextZoomLevel, origin, startScale) {
-        if (Z.Util.isNil(startScale)) {
+        if (maptalks.Util.isNil(startScale)) {
             startScale = 1;
         }
         var resolutions = this._getResolutions();
@@ -113,21 +113,21 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         var zoomOffset;
         if (nextZoomLevel < this._originZoomLevel) {
             zScale = resolutions[nextZoomLevel + 1] / resolutions[nextZoomLevel];
-            zoomOffset = new Z.Point(
+            zoomOffset = new maptalks.Point(
                     -(origin.x - this.width / 2) * (startScale - zScale),
                     -(origin.y - this.height / 2) * (startScale - zScale)
                 );
         } else {
             zScale = resolutions[nextZoomLevel - 1] / resolutions[nextZoomLevel];
-            zoomOffset = new Z.Point(
+            zoomOffset = new maptalks.Point(
                     (origin.x - this.width / 2) * (zScale - startScale),
                     (origin.y - this.height / 2) * (zScale - startScale)
                 );
         }
 
-        var newCenter = this.containerPointToCoordinate(new Z.Point(this.width / 2 + zoomOffset.x, this.height / 2 + zoomOffset.y));
+        var newCenter = this.containerPointToCoordinate(new maptalks.Point(this.width / 2 + zoomOffset.x, this.height / 2 + zoomOffset.y));
         if (!this._verifyExtent(newCenter)) {
-            return new Z.Point(0, 0);
+            return new maptalks.Point(0, 0);
         }
 
         return zoomOffset;

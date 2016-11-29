@@ -1,5 +1,5 @@
 //如果不支持canvas, 则不载入canvas的绘制逻辑
-if (Z.Browser.canvas) {
+if (maptalks.Browser.canvas) {
 
     var ellipseReources = {
         _getPaintParams: function () {
@@ -10,36 +10,36 @@ if (Z.Browser.canvas) {
             return [pt, size['width'], size['height']];
         },
 
-        _paintOn: Z.Canvas.ellipse
+        _paintOn: maptalks.Canvas.ellipse
     };
 
-    Z.Ellipse.include(ellipseReources);
+    maptalks.Ellipse.include(ellipseReources);
 
-    Z.Circle.include(ellipseReources);
+    maptalks.Circle.include(ellipseReources);
     //----------------------------------------------------
-    Z.Rectangle.include({
+    maptalks.Rectangle.include({
         _getPaintParams: function () {
             var map = this.getMap();
             var pt = map._prjToPoint(this._getPrjCoordinates());
             var size = this._getRenderSize();
             return [pt, size];
         },
-        _paintOn: Z.Canvas.rectangle
+        _paintOn: maptalks.Canvas.rectangle
     });
     //----------------------------------------------------
-    Z.Sector.include({
+    maptalks.Sector.include({
         _getPaintParams: function () {
             var map = this.getMap();
             var pt = map._prjToPoint(this._getPrjCoordinates());
             var size = this._getRenderSize();
             return [pt, size['width'], [this.getStartAngle(), this.getEndAngle()]];
         },
-        _paintOn: Z.Canvas.sector
+        _paintOn: maptalks.Canvas.sector
 
     });
     //----------------------------------------------------
 
-    Z.LineString.include({
+    maptalks.LineString.include({
         arrowStyles : {
             'classic' : [3, 4]
         },
@@ -68,7 +68,7 @@ if (Z.Browser.canvas) {
         },
 
         _paintOn:function (ctx, points, lineOpacity, fillOpacity, dasharray) {
-            Z.Canvas.path(ctx, points, lineOpacity, null, dasharray);
+            maptalks.Canvas.path(ctx, points, lineOpacity, null, dasharray);
             this._paintArrow(ctx, points, lineOpacity);
         },
 
@@ -79,7 +79,7 @@ if (Z.Browser.canvas) {
         _getArrowStyle: function () {
             var arrowStyle = this.options['arrowStyle'];
             if (arrowStyle) {
-                return Z.Util.isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
+                return maptalks.Util.isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
             }
             return null;
         },
@@ -89,7 +89,7 @@ if (Z.Browser.canvas) {
             if (!arrowStyle || points.length < 2) {
                 return null;
             }
-            var isSplitted = points.length > 0 && Z.Util.isArray(points[0]);
+            var isSplitted = points.length > 0 && maptalks.Util.isArray(points[0]);
             var segments = isSplitted ? points : [points];
             var placement = this._getArrowPlacement();
             var arrows = [];
@@ -124,29 +124,29 @@ if (Z.Browser.canvas) {
                 }
                 for (var i = arrows.length - 1; i >= 0; i--) {
                     ctx.fillStyle = ctx.strokeStyle;
-                    Z.Canvas.polygon(ctx, arrows[i], lineOpacity, lineOpacity);
+                    maptalks.Canvas.polygon(ctx, arrows[i], lineOpacity, lineOpacity);
                 }
             }
         }
     });
 
-    Z.Polygon.include({
+    maptalks.Polygon.include({
         _getPaintParams: function () {
             var prjVertexes = this._getPrjCoordinates(),
                 points = this._getPath2DPoints(prjVertexes),
                 //splitted by anti-meridian
-                isSplitted = points.length > 0 && Z.Util.isArray(points[0]);
+                isSplitted = points.length > 0 && maptalks.Util.isArray(points[0]);
             if (isSplitted) {
                 points = [[points[0]], [points[1]]];
             }
             var prjHoles = this._getPrjHoles();
             var holePoints = [];
-            if (Z.Util.isArrayHasData(prjHoles)) {
+            if (maptalks.Util.isArrayHasData(prjHoles)) {
                 var hole;
                 for (var i = 0; i < prjHoles.length; i++) {
                     hole = this._getPath2DPoints(prjHoles[i]);
                     if (isSplitted) {
-                        if (Z.Util.isArray(hole)) {
+                        if (maptalks.Util.isArray(hole)) {
                             points[0].push(hole[0]);
                             points[1].push(hole[1]);
                         } else {
@@ -160,6 +160,6 @@ if (Z.Browser.canvas) {
             }
             return [isSplitted ? points : [points].concat(holePoints)];
         },
-        _paintOn: Z.Canvas.polygon
+        _paintOn: maptalks.Canvas.polygon
     });
 }

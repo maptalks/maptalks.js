@@ -3,7 +3,7 @@ describe('MapTouchZoomSpec', function () {
     var container,eventContainer;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var centerPoint;
 
     beforeEach(function() {
@@ -12,7 +12,7 @@ describe('MapTouchZoomSpec', function () {
             map = setups.map;
             delay = map.options['zoomAnimationDuration'];
             eventContainer = map._panels.canvasContainer;;
-            var domPosition = Z.DomUtil.getPagePosition(container);
+            var domPosition = maptalks.DomUtil.getPagePosition(container);
             centerPoint = map.coordinateToContainerPoint(center).add(domPosition);
     });
 

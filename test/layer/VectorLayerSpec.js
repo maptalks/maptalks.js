@@ -5,7 +5,7 @@ describe('#VectorLayer', function() {
     var container;
     var map;
     var tile, layer;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -16,13 +16,13 @@ describe('#VectorLayer', function() {
             zoom: 17,
             center: center
         };
-        map = new Z.Map(container, option);
-        tile = new Z.TileLayer('tile', {
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
         });
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
     });
 
     afterEach(function() {

@@ -20,10 +20,10 @@
  *     }
  * });
  */
-Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
-    includes:[Z.Geometry.Center],
+maptalks.Marker = maptalks.Geometry.extend(/** @lends maptalks.Marker.prototype */{
+    includes:[maptalks.Geometry.Center],
 
-    type: Z.Geometry['TYPE_POINT'],
+    type: maptalks.Geometry['TYPE_POINT'],
 
     options:{
         'symbol': {
@@ -42,8 +42,8 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
     },
 
     initialize:function (coordinates, opts) {
-        if (coordinates && !(coordinates instanceof Z.Coordinate)) {
-            coordinates = new Z.Coordinate(coordinates);
+        if (coordinates && !(coordinates instanceof maptalks.Coordinate)) {
+            coordinates = new maptalks.Coordinate(coordinates);
         }
         this._coordinates = coordinates;
         this._initOptions(opts);
@@ -56,11 +56,11 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
      */
     _canEdit:function () {
         var symbol = this._getInternalSymbol();
-        if (Z.Util.isArray(symbol)) {
+        if (maptalks.Util.isArray(symbol)) {
             return false;
         }
-        return Z.symbolizer.VectorMarkerSymbolizer.test(symbol) || Z.symbolizer.VectorPathMarkerSymbolizer.test(symbol) ||
-                    Z.symbolizer.ImageMarkerSymbolizer.test(symbol);
+        return maptalks.symbolizer.VectorMarkerSymbolizer.test(symbol) || maptalks.symbolizer.VectorPathMarkerSymbolizer.test(symbol) ||
+                    maptalks.symbolizer.ImageMarkerSymbolizer.test(symbol);
     },
 
     _containsPoint: function (point) {
@@ -71,7 +71,7 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
     _computeExtent: function () {
         var coordinates = this.getCenter();
         if (!coordinates) { return null; }
-        return new Z.Extent(coordinates, coordinates);
+        return new maptalks.Extent(coordinates, coordinates);
     },
 
     _computeGeodesicLength:function () {
@@ -86,6 +86,6 @@ Z.Marker = Z.Geometry.extend(/** @lends maptalks.Marker.prototype */{
         if (this._getPainter()) {
             return this._getPainter().getSprite(resources);
         }
-        return new Z.Painter(this).getSprite(resources);
+        return new maptalks.Painter(this).getSprite(resources);
     }
 });

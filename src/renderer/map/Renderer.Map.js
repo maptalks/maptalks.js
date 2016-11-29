@@ -2,7 +2,7 @@
  * @namespace
  * @protected
  */
-Z.renderer.map = {};
+maptalks.renderer.map = {};
 
 /**
  * @classdesc
@@ -14,10 +14,10 @@ Z.renderer.map = {};
  * @name Renderer
  * @extends {maptalks.Class}
  */
-Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prototype */{
+maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.renderer.map.Renderer.prototype */{
 
     panAnimation:function (distance, t, onFinish) {
-        distance = new Z.Point(distance);
+        distance = new maptalks.Point(distance);
         var map = this.map;
         if (map.options['panAnimation']) {
             var duration;
@@ -29,7 +29,7 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             map._enablePanAnimation = true;
             map._panAnimating = true;
             var preDist = null;
-            var player = Z.Animation.animate({
+            var player = maptalks.Animation.animate({
                 'distance' : distance
             }, {
                 'easing' : 'out',
@@ -76,11 +76,11 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
             return this;
         }
         var pos = this.map.offsetPlatform().add(offset)._round();
-        Z.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
-        Z.DomUtil.offsetDom(this.map._panels.frontLayer, pos);
-        Z.DomUtil.offsetDom(this.map._panels.layer, pos);
-        if (Z.Browser.mobile) {
-            Z.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
+        maptalks.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
+        maptalks.DomUtil.offsetDom(this.map._panels.frontLayer, pos);
+        maptalks.DomUtil.offsetDom(this.map._panels.layer, pos);
+        if (maptalks.Browser.mobile) {
+            maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
         }
         return this;
     },
@@ -88,12 +88,12 @@ Z.renderer.map.Renderer = Z.Class.extend(/** @lends Z.renderer.map.Renderer.prot
     resetContainer:function () {
         this.map._resetMapViewPoint();
         if (this.map._panels.mapPlatform) {
-            var pos = new Z.Point(0, 0);
-            Z.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
-            Z.DomUtil.offsetDom(this.map._panels.layer, pos);
-            Z.DomUtil.offsetDom(this.map._panels.frontLayer, pos);
-            if (Z.Browser.mobile) {
-                Z.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
+            var pos = new maptalks.Point(0, 0);
+            maptalks.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
+            maptalks.DomUtil.offsetDom(this.map._panels.layer, pos);
+            maptalks.DomUtil.offsetDom(this.map._panels.frontLayer, pos);
+            if (maptalks.Browser.mobile) {
+                maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
             }
         }
     },

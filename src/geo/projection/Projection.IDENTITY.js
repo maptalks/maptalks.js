@@ -9,7 +9,7 @@
  * @mixes maptalks.projection.Common
  * @mixes maptalks.measurer.Identity
  */
-Z.projection.IDENTITY = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.projection.IDENTITY */{
+maptalks.projection.IDENTITY = maptalks.Util.extend({}, maptalks.projection.Common, /** @lends maptalks.projection.IDENTITY */{
     /**
      * "IDENTITY", Code of the projection, used by [View]{@link maptalks.View} to get projection instance.
      * @type {String}
@@ -22,4 +22,4 @@ Z.projection.IDENTITY = Z.Util.extend({}, Z.projection.Common, /** @lends maptal
     unproject:function (p) {
         return p.copy();
     }
-}, Z.measurer.Identity);
+}, maptalks.measurer.Identity);

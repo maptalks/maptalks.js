@@ -14,7 +14,7 @@
  *     zoomLevel : false
  * }).addTo(map);
  */
-Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
+maptalks.control.Zoom = maptalks.control.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
 
     /**
      * @property {Object}   options - options
@@ -32,27 +32,27 @@ Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.proto
         this._map = map;
         var options = this.options;
 
-        var dom = Z.DomUtil.createEl('div', 'maptalks-zoom');
+        var dom = maptalks.DomUtil.createEl('div', 'maptalks-zoom');
 
         if (options['zoomLevel']) {
-            var levelDOM = Z.DomUtil.createEl('span', 'maptalks-zoom-zoomlevel');
+            var levelDOM = maptalks.DomUtil.createEl('span', 'maptalks-zoom-zoomlevel');
             dom.appendChild(levelDOM);
             this._levelDOM = levelDOM;
         }
 
-        var zoomDOM = Z.DomUtil.createEl('div', 'maptalks-zoom-slider');
+        var zoomDOM = maptalks.DomUtil.createEl('div', 'maptalks-zoom-slider');
 
-        var zoomInButton = Z.DomUtil.createEl('a', 'maptalks-zoom-zoomin');
+        var zoomInButton = maptalks.DomUtil.createEl('a', 'maptalks-zoom-zoomin');
         zoomInButton.href = 'javascript:;';
         zoomInButton.innerHTML = '+';
         zoomDOM.appendChild(zoomInButton);
         this._zoomInButton = zoomInButton;
 
         if (options['slider']) {
-            var sliderDOM = Z.DomUtil.createEl('div', 'maptalks-zoom-slider-box');
-            var ruler = Z.DomUtil.createEl('div', 'maptalks-zoom-slider-ruler');
-            var reading = Z.DomUtil.createEl('span', 'maptalks-zoom-slider-reading');
-            var dot = Z.DomUtil.createEl('span', 'maptalks-zoom-slider-dot');
+            var sliderDOM = maptalks.DomUtil.createEl('div', 'maptalks-zoom-slider-box');
+            var ruler = maptalks.DomUtil.createEl('div', 'maptalks-zoom-slider-ruler');
+            var reading = maptalks.DomUtil.createEl('span', 'maptalks-zoom-slider-reading');
+            var dot = maptalks.DomUtil.createEl('span', 'maptalks-zoom-slider-dot');
             ruler.appendChild(reading);
             ruler.appendChild(dot);
             sliderDOM.appendChild(ruler);
@@ -63,7 +63,7 @@ Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.proto
             this._sliderDot = dot;
         }
 
-        var zoomOutButton = Z.DomUtil.createEl('a', 'maptalks-zoom-zoomout');
+        var zoomOutButton = maptalks.DomUtil.createEl('a', 'maptalks-zoom-zoomout');
         zoomOutButton.href = 'javascript:;';
         zoomOutButton.innerHTML = '-';
         zoomDOM.appendChild(zoomOutButton);
@@ -99,10 +99,10 @@ Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.proto
     _registerDomEvents:function () {
         var map = this.getMap();
         if (this._zoomInButton) {
-            Z.DomUtil.on(this._zoomInButton, 'click', map.zoomIn, map);
+            maptalks.DomUtil.on(this._zoomInButton, 'click', map.zoomIn, map);
         }
         if (this._zoomOutButton) {
-            Z.DomUtil.on(this._zoomOutButton, 'click', map.zoomOut, map);
+            maptalks.DomUtil.on(this._zoomOutButton, 'click', map.zoomOut, map);
         }
         //TODO slider dot拖放缩放逻辑还没有实现
     },
@@ -110,22 +110,22 @@ Z.control.Zoom = Z.control.Control.extend(/** @lends maptalks.control.Zoom.proto
     onRemove: function () {
         var map = this.getMap();
         if (this._zoomInButton) {
-            Z.DomUtil.off(this._zoomInButton, 'click', map.zoomIn, map);
+            maptalks.DomUtil.off(this._zoomInButton, 'click', map.zoomIn, map);
         }
         if (this._zoomOutButton) {
-            Z.DomUtil.off(this._zoomOutButton, 'click', map.zoomOut, map);
+            maptalks.DomUtil.off(this._zoomOutButton, 'click', map.zoomOut, map);
         }
     }
 });
 
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
 
     'zoomControl': false
 });
 
-Z.Map.addOnLoadHook(function () {
+maptalks.Map.addOnLoadHook(function () {
     if (this.options['zoomControl']) {
-        this.zoomControl = new Z.control.Zoom(this.options['zoomControl']);
+        this.zoomControl = new maptalks.control.Zoom(this.options['zoomControl']);
         this.addControl(this.zoomControl);
     }
 });

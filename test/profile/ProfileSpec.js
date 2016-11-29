@@ -3,7 +3,7 @@ describe('#Map Profile', function () {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -14,8 +14,8 @@ describe('#Map Profile', function () {
             zoom: 17,
             center: center
         };
-        map = new Z.Map(container, option);
-        tile = new Z.TileLayer('tile', {
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3],
@@ -37,17 +37,17 @@ describe('#Map Profile', function () {
         });
 
         it('get tilelayer from a profile json',function() {
-            var tileLayer = Z.Layer.fromJSON(null);
+            var tileLayer = maptalks.Layer.fromJSON(null);
             expect(tileLayer).not.to.be.ok();
             var json = tile.toJSON();
-            tileLayer = Z.Layer.fromJSON(json);
+            tileLayer = maptalks.Layer.fromJSON(json);
             expect(tileLayer).to.be.ok();
             expect(tileLayer.config()).to.eql(tile.config());
             expect(tileLayer.getId()).to.eql(tile.getId());
         });
 
         it('get vectorLayer\'s profile',function() {
-            var vectorLayer = new Z.VectorLayer("vector");
+            var vectorLayer = new maptalks.VectorLayer("vector");
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
             var style = {
@@ -86,7 +86,7 @@ describe('#Map Profile', function () {
         });
 
         it('get vectorlayer from a profile json',function() {
-            var vectorLayer = new Z.VectorLayer("vector",{"render":"canvas"});
+            var vectorLayer = new maptalks.VectorLayer("vector",{"render":"canvas"});
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
             var style = {
@@ -97,7 +97,7 @@ describe('#Map Profile', function () {
             };
             vectorLayer.setStyle(style);
             var json = vectorLayer.toJSON();
-            var layer = Z.Layer.fromJSON(json);
+            var layer = maptalks.Layer.fromJSON(json);
             expect(layer).to.be.ok();
             expect(layer.config()).to.eql(vectorLayer.config());
             expect(layer.getStyle()).to.eql(style);
@@ -137,7 +137,7 @@ describe('#Map Profile', function () {
             container2.style.width = '800px';
             container2.style.height = '600px';
             document.body.appendChild(container2);
-            var profileMap = Z.Map.fromJSON(container2, profile);
+            var profileMap = maptalks.Map.fromJSON(container2, profile);
 
             expect(profileMap).to.be.ok();
             expect(profileMap.getBaseLayer()).to.be.ok();
@@ -151,10 +151,10 @@ describe('#Map Profile', function () {
                 opacity:0.6
             });
             map.addLayer(tile2);
-            var vectorLayer = new Z.VectorLayer("vector-canvas",{"render":"canvas"});
+            var vectorLayer = new maptalks.VectorLayer("vector-canvas",{"render":"canvas"});
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
-            var vectorLayer2 = new Z.VectorLayer("vector");
+            var vectorLayer2 = new maptalks.VectorLayer("vector");
             vectorLayer2.addGeometry(genAllTypeGeometries());
             map.addLayer([vectorLayer, vectorLayer2]);
 
@@ -173,10 +173,10 @@ describe('#Map Profile', function () {
                 opacity:0.6
             });
             map.addLayer(tile2);
-            var vectorLayer = new Z.VectorLayer("vector-canvas",{"render":"canvas"});
+            var vectorLayer = new maptalks.VectorLayer("vector-canvas",{"render":"canvas"});
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
-            var vectorLayer2 = new Z.VectorLayer("vector");
+            var vectorLayer2 = new maptalks.VectorLayer("vector");
             vectorLayer2.addGeometry(genAllTypeGeometries());
             map.addLayer([vectorLayer, vectorLayer2]);
 
@@ -203,10 +203,10 @@ describe('#Map Profile', function () {
                 opacity:0.6
             });
             map.addLayer(tile2);
-            var vectorLayer = new Z.VectorLayer("vector-canvas",{"render":"canvas"});
+            var vectorLayer = new maptalks.VectorLayer("vector-canvas",{"render":"canvas"});
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
-            var vectorLayer2 = new Z.VectorLayer("vector");
+            var vectorLayer2 = new maptalks.VectorLayer("vector");
             vectorLayer2.addGeometry(genAllTypeGeometries());
             map.addLayer([vectorLayer, vectorLayer2]);
 
@@ -215,7 +215,7 @@ describe('#Map Profile', function () {
             container2.style.width = '800px';
             container2.style.height = '600px';
             document.body.appendChild(container2);
-            var profileMap = Z.Map.fromJSON(container2, profile);
+            var profileMap = maptalks.Map.fromJSON(container2, profile);
 
             expect(profileMap).to.be.ok();
             expect(profileMap.getBaseLayer()).to.be.ok();
@@ -235,7 +235,7 @@ describe('#Map Profile', function () {
             for (var i = 0; i < all.length; i++) {
                 var g = all[i];
                 var json = g.toJSON();
-                var deser = Z.Geometry.fromJSON(json);
+                var deser = maptalks.Geometry.fromJSON(json);
                 var deserJSON = deser.toJSON();
                 expect(json).not.to.be.empty();
                 expect(json).to.be.eql(deserJSON);

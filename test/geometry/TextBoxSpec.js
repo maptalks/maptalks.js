@@ -5,7 +5,7 @@ describe('#TextBox', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
     beforeEach(function() {
@@ -36,7 +36,7 @@ describe('#TextBox', function() {
 
             function evaluate() {
                 var rnd = Math.random()*0.001;
-                var coordinates = new Z.Coordinate(center.x+rnd, center.y+rnd);
+                var coordinates = new maptalks.Coordinate(center.x+rnd, center.y+rnd);
                 var radius = 1000*rnd;
 
                 vector.setCoordinates(coordinates);
@@ -47,7 +47,7 @@ describe('#TextBox', function() {
 
             evaluate();
 
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             evaluate();
@@ -59,7 +59,7 @@ describe('#TextBox', function() {
         it("get/set content",function() {
             var text = '中文标签';
             var vector = new maptalks.TextBox(text,center);
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             expect(vector.getContent()).to.be.eql(text);
@@ -76,7 +76,7 @@ describe('#TextBox', function() {
             vector.setSymbol(null);
             //null symbol is allowed, means set to default symbol.
             expect(vector.getSymbol()).not.to.be.ok();
-            layer = new Z.VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             var textboxSymbol = {
@@ -115,6 +115,7 @@ describe('#TextBox', function() {
     describe('alignment', function () {
         it('left', function () {
             var vector = new maptalks.TextBox('■■■', center, {
+                box : false,
                 symbol : {
                     'markerWidth' : 100,
                     'markerHeight' : 50,
@@ -123,7 +124,7 @@ describe('#TextBox', function() {
                     'textHorizontalAlignment' : 'left'
                 }
             });
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -133,6 +134,7 @@ describe('#TextBox', function() {
 
         it('right', function () {
             var vector = new maptalks.TextBox('■■■', center, {
+                box : false,
                 symbol : {
                     'markerWidth' : 100,
                     'markerHeight' : 50,
@@ -141,7 +143,7 @@ describe('#TextBox', function() {
                     'textHorizontalAlignment' : 'right'
                 }
             });
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -151,6 +153,7 @@ describe('#TextBox', function() {
 
         it('top', function () {
             var vector = new maptalks.TextBox('■■■', center, {
+                box : false,
                 symbol : {
                     'markerWidth' : 100,
                     'markerHeight' : 50,
@@ -159,7 +162,7 @@ describe('#TextBox', function() {
                     'textVerticalAlignment' : 'top'
                 }
             });
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -169,6 +172,7 @@ describe('#TextBox', function() {
 
         it('bottom', function () {
             var vector = new maptalks.TextBox('■■■', center, {
+                box : false,
                 symbol : {
                     'markerWidth' : 100,
                     'markerHeight' : 50,
@@ -177,7 +181,7 @@ describe('#TextBox', function() {
                     'textVerticalAlignment' : 'bottom'
                 }
             });
-            layer = new Z.VectorLayer('id', {'drawImmediate' : true});
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -197,7 +201,7 @@ describe('#TextBox', function() {
 
     it('can edit', function() {
         var vector = new maptalks.TextBox('textbox',center);
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
         vector.startEditText();
@@ -208,7 +212,7 @@ describe('#TextBox', function() {
 
     it('edit with special characters', function() {
         var vector = new maptalks.TextBox('textbox\r\n',center);
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
         vector.startEditText();

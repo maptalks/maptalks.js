@@ -116,9 +116,6 @@ function runTests(target, _context) {
             if (target.getLayer()) {target.remove();}
             map.removeLayer('vector');
             var layer = new maptalks.VectorLayer('vector');
-            target.setMenu({
-                'animation' : null
-            });
             layer.addGeometry(target).addTo(map);
         }
 
@@ -138,7 +135,7 @@ function runTests(target, _context) {
         function rightclick() {
             _context.map.setCenter(target.getFirstCoordinate());
             var eventContainer = _context.map._panels.canvasContainer;
-            var domPosition = Z.DomUtil.getPagePosition(eventContainer);
+            var domPosition = maptalks.DomUtil.getPagePosition(eventContainer);
             var point = _context.map.coordinateToContainerPoint(target.getFirstCoordinate()).add(domPosition);
 
             happen.click(eventContainer,{
@@ -150,7 +147,7 @@ function runTests(target, _context) {
         }
 
         context('Type of ' + type, function() {
-            it('setMenuAndOpen', function() {
+            it('setMenu and open', function() {
                 prepareGeometry();
                 target.setMenu({
                         items: items,
@@ -163,15 +160,65 @@ function runTests(target, _context) {
                 expect(target._menu.getDOM().style.display).to.be.eql('none');
             });
 
-            it('get menu', function() {
+            it('setMenu and open with animation', function(done) {
                 prepareGeometry();
                 target.setMenu({
                         items: items,
+                        animation : 'scale',
+                        animationDuration : 20,
+                        animationOnHide   : true,
+                        width: 250
+                    });
+                target.openMenu();
+                expect(target._menu.getDOM().style.display).to.be.eql('');
+                expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
+                setTimeout(function () {
+                    assertItems();
+                    expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
+                    target.closeMenu();
+                    expect(target._menu.getDOM().style.display).to.be.eql('');
+                    setTimeout(function () {
+                        expect(target._menu.getDOM().style.display).to.be.eql('none');
+                        done();
+                    }, 21);
+                }, 21);
+            });
+
+            it('get menu', function() {
+                prepareGeometry();
+                target.setMenu({
+                    items: items,
+                    animation : null,
+                    width: 250
+                });
+                expect(target.getMenuItems()).to.be.eql(items);
+            });
+
+            it('menu item of function type', function() {
+                prepareGeometry();
+                target.setMenu({
+                        items: [
+                            {
+                                item: function (param) {
+                                    expect(param.index).to.be(0);
+                                    return 'item1';
+                                },
+                                click: function(){}
+                            },
+                            '-',
+                            {
+                                item: function (param) {
+                                    expect(param.index).to.be(2);
+                                    return 'item2';
+                                },
+                                click: function(){}
+                            },
+                        ],
                         animation : null,
                         width: 250
                     });
-                var items = target.getMenuItems();
-                expect(items).to.be.eql(items);
+                target.openMenu();
+                assertItems();
             });
 
             it('remove menu', function() {
@@ -212,11 +259,11 @@ function runTests(target, _context) {
                 ul.appendChild(li3);
                 prepareGeometry();
                 target.setMenu({
-                        animation : null,
-                        custom : true,
-                        items: ul,
-                        width: 250
-                    });
+                    animation : null,
+                    custom : true,
+                    items: ul,
+                    width: 250
+                });
                 target.openMenu();
                 assertItems();
                 target.closeMenu();
@@ -242,7 +289,7 @@ function runTests(target, _context) {
             });
 
             it('openMenu by click', function() {
-                if (target instanceof Z.Sector) {
+                if (target instanceof maptalks.Sector) {
                     return;
                 }
                 prepareGeometry();
@@ -258,7 +305,7 @@ function runTests(target, _context) {
             });
 
             it('openMenu by click when target is being edited', function(done) {
-                // if (target instanceof Z.Sector) {
+                // if (target instanceof maptalks.Sector) {
                 //     return;
                 // }
                 // prepareGeometry();

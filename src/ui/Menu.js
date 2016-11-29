@@ -1,5 +1,8 @@
 (function () {
     var defaultOptions = {
+        'animation' : null,
+        'animationDelay' : 10,
+        'animationOnHide' : false,
         'eventsToStop' : 'mousedown dblclick click',
         'autoPan': false,
         'width'  : 160,
@@ -25,7 +28,7 @@
      * @memberOf maptalks.ui
      * @name Menu
      */
-    Z.ui.Menu = Z.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
+    maptalks.ui.Menu = maptalks.ui.UIComponent.extend(/** @lends maptalks.ui.Menu.prototype */{
 
         /**
          * @property {Object} options
@@ -41,7 +44,7 @@
                 owner.removeMenu();
             }
             owner._menu = this;
-            return Z.ui.UIComponent.prototype.addTo.apply(this, arguments);
+            return maptalks.ui.UIComponent.prototype.addTo.apply(this, arguments);
         },
 
         /**
@@ -77,19 +80,19 @@
          */
         buildOn:function () {
             if (this.options['custom']) {
-                if (Z.Util.isString(this.options['items'])) {
-                    var container = Z.DomUtil.createEl('div');
+                if (maptalks.Util.isString(this.options['items'])) {
+                    var container = maptalks.DomUtil.createEl('div');
                     container.innerHTML = this.options['items'];
                     return container;
                 } else {
                     return this.options['items'];
                 }
             } else {
-                var dom = Z.DomUtil.createEl('div');
-                Z.DomUtil.addClass(dom, 'maptalks-menu');
+                var dom = maptalks.DomUtil.createEl('div');
+                maptalks.DomUtil.addClass(dom, 'maptalks-menu');
                 dom.style.width = this._getMenuWidth() + 'px';
-                /*var arrow = Z.DomUtil.createEl('em');
-                Z.DomUtil.addClass(arrow, 'maptalks-ico');*/
+                /*var arrow = maptalks.DomUtil.createEl('em');
+                maptalks.DomUtil.addClass(arrow, 'maptalks-ico');*/
                 var menuItems = this._createMenuItemDom();
                 // dom.appendChild(arrow);
                 dom.appendChild(menuItems);
@@ -116,7 +119,11 @@
             if (p.y + size['height'] > mapSize['height']) {
                 dy = -size['height'];
             }
-            return new Z.Point(dx, dy);
+            return new maptalks.Point(dx, dy);
+        },
+
+        getTransformOrigin: function () {
+            return this.getOffset()._multi(-1);
         },
 
         getEvents: function () {
@@ -127,12 +134,17 @@
 
         _createMenuItemDom: function () {
             var me = this;
-            var ul = Z.DomUtil.createEl('ul');
-            Z.DomUtil.addClass(ul, 'maptalks-menu-items');
+            var map = this.getMap();
+            var ul = maptalks.DomUtil.createEl('ul');
+            maptalks.DomUtil.addClass(ul, 'maptalks-menu-items');
             var items = this.getItems();
             function onMenuClick(index) {
-                return function () {
-                    var result = this._callback({'target':me, 'owner':me._owner, 'index':index});
+                return function (e) {
+                    var param = map._parseEvent(e, 'click');
+                    param['target'] = me;
+                    param['owner']  = me._owner;
+                    param['index']  = index;
+                    var result = this._callback(param);
                     if (result === false) {
                         return;
                     }
@@ -143,13 +155,17 @@
             for (var i = 0, len = items.length; i < len; i++) {
                 item = items[i];
                 if (item === '-' || item === '_') {
-                    itemDOM = Z.DomUtil.createEl('li');
-                    Z.DomUtil.addClass(itemDOM, 'maptalks-menu-splitter');
+                    itemDOM = maptalks.DomUtil.createEl('li');
+                    maptalks.DomUtil.addClass(itemDOM, 'maptalks-menu-splitter');
                 } else {
-                    itemDOM = Z.DomUtil.createEl('li');
-                    itemDOM.innerHTML = item['item'];
+                    itemDOM = maptalks.DomUtil.createEl('li');
+                    var itemTitle = item['item'];
+                    if (maptalks.Util.isFunction(itemTitle)) {
+                        itemTitle = itemTitle({'owner' : this._owner, 'index' : i});
+                    }
+                    itemDOM.innerHTML = itemTitle;
                     itemDOM._callback = item['click'];
-                    Z.DomUtil.on(itemDOM, 'click', (onMenuClick)(i));
+                    maptalks.DomUtil.on(itemDOM, 'click', (onMenuClick)(i));
                 }
                 ul.appendChild(itemDOM);
             }
@@ -172,7 +188,7 @@
      * @memberOf maptalks.ui
      * @name Menu.Mixin
      */
-    Z.ui.Menu.Mixin = {
+    maptalks.ui.Menu.Mixin = {
         /**
         * Set a context menu
         * @param {Object} options - menu options
@@ -194,7 +210,7 @@
             this._menuOptions = options;
 
             if (this._menu) {
-                Z.Util.setOptions(this._menu, Z.Util.extend(defaultOptions, options));
+                maptalks.Util.setOptions(this._menu, maptalks.Util.extend(defaultOptions, options));
             } else {
                 this.on('contextmenu', this._defaultOpenMenu, this);
             }
@@ -207,7 +223,7 @@
         * @return {*} this
         */
         openMenu: function (coordinate) {
-            var map = (this instanceof Z.Map) ? this : this.getMap();
+            var map = (this instanceof maptalks.Map) ? this : this.getMap();
             if (!coordinate) {
                 coordinate = this.getCenter();
             }
@@ -228,18 +244,14 @@
         * @return {*} this
         */
         setMenuItems: function (items) {
-            if (this._menuOptions) {
-                if (Z.Util.isArray(items)) {
-                    this._menuOptions['custom'] = false;
-                }
-                this._menuOptions['items'] = items;
+            if (!this._menuOptions) {
+                this._menuOptions = {};
             }
-            if (this._menu) {
-                if (Z.Util.isArray(items)) {
-                    this._menu.config('custom', false);
-                }
-                this._menu.setItems(items);
+            if (maptalks.Util.isArray(items)) {
+                this._menuOptions['custom'] = false;
             }
+            this._menuOptions['items'] = items;
+            this.setMenu(this._menuOptions);
             return this;
         },
 
@@ -250,9 +262,10 @@
         getMenuItems:function () {
             if (this._menu) {
                 return this._menu.getItems();
-            } else {
-                return null;
+            } else if (this._menuOptions) {
+                return this._menuOptions['items'];
             }
+            return null;
         },
 
         /**
@@ -278,7 +291,7 @@
         },
 
         _bindMenu: function (options) {
-            this._menu = new Z.ui.Menu(options);
+            this._menu = new maptalks.ui.Menu(options);
             this._menu.addTo(this);
 
             return this;
@@ -296,15 +309,16 @@
          /**
          * 应用没有注册contextmenu事件时, 默认在contextmenu事件时打开右键菜单
          * 如果注册过contextmenu事件, 则不做任何操作
-         * @param  {*} param [description]
-         * @return {*}       [description]
+         * @param  {Object} param - event parameter
+         * @return {Boolean} true | false to stop event propagation
          * @private
          */
         _defaultOpenMenu:function (param) {
             if (this.listens('contextmenu') > 1) {
-                return;
+                return true;
             } else {
                 this.openMenu(param['coordinate']);
+                return false;
             }
         }
     };

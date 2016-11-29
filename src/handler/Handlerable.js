@@ -3,7 +3,7 @@
  * @protected
  * @mixin
  */
-Z.Handlerable = {
+maptalks.Handlerable = {
     /**
      * Register a handler
      * @param {String} name       - name of the handler
@@ -43,7 +43,7 @@ Z.Handlerable = {
         var handler = this[name];
         if (handler) {
             //handler registered
-            var hit = Z.Util.indexOfArray(handler, this._handlers);
+            var hit = maptalks.Util.indexOfArray(handler, this._handlers);
             if (hit >= 0) {
                 this._handlers.splice(hit, 1);
             }

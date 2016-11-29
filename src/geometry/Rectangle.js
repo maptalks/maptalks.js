@@ -14,10 +14,10 @@
  *     id : 'rectangle0'
  * });
  */
-Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
+maptalks.Rectangle = maptalks.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
 
     initialize:function (coordinates, width, height, opts) {
-        this._coordinates = new Z.Coordinate(coordinates);
+        this._coordinates = new maptalks.Coordinate(coordinates);
         this._width = width;
         this._height = height;
         this._initOptions(opts);
@@ -39,7 +39,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
      * @fires maptalks.Rectangle#positionchange
      */
     setCoordinates:function (nw) {
-        this._coordinates = new Z.Coordinate(nw);
+        this._coordinates = new maptalks.Coordinate(nw);
 
         if (!this._coordinates || !this.getMap()) {
             this.onPositionChanged();
@@ -160,46 +160,46 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
 
     _containsPoint: function (point, tolerance) {
         var map = this.getMap(),
-            t = Z.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            t = maptalks.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             sp = map.coordinateToPoint(this._coordinates),
             pxSize = map.distanceToPixel(this._width, this._height);
 
-        var pxMin = new Z.Point(sp.x, sp.y),
-            pxMax = new Z.Point(sp.x + pxSize.width, sp.y + pxSize.height),
-            pxExtent = new Z.PointExtent(pxMin.x - t, pxMin.y - t,
+        var pxMin = new maptalks.Point(sp.x, sp.y),
+            pxMax = new maptalks.Point(sp.x + pxSize.width, sp.y + pxSize.height),
+            pxExtent = new maptalks.PointExtent(pxMin.x - t, pxMin.y - t,
                                     pxMax.x + t, pxMax.y + t);
 
-        point = new Z.Point(point.x, point.y);
+        point = new maptalks.Point(point.x, point.y);
 
         return pxExtent.contains(point);
     },
 
     _computeExtent:function (measurer) {
-        if (!measurer || !this._coordinates || Z.Util.isNil(this._width) || Z.Util.isNil(this._height)) {
+        if (!measurer || !this._coordinates || maptalks.Util.isNil(this._width) || maptalks.Util.isNil(this._height)) {
             return null;
         }
         var width = this.getWidth(),
             height = this.getHeight();
         var p1 = measurer.locate(this._coordinates, width, -height);
-        return new Z.Extent(p1, this._coordinates);
+        return new maptalks.Extent(p1, this._coordinates);
     },
 
     _computeGeodesicLength:function () {
-        if (Z.Util.isNil(this._width) || Z.Util.isNil(this._height)) {
+        if (maptalks.Util.isNil(this._width) || maptalks.Util.isNil(this._height)) {
             return 0;
         }
         return 2 * (this._width + this._height);
     },
 
     _computeGeodesicArea:function () {
-        if (Z.Util.isNil(this._width) || Z.Util.isNil(this._height)) {
+        if (maptalks.Util.isNil(this._width) || maptalks.Util.isNil(this._height)) {
             return 0;
         }
         return this._width * this._height;
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = Z.GeoJSON.toNumberArrays([this.getShell()]);
+        var coordinates = maptalks.GeoJSON.toNumberArrays([this.getShell()]);
         return {
             'type' : 'Polygon',
             'coordinates' : coordinates
@@ -207,7 +207,7 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
     },
 
     _toJSON:function (options) {
-        var opts = Z.Util.extend({}, options);
+        var opts = maptalks.Util.extend({}, options);
         var nw = this.getCoordinates();
         opts.geometry = false;
         var feature = this.toGeoJSON(opts);
@@ -225,9 +225,9 @@ Z.Rectangle = Z.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
 
 });
 
-Z.Rectangle.fromJSON = function (json) {
+maptalks.Rectangle.fromJSON = function (json) {
     var feature = json['feature'];
-    var rect = new Z.Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
+    var rect = new maptalks.Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
     rect.setProperties(feature['properties']);
     return rect;
 };

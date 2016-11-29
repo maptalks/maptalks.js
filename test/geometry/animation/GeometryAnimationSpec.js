@@ -23,7 +23,7 @@ describe('#GeometryAnimation', function () {
             }
             for (var i = 0; i < geometries.length; i++) {
                 var player = geometries[i].animate({
-                    translate:new Z.Coordinate(0.01,0.01)
+                    translate:new maptalks.Coordinate(0.01,0.01)
                 }, {speed : 500}, cmp);
             };
 
@@ -173,7 +173,7 @@ describe('#GeometryAnimation', function () {
         var container;
         var map;
         var tile;
-        var center = new Z.Coordinate(118.846825, 32.046534);
+        var center = new maptalks.Coordinate(118.846825, 32.046534);
         var layer;
         var context = {
             map:map,
@@ -185,7 +185,7 @@ describe('#GeometryAnimation', function () {
             var setups = commonSetupMap(center);
             container = setups.container;
             map = setups.map;
-            layer = new Z.VectorLayer('vector');
+            layer = new maptalks.VectorLayer('vector');
             map.addLayer(layer);
             context.map = map;
             context.layer = layer;
@@ -204,7 +204,7 @@ describe('#GeometryAnimation', function () {
                 if (frame.state.playState !== 'finished') {
                     return;
                 }
-                var expected = center.add(new Z.Coordinate(0.1, 0.1));
+                var expected = center.add(new maptalks.Coordinate(0.1, 0.1));
                 expect(marker.getCenter()).to.closeTo(expected);
                 expect(map.getCenter()).to.closeTo(expected);
                 done();

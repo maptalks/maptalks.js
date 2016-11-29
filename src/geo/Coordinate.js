@@ -14,8 +14,8 @@
  * @param {Number} x - x value
  * @param {Number} y - y value
  */
-Z.Coordinate = function (x, y) {
-    if (!Z.Util.isNil(x) && !Z.Util.isNil(y)) {
+maptalks.Coordinate = function (x, y) {
+    if (!maptalks.Util.isNil(x) && !maptalks.Util.isNil(y)) {
         /**
          * @property {Number} x - value on X-Axis or longitude in degrees
          */
@@ -24,11 +24,11 @@ Z.Coordinate = function (x, y) {
          * @property {Number} y - value on Y-Axis or Latitude in degrees
          */
         this.y = +(y);
-    } else if (Z.Util.isArray(x)) {
+    } else if (maptalks.Util.isArray(x)) {
         //数组
         this.x = +(x[0]);
         this.y = +(x[1]);
-    } else if (!Z.Util.isNil(x['x']) && !Z.Util.isNil(x['y'])) {
+    } else if (!maptalks.Util.isNil(x['x']) && !maptalks.Util.isNil(x['y'])) {
         //对象
         this.x = +(x['x']);
         this.y = +(x['y']);
@@ -38,18 +38,18 @@ Z.Coordinate = function (x, y) {
     }
 };
 
-Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype */{
+maptalks.Util.extend(maptalks.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype */{
     /**
      * Returns a copy of the coordinate
      * @return {maptalks.Coordinate} copy
      */
     copy:function () {
-        return new Z.Coordinate(this.x, this.y);
+        return new maptalks.Coordinate(this.x, this.y);
     },
 
     //destructive add, to improve performance in some circumstances.
     _add: function (x, y) {
-        if (x instanceof Z.Coordinate) {
+        if (x instanceof maptalks.Coordinate) {
             this.x += x.x;
             this.y += x.y;
         } else {
@@ -65,19 +65,19 @@ Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype *
      */
     add:function (x, y) {
         var nx, ny;
-        if (x instanceof Z.Coordinate) {
+        if (x instanceof maptalks.Coordinate) {
             nx = this.x + x.x;
             ny = this.y + x.y;
         } else {
             nx = this.x + x;
             ny = this.y + y;
         }
-        return new Z.Coordinate(nx, ny);
+        return new maptalks.Coordinate(nx, ny);
     },
 
     //destructive substract
     _substract: function (x, y) {
-        if (x instanceof Z.Coordinate) {
+        if (x instanceof maptalks.Coordinate) {
             this.x -= x.x;
             this.y -= x.y;
         } else {
@@ -94,14 +94,14 @@ Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype *
      */
     substract:function (x, y) {
         var nx, ny;
-        if (x instanceof Z.Coordinate) {
+        if (x instanceof maptalks.Coordinate) {
             nx = this.x - x.x;
             ny = this.y - x.y;
         } else {
             nx = this.x - x;
             ny = this.y - y;
         }
-        return new Z.Coordinate(nx, ny);
+        return new maptalks.Coordinate(nx, ny);
     },
 
     /**
@@ -110,7 +110,7 @@ Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype *
      * @return {maptalks.Coordinate} result
      */
     multi: function (ratio) {
-        return new Z.Coordinate(this.x * ratio, this.y * ratio);
+        return new maptalks.Coordinate(this.x * ratio, this.y * ratio);
     },
 
     _multi: function (ratio) {
@@ -125,7 +125,7 @@ Z.Util.extend(Z.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype *
      * @return {Boolean}
      */
     equals:function (c2) {
-        if (!Z.Util.isCoordinate(c2)) {
+        if (!maptalks.Util.isCoordinate(c2)) {
             return false;
         }
         return this.x === c2.x && this.y === c2.y;

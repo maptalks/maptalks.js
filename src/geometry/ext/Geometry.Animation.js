@@ -1,4 +1,4 @@
-Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     /**
      * Animate the geometry
      *
@@ -25,7 +25,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         if (this._animPlayer) {
             this._animPlayer.finish();
         }
-        if (Z.Util.isFunction(options)) {
+        if (maptalks.Util.isFunction(options)) {
             step = options;
             options = null;
         }
@@ -38,7 +38,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         if (options) { isFocusing = options['focus']; }
         delete this._animationStarted;
 
-        var player = Z.Animation.animate(stylesToAnimate, options, Z.Util.bind(function (frame) {
+        var player = maptalks.Animation.animate(stylesToAnimate, options, maptalks.Util.bind(function (frame) {
             if (!this._animationStarted && isFocusing) {
                 map.onMoveStart();
             }
@@ -60,7 +60,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             }
             var dSymbol = styles['symbol'];
             if (dSymbol) {
-                this.setSymbol(Z.Util.extendSymbol(symbol, dSymbol));
+                this.setSymbol(maptalks.Util.extendSymbol(symbol, dSymbol));
             }
             if (isFocusing) {
                 var pcenter = projection.project(this.getCenter());
@@ -98,8 +98,8 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                     stylesToAnimate[p] = [current, v];
                 } else if (p === 'symbol') {
                     var symbolToAnimate;
-                    if (Z.Util.isArray(styles['symbol'])) {
-                        if (!Z.Util.isArray(symbol)) {
+                    if (maptalks.Util.isArray(styles['symbol'])) {
+                        if (!maptalks.Util.isArray(symbol)) {
                             throw new Error('geometry\'symbol isn\'t a composite symbol, while the symbol in styles is.');
                         }
                         symbolToAnimate = [];
@@ -118,7 +118,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                             symbolToAnimate.push(a);
                         }
                     } else {
-                        if (Z.Util.isArray(symbol)) {
+                        if (maptalks.Util.isArray(symbol)) {
                             throw new Error('geometry\'symbol is a composite symbol, while the symbol in styles isn\'t.');
                         }
                         symbolToAnimate = {};
@@ -130,7 +130,7 @@ Z.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                     }
                     stylesToAnimate['symbol'] = symbolToAnimate;
                 } else if (p === 'translate') {
-                    stylesToAnimate['translate'] = new Z.Coordinate(v);
+                    stylesToAnimate['translate'] = new maptalks.Coordinate(v);
                 }
             }
         }

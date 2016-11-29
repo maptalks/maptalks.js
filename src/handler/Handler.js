@@ -7,8 +7,8 @@
  * @abstract
  * @protected
  */
-Z.Handler = Z.Class.extend(/** @lends maptalks.Handler.prototype */{
-    includes: Z.Eventable,
+maptalks.Handler = maptalks.Class.extend(/** @lends maptalks.Handler.prototype */{
+    includes: maptalks.Eventable,
 
     initialize: function (target) {
         this.target = target;

@@ -1,4 +1,4 @@
-Z.Map.include(/** @lends maptalks.Map.prototype */{
+maptalks.Map.include(/** @lends maptalks.Map.prototype */{
     /**
      * Pan to the given coordinate
      * @param {maptalks.Coordinate} coordinate - coordinate to pan to
@@ -12,7 +12,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
             return this;
         }
         var map = this;
-        coordinate = new Z.Coordinate(coordinate);
+        coordinate = new maptalks.Coordinate(coordinate);
         var dest = this.coordinateToContainerPoint(coordinate),
             current = this.coordinateToContainerPoint(this.getCenter());
         return this._panBy(dest.substract(current), options, function () {
@@ -37,7 +37,7 @@ Z.Map.include(/** @lends maptalks.Map.prototype */{
         if (!offset) {
             return this;
         }
-        offset = new Z.Point(offset).multi(-1);
+        offset = new maptalks.Point(offset).multi(-1);
         this.onMoveStart();
         if (!options) {
             options = {};

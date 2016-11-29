@@ -1,4 +1,4 @@
-if (!Z.node) {
+if (!maptalks.node) {
     (function () {
 
         var ua = navigator.userAgent.toLowerCase(),
@@ -25,7 +25,7 @@ if (!Z.node) {
         var touch = !phantomjs && (pointer || 'ontouchstart' in window ||
                 (window.DocumentTouch && document instanceof window.DocumentTouch));
 
-        Z.Browser = {
+        maptalks.Browser = {
             ie: ie,
             ielt9: ie && !document.addEventListener,
             edge: 'msLaunchUri' in navigator && !('documentMode' in document),
@@ -63,7 +63,7 @@ if (!Z.node) {
     }());
 } else {
     //usually in node
-    Z.Browser = {
+    maptalks.Browser = {
         canvas:true
     };
 }

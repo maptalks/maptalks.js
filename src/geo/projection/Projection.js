@@ -1,7 +1,7 @@
 /**
  * @namespace
  */
-Z.projection = {};
+maptalks.projection = {};
 
 /**
  * Common Methods of Projections.
@@ -10,7 +10,7 @@ Z.projection = {};
  * @memberOf maptalks.projection
  * @name Common
  */
-Z.projection.Common = {
+maptalks.projection.Common = {
     /**
      * Project a geographical coordinate to a projected coordinate (2d coordinate)
      * @param  {maptalks.Coordinate} p - coordinate to project
@@ -32,7 +32,7 @@ Z.projection.Common = {
      * @static
      */
     projectCoords:function (coordinates) {
-        return Z.Util.mapArrayRecursively(coordinates, this.project, this);
+        return maptalks.Util.mapArrayRecursively(coordinates, this.project, this);
     },
 
     /**
@@ -42,6 +42,6 @@ Z.projection.Common = {
      * @static
      */
     unprojectCoords:function (projCoords) {
-        return Z.Util.mapArrayRecursively(projCoords, this.unproject, this);
+        return maptalks.Util.mapArrayRecursively(projCoords, this.unproject, this);
     }
 };

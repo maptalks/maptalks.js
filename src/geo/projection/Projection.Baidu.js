@@ -8,7 +8,7 @@
  * @mixes maptalks.projection.Common
  * @mixes maptalks.measurer.BaiduSphere
  */
-Z.projection.BAIDU = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.projection.BAIDU */{
+maptalks.projection.BAIDU = maptalks.Util.extend({}, maptalks.projection.Common, /** @lends maptalks.projection.BAIDU */{
     /**
      * "BAIDU", Code of the projection, used by [View]{@link maptalks.View} to get projection instance.
      * @type {String}
@@ -23,7 +23,7 @@ Z.projection.BAIDU = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.
     unproject:function (p) {
         return this.convertMC2LL(p);
     }
-}, Z.measurer.BaiduSphere, {
+}, maptalks.measurer.BaiduSphere, {
     EARTHRADIUS: 6370996.81,
     MCBAND: [12890594.86, 8362377.87, 5591021, 3481989.83, 1678043.12, 0],
     LLBAND: [75, 60, 45, 30, 15, 0],
@@ -40,14 +40,14 @@ Z.projection.BAIDU = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.
             }
         }
         var T = this.convertor(cB, cE);
-        var result = new Z.Coordinate(T.x.toFixed(6), T.y.toFixed(6));
+        var result = new maptalks.Coordinate(T.x.toFixed(6), T.y.toFixed(6));
         return result;
     },
     convertLL2MC: function (T) {
         var cB, cD, cC, len;
         T.x = this.getLoop(T.x, -180, 180);
         T.y = this.getRange(T.y, -74, 74);
-        cB = new Z.Coordinate(T.x, T.y);
+        cB = new maptalks.Coordinate(T.x, T.y);
         for (cC = 0, len = this.LLBAND.length; cC < len; cC++) {
             if (cB.y >= this.LLBAND[cC]) {
                 cD = this.LL2MC[cC];
@@ -63,7 +63,7 @@ Z.projection.BAIDU = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.
             }
         }
         var cE = this.convertor(T, cD);
-        var result = new Z.Coordinate(cE.x.toFixed(2), cE.y.toFixed(2));
+        var result = new maptalks.Coordinate(cE.x.toFixed(2), cE.y.toFixed(2));
         return result;
     },
     convertor: function (cC, cD) {
@@ -78,7 +78,7 @@ Z.projection.BAIDU = Z.Util.extend({}, Z.projection.Common, /** @lends maptalks.
                 cD[8] * cB * cB * cB * cB * cB * cB;
         T *= (cC.x < 0 ? -1 : 1);
         cE *= (cC.y < 0 ? -1 : 1);
-        return new Z.Coordinate(T, cE);
+        return new maptalks.Coordinate(T, cE);
     },
     toRadians: function (T) {
         return Math.PI * T / 180;

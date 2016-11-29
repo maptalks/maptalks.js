@@ -5,7 +5,7 @@
  * @param {Number} width - width value
  * @param {Number} height - height value
  */
-Z.Size = function (width, height) {
+maptalks.Size = function (width, height) {
     /**
      * @property {Number} width - width
      */
@@ -16,13 +16,13 @@ Z.Size = function (width, height) {
     this.height = height;
 };
 
-Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
+maptalks.Util.extend(maptalks.Size.prototype, /** @lends maptalks.Size.prototype */{
     /**
      * Returns a copy of the size
      * @return {maptalks.Size} copy
      */
     copy:function () {
-        return new Z.Size(this['width'], this['height']);
+        return new maptalks.Size(this['width'], this['height']);
     },
     /**
      * Returns the result of addition of another size.
@@ -30,7 +30,7 @@ Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
      * @return {maptalks.Size} result
      */
     add:function (size) {
-        return new Z.Size(this['width'] + size['width'], this['height'] + size['height']);
+        return new maptalks.Size(this['width'] + size['width'], this['height'] + size['height']);
     },
     /**
      * Compare with another size to see whether they are equal.
@@ -46,7 +46,7 @@ Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
      * @return {maptalks.Size} result
      */
     multi:function (ratio) {
-        return new Z.Size(this['width'] * ratio, this['height'] * ratio);
+        return new maptalks.Size(this['width'] * ratio, this['height'] * ratio);
     },
     _multi:function (ratio) {
         this['width'] *= ratio;
@@ -54,8 +54,8 @@ Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
         return this;
     },
     _round:function () {
-        this['width'] = Z.Util.round(this['width']);
-        this['height'] = Z.Util.round(this['height']);
+        this['width'] = maptalks.Util.round(this['width']);
+        this['height'] = maptalks.Util.round(this['height']);
         return this;
     },
 
@@ -64,7 +64,7 @@ Z.Util.extend(Z.Size.prototype, /** @lends maptalks.Size.prototype */{
      * @return {maptalks.Point} point
      */
     toPoint:function () {
-        return new Z.Point(this['width'], this['height']);
+        return new maptalks.Point(this['width'], this['height']);
     },
 
     /**

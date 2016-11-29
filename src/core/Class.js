@@ -7,7 +7,7 @@
  * @category core
  * @abstract
  */
-Z.Class = function () {
+maptalks.Class = function () {
 
 };
 /**
@@ -34,14 +34,14 @@ Z.Class = function () {
     // call greet method, alerting "Hello, World"
     a.greet("World");
  */
-Z.Class.extend = function (props) {
+maptalks.Class.extend = function (props) {
 
     // extended class with the new prototype
     var NewClass = function () {
         var self = this;
         if (!(this instanceof NewClass)) {
             // fix consructing without new silently
-            self = Z.Util.create(NewClass.prototype);
+            self = maptalks.Util.create(NewClass.prototype);
         }
 
         // call the constructor
@@ -60,7 +60,7 @@ Z.Class.extend = function (props) {
     var parentProto = NewClass.__super__ = this.prototype;
 
     /** @lends maptalks.Class.prototype */
-    var proto = Z.Util.create(parentProto);
+    var proto = maptalks.Util.create(parentProto);
 
     proto.constructor = NewClass;
 
@@ -68,30 +68,30 @@ Z.Class.extend = function (props) {
 
     // inherit parent's statics
     for (var i in this) {
-        if (i[0] !== '_' && this.hasOwnProperty(i) && i !== 'prototype' && !(this[i] instanceof Z.Class)) {
+        if (i[0] !== '_' && this.hasOwnProperty(i) && i !== 'prototype' && !(this[i] instanceof maptalks.Class)) {
             NewClass[i] = this[i];
         }
     }
 
     // mix static properties into the class
     if (props.statics) {
-        Z.Util.extend(NewClass, props.statics);
+        maptalks.Util.extend(NewClass, props.statics);
         delete props.statics;
     }
 
     // mix includes into the prototype
     if (props.includes) {
-        Z.Util.extend.apply(null, [proto].concat(props.includes));
+        maptalks.Util.extend.apply(null, [proto].concat(props.includes));
         delete props.includes;
     }
 
     // merge options
     if (proto.options) {
-        props.options = Z.Util.extend(Z.Util.create(proto.options), props.options);
+        props.options = maptalks.Util.extend(maptalks.Util.create(proto.options), props.options);
     }
 
     // mix given properties into the prototype
-    Z.Util.extend(proto, props);
+    maptalks.Util.extend(proto, props);
 
     proto._initHooks = [];
 
@@ -136,7 +136,7 @@ Z.Class.extend = function (props) {
                 if (conf.hasOwnProperty(i)) {
                     this.options[i] = conf[i];
                     // enable/disable handler
-                    if (this[i] && (this[i] instanceof Z.Handler)) {
+                    if (this[i] && (this[i] instanceof maptalks.Handler)) {
                         if (conf[i]) {
                             this[i].enable();
                         } else {
@@ -162,10 +162,10 @@ Z.Class.extend = function (props) {
  * @param  {object} props - additional instance methods or properties
  * @static
  */
-Z.Class.include = function () {
+maptalks.Class.include = function () {
     var sources = arguments;
     for (var j = 0, len = sources.length; j < len; j++) {
-        Z.Util.extend(this.prototype, sources[j]);
+        maptalks.Util.extend(this.prototype, sources[j]);
     }
     return this;
 };
@@ -175,8 +175,8 @@ Z.Class.include = function () {
  * @param  {object} options - default options.
  * @static
  */
-Z.Class.mergeOptions = function (options) {
-    Z.Util.extend(this.prototype.options, options);
+maptalks.Class.mergeOptions = function (options) {
+    maptalks.Util.extend(this.prototype.options, options);
     return this;
 };
 
@@ -185,7 +185,7 @@ Z.Class.mergeOptions = function (options) {
  * @param {string|function} fn - a hook function or name of the hook function and arguments
  * @static
  */
-Z.Class.addInitHook = function (fn) { // (Function) || (String, args...)
+maptalks.Class.addInitHook = function (fn) { // (Function) || (String, args...)
     var args = Array.prototype.slice.call(arguments, 1);
 
     var init = typeof fn === 'function' ? fn : function () {

@@ -3,7 +3,7 @@ describe('#Rectangle', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -11,9 +11,9 @@ describe('#Rectangle', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
-        canvasContainer = map._panels.mapPlatform;
+        canvasContainer = map._panels.allLayers;
     });
 
     afterEach(function() {
@@ -110,7 +110,7 @@ describe('#Rectangle', function() {
 
     describe('geometry fires events', function() {
         it('events', function() {
-            var vector = new Z.Rectangle(center, 1, 1);
+            var vector = new maptalks.Rectangle(center, 1, 1);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
@@ -121,12 +121,12 @@ describe('#Rectangle', function() {
         it('events',function() {
             var spy = sinon.spy();
 
-            var vector = new Z.Rectangle(center, 1, 1);
+            var vector = new maptalks.Rectangle(center, 1, 1);
             vector.on('shapechange positionchange',spy);
 
             function evaluate() {
                 var rnd = Math.random()*0.001;
-                var coordinates = new Z.Coordinate(center.x+rnd, center.y+rnd);
+                var coordinates = new maptalks.Coordinate(center.x+rnd, center.y+rnd);
 
                 vector.setCoordinates(coordinates);
                 expect(spy.calledOnce).to.be.ok();
@@ -149,13 +149,13 @@ describe('#Rectangle', function() {
             evaluate();
 
             //svg
-            layer = new Z.VectorLayer('svg');
+            layer = new maptalks.VectorLayer('svg');
             map.addLayer(layer);
             layer.addGeometry(vector);
             evaluate();
             vector.remove();
             //canvas
-            layer = new Z.VectorLayer('canvas',{render:'canvas'});
+            layer = new maptalks.VectorLayer('canvas',{render:'canvas'});
             layer.addGeometry(vector);
             map.addLayer(layer);
             evaluate();
@@ -164,7 +164,7 @@ describe('#Rectangle', function() {
 
     describe('can be treated as a polygon',function() {
         it('has shell',function() {
-            var vector = new Z.Rectangle(center, 1, 1);
+            var vector = new maptalks.Rectangle(center, 1, 1);
             var shell = vector.getShell();
             expect(shell).to.have.length(5);
             expect(shell[0].x === center.x && shell[0].y === center.y).to.be.ok();
@@ -175,13 +175,13 @@ describe('#Rectangle', function() {
         });
 
         it("but doesn't have holes",function() {
-            var vector = new Z.Rectangle(center, 1, 1);
+            var vector = new maptalks.Rectangle(center, 1, 1);
             var holes = vector.getHoles();
             expect(holes).to.not.be.ok();
         });
 
         it("toGeoJSON exported an polygon", function() {
-            var vector = new Z.Rectangle(center, 1, 1);
+            var vector = new maptalks.Rectangle(center, 1, 1);
             var geojson = vector.toGeoJSON().geometry ;
             expect(geojson.type).to.be.eql('Polygon');
             expect(geojson.coordinates[0]).to.have.length(5);
@@ -190,14 +190,14 @@ describe('#Rectangle', function() {
 
     describe('compute length and area',function() {
         it('length',function() {
-            var vector = new Z.Rectangle(center, 1, 1);
+            var vector = new maptalks.Rectangle(center, 1, 1);
             var result = 2*(vector.getWidth()+vector.getHeight());
             var length = vector.getLength();
             expect(length).to.be(result);
         });
 
         it('area',function() {
-            var vector = new Z.Rectangle(center, 1, 1);
+            var vector = new maptalks.Rectangle(center, 1, 1);
             var result = 1;
             var length = vector.getArea();
             expect(length).to.be(result);
@@ -205,7 +205,7 @@ describe('#Rectangle', function() {
     });
 
     it('can have various symbols',function(done) {
-         var vector = new Z.Rectangle(center, 1, 1);
+         var vector = new maptalks.Rectangle(center, 1, 1);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 });

@@ -2,7 +2,7 @@ describe('#TileLayer', function() {
 
     var container;
     var map;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -13,7 +13,7 @@ describe('#TileLayer', function() {
             zoom: 17,
             center: center
         };
-        map = new Z.Map(container, option);
+        map = new maptalks.Map(container, option);
     });
 
     afterEach(function () {
@@ -22,7 +22,7 @@ describe('#TileLayer', function() {
 
     describe('add to map', function () {
         it('add again', function (done) {
-            var tile = new Z.TileLayer('tile', {
+            var tile = new maptalks.TileLayer('tile', {
                 urlTemplate : '/resources/tile.png'
             });
             tile.once('layerload', function () {
@@ -40,7 +40,7 @@ describe('#TileLayer', function() {
 
     describe("Different Projections", function() {
         it("webmercator", function(done) {
-            var tile = new Z.TileLayer('tile', {
+            var tile = new maptalks.TileLayer('tile', {
                 debug : true,
                 urlTemplate : '#',
                 subdomains:['a','b','c']
@@ -103,7 +103,7 @@ describe('#TileLayer', function() {
 
     describe("Different Renderers", function() {
         it("canvas", function(done) {
-            var tile = new Z.TileLayer('tile', {
+            var tile = new maptalks.TileLayer('tile', {
                 debug : true,
                 urlTemplate : '/resources/tile.png',
                 subdomains:['a','b','c'],
@@ -119,7 +119,7 @@ describe('#TileLayer', function() {
         });
 
         it("dom", function(done) {
-            var tile = new Z.TileLayer('tile', {
+            var tile = new maptalks.TileLayer('tile', {
                 debug : true,
                 urlTemplate : '/resources/tile.png',
                 subdomains:['a','b','c'],
@@ -147,8 +147,8 @@ describe('#TileLayer', function() {
                 zoom: 17,
                 center: center
             };
-            map = new Z.Map(container, option);
-            var tile = new Z.TileLayer('tile', {
+            map = new maptalks.Map(container, option);
+            var tile = new maptalks.TileLayer('tile', {
                 debug : true,
                 urlTemplate : '/resources/tile.png',
                 subdomains:['a','b','c']

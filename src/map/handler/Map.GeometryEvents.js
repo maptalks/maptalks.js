@@ -1,31 +1,31 @@
-Z.Map.mergeOptions({
+maptalks.Map.mergeOptions({
     'geometryEvents': true
 });
 
-Z.Map.GeometryEvents = Z.Handler.extend({
+maptalks.Map.GeometryEvents = maptalks.Handler.extend({
     EVENTS: 'mousedown mouseup mousemove click dblclick contextmenu touchstart touchmove touchend',
 
     addHooks: function () {
         var map = this.target;
-        var dom = map._panels.mapLayers || map._containerDOM;
+        var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
-            Z.DomUtil.on(dom, this.EVENTS, this._identifyGeometryEvents, this);
+            maptalks.DomUtil.on(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
 
     },
 
     removeHooks: function () {
         var map = this.target;
-        var dom = map._panels.mapLayers || map._containerDOM;
+        var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
-            Z.DomUtil.off(dom, this.EVENTS, this._identifyGeometryEvents, this);
+            maptalks.DomUtil.off(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
     },
 
     _identifyGeometryEvents: function (domEvent) {
         var map = this.target;
         var vectorLayers = map._getLayers(function (layer) {
-            if (layer instanceof Z.VectorLayer) {
+            if (layer instanceof maptalks.VectorLayer) {
                 return true;
             }
             return false;
@@ -49,10 +49,10 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         if (!actual) {
             return;
         }
-        var containerPoint = Z.DomUtil.getEventContainerPoint(actual, map._containerDOM),
+        var containerPoint = maptalks.DomUtil.getEventContainerPoint(actual, map._containerDOM),
             coordinate = map.containerPointToCoordinate(containerPoint);
         if (eventType === 'touchstart') {
-            Z.DomUtil.preventDefault(domEvent);
+            maptalks.DomUtil.preventDefault(domEvent);
         }
         var geometryCursorStyle = null;
         var identifyOptions = {
@@ -77,13 +77,13 @@ Z.Map.GeometryEvents = Z.Handler.extend({
             'coordinate' : coordinate,
             'layers': layers
         };
-        var callback = Z.Util.bind(fireGeometryEvent, this);
+        var callback = maptalks.Util.bind(fireGeometryEvent, this);
         var me = this;
         if (this._queryIdentifyTimeout) {
-            Z.Util.cancelAnimFrame(this._queryIdentifyTimeout);
+            maptalks.Util.cancelAnimFrame(this._queryIdentifyTimeout);
         }
         if (eventType === 'mousemove'  || eventType === 'touchmove') {
-            this._queryIdentifyTimeout = Z.Util.requestAnimFrame(function () {
+            this._queryIdentifyTimeout = maptalks.Util.requestAnimFrame(function () {
                 map.identify(identifyOptions, callback);
             });
         } else {
@@ -91,15 +91,16 @@ Z.Map.GeometryEvents = Z.Handler.extend({
         }
 
         function fireGeometryEvent(geometries) {
+            var propagation = true;
             var i;
             if (eventType === 'mousemove') {
                 var geoMap = {};
-                if (Z.Util.isArrayHasData(geometries)) {
+                if (maptalks.Util.isArrayHasData(geometries)) {
                     for (i = geometries.length - 1; i >= 0; i--) {
                         geoMap[geometries[i]._getInternalId()] = geometries[i];
                         geometries[i]._onEvent(domEvent);
                         //the first geometry is on the top, so ignore the latter cursors.
-                        geometries[i]._onMouseOver(domEvent);
+                        propagation = geometries[i]._onMouseOver(domEvent);
                     }
                 }
 
@@ -107,7 +108,7 @@ Z.Map.GeometryEvents = Z.Handler.extend({
 
                 var oldTargets = me._prevMouseOverTargets;
                 me._prevMouseOverTargets = geometries;
-                if (Z.Util.isArrayHasData(oldTargets)) {
+                if (maptalks.Util.isArrayHasData(oldTargets)) {
                     for (i = oldTargets.length - 1; i >= 0; i--) {
                         var oldTarget = oldTargets[i];
                         var oldTargetId = oldTargets[i]._getInternalId();
@@ -130,13 +131,14 @@ Z.Map.GeometryEvents = Z.Handler.extend({
 
             } else {
                 if (!geometries || geometries.length === 0) { return; }
-                // for (i = geometries.length - 1; i >= 0; i--) {
-                geometries[geometries.length - 1]._onEvent(domEvent);
-                // }
+                propagation = geometries[geometries.length - 1]._onEvent(domEvent);
+            }
+            if (propagation === false) {
+                maptalks.DomUtil.stopPropagation(domEvent);
             }
         }
 
     }
 });
 
-Z.Map.addInitHook('addHandler', 'geometryEvents', Z.Map.GeometryEvents);
+maptalks.Map.addInitHook('addHandler', 'geometryEvents', maptalks.Map.GeometryEvents);

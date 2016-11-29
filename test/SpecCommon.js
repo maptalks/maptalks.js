@@ -85,7 +85,8 @@ function commonSetupMap(center, baseLayer) {
     if (baseLayer === undefined) {
         var tile = new maptalks.TileLayer('tile', {
             urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
+            subdomains: [1, 2, 3],
+            cssFilter : 'grayscale(0.5)'
         });
         map.setBaseLayer(tile);
     } else if (baseLayer) {

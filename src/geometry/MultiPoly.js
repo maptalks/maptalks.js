@@ -2,7 +2,7 @@
  * Common methods for MultiPoint, MultiLineString and MultiPolygon
  * @mixin maptalks.Geometry.MultiPoly
  */
-Z.Geometry.MultiPoly = {
+maptalks.Geometry.MultiPoly = {
     /**
      * Get coordinates of the collection
      * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates
@@ -10,7 +10,7 @@ Z.Geometry.MultiPoly = {
     getCoordinates:function () {
         var coordinates = [];
         var geometries = this.getGeometries();
-        if (!Z.Util.isArray(geometries)) {
+        if (!maptalks.Util.isArray(geometries)) {
             return null;
         }
         for (var i = 0, len = geometries.length; i < len; i++) {
@@ -26,7 +26,7 @@ Z.Geometry.MultiPoly = {
      * @fires maptalk.Geometry#shapechange
      */
     setCoordinates:function (coordinates) {
-        if (Z.Util.isArrayHasData(coordinates)) {
+        if (maptalks.Util.isArrayHasData(coordinates)) {
             var geometries = [];
             for (var i = 0, len = coordinates.length; i < len; i++) {
                 var p = new this.GeometryType(coordinates[i], this.config());
@@ -40,7 +40,7 @@ Z.Geometry.MultiPoly = {
     },
 
     _initData:function (data) {
-        if (Z.Util.isArrayHasData(data)) {
+        if (maptalks.Util.isArrayHasData(data)) {
             if (data[0] instanceof this.GeometryType) {
                 this.setGeometries(data);
             } else {
@@ -50,7 +50,7 @@ Z.Geometry.MultiPoly = {
     },
 
     _checkGeometries:function (geometries) {
-        if (Z.Util.isArray(geometries)) {
+        if (maptalks.Util.isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
                 if (geometries[i] && !(geometries[i] instanceof this.GeometryType)) {
                     throw new Error('Geometry is not valid for collection, index:' + i);
@@ -63,7 +63,7 @@ Z.Geometry.MultiPoly = {
     //override _exportGeoJSONGeometry in GeometryCollection
     _exportGeoJSONGeometry:function () {
         var points = this.getCoordinates();
-        var coordinates = Z.GeoJSON.toNumberArrays(points);
+        var coordinates = maptalks.GeoJSON.toNumberArrays(points);
         return {
             'type':this.getType(),
             'coordinates': coordinates

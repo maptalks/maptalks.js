@@ -1,4 +1,4 @@
-Z.Map.include(/** @lends maptalks.Map.prototype */{
+maptalks.Map.include(/** @lends maptalks.Map.prototype */{
     /**
      * Request for the full screen
      * @return {maptalks.Map} this

@@ -1,4 +1,4 @@
-Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
+maptalks.symbolizer.VectorMarkerSymbolizer = maptalks.symbolizer.PointSymbolizer.extend({
 
     padding : [2, 2],
 
@@ -8,7 +8,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         this.painter = painter;
         var style = this.translate();
         this.style = this._defineStyle(style);
-        this.strokeAndFill = this._defineStyle(Z.symbolizer.VectorMarkerSymbolizer.translateLineAndFill(style));
+        this.strokeAndFill = this._defineStyle(maptalks.symbolizer.VectorMarkerSymbolizer.translateLineAndFill(style));
     },
 
     symbolize:function (ctx, resources) {
@@ -18,7 +18,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             return;
         }
         var cookedPoints = this._getRenderContainerPoints();
-        if (!Z.Util.isArrayHasData(cookedPoints)) {
+        if (!maptalks.Util.isArrayHasData(cookedPoints)) {
             return;
         }
         this._prepareContext(ctx);
@@ -35,9 +35,9 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
         var strokeAndFill = this.strokeAndFill,
             point, origin;
-        var gradient = Z.Util.isGradient(strokeAndFill['lineColor']) || Z.Util.isGradient(strokeAndFill['polygonFill']);
+        var gradient = maptalks.Util.isGradient(strokeAndFill['lineColor']) || maptalks.Util.isGradient(strokeAndFill['polygonFill']);
         if (!gradient) {
-            Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+            maptalks.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         }
         for (var i = cookedPoints.length - 1; i >= 0; i--) {
             point = cookedPoints[i];
@@ -72,7 +72,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             if (origin) {
                 point = origin;
             }
-            Z.Canvas.image(ctx, image, point.x, point.y, w, h);
+            maptalks.Canvas.image(ctx, image, point.x, point.y, w, h);
             if (origin) {
                 ctx.restore();
             }
@@ -85,12 +85,12 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             shadow = this.geometry.options['shadowBlur'],
             w = this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0],
             h = this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1],
-            canvas = Z.Canvas.createCanvas(w, h, canvasClass),
+            canvas = maptalks.Canvas.createCanvas(w, h, canvasClass),
             point = this._getAnchor();
         var context = canvas.getContext('2d');
-        var gradient = Z.Util.isGradient(this.strokeAndFill['lineColor']) || Z.Util.isGradient(this.strokeAndFill['polygonFill']);
+        var gradient = maptalks.Util.isGradient(this.strokeAndFill['lineColor']) || maptalks.Util.isGradient(this.strokeAndFill['polygonFill']);
         if (!gradient) {
-            Z.Canvas.prepareCanvas(context, this.strokeAndFill, resources);
+            maptalks.Canvas.prepareCanvas(context, this.strokeAndFill, resources);
         }
         this._drawVectorMarker(context, point, resources);
         // context.strokeStyle = '#f00';
@@ -103,10 +103,10 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         if (!this._stamp) {
             this._stamp =  [
                 this.style['markerType'],
-                Z.Util.isGradient(this.style['markerFill']) ? Z.Util.getGradientStamp(this.style['markerFill']) : this.style['markerFill'],
+                maptalks.Util.isGradient(this.style['markerFill']) ? maptalks.Util.getGradientStamp(this.style['markerFill']) : this.style['markerFill'],
                 this.style['markerFillOpacity'],
                 this.style['markerFillPatternFile'],
-                Z.Util.isGradient(this.style['markerLineColor']) ? Z.Util.getGradientStamp(this.style['markerLineColor']) : this.style['markerLineColor'],
+                maptalks.Util.isGradient(this.style['markerLineColor']) ? maptalks.Util.getGradientStamp(this.style['markerLineColor']) : this.style['markerLineColor'],
                 this.style['markerLineWidth'],
                 this.style['markerLineOpacity'],
                 this.style['markerLineDasharray'] ? this.style['markerLineDasharray'].join(',') : '',
@@ -125,16 +125,16 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             w = this.style['markerWidth'],
             h = this.style['markerHeight'];
         if (markerType  === 'bar' || markerType  === 'pie' || markerType  === 'pin') {
-            return new Z.Point(w / 2 + lineWidth / 2 + shadow + this.padding[0] / 2, h + lineWidth / 2 + shadow + this.padding[1]);
+            return new maptalks.Point(w / 2 + lineWidth / 2 + shadow + this.padding[0] / 2, h + lineWidth / 2 + shadow + this.padding[1]);
         } else {
-            return new Z.Point(w / 2  + lineWidth / 2 + shadow + this.padding[0] / 2, h / 2  + lineWidth / 2 + shadow + this.padding[1] / 2);
+            return new maptalks.Point(w / 2  + lineWidth / 2 + shadow + this.padding[0] / 2, h / 2  + lineWidth / 2 + shadow + this.padding[1] / 2);
         }
     },
 
     _getGraidentExtent: function (points) {
-        var e = new Z.PointExtent(),
+        var e = new maptalks.PointExtent(),
             m = this.getMarkerExtent();
-        if (Z.Util.isArray(points)) {
+        if (maptalks.Util.isArray(points)) {
             for (var i = points.length - 1; i >= 0; i--) {
                 e._combine(points[i]);
             }
@@ -151,22 +151,22 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _drawVectorMarker: function (ctx, point, resources) {
         var style = this.style, strokeAndFill = this.strokeAndFill,
             markerType = style['markerType'].toLowerCase(),
-            vectorArray = Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints(markerType, style['markerWidth'], style['markerHeight']),
+            vectorArray = maptalks.symbolizer.VectorMarkerSymbolizer._getVectorPoints(markerType, style['markerWidth'], style['markerHeight']),
             lineOpacity = strokeAndFill['lineOpacity'], fillOpacity = strokeAndFill['polygonOpacity'],
             j, lineCap, angle, gradientExtent;
-        var gradient = Z.Util.isGradient(strokeAndFill['lineColor']) || Z.Util.isGradient(strokeAndFill['polygonFill']);
+        var gradient = maptalks.Util.isGradient(strokeAndFill['lineColor']) || maptalks.Util.isGradient(strokeAndFill['polygonFill']);
         if (gradient) {
-            if (Z.Util.isGradient(strokeAndFill['lineColor'])) {
+            if (maptalks.Util.isGradient(strokeAndFill['lineColor'])) {
                 gradientExtent = this._getGraidentExtent(point);
                 strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth']);
             }
-            if (Z.Util.isGradient(strokeAndFill['polygonFill'])) {
+            if (maptalks.Util.isGradient(strokeAndFill['polygonFill'])) {
                 if (!gradientExtent) {
                     gradientExtent = this._getGraidentExtent(point);
                 }
                 strokeAndFill['polygonGradientExtent'] = gradientExtent;
             }
-            Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+            maptalks.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         }
 
 
@@ -174,14 +174,14 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             height = style['markerHeight'];
         if (markerType === 'ellipse') {
              //ellipse default
-            Z.Canvas.ellipse(ctx, point, width / 2, height / 2, lineOpacity, fillOpacity);
+            maptalks.Canvas.ellipse(ctx, point, width / 2, height / 2, lineOpacity, fillOpacity);
         } else if (markerType === 'cross' || markerType === 'x') {
             for (j = vectorArray.length - 1; j >= 0; j--) {
                 vectorArray[j]._add(point);
             }
             //线类型
-            Z.Canvas.path(ctx, vectorArray.slice(0, 2), lineOpacity);
-            Z.Canvas.path(ctx, vectorArray.slice(2, 4), lineOpacity);
+            maptalks.Canvas.path(ctx, vectorArray.slice(0, 2), lineOpacity);
+            maptalks.Canvas.path(ctx, vectorArray.slice(2, 4), lineOpacity);
         } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'triangle') {
             if (markerType === 'bar') {
                 point = point.add(0, -style['markerLineWidth'] / 2);
@@ -190,7 +190,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
                 vectorArray[j]._add(point);
             }
             //面类型
-            Z.Canvas.polygon(ctx, vectorArray, lineOpacity, fillOpacity);
+            maptalks.Canvas.polygon(ctx, vectorArray, lineOpacity, fillOpacity);
         } else if (markerType === 'pin') {
             point = point.add(0, -style['markerLineWidth'] / 2);
             for (j = vectorArray.length - 1; j >= 0; j--) {
@@ -198,14 +198,14 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             }
             lineCap = ctx.lineCap;
             ctx.lineCap = 'round'; //set line cap to round to close the pin bottom
-            Z.Canvas.bezierCurveAndFill(ctx, vectorArray, lineOpacity, fillOpacity);
+            maptalks.Canvas.bezierCurveAndFill(ctx, vectorArray, lineOpacity, fillOpacity);
             ctx.lineCap = lineCap;
         } else if (markerType === 'pie') {
             point = point.add(0, -style['markerLineWidth'] / 2);
             angle = Math.atan(width / 2 / height) * 180 / Math.PI;
             lineCap = ctx.lineCap;
             ctx.lineCap = 'round';
-            Z.Canvas.sector(ctx, point, height, [90 - angle, 90 + angle], lineOpacity, fillOpacity);
+            maptalks.Canvas.sector(ctx, point, height, [90 - angle, 90 + angle], lineOpacity, fillOpacity);
             ctx.lineCap = lineCap;
         } else {
             throw new Error('unsupported markerType: ' + markerType);
@@ -218,7 +218,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     getRotation: function () {
         var r = this.style['markerRotation'];
-        if (!Z.Util.isNumber(r)) {
+        if (!maptalks.Util.isNumber(r)) {
             return null;
         }
         //to radian
@@ -229,7 +229,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var s = this.style;
         var dx = s['markerDx'],
             dy = s['markerDy'];
-        return new Z.Point(dx, dy);
+        return new maptalks.Point(dx, dy);
     },
 
     getMarkerExtent:function () {
@@ -240,9 +240,9 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             height = style['markerHeight'];
         var result;
         if (markerType  === 'bar' || markerType  === 'pie' || markerType  === 'pin') {
-            result = new Z.PointExtent(dxdy.add(-width / 2, -height), dxdy.add(width / 2, 0));
+            result = new maptalks.PointExtent(dxdy.add(-width / 2, -height), dxdy.add(width / 2, 0));
         } else {
-            result = new Z.PointExtent(dxdy.add(-width / 2, -height / 2), dxdy.add(width / 2, height / 2));
+            result = new maptalks.PointExtent(dxdy.add(-width / 2, -height / 2), dxdy.add(width / 2, height / 2));
         }
         if (this.style['markerLineWidth']) {
             result._expand(this.style['markerLineWidth'] / 2);
@@ -253,24 +253,24 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     translate: function () {
         var s = this.symbol;
         var result = {
-            'markerType'            : Z.Util.getValueOrDefault(s['markerType'], 'ellipse'), //<----- ellipse | cross | x | triangle | diamond | square | bar | pin等,默认ellipse
-            'markerFill'            : Z.Util.getValueOrDefault(s['markerFill'], '#00f'), //blue as cartoCSS
-            'markerFillOpacity'     : Z.Util.getValueOrDefault(s['markerFillOpacity'], 1),
-            'markerFillPatternFile' : Z.Util.getValueOrDefault(s['markerFillPatternFile'], null),
-            'markerLineColor'       : Z.Util.getValueOrDefault(s['markerLineColor'], '#000'), //black
-            'markerLineWidth'       : Z.Util.getValueOrDefault(s['markerLineWidth'], 1),
-            'markerLineOpacity'     : Z.Util.getValueOrDefault(s['markerLineOpacity'], 1),
-            'markerLineDasharray'   : Z.Util.getValueOrDefault(s['markerLineDasharray'], []),
-            'markerLinePatternFile' : Z.Util.getValueOrDefault(s['markerLinePatternFile'], null),
+            'markerType'            : maptalks.Util.getValueOrDefault(s['markerType'], 'ellipse'), //<----- ellipse | cross | x | triangle | diamond | square | bar | pin等,默认ellipse
+            'markerFill'            : maptalks.Util.getValueOrDefault(s['markerFill'], '#00f'), //blue as cartoCSS
+            'markerFillOpacity'     : maptalks.Util.getValueOrDefault(s['markerFillOpacity'], 1),
+            'markerFillPatternFile' : maptalks.Util.getValueOrDefault(s['markerFillPatternFile'], null),
+            'markerLineColor'       : maptalks.Util.getValueOrDefault(s['markerLineColor'], '#000'), //black
+            'markerLineWidth'       : maptalks.Util.getValueOrDefault(s['markerLineWidth'], 1),
+            'markerLineOpacity'     : maptalks.Util.getValueOrDefault(s['markerLineOpacity'], 1),
+            'markerLineDasharray'   : maptalks.Util.getValueOrDefault(s['markerLineDasharray'], []),
+            'markerLinePatternFile' : maptalks.Util.getValueOrDefault(s['markerLinePatternFile'], null),
 
-            'markerWidth'           : Z.Util.getValueOrDefault(s['markerWidth'], 10),
-            'markerHeight'          : Z.Util.getValueOrDefault(s['markerHeight'], 10),
+            'markerWidth'           : maptalks.Util.getValueOrDefault(s['markerWidth'], 10),
+            'markerHeight'          : maptalks.Util.getValueOrDefault(s['markerHeight'], 10),
 
-            'markerDx'              : Z.Util.getValueOrDefault(s['markerDx'], 0),
-            'markerDy'              : Z.Util.getValueOrDefault(s['markerDy'], 0)
+            'markerDx'              : maptalks.Util.getValueOrDefault(s['markerDx'], 0),
+            'markerDy'              : maptalks.Util.getValueOrDefault(s['markerDy'], 0)
         };
         //markerOpacity覆盖fillOpacity和lineOpacity
-        if (Z.Util.isNumber(s['markerOpacity'])) {
+        if (maptalks.Util.isNumber(s['markerOpacity'])) {
             result['markerFillOpacity'] *= s['markerOpacity'];
             result['markerLineOpacity'] *= s['markerOpacity'];
         }
@@ -279,7 +279,7 @@ Z.symbolizer.VectorMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 });
 
 
-Z.symbolizer.VectorMarkerSymbolizer.translateLineAndFill = function (s) {
+maptalks.symbolizer.VectorMarkerSymbolizer.translateLineAndFill = function (s) {
     var result = {
         'lineColor' : s['markerLineColor'],
         'linePatternFile' : s['markerLinePatternFile'],
@@ -298,17 +298,17 @@ Z.symbolizer.VectorMarkerSymbolizer.translateLineAndFill = function (s) {
     return result;
 };
 
-Z.symbolizer.VectorMarkerSymbolizer.test = function (symbol) {
+maptalks.symbolizer.VectorMarkerSymbolizer.test = function (symbol) {
     if (!symbol) {
         return false;
     }
-    if (Z.Util.isNil(symbol['markerFile']) && !Z.Util.isNil(symbol['markerType']) && (symbol['markerType'] !== 'path')) {
+    if (maptalks.Util.isNil(symbol['markerFile']) && !maptalks.Util.isNil(symbol['markerType']) && (symbol['markerType'] !== 'path')) {
         return true;
     }
     return false;
 };
 
-Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles = function (s) {
+maptalks.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles = function (s) {
     var result = {
         'stroke' :{
             'stroke' : s['markerLineColor'],
@@ -326,7 +326,7 @@ Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles = function (s) {
     };
     //vml和svg对linecap的定义不同
     if (result['stroke']['stroke-linecap'] === 'butt') {
-        if (Z.Browser.vml) {
+        if (maptalks.Browser.vml) {
             result['stroke']['stroke-linecap'] = 'flat';
         }
     }
@@ -336,53 +336,53 @@ Z.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles = function (s) {
     return result;
 };
 
-Z.symbolizer.VectorMarkerSymbolizer._getVectorPoints = function (markerType, width, height) {
+maptalks.symbolizer.VectorMarkerSymbolizer._getVectorPoints = function (markerType, width, height) {
         //half height and half width
     var hh = height / 2,
         hw = width / 2;
     var left = 0, top = 0;
     var v0, v1, v2, v3;
     if (markerType === 'triangle') {
-        v0 = new Z.Point(left, top - hh);
-        v1 = new Z.Point(left - hw, top + hh);
-        v2 = new Z.Point(left + hw, top + hh);
+        v0 = new maptalks.Point(left, top - hh);
+        v1 = new maptalks.Point(left - hw, top + hh);
+        v2 = new maptalks.Point(left + hw, top + hh);
         return [v0, v1, v2];
     } else if (markerType === 'cross') {
-        v0 = new Z.Point((left - hw), top);
-        v1 = new Z.Point((left + hw), top);
-        v2 = new Z.Point((left), (top - hh));
-        v3 = new Z.Point((left), (top + hh));
+        v0 = new maptalks.Point((left - hw), top);
+        v1 = new maptalks.Point((left + hw), top);
+        v2 = new maptalks.Point((left), (top - hh));
+        v3 = new maptalks.Point((left), (top + hh));
         return [v0, v1, v2, v3];
     } else if (markerType === 'diamond') {
-        v0 = new Z.Point((left - hw), top);
-        v1 = new Z.Point(left, (top - hh));
-        v2 = new Z.Point((left + hw), top);
-        v3 = new Z.Point((left), (top + hh));
+        v0 = new maptalks.Point((left - hw), top);
+        v1 = new maptalks.Point(left, (top - hh));
+        v2 = new maptalks.Point((left + hw), top);
+        v3 = new maptalks.Point((left), (top + hh));
         return [v0, v1, v2, v3];
     } else if (markerType === 'square') {
-        v0 = new Z.Point((left - hw), (top + hh));
-        v1 = new Z.Point((left + hw), (top + hh));
-        v2 = new Z.Point((left + hw), (top - hh));
-        v3 = new Z.Point((left - hw), (top - hh));
+        v0 = new maptalks.Point((left - hw), (top + hh));
+        v1 = new maptalks.Point((left + hw), (top + hh));
+        v2 = new maptalks.Point((left + hw), (top - hh));
+        v3 = new maptalks.Point((left - hw), (top - hh));
         return [v0, v1, v2, v3];
     } else if (markerType === 'x') {
-        v0 = new Z.Point(left - hw, top + hh);
-        v1 = new Z.Point(left + hw, top - hh);
-        v2 = new Z.Point(left + hw, top + hh);
-        v3 = new Z.Point(left - hw, top - hh);
+        v0 = new maptalks.Point(left - hw, top + hh);
+        v1 = new maptalks.Point(left + hw, top - hh);
+        v2 = new maptalks.Point(left + hw, top + hh);
+        v3 = new maptalks.Point(left - hw, top - hh);
         return [v0, v1, v2, v3];
     } else if (markerType === 'bar') {
-        v0 = new Z.Point((left - hw), (top - height));
-        v1 = new Z.Point((left + hw), (top - height));
-        v2 = new Z.Point((left + hw), top);
-        v3 = new Z.Point((left - hw), top);
+        v0 = new maptalks.Point((left - hw), (top - height));
+        v1 = new maptalks.Point((left + hw), (top - height));
+        v2 = new maptalks.Point((left + hw), top);
+        v3 = new maptalks.Point((left - hw), top);
         return [v0, v1, v2, v3];
     } else if (markerType === 'pin') {
         var extWidth = height * Math.atan(hw / hh);
-        v0 = new Z.Point(left, top);
-        v1 = new Z.Point(left - extWidth, top - height);
-        v2 = new Z.Point(left + extWidth, top - height);
-        v3 = new Z.Point(left, top);
+        v0 = new maptalks.Point(left, top);
+        v1 = new maptalks.Point(left - extWidth, top - height);
+        v2 = new maptalks.Point(left + extWidth, top - height);
+        v3 = new maptalks.Point(left, top);
         return [v0, v1, v2, v3];
     }
     return null;

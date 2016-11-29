@@ -3,7 +3,7 @@
  * @class
  * @protected
  */
-Z.GeoUtil = {
+maptalks.GeoUtil = {
     /**
      * caculate the distance from a point to a segment.
      * @param {maptalks.Point} p

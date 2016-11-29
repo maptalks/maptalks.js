@@ -2,6 +2,6 @@
  * @namespace
  * @protected
  */
-Z.renderer.vectorlayer = {};
-Z.renderer.overlaylayer = {};
+maptalks.renderer.vectorlayer = {};
+maptalks.renderer.overlaylayer = {};
 

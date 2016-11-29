@@ -1,6 +1,6 @@
 if (typeof Promise !== 'undefined') {
     //built in Promise
-    Z.Promise = Promise;
+    maptalks.Promise = Promise;
 } else {
 // zousan - A Lightning Fast, Yet Very Small Promise A+ Compliant Implementation
 // https://github.com/bluejava/zousan
@@ -294,5 +294,5 @@ if (typeof Promise !== 'undefined') {
         // make soon accessable from Zousan
         // Zousan.soon = soon;
 
-    })(/*typeof global != "undefined" ? global : this*//* by maptalks*/Z);   // jshint ignore:line
+    })(/*typeof global != "undefined" ? global : this*//* by maptalks*/maptalks);   // jshint ignore:line
 }

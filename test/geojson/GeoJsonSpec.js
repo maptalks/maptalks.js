@@ -97,31 +97,31 @@ describe('GeoJSON', function() {
         var geoJSONCoords = [
             [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
         ];
-        var result = Z.GeoJSON.toCoordinates(geoJSONCoords);
+        var result = maptalks.GeoJSON.toCoordinates(geoJSONCoords);
         expect(result).to.have.length(geoJSONCoords.length);
-        expect(result[0]).to.eql(new Z.Coordinate(geoJSONCoords[0]));
-        var reverse = Z.GeoJSON.toNumberArrays(result);
+        expect(result[0]).to.eql(new maptalks.Coordinate(geoJSONCoords[0]));
+        var reverse = maptalks.GeoJSON.toNumberArrays(result);
         expect(reverse).to.eql(geoJSONCoords);
     });
 
     describe('parse FeatureCollection',function(){
         var fJsons = featureCollectionGeoJSON['features'];
-        var features = Z.GeoJSON.toGeometry(featureCollectionGeoJSON);
+        var features = maptalks.GeoJSON.toGeometry(featureCollectionGeoJSON);
         it('parse FeatureCollection', function() {
             expect(features).to.have.length(3);
-            expect(features[0]).to.an(Z.Marker);
+            expect(features[0]).to.an(maptalks.Marker);
             expect(features[0].toGeoJSON()).to.eql(fJsons[0]);
             expect(features[0].getProperties()).to.eql(featureCollectionGeoJSON['features'][0]['properties']);
-            expect(features[1]).to.an(Z.Polyline);
+            expect(features[1]).to.an(maptalks.Polyline);
             expect(features[1].toGeoJSON()).to.eql(fJsons[1]);
-            expect(features[2]).to.an(Z.Polygon);
+            expect(features[2]).to.an(maptalks.Polygon);
             expect(features[2].toGeoJSON()).to.eql(fJsons[2]);
         });
 
     });
 
     describe('parse GeoJSON Objects', function() {
-        var geometries = Z.GeoJSON.toGeometry(geoJSONs);
+        var geometries = maptalks.GeoJSON.toGeometry(geoJSONs);
         beforeEach(function() {
         });
 
@@ -134,16 +134,16 @@ describe('GeoJSON', function() {
 
         it('evaluate point', function() {
             var point = geometries[0];
-            expect(point).to.an(Z.Marker);
+            expect(point).to.an(maptalks.Marker);
             expect(point.getType()).to.eql(geoJSONs[0].type);
-            expect(point.getCenter()).to.eql(new Z.Coordinate(geoJSONs[0]['coordinates']));
+            expect(point.getCenter()).to.eql(new maptalks.Coordinate(geoJSONs[0]['coordinates']));
             expect(point.toGeoJSON()['geometry']).to.eql(geoJSONs[0]);
             expect(point.toGeoJSONGeometry()).to.eql(geoJSONs[0]);
         });
 
         it('evaluate polyline', function() {
             var polyline = geometries[1];
-            expect(polyline).to.an(Z.Polyline);
+            expect(polyline).to.an(maptalks.Polyline);
             expect(polyline.getType()).to.eql(geoJSONs[1].type);
             expect(polyline.toGeoJSON()['geometry']).to.eql(geoJSONs[1]);
             expect(polyline.toGeoJSONGeometry()).to.eql(geoJSONs[1]);
@@ -151,7 +151,7 @@ describe('GeoJSON', function() {
 
         it('evaluate polygon', function() {
             var polygon = geometries[2];
-            expect(polygon).to.an(Z.Polygon);
+            expect(polygon).to.an(maptalks.Polygon);
             expect(polygon.getType()).to.eql(geoJSONs[2].type);
             expect(polygon.toGeoJSON()['geometry']).to.eql(geoJSONs[2]);
             expect(polygon.toGeoJSONGeometry()).to.eql(geoJSONs[2]);
@@ -159,7 +159,7 @@ describe('GeoJSON', function() {
 
         it('evaluate polygon with holes', function() {
             var polygon = geometries[3];
-            expect(polygon).to.an(Z.Polygon);
+            expect(polygon).to.an(maptalks.Polygon);
             expect(polygon.toGeoJSON()['geometry']).to.eql(geoJSONs[3]);
             expect(polygon.toGeoJSONGeometry()).to.eql(geoJSONs[3]);
             var holes = polygon.getHoles();
@@ -168,7 +168,7 @@ describe('GeoJSON', function() {
 
         it('evaluate multipoint', function() {
             var multipoint = geometries[4];
-            expect(multipoint).to.an(Z.MultiPoint);
+            expect(multipoint).to.an(maptalks.MultiPoint);
             expect(multipoint.getType()).to.eql(geoJSONs[4].type);
             expect(multipoint.toGeoJSON()['geometry']).to.eql(geoJSONs[4]);
             expect(multipoint.toGeoJSONGeometry()).to.eql(geoJSONs[4]);
@@ -176,7 +176,7 @@ describe('GeoJSON', function() {
 
         it('evaluate MultiLineString', function() {
             var multiPolyline = geometries[5];
-            expect(multiPolyline).to.an(Z.MultiPolyline);
+            expect(multiPolyline).to.an(maptalks.MultiPolyline);
             expect(multiPolyline.getType()).to.eql(geoJSONs[5].type);
             expect(multiPolyline.toGeoJSON()['geometry']).to.eql(geoJSONs[5]);
             expect(multiPolyline.toGeoJSONGeometry()).to.eql(geoJSONs[5]);
@@ -184,7 +184,7 @@ describe('GeoJSON', function() {
 
         it('evaluate MultiPolygon', function() {
             var multiPolygon = geometries[6];
-            expect(multiPolygon).to.an(Z.MultiPolygon);
+            expect(multiPolygon).to.an(maptalks.MultiPolygon);
             expect(multiPolygon.getType()).to.eql(geoJSONs[6].type);
             expect(multiPolygon.toGeoJSON()['geometry']).to.eql(geoJSONs[6]);
             expect(multiPolygon.toGeoJSONGeometry()).to.eql(geoJSONs[6]);
@@ -192,7 +192,7 @@ describe('GeoJSON', function() {
 
         it('evaluate GeometryCollection', function() {
             var geometryCollection = geometries[7];
-            expect(geometryCollection).to.an(Z.GeometryCollection);
+            expect(geometryCollection).to.an(maptalks.GeometryCollection);
             expect(geometryCollection.getType()).to.eql(geoJSONs[7].type);
             expect(geometryCollection.toGeoJSON()['geometry']).to.eql(geoJSONs[7]);
             expect(geometryCollection.toGeoJSONGeometry()).to.eql(geoJSONs[7]);

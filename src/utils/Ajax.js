@@ -1,6 +1,6 @@
 (function () {
     var Ajax;
-    if (Z.node) {
+    if (maptalks.node) {
         var urlParser = require('url'),
             http = require('http'),
             https = require('https');
@@ -29,7 +29,7 @@
 
                 req.on('error', cb);
 
-                if (!Z.Util.isString(postData)) {
+                if (!maptalks.Util.isString(postData)) {
                     postData = JSON.stringify(postData);
                 }
 
@@ -87,7 +87,7 @@
                         }
                     }
                 }
-                if (!Z.Util.isString(postData)) {
+                if (!maptalks.Util.isString(postData)) {
                     postData = JSON.stringify(postData);
                 }
                 client.send(postData);
@@ -113,7 +113,7 @@
             },
 
             _isIE8: function () {
-                return Z.Browser.ie && document.documentMode === 8;
+                return maptalks.Browser.ie && document.documentMode === 8;
             },
 
             _getClient: function (cb) {
@@ -160,13 +160,13 @@
      */
     Ajax.getJSON = function (url, cb) {
         var callback = function (err, resp) {
-            var data = resp ? Z.Util.parseJSON(resp) : null;
+            var data = resp ? maptalks.Util.parseJSON(resp) : null;
             cb(err, data);
         };
         return Ajax.getResource(url, callback);
     };
 
-    Z.Util.getJSON = Ajax.getJSON;
+    maptalks.Util.getJSON = Ajax.getJSON;
 
-    Z.Ajax = Ajax;
+    maptalks.Ajax = Ajax;
 })();

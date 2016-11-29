@@ -7,7 +7,7 @@
  * @memberOf maptalks.measurer
  * @name Identity
  */
-Z.measurer.Identity = {
+maptalks.measurer.Identity = {
     /**
      * the code of the measurer, used by [MeasurerUtil]{@link maptalks.MeasurerUtil} to as its key get measurer instance.
      * @static
@@ -36,7 +36,7 @@ Z.measurer.Identity = {
      * @static
      */
     measureArea:function (coordinates) {
-        if (!Z.Util.isArrayHasData(coordinates)) {
+        if (!maptalks.Util.isArrayHasData(coordinates)) {
             return 0;
         }
         var area = 0;
@@ -66,6 +66,6 @@ Z.measurer.Identity = {
         if (!xDist) { xDist = 0; }
         if (!yDist) { yDist = 0; }
         if (!xDist && !yDist) { return c; }
-        return new Z.Coordinate(c.x + xDist, c.y + yDist);
+        return new maptalks.Coordinate(c.x + xDist, c.y + yDist);
     }
 };

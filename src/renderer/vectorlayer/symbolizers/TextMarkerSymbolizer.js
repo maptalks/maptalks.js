@@ -1,4 +1,4 @@
-Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
+maptalks.symbolizer.TextMarkerSymbolizer = maptalks.symbolizer.PointSymbolizer.extend({
 
     initialize:function (symbol, geometry, painter) {
         this.symbol = symbol;
@@ -7,7 +7,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var style = this.translate();
         this.style = this._defineStyle(style);
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
-        var textContent = Z.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
+        var textContent = maptalks.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
         this._descText(textContent);
     },
 
@@ -16,16 +16,16 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             return;
         }
         var cookedPoints = this._getRenderContainerPoints();
-        if (!Z.Util.isArrayHasData(cookedPoints)) {
+        if (!maptalks.Util.isArrayHasData(cookedPoints)) {
             return;
         }
         var style = this.style,
             strokeAndFill = this.strokeAndFill;
-        var textContent = Z.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
+        var textContent = maptalks.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
         this._descText(textContent);
         this._prepareContext(ctx);
-        Z.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
-        Z.Canvas.prepareCanvasFont(ctx, style);
+        maptalks.Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+        maptalks.Canvas.prepareCanvasFont(ctx, style);
         var p;
         for (var i = 0, len = cookedPoints.length; i < len; i++) {
             p = cookedPoints[i];
@@ -33,7 +33,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
             if (origin) {
                 p = origin;
             }
-            Z.Canvas.text(ctx, textContent, p, style, this.textDesc);
+            maptalks.Canvas.text(ctx, textContent, p, style, this.textDesc);
             if (origin) {
                 ctx.restore();
             }
@@ -46,7 +46,7 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
     getRotation: function () {
         var r = this.style['textRotation'];
-        if (!Z.Util.isNumber(r)) {
+        if (!maptalks.Util.isNumber(r)) {
             return null;
         }
         //to radian
@@ -57,16 +57,16 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var s = this.style;
         var dx = s['textDx'],
             dy = s['textDy'];
-        return new Z.Point(dx, dy);
+        return new maptalks.Point(dx, dy);
     },
 
     getMarkerExtent:function () {
         var dxdy = this.getDxDy(),
             style = this.style,
             size = this.textDesc['size'];
-        var alignPoint = Z.StringUtil.getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
+        var alignPoint = maptalks.StringUtil.getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
         var alignW = alignPoint.x, alignH = alignPoint.y;
-        return new Z.PointExtent(
+        return new maptalks.PointExtent(
             dxdy.add(alignW, alignH),
             dxdy.add(alignW + size['width'], alignH + size['height'])
         );
@@ -76,29 +76,29 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
         var s = this.symbol;
         var result = {
             'textName'          : s['textName'],
-            'textFaceName'      : Z.Util.getValueOrDefault(s['textFaceName'], 'monospace'),
-            'textWeight'        : Z.Util.getValueOrDefault(s['textWeight'], 'normal'), //'bold', 'bolder'
-            'textStyle'         : Z.Util.getValueOrDefault(s['textStyle'], 'normal'), //'italic', 'oblique'
-            'textSize'          : Z.Util.getValueOrDefault(s['textSize'], 10),
-            'textFont'          : Z.Util.getValueOrDefault(s['textFont'], null),
-            'textFill'          : Z.Util.getValueOrDefault(s['textFill'], '#000'),
-            'textOpacity'       : Z.Util.getValueOrDefault(s['textOpacity'], 1),
+            'textFaceName'      : maptalks.Util.getValueOrDefault(s['textFaceName'], 'monospace'),
+            'textWeight'        : maptalks.Util.getValueOrDefault(s['textWeight'], 'normal'), //'bold', 'bolder'
+            'textStyle'         : maptalks.Util.getValueOrDefault(s['textStyle'], 'normal'), //'italic', 'oblique'
+            'textSize'          : maptalks.Util.getValueOrDefault(s['textSize'], 10),
+            'textFont'          : maptalks.Util.getValueOrDefault(s['textFont'], null),
+            'textFill'          : maptalks.Util.getValueOrDefault(s['textFill'], '#000'),
+            'textOpacity'       : maptalks.Util.getValueOrDefault(s['textOpacity'], 1),
 
-            'textHaloFill'      : Z.Util.getValueOrDefault(s['textHaloFill'], '#ffffff'),
-            'textHaloRadius'    : Z.Util.getValueOrDefault(s['textHaloRadius'], 0),
-            'textHaloOpacity'   : Z.Util.getValueOrDefault(s['textHaloOpacity'], 1),
+            'textHaloFill'      : maptalks.Util.getValueOrDefault(s['textHaloFill'], '#ffffff'),
+            'textHaloRadius'    : maptalks.Util.getValueOrDefault(s['textHaloRadius'], 0),
+            'textHaloOpacity'   : maptalks.Util.getValueOrDefault(s['textHaloOpacity'], 1),
 
-            'textWrapWidth'     : Z.Util.getValueOrDefault(s['textWrapWidth'], null),
-            'textWrapBefore'    : Z.Util.getValueOrDefault(s['textWrapBefore'], false),
-            'textWrapCharacter' : Z.Util.getValueOrDefault(s['textWrapCharacter'], null),
-            'textLineSpacing'   : Z.Util.getValueOrDefault(s['textLineSpacing'], 0),
+            'textWrapWidth'     : maptalks.Util.getValueOrDefault(s['textWrapWidth'], null),
+            'textWrapBefore'    : maptalks.Util.getValueOrDefault(s['textWrapBefore'], false),
+            'textWrapCharacter' : maptalks.Util.getValueOrDefault(s['textWrapCharacter'], null),
+            'textLineSpacing'   : maptalks.Util.getValueOrDefault(s['textLineSpacing'], 0),
 
-            'textDx'            : Z.Util.getValueOrDefault(s['textDx'], 0),
-            'textDy'            : Z.Util.getValueOrDefault(s['textDy'], 0),
+            'textDx'            : maptalks.Util.getValueOrDefault(s['textDx'], 0),
+            'textDy'            : maptalks.Util.getValueOrDefault(s['textDy'], 0),
 
-            'textHorizontalAlignment' : Z.Util.getValueOrDefault(s['textHorizontalAlignment'], 'middle'), //left | middle | right | auto
-            'textVerticalAlignment'   : Z.Util.getValueOrDefault(s['textVerticalAlignment'], 'middle'),   // top | middle | bottom | auto
-            'textAlign'               : Z.Util.getValueOrDefault(s['textAlign'], 'center') //left | right | center | auto
+            'textHorizontalAlignment' : maptalks.Util.getValueOrDefault(s['textHorizontalAlignment'], 'middle'), //left | middle | right | auto
+            'textVerticalAlignment'   : maptalks.Util.getValueOrDefault(s['textVerticalAlignment'], 'middle'),   // top | middle | bottom | auto
+            'textAlign'               : maptalks.Util.getValueOrDefault(s['textAlign'], 'center') //left | right | center | auto
         };
 
         return result;
@@ -120,13 +120,13 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
     _descText : function (textContent) {
         this.textDesc = this._loadFromCache(textContent, this.style);
         if (!this.textDesc) {
-            this.textDesc = Z.StringUtil.splitTextToRow(textContent, this.style);
+            this.textDesc = maptalks.StringUtil.splitTextToRow(textContent, this.style);
             this._storeToCache(textContent, this.style, this.textDesc);
         }
     },
 
     _storeToCache: function (textContent, style, textDesc) {
-        if (Z.node) {
+        if (maptalks.node) {
             return;
         }
         if (!this.geometry['___text_symbol_cache']) {
@@ -155,17 +155,17 @@ Z.symbolizer.TextMarkerSymbolizer = Z.symbolizer.PointSymbolizer.extend({
 
 
 
-Z.symbolizer.TextMarkerSymbolizer.test = function (symbol) {
+maptalks.symbolizer.TextMarkerSymbolizer.test = function (symbol) {
     if (!symbol) {
         return false;
     }
-    if (!Z.Util.isNil(symbol['textName'])) {
+    if (!maptalks.Util.isNil(symbol['textName'])) {
         return true;
     }
     return false;
 };
 
-Z.symbolizer.TextMarkerSymbolizer.getFont = function (style) {
+maptalks.symbolizer.TextMarkerSymbolizer.getFont = function (style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {

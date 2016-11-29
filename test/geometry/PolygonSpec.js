@@ -3,7 +3,7 @@ describe('#Polygon', function() {
     var container;
     var map;
     var tile;
-    var center = new Z.Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -11,7 +11,7 @@ describe('#Polygon', function() {
        var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new Z.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         canvasContainer = map._panels.canvasContainer;
     });
@@ -138,15 +138,15 @@ describe('#Polygon', function() {
                 [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ],
                 [ [100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2] ]
             ];
-            var polygon = new Z.Polygon(points);
+            var polygon = new maptalks.Polygon(points);
             var coordinates = polygon.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = Z.GeoJSON.toNumberArrays(coordinates);
+            var geojsonCoordinates = maptalks.GeoJSON.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 
         it('can be empty.',function() {
-            var polygon = new Z.Polygon();
+            var polygon = new maptalks.Polygon();
             expect(polygon.getCoordinates()).to.have.length(0);
         });
 
@@ -154,7 +154,7 @@ describe('#Polygon', function() {
 
     describe('getCenter', function() {
         it('should返回笛卡尔坐标系上的点集合的中心点', function() {
-            var polygon = new Z.Polygon([[
+            var polygon = new maptalks.Polygon([[
                 {x: 0, y: 0},
                 {x: 0, y: 10},
                 {x: 10, y: 10},
@@ -167,7 +167,7 @@ describe('#Polygon', function() {
     });
 
     it('getExtent', function() {
-        var polygon = new Z.Polygon([
+        var polygon = new maptalks.Polygon([
             [
                 {x: 0, y: 0},
                 {x: 0, y: 10},
@@ -196,7 +196,7 @@ describe('#Polygon', function() {
                     {x: 10, y: 0}
                 ]
             ];
-            var vector = new Z.Polygon(points);
+            var vector = new maptalks.Polygon(points);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
@@ -210,16 +210,16 @@ describe('#Polygon', function() {
                     {x: 10, y: 0}
                 ]
             ];
-            var vector = new Z.Polygon(points);
+            var vector = new maptalks.Polygon(points);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
     it("Polygon._containsPoint", function() {
         layer.clear();
-        var geometry = new Z.Polygon([[
-            new Z.Coordinate([center.x, center.y + 0.001]),
-            new Z.Coordinate([center.x, center.y]),
-            new Z.Coordinate([center.x + 0.002, center.y])
+        var geometry = new maptalks.Polygon([[
+            new maptalks.Coordinate([center.x, center.y + 0.001]),
+            new maptalks.Coordinate([center.x, center.y]),
+            new maptalks.Coordinate([center.x + 0.002, center.y])
         ]], {
             symbol: {
                 'lineWidth': 6
@@ -248,13 +248,13 @@ describe('#Polygon', function() {
             [[179,10],[-170,10],[-169, -10],[179, -10]],
             [[180,5],[-175,5],[-171, -5],[180, -5]]
             ];
-        var vector = new Z.Polygon(points,{antiMeridian : 'continuous',});
+        var vector = new maptalks.Polygon(points,{antiMeridian : 'continuous',});
         layer.addGeometry(vector);
 
         var points2 = [
             [[179,10],[168,10],[167, -10],[179, -10]]
             ];
-        var comparison = new Z.Polygon(points2);
+        var comparison = new maptalks.Polygon(points2);
         layer.addGeometry(comparison);
 
         var size = vector.getSize();

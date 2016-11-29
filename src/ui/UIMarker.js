@@ -20,9 +20,9 @@
  *      content : dom
  *  }).addTo(map);
  */
-Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototype */{
+maptalks.ui.UIMarker = maptalks.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototype */{
 
-    includes: [Z.Handlerable],
+    includes: [maptalks.Handlerable],
 
     /**
      * @property {Object} options - construct options
@@ -37,8 +37,8 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
     },
 
     initialize: function (coordinate, options) {
-        this._markerCoord = new Z.Coordinate(coordinate);
-        Z.Util.setOptions(this, options);
+        this._markerCoord = new maptalks.Coordinate(coordinate);
+        maptalks.Util.setOptions(this, options);
     },
 
     /**
@@ -113,7 +113,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
      * @fires maptalks.ui.UIMarker#showend
      */
     show: function () {
-        return Z.ui.UIComponent.prototype.show.call(this, this._markerCoord);
+        return maptalks.ui.UIComponent.prototype.show.call(this, this._markerCoord);
     },
 
     /**
@@ -124,8 +124,8 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
      */
     buildOn: function () {
         var dom;
-        if (Z.Util.isString(this.options['content'])) {
-            dom = Z.DomUtil.createEl('div');
+        if (maptalks.Util.isString(this.options['content'])) {
+            dom = maptalks.DomUtil.createEl('div');
             dom.innerHTML = this.options['content'];
         } else {
             dom = this.options['content'];
@@ -141,7 +141,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
      */
     getOffset: function () {
         var size = this.getSize();
-        return new Z.Point(-size['width'] / 2, -size['height'] / 2);
+        return new maptalks.Point(-size['width'] / 2, -size['height'] / 2);
     },
 
     /**
@@ -151,7 +151,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
      */
     getTransformOrigin: function () {
         var size = this.getSize();
-        return new Z.Point(size['width'] / 2, size['height'] / 2);
+        return new maptalks.Point(size['width'] / 2, size['height'] / 2);
     },
 
     onDomRemove: function () {
@@ -305,7 +305,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
                  'touchend',
 
     _registerDOMEvents: function (dom) {
-        Z.DomUtil.on(dom, this._domEvents, this._onDomEvents, this);
+        maptalks.DomUtil.on(dom, this._domEvents, this._onDomEvents, this);
     },
 
     _onDomEvents: function (e) {
@@ -314,7 +314,7 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
     },
 
     _removeDOMEvents: function (dom) {
-        Z.DomUtil.off(dom, this._domEvents, this._onDomEvents, this);
+        maptalks.DomUtil.off(dom, this._domEvents, this._onDomEvents, this);
     }
 
 });
@@ -326,9 +326,9 @@ Z.ui.UIMarker = Z.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototyp
  * @protected
  * @extends {maptalks.Handler}
  */
-Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.prototype */{
+maptalks.ui.UIMarker.Drag = maptalks.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.prototype */{
 
-    START: Z.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
+    START: maptalks.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
 
     addHooks: function () {
         this.target.on(this.START.join(' '), this._startDrag, this);
@@ -367,8 +367,8 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
     },
 
     _prepareDragHandler:function () {
-        this._dragHandler = new Z.Handler.Drag(this.target.getDOM(), {
-            'cancelOn' : Z.Util.bind(this._cancelOn, this)
+        this._dragHandler = new maptalks.Handler.Drag(this.target.getDOM(), {
+            'cancelOn' : maptalks.Util.bind(this._cancelOn, this)
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this);
         this._dragHandler.on('dragging', this._dragging, this);
@@ -390,7 +390,7 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
     },
 
     _onMouseDown: function (param) {
-        Z.DomUtil.stopPropagation(param['domEvent']);
+        maptalks.DomUtil.stopPropagation(param['domEvent']);
     },
 
     _dragging: function (param) {
@@ -466,9 +466,9 @@ Z.ui.UIMarker.Drag = Z.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.proto
     }
 });
 
-Z.ui.UIMarker.addInitHook('addHandler', 'draggable', Z.ui.UIMarker.Drag);
+maptalks.ui.UIMarker.addInitHook('addHandler', 'draggable', maptalks.ui.UIMarker.Drag);
 
-Z.ui.UIMarker.include(/** @lends maptalks.ui.UIMarker.prototype */{
+maptalks.ui.UIMarker.include(/** @lends maptalks.ui.UIMarker.prototype */{
     /**
      * Whether the uimarker is being dragged.
      * @returns {Boolean}

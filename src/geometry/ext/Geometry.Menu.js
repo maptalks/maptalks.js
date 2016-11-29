@@ -1,1 +1,1 @@
-Z.Geometry.include(Z.ui.Menu.Mixin);
+maptalks.Geometry.include(maptalks.ui.Menu.Mixin);

@@ -31,7 +31,7 @@
  *  }).addTo(map);
  *
  */
-Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */{
+maptalks.DistanceTool = maptalks.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */{
 
     /**
      * @property {options} options
@@ -74,7 +74,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
     },
 
     initialize: function (options) {
-        Z.Util.setOptions(this, options);
+        maptalks.Util.setOptions(this, options);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
@@ -85,7 +85,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
      * @return {maptalks.DistanceTool} this
      */
     clear:function () {
-        if (Z.Util.isArrayHasData(this._measureLayers)) {
+        if (maptalks.Util.isArrayHasData(this._measureLayers)) {
             for (var i = 0; i < this._measureLayers.length; i++) {
                 this._measureLayers[i].remove();
             }
@@ -118,10 +118,10 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
     _measure:function (toMeasure) {
         var map = this.getMap();
         var length;
-        if (toMeasure instanceof Z.Geometry) {
+        if (toMeasure instanceof maptalks.Geometry) {
             length = map.computeGeometryLength(toMeasure);
-        } else if (Z.Util.isArray(toMeasure)) {
-            length = Z.GeoUtil._computeLength(toMeasure, map.getProjection());
+        } else if (maptalks.Util.isArray(toMeasure)) {
+            length = maptalks.GeoUtil._computeLength(toMeasure, map.getProjection());
         }
         this._lastMeasure = length;
         var units;
@@ -164,7 +164,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
 
     _msOnDrawStart:function (param) {
         var map = this.getMap();
-        var uid = Z.Util.UID();
+        var uid = maptalks.Util.UID();
         var layerId = 'distancetool_' + uid;
         var markerLayerId = 'distancetool_markers_' + uid;
         if (!map.getLayer(layerId)) {
@@ -188,7 +188,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
     _msOnMouseMove:function (param) {
         var ms = this._measure(param['geometry'].getCoordinates().concat([param['coordinate']]));
         if (!this._tailMarker) {
-            var symbol = Z.Util.extendSymbol(this.options['vertexSymbol']);
+            var symbol = maptalks.Util.extendSymbol(this.options['vertexSymbol']);
             symbol['markerWidth'] /= 2;
             symbol['markerHeight'] /= 2;
             this._tailMarker = new maptalks.Marker(param['coordinate'], {
@@ -219,7 +219,7 @@ Z.DistanceTool = Z.DrawTool.extend(/** @lends maptalks.DistanceTool.prototype */
         this._clearTailMarker();
         var size = this._lastVertex.getSize();
         if (!size) {
-            size = new Z.Size(10, 10);
+            size = new maptalks.Size(10, 10);
         }
         this._addClearMarker(this._lastVertex.getCoordinates(), size['width']);
         var geo = param['geometry'].copy();

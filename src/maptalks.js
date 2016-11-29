@@ -1,10 +1,8 @@
 
 /**
  * @namespace
- * @alias maptalks
  */
-var Z = {};
-// Z is the root namespace used internally, and will be exported as maptalks.
+var maptalks = {};
 
 /**
  * From https://github.com/abhirathore2006/detect-is-node/
@@ -14,6 +12,6 @@ var Z = {};
  * @name node
  * @static
  */
-Z.node = (function () {
+maptalks.node = (function () {
     return new Function('try { return this === global; } catch(e) { return false; }')();
 })();

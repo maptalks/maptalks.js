@@ -5,7 +5,7 @@
  * @protected
  * @param {maptalks.Geometry} geometry - geometry to paint
  */
-Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
+maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype */{
 
 
     initialize:function (geometry) {
@@ -24,9 +24,9 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     _createSymbolizers:function () {
         var geoSymbol = this.getSymbol(),
             symbolizers = [],
-            regSymbolizers = Z.Painter.registerSymbolizers,
+            regSymbolizers = maptalks.Painter.registerSymbolizers,
             symbols = geoSymbol;
-        if (!Z.Util.isArray(geoSymbol)) {
+        if (!maptalks.Util.isArray(geoSymbol)) {
             symbols = [geoSymbol];
         }
         var symbol, symbolizer;
@@ -36,7 +36,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
                 if (regSymbolizers[i].test(symbol, this.geometry)) {
                     symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
                     symbolizers.push(symbolizer);
-                    if (symbolizer instanceof Z.symbolizer.PointSymbolizer) {
+                    if (symbolizer instanceof maptalks.symbolizer.PointSymbolizer) {
                         this._hasPointSymbolizer = true;
                     }
                 }
@@ -48,7 +48,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             }
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
-        this._debugSymbolizer = new Z.symbolizer.DebugSymbolizer(symbol, this.geometry, this);
+        this._debugSymbolizer = new maptalks.symbolizer.DebugSymbolizer(symbol, this.geometry, this);
         this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
     },
@@ -103,15 +103,15 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             points = paintParams[0],
             containerPoints;
         //convert view points to container points needed by canvas
-        if (Z.Util.isArray(points)) {
-            containerPoints = Z.Util.mapArrayRecursively(points, function (point) {
+        if (maptalks.Util.isArray(points)) {
+            containerPoints = maptalks.Util.mapArrayRecursively(points, function (point) {
                 var cp = point.substract(layerPoint);
                 if (matrix) {
                     return matrix.applyToPointInstance(cp);
                 }
                 return cp;
             });
-        } else if (points instanceof Z.Point) {
+        } else if (points instanceof maptalks.Point) {
             containerPoints = points.substract(layerPoint);
             if (matrix) {
                 containerPoints = matrix.applyToPointInstance(containerPoints);
@@ -122,11 +122,11 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         //scale width ,height or radius if geometry has
         for (var i = 1, len = paintParams.length; i < len; i++) {
             if (matrix) {
-                if (Z.Util.isNumber(paintParams[i]) || (paintParams[i] instanceof Z.Size)) {
-                    if (Z.Util.isNumber(paintParams[i])) {
+                if (maptalks.Util.isNumber(paintParams[i]) || (paintParams[i] instanceof maptalks.Size)) {
+                    if (maptalks.Util.isNumber(paintParams[i])) {
                         tPaintParams.push(scale.x * paintParams[i]);
                     } else {
-                        tPaintParams.push(new Z.Size(paintParams[i].width * scale.x, paintParams[i].height * scale.y));
+                        tPaintParams.push(new maptalks.Size(paintParams[i].width * scale.x, paintParams[i].height * scale.y));
                     }
                 } else {
                     tPaintParams.push(paintParams[i]);
@@ -166,18 +166,18 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     },
 
     getSprite: function (resources) {
-        if (!(this.geometry instanceof Z.Marker)) {
+        if (!(this.geometry instanceof maptalks.Marker)) {
             return null;
         }
         this._genSprite = true;
         if (!this._sprite && this.symbolizers.length > 0) {
-            var extent = new Z.PointExtent();
+            var extent = new maptalks.PointExtent();
             this.symbolizers.forEach(function (s) {
                 var markerExtent = s.getMarkerExtent(resources);
                 extent._combine(markerExtent);
             });
             var origin = extent.getMin().multi(-1);
-            var canvas = Z.Canvas.createCanvas(extent.getWidth(), extent.getHeight(), this.getMap() ? this.getMap().CanvasClass : null);
+            var canvas = maptalks.Canvas.createCanvas(extent.getWidth(), extent.getHeight(), this.getMap() ? this.getMap().CanvasClass : null);
             var bak;
             if (this._renderPoints) {
                 bak = this._renderPoints;
@@ -231,7 +231,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
     get2DExtent:function (resources) {
         if (!this._extent2D) {
             if (this.symbolizers) {
-                var _extent2D = new Z.PointExtent();
+                var _extent2D = new maptalks.PointExtent();
                 var len = this.symbolizers.length - 1;
                 for (var i = len; i >= 0; i--) {
                     _extent2D._combine(this.symbolizers[i].get2DExtent(resources));
@@ -246,12 +246,12 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
         var map = this.getMap(),
             matrix = this.getTransformMatrix(),
             extent2D = this.get2DExtent(this.resources);
-        var containerExtent = new Z.PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
+        var containerExtent = new maptalks.PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
         if (matrix) {
             //FIXME not right for markers
             var min = matrix['container'].applyToPointInstance(containerExtent.getMin());
             var max = matrix['container'].applyToPointInstance(containerExtent.getMax());
-            containerExtent = new Z.PointExtent(min, max);
+            containerExtent = new maptalks.PointExtent(min, max);
         }
         return containerExtent;
     },
@@ -310,7 +310,7 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
             return;
         }
         var layer = this.geometry.getLayer();
-        if (this.geometry.isVisible() && (layer instanceof Z.VectorLayer)) {
+        if (this.geometry.isVisible() && (layer instanceof maptalks.VectorLayer)) {
             if (!layer.isCanvasRender()) {
                 this.paint();
             }
@@ -342,10 +342,10 @@ Z.Painter = Z.Class.extend(/** @lends maptalks.Painter.prototype */{
 });
 
 //注册的symbolizer
-Z.Painter.registerSymbolizers = [
-    Z.symbolizer.StrokeAndFillSymbolizer,
-    Z.symbolizer.ImageMarkerSymbolizer,
-    Z.symbolizer.VectorPathMarkerSymbolizer,
-    Z.symbolizer.VectorMarkerSymbolizer,
-    Z.symbolizer.TextMarkerSymbolizer
+maptalks.Painter.registerSymbolizers = [
+    maptalks.symbolizer.StrokeAndFillSymbolizer,
+    maptalks.symbolizer.ImageMarkerSymbolizer,
+    maptalks.symbolizer.VectorPathMarkerSymbolizer,
+    maptalks.symbolizer.VectorMarkerSymbolizer,
+    maptalks.symbolizer.TextMarkerSymbolizer
 ];

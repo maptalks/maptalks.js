@@ -2,7 +2,7 @@
 /**
  * @mixin maptalks.TextMarker.Edit
  */
-Z.TextMarker.Editor = {
+maptalks.TextMarker.Editor = {
     /**
      * Start to edit the text, editing will be ended automatically whenever map is clicked.
      *
@@ -39,7 +39,7 @@ Z.TextMarker.Editor = {
             content = this._filterContent(content);
             this.setContent(content);
             this.show();
-            Z.DomUtil.off(this._textEditor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
+            maptalks.DomUtil.off(this._textEditor, 'mousedown dblclick', maptalks.DomUtil.stopPropagation);
             this.getMap().off('mousedown', this.endEditText, this);
             this._editUIMarker.remove();
             delete this._editUIMarker;
@@ -119,7 +119,7 @@ Z.TextMarker.Editor = {
             fill = symbol['markerFill'] || '#3398CC',
             spacing = symbol['textLineSpacing'] || 0;
             // opacity = symbol['markerFillOpacity'];
-        var editor = Z.DomUtil.createEl('div');
+        var editor = maptalks.DomUtil.createEl('div');
         editor.contentEditable = true;
         editor.style.cssText = 'background: ' + fill + ';' +
             'border: 1px solid ' + lineColor + ';' +
@@ -137,7 +137,7 @@ Z.TextMarker.Editor = {
             '-webkit-user-modify: read-write-plaintext-only;';
 
         editor.innerText = content;
-        Z.DomUtil.on(editor, 'mousedown dblclick', Z.DomUtil.stopPropagation);
+        maptalks.DomUtil.on(editor, 'mousedown dblclick', maptalks.DomUtil.stopPropagation);
         editor.onkeyup =  function (event) {
             var h = editor.style.height;
             if (!h) {
@@ -174,5 +174,5 @@ Z.TextMarker.Editor = {
     }
 };
 
-Z.TextBox.include(Z.TextMarker.Editor);
-Z.Label.include(Z.TextMarker.Editor);
+maptalks.TextBox.include(maptalks.TextMarker.Editor);
+maptalks.Label.include(maptalks.TextMarker.Editor);
