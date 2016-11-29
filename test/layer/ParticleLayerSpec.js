@@ -189,6 +189,8 @@ describe('#ParticleLayer', function() {
         layer.once('layerload', function () {
             layer.cancel();
             layer.clearCanvas();
+            layer.requestMapToRender();
+            layer.completeRender();
             layer.once('layerload', function () {
                 if (count === 2) {
                     expect(layer).to.be.painted(3, 0, [255, 0, 0]);
