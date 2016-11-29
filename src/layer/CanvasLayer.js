@@ -127,27 +127,25 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
             if (!this._drawContext) {
                 this._drawContext = [];
             }
+            if (!Array.isArray(this._drawContext)) {
+                this._drawContext = [this._drawContext];
+            }
             this._predrawed = true;
         }
         this.prepareCanvas();
-        if (this.layer.options['animation']) {
-            if (!this._frame) {
-                this.startAnimation();
-            }
-        } else {
-            this._drawLayer();
-        }
+        this._drawLayer();
     },
 
     _drawLayer: function () {
         this.layer.draw.apply(this.layer, [this.context].concat(this._drawContext));
         this.completeRender();
-        if (this.layer.options['animation']) {
-            this.startAnimation();
-        }
+        this.startAnimation();
     },
 
     startAnimation: function () {
+        if (!this.layer || !this.layer.options['animation']) {
+            return;
+        }
         var frameFn = maptalks.Util.bind(this._drawLayer, this);
         this.stopAnimation();
         var fps = this.layer.options['fps'];
@@ -164,7 +162,6 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
                 }
             }.bind(this), 1000 / this.layer.options['fps']);
         }
-        return this;
     },
 
     stopAnimation: function () {
@@ -176,7 +173,6 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
             clearTimeout(this._animTimeout);
             delete this._animTimeout;
         }
-        return this;
     },
 
     hide: function () {
@@ -185,9 +181,7 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
     },
 
     show: function () {
-        if (this.layer && this.layer.options['animation']) {
-            this.startAnimation();
-        }
+        this.startAnimation();
         return maptalks.renderer.Canvas.prototype.show.call(this);
     },
 
@@ -204,8 +198,8 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
     },
 
     onZoomEnd: function (param) {
-        this.startAnimation();
         this.layer.onZoomEnd(param);
+        this.startAnimation();
         maptalks.renderer.Canvas.prototype.onZoomEnd.call(this);
     },
 
@@ -216,8 +210,8 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
     },
 
     onMoveEnd: function (param) {
-        this.startAnimation();
         this.layer.onMoveEnd(param);
+        this.startAnimation();
         maptalks.renderer.Canvas.prototype.onMoveEnd.call(this);
     },
 
