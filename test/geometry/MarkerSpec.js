@@ -78,7 +78,7 @@ describe('#Marker', function() {
         it("can be icon", function() {
             var marker = new maptalks.Marker(center, {
                 symbol: {
-                    markerFile: maptalks.prefix + 'images/control/2.png',
+                    markerFile: 'images/control/2.png',
                     markerWidth: 30,
                     markerHeight: 22
                 }
@@ -172,7 +172,7 @@ describe('#Marker', function() {
 
         var geometry = new maptalks.Marker(center, {
             symbol: {
-                markerFile : maptalks.prefix + 'images/control/2.png',
+                markerFile : 'images/control/2.png',
                 markerHeight : 30,
                 markerWidth : 22,
                 dx : 0,
@@ -197,7 +197,7 @@ describe('#Marker', function() {
     it('get image marker\'s extent', function (done) {
         var geometry = new maptalks.Marker(map.getExtent().getMin().substract(1E-7, 0), {
             symbol: {
-                markerFile : maptalks.prefix + 'images/control/2.png'
+                markerFile : 'images/control/2.png'
             }
         });
         layer = new maptalks.VectorLayer('id').addGeometry(geometry);
