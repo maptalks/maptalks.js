@@ -836,7 +836,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         if (!this._extent && p) {
             var ext = this._computeExtent(p);
             if (ext) {
-                var isAntiMeridian = this.options['antiMeridian'];
+                var isAntiMeridian = this.options['antiMeridian'] && maptalks.MeasurerUtil.isSphere(p);
                 if (isAntiMeridian && isAntiMeridian !== 'default') {
                     var firstCoordinate = this.getFirstCoordinate();
                     if (isAntiMeridian === 'continuous') {
@@ -1003,6 +1003,23 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
          */
         this._fireEvent('symbolchange');
     },
+
+    onConfig: function (conf) {
+        var needRepaint = false;
+        for (var p in conf) {
+            if (conf.hasOwnProperty(p)) {
+                var prefix = p.slice(0, 5);
+                if (prefix === 'arrow' || prefix === 'shado') {
+                    needRepaint = true;
+                    break;
+                }
+            }
+        }
+        if (needRepaint) {
+            this.onShapeChanged();
+        }
+    },
+
     /**
      * Set a parent to the geometry, which is usually a MultiPolygon, GeometryCollection, etc
      * @param {maptalks.GeometryCollection} geometry - parent geometry

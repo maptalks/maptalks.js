@@ -36,6 +36,15 @@ maptalks.MeasurerUtil = {
     },
 
     /**
+     * Whether the measurer is based on earth sphere
+     * @param  {Object}  measurer
+     * @return {Boolean}
+     */
+    isSphere: function (measurer) {
+        return !maptalks.Util.isNil(measurer.sphere);
+    },
+
+    /**
      * The default measurer: WGS84Sphere
      * @type {Object}
      */
