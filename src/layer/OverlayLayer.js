@@ -189,7 +189,7 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
             this._geoList.push(geo);
 
 
-            if (fitView) {
+            if (fitView === true) {
                 geoCenter = geo.getCenter();
                 geoExtent = geo.getExtent();
                 if (geoCenter && geoExtent) {
