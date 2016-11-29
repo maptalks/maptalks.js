@@ -187,12 +187,38 @@ function runTests(target, _context) {
             it('get menu', function() {
                 prepareGeometry();
                 target.setMenu({
-                        items: items,
+                    items: items,
+                    animation : null,
+                    width: 250
+                });
+                expect(target.getMenuItems()).to.be.eql(items);
+            });
+
+            it('menu item of function type', function() {
+                prepareGeometry();
+                target.setMenu({
+                        items: [
+                            {
+                                item: function (param) {
+                                    expect(param.index).to.be(0);
+                                    return 'item1';
+                                },
+                                click: function(){}
+                            },
+                            '-',
+                            {
+                                item: function (param) {
+                                    expect(param.index).to.be(2);
+                                    return 'item2';
+                                },
+                                click: function(){}
+                            },
+                        ],
                         animation : null,
                         width: 250
                     });
-                var items = target.getMenuItems();
-                expect(items).to.be.eql(items);
+                target.openMenu();
+                assertItems();
             });
 
             it('remove menu', function() {
@@ -233,11 +259,11 @@ function runTests(target, _context) {
                 ul.appendChild(li3);
                 prepareGeometry();
                 target.setMenu({
-                        animation : null,
-                        custom : true,
-                        items: ul,
-                        width: 250
-                    });
+                    animation : null,
+                    custom : true,
+                    items: ul,
+                    width: 250
+                });
                 target.openMenu();
                 assertItems();
                 target.closeMenu();

@@ -159,7 +159,11 @@
                     maptalks.DomUtil.addClass(itemDOM, 'maptalks-menu-splitter');
                 } else {
                     itemDOM = maptalks.DomUtil.createEl('li');
-                    itemDOM.innerHTML = item['item'];
+                    var itemTitle = item['item'];
+                    if (maptalks.Util.isFunction(itemTitle)) {
+                        itemTitle = itemTitle({'owner' : this._owner, 'index' : i});
+                    }
+                    itemDOM.innerHTML = itemTitle;
                     itemDOM._callback = item['click'];
                     maptalks.DomUtil.on(itemDOM, 'click', (onMenuClick)(i));
                 }
@@ -258,9 +262,10 @@
         getMenuItems:function () {
             if (this._menu) {
                 return this._menu.getItems();
-            } else {
-                return null;
+            } else if (this._menuOptions) {
+                return this._menuOptions['items'];
             }
+            return null;
         },
 
         /**
@@ -304,15 +309,16 @@
          /**
          * 应用没有注册contextmenu事件时, 默认在contextmenu事件时打开右键菜单
          * 如果注册过contextmenu事件, 则不做任何操作
-         * @param  {*} param [description]
-         * @return {*}       [description]
+         * @param  {Object} param - event parameter
+         * @return {Boolean} true | false to stop event propagation
          * @private
          */
         _defaultOpenMenu:function (param) {
             if (this.listens('contextmenu') > 1) {
-                return;
+                return true;
             } else {
                 this.openMenu(param['coordinate']);
+                return false;
             }
         }
     };
