@@ -136,7 +136,7 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
-        this._dragStageLayer._getRenderer()._resources = layer._getRenderer()._resources;
+        this._dragStageLayer._getRenderer().resources = layer._getRenderer().resources;
     },
 
     _dragging: function (param) {
