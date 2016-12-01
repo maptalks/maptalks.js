@@ -99,7 +99,6 @@ describe('#GeometryEdit', function () {
                 }
             }).addTo(layer);
             marker.startEdit();
-            console.log(size.width, size.height);
             dragGeometry(marker, new maptalks.Point(size.width/2,0));
             var symbol = marker.getSymbol();
             expect(symbol.markerWidth).to.be.approx(39);
