@@ -98,6 +98,7 @@ describe('#GeometryEdit', function () {
                     markerHeight:20
                 }
             }).addTo(layer);
+            var size = marker.getSize();
             marker.startEdit();
             dragGeometry(marker, new maptalks.Point(size.width/2,0));
             var symbol = marker.getSymbol();
