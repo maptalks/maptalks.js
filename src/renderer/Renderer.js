@@ -508,6 +508,17 @@ maptalks.Util.extend(maptalks.renderer.Canvas.Resources.prototype, {
         this._errors[this._getImgUrl(url)] = 1;
     },
 
+    merge: function (res) {
+        if (!res) {
+            return this;
+        }
+        for (var p in res.resources) {
+            var img = res.resources[p];
+            this.addResource([p, img.width, img.height], img.image);
+        }
+        return this;
+    },
+
     _getImgUrl: function (url) {
         if (!maptalks.Util.isArray(url)) {
             return url;

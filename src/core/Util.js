@@ -608,7 +608,7 @@ maptalks.Util = {
         document.head.appendChild(script);
     },
 
-    decreaseSymbolOpacity:function (symbol, ratio) {
+    lowerSymbolOpacity:function (symbol, ratio) {
         function s(_symbol, _ratio) {
             var op = _symbol['opacity'];
             if (maptalks.Util.isNil(op)) {
@@ -617,14 +617,19 @@ maptalks.Util = {
                 _symbol['opacity'] *= _ratio;
             }
         }
+        var lower;
         if (maptalks.Util.isArray(symbol)) {
+            lower = [];
             for (var i = 0; i < symbol.length; i++) {
-                s(symbol[i], ratio);
+                var d = maptalks.Util.extend({}, symbol[i]);
+                s(d, ratio);
+                lower.push(d);
             }
         } else {
-            s(symbol, ratio);
+            lower = maptalks.Util.extend({}, symbol);
+            s(lower, ratio);
         }
-        return symbol;
+        return lower;
     },
 
     extendSymbol:function (symbol) {
@@ -651,7 +656,9 @@ maptalks.Util = {
             }
             return result;
         } else {
-            return maptalks.Util.extend.apply(maptalks.Util, [{}, symbol].concat(sources));
+            var args = [{}, symbol];
+            args.push.apply(args, sources);
+            return maptalks.Util.extend.apply(maptalks.Util, args);
         }
     },
 

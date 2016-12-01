@@ -244,7 +244,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             'cursor'     : 'move',
             onDown:function () {
                 shadow = this._shadow.copy();
-                var symbol = maptalks.Util.decreaseSymbolOpacity(shadow._getInternalSymbol(), 0.5);
+                var symbol = maptalks.Util.lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },
             onMove:function (v, param) {
@@ -418,7 +418,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
      * 标注和自定义标注编辑器
      */
     createMarkerEditor:function () {
-
+        var me = this;
         var marker = this._shadow,
             geometryToEdit = this._geometry,
             map = this.getMap(),
@@ -502,19 +502,41 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             if (blackList && handleViewPoint.y > viewCenter.y) {
                 wh.y = 0;
             }
+
+            var aspectRatio;
+            if (me.options['fixAspectRatio']) {
+                var size = marker.getSize();
+                aspectRatio = size.width / size.height;
+            }
+
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
             var r = blackList ? 1 : 2;
             var width = Math.abs(wh.x) * 2,
                 height = Math.abs(wh.y) * r;
+            if (aspectRatio) {
+                width = Math.max(width, height * aspectRatio);
+                height = width / aspectRatio;
+            }
             var ability = resizeAbilities[i];
-            if (ability === 0 || ability === 2) {
-                symbol['markerWidth'] = width;
+            if (!(marker instanceof maptalks.TextMarker)) {
+                if (aspectRatio || ability === 0 || ability === 2) {
+                    symbol['markerWidth'] = width;
+                }
+                if (aspectRatio || ability === 1 || ability === 2) {
+                    symbol['markerHeight'] = height;
+                }
+                marker.setSymbol(symbol);
+                geometryToEdit.setSymbol(symbol);
+            } else {
+                if (aspectRatio || ability === 0 || ability === 2) {
+                    geometryToEdit.config('boxMinWidth', width);
+                    marker.config('boxMinWidth', width);
+                }
+                if (aspectRatio || ability === 1 || ability === 2) {
+                    geometryToEdit.config('boxMinHeight', height);
+                    marker.config('boxMinHeight', height);
+                }
             }
-            if (ability === 1 || ability === 2) {
-                symbol['markerHeight'] = height;
-            }
-            marker.setSymbol(symbol);
-            geometryToEdit.setSymbol(symbol);
         });
         this._addListener([map, 'zoomstart', onZoomStart]);
         this._addListener([map, 'zoomend', onZoomEnd]);

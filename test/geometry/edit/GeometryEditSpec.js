@@ -92,16 +92,34 @@ describe('#GeometryEdit', function () {
 
         it('resize a vector marker',function() {
             var marker = new maptalks.Marker(map.getCenter(), {
-                markerType:'ellipse',
-                markerWidth:20,
-                markerHeight:20
+                symbol : {
+                    markerType:'ellipse',
+                    markerWidth:20,
+                    markerHeight:20
+                }
             }).addTo(layer);
             marker.startEdit();
+            console.log(size.width, size.height);
+            dragGeometry(marker, new maptalks.Point(size.width/2,0));
+            var symbol = marker.getSymbol();
+            expect(symbol.markerWidth).to.be.approx(39);
+            expect(symbol.markerHeight).to.be.approx(20);
+        });
+
+        it('resize a vector marker with fix aspect ratio',function() {
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    markerType:'ellipse',
+                    markerWidth:20,
+                    markerHeight:20
+                }
+            }).addTo(layer);
+            marker.startEdit({'fixAspectRatio' : true});
             var size = marker.getSize();
             dragGeometry(marker, new maptalks.Point(size.width/2,0));
             var symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(24);
-            expect(symbol.markerHeight).to.be.approx(42.99999999);
+            expect(symbol.markerWidth).to.be.approx(39);
+            expect(symbol.markerHeight).to.be.approx(39);
         });
 
         it('resize a circle',function() {
