@@ -113,6 +113,15 @@ describe('#Point', function () {
 
         it('can abs',function() {
             var c = new maptalks.Point(new maptalks.Point(-2,-3));
+            var t = c.abs();
+            expect(c.x).to.be.eql(-2);
+            expect(c.y).to.be.eql(-3);
+            expect(t.x).to.be.eql(2);
+            expect(t.y).to.be.eql(3);
+        });
+
+        it('can _abs',function() {
+            var c = new maptalks.Point(new maptalks.Point(-2,-3));
             var t = c._abs();
             expect(c.x).to.be.eql(2);
             expect(c.y).to.be.eql(3);
