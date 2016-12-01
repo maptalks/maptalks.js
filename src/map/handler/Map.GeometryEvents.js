@@ -33,6 +33,16 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
         if (map._isBusy() || !vectorLayers || vectorLayers.length === 0) {
             return;
         }
+        var eventType = domEvent.type;
+        // ignore click lasted for more than 300ms.
+        if (eventType === 'mousedown') {
+            this._mouseDownTime = maptalks.Util.now();
+        } else if (eventType === 'click' && this._mouseDownTime) {
+            var now = maptalks.Util.now();
+            if (now - this._mouseDownTime > 300) {
+                return;
+            }
+        }
         var layers = [];
         for (var i = 0; i < vectorLayers.length; i++) {
             if (vectorLayers[i].options['geometryEvents']) {
@@ -42,7 +52,7 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
         if (layers.length === 0) {
             return;
         }
-        var eventType = domEvent.type;
+
         var actual = domEvent.touches && domEvent.touches.length > 0 ?
             domEvent.touches[0] : domEvent.changedTouches && domEvent.changedTouches.length > 0 ?
             domEvent.changedTouches[0] : domEvent;

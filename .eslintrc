@@ -1,7 +1,7 @@
 {
   "extends": "maptalks",
   "globals": {
-      "Z" : true,
+      "THREE" : true,
       "define" : true
   },
   "rules": {

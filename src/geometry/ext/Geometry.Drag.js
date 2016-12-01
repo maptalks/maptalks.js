@@ -86,6 +86,7 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
     _prepareShadow:function () {
         var target = this.target;
         this._prepareDragStageLayer();
+        var resources = this._dragStageLayer._getRenderer().resources;
         if (this._shadow) {
             this._shadow.remove();
         }
@@ -94,7 +95,7 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
         this._shadow.setSymbol(target._getInternalSymbol());
         var shadow = this._shadow;
         if (target.options['dragShadow']) {
-            var symbol = maptalks.Util.decreaseSymbolOpacity(shadow._getInternalSymbol(), 0.5);
+            var symbol = maptalks.Util.lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
             shadow.setSymbol(symbol);
         }
         shadow.setId(null);
@@ -107,7 +108,7 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
                 var targetConn = connectors[i];
                 var connOptions = targetConn.config(),
                     connSymbol = targetConn._getInternalSymbol();
-                connOptions['symbol'] = connSymbol;
+                connOptions['symbol'] = maptalks.Util.lowerSymbolOpacity(connSymbol, 0.5);
                 var conn;
                 if (targetConn.getConnectSource() === target) {
                     conn = new maptalks.ConnectorLine(shadow, targetConn.getConnectTarget(), connOptions);
@@ -115,10 +116,15 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
                     conn = new maptalks.ConnectorLine(targetConn.getConnectSource(), shadow, connOptions);
                 }
                 shadowConnectors.push(conn);
+                if (targetConn.getLayer() && targetConn.getLayer()._getRenderer()) {
+                    resources.merge(targetConn.getLayer()._getRenderer().resources);
+                }
+
             }
         }
         this._shadowConnectors = shadowConnectors;
-        this._dragStageLayer.bringToFront().addGeometry(shadowConnectors.concat(shadow));
+        shadowConnectors.push(shadow);
+        this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
     },
 
     _onTargetUpdated:function () {
@@ -136,7 +142,9 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
-        this._dragStageLayer._getRenderer().resources = layer._getRenderer().resources;
+        var resources = new maptalks.renderer.Canvas.Resources();
+        resources.merge(layer._getRenderer().resources);
+        this._dragStageLayer._getRenderer().resources = resources;
     },
 
     _dragging: function (param) {
@@ -245,6 +253,9 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
 
         delete this._autoBorderPanning;
         delete this._mapDraggable;
+        if (this._dragStageLayer) {
+            this._dragStageLayer.remove();
+        }
         this._isDragging = false;
         /**
          * dragend event
