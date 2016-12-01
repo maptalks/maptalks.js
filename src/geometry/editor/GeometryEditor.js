@@ -572,6 +572,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
      * @return {*} [description]
      */
     createEllipseOrRectEditor:function () {
+        var me = this;
         //defines what can be resized by the handle
         //0: resize width; 1: resize height; 2: resize both width and height.
         var resizeAbilities = [
@@ -582,66 +583,72 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         var shadow = this._shadow,
             geometryToEdit = this._geometry;
         var map = this.getMap();
-        //handles in blackList will change geometry's coordinates
-        var blackList = null;
         var isRect = this._geometry instanceof maptalks.Rectangle;
-        if (isRect) {
-            //resize handles to hide for rectangle
-            blackList = [0, 1, 2, 3, 5];
-        }
         var resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
-            var viewCenter;
             //ratio of width and height
             var r;
+            var wh, w, h;
+            var aspectRatio;
+            if (me.options['fixAspectRatio']) {
+                aspectRatio = geometryToEdit.getWidth() / geometryToEdit.getHeight();
+            }
             if (isRect) {
-                //change rectangle's coordinates
-                if (blackList && maptalks.Util.indexOfArray(i, blackList) >= 0) {
-                    var coordinates = shadow.getCoordinates(),
-                        handleCoordinates = map.viewPointToCoordinate(handleViewPoint);
-                    var newCoordinates;
-                    var mirrorHandle = resizeHandles[7];
-                    var mirrorViewPoint = map.coordinateToViewPoint(mirrorHandle.getCoordinates());
-                    switch (i) {
-                    case 0:
-                        newCoordinates = handleCoordinates;
-                        break;
-                    case 1:
-                        newCoordinates = new maptalks.Coordinate(coordinates.x, handleCoordinates.y);
-                        break;
-                    case 2:
-                        newCoordinates = new maptalks.Coordinate(coordinates.x, handleCoordinates.y);
-                        mirrorViewPoint = new maptalks.Point(handleViewPoint.x, mirrorViewPoint.y);
-                        break;
-                    case 3:
-                        newCoordinates = new maptalks.Coordinate(handleCoordinates.x, coordinates.y);
-                        break;
-                    case 5:
-                        newCoordinates = new maptalks.Coordinate(handleCoordinates.x, coordinates.y);
-                        mirrorViewPoint = new maptalks.Point(mirrorViewPoint.x, handleViewPoint.y);
-                        break;
-                    default:
-                        newCoordinates = null;
-                    }
-                    shadow.setCoordinates(newCoordinates);
-                    geometryToEdit.setCoordinates(newCoordinates);
+                var anchorHandle = resizeHandles[7 - i];
+                var anchorViewPoint = map.coordinateToViewPoint(anchorHandle.getCoordinates());
+                var currentSize = geometryToEdit.getSize();
+                if (aspectRatio) {
+                    wh = handleViewPoint.substract(anchorViewPoint);
 
-                    handleViewPoint = mirrorViewPoint;
+                    var awh = wh.abs();
+                    if (wh.x !== 0 && wh.y !== 0) {
+                        w = Math.max(awh.x, awh.y * aspectRatio);
+                        h = w / aspectRatio;
+                    } else if (wh.x === 0) {
+                        h = awh.y;
+                        w = h * aspectRatio;
+                    } else if (wh.y === 0) {
+                        w = awh.x;
+                        h = w / aspectRatio;
+                    }
+                    handleViewPoint.x = anchorViewPoint.x + (wh.x === 0 ? -currentSize.width / 2 : wh.x / awh.x * w);
+                    handleViewPoint.y = anchorViewPoint.y + (wh.y === 0 ? -currentSize.height / 2 : wh.y / awh.y * h);
+                    wh = new maptalks.Point(w, h);
+                } else {
+                    wh = handleViewPoint.substract(anchorViewPoint)._abs();
+                    if (wh.x === 0) {
+                        handleViewPoint.x = anchorViewPoint.x - currentSize.width / 2;
+                    }
+                    if (wh.y === 0) {
+                        handleViewPoint.y = anchorViewPoint.y - currentSize.height / 2;
+                    }
                 }
+                //change rectangle's coordinates
+                var newCoordinates = map.viewPointToCoordinate(new maptalks.Point(Math.min(handleViewPoint.x, anchorViewPoint.x), Math.min(handleViewPoint.y, anchorViewPoint.y)));
+                shadow.setCoordinates(newCoordinates);
+                geometryToEdit.setCoordinates(newCoordinates);
                 r = 1;
-                viewCenter = map._prjToViewPoint(shadow._getPrjCoordinates());
             } else {
                 r = 2;
-                viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
+                var viewCenter = map.coordinateToViewPoint(geometryToEdit.getCenter());
+                if (aspectRatio) {
+                    wh = viewCenter.substract(handleViewPoint)._abs();
+                    w = Math.max(wh.x, wh.y * aspectRatio);
+                    h = w / aspectRatio;
+                    wh.x = w;
+                    wh.y = h;
+                } else {
+                    wh = viewCenter.substract(handleViewPoint)._abs();
+                }
             }
-            var wh = handleViewPoint.substract(viewCenter);
+
             var ability = resizeAbilities[i];
-            var w = map.pixelToDistance(Math.abs(wh.x), 0);
-            var h = map.pixelToDistance(0, Math.abs(wh.y));
-            if (ability === 0 || ability === 2) {
+            w = map.pixelToDistance(wh.x, 0);
+            h = map.pixelToDistance(0, wh.y);
+            if (aspectRatio || ability === 0 || ability === 2) {
                 shadow.setWidth(w * r);
                 geometryToEdit.setWidth(w * r);
             }
-            if (ability === 1 || ability === 2) {
+            if (aspectRatio || ability === 1 || ability === 2) {
                 shadow.setHeight(h * r);
                 geometryToEdit.setHeight(h * r);
             }

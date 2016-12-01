@@ -36,6 +36,10 @@ maptalks.Point = function (x, y) {
 };
 
 maptalks.Util.extend(maptalks.Point.prototype, /** @lends maptalks.Point.prototype */{
+    abs: function () {
+        return new maptalks.Point(Math.abs(this.x), Math.abs(this.y));
+    },
+
     _abs:function () {
         this.x = Math.abs(this.x);
         this.y = Math.abs(this.y);
