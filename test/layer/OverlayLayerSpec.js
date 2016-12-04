@@ -307,6 +307,35 @@ describe('#OverlayLayer', function() {
             layer.addGeometry([geo1, geo2], true);
 
         });
+
+        it('support rest parameters', function(done) {
+            var layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            var center1 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var center2 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var geo1 = new maptalks.Marker(center1);
+            var geo2 = new maptalks.Marker(center2);
+            layer.on('addgeo', function() {
+                expect(layer.getCount()).to.be(2);
+                done();
+            });
+            layer.addGeometry(geo1, geo2);
+        });
+
+        it('support rest parameters and fit map view', function(done) {
+            var layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            var center1 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var center2 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var geo1 = new maptalks.Marker(center1);
+            var geo2 = new maptalks.Marker(center2);
+            layer.on('addgeo', function() {
+                var center = center1.add(center2).multi(1/2);
+                expect(map.getCenter()).to.be.closeTo(center);
+                done();
+            });
+            layer.addGeometry(geo1, geo2, true);
+        });
     });
 
     describe('getGeometry', function() {
