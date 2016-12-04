@@ -318,28 +318,22 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
 
         var control = createContainer('control', 'maptalks-control', null, true);
         var mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
-        var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;', true);
+        var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;will-change:transform;', true);
         var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
         var mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;top:0px;left:0px;');
         var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;');
         var frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
-        var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;');
-
-        mapPlatform.style.zIndex = 300;
-        frontLayer.style.zIndex = 201;
-        canvasContainer.style.zIndex = 200;
-        layer.style.zIndex = 100;
-        ui.style.zIndex = 300;
-        control.style.zIndex = 400;
+        var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;will-change:transform;');
 
         containerDOM.appendChild(mapWrapper);
 
+        mapPlatform.appendChild(mapAllLayers);
         mapPlatform.appendChild(ui);
         mapWrapper.appendChild(mapPlatform);
         mapAllLayers.appendChild(layer);
         mapAllLayers.appendChild(canvasContainer);
         mapAllLayers.appendChild(frontLayer);
-        mapWrapper.appendChild(mapAllLayers);
+
         mapWrapper.appendChild(control);
 
         this.createCanvas();

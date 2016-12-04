@@ -77,8 +77,7 @@ maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.rende
         }
         var pos = this.map.offsetPlatform().add(offset)._round();
         maptalks.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
-        maptalks.DomUtil.offsetDom(this.map._panels.frontLayer, pos);
-        maptalks.DomUtil.offsetDom(this.map._panels.layer, pos);
+        maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos.multi(-1));
         if (maptalks.Browser.mobile) {
             maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
         }
@@ -90,8 +89,7 @@ maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.rende
         if (this.map._panels.mapPlatform) {
             var pos = new maptalks.Point(0, 0);
             maptalks.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
-            maptalks.DomUtil.offsetDom(this.map._panels.layer, pos);
-            maptalks.DomUtil.offsetDom(this.map._panels.frontLayer, pos);
+            maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
             if (maptalks.Browser.mobile) {
                 maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
             }
