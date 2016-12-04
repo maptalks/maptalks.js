@@ -36,7 +36,7 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
 
         'renderWhenPanning' : false,
         //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
-        'renderSpanWhenPanning' : (function () { return maptalks.Browser.mobile ? -1 : 100; })(),
+        'updateInterval' : (function () { return maptalks.Browser.mobile ? -1 : 200; })(),
 
         'cssFilter' : null,
 
@@ -51,6 +51,8 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
         'debug'      : false,
 
         'cacheTiles' : true,
+
+        'keepBuffer' : 1,
 
         'baseLayerRenderer' : (function () { return maptalks.node ? 'canvas' : 'dom'; })()
     },
@@ -160,11 +162,13 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
             centerPoint = new maptalks.Point(mapW / 2 - centerTile['offsetLeft'],
                                                 mapH / 2 - centerTile['offsetTop']);
 
+        var keepBuffer = this.options['keepBuffer'] || 0;
         //中心瓦片上下左右的瓦片数
-        var top = Math.ceil(Math.abs(containerCenter.y - containerExtent['ymin'] - centerTile['offsetTop']) / tileSize['height']),
-            left = Math.ceil(Math.abs(containerCenter.x - containerExtent['xmin'] - centerTile['offsetLeft']) / tileSize['width']),
-            bottom = Math.ceil(Math.abs(containerExtent['ymax'] - containerCenter.y + centerTile['offsetTop']) / tileSize['height']),
-            right = Math.ceil(Math.abs(containerExtent['xmax'] - containerCenter.x + centerTile['offsetLeft']) / tileSize['width']);
+        var top = Math.ceil(Math.abs(containerCenter.y - containerExtent['ymin'] - centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
+            left = Math.ceil(Math.abs(containerCenter.x - containerExtent['xmin'] - centerTile['offsetLeft']) / tileSize['width']) + keepBuffer,
+            bottom = Math.ceil(Math.abs(containerExtent['ymax'] - containerCenter.y + centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
+            right = Math.ceil(Math.abs(containerExtent['xmax'] - containerCenter.x + centerTile['offsetLeft']) / tileSize['width']) + keepBuffer;
+
 
         centerPoint._substract(mapViewPoint)._round();
 

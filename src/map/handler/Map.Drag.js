@@ -54,7 +54,7 @@ maptalks.Map.Drag = maptalks.Handler.extend({
 
     _onDragStart:function (param) {
         var map = this.target;
-        this.startDragTime = new Date().getTime();
+        this.startDragTime = maptalks.Util.now();
         var domOffset = map.offsetPlatform();
         this.startLeft = domOffset.x;
         this.startTop = domOffset.y;
@@ -88,7 +88,7 @@ maptalks.Map.Drag = maptalks.Handler.extend({
             return;
         }
         var map = this.target;
-        var t = new Date().getTime() - this.startDragTime;
+        var t = maptalks.Util.now() - this.startDragTime;
         var domOffset = map.offsetPlatform();
         var xSpan =  domOffset.x - this.startLeft;
         var ySpan =  domOffset.y - this.startTop;
@@ -101,9 +101,10 @@ maptalks.Map.Drag = maptalks.Handler.extend({
         delete this.startY;
 
         if (t < 280 && Math.abs(ySpan) + Math.abs(xSpan) > 5) {
-            var distance = new maptalks.Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t)).multi(0.5);
-            t = 5 * t * (Math.abs(distance.x) + Math.abs(distance.y)) / 600;
-            map._panAnimation(distance._multi(2 / 3), t);
+            // var distance = new maptalks.Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t))._multi(0.5);
+            var distance = new maptalks.Point(xSpan, ySpan);
+            t = 5 * t * (Math.abs(distance.x) + Math.abs(distance.y)) / 500;
+            map._panAnimation(distance, t);
         } else {
             map.onMoveEnd(param);
         }

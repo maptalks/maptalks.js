@@ -75,9 +75,9 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
                 this._tiles[p].current = false;
             }
         }
-
+        var i, l;
         var tile;
-        for (var i = tiles.length - 1; i >= 0; i--) {
+        for (i = tiles.length - 1; i >= 0; i--) {
             tile = tiles[i];
             if (this._tiles[tile['id']]) {
                 //tile is already added
@@ -91,7 +91,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         maptalks.DomUtil.removeTransform(container);
         if (queue.length > 0) {
             var fragment = document.createDocumentFragment();
-            for (i = 0; i < queue.length; i++) {
+            for (i = 0, l = queue.length; i < l; i++) {
                 fragment.appendChild(this._loadTile(queue[i]));
             }
             container.appendChild(fragment);
@@ -105,7 +105,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         var zoom = this.getMap().getZoom();
         if (this._levelContainers[zoom]) {
             if (matrices) {
-                maptalks.DomUtil.setTransform(this._levelContainers[zoom], matrices['view']);
+                maptalks.DomUtil.setTransformMatrix(this._levelContainers[zoom], matrices['view']);
             } else {
                 maptalks.DomUtil.removeTransform(this._levelContainers[zoom]);
             }
@@ -174,13 +174,15 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
 
         tile.loaded = maptalks.Util.now();
 
+        var map = this.getMap();
+
         if (this._fadeAnimated) {
             maptalks.Util.cancelAnimFrame(this._fadeFrame);
             this._fadeFrame = maptalks.Util.requestAnimFrame(maptalks.Util.bind(this._updateOpacity, this));
         } else {
             maptalks.DomUtil.setOpacity(tile['el'], 1);
             tile.active = true;
-            this._pruneTiles();
+            // this._pruneTiles();
         }
 
         /**
@@ -205,7 +207,6 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
                 if (this._pruneTimeout) {
                     clearTimeout(this._pruneTimeout);
                 }
-                var map = this.getMap();
                 var timeout = map ? map.options['zoomAnimationDuration'] : 250,
                     pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
@@ -393,12 +394,12 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
             '_movestart'    : this.onMoveStart
         };
         if (!this._onMapMoving && this.layer.options['renderWhenPanning']) {
-            var rendSpan = this.layer.options['renderSpanWhenPanning'];
-            if (maptalks.Util.isNumber(rendSpan) && rendSpan >= 0) {
-                if (rendSpan > 0) {
+            var interval = this.layer.options['updateInterval'];
+            if (maptalks.Util.isNumber(interval) && interval >= 0) {
+                if (interval > 0) {
                     this._onMapMoving = maptalks.Util.throttle(function () {
                         this.render();
-                    }, rendSpan, this);
+                    }, interval, this);
                 } else {
                     this._onMapMoving = function () {
                         this.render();

@@ -496,16 +496,18 @@ maptalks.DomUtil = {
      * @param {Number} scale
      */
     setTransform: function (el, offset, scale) {
-        if (offset instanceof maptalks.Matrix) {
-            el.style[maptalks.DomUtil.TRANSFORM] =  offset.toCSS();
-            return this;
-        }
+
         var pos = offset || new maptalks.Point(0, 0);
         el.style[maptalks.DomUtil.TRANSFORM] =
             (maptalks.Browser.ie3d ?
                 'translate(' + pos.x + 'px,' + pos.y + 'px)' + (scale ? ' scale(' + scale + ')' : '') :
                 'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)') + (scale ? ' scale(' + scale + ')' : '');
 
+        return this;
+    },
+
+    setTransformMatrix: function (el, m) {
+        el.style[maptalks.DomUtil.TRANSFORM] =  m.toCSS();
         return this;
     },
 
