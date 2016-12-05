@@ -488,6 +488,9 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
         }
         this._resizeFrame = maptalks.Util.requestAnimFrame(
             maptalks.Util.bind(function () {
+                if (this.map._moving || this.map._isBusy()) {
+                    return;
+                }
                 this.map.checkSize();
             }, this)
         );
