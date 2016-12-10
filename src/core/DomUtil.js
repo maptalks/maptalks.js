@@ -487,21 +487,16 @@ maptalks.DomUtil = {
 
 
     /**
-     * Based on Leaflet.DomUtil.
      * Resets the 3D CSS transform of `el` so it is translated by `offset` pixels
-     * and optionally scaled by `scale`. Does not have an effect if the browser doesn't support 3D CSS transforms.
-     * Also support set a transform matrix.
      * @param {HTMLElement} el
      * @param {maptalks.Point} offset
-     * @param {Number} scale
      */
-    setTransform: function (el, offset, scale) {
-
+    setTransform: function (el, offset) {
         var pos = offset || new maptalks.Point(0, 0);
         el.style[maptalks.DomUtil.TRANSFORM] =
             (maptalks.Browser.ie3d ?
-                'translate(' + pos.x + 'px,' + pos.y + 'px)' + (scale ? ' scale(' + scale + ')' : '') :
-                'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)') + (scale ? ' scale(' + scale + ')' : '');
+                'translate(' + pos.x + 'px,' + pos.y + 'px)' :
+                'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)');
 
         return this;
     },

@@ -80,7 +80,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
         'clipFullExtent' : false,
 
-        'zoomAnimation' : true,
+        'zoomAnimation' : (function () { return !maptalks.node; })(),
         'zoomAnimationDuration' : 330,
         //still leave background after zooming, set it to false if baseLayer is a transparent layer
         'zoomBackground' : true,
@@ -91,7 +91,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         //set to true can prevent drastic low performance when number of point symbolizers is large.
         'layerTransforming' : true,
 
-        'panAnimation':true,
+        'panAnimation': (function () { return !maptalks.node; })(),
         //default pan animation duration
         'panAnimationDuration' : 600,
 
@@ -474,13 +474,13 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     setZoom:function (zoom) {
         var me = this;
         maptalks.Util.executeWhen(function () {
-            if (me.options['zoomAnimation']) {
+            if (me._loaded && me.options['zoomAnimation']) {
                 me._zoomAnimation(zoom);
             } else {
                 me._zoom(zoom);
             }
         }, function () {
-            return !me._zooming;
+            return  !me._zooming;
         });
         return this;
     },

@@ -76,11 +76,8 @@ maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.rende
             return this;
         }
         var pos = this.map.offsetPlatform().add(offset)._round();
+        maptalks.DomUtil.offsetDom(this.map._panels.layer, pos);
         maptalks.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
-        maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos.multi(-1));
-        if (maptalks.Browser.mobile) {
-            maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
-        }
         return this;
     },
 
@@ -88,11 +85,8 @@ maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.rende
         this.map._resetMapViewPoint();
         if (this.map._panels.mapPlatform) {
             var pos = new maptalks.Point(0, 0);
+            maptalks.DomUtil.offsetDom(this.map._panels.layer, pos);
             maptalks.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
-            maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
-            if (maptalks.Browser.mobile) {
-                maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
-            }
         }
     },
 
