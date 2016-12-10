@@ -59,8 +59,8 @@ maptalks.renderer.overlaylayer.Canvas = maptalks.renderer.Canvas.extend({
         this.render();
     },
 
-    onGeometrySymbolChange: function (geometries) {
-        this.render(geometries);
+    onGeometrySymbolChange: function (e) {
+        this.render([e.target]);
     },
 
     onGeometryShapeChange: function () {

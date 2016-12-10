@@ -154,6 +154,24 @@ describe('#Marker', function() {
             }).to.throwException();
         });
 
+        it('change symbol in event listener', function (done) {
+            var marker = new maptalks.Marker(map.getCenter());
+            var layer = new maptalks.VectorLayer('vector', [marker]);
+            marker.on('click', function (e) {
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, -5);
+                    done();
+                });
+                e.target.setSymbol({
+                    'markerFile' : 'images/control/2.png'
+                });
+            });
+            layer.once('layerload', function () {
+                marker._fireEvent('click');
+            });
+            map.addLayer(layer);
+        });
+
     });
 
     describe('events', function() {
