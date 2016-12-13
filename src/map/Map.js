@@ -83,7 +83,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         'zoomAnimation' : (function () { return !maptalks.node; })(),
         'zoomAnimationDuration' : 330,
         //still leave background after zooming, set it to false if baseLayer is a transparent layer
-        'zoomBackground' : true,
+        'zoomBackground' : false,
         //controls whether other layers than base tilelayer will show during zoom animation.
         'layerZoomAnimation' : true,
 
