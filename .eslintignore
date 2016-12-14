@@ -1,3 +1,2 @@
-src/utils/Promise.js
 src/utils/Matrix.js
-src/utils/FunctionType.js
+dist/
