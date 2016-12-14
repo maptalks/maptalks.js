@@ -28,7 +28,7 @@
  * @protected
  * @constructor
  */
-maptalks.Matrix = function(context) {
+const Matrix = function(context) {
 
     var me = this;
     me._t = me.transform;
@@ -42,9 +42,7 @@ maptalks.Matrix = function(context) {
     if (context) context.setTransform(1, 0, 0, 1, 0, 0);
 };
 
-var Matrix = maptalks.Matrix;
-
-maptalks.Matrix.prototype = {
+Matrix.prototype = {
 
     /**
      * Concatenates transforms of this matrix onto the given child matrix and
@@ -739,7 +737,7 @@ maptalks.Matrix.prototype = {
     }
 };
 
-maptalks.Matrix.prototype.multi = function(s) {
+Matrix.prototype.multi = function(s) {
     var matrix = this;
     var copy = matrix.clone();
         copy.a = matrix.a * s;
@@ -750,3 +748,5 @@ maptalks.Matrix.prototype.multi = function(s) {
         copy.f = matrix.f * s;
     return copy;
 }
+
+export default Matrix;

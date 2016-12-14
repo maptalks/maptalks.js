@@ -4,6 +4,8 @@
  * @category core
  * @protected
  */
+import { utils } from '../utils';
+
 maptalks.Util = {
     /**
      * @property {Number} uid
@@ -11,7 +13,7 @@ maptalks.Util = {
      */
     uid: 0,
 
-    now:function () {
+    now: function () {
         if (!Date.now) {
             return new Date().getTime();
         }
@@ -25,7 +27,8 @@ maptalks.Util = {
      * @return {Object}
      */
     extend: function (dest) { // (Object[, Object, ...]) ->
-        var sources = Array.prototype.slice.call(arguments, 1), i, j, len, src;
+        var sources = Array.prototype.slice.call(arguments, 1),
+            i, j, len, src;
 
         for (j = 0, len = sources.length; j < len; j++) {
             src = sources[j] || {};
@@ -54,7 +57,7 @@ maptalks.Util = {
         return obj.options;
     },
 
-    isSVG:function (url) {
+    isSVG: function (url) {
         var prefix = 'data:image/svg+xml';
         if (url.length > 4 && url.slice(-4) === '.svg') {
             return 1;
@@ -71,11 +74,12 @@ maptalks.Util = {
      * @param  {Object[]} imgDesc - image's descriptor, it's a array. imgUrl[0] is the url string, imgUrl[1] is the width, imgUrl[2] is the height.
      * @return maptalks.Util
      */
-    loadImage:function (img, imgDesc) {
+    loadImage: function (img, imgDesc) {
         if (!maptalks.node) {
             img.src = imgDesc[0];
             return this;
         }
+
         function onError(err) {
             if (err) {
                 console.error(err);
@@ -86,6 +90,7 @@ maptalks.Util = {
                 onerrorFn.call(img);
             }
         }
+
         function onLoadComplete(err, data) {
             if (err) {
                 onError(err);
@@ -100,8 +105,8 @@ maptalks.Util = {
             img.src = data;
         }
         var url = imgDesc[0],
-            w   = imgDesc[1],
-            h   = imgDesc[2];
+            w = imgDesc[1],
+            h = imgDesc[2];
         try {
             if (maptalks.Util.isSVG(url) && maptalks.Util.convertSVG) {
                 maptalks.Util.convertSVG(url, w, h, onLoadComplete);
@@ -117,7 +122,7 @@ maptalks.Util = {
         return this;
     },
 
-    _loadRemoteImage:function (img, url, onComplete) {
+    _loadRemoteImage: function (img, url, onComplete) {
         //http
         var loader;
         if (url.indexOf('https://') === 0) {
@@ -128,13 +133,13 @@ maptalks.Util = {
         var urlObj = require('url').parse(url);
         //mimic the browser to prevent server blocking.
         urlObj.headers = {
-            'Accept':'image/*,*/*;q=0.8',
-            'Accept-Encoding':'gzip, deflate',
-            'Cache-Control':'no-cache',
-            'Connection':'keep-alive',
-            'Host':urlObj.host,
-            'Pragma':'no-cache',
-            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'
+            'Accept': 'image/*,*/*;q=0.8',
+            'Accept-Encoding': 'gzip, deflate',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Host': urlObj.host,
+            'Pragma': 'no-cache',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'
         };
         loader.request(urlObj, function (res) {
             var data = [];
@@ -147,12 +152,12 @@ maptalks.Util = {
         }).on('error', onComplete).end();
     },
 
-    _loadLocalImage:function (img, url, onComplete) {
+    _loadLocalImage: function (img, url, onComplete) {
         //local file
         require('fs').readFile(url, onComplete);
     },
 
-    fixPNG:function () {
+    fixPNG: function () {
 
     },
 
@@ -169,7 +174,7 @@ maptalks.Util = {
      * @param {String} str      - a JSON string
      * @return {Object}
      */
-    parseJSON:function (str) {
+    parseJSON: function (str) {
         if (!str || !maptalks.Util.isString(str)) {
             return str;
         }
@@ -257,7 +262,7 @@ maptalks.Util = {
         return this;
     },
 
-    removeFromArray:function (obj, array) {
+    removeFromArray: function (obj, array) {
         for (var i = array.length - 1; i >= 0; i--) {
             if (array[i] === obj) {
                 return array.splice(i, 1);
@@ -267,7 +272,7 @@ maptalks.Util = {
     },
 
 
-    mapArrayRecursively:function (arr, fn, context) {
+    mapArrayRecursively: function (arr, fn, context) {
         if (!this.isArray(arr)) {
             return null;
         }
@@ -309,7 +314,7 @@ maptalks.Util = {
         return result;
     },
 
-    indexOfArray:function (obj, arr) {
+    indexOfArray: function (obj, arr) {
         if (!maptalks.Util.isArrayHasData(arr)) {
             return -1;
         }
@@ -332,7 +337,7 @@ maptalks.Util = {
      * @param  {Object} b
      * @return {Boolean}
      */
-    objEqual:function (a, b) {
+    objEqual: function (a, b) {
         return maptalks.Util._objEqual(a, b);
     },
 
@@ -343,11 +348,11 @@ maptalks.Util = {
      * @param  {Object} b
      * @return {Boolean}
      */
-    objDeepEqual:function (a, b) {
+    objDeepEqual: function (a, b) {
         return maptalks.Util._objEqual(a, b, true);
     },
 
-    _objEqual:function (a, b, isDeep) {
+    _objEqual: function (a, b, isDeep) {
         function getKeys(obj) {
             if (Object.keys) {
                 return Object.keys(obj);
@@ -364,7 +369,9 @@ maptalks.Util = {
             return false;
         }
         // an identical "prototype" property.
-        if (a.prototype !== b.prototype) { return false; }
+        if (a.prototype !== b.prototype) {
+            return false;
+        }
         var ka, kb, key, i;
         try {
             ka = getKeys(a);
@@ -400,7 +407,7 @@ maptalks.Util = {
      * @param  {Number} num - num to round
      * @return {Number}
      */
-    round:function (num) {
+    round: function (num) {
         if (num > 0) {
             return (0.5 + num) << 0;
         } else {
@@ -414,7 +421,7 @@ maptalks.Util = {
      * @param  {Object} obj     - object
      * @return {Boolean}
      */
-    isCoordinate:function (obj) {
+    isCoordinate: function (obj) {
         if (obj instanceof maptalks.Coordinate) {
             return true;
         }
@@ -428,7 +435,7 @@ maptalks.Util = {
      * @param  {Object}  obj - object
      * @return {Boolean}
      */
-    isNil:function (obj) {
+    isNil: function (obj) {
         return obj == null;
     },
 
@@ -437,7 +444,7 @@ maptalks.Util = {
      * @param  {Object}  val - val
      * @return {Boolean}
      */
-    isNumber:function (val) {
+    isNumber: function (val) {
         return (typeof val === 'number') && !isNaN(val);
     },
 
@@ -455,7 +462,7 @@ maptalks.Util = {
      * @param {Object} obj
      * @return {Boolean} true|false
      */
-    isArrayHasData:function (obj) {
+    isArrayHasData: function (obj) {
         return this.isArray(obj) && obj.length > 0;
     },
 
@@ -464,8 +471,10 @@ maptalks.Util = {
      * @param {Object} obj
      * @return {Boolean} true|false
      */
-    isArray:function (obj) {
-        if (!obj) { return false; }
+    isArray: function (obj) {
+        if (!obj) {
+            return false;
+        }
         if (Array.isArray) {
             return Array.isArray(obj);
         }
@@ -477,8 +486,10 @@ maptalks.Util = {
      * @param {Object} _str
      * @return {Boolean} true|false
      */
-    isString:function (_str) {
-        if (maptalks.Util.isNil(_str)) { return false; }
+    isString: function (_str) {
+        if (maptalks.Util.isNil(_str)) {
+            return false;
+        }
         return typeof _str === 'string' || (_str.constructor !== null && _str.constructor === String);
     },
 
@@ -487,7 +498,7 @@ maptalks.Util = {
      * @param {Object} _func
      * @return {Boolean} true|false
      */
-    isFunction:function (_func) {
+    isFunction: function (_func) {
         if (this.isNil(_func)) {
             return false;
         }
@@ -499,7 +510,7 @@ maptalks.Util = {
      * @param  {String}  url - url to check
      * @return {Boolean}
      */
-    isURL:function (url) {
+    isURL: function (url) {
         if (!url) {
             return false;
         }
@@ -516,7 +527,7 @@ maptalks.Util = {
     // TODO: url(x)
     cssUrlReWithQuote: /^url\(([\'\"])(.+)\1\)$/i,
 
-    cssUrlRe:/^url\(([^\'\"].*[^\'\"])\)$/i,
+    cssUrlRe: /^url\(([^\'\"].*[^\'\"])\)$/i,
 
     isCssUrl: function (str) {
         if (!maptalks.Util.isString(str)) {
@@ -536,7 +547,8 @@ maptalks.Util = {
     },
 
     extractCssUrl: function (str) {
-        var test = maptalks.Util.isCssUrl(str), matches;
+        var test = maptalks.Util.isCssUrl(str),
+            matches;
         if (test === 3) {
             return str;
         }
@@ -552,7 +564,7 @@ maptalks.Util = {
         }
     },
 
-    b64chrs : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+    b64chrs: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 
     /**
      * btoa or a polyfill in old browsers. <br>
@@ -563,20 +575,20 @@ maptalks.Util = {
      * @example
      *     var encodedData = maptalks.Util.btoa(stringToEncode);
      */
-    btoa:function (input) {
+    btoa: function (input) {
         if ((typeof window !== 'undefined') && window.btoa) {
             return window.btoa(input);
         }
         var str = String(input);
         for (
-          // initialize result and counter
-          var block, charCode, idx = 0, map = maptalks.Util.b64chrs, output = '';
-          // if the next str index does not exist:
-          //   change the mapping table to "="
-          //   check if d has no fractional digits
-          str.charAt(idx | 0) || (map = '=', idx % 1);
-          // "8 - idx % 1 * 8" generates the sequence 2, 4, 6, 8
-          output += map.charAt(63 & block >> 8 - idx % 1 * 8)
+            // initialize result and counter
+            var block, charCode, idx = 0, map = maptalks.Util.b64chrs, output = '';
+            // if the next str index does not exist:
+            //   change the mapping table to "="
+            //   check if d has no fractional digits
+            str.charAt(idx | 0) || (map = '=', idx % 1);
+            // "8 - idx % 1 * 8" generates the sequence 2, 4, 6, 8
+            output += map.charAt(63 & block >> 8 - idx % 1 * 8)
         ) {
             charCode = str.charCodeAt(idx += 3 / 4);
             if (charCode > 0xFF) {
@@ -608,7 +620,7 @@ maptalks.Util = {
         document.head.appendChild(script);
     },
 
-    lowerSymbolOpacity:function (symbol, ratio) {
+    lowerSymbolOpacity: function (symbol, ratio) {
         function s(_symbol, _ratio) {
             var op = _symbol['opacity'];
             if (maptalks.Util.isNil(op)) {
@@ -632,7 +644,7 @@ maptalks.Util = {
         return lower;
     },
 
-    extendSymbol:function (symbol) {
+    extendSymbol: function (symbol) {
         var sources = Array.prototype.slice.call(arguments, 1);
         if (!sources || !sources.length) {
             sources = [{}];
@@ -737,8 +749,8 @@ maptalks.Util = {
             }
             for (ii = 0; ii < props.length; ii++) {
                 res = symbol[props[ii]];
-                if (maptalks.Util.isFunctionDefinition(res)) {
-                    res = maptalks.Util.getFunctionTypeResources(res);
+                if (utils.isFunctionDefinition(res)) {
+                    res = utils.getFunctionTypeResources(res);
                 }
                 if (!res) {
                     continue;
@@ -755,10 +767,10 @@ maptalks.Util = {
                 }
             }
             if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-                w = maptalks.Util.isFunctionDefinition(symbol['markerWidth']) ? 200 : symbol['markerWidth'];
-                h = maptalks.Util.isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
-                if (maptalks.Util.isFunctionDefinition(symbol['markerPath'])) {
-                    res = maptalks.Util.getFunctionTypeResources(symbol['markerPath']);
+                w = utils.isFunctionDefinition(symbol['markerWidth']) ? 200 : symbol['markerWidth'];
+                h = utils.isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
+                if (utils.isFunctionDefinition(symbol['markerPath'])) {
+                    res = utils.getFunctionTypeResources(symbol['markerPath']);
                     var path = symbol['markerPath'];
                     for (iii = 0; iii < res.length; iii++) {
                         symbol['markerPath'] = res[iii];
@@ -773,7 +785,7 @@ maptalks.Util = {
         return resources;
     },
 
-     /**
+    /**
      * Convert symbol's resources' urls from relative path to an absolute path.
      * @param  {Object} symbol
      * @private
@@ -800,7 +812,7 @@ maptalks.Util = {
     },
 
     _convertUrlToAbsolute: function (res) {
-        if (maptalks.Util.isFunctionDefinition(res)) {
+        if (utils.isFunctionDefinition(res)) {
             var stops = res.stops;
             for (var i = 0; i < stops.length; i++) {
                 stops[i][1] = maptalks.Util._convertUrlToAbsolute(stops[i][1]);
@@ -825,7 +837,7 @@ maptalks.Util = {
             return stack.slice(0, 3).join('/') + relative;
         } else {
             stack.pop(); // remove current file name (or empty string)
-                         // (omit if "base" is the current folder without trailing slash)
+            // (omit if "base" is the current folder without trailing slash)
             for (var i = 0; i < parts.length; i++) {
                 if (parts[i] === '.')
                     continue;
@@ -859,13 +871,15 @@ maptalks.Util = {
         for (var i = 0; i < styles.length; i++) {
             if (styles[i]['filter'] === true) {
                 compiled.push({
-                    'filter' : function () { return true; },
-                    'symbol' : styles[i].symbol
+                    'filter': function () {
+                        return true;
+                    },
+                    'symbol': styles[i].symbol
                 });
             } else {
                 compiled.push({
-                    'filter' : maptalks.Util.createFilter(styles[i]['filter']),
-                    'symbol' : styles[i].symbol
+                    'filter': utils.createFilter(styles[i]['filter']),
+                    'symbol': styles[i].symbol
                 });
             }
         }
@@ -877,7 +891,7 @@ maptalks.Util = {
 maptalks.Util.GUID = maptalks.Util.UID;
 
 
-    //RequestAnimationFrame, inspired by Leaflet
+//RequestAnimationFrame, inspired by Leaflet
 (function () {
     if (maptalks.node) {
         maptalks.Util.requestAnimFrame = function (fn) {
@@ -892,7 +906,7 @@ maptalks.Util.GUID = maptalks.Util.UID;
     var lastTime = 0;
 
 
-        // fallback for IE 7-8
+    // fallback for IE 7-8
     function timeoutDefer(fn) {
         var time = +new Date(),
             timeToCall = Math.max(0, 16 - (time - lastTime));
@@ -900,18 +914,23 @@ maptalks.Util.GUID = maptalks.Util.UID;
         lastTime = time + timeToCall;
         return setTimeout(fn, timeToCall);
     }
+
     function getPrefixed(name) {
         return window['webkit' + name] || window['moz' + name] || window['ms' + name];
     }
     if (typeof (window) != 'undefined') {
-            // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+        // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 
         requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
         cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
-                           getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
+            getPrefixed('CancelRequestAnimationFrame') || function (id) {
+                window.clearTimeout(id);
+            };
     } else {
         requestFn = timeoutDefer;
-        cancelFn =  function (id) { clearTimeout(id); };
+        cancelFn = function (id) {
+            clearTimeout(id);
+        };
     }
     maptalks.Util.requestAnimFrame = function (fn) {
         return requestFn(fn);
@@ -923,3 +942,5 @@ maptalks.Util.GUID = maptalks.Util.UID;
         }
     };
 })();
+
+export default maptalks.Util;

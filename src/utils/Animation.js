@@ -14,13 +14,11 @@ maptalks.Animation = {
      * @property {Number} speed.normal  - 1000ms
      * @property {Number} speed.fast    - 500ms
      */
-    speed:{
-        'slow'   : 2000,
-        'normal' : 1000,
-        'fast'   : 500
+    speed: {
+        'slow': 2000,
+        'normal': 1000,
+        'fast': 500
     },
-
-
 
     /**
      * resolve styles for animation, get a style group of start style, styles to animate and end styles.
@@ -28,7 +26,7 @@ maptalks.Animation = {
      * @return {Object[]}  styles resolved
      * @private
      */
-    _resolveStyles:function (styles) {
+    _resolveStyles: function (styles) {
         if (!styles) {
             return null;
         }
@@ -37,7 +35,9 @@ maptalks.Animation = {
             if (!maptalks.Util.isArray(child)) {
                 return maptalks.Animation._resolveStyles(child);
             }
-            var start = [], d = [], dest = [];
+            var start = [],
+                d = [],
+                dest = [];
             for (var i = 0; i < child.length; i++) {
                 var styles = maptalks.Animation._resolveStyles(child[i]);
                 if (styles) {
@@ -104,7 +104,9 @@ maptalks.Animation = {
             return false;
         }
 
-        var d = {}, start = {}, dest = {};
+        var d = {},
+            start = {},
+            dest = {};
         for (var p in styles) {
             if (styles.hasOwnProperty(p)) {
                 var values = styles[p];
@@ -131,12 +133,14 @@ maptalks.Animation = {
      * @param  {Object} [options.easing=null]  - animation easing
      * @return {Function} framing function helps to generate animation frames.
      */
-    framing:function (styles, options) {
+    framing: function (styles, options) {
         if (!options) {
             options = {};
         }
         var easing = options['easing'] ? maptalks.animation.Easing[options['easing']] : maptalks.animation.Easing.linear;
-        if (!easing) { easing = maptalks.animation.Easing.linear; }
+        if (!easing) {
+            easing = maptalks.animation.Easing.linear;
+        }
         var dStyles, startStyles, destStyles;
         styles = maptalks.Animation._resolveStyles(styles);
         if (styles) {
@@ -155,7 +159,8 @@ maptalks.Animation = {
                         result[p] = _startStyles[p];
                         continue;
                     }
-                    var s = _startStyles[p], d = _dStyles[p];
+                    var s = _startStyles[p],
+                        d = _dStyles[p];
                     if (maptalks.Util.isNumber(d)) {
                         //e.g. radius, width, height
                         result[p] = s + delta * d;
@@ -183,21 +188,21 @@ maptalks.Animation = {
             var state, d;
             if (elapsed < 0) {
                 state = {
-                    'playState' : 'idle',
-                    'delta'   : 0
+                    'playState': 'idle',
+                    'delta': 0
                 };
                 d = startStyles;
-            } else if (elapsed <  duration) {
+            } else if (elapsed < duration) {
                 var delta = easing(elapsed / duration);
                 state = {
-                    'playState' : 'running',
-                    'delta' : delta
+                    'playState': 'running',
+                    'delta': delta
                 };
                 d = deltaStyles(delta, startStyles, dStyles);
             } else {
                 state = {
-                    'playState' : 'finished',
-                    'delta' : 1
+                    'playState': 'finished',
+                    'delta': 1
                 };
                 d = destStyles;
             }
@@ -208,7 +213,7 @@ maptalks.Animation = {
 
     },
 
-    _requestAnimFrame:function (fn) {
+    _requestAnimFrame: function (fn) {
         if (!this._frameQueue) {
             this._frameQueue = [];
         }
@@ -216,13 +221,13 @@ maptalks.Animation = {
         this._a();
     },
 
-    _a:function () {
+    _a: function () {
         if (!this._animationFrameId) {
             this._animationFrameId = maptalks.Util.requestAnimFrame(maptalks.Util.bind(maptalks.Animation._run, maptalks.Animation));
         }
     },
 
-    _run:function () {
+    _run: function () {
         if (this._frameQueue.length) {
             var running = this._frameQueue;
             this._frameQueue = [];
@@ -244,7 +249,7 @@ maptalks.Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {maptalks.animation.Player} player
      */
-    animate : function (styles, options, step) {
+    animate: function (styles, options, step) {
         if (!options) {
             options = {};
         }
@@ -273,19 +278,23 @@ maptalks.animation.Player = function (animation, options, step) {
     this.finished = false;
 };
 
-maptalks.Util.extend(maptalks.animation.Player.prototype, /** @lends maptalks.animation.Player.prototype */{
-    _prepare:function () {
+maptalks.Util.extend(maptalks.animation.Player.prototype, /** @lends maptalks.animation.Player.prototype */ {
+    _prepare: function () {
         var options = this._options;
         var duration = options['speed'];
-        if (maptalks.Util.isString(duration)) { duration = maptalks.Animation.speed[duration]; }
-        if (!duration) { duration = maptalks.Animation.speed['normal']; }
+        if (maptalks.Util.isString(duration)) {
+            duration = maptalks.Animation.speed[duration];
+        }
+        if (!duration) {
+            duration = maptalks.Animation.speed['normal'];
+        }
         this.duration = duration;
     },
     /**
      * Start or resume the animation
      * @return {maptalks.animation.Player} this
      */
-    play:function () {
+    play: function () {
         if (this.playState !== 'idle' && this.playState !== 'paused') {
             return this;
         }
@@ -310,7 +319,7 @@ maptalks.Util.extend(maptalks.animation.Player.prototype, /** @lends maptalks.an
      * Pause the animation
      * @return {maptalks.animation.Player} this
      */
-    pause:function () {
+    pause: function () {
         this.playState = 'paused';
         //this.duration = this.duration - this.currentTime;
         return this;
@@ -319,7 +328,7 @@ maptalks.Util.extend(maptalks.animation.Player.prototype, /** @lends maptalks.an
      * Cancel the animation play and ready to play again
      * @return {maptalks.animation.Player} this
      */
-    cancel:function () {
+    cancel: function () {
         this.playState = 'idle';
         this.finished = false;
         return this;
@@ -328,15 +337,15 @@ maptalks.Util.extend(maptalks.animation.Player.prototype, /** @lends maptalks.an
      * Finish the animation play, and can't be played any more.
      * @return {maptalks.animation.Player} this
      */
-    finish:function () {
+    finish: function () {
         this.playState = 'finished';
         this.finished = true;
         return this;
     },
-    reverse:function () {
+    reverse: function () {
 
     },
-    _run:function () {
+    _run: function () {
         if (this.playState === 'finished' || this.playState === 'paused') {
             return;
         }
@@ -387,54 +396,54 @@ maptalks.Util.extend(maptalks.animation.Player.prototype, /** @lends maptalks.an
  * @protected
  */
 maptalks.animation.Easing = {
-        /**
-         * Start slow and speed up.
-         * @param {number} t Input between 0 and 1.
-         * @return {number} Output between 0 and 1.
-         */
-    in : function (t) {
+    /**
+     * Start slow and speed up.
+     * @param {number} t Input between 0 and 1.
+     * @return {number} Output between 0 and 1.
+     */
+    in: function (t) {
         return Math.pow(t, 2);
     },
 
 
-        /**
-         * Start fast and slow down.
-         * @param {number} t Input between 0 and 1.
-         * @return {number} Output between 0 and 1.
-         */
-    out : function (t) {
+    /**
+     * Start fast and slow down.
+     * @param {number} t Input between 0 and 1.
+     * @return {number} Output between 0 and 1.
+     */
+    out: function (t) {
         return 1 - maptalks.animation.Easing.in(1 - t);
     },
 
 
-        /**
-         * Start slow, speed up, and then slow down again.
-         * @param {number} t Input between 0 and 1.
-         * @return {number} Output between 0 and 1.
-         */
-    inAndOut : function (t) {
+    /**
+     * Start slow, speed up, and then slow down again.
+     * @param {number} t Input between 0 and 1.
+     * @return {number} Output between 0 and 1.
+     */
+    inAndOut: function (t) {
         return 3 * t * t - 2 * t * t * t;
     },
 
 
-        /**
-         * Maintain a constant speed over time.
-         * @param {number} t Input between 0 and 1.
-         * @return {number} Output between 0 and 1.
-         */
-    linear : function (t) {
+    /**
+     * Maintain a constant speed over time.
+     * @param {number} t Input between 0 and 1.
+     * @return {number} Output between 0 and 1.
+     */
+    linear: function (t) {
         return t;
     },
 
 
-        /**
-         * Start slow, speed up, and at the very end slow down again.  This has the
-         * same general behavior as {@link inAndOut}, but the final slowdown
-         * is delayed.
-         * @param {number} t Input between 0 and 1.
-         * @return {number} Output between 0 and 1.
-         */
-    upAndDown : function (t) {
+    /**
+     * Start slow, speed up, and at the very end slow down again.  This has the
+     * same general behavior as {@link inAndOut}, but the final slowdown
+     * is delayed.
+     * @param {number} t Input between 0 and 1.
+     * @return {number} Output between 0 and 1.
+     */
+    upAndDown: function (t) {
         if (t < 0.5) {
             return maptalks.animation.Easing.inAndOut(2 * t);
         } else {

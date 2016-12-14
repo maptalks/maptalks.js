@@ -1,4 +1,4 @@
-maptalks.Canvas = {
+const Canvas = {
 
     createCanvas:function (width, height, canvasClass) {
         var canvas;
@@ -351,8 +351,8 @@ maptalks.Canvas = {
             var capmin = function (a, b) { return Math.min(a, b); };
             var capmax = function (a, b) { return Math.max(a, b); };
 
-            var checkX = {thereYet: gt, cap: capmin};
-            var checkY = {thereYet: gt, cap: capmin};
+            var checkX = { thereYet: gt, cap: capmin };
+            var checkY = { thereYet: gt, cap: capmin };
 
             if (fromY - toY > 0) {
                 checkY.thereYet = lt;
@@ -626,3 +626,5 @@ maptalks.Canvas = {
         return ctrlPts;
     }
 };
+
+export default Canvas;
