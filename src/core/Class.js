@@ -1,3 +1,13 @@
+function extend(dest) { // (Object[, Object, ...]) ->
+    for (var i = 1; i < arguments.length; i++) {
+        var src = arguments[i];
+        for (var k in src) {
+            dest[k] = src[k];
+        }
+    }
+    return dest;
+}
+
 /**
  * OOP facilities of the library. <br/>
  *
@@ -7,6 +17,7 @@
  */
 class Class {
     constructor() {
+        this.options = Object.create(this.options);
         this.callInitHooks();
     }
 
@@ -30,6 +41,41 @@ class Class {
                 hooks[i].call(this);
             }
         }
+    }
+
+    setOptions(options) {
+        for (let i in options) {
+            this.options[i] = options[i];
+        }
+        return this;
+    }
+
+    config(conf) {
+        if (!conf) {
+            return extend({}, this.options);
+        } else {
+            if (arguments.length === 2) {
+                let t = {};
+                t[conf] = arguments[1];
+                conf = t;
+            }
+            for (let i in conf) {
+                this.options[i] = conf[i];
+                // enable/disable handler
+                // if (this[i] && (this[i] instanceof maptalks.Handler)) {
+                //     if (conf[i]) {
+                //         this[i].enable();
+                //     } else {
+                //         this[i].disable();
+                //     }
+                // }
+            }
+            // callback when set config
+            if (this.onConfig) {
+                this.onConfig(conf);
+            }
+        }
+        return this;
     }
 
     /**
@@ -68,7 +114,12 @@ class Class {
      * @static
      */
     static mergeOptions(options) {
-        maptalks.Util.extend(this.prototype.options, options);
+        const proto = this.prototype;
+        const parentProto = Object.getPrototypeOf(proto);
+        if (!proto.options || proto.options === parentProto.options) {
+            proto.options = proto.options ? Object.create(proto.options) : {};
+        }
+        extend(proto.options, options);
         return this;
     }
 }
