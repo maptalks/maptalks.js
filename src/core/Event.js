@@ -4,7 +4,7 @@
  * @memberOf maptalks
  * @name Eventable
  */
-maptalks.Eventable = {
+const Eventable = (Base) => class extends Base {
     /**
      * Register a handler function to be called whenever this event is fired.
      *
@@ -15,7 +15,7 @@ maptalks.Eventable = {
      * @example
      * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
      */
-    on: function (eventsOn, handler, context) {
+    on(eventsOn, handler, context) {
         if (!eventsOn || !handler) { return this; }
         if (!maptalks.Util.isString(eventsOn)) {
             return this._switch('on', eventsOn, handler);
@@ -48,7 +48,7 @@ maptalks.Eventable = {
             });
         }
         return this;
-    },
+    }
 
     /**
      * Same as on, except the listener will only get fired once and then removed.
@@ -60,7 +60,7 @@ maptalks.Eventable = {
      * @example
      * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
      */
-    once: function (eventTypes, handler, context) {
+    once(eventTypes, handler, context) {
         if (!maptalks.Util.isString(eventTypes)) {
             var once = {};
             for (var p in eventTypes) {
@@ -75,9 +75,9 @@ maptalks.Eventable = {
             this.on(evetTypes[i], this._wrapOnceHandler(evetTypes[i], handler, context));
         }
         return this;
-    },
+    }
 
-    _wrapOnceHandler: function (evtType, handler, context) {
+    _wrapOnceHandler(evtType, handler, context) {
         var me = this;
         var called = false;
         return function onceHandler() {
@@ -92,7 +92,7 @@ maptalks.Eventable = {
             }
             me.off(evtType, onceHandler, this);
         };
-    },
+    }
 
     /**
      * Unregister the event handler for the specified event types.
@@ -104,7 +104,7 @@ maptalks.Eventable = {
      * @example
      * foo.off('mousedown mousemove mouseup', onMouseEvent, foo);
      */
-    off:function (eventsOff, handler, context) {
+    off(eventsOff, handler, context) {
         if (!eventsOff || !this._eventMap || !handler) { return this; }
         if (!maptalks.Util.isString(eventsOff)) {
             return this._switch('off', eventsOff, handler);
@@ -124,27 +124,27 @@ maptalks.Eventable = {
             }
         }
         return this;
-    },
+    }
 
-    _switch: function (to, eventKeys, context) {
+    _switch(to, eventKeys, context) {
         for (var p in eventKeys) {
             if (eventKeys.hasOwnProperty(p)) {
                 this[to](p, eventKeys[p], context);
             }
         }
         return this;
-    },
+    }
 
-    _clearListeners:function (eventType) {
+    _clearListeners(eventType) {
         if (!this._eventMap || !maptalks.Util.isString(eventType)) { return; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
         if (!handlerChain) { return; }
         this._eventMap[eventType] = null;
-    },
+    }
 
-    _clearAllListeners:function () {
+    _clearAllListeners() {
         this._eventMap = null;
-    },
+    }
 
     /**
      * Returns listener's count registered for the event type.
@@ -154,7 +154,7 @@ maptalks.Eventable = {
      * @param {Object} [context=null]   - the context of the handler
      * @return {Number}
      */
-    listens:function (eventType, handler, context) {
+    listens(eventType, handler, context) {
         if (!this._eventMap || !maptalks.Util.isString(eventType)) { return 0; }
         var handlerChain =  this._eventMap[eventType.toLowerCase()];
         if (!handlerChain || handlerChain.length === 0) { return 0; }
@@ -170,14 +170,14 @@ maptalks.Eventable = {
             }
         }
         return count;
-    },
+    }
 
    /**
     * Copy all the event listener to the target object
     * @param {Object} target - target object to copy to.
     * @return {*} this
     */
-    copyEventListeners: function (target) {
+    copyEventListeners(target) {
         var eventMap = target._eventMap;
         if (!eventMap) { return this; }
         var handlerChain, i, len;
@@ -188,7 +188,7 @@ maptalks.Eventable = {
             }
         }
         return this;
-    },
+    }
 
     /**
      * Fire an event, causing all handlers for that event name to run.
@@ -197,12 +197,12 @@ maptalks.Eventable = {
      * @param  {Object} param     - parameters for the listener function.
      * @return {*} this
      */
-    fire:function () {
+    fire() {
         if (this._eventParent) {
             return this._eventParent.fire.apply(this._eventParent, arguments);
         }
         return this._fire.apply(this, arguments);
-    },
+    }
 
     /**
      * Set a event parent to handle all the events
@@ -210,13 +210,13 @@ maptalks.Eventable = {
      * @return {Any} this
      * @private
      */
-    _setEventParent:function (parent) {
+    _setEventParent(parent) {
         this._eventParent = parent;
         return this;
-    },
+    }
 
 
-    _fire:function (eventType, param) {
+    _fire(eventType, param) {
         if (!this._eventMap) { return this; }
         var handlerChain = this._eventMap[eventType.toLowerCase()];
         if (!handlerChain) { return this; }
@@ -273,3 +273,5 @@ maptalks.Eventable.addEventListener = maptalks.Eventable.on;
  * @name removeEventListener
  */
 maptalks.Eventable.removeEventListener = maptalks.Eventable.off;
+
+export default Eventable;
