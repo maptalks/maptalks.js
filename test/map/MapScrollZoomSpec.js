@@ -18,7 +18,7 @@ describe('#MapScrollZoomSpec', function () {
         container = setups.container;
         map = setups.map;
         delay = map.options['zoomAnimationDuration'];
-        mapPlatform = map._panels.mapPlatform;
+        mapPlatform = map._panels.front;
     });
 
     afterEach(function() {

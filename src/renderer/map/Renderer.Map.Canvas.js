@@ -178,16 +178,16 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
 
     updateMapSize:function (mSize) {
         if (!mSize || this._isCanvasContainer) { return; }
-        var width = mSize['width'],
-            height = mSize['height'];
+        var width = mSize['width'] + 'px',
+            height = mSize['height'] + 'px';
         var panels = this.map._panels;
-        panels.mapWrapper.style.width = width + 'px';
-        panels.mapWrapper.style.height = height + 'px';
-        panels.allLayers.style.width = width + 'px';
-        panels.allLayers.style.height = height + 'px';
-        panels.allLayers.style.perspective = height + 'px';
-        panels.layer.style.width = width + 'px';
-        panels.layer.style.height = height + 'px';
+        panels.mapWrapper.style.width = width;
+        panels.mapWrapper.style.height = height;
+        panels.front.style.width = panels.frontLayer.style.width = width;
+        panels.front.style.height = panels.frontLayer.style.height = height;
+        panels.back.style.width = panels.layer.style.width = width;
+        panels.back.style.height = panels.layer.style.height = height;
+        panels.front.style.perspective = panels.back.style.perspective = height;
         this._updateCanvasSize();
     },
 
@@ -317,20 +317,22 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
 
         var control = createContainer('control', 'maptalks-control', null, true);
         var mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
-        var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;will-change:transform;', true);
+        var front = createContainer('front', 'maptalks-front', 'position:absolute;top:0px;left:0px;will-change:transform;', true);
         var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
         var mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;', true);
-        var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;will-change:transform;');
+        var back = createContainer('back', 'maptalks-back', 'position:absolute;left:0px;top:0px;will-change:transform;');
+        var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;');
         var frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
         var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:relative;border:none;');
 
         containerDOM.appendChild(mapWrapper);
 
-        mapAllLayers.appendChild(layer);
+        back.appendChild(layer);
+        mapAllLayers.appendChild(back);
         mapAllLayers.appendChild(canvasContainer);
-        mapPlatform.appendChild(frontLayer);
-        mapPlatform.appendChild(ui);
-        mapAllLayers.appendChild(mapPlatform);
+        front.appendChild(frontLayer);
+        front.appendChild(ui);
+        mapAllLayers.appendChild(front);
 
         mapWrapper.appendChild(mapAllLayers);
         mapWrapper.appendChild(control);
@@ -557,9 +559,9 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
             };
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-        map.on('_moving _moveend', function () {
+        /*map.on('_moving _moveend', function () {
             this.render();
-        }, this);
+        }, this);*/
     }
 });
 

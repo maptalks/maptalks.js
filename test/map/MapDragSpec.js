@@ -19,7 +19,7 @@ describe('#MapDrag', function () {
             maptalks.Util.requestAnimFrame=function(fn) {
                 fn();
         };
-        happen.mousedown(map._panels.mapPlatform,{
+        happen.mousedown(map._panels.front,{
                 'clientX':point.x,
                 'clientY':point.y
                 });
@@ -38,7 +38,7 @@ describe('#MapDrag', function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        mapPlatform = map._panels.mapPlatform;
+        mapPlatform = map._panels.front;
     });
 
     afterEach(function() {

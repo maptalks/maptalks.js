@@ -110,9 +110,8 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         }
         var map = this.getMap(),
             size = this._extent2D.getSize(),
-            point = this._extent2D.getMin(),
-            containerPoint = map._pointToContainerPoint(point);
-
+            // point = this._extent2D.getMin(),
+            containerPoint = map._pointToContainerPoint(this._northWest);
         return {'image':this.canvas, 'layer':this.layer, 'point': containerPoint, 'size':size};
     },
 
@@ -274,6 +273,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     prepareRender: function () {
         this._renderZoom = this.getMap().getZoom();
         this._extent2D = this.getMap()._get2DExtent();
+        this._northWest = this.getMap()._containerPointToPoint(new maptalks.Point(0, 0));
         this._loaded = false;
     },
 

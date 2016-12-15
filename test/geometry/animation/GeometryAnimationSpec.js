@@ -189,7 +189,7 @@ describe('#GeometryAnimation', function () {
             map.addLayer(layer);
             context.map = map;
             context.layer = layer;
-            canvasContainer = map._panels.mapPlatform;
+            canvasContainer = map._panels.front;
         });
 
         afterEach(function() {

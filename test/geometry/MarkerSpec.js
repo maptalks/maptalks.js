@@ -11,7 +11,7 @@ describe('#Marker', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.mapPlatform;
+        canvasContainer = map._panels.front;
         layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
