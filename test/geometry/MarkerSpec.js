@@ -11,7 +11,7 @@ describe('#Marker', function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.mapPlatform;
+        canvasContainer = map._panels.front;
         layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
@@ -152,6 +152,24 @@ describe('#Marker', function() {
             expect(function() {
                 layer.addGeometry(marker);
             }).to.throwException();
+        });
+
+        it('change symbol in event listener', function (done) {
+            var marker = new maptalks.Marker(map.getCenter());
+            var layer = new maptalks.VectorLayer('vector', [marker]);
+            marker.on('click', function (e) {
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, -5);
+                    done();
+                });
+                e.target.setSymbol({
+                    'markerFile' : 'images/control/2.png'
+                });
+            });
+            layer.once('layerload', function () {
+                marker._fireEvent('click');
+            });
+            map.addLayer(layer);
         });
 
     });

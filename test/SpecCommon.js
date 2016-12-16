@@ -281,7 +281,7 @@ GeoEventsTester.prototype = {
         vector.on(this.eventsToTest, this._eventCallBack );
         layer.addGeometry(vector);
         var point = map.coordinateToContainerPoint(testPoint);
-        var dom = map._panels.mapPlatform;
+        var dom = map._panels.front;
         var domPosition = maptalks.DomUtil.getPagePosition(dom);
         point._add(domPosition);
         this._verifyGeometryEvents(dom,

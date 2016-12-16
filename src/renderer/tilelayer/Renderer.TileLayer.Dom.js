@@ -75,9 +75,9 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
                 this._tiles[p].current = false;
             }
         }
-
+        var i, l;
         var tile;
-        for (var i = tiles.length - 1; i >= 0; i--) {
+        for (i = tiles.length - 1; i >= 0; i--) {
             tile = tiles[i];
             if (this._tiles[tile['id']]) {
                 //tile is already added
@@ -91,7 +91,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         maptalks.DomUtil.removeTransform(container);
         if (queue.length > 0) {
             var fragment = document.createDocumentFragment();
-            for (i = 0; i < queue.length; i++) {
+            for (i = 0, l = queue.length; i < l; i++) {
                 fragment.appendChild(this._loadTile(queue[i]));
             }
             container.appendChild(fragment);
@@ -105,7 +105,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         var zoom = this.getMap().getZoom();
         if (this._levelContainers[zoom]) {
             if (matrices) {
-                maptalks.DomUtil.setTransform(this._levelContainers[zoom], matrices['view']);
+                maptalks.DomUtil.setTransformMatrix(this._levelContainers[zoom], matrices['view']);
             } else {
                 maptalks.DomUtil.removeTransform(this._levelContainers[zoom]);
             }
@@ -133,8 +133,9 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         }
 
         tileImage.style.position = 'absolute';
-        tileImage.style.left = Math.floor(tile['viewPoint'].x) + 'px';
-        tileImage.style.top  = Math.floor(tile['viewPoint'].y) + 'px';
+        var viewPoint = this.getMap()._pointToViewPoint(tile['point']);
+        tileImage.style.left = Math.floor(viewPoint.x) + 'px';
+        tileImage.style.top  = Math.floor(viewPoint.y) + 'px';
 
         tileImage.alt = '';
         tileImage.width = tileSize['width'];
@@ -174,14 +175,14 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
 
         tile.loaded = maptalks.Util.now();
 
+        var map = this.getMap();
+
         if (this._fadeAnimated) {
-            maptalks.Util.cancelAnimFrame(this._fadeFrame);
-            this._fadeFrame = maptalks.Util.requestAnimFrame(maptalks.Util.bind(this._updateOpacity, this));
-        } else {
-            maptalks.DomUtil.setOpacity(tile['el'], 1);
-            tile.active = true;
-            this._pruneTiles();
+            tile['el'].style[maptalks.DomUtil.TRANSITION] = 'opacity 250ms';
         }
+
+        maptalks.DomUtil.setOpacity(tile['el'], 1);
+        tile.active = true;
 
         /**
          * tileload event, fired when layer is 'dom' rendered and a tile is loaded
@@ -205,7 +206,6 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
                 if (this._pruneTimeout) {
                     clearTimeout(this._pruneTimeout);
                 }
-                var map = this.getMap();
                 var timeout = map ? map.options['zoomAnimationDuration'] : 250,
                     pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
@@ -234,37 +234,6 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         done.call(this, 'error', tile);
     },
 
-    _updateOpacity: function () {
-        if (!this.getMap()) { return; }
-
-        // IE doesn't inherit filter opacity properly, so we're forced to set it on tiles
-        if (maptalks.Browser.ielt9) {
-            return;
-        }
-
-        maptalks.DomUtil.setOpacity(this._container, this.layer.options['opacity']);
-
-        var now = maptalks.Util.now(),
-            nextFrame = false;
-        var tile, fade;
-        for (var key in this._tiles) {
-            tile = this._tiles[key];
-            if (!tile.current || !tile.loaded) { continue; }
-
-            fade = Math.min(1, (now - tile.loaded) / 200);
-
-            maptalks.DomUtil.setOpacity(tile['el'], fade);
-            if (!nextFrame && fade < 1) {
-                nextFrame = true;
-            }
-        }
-
-        if (nextFrame) {
-            maptalks.Util.cancelAnimFrame(this._fadeFrame);
-            this._fadeFrame = maptalks.Util.requestAnimFrame(maptalks.Util.bind(this._updateOpacity, this));
-        }
-    },
-
     _noTilesToLoad: function () {
         for (var key in this._tiles) {
             if (!this._tiles[key].loaded) { return false; }
@@ -274,7 +243,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
 
     _pruneTiles: function (pruneLevels) {
         var map = this.getMap();
-        if (!map) {
+        if (!map || map._moving) {
             return;
         }
 
@@ -393,12 +362,12 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
             '_movestart'    : this.onMoveStart
         };
         if (!this._onMapMoving && this.layer.options['renderWhenPanning']) {
-            var rendSpan = this.layer.options['renderSpanWhenPanning'];
-            if (maptalks.Util.isNumber(rendSpan) && rendSpan >= 0) {
-                if (rendSpan > 0) {
+            var interval = this.layer.options['updateInterval'];
+            if (maptalks.Util.isNumber(interval) && interval >= 0) {
+                if (interval > 0) {
                     this._onMapMoving = maptalks.Util.throttle(function () {
                         this.render();
-                    }, rendSpan, this);
+                    }, interval, this);
                 } else {
                     this._onMapMoving = function () {
                         this.render();

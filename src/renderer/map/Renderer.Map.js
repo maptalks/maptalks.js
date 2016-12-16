@@ -72,29 +72,21 @@ maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.rende
      * @return {this | Point}
      */
     offsetPlatform:function (offset) {
-        if (!this.map._panels.mapPlatform) {
+        if (!this.map._panels.front) {
             return this;
         }
         var pos = this.map.offsetPlatform().add(offset)._round();
-        maptalks.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
-        maptalks.DomUtil.offsetDom(this.map._panels.frontLayer, pos);
-        maptalks.DomUtil.offsetDom(this.map._panels.layer, pos);
-        if (maptalks.Browser.mobile) {
-            maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
-        }
+        maptalks.DomUtil.offsetDom(this.map._panels.back, pos);
+        maptalks.DomUtil.offsetDom(this.map._panels.front, pos);
         return this;
     },
 
     resetContainer:function () {
         this.map._resetMapViewPoint();
-        if (this.map._panels.mapPlatform) {
+        if (this.map._panels.front) {
             var pos = new maptalks.Point(0, 0);
-            maptalks.DomUtil.offsetDom(this.map._panels.mapPlatform, pos);
-            maptalks.DomUtil.offsetDom(this.map._panels.layer, pos);
-            maptalks.DomUtil.offsetDom(this.map._panels.frontLayer, pos);
-            if (maptalks.Browser.mobile) {
-                maptalks.DomUtil.offsetDom(this.map._panels.canvasContainer, pos);
-            }
+            maptalks.DomUtil.offsetDom(this.map._panels.back, pos);
+            maptalks.DomUtil.offsetDom(this.map._panels.front, pos);
         }
     },
 

@@ -159,7 +159,15 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
     addGeometry:function (geometries, fitView) {
         if (!geometries) { return this; }
         if (!maptalks.Util.isArray(geometries)) {
-            return this.addGeometry([geometries], fitView);
+            var count = arguments.length;
+            var last = arguments[count - 1];
+            geometries = Array.prototype.slice.call(arguments, 0, count - 1);
+            fitView = last;
+            if (last instanceof maptalks.Geometry) {
+                geometries.push(last);
+                fitView = false;
+            }
+            return this.addGeometry(geometries, fitView);
         } else if (!maptalks.Util.isArrayHasData(geometries)) {
             return this;
         }

@@ -23,7 +23,7 @@ describe('#Map', function () {
             subdomains: [1, 2, 3],
             visible : false
         });
-        eventContainer = map._panels.mapPlatform;
+        eventContainer = map._panels.front;
     });
 
     afterEach(function() {

@@ -93,10 +93,11 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
         if (!this._paintParams) {
             return null;
         }
+        var map = this.getMap();
         var matrices = this.getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null;
-        var layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin(),
+        var layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest),
             paintParams = this._paintParams,
             tPaintParams = [], // transformed params
         //refer to Geometry.Canvas
@@ -105,14 +106,16 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
         //convert view points to container points needed by canvas
         if (maptalks.Util.isArray(points)) {
             containerPoints = maptalks.Util.mapArrayRecursively(points, function (point) {
-                var cp = point.substract(layerPoint);
+                // var cp = point.substract(layerPoint);
+                var cp = map._pointToContainerPoint(point)._substract(layerPoint);
                 if (matrix) {
                     return matrix.applyToPointInstance(cp);
                 }
                 return cp;
             });
         } else if (points instanceof maptalks.Point) {
-            containerPoints = points.substract(layerPoint);
+            // containerPoints = points.substract(layerPoint);
+            containerPoints = map._pointToContainerPoint(points)._substract(layerPoint);
             if (matrix) {
                 containerPoints = matrix.applyToPointInstance(containerPoints);
             }

@@ -19,56 +19,46 @@ describe('Spec of Masks', function() {
             center: center
         };
         map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
-            crossOrigin : 'anonymous',
-            baseLayerRenderer : 'canvas',
-            urlTemplate : '/resources/tile.png',
-            subdomains:['a','b','c'],
-            visible : false
-        });
-
-        // map.setBaseLayer(tile);
         context.map = map;
     });
 
     afterEach(function() {
+        map.remove();
         removeContainer(container);
     });
 
     function testMask(layer, done) {
         layer.once('layerload', function() {
-            expect(layer).not.to.be.painted(-7, 0);
+            expect(layer).not.to.be.painted(-6, 0);
             expect(layer).to.be.painted(0, 0, [0, 0, 0]);
             layer.once('layerload', function() {
-                expect(layer).not.to.be.painted(-12, 0);
+                expect(layer).not.to.be.painted(-11, 0);
                 expect(layer).to.be.painted(0, 0, [0, 0, 0]);
                 done();
             });
-            layer.setMask(new maptalks.Circle(map.getCenter(), 10, {
-                symbol : {
-                    'polygonFill' : 'rgba(255, 255, 255, 0.1)'
+            layer.setMask(new maptalks.Marker(map.getCenter(), {
+                'symbol' : {
+                    'markerType' : 'ellipse',
+                    'markerWidth' : 20,
+                    'markerHeight' : 20,
+                    'markerFill' : '#fff',
+                    'markerFillOpacity' : 1,
+                    'markerLineWidth' : 3,
+                    'markerDy' : 5
                 }
             }));
         });
-
-        layer.setMask(new maptalks.Marker(map.getCenter(), {
-            'symbol' : {
-                'markerType' : 'ellipse',
-                'markerWidth' : 10,
-                'markerHeight' : 10,
-                'markerFill' : '#fff',
-                'markerFillOpacity' : 1,
-                'markerLineWidth' : 3,
-                'markerDy' : 5
+        layer.setMask(new maptalks.Circle(map.getCenter(), 5, {
+            symbol : {
+                'polygonFill' : 'rgba(255, 255, 255, 0.1)'
             }
         }));
+
     }
 
     //test tilelayer
     runTests(new maptalks.TileLayer('tile', {
-            crossOrigin : 'anonymous',
-            urlTemplate:'/resources/tile.png',
-            subdomains:['a','b','c']
+            urlTemplate:'/resources/tile.png'
         }), context);
 
     //test vectorlayer

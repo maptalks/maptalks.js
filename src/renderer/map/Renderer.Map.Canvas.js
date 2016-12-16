@@ -36,7 +36,6 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
         if (!this.canvas) {
             this.createCanvas();
         }
-        var zoom = this.map.getZoom();
         var layers = this._getAllLayerToTransform();
 
         if (!this._updateCanvasSize()) {
@@ -50,7 +49,7 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
                 continue;
             }
             var renderer = layers[i]._getRenderer();
-            if (renderer && renderer.getRenderZoom() === zoom) {
+            if (renderer) {
                 var layerImage = this._getLayerImage(layers[i]);
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage);
@@ -178,17 +177,16 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
 
     updateMapSize:function (mSize) {
         if (!mSize || this._isCanvasContainer) { return; }
-        var width = mSize['width'],
-            height = mSize['height'];
+        var width = mSize['width'] + 'px',
+            height = mSize['height'] + 'px';
         var panels = this.map._panels;
-        panels.mapWrapper.style.width = width + 'px';
-        panels.mapWrapper.style.height = height + 'px';
-        // panels.mapPlatform.style.width = width + 'px';
-        // panels.mapPlatform.style.height = height + 'px';
-        panels.canvasContainer.style.width = width + 'px';
-        panels.canvasContainer.style.height = height + 'px';
-        // panels.control.style.width = width + 'px';
-        // panels.control.style.height = height + 'px';
+        panels.mapWrapper.style.width = width;
+        panels.mapWrapper.style.height = height;
+        panels.front.style.width = panels.frontLayer.style.width = width;
+        panels.front.style.height = panels.frontLayer.style.height = height;
+        panels.back.style.width = panels.layer.style.width = width;
+        panels.back.style.height = panels.layer.style.height = height;
+        panels.front.style.perspective = panels.back.style.perspective = height;
         this._updateCanvasSize();
     },
 
@@ -318,27 +316,23 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
 
         var control = createContainer('control', 'maptalks-control', null, true);
         var mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
-        var mapPlatform = createContainer('mapPlatform', 'maptalks-platform', 'position:absolute;top:0px;left:0px;', true);
+        var front = createContainer('front', 'maptalks-front', 'position:absolute;top:0px;left:0px;will-change:transform;', true);
         var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
-        var mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;top:0px;left:0px;');
+        var mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;', true);
+        var back = createContainer('back', 'maptalks-back', 'position:absolute;left:0px;top:0px;will-change:transform;');
         var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;');
         var frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
-        var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:absolute;top:0px;left:0px;border:none;');
-
-        mapPlatform.style.zIndex = 300;
-        frontLayer.style.zIndex = 201;
-        canvasContainer.style.zIndex = 200;
-        layer.style.zIndex = 100;
-        ui.style.zIndex = 300;
-        control.style.zIndex = 400;
+        var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:relative;border:none;');
 
         containerDOM.appendChild(mapWrapper);
 
-        mapPlatform.appendChild(ui);
-        mapWrapper.appendChild(mapPlatform);
-        mapAllLayers.appendChild(layer);
+        back.appendChild(layer);
+        mapAllLayers.appendChild(back);
         mapAllLayers.appendChild(canvasContainer);
-        mapAllLayers.appendChild(frontLayer);
+        front.appendChild(frontLayer);
+        front.appendChild(ui);
+        mapAllLayers.appendChild(front);
+
         mapWrapper.appendChild(mapAllLayers);
         mapWrapper.appendChild(control);
 
@@ -396,7 +390,7 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
         if (layer.options['dx'] || layer.options['dy']) {
             point._add(layer.options['dx'], layer.options['dy']);
         }
-        this.context.drawImage(canvasImage, point.x, point.y);
+        this.context.drawImage(canvasImage, Math.floor(point.x), Math.floor(point.y));
         this.context.globalAlpha = alpha;
         if (this.context.filter !== 'none') {
             this.context.filter = 'none';
@@ -494,6 +488,9 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
         }
         this._resizeFrame = maptalks.Util.requestAnimFrame(
             maptalks.Util.bind(function () {
+                if (this.map._moving || this.map._isBusy()) {
+                    return;
+                }
                 this.map.checkSize();
             }, this)
         );
@@ -561,21 +558,9 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
             };
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-        map.on('_moveend', function () {
-            if (maptalks.Browser.mobile) {
-                maptalks.DomUtil.offsetDom(this.canvas, map.offsetPlatform().multi(-1));
-            }
+        map.on('_moving _moveend', function () {
             this.render();
         }, this);
-        if (!maptalks.Browser.mobile) {
-            map.on('_moving', function () {
-                this.render();
-            }, this);
-        } else {
-            map.on('_zoomend', function () {
-                maptalks.DomUtil.offsetDom(this.canvas, new maptalks.Point(0, 0));
-            }, this);
-        }
     }
 });
 

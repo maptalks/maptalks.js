@@ -123,7 +123,7 @@ maptalks.TileConfig = maptalks.Class.extend(/** @lends maptalks.TileConfig.proto
     _getTileFullIndex:function (res) {
         var ext = this.fullExtent;
         var transformation = this.transformation;
-        var nwIndex = this.getTileIndex(transformation.transform(new maptalks.Coordinate(ext['left'], ext['right']), 1), res);
+        var nwIndex = this.getTileIndex(transformation.transform(new maptalks.Coordinate(ext['left'], ext['top']), 1), res);
         var seIndex = this.getTileIndex(transformation.transform(new maptalks.Coordinate(ext['right'], ext['bottom']), 1), res);
         return new maptalks.Extent(nwIndex, seIndex);
     },
