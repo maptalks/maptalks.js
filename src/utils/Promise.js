@@ -1,4 +1,4 @@
-import { Zousan } from 'zousan';
+import Zousan from 'zousan';
 
 let promise;
 

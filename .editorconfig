@@ -14,7 +14,3 @@ trim_trailing_whitespace = false
 [*.js]
 indent_style = space
 indent_size = 4
-
-[{gulpfile.js, karma.conf.js}]
-indent_style = space
-indent_size = 2

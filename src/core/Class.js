@@ -17,7 +17,7 @@ function extend(dest) { // (Object[, Object, ...]) ->
  */
 class Class {
     constructor() {
-        this.options = Object.create(this.options);
+        // this.options = Object.create(this.options);
         this.callInitHooks();
     }
 
