@@ -798,14 +798,27 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         if (maptalks.Util.isArray(symbol)) {
             var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
-                cookedSymbols.push(maptalks.Util.convertResourceUrl(maptalks.Util.extend({}, symbol[i])));
+                cookedSymbols.push(maptalks.Util.convertResourceUrl(this._checkAndCopySymbol(symbol[i])));
             }
             return cookedSymbols;
         } else if (symbol) {
-            symbol = maptalks.Util.extend({}, symbol);
+            symbol = this._checkAndCopySymbol(symbol);
             return maptalks.Util.convertResourceUrl(symbol);
         }
         return null;
+    },
+
+    _checkAndCopySymbol: function (symbol) {
+        var s = {};
+        var numberProperties = maptalks.Symbolizer.numberProperties;
+        for (var i in symbol) {
+            if (numberProperties[i] && maptalks.Util.isString(symbol[i])) {
+                s[i] = +symbol[i];
+            } else {
+                s[i] = symbol[i];
+            }
+        }
+        return s;
     },
 
     /**
