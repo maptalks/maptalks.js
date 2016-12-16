@@ -15,6 +15,12 @@ var minimist = require('minimist'),
     version = require('./package.json').version;
 var Server = require('karma').Server;
 
+const banner =
+  '/*!\n' +
+  ' * maptalks.js v' + version + '\n' +
+  ' * (c) 2016 MapTalks\n' +
+  ' */';
+
 var knownOptions = {
     string: ['browsers', 'pattern'],
     boolean: 'coverage',
@@ -44,7 +50,7 @@ browsers = browsers.map(function (name) {
 
 var stylesPattern = './assets/css/**/*.css';
 
-// TODO: minify, version
+// TODO: minify
 gulp.task('scripts', function () {
     return rollup({
         entry: 'src/maptalks.js',
@@ -61,6 +67,8 @@ gulp.task('scripts', function () {
     }).then(function (bundle) {
         return bundle.write({
             format: 'iife',
+            moduleName: 'maptalks',
+            banner: banner,
             dest: 'dist/maptalks.js'
         });
     });
@@ -111,8 +119,7 @@ gulp.task('test', ['build'], function (done) {
  */
 gulp.task('tdd', function (done) {
     var karmaConfig = {
-        configFile: path.join(__dirname, 'build/karma.dev.config.js'),
-        browsers: browsers
+        configFile: path.join(__dirname, 'build/karma.dev.config.js')
     };
     if (options.pattern) {
         karmaConfig.client = {

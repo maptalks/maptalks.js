@@ -24,3 +24,5 @@ maptalks.Ajax = Ajax;
 maptalks.Canvas = Canvas;
 maptalks.Matrix = Matrix;
 maptalks.Promise = Promise;
+
+export default maptalks;
