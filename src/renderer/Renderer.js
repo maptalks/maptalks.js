@@ -82,6 +82,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         if (this.onRemove) {
             this.onRemove();
         }
+        delete this._northWest;
         delete this.canvas;
         delete this.context;
         delete this._extent2D;
@@ -99,7 +100,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     },
 
     getCanvasImage:function () {
-        if (!this.canvas) {
+        if (this._renderZoom !== this.getMap().getZoom() || !this.canvas) {
             return null;
         }
         if ((this.layer.isEmpty && this.layer.isEmpty()) || !this._extent2D) {
@@ -145,17 +146,13 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         this.requestMapToRender();
     },
 
-    getRenderZoom: function () {
-        return this._renderZoom;
-    },
-
     /**
      *
      * @param  {ViewPoint} point ViewPoint
      * @return {Boolean}       true|false
      */
     hitDetect:function (point) {
-        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown || (this.layer instanceof maptalks.TileLayer)) {
             return false;
         }
         var extent2D = this.getMap()._get2DExtent();
@@ -271,9 +268,10 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     },
 
     prepareRender: function () {
-        this._renderZoom = this.getMap().getZoom();
-        this._extent2D = this.getMap()._get2DExtent();
-        this._northWest = this.getMap()._containerPointToPoint(new maptalks.Point(0, 0));
+        var map = this.getMap();
+        this._renderZoom = map.getZoom();
+        this._extent2D = map._get2DExtent();
+        this._northWest = map._containerPointToPoint(new maptalks.Point(0, 0));
         this._loaded = false;
     },
 

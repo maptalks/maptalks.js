@@ -17,7 +17,7 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
     initialize:function (layer) {
         this.layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
-        if (!maptalks.node || !this.layer.options['cacheTiles']) {
+        if (!maptalks.node && this.layer.options['cacheTiles']) {
             this._tileCache = new maptalks.TileLayer.TileCache();
         }
         this._tileQueue = {};
@@ -50,7 +50,7 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
             tileSize = layer.getTileSize();
 
         this._extent2D = tileGrid['fullExtent'];
-        this._viewExtent = tileGrid['viewExtent'];
+        this._northWest = tileGrid['northWest'];
         if (!this.canvas) {
             this.createCanvas();
         }
@@ -68,20 +68,20 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
             tile = tiles[i];
             tileId = tiles[i]['id'];
             //如果缓存中已存有瓦片, 则从不再请求而从缓存中读取.
-            cached = tileRended[tileId] || tileCache ? tileCache.get(tileId) : null;
-            tile2DExtent = new maptalks.PointExtent(tile['2dPoint'],
-                                tile['2dPoint'].add(tileSize.toPoint()));
-            if (!this._extent2D.intersects(tile2DExtent)) {
+            cached = tileRended[tileId] || (tileCache ? tileCache.get(tileId) : null);
+            tile2DExtent = new maptalks.PointExtent(tile['point'],
+                                tile['point'].add(tileSize.toPoint()));
+            if (!this._extent2D.intersects(tile2DExtent) || (mask2DExtent && !mask2DExtent.intersects(tile2DExtent))) {
                 continue;
             }
             this._totalTileToLoad++;
             if (cached) {
-                this._drawTile(tile['viewPoint'], cached);
+                this._drawTile(tile['point'], cached);
                 this._tileRended[tileId] = cached;
             } else {
 
                 this._tileToLoadCounter++;
-                this._tileQueue[tileId + '@' + tile['viewPoint'].toString()] = tile;
+                this._tileQueue[tileId + '@' + tile['point'].toString()] = tile;
             }
         }
 
@@ -93,25 +93,6 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
             }
             this._scheduleLoadTileQueue();
         }
-    },
-
-    getCanvasImage:function () {
-        if (this._renderZoom !== this.getMap().getZoom() || !this.canvas) {
-            return null;
-        }
-        var gradualOpacity = null;
-        if (this._gradualLoading && this._totalTileToLoad && this.layer.options['gradualLoading']) {
-            gradualOpacity = ((this._totalTileToLoad - this._tileToLoadCounter) / this._totalTileToLoad) * 1.5;
-            if (gradualOpacity > 1) {
-                gradualOpacity = 1;
-            }
-        }
-        var canvasImage = maptalks.renderer.Canvas.prototype.getCanvasImage.apply(this, arguments);
-        canvasImage['opacity'] = gradualOpacity;
-        return canvasImage;
-        // var size = this._extent2D.getSize();
-        // var point = this._extent2D.getMin();
-        // return {'image':this.canvas, 'layer':this.layer, 'point':this.getMap()._pointToContainerPoint(point), 'size':size, 'opacity':gradualOpacity};
     },
 
     _scheduleLoadTileQueue:function () {
@@ -161,10 +142,7 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
         tileImage.width = tileSize['width'];
         tileImage.height = tileSize['height'];
         tileImage[this.propertyOfTileId] = tileId;
-        tileImage[this.propertyOfPointOnTile] = {
-            'viewPoint' : tile['viewPoint'],
-            '2dPoint' : tile['2dPoint']
-        };
+        tileImage[this.propertyOfPointOnTile] = tile['point'];
         tileImage[this.propertyOfTileZoom] = tile['zoom'];
         tileImage.onload = onTileLoad;
         tileImage.onabort = onTileError;
@@ -181,12 +159,11 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
             return;
         }
         var tileSize = this.layer.getTileSize();
-        var leftTop = this._viewExtent.getMin();
         maptalks.Canvas.image(this.context, tileImage,
-            point.x - leftTop.x, point.y - leftTop.y,
+            Math.floor(point.x - this._northWest.x), Math.floor(point.y - this._northWest.y),
             tileSize['width'], tileSize['height']);
         if (this.layer.options['debug']) {
-            var p = point.substract(leftTop);
+            var p = point.substract(this._northWest);
             this.context.save();
             this.context.strokeStyle = 'rgb(0,0,0)';
             this.context.fillStyle = 'rgb(0,0,0)';
@@ -216,12 +193,12 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
         }
         this._tileToLoadCounter--;
         var point = tileImage[this.propertyOfPointOnTile];
-        this._drawTile(point['viewPoint'], tileImage);
+        this._drawTile(point, tileImage);
 
         if (!maptalks.node) {
             var tileSize = this.layer.getTileSize();
             var mapExtent = this.getMap()._get2DExtent();
-            if (mapExtent.intersects(new maptalks.PointExtent(point['2dPoint'], point['2dPoint'].add(tileSize['width'], tileSize['height'])))) {
+            if (mapExtent.intersects(new maptalks.PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
                 this.requestMapToRender();
             }
         }
@@ -281,18 +258,7 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
         });
     },
 
-    onMoveEnd: function () {
-        this._gradualLoading = false;
-        maptalks.renderer.Canvas.prototype.onMoveEnd.apply(this, arguments);
-    },
-
-    onZoomEnd: function () {
-        this._gradualLoading = true;
-        maptalks.renderer.Canvas.prototype.onZoomEnd.apply(this, arguments);
-    },
-
     onRemove: function () {
-        delete this._viewExtent;
         delete this._mapRender;
         delete this._tileCache;
         delete this._tileRended;

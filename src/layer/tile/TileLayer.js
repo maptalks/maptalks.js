@@ -52,7 +52,7 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
 
         'cacheTiles' : true,
 
-        'keepBuffer' : 1,
+        'keepBuffer' : null,
 
         'baseLayerRenderer' : (function () { return maptalks.node ? 'canvas' : 'dom'; })()
     },
@@ -148,8 +148,7 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
 
         var tileSize = this.getTileSize(),
             zoom = map.getZoom(),
-            res = map._getResolution(),
-            mapViewPoint = map.offsetPlatform();
+            res = map._getResolution();
 
         var mapW = map.width,
             mapH = map.height,
@@ -161,45 +160,34 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
          //计算中心瓦片的top和left偏移值
             centerPoint = new maptalks.Point(mapW / 2 - centerTile['offsetLeft'],
                                                 mapH / 2 - centerTile['offsetTop']);
+        var center2D = map._containerPointToPoint(centerPoint);
 
-        var keepBuffer = this.options['keepBuffer'] || 0;
+        var keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
         //中心瓦片上下左右的瓦片数
         var top = Math.ceil(Math.abs(containerCenter.y - containerExtent['ymin'] - centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
             left = Math.ceil(Math.abs(containerCenter.x - containerExtent['xmin'] - centerTile['offsetLeft']) / tileSize['width']) + keepBuffer,
             bottom = Math.ceil(Math.abs(containerExtent['ymax'] - containerCenter.y + centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
             right = Math.ceil(Math.abs(containerExtent['xmax'] - containerCenter.x + centerTile['offsetLeft']) / tileSize['width']) + keepBuffer;
 
-
-        centerPoint._substract(mapViewPoint)._round();
-
         var tiles = [],
-            viewExtent = new maptalks.PointExtent(),
-            fullExtent = new maptalks.PointExtent();
+            fullExtent = new maptalks.PointExtent(),
+            northWest = new maptalks.Point(center2D.x - left * tileSize['width'], center2D.y - top * tileSize['height']);
 
         for (var i = -(left); i < right; i++) {
             for (var j = -(top); j < bottom; j++) {
                 var tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
                     tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
-                    tileLeft = centerPoint.x + tileSize['width'] * i,
-                    tileTop = centerPoint.y + tileSize['height'] * j,
-                    tileId = [tileIndex['y'], tileIndex['x'], zoom, tileLeft, tileTop].join('__'),
-                    tileViewPoint = new maptalks.Point(tileLeft, tileTop),
+                    tileId = [tileIndex['y'], tileIndex['x'], zoom].join('__'),
                     tileDesc = {
                         'url' : tileUrl,
-                        'viewPoint': tileViewPoint,
-                        '2dPoint' : map._viewPointToPoint(tileViewPoint),
+                        'point' : new maptalks.Point(center2D.x + tileSize['width'] * i, center2D.y + tileSize['height'] * j),
                         'id'  : tileId,
                         'zoom' : zoom
                     };
                 tiles.push(tileDesc);
-                viewExtent = viewExtent.combine(new maptalks.PointExtent(
-                        tileDesc['viewPoint'],
-                        tileDesc['viewPoint'].add(tileSize['width'], tileSize['height'])
-                        )
-                    );
-                fullExtent = fullExtent.combine(new maptalks.PointExtent(
-                        tileDesc['2dPoint'],
-                        tileDesc['2dPoint'].add(tileSize['width'], tileSize['height'])
+                fullExtent._combine(new maptalks.PointExtent(
+                        tileDesc['point'],
+                        tileDesc['point'].add(tileSize['width'], tileSize['height'])
                         )
                     );
             }
@@ -207,12 +195,12 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
 
         //sort tiles according to tile's distance to center
         tiles.sort(function (a, b) {
-            return (b['viewPoint'].distanceTo(centerPoint) - a['viewPoint'].distanceTo(centerPoint));
+            return (b['point'].distanceTo(center2D) - a['point'].distanceTo(center2D));
         });
         return {
             'tiles' : tiles,
             'fullExtent' : fullExtent,
-            'viewExtent' : viewExtent
+            'northWest' : northWest
         };
     },
 

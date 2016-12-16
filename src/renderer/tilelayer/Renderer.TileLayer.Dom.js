@@ -133,8 +133,9 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         }
 
         tileImage.style.position = 'absolute';
-        tileImage.style.left = Math.floor(tile['viewPoint'].x) + 'px';
-        tileImage.style.top  = Math.floor(tile['viewPoint'].y) + 'px';
+        var viewPoint = this.getMap()._pointToViewPoint(tile['point']);
+        tileImage.style.left = Math.floor(viewPoint.x) + 'px';
+        tileImage.style.top  = Math.floor(viewPoint.y) + 'px';
 
         tileImage.alt = '';
         tileImage.width = tileSize['width'];

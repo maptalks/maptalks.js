@@ -36,7 +36,6 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
         if (!this.canvas) {
             this.createCanvas();
         }
-        var zoom = this.map.getZoom();
         var layers = this._getAllLayerToTransform();
 
         if (!this._updateCanvasSize()) {
@@ -50,7 +49,7 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
                 continue;
             }
             var renderer = layers[i]._getRenderer();
-            if (renderer && renderer.getRenderZoom() === zoom) {
+            if (renderer) {
                 var layerImage = this._getLayerImage(layers[i]);
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage);
@@ -391,7 +390,7 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
         if (layer.options['dx'] || layer.options['dy']) {
             point._add(layer.options['dx'], layer.options['dy']);
         }
-        this.context.drawImage(canvasImage, point.x, point.y);
+        this.context.drawImage(canvasImage, Math.floor(point.x), Math.floor(point.y));
         this.context.globalAlpha = alpha;
         if (this.context.filter !== 'none') {
             this.context.filter = 'none';
@@ -559,9 +558,9 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
             };
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-        /*map.on('_moving _moveend', function () {
+        map.on('_moving _moveend', function () {
             this.render();
-        }, this);*/
+        }, this);
     }
 });
 
