@@ -530,10 +530,13 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
                 if (map._isBusy() || map._moving || !map.options['hitDetect']) {
                     return;
                 }
-                if (this._hitDetectTimeout) {
-                    maptalks.Util.cancelAnimFrame(this._hitDetectTimeout);
+                if (this._hitDetectFrame) {
+                    maptalks.Util.cancelAnimFrame(this._hitDetectFrame);
                 }
-                this._hitDetectTimeout = maptalks.Util.requestAnimFrame(function () {
+                this._hitDetectFrame = maptalks.Util.requestAnimFrame(function () {
+                    if (map._isBusy() || map._moving || !map.options['hitDetect']) {
+                        return;
+                    }
                     var vp = param['point2d'];
                     var layers = map._getLayers();
                     var hit = false,
