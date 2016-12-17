@@ -103,7 +103,6 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
 
     initialize:function (layer) {
         this.layer = layer;
-        this._painted = false;
     },
 
     checkResources: function () {
@@ -165,9 +164,6 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
         return true;
     },
 
-
-
-
     isBlank: function () {
         return this._isBlank;
     },
@@ -216,7 +212,6 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
 
     _prepareToDraw: function () {
         this._isBlank = true;
-        this._painted = true;
         this._hasPointSymbolizer = false;
         this._geosToDraw = [];
     },
@@ -250,34 +245,7 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
                 geo.onZoomEnd();
             });
         }
-        if (!this._painted) {
-            this.render(true);
-        } else {
-            //prepareRender is called in render not in draw.
-            //Thus prepareRender needs to be called here
-            this.prepareRender();
-            this.draw();
-        }
-    },
-
-    onMoveEnd: function () {
-        if (!this._painted) {
-            this.render(true);
-        } else {
-            this.prepareRender();
-            this.draw();
-        }
-    },
-
-    onResize: function () {
-        this.resizeCanvas();
-        if (!this._painted) {
-            this.render(true);
-        } else {
-            delete this._extent2D;
-            this.prepareRender();
-            this.draw();
-        }
+        maptalks.renderer.Canvas.prototype.onZoomEnd.apply(this, arguments);
     },
 
     onRemove:function () {

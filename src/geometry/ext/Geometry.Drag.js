@@ -251,8 +251,8 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
             'draggable': this._mapDraggable
         });
 
-        delete this._autoBorderPanning;
         delete this._mapDraggable;
+        delete this._mapHitDetect;
         if (this._dragStageLayer) {
             this._dragStageLayer.remove();
         }

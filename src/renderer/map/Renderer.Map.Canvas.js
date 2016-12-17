@@ -562,7 +562,9 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
             map.on('_mousemove', this._onMapMouseMove, this);
         }
         map.on('_moving _moveend', function () {
-            this.render();
+            if (!map._pitching) {
+                this.render();
+            }
         }, this);
     }
 });

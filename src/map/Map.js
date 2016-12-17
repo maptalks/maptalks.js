@@ -1317,7 +1317,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     _setCursorToPanel:function (cursor) {
         var panel = this.getMainPanel();
-        if (panel && panel.style) {
+        if (panel && panel.style && panel.style.cursor !== cursor) {
             panel.style.cursor = cursor;
         }
     },
