@@ -1,3 +1,8 @@
+import Browser from './Browser';
+import Util from './Util';
+import StringUtil from './StringUtil';
+import Point from 'geo/Point';
+import Size from 'geo/Size';
 
 /**
  * DOM utilities used internally.
@@ -8,17 +13,17 @@
  * @memberOf maptalks
  * @name DomUtil
  */
-maptalks.DomUtil = {
+const DomUtil = {
 
     /**
      * Create a html element.
      * @param {String} tagName
      * @returns {HTMLElement}
      */
-    createEl:function (tagName, className) {
+    createEl: function (tagName, className) {
         var el = document.createElement(tagName);
         if (className) {
-            maptalks.DomUtil.setClass(el, className);
+            DomUtil.setClass(el, className);
         }
         return el;
     },
@@ -30,7 +35,7 @@ maptalks.DomUtil = {
      * @param {HTMLElement} container
      * @return {HTMLElement}
      */
-    createElOn:function (tagName, style, container) {
+    createElOn: function (tagName, style, container) {
         var el = this.createEl(tagName);
         if (style) {
             this.setStyle(el, style);
@@ -45,12 +50,14 @@ maptalks.DomUtil = {
      * Removes a html element.
      * @param {HTMLElement} node
      */
-    removeDomNode:function (node) {
-        if (!node) { return; }
-        if (maptalks.Browser.ielt9 || maptalks.Browser.ie9) {
+    removeDomNode: function (node) {
+        if (!node) {
+            return;
+        }
+        if (Browser.ielt9 || Browser.ie9) {
             //fix memory leak in IE9-
             //http://com.hemiola.com/2009/11/23/memory-leaks-in-ie8/
-            var d = maptalks.DomUtil.createEl('div');
+            var d = DomUtil.createEl('div');
             d.appendChild(node);
             d.innerHTML = '';
             d = null;
@@ -65,15 +72,17 @@ maptalks.DomUtil = {
      * @param {String} typeArr      - event types, seperated by space
      * @param {Function} handler    - listener function
      * @param {Object} context      - function context
-     * @return {maptalks.DomUtil}
      */
-    addDomEvent:function (obj, typeArr, handler, context) {
-        if (!obj || !typeArr || !handler) { return maptalks.DomUtil; }
+    addDomEvent: function (obj, typeArr, handler, context) {
+        if (!obj || !typeArr || !handler) {
+            return;
+        }
         var eventHandler = function (e) {
             if (!e) {
                 e = window.event;
             }
-            return handler.call(context || obj, e);
+            handler.call(context || obj, e);
+            return;
         };
         var types = typeArr.split(' ');
         for (var i = types.length - 1; i >= 0; i--) {
@@ -86,11 +95,14 @@ maptalks.DomUtil = {
                 obj['Z__' + type] = [];
 
             }
-            var hit = maptalks.DomUtil.listensDomEvent(obj, type, handler);
+            var hit = DomUtil.listensDomEvent(obj, type, handler);
             if (hit >= 0) {
-                maptalks.DomUtil.removeDomEvent(obj, type, handler);
+                DomUtil.removeDomEvent(obj, type, handler);
             }
-            obj['Z__' + type].push({callback:eventHandler, src:handler});
+            obj['Z__' + type].push({
+                callback: eventHandler,
+                src: handler
+            });
             if ('addEventListener' in obj) {
                 //滚轮事件的特殊处理
                 if (type === 'mousewheel' && document['mozHidden'] !== undefined) {
@@ -101,7 +113,6 @@ maptalks.DomUtil = {
                 obj.attachEvent('on' + type, eventHandler);
             }
         }
-        return maptalks.DomUtil;
     },
 
     /**
@@ -109,9 +120,8 @@ maptalks.DomUtil = {
      * @param {HTMLElement} obj         - dom element
      * @param {String} typeArr          - event types, separated by space
      * @param {Function} handler        - listening function
-     * @return {maptalks.DomUtil}
      */
-    removeDomEvent:function (obj, typeArr, handler) {
+    removeDomEvent: function (obj, typeArr, handler) {
         function doRemove(type, callback) {
             if ('removeEventListener' in obj) {
                 //mouse wheel in firefox
@@ -123,7 +133,9 @@ maptalks.DomUtil = {
                 obj.detachEvent('on' + type, callback);
             }
         }
-        if (!obj || !typeArr) { return this; }
+        if (!obj || !typeArr) {
+            return;
+        }
         var types = typeArr.split(' ');
         for (var i = types.length - 1; i >= 0; i--) {
             var type = types[i];
@@ -137,17 +149,17 @@ maptalks.DomUtil = {
                     doRemove(handlers[j].callback);
                 }
                 delete obj['Z__' + type];
-                return this;
+                return;
             }
             var hit = this.listensDomEvent(obj, type, handler);
             if (hit < 0) {
-                return this;
+                return;
             }
             var hitHandler = obj['Z__' + type][hit];
             doRemove(type, hitHandler.callback);
             obj['Z__' + type].splice(hit, 1);
         }
-        return this;
+        return;
     },
 
     /**
@@ -157,7 +169,7 @@ maptalks.DomUtil = {
      * @param {Function} handler    - the listening function
      * @return {Number} - the handler's index in the listener chain, returns -1 if not.
      */
-    listensDomEvent:function (obj, type, handler) {
+    listensDomEvent: function (obj, type, handler) {
         if (!obj || !obj['Z__' + type] || !handler) {
             return -1;
         }
@@ -200,7 +212,9 @@ maptalks.DomUtil = {
         dom.onselectstart = function () {
             return false;
         };
-        dom.ondragstart = function () { return false; };
+        dom.ondragstart = function () {
+            return false;
+        };
         dom.setAttribute('unselectable', 'on');
         return this;
     },
@@ -212,10 +226,12 @@ maptalks.DomUtil = {
      * @return {maptalks.Point} - dom element's current position if offset is null.
      */
     offsetDom: function (dom, offset) {
-        if (!dom) { return null; }
+        if (!dom) {
+            return null;
+        }
 
-        if (maptalks.Browser.any3d) {
-            maptalks.DomUtil.setTransform(dom, offset);
+        if (Browser.any3d) {
+            DomUtil.setTransform(dom, offset);
         } else {
             dom.style.left = offset.x + 'px';
             dom.style.top = offset.y + 'px';
@@ -228,10 +244,10 @@ maptalks.DomUtil = {
      * @param  {HTMLElement} obj Dom对象
      * @return {Object}     屏幕坐标
      */
-    getPagePosition:function (obj) {
+    getPagePosition: function (obj) {
         var docEl = document.documentElement;
         var rect = obj.getBoundingClientRect();
-        return new maptalks.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
+        return new Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
     },
 
 
@@ -240,13 +256,13 @@ maptalks.DomUtil = {
      * @param {Event} ev  触发的事件
      * @return {maptalks.Point} left:鼠标在页面上的横向位置, top:鼠标在页面上的纵向位置
      */
-    getEventContainerPoint:function (ev, dom) {
+    getEventContainerPoint: function (ev, dom) {
         if (!ev) {
             ev = window.event;
         }
         var rect = dom.getBoundingClientRect();
 
-        return new maptalks.Point(
+        return new Point(
             ev.clientX - rect.left - dom.clientLeft,
             ev.clientY - rect.top - dom.clientTop);
     },
@@ -256,7 +272,7 @@ maptalks.DomUtil = {
      * @param {HTMLElement} dom dom节点
      * @param {String} strCss 样式字符串
      */
-    setStyle : function (dom, strCss) {
+    setStyle: function (dom, strCss) {
         function endsWith(str, suffix) {
             var l = str.length - suffix.length;
             return l >= 0 && str.indexOf(suffix, l) === l;
@@ -300,7 +316,7 @@ maptalks.DomUtil = {
         if (el.classList !== undefined) {
             return el.classList.contains(name);
         }
-        var className = maptalks.DomUtil.getClass(el);
+        var className = DomUtil.getClass(el);
         return className.length > 0 && new RegExp('(^|\\s)' + name + '(\\s|$)').test(className);
     },
 
@@ -311,13 +327,13 @@ maptalks.DomUtil = {
      */
     addClass: function (el, name) {
         if (el.classList !== undefined) {
-            var classes = maptalks.StringUtil.splitWords(name);
+            var classes = StringUtil.splitWords(name);
             for (var i = 0, len = classes.length; i < len; i++) {
                 el.classList.add(classes[i]);
             }
-        } else if (!maptalks.DomUtil.hasClass(el, name)) {
-            var className = maptalks.DomUtil.getClass(el);
-            maptalks.DomUtil.setClass(el, (className ? className + ' ' : '') + name);
+        } else if (!DomUtil.hasClass(el, name)) {
+            var className = DomUtil.getClass(el);
+            DomUtil.setClass(el, (className ? className + ' ' : '') + name);
         }
     },
 
@@ -330,7 +346,7 @@ maptalks.DomUtil = {
         if (el.classList !== undefined) {
             el.classList.remove(name);
         } else {
-            maptalks.DomUtil.setClass(el, maptalks.StringUtil.trim((' ' + maptalks.DomUtil.getClass(el) + ' ').replace(' ' + name + ' ', ' ')));
+            DomUtil.setClass(el, StringUtil.trim((' ' + DomUtil.getClass(el) + ' ').replace(' ' + name + ' ', ' ')));
         }
     },
 
@@ -340,7 +356,7 @@ maptalks.DomUtil = {
      * @param {String} name class名称
      */
     setClass: function (el, name) {
-        if (maptalks.Util.isNil(el.className.baseVal)) {
+        if (Util.isNil(el.className.baseVal)) {
             el.className = name;
         } else {
             el.className.baseVal = name;
@@ -353,7 +369,7 @@ maptalks.DomUtil = {
      * @retrun {String} class字符串
      */
     getClass: function (el) {
-        return maptalks.Util.isNil(el.className.baseVal) ? el.className : el.className.baseVal;
+        return Util.isNil(el.className.baseVal) ? el.className : el.className.baseVal;
     },
 
     // Borrowed from Leaflet
@@ -366,7 +382,7 @@ maptalks.DomUtil = {
             el.style.opacity = value;
 
         } else if ('filter' in el.style) {
-            maptalks.DomUtil._setOpacityIE(el, value);
+            DomUtil._setOpacityIE(el, value);
         }
     },
 
@@ -380,7 +396,9 @@ maptalks.DomUtil = {
         } catch (e) {
             // don't set opacity to 1 if we haven't already set an opacity,
             // it isn't needed and breaks transparent pngs.
-            if (value === 1) { return; }
+            if (value === 1) {
+                return;
+            }
         }
 
         value = Math.round(value * 100);
@@ -398,11 +416,11 @@ maptalks.DomUtil = {
      * @param  {Element|Canvas} src - source canvas
      * @return {Element|Canvas}     target canvas
      */
-    copyCanvas:function (src) {
+    copyCanvas: function (src) {
         if (maptalks.node) {
             return null;
         }
-        var target = maptalks.DomUtil.createEl('canvas');
+        var target = DomUtil.createEl('canvas');
         target.width = src.width;
         target.height = src.height;
         target.getContext('2d').drawImage(src, 0, 0);
@@ -417,21 +435,23 @@ maptalks.DomUtil = {
      */
     testCanvasSize: (function () {
         if (maptalks.node) {
-            return function () { return true; };
+            return function () {
+                return true;
+            };
         }
-          /**
-           * @type {CanvasRenderingContext2D}
-           */
+        /**
+         * @type {CanvasRenderingContext2D}
+         */
         var context = null;
 
-          /**
-           * @type {ImageData}
-           */
+        /**
+         * @type {ImageData}
+         */
         var imageData = null;
 
         return function (size) {
             if (!context) {
-                var _canvas = maptalks.DomUtil.createEl('canvas');
+                var _canvas = DomUtil.createEl('canvas');
                 _canvas.width = 1;
                 _canvas.height = 1;
                 context = _canvas.getContext('2d');
@@ -492,9 +512,9 @@ maptalks.DomUtil = {
      * @param {maptalks.Point} offset
      */
     setTransform: function (el, offset) {
-        var pos = offset || new maptalks.Point(0, 0);
-        el.style[maptalks.DomUtil.TRANSFORM] =
-            (maptalks.Browser.ie3d ?
+        var pos = offset || new Point(0, 0);
+        el.style[DomUtil.TRANSFORM] =
+            (Browser.ie3d ?
                 'translate(' + pos.x + 'px,' + pos.y + 'px)' :
                 'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)');
 
@@ -502,12 +522,12 @@ maptalks.DomUtil = {
     },
 
     setTransformMatrix: function (el, m) {
-        el.style[maptalks.DomUtil.TRANSFORM] =  m.toCSS();
+        el.style[DomUtil.TRANSFORM] = m.toCSS();
         return this;
     },
 
     removeTransform: function (el) {
-        el.style[maptalks.DomUtil.TRANSFORM] =  null;
+        el.style[DomUtil.TRANSFORM] = null;
         return this;
     },
 
@@ -516,18 +536,18 @@ maptalks.DomUtil = {
     },
 
     measureDom: function (parentTag, dom) {
-        var ruler = maptalks.DomUtil._getDomRuler(parentTag);
-        if (maptalks.Util.isString(dom)) {
+        var ruler = DomUtil._getDomRuler(parentTag);
+        if (Util.isString(dom)) {
             ruler.innerHTML = dom;
         } else {
             ruler.appendChild(dom);
         }
-        var result = new maptalks.Size(ruler.clientWidth, ruler.clientHeight);
-        maptalks.DomUtil.removeDomNode(ruler);
+        var result = new Size(ruler.clientWidth, ruler.clientHeight);
+        DomUtil.removeDomNode(ruler);
         return result;
     },
 
-    _getDomRuler:function (tag) {
+    _getDomRuler: function (tag) {
         var span = document.createElement(tag);
         span.style.cssText = 'position:absolute;left:-10000px;top:-10000px;';
         document.body.appendChild(span);
@@ -537,27 +557,27 @@ maptalks.DomUtil = {
 };
 
 /**
- * Alias for [addDomEvent]{@link maptalks.DomUtil.addDomEvent}
+ * Alias for [addDomEvent]{@link DomUtil.addDomEvent}
  * @param {HTMLElement} obj     - dom element to listen on
  * @param {String} typeArr      - event types, seperated by space
  * @param {Function} handler    - listener function
  * @param {Object} context      - function context
  * @static
  * @function
- * @return {maptalks.DomUtil}
+ * @return {DomUtil}
  */
-maptalks.DomUtil.on = maptalks.DomUtil.addDomEvent;
+DomUtil.on = DomUtil.addDomEvent;
 
 /**
-* Alias for [removeDomEvent]{@link maptalks.DomUtil.removeDomEvent}
-* @param {HTMLElement} obj         - dom element
-* @param {String} typeArr          - event types, separated by space
-* @param {Function} handler        - listening function
-* @static
-* @function
-* @return {maptalks.DomUtil}
-*/
-maptalks.DomUtil.off = maptalks.DomUtil.removeDomEvent;
+ * Alias for [removeDomEvent]{@link DomUtil.removeDomEvent}
+ * @param {HTMLElement} obj         - dom element
+ * @param {String} typeArr          - event types, separated by space
+ * @param {Function} handler        - listening function
+ * @static
+ * @function
+ * @return {DomUtil}
+ */
+DomUtil.off = DomUtil.removeDomEvent;
 
 (function () {
     if (maptalks.node) {
@@ -570,39 +590,39 @@ maptalks.DomUtil.off = maptalks.DomUtil.removeDomEvent;
     /**
      * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
      * @property {String} TRANSFORM
-     * @memberOf maptalks.DomUtil
+     * @memberOf DomUtil
      * @type {String}
      */
-    maptalks.DomUtil.TRANSFORM = maptalks.DomUtil.testProp(
-            ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+    DomUtil.TRANSFORM = DomUtil.testProp(
+        ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
 
     /**
      * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
      * @property {String} TRANSFORMORIGIN
-     * @memberOf maptalks.DomUtil
+     * @memberOf DomUtil
      * @type {String}
      */
-    maptalks.DomUtil.TRANSFORMORIGIN = maptalks.DomUtil.testProp(
-            ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']);
+    DomUtil.TRANSFORMORIGIN = DomUtil.testProp(
+        ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']);
 
     /**
      * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
      * @property {String} TRANSITION
-     * @memberOf maptalks.DomUtil
+     * @memberOf DomUtil
      * @type {String}
      */
-    maptalks.DomUtil.TRANSITION = maptalks.DomUtil.testProp(
-            ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
+    DomUtil.TRANSITION = DomUtil.testProp(
+        ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
 
     /**
      * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
      * @property {String} FILTER
-     * @memberOf maptalks.DomUtil
+     * @memberOf DomUtil
      * @type {String}
      */
-    maptalks.DomUtil.CSSFILTER = maptalks.DomUtil.testProp(
-            ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']);
+    DomUtil.CSSFILTER = DomUtil.testProp(
+        ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']);
 
 })();
 
-
+export default DomUtil;

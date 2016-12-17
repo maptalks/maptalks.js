@@ -1,2 +1,2 @@
 //internal constants.
-maptalks.internalLayerPrefix = '_maptalks__internal_layer_';
+export const internalLayerPrefix = '_maptalks__internal_layer_';

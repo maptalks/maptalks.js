@@ -1,95 +1,98 @@
+import Util from 'core/Util';
+
 /**
  * Represents a 2d point.<br>
  * Can be created in serveral ways:
  * @example
- * var point = new maptalks.Point(1000, 1000);
+ * var point = new Point(1000, 1000);
  * @example
- * var point = new maptalks.Point([1000,1000]);
+ * var point = new Point([1000,1000]);
  * @example
- * var point = new maptalks.Point({x:1000, y:1000});
+ * var point = new Point({x:1000, y:1000});
  * @class
  * @category basic types
  * @param {Number} x - x value
  * @param {Number} y - y value
  */
-maptalks.Point = function (x, y) {
-    if (!maptalks.Util.isNil(x) && !maptalks.Util.isNil(y)) {
-        /**
-         * @property x {Number} - x value
-         */
-        this.x = x;
-        /**
-         * @property y {Number} - y value
-         */
-        this.y = y;
-    } else if (!maptalks.Util.isNil(x.x) && !maptalks.Util.isNil(x.y)) {
-        //对象
-        this.x = x.x;
-        this.y = x.y;
-    } else if (maptalks.Util.isArrayHasData(x)) {
-        this.x = x[0];
-        this.y = x[1];
+export default class Point {
+    constructor(x, y) {
+        if (!Util.isNil(x) && !Util.isNil(y)) {
+            /**
+             * @property x {Number} - x value
+             */
+            this.x = x;
+            /**
+             * @property y {Number} - y value
+             */
+            this.y = y;
+        } else if (!Util.isNil(x.x) && !Util.isNil(x.y)) {
+            //对象
+            this.x = x.x;
+            this.y = x.y;
+        } else if (Util.isArrayHasData(x)) {
+            this.x = x[0];
+            this.y = x[1];
+        }
+        if (this.isNaN()) {
+            throw new Error('point is NaN');
+        }
     }
-    if (this.isNaN()) {
-        throw new Error('point is NaN');
+
+    abs() {
+        return new Point(Math.abs(this.x), Math.abs(this.y));
     }
-};
 
-maptalks.Util.extend(maptalks.Point.prototype, /** @lends maptalks.Point.prototype */{
-    abs: function () {
-        return new maptalks.Point(Math.abs(this.x), Math.abs(this.y));
-    },
-
-    _abs:function () {
+    _abs() {
         this.x = Math.abs(this.x);
         this.y = Math.abs(this.y);
         return this;
-    },
+    }
+
     /**
      * Returns a copy of the point
-     * @return {maptalks.Point} copy
+     * @return {Point} copy
      */
-    copy:function () {
-        return new maptalks.Point(this.x, this.y);
-    },
+    copy() {
+        return new Point(this.x, this.y);
+    }
 
-    _round:function () {
-        this.x = maptalks.Util.round(this.x);
-        this.y = maptalks.Util.round(this.y);
+    _round() {
+        this.x = Util.round(this.x);
+        this.y = Util.round(this.y);
         return this;
-    },
+    }
 
     /**
      * Like math.round, rounding the point's xy.
-     * @return {maptalks.Point} rounded point
+     * @return {Point} rounded point
      */
-    round:function () {
-        return new maptalks.Point(maptalks.Util.round(this.x), maptalks.Util.round(this.y));
-    },
+    round() {
+        return new Point(Util.round(this.x), Util.round(this.y));
+    }
 
     /**
      * Compare with another point to see whether they are equal.
-     * @param {maptalks.Point} c2 - point to compare
+     * @param {Point} c2 - point to compare
      * @return {Boolean}
      */
-    equals:function (p) {
+    equals(p) {
         return this.x === p.x && this.y === p.y;
-    },
+    }
 
     /**
      * Returns the distance between the current and the given point.
-     * @param  {maptalks.Point} point - another point
+     * @param  {Point} point - another point
      * @return {Number} distance
      */
-    distanceTo: function (point) {
+    distanceTo(point) {
         var x = point.x - this.x,
             y = point.y - this.y;
         return Math.sqrt(x * x + y * y);
-    },
+    }
 
     //Destructive add
-    _add: function (x, y) {
-        if (x instanceof maptalks.Point) {
+    _add(x, y) {
+        if (x instanceof Point) {
             this.x += x.x;
             this.y += x.y;
         } else {
@@ -97,27 +100,27 @@ maptalks.Util.extend(maptalks.Point.prototype, /** @lends maptalks.Point.prototy
             this.y += y;
         }
         return this;
-    },
+    }
 
     /**
      * Returns the result of addition of another point.
-     * @param {maptalks.Point} point - point to add
-     * @return {maptalks.Point} result
+     * @param {Point} point - point to add
+     * @return {Point} result
      */
-    add: function (x, y) {
+    add(x, y) {
         var nx, ny;
-        if (x instanceof maptalks.Point) {
+        if (x instanceof Point) {
             nx = this.x + x.x;
             ny = this.y + x.y;
         } else {
             nx = this.x + x;
             ny = this.y + y;
         }
-        return new maptalks.Point(nx, ny);
-    },
+        return new Point(nx, ny);
+    }
 
-    _substract: function (x, y) {
-        if (x instanceof maptalks.Point) {
+    _substract(x, y) {
+        if (x instanceof Point) {
             this.x -= x.x;
             this.y -= x.y;
         } else {
@@ -125,80 +128,80 @@ maptalks.Util.extend(maptalks.Point.prototype, /** @lends maptalks.Point.prototy
             this.y -= y;
         }
         return this;
-    },
+    }
 
     /**
      * Returns the result of subtraction of another point.
-     * @param {maptalks.Point} point - point to substract
-     * @return {maptalks.Point} result
+     * @param {Point} point - point to substract
+     * @return {Point} result
      */
-    substract: function (x, y) {
+    substract(x, y) {
         var nx, ny;
-        if (x instanceof maptalks.Point) {
+        if (x instanceof Point) {
             nx = this.x - x.x;
             ny = this.y - x.y;
         } else {
             nx = this.x - x;
             ny = this.y - y;
         }
-        return new maptalks.Point(nx, ny);
-    },
+        return new Point(nx, ny);
+    }
 
     //破坏性方法
-    _multi: function (n) {
+    _multi(n) {
         this.x *= n;
         this.y *= n;
         return this;
-    },
+    }
 
     /**
      * Returns the result of multiplication of the current point by the given number.
      * @param {Number} n - number to multi
-     * @return {maptalks.Point} result
+     * @return {Point} result
      */
-    multi: function (n) {
-        return new maptalks.Point(this.x * n, this.y * n);
-    },
+    multi(n) {
+        return new Point(this.x * n, this.y * n);
+    }
 
     /**
      * Returns the result of division of the current point by the given number.
      * @param {Number} n - number to div
-     * @return {maptalks.Point} result
+     * @return {Point} result
      */
-    div: function (n) {
+    div(n) {
         return this.multi(1 / n);
-    },
+    }
 
-    _div: function (n) {
+    _div(n) {
         return this._multi(1 / n);
-    },
+    }
 
     /**
      * Whether the point is NaN
      * @return {Boolean}
      */
-    isNaN:function () {
+    isNaN() {
         return isNaN(this.x) || isNaN(this.y);
-    },
+    }
 
     /**
      * Convert the point to a number array [x, y]
      * @return {Number[]} number array
      */
-    toArray:function () {
+    toArray() {
         return [this.x, this.y];
-    },
+    }
 
     /**
      * Convert the point to a json object {x : .., y : ..}
      * @return {Object} json
      */
-    toJSON: function () {
+    toJSON() {
         return {
-            x : this.x,
-            y : this.y
+            x: this.x,
+            y: this.y
         };
-    },
+    }
 
     /**
      * Return the magitude of this point: this is the Euclidean
@@ -206,36 +209,40 @@ maptalks.Util.extend(maptalks.Point.prototype, /** @lends maptalks.Point.prototy
      * coordinates.
      * @return {Number} magnitude
      */
-    mag: function () {
+    mag() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
-    },
+    }
 
     /**
      * Calculate this point but as a unit vector from 0, 0, meaning
      * that the distance from the resulting point to the 0, 0
      * coordinate will be equal to 1 and the angle from the resulting
      * point to the 0, 0 coordinate will be the same as before.
-     * @return {maptalks.Point} unit vector point
+     * @return {Point} unit vector point
      */
-    unit: function () { return this.copy()._unit(); },
+    unit() {
+        return this.copy()._unit();
+    }
 
-    _unit: function () {
+    _unit() {
         this._div(this.mag());
         return this;
-    },
+    }
 
     /**
      * Compute a perpendicular point, where the new y coordinate
      * is the old x coordinate and the new x coordinate is the old y
      * coordinate multiplied by -1
-     * @return {maptalks.Point} perpendicular point
+     * @return {Point} perpendicular point
      */
-    perp: function () { return this.copy()._perp(); },
+    perp() {
+        return this.copy()._perp();
+    }
 
-    _perp: function () {
+    _perp() {
         var y = this.y;
         this.y = this.x;
         this.x = -y;
         return this;
     }
-});
+}

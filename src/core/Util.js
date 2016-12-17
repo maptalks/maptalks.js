@@ -4,9 +4,11 @@
  * @category core
  * @protected
  */
+import { isNode } from '../env';
 import { utils } from '../utils';
+import Coordinate from 'geo/Coordinate';
 
-maptalks.Util = {
+const Util = {
     /**
      * @property {Number} uid
      * @static
@@ -44,7 +46,7 @@ maptalks.Util = {
      */
     setOptions: function (obj, options) {
         if (!obj.hasOwnProperty('options')) {
-            obj.options = obj.options ? maptalks.Util.create(obj.options) : {};
+            obj.options = obj.options ? Util.create(obj.options) : {};
         }
         for (var i in options) {
             obj.options[i] = options[i];
@@ -67,12 +69,11 @@ maptalks.Util = {
      * If in node, a SVG image will be converted to a png file by [svg2img]{@link https://github.com/FuZhenn/node-svg2img}<br>
      * @param  {Image} img  - the image object to load.
      * @param  {Object[]} imgDesc - image's descriptor, it's a array. imgUrl[0] is the url string, imgUrl[1] is the width, imgUrl[2] is the height.
-     * @return maptalks.Util
      */
     loadImage: function (img, imgDesc) {
-        if (!maptalks.node) {
+        if (!isNode) {
             img.src = imgDesc[0];
-            return this;
+            return;
         }
 
         function onError(err) {
@@ -103,9 +104,9 @@ maptalks.Util = {
             w = imgDesc[1],
             h = imgDesc[2];
         try {
-            if (maptalks.Util.isSVG(url) && maptalks.Util.convertSVG) {
-                maptalks.Util.convertSVG(url, w, h, onLoadComplete);
-            } else if (maptalks.Util.isURL(url)) {
+            if (Util.isSVG(url) && Util.convertSVG) {
+                Util.convertSVG(url, w, h, onLoadComplete);
+            } else if (Util.isURL(url)) {
                 //canvas-node的Image对象
                 this._loadRemoteImage(img, url, onLoadComplete);
             } else {
@@ -114,7 +115,6 @@ maptalks.Util = {
         } catch (error) {
             onError(error);
         }
-        return this;
     },
 
     _loadRemoteImage: function (img, url, onComplete) {
@@ -149,19 +149,17 @@ maptalks.Util = {
 
     _loadLocalImage: function (img, url, onComplete) {
         //local file
-        require('fs').readFile(url, onComplete);
+        // require('fs').readFile(url, onComplete);
     },
 
-    fixPNG: function () {
-
-    },
+    fixPNG: function () {},
 
     /**
      * Generate a global UID, not a real UUID, just a auto increment key with a prefix.
      * @return {Number}
      */
     UID: function () {
-        return maptalks.Util.uid++;
+        return Util.uid++;
     },
 
     /**
@@ -170,7 +168,7 @@ maptalks.Util = {
      * @return {Object}
      */
     parseJSON: function (str) {
-        if (!str || !maptalks.Util.isString(str)) {
+        if (!str || !Util.isString(str)) {
             return str;
         }
         return JSON.parse(str);
@@ -249,7 +247,7 @@ maptalks.Util = {
             if (when()) {
                 fn();
             } else {
-                maptalks.Util.requestAnimFrame(exe);
+                Util.requestAnimFrame(exe);
             }
         };
 
@@ -275,12 +273,12 @@ maptalks.Util = {
             p, pp;
         for (var i = 0, len = arr.length; i < len; i++) {
             p = arr[i];
-            if (maptalks.Util.isNil(p)) {
+            if (Util.isNil(p)) {
                 result.push(null);
                 continue;
             }
-            if (maptalks.Util.isArray(p)) {
-                result.push(maptalks.Util.mapArrayRecursively(p, fn, context));
+            if (Util.isArray(p)) {
+                result.push(Util.mapArrayRecursively(p, fn, context));
             } else {
                 pp = context ? fn.call(context, p) : fn(p);
                 result.push(pp);
@@ -299,7 +297,7 @@ maptalks.Util = {
             p, pp;
         for (var i = 0, len = array.length; i < len; i++) {
             p = array[i];
-            if (maptalks.Util.isNil(p)) {
+            if (Util.isNil(p)) {
                 result.push(null);
                 continue;
             }
@@ -310,7 +308,7 @@ maptalks.Util = {
     },
 
     indexOfArray: function (obj, arr) {
-        if (!maptalks.Util.isArrayHasData(arr)) {
+        if (!Util.isArrayHasData(arr)) {
             return -1;
         }
         for (var i = 0, len = arr.length; i < len; i++) {
@@ -333,7 +331,7 @@ maptalks.Util = {
      * @return {Boolean}
      */
     objEqual: function (a, b) {
-        return maptalks.Util._objEqual(a, b);
+        return Util._objEqual(a, b);
     },
 
     /**
@@ -344,7 +342,7 @@ maptalks.Util = {
      * @return {Boolean}
      */
     objDeepEqual: function (a, b) {
-        return maptalks.Util._objEqual(a, b, true);
+        return Util._objEqual(a, b, true);
     },
 
     _objEqual: function (a, b, isDeep) {
@@ -360,7 +358,7 @@ maptalks.Util = {
             }
             return keys;
         }
-        if (maptalks.Util.isNil(a) || maptalks.Util.isNil(b)) {
+        if (Util.isNil(a) || Util.isNil(b)) {
             return false;
         }
         // an identical "prototype" property.
@@ -389,7 +387,7 @@ maptalks.Util = {
         if (isDeep) {
             for (i = ka.length - 1; i >= 0; i--) {
                 key = ka[i];
-                if (!maptalks.Util.objEqual(a[key], b[key])) {
+                if (!Util.objEqual(a[key], b[key])) {
                     return false;
                 }
             }
@@ -417,10 +415,10 @@ maptalks.Util = {
      * @return {Boolean}
      */
     isCoordinate: function (obj) {
-        if (obj instanceof maptalks.Coordinate) {
+        if (obj instanceof Coordinate) {
             return true;
         }
-        /*if (obj && !maptalks.Util.isNil(obj.x) && !maptalks.Util.isNil(obj.y)) {
+        /*if (obj && !Util.isNil(obj.x) && !Util.isNil(obj.y)) {
             return true;
         }*/
         return false;
@@ -482,7 +480,7 @@ maptalks.Util = {
      * @return {Boolean} true|false
      */
     isString: function (_str) {
-        if (maptalks.Util.isNil(_str)) {
+        if (Util.isNil(_str)) {
             return false;
         }
         return typeof _str === 'string' || (_str.constructor !== null && _str.constructor === String);
@@ -525,33 +523,33 @@ maptalks.Util = {
     cssUrlRe: /^url\(([^\'\"].*[^\'\"])\)$/i,
 
     isCssUrl: function (str) {
-        if (!maptalks.Util.isString(str)) {
+        if (!Util.isString(str)) {
             return 0;
         }
         var head = str.slice(0, 6);
         if (head === 'http:/' || head === 'https:') {
             return 3;
         }
-        if (maptalks.Util.cssUrlRe.test(str)) {
+        if (Util.cssUrlRe.test(str)) {
             return 1;
         }
-        if (maptalks.Util.cssUrlReWithQuote.test(str)) {
+        if (Util.cssUrlReWithQuote.test(str)) {
             return 2;
         }
         return 0;
     },
 
     extractCssUrl: function (str) {
-        var test = maptalks.Util.isCssUrl(str),
+        var test = Util.isCssUrl(str),
             matches;
         if (test === 3) {
             return str;
         }
         if (test === 1) {
-            matches = maptalks.Util.cssUrlRe.exec(str);
+            matches = Util.cssUrlRe.exec(str);
             return matches[1];
         } else if (test === 2) {
-            matches = maptalks.Util.cssUrlReWithQuote.exec(str);
+            matches = Util.cssUrlReWithQuote.exec(str);
             return matches[2];
         } else {
             // return as is if not an css url
@@ -568,7 +566,7 @@ maptalks.Util = {
      * @param  {Buffer} input - input string to convert
      * @return {String} ascii
      * @example
-     *     var encodedData = maptalks.Util.btoa(stringToEncode);
+     *     var encodedData = Util.btoa(stringToEncode);
      */
     btoa: function (input) {
         if ((typeof window !== 'undefined') && window.btoa) {
@@ -577,7 +575,7 @@ maptalks.Util = {
         var str = String(input);
         for (
             // initialize result and counter
-            var block, charCode, idx = 0, map = maptalks.Util.b64chrs, output = '';
+            var block, charCode, idx = 0, map = Util.b64chrs, output = '';
             // if the next str index does not exist:
             //   change the mapping table to "="
             //   check if d has no fractional digits
@@ -618,22 +616,22 @@ maptalks.Util = {
     lowerSymbolOpacity: function (symbol, ratio) {
         function s(_symbol, _ratio) {
             var op = _symbol['opacity'];
-            if (maptalks.Util.isNil(op)) {
+            if (Util.isNil(op)) {
                 _symbol['opacity'] = _ratio;
             } else {
                 _symbol['opacity'] *= _ratio;
             }
         }
         var lower;
-        if (maptalks.Util.isArray(symbol)) {
+        if (Util.isArray(symbol)) {
             lower = [];
             for (var i = 0; i < symbol.length; i++) {
-                var d = maptalks.Util.extend({}, symbol[i]);
+                var d = Util.extend({}, symbol[i]);
                 s(d, ratio);
                 lower.push(d);
             }
         } else {
-            lower = maptalks.Util.extend({}, symbol);
+            lower = Util.extend({}, symbol);
             s(lower, ratio);
         }
         return lower;
@@ -644,19 +642,19 @@ maptalks.Util = {
         if (!sources || !sources.length) {
             sources = [{}];
         }
-        if (maptalks.Util.isArray(symbol)) {
+        if (Util.isArray(symbol)) {
             var s, dest, i, ii, l, ll;
             var result = [];
             for (i = 0, l = symbol.length; i < l; i++) {
                 s = symbol[i];
                 dest = {};
                 for (ii = 0, ll = sources.length; ii < ll; ii++) {
-                    if (!maptalks.Util.isArray(sources[ii])) {
-                        maptalks.Util.extend(dest, s, sources[ii] ? sources[ii] : {});
-                    } else if (!maptalks.Util.isNil(sources[ii][i])) {
-                        maptalks.Util.extend(dest, s, sources[ii][i]);
+                    if (!Util.isArray(sources[ii])) {
+                        Util.extend(dest, s, sources[ii] ? sources[ii] : {});
+                    } else if (!Util.isNil(sources[ii][i])) {
+                        Util.extend(dest, s, sources[ii][i]);
                     } else {
-                        maptalks.Util.extend(dest, s ? s : {});
+                        Util.extend(dest, s ? s : {});
                     }
                 }
                 result.push(dest);
@@ -665,7 +663,7 @@ maptalks.Util = {
         } else {
             var args = [{}, symbol];
             args.push.apply(args, sources);
-            return maptalks.Util.extend.apply(maptalks.Util, args);
+            return Util.extend.apply(Util, args);
         }
     },
 
@@ -696,17 +694,17 @@ maptalks.Util = {
 
     getSymbolStamp: function (symbol) {
         var keys = [];
-        if (maptalks.Util.isArray(symbol)) {
+        if (Util.isArray(symbol)) {
             for (var i = 0; i < symbol.length; i++) {
-                keys.push(maptalks.Util.getSymbolStamp(symbol[i]));
+                keys.push(Util.getSymbolStamp(symbol[i]));
             }
             return '[ ' + keys.join(' , ') + ' ]';
         }
         for (var p in symbol) {
             if (symbol.hasOwnProperty(p)) {
-                if (!maptalks.Util.isFunction(symbol[p])) {
-                    if (maptalks.Util.isGradient(symbol[p])) {
-                        keys.push(p + '=' + maptalks.Util.getGradientStamp(symbol[p]));
+                if (!Util.isFunction(symbol[p])) {
+                    if (Util.isGradient(symbol[p])) {
+                        keys.push(p + '=' + Util.getGradientStamp(symbol[p]));
                     } else {
                         keys.push(p + '=' + symbol[p]);
                     }
@@ -727,7 +725,7 @@ maptalks.Util = {
             return null;
         }
         var symbols = symbol;
-        if (!maptalks.Util.isArray(symbol)) {
+        if (!Util.isArray(symbol)) {
             symbols = [symbol];
         }
         var resources = [];
@@ -740,7 +738,7 @@ maptalks.Util = {
                 continue;
             }
             if (toAbsolute) {
-                symbol = maptalks.Util.convertResourceUrl(symbol);
+                symbol = Util.convertResourceUrl(symbol);
             }
             for (ii = 0; ii < props.length; ii++) {
                 res = symbol[props[ii]];
@@ -750,12 +748,12 @@ maptalks.Util = {
                 if (!res) {
                     continue;
                 }
-                if (!maptalks.Util.isArray(res)) {
+                if (!Util.isArray(res)) {
                     res = [res];
                 }
                 for (iii = 0; iii < res.length; iii++) {
                     if (res[iii].slice(0, 4) === 'url(') {
-                        res[iii] = maptalks.Util.extractCssUrl(res[iii]);
+                        res[iii] = Util.extractCssUrl(res[iii]);
                     }
                     resSizeProp = maptalks.Symbolizer.resourceSizeProperties[ii];
                     resources.push([res[iii], symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
@@ -791,7 +789,7 @@ maptalks.Util = {
         }
 
         var s = symbol;
-        if (maptalks.node) {
+        if (isNode) {
             return s;
         }
         var props = maptalks.Symbolizer.resourceProperties;
@@ -810,15 +808,15 @@ maptalks.Util = {
         if (utils.isFunctionDefinition(res)) {
             var stops = res.stops;
             for (var i = 0; i < stops.length; i++) {
-                stops[i][1] = maptalks.Util._convertUrlToAbsolute(stops[i][1]);
+                stops[i][1] = Util._convertUrlToAbsolute(stops[i][1]);
             }
             return res;
         }
         var embed = 'data:';
         if (res.slice(0, 4) === 'url(') {
-            res = maptalks.Util.extractCssUrl(res);
+            res = Util.extractCssUrl(res);
         }
-        if (!maptalks.Util.isURL(res) &&
+        if (!Util.isURL(res) &&
             (res.length <= embed.length || res.substring(0, embed.length) !== embed)) {
             res = this._absolute(location.href, res);
         }
@@ -859,8 +857,8 @@ maptalks.Util = {
      * @return {Object[]}       compiled styles
      */
     compileStyle: function (styles) {
-        if (!maptalks.Util.isArray(styles)) {
-            return maptalks.Util.compileStyle([styles]);
+        if (!Util.isArray(styles)) {
+            return Util.compileStyle([styles]);
         }
         var compiled = [];
         for (var i = 0; i < styles.length; i++) {
@@ -883,17 +881,17 @@ maptalks.Util = {
 
 };
 
-maptalks.Util.GUID = maptalks.Util.UID;
+Util.GUID = Util.UID;
 
 
 //RequestAnimationFrame, inspired by Leaflet
 (function () {
-    if (maptalks.node) {
-        maptalks.Util.requestAnimFrame = function (fn) {
+    if (isNode) {
+        Util.requestAnimFrame = function (fn) {
             return setTimeout(fn, 16);
         };
 
-        maptalks.Util.cancelAnimFrame = clearTimeout;
+        Util.cancelAnimFrame = clearTimeout;
         return;
     }
 
@@ -927,15 +925,15 @@ maptalks.Util.GUID = maptalks.Util.UID;
             clearTimeout(id);
         };
     }
-    maptalks.Util.requestAnimFrame = function (fn) {
+    Util.requestAnimFrame = function (fn) {
         return requestFn(fn);
     };
 
-    maptalks.Util.cancelAnimFrame = function (id) {
+    Util.cancelAnimFrame = function (id) {
         if (id) {
             cancelFn(id);
         }
     };
 })();
 
-export default maptalks.Util;
+export default Util;

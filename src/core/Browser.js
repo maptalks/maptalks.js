@@ -1,4 +1,8 @@
-if (!maptalks.node) {
+import { isNode } from '../env';
+
+let Browser;
+
+if (!isNode) {
     (function () {
 
         var ua = navigator.userAgent.toLowerCase(),
@@ -6,11 +10,11 @@ if (!maptalks.node) {
 
             ie = 'ActiveXObject' in window,
 
-            webkit    = ua.indexOf('webkit') !== -1,
+            webkit = ua.indexOf('webkit') !== -1,
             phantomjs = ua.indexOf('phantom') !== -1,
             android23 = ua.search('android [23]') !== -1,
-            chrome    = ua.indexOf('chrome') !== -1,
-            gecko     = ua.indexOf('gecko') !== -1  && !webkit && !window.opera && !ie,
+            chrome = ua.indexOf('chrome') !== -1,
+            gecko = ua.indexOf('gecko') !== -1 && !webkit && !window.opera && !ie,
 
             mobile = typeof orientation !== 'undefined' || ua.indexOf('mobile') !== -1,
             msPointer = !window.PointerEvent && window.MSPointerEvent,
@@ -23,9 +27,9 @@ if (!maptalks.node) {
             any3d = (ie3d || webkit3d || gecko3d) && !opera12 && !phantomjs;
 
         var touch = !phantomjs && (pointer || 'ontouchstart' in window ||
-                (window.DocumentTouch && document instanceof window.DocumentTouch));
+            (window.DocumentTouch && document instanceof window.DocumentTouch));
 
-        maptalks.Browser = {
+        Browser = {
             ie: ie,
             ielt9: ie && !document.addEventListener,
             edge: 'msLaunchUri' in navigator && !('documentMode' in document),
@@ -35,7 +39,7 @@ if (!maptalks.node) {
             android23: android23,
             chrome: chrome,
             safari: !chrome && ua.indexOf('safari') !== -1,
-            phantomjs : phantomjs,
+            phantomjs: phantomjs,
 
             ie3d: ie3d,
             webkit3d: webkit3d,
@@ -62,9 +66,10 @@ if (!maptalks.node) {
         };
     }());
 } else {
-    //usually in node
-    maptalks.Browser = {
-        canvas:true
+    // usually in node
+    Browser = {
+        canvas: true
     };
 }
 
+export default Browser;

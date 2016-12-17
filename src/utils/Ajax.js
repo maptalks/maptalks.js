@@ -1,5 +1,9 @@
+import { isNode } from '../env';
+import Browser from 'core/Browser';
+import Util from 'core/Util';
+
 var Ajax;
-if (maptalks.node) {
+if (isNode) {
     var urlParser = require('url'),
         http = require('http'),
         https = require('https');
@@ -28,7 +32,7 @@ if (maptalks.node) {
 
             req.on('error', cb);
 
-            if (!maptalks.Util.isString(postData)) {
+            if (!Util.isString(postData)) {
                 postData = JSON.stringify(postData);
             }
 
@@ -86,7 +90,7 @@ if (maptalks.node) {
                     }
                 }
             }
-            if (!maptalks.Util.isString(postData)) {
+            if (!Util.isString(postData)) {
                 postData = JSON.stringify(postData);
             }
             client.send(postData);
@@ -112,7 +116,7 @@ if (maptalks.node) {
         },
 
         _isIE8: function () {
-            return maptalks.Browser.ie && document.documentMode === 8;
+            return Browser.ie && document.documentMode === 8;
         },
 
         _getClient: function (cb) {
@@ -159,7 +163,7 @@ Ajax.getResource = function (url, cb) {
  */
 Ajax.getJSON = function (url, cb) {
     var callback = function (err, resp) {
-        var data = resp ? maptalks.Util.parseJSON(resp) : null;
+        var data = resp ? Util.parseJSON(resp) : null;
         cb(err, data);
     };
     return Ajax.getResource(url, callback);
