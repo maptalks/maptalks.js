@@ -103,6 +103,87 @@ describe('SymbolSpec', function() {
         expect(res[0][2]).to.be.eql(30);
     });
 
+    describe('symbol number properties in type of string', function() {
+        it('vector path marker symbolizer', function () {
+            var symbol = {
+                'markerType'    : 'path',
+                'markerPath'    : [
+                    {
+                        'path' : 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
+                        'fill' : '#DE3333'
+                    }
+                ],
+                "markerWidth": '20',
+                "markerHeight": '30',
+                "markerOpacity" : '0.5'
+            }
+            var symbolizer = new maptalks.symbolizer.VectorPathMarkerSymbolizer(symbol);
+            expect(symbolizer.style.markerWidth).to.be.eql(20);
+            expect(symbolizer.style.markerHeight).to.be.eql(30);
+            expect(symbolizer.style.markerOpacity).to.be.eql(0.5);
+        });
+
+        it('vector marker symbolizer', function () {
+            var symbol = {
+                "markerType" : "ellipse",
+                "markerWidth": '20',
+                "markerHeight": '30',
+                'markerFillOpacity' : '0.5',
+                'markerLineWidth'       : '2',
+                'markerLineOpacity'     : '0.6',
+                'markerDx'              : '1',
+                'markerDy'              : '2'
+            }
+            var symbolizer = new maptalks.symbolizer.VectorMarkerSymbolizer(symbol);
+            expect(symbolizer.style.markerWidth).to.be.eql(20);
+            expect(symbolizer.style.markerHeight).to.be.eql(30);
+            expect(symbolizer.style.markerFillOpacity).to.be.eql(0.5);
+            expect(symbolizer.style.markerLineWidth).to.be.eql(2);
+            expect(symbolizer.style.markerLineOpacity).to.be.eql(0.6);
+            expect(symbolizer.style.markerDx).to.be.eql(1);
+            expect(symbolizer.style.markerDy).to.be.eql(2);
+        });
+
+        it('image marker symbolizer', function () {
+            var symbol = {
+                "markerFile" : "foo.png",
+                "markerWidth": '20',
+                "markerHeight": '30',
+                "markerOpacity" : '0.5',
+                "markerDx": '1',
+                "markerDy": '2',
+            }
+            var symbolizer = new maptalks.symbolizer.ImageMarkerSymbolizer(symbol);
+            expect(symbolizer.style.markerWidth).to.be.eql(20);
+            expect(symbolizer.style.markerHeight).to.be.eql(30);
+            expect(symbolizer.style.markerOpacity).to.be.eql(0.5);
+            expect(symbolizer.style.markerDx).to.be.eql(1);
+            expect(symbolizer.style.markerDy).to.be.eql(2);
+        });
+
+        it('text marker symbolizer', function () {
+            var symbol = {
+                "textName" : "foo",
+                "textSize": '20',
+                'textOpacity' : '0.5',
+                'textHaloRadius' : '4',
+                'textWrapWidth' : '3',
+                'textLineSpacing' : '2',
+                'textDx' : '1',
+                'textDy' : '2',
+            };
+            var marker = new maptalks.Marker([0, 0], {symbol : symbol});
+            var symbolizer = new maptalks.symbolizer.TextMarkerSymbolizer(symbol, marker);
+            expect(symbolizer.style.textSize).to.be.eql(20);
+            expect(symbolizer.style.textOpacity).to.be.eql(0.5);
+            expect(symbolizer.style.textHaloRadius).to.be.eql(4);
+            expect(symbolizer.style.textWrapWidth).to.be.eql(3);
+            expect(symbolizer.style.textLineSpacing).to.be.eql(2);
+            expect(symbolizer.style.textDx).to.be.eql(1);
+            expect(symbolizer.style.textDy).to.be.eql(2);
+        });
+    });
+
     it('line pattern file', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
         var line = new maptalks.Polygon([[100,0],[101,1],[105,10],[100,0]], {

@@ -12,7 +12,7 @@ describe('#MapBorderPanningSpec', function () {
         container = setups.container;
         map = setups.map;
         map.config('autoBorderPanning',true);
-        mapPlatform = map._panels.mapPlatform;
+        mapPlatform = map._panels.front;
     });
 
     afterEach(function() {

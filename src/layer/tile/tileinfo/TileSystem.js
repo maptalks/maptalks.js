@@ -70,6 +70,8 @@ maptalks.TileSystem.getDefault = function (projection) {
         return 'baidu';
     } else if (projection['code'].toLowerCase() === 'EPSG:4326'.toLowerCase()) {
         return 'tms-global-geodetic';
+    } else if (projection['code'].toLowerCase() === 'identity') {
+        return [1, -1, 0, 0];
     } else {
         return 'web-mercator';
     }

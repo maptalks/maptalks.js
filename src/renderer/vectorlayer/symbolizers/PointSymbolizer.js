@@ -37,17 +37,21 @@ maptalks.symbolizer.PointSymbolizer = maptalks.symbolizer.CanvasSymbolizer.exten
         if (painter.isSpriting()) {
             return points;
         }
+        var map = this.getMap();
         var matrices = painter.getTransformMatrix(),
             matrix = matrices ? matrices['container'] : null,
             scale = matrices ? matrices['scale'] : null,
             dxdy = this.getDxDy(),
-            layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin();
+            layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest);
+            // layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin();
         if (matrix) {
             dxdy = new maptalks.Point(dxdy.x / scale.x, dxdy.y / scale.y);
         }
-
+        // console.log(layerPoint);
         var containerPoints = maptalks.Util.mapArrayRecursively(points, function (point) {
-            return point.substract(layerPoint)._add(dxdy);
+            // console.log(point);
+            // return point.substract(layerPoint)._add(dxdy);
+            return map._pointToContainerPoint(point)._add(dxdy)._substract(layerPoint);
         });
         if (matrix) {
             return matrix.applyToArray(containerPoints);
