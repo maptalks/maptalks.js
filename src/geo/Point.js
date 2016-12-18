@@ -1,4 +1,4 @@
-import Util from 'core/Util';
+import { isNil, isArrayHasData, round } from 'core/util';
 
 /**
  * Represents a 2d point.<br>
@@ -16,7 +16,7 @@ import Util from 'core/Util';
  */
 export default class Point {
     constructor(x, y) {
-        if (!Util.isNil(x) && !Util.isNil(y)) {
+        if (!isNil(x) && !isNil(y)) {
             /**
              * @property x {Number} - x value
              */
@@ -25,11 +25,11 @@ export default class Point {
              * @property y {Number} - y value
              */
             this.y = y;
-        } else if (!Util.isNil(x.x) && !Util.isNil(x.y)) {
+        } else if (!isNil(x.x) && !isNil(x.y)) {
             //对象
             this.x = x.x;
             this.y = x.y;
-        } else if (Util.isArrayHasData(x)) {
+        } else if (isArrayHasData(x)) {
             this.x = x[0];
             this.y = x[1];
         }
@@ -57,8 +57,8 @@ export default class Point {
     }
 
     _round() {
-        this.x = Util.round(this.x);
-        this.y = Util.round(this.y);
+        this.x = round(this.x);
+        this.y = round(this.y);
         return this;
     }
 
@@ -67,7 +67,7 @@ export default class Point {
      * @return {Point} rounded point
      */
     round() {
-        return new Point(Util.round(this.x), Util.round(this.y));
+        return new Point(round(this.x), round(this.y));
     }
 
     /**

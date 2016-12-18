@@ -1,5 +1,5 @@
-import Point from 'geo/Point';
-import Util from 'core/Util';
+import Point from './Point';
+import { round } from 'core/util';
 
 /**
  * Represents a size.
@@ -62,8 +62,8 @@ export default class Size {
     }
 
     _round() {
-        this['width'] = Util.round(this['width']);
-        this['height'] = Util.round(this['height']);
+        this['width'] = round(this['width']);
+        this['height'] = round(this['height']);
         return this;
     }
 

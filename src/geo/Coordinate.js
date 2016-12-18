@@ -1,4 +1,4 @@
-import Util from 'core/Util';
+import { isNil, isArray, isCoordinate } from 'core/util';
 
 /**
  * Represents a coordinate point <br>
@@ -18,7 +18,7 @@ import Util from 'core/Util';
  */
 export default class Coordinate {
     constructor(x, y) {
-        if (!Util.isNil(x) && !Util.isNil(y)) {
+        if (!isNil(x) && !isNil(y)) {
             /**
              * @property {Number} x - value on X-Axis or longitude in degrees
              */
@@ -27,11 +27,11 @@ export default class Coordinate {
              * @property {Number} y - value on Y-Axis or Latitude in degrees
              */
             this.y = +(y);
-        } else if (Util.isArray(x)) {
+        } else if (isArray(x)) {
             //数组
             this.x = +(x[0]);
             this.y = +(x[1]);
-        } else if (!Util.isNil(x['x']) && !Util.isNil(x['y'])) {
+        } else if (!isNil(x['x']) && !isNil(x['y'])) {
             //对象
             this.x = +(x['x']);
             this.y = +(x['y']);
@@ -128,7 +128,7 @@ export default class Coordinate {
      * @return {Boolean}
      */
     equals(c2) {
-        if (!Util.isCoordinate(c2)) {
+        if (!isCoordinate(c2)) {
             return false;
         }
         return this.x === c2.x && this.y === c2.y;
