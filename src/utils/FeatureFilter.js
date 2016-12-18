@@ -5,7 +5,7 @@
     www.mapbox.com
     License: MIT, header required.
 */
-import { Util } from '../core/Util';
+import { indexOfArray, mapArray } from 'core/util';
 
 var types = ['Unknown', 'Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'];
 
@@ -49,20 +49,20 @@ function compilePropertyReference(property) {
 
 function compileComparisonOp(property, value, op, checkType) {
     var left = compilePropertyReference(property);
-    var right = property === '$type' ? Util.indexOfArray(value, types) : JSON.stringify(value);
+    var right = property === '$type' ? indexOfArray(value, types) : JSON.stringify(value);
     return (checkType ? 'typeof ' + left + '=== typeof ' + right + '&&' : '') + left + op + right;
 }
 
 function compileLogicalOp(expressions, op) {
-    return Util.mapArray(expressions, compile).join(op);
+    return mapArray(expressions, compile).join(op);
 }
 
 function compileInOp(property, values) {
-    if (property === '$type') values = Util.mapArray(values, function (value) { return Util.indexOfArray(value, types); });
+    if (property === '$type') values = mapArray(values, function (value) { return indexOfArray(value, types); });
     var left = JSON.stringify(values.sort(compare));
     var right = compilePropertyReference(property);
 
-    if (values.length <= 200) return 'Util.indexOfArray(' + right + ', ' + left + ') !== -1';
+    if (values.length <= 200) return 'indexOfArray(' + right + ', ' + left + ') !== -1';
     return 'function(v, a, i, j) {' +
         'while (i <= j) { var m = (i + j) >> 1;' +
         '    if (a[m] === v) return true; if (a[m] > v) j = m - 1; else i = m + 1;' +
@@ -86,7 +86,7 @@ function compare(a, b) {
 export function getFilterFeature(geometry) {
     var json = geometry._toJSON(),
         g = json['feature'];
-    g['type'] = Util.indexOfArray(g['geometry']['type'], types);
+    g['type'] = indexOfArray(g['geometry']['type'], types);
     g['subType'] = json['subType'];
     return g;
 }

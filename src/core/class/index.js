@@ -1,4 +1,5 @@
 import { create, extend, hasOwn } from 'core/util';
+// import Handler from '../Handler';
 
 /**
  * OOP facilities of the library. <br/>
@@ -136,13 +137,13 @@ Class.extend = function (props) {
                 if (hasOwn(conf, i)) {
                     this.options[i] = conf[i];
                     // enable/disable handler
-                    if (this[i] && (this[i] instanceof Handler)) {
-                        if (conf[i]) {
-                            this[i].enable();
-                        } else {
-                            this[i].disable();
-                        }
-                    }
+                    // if (this[i] && (this[i] instanceof Handler)) {
+                    //     if (conf[i]) {
+                    //         this[i].enable();
+                    //     } else {
+                    //         this[i].disable();
+                    //     }
+                    // }
                 }
             }
             // callback when set config
@@ -155,7 +156,6 @@ Class.extend = function (props) {
 
     return NewClass;
 };
-
 
 /**
  * method for adding properties to prototype

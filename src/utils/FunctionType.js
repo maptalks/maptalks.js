@@ -1,4 +1,4 @@
-import { Util } from '../core/Util';
+import { isArray } from 'core/util';
 
 function createFunction(parameters, defaultType) {
     var fun;
@@ -165,7 +165,7 @@ export function loadFunctionTypes(obj, argFn) {
         return null;
     }
     var i;
-    if (Util.isArray(obj)) {
+    if (isArray(obj)) {
         var multResult = [];
         for (i = 0; i < obj.length; i++) {
             multResult.push(loadFunctionTypes(obj[i], argFn));

@@ -1,6 +1,6 @@
 import { isNode } from 'core/util';
 import Browser from 'core/Browser';
-import Util from 'core/Util';
+import { isString, parseJSON } from 'core/util';
 
 var Ajax;
 if (isNode) {
@@ -32,7 +32,7 @@ if (isNode) {
 
             req.on('error', cb);
 
-            if (!Util.isString(postData)) {
+            if (!isString(postData)) {
                 postData = JSON.stringify(postData);
             }
 
@@ -90,7 +90,7 @@ if (isNode) {
                     }
                 }
             }
-            if (!Util.isString(postData)) {
+            if (!isString(postData)) {
                 postData = JSON.stringify(postData);
             }
             client.send(postData);
@@ -163,7 +163,7 @@ Ajax.getResource = function (url, cb) {
  */
 Ajax.getJSON = function (url, cb) {
     var callback = function (err, resp) {
-        var data = resp ? Util.parseJSON(resp) : null;
+        var data = resp ? parseJSON(resp) : null;
         cb(err, data);
     };
     return Ajax.getResource(url, callback);

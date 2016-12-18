@@ -32,7 +32,7 @@ export function splitWords(chr) {
  * Gets size in pixel of the text with a certain font.
  * @param {String} text - text to measure
  * @param {String} font - font of the text, same as the CSS font.
- * @return {maptalks.Size}
+ * @return {Size}
  */
 export function stringLength(text, font) {
     var ruler = _getDomRuler('span');
@@ -73,7 +73,7 @@ const contentExpRe = /\{([\w_]+)\}/g;
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
  * @example
  *     // will returns 'John is awesome'
- *     var actual = maptalks.StringUtil.replaceVariable('{foo} is awesome', {'foo' : 'John'});
+ *     var actual = replaceVariable('{foo} is awesome', {'foo' : 'John'});
  * @param {String} str      - string to replace
  * @param {Object} props    - variable value properties
  * @return {String}
@@ -93,10 +93,10 @@ export function replaceVariable(str, props) {
 
 /**
  * Gets text's align point according to the horizontalAlignment and verticalAlignment
- * @param  {maptalks.Size} size                  - text size
+ * @param  {Size} size                  - text size
  * @param  {String} horizontalAlignment - horizontalAlignment: left/middle/right
  * @param  {String} verticalAlignment   - verticalAlignment: top/middle/bottom
- * @return {maptalks.Point}
+ * @return {Point}
  */
 export function getAlignPoint(size, horizontalAlignment, verticalAlignment) {
     var width = size['width'],

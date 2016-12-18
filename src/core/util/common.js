@@ -150,7 +150,7 @@ export function isString(str) {
  * @return {Boolean} true|false
  */
 export function isFunction(fn) {
-    if (this.isNil(fn)) {
+    if (isNil(fn)) {
         return false;
     }
     return typeof fn === 'function' || (fn.constructor !== null && fn.constructor === Function);

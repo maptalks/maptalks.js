@@ -1,5 +1,5 @@
 import { extend, isArray, isNil, isFunction, hasOwn } from './common';
-import { createFilter } from '../../utils';
+import { createFilter } from 'utils';
 
 export function isGradient(g) {
     return g && g['colorStops'];
