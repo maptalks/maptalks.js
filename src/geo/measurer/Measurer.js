@@ -1,8 +1,14 @@
+import { isNil, hasOwn } from 'core/util';
+
 /**
  * @namespace
  * @protected
  */
-maptalks.measurer = {};
+const measurer = { };
+export default measurer;
+export function registerMeasurer(m) {
+    measurer[m.measure] = m;
+}
 
 /**
  * Utilities with measurers.<br>
@@ -11,24 +17,24 @@ maptalks.measurer = {};
  * @category geo
  * @protected
  */
-maptalks.MeasurerUtil = {
+export const MeasurerUtil = {
     /**
      * Get a measurer instance.
      * @param  {String} name - code of the measurer: 'EPSG:4326', 'Identity', 'BAIDU'
      * @return {Object} a measurer object
      */
-    getInstance:function (name) {
+    getInstance: function (name) {
         if (!name) {
-            return maptalks.MeasurerUtil.DEFAULT;
+            return MeasurerUtil.DEFAULT;
         }
-        for (var p in maptalks.measurer) {
-            if (maptalks.measurer.hasOwnProperty(p)) {
-                var mName = maptalks.measurer[p]['measure'];
+        for (var p in measurer) {
+            if (hasOwn(measurer, p)) {
+                var mName = measurer[p]['measure'];
                 if (!mName) {
                     continue;
                 }
                 if (name.toLowerCase() === mName.toLowerCase()) {
-                    return maptalks.measurer[p];
+                    return measurer[p];
                 }
             }
         }
@@ -37,16 +43,16 @@ maptalks.MeasurerUtil = {
 
     /**
      * Whether the measurer is based on earth sphere
-     * @param  {Object}  measurer
+     * @param  {Object}  m
      * @return {Boolean}
      */
-    isSphere: function (measurer) {
-        return !maptalks.Util.isNil(measurer.sphere);
+    isSphere: function (m) {
+        return !isNil(m.sphere);
     },
 
     /**
      * The default measurer: WGS84Sphere
      * @type {Object}
      */
-    DEFAULT: maptalks.measurer.WGS84Sphere
+    DEFAULT: measurer.WGS84Sphere
 };

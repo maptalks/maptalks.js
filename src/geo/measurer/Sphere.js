@@ -1,22 +1,36 @@
-maptalks.measurer.Sphere = function (radius) {
-    this.radius = radius;
-};
+import Coordinate from '../Coordinate';
+import { registerMeasurer } from './Measurer';
 
-maptalks.Util.extend(maptalks.measurer.Sphere.prototype, {
-    rad: function (a) { return a * Math.PI / 180; },
+class Sphere {
+    constructor(radius) {
+        this.radius = radius;
+    }
 
-    measureLength:function (c1, c2) {
-        if (!c1 || !c2) { return 0; }
-        var b = this.rad(c1.y), d = this.rad(c2.y), e = b - d, f = this.rad(c1.x) - this.rad(c2.x);
-        b = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(e / 2), 2) + Math.cos(b) * Math.cos(d) * Math.pow(Math.sin(f / 2), 2))); b *= this.radius;
+    rad(a) {
+        return a * Math.PI / 180;
+    }
+
+    measureLength(c1, c2) {
+        if (!c1 || !c2) {
+            return 0;
+        }
+        var b = this.rad(c1.y),
+            d = this.rad(c2.y),
+            e = b - d,
+            f = this.rad(c1.x) - this.rad(c2.x);
+        b = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(e / 2), 2) + Math.cos(b) * Math.cos(d) * Math.pow(Math.sin(f / 2), 2)));
+        b *= this.radius;
         return Math.round(b * 1E5) / 1E5;
-    },
-    measureArea:function (coordinates) {
+    }
+
+    measureArea(coordinates) {
         var a = this.radius * Math.PI / 180,
             b = 0,
             c = coordinates,
             d = c.length;
-        if (d < 3) { return 0; }
+        if (d < 3) {
+            return 0;
+        }
         for (var i = 0; i < d - 1; i++) {
             var e = c[i],
                 f = c[i + 1];
@@ -26,12 +40,21 @@ maptalks.Util.extend(maptalks.measurer.Sphere.prototype, {
         c = c[0];
         b += d.x * a * Math.cos(d.y * Math.PI / 180) * c.y * a - c.x * a * Math.cos(c.y * Math.PI / 180) * d.y * a;
         return 0.5 * Math.abs(b);
-    },
-    locate:function (c, xDist, yDist) {
-        if (!c) { return null; }
-        if (!xDist) { xDist = 0; }
-        if (!yDist) { yDist = 0; }
-        if (!xDist && !yDist) { return c; }
+    }
+
+    locate(c, xDist, yDist) {
+        if (!c) {
+            return null;
+        }
+        if (!xDist) {
+            xDist = 0;
+        }
+        if (!yDist) {
+            yDist = 0;
+        }
+        if (!xDist && !yDist) {
+            return c;
+        }
         var dx = Math.abs(xDist);
         var dy = Math.abs(yDist);
         var ry = this.rad(c.y);
@@ -40,25 +63,25 @@ maptalks.Util.extend(maptalks.measurer.Sphere.prototype, {
         ry = ry + sy * (yDist > 0 ? 1 : -1);
         var sx = 2 * Math.sqrt(Math.pow(Math.sin(dx / (2 * this.radius)), 2) / Math.pow(Math.cos(ry), 2));
         rx = rx + sx * (xDist > 0 ? 1 : -1);
-        return new maptalks.Coordinate(rx * 180 / Math.PI, ry * 180 / Math.PI);
+        return new Coordinate(rx * 180 / Math.PI, ry * 180 / Math.PI);
     }
-});
+}
 
 /**
  * WGS84 Sphere measurer.
  * @class
  * @category geo
  * @protected
- * @memberOf maptalks.measurer
+ * @memberOf measurer
  * @name WGS84Sphere
  */
-maptalks.measurer.WGS84Sphere = {
-    'measure' : 'EPSG:4326',
-    sphere : new maptalks.measurer.Sphere(6378137),
+export const WGS84Sphere = {
+    'measure': 'EPSG:4326',
+    sphere: new Sphere(6378137),
     /**
      * Measure the length between 2 coordinates.
-     * @param  {maptalks.Coordinate} c1
-     * @param  {maptalks.Coordinate} c2
+     * @param  {Coordinate} c1
+     * @param  {Coordinate} c2
      * @return {Number}
      */
     measureLength: function () {
@@ -66,7 +89,7 @@ maptalks.measurer.WGS84Sphere = {
     },
     /**
      * Measure the area closed by the given coordinates.
-     * @param  {maptalks.Coordinate[]} coordinates
+     * @param  {Coordinate[]} coordinates
      * @return {number}
      */
     measureArea: function () {
@@ -74,10 +97,10 @@ maptalks.measurer.WGS84Sphere = {
     },
     /**
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-     * @param  {maptalks.Coordinate} c     - source coordinate
+     * @param  {Coordinate} c     - source coordinate
      * @param  {Number} xDist              - x-axis distance
      * @param  {Number} yDist              - y-axis distance
-     * @return {maptalks.Coordinate}
+     * @return {Coordinate}
      */
     locate: function () {
         return this.sphere.locate.apply(this.sphere, arguments);
@@ -89,16 +112,16 @@ maptalks.measurer.WGS84Sphere = {
  * @class
  * @category geo
  * @protected
- * @memberOf maptalks.measurer
+ * @memberOf measurer
  * @name BaiduSphere
  */
-maptalks.measurer.BaiduSphere = {
-    'measure' : 'BAIDU',
-    sphere : new maptalks.measurer.Sphere(6370996.81),
+export const BaiduSphere = {
+    'measure': 'BAIDU',
+    sphere: new Sphere(6370996.81),
     /**
      * Measure the length between 2 coordinates.
-     * @param  {maptalks.Coordinate} c1
-     * @param  {maptalks.Coordinate} c2
+     * @param  {Coordinate} c1
+     * @param  {Coordinate} c2
      * @return {Number}
      */
     measureLength: function () {
@@ -106,7 +129,7 @@ maptalks.measurer.BaiduSphere = {
     },
     /**
      * Measure the area closed by the given coordinates.
-     * @param  {maptalks.Coordinate[]} coordinates
+     * @param  {Coordinate[]} coordinates
      * @return {number}
      */
     measureArea: function () {
@@ -114,12 +137,15 @@ maptalks.measurer.BaiduSphere = {
     },
     /**
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-     * @param  {maptalks.Coordinate} c     - source coordinate
+     * @param  {Coordinate} c     - source coordinate
      * @param  {Number} xDist              - x-axis distance
      * @param  {Number} yDist              - y-axis distance
-     * @return {maptalks.Coordinate}
+     * @return {Coordinate}
      */
     locate: function () {
         return this.sphere.locate.apply(this.sphere, arguments);
     }
 };
+
+registerMeasurer(WGS84Sphere);
+registerMeasurer(BaiduSphere);
