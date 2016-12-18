@@ -1,3 +1,10 @@
+import { extend } from 'core/util';
+import splitTextToRow from 'core/util/text';
+import Coordinate from 'geo/Coordinate';
+import Size from 'geo/Size';
+import Geometry from './Geometry';
+import Marker from './Marker';
+
 /**
  * @classdesc
  * Base class for  the Text marker classes, a marker which has text and background box. <br>
@@ -6,40 +13,40 @@
  * @class
  * @category geometry
  * @abstract
- * @extends maptalks.Marker
+ * @extends Marker
  */
-maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prototype */{
+const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
 
-    options : {
-        'box' : true,
+    options: {
+        'box': true,
     },
 
-    defaultSymbol : {
-        'textFaceName'  : 'monospace',
+    defaultSymbol: {
+        'textFaceName': 'monospace',
         'textSize': 12,
         'textWrapBefore': false,
         'textWrapCharacter': '\n',
         'textLineSpacing': 8,
         'textHorizontalAlignment': 'middle', //left middle right
         'textVerticalAlignment': 'middle', //top middle bottom
-        'textOpacity' : 1,
-        'textDx' : 0,
-        'textDy' : 0
+        'textOpacity': 1,
+        'textDx': 0,
+        'textDy': 0
     },
 
-    defaultBoxSymbol:{
-        'markerType':'square',
+    defaultBoxSymbol: {
+        'markerType': 'square',
         'markerLineColor': '#000',
         'markerLineWidth': 2,
         'markerLineOpacity': 1,
         'markerFill': '#fff',
-        'markerOpacity' : 1
+        'markerOpacity': 1
     },
 
 
     initialize: function (content, coordinates, options) {
         this._content = content;
-        this._coordinates = new maptalks.Coordinate(coordinates);
+        this._coordinates = new Coordinate(coordinates);
         this._initOptions(options);
         this._registerEvents();
         this._refresh();
@@ -55,8 +62,8 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
 
     /**
      * Set a new text content to the label
-     * @return {maptalks.Label} this
-     * @fires maptalks.Label#contentchange
+     * @return {Label} this
+     * @fires Label#contentchange
      */
     setContent: function (content) {
         var old = this._content;
@@ -64,25 +71,28 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
         this._refresh();
         /**
          * an event when changing label's text content
-         * @event maptalks.Label#contentchange
+         * @event Label#contentchange
          * @type {Object}
          * @property {String} type - contentchange
-         * @property {maptalks.Label} target - label fires the event
+         * @property {Label} target - label fires the event
          * @property {String} old - old content
          * @property {String} new - new content
          */
-        this._fireEvent('contentchange', {'old':old, 'new':content});
+        this._fireEvent('contentchange', {
+            'old': old,
+            'new': content
+        });
         return this;
     },
 
     getSymbol: function () {
         if (this._textSymbolChanged) {
-            return maptalks.Geometry.prototype.getSymbol.call(this);
+            return Geometry.prototype.getSymbol.call(this);
         }
         return null;
     },
 
-    setSymbol:function (symbol) {
+    setSymbol: function (symbol) {
         if (!symbol || symbol === this.options['symbol']) {
             this._textSymbolChanged = false;
             symbol = {};
@@ -91,13 +101,13 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
         }
         var cooked = this._prepareSymbol(symbol);
         var s = this._getDefaultTextSymbol();
-        maptalks.Util.extend(s, cooked);
+        extend(s, cooked);
         this._symbol = s;
         this._refresh();
         return this;
     },
 
-    onConfig:function (conf) {
+    onConfig: function (conf) {
         var needRepaint = false;
         for (var p in conf) {
             if (conf.hasOwnProperty(p)) {
@@ -110,14 +120,14 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
         if (needRepaint) {
             this._refresh();
         }
-        return maptalks.Marker.prototype.onConfig.apply(this, arguments);
+        return Marker.prototype.onConfig.apply(this, arguments);
     },
 
     _getBoxSize: function (symbol) {
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';
         }
-        var size = maptalks.StringUtil.splitTextToRow(this._content, symbol)['size'],
+        var size = splitTextToRow(this._content, symbol)['size'],
             width, height;
         if (this.options['boxAutoSize']) {
             var padding = this.options['boxPadding'];
@@ -134,18 +144,18 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
                 height = this.options['boxMinHeight'];
             }
         }
-        return [width && height ? new maptalks.Size(width, height) : null, size];
+        return [width && height ? new Size(width, height) : null, size];
     },
 
-    _getInternalSymbol:function () {
+    _getInternalSymbol: function () {
         return this._symbol;
     },
 
     _getDefaultTextSymbol: function () {
         var s = {};
-        maptalks.Util.extend(s, this.defaultSymbol);
+        extend(s, this.defaultSymbol);
         if (this.options['box']) {
-            maptalks.Util.extend(s, this.defaultBoxSymbol);
+            extend(s, this.defaultBoxSymbol);
         }
         return s;
     },
@@ -154,7 +164,9 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
         this.on('shapechange', this._refresh, this);
     },
 
-    onRemove:function () {
+    onRemove: function () {
         this.off('shapechange', this._refresh, this);
     }
 });
+
+export default TextMarker;

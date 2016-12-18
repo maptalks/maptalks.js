@@ -1,13 +1,21 @@
+import { bind, isNil, isArray } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import PointExtent from 'geo/PointExtent';
+import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
+import Geometry from './Geometry';
+import GeoJSON from './GeoJSON';
+import Vector from './Vector';
+
 /**
  * @classdesc Represents a LineString type Geometry.
  * @class
  * @category geometry
- * @extends {maptalks.Vector}
- * @mixes   {maptalks.Geometry.Poly}
- * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the line string
- * @param {Object} [options=null] - construct options defined in [maptalks.LineString]{@link maptalks.LineString#options}
+ * @extends {Vector}
+ * @mixes   {Geometry.Poly}
+ * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string
+ * @param {Object} [options=null] - construct options defined in [LineString]{@link LineString#options}
  * @example
- * var line = new maptalks.LineString(
+ * var line = new LineString(
  *     [
  *         [121.4594221902467, 31.241237891628657],
  *         [121.46371372467041, 31.242265291152066],
@@ -16,41 +24,41 @@
  *     ]
  * ).addTo(layer);
  */
-maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends maptalks.LineString.prototype */{
-    includes:[maptalks.Geometry.Poly],
+const LineString = Vector.extend(/** @lends LineString.prototype */ {
+    includes: [Geometry.Poly],
 
-    type:maptalks.Geometry['TYPE_LINESTRING'],
+    type: Geometry['TYPE_LINESTRING'],
 
     /**
-    * @property {Object} [options=null]
-    * @property {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the linestring when it cross the 180 or -180 longtitude line.
-    * @property {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
-    * @property {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
-    */
-    options:{
-        'antiMeridian' : 'continuous',
-        'arrowStyle' : null,
-        'arrowPlacement' : 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
+     * @property {Object} [options=null]
+     * @property {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the linestring when it cross the 180 or -180 longtitude line.
+     * @property {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
+     * @property {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
+     */
+    options: {
+        'antiMeridian': 'continuous',
+        'arrowStyle': null,
+        'arrowPlacement': 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
     },
 
-    initialize:function (coordinates, opts) {
+    initialize: function (coordinates, opts) {
         this.setCoordinates(coordinates);
         this._initOptions(opts);
     },
 
     /**
      * Set new coordinates to the line string
-     * @param {maptalks.Coordinate[]|Number[][]} coordinates - new coordinates
-     * @fires maptalks.LineString#shapechange
-     * @return {maptalks.LineString} this
+     * @param {Coordinate[]|Number[][]} coordinates - new coordinates
+     * @fires LineString#shapechange
+     * @return {LineString} this
      */
-    setCoordinates:function (coordinates) {
+    setCoordinates: function (coordinates) {
         if (!coordinates) {
             this._coordinates = null;
             this._setPrjCoordinates(null);
             return this;
         }
-        this._coordinates = maptalks.GeoJSON.toCoordinates(coordinates);
+        this._coordinates = GeoJSON.toCoordinates(coordinates);
         if (this.getMap()) {
             this._setPrjCoordinates(this._projectCoords(this._coordinates));
         } else {
@@ -61,9 +69,9 @@ maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends mapt
 
     /**
      * Get coordinates of the line string
-     * @return {maptalks.Coordinate[]|Number[][]} coordinates
+     * @return {Coordinate[]|Number[][]} coordinates
      */
-    getCoordinates:function () {
+    getCoordinates: function () {
         if (!this._coordinates) {
             return [];
         }
@@ -79,7 +87,12 @@ maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends mapt
         var length = this.getLength();
         var easing = options['easing'] || 'out';
         this.setCoordinates([]);
-        var player = maptalks.Animation.animate({'t' : duration}, {'speed' : duration, 'easing' : easing}, maptalks.Util.bind(function (frame) {
+        var player = Animation.animate({
+            't': duration
+        }, {
+            'speed': duration,
+            'easing': easing
+        }, bind(function (frame) {
             if (!this.getMap()) {
                 player.finish();
                 this.setCoordinates(coordinates);
@@ -118,28 +131,30 @@ maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends mapt
             return;
         }
         var idx = this._animIdx;
-        var p1 = coordinates[idx], p2 = coordinates[idx + 1],
+        var p1 = coordinates[idx],
+            p2 = coordinates[idx + 1],
             span = targetLength - this._animLenSoFar,
             r = span / segLen;
         var x = p1.x + (p2.x - p1.x) * r,
             y = p1.y + (p2.y - p1.y) * r,
-            targetCoord = new maptalks.Coordinate(x, y);
+            targetCoord = new Coordinate(x, y);
         var animCoords = coordinates.slice(0, this._animIdx + 1);
         animCoords.push(targetCoord);
 
         this.setCoordinates(animCoords);
     },
 
-    _computeGeodesicLength:function (measurer) {
-        return maptalks.GeoUtil._computeLength(this.getCoordinates(), measurer);
+    _computeGeodesicLength: function (measurer) {
+        return _computeLength(this.getCoordinates(), measurer);
     },
 
-    _computeGeodesicArea:function () {
+    _computeGeodesicArea: function () {
         return 0;
     },
 
     _containsPoint: function (point, tolerance) {
-        var t = maptalks.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance;
+        var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;
+
         function isContains(points) {
             var i, p1, p2,
                 len = points.length;
@@ -148,7 +163,7 @@ maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends mapt
                 p1 = points[i];
                 p2 = points[i + 1];
 
-                if (maptalks.GeoUtil.distanceToSegment(point, p1, p2) <= t) {
+                if (distanceToSegment(point, p1, p2) <= t) {
                     return true;
                 }
             }
@@ -164,16 +179,18 @@ maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends mapt
 
         var map = this.getMap(),
             extent = this._getPrjExtent(),
-            nw = new maptalks.Coordinate(extent.xmin, extent.ymax),
-            se = new maptalks.Coordinate(extent.xmax, extent.ymin),
+            nw = new Coordinate(extent.xmin, extent.ymax),
+            se = new Coordinate(extent.xmax, extent.ymin),
             pxMin = map._prjToPoint(nw),
             pxMax = map._prjToPoint(se),
-            pxExtent = new maptalks.PointExtent(pxMin.x - t, pxMin.y - t,
-                                    pxMax.x + t, pxMax.y + t);
+            pxExtent = new PointExtent(pxMin.x - t, pxMin.y - t,
+                pxMax.x + t, pxMax.y + t);
         if (arrowStyle) {
             pxExtent._expand(Math.max(arrowStyle[0] * lineWidth, arrowStyle[1] * lineWidth));
         }
-        if (!pxExtent.contains(point)) { return false; }
+        if (!pxExtent.contains(point)) {
+            return false;
+        }
 
         // check arrow
         var points;
@@ -181,14 +198,14 @@ maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends mapt
             points = this._getPath2DPoints(this._getPrjCoordinates(), true);
             var arrows = this._getArrows(points, lineWidth, (tolerance ? tolerance : 2) + lineWidth / 2);
             for (var ii = arrows.length - 1; ii >= 0; ii--) {
-                if (maptalks.GeoUtil.pointInsidePolygon(point, arrows[ii])) {
+                if (pointInsidePolygon(point, arrows[ii])) {
                     return true;
                 }
             }
         }
 
         points = points || this._getPath2DPoints(this._getPrjCoordinates());
-        var isSplitted = points.length > 0 && maptalks.Util.isArray(points[0]);
+        var isSplitted = points.length > 0 && isArray(points[0]);
         if (isSplitted) {
             for (var i = 0, l = points.length; i < l; i++) {
                 if (isContains(points[i])) {
@@ -203,3 +220,7 @@ maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends mapt
     }
 
 });
+
+export const Polyline = LineString;
+
+export default LineString;

@@ -1,12 +1,15 @@
+import Curve from './Curve';
+import Canvas from 'utils/Canvas';
+
 /**
  * @classdesc Circle Arc Curve
  * @class
  * @category geometry
- * @extends {maptalks.Curve}
- * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the curve
- * @param {Object} [options=null]   - construct options defined in [maptalks.ArcCurve]{@link maptalks.ArcCurve#options}
+ * @extends {Curve}
+ * @param {Coordinate[]|Number[][]} coordinates - coordinates of the curve
+ * @param {Object} [options=null]   - construct options defined in [ArcCurve]{@link ArcCurve#options}
  * @example
- * var curve = new maptalks.ArcCurve(
+ * var curve = new ArcCurve(
  *     [
  *         [121.47083767181408,31.214448123476995],
  *         [121.4751292062378,31.215475523000404],
@@ -20,19 +23,19 @@
  *     }
  * ).addTo(layer);
  */
-maptalks.ArcCurve = maptalks.Curve.extend(/** @lends maptalks.ArcCurve.prototype */{
+const ArcCurve = Curve.extend(/** @lends ArcCurve.prototype */ {
     /**
      * @property {Object} options
      * @property {Number} [options.arcDegree=90]           - circle arc's degree.
      */
-    options:{
-        'arcDegree'     : 90
+    options: {
+        'arcDegree': 90
     },
 
     _toJSON: function (options) {
         return {
-            'feature' : this.toGeoJSON(options),
-            'subType' : 'ArcCurve'
+            'feature': this.toGeoJSON(options),
+            'subType': 'ArcCurve'
         };
     },
 
@@ -40,14 +43,16 @@ maptalks.ArcCurve = maptalks.Curve.extend(/** @lends maptalks.ArcCurve.prototype
     _paintOn: function (ctx, points, lineOpacity) {
         ctx.beginPath();
         this._arc(ctx, points, lineOpacity);
-        maptalks.Canvas._stroke(ctx, lineOpacity);
+        Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity);
     }
 });
 
-maptalks.ArcCurve.fromJSON = function (json) {
+ArcCurve.fromJSON = function (json) {
     var feature = json['feature'];
-    var arc = new maptalks.ArcCurve(feature['geometry']['coordinates'], json['options']);
+    var arc = new ArcCurve(feature['geometry']['coordinates'], json['options']);
     arc.setProperties(feature['properties']);
     return arc;
 };
+
+export default ArcCurve;

@@ -3,15 +3,15 @@
  * @mixin
  * @protected
  */
-maptalks.Renderable = {
+const Renderable = {
     /**
      * Register a renderer class with the given name.
      * @param  {String} name  - renderer's register key
-     * @param  {Function} clazz - renderer's class, a function (not necessarily a [maptalks.Class]{@link maptalks.Class}).
+     * @param  {Function} clazz - renderer's class, a function (not necessarily a [Class]{@link Class}).
      * @static
      * @return {*} this
      */
-    registerRenderer : function (name, clazz) {
+    registerRenderer: function (name, clazz) {
         if (!this._regRenderers) {
             this._regRenderers = {};
         }
@@ -25,10 +25,12 @@ maptalks.Renderable = {
      * @return {Function} renderer's class
      * @static
      */
-    getRendererClass : function (name) {
+    getRendererClass: function (name) {
         if (!this._regRenderers) {
             return null;
         }
         return this._regRenderers[name.toLowerCase()];
     }
 };
+
+export default Renderable;

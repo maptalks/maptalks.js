@@ -1,43 +1,50 @@
+import { extend } from 'core/util';
+import Size from 'geo/Size';
+import TextMarker from './TextMarker';
+
 /**
  * @classdesc
  * Represents point type geometry for text boxes.<br>
  * A TextBox is used to draw a box with text inside on a particular coordinate.
  * @class
  * @category geometry
- * @extends maptalks.TextMarker
- * @mixes maptalks.TextMarker.Editor
+ * @extends TextMarker
+ * @mixes TextMarker.Editor
  * @param {String} content                          - TextBox's text content
- * @param {maptalks.Coordinate} coordinates         - center
- * @param {Object} [options=null]                   - construct options defined in [maptalks.TextBox]{@link maptalks.TextBox#options}
+ * @param {Coordinate} coordinates         - center
+ * @param {Object} [options=null]                   - construct options defined in [TextBox]{@link TextBox#options}
  * @example
- * var textBox = new maptalks.TextBox('This is a textBox',[100,0])
+ * var textBox = new TextBox('This is a textBox',[100,0])
  *     .addTo(layer);
  */
-maptalks.TextBox = maptalks.TextMarker.extend(/** @lends maptalks.TextBox.prototype */{
+const TextBox = TextMarker.extend(/** @lends TextBox.prototype */ {
 
     /**
-     * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link maptalks.Marker#options}
+     * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
      * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the box automatically to fit for the textbox's text.
      * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the box.
      * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
      * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the text to the border of the box.
      */
     options: {
-        'boxAutoSize'  :   false,
-        'boxMinWidth'  :   0,
-        'boxMinHeight' :   0,
-        'boxPadding'   :   {'width' : 12, 'height' : 8}
+        'boxAutoSize': false,
+        'boxMinWidth': 0,
+        'boxMinHeight': 0,
+        'boxPadding': {
+            'width': 12,
+            'height': 8
+        }
     },
 
-    _toJSON:function (options) {
+    _toJSON: function (options) {
         return {
-            'feature' : this.toGeoJSON(options),
-            'subType' : 'TextBox',
-            'content' : this._content
+            'feature': this.toGeoJSON(options),
+            'subType': 'TextBox',
+            'content': this._content
         };
     },
 
-    _refresh:function () {
+    _refresh: function () {
         var symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
 
@@ -50,14 +57,13 @@ maptalks.TextBox = maptalks.TextMarker.extend(/** @lends maptalks.TextBox.protot
             var padding = this.options['boxPadding'];
             var width = textSize['width'] + padding['width'] * 2,
                 height = textSize['height'] + padding['height'] * 2;
-            boxSize = new maptalks.Size(width, height);
+            boxSize = new Size(width, height);
             symbol['markerWidth'] = boxSize['width'];
             symbol['markerHeight'] = boxSize['height'];
-        }  else if (boxSize) {
+        } else if (boxSize) {
             symbol['markerWidth'] = boxSize['width'];
             symbol['markerHeight'] = boxSize['height'];
         }
-
 
         var textAlign = symbol['textHorizontalAlignment'];
         if (textAlign) {
@@ -85,7 +91,7 @@ maptalks.TextBox = maptalks.TextMarker.extend(/** @lends maptalks.TextBox.protot
 
     _getInternalSymbol: function () {
         //In TextBox, textHorizontalAlignment's meaning is textAlign in the box which is reversed from original textHorizontalAlignment.
-        var textSymbol = maptalks.Util.extend({}, this._symbol);
+        var textSymbol = extend({}, this._symbol);
         if (textSymbol['textHorizontalAlignment'] === 'left') {
             textSymbol['textHorizontalAlignment'] = 'right';
         } else if (textSymbol['textHorizontalAlignment'] === 'right') {
@@ -100,10 +106,12 @@ maptalks.TextBox = maptalks.TextMarker.extend(/** @lends maptalks.TextBox.protot
     }
 });
 
-maptalks.TextBox.fromJSON = function (json) {
+TextBox.fromJSON = function (json) {
     var feature = json['feature'];
-    var textBox = new maptalks.TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
+    var textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
     textBox.setProperties(feature['properties']);
     textBox.setId(feature['id']);
     return textBox;
 };
+
+export default TextBox;

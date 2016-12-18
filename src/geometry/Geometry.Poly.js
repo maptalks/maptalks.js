@@ -1,39 +1,48 @@
+import { isArray, isNil, isNumber, isArrayHasData } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import Extent from 'geo/Extent';
+import { MeasurerUtil } from 'geo/measurer/Measurer';
+import { simplify } from 'geo/utils';
+import Geometry from './Geometry';
+
 /**
  * Common methods for geometry classes based on coordinates arrays, e.g. LineString, Polygon
- * @mixin maptalks.Geometry.Poly
+ * @mixin Geometry.Poly
  */
-maptalks.Geometry.Poly = {
+Geometry.Poly = {
     /**
      * Transform projected coordinates to view points
-     * @param  {maptalks.Coordinate[]} prjCoords  - projected coordinates
-     * @returns {maptalks.Point[]}
+     * @param  {Coordinate[]} prjCoords  - projected coordinates
+     * @returns {Point[]}
      * @private
      */
-    _getPath2DPoints:function (prjCoords, disableSimplify) {
+    _getPath2DPoints: function (prjCoords, disableSimplify) {
         var result = [];
-        if (!maptalks.Util.isArrayHasData(prjCoords)) {
+        if (!isArrayHasData(prjCoords)) {
             return result;
         }
         var map = this.getMap(),
             fullExtent = map.getFullExtent(),
             projection = this._getProjection();
-        var anti = this.options['antiMeridian'] && maptalks.MeasurerUtil.isSphere(projection),
+        var anti = this.options['antiMeridian'] && MeasurerUtil.isSphere(projection),
             isClip = map.options['clipFullExtent'],
             isSimplify = !disableSimplify && this.getLayer() && this.getLayer().options['enableSimplify'],
             tolerance = 2 * map._getResolution(),
-            isMulti = maptalks.Util.isArray(prjCoords[0]);
+            isMulti = isArray(prjCoords[0]);
         if (isSimplify && !isMulti) {
-            prjCoords = maptalks.Simplify.simplify(prjCoords, tolerance, false);
+            prjCoords = simplify(prjCoords, tolerance, false);
         }
         var i, len, p, pre, current, dx, dy, my,
-            part1 = [], part2 = [], part = part1;
+            part1 = [],
+            part2 = [],
+            part = part1;
         for (i = 0, len = prjCoords.length; i < len; i++) {
             p = prjCoords[i];
             if (isMulti) {
                 part.push(this._getPath2DPoints(p));
                 continue;
             }
-            if (maptalks.Util.isNil(p) || (isClip && !fullExtent.contains(p))) {
+            if (isNil(p) || (isClip && !fullExtent.contains(p))) {
                 continue;
             }
             if (i > 0 && (anti === 'continuous' || anti === 'split')) {
@@ -52,15 +61,15 @@ maptalks.Geometry.Poly = {
                         } else if (anti === 'split') {
                             if (dx > 0) {
                                 my = pre.y + dy * (pre.x - (-180)) / (360 - dx) * (pre.y > current.y ? -1 : 1);
-                                part.push(map.coordinateToPoint(new maptalks.Coordinate(-180, my)));
+                                part.push(map.coordinateToPoint(new Coordinate(-180, my)));
                                 part = part === part1 ? part2 : part1;
-                                part.push(map.coordinateToPoint(new maptalks.Coordinate(180, my)));
+                                part.push(map.coordinateToPoint(new Coordinate(180, my)));
 
                             } else {
                                 my = pre.y + dy * (180 - pre.x) / (360 + dx) * (pre.y > current.y ? 1 : -1);
-                                part.push(map.coordinateToPoint(new maptalks.Coordinate(180, my)));
+                                part.push(map.coordinateToPoint(new Coordinate(180, my)));
                                 part = part === part1 ? part2 : part1;
-                                part.push(map.coordinateToPoint(new maptalks.Coordinate(-180, my)));
+                                part.push(map.coordinateToPoint(new Coordinate(-180, my)));
 
                             }
                         }
@@ -85,12 +94,12 @@ maptalks.Geometry.Poly = {
         }
     },
 
-    _setPrjCoordinates:function (prjPoints) {
+    _setPrjCoordinates: function (prjPoints) {
         this._prjCoords = prjPoints;
         this.onShapeChanged();
     },
 
-    _getPrjCoordinates:function () {
+    _getPrjCoordinates: function () {
         if (!this._prjCoords) {
             var points = this._coordinates;
             this._prjCoords = this._projectCoords(points);
@@ -99,7 +108,7 @@ maptalks.Geometry.Poly = {
     },
 
     //update cached variables if geometry is updated.
-    _updateCache:function () {
+    _updateCache: function () {
         delete this._extent;
         var projection = this._getProjection();
         if (!projection) {
@@ -113,14 +122,14 @@ maptalks.Geometry.Poly = {
         }
     },
 
-    _clearProjection:function () {
+    _clearProjection: function () {
         this._prjCoords = null;
         if (this._prjHoles) {
             this._prjHoles = null;
         }
     },
 
-    _projectCoords:function (points) {
+    _projectCoords: function (points) {
         var projection = this._getProjection();
         if (projection) {
             return projection.projectCoords(points);
@@ -128,7 +137,7 @@ maptalks.Geometry.Poly = {
         return null;
     },
 
-    _unprojectCoords:function (prjPoints) {
+    _unprojectCoords: function (prjPoints) {
         var projection = this._getProjection();
         if (projection) {
             return projection.unprojectCoords(prjPoints);
@@ -136,29 +145,30 @@ maptalks.Geometry.Poly = {
         return null;
     },
 
-    _computeCenter:function () {
+    _computeCenter: function () {
         var ring = this._coordinates;
-        if (!maptalks.Util.isArrayHasData(ring)) {
+        if (!isArrayHasData(ring)) {
             return null;
         }
-        var sumx = 0, sumy = 0;
+        var sumx = 0,
+            sumy = 0;
         var counter = 0;
         var size = ring.length;
         for (var i = 0; i < size; i++) {
             if (ring[i]) {
-                if (maptalks.Util.isNumber(ring[i].x) && maptalks.Util.isNumber(ring[i].y)) {
+                if (isNumber(ring[i].x) && isNumber(ring[i].y)) {
                     sumx += ring[i].x;
                     sumy += ring[i].y;
                     counter++;
                 }
             }
         }
-        return new maptalks.Coordinate(sumx / counter, sumy / counter);
+        return new Coordinate(sumx / counter, sumy / counter);
     },
 
-    _computeExtent:function () {
+    _computeExtent: function () {
         var ring = this._coordinates;
-        if (!maptalks.Util.isArrayHasData(ring)) {
+        if (!isArrayHasData(ring)) {
             return null;
         }
         var rings = [ring];
@@ -168,12 +178,12 @@ maptalks.Geometry.Poly = {
         return this._computeCoordsExtent(rings);
     },
 
-     /**
-      * Compute extent of a group of coordinates
-      * @param  {maptalks.Coordinate[]} coords  - coordinates
-      * @returns {maptalks.Extent}
-      * @private
-      */
+    /**
+     * Compute extent of a group of coordinates
+     * @param  {Coordinate[]} coords  - coordinates
+     * @returns {Extent}
+     * @private
+     */
     _computeCoordsExtent: function (coords) {
         var result = null,
             anti = this.options['antiMeridian'];
@@ -191,7 +201,7 @@ maptalks.Geometry.Poly = {
                         pre = p;
                     }
                 }
-                ext = new maptalks.Extent(p, p);
+                ext = new Extent(p, p);
                 result = ext.combine(result);
             }
 

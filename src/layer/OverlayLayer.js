@@ -1,3 +1,12 @@
+import { isNil, isArray, isFunction, isArrayHasData, UID } from 'core/util';
+import { createFilter, getFilterFeature } from 'utils';
+import Coordinate from 'geo/Coordinate';
+import Extent from 'geo/Extent';
+import Geometry from 'geometry/Geometry';
+import GeometryCollection from 'geometry/GeometryCollection';
+import LineString from 'geometry/LineString';
+import Layer from './Layer';
+
 /**
  * @classdesc
  * Base class of all the layers that can add/remove geometries. <br>
@@ -5,17 +14,17 @@
  * @class
  * @category layer
  * @abstract
- * @extends {maptalks.Layer}
+ * @extends {Layer}
  */
-maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.prototype */{
+const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
 
     /**
      * Get a geometry by its id
      * @param  {String|Number} id   - id of the geometry
-     * @return {maptalks.Geometry}
+     * @return {Geometry}
      */
-    getGeometryById:function (id) {
-        if (maptalks.Util.isNil(id) || id === '') {
+    getGeometryById: function (id) {
+        if (isNil(id) || id === '') {
             return null;
         }
         if (!this._geoMap[id]) {
@@ -28,9 +37,9 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
      * Get all the geometries or the ones filtered if a filter function is provided.
      * @param {Function} [filter=undefined]  - a function to filter the geometries
      * @param {Object} [context=undefined]   - context of the filter function, value to use as this when executing filter.
-     * @return {maptalks.Geometry[]}
+     * @return {Geometry[]}
      */
-    getGeometries:function (filter, context) {
+    getGeometries: function (filter, context) {
         if (!filter) {
             return this._geoList.slice(0);
         }
@@ -52,7 +61,7 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
 
     /**
      * Get the first geometry, the geometry at the bottom.
-     * @return {maptalks.Geometry} first geometry
+     * @return {Geometry} first geometry
      */
     getFirstGeometry: function () {
         if (this._geoList.length === 0) {
@@ -63,7 +72,7 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
 
     /**
      * Get the last geometry, the geometry on the top
-     * @return {maptalks.Geometry} last geometry
+     * @return {Geometry} last geometry
      */
     getLastGeometry: function () {
         var len = this._geoList.length;
@@ -83,13 +92,13 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
 
     /**
      * Get extent of all the geometries in the layer, return null if the layer is empty.
-     * @return {maptalks.Extent} - extent of the layer
+     * @return {Extent} - extent of the layer
      */
     getExtent: function () {
         if (this.getCount() === 0) {
             return null;
         }
-        var extent = new maptalks.Extent();
+        var extent = new Extent();
         this.forEach(function (g) {
             extent._combine(g.getExtent());
         });
@@ -100,9 +109,9 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
      * Executes the provided callback once for each geometry present in the layer in order.
      * @param  {Function} fn - a callback function
      * @param  {*} [context=undefined]   - callback's context, value to use as this when executing callback.
-     * @return {maptalks.OverlayLayer} this
+     * @return {OverlayLayer} this
      */
-    forEach:function (fn, context) {
+    forEach: function (fn, context) {
         var copyOnWrite = this._geoList.slice(0);
         for (var i = 0, l = copyOnWrite.length; i < l; i++) {
             if (!context) {
@@ -118,11 +127,11 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
      * Creates a GeometryCollection with all the geometries that pass the test implemented by the provided function.
      * @param  {Function} fn      - Function to test each geometry
      * @param  {*} [context=undefined]  - Function's context, value to use as this when executing function.
-     * @return {maptalks.GeometryCollection} A GeometryCollection with all the geometries that pass the test
+     * @return {GeometryCollection} A GeometryCollection with all the geometries that pass the test
      */
     filter: function (fn, context) {
         var selected = [];
-        if (maptalks.Util.isFunction(fn)) {
+        if (isFunction(fn)) {
             if (fn) {
                 this.forEach(function (geometry) {
                     if (context ? fn.call(context, geometry) : fn(geometry)) {
@@ -131,49 +140,51 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
                 });
             }
         } else {
-            var filter = maptalks.Util.createFilter(fn);
+            var filter = createFilter(fn);
             this.forEach(function (geometry) {
-                var g = maptalks.Util.getFilterFeature(geometry);
+                var g = getFilterFeature(geometry);
                 if (filter(g)) {
                     selected.push(geometry);
                 }
             }, this);
         }
-        return selected.length > 0 ? new maptalks.GeometryCollection(selected) : null;
+        return selected.length > 0 ? new GeometryCollection(selected) : null;
     },
 
     /**
      * Whether the layer is empty.
      * @return {Boolean}
      */
-    isEmpty:function () {
+    isEmpty: function () {
         return this._geoList.length === 0;
     },
 
     /**
      * Adds one or more geometries to the layer
-     * @param {maptalks.Geometry|maptalks.Geometry[]} geometries - one or more geometries
+     * @param {Geometry|Geometry[]} geometries - one or more geometries
      * @param {Boolean} [fitView=false]  - automatically set the map to a fit center and zoom for the geometries
-     * @return {maptalks.OverlayLayer} this
+     * @return {OverlayLayer} this
      */
-    addGeometry:function (geometries, fitView) {
-        if (!geometries) { return this; }
-        if (!maptalks.Util.isArray(geometries)) {
+    addGeometry: function (geometries, fitView) {
+        if (!geometries) {
+            return this;
+        }
+        if (!isArray(geometries)) {
             var count = arguments.length;
             var last = arguments[count - 1];
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
             fitView = last;
-            if (last instanceof maptalks.Geometry) {
+            if (last instanceof Geometry) {
                 geometries.push(last);
                 fitView = false;
             }
             return this.addGeometry(geometries, fitView);
-        } else if (!maptalks.Util.isArrayHasData(geometries)) {
+        } else if (!isArrayHasData(geometries)) {
             return this;
         }
         this._initCache();
         var fitCounter = 0;
-        var centerSum = new maptalks.Coordinate(0, 0);
+        var centerSum = new Coordinate(0, 0);
         var extent = null,
             geo, geoId, internalId, geoCenter, geoExtent;
         for (var i = 0, len = geometries.length; i < len; i++) {
@@ -181,17 +192,17 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
             if (!geo) {
                 throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
             }
-            if (!(geo instanceof maptalks.Geometry)) {
-                geo = maptalks.Geometry.fromJSON(geo);
+            if (!(geo instanceof Geometry)) {
+                geo = Geometry.fromJSON(geo);
             }
             geoId = geo.getId();
-            if (!maptalks.Util.isNil(geoId)) {
-                if (!maptalks.Util.isNil(this._geoMap[geoId])) {
+            if (!isNil(geoId)) {
+                if (!isNil(this._geoMap[geoId])) {
                     throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + geoId + ', at index:' + i);
                 }
                 this._geoMap[geoId] = geo;
             }
-            internalId = maptalks.Util.UID();
+            internalId = UID();
             //内部全局唯一的id
             geo._setInternalId(internalId);
             this._geoList.push(geo);
@@ -217,13 +228,15 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
             /**
              * add event.
              *
-             * @event maptalks.Geometry#add
+             * @event Geometry#add
              * @type {Object}
              * @property {String} type - add
-             * @property {maptalks.Geometry} target - geometry
-             * @property {maptalks.Layer} layer - the layer added to.
+             * @property {Geometry} target - geometry
+             * @property {Layer} layer - the layer added to.
              */
-            geo._fireEvent('add', {'layer':this});
+            geo._fireEvent('add', {
+                'layer': this
+            });
         }
         this._sortGeometries();
         var map = this.getMap();
@@ -238,27 +251,29 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
         /**
          * addgeo event.
          *
-         * @event maptalks.OverlayLayer#addgeo
+         * @event OverlayLayer#addgeo
          * @type {Object}
          * @property {String} type - addgeo
-         * @property {maptalks.OverlayLayer} target - layer
-         * @property {maptalks.Geometry[]} geometries - the geometries to add
+         * @property {OverlayLayer} target - layer
+         * @property {Geometry[]} geometries - the geometries to add
          */
-        this.fire('addgeo', {'geometries':geometries});
+        this.fire('addgeo', {
+            'geometries': geometries
+        });
         return this;
     },
 
     /**
      * Removes one or more geometries from the layer
-     * @param  {String|String[]|maptalks.Geometry|maptalks.Geometry[]} geometries - geometry ids or geometries to remove
-     * @returns {maptalks.OverlayLayer} this
+     * @param  {String|String[]|Geometry|Geometry[]} geometries - geometry ids or geometries to remove
+     * @returns {OverlayLayer} this
      */
-    removeGeometry:function (geometries) {
-        if (!maptalks.Util.isArray(geometries)) {
+    removeGeometry: function (geometries) {
+        if (!isArray(geometries)) {
             return this.removeGeometry([geometries]);
         }
         for (var i = geometries.length - 1; i >= 0; i--) {
-            if (!(geometries[i] instanceof maptalks.Geometry)) {
+            if (!(geometries[i] instanceof Geometry)) {
                 geometries[i] = this.getGeometryById(geometries[i]);
             }
             if (!geometries[i] || this !== geometries[i].getLayer()) continue;
@@ -267,21 +282,23 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
         /**
          * removegeo event.
          *
-         * @event maptalks.OverlayLayer#removegeo
+         * @event OverlayLayer#removegeo
          * @type {Object}
          * @property {String} type - removegeo
-         * @property {maptalks.OverlayLayer} target - layer
-         * @property {maptalks.Geometry[]} geometries - the geometries to remove
+         * @property {OverlayLayer} target - layer
+         * @property {Geometry[]} geometries - the geometries to remove
          */
-        this.fire('removegeo', {'geometries':geometries});
+        this.fire('removegeo', {
+            'geometries': geometries
+        });
         return this;
     },
 
     /**
      * Clear all geometries in this layer
-     * @returns {maptalks.OverlayLayer} this
+     * @returns {OverlayLayer} this
      */
-    clear:function () {
+    clear: function () {
         this._clearing = true;
         this.forEach(function (geo) {
             geo.remove();
@@ -292,10 +309,10 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
         /**
          * clear event.
          *
-         * @event maptalks.OverlayLayer#clear
+         * @event OverlayLayer#clear
          * @type {Object}
          * @property {String} type - clear
-         * @property {maptalks.OverlayLayer} target - layer
+         * @property {OverlayLayer} target - layer
          */
         this.fire('clear');
         return this;
@@ -303,21 +320,23 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
 
     /**
      * Called when geometry is being removed to clear the context concerned.
-     * @param  {maptalks.Geometry} geometry - the geometry instance to remove
+     * @param  {Geometry} geometry - the geometry instance to remove
      * @protected
      */
-    onRemoveGeometry:function (geometry) {
-        if (!geometry) { return; }
+    onRemoveGeometry: function (geometry) {
+        if (!geometry) {
+            return;
+        }
         //考察geometry是否属于该图层
         if (this !== geometry.getLayer()) {
             return;
         }
         var internalId = geometry._getInternalId();
-        if (maptalks.Util.isNil(internalId)) {
+        if (isNil(internalId)) {
             return;
         }
         var geoId = geometry.getId();
-        if (!maptalks.Util.isNil(geoId)) {
+        if (!isNil(geoId)) {
             delete this._geoMap[geoId];
         }
         if (!this._clearing) {
@@ -336,15 +355,15 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
         for (var i = 0, l = this._geoList.length; i < l; i++) {
             this._geoList[i].onHide();
         }
-        return maptalks.Layer.prototype.hide.call(this);
+        return Layer.prototype.hide.call(this);
     },
 
     /**
      * Identify the geometries on the given container point
-     * @param  {maptalks.Point} point   - container point
+     * @param  {Point} point   - container point
      * @param  {Object} [options=null]  - options
      * @param  {Object} [options.count=null] - result count
-     * @return {maptalks.Geometry[]} geometries identified
+     * @return {Geometry[]} geometries identified
      */
     identify: function (point, options) {
         var geometries = this._geoList,
@@ -356,7 +375,7 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
             if (!geo || !geo.isVisible() || !geo._getPainter()) {
                 continue;
             }
-            if (!(geo instanceof maptalks.LineString) || !geo._getArrowStyle()) {
+            if (!(geo instanceof LineString) || !geo._getArrowStyle()) {
                 // Except for LineString with arrows
                 extent2d = geo._getPainter().get2DExtent();
                 if (!extent2d || !extent2d.contains(point)) {
@@ -402,7 +421,9 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
         if (len === 0) {
             return -1;
         }
-        var low = 0, high = len - 1, middle;
+        var low = 0,
+            high = len - 1,
+            middle;
         while (low <= high) {
             middle = Math.floor((low + high) / 2);
             if (this._geoList[middle] === geo) {
@@ -446,13 +467,13 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
                 return;
             }
         }
-        if (!maptalks.Util.isNil(param['new'])) {
+        if (!isNil(param['new'])) {
             if (this._geoMap[param['new']]) {
                 throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + param['new']);
             }
             this._geoMap[param['new']] = param['target'];
         }
-        if (!maptalks.Util.isNil(param['old']) && param['new'] !== param['old']) {
+        if (!isNil(param['old']) && param['new'] !== param['old']) {
             delete this._geoMap[param['old']];
         }
 
@@ -504,6 +525,6 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
     }
 });
 
-maptalks.OverlayLayer.addInitHook(function () {
+OverlayLayer.addInitHook(function () {
     this._initCache();
 });

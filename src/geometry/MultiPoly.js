@@ -1,16 +1,20 @@
+import { isArray, isArrayHasData } from 'core/util';
+import Geometry from './Geometry';
+import GeoJSON from './GeoJSON';
+
 /**
  * Common methods for MultiPoint, MultiLineString and MultiPolygon
- * @mixin maptalks.Geometry.MultiPoly
+ * @mixin Geometry.MultiPoly
  */
-maptalks.Geometry.MultiPoly = {
+Geometry.MultiPoly = {
     /**
      * Get coordinates of the collection
-     * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates
+     * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
      */
-    getCoordinates:function () {
+    getCoordinates: function () {
         var coordinates = [];
         var geometries = this.getGeometries();
-        if (!maptalks.Util.isArray(geometries)) {
+        if (!isArray(geometries)) {
             return null;
         }
         for (var i = 0, len = geometries.length; i < len; i++) {
@@ -21,12 +25,12 @@ maptalks.Geometry.MultiPoly = {
 
     /**
      * Set new coordinates to the collection
-     * @param {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates
-     * @returns {maptalks.Geometry} this
+     * @param {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
+     * @returns {Geometry} this
      * @fires maptalk.Geometry#shapechange
      */
-    setCoordinates:function (coordinates) {
-        if (maptalks.Util.isArrayHasData(coordinates)) {
+    setCoordinates: function (coordinates) {
+        if (isArrayHasData(coordinates)) {
             var geometries = [];
             for (var i = 0, len = coordinates.length; i < len; i++) {
                 var p = new this.GeometryType(coordinates[i], this.config());
@@ -39,8 +43,8 @@ maptalks.Geometry.MultiPoly = {
         return this;
     },
 
-    _initData:function (data) {
-        if (maptalks.Util.isArrayHasData(data)) {
+    _initData: function (data) {
+        if (isArrayHasData(data)) {
             if (data[0] instanceof this.GeometryType) {
                 this.setGeometries(data);
             } else {
@@ -49,8 +53,8 @@ maptalks.Geometry.MultiPoly = {
         }
     },
 
-    _checkGeometries:function (geometries) {
-        if (maptalks.Util.isArray(geometries)) {
+    _checkGeometries: function (geometries) {
+        if (isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
                 if (geometries[i] && !(geometries[i] instanceof this.GeometryType)) {
                     throw new Error('Geometry is not valid for collection, index:' + i);
@@ -61,11 +65,11 @@ maptalks.Geometry.MultiPoly = {
     },
 
     //override _exportGeoJSONGeometry in GeometryCollection
-    _exportGeoJSONGeometry:function () {
+    _exportGeoJSONGeometry: function () {
         var points = this.getCoordinates();
-        var coordinates = maptalks.GeoJSON.toNumberArrays(points);
+        var coordinates = GeoJSON.toNumberArrays(points);
         return {
-            'type':this.getType(),
+            'type': this.getType(),
             'coordinates': coordinates
         };
     }

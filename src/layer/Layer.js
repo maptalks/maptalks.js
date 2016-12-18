@@ -1,3 +1,11 @@
+import Class from 'core/class/index';
+import { extend, isNil, isNumber, setOptions } from 'core/util';
+import Eventable from 'core/Event';
+import Marker from 'geometry/Marker';
+import Polygon from 'geometry/Polygon';
+import Renderable from 'renderer/Renderable';
+import symbolizers from 'renderer/vectorlayer/symbolizers';
+
 /**
  * @classdesc
  * Base class for all the layers, defines common methods that all the layer classes share. <br>
@@ -6,12 +14,12 @@
  * @class
  * @category layer
  * @abstract
- * @extends maptalks.Class
- * @mixes maptalks.Eventable
+ * @extends Class
+ * @mixes Eventable
  */
-maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
+const Layer = Class.extend(/** @lends Layer.prototype */ {
 
-    includes: maptalks.Eventable,
+    includes: Eventable,
 
     /**
      * @property {Object}  [options=null] - base options of layer.
@@ -21,36 +29,38 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
      * @property {String}  [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
      */
-    options:{
+    options: {
         //最大最小可视范围, null表示不受限制
         'minZoom': null,
         'maxZoom': null,
         //图层是否可见
         'visible': true,
         'opacity': 1,
-        'drawImmediate' : false,
+        'drawImmediate': false,
         // context.globalCompositeOperation, 'source-in' in default
-        'globalCompositeOperation' : null,
-        'renderer' : 'canvas',
-        'dx'       : 0,
-        'dy'       : 0
+        'globalCompositeOperation': null,
+        'renderer': 'canvas',
+        'dx': 0,
+        'dy': 0
     },
 
-    initialize:function (id, opts) {
+    initialize: function (id, opts) {
         this.setId(id);
-        maptalks.Util.setOptions(this, opts);
+        setOptions(this, opts);
     },
 
 
-     /**
+    /**
      * load the tile layer, can't be overrided by sub-classes
      */
-    load:function () {
-        if (!this.getMap()) { return this; }
+    load: function () {
+        if (!this.getMap()) {
+            return this;
+        }
         this._initRenderer();
         var zIndex = this.getZIndex();
         if (this.onAdd()) {
-            if (!maptalks.Util.isNil(zIndex)) {
+            if (!isNil(zIndex)) {
                 this._renderer.setZIndex(zIndex);
             }
             this._renderer.render(true);
@@ -62,43 +72,46 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Get the layer id
      * @returns {String} id
      */
-    getId:function () {
+    getId: function () {
         return this._id;
     },
 
     /**
      * Set a new id to the layer
      * @param {String} id - new layer id
-     * @return {maptalks.Layer} this
-     * @fires maptalks.Layer#idchange
+     * @return {Layer} this
+     * @fires Layer#idchange
      */
-    setId:function (id) {
+    setId: function (id) {
         //TODO 设置id可能造成map无法找到layer
         var old = this._id;
-        if (!maptalks.Util.isNil(id)) {
+        if (!isNil(id)) {
             id = id + '';
         }
         this._id = id;
         /**
          * idchange event.
          *
-         * @event maptalks.Layer#idchange
+         * @event Layer#idchange
          * @type {Object}
          * @property {String} type - idchange
-         * @property {maptalks.Layer} target    - the layer fires the event
+         * @property {Layer} target    - the layer fires the event
          * @property {String} old        - value of the old id
          * @property {String} new        - value of the new id
          */
-        this.fire('idchange', {'old':old, 'new':id});
+        this.fire('idchange', {
+            'old': old,
+            'new': id
+        });
         return this;
     },
 
     /**
      * Adds itself to a map.
-     * @param {maptalks.Map} map - map added to
-     * @return {maptalks.Layer} this
+     * @param {Map} map - map added to
+     * @return {Layer} this
      */
-    addTo:function (map) {
+    addTo: function (map) {
         map.addLayer(this);
         return this;
     },
@@ -106,9 +119,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
     /**
      * Set a z-index to the layer
      * @param {Number} zIndex - layer's z-index
-     * @return {maptalks.Layer} this
+     * @return {Layer} this
      */
-    setZIndex:function (zIndex) {
+    setZIndex: function (zIndex) {
         this._zIndex = zIndex;
         if (this.map) {
             var layerList = this._getLayerList();
@@ -124,7 +137,7 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Get the layer's z-index
      * @return {Number}
      */
-    getZIndex:function () {
+    getZIndex: function () {
         return this._zIndex;
     },
 
@@ -133,7 +146,7 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @return {Boolean}
      * @protected
      */
-    isCanvasRender:function () {
+    isCanvasRender: function () {
         var renderer = this._getRenderer();
         if (renderer) {
             return renderer.isCanvasRender();
@@ -143,9 +156,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Get the map that the layer added to
-     * @returns {maptalks.Map}
+     * @returns {Map}
      */
-    getMap:function () {
+    getMap: function () {
         if (this.map) {
             return this.map;
         }
@@ -155,9 +168,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Brings the layer to the top of all the layers
-     * @returns {maptalks.Layer} this
+     * @returns {Layer} this
      */
-    bringToFront:function () {
+    bringToFront: function () {
         var layers = this._getLayerList();
         if (!layers) {
             return this;
@@ -173,9 +186,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Brings the layer under the bottom of all the layers
-     * @returns {maptalks.Layer} this
+     * @returns {Layer} this
      */
-    bringToBack:function () {
+    bringToBack: function () {
         var layers = this._getLayerList();
         if (!layers) {
             return this;
@@ -191,9 +204,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Show the layer
-     * @returns {maptalks.Layer} this
+     * @returns {Layer} this
      */
-    show:function () {
+    show: function () {
         if (!this.options['visible']) {
             this.options['visible'] = true;
             if (this._getRenderer()) {
@@ -206,9 +219,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Hide the layer
-     * @returns {maptalks.Layer} this
+     * @returns {Layer} this
      */
-    hide:function () {
+    hide: function () {
         if (this.options['visible']) {
             this.options['visible'] = false;
             if (this._getRenderer()) {
@@ -219,7 +232,7 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
         return this;
     },
 
-    isLoaded:function () {
+    isLoaded: function () {
         if (!this._renderer) {
             return false;
         }
@@ -230,20 +243,20 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
      * Whether the layer is visible now.
      * @return {Boolean}
      */
-    isVisible:function () {
-        if (maptalks.Util.isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
+    isVisible: function () {
+        if (isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
             return false;
         }
         var map = this.getMap();
         if (map) {
             var zoom = map.getZoom();
-            if ((!maptalks.Util.isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom) ||
-                    (!maptalks.Util.isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
+            if ((!isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom) ||
+                (!isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
                 return false;
             }
         }
 
-        if (maptalks.Util.isNil(this.options['visible'])) {
+        if (isNil(this.options['visible'])) {
             this.options['visible'] = true;
         }
         return this.options['visible'];
@@ -251,9 +264,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Remove itself from the map added to.
-     * @returns {maptalks.Layer} this
+     * @returns {Layer} this
      */
-    remove:function () {
+    remove: function () {
         if (this.map) {
             this.map.removeLayer(this);
         }
@@ -262,32 +275,32 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Get the mask geometry of the layer
-     * @return {maptalks.Geometry}
+     * @return {Geometry}
      */
-    getMask:function () {
+    getMask: function () {
         return this._mask;
     },
 
     /**
      * Set a mask geometry on the layer, only the area in the mask will be displayed.
-     * @param {maptalks.Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
-     * @returns {maptalks.Layer} this
+     * @param {Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
+     * @returns {Layer} this
      */
-    setMask:function (mask) {
-        if (!((mask instanceof maptalks.Marker && maptalks.symbolizer.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
-                mask instanceof maptalks.Polygon)) {
+    setMask: function (mask) {
+        if (!((mask instanceof Marker && symbolizers.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
+                mask instanceof Polygon)) {
             throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }
 
-        if (mask instanceof maptalks.Marker) {
+        if (mask instanceof Marker) {
             mask.updateSymbol({
-                'markerLineColor'   : 'rgba(0, 0, 0, 0)',
-                'markerFillOpacity' : 0
+                'markerLineColor': 'rgba(0, 0, 0, 0)',
+                'markerFillOpacity': 0
             });
         } else {
             mask.setSymbol({
-                'lineColor'    : 'rgba(0, 0, 0, 0)',
-                'polygonOpacity' : 0
+                'lineColor': 'rgba(0, 0, 0, 0)',
+                'polygonOpacity': 0
             });
         }
         mask._bindLayer(this);
@@ -303,9 +316,9 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
 
     /**
      * Remove the mask
-     * @returns {maptalks.Layer} this
+     * @returns {Layer} this
      */
-    removeMask:function () {
+    removeMask: function () {
         delete this._mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
@@ -321,7 +334,7 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
      * @return {Boolean} true to continue loading, false to cease.
      * @protected
      */
-    onAdd:function () {
+    onAdd: function () {
         return true;
     },
 
@@ -331,8 +344,10 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
         }
     },
 
-    _bindMap:function (map, zIndex) {
-        if (!map) { return; }
+    _bindMap: function (map, zIndex) {
+        if (!map) {
+            return;
+        }
         this.map = map;
         this.setZIndex(zIndex);
         this._registerEvents();
@@ -341,7 +356,7 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
         this.fire('add');
     },
 
-    _initRenderer:function () {
+    _initRenderer: function () {
         var renderer = this.options['renderer'];
         if (!this.constructor.getRendererClass) {
             return;
@@ -356,7 +371,7 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
         this._switchEvents('on', this._renderer);
     },
 
-    _doRemove:function () {
+    _doRemove: function () {
         if (this.onRemove) {
             this.onRemove();
         }
@@ -385,22 +400,24 @@ maptalks.Layer = maptalks.Class.extend(/** @lends maptalks.Layer.prototype */{
         this.getMap().off('_zoomend', this._refreshMask, this);
     },
 
-    _getRenderer:function () {
+    _getRenderer: function () {
         return this._renderer;
     },
 
-    _getLayerList:function () {
-        if (!this.map) { return null; }
+    _getLayerList: function () {
+        if (!this.map) {
+            return null;
+        }
         return this.map._layers;
     }
 });
 
-maptalks.Util.extend(maptalks.Layer, maptalks.Renderable);
+extend(Layer, Renderable);
 
-maptalks.Layer.extend = function (props) {
-    var NewLayer = maptalks.Class.extend.call(this, props);
+Layer.extend = function (props) {
+    var NewLayer = Class.extend.call(this, props);
     if (this._regRenderers) {
-        NewLayer._regRenderers = maptalks.Util.extend({}, this._regRenderers);
+        NewLayer._regRenderers = extend({}, this._regRenderers);
     }
     return NewLayer;
 };

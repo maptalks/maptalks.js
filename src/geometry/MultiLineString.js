@@ -1,14 +1,18 @@
+import Geometry from './Geometry';
+import GeometryCollection from './GeometryCollection';
+import { Polyline } from './LineString';
+
 /**
  * @classdesc
  * Represents a Geometry type of MultiLineString
  * @class
  * @category geometry
- * @extends maptalks.GeometryCollection
- * @mixes maptalks.Geometry.MultiPoly
- * @param {Number[][][]|maptalks.Coordinate[][]|maptalks.LineString[]} data - construct data, coordinates or a array of linestrings
- * @param {Object} [options=null]           - options defined in [maptalks.MultiLineString]{@link maptalks.MultiLineString#options}
+ * @extends GeometryCollection
+ * @mixes Geometry.MultiPoly
+ * @param {Number[][][]|Coordinate[][]|LineString[]} data - construct data, coordinates or a array of linestrings
+ * @param {Object} [options=null]           - options defined in [MultiLineString]{@link MultiLineString#options}
  * @example
- * var multiLineString = new maptalks.MultiLineString(
+ * var multiLineString = new MultiLineString(
  *      [
  *          [
  *              [121.5289450479131, 31.2420083925986],
@@ -33,16 +37,20 @@
  *      }
  * ).addTo(layer);
  */
-maptalks.MultiLineString = maptalks.MultiPolyline = maptalks.GeometryCollection.extend(/** @lends maptalks.MultiLineString.prototype */{
+const MultiLineString = GeometryCollection.extend(/** @lends MultiLineString.prototype */ {
 
-    includes:[maptalks.Geometry.MultiPoly],
+    includes: [Geometry.MultiPoly],
 
-    GeometryType:maptalks.Polyline,
+    GeometryType: Polyline,
 
-    type:maptalks.Geometry['TYPE_MULTILINESTRING'],
+    type: Geometry['TYPE_MULTILINESTRING'],
 
-    initialize:function (data, opts) {
+    initialize: function (data, opts) {
         this._initOptions(opts);
         this._initData(data);
     }
 });
+
+export const MultiPolyline = MultiLineString;
+
+export default MultiLineString;

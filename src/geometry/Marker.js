@@ -1,14 +1,21 @@
+import { isArray } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import Extent from 'geo/Extend';
+import Geometry from './Geometry';
+import Painter from 'renderer/vectorlayer/Painter';
+import symbolizers from 'renderer/vectorlayer/symbolizers';
+
 /**
  * @classdesc
  * Represents a Point type Geometry.
  * @class
  * @category geometry
- * @extends maptalks.Geometry
- * @mixes maptalks.Geometry.Center
- * @param {maptalks.Coordinate} center      - center of the marker
- * @param {Object} [options=null]           - construct options defined in [maptalks.Marker]{@link maptalks.Marker#options}
+ * @extends Geometry
+ * @mixes Geometry.Center
+ * @param {Coordinate} center      - center of the marker
+ * @param {Object} [options=null]           - construct options defined in [Marker]{@link Marker#options}
  * @example
- * var marker = new maptalks.Marker([100, 0], {
+ * var marker = new Marker([100, 0], {
  *     'id' : 'marker0',
  *     'symbol' : {
  *         'markerFile'  : 'foo.png',
@@ -20,10 +27,10 @@
  *     }
  * });
  */
-maptalks.Marker = maptalks.Geometry.extend(/** @lends maptalks.Marker.prototype */{
-    includes:[maptalks.Geometry.Center],
+const Marker = Geometry.extend(/** @lends Marker.prototype */{
+    includes: [Geometry.Center],
 
-    type: maptalks.Geometry['TYPE_POINT'],
+    type: Geometry['TYPE_POINT'],
 
     options:{
         'symbol': {
@@ -42,8 +49,8 @@ maptalks.Marker = maptalks.Geometry.extend(/** @lends maptalks.Marker.prototype 
     },
 
     initialize:function (coordinates, opts) {
-        if (coordinates && !(coordinates instanceof maptalks.Coordinate)) {
-            coordinates = new maptalks.Coordinate(coordinates);
+        if (coordinates && !(coordinates instanceof Coordinate)) {
+            coordinates = new Coordinate(coordinates);
         }
         this._coordinates = coordinates;
         this._initOptions(opts);
@@ -56,11 +63,11 @@ maptalks.Marker = maptalks.Geometry.extend(/** @lends maptalks.Marker.prototype 
      */
     _canEdit:function () {
         var symbol = this._getInternalSymbol();
-        if (maptalks.Util.isArray(symbol)) {
+        if (isArray(symbol)) {
             return false;
         }
-        return maptalks.symbolizer.VectorMarkerSymbolizer.test(symbol) || maptalks.symbolizer.VectorPathMarkerSymbolizer.test(symbol) ||
-                    maptalks.symbolizer.ImageMarkerSymbolizer.test(symbol);
+        return symbolizers.VectorMarkerSymbolizer.test(symbol) || symbolizers.VectorPathMarkerSymbolizer.test(symbol) ||
+                    symbolizers.ImageMarkerSymbolizer.test(symbol);
     },
 
     _containsPoint: function (point) {
@@ -71,7 +78,7 @@ maptalks.Marker = maptalks.Geometry.extend(/** @lends maptalks.Marker.prototype 
     _computeExtent: function () {
         var coordinates = this.getCenter();
         if (!coordinates) { return null; }
-        return new maptalks.Extent(coordinates, coordinates);
+        return new Extent(coordinates, coordinates);
     },
 
     _computeGeodesicLength:function () {
@@ -86,6 +93,8 @@ maptalks.Marker = maptalks.Geometry.extend(/** @lends maptalks.Marker.prototype 
         if (this._getPainter()) {
             return this._getPainter().getSprite(resources);
         }
-        return new maptalks.Painter(this).getSprite(resources);
+        return new Painter(this).getSprite(resources);
     }
 });
+
+export default Marker;

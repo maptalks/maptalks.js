@@ -1,14 +1,21 @@
- /**
+import { isNil, isArray, isArrayHasData } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
+import Geometry from './Geometry';
+import GeoJSON from './GeoJSON';
+import Vector from './Vector';
+
+/**
  * @classdesc
  *     Geometry class for polygon type
  * @class
  * @category geometry
- * @extends maptalks.Vector
- * @mixins maptalks.Geometry.Poly
- * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
- * @param {Object} [options=null] - construct options defined in [maptalks.Polygon]{@link maptalks.Polygon#options}
+ * @extends Vector
+ * @mixins Geometry.Poly
+ * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
+ * @param {Object} [options=null] - construct options defined in [Polygon]{@link Polygon#options}
  * @example
- * var polygon = new maptalks.Polygon(
+ * var polygon = new Polygon(
  *      [
  *          [
  *              [121.48053653961283, 31.24244899384889],
@@ -21,20 +28,20 @@
  *      ]
  *  ).addTo(layer);
  */
-maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype */{
+const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
 
-    includes:[maptalks.Geometry.Poly],
+    includes: [Geometry.Poly],
 
-    type:maptalks.Geometry['TYPE_POLYGON'],
+    type: Geometry['TYPE_POLYGON'],
 
     /**
      * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
      */
-    options:{
-        'antiMeridian' : 'continuous'
+    options: {
+        'antiMeridian': 'continuous'
     },
 
-    initialize:function (coordinates, opts) {
+    initialize: function (coordinates, opts) {
         this.setCoordinates(coordinates);
         this._initOptions(opts);
     },
@@ -42,20 +49,20 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
     /**
      * Set coordinates to the polygon
      *
-     * @param {Number[][]|Number[][][]|maptalks.Coordinate[]|maptalks.Coordinate[][]} coordinates - new coordinates
-     * @return {maptalks.Polygon} this
-     * @fires maptalks.Polygon#shapechange
+     * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - new coordinates
+     * @return {Polygon} this
+     * @fires Polygon#shapechange
      */
-    setCoordinates:function (coordinates) {
+    setCoordinates: function (coordinates) {
         if (!coordinates) {
             this._coordinates = null;
             this._holes = null;
             this._projectRings();
             return this;
         }
-        var rings = maptalks.GeoJSON.toCoordinates(coordinates);
+        var rings = GeoJSON.toCoordinates(coordinates);
         var len = rings.length;
-        if (!maptalks.Util.isArray(rings[0])) {
+        if (!isArray(rings[0])) {
             this._coordinates = this._trimRing(rings);
         } else {
             this._coordinates = this._trimRing(rings[0]);
@@ -78,13 +85,13 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
     /**
      * Gets polygons's coordinates
      *
-     * @returns {maptalks.Coordinate[][]}
+     * @returns {Coordinate[][]}
      */
-    getCoordinates:function () {
+    getCoordinates: function () {
         if (!this._coordinates) {
             return [];
         }
-        if (maptalks.Util.isArrayHasData(this._holes)) {
+        if (isArrayHasData(this._holes)) {
             var holes = [];
             for (var i = 0; i < this._holes.length; i++) {
                 holes.push(this._closeRing(this._holes[i]));
@@ -97,18 +104,18 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
     /**
      * Gets shell's coordinates of the polygon
      *
-     * @returns {maptalks.Coordinate[]}
+     * @returns {Coordinate[]}
      */
-    getShell:function () {
+    getShell: function () {
         return this._coordinates;
     },
 
 
     /**
      * Gets holes' coordinates of the polygon if it has.
-     * @returns {maptalks.Coordinate[][]}
+     * @returns {Coordinate[][]}
      */
-    getHoles:function () {
+    getHoles: function () {
         if (this.hasHoles()) {
             return this._holes;
         }
@@ -120,16 +127,16 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
      *
      * @returns {Boolean}
      */
-    hasHoles:function () {
-        if (maptalks.Util.isArrayHasData(this._holes)) {
-            if (maptalks.Util.isArrayHasData(this._holes[0])) {
+    hasHoles: function () {
+        if (isArrayHasData(this._holes)) {
+            if (isArrayHasData(this._holes[0])) {
                 return true;
             }
         }
         return false;
     },
 
-    _projectRings:function () {
+    _projectRings: function () {
         if (!this.getMap()) {
             this.onShapeChanged();
             return;
@@ -139,7 +146,7 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
         this.onShapeChanged();
     },
 
-    _cleanRing:function (ring) {
+    _cleanRing: function (ring) {
         for (var i = ring.length - 1; i >= 0; i--) {
             if (!ring[i]) {
                 ring.splice(i, 1);
@@ -152,9 +159,9 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
      * @param  {*} ring [description]
      * @private
      */
-    _checkRing:function (ring) {
+    _checkRing: function (ring) {
         this._cleanRing(ring);
-        if (!ring || !maptalks.Util.isArrayHasData(ring)) {
+        if (!ring || !isArrayHasData(ring)) {
             return false;
         }
         var lastPoint = ring[ring.length - 1];
@@ -169,9 +176,9 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
      * 如果最后一个端点与第一个端点相同, 则去掉最后一个端点
      * @private
      */
-    _trimRing:function (ring) {
+    _trimRing: function (ring) {
         var isClose = this._checkRing(ring);
-        if (maptalks.Util.isArrayHasData(ring) && isClose) {
+        if (isArrayHasData(ring) && isClose) {
             return ring.slice(0, ring.length - 1);
         } else {
             return ring;
@@ -182,38 +189,38 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
      * 如果最后一个端点与第一个端点不同, 则在最后增加与第一个端点相同的点
      * @private
      */
-    _closeRing:function (ring) {
+    _closeRing: function (ring) {
         var isClose = this._checkRing(ring);
-        if (maptalks.Util.isArrayHasData(ring) && !isClose) {
-            return ring.concat([new maptalks.Coordinate(ring[0].x, ring[0].y)]);
+        if (isArrayHasData(ring) && !isClose) {
+            return ring.concat([new Coordinate(ring[0].x, ring[0].y)]);
         } else {
             return ring;
         }
     },
 
 
-    _getPrjHoles:function () {
+    _getPrjHoles: function () {
         if (!this._prjHoles) {
             this._prjHoles = this._projectCoords(this._holes);
         }
         return this._prjHoles;
     },
 
-    _computeGeodesicLength:function (measurer) {
+    _computeGeodesicLength: function (measurer) {
         var rings = this.getCoordinates();
-        if (!maptalks.Util.isArrayHasData(rings)) {
+        if (!isArrayHasData(rings)) {
             return 0;
         }
         var result = 0;
         for (var i = 0, len = rings.length; i < len; i++) {
-            result += maptalks.GeoUtil._computeLength(rings[i], measurer);
+            result += _computeLength(rings[i], measurer);
         }
         return result;
     },
 
-    _computeGeodesicArea:function (measurer) {
+    _computeGeodesicArea: function (measurer) {
         var rings = this.getCoordinates();
-        if (!maptalks.Util.isArrayHasData(rings)) {
+        if (!isArrayHasData(rings)) {
             return 0;
         }
         var result = measurer.measureArea(rings[0]);
@@ -226,10 +233,11 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
     },
 
     _containsPoint: function (point, tolerance) {
-        var t = maptalks.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+        var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pxExtent = this._getPainter().get2DExtent().expand(t);
+
         function isContains(points) {
-            var c = maptalks.GeoUtil.pointInsidePolygon(point, points);
+            var c = pointInsidePolygon(point, points);
             if (c) {
                 return c;
             }
@@ -241,7 +249,7 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
                 p1 = points[i];
                 p2 = points[j];
 
-                if (maptalks.GeoUtil.distanceToSegment(point, p1, p2) <= t) {
+                if (distanceToSegment(point, p1, p2) <= t) {
                     return true;
                 }
             }
@@ -249,11 +257,13 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
             return false;
         }
 
-        if (!pxExtent.contains(point)) { return false; }
+        if (!pxExtent.contains(point)) {
+            return false;
+        }
 
         // screen points
         var points = this._getPath2DPoints(this._getPrjCoordinates()),
-            isSplitted = maptalks.Util.isArray(points[0]);
+            isSplitted = isArray(points[0]);
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
                 if (isContains(points[i])) {
@@ -267,3 +277,5 @@ maptalks.Polygon = maptalks.Vector.extend(/** @lends maptalks.Polygon.prototype 
 
     }
 });
+
+export default Polygon;

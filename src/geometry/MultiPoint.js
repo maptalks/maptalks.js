@@ -1,14 +1,18 @@
+import Geometry from './Geometry';
+import GeometryCollection from './GeometryCollection';
+import Marker from './Marker';
+
 /**
  * @classdesc
  * Represents a Geometry type of MultiPoint.
  * @class
  * @category geometry
- * @extends maptalks.GeometryCollection
- * @mixes maptalks.Geometry.MultiPoly
- * @param {Number[][]|maptalks.Coordinate[]|maptalks.Marker[]} data - construct data, coordinates or a array of markers
- * @param {Object} [options=null] - options defined in [nmaptalks.MultiPoint]{@link maptalks.MultiPoint#options}
+ * @extends GeometryCollection
+ * @mixes Geometry.MultiPoly
+ * @param {Number[][]|Coordinate[]|Marker[]} data - construct data, coordinates or a array of markers
+ * @param {Object} [options=null] - options defined in [nMultiPoint]{@link MultiPoint#options}
  * @example
- * var multiPoint = new maptalks.MultiPoint(
+ * var multiPoint = new MultiPoint(
  *     [
  *         [121.5080881906138, 31.241128104458117],
  *         [121.50804527526954, 31.237238340103413],
@@ -16,15 +20,17 @@
  *     ]
  * ).addTo(layer);
  */
-maptalks.MultiPoint = maptalks.GeometryCollection.extend(/** @lends maptalks.MultiPoint.prototype */{
-    includes:[maptalks.Geometry.MultiPoly],
+const MultiPoint = GeometryCollection.extend(/** @lends MultiPoint.prototype */ {
+    includes: [Geometry.MultiPoly],
 
-    GeometryType:maptalks.Marker,
+    GeometryType: Marker,
 
-    type:maptalks.Geometry['TYPE_MULTIPOINT'],
+    type: Geometry['TYPE_MULTIPOINT'],
 
-    initialize:function (data, opts) {
+    initialize: function (data, opts) {
         this._initOptions(opts);
         this._initData(data);
     }
 });
+
+export default MultiPoint;

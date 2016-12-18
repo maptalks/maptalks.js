@@ -1,12 +1,15 @@
+import Curve from './Curve';
+import Canvas from 'utils/Canvas';
+
 /**
  * @classdesc Cubic Bezier Curve
  * @class
  * @category geometry
- * @extends {maptalks.Curve}
- * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the curve
- * @param {Object} [options=null]   - construct options defined in [maptalks.CubicBezierCurve]{@link maptalks.CubicBezierCurve#options}
+ * @extends {Curve}
+ * @param {Coordinate[]|Number[][]} coordinates - coordinates of the curve
+ * @param {Object} [options=null]   - construct options defined in [CubicBezierCurve]{@link CubicBezierCurve#options}
  * @example
- * var curve = new maptalks.CubicBezierCurve(
+ * var curve = new CubicBezierCurve(
  *     [
  *         [121.47083767181408,31.214448123476995],
  *         [121.4751292062378,31.215475523000404],
@@ -19,12 +22,12 @@
  *     }
  * ).addTo(layer);
  */
-maptalks.CubicBezierCurve = maptalks.Curve.extend(/** @lends maptalks.CubicBezierCurve.prototype */{
+const CubicBezierCurve = Curve.extend(/** @lends CubicBezierCurve.prototype */ {
 
     _toJSON: function (options) {
         return {
-            'feature' : this.toGeoJSON(options),
-            'subType' : 'CubicBezierCurve'
+            'feature': this.toGeoJSON(options),
+            'subType': 'CubicBezierCurve'
         };
     },
 
@@ -33,14 +36,16 @@ maptalks.CubicBezierCurve = maptalks.Curve.extend(/** @lends maptalks.CubicBezie
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         this._bezierCurve(ctx, points, lineOpacity);
-        maptalks.Canvas._stroke(ctx, lineOpacity);
+        Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity);
     }
 });
 
-maptalks.CubicBezierCurve.fromJSON = function (json) {
+CubicBezierCurve.fromJSON = function (json) {
     var feature = json['feature'];
-    var curve = new maptalks.CubicBezierCurve(feature['geometry']['coordinates'], json['options']);
+    var curve = new CubicBezierCurve(feature['geometry']['coordinates'], json['options']);
     curve.setProperties(feature['properties']);
     return curve;
 };
+
+export default CubicBezierCurve;

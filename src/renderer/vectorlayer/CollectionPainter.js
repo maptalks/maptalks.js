@@ -1,16 +1,19 @@
+import Class from 'core/class/index';
+import PointExtent from 'geo/PointExtent';
+
 /**
  * @classdesc
  * Painter for collection type geometries
  * @class
  * @protected
- * @param {maptalks.GeometryCollection} geometry - geometry to paint
+ * @param {GeometryCollection} geometry - geometry to paint
  */
-maptalks.CollectionPainter = maptalks.Class.extend(/** @lends maptalks.CollectionPainter.prototype */{
-    initialize:function (geometry) {
+const CollectionPainter = Class.extend(/** @lends CollectionPainter.prototype */ {
+    initialize: function (geometry) {
         this.geometry = geometry;
     },
 
-    _eachPainter:function (fn) {
+    _eachPainter: function (fn) {
         var geometries = this.geometry.getGeometries();
         var painter;
         for (var i = 0, len = geometries.length; i < len; i++) {
@@ -26,7 +29,7 @@ maptalks.CollectionPainter = maptalks.Class.extend(/** @lends maptalks.Collectio
         }
     },
 
-    paint:function (matrix) {
+    paint: function (matrix) {
         if (!this.geometry) {
             return;
         }
@@ -35,64 +38,64 @@ maptalks.CollectionPainter = maptalks.Class.extend(/** @lends maptalks.Collectio
         });
     },
 
-    get2DExtent:function (resources) {
-        var  extent = new maptalks.PointExtent();
+    get2DExtent: function (resources) {
+        var extent = new PointExtent();
         this._eachPainter(function (painter) {
             extent = extent.combine(painter.get2DExtent(resources));
         });
         return extent;
     },
 
-    remove:function () {
+    remove: function () {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.remove.apply(painter, args);
         });
     },
 
-    setZIndex:function () {
+    setZIndex: function () {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.setZIndex.apply(painter, args);
         });
     },
 
-    show:function () {
+    show: function () {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.show.apply(painter, args);
         });
     },
 
-    hide:function () {
+    hide: function () {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.hide.apply(painter, args);
         });
     },
 
-    onZoomEnd:function () {
+    onZoomEnd: function () {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.onZoomEnd.apply(painter, args);
         });
     },
 
-    repaint:function () {
+    repaint: function () {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.repaint.apply(painter, args);
         });
     },
 
-    refreshSymbol:function () {
+    refreshSymbol: function () {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.refreshSymbol.apply(painter, args);
         });
     },
 
-    hasPointSymbolizer:function () {
+    hasPointSymbolizer: function () {
         var result = false;
         this._eachPainter(function (painter) {
             if (painter.hasPointSymbolizer()) {
@@ -104,3 +107,5 @@ maptalks.CollectionPainter = maptalks.Class.extend(/** @lends maptalks.Collectio
         return result;
     }
 });
+
+export default CollectionPainter;

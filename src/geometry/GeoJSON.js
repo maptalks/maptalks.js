@@ -1,17 +1,34 @@
+import {
+    isNil,
+    isArray,
+    isNumber,
+    isString,
+    parseJSON,
+    indexOfArray,
+    isArrayHasData,
+    mapArrayRecursively
+} from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import GeometryCollection from './GeometryCollection';
+import Sector from './Sector';
+import Circle from './Circle';
+import Ellipse from './Ellipse';
+import Rectangle from './Rectangle';
+
 /**
  * @classdesc
  * GeoJSON utilities
  * @class
  * @category geometry
-*  @memberOf maptalks
+ *  @memberOf maptalks
  * @name GeoJSON
  */
-maptalks.GeoJSON = {
+const GeoJSON = {
 
     /**
      * Convert one or more GeoJSON objects to a geometry
      * @param  {String|Object|Object[]} json - json objects or json string
-     * @return {maptalks.Geometry|maptalks.Geometry[]} a geometry array when input is a FeatureCollection
+     * @return {Geometry|Geometry[]} a geometry array when input is a FeatureCollection
      * @example
      * var collection = {
      *      "type": "FeatureCollection",
@@ -48,17 +65,17 @@ maptalks.GeoJSON = {
      *      ]
      *  }
      *  // a geometry array.
-     *  var geometries = maptalks.GeoJSON.toGeometry(collection);
+     *  var geometries = GeoJSON.toGeometry(collection);
      */
-    toGeometry:function (geoJSON) {
-        if (maptalks.Util.isString(geoJSON)) {
-            geoJSON = maptalks.Util.parseJSON(geoJSON);
+    toGeometry: function (geoJSON) {
+        if (isString(geoJSON)) {
+            geoJSON = parseJSON(geoJSON);
         }
-        if (maptalks.Util.isArray(geoJSON)) {
+        if (isArray(geoJSON)) {
             var resultGeos = [];
             for (var i = 0, len = geoJSON.length; i < len; i++) {
                 var geo = this._convert(geoJSON[i]);
-                if (maptalks.Util.isArray(geo)) {
+                if (isArray(geo)) {
                     resultGeos = resultGeos.concat(geo);
                 } else {
                     resultGeos.push(geo);
@@ -73,44 +90,44 @@ maptalks.GeoJSON = {
     },
 
     /**
-     * Convert one or more maptalks.Coordinate objects to GeoJSON style coordinates
-     * @param  {maptalks.Coordinate|maptalks.Coordinate[]} coordinates - coordinates to convert
+     * Convert one or more Coordinate objects to GeoJSON style coordinates
+     * @param  {Coordinate|Coordinate[]} coordinates - coordinates to convert
      * @return {Number[]|Number[][]}
      * @example
      * // result is [[100,0], [101,1]]
-     * var numCoords = maptalks.GeoJSON.toNumberArrays([new maptalks.Coordinate(100,0), new maptalks.Coordinate(101,1)]);
+     * var numCoords = GeoJSON.toNumberArrays([new Coordinate(100,0), new Coordinate(101,1)]);
      */
-    toNumberArrays:function (coordinates) {
-        if (!maptalks.Util.isArray(coordinates)) {
+    toNumberArrays: function (coordinates) {
+        if (!isArray(coordinates)) {
             return [coordinates.x, coordinates.y];
         }
-        return maptalks.Util.mapArrayRecursively(coordinates, function (coord) {
+        return mapArrayRecursively(coordinates, function (coord) {
             return [coord.x, coord.y];
         });
     },
 
     /**
-     * Convert one or more GeoJSON style coordiantes to maptalks.Coordinate objects
+     * Convert one or more GeoJSON style coordiantes to Coordinate objects
      * @param  {Number[]|Number[][]} coordinates - coordinates to convert
-     * @return {maptalks.Coordinate|maptalks.Coordinate[]}
+     * @return {Coordinate|Coordinate[]}
      * @example
-     * var coordinates = maptalks.GeoJSON.toCoordinates([[100,0], [101,1]]);
+     * var coordinates = GeoJSON.toCoordinates([[100,0], [101,1]]);
      */
-    toCoordinates:function (coordinates) {
-        if (maptalks.Util.isNumber(coordinates[0]) && maptalks.Util.isNumber(coordinates[1])) {
-            return new maptalks.Coordinate(coordinates);
+    toCoordinates: function (coordinates) {
+        if (isNumber(coordinates[0]) && isNumber(coordinates[1])) {
+            return new Coordinate(coordinates);
         }
         var result = [];
         for (var i = 0, len = coordinates.length; i < len; i++) {
             var child = coordinates[i];
-            if (maptalks.Util.isArray(child)) {
-                if (maptalks.Util.isNumber(child[0])) {
-                    result.push(new maptalks.Coordinate(child));
+            if (isArray(child)) {
+                if (isNumber(child[0])) {
+                    result.push(new Coordinate(child));
                 } else {
                     result.push(this.toCoordinates(child));
                 }
             } else {
-                result.push(new maptalks.Coordinate(child));
+                result.push(new Coordinate(child));
             }
         }
         return result;
@@ -119,11 +136,11 @@ maptalks.GeoJSON = {
     /**
      * Convert single GeoJSON object
      * @param  {Object} geoJSONObj - a GeoJSON object
-     * @return {maptalks.Geometry}
+     * @return {Geometry}
      * @private
      */
-    _convert:function (json) {
-        if (!json || maptalks.Util.isNil(json['type'])) {
+    _convert: function (json) {
+        if (!json || isNil(json['type'])) {
             return null;
         }
         var options = {};
@@ -144,30 +161,33 @@ maptalks.GeoJSON = {
                 return null;
             }
             //返回geometry数组
-            var result = maptalks.GeoJSON.toGeometry(features);
+            var result = GeoJSON.toGeometry(features);
             return result;
-        } else if (maptalks.Util.indexOfArray(type,
-            ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
+        } else if (indexOfArray(type, ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
             var clazz = (type === 'Point' ? 'Marker' : type);
             return new maptalks[clazz](json['coordinates'], options);
         } else if (type === 'GeometryCollection') {
             var geometries = json['geometries'];
-            if (!maptalks.Util.isArrayHasData(geometries)) {
-                return new maptalks.GeometryCollection();
+            if (!isArrayHasData(geometries)) {
+                return new GeometryCollection();
             }
             var mGeos = [];
             var size = geometries.length;
             for (var i = 0; i < size; i++) {
                 mGeos.push(this._convert(geometries[i]));
             }
-            return new maptalks.GeometryCollection(mGeos, options);
+            return new GeometryCollection(mGeos, options);
         } else if (type === 'Circle') {
-            return new maptalks.Circle(json['coordinates'], json['radius'], options);
-        } else if (type === 'Ellipse' || type === 'Rectangle') {
-            return new maptalks[type](json['coordinates'], json['width'], json['height'], options);
+            return new Circle(json['coordinates'], json['radius'], options);
+        } else if (type === 'Ellipse') {
+            return new Ellipse(json['coordinates'], json['width'], json['height']);
+        } else if (type === 'Rectangle') {
+            return new Rectangle(json['coordinates'], json['width'], json['height'], options);
         } else if (type === 'Sector') {
-            return new maptalks.Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], options);
+            return new Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], options);
         }
         return null;
     }
 };
+
+export default GeoJSON;

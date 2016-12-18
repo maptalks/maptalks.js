@@ -1,25 +1,28 @@
+import LineString from './LineString';
+import Canvas from 'utils/Canvas';
+
 /**
  * @classdesc Curve style LineString, an abstract parent class for all the curves.
  * @class
  * @category geometry
- * @extends {maptalks.LineString}
+ * @extends {LineString}
  */
-maptalks.Curve = maptalks.LineString.extend(/** @lends maptalks.Curve.prototype */{
+const Curve = LineString.extend(/** @lends Curve.prototype */ {
 
     _arc: function (ctx, points, lineOpacity) {
-        var degree = this.options['arcDegree']  * Math.PI / 180;
+        var degree = this.options['arcDegree'] * Math.PI / 180;
         for (var i = 1, l = points.length; i < l; i++) {
-            maptalks.Canvas._arcBetween(ctx, points[i - 1], points[i], degree);
-            maptalks.Canvas._stroke(ctx, lineOpacity);
+            Canvas._arcBetween(ctx, points[i - 1], points[i], degree);
+            Canvas._stroke(ctx, lineOpacity);
         }
     },
 
     _quadraticCurve: function (ctx, points) {
         if (points.length <= 2) {
-            maptalks.Canvas._path(ctx, points);
+            Canvas._path(ctx, points);
             return;
         }
-        maptalks.Canvas.quadraticCurve(ctx, points);
+        Canvas.quadraticCurve(ctx, points);
     },
 
     _getCubicCurvePoints: function (points) {
@@ -56,7 +59,7 @@ maptalks.Curve = maptalks.LineString.extend(/** @lends maptalks.Curve.prototype 
     _bezierCurve: function (ctx, points) {
 
         if (points.length <= 2) {
-            maptalks.Canvas._path(ctx, points);
+            Canvas._path(ctx, points);
             return;
         }
         var ctrlPts = this._getCubicCurvePoints(points);
@@ -66,3 +69,5 @@ maptalks.Curve = maptalks.LineString.extend(/** @lends maptalks.Curve.prototype 
         }
     }
 });
+
+export default Curve;

@@ -1,15 +1,19 @@
+import Geometry from './Geometry';
+import GeometryCollection from './GeometryCollection';
+import Polygon from './Polygon';
+
 /**
  * @classdesc
  * Represents a Geometry type of MultiPolygon
  * @class
  * @category geometry
  * @category geometry
- * @extends maptalks.GeometryCollection
- * @mixes maptalks.Geometry.MultiPoly
- * @param {Number[][][][]|maptalks.Coordinate[][][]|maptalks.Polygon[]} data - construct data, coordinates or a array of polygons
- * @param {Object} [options=null]           - options defined in [maptalks.MultiPolygon]{@link maptalks.MultiPolygon#options}
+ * @extends GeometryCollection
+ * @mixes Geometry.MultiPoly
+ * @param {Number[][][][]|Coordinate[][][]|Polygon[]} data - construct data, coordinates or a array of polygons
+ * @param {Object} [options=null]           - options defined in [MultiPolygon]{@link MultiPolygon#options}
  * @example
- * var multiPolygon = new maptalks.MultiPolygon(
+ * var multiPolygon = new MultiPolygon(
  *       [
  *           [
  *               [
@@ -44,14 +48,16 @@
  *           draggable:true
  * }).addTo(layer);
  */
-maptalks.MultiPolygon = maptalks.GeometryCollection.extend(/** @lends maptalks.MultiPolygon.prototype */{
-    includes:[maptalks.Geometry.MultiPoly],
-    GeometryType:maptalks.Polygon,
+const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.prototype */ {
+    includes: [Geometry.MultiPoly],
+    GeometryType: Polygon,
 
-    type:maptalks.Geometry['TYPE_MULTIPOLYGON'],
+    type: Geometry['TYPE_MULTIPOLYGON'],
 
-    initialize:function (data, opts) {
+    initialize: function (data, opts) {
         this._initOptions(opts);
         this._initData(data);
     }
 });
+
+export default MultiPolygon;

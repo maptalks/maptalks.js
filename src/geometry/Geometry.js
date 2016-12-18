@@ -1,3 +1,31 @@
+import Class from 'core/class/index';
+import Eventable from 'core/Event';
+import Handlerable from 'core/Handlerable';
+import {
+    extend,
+    isNil,
+    isString,
+    isNumber,
+    isArray,
+    isObject,
+    isArrayHasData,
+    mapArrayRecursively,
+    setOptions
+} from 'core/util';
+import { extendSymbol } from 'core/util/style';
+import { convertResourceUrl, getExternalResources } from 'core/util/resource';
+import Point from 'geo/Point';
+import Coordinate from 'geo/Coordinate';
+import Extent from 'geo/Extend';
+import { MeasurerUtil } from 'geo/measurer/Measurer';
+import { OverlayLayer } from 'layer';
+import GeometryCollection from './GeometryCollection';
+import GeoJSON from './GeoJSON';
+import Painter from 'renderer/vectorlayer/Painter';
+import CollectionPainter from 'renderer/vectorlayer/CollectionPainter';
+import symbolizers from 'renderer/vectorlayer/symbolizers';
+import { Symbolizer } from 'renderer/vectorlayer/symbolizers';
+
 /**
  * @classdesc
  * Base class for all the geometries, it is not intended to be instantiated but extended. <br/>
@@ -7,15 +35,15 @@
  * @class
  * @category geometry
  * @abstract
- * @extends maptalks.Class
- * @mixes maptalks.Eventable
- * @mixes maptalks.Handlerable
- * @mixes maptalks.ui.Menu.Mixin
+ * @extends Class
+ * @mixes Eventable
+ * @mixes Handlerable
+ * @mixes ui.Menu.Mixin
  */
-maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype */{
-    includes: [maptalks.Eventable, maptalks.Handlerable],
+const Geometry = Class.extend(/** @lends Geometry.prototype */{
+    includes: [Eventable, Handlerable],
 
-    /** @lends maptalks.Geometry */
+    /** @lends Geometry */
     statics:{
         /**
          * Type of [Point]{@link http://geojson.org/geojson-spec.html#point}
@@ -80,57 +108,57 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Returns the first coordinate of the geometry.
      *
-     * @return {maptalks.Coordinate} First Coordinate
+     * @return {Coordinate} First Coordinate
      */
     getFirstCoordinate:function () {
-        if (this instanceof maptalks.GeometryCollection) {
+        if (this instanceof GeometryCollection) {
             var geometries = this.getGeometries();
-            if (!geometries || !maptalks.Util.isArrayHasData(geometries)) {
+            if (!geometries || !isArrayHasData(geometries)) {
                 return null;
             }
             return geometries[0].getFirstCoordinate();
         }
         var coordinates = this.getCoordinates();
-        if (!maptalks.Util.isArray(coordinates)) {
+        if (!isArray(coordinates)) {
             return coordinates;
         }
         var first = coordinates;
         do {
             first = first[0];
-        } while (maptalks.Util.isArray(first));
+        } while (isArray(first));
         return first;
     },
 
     /**
      * Returns the last coordinate of the geometry.
      *
-     * @return {maptalks.Coordinate} Last Coordinate
+     * @return {Coordinate} Last Coordinate
      */
     getLastCoordinate:function () {
-        if (this instanceof maptalks.GeometryCollection) {
+        if (this instanceof GeometryCollection) {
             var geometries = this.getGeometries();
-            if (!geometries || !maptalks.Util.isArrayHasData(geometries)) {
+            if (!geometries || !isArrayHasData(geometries)) {
                 return null;
             }
             return geometries[geometries.length - 1].getLastCoordinate();
         }
         var coordinates = this.getCoordinates();
-        if (!maptalks.Util.isArray(coordinates)) {
+        if (!isArray(coordinates)) {
             return coordinates;
         }
         var last = coordinates;
         do {
             last = last[last.length - 1];
-        } while (maptalks.Util.isArray(last));
+        } while (isArray(last));
         return last;
     },
 
     /**
      * Adds the geometry to a layer
-     * @param {maptalks.Layer} layer    - layer add to
+     * @param {Layer} layer    - layer add to
      * @param {Boolean} [fitview=false] - automatically set the map to a fit center and zoom for the geometry
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#add
+     * @return {Geometry} this
+     * @fires Geometry#add
      */
     addTo:function (layer, fitview) {
         layer.addGeometry(this, fitview);
@@ -139,7 +167,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     /**
      * Get the layer which this geometry added to.
-     * @returns {maptalks.Layer} - layer added to
+     * @returns {Layer} - layer added to
      */
     getLayer:function () {
         if (!this._layer) { return null; }
@@ -148,7 +176,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     /**
      * Get the map which this geometry added to
-     * @returns {maptalks.Map} - map added to
+     * @returns {Map} - map added to
      */
     getMap:function () {
         if (!this._layer) { return null; }
@@ -166,8 +194,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Set geometry's id.
      * @param {String} id - new id
-     * @returns {maptalks.Geometry} this
-     * @fires maptalks.Geometry#idchange
+     * @returns {Geometry} this
+     * @fires Geometry#idchange
      */
     setId:function (id) {
         var oldId = this.getId();
@@ -175,14 +203,18 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         /**
          * idchange event.
          *
-         * @event maptalks.Geometry#idchange
+         * @event Geometry#idchange
          * @type {Object}
          * @property {String} type - idchange
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          * @property {String|Number} old        - value of the old id
          * @property {String|Number} new        - value of the new id
          */
-        this._fireEvent('idchange', {'old':oldId, 'new':id});
+        this._fireEvent('idchange', {
+            'old': oldId,
+            'new': id
+        });
+
         return this;
     },
 
@@ -204,23 +236,27 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Set a new properties to geometry.
      * @param {Object} properties - new properties
-     * @returns {maptalks.Geometry} this
-     * @fires maptalks.Geometry#propertieschange
+     * @returns {Geometry} this
+     * @fires Geometry#propertieschange
      */
     setProperties:function (properties) {
         var old = this.properties;
-        this.properties = maptalks.Util.isObject(properties) ? maptalks.Util.extend({}, properties) : properties;
+        this.properties = isObject(properties) ? extend({}, properties) : properties;
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
-         * @event maptalks.Geometry#propertieschange
+         * @event Geometry#propertieschange
          * @type {Object}
          * @property {String} type - propertieschange
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          * @property {String|Number} old        - value of the old properties
          * @property {String|Number} new        - value of the new properties
          */
-        this._fireEvent('propertieschange', {'old':old, 'new':properties});
+        this._fireEvent('propertieschange', {
+            'old': old,
+            'new': properties
+        });
+
         return this;
     },
 
@@ -240,10 +276,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     getSymbol:function () {
         var s = this._symbol;
         if (s) {
-            if (!maptalks.Util.isArray(s)) {
-                return maptalks.Util.extend({}, s);
+            if (!isArray(s)) {
+                return extend({}, s);
             } else {
-                return maptalks.Util.extendSymbol(s);
+                return extendSymbol(s);
             }
         }
         return null;
@@ -253,8 +289,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
      * Set a new symbol to style the geometry.
      * @param {Object} symbol - new symbol
      * @see {@tutorial symbol Style a geometry with symbols}
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#symbolchange
+     * @return {Geometry} this
+     * @fires Geometry#symbolchange
      */
     setSymbol:function (symbol) {
         this._symbol = this._prepareSymbol(symbol);
@@ -266,10 +302,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
      * Update geometry's current symbol.
      *
      * @param  {Object} props - symbol properties to update
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#symbolchange
+     * @return {Geometry} this
+     * @fires Geometry#symbolchange
      * @example
-     * var marker = new maptalks.Marker([0, 0], {
+     * var marker = new Marker([0, 0], {
      *    symbol : {
      *       markerType : 'ellipse',
      *       markerWidth : 20,
@@ -287,9 +323,9 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         }
         var s = this.getSymbol();
         if (s) {
-            s = maptalks.Util.extendSymbol(s, props);
+            s = extendSymbol(s, props);
         } else {
-            s = maptalks.Util.extendSymbol(this._getInternalSymbol(), props);
+            s = extendSymbol(this._getInternalSymbol(), props);
         }
         return this.setSymbol(s);
     },
@@ -297,7 +333,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Get the geographical center of the geometry.
      *
-     * @returns {maptalks.Coordinate}
+     * @returns {Coordinate}
      */
     getCenter:function () {
         return this._computeCenter(this._getMeasurer()).copy();
@@ -306,13 +342,13 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Get the geometry's geographical extent
      *
-     * @returns {maptalks.Extent} geometry's extent
+     * @returns {Extent} geometry's extent
      */
     getExtent:function () {
         var prjExt = this._getPrjExtent();
         if (prjExt) {
             var p = this._getProjection();
-            return new maptalks.Extent(p.unproject(new maptalks.Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new maptalks.Coordinate(prjExt['xmax'], prjExt['ymax'])));
+            return new Extent(p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax'])));
         } else {
             return this._computeExtent(this._getMeasurer());
         }
@@ -321,7 +357,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Get pixel size of the geometry, which may vary in different zoom levels.
      *
-     * @returns {maptalks.Size}
+     * @returns {Size}
      */
     getSize: function () {
         var map = this.getMap();
@@ -335,11 +371,11 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Whehter the geometry contains the input container point.
      *
-     * @param  {maptalks.Point|maptalks.Coordinate} point - input container point or coordinate
+     * @param  {Point|Coordinate} point - input container point or coordinate
      * @param  {Number} [t=undefined] - tolerance in pixel
      * @return {Boolean}
      * @example
-     * var circle = new maptalks.Circle([0, 0], 1000)
+     * var circle = new Circle([0, 0], 1000)
      *     .addTo(layer);
      * var contains = circle.containsPoint([400, 300]);
      */
@@ -347,17 +383,17 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         if (!this.getMap()) {
             throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
-        if (containerPoint instanceof maptalks.Coordinate) {
+        if (containerPoint instanceof Coordinate) {
             containerPoint = this.getMap().coordinateToContainerPoint(containerPoint);
         }
-        return this._containsPoint(this.getMap()._containerPointToPoint(new maptalks.Point(containerPoint)), t);
+        return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
     },
 
     /**
      * Show the geometry.
      *
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#show
+     * @return {Geometry} this
+     * @fires Geometry#show
      */
     show:function () {
         this.options['visible'] = true;
@@ -369,10 +405,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
             /**
              * show event
              *
-             * @event maptalks.Geometry#show
+             * @event Geometry#show
              * @type {Object}
              * @property {String} type - show
-             * @property {maptalks.Geometry} target - the geometry fires the event
+             * @property {Geometry} target - the geometry fires the event
              */
             this._fireEvent('show');
         }
@@ -382,8 +418,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Hide the geometry
      *
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#hide
+     * @return {Geometry} this
+     * @fires Geometry#hide
      */
     hide:function () {
         this.options['visible'] = false;
@@ -396,10 +432,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
             /**
              * hide event
              *
-             * @event maptalks.Geometry#hide
+             * @event Geometry#hide
              * @type {Object}
              * @property {String} type - hide
-             * @property {maptalks.Geometry} target - the geometry fires the event
+             * @property {Geometry} target - the geometry fires the event
              */
             this._fireEvent('hide');
         }
@@ -419,18 +455,18 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         if (!symbol) {
             return true;
         }
-        if (maptalks.Util.isArray(symbol)) {
+        if (isArray(symbol)) {
             if (symbol.length === 0) {
                 return true;
             }
             for (var i = 0, len = symbol.length; i < len; i++) {
-                if (maptalks.Util.isNil(symbol[i]['opacity']) || symbol[i]['opacity'] > 0) {
+                if (isNil(symbol[i]['opacity']) || symbol[i]['opacity'] > 0) {
                     return true;
                 }
             }
             return false;
         } else {
-            return (maptalks.Util.isNil(symbol['opacity']) || (maptalks.Util.isNumber(symbol['opacity']) && symbol['opacity'] > 0));
+            return (isNil(symbol['opacity']) || (isNumber(symbol['opacity']) && symbol['opacity'] > 0));
         }
     },
 
@@ -445,8 +481,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Set a new zIndex to Geometry and fire zindexchange event (will cause layer to sort geometries and render)
      * @param {Number} zIndex - new zIndex
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#zindexchange
+     * @return {Geometry} this
+     * @fires Geometry#zindexchange
      */
     setZIndex: function (zIndex) {
         var old = this._zIndex;
@@ -454,14 +490,18 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         /**
          * zindexchange event, fired when geometry's zIndex is changed.
          *
-         * @event maptalks.Geometry#zindexchange
+         * @event Geometry#zindexchange
          * @type {Object}
          * @property {String} type - zindexchange
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          * @property {Number} old        - old zIndex
          * @property {Number} new        - new zIndex
          */
-        this._fireEvent('zindexchange', {'old':old, 'new':zIndex});
+        this._fireEvent('zindexchange', {
+            'old': old,
+            'new': zIndex
+        });
+
         return this;
     },
 
@@ -470,7 +510,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
      * Can be useful to improve perf when a lot of geometries' zIndex need to be updated. <br>
      * When updated N geometries, You can use setZIndexSilently with (N-1) geometries and use setZIndex with the last geometry for layer to sort and render.
      * @param {Number} zIndex - new zIndex
-     * @return {maptalks.Geometry} this
+     * @return {Geometry} this
      */
     setZIndexSilently: function (zIndex) {
         this._zIndex = zIndex;
@@ -479,12 +519,12 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     /**
      * Bring the geometry on the top
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#zindexchange
+     * @return {Geometry} this
+     * @fires Geometry#zindexchange
      */
     bringToFront: function () {
         var layer = this.getLayer();
-        if (!layer || !(layer instanceof maptalks.OverlayLayer)) {
+        if (!layer || !(layer instanceof OverlayLayer)) {
             return this;
         }
         var topZ = layer.getLastGeometry().getZIndex();
@@ -494,12 +534,12 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     /**
      * Bring the geometry to the back
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#zindexchange
+     * @return {Geometry} this
+     * @fires Geometry#zindexchange
      */
     bringToBack: function () {
         var layer = this.getLayer();
-        if (!layer || !(layer instanceof maptalks.OverlayLayer)) {
+        if (!layer || !(layer instanceof OverlayLayer)) {
             return this;
         }
         var bottomZ = layer.getFirstGeometry().getZIndex();
@@ -510,23 +550,23 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     /**
      * Translate or move the geometry by the given offset.
      *
-     * @param  {maptalks.Coordinate} offset - translate offset
-     * @return {maptalks.Geometry} this
-     * @fires maptalks.Geometry#positionchange
-     * @fires maptalks.Geometry#shapechange
+     * @param  {Coordinate} offset - translate offset
+     * @return {Geometry} this
+     * @fires Geometry#positionchange
+     * @fires Geometry#shapechange
      */
     translate:function (offset) {
         if (!offset) {
             return this;
         }
-        offset = new maptalks.Coordinate(offset);
+        offset = new Coordinate(offset);
         if (offset.x === 0 && offset.y === 0) {
             return this;
         }
         var coordinates = this.getCoordinates();
         if (coordinates) {
-            if (maptalks.Util.isArray(coordinates)) {
-                var translated = maptalks.Util.mapArrayRecursively(coordinates, function (coord) {
+            if (isArray(coordinates)) {
+                var translated = mapArrayRecursively(coordinates, function (coord) {
                     return coord.add(offset);
                 });
                 this.setCoordinates(translated);
@@ -544,7 +584,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
      * @param {Number} [count=4]          - flash times
      * @param {Function} [cb=null]        - callback function when flash ended
      * @param {*} [context=null]          - callback context
-     * @return {maptalks.Geometry} this
+     * @return {Geometry} this
      */
     flash: function (interval, count, cb, context) {
         if (!interval) {
@@ -585,11 +625,11 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     /**
      * Returns a copy of the geometry without the event listeners.
-     * @returns {maptalks.Geometry} copy
+     * @returns {Geometry} copy
      */
     copy:function () {
         var json = this.toJSON();
-        var ret = maptalks.Geometry.fromJSON(json);
+        var ret = Geometry.fromJSON(json);
         //restore visibility
         ret.options['visible'] = true;
         return ret;
@@ -598,9 +638,9 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     /**
      * remove itself from the layer if any.
-     * @returns {maptalks.Geometry} this
-     * @fires maptalks.Geometry#removestart
-     * @fires maptalks.Geometry#remove
+     * @returns {Geometry} this
+     * @fires Geometry#removestart
+     * @fires Geometry#remove
      */
     remove:function () {
         var layer = this.getLayer();
@@ -610,10 +650,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         /**
          * removestart event.
          *
-         * @event maptalks.Geometry#removestart
+         * @event Geometry#removestart
          * @type {Object}
          * @property {String} type - removestart
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('removestart');
 
@@ -621,19 +661,19 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         /**
          * removeend event.
          *
-         * @event maptalks.Geometry#removeend
+         * @event Geometry#removeend
          * @type {Object}
          * @property {String} type - removeend
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('removeend');
         /**
          * remove event.
          *
-         * @event maptalks.Geometry#remove
+         * @event Geometry#remove
          * @type {Object}
          * @property {String} type - remove
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('remove');
         return this;
@@ -663,16 +703,16 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
             'type':'Feature',
             'geometry':null
         };
-        if (maptalks.Util.isNil(opts['geometry']) || opts['geometry']) {
+        if (isNil(opts['geometry']) || opts['geometry']) {
             var geoJSON = this._exportGeoJSONGeometry();
             feature['geometry'] = geoJSON;
         }
         var id = this.getId();
-        if (!maptalks.Util.isNil(id)) {
+        if (!isNil(id)) {
             feature['id'] = id;
         }
         var properties;
-        if (maptalks.Util.isNil(opts['properties']) || opts['properties']) {
+        if (isNil(opts['properties']) || opts['properties']) {
             properties = this._exportProperties();
         }
         feature['properties'] = properties;
@@ -730,7 +770,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         }
         var json = this._toJSON(options);
         var other = this._exportGraphicOptions(options);
-        maptalks.Util.extend(json, other);
+        extend(json, other);
         return json;
     },
 
@@ -751,8 +791,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     },
 
     /**
-     * Get the connect points for [ConnectorLine]{@link maptalks.ConnectorLine}
-     * @return {maptalks.Coordinate[]} connect points
+     * Get the connect points for [ConnectorLine]{@link ConnectorLine}
+     * @return {Coordinate[]} connect points
      * @private
      */
     _getConnectPoints: function () {
@@ -767,7 +807,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         var symbol = opts['symbol'];
         var properties = opts['properties'];
         var id = opts['id'];
-        maptalks.Util.setOptions(this, opts);
+        setOptions(this, opts);
         delete this.options['symbol'];
         delete this.options['id'];
         delete this.options['properties'];
@@ -777,7 +817,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         if (properties) {
             this.setProperties(properties);
         }
-        if (!maptalks.Util.isNil(id)) {
+        if (!isNil(id)) {
             this.setId(id);
         }
         this._zIndex = 0;
@@ -795,24 +835,24 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     },
 
     _prepareSymbol:function (symbol) {
-        if (maptalks.Util.isArray(symbol)) {
+        if (isArray(symbol)) {
             var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
-                cookedSymbols.push(maptalks.Util.convertResourceUrl(this._checkAndCopySymbol(symbol[i])));
+                cookedSymbols.push(convertResourceUrl(this._checkAndCopySymbol(symbol[i])));
             }
             return cookedSymbols;
         } else if (symbol) {
             symbol = this._checkAndCopySymbol(symbol);
-            return maptalks.Util.convertResourceUrl(symbol);
+            return convertResourceUrl(symbol);
         }
         return null;
     },
 
     _checkAndCopySymbol: function (symbol) {
         var s = {};
-        var numberProperties = maptalks.Symbolizer.numberProperties;
+        var numberProperties = Symbolizer.numberProperties;
         for (var i in symbol) {
-            if (numberProperties[i] && maptalks.Util.isString(symbol[i])) {
+            if (numberProperties[i] && isString(symbol[i])) {
                 s[i] = +symbol[i];
             } else {
                 s[i] = symbol[i];
@@ -849,7 +889,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         if (!this._extent && p) {
             var ext = this._computeExtent(p);
             if (ext) {
-                var isAntiMeridian = this.options['antiMeridian'] && maptalks.MeasurerUtil.isSphere(p);
+                var isAntiMeridian = this.options['antiMeridian'] && MeasurerUtil.isSphere(p);
                 if (isAntiMeridian && isAntiMeridian !== 'default') {
                     var firstCoordinate = this.getFirstCoordinate();
                     if (isAntiMeridian === 'continuous') {
@@ -867,8 +907,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
                         ext['xmin'] = tmp;
                     }
                 }
-                this._extent = new maptalks.Extent(p.project(new maptalks.Coordinate(ext['xmin'], ext['ymin'])),
-                    p.project(new maptalks.Coordinate(ext['xmax'], ext['ymax'])));
+                this._extent = new Extent(p.project(new Coordinate(ext['xmin'], ext['ymin'])),
+                    p.project(new Coordinate(ext['xmax'], ext['ymax'])));
             }
 
         }
@@ -919,7 +959,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         if (this._getProjection()) {
             return this._getProjection();
         }
-        return maptalks.MeasurerUtil.getInstance(this.options['measure']);
+        return MeasurerUtil.getInstance(this.options['measure']);
     },
 
     _getProjection:function () {
@@ -934,16 +974,16 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     _getExternalResources:function () {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
-        var resources = maptalks.Util.getExternalResources(symbol);
+        var resources = getExternalResources(symbol);
         return resources;
     },
 
     _getPainter:function () {
         if (!this._painter && this.getMap()) {
-            if (this instanceof maptalks.GeometryCollection) {
-                this._painter = new maptalks.CollectionPainter(this);
+            if (this instanceof GeometryCollection) {
+                this._painter = new CollectionPainter(this);
             } else {
-                this._painter = new maptalks.Painter(this);
+                this._painter = new Painter(this);
             }
         }
         return this._painter;
@@ -976,10 +1016,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         /**
          * shapechange event.
          *
-         * @event maptalks.Geometry#shapechange
+         * @event Geometry#shapechange
          * @type {Object}
          * @property {String} type - shapechange
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('shapechange');
     },
@@ -993,10 +1033,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         /**
          * positionchange event.
          *
-         * @event maptalks.Geometry#positionchange
+         * @event Geometry#positionchange
          * @type {Object}
          * @property {String} type - positionchange
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('positionchange');
     },
@@ -1009,10 +1049,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         /**
          * symbolchange event.
          *
-         * @event maptalks.Geometry#symbolchange
+         * @event Geometry#symbolchange
          * @type {Object}
          * @property {String} type - symbolchange
-         * @property {maptalks.Geometry} target - the geometry fires the event
+         * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('symbolchange');
     },
@@ -1035,7 +1075,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     /**
      * Set a parent to the geometry, which is usually a MultiPolygon, GeometryCollection, etc
-     * @param {maptalks.GeometryCollection} geometry - parent geometry
+     * @param {GeometryCollection} geometry - parent geometry
      * @private
      */
     _setParent:function (geometry) {
@@ -1068,13 +1108,13 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     _exportGraphicOptions:function (options) {
         var json = {};
-        if (maptalks.Util.isNil(options['options']) || options['options']) {
+        if (isNil(options['options']) || options['options']) {
             json['options'] = this.config();
         }
-        if (maptalks.Util.isNil(options['symbol']) || options['symbol']) {
+        if (isNil(options['symbol']) || options['symbol']) {
             json['symbol'] = this.getSymbol();
         }
-        if (maptalks.Util.isNil(options['infoWindow']) || options['infoWindow']) {
+        if (isNil(options['infoWindow']) || options['infoWindow']) {
             if (this._infoWinOptions) {
                 json['infoWindow'] = this._infoWinOptions;
             }
@@ -1084,7 +1124,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     _exportGeoJSONGeometry:function () {
         var points = this.getCoordinates();
-        var coordinates = maptalks.GeoJSON.toNumberArrays(points);
+        var coordinates = GeoJSON.toNumberArrays(points);
         return {
             'type'        : this.getType(),
             'coordinates' : coordinates
@@ -1095,8 +1135,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         var properties = null;
         var geoProperties = this.getProperties();
         if (geoProperties) {
-            if (maptalks.Util.isObject(geoProperties)) {
-                properties = maptalks.Util.extend({}, geoProperties);
+            if (isObject(geoProperties)) {
+                properties = extend({}, geoProperties);
             } else {
                 geoProperties = properties;
             }
@@ -1107,10 +1147,10 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 });
 
 /**
- * Produce a geometry from one or more [profile json]{@link maptalks.Geometry#toJSON} or GeoJSON.
+ * Produce a geometry from one or more [profile json]{@link Geometry#toJSON} or GeoJSON.
  * @static
  * @param  {Object} json - a geometry's profile json or a geojson
- * @return {maptalks.Geometry} geometry
+ * @return {Geometry} geometry
  * @example
  * var profile = {
         "feature": {
@@ -1130,14 +1170,14 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
             "markerHeight": 20
         }
     };
-    var marker = maptalks.Geometry.fromJSON(profile);
+    var marker = Geometry.fromJSON(profile);
  */
-maptalks.Geometry.fromJSON = function (json) {
-    if (maptalks.Util.isArray(json)) {
+Geometry.fromJSON = function (json) {
+    if (isArray(json)) {
         var result = [], c;
         for (var i = 0, len = json.length; i < len; i++) {
-            c = maptalks.Geometry.fromJSON(json[i]);
-            if (maptalks.Util.isArray(json)) {
+            c = Geometry.fromJSON(json[i]);
+            if (isArray(json)) {
                 result = result.concat(c);
             } else {
                 result.push(c);
@@ -1147,17 +1187,17 @@ maptalks.Geometry.fromJSON = function (json) {
     }
 
     if (json && !json['feature']) {
-        return maptalks.GeoJSON.toGeometry(json);
+        return GeoJSON.toGeometry(json);
     }
     var geometry;
     if (json['subType']) {
         geometry = maptalks[json['subType']].fromJSON(json);
-        if (!maptalks.Util.isNil(json['feature']['id'])) {
+        if (!isNil(json['feature']['id'])) {
             geometry.setId(json['feature']['id']);
         }
     } else {
         var feature = json['feature'];
-        geometry = maptalks.GeoJSON.toGeometry(feature);
+        geometry = GeoJSON.toGeometry(feature);
         if (json['options']) {
             geometry.config(json['options']);
         }
@@ -1172,41 +1212,41 @@ maptalks.Geometry.fromJSON = function (json) {
 };
 
 
-maptalks.Geometry.getMarkerPathBase64 = function (symbol) {
+Geometry.getMarkerPathBase64 = function (symbol) {
     if (!symbol['markerPath']) {
         return null;
     }
-    var op = 1, styles =  maptalks.symbolizer.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
+    var op = 1, styles =  symbolizers.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
-    if (maptalks.Util.isNumber(symbol['markerOpacity'])) {
+    if (isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];
     }
-    if (maptalks.Util.isNumber(symbol['opacity'])) {
+    if (isNumber(symbol['opacity'])) {
         op *= symbol['opacity'];
     }
     var p, svgStyles = {};
     if (styles) {
         for (p in styles['stroke']) {
             if (styles['stroke'].hasOwnProperty(p)) {
-                if (!maptalks.Util.isNil(styles['stroke'][p])) {
+                if (!isNil(styles['stroke'][p])) {
                     svgStyles[p] = styles['stroke'][p];
                 }
             }
         }
         for (p in styles['fill']) {
             if (styles['fill'].hasOwnProperty(p)) {
-                if (!maptalks.Util.isNil(styles['fill'][p])) {
+                if (!isNil(styles['fill'][p])) {
                     svgStyles[p] = styles['fill'][p];
                 }
             }
         }
     }
 
-    var pathes = maptalks.Util.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    var pathes = isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
     var i, path, pathesToRender = [];
     for (i = 0; i < pathes.length; i++) {
-        path = maptalks.Util.isString(pathes[i]) ? {'path' : pathes[i]} : pathes[i];
-        path = maptalks.Util.extend({}, path, svgStyles);
+        path = isString(pathes[i]) ? { 'path': pathes[i] } : pathes[i];
+        path = extend({}, path, svgStyles);
         path['d'] = path['path'];
         delete path['path'];
         pathesToRender.push(path);
@@ -1235,6 +1275,6 @@ maptalks.Geometry.getMarkerPathBase64 = function (symbol) {
         svg.push(strPath);
     }
     svg.push('</svg>');
-    var b64 = 'data:image/svg+xml;base64,' + maptalks.Util.btoa(svg.join(' '));
+    var b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' '));
     return b64;
 };

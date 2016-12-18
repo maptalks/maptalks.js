@@ -1,11 +1,14 @@
+import Curve from './Curve';
+import Canvas from 'utils/Canvas';
+
 /**
  * @classdesc Quadratic Bezier Curve
  * @class
  * @category geometry
- * @extends {maptalks.Curve}
- * @param {maptalks.Coordinate[]|Number[][]} coordinates - coordinates of the curve
+ * @extends {Curve}
+ * @param {Coordinate[]|Number[][]} coordinates - coordinates of the curve
  * @example
- * var curve = new maptalks.QuadBezierCurve(
+ * var curve = new QuadBezierCurve(
  *     [
  *         [121.47083767181408,31.214448123476995],
  *         [121.4751292062378,31.215475523000404],
@@ -18,12 +21,12 @@
  *     }
  * ).addTo(layer);
  */
-maptalks.QuadBezierCurve = maptalks.Curve.extend(/** @lends maptalks.QuadBezierCurve.prototype */{
+const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype */ {
 
     _toJSON: function (options) {
         return {
-            'feature' : this.toGeoJSON(options),
-            'subType' : 'QuadBezierCurve'
+            'feature': this.toGeoJSON(options),
+            'subType': 'QuadBezierCurve'
         };
     },
 
@@ -32,7 +35,7 @@ maptalks.QuadBezierCurve = maptalks.Curve.extend(/** @lends maptalks.QuadBezierC
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         this._quadraticCurve(ctx, points, lineOpacity);
-        maptalks.Canvas._stroke(ctx, lineOpacity);
+        Canvas._stroke(ctx, lineOpacity);
 
         this._paintArrow(ctx, points, lineOpacity);
     },
@@ -47,9 +50,11 @@ maptalks.QuadBezierCurve = maptalks.Curve.extend(/** @lends maptalks.QuadBezierC
     }
 });
 
-maptalks.QuadBezierCurve.fromJSON = function (json) {
+QuadBezierCurve.fromJSON = function (json) {
     var feature = json['feature'];
-    var curve = new maptalks.QuadBezierCurve(feature['geometry']['coordinates'], json['options']);
+    var curve = new QuadBezierCurve(feature['geometry']['coordinates'], json['options']);
     curve.setProperties(feature['properties']);
     return curve;
 };
+
+export default QuadBezierCurve;
