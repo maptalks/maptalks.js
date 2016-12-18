@@ -1,10 +1,13 @@
+import { extend, isString, isNil } from 'core/util';
+import { stopPropagation } from 'core/util/dom';
+
 /**
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.
  * @mixin
  * @memberOf maptalks
  * @name Eventable
  */
-const Eventable = (Base) => class extends Base {
+const Eventable = {
     /**
      * Register a handler function to be called whenever this event is fired.
      *
@@ -16,8 +19,10 @@ const Eventable = (Base) => class extends Base {
      * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
      */
     on(eventsOn, handler, context) {
-        if (!eventsOn || !handler) { return this; }
-        if (!maptalks.Util.isString(eventsOn)) {
+        if (!eventsOn || !handler) {
+            return this;
+        }
+        if (!isString(eventsOn)) {
             return this._switch('on', eventsOn, handler);
         }
         if (!this._eventMap) {
@@ -25,7 +30,9 @@ const Eventable = (Base) => class extends Base {
         }
         var eventTypes = eventsOn.toLowerCase().split(' ');
         var evtType;
-        if (!context) { context = this; }
+        if (!context) {
+            context = this;
+        }
         var handlerChain, i, l;
         for (var ii = 0, ll = eventTypes.length; ii < ll; ii++) {
             evtType = eventTypes[ii];
@@ -43,12 +50,12 @@ const Eventable = (Base) => class extends Base {
                 }
             }
             handlerChain.push({
-                handler:handler,
-                context:context
+                handler: handler,
+                context: context
             });
         }
         return this;
-    }
+    },
 
     /**
      * Same as on, except the listener will only get fired once and then removed.
@@ -61,7 +68,7 @@ const Eventable = (Base) => class extends Base {
      * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
      */
     once(eventTypes, handler, context) {
-        if (!maptalks.Util.isString(eventTypes)) {
+        if (!isString(eventTypes)) {
             var once = {};
             for (var p in eventTypes) {
                 if (eventTypes.hasOwnProperty(p)) {
@@ -75,7 +82,7 @@ const Eventable = (Base) => class extends Base {
             this.on(evetTypes[i], this._wrapOnceHandler(evetTypes[i], handler, context));
         }
         return this;
-    }
+    },
 
     _wrapOnceHandler(evtType, handler, context) {
         var me = this;
@@ -92,7 +99,7 @@ const Eventable = (Base) => class extends Base {
             }
             me.off(evtType, onceHandler, this);
         };
-    }
+    },
 
     /**
      * Unregister the event handler for the specified event types.
@@ -105,18 +112,24 @@ const Eventable = (Base) => class extends Base {
      * foo.off('mousedown mousemove mouseup', onMouseEvent, foo);
      */
     off(eventsOff, handler, context) {
-        if (!eventsOff || !this._eventMap || !handler) { return this; }
-        if (!maptalks.Util.isString(eventsOff)) {
+        if (!eventsOff || !this._eventMap || !handler) {
+            return this;
+        }
+        if (!isString(eventsOff)) {
             return this._switch('off', eventsOff, handler);
         }
         var eventTypes = eventsOff.split(' ');
         var eventType, handlerChain;
-        if (!context) { context = this; }
+        if (!context) {
+            context = this;
+        }
         var i;
         for (var j = 0, jl = eventTypes.length; j < jl; j++) {
             eventType = eventTypes[j].toLowerCase();
-            handlerChain =  this._eventMap[eventType];
-            if (!handlerChain) { return this; }
+            handlerChain = this._eventMap[eventType];
+            if (!handlerChain) {
+                return this;
+            }
             for (i = handlerChain.length - 1; i >= 0; i--) {
                 if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
                     handlerChain.splice(i, 1);
@@ -124,7 +137,7 @@ const Eventable = (Base) => class extends Base {
             }
         }
         return this;
-    }
+    },
 
     _switch(to, eventKeys, context) {
         for (var p in eventKeys) {
@@ -133,18 +146,22 @@ const Eventable = (Base) => class extends Base {
             }
         }
         return this;
-    }
+    },
 
     _clearListeners(eventType) {
-        if (!this._eventMap || !maptalks.Util.isString(eventType)) { return; }
-        var handlerChain =  this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain) { return; }
+        if (!this._eventMap || !isString(eventType)) {
+            return;
+        }
+        var handlerChain = this._eventMap[eventType.toLowerCase()];
+        if (!handlerChain) {
+            return;
+        }
         this._eventMap[eventType] = null;
-    }
+    },
 
     _clearAllListeners() {
         this._eventMap = null;
-    }
+    },
 
     /**
      * Returns listener's count registered for the event type.
@@ -155,14 +172,18 @@ const Eventable = (Base) => class extends Base {
      * @return {Number}
      */
     listens(eventType, handler, context) {
-        if (!this._eventMap || !maptalks.Util.isString(eventType)) { return 0; }
-        var handlerChain =  this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain || handlerChain.length === 0) { return 0; }
+        if (!this._eventMap || !isString(eventType)) {
+            return 0;
+        }
+        var handlerChain = this._eventMap[eventType.toLowerCase()];
+        if (!handlerChain || handlerChain.length === 0) {
+            return 0;
+        }
         var count = 0;
         for (var i = 0, len = handlerChain.length; i < len; i++) {
             if (handler) {
                 if (handler === handlerChain[i].handler &&
-                    (maptalks.Util.isNil(context) || handlerChain[i].context === context)) {
+                    (isNil(context) || handlerChain[i].context === context)) {
                     return 1;
                 }
             } else {
@@ -170,16 +191,18 @@ const Eventable = (Base) => class extends Base {
             }
         }
         return count;
-    }
+    },
 
-   /**
-    * Copy all the event listener to the target object
-    * @param {Object} target - target object to copy to.
-    * @return {*} this
-    */
+    /**
+     * Copy all the event listener to the target object
+     * @param {Object} target - target object to copy to.
+     * @return {*} this
+     */
     copyEventListeners(target) {
         var eventMap = target._eventMap;
-        if (!eventMap) { return this; }
+        if (!eventMap) {
+            return this;
+        }
         var handlerChain, i, len;
         for (var eventType in eventMap) {
             handlerChain = eventMap[eventType];
@@ -188,7 +211,7 @@ const Eventable = (Base) => class extends Base {
             }
         }
         return this;
-    }
+    },
 
     /**
      * Fire an event, causing all handlers for that event name to run.
@@ -202,7 +225,7 @@ const Eventable = (Base) => class extends Base {
             return this._eventParent.fire.apply(this._eventParent, arguments);
         }
         return this._fire.apply(this, arguments);
-    }
+    },
 
     /**
      * Set a event parent to handle all the events
@@ -213,13 +236,16 @@ const Eventable = (Base) => class extends Base {
     _setEventParent(parent) {
         this._eventParent = parent;
         return this;
-    }
-
+    },
 
     _fire(eventType, param) {
-        if (!this._eventMap) { return this; }
+        if (!this._eventMap) {
+            return this;
+        }
         var handlerChain = this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain) { return this; }
+        if (!handlerChain) {
+            return this;
+        }
         if (!param) {
             param = {};
         }
@@ -229,10 +255,12 @@ const Eventable = (Base) => class extends Base {
         var queue = handlerChain.slice(0),
             context, bubble, passed;
         for (var i = 0, len = queue.length; i < len; i++) {
-            if (!queue[i]) { continue; }
+            if (!queue[i]) {
+                continue;
+            }
             context = queue[i].context;
             bubble = true;
-            passed = maptalks.Util.extend({}, param);
+            passed = extend({}, param);
             if (context) {
                 bubble = queue[i].handler.call(context, passed);
             } else {
@@ -241,37 +269,37 @@ const Eventable = (Base) => class extends Base {
             //stops the event propagation if the handler returns false.
             if (bubble === false) {
                 if (param['domEvent']) {
-                    maptalks.DomUtil.stopPropagation(param['domEvent']);
+                    stopPropagation(param['domEvent']);
                 }
             }
         }
         return this;
-    }
+    },
 };
 
 /**
-* Alias for [on]{@link maptalks.Eventable.on}
-*
-* @param {String} eventTypes     - event types to register, seperated by space if more than one.
-* @param {Function} handler                 - handler function to be called
-* @param {Object} [context=null]            - the context of the handler
-* @return {*} this
-* @function
-* @memberOf maptalks.Eventable
-* @name addEventListener
-*/
-maptalks.Eventable.addEventListener = maptalks.Eventable.on;
+ * Alias for [on]{@link Eventable.on}
+ *
+ * @param {String} eventTypes     - event types to register, seperated by space if more than one.
+ * @param {Function} handler                 - handler function to be called
+ * @param {Object} [context=null]            - the context of the handler
+ * @return {*} this
+ * @function
+ * @memberOf Eventable
+ * @name addEventListener
+ */
+Eventable.addEventListener = Eventable.on;
 /**
- * Alias for [off]{@link maptalks.Eventable.off}
+ * Alias for [off]{@link Eventable.off}
  *
  * @param {String} eventTypes    - event types to unregister, seperated by space if more than one.
  * @param {Function} handler                - listener handler
  * @param {Object} [context=null]           - the context of the handler
  * @return {*} this
  * @function
- * @memberOf maptalks.Eventable
+ * @memberOf Eventable
  * @name removeEventListener
  */
-maptalks.Eventable.removeEventListener = maptalks.Eventable.off;
+Eventable.removeEventListener = Eventable.off;
 
 export default Eventable;

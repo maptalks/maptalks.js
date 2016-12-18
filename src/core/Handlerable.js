@@ -1,18 +1,22 @@
+import { indexOfArray } from 'core/util';
+
 /**
- * A mixin, to enable a class with [interaction handlers]{@link maptalks.Handler}
+ * A mixin, to enable a class with [interaction handlers]{@link Handler}
  * @protected
  * @mixin
  */
-maptalks.Handlerable = {
+const Handlerable = {
     /**
      * Register a handler
      * @param {String} name       - name of the handler
-     * @param {maptalks.Handler}  - handler class
+     * @param {Handler}           - handler class
      * @return {*} this
      * @protected
      */
     addHandler: function (name, handlerClass) {
-        if (!handlerClass) { return this; }
+        if (!handlerClass) {
+            return this;
+        }
         if (!this._handlers) {
             this._handlers = [];
         }
@@ -39,11 +43,13 @@ maptalks.Handlerable = {
      * @protected
      */
     removeHandler: function (name) {
-        if (!name) { return this; }
+        if (!name) {
+            return this;
+        }
         var handler = this[name];
         if (handler) {
             //handler registered
-            var hit = maptalks.Util.indexOfArray(handler, this._handlers);
+            var hit = indexOfArray(handler, this._handlers);
             if (hit >= 0) {
                 this._handlers.splice(hit, 1);
             }
@@ -60,3 +66,5 @@ maptalks.Handlerable = {
         this._handlers = [];
     }
 };
+
+export default Handlerable;

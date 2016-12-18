@@ -1,14 +1,17 @@
+import Class from 'core/class';
+import Eventable from 'core/Event';
+
 /**
  * Base class for all the interaction handlers
  * @class
  * @category handler
- * @extends maptalks.Class
- * @mixins maptalks.Eventable
+ * @extends Class
+ * @mixins Eventable
  * @abstract
  * @protected
  */
-maptalks.Handler = maptalks.Class.extend(/** @lends maptalks.Handler.prototype */{
-    includes: maptalks.Eventable,
+const Handler = Class.extend(/** @lends Handler.prototype */ {
+    includes: Eventable,
 
     initialize: function (target) {
         this.target = target;
@@ -16,10 +19,12 @@ maptalks.Handler = maptalks.Class.extend(/** @lends maptalks.Handler.prototype *
 
     /**
      * Enables the handler
-     * @return {maptalks.Handler} this
+     * @return {Handler} this
      */
     enable: function () {
-        if (this._enabled) { return this; }
+        if (this._enabled) {
+            return this;
+        }
         this._enabled = true;
         this.addHooks();
         return this;
@@ -27,10 +32,12 @@ maptalks.Handler = maptalks.Class.extend(/** @lends maptalks.Handler.prototype *
 
     /**
      * Disablesthe handler
-     * @return {maptalks.Handler} this
+     * @return {Handler} this
      */
     disable: function () {
-        if (!this._enabled) { return this; }
+        if (!this._enabled) {
+            return this;
+        }
         this._enabled = false;
         this.removeHooks();
         return this;
@@ -50,3 +57,5 @@ maptalks.Handler = maptalks.Class.extend(/** @lends maptalks.Handler.prototype *
         delete this.dom;
     }
 });
+
+export default Handler;

@@ -1,4 +1,4 @@
-import { isNode } from '../env';
+import { isNode } from 'core/util';
 import Browser from 'core/Browser';
 import Util from 'core/Util';
 

@@ -1,3 +1,7 @@
+import Extent from './Extent';
+import Point from './Point';
+import Size from './size';
+
 /**
  * Represent a bounding box on 2d surface , a rectangular area with minimum and maximum points. <br>
  * There are serveral ways to create a PointExtent:
@@ -7,32 +11,32 @@
  * @param {Number} y1   - y of point 1
  * @param {Number} x2   - x of point 2
  * @param {Number} y2   - y of point 2
- * @extends {maptalks.Extent}
+ * @extends {Extent}
  * @example
  * //with 4 numbers
- * var extent = new maptalks.PointExtent(100, 10, 120, 20);
+ * var extent = new PointExtent(100, 10, 120, 20);
  * @example
  * //with 2 points
- * var extent = new maptalks.PointExtent(new maptalks.Point(100, 10), new maptalks.Point(120, 20));
+ * var extent = new PointExtent(new Point(100, 10), new Point(120, 20));
  * @example
  * //with a json object containing xmin, ymin, xmax and ymax
- * var extent = new maptalks.PointExtent({xmin : 100, ymin: 10, xmax: 120, ymax:20});
+ * var extent = new PointExtent({xmin : 100, ymin: 10, xmax: 120, ymax:20});
  * @example
- * var extent1 = new maptalks.PointExtent(100, 10, 120, 20);
+ * var extent1 = new PointExtent(100, 10, 120, 20);
  * //with another extent
- * var extent2 = new maptalks.PointExtent(extent1);
+ * var extent2 = new PointExtent(extent1);
  */
-maptalks.PointExtent = function (p1, p2, p3, p4) {
-    this._clazz = maptalks.Point;
-    this._initialize(p1, p2, p3, p4);
-};
+export default class PointExtent extends Extent {
+    constructor(p1, p2, p3, p4) {
+        super(p1, p2, p3, p4);
+        this._clazz = Point;
+    }
 
-maptalks.Util.extend(maptalks.PointExtent.prototype, maptalks.Extent.prototype, /** @lends maptalks.PointExtent.prototype */{
     /**
      * Get size of the PointExtent
-     * @return {maptalks.Size}
+     * @return {Size}
      */
-    getSize:function () {
-        return new maptalks.Size(this.getWidth(), this.getHeight());
+    getSize() {
+        return new Size(this.getWidth(), this.getHeight());
     }
-});
+}

@@ -1,4 +1,4 @@
-import { isNode } from '../env';
+import { isNode } from 'core/util';
 
 let Browser;
 
