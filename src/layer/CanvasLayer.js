@@ -1,3 +1,8 @@
+import { bind, isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import Browser from 'core/Browser';
+import renderer from 'renderer';
+import Layer from './Layer';
+
 /**
  * CanvasLayer provides some interface methods for canvas context operations. <br>
  * You can use it directly, but can't ser/dser a CanvasLayer with json in this way. <br>
@@ -5,7 +10,7 @@
  * @classdesc
  * A layer with a HTML5 2D canvas context.
  * @example
- *  var layer = new maptalks.CanvasLayer('canvas');
+ *  var layer = new CanvasLayer('canvas');
  *
  *  layer.prepareToDraw = function (context) {
  *      var size = map.getSize();
@@ -19,15 +24,15 @@
  *  layer.addTo(map);
  * @class
  * @category layer
- * @extends {maptalks.Layer}
+ * @extends {Layer}
  * @param {String|Number} id - layer's id
- * @param {Object} options - options defined in [options]{@link maptalks.CanvasLayer#options}
+ * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
  */
-maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.prototype */{
+export const CanvasLayer = Layer.extend(/** @lends CanvasLayer.prototype */ {
 
     options: {
-        'animation' : false,
-        'fps'    : 70
+        'animation': false,
+        'fps': 70
     },
 
     /**
@@ -58,7 +63,7 @@ maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.pro
         return this;
     },
 
-    isPlaying : function () {
+    isPlaying: function () {
         if (this._getRenderer()) {
             return this._getRenderer().isPlaying();
         }
@@ -74,7 +79,7 @@ maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.pro
 
     /**
      * Ask the map to redraw the layer canvas without firing any event.
-     * @return {maptalks.CanvasLayer} this
+     * @return {CanvasLayer} this
      */
     requestMapToRender: function () {
         if (this._getRenderer()) {
@@ -85,7 +90,7 @@ maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.pro
 
     /**
      * Ask the map to redraw the layer canvas and fire layerload event
-     * @return {maptalks.CanvasLayer} this
+     * @return {CanvasLayer} this
      */
     completeRender: function () {
         if (this._getRenderer()) {
@@ -126,7 +131,7 @@ maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.pro
 
 });
 
-maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend({
+CanvasLayer.registerRenderer('canvas', renderer.Canvas.extend({
 
     draw: function () {
         if (!this._predrawed) {
@@ -159,55 +164,55 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
         this._paused = true;
     },
 
-    isPlaying : function () {
-        return !maptalks.Util.isNil(this._frame);
+    isPlaying: function () {
+        return !isNil(this._frame);
     },
 
     hide: function () {
         this._pause();
-        return maptalks.renderer.Canvas.prototype.hide.call(this);
+        return renderer.Canvas.prototype.hide.call(this);
     },
 
     show: function () {
-        return maptalks.renderer.Canvas.prototype.show.call(this);
+        return renderer.Canvas.prototype.show.call(this);
     },
 
     remove: function () {
         this._pause();
         delete this._drawContext;
-        return maptalks.renderer.Canvas.prototype.remove.call(this);
+        return renderer.Canvas.prototype.remove.call(this);
     },
 
     onZoomStart: function (param) {
         this._pause();
         this.layer.onZoomStart(param);
-        maptalks.renderer.Canvas.prototype.onZoomStart.call(this);
+        renderer.Canvas.prototype.onZoomStart.call(this);
     },
 
     onZoomEnd: function (param) {
         this.layer.onZoomEnd(param);
-        maptalks.renderer.Canvas.prototype.onZoomEnd.call(this);
+        renderer.Canvas.prototype.onZoomEnd.call(this);
     },
 
     onMoveStart: function (param) {
         this._pause();
         this.layer.onMoveStart(param);
-        maptalks.renderer.Canvas.prototype.onMoveStart.call(this);
+        renderer.Canvas.prototype.onMoveStart.call(this);
     },
 
     onMoveEnd: function (param) {
         this.layer.onMoveEnd(param);
-        maptalks.renderer.Canvas.prototype.onMoveEnd.call(this);
+        renderer.Canvas.prototype.onMoveEnd.call(this);
     },
 
     onResize: function (param) {
         this.layer.onResize(param);
-        maptalks.renderer.Canvas.prototype.onResize.call(this);
+        renderer.Canvas.prototype.onResize.call(this);
     },
 
-    _pause : function () {
+    _pause: function () {
         if (this._frame) {
-            maptalks.Util.cancelAnimFrame(this._frame);
+            cancelAnimFrame(this._frame);
             delete this._frame;
         }
         if (this._animTimeout) {
@@ -216,23 +221,23 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
         }
     },
 
-    _play : function () {
+    _play: function () {
         if (this._paused || !this.layer || !this.layer.options['animation']) {
             return;
         }
-        var frameFn = maptalks.Util.bind(this._drawLayer, this);
+        var frameFn = bind(this._drawLayer, this);
         this._pause();
         var fps = this.layer.options['fps'];
         if (fps >= 1000 / 16) {
-            this._frame = maptalks.Util.requestAnimFrame(frameFn);
+            this._frame = requestAnimFrame(frameFn);
         } else {
             this._animTimeout = setTimeout(function () {
-                if (maptalks.Browser.ie9) {
+                if (Browser.ie9) {
                     // ie9 doesn't support RAF
                     frameFn();
                     this._frame = 1;
                 } else {
-                    this._frame = maptalks.Util.requestAnimFrame(frameFn);
+                    this._frame = requestAnimFrame(frameFn);
                 }
             }.bind(this), 1000 / this.layer.options['fps']);
         }

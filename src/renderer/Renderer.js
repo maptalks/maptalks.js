@@ -1,9 +1,8 @@
-/**
- * @namespace
- * @protected
- */
-maptalks.renderer = {};
-
+import { extend, isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import Class from 'core/class/index';
+import Browser from 'core/Browser';
+import Point from 'geo/Point';
+import TileLayer from 'layer/tile/TileLayer';
 
 /**
  * @classdesc
@@ -11,17 +10,17 @@ maptalks.renderer = {};
  * @abstract
  * @class
  * @protected
- * @memberOf maptalks.renderer
+ * @memberOf renderer
  * @name Canvas
- * @extends {maptalks.Class}
+ * @extends {Class}
  */
-maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Canvas.prototype */{
+export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
 
-    isCanvasRender:function () {
+    isCanvasRender: function () {
         return true;
     },
 
-    render:function (isCheckRes) {
+    render: function (isCheckRes) {
         this.prepareRender();
         if (!this.getMap()) {
             return;
@@ -31,21 +30,22 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             return;
         }
         if (!this.resources) {
-            this.resources = new maptalks.renderer.Canvas.Resources();
+            this.resources = new Canvas.Resources();
         }
         if (this.checkResources && isCheckRes) {
-            var me = this, args = arguments;
+            var me = this,
+                args = arguments;
             var resources = this.checkResources.apply(this, args);
-            if (maptalks.Util.isArrayHasData(resources)) {
+            if (isArrayHasData(resources)) {
                 this.loadResources(resources).then(function () {
                     if (me.layer) {
                         /**
                          * resourceload event, fired when external resources of the layer complete loading.
                          *
-                         * @event maptalks.Layer#resourceload
+                         * @event Layer#resourceload
                          * @type {Object}
                          * @property {String} type              - resourceload
-                         * @property {maptalks.Layer} target    - layer
+                         * @property {Layer} target    - layer
                          */
                         me.layer.fire('resourceload');
                         me._tryToDraw.apply(me, args);
@@ -59,17 +59,18 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         }
     },
 
-    _tryToDraw:function () {
+    _tryToDraw: function () {
         this._clearTimeout();
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
             this.completeRender();
             return;
         }
-        var me = this, args = arguments;
+        var me = this,
+            args = arguments;
         if (this.layer.options['drawImmediate']) {
             this.draw.apply(this, args);
         } else {
-            this._animReqId = maptalks.Util.requestAnimFrame(function () {
+            this._animReqId = requestAnimFrame(function () {
                 if (me.layer) {
                     me.draw.apply(me, args);
                 }
@@ -88,7 +89,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         delete this._extent2D;
         delete this.resources;
         // requestMapToRender may be overrided, e.g. renderer.TileLayer.Canvas
-        maptalks.renderer.Canvas.prototype.requestMapToRender.call(this);
+        Canvas.prototype.requestMapToRender.call(this);
         delete this.layer;
     },
 
@@ -99,7 +100,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         return this.layer.getMap();
     },
 
-    getCanvasImage:function () {
+    getCanvasImage: function () {
         if (this._renderZoom !== this.getMap().getZoom() || !this.canvas) {
             return null;
         }
@@ -113,10 +114,15 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             size = this._extent2D.getSize(),
             // point = this._extent2D.getMin(),
             containerPoint = map._pointToContainerPoint(this._northWest);
-        return {'image':this.canvas, 'layer':this.layer, 'point': containerPoint, 'size':size};
+        return {
+            'image': this.canvas,
+            'layer': this.layer,
+            'point': containerPoint,
+            'size': size
+        };
     },
 
-    isLoaded:function () {
+    isLoaded: function () {
         if (this._loaded) {
             return true;
         }
@@ -151,8 +157,8 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
      * @param  {ViewPoint} point ViewPoint
      * @return {Boolean}       true|false
      */
-    hitDetect:function (point) {
-        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown || (this.layer instanceof maptalks.TileLayer)) {
+    hitDetect: function (point) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown || (this.layer instanceof TileLayer)) {
             return false;
         }
         var extent2D = this.getMap()._get2DExtent();
@@ -169,7 +175,9 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             }
         } catch (error) {
             if (!this._errorThrown) {
-                if (console) { console.warn('hit detect failed with tainted canvas, some geometries have external resources in another domain:\n', error); }
+                if (console) {
+                    console.warn('hit detect failed with tainted canvas, some geometries have external resources in another domain:\n', error);
+                }
                 this._errorThrown = true;
             }
             //usually a CORS error will be thrown if the canvas uses resources from other domain.
@@ -186,11 +194,12 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
      * @param  {Function} onComplete          - callback after loading complete
      * @param  {Object} context         - callback's context
      */
-    loadResources:function (resourceUrls) {
+    loadResources: function (resourceUrls) {
         var resources = this.resources,
             promises = [];
-        if (maptalks.Util.isArrayHasData(resourceUrls)) {
-            var cache = {}, url;
+        if (isArrayHasData(resourceUrls)) {
+            var cache = {},
+                url;
             for (var i = resourceUrls.length - 1; i >= 0; i--) {
                 url = resourceUrls[i];
                 if (!url || cache[url.join('-')]) {
@@ -199,15 +208,16 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
                 cache[url.join('-')] = 1;
                 if (!resources.isResourceLoaded(url, true)) {
                     //closure it to preserve url's value
-                    promises.push(new maptalks.Promise(this._promiseResource(url)));
+                    promises.push(new Promise(this._promiseResource(url)));
                 }
             }
         }
-        return maptalks.Promise.all(promises);
+        return Promise.all(promises);
     },
 
     _promiseResource: function (url) {
-        var me = this, resources = this.resources,
+        var me = this,
+            resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
         return function (resolve) {
             if (resources.isResourceLoaded(url, true)) {
@@ -218,31 +228,41 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             if (crossOrigin) {
                 img['crossOrigin'] = crossOrigin;
             }
-            if (maptalks.Util.isSVG(url[0]) && !maptalks.node) {
+            if (isSVG(url[0]) && !isNode) {
                 //amplify the svg image to reduce loading.
-                if (url[1]) { url[1] *= 2; }
-                if (url[2]) { url[2] *= 2; }
+                if (url[1]) {
+                    url[1] *= 2;
+                }
+                if (url[2]) {
+                    url[2] *= 2;
+                }
             }
             img.onload = function () {
                 me._cacheResource(url, img);
                 resolve(url);
             };
             img.onabort = function (err) {
-                if (console) { console.warn('image loading aborted: ' + url[0]); }
+                if (console) {
+                    console.warn('image loading aborted: ' + url[0]);
+                }
                 if (err) {
-                    if (console) { console.warn(err); }
+                    if (console) {
+                        console.warn(err);
+                    }
                 }
                 resolve(url);
             };
             img.onerror = function (err) {
                 // if (console) { console.warn('image loading failed: ' + url[0]); }
-                if (err && !maptalks.Browser.phantomjs) {
-                    if (console) { console.warn(err); }
+                if (err && !Browser.phantomjs) {
+                    if (console) {
+                        console.warn(err);
+                    }
                 }
                 resources.markErrorResource(url);
                 resolve(url);
             };
-            maptalks.Util.loadImage(img,  url);
+            loadImage(img, url);
         };
 
     },
@@ -251,17 +271,18 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         if (!this.layer || !this.resources) {
             return;
         }
-        var w = url[1], h = url[2];
-        if (this.layer.options['cacheSvgOnCanvas'] && maptalks.Util.isSVG(url[0]) === 1 && (maptalks.Browser.edge || maptalks.Browser.ie)) {
+        var w = url[1],
+            h = url[2];
+        if (this.layer.options['cacheSvgOnCanvas'] && isSVG(url[0]) === 1 && (Browser.edge || Browser.ie)) {
             //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
-            if (maptalks.Util.isNil(w)) {
+            if (isNil(w)) {
                 w = img.width || this.layer.options['defaultIconSize'][0];
             }
-            if (maptalks.Util.isNil(h)) {
+            if (isNil(h)) {
                 h = img.height || this.layer.options['defaultIconSize'][1];
             }
-            var canvas = maptalks.Canvas.createCanvas(w, h);
-            maptalks.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
+            var canvas = Canvas.createCanvas(w, h);
+            Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
             img = canvas;
         }
         this.resources.addResource(url, img);
@@ -271,32 +292,32 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         var map = this.getMap();
         this._renderZoom = map.getZoom();
         this._extent2D = map._get2DExtent();
-        this._northWest = map._containerPointToPoint(new maptalks.Point(0, 0));
+        this._northWest = map._containerPointToPoint(new Point(0, 0));
         this._loaded = false;
     },
 
-    createCanvas:function () {
+    createCanvas: function () {
         if (this.canvas) {
             return;
         }
         var map = this.getMap();
         var size = map.getSize();
-        var r = maptalks.Browser.retina ? 2 : 1;
-        this.canvas = maptalks.Canvas.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
+        var r = Browser.retina ? 2 : 1;
+        this.canvas = Canvas.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
         }
-        if (maptalks.Browser.retina) {
+        if (Browser.retina) {
             this.context.scale(2, 2);
         }
-        maptalks.Canvas.setDefaultCanvasSetting(this.context);
+        Canvas.setDefaultCanvasSetting(this.context);
         if (this.onCanvasCreate) {
             this.onCanvasCreate();
         }
     },
 
-    resizeCanvas:function (canvasSize) {
+    resizeCanvas: function (canvasSize) {
         if (!this.canvas) {
             return;
         }
@@ -307,7 +328,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         } else {
             size = canvasSize;
         }
-        var r = maptalks.Browser.retina ? 2 : 1;
+        var r = Browser.retina ? 2 : 1;
         //only make canvas bigger, never smaller
         if (this.canvas.width >= r * size['width'] && this.canvas.height >= r * size['height']) {
             return;
@@ -315,19 +336,19 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         //retina support
         this.canvas.height = r * size['height'];
         this.canvas.width = r * size['width'];
-        if (maptalks.Browser.retina) {
+        if (Browser.retina) {
             this.context.scale(2, 2);
         }
     },
 
-    clearCanvas:function () {
+    clearCanvas: function () {
         if (!this.canvas) {
             return;
         }
-        maptalks.Canvas.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
+        Canvas.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
     },
 
-    prepareCanvas:function () {
+    prepareCanvas: function () {
         if (this._clipped) {
             this.context.restore();
             this._clipped = false;
@@ -339,12 +360,16 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         }
         var mask = this.layer.getMask();
         if (!mask) {
-            this.layer.fire('renderstart', {'context' : this.context});
+            this.layer.fire('renderstart', {
+                'context': this.context
+            });
             return null;
         }
         var maskExtent2D = mask._getPainter().get2DExtent();
         if (!maskExtent2D.intersects(this._extent2D)) {
-            this.layer.fire('renderstart', {'context' : this.context});
+            this.layer.fire('renderstart', {
+                'context': this.context
+            });
             return maskExtent2D;
         }
         this.context.save();
@@ -354,13 +379,15 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         /**
          * renderstart event, fired when layer starts to render.
          *
-         * @event maptalks.Layer#renderstart
+         * @event Layer#renderstart
          * @type {Object}
          * @property {String} type              - renderstart
-         * @property {maptalks.Layer} target    - layer
+         * @property {Layer} target    - layer
          * @property {CanvasRenderingContext2D} context - canvas's context
          */
-        this.layer.fire('renderstart', {'context' : this.context});
+        this.layer.fire('renderstart', {
+            'context': this.context
+        });
         return maskExtent2D;
     },
 
@@ -374,13 +401,15 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
                 /**
                  * renderend event, fired when layer ends rendering.
                  *
-                 * @event maptalks.Layer#renderend
+                 * @event Layer#renderend
                  * @type {Object}
                  * @property {String} type              - renderend
-                 * @property {maptalks.Layer} target    - layer
+                 * @property {Layer} target    - layer
                  * @property {CanvasRenderingContext2D} context - canvas's context
                  */
-                this.layer.fire('renderend', {'context' : this.context});
+                this.layer.fire('renderend', {
+                    'context': this.context
+                });
             }
             this.getMap()._getRenderer().render();
         }
@@ -392,10 +421,10 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             /**
              * layerload event, fired when layer is loaded.
              *
-             * @event maptalks.Layer#layerload
+             * @event Layer#layerload
              * @type {Object}
              * @property {String} type - layerload
-             * @property {maptalks.Layer} target - layer
+             * @property {Layer} target - layer
              */
             this.layer.fire('layerload');
         }
@@ -406,7 +435,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         this.fireLoadedEvent();
     },
 
-    getPaintContext:function () {
+    getPaintContext: function () {
         if (!this.context) {
             return null;
         }
@@ -415,12 +444,12 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
 
     getEvents: function () {
         return {
-            '_zoomstart' : this.onZoomStart,
-            '_zoomend' : this.onZoomEnd,
-            '_resize'  : this.onResize,
-            '_movestart' : this.onMoveStart,
-            '_moving' : this.onMoving,
-            '_moveend' : this.onMoveEnd
+            '_zoomstart': this.onZoomStart,
+            '_zoomend': this.onZoomEnd,
+            '_resize': this.onResize,
+            '_movestart': this.onMoveStart,
+            '_moving': this.onMoving,
+            '_moveend': this.onMoveEnd
         };
     },
 
@@ -456,29 +485,29 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         }
     },
 
-    _clearTimeout:function () {
+    _clearTimeout: function () {
         if (this._animReqId) {
             //clearTimeout(this._animReqId);
-            maptalks.Util.cancelAnimFrame(this._animReqId);
+            cancelAnimFrame(this._animReqId);
         }
     }
 });
 
-maptalks.renderer.Canvas.Resources = function () {
+Canvas.Resources = function () {
     this.resources = {};
     this._errors = {};
 };
 
-maptalks.Util.extend(maptalks.renderer.Canvas.Resources.prototype, {
-    addResource:function (url, img) {
+extend(Canvas.Resources.prototype, {
+    addResource: function (url, img) {
         this.resources[url[0]] = {
-            image : img,
-            width : +url[1],
-            height : +url[2]
+            image: img,
+            width: +url[1],
+            height: +url[2]
         };
     },
 
-    isResourceLoaded:function (url, checkSVG) {
+    isResourceLoaded: function (url, checkSVG) {
         if (!url) {
             return false;
         }
@@ -489,20 +518,20 @@ maptalks.Util.extend(maptalks.renderer.Canvas.Resources.prototype, {
         if (!img) {
             return false;
         }
-        if (checkSVG && maptalks.Util.isSVG(url[0]) && (+url[1] > img.width || +url[2] > img.height)) {
+        if (checkSVG && isSVG(url[0]) && (+url[1] > img.width || +url[2] > img.height)) {
             return false;
         }
         return true;
     },
 
-    getImage:function (url) {
+    getImage: function (url) {
         if (!this.isResourceLoaded(url) || this._errors[this._getImgUrl(url)]) {
             return null;
         }
         return this.resources[this._getImgUrl(url)].image;
     },
 
-    markErrorResource:function (url) {
+    markErrorResource: function (url) {
         this._errors[this._getImgUrl(url)] = 1;
     },
 
@@ -518,7 +547,7 @@ maptalks.Util.extend(maptalks.renderer.Canvas.Resources.prototype, {
     },
 
     _getImgUrl: function (url) {
-        if (!maptalks.Util.isArray(url)) {
+        if (!isArray(url)) {
             return url;
         }
         return url[0];

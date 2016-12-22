@@ -1,21 +1,25 @@
+import { createEl, createElOn } from 'core/util/dom';
+import Map from 'map/Map';
+import Control from './Control';
+
 /**
  * @classdesc
  * Based on the implementation in Leaflet, a simple scale control that shows the scale of the current center of screen in metric (m/km) and imperial (mi/ft) systems.
  * @class
  * @category control
- * @extends maptalks.control.Control
- * @memberOf maptalks.control
+ * @extends Control
+ * @memberOf control
  * @name Scale
- * @param {Object} [options=null] - options defined in [maptalks.control.Scale]{@link maptalks.control.Scale#options}
+ * @param {Object} [options=null] - options defined in [Scale]{@link Scale#options}
  * @example
- * var scale = new maptalks.control.Scale({
+ * var scale = new Scale({
  *     position : 'bottom-left',
  *     maxWidth : 160,
  *     metric : true,
  *     imperial : true
  * }).addTo(map);
  */
-maptalks.control.Scale = maptalks.control.Control.extend(/** @lends maptalks.control.Scale.prototype */{
+export const Scale = Control.extend(/** @lends Scale.prototype */ {
 
     /**
      * @property {Object} [options=null] - options
@@ -24,8 +28,8 @@ maptalks.control.Scale = maptalks.control.Control.extend(/** @lends maptalks.con
      * @property {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
      * @property {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
      */
-    options:{
-        'position' : 'bottom-left',
+    options: {
+        'position': 'bottom-left',
         'maxWidth': 100,
         'metric': true,
         'imperial': false
@@ -33,7 +37,7 @@ maptalks.control.Scale = maptalks.control.Control.extend(/** @lends maptalks.con
 
     buildOn: function (map) {
         this._map = map;
-        this._scaleContainer = maptalks.DomUtil.createEl('div');
+        this._scaleContainer = createEl('div');
         this._addScales();
         map.on('zoomend', this._update, this);
         if (this._map._loaded) {
@@ -48,13 +52,13 @@ maptalks.control.Scale = maptalks.control.Control.extend(/** @lends maptalks.con
 
     _addScales: function () {
         var css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
-                          'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
-                          ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
+            'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
+            ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
         if (this.options['metric']) {
-            this._mScale = maptalks.DomUtil.createElOn('div', css, this._scaleContainer);
+            this._mScale = createElOn('div', css, this._scaleContainer);
         }
         if (this.options['imperial']) {
-            this._iScale = maptalks.DomUtil.createElOn('div', css, this._scaleContainer);
+            this._iScale = createElOn('div', css, this._scaleContainer);
         }
     },
 
@@ -113,13 +117,13 @@ maptalks.control.Scale = maptalks.control.Control.extend(/** @lends maptalks.con
     }
 });
 
-maptalks.Map.mergeOptions({
-    'scaleControl' : false
+Map.mergeOptions({
+    'scaleControl': false
 });
 
-maptalks.Map.addOnLoadHook(function () {
+Map.addOnLoadHook(function () {
     if (this.options['scaleControl']) {
-        this.scaleControl = new maptalks.control.Scale(this.options['scaleControl']);
+        this.scaleControl = new Scale(this.options['scaleControl']);
         this.addControl(this.scaleControl);
     }
 });

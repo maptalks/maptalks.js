@@ -1,7 +1,9 @@
+import { isArray, extend } from 'core/util';
+
 /**
  * @classdesc
  * A class internally used by tile layer helps to descibe tile system used by different tile services.<br>
- * Similar with [transformation]{@link maptalks.Transformation}, it contains 4 numbers: <br>
+ * Similar with [transformation]{@link Transformation}, it contains 4 numbers: <br>
  * sx : the order of X-axis tile index, 1 means right is larger and -1 means the reverse, left is larger;<br>
  * sy : the order of Y-axis tile index, 1 means top is larger and -1 means the reverse, bottom is larger;<br>
  * ox : x of the origin point of the world's projected coordinate system <br>
@@ -10,26 +12,61 @@
  * @class
  * @category geo
  * @example
- * var ts = new maptalks.TileSystem([1, -1, -20037508.34, 20037508.34]);
+ * var ts = new TileSystem([1, -1, -20037508.34, 20037508.34]);
  */
-maptalks.TileSystem = function (sx, sy, ox, oy) {
-    if (maptalks.Util.isArray(sx)) {
-        this.scale =  {x : sx[0], y : sx[1]};
-        this.origin = {x : sx[2], y : sx[3]};
-    } else {
-        this.scale =  {x : sx, y : sy};
-        this.origin = {x : ox, y : oy};
+export class TileSystem {
+    constructor(sx, sy, ox, oy) {
+        if (isArray(sx)) {
+            this.scale = {
+                x: sx[0],
+                y: sx[1]
+            };
+            this.origin = {
+                x: sx[2],
+                y: sx[3]
+            };
+        } else {
+            this.scale = {
+                x: sx,
+                y: sy
+            };
+            this.origin = {
+                x: ox,
+                y: oy
+            };
+        }
     }
-};
 
-maptalks.Util.extend(maptalks.TileSystem, /** @lends maptalks.TileSystem */{
+    /**
+     * Get the default tile system's code for the projection.
+     * @function
+     * @static
+     * @memberOf TileSystem
+     * @name  getDefault
+     * @param  {Object} projection      - a projection object
+     * @return {String} tile system code
+     */
+    static getDefault(projection) {
+        if (projection['code'].toLowerCase() === 'baidu') {
+            return 'baidu';
+        } else if (projection['code'].toLowerCase() === 'EPSG:4326'.toLowerCase()) {
+            return 'tms-global-geodetic';
+        } else if (projection['code'].toLowerCase() === 'identity') {
+            return [1, -1, 0, 0];
+        } else {
+            return 'web-mercator';
+        }
+    }
+}
+
+extend(TileSystem, /** @lends TileSystem */ {
     /**
      * The most common used tile system, used by google maps, bing maps and amap, soso maps in China.
      * @see {@link https://en.wikipedia.org/wiki/Web_Mercator}
      * @constant
      * @static
      */
-    'web-mercator' : new maptalks.TileSystem([1, -1, -20037508.34, 20037508.34]),
+    'web-mercator': new TileSystem([1, -1, -20037508.34, 20037508.34]),
 
     /**
      * Predefined tile system for TMS tile system, A tile system published by [OSGEO]{@link http://www.osgeo.org/}. <br>
@@ -38,7 +75,7 @@ maptalks.Util.extend(maptalks.TileSystem, /** @lends maptalks.TileSystem */{
      * @constant
      * @static
      */
-    'tms-global-mercator' : new maptalks.TileSystem([1, 1, -20037508.34, -20037508.34]),
+    'tms-global-mercator': new TileSystem([1, 1, -20037508.34, -20037508.34]),
 
     /**
      * Another tile system published by [OSGEO]{@link http://www.osgeo.org/}, based on EPSG:4326 SRS.
@@ -46,33 +83,12 @@ maptalks.Util.extend(maptalks.TileSystem, /** @lends maptalks.TileSystem */{
      * @constant
      * @static
      */
-    'tms-global-geodetic' : new maptalks.TileSystem([1, 1, -180, -90]),
+    'tms-global-geodetic': new TileSystem([1, 1, -180, -90]),
 
     /**
      * Tile system used by [baidu]{@link http://map.baidu.com}
      * @constant
      * @static
      */
-    'baidu' : new maptalks.TileSystem([1, 1, 0, 0])
+    'baidu': new TileSystem([1, 1, 0, 0])
 });
-
-/**
- * Get the default tile system's code for the projection.
- * @function
- * @static
- * @memberOf maptalks.TileSystem
- * @name  getDefault
- * @param  {Object} projection      - a projection object
- * @return {String} tile system code
- */
-maptalks.TileSystem.getDefault = function (projection) {
-    if (projection['code'].toLowerCase() === 'baidu') {
-        return 'baidu';
-    } else if (projection['code'].toLowerCase() === 'EPSG:4326'.toLowerCase()) {
-        return 'tms-global-geodetic';
-    } else if (projection['code'].toLowerCase() === 'identity') {
-        return [1, -1, 0, 0];
-    } else {
-        return 'web-mercator';
-    }
-};

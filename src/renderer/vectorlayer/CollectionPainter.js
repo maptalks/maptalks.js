@@ -8,7 +8,7 @@ import PointExtent from 'geo/PointExtent';
  * @protected
  * @param {GeometryCollection} geometry - geometry to paint
  */
-const CollectionPainter = Class.extend(/** @lends CollectionPainter.prototype */ {
+export const CollectionPainter = Class.extend(/** @lends CollectionPainter.prototype */ {
     initialize: function (geometry) {
         this.geometry = geometry;
     },
@@ -107,5 +107,3 @@ const CollectionPainter = Class.extend(/** @lends CollectionPainter.prototype */
         return result;
     }
 });
-
-export default CollectionPainter;

@@ -1,3 +1,6 @@
+import { now } from 'core/util';
+import CanvasLayer from './CanvasLayer';
+
 /**
  * ParticleLayer provides some interface methods to render particles. <br>
  * You can use it directly, but can't ser/dser a ParticleLayer with json in this way. <br>
@@ -5,7 +8,7 @@
  * @classdesc
  * A layer to draw particles.
  * @example
- *  var layer = new maptalks.ParticleLayer('particle');
+ *  var layer = new ParticleLayer('particle');
  *
  *  layer.getParticles = function (t) {
  *      return particles[t];
@@ -13,14 +16,14 @@
  *  layer.addTo(map);
  * @class
  * @category layer
- * @extends {maptalks.Layer}
+ * @extends {Layer}
  * @param {String|Number} id - layer's id
- * @param {Object} options - options defined in [options]{@link maptalks.CanvasLayer#options}
+ * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
  */
-maptalks.ParticleLayer = maptalks.CanvasLayer.extend({
-    options : {
-        'animation' : true,
-        'fps' : 70
+export const ParticleLayer = CanvasLayer.extend({
+    options: {
+        'animation': true,
+        'fps': 70
     },
 
     /**
@@ -34,7 +37,7 @@ maptalks.ParticleLayer = maptalks.CanvasLayer.extend({
     draw: function (context) {
         var map = this.getMap(),
             extent = map.getContainerExtent();
-        var points = this.getParticles(maptalks.Util.now());
+        var points = this.getParticles(now());
         if (!points) {
             return;
         }

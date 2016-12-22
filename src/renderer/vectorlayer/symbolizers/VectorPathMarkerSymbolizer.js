@@ -1,26 +1,31 @@
-maptalks.symbolizer.VectorPathMarkerSymbolizer = maptalks.symbolizer.ImageMarkerSymbolizer.extend({
+import { isNil } from 'core/util';
+import Geometry from 'geometry/Geometry';
+import { ImageMarkerSymbolizer } from './ImageMarkerSymbolizer';
 
-    initialize:function (symbol, geometry, painter) {
+export class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
+
+    constructor(symbol, geometry, painter) {
+        super();
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        this._url = [maptalks.Geometry.getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
+        this._url = [Geometry.getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
         this.style = this._defineStyle(this.translate());
         //IE must have a valid width and height to draw a svg image
         //otherwise, error will be thrown
-        if (maptalks.Util.isNil(this.style['markerWidth'])) {
+        if (isNil(this.style['markerWidth'])) {
             this.style['markerWidth'] = 80;
         }
-        if (maptalks.Util.isNil(this.style['markerHeight'])) {
+        if (isNil(this.style['markerHeight'])) {
             this.style['markerHeight'] = 80;
         }
-    },
+    }
 
-    _prepareContext: function () {
+    _prepareContext() {
         //for VectorPathMarkerSymbolizer, opacity is already added into SVG element.
-    },
+    }
 
-    _getImage:function (resources) {
+    _getImage(resources) {
         if (resources && resources.isResourceLoaded(this._url)) {
             return resources.getImage(this._url);
         }
@@ -32,14 +37,13 @@ maptalks.symbolizer.VectorPathMarkerSymbolizer = maptalks.symbolizer.ImageMarker
         return image;
         // return resources ? resources.getImage(this._url) : null;
     }
-});
+}
 
-
-maptalks.symbolizer.VectorPathMarkerSymbolizer.test = function (symbol) {
+VectorPathMarkerSymbolizer.test = function (symbol) {
     if (!symbol) {
         return false;
     }
-    if (maptalks.Util.isNil(symbol['markerFile']) && symbol['markerType'] === 'path') {
+    if (isNil(symbol['markerFile']) && symbol['markerType'] === 'path') {
         return true;
     }
     return false;

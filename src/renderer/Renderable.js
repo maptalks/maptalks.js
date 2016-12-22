@@ -3,7 +3,7 @@
  * @mixin
  * @protected
  */
-const Renderable = {
+export const Renderable = {
     /**
      * Register a renderer class with the given name.
      * @param  {String} name  - renderer's register key
@@ -32,5 +32,3 @@ const Renderable = {
         return this._regRenderers[name.toLowerCase()];
     }
 };
-
-export default Renderable;

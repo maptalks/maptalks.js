@@ -1,14 +1,23 @@
-maptalks.Map.mergeOptions({
+import { now, bind } from 'core/util';
+import { preventDefault } from 'core/util/dom';
+import Handler from 'core/Handler';
+import DragHandler from 'handler/Drag';
+import Point from 'geo/Point';
+import Map from '../Map';
+
+Map.mergeOptions({
     'draggable': true
 });
 
-maptalks.Map.Drag = maptalks.Handler.extend({
+Map.Drag = Handler.extend({
     addHooks: function () {
         var map = this.target;
-        if (!map) { return; }
+        if (!map) {
+            return;
+        }
         var dom = map._panels.mapWrapper || map._containerDOM;
-        this._dragHandler = new maptalks.Handler.Drag(dom, {
-            'cancelOn' : maptalks.Util.bind(this._cancelOn, this)
+        this._dragHandler = new DragHandler(dom, {
+            'cancelOn': bind(this._cancelOn, this)
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)
@@ -19,10 +28,10 @@ maptalks.Map.Drag = maptalks.Handler.extend({
 
     removeHooks: function () {
         this._dragHandler.off('mousedown', this._onMouseDown, this)
-                .off('dragstart', this._onDragStart, this)
-                .off('dragging', this._onDragging, this)
-                .off('dragend', this._onDragEnd, this)
-                .disable();
+            .off('dragstart', this._onDragStart, this)
+            .off('dragging', this._onDragging, this)
+            .off('dragend', this._onDragEnd, this)
+            .disable();
         this._dragHandler.remove();
         delete this._dragHandler;
     },
@@ -45,16 +54,16 @@ maptalks.Map.Drag = maptalks.Handler.extend({
     },
 
 
-    _onMouseDown:function (param) {
+    _onMouseDown: function (param) {
         if (this.target._panAnimating) {
             this.target._enablePanAnimation = false;
         }
-        maptalks.DomUtil.preventDefault(param['domEvent']);
+        preventDefault(param['domEvent']);
     },
 
-    _onDragStart:function (param) {
+    _onDragStart: function (param) {
         var map = this.target;
-        this.startDragTime = maptalks.Util.now();
+        this.startDragTime = now();
         var domOffset = map.offsetPlatform();
         this.startLeft = domOffset.x;
         this.startTop = domOffset.y;
@@ -65,8 +74,8 @@ maptalks.Map.Drag = maptalks.Handler.extend({
         map.onMoveStart(param);
     },
 
-    _onDragging:function (param) {
-        //maptalks.DomUtil.preventDefault(param['domEvent']);
+    _onDragging: function (param) {
+        //preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
         }
@@ -76,22 +85,22 @@ maptalks.Map.Drag = maptalks.Handler.extend({
         var nextLeft = (this.startLeft + mx - this.startX);
         var nextTop = (this.startTop + my - this.startY);
         var mapPos = map.offsetPlatform();
-        var offset = new maptalks.Point(nextLeft, nextTop)._substract(mapPos);
+        var offset = new Point(nextLeft, nextTop)._substract(mapPos);
         map.offsetPlatform(offset);
         map._offsetCenterByPixel(offset);
         map.onMoving(param);
     },
 
-    _onDragEnd:function (param) {
-        //maptalks.DomUtil.preventDefault(param['domEvent']);
+    _onDragEnd: function (param) {
+        //preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
         }
         var map = this.target;
-        var t = maptalks.Util.now() - this.startDragTime;
+        var t = now() - this.startDragTime;
         var domOffset = map.offsetPlatform();
-        var xSpan =  domOffset.x - this.startLeft;
-        var ySpan =  domOffset.y - this.startTop;
+        var xSpan = domOffset.x - this.startLeft;
+        var ySpan = domOffset.y - this.startTop;
 
         delete this.startLeft;
         delete this.startTop;
@@ -101,8 +110,8 @@ maptalks.Map.Drag = maptalks.Handler.extend({
         delete this.startY;
 
         if (t < 280 && Math.abs(ySpan) + Math.abs(xSpan) > 5) {
-            // var distance = new maptalks.Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t))._multi(0.5);
-            var distance = new maptalks.Point(xSpan, ySpan);
+            // var distance = new Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t))._multi(0.5);
+            var distance = new Point(xSpan, ySpan);
             t = 5 * t * (Math.abs(distance.x) + Math.abs(distance.y)) / 500;
             map._panAnimation(distance, t);
         } else {
@@ -111,4 +120,4 @@ maptalks.Map.Drag = maptalks.Handler.extend({
     }
 });
 
-maptalks.Map.addInitHook('addHandler', 'draggable', maptalks.Map.Drag);
+Map.addInitHook('addHandler', 'draggable', Map.Drag);

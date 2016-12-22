@@ -1,25 +1,29 @@
+import { isArray, setOptions, parseJSON } from 'core/util';
+import Geometry from 'geometry/Geometry';
+import VectorLayer from './VectorLayer';
+
 /**
  * @classdesc
- * A sub class of maptalks.VectorLayer supports GeoJSON.
+ * A sub class of VectorLayer supports GeoJSON.
  * @class
  * @category layer
- * @extends {maptalks.VectorLayer}
+ * @extends {VectorLayer}
  * @param {String|Number} id        - layer's id
  * @param {Object}        json      - GeoJSON objects
- * @param {Object} [options=null]   - construct options defined in [maptalks.GeoJSONLayer]{@link maptalks.GeoJSONLayer#options}
+ * @param {Object} [options=null]   - construct options defined in [GeoJSONLayer]{@link GeoJSONLayer#options}
  */
-maptalks.GeoJSONLayer = maptalks.VectorLayer.extend(/** @lends maptalks.GeoJSONLayer.prototype */{
+export const GeoJSONLayer = VectorLayer.extend(/** @lends GeoJSONLayer.prototype */ {
 
     initialize: function (id, json, options) {
         this.setId(id);
-        if (json && !maptalks.Util.isArray(json)) {
+        if (json && !isArray(json)) {
             if (!json['type']) {
                 //is options
                 options = json;
                 json = null;
             }
         }
-        maptalks.Util.setOptions(this, options);
+        setOptions(this, options);
         if (json) {
             var geometries = this._parse(json);
             this.addGeometry(geometries);
@@ -29,7 +33,7 @@ maptalks.GeoJSONLayer = maptalks.VectorLayer.extend(/** @lends maptalks.GeoJSONL
     /**
      * Add geojson data to the layer
      * @param {Object|Object[]} json - GeoJSON data
-     * @return {maptalks.GeoJSONLayer} this
+     * @return {GeoJSONLayer} this
      */
     addData: function (json) {
         var geometries = this._parse(json);
@@ -38,20 +42,20 @@ maptalks.GeoJSONLayer = maptalks.VectorLayer.extend(/** @lends maptalks.GeoJSONL
     },
 
     _parse: function (json) {
-        json = maptalks.Util.parseJSON(json);
-        return maptalks.Geometry.fromJSON(json);
+        json = parseJSON(json);
+        return Geometry.fromJSON(json);
     },
 
     /**
      * Export the GeoJSONLayer's profile json. <br>
      * @param  {Object} [options=null] - export options
-     * @param  {Object} [options.geometries=null] - If not null and the layer is a [OverlayerLayer]{@link maptalks.OverlayLayer},
+     * @param  {Object} [options.geometries=null] - If not null and the layer is a [OverlayerLayer]{@link OverlayLayer},
      *                                            the layer's geometries will be exported with the given "options.geometries" as a parameter of geometry's toJSON.
-     * @param  {maptalks.Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
+     * @param  {Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
      * @return {Object} layer's profile JSON
      */
     toJSON: function (options) {
-        var profile = maptalks.VectorLayer.prototype.toJSON.call(this, options);
+        var profile = VectorLayer.prototype.toJSON.call(this, options);
         profile['type'] = 'GeoJSONLayer';
         var json = [];
         if (profile['geometries']) {
@@ -73,14 +77,16 @@ maptalks.GeoJSONLayer = maptalks.VectorLayer.extend(/** @lends maptalks.GeoJSONL
 /**
  * Reproduce a GeoJSONLayer from layer's profile JSON.
  * @param  {Object} layerJSON - layer's profile JSON
- * @return {maptalks.GeoJSONLayer}
+ * @return {GeoJSONLayer}
  * @static
  * @private
  * @function
  */
-maptalks.GeoJSONLayer.fromJSON = function (profile) {
-    if (!profile || profile['type'] !== 'GeoJSONLayer') { return null; }
-    var layer = new maptalks.GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
+GeoJSONLayer.fromJSON = function (profile) {
+    if (!profile || profile['type'] !== 'GeoJSONLayer') {
+        return null;
+    }
+    var layer = new GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
     if (profile['style']) {
         layer.setStyle(profile['style']);
     }

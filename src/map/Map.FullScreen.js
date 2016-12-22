@@ -1,42 +1,44 @@
-maptalks.Map.include(/** @lends maptalks.Map.prototype */{
+import Map from './Map';
+
+Map.include(/** @lends Map.prototype */ {
     /**
      * Request for the full screen
-     * @return {maptalks.Map} this
+     * @return {Map} this
      */
     requestFullScreen: function () {
         /**
-          * fullscreenstart event
-          * @event maptalks.Map#fullscreenstart
-          * @type {Object}
-          * @property {String} type                    - fullscreenstart
-          * @property {maptalks.Map} target            - the map fires event
-          */
+         * fullscreenstart event
+         * @event Map#fullscreenstart
+         * @type {Object}
+         * @property {String} type                    - fullscreenstart
+         * @property {Map} target            - the map fires event
+         */
         this._fireEvent('fullscreenstart');
         this._requestFullScreen(this._containerDOM);
         /**
-          * fullscreenend event
-          * @event maptalks.Map#fullscreenend
-          * @type {Object}
-          * @property {String} type                    - fullscreenend
-          * @property {maptalks.Map} target            - the map fires event
-          */
+         * fullscreenend event
+         * @event Map#fullscreenend
+         * @type {Object}
+         * @property {String} type                    - fullscreenend
+         * @property {Map} target            - the map fires event
+         */
         this._fireEvent('fullscreenend');
         return this;
     },
 
     /**
      * Cancel full screen
-     * @return {maptalks.Map} this
+     * @return {Map} this
      */
     cancelFullScreen: function () {
         this._cancelFullScreen(this._containerDOM);
         /**
-          * cancelfullscreen event
-          * @event maptalks.Map#cancelfullscreen
-          * @type {Object}
-          * @property {String} type                    - cancelfullscreen
-          * @property {maptalks.Map} target            - the map fires event
-          */
+         * cancelfullscreen event
+         * @event Map#cancelfullscreen
+         * @type {Object}
+         * @property {String} type                    - cancelfullscreen
+         * @property {Map} target            - the map fires event
+         */
         this._fireEvent('cancelfullscreen');
         return this;
     },

@@ -1,21 +1,29 @@
+import { extend } from 'core/util';
+import { createEl } from 'core/util/dom';
+import Polygon from 'geometry/Polygon';
+import Layer from 'layer/Layer';
+import VectorLayer from 'layer/VectorLayer';
+import Map from 'map/Map';
+import Control from './Control';
+
 /**
  * @classdesc
  * An overview control for the map.
  * @class
  * @category control
- * @extends maptalks.control.Control
- * @memberOf maptalks.control
+ * @extends Control
+ * @memberOf control
  * @name Overview
- * @param {Object} [options=null] - options defined in [maptalks.control.Overview]{@link maptalks.control.Overview#options}
+ * @param {Object} [options=null] - options defined in [Overview]{@link Overview#options}
  * @example
- * var overview = new maptalks.control.Overview({
+ * var overview = new Overview({
  *     position : {'bottom': '0', 'right': '0'},
  *     size : {'width' : 300,'height' : 200}
  * }).addTo(map);
  */
-maptalks.control.Overview = maptalks.control.Control.extend(/** @lends maptalks.control.Overview.prototype */{
+export const Overview = Control.extend(/** @lends Overview.prototype */ {
 
-    loadDelay : 1600,
+    loadDelay: 1600,
 
     /**
      * @property {Object} options - options
@@ -24,20 +32,20 @@ maptalks.control.Overview = maptalks.control.Control.extend(/** @lends maptalks.
      * @property {Object} [options.size={"width":300, "height":200}  - size of the Control
      * @property {Object} [options.style={"color":"#1bbc9b"}] - style of the control, color is the overview rectangle's color
      */
-    options:{
-        'level' : 4,
-        'position' : 'bottom-right',
-        'size' : {
-            'width' : 300,
-            'height' : 200
+    options: {
+        'level': 4,
+        'position': 'bottom-right',
+        'size': {
+            'width': 300,
+            'height': 200
         },
-        'style' : {
-            'color' : '#1bbc9b'
+        'style': {
+            'color': '#1bbc9b'
         }
     },
 
     buildOn: function (map) {
-        var container = maptalks.DomUtil.createEl('div');
+        var container = createEl('div');
         container.style.cssText = 'border:1px solid #000;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
         if (map.isLoaded()) {
             this._initOverview();
@@ -47,54 +55,54 @@ maptalks.control.Overview = maptalks.control.Control.extend(/** @lends maptalks.
         return container;
     },
 
-    _initOverview : function () {
+    _initOverview: function () {
         var me = this;
         setTimeout(function () {
             me._createOverview();
         }, this.loadDelay);
     },
 
-    _createOverview : function (container) {
+    _createOverview: function (container) {
         var map = this.getMap(),
             dom = container || this.getDOM(),
             extent = map.getExtent();
         var options = map.config();
-        maptalks.Util.extend(options, {
-            'center' : map.getCenter(),
-            'zoom'   : this._getOverviewZoom(),
-            'scrollWheelZoom' : false,
-            'checkSize' : false,
-            'doubleClickZoom' : false,
-            'touchZoom' : false,
-            'control' : false
+        extend(options, {
+            'center': map.getCenter(),
+            'zoom': this._getOverviewZoom(),
+            'scrollWheelZoom': false,
+            'checkSize': false,
+            'doubleClickZoom': false,
+            'touchZoom': false,
+            'control': false
         });
-        this._overview = new maptalks.Map(dom, options);
+        this._overview = new Map(dom, options);
         this._updateBaseLayer();
-        this._perspective = new maptalks.Polygon(extent.toArray(), {
-            'draggable' : true,
-            'cursor' : 'move',
-            'symbol' : {
-                'lineWidth' : 3,
-                'lineColor' : this.options['style']['color'],
-                'polygonFill' : this.options['style']['color'],
-                'polygonOpacity' : 0.4,
+        this._perspective = new Polygon(extent.toArray(), {
+            'draggable': true,
+            'cursor': 'move',
+            'symbol': {
+                'lineWidth': 3,
+                'lineColor': this.options['style']['color'],
+                'polygonFill': this.options['style']['color'],
+                'polygonOpacity': 0.4,
             }
         })
-        .on('dragstart', this._onDragStart, this)
-        .on('dragend', this._onDragEnd, this);
+            .on('dragstart', this._onDragStart, this)
+            .on('dragend', this._onDragEnd, this);
         map.on('resize moveend zoomend', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this);
-        new maptalks.VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
+        new VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
         this.fire('load');
     },
 
-    onRemove : function () {
+    onRemove: function () {
         this.getMap().off('load', this._initOverview, this)
             .off('resize moveend zoomend', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this);
     },
 
-    _getOverviewZoom : function () {
+    _getOverviewZoom: function () {
         var map = this.getMap(),
             zoom = map.getZoom(),
             minZoom = map.getMinZoom(),
@@ -122,14 +130,14 @@ maptalks.control.Overview = maptalks.control.Control.extend(/** @lends maptalks.
         this.getMap().config('draggable', false);
     },
 
-    _onDragEnd : function () {
+    _onDragEnd: function () {
         var center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
         this.getMap().config('draggable', this._origDraggable);
     },
 
-    _update : function () {
+    _update: function () {
         this._perspective.setCoordinates(this.getMap().getExtent().toArray());
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
     },
@@ -137,7 +145,7 @@ maptalks.control.Overview = maptalks.control.Control.extend(/** @lends maptalks.
     _updateBaseLayer: function () {
         var map = this.getMap();
         if (map.getBaseLayer()) {
-            this._overview.setBaseLayer(maptalks.Layer.fromJSON(map.getBaseLayer().toJSON()));
+            this._overview.setBaseLayer(Layer.fromJSON(map.getBaseLayer().toJSON()));
         } else {
             this._overview.setBaseLayer(null);
         }
@@ -145,13 +153,13 @@ maptalks.control.Overview = maptalks.control.Control.extend(/** @lends maptalks.
 
 });
 
-maptalks.Map.mergeOptions({
-    'overviewControl' : false
+Map.mergeOptions({
+    'overviewControl': false
 });
 
-maptalks.Map.addOnLoadHook(function () {
+Map.addOnLoadHook(function () {
     if (this.options['overviewControl']) {
-        this.overviewControl = new maptalks.control.Overview(this.options['overviewControl']);
+        this.overviewControl = new Overview(this.options['overviewControl']);
         this.addControl(this.overviewControl);
     }
 });

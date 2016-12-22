@@ -1,23 +1,44 @@
+import {
+    now,
+    bind,
+    isNumber,
+    throttle,
+    requestAnimFrame
+} from 'core/util';
+import {
+    on,
+    createEl,
+    setTransformMatrix,
+    removeTransform,
+    removeDomNode,
+    setOpacity,
+    CSSFILTER,
+    TRANSITION
+} from 'core/util/dom';
+import Class from 'core/class/index';
+import Browser from 'core/Browser';
+import TileLayer from 'layer/tile/TileLayer';
+
 /**
  * @classdesc
  * A renderer based on HTML Doms for TileLayers.
  * It is implemented based on Leaflet's GridLayer, and all the credits belongs to Leaflet.
  * @class
  * @protected
- * @memberOf maptalks.renderer.tilelayer
+ * @memberOf tilelayer
  * @name Dom
- * @extends {maptalks.Class}
- * @param {maptalks.TileLayer} layer - layer of the renderer
+ * @extends {Class}
+ * @param {TileLayer} layer - layer of the renderer
  */
-maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.renderer.tilelayer.Dom.prototype */{
+export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
 
-    initialize:function (layer) {
+    initialize: function (layer) {
         this.layer = layer;
         this._tiles = {};
-        this._fadeAnimated = !maptalks.Browser.mobile && true;
+        this._fadeAnimated = !Browser.mobile && true;
     },
 
-    getMap:function () {
+    getMap: function () {
         return this.layer.getMap();
     },
 
@@ -35,13 +56,13 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         }
     },
 
-    remove:function () {
+    remove: function () {
         delete this._tiles;
         delete this.layer;
         this._removeLayerContainer();
     },
 
-    clear:function () {
+    clear: function () {
         this._removeAllTiles();
         this._clearLayerContainer();
     },
@@ -57,7 +78,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         return false;
     },
 
-    render:function () {
+    render: function () {
         var layer = this.layer;
         if (!this._container) {
             this._createLayerContainer();
@@ -88,7 +109,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
             queue.push(tile);
         }
         var container = this._getTileContainer();
-        maptalks.DomUtil.removeTransform(container);
+        removeTransform(container);
         if (queue.length > 0) {
             var fragment = document.createDocumentFragment();
             for (i = 0, l = queue.length; i < l; i++) {
@@ -105,28 +126,28 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         var zoom = this.getMap().getZoom();
         if (this._levelContainers[zoom]) {
             if (matrices) {
-                maptalks.DomUtil.setTransformMatrix(this._levelContainers[zoom], matrices['view']);
+                setTransformMatrix(this._levelContainers[zoom], matrices['view']);
             } else {
-                maptalks.DomUtil.removeTransform(this._levelContainers[zoom]);
+                removeTransform(this._levelContainers[zoom]);
             }
-            // maptalks.DomUtil.setTransform(this._levelContainers[zoom], new maptalks.Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
+            // setTransform(this._levelContainers[zoom], new Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
         }
         return false;
     },
 
     _loadTile: function (tile) {
         this._tiles[tile['id']] = tile;
-        return this._createTile(tile, maptalks.Util.bind(this._tileReady, this));
+        return this._createTile(tile, bind(this._tileReady, this));
     },
 
     _createTile: function (tile, done) {
         var tileSize = this.layer.getTileSize();
-        var tileImage = maptalks.DomUtil.createEl('img');
+        var tileImage = createEl('img');
 
         tile['el'] = tileImage;
 
-        maptalks.DomUtil.on(tileImage, 'load', maptalks.Util.bind(this._tileOnLoad, this, done, tile));
-        maptalks.DomUtil.on(tileImage, 'error', maptalks.Util.bind(this._tileOnError, this, done, tile));
+        on(tileImage, 'load', bind(this._tileOnLoad, this, done, tile));
+        on(tileImage, 'error', bind(this._tileOnError, this, done, tile));
 
         if (this.layer.options['crossOrigin']) {
             tile.crossOrigin = this.layer.options['crossOrigin'];
@@ -135,16 +156,16 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         tileImage.style.position = 'absolute';
         var viewPoint = this.getMap()._pointToViewPoint(tile['point']);
         tileImage.style.left = Math.floor(viewPoint.x) + 'px';
-        tileImage.style.top  = Math.floor(viewPoint.y) + 'px';
+        tileImage.style.top = Math.floor(viewPoint.y) + 'px';
 
         tileImage.alt = '';
         tileImage.width = tileSize['width'];
         tileImage.height = tileSize['height'];
 
-        maptalks.DomUtil.setOpacity(tileImage, 0);
+        setOpacity(tileImage, 0);
 
         if (this.layer.options['cssFilter']) {
-            tileImage.style[maptalks.DomUtil.CSSFILTER] = this.layer.options['cssFilter'];
+            tileImage.style[CSSFILTER] = this.layer.options['cssFilter'];
         }
 
         tileImage.src = tile['url'];
@@ -160,10 +181,10 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
             /**
              * tileerror event, fired when layer is 'dom' rendered and a tile errors
              *
-             * @event maptalks.TileLayer#tileerror
+             * @event TileLayer#tileerror
              * @type {Object}
              * @property {String} type - tileerror
-             * @property {maptalks.TileLayer} target - tile layer
+             * @property {TileLayer} target - tile layer
              * @property {String} err  - error message
              * @property {Object} tile - tile
              */
@@ -173,24 +194,24 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
             });
         }
 
-        tile.loaded = maptalks.Util.now();
+        tile.loaded = now();
 
         var map = this.getMap();
 
         if (this._fadeAnimated) {
-            tile['el'].style[maptalks.DomUtil.TRANSITION] = 'opacity 250ms';
+            tile['el'].style[TRANSITION] = 'opacity 250ms';
         }
 
-        maptalks.DomUtil.setOpacity(tile['el'], 1);
+        setOpacity(tile['el'], 1);
         tile.active = true;
 
         /**
          * tileload event, fired when layer is 'dom' rendered and a tile is loaded
          *
-         * @event maptalks.TileLayer#tileload
+         * @event TileLayer#tileload
          * @type {Object}
          * @property {String} type - tileload
-         * @property {maptalks.TileLayer} target - tile layer
+         * @property {TileLayer} target - tile layer
          * @property {Object} tile - tile
          */
         this.layer.fire('tileload', {
@@ -200,8 +221,8 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         if (this._noTilesToLoad()) {
             this.layer.fire('layerload');
 
-            if (maptalks.Browser.ielt9) {
-                maptalks.Util.requestAnimFrame(this._pruneTiles, this);
+            if (Browser.ielt9) {
+                requestAnimFrame(this._pruneTiles, this);
             } else {
                 if (this._pruneTimeout) {
                     clearTimeout(this._pruneTimeout);
@@ -210,15 +231,15 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
                     pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
                 // to trigger a pruning.
-                this._pruneTimeout = setTimeout(maptalks.Util.bind(this._pruneTiles, this, pruneLevels), timeout + 100);
+                this._pruneTimeout = setTimeout(bind(this._pruneTiles, this, pruneLevels), timeout + 100);
             }
         }
     },
 
     _tileOnLoad: function (done, tile) {
         // For https://github.com/Leaflet/Leaflet/issues/3332
-        if (maptalks.Browser.ielt9) {
-            setTimeout(maptalks.Util.bind(done, this, null, tile), 0);
+        if (Browser.ielt9) {
+            setTimeout(bind(done, this, null, tile), 0);
         } else {
             done.call(this, null, tile);
         }
@@ -236,7 +257,9 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
 
     _noTilesToLoad: function () {
         for (var key in this._tiles) {
-            if (!this._tiles[key].loaded) { return false; }
+            if (!this._tiles[key].loaded) {
+                return false;
+            }
         }
         return true;
     },
@@ -269,7 +292,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
             }
             for (var z in this._levelContainers) {
                 if (+z !== zoom) {
-                    maptalks.DomUtil.removeDomNode(this._levelContainers[z]);
+                    removeDomNode(this._levelContainers[z]);
                     this._removeTilesAtZoom(z);
                     delete this._levelContainers[z];
                 }
@@ -280,19 +303,21 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
 
     _removeTile: function (key) {
         var tile = this._tiles[key];
-        if (!tile) { return; }
+        if (!tile) {
+            return;
+        }
 
-        maptalks.DomUtil.removeDomNode(tile.el);
+        removeDomNode(tile.el);
 
         delete this._tiles[key];
 
         /**
          * tileunload event, fired when layer is 'dom' rendered and a tile is removed
          *
-         * @event maptalks.TileLayer#tileunload
+         * @event TileLayer#tileunload
          * @type {Object}
          * @property {String} type - tileunload
-         * @property {maptalks.TileLayer} target - tile layer
+         * @property {TileLayer} target - tile layer
          * @property {Object} tile - tile
          */
         this.layer.fire('tileunload', {
@@ -321,7 +346,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         }
         var zoom = this.getMap().getZoom();
         if (!this._levelContainers[zoom]) {
-            var container = this._levelContainers[zoom] = maptalks.DomUtil.createEl('div', 'maptalks-tilelayer-level');
+            var container = this._levelContainers[zoom] = createEl('div', 'maptalks-tilelayer-level');
             container.style.cssText = 'position:absolute;left:0px;top:0px;';
             container.style.willChange = 'transform';
             this._container.appendChild(container);
@@ -330,7 +355,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
     },
 
     _createLayerContainer: function () {
-        var container = this._container = maptalks.DomUtil.createEl('div', 'maptalks-tilelayer');
+        var container = this._container = createEl('div', 'maptalks-tilelayer');
         container.style.cssText = 'position:absolute;left:0px;top:0px;';
         if (this._zIndex) {
             container.style.zIndex = this._zIndex;
@@ -338,34 +363,34 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         this.getMap()._panels['layer'].appendChild(container);
     },
 
-    _clearLayerContainer:function () {
+    _clearLayerContainer: function () {
         if (this._container) {
             this._container.innerHTML = '';
         }
         delete this._levelContainers;
     },
 
-    _removeLayerContainer:function () {
+    _removeLayerContainer: function () {
         if (this._container) {
-            maptalks.DomUtil.removeDomNode(this._container);
+            removeDomNode(this._container);
         }
         delete this._container;
         delete this._levelContainers;
     },
 
-    getEvents:function () {
+    getEvents: function () {
         var events = {
-            '_zoomstart'    : this.onZoomStart,
-            '_touchzoomstart' : this._onTouchZoomStart,
-            '_zoomend'      : this.onZoomEnd,
-            '_moveend _resize' : this.render,
-            '_movestart'    : this.onMoveStart
+            '_zoomstart': this.onZoomStart,
+            '_touchzoomstart': this._onTouchZoomStart,
+            '_zoomend': this.onZoomEnd,
+            '_moveend _resize': this.render,
+            '_movestart': this.onMoveStart
         };
         if (!this._onMapMoving && this.layer.options['renderWhenPanning']) {
             var interval = this.layer.options['updateInterval'];
-            if (maptalks.Util.isNumber(interval) && interval >= 0) {
+            if (isNumber(interval) && interval >= 0) {
                 if (interval > 0) {
-                    this._onMapMoving = maptalks.Util.throttle(function () {
+                    this._onMapMoving = throttle(function () {
                         this.render();
                     }, interval, this);
                 } else {
@@ -382,7 +407,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
     },
 
     _canTransform: function () {
-        return maptalks.Browser.any3d || maptalks.Browser.ie9;
+        return Browser.any3d || Browser.ie9;
     },
 
     onMoveStart: function () {
@@ -394,7 +419,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
     },
 
     onZoomStart: function () {
-        this._fadeAnimated = !maptalks.Browser.mobile && true;
+        this._fadeAnimated = !Browser.mobile && true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
         if (!this._canTransform()) {
@@ -423,4 +448,4 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
     }
 });
 
-maptalks.TileLayer.registerRenderer('dom', maptalks.renderer.tilelayer.Dom);
+TileLayer.registerRenderer('dom', Dom);

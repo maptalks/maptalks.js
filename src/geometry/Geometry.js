@@ -18,13 +18,11 @@ import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extend';
 import { MeasurerUtil } from 'geo/measurer/Measurer';
-import { OverlayLayer } from 'layer';
+import { OverlayLayer } from 'layer/OverlayLayer';
+import { Painter, CollectionPainter } from 'renderer/vectorlayer';
+import { Symbolizer, VectorMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
 import GeometryCollection from './GeometryCollection';
 import GeoJSON from './GeoJSON';
-import Painter from 'renderer/vectorlayer/Painter';
-import CollectionPainter from 'renderer/vectorlayer/CollectionPainter';
-import symbolizers from 'renderer/vectorlayer/symbolizers';
-import { Symbolizer } from 'renderer/vectorlayer/symbolizers';
 
 /**
  * @classdesc
@@ -1216,7 +1214,7 @@ Geometry.getMarkerPathBase64 = function (symbol) {
     if (!symbol['markerPath']) {
         return null;
     }
-    var op = 1, styles =  symbolizers.VectorMarkerSymbolizer.translateToSVGStyles(symbol);
+    var op = 1, styles = VectorMarkerSymbolizer.translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
     if (isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];

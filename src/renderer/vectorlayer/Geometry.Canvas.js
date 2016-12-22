@@ -1,5 +1,15 @@
-//如果不支持canvas, 则不载入canvas的绘制逻辑
-if (maptalks.Browser.canvas) {
+import { isArray, isArrayHasData } from 'core/util';
+import Browser from 'core/Browser';
+import Canvas from 'utils/Canvas';
+import Ellipse from 'geometry/Ellipse';
+import Circle from 'geometry/Circle';
+import Sector from 'geometry/Sector';
+import Rectangle from 'geometry/Rectangle';
+import LineString from 'geometry/LineString';
+import Polygon from 'geometry/Polygon';
+
+// 如果不支持canvas, 则不载入canvas的绘制逻辑
+if (Browser.canvas) {
 
     var ellipseReources = {
         _getPaintParams: function () {
@@ -10,38 +20,40 @@ if (maptalks.Browser.canvas) {
             return [pt, size['width'], size['height']];
         },
 
-        _paintOn: maptalks.Canvas.ellipse
+        _paintOn: Canvas.ellipse
     };
 
-    maptalks.Ellipse.include(ellipseReources);
+    Ellipse.include(ellipseReources);
 
-    maptalks.Circle.include(ellipseReources);
+    Circle.include(ellipseReources);
     //----------------------------------------------------
-    maptalks.Rectangle.include({
+    Rectangle.include({
         _getPaintParams: function () {
             var map = this.getMap();
             var pt = map._prjToPoint(this._getPrjCoordinates());
             var size = this._getRenderSize();
             return [pt, size];
         },
-        _paintOn: maptalks.Canvas.rectangle
+        _paintOn: Canvas.rectangle
     });
     //----------------------------------------------------
-    maptalks.Sector.include({
+    Sector.include({
         _getPaintParams: function () {
             var map = this.getMap();
             var pt = map._prjToPoint(this._getPrjCoordinates());
             var size = this._getRenderSize();
-            return [pt, size['width'], [this.getStartAngle(), this.getEndAngle()]];
+            return [pt, size['width'],
+                [this.getStartAngle(), this.getEndAngle()]
+            ];
         },
-        _paintOn: maptalks.Canvas.sector
+        _paintOn: Canvas.sector
 
     });
     //----------------------------------------------------
 
-    maptalks.LineString.include({
-        arrowStyles : {
-            'classic' : [3, 4]
+    LineString.include({
+        arrowStyles: {
+            'classic': [3, 4]
         },
 
         _getArrowPoints: function (prePoint, point, lineWidth, arrowStyle, tolerance) {
@@ -67,8 +79,8 @@ if (maptalks.Browser.canvas) {
             return [points];
         },
 
-        _paintOn:function (ctx, points, lineOpacity, fillOpacity, dasharray) {
-            maptalks.Canvas.path(ctx, points, lineOpacity, null, dasharray);
+        _paintOn: function (ctx, points, lineOpacity, fillOpacity, dasharray) {
+            Canvas.path(ctx, points, lineOpacity, null, dasharray);
             this._paintArrow(ctx, points, lineOpacity);
         },
 
@@ -79,7 +91,7 @@ if (maptalks.Browser.canvas) {
         _getArrowStyle: function () {
             var arrowStyle = this.options['arrowStyle'];
             if (arrowStyle) {
-                return maptalks.Util.isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
+                return isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
             }
             return null;
         },
@@ -89,7 +101,7 @@ if (maptalks.Browser.canvas) {
             if (!arrowStyle || points.length < 2) {
                 return null;
             }
-            var isSplitted = points.length > 0 && maptalks.Util.isArray(points[0]);
+            var isSplitted = points.length > 0 && isArray(points[0]);
             var segments = isSplitted ? points : [points];
             var placement = this._getArrowPlacement();
             var arrows = [];
@@ -124,29 +136,32 @@ if (maptalks.Browser.canvas) {
                 }
                 for (var i = arrows.length - 1; i >= 0; i--) {
                     ctx.fillStyle = ctx.strokeStyle;
-                    maptalks.Canvas.polygon(ctx, arrows[i], lineOpacity, lineOpacity);
+                    Canvas.polygon(ctx, arrows[i], lineOpacity, lineOpacity);
                 }
             }
         }
     });
 
-    maptalks.Polygon.include({
+    Polygon.include({
         _getPaintParams: function () {
             var prjVertexes = this._getPrjCoordinates(),
                 points = this._getPath2DPoints(prjVertexes),
                 //splitted by anti-meridian
-                isSplitted = points.length > 0 && maptalks.Util.isArray(points[0]);
+                isSplitted = points.length > 0 && isArray(points[0]);
             if (isSplitted) {
-                points = [[points[0]], [points[1]]];
+                points = [
+                    [points[0]],
+                    [points[1]]
+                ];
             }
             var prjHoles = this._getPrjHoles();
             var holePoints = [];
-            if (maptalks.Util.isArrayHasData(prjHoles)) {
+            if (isArrayHasData(prjHoles)) {
                 var hole;
                 for (var i = 0; i < prjHoles.length; i++) {
                     hole = this._getPath2DPoints(prjHoles[i]);
                     if (isSplitted) {
-                        if (maptalks.Util.isArray(hole)) {
+                        if (isArray(hole)) {
                             points[0].push(hole[0]);
                             points[1].push(hole[1]);
                         } else {
@@ -160,6 +175,6 @@ if (maptalks.Browser.canvas) {
             }
             return [isSplitted ? points : [points].concat(holePoints)];
         },
-        _paintOn: maptalks.Canvas.polygon
+        _paintOn: Canvas.polygon
     });
 }

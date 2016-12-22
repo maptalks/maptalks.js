@@ -1,8 +1,6 @@
-/**
- * @namespace
- * @protected
- */
-maptalks.renderer.map = {};
+import { offsetDom } from 'core/util/dom';
+import Class from 'core/class/index';
+import Point from 'geo/Point';
 
 /**
  * @classdesc
@@ -10,14 +8,14 @@ maptalks.renderer.map = {};
  * @class
  * @abstract
  * @protected
- * @memberOf maptalks.renderer.map
+ * @memberOf renderer.map
  * @name Renderer
- * @extends {maptalks.Class}
+ * @extends {Class}
  */
-maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.renderer.map.Renderer.prototype */{
+export const Renderer = Class.extend(/** @lends renderer.map.Renderer.prototype */ {
 
-    panAnimation:function (distance, t, onFinish) {
-        distance = new maptalks.Point(distance);
+    panAnimation: function (distance, t, onFinish) {
+        distance = new Point(distance);
         var map = this.map;
         if (map.options['panAnimation']) {
             var duration;
@@ -29,11 +27,11 @@ maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.rende
             map._enablePanAnimation = true;
             map._panAnimating = true;
             var preDist = null;
-            var player = maptalks.Animation.animate({
-                'distance' : distance
+            var player = Animation.animate({
+                'distance': distance
             }, {
-                'easing' : 'out',
-                'speed' : duration
+                'easing': 'out',
+                'speed': duration
             }, function (frame) {
                 if (!map._enablePanAnimation) {
                     player.finish();
@@ -71,26 +69,26 @@ maptalks.renderer.map.Renderer = maptalks.Class.extend(/** @lends maptalks.rende
      * @param  {Point} offset 偏移量
      * @return {this | Point}
      */
-    offsetPlatform:function (offset) {
+    offsetPlatform: function (offset) {
         if (!this.map._panels.front) {
             return this;
         }
         var pos = this.map.offsetPlatform().add(offset)._round();
-        maptalks.DomUtil.offsetDom(this.map._panels.back, pos);
-        maptalks.DomUtil.offsetDom(this.map._panels.front, pos);
+        offsetDom(this.map._panels.back, pos);
+        offsetDom(this.map._panels.front, pos);
         return this;
     },
 
-    resetContainer:function () {
+    resetContainer: function () {
         this.map._resetMapViewPoint();
         if (this.map._panels.front) {
-            var pos = new maptalks.Point(0, 0);
-            maptalks.DomUtil.offsetDom(this.map._panels.back, pos);
-            maptalks.DomUtil.offsetDom(this.map._panels.front, pos);
+            var pos = new Point(0, 0);
+            offsetDom(this.map._panels.back, pos);
+            offsetDom(this.map._panels.front, pos);
         }
     },
 
-    onZoomEnd:function () {
+    onZoomEnd: function () {
         this.resetContainer();
     },
 

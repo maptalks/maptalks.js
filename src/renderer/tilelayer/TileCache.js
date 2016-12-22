@@ -1,28 +1,28 @@
-maptalks.TileLayer.TileCache = function (capacity) {
-    this._queue = [];
-    this._cache = {};
-    if (!capacity) {
-        capacity = 128;
+export class TileCache {
+    constructor(capacity) {
+        this._queue = [];
+        this._cache = {};
+        if (!capacity) {
+            capacity = 128;
+        }
+        this.capacity = capacity;
     }
-    this.capacity = capacity;
-};
 
-maptalks.Util.extend(maptalks.TileLayer.TileCache.prototype, {
-    add:function (key, tile) {
+    add(key, tile) {
         this._cache[key] = tile;
         this._queue.push(key);
         this._expireCache();
-    },
+    }
 
-    get:function (key) {
+    get(key) {
         return this._cache[key];
-    },
+    }
 
-    remove:function (key) {
+    remove(key) {
         delete this._cache[key];
-    },
+    }
 
-    _expireCache:function () {
+    _expireCache() {
         if (this._expTimeout) {
             clearTimeout(this._expTimeout);
         }
@@ -36,6 +36,5 @@ maptalks.Util.extend(maptalks.TileLayer.TileCache.prototype, {
                 }
             }
         }, 1000);
-
     }
-});
+}

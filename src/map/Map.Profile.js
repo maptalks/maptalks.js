@@ -1,14 +1,26 @@
 /** Profile **/
+import {
+    extend,
+    isNil,
+    isObject,
+    isArray,
+    isArrayHasData
+} from 'core/util';
+import Layer from 'layer/Layer';
+import Map from './Map';
 
 /**
  * Reproduce a Layer from layer's profile JSON.
  * @param  {Object} layerJSON - layer's profile JSON
- * @return {maptalks.Layer}
+ * @return {Layer}
  * @static
  * @function
  */
-maptalks.Layer.fromJSON = function (layerJSON) {
-    if (!layerJSON) { return null; }
+Layer.fromJSON = function (layerJSON) {
+    if (!layerJSON) {
+        return null;
+    }
+    // TODO: layerTypes register
     var layerType = layerJSON['type'];
     if (layerType === 'vector') {
         layerType = layerJSON['type'] = 'VectorLayer';
@@ -23,46 +35,46 @@ maptalks.Layer.fromJSON = function (layerJSON) {
     return maptalks[layerType].fromJSON(layerJSON);
 };
 
-maptalks.Map.include(/** @lends maptalks.Map.prototype */{
+Map.include(/** @lends Map.prototype */ {
     /**
-     * @property {String}  - Version of the [profile]{@link maptalks.Map#toJSON} JSON schema.
+     * @property {String}  - Version of the [profile]{@link Map#toJSON} JSON schema.
      * @constant
      * @static
      */
-    'PROFILE_VERSION' : '1.0',
+    'PROFILE_VERSION': '1.0',
     /**
      * Export the map's profile json. <br>
      * Map's profile is a snapshot of the map in JSON format. <br>
-     * It can be used to reproduce the instance by [fromJSON]{@link maptalks.Map#fromJSON} method
+     * It can be used to reproduce the instance by [fromJSON]{@link Map#fromJSON} method
      * @param  {Object} [options=null] - export options
      * @param  {Boolean|Object} [options.baseLayer=null] - whether to export base layer's profile, if yes, it will be used as layer's toJSON options.
-     * @param  {Boolean|maptalks.Extent} [options.clipExtent=null] - if set with an extent instance, only the geometries intersectes with the extent will be exported.
+     * @param  {Boolean|Extent} [options.clipExtent=null] - if set with an extent instance, only the geometries intersectes with the extent will be exported.
      *                                                             If set to true, map's current extent will be used.
      * @param  {Boolean|Object|Object[]} [options.layers=null] - whether to export other layers' profile, if yes, it will be used as layer's toJSON options.
      *                                                        It can also be a array of layer export options with a "id" attribute to filter the layers to export.
      * @return {Object} layer's profile JSON
      */
-    toJSON:function (options) {
+    toJSON: function (options) {
         if (!options) {
             options = {};
         }
         var profile = {
             'version': this['PROFILE_VERSION'],
-            'extent' : this.getExtent().toJSON()
+            'extent': this.getExtent().toJSON()
         };
         profile['options'] = this.config();
         profile['options']['center'] = this.getCenter();
         profile['options']['zoom'] = this.getZoom();
 
         var baseLayer = this.getBaseLayer();
-        if ((maptalks.Util.isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
+        if ((isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
             profile['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
         }
         var extraLayerOptions = {};
         if (options['clipExtent']) {
             //if clipExtent is set, only geometries intersecting with extent will be exported.
             //clipExtent's value can be an extent or true (map's current extent)
-            if (options['clipExtent'] === true)  {
+            if (options['clipExtent'] === true) {
                 extraLayerOptions['clipExtent'] = this.getExtent();
             } else {
                 extraLayerOptions['clipExtent'] = options['clipExtent'];
@@ -70,17 +82,17 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         }
         var i, len, layers, opts,
             layersJSON = [];
-        if (maptalks.Util.isNil(options['layers']) || (options['layers'] && !maptalks.Util.isArray(options['layers']))) {
+        if (isNil(options['layers']) || (options['layers'] && !isArray(options['layers']))) {
             layers = this.getLayers();
             for (i = 0, len = layers.length; i < len; i++) {
                 if (!layers[i].toJSON) {
                     continue;
                 }
-                opts = maptalks.Util.extend({}, maptalks.Util.isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
+                opts = extend({}, isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
                 layersJSON.push(layers[i].toJSON(opts));
             }
             profile['layers'] = layersJSON;
-        } else if (maptalks.Util.isArrayHasData(options['layers'])) {
+        } else if (isArrayHasData(options['layers'])) {
             layers = options['layers'];
             for (i = 0; i < layers.length; i++) {
                 var exportOption = layers[i];
@@ -88,7 +100,7 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
                 if (!layer.toJSON) {
                     continue;
                 }
-                opts = maptalks.Util.extend({}, exportOption['options'], extraLayerOptions);
+                opts = extend({}, exportOption['options'], extraLayerOptions);
                 layersJSON.push(layer.toJSON(opts));
             }
             profile['layers'] = layersJSON;
@@ -111,31 +123,31 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
  * @param  {Object} [options=null] - options
  * @param  {Object} [options.baseLayer=null] - whether to import the baseLayer
  * @param  {Object} [options.layers=null]    - whether to import the layers
- * @return {maptalks.Map}
+ * @return {Map}
  * @static
  * @function
  * @example
- * var map = maptalks.Map.fromJSON('map', mapProfile);
+ * var map = Map.fromJSON('map', mapProfile);
  */
-maptalks.Map.fromJSON = function (container, profile, options) {
+Map.fromJSON = function (container, profile, options) {
     if (!container || !profile) {
         return null;
     }
     if (!options) {
         options = {};
     }
-    var map = new maptalks.Map(container, profile['options']);
-    if (maptalks.Util.isNil(options['baseLayer']) || options['baseLayer']) {
-        var baseLayer = maptalks.Layer.fromJSON(profile['baseLayer']);
+    var map = new Map(container, profile['options']);
+    if (isNil(options['baseLayer']) || options['baseLayer']) {
+        var baseLayer = Layer.fromJSON(profile['baseLayer']);
         if (baseLayer) {
             map.setBaseLayer(baseLayer);
         }
     }
-    if (maptalks.Util.isNil(options['layers']) || options['layers']) {
+    if (isNil(options['layers']) || options['layers']) {
         var layers = [];
         var layerJSONs = profile['layers'];
         for (var i = 0; i < layerJSONs.length; i++) {
-            var layer = maptalks.Layer.fromJSON(layerJSONs[i]);
+            var layer = Layer.fromJSON(layerJSONs[i]);
             layers.push(layer);
         }
         map.addLayer(layers);

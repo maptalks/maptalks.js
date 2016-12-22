@@ -1,38 +1,49 @@
+import {
+    isNode,
+    requestAnimFrame,
+    cancelAnimFrame,
+    loadImage
+} from 'core/util';
+import PointExtent from 'geo/PointExtent';
+import Canvas2D from 'utils/Canvas';
+import TileLayer from 'layer/tile/TileLayer';
+import { Canvas as Renderer } from 'renderer';
+
 /**
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for TileLayers
  * @class
  * @protected
- * @memberOf maptalks.renderer.tilelayer
+ * @memberOf tilelayer
  * @name Canvas
- * @extends {maptalks.renderer.Canvas}
- * @param {maptalks.TileLayer} layer - layer of the renderer
+ * @extends {renderer.Canvas}
+ * @param {TileLayer} layer - layer of the renderer
  */
-maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends maptalks.renderer.tilelayer.Canvas.prototype */{
+export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
 
-    propertyOfPointOnTile   : '--maptalks-tile-point',
-    propertyOfTileId        : '--maptalks-tile-id',
-    propertyOfTileZoom      : '--maptalks-tile-zoom',
+    propertyOfPointOnTile: '--maptalks-tile-point',
+    propertyOfTileId: '--maptalks-tile-id',
+    propertyOfTileZoom: '--maptalks-tile-zoom',
 
-    initialize:function (layer) {
+    initialize: function (layer) {
         this.layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
-        if (!maptalks.node && this.layer.options['cacheTiles']) {
-            this._tileCache = new maptalks.TileLayer.TileCache();
+        if (!isNode && this.layer.options['cacheTiles']) {
+            this._tileCache = new TileLayer.TileCache();
         }
         this._tileQueue = {};
     },
 
-    clear:function () {
+    clear: function () {
         this.clearCanvas();
         this.requestMapToRender();
     },
 
-    clearExecutors:function () {
+    clearExecutors: function () {
         clearTimeout(this._loadQueueTimeout);
     },
 
-    draw:function () {
+    draw: function () {
         var layer = this.layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
@@ -69,8 +80,8 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
             tileId = tiles[i]['id'];
             //如果缓存中已存有瓦片, 则从不再请求而从缓存中读取.
             cached = tileRended[tileId] || (tileCache ? tileCache.get(tileId) : null);
-            tile2DExtent = new maptalks.PointExtent(tile['point'],
-                                tile['point'].add(tileSize.toPoint()));
+            tile2DExtent = new PointExtent(tile['point'],
+                tile['point'].add(tileSize.toPoint()));
             if (!this._extent2D.intersects(tile2DExtent) || (mask2DExtent && !mask2DExtent.intersects(tile2DExtent))) {
                 continue;
             }
@@ -95,25 +106,31 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
         }
     },
 
-    _scheduleLoadTileQueue:function () {
+    _scheduleLoadTileQueue: function () {
 
         if (this._loadQueueTimeout) {
-            maptalks.Util.cancelAnimFrame(this._loadQueueTimeout);
+            cancelAnimFrame(this._loadQueueTimeout);
         }
 
         var me = this;
-        this._loadQueueTimeout = maptalks.Util.requestAnimFrame(function () { me._loadTileQueue(); });
+        this._loadQueueTimeout = requestAnimFrame(function () {
+            me._loadTileQueue();
+        });
     },
 
-    _loadTileQueue:function () {
+    _loadTileQueue: function () {
         var me = this;
+
         function onTileLoad() {
-            if (!maptalks.node) {
-                if (me._tileCache) { me._tileCache.add(this[me.propertyOfTileId], this); }
+            if (!isNode) {
+                if (me._tileCache) {
+                    me._tileCache.add(this[me.propertyOfTileId], this);
+                }
                 me._tileRended[this[me.propertyOfTileId]] = this;
             }
             me._drawTileAndRequest(this);
         }
+
         function onTileError() {
             me._clearTileRectAndRequest(this);
         }
@@ -135,7 +152,7 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
     },
 
 
-    _loadTile:function (tileId, tile, onTileLoad, onTileError) {
+    _loadTile: function (tileId, tile, onTileLoad, onTileError) {
         var crossOrigin = this.layer.options['crossOrigin'];
         var tileSize = this.layer.getTileSize();
         var tileImage = new Image();
@@ -150,16 +167,16 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
         if (crossOrigin) {
             tileImage.crossOrigin = crossOrigin;
         }
-        maptalks.Util.loadImage(tileImage, [tile['url']]);
+        loadImage(tileImage, [tile['url']]);
     },
 
 
-    _drawTile:function (point, tileImage) {
+    _drawTile: function (point, tileImage) {
         if (!point) {
             return;
         }
         var tileSize = this.layer.getTileSize();
-        maptalks.Canvas.image(this.context, tileImage,
+        Canvas2D.image(this.context, tileImage,
             Math.floor(point.x - this._northWest.x), Math.floor(point.y - this._northWest.y),
             tileSize['width'], tileSize['height']);
         if (this.layer.options['debug']) {
@@ -169,9 +186,9 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
             this.context.fillStyle = 'rgb(0,0,0)';
             this.context.strokeWidth = 10;
             this.context.font = '15px monospace';
-            maptalks.Canvas.rectangle(this.context, p, tileSize, 1, 0);
+            Canvas2D.rectangle(this.context, p, tileSize, 1, 0);
             var xyz = tileImage[this.propertyOfTileId].split('__');
-            maptalks.Canvas.fillText(this.context, 'x:' + xyz[1] + ',y:' + xyz[0] + ',z:' + xyz[2], p.add(10, 20), 'rgb(0,0,0)');
+            Canvas2D.fillText(this.context, 'x:' + xyz[1] + ',y:' + xyz[0] + ',z:' + xyz[2], p.add(10, 20), 'rgb(0,0,0)');
             this.context.restore();
         }
         tileImage = null;
@@ -182,7 +199,7 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
      * @param  {Point} point        瓦片左上角坐标
      * @param  {Image} tileImage 瓦片图片对象
      */
-    _drawTileAndRequest:function (tileImage) {
+    _drawTileAndRequest: function (tileImage) {
         //sometimes, layer may be removed from map here.
         if (!this.getMap()) {
             return;
@@ -195,10 +212,10 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
         var point = tileImage[this.propertyOfPointOnTile];
         this._drawTile(point, tileImage);
 
-        if (!maptalks.node) {
+        if (!isNode) {
             var tileSize = this.layer.getTileSize();
             var mapExtent = this.getMap()._get2DExtent();
-            if (mapExtent.intersects(new maptalks.PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
+            if (mapExtent.intersects(new PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
                 this.requestMapToRender();
             }
         }
@@ -207,10 +224,10 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
         }
     },
 
-    _onTileLoadComplete:function () {
+    _onTileLoadComplete: function () {
         //In browser, map will be requested to render once a tile was loaded.
         //but in node, map will be requested to render when the layer is loaded.
-        if (maptalks.node) {
+        if (isNode) {
             this.requestMapToRender();
         }
         this.fireLoadedEvent();
@@ -220,7 +237,7 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
      * 清除瓦片区域, 并请求地图重绘
      * @param  {Point} point        瓦片左上角坐标
      */
-    _clearTileRectAndRequest:function (tileImage) {
+    _clearTileRectAndRequest: function (tileImage) {
         if (!this.getMap()) {
             return;
         }
@@ -228,7 +245,7 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
         if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
         }
-        if (!maptalks.node) {
+        if (!isNode) {
             this.requestMapToRender();
         }
         this._tileToLoadCounter--;
@@ -240,18 +257,18 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
     /**
      * @override
      */
-    requestMapToRender:function () {
-        if (maptalks.node) {
+    requestMapToRender: function () {
+        if (isNode) {
             if (this.getMap() && !this.getMap()._isBusy()) {
                 this._mapRender.render();
             }
             return;
         }
         if (this._mapRenderRequest) {
-            maptalks.Util.cancelAnimFrame(this._mapRenderRequest);
+            cancelAnimFrame(this._mapRenderRequest);
         }
         var me = this;
-        this._mapRenderRequest = maptalks.Util.requestAnimFrame(function () {
+        this._mapRenderRequest = requestAnimFrame(function () {
             if (me.getMap() && !me.getMap()._isBusy()) {
                 me._mapRender.render();
             }
@@ -266,4 +283,4 @@ maptalks.renderer.tilelayer.Canvas = maptalks.renderer.Canvas.extend(/** @lends 
     }
 });
 
-maptalks.TileLayer.registerRenderer('canvas', maptalks.renderer.tilelayer.Canvas);
+TileLayer.registerRenderer('canvas', Canvas);

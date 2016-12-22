@@ -1,46 +1,44 @@
+import { isNumber, loadFunctionTypes } from 'core/util';
+import Symbolizer from './Symbolizer';
+
 /**
  * @classdesc
  * Base symbolizer class for all the symbolizers base on HTML5 Canvas2D
  * @abstract
  * @class
  * @protected
- * @memberOf maptalks.symbolizer
+ * @memberOf symbolizer
  * @name CanvasSymbolizer
- * @extends {maptalks.Symbolizer}
+ * @extends {Symbolizer}
  */
-maptalks.symbolizer.CanvasSymbolizer = maptalks.Symbolizer.extend(/** @lends maptalks.symbolizer.CanvasSymbolizer.prototype */{
-    _prepareContext:function (ctx) {
-        if (maptalks.Util.isNumber(this.symbol['opacity'])) {
+export class CanvasSymbolizer extends Symbolizer {
+    _prepareContext(ctx) {
+        if (isNumber(this.symbol['opacity'])) {
             if (ctx.globalAlpha !== this.symbol['opacity']) {
                 ctx.globalAlpha = this.symbol['opacity'];
             }
         } else if (ctx.globalAlpha !== 1) {
             ctx.globalAlpha = 1;
         }
-    },
+    }
 
-    refresh:function () {
-    },
+    refresh() {}
 
     //所有point symbolizer的共同的remove方法
-    remove:function () {
-    },
+    remove() {}
 
-    setZIndex:function () {
-    },
+    setZIndex() {}
 
-    show:function () {
-    },
+    show() {}
 
-    hide:function () {
-    },
+    hide() {}
 
-    _defineStyle: function (style) {
+    _defineStyle(style) {
         var me = this;
         var argFn = function () {
             return [me.getMap().getZoom(), me.geometry.getProperties()];
         };
 
-        return maptalks.Util.loadFunctionTypes(style, argFn);
+        return loadFunctionTypes(style, argFn);
     }
-});
+}

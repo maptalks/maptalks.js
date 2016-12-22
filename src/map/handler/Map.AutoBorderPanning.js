@@ -1,23 +1,29 @@
-maptalks.Map.mergeOptions({
+import { requestAnimFrame, cancelAnimFrame, bind } from 'core/util';
+import { on, off } from 'core/util/dom';
+import Handler from 'core/Handler';
+import Point from 'geo/Point';
+import Map from '../Map';
+
+Map.mergeOptions({
     'autoBorderPanning': false
 });
 
-maptalks.Map.AutoBorderPanning = maptalks.Handler.extend({
+Map.AutoBorderPanning = Handler.extend({
     //threshold to trigger panning, in px
-    threshold : 10,
+    threshold: 10,
     //number of px to move when panning is triggered
-    step : 4,
+    step: 4,
 
     addHooks: function () {
         this.dom = this.target._containerDOM;
-        maptalks.DomUtil.on(this.dom, 'mousemove', this._onMouseMove, this);
-        maptalks.DomUtil.on(this.dom, 'mouseout', this._onMouseOut, this);
+        on(this.dom, 'mousemove', this._onMouseMove, this);
+        on(this.dom, 'mouseout', this._onMouseOut, this);
     },
 
     removeHooks: function () {
         this._cancelPan();
-        maptalks.DomUtil.off(this.dom, 'mousemove', this._onMouseMove, this);
-        maptalks.DomUtil.off(this.dom, 'mouseout', this._onMouseOut, this);
+        off(this.dom, 'mousemove', this._onMouseMove, this);
+        off(this.dom, 'mouseout', this._onMouseOut, this);
     },
 
     _onMouseMove: function (event) {
@@ -25,7 +31,8 @@ maptalks.Map.AutoBorderPanning = maptalks.Handler.extend({
         var mousePos = eventParam['containerPoint'];
         var size = this.target.getSize();
         var tests = [mousePos.x, size['width'] - mousePos.x,
-                mousePos.y, size['height'] - mousePos.y];
+            mousePos.y, size['height'] - mousePos.y
+        ];
 
         var min = Math.min.apply(Math, tests),
             absMin = Math.abs(min);
@@ -35,7 +42,7 @@ maptalks.Map.AutoBorderPanning = maptalks.Handler.extend({
             return;
         }
         var step = this.step;
-        var offset = new maptalks.Point(0, 0);
+        var offset = new Point(0, 0);
         if (tests[0] === min) {
             offset.x = -step;
         } else if (tests[1] === min) {
@@ -54,22 +61,22 @@ maptalks.Map.AutoBorderPanning = maptalks.Handler.extend({
         this._cancelPan();
     },
 
-    _cancelPan:function () {
+    _cancelPan: function () {
         delete this._stepOffset;
         if (this._animationId) {
-            maptalks.Util.cancelAnimFrame(this._animationId);
+            cancelAnimFrame(this._animationId);
             delete this._animationId;
         }
     },
 
-    _pan:function () {
+    _pan: function () {
         if (this._stepOffset) {
             this.target.panBy(this._stepOffset, {
-                'animation':false
+                'animation': false
             });
-            this._animationId = maptalks.Util.requestAnimFrame(maptalks.Util.bind(this._pan, this));
+            this._animationId = requestAnimFrame(bind(this._pan, this));
         }
     }
 });
 
-maptalks.Map.addInitHook('addHandler', 'autoBorderPanning', maptalks.Map.AutoBorderPanning);
+Map.addInitHook('addHandler', 'autoBorderPanning', Map.AutoBorderPanning);

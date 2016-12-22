@@ -1,8 +1,11 @@
-maptalks.Map.mergeOptions({
+import Handler from 'core/Handler';
+import Map from '../Map';
+
+Map.mergeOptions({
     'doubleClickZoom': true
 });
 
-maptalks.Map.DoubleClickZoom = maptalks.Handler.extend({
+Map.DoubleClickZoom = Handler.extend({
     addHooks: function () {
         this.target.on('_dblclick', this._onDoubleClick, this);
     },
@@ -22,4 +25,4 @@ maptalks.Map.DoubleClickZoom = maptalks.Handler.extend({
     }
 });
 
-maptalks.Map.addInitHook('addHandler', 'doubleClickZoom', maptalks.Map.DoubleClickZoom);
+Map.addInitHook('addHandler', 'doubleClickZoom', Map.DoubleClickZoom);

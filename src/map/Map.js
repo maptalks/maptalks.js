@@ -1,8 +1,42 @@
+import internalLayerPrefix from 'core/Constants';
+import {
+    now,
+    extend,
+    isNode,
+    isNil,
+    isArray,
+    isString,
+    isFunction,
+    isNumber,
+    setOptions,
+    round,
+    indexOfArray,
+    executeWhen
+} from 'core/util';
+import Class from 'core/class/index';
+import Browser from 'core/Browser';
+import Eventable from 'core/Event';
+import Handlerable from 'core/Hanlerable';
+import Point from 'geo/Point';
+import Size from 'geo/Size';
+import PointExtent from 'geo/PointExtent';
+import Extent from 'geo/Extent';
+import Coordinate from 'geo/Coordinate';
+import Layer from 'layer/Layer';
+import {
+    TileLayer,
+    TileSystem
+} from 'layer/tile';
+import Matrix from 'utils/Matrix';
+import { Renderable } from 'renderer';
+import { Canvas as TileLayerRenderer } from 'renderer/tilelayer';
+import View from './view/View';
+
 /**
  *
  * @class
  * @category map
- * @extends {maptalks.Class}
+ * @extends {Class}
  *
  * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
  *                                          1. A HTMLElement container.<br/>
@@ -11,36 +45,36 @@
  *                                          e.g. [node-canvas]{@link https://github.com/Automattic/node-canvas},
  *                                              [canvas2svg]{@link https://github.com/gliffy/canvas2svg}
  * @param {Object} options - construct options
- * @param {(Number[]|maptalks.Coordinate)} options.center - initial center of the map.
+ * @param {(Number[]|Coordinate)} options.center - initial center of the map.
  * @param {Number} options.zoom - initial zoom of the map.
  * @param {Object} [options.view=null] - map's view config, default is using projection EPSG:3857 with resolutions used by google map/osm.
- * @param {maptalks.Layer} [options.baseLayer=null] - base layer that will be set to map initially.
- * @param {maptalks.Layer[]} [options.layers=null] - layers that will be added to map initially.
- * @param {*} options.* - any other option defined in [Map.options]{@link maptalks.Map#options}
+ * @param {Layer} [options.baseLayer=null] - base layer that will be set to map initially.
+ * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
+ * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}
  *
- * @mixes maptalks.Eventable
- * @mixes maptalks.Handlerable
- * @mixes maptalks.ui.Menu.Mixin
+ * @mixes Eventable
+ * @mixes Handlerable
+ * @mixes ui.Menu.Mixin
  *
  * @classdesc
  * The central class of the library, to create a map on a container.
  * @example
- * var map = new maptalks.Map("map",{
+ * var map = new Map("map",{
         center:     [180,0],
         zoom:  4,
-        baseLayer : new maptalks.TileLayer("base",{
+        baseLayer : new TileLayer("base",{
             urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             subdomains:['a','b','c']
         }),
         layers : [
             new VectorLayer('v')
-            .addGeometry(new maptalks.Marker([180, 0]))
+            .addGeometry(new Marker([180, 0]))
         ]
     });
  */
-maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
+const Map = Class.extend(/** @lends Map.prototype */ {
 
-    includes: [maptalks.Eventable, maptalks.Handlerable],
+    includes: [Eventable, Handlerable],
 
     /**
      * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
@@ -58,7 +92,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
      * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
      * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
-     * @property {maptalks.Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
+     * @property {Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
      *
      * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
      * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
@@ -75,42 +109,48 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      *
      * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
      */
-    options:{
-        'centerCross' : false,
+    options: {
+        'centerCross': false,
 
-        'clipFullExtent' : false,
+        'clipFullExtent': false,
 
-        'zoomAnimation' : (function () { return !maptalks.node; })(),
-        'zoomAnimationDuration' : 200,
+        'zoomAnimation': (function () {
+            return !isNode;
+        })(),
+        'zoomAnimationDuration': 200,
         //still leave background after zooming, set it to false if baseLayer is a transparent layer
-        'zoomBackground' : false,
+        'zoomBackground': false,
         //controls whether other layers than base tilelayer will show during zoom animation.
-        'layerZoomAnimation' : true,
+        'layerZoomAnimation': true,
 
         //economically transform, whether point symbolizers transforms during transformation (e.g. zoom animation)
         //set to true can prevent drastic low performance when number of point symbolizers is large.
-        'layerTransforming' : true,
+        'layerTransforming': true,
 
-        'panAnimation': (function () { return !maptalks.node; })(),
+        'panAnimation': (function () {
+            return !isNode;
+        })(),
         //default pan animation duration
-        'panAnimationDuration' : 600,
+        'panAnimationDuration': 600,
 
-        'zoomable':true,
-        'enableInfoWindow':true,
+        'zoomable': true,
+        'enableInfoWindow': true,
 
-        'hitDetect' : (function () { return !maptalks.Browser.mobile; })(),
+        'hitDetect': (function () {
+            return !Browser.mobile;
+        })(),
 
-        'maxZoom' : null,
-        'minZoom' : null,
-        'maxExtent' : null,
+        'maxZoom': null,
+        'minZoom': null,
+        'maxExtent': null,
 
-        'checkSize' : true,
+        'checkSize': true,
 
-        'renderer' : 'canvas'
+        'renderer': 'canvas'
     },
 
 
-    initialize:function (container, options) {
+    initialize: function (container, options) {
 
         if (!options) {
             throw new Error('Invalid options when creating map.');
@@ -118,20 +158,20 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
         this._loaded = false;
 
-        if (maptalks.Util.isString(container)) {
+        if (isString(container)) {
             this._containerDOM = document.getElementById(container);
             if (!this._containerDOM) {
                 throw new Error('invalid container when creating map: \'' + container + '\'');
             }
         } else {
             this._containerDOM = container;
-            if (maptalks.node) {
+            if (isNode) {
                 //Reserve container's constructor in node for canvas creating.
                 this.CanvasClass = this._containerDOM.constructor;
             }
         }
 
-        if (!maptalks.node) {
+        if (!isNode) {
             if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
                 if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
                     throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
@@ -150,11 +190,11 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         this._layers = [];
 
         //shallow copy options
-        var opts = maptalks.Util.extend({}, options);
+        var opts = extend({}, options);
 
         this._zoomLevel = opts['zoom'];
         delete opts['zoom'];
-        this._center = new maptalks.Coordinate(opts['center']);
+        this._center = new Coordinate(opts['center']);
         delete opts['center'];
 
         var baseLayer = opts['baseLayer'];
@@ -162,7 +202,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         var layers = opts['layers'];
         delete opts['layers'];
 
-        maptalks.Util.setOptions(this, opts);
+        setOptions(this, opts);
         this.setView(opts['view']);
 
         if (baseLayer) {
@@ -172,7 +212,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
             this.addLayer(layers);
         }
 
-        this._mapViewPoint = new maptalks.Point(0, 0);
+        this._mapViewPoint = new Point(0, 0);
 
         this._initRenderer();
         this._getRenderer().initContainer();
@@ -185,7 +225,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * Whether the map is loaded or not.
      * @return {Boolean}
      */
-    isLoaded:function () {
+    isLoaded: function () {
         return this._loaded;
     },
 
@@ -196,7 +236,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @example
      * var isCanvas = map.isCanvasRender();
      */
-    isCanvasRender:function () {
+    isCanvasRender: function () {
         var renderer = this._getRenderer();
         if (renderer) {
             return renderer.isCanvasRender();
@@ -206,7 +246,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Get the view of the Map.
-     * @return {maptalks.View} map's view
+     * @return {View} map's view
      */
     getView: function () {
         if (!this._view) {
@@ -223,9 +263,9 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * 3. full extent.<br>
      * There are some [predefined views]{@link http://www.foo.com}, and surely you can [define a custom one.]{@link http://www.foo.com}.<br>
      * View can also be set by map.config('view', view);
-     * @param {maptalks.View} view - view settings
-     * @returns {maptalks.Map} this
-     * @fires maptalks.Map#viewchange
+     * @param {View} view - view settings
+     * @returns {Map} this
+     * @fires Map#viewchange
      * @example
      *  map.setView({
             projection:'EPSG:4326',
@@ -238,15 +278,15 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
             })()
         });
      */
-    setView:function (view) {
+    setView: function (view) {
         var oldView = this.options['view'];
         if (oldView && !view) {
             return this;
         }
         this._center = this.getCenter();
-        this.options['view'] =  view;
-        this._view = new maptalks.View(view);
-        if (this.options['view'] && maptalks.Util.isFunction(this.options['view']['projection'])) {
+        this.options['view'] = view;
+        this._view = new View(view);
+        if (this.options['view'] && isFunction(this.options['view']['projection'])) {
             var projection = this._view.getProjection();
             //save projection code for map profiling (toJSON/fromJSON)
             this.options['view']['projection'] = projection['code'];
@@ -255,14 +295,17 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         /**
          * viewchange event, fired when map's view is updated.
          *
-         * @event maptalks.Map#viewchange
+         * @event Map#viewchange
          * @type {Object}
          * @property {String} type - viewchange
-         * @property {maptalks.Map} target - map
-         * @property {maptalks.Map} old - the old view
-         * @property {maptalks.Map} new - the new view changed to
+         * @property {Map} target - map
+         * @property {Map} old - the old view
+         * @property {Map} new - the new view changed to
          */
-        this._fireEvent('viewchange', {'old' : oldView, 'new' : maptalks.Util.extend({}, this.options['view'])});
+        this._fireEvent('viewchange', {
+            'old': oldView,
+            'new': extend({}, this.options['view'])
+        });
         return this;
     },
 
@@ -270,10 +313,10 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * Callback when any option is updated
      * @private
      * @param  {Object} conf - options to update
-     * @return {maptalks.Map}   this
+     * @return {Map}   this
      */
-    onConfig:function (conf) {
-        if (!maptalks.Util.isNil(conf['view'])) {
+    onConfig: function (conf) {
+        if (!isNil(conf['view'])) {
             this.setView(conf['view']);
         }
         return this;
@@ -291,27 +334,27 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * 3. locate(coord, distx, disty) - compute the coordinate from the coord with xdist on axis x and ydist on axis y.
      * @return {Object}
      */
-    getProjection:function () {
+    getProjection: function () {
         return this._view.getProjection();
     },
 
     /**
      * Get map's full extent, which is defined in map's view. <br>
      * eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
-     * @return {maptalks.Extent}
+     * @return {Extent}
      */
-    getFullExtent:function () {
+    getFullExtent: function () {
         return this._view.getFullExtent();
     },
 
     /**
      * Set map's cursor style, cursor style is same with CSS.
      * @param {String} cursor - cursor style
-     * @returns {maptalks.Map} this
+     * @returns {Map} this
      * @example
      * map.setCursor('url(cursor.png) 4 12, auto');
      */
-    setCursor:function (cursor) {
+    setCursor: function (cursor) {
         delete this._cursor;
         this._trySetCursor(cursor);
         this._cursor = cursor;
@@ -320,24 +363,26 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Get center of the map.
-     * @return {maptalks.Coordinate}
+     * @return {Coordinate}
      */
-    getCenter:function () {
-        if (!this._loaded || !this._prjCenter) { return this._center; }
+    getCenter: function () {
+        if (!this._loaded || !this._prjCenter) {
+            return this._center;
+        }
         var projection = this.getProjection();
         return projection.unproject(this._prjCenter);
     },
 
     /**
      * Set a new center to the map.
-     * @param {maptalks.Coordinate} center
-     * @return {maptalks.Map} this
+     * @param {Coordinate} center
+     * @return {Map} this
      */
-    setCenter:function (center) {
+    setCenter: function (center) {
         if (!center) {
             return this;
         }
-        center = new maptalks.Coordinate(center);
+        center = new Coordinate(center);
         if (!this._verifyExtent(center)) {
             return this;
         }
@@ -355,40 +400,40 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Get map's size (width and height) in pixel.
-     * @return {maptalks.Size}
+     * @return {Size}
      */
-    getSize:function () {
-        if (maptalks.Util.isNil(this.width) || maptalks.Util.isNil(this.height)) {
+    getSize: function () {
+        if (isNil(this.width) || isNil(this.height)) {
             return this._getContainerDomSize();
         }
-        return new maptalks.Size(this.width, this.height);
+        return new Size(this.width, this.height);
     },
 
     /**
      * Get container extent of the map
-     * @return {maptalks.PointExtent}
+     * @return {PointExtent}
      */
     getContainerExtent: function () {
-        return new maptalks.PointExtent(0, 0, this.width, this.height);
+        return new PointExtent(0, 0, this.width, this.height);
     },
 
     /**
      * Get the geographical extent of map's current view extent.
      *
-     * @return {maptalks.Extent}
+     * @return {Extent}
      */
-    getExtent:function () {
+    getExtent: function () {
         return this._pointToExtent(this._get2DExtent());
     },
 
     /**
      * Get the projected geographical extent of map's current view extent.
      *
-     * @return {maptalks.Extent}
+     * @return {Extent}
      */
     getProjExtent: function () {
         var extent2D = this._get2DExtent();
-        return new maptalks.Extent(
+        return new Extent(
             this._pointToPrj(extent2D.getMin()),
             this._pointToPrj(extent2D.getMax())
         );
@@ -396,25 +441,25 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Get the max extent that the map is restricted to.
-     * @return {maptalks.Extent}
+     * @return {Extent}
      */
-    getMaxExtent:function () {
+    getMaxExtent: function () {
         if (!this.options['maxExtent']) {
             return null;
         }
-        return new maptalks.Extent(this.options['maxExtent']);
+        return new Extent(this.options['maxExtent']);
     },
 
     /**
      * Sets the max extent that the map is restricted to.
-     * @param {maptalks.Extent}
-     * @return {maptalks.Map} this
+     * @param {Extent}
+     * @return {Map} this
      * @example
      * map.setMaxExtent(map.getExtent());
      */
-    setMaxExtent:function (extent) {
+    setMaxExtent: function (extent) {
         if (extent) {
-            var maxExt = new maptalks.Extent(extent);
+            var maxExt = new Extent(extent);
             this.options['maxExtent'] = maxExt;
             var center = this.getCenter();
             if (!this._verifyExtent(center)) {
@@ -430,7 +475,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get map's current zoom.
      * @return {Number}
      */
-    getZoom:function () {
+    getZoom: function () {
         return this._zoomLevel;
     },
 
@@ -440,8 +485,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} fromZoom
      * @return {Number} zoom fit for scale starting from fromZoom
      */
-    getZoomForScale:function (scale, fromZoom) {
-        if (maptalks.Util.isNil(fromZoom)) {
+    getZoomForScale: function (scale, fromZoom) {
+        if (isNil(fromZoom)) {
             fromZoom = this.getZoom();
         }
         var res = this._getResolution(fromZoom),
@@ -457,10 +502,10 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
                 hit = i;
             }
         }
-        if (maptalks.Util.isNumber(minZoom) && hit < minZoom) {
+        if (isNumber(minZoom) && hit < minZoom) {
             hit = minZoom;
         }
-        if (maptalks.Util.isNumber(maxZoom) && hit > maxZoom) {
+        if (isNumber(maxZoom) && hit > maxZoom) {
             hit = maxZoom;
         }
         return hit;
@@ -469,18 +514,18 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Sets zoom of the map
      * @param {Number} zoom
-     * @returns {maptalks.Map} this
+     * @returns {Map} this
      */
-    setZoom:function (zoom) {
+    setZoom: function (zoom) {
         var me = this;
-        maptalks.Util.executeWhen(function () {
+        executeWhen(function () {
             if (me._loaded && me.options['zoomAnimation']) {
                 me._zoomAnimation(zoom);
             } else {
                 me._zoom(zoom);
             }
         }, function () {
-            return  !me._zooming;
+            return !me._zooming;
         });
         return this;
     },
@@ -489,8 +534,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get the max zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMaxZoom:function () {
-        if (!maptalks.Util.isNil(this.options['maxZoom'])) {
+    getMaxZoom: function () {
+        if (!isNil(this.options['maxZoom'])) {
             return this.options['maxZoom'];
         }
         var view = this.getView();
@@ -503,9 +548,9 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Sets the max zoom that the map can be zoom to.
      * @param {Number} maxZoom
-     * @returns {maptalks.Map} this
+     * @returns {Map} this
      */
-    setMaxZoom:function (maxZoom) {
+    setMaxZoom: function (maxZoom) {
         var viewMaxZoom = this._view.getMaxZoom();
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
@@ -521,8 +566,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get the min zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMinZoom:function () {
-        if (!maptalks.Util.isNil(this.options['minZoom'])) {
+    getMinZoom: function () {
+        if (!isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
         return 0;
@@ -531,9 +576,9 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Sets the min zoom that the map can be zoom to.
      * @param {Number} minZoom
-     * @return {maptalks.Map} this
+     * @return {Map} this
      */
-    setMinZoom:function (minZoom) {
+    setMinZoom: function (minZoom) {
         var viewMinZoom = this._view.getMinZoom();
         if (minZoom < viewMinZoom) {
             minZoom = viewMinZoom;
@@ -544,11 +589,11 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * zoom in
-     * @return {maptalks.Map} this
+     * @return {Map} this
      */
     zoomIn: function () {
         var me = this;
-        maptalks.Util.executeWhen(function () {
+        executeWhen(function () {
             me.setZoom(me.getZoom() + 1);
         }, function () {
             return !me._zooming;
@@ -558,11 +603,11 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * zoom out
-     * @return {maptalks.Map} this
+     * @return {Map} this
      */
     zoomOut: function () {
         var me = this;
-        maptalks.Util.executeWhen(function () {
+        executeWhen(function () {
             me.setZoom(me.getZoom() - 1);
         }, function () {
             return !me._zooming;
@@ -572,14 +617,14 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Sets the center and zoom at the same time.
-     * @param {maptalks.Coordinate} center
+     * @param {Coordinate} center
      * @param {Number} zoom
-     * @return {maptalks.Map} this
+     * @return {Map} this
      */
-    setCenterAndZoom:function (center, zoom) {
+    setCenterAndZoom: function (center, zoom) {
         if (this._zoomLevel !== zoom) {
             this.setCenter(center);
-            if (!maptalks.Util.isNil(zoom)) {
+            if (!isNil(zoom)) {
                 this.setZoom(zoom);
             }
         } else {
@@ -591,11 +636,11 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Caculate the zoom level that contains the given extent with the maximum zoom level possible.
-     * @param {maptalks.Extent} extent
+     * @param {Extent} extent
      * @return {Number} zoom fit for the extent
      */
     getFitZoom: function (extent) {
-        if (!extent || !(extent instanceof maptalks.Extent)) {
+        if (!extent || !(extent instanceof Extent)) {
             return this._zoomLevel;
         }
         //It's a point
@@ -605,17 +650,20 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         var projection = this.getProjection(),
             x = Math.abs(extent['xmin'] - extent['xmax']),
             y = Math.abs(extent['ymin'] - extent['ymax']),
-            projectedExtent = projection.project({x:x, y:y}),
+            projectedExtent = projection.project({
+                x: x,
+                y: y
+            }),
             resolutions = this._getResolutions(),
             xz = -1,
             yz = -1;
         for (var i = this.getMinZoom(), len = this.getMaxZoom(); i < len; i++) {
-            if (maptalks.Util.round(projectedExtent.x / resolutions[i]) >= this.width) {
+            if (round(projectedExtent.x / resolutions[i]) >= this.width) {
                 if (xz === -1) {
                     xz = i;
                 }
             }
-            if (maptalks.Util.round(projectedExtent.y / resolutions[i]) >= this.height) {
+            if (round(projectedExtent.y / resolutions[i]) >= this.height) {
                 if (yz === -1) {
                     yz = i;
                 }
@@ -639,7 +687,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} resolution
      */
-    getResolution:function (zoom) {
+    getResolution: function (zoom) {
         return this._getResolution(zoom);
     },
 
@@ -657,9 +705,9 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Set the map to be fit for the given extent with the max zoom level possible.
-     * @param  {maptalks.Extent} extent - extent
+     * @param  {Extent} extent - extent
      * @param  {Number} zoomOffset - zoom offset
-     * @return {maptalks.Map} - this
+     * @return {Map} - this
      */
     fitExtent: function (extent, zoomOffset) {
         if (!extent) {
@@ -668,38 +716,38 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         zoomOffset = zoomOffset || 0;
         var zoom = this.getFitZoom(extent);
         zoom += zoomOffset;
-        var center = new maptalks.Extent(extent).getCenter();
+        var center = new Extent(extent).getCenter();
         return this.setCenterAndZoom(center, zoom);
     },
 
     /**
      * Get the base layer of the map.
-     * @return {maptalks.Layer}
+     * @return {Layer}
      */
-    getBaseLayer:function () {
+    getBaseLayer: function () {
         return this._baseLayer;
     },
 
     /**
      * Sets a new base layer to the map.<br>
      * Some events will be thrown such as baselayerchangestart, baselayerload, baselayerchangeend.
-     * @param  {maptalks.Layer} baseLayer - new base layer
-     * @return {maptalks.Map} this
-     * @fires maptalks.Map#setbaselayer
-     * @fires maptalks.Map#baselayerchangestart
-     * @fires maptalks.Map#baselayerchangeend
+     * @param  {Layer} baseLayer - new base layer
+     * @return {Map} this
+     * @fires Map#setbaselayer
+     * @fires Map#baselayerchangestart
+     * @fires Map#baselayerchangeend
      */
-    setBaseLayer:function (baseLayer) {
+    setBaseLayer: function (baseLayer) {
         var isChange = false;
         if (this._baseLayer) {
             isChange = true;
             /**
              * baselayerchangestart event, fired when base layer is changed.
              *
-             * @event maptalks.Map#baselayerchangestart
+             * @event Map#baselayerchangestart
              * @type {Object}
              * @property {String} type - baselayerchangestart
-             * @property {maptalks.Map} target - map
+             * @property {Map} target - map
              */
             this._fireEvent('baselayerchangestart');
             this._baseLayer.remove();
@@ -709,41 +757,42 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
             /**
              * baselayerchangeend event, fired when base layer is changed.
              *
-             * @event maptalks.Map#baselayerchangeend
+             * @event Map#baselayerchangeend
              * @type {Object}
              * @property {String} type - baselayerchangeend
-             * @property {maptalks.Map} target - map
+             * @property {Map} target - map
              */
             this._fireEvent('baselayerchangeend');
             /**
              * setbaselayer event, fired when base layer is set.
              *
-             * @event maptalks.Map#setbaselayer
+             * @event Map#setbaselayer
              * @type {Object}
              * @property {String} type - setbaselayer
-             * @property {maptalks.Map} target - map
+             * @property {Map} target - map
              */
             this._fireEvent('setbaselayer');
             return this;
         }
-        if (baseLayer instanceof maptalks.TileLayer) {
+        if (baseLayer instanceof TileLayer) {
             baseLayer.config({
-                'renderWhenPanning':true
+                'renderWhenPanning': true
             });
             if (!baseLayer.options['tileSystem']) {
-                baseLayer.config('tileSystem', maptalks.TileSystem.getDefault(this.getProjection()));
+                baseLayer.config('tileSystem', TileSystem.getDefault(this.getProjection()));
             }
         }
         baseLayer._bindMap(this, -1);
         this._baseLayer = baseLayer;
+
         function onbaseLayerload() {
             /**
              * baselayerload event, fired when base layer is loaded.
              *
-             * @event maptalks.Map#baselayerload
+             * @event Map#baselayerload
              * @type {Object}
              * @property {String} type - baselayerload
-             * @property {maptalks.Map} target - map
+             * @property {Map} target - map
              */
             this._fireEvent('baselayerload');
             if (isChange) {
@@ -761,20 +810,20 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Remove the base layer from the map
-     * @return {maptalks.Map} this
-     * @fires maptalks.Map#baselayerremove
+     * @return {Map} this
+     * @fires Map#baselayerremove
      */
-    removeBaseLayer: function ()  {
+    removeBaseLayer: function () {
         if (this._baseLayer) {
             this._baseLayer.remove();
             delete this._baseLayer;
             /**
              * baselayerremove event, fired when base layer is removed.
              *
-             * @event maptalks.Map#baselayerremove
+             * @event Map#baselayerremove
              * @type {Object}
              * @property {String} type - baselayerremove
-             * @property {maptalks.Map} target - map
+             * @property {Map} target - map
              */
             this._fireEvent('baselayerremove');
         }
@@ -785,15 +834,15 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * Get the layers of the map, except base layer (which should be by getBaseLayer). <br>
      * A filter function can be given to filter layers, e.g. exclude all the VectorLayers.
      * @param {Function} [filter=undefined] - a filter function of layers, return false to exclude the given layer.
-     * @return {maptalks.Layer[]}
+     * @return {Layer[]}
      * @example
      * var vectorLayers = map.getLayers(function (layer) {
-     *     return (layer instanceof maptalks.VectorLayer);
+     *     return (layer instanceof VectorLayer);
      * });
      */
-    getLayers:function (filter) {
+    getLayers: function (filter) {
         return this._getLayers(function (layer) {
-            if (layer === this._baseLayer || layer.getId().indexOf(maptalks.internalLayerPrefix) >= 0) {
+            if (layer === this._baseLayer || layer.getId().indexOf(internalLayerPrefix) >= 0) {
                 return false;
             }
             if (filter) {
@@ -806,9 +855,9 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Get the layer with the given id.
      * @param  {String} id - layer id
-     * @return {maptalks.Layer}
+     * @return {Layer}
      */
-    getLayer:function (id) {
+    getLayer: function (id) {
         if (!id || !this._layerCache || !this._layerCache[id]) {
             return null;
         }
@@ -817,15 +866,15 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Add a new layer on the top of the map.
-     * @param  {maptalks.Layer|maptalks.Layer[]} layer - one or more layers to add
-     * @return {maptalks.Map} this
-     * @fires maptalks.Map#addlayer
+     * @param  {Layer|Layer[]} layer - one or more layers to add
+     * @return {Map} this
+     * @fires Map#addlayer
      */
-    addLayer:function (layers) {
+    addLayer: function (layers) {
         if (!layers) {
             return this;
         }
-        if (!maptalks.Util.isArray(layers)) {
+        if (!isArray(layers)) {
             return this.addLayer([layers]);
         }
         if (!this._layerCache) {
@@ -834,7 +883,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         for (var i = 0, len = layers.length; i < len; i++) {
             var layer = layers[i];
             var id = layer.getId();
-            if (maptalks.Util.isNil(id)) {
+            if (isNil(id)) {
                 throw new Error('Invalid id for the layer: ' + id);
             }
             if (this._layerCache[id]) {
@@ -850,32 +899,34 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         /**
          * addlayer event, fired when adding layers.
          *
-         * @event maptalks.Map#addlayer
+         * @event Map#addlayer
          * @type {Object}
          * @property {String} type - addlayer
-         * @property {maptalks.Map} target - map
-         * @property {maptalks.Layer[]} layers - layers to add
+         * @property {Map} target - map
+         * @property {Layer[]} layers - layers to add
          */
-        this._fireEvent('addlayer', {'layers' : layers});
+        this._fireEvent('addlayer', {
+            'layers': layers
+        });
         return this;
     },
 
     /**
      * Remove a layer from the map
-     * @param  {String|String[]|maptalks.Layer|maptalks.Layer[]} layer - one or more layers or layer ids
-     * @return {maptalks.Map} this
-     * @fires maptalks.Map#removelayer
+     * @param  {String|String[]|Layer|Layer[]} layer - one or more layers or layer ids
+     * @return {Map} this
+     * @fires Map#removelayer
      */
     removeLayer: function (layers) {
         if (!layers) {
             return this;
         }
-        if (!maptalks.Util.isArray(layers)) {
+        if (!isArray(layers)) {
             return this.removeLayer([layers]);
         }
         for (var i = 0, len = layers.length; i < len; i++) {
             var layer = layers[i];
-            if (!(layer instanceof maptalks.Layer)) {
+            if (!(layer instanceof Layer)) {
                 layer = this.getLayer(layer);
             }
             if (!layer) {
@@ -898,37 +949,39 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         /**
          * removelayer event, fired when removing layers.
          *
-         * @event maptalks.Map#removelayer
+         * @event Map#removelayer
          * @type {Object}
          * @property {String} type - removelayer
-         * @property {maptalks.Map} target - map
-         * @property {maptalks.Layer[]} layers - layers to remove
+         * @property {Map} target - map
+         * @property {Layer[]} layers - layers to remove
          */
-        this._fireEvent('removelayer', {'layers' : layers});
+        this._fireEvent('removelayer', {
+            'layers': layers
+        });
         return this;
     },
 
     /**
      * Sort layers according to the order provided, the last will be on the top.
-     * @param  {string[]|maptalks.Layer[]} layers - layers or layer ids to sort
-     * @return {maptalks.Map} this
+     * @param  {string[]|Layer[]} layers - layers or layer ids to sort
+     * @return {Map} this
      * @example
      * map.addLayer([layer1, layer2, layer3]);
      * map.sortLayers([layer2, layer3, layer1]);
      * map.sortLayers(['3', '2', '1']); // sort by layer ids.
      */
-    sortLayers:function (layers) {
-        if (!layers || !maptalks.Util.isArray(layers)) {
+    sortLayers: function (layers) {
+        if (!layers || !isArray(layers)) {
             return this;
         }
         var layersToOrder = [];
         var minZ = Number.MAX_VALUE;
         for (var i = 0; i < layers.length; i++) {
             var layer = layers[i];
-            if (maptalks.Util.isString(layers[i])) {
+            if (isString(layers[i])) {
                 layer = this.getLayer(layer);
             }
-            if (!(layer instanceof maptalks.Layer) || !layer.getMap() || layer.getMap() !== this) {
+            if (!(layer instanceof Layer) || !layer.getMap() || layer.getMap() !== this) {
                 throw new Error('It must be a layer added to this map to order.');
             }
             if (layer.getZIndex() < minZ) {
@@ -965,7 +1018,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
             if (!file) {
                 file = 'export';
             }
-            var dataURL =  renderer.toDataURL(mimeType);
+            var dataURL = renderer.toDataURL(mimeType);
             if (save && dataURL) {
                 var imgURL = dataURL;
 
@@ -987,11 +1040,11 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
      * The 2D point's coordinate system's origin is the same with map's origin.
-     * @param  {maptalks.Coordinate} coordinate - coordinate
+     * @param  {Coordinate} coordinate - coordinate
      * @param  {Number} [zoom=undefined]       - zoom level
-     * @return {maptalks.Point}  2D point
+     * @return {Point}  2D point
      * @example
-     * var point = map.coordinateToPoint(new maptalks.Coordinate(121.3, 29.1));
+     * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
      */
     coordinateToPoint: function (coordinate, zoom) {
         var prjCoord = this.getProjection().project(coordinate);
@@ -1000,11 +1053,11 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Converts a 2D point in current zoom or a specific zoom to a coordinate.
-     * @param  {maptalks.Point} point - 2D point
+     * @param  {Point} point - 2D point
      * @param  {Number} zoom  - zoom level
-     * @return {maptalks.Coordinate} coordinate
+     * @return {Coordinate} coordinate
      * @example
-     * var coord = map.pointToCoordinate(new maptalks.Point(4E6, 3E4));
+     * var coord = map.pointToCoordinate(new Point(4E6, 3E4));
      */
     pointToCoordinate: function (point, zoom) {
         var prjCoord = this._pointToPrj(point, zoom);
@@ -1014,8 +1067,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Converts a geographical coordinate to view point.<br>
      * A view point is a point relative to map's mapPlatform panel's position. <br>
-     * @param {maptalks.Coordinate} coordinate
-     * @return {maptalks.Point}
+     * @param {Coordinate} coordinate
+     * @return {Point}
      */
     coordinateToViewPoint: function (coordinate) {
         return this._prjToViewPoint(this.getProjection().project(coordinate));
@@ -1023,8 +1076,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Converts a view point to the geographical coordinate.
-     * @param {maptalks.Point} viewPoint
-     * @return {maptalks.Coordinate}
+     * @param {Point} viewPoint
+     * @return {Coordinate}
      */
     viewPointToCoordinate: function (viewPoint) {
         return this.getProjection().unproject(this._viewPointToPrj(viewPoint));
@@ -1033,8 +1086,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Convert a geographical coordinate to the container point. <br>
      *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {maptalks.Coordinate}
-     * @return {maptalks.Point}
+     * @param {Coordinate}
+     * @return {Point}
      */
     coordinateToContainerPoint: function (coordinate) {
         var pCoordinate = this.getProjection().project(coordinate);
@@ -1043,8 +1096,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Converts a container point to geographical coordinate.
-     * @param {maptalks.Point}
-     * @return {maptalks.Coordinate}
+     * @param {Point}
+     * @return {Coordinate}
      */
     containerPointToCoordinate: function (containerPoint) {
         var pCoordinate = this._containerPointToPrj(containerPoint);
@@ -1054,8 +1107,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Converts a container point to the view point.
      *
-     * @param {maptalks.Point}
-     * @returns {maptalks.Point}
+     * @param {Point}
+     * @returns {Point}
      */
     containerPointToViewPoint: function (containerPoint) {
         return containerPoint.substract(this.offsetPlatform());
@@ -1064,8 +1117,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Converts a view point to the container point.
      *
-     * @param {maptalks.Point}
-     * @returns {maptalks.Point}
+     * @param {Point}
+     * @returns {Point}
      */
     viewPointToContainerPoint: function (viewPoint) {
         return viewPoint.add(this.offsetPlatform());
@@ -1073,24 +1126,24 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Converts a container point extent to the geographic extent.
-     * @param  {maptalks.PointExtent} containerExtent - containeproints extent
-     * @return {maptalks.Extent}  geographic extent
+     * @param  {PointExtent} containerExtent - containeproints extent
+     * @return {Extent}  geographic extent
      */
-    containerToExtent:function (containerExtent) {
-        var extent2D = new maptalks.PointExtent(
-                this._containerPointToPoint(containerExtent.getMin()),
-                this._containerPointToPoint(containerExtent.getMax())
-            );
+    containerToExtent: function (containerExtent) {
+        var extent2D = new PointExtent(
+            this._containerPointToPoint(containerExtent.getMin()),
+            this._containerPointToPoint(containerExtent.getMax())
+        );
         return this._pointToExtent(extent2D);
     },
 
     /**
      * Checks if the map container size changed and updates the map if so.
-     * @return {maptalks.Map} this
-     * @fires maptalks.Map#resize
+     * @return {Map} this
+     * @fires Map#resize
      */
-    checkSize:function () {
-        var justStart = ((maptalks.Util.now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
+    checkSize: function () {
+        var justStart = ((now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
 
         var watched = this._getContainerDomSize(),
             oldHeight = this.height,
@@ -1100,7 +1153,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         }
         var center = this.getCenter();
         this._updateMapSize(watched);
-        var resizeOffset = new maptalks.Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
+        var resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
         this._offsetCenterByPixel(resizeOffset);
         if (justStart) {
             this._eventSuppressed = true;
@@ -1109,10 +1162,10 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         }
         /**
          * resize event when map container's size changes
-         * @event maptalks.Map#resize
+         * @event Map#resize
          * @type {Object}
          * @property {String} type - resize
-         * @property {maptalks.Map} target - map fires the event
+         * @property {Map} target - map fires the event
          */
         this._fireEvent('resize');
 
@@ -1125,7 +1178,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      *
      * @param  {Number} xDist - distance on X axis.
      * @param  {Number} yDist - distance on Y axis.
-     * @return {maptalks.Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
+     * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
      */
     distanceToPixel: function (xDist, yDist) {
         var projection = this.getProjection();
@@ -1136,9 +1189,9 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
             target = projection.locate(center, xDist, yDist),
             res = this._getResolution();
 
-        var width = !xDist ? 0 : (projection.project(new maptalks.Coordinate(target.x, center.y)).x - projection.project(center).x) / res;
-        var height = !yDist ? 0 : (projection.project(new maptalks.Coordinate(center.x, target.y)).y - projection.project(center).y) / res;
-        return new maptalks.Size(Math.abs(width), Math.abs(height));
+        var width = !xDist ? 0 : (projection.project(new Coordinate(target.x, center.y)).x - projection.project(center).x) / res;
+        var height = !yDist ? 0 : (projection.project(new Coordinate(center.x, target.y)).y - projection.project(center).y) / res;
+        return new Size(Math.abs(width), Math.abs(height));
     },
 
     /**
@@ -1148,35 +1201,35 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} height - pixel height
      * @return {Number}  distance - Geographical distance
      */
-    pixelToDistance:function (width, height) {
+    pixelToDistance: function (width, height) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
         }
-        //¼ÆËãÇ°Ë¢ÐÂscales
+        //ï¿½ï¿½ï¿½ï¿½Ç°Ë¢ï¿½ï¿½scales
         var center = this.getCenter(),
             pcenter = this._getPrjCenter(),
             res = this._getResolution();
-        var pTarget = new maptalks.Coordinate(pcenter.x + width * res, pcenter.y + height * res);
+        var pTarget = new Coordinate(pcenter.x + width * res, pcenter.y + height * res);
         var target = projection.unproject(pTarget);
         return projection.measureLength(target, center);
     },
 
     /**
      * Computes the coordinate from the given coordinate with xdist on axis x and ydist on axis y.
-     * @param  {maptalks.Coordinate} coordinate - source coordinate
+     * @param  {Coordinate} coordinate - source coordinate
      * @param  {Number} dx           - distance on X axis from the source coordinate
      * @param  {Number} dy           - distance on Y axis from the source coordinate
-     * @return {maptalks.Coordinate} Result coordinate
+     * @return {Coordinate} Result coordinate
      */
-    locate:function (coordinate, dx, dy) {
-        return this.getProjection().locate(new maptalks.Coordinate(coordinate), dx, dy);
+    locate: function (coordinate, dx, dy) {
+        return this.getProjection().locate(new Coordinate(coordinate), dx, dy);
     },
 
     /**
-    * Return map's main panel
-    * @returns {HTMLElement}
-    */
+     * Return map's main panel
+     * @returns {HTMLElement}
+     */
     getMainPanel: function () {
         return this._getRenderer().getMainPanel();
     },
@@ -1212,54 +1265,54 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * The callback function when move started
      * @private
-     * @fires maptalks.Map#movestart
+     * @fires Map#movestart
      */
-    onMoveStart:function (param) {
+    onMoveStart: function (param) {
         this._originCenter = this.getCenter();
         this._enablePanAnimation = false;
         this._moving = true;
         this._trySetCursor('move');
         /**
          * movestart event
-         * @event maptalks.Map#movestart
+         * @event Map#movestart
          * @type {Object}
          * @property {String} type - movestart
-         * @property {maptalks.Map} target - map fires the event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('movestart', this._parseEvent(param ? param['domEvent'] : null, 'movestart'));
     },
 
-    onMoving:function (param) {
+    onMoving: function (param) {
         /**
          * moving event
-         * @event maptalks.Map#moving
+         * @event Map#moving
          * @type {Object}
          * @property {String} type - moving
-         * @property {maptalks.Map} target - map fires the event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moving', this._parseEvent(param ? param['domEvent'] : null, 'moving'));
     },
 
-    onMoveEnd:function (param) {
+    onMoveEnd: function (param) {
         this._moving = false;
         this._trySetCursor('default');
         /**
          * moveend event
-         * @event maptalks.Map#moveend
+         * @event Map#moveend
          * @type {Object}
          * @property {String} type - moveend
-         * @property {maptalks.Map} target - map fires the event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moveend', this._parseEvent(param ? param['domEvent'] : null, 'moveend'));
@@ -1272,14 +1325,14 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         }
     },
 
-//-----------------------------------------------------------
+    //-----------------------------------------------------------
 
     /**
      * whether map is busy
      * @private
      * @return {Boolean}
      */
-    _isBusy:function () {
+    _isBusy: function () {
         return this._zooming/* || this._moving*/;
     },
 
@@ -1288,7 +1341,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      * @param  {String} cursor css cursor
      */
-    _trySetCursor:function (cursor) {
+    _trySetCursor: function (cursor) {
         if (!this._cursor && !this._priorityCursor) {
             if (!cursor) {
                 cursor = 'default';
@@ -1298,7 +1351,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         return this;
     },
 
-    _setPriorityCursor:function (cursor) {
+    _setPriorityCursor: function (cursor) {
         if (!cursor) {
             var hasCursor = false;
             if (this._priorityCursor) {
@@ -1315,54 +1368,56 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         return this;
     },
 
-    _setCursorToPanel:function (cursor) {
+    _setCursorToPanel: function (cursor) {
         var panel = this.getMainPanel();
         if (panel && panel.style) {
             panel.style.cursor = cursor;
         }
     },
 
-     /**
+    /**
      * Get map's extent in view points.
      * @param {Number} zoom - zoom
-     * @return {maptalks.PointExtent}
+     * @return {PointExtent}
      * @private
      */
-    _get2DExtent:function (zoom) {
-        var c1 = this._containerPointToPoint(new maptalks.Point(0, 0), zoom),
-            c2 = this._containerPointToPoint(new maptalks.Point(this.width, 0), zoom),
-            c3 = this._containerPointToPoint(new maptalks.Point(this.width, this.height), zoom),
-            c4 = this._containerPointToPoint(new maptalks.Point(0, this.height), zoom);
+    _get2DExtent: function (zoom) {
+        var c1 = this._containerPointToPoint(new Point(0, 0), zoom),
+            c2 = this._containerPointToPoint(new Point(this.width, 0), zoom),
+            c3 = this._containerPointToPoint(new Point(this.width, this.height), zoom),
+            c4 = this._containerPointToPoint(new Point(0, this.height), zoom);
         var xmin = Math.min(c1.x, c2.x, c3.x, c4.x),
             xmax = Math.max(c1.x, c2.x, c3.x, c4.x),
             ymin = Math.min(c1.y, c2.y, c3.y, c4.y),
             ymax = Math.max(c1.y, c2.y, c3.y, c4.y);
-        return new maptalks.PointExtent(xmin, ymin, xmax, ymax);
+        return new PointExtent(xmin, ymin, xmax, ymax);
     },
 
     /**
      * Converts a view point extent to the geographic extent.
-     * @param  {maptalks.PointExtent} extent2D - view points extent
-     * @return {maptalks.Extent}  geographic extent
+     * @param  {PointExtent} extent2D - view points extent
+     * @return {Extent}  geographic extent
      * @protected
      */
-    _pointToExtent:function (extent2D) {
-        return new maptalks.Extent(
+    _pointToExtent: function (extent2D) {
+        return new Extent(
             this.pointToCoordinate(extent2D.getMin()),
             this.pointToCoordinate(extent2D.getMax())
         );
     },
 
-    _setPrjCenterAndMove:function (pcenter) {
+    _setPrjCenterAndMove: function (pcenter) {
         var offset = this._getPixelDistance(pcenter);
         this._setPrjCenter(pcenter);
         this.offsetPlatform(offset);
     },
 
     //remove a layer from the layerList
-    _removeLayer:function (layer, layerList) {
-        if (!layer || !layerList) { return; }
-        var index = maptalks.Util.indexOfArray(layer, layerList);
+    _removeLayer: function (layer, layerList) {
+        if (!layer || !layerList) {
+            return;
+        }
+        var index = indexOfArray(layer, layerList);
         if (index > -1) {
             layerList.splice(index, 1);
 
@@ -1374,34 +1429,34 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         }
     },
 
-    _sortLayersByZIndex:function (layerList) {
+    _sortLayersByZIndex: function (layerList) {
         layerList.sort(function (a, b) {
             return a.getZIndex() - b.getZIndex();
         });
     },
 
 
-    _genViewMatrix : function (origin, scale, rotate) {
+    _genViewMatrix: function (origin, scale, rotate) {
         if (!rotate) {
             rotate = 0;
         }
         this._generatingMatrix = true;
-        if (origin instanceof maptalks.Coordinate) {
+        if (origin instanceof Coordinate) {
             origin = this.coordinateToContainerPoint(origin);
         }
         var point = this._containerPointToPoint(origin),
             viewPoint = this.containerPointToViewPoint(origin);
 
         var matrices = {
-            '2dPoint' : point,
-            'view' : new maptalks.Matrix().translate(viewPoint.x, viewPoint.y)
-                    .scaleU(scale).rotate(rotate).translate(-viewPoint.x, -viewPoint.y),
-            '2d' : new maptalks.Matrix().translate(point.x, point.y)
-                    .scaleU(scale).rotate(rotate).translate(-point.x, -point.y)
+            '2dPoint': point,
+            'view': new Matrix().translate(viewPoint.x, viewPoint.y)
+                .scaleU(scale).rotate(rotate).translate(-viewPoint.x, -viewPoint.y),
+            '2d': new Matrix().translate(point.x, point.y)
+                .scaleU(scale).rotate(rotate).translate(-point.x, -point.y)
         };
         matrices['inverse'] = {
-            '2d' : matrices['2d'].inverse(),
-            'view' : matrices['view'].inverse()
+            '2d': matrices['2d'].inverse(),
+            'view': matrices['view'].inverse()
         };
         this._generatingMatrix = false;
         return matrices;
@@ -1415,16 +1470,19 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         var origin = this._pointToContainerPoint(matrix['2dPoint']);
         //matrix for layers to transform
         // var view = origin.substract(mapViewPoint);
-        matrix['container'] = new maptalks.Matrix().translate(origin.x, origin.y)
-                        .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
+        matrix['container'] = new Matrix().translate(origin.x, origin.y)
+            .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
 
         origin = origin.multi(2);
-        matrix['retina'] = new maptalks.Matrix().translate(origin.x, origin.y)
-                    .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
+        matrix['retina'] = new Matrix().translate(origin.x, origin.y)
+            .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
         matrix['inverse']['container'] = matrix['container'].inverse();
         matrix['inverse']['retina'] = matrix['retina'].inverse();
         // var scale = matrix['container'].decompose()['scale'];
-        matrix['scale'] = {x:scale, y:scale};
+        matrix['scale'] = {
+            x: scale,
+            y: scale
+        };
         this._generatingMatrix = false;
     },
 
@@ -1434,7 +1492,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Point} origin Transform Origin
      * @private
      */
-    _generateMatrices:function (origin, scale, rotate) {
+    _generateMatrices: function (origin, scale, rotate) {
         var viewMatrix = this._genViewMatrix(origin, scale, rotate);
         this._fillMatrices(viewMatrix, scale, rotate);
         return viewMatrix;
@@ -1442,19 +1500,19 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Gets pixel lenth from pcenter to map's current center.
-     * @param  {maptalks.Coordinate} pcenter - a projected coordinate
-     * @return {maptalks.Point}
+     * @param  {Coordinate} pcenter - a projected coordinate
+     * @return {Point}
      * @private
      */
-    _getPixelDistance:function (pCoord) {
+    _getPixelDistance: function (pCoord) {
         var center = this._getPrjCenter();
         var pxCenter = this._prjToContainerPoint(center);
         var pxCoord = this._prjToContainerPoint(pCoord);
-        var dist = new maptalks.Point(-pxCoord.x + pxCenter.x, pxCenter.y - pxCoord.y);
+        var dist = new Point(-pxCoord.x + pxCenter.x, pxCenter.y - pxCoord.y);
         return dist;
     },
 
-    _fireEvent:function (eventName, param) {
+    _fireEvent: function (eventName, param) {
         if (this._eventSuppressed) {
             return;
         }
@@ -1463,42 +1521,44 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         this.fire(eventName, param);
     },
 
-    _Load:function () {
+    _Load: function () {
         this._resetMapStatus();
         this._registerDomEvents();
         this._loadAllLayers();
         this._getRenderer().onLoad();
         this._loaded = true;
         this._callOnLoadHooks();
-        this._initTime = maptalks.Util.now();
+        this._initTime = now();
         /**
          * load event, fired when the map completes loading.
          *
-         * @event maptalks.Map#load
+         * @event Map#load
          * @type {Object}
          * @property {String} type - load
-         * @property {maptalks.Map} target - map
+         * @property {Map} target - map
          */
         this._fireEvent('load');
     },
 
-    _initRenderer:function () {
+    _initRenderer: function () {
         var renderer = this.options['renderer'];
-        var clazz = maptalks.Map.getRendererClass(renderer);
+        var clazz = Map.getRendererClass(renderer);
         this._renderer = new clazz(this);
     },
 
-    _getRenderer:function () {
+    _getRenderer: function () {
         return this._renderer;
     },
 
-    _loadAllLayers:function () {
+    _loadAllLayers: function () {
         function loadLayer(layer) {
             if (layer) {
                 layer.load();
             }
         }
-        if (this._baseLayer) { this._baseLayer.load(); }
+        if (this._baseLayer) {
+            this._baseLayer.load();
+        }
         this._eachLayer(loadLayer, this.getLayers());
     },
 
@@ -1507,10 +1567,10 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * Gets layers that fits for the filter
      * @param  {fn} filter - filter function
-     * @return {maptalks.Layer[]}
+     * @return {Layer[]}
      * @private
      */
-    _getLayers:function (filter) {
+    _getLayers: function (filter) {
         var layers = this._baseLayer ? [this._baseLayer].concat(this._layers) : this._layers;
         var result = [];
         for (var i = 0; i < layers.length; i++) {
@@ -1521,10 +1581,12 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         return result;
     },
 
-    _eachLayer:function (fn) {
-        if (arguments.length < 2) { return; }
+    _eachLayer: function (fn) {
+        if (arguments.length < 2) {
+            return;
+        }
         var layerLists = Array.prototype.slice.call(arguments, 1);
-        if (layerLists && !maptalks.Util.isArray(layerLists)) {
+        if (layerLists && !isArray(layerLists)) {
             layerLists = [layerLists];
         }
         var layers = [];
@@ -1537,7 +1599,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 
     //Check and reset map's status when map'sview is changed.
-    _resetMapStatus:function () {
+    _resetMapStatus: function () {
         var maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
         var viewMaxZoom = this._view.getMaxZoom(),
@@ -1564,28 +1626,30 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         this._prjCenter = projection.project(this._center);
     },
 
-    _getContainerDomSize:function () {
-        if (!this._containerDOM) { return null; }
+    _getContainerDomSize: function () {
+        if (!this._containerDOM) {
+            return null;
+        }
         var containerDOM = this._containerDOM,
             width, height;
-        if (!maptalks.Util.isNil(containerDOM.width) && !maptalks.Util.isNil(containerDOM.height)) {
+        if (!isNil(containerDOM.width) && !isNil(containerDOM.height)) {
             width = containerDOM.width;
             height = containerDOM.height;
-            if (maptalks.Browser.retina && containerDOM[maptalks.renderer.tilelayer.Canvas.prototype.propertyOfTileId]) {
+            if (Browser.retina && containerDOM[TileLayerRenderer.prototype.propertyOfTileId]) {
                 //is a canvas tile of CanvasTileLayer
                 width /= 2;
                 height /= 2;
             }
-        } else if (!maptalks.Util.isNil(containerDOM.clientWidth) && !maptalks.Util.isNil(containerDOM.clientHeight)) {
+        } else if (!isNil(containerDOM.clientWidth) && !isNil(containerDOM.clientHeight)) {
             width = parseInt(containerDOM.clientWidth, 0);
             height = parseInt(containerDOM.clientHeight, 0);
         } else {
             throw new Error('can not get size of container');
         }
-        return new maptalks.Size(width, height);
+        return new Size(width, height);
     },
 
-    _updateMapSize:function (mSize) {
+    _updateMapSize: function (mSize) {
         this.width = mSize['width'];
         this.height = mSize['height'];
         this._getRenderer().updateMapSize(mSize);
@@ -1594,18 +1658,18 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Gets projected center of the map
-     * @return {maptalks.Coordinate}
+     * @return {Coordinate}
      * @private
      */
-    _getPrjCenter:function () {
+    _getPrjCenter: function () {
         return this._prjCenter;
     },
 
-    _setPrjCenter:function (pcenter) {
+    _setPrjCenter: function (pcenter) {
         this._prjCenter = pcenter;
     },
 
-    _verifyExtent:function (center) {
+    _verifyExtent: function (center) {
         if (!center) {
             return false;
         }
@@ -1618,15 +1682,15 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     /**
      * Move map's center by pixels.
-     * @param  {maptalks.Point} pixel - pixels to move, the relation between value and direction is as:
+     * @param  {Point} pixel - pixels to move, the relation between value and direction is as:
      * -1,1 | 1,1
      * ------------
      *-1,-1 | 1,-1
      * @private
-     * @returns {maptalks.Coordinate} the new projected center.
+     * @returns {Coordinate} the new projected center.
      */
-    _offsetCenterByPixel:function (pixel) {
-        var pos = new maptalks.Point(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
+    _offsetCenterByPixel: function (pixel) {
+        var pos = new Point(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
         var pCenter = this._containerPointToPrj(pos);
         this._setPrjCenter(pCenter);
         return pCenter;
@@ -1635,14 +1699,14 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * offset map platform panel.
      *
-     * @param  {maptalks.Point} offset - offset in pixel to move
-     * @return {maptalks.Map} this
+     * @param  {Point} offset - offset in pixel to move
+     * @return {Map} this
      */
     /**
      * Gets map platform panel's current view point.
-     * @return {maptalks.Point}
+     * @return {Point}
      */
-    offsetPlatform:function (offset) {
+    offsetPlatform: function (offset) {
         if (!offset) {
             return this._mapViewPoint;
         } else {
@@ -1652,8 +1716,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         }
     },
 
-    _resetMapViewPoint:function () {
-        this._mapViewPoint = new maptalks.Point(0, 0);
+    _resetMapViewPoint: function () {
+        this._mapViewPoint = new Point(0, 0);
     },
 
     /**
@@ -1661,37 +1725,37 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {Number} resolution
      * @private
      */
-    _getResolution:function (zoom) {
-        if (maptalks.Util.isNil(zoom)) {
+    _getResolution: function (zoom) {
+        if (isNil(zoom)) {
             zoom = this.getZoom();
         }
         return this._view.getResolution(zoom);
     },
 
-    _getResolutions:function () {
+    _getResolutions: function () {
         return this._view.getResolutions();
     },
 
     /**
      * Converts the projected coordinate to a 2D point in the specific zoom
-     * @param  {maptalks.Coordinate} pCoord - projected Coordinate
+     * @param  {Coordinate} pCoord - projected Coordinate
      * @param  {Number} zoom   - zoom level
-     * @return {maptalks.Point} 2D point
+     * @return {Point} 2D point
      * @private
      */
-    _prjToPoint:function (pCoord, zoom) {
+    _prjToPoint: function (pCoord, zoom) {
         zoom = (zoom === undefined ? this.getZoom() : zoom);
         return this._view.getTransformation().transform(pCoord, this._getResolution(zoom));
     },
 
     /**
      * Converts the 2D point to projected coordinate
-     * @param  {maptalks.Point} point - 2D point
+     * @param  {Point} point - 2D point
      * @param  {Number} zoom   - zoom level
-     * @return {maptalks.Coordinate} projected coordinate
+     * @return {Coordinate} projected coordinate
      * @private
      */
-    _pointToPrj:function (point, zoom) {
+    _pointToPrj: function (point, zoom) {
         zoom = (zoom === undefined ? this.getZoom() : zoom);
         return this._view.getTransformation().untransform(point, this._getResolution(zoom));
     },
@@ -1699,55 +1763,57 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     /**
      * transform container point to geographical projected coordinate
      *
-     * @param  {maptalks.Point} containerPoint
-     * @return {maptalks.Coordinate}
+     * @param  {Point} containerPoint
+     * @return {Coordinate}
      * @private
      */
-    _containerPointToPrj:function (containerPoint) {
+    _containerPointToPrj: function (containerPoint) {
         return this._pointToPrj(this._containerPointToPoint(containerPoint));
     },
 
     /**
      * transform view point to geographical projected coordinate
-     * @param  {maptalks.Point} viewPoint
-     * @return {maptalks.Coordinate}
+     * @param  {Point} viewPoint
+     * @return {Coordinate}
      * @private
      */
-    _viewPointToPrj:function (viewPoint) {
+    _viewPointToPrj: function (viewPoint) {
         return this._containerPointToPrj(this.viewPointToContainerPoint(viewPoint));
     },
 
     /**
      * transform geographical projected coordinate to container point
-     * @param  {maptalks.Coordinate} pCoordinate
-     * @return {maptalks.Point}
+     * @param  {Coordinate} pCoordinate
+     * @return {Point}
      * @private
      */
-    _prjToContainerPoint:function (pCoordinate) {
+    _prjToContainerPoint: function (pCoordinate) {
         return this._pointToContainerPoint(this._prjToPoint(pCoordinate));
     },
 
     /**
      * transform geographical projected coordinate to view point
-     * @param  {maptalks.Coordinate} pCoordinate
-     * @return {maptalks.Point}
+     * @param  {Coordinate} pCoordinate
+     * @return {Point}
      * @private
      */
-    _prjToViewPoint:function (pCoordinate) {
+    _prjToViewPoint: function (pCoordinate) {
         var containerPoint = this._prjToContainerPoint(pCoordinate);
         return this._containerPointToViewPoint(containerPoint);
     },
 
     //destructive containerPointToViewPoint
     _containerPointToViewPoint: function (containerPoint) {
-        if (!containerPoint) { return null; }
+        if (!containerPoint) {
+            return null;
+        }
         var platformOffset = this.offsetPlatform();
         return containerPoint._substract(platformOffset);
     },
 
     _pointToContainerPoint: function (point) {
         var centerPoint = this._prjToPoint(this._getPrjCenter());
-        return new maptalks.Point(
+        return new Point(
             this.width / 2 + point.x - centerPoint.x,
             this.height / 2 + point.y - centerPoint.y
         );
@@ -1757,9 +1823,9 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         var centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
 
-        //ÈÝÆ÷µÄÏñËØ×ø±ê·½ÏòÊÇ¹Ì¶¨·½ÏòµÄ, ºÍhtml±ê×¼Ò»ÖÂ, ¼´´Ó×óµ½ÓÒÔö´ó, ´ÓÉÏµ½ÏÂÔö´ó
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê·½ï¿½ï¿½ï¿½Ç¹Ì¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½htmlï¿½ï¿½×¼Ò»ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-        return new maptalks.Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
+        return new Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
     },
 
     _viewPointToPoint: function (viewPoint) {
@@ -1771,12 +1837,10 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
     },
 });
 
-
-
-
 //--------------hooks after map loaded----------------
-maptalks.Map.prototype._callOnLoadHooks = function () {
-    var proto = maptalks.Map.prototype;
+/* eslint no-extend-native: 0 */
+Map.prototype._callOnLoadHooks = function () {
+    var proto = Map.prototype;
     for (var i = 0, len = proto._onLoadHooks.length; i < len; i++) {
         proto._onLoadHooks[i].call(this);
     }
@@ -1785,11 +1849,11 @@ maptalks.Map.prototype._callOnLoadHooks = function () {
 /**
  * Add hooks for additional codes when map's loading complete, useful for plugin developping.
  * @param {function} fn
- * @returns {maptalks.Map}
+ * @returns {Map}
  * @static
  * @protected
  */
-maptalks.Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
+Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
     var args = Array.prototype.slice.call(arguments, 1);
 
     var onload = typeof fn === 'function' ? fn : function () {
@@ -1802,4 +1866,6 @@ maptalks.Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
 };
 
 
-maptalks.Util.extend(maptalks.Map, maptalks.Renderable);
+extend(Map, Renderable);
+
+export default Map;

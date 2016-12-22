@@ -1,26 +1,35 @@
-maptalks.symbolizer.DebugSymbolizer = maptalks.symbolizer.PointSymbolizer.extend({
+import {
+    isNil
+} from 'core/util';
+import Point from 'geo/Point';
+import Canvas from 'utils/Canvas';
+import { PointSymbolizer } from './PointSymbolizer';
+import { VectorMarkerSymbolizer } from './VectorMarkerSymbolizer';
 
-    styles:{
-        'lineColor':'#000',
-        'lineOpacity' : 1,
-        'lineWidth' : 1
-    },
+const styles = {
+    'lineColor': '#000',
+    'lineOpacity': 1,
+    'lineWidth': 1
+};
 
-    initialize:function (symbol, geometry, painter) {
+export class DebugSymbolizer extends PointSymbolizer {
+
+
+    initialize(symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-    },
+    }
 
-    getPlacement:function () {
+    getPlacement() {
         return 'point';
-    },
+    }
 
-    getDxDy:function () {
-        return new maptalks.Point(0, 0);
-    },
+    getDxDy() {
+        return new Point(0, 0);
+    }
 
-    symbolize:function (ctx) {
+    symbolize(ctx) {
         var geometry = this.geometry,
             layer = geometry.getLayer();
         if (!geometry.options['debug'] && (layer && !layer.options['debug'])) {
@@ -30,32 +39,32 @@ maptalks.symbolizer.DebugSymbolizer = maptalks.symbolizer.PointSymbolizer.extend
         if (!map || map._zooming) {
             return;
         }
-        maptalks.Canvas.prepareCanvas(ctx, this.styles);
-        var op = this.styles['lineOpacity'];
+        Canvas.prepareCanvas(ctx, styles);
+        var op = styles['lineOpacity'];
 
         //outline
         var pixelExtent = this.getPainter().getContainerExtent();
         var nw = pixelExtent.getMin(),
             size = pixelExtent.getSize();
-        maptalks.Canvas.rectangle(ctx, nw, size, op, 0);
+        Canvas.rectangle(ctx, nw, size, op, 0);
 
         //center cross and id if have any.
         var points = this._getRenderContainerPoints();
 
         var id = this.geometry.getId();
-        var cross = maptalks.symbolizer.VectorMarkerSymbolizer._getVectorPoints('cross', 10, 10);
+        var cross = VectorMarkerSymbolizer._getVectorPoints('cross', 10, 10);
         for (var i = 0; i < points.length; i++) {
             var p = points[i];
-            if (!maptalks.Util.isNil(id)) {
-                maptalks.Canvas.fillText(ctx, id, p.add(8, -4), 'rgba(0,0,0,1)');
+            if (!isNil(id)) {
+                Canvas.fillText(ctx, id, p.add(8, -4), 'rgba(0,0,0,1)');
             }
             var c = [];
             for (var ii = 0; ii < cross.length; ii++) {
                 c.push(cross[ii].add(p));
             }
-            maptalks.Canvas.path(ctx, c.slice(0, 2), op);
-            maptalks.Canvas.path(ctx, c.slice(2, 4), op);
+            Canvas.path(ctx, c.slice(0, 2), op);
+            Canvas.path(ctx, c.slice(2, 4), op);
         }
     }
 
-});
+}

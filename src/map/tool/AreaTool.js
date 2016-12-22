@@ -1,9 +1,17 @@
+import { isArray, setOptions } from 'core/util';
+import Size from 'geo/Size';
+import { _computeArea } from 'geo/utils';
+import Geometry from 'geometry/Geometry';
+import Marker from 'geometry/Marker';
+import Label from 'geometry/Labe';
+import { DistanceTool } from './DistanceTool';
+
 /**
  * @classdesc
  * A map tool to help measure area on the map
  * @class
  * @category maptool
- * @extends maptalks.DistanceTool
+ * @extends DistanceTool
  * @param {options} [options=null] - construct options
  * @param {String} [options.language=zh-CN]         - language of the distance tool, zh-CN or en-US
  * @param {Boolean} [options.metric=true]           - display result in metric system
@@ -12,7 +20,7 @@
  * @param {Object}  [options.vertexSymbol=null]     - symbol of the vertice
  * @param {Object}  [options.labelOptions=null]     - construct options of the vertice labels.
  * @example
- * var areaTool = new maptalks.AreaTool({
+ * var areaTool = new AreaTool({
  *     'once' : true,
  *     'symbol': {
  *       'lineColor' : '#34495e',
@@ -29,7 +37,7 @@
  *    'language' : 'en-US'
  *  }).addTo(map);
  */
-maptalks.AreaTool = maptalks.DistanceTool.extend(/** @lends maptalks.AreaTool.prototype */{
+export const AreaTool = DistanceTool.extend(/** @lends AreaTool.prototype */ {
     /**
      * @property {options} options
      * @property {String}  options.language         - language of the distance tool, zh-CN or en-US
@@ -39,32 +47,32 @@ maptalks.AreaTool = maptalks.DistanceTool.extend(/** @lends maptalks.AreaTool.pr
      * @property {Object}  options.vertexSymbol     - symbol of the vertice
      * @property {Object}  options.labelOptions     - construct options of the vertice labels.
      */
-    options:{
-        'mode' : 'Polygon',
-        'symbol' : {
-            'lineColor':'#000000',
-            'lineWidth':2,
-            'lineOpacity':1,
+    options: {
+        'mode': 'Polygon',
+        'symbol': {
+            'lineColor': '#000000',
+            'lineWidth': 2,
+            'lineOpacity': 1,
             'lineDasharray': '',
-            'polygonFill' : '#ffffff',
-            'polygonOpacity' : 0.5
+            'polygonFill': '#ffffff',
+            'polygonOpacity': 0.5
         }
     },
 
     initialize: function (options) {
-        maptalks.Util.setOptions(this, options);
+        setOptions(this, options);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
     },
 
-    _measure:function (toMeasure) {
+    _measure: function (toMeasure) {
         var map = this.getMap();
         var area;
-        if (toMeasure instanceof maptalks.Geometry) {
+        if (toMeasure instanceof Geometry) {
             area = map.computeGeometryArea(toMeasure);
-        } else if (maptalks.Util.isArray(toMeasure)) {
-            area = maptalks.GeoUtil._computeArea(toMeasure, map.getProjection());
+        } else if (isArray(toMeasure)) {
+            area = _computeArea(toMeasure, map.getProjection());
         }
         this._lastMeasure = area;
         var units;
@@ -88,23 +96,23 @@ maptalks.AreaTool = maptalks.DistanceTool.extend(/** @lends maptalks.AreaTool.pr
         return content;
     },
 
-    _msOnDrawVertex:function (param) {
-        var vertexMarker = new maptalks.Marker(param['coordinate'], {
-            'symbol' : this.options['vertexSymbol']
+    _msOnDrawVertex: function (param) {
+        var vertexMarker = new Marker(param['coordinate'], {
+            'symbol': this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
 
         this._lastVertex = vertexMarker;
     },
 
-    _msOnDrawEnd:function (param) {
+    _msOnDrawEnd: function (param) {
         this._clearTailMarker();
 
         var ms = this._measure(param['geometry']);
-        var endLabel = new maptalks.Label(ms, param['coordinate'], this.options['labelOptions'])
-                        .addTo(this._measureMarkerLayer);
+        var endLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
+            .addTo(this._measureMarkerLayer);
         var size = endLabel.getSize();
         if (!size) {
-            size = new maptalks.Size(10, 10);
+            size = new Size(10, 10);
         }
         this._addClearMarker(param['coordinate'], size['width']);
         var geo = param['geometry'].copy();

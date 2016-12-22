@@ -1,10 +1,10 @@
-import Class from 'core/class/index';
 import { isArray, isNumber, mapArrayRecursively } from 'core/util';
+import Class from 'core/class/index';
 import Size from 'geo/Size';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Marker from 'geometry/Marker';
-import VectorLayer from 'layer';
+import VectorLayer from 'layer/VectorLayer';
 import Canvas from 'utils/Canvas';
 import symbolizers from 'renderer/vectorlayer/symbolizers';
 
@@ -24,7 +24,7 @@ const registerSymbolizers = [
  * @protected
  * @param {Geometry} geometry - geometry to paint
  */
-const Painter = Class.extend(/** @lends Painter.prototype */ {
+export const Painter = Class.extend(/** @lends Painter.prototype */ {
 
     initialize: function (geometry) {
         this.geometry = geometry;
@@ -366,5 +366,3 @@ const Painter = Class.extend(/** @lends Painter.prototype */ {
         delete this._sprite;
     }
 });
-
-export default Painter;

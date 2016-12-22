@@ -1,17 +1,30 @@
-var Symboling = {};
-//有中心点的图形的共同方法
-Symboling.Center = {
-    _getRenderPoints:function () {
-        return [[this._getCenter2DPoint()], null];
+import { isArray, computeDegree } from 'core/util';
+import Marker from 'geometry/Marker';
+import Ellipse from 'geometry/Ellipse';
+import Circle from 'geometry/Circle';
+import Sector from 'geometry/Sector';
+import Rectangle from 'geometry/Rectangle';
+import LineString from 'geometry/LineString';
+import Polygon from 'geometry/Polygon';
+
+const Polyline = LineString;
+
+// 有中心点的图形的共同方法
+const Center = {
+    _getRenderPoints: function () {
+        return [
+            [this._getCenter2DPoint()], null
+        ];
     }
 };
+
 /**
  * 获取symbolizer所需的数据
  */
-maptalks.Marker.include(Symboling.Center);
+Marker.include(Center);
 
-maptalks.Ellipse.include(Symboling.Center, {
-    _getRenderSize:function () {
+Ellipse.include(Center, {
+    _getRenderSize: function () {
         var w = this.getWidth(),
             h = this.getHeight();
         var map = this.getMap();
@@ -19,24 +32,24 @@ maptalks.Ellipse.include(Symboling.Center, {
     }
 });
 
-maptalks.Circle.include(Symboling.Center, {
-    _getRenderSize:function () {
+Circle.include(Center, {
+    _getRenderSize: function () {
         var radius = this.getRadius();
         var map = this.getMap();
         return map.distanceToPixel(radius, radius);
     }
 });
 //----------------------------------------------------
-maptalks.Sector.include(Symboling.Center, {
-    _getRenderSize:function () {
+Sector.include(Center, {
+    _getRenderSize: function () {
         var radius = this.getRadius();
         var map = this.getMap();
         return map.distanceToPixel(radius, radius);
     }
 });
 //----------------------------------------------------
-maptalks.Rectangle.include({
-    _getRenderPoints:function (placement) {
+Rectangle.include({
+    _getRenderPoints: function (placement) {
         if (placement === 'vertex') {
             var shell = this.getShell();
             var points = [];
@@ -46,25 +59,28 @@ maptalks.Rectangle.include({
             return [points, null];
         } else {
             var c = this.getMap().coordinateToPoint(this.getCenter());
-            return [[c], null];
+            return [
+                [c], null
+            ];
         }
     },
 
-    _getRenderSize:function () {
+    _getRenderSize: function () {
         var w = this.getWidth(),
             h = this.getHeight();
         var map = this.getMap();
         return map.distanceToPixel(w, h);
     }
 });
+
 //----------------------------------------------------
-Symboling.Poly = {
-    _getRenderPoints:function (placement) {
+const Poly = {
+    _getRenderPoints: function (placement) {
         var map = this.getMap();
         var points, rotations = null;
         if (placement === 'vertex') {
             points = this._getPath2DPoints(this._getPrjCoordinates());
-            if (points && points.length > 0 && maptalks.Util.isArray(points[0])) {
+            if (points && points.length > 0 && isArray(points[0])) {
                 //anti-meridian
                 points = points[0].concat(points[1]);
             }
@@ -72,28 +88,28 @@ Symboling.Poly = {
             points = [];
             rotations = [];
             var vertice = this._getPath2DPoints(this._getPrjCoordinates()),
-                isSplitted =  vertice.length > 0 && maptalks.Util.isArray(vertice[0]);
+                isSplitted = vertice.length > 0 && isArray(vertice[0]);
             var i, len;
             if (isSplitted) {
                 //anti-meridian splitted
                 var ring, ii, ilen;
                 for (i = 1, len = vertice.length; i < len; i++) {
                     ring = vertice[i];
-                    if (this instanceof maptalks.Polygon && ring.length > 0 && !ring[0].equals(ring[ring.length - 1])) {
+                    if (this instanceof Polygon && ring.length > 0 && !ring[0].equals(ring[ring.length - 1])) {
                         ring.push(ring[0]);
                     }
                     for (ii = 1, ilen = ring.length; ii < ilen; ii++) {
                         points.push(ring[ii].add(ring[ii - 1])._multi(0.5));
-                        rotations.push(maptalks.Util.computeDegree(ring[ii - 1], ring[ii]));
+                        rotations.push(computeDegree(ring[ii - 1], ring[ii]));
                     }
                 }
             } else {
-                if (this instanceof maptalks.Polygon && vertice.length > 0 && !vertice[0].equals(vertice[vertice.length - 1])) {
+                if (this instanceof Polygon && vertice.length > 0 && !vertice[0].equals(vertice[vertice.length - 1])) {
                     vertice.push(vertice[0]);
                 }
                 for (i = 1, len = vertice.length; i < len; i++) {
                     points.push(vertice[i].add(vertice[i - 1])._multi(0.5));
-                    rotations.push(maptalks.Util.computeDegree(vertice[i - 1], vertice[i]));
+                    rotations.push(computeDegree(vertice[i - 1], vertice[i]));
                 }
             }
 
@@ -111,6 +127,6 @@ Symboling.Poly = {
     }
 };
 
-maptalks.Polyline.include(Symboling.Poly);
+Polyline.include(Poly);
 
-maptalks.Polygon.include(Symboling.Poly);
+Polygon.include(Poly);
