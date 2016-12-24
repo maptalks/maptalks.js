@@ -59,8 +59,7 @@ const DefaultView = {
     }
 };
 
-export default class View {
-
+export class View {
     constructor(options = {}) {
         this.options = options;
         this._initView();

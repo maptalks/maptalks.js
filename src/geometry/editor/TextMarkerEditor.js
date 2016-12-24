@@ -1,13 +1,18 @@
+import { on, off, createEl, stopPropagation } from 'core/util/dom';
+import TextMarker from 'geometry/TextMarker';
+import TextBox from 'geometry/TextBox';
+import Label from 'geometry/Label';
+import { UIMarker } from 'ui';
 
 /**
- * @mixin maptalks.TextMarker.Edit
+ * @mixin TextMarker.Edit
  */
-maptalks.TextMarker.Editor = {
+TextMarker.Editor = {
     /**
      * Start to edit the text, editing will be ended automatically whenever map is clicked.
      *
-     * @return {maptalks.TextMarker} this
-     * @fires maptalks.TextMarker#edittextstart
+     * @return {TextMarker} this
+     * @fires TextMarker#edittextstart
      */
     startEditText: function () {
         if (!this.getMap()) {
@@ -18,10 +23,10 @@ maptalks.TextMarker.Editor = {
         this._prepareEditor();
         /**
          * edittextstart when starting to edit text content
-         * @event maptalks.TextMarker#edittextstart
+         * @event TextMarker#edittextstart
          * @type {Object}
          * @property {String} type - edittextstart
-         * @property {maptalks.TextMarker} target - fires the event
+         * @property {TextMarker} target - fires the event
          */
         this._fireEvent('edittextstart');
         return this;
@@ -30,8 +35,8 @@ maptalks.TextMarker.Editor = {
     /**
      * End text edit.
      *
-     * @return {maptalks.TextMarker} this
-     * @fires maptalks.TextMarker#edittextend
+     * @return {TextMarker} this
+     * @fires TextMarker#edittextend
      */
     endEditText: function () {
         if (this._textEditor) {
@@ -39,7 +44,7 @@ maptalks.TextMarker.Editor = {
             content = this._filterContent(content);
             this.setContent(content);
             this.show();
-            maptalks.DomUtil.off(this._textEditor, 'mousedown dblclick', maptalks.DomUtil.stopPropagation);
+            off(this._textEditor, 'mousedown dblclick', stopPropagation);
             this.getMap().off('mousedown', this.endEditText, this);
             this._editUIMarker.remove();
             delete this._editUIMarker;
@@ -47,10 +52,10 @@ maptalks.TextMarker.Editor = {
             delete this._textEditor;
             /**
              * edittextend when ended editing text content
-             * @event maptalks.TextMarker#edittextend
+             * @event TextMarker#edittextend
              * @type {Object}
              * @property {String} type - edittextend
-             * @property {maptalks.TextMarker} target - textMarker fires the event
+             * @property {TextMarker} target - textMarker fires the event
              */
             this._fireEvent('edittextend');
         }
@@ -70,29 +75,31 @@ maptalks.TextMarker.Editor = {
     },
 
     /**
-     * Get the text editor which is a [maptalks.ui.UIMarker]{@link maptalks.ui.UIMarker}
-     * @return {maptalks.ui.UIMarker} text editor
+     * Get the text editor which is a [ui.UIMarker]{@link ui.UIMarker}
+     * @return {ui.UIMarker} text editor
      */
     getTextEditor: function () {
         return this._editUIMarker;
     },
 
-    _prepareEditor:function () {
+    _prepareEditor: function () {
         var map = this.getMap();
         var editContainer = this._createEditor();
         this._textEditor = editContainer;
-        map.on('mousedown',  this.endEditText, this);
+        map.on('mousedown', this.endEditText, this);
         var offset = this._getEditorOffset();
-        this._editUIMarker = new maptalks.ui.UIMarker(this.getCoordinates(), {
-            'content' : editContainer,
-            'dx' : offset.dx,
-            'dy' : offset.dy
+        this._editUIMarker = new UIMarker(this.getCoordinates(), {
+            'content': editContainer,
+            'dx': offset.dx,
+            'dy': offset.dy
         }).addTo(map).show();
         this._setCursorToLast(this._textEditor);
     },
 
     _getEditorOffset: function () {
-        var symbol = this._getInternalSymbol() || {}, dx = 0, dy = 0;
+        var symbol = this._getInternalSymbol() || {},
+            dx = 0,
+            dy = 0;
         var textAlign = symbol['textHorizontalAlignment'];
         if (textAlign === 'middle') {
             dx = symbol['textDx'] - 2 || 0;
@@ -104,7 +111,10 @@ maptalks.TextMarker.Editor = {
             dx = symbol['markerDx'] - 2 || 0;
             dy = symbol['markerDy'] - 2 || 0;
         }
-        return {'dx' : dx, 'dy' : dy};
+        return {
+            'dx': dx,
+            'dy': dy
+        };
     },
 
     _createEditor: function () {
@@ -118,8 +128,8 @@ maptalks.TextMarker.Editor = {
             lineColor = symbol['markerLineColor'] || '#000',
             fill = symbol['markerFill'] || '#3398CC',
             spacing = symbol['textLineSpacing'] || 0;
-            // opacity = symbol['markerFillOpacity'];
-        var editor = maptalks.DomUtil.createEl('div');
+        // opacity = symbol['markerFillOpacity'];
+        var editor = createEl('div');
         editor.contentEditable = true;
         editor.style.cssText = 'background: ' + fill + ';' +
             'border: 1px solid ' + lineColor + ';' +
@@ -137,8 +147,8 @@ maptalks.TextMarker.Editor = {
             '-webkit-user-modify: read-write-plaintext-only;';
 
         editor.innerText = content;
-        maptalks.DomUtil.on(editor, 'mousedown dblclick', maptalks.DomUtil.stopPropagation);
-        editor.onkeyup =  function (event) {
+        on(editor, 'mousedown dblclick', stopPropagation);
+        editor.onkeyup = function (event) {
             var h = editor.style.height;
             if (!h) {
                 h = 0;
@@ -174,5 +184,5 @@ maptalks.TextMarker.Editor = {
     }
 };
 
-maptalks.TextBox.include(maptalks.TextMarker.Editor);
-maptalks.Label.include(maptalks.TextMarker.Editor);
+TextBox.include(TextMarker.Editor);
+Label.include(TextMarker.Editor);

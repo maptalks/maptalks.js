@@ -1,16 +1,18 @@
-maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+import Geometry from 'geometry/Geometry';
+
+Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * Start to edit
      * @param {Object} [options=null]        - edit options
      * @param {Object} [options.symbol=null] - symbol for the geometry during editing
-     * @return {maptalks.Geometry} this
+     * @return {Geometry} this
      */
     startEdit: function (opts) {
         if (!this.getMap() || !this.options['editable']) {
             return this;
         }
         this.endEdit();
-        this._editor = new maptalks.Geometry.Editor(this, opts);
+        this._editor = new Geometry.Editor(this, opts);
         this._editor.start();
         this.fire('editstart');
         return this;
@@ -18,7 +20,7 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * End editing.
-     * @return {maptalks.Geometry} this
+     * @return {Geometry} this
      */
     endEdit: function () {
         if (this._editor) {

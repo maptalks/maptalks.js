@@ -1,1 +1,4 @@
-maptalks.Geometry.include(maptalks.ui.Menu.Mixin);
+import Geometry from 'geometry/Geometry';
+import { Menu } from 'ui';
+
+Geometry.include(Menu.Mixin);
