@@ -17,7 +17,7 @@ import TextMarker from './TextMarker';
  * var textBox = new TextBox('This is a textBox',[100,0])
  *     .addTo(layer);
  */
-const TextBox = TextMarker.extend(/** @lends TextBox.prototype */ {
+export const TextBox = TextMarker.extend(/** @lends TextBox.prototype */ {
 
     /**
      * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}

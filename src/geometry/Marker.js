@@ -27,7 +27,7 @@ import symbolizers from 'renderer/vectorlayer/symbolizers';
  *     }
  * });
  */
-const Marker = Geometry.extend(/** @lends Marker.prototype */ {
+export const Marker = Geometry.extend(/** @lends Marker.prototype */ {
     includes: [Geometry.Center],
 
     type: Geometry['TYPE_POINT'],

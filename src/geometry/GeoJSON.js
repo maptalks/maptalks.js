@@ -23,7 +23,7 @@ import Rectangle from './Rectangle';
  *  @memberOf maptalks
  * @name GeoJSON
  */
-const GeoJSON = {
+export const GeoJSON = {
 
     /**
      * Convert one or more GeoJSON objects to a geometry

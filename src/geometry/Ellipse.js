@@ -23,7 +23,7 @@ import Polygon from './Polygon';
  *     id : 'ellipse0'
  * });
  */
-const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
+export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
     includes: [Geometry.Center],
 
     /**

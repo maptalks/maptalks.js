@@ -23,7 +23,7 @@ import Polygon from './Polygon';
  *     id : 'sector0'
  * });
  */
-const Sector = Polygon.extend(/** @lends Sector.prototype */ {
+export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
     includes: [Geometry.Center],
 
     /**

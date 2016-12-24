@@ -38,7 +38,7 @@ import GeoJSON from './GeoJSON';
  * @mixes Handlerable
  * @mixes ui.Menu.Mixin
  */
-const Geometry = Class.extend(/** @lends Geometry.prototype */{
+export const Geometry = Class.extend(/** @lends Geometry.prototype */{
     includes: [Eventable, Handlerable],
 
     /** @lends Geometry */

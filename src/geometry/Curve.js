@@ -7,7 +7,7 @@ import Canvas from 'utils/Canvas';
  * @category geometry
  * @extends {LineString}
  */
-const Curve = LineString.extend(/** @lends Curve.prototype */ {
+export const Curve = LineString.extend(/** @lends Curve.prototype */ {
 
     _arc: function (ctx, points, lineOpacity) {
         var degree = this.options['arcDegree'] * Math.PI / 180;

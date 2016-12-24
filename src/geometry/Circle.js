@@ -21,7 +21,7 @@ import GeoJSON from './GeoJSON';
  *     id : 'circle0'
  * });
  */
-const Circle = Polygon.extend(/** @lends Circle.prototype */ {
+export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
     includes: [Geometry.Center],
 
     /**

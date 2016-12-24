@@ -15,7 +15,7 @@ import Marker from './Marker';
  * @abstract
  * @extends Marker
  */
-const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
+export const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
 
     options: {
         'box': true,

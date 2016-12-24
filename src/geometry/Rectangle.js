@@ -22,7 +22,7 @@ import GeoJSON from './GeoJSON';
  *     id : 'rectangle0'
  * });
  */
-const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
+export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
 
     initialize: function (coordinates, width, height, opts) {
         this._coordinates = new Coordinate(coordinates);

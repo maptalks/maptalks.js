@@ -23,7 +23,7 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-const ArcCurve = Curve.extend(/** @lends ArcCurve.prototype */ {
+export const ArcCurve = Curve.extend(/** @lends ArcCurve.prototype */ {
     /**
      * @property {Object} options
      * @property {Number} [options.arcDegree=90]           - circle arc's degree.

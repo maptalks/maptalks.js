@@ -21,7 +21,7 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype */ {
+export const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype */ {
 
     _toJSON: function (options) {
         return {

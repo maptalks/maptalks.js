@@ -22,7 +22,7 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-const CubicBezierCurve = Curve.extend(/** @lends CubicBezierCurve.prototype */ {
+export const CubicBezierCurve = Curve.extend(/** @lends CubicBezierCurve.prototype */ {
 
     _toJSON: function (options) {
         return {

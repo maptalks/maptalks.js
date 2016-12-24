@@ -37,7 +37,7 @@ import { Polyline } from './LineString';
  *      }
  * ).addTo(layer);
  */
-const MultiLineString = GeometryCollection.extend(/** @lends MultiLineString.prototype */ {
+export const MultiLineString = GeometryCollection.extend(/** @lends MultiLineString.prototype */ {
 
     includes: [Geometry.MultiPoly],
 
