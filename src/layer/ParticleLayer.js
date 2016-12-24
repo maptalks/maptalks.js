@@ -63,3 +63,5 @@ export const ParticleLayer = CanvasLayer.extend({
         context.globalCompositeOperation = g;
     }
 });
+
+export default ParticleLayer;

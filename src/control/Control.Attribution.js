@@ -1,6 +1,6 @@
 import { createEl } from 'core/util/dom';
 import Control from './Control';
-import Map from 'map/Map';
+import Map from 'map';
 
 /**
  * @classdesc

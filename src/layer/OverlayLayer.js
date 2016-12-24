@@ -16,7 +16,7 @@ import Layer from './Layer';
  * @abstract
  * @extends {Layer}
  */
-const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
+export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
 
     /**
      * Get a geometry by its id
@@ -528,3 +528,5 @@ const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
 OverlayLayer.addInitHook(function () {
     this._initCache();
 });
+
+export default OverlayLayer;

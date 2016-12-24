@@ -1,3 +1,5 @@
+import Map from './Map';
+
 import './handler/Map.AutoBorderPanning';
 import './handler/Map.DoubleClickZoom';
 import './handler/Map.Drag';
@@ -17,3 +19,5 @@ import './view/View.Arc';
 
 export * from './Map';
 export * from './view/View';
+
+export default Map;

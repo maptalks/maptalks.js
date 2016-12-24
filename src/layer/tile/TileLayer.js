@@ -288,3 +288,5 @@ TileLayer.fromJSON = function (layerJSON) {
     }
     return new TileLayer(layerJSON['id'], layerJSON['options']);
 };
+
+export default TileLayer;

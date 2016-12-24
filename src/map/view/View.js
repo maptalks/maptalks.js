@@ -3,7 +3,7 @@ import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import projections from 'geo/projection';
 import Transformation from 'geo/transformation/Transformation';
-import Measurer from 'geo/measurer/Measurer';
+import * as Measurer from 'geo/measurer';
 
 const DefaultView = {
     'EPSG:3857': {

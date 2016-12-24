@@ -31,3 +31,5 @@ CanvasTileLayer.fromJSON = function (layerJSON) {
     }
     return new CanvasTileLayer(layerJSON['id'], layerJSON['options']);
 };
+
+export default CanvasTileLayer;

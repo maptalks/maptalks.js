@@ -3,7 +3,7 @@ import { createEl, addStyle, setStyle, removeDomNode } from 'core/util/dom';
 import Eventable from 'core/Event';
 import Class from 'core/class/index';
 import Point from 'geo/Point';
-import Map from 'map/Map';
+import Map from 'map';
 
 /**
  * Base class for all the map controls, you can extend it to build your own customized Control.

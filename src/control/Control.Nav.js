@@ -1,4 +1,4 @@
-import Map from 'map/Map';
+import Map from 'map';
 import Control from './Control';
 
 /**

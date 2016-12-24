@@ -92,3 +92,5 @@ GeoJSONLayer.fromJSON = function (profile) {
     }
     return layer;
 };
+
+export default GeoJSONLayer;

@@ -243,3 +243,5 @@ CanvasLayer.registerRenderer('canvas', renderer.Canvas.extend({
         }
     }
 }));
+
+export default CanvasLayer;

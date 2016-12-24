@@ -16,7 +16,7 @@ import {
 import Class from 'core/class/index';
 import Browser from 'core/Browser';
 import Eventable from 'core/Event';
-import Handlerable from 'core/Hanlerable';
+import Handlerable from 'core/Handlerable';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 import PointExtent from 'geo/PointExtent';
@@ -72,7 +72,7 @@ import View from './view/View';
         ]
     });
  */
-const Map = Class.extend(/** @lends Map.prototype */ {
+export const Map = Class.extend(/** @lends Map.prototype */ {
 
     includes: [Eventable, Handlerable],
 
@@ -1864,7 +1864,6 @@ Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
     this.prototype._onLoadHooks.push(onload);
     return this;
 };
-
 
 extend(Map, Renderable);
 

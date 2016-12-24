@@ -17,7 +17,7 @@ import symbolizers from 'renderer/vectorlayer/symbolizers';
  * @extends Class
  * @mixes Eventable
  */
-const Layer = Class.extend(/** @lends Layer.prototype */ {
+export const Layer = Class.extend(/** @lends Layer.prototype */ {
 
     includes: Eventable,
 
@@ -421,3 +421,5 @@ Layer.extend = function (props) {
     }
     return NewLayer;
 };
+
+export default Layer;

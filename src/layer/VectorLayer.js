@@ -18,7 +18,7 @@ import OverlayLayer from './OverlayLayer';
  * @param {Object}  [options.style=null]    - vectorlayer's style
  * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}
  */
-const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype */ {
+export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype */ {
     /**
      * @property {Object}  options - VectorLayer's options
      * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
