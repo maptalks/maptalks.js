@@ -1,2 +1,2 @@
-const testsContext = require.context('../test/core', true, /UtilSpec\.js$/);
+const testsContext = require.context('../test', true, /\.js$/);
 testsContext.keys().forEach(testsContext);

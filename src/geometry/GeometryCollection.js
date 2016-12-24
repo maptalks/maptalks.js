@@ -1,7 +1,7 @@
 import { isArray, isArrayHasData } from 'core/util';
 import { getExternalResources } from 'core/util/resource';
 import Coordinate from 'geo/Coordinate';
-import VectorLayer from 'layer';
+import VectorLayer from 'layer/VectorLayer';
 import Geometry from './Geometry';
 
 /**

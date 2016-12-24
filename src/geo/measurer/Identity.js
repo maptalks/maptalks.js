@@ -1,5 +1,5 @@
 import { isArrayHasData } from 'core/util';
-import Coordinate from 'geo/Coordiante';
+import Coordinate from 'geo/Coordinate';
 
 /**
  * Identity measurer, a measurer for Cartesian coordinate system.

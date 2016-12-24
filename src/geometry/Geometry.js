@@ -16,7 +16,7 @@ import { extendSymbol } from 'core/util/style';
 import { convertResourceUrl, getExternalResources } from 'core/util/resource';
 import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extend';
+import Extent from 'geo/Extent';
 import Measurer from 'geo/measurer';
 import { OverlayLayer } from 'layer/OverlayLayer';
 import { Painter, CollectionPainter } from 'renderer/vectorlayer';
