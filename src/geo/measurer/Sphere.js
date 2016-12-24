@@ -1,5 +1,4 @@
 import Coordinate from '../Coordinate';
-import { registerMeasurer } from './Measurer';
 
 class Sphere {
     constructor(radius) {
@@ -146,6 +145,3 @@ export const BaiduSphere = {
         return this.sphere.locate.apply(this.sphere, arguments);
     }
 };
-
-registerMeasurer(WGS84Sphere);
-registerMeasurer(BaiduSphere);

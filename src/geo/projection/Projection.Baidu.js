@@ -1,7 +1,7 @@
 import { extend } from 'core/util';
 import Common from './Projection';
 import Coordinate from '../Coordinate';
-import measurer from '../measurer/Measurer';
+import { BaiduSphere } from '../measurer';
 
 /**
  * Projection used by [Baidu Map]{@link http://map.baidu.com}
@@ -13,7 +13,7 @@ import measurer from '../measurer/Measurer';
  * @mixes projection.Common
  * @mixes measurer.BaiduSphere
  */
-const BAIDU = extend({}, Common, /** @lends projection.BAIDU */ {
+export const BAIDU = extend({}, Common, /** @lends projection.BAIDU */ {
     /**
      * "BAIDU", Code of the projection, used by [View]{@link View} to get projection instance.
      * @type {String}
@@ -28,7 +28,7 @@ const BAIDU = extend({}, Common, /** @lends projection.BAIDU */ {
     unproject: function (p) {
         return this.convertMC2LL(p);
     }
-}, measurer.BaiduSphere, {
+}, BaiduSphere, {
     EARTHRADIUS: 6370996.81,
     MCBAND: [12890594.86, 8362377.87, 5591021, 3481989.83, 1678043.12, 0],
     LLBAND: [75, 60, 45, 30, 15, 0],

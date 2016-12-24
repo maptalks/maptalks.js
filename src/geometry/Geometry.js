@@ -17,7 +17,7 @@ import { convertResourceUrl, getExternalResources } from 'core/util/resource';
 import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extend';
-import { MeasurerUtil } from 'geo/measurer/Measurer';
+import Measurer from 'geo/measurer';
 import { OverlayLayer } from 'layer/OverlayLayer';
 import { Painter, CollectionPainter } from 'renderer/vectorlayer';
 import { Symbolizer, VectorMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
@@ -887,7 +887,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */{
         if (!this._extent && p) {
             var ext = this._computeExtent(p);
             if (ext) {
-                var isAntiMeridian = this.options['antiMeridian'] && MeasurerUtil.isSphere(p);
+                var isAntiMeridian = this.options['antiMeridian'] && Measurer.isSphere(p);
                 if (isAntiMeridian && isAntiMeridian !== 'default') {
                     var firstCoordinate = this.getFirstCoordinate();
                     if (isAntiMeridian === 'continuous') {
@@ -957,7 +957,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */{
         if (this._getProjection()) {
             return this._getProjection();
         }
-        return MeasurerUtil.getInstance(this.options['measure']);
+        return Measurer.getInstance(this.options['measure']);
     },
 
     _getProjection:function () {

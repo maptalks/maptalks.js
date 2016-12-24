@@ -1,6 +1,6 @@
 import { extend } from 'core/util';
 import Common from './Projection';
-import measurer from '../measurer/Measurer';
+import { Identity } from '../measurer';
 
 /**
  * A projection based on Cartesian coordinate system.<br>
@@ -13,7 +13,7 @@ import measurer from '../measurer/Measurer';
  * @mixes projection.Common
  * @mixes measurer.Identity
  */
-const IDENTITY = extend({}, Common, /** @lends projection.IDENTITY */ {
+export const IDENTITY = extend({}, Common, /** @lends projection.IDENTITY */ {
     /**
      * "IDENTITY", Code of the projection, used by [View]{@link View} to get projection instance.
      * @type {String}
@@ -26,6 +26,6 @@ const IDENTITY = extend({}, Common, /** @lends projection.IDENTITY */ {
     unproject: function (p) {
         return p.copy();
     }
-}, measurer.Identity);
+}, Identity);
 
 export default IDENTITY;

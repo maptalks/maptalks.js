@@ -7,7 +7,7 @@ import { mapArrayRecursively } from 'core/util';
  * @memberOf projection
  * @name Common
  */
-const Common = {
+export const Common = {
     /**
      * Project a geographical coordinate to a projected coordinate (2d coordinate)
      * @param  {Coordinate} p - coordinate to project

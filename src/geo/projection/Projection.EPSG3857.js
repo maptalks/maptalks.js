@@ -1,7 +1,7 @@
 import { extend } from 'core/util';
 import Common from './Projection';
 import Coordinate from '../Coordinate';
-import measurer from '../measurer/Measurer';
+import { WGS84Sphere } from '../measurer';
 
 /**
  * Well-known projection used by Google maps or Open Street Maps, aka Mercator Projection.<br>
@@ -14,7 +14,7 @@ import measurer from '../measurer/Measurer';
  * @mixes projection.Common
  * @mixes measurer.WGS84Sphere
  */
-const EPSG3857 = extend({}, Common, /** @lends projection.EPSG3857 */ {
+export const EPSG3857 = extend({}, Common, /** @lends projection.EPSG3857 */ {
     /**
      * "EPSG:3857", Code of the projection, used by [View]{@link View} to get projection instance.
      * @type {String}
@@ -54,6 +54,6 @@ const EPSG3857 = extend({}, Common, /** @lends projection.EPSG3857 */ {
         }
         return new Coordinate(x / metersPerDegree, c);
     }
-}, measurer.WGS84Sphere);
+}, WGS84Sphere);
 
 export default EPSG3857;

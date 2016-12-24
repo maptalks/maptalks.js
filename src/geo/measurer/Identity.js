@@ -1,6 +1,5 @@
 import { isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordiante';
-import { registerMeasurer } from './Measurer';
 
 /**
  * Identity measurer, a measurer for Cartesian coordinate system.
@@ -13,7 +12,7 @@ import { registerMeasurer } from './Measurer';
  */
 export const Identity = {
     /**
-     * the code of the measurer, used by [MeasurerUtil]{@link MeasurerUtil} to as its key get measurer instance.
+     * the code of the measurer
      * @static
      * @type {String}
      */
@@ -83,5 +82,3 @@ export const Identity = {
         return new Coordinate(c.x + xDist, c.y + yDist);
     }
 };
-
-registerMeasurer(Identity);

@@ -1,7 +1,7 @@
 import { isArray, isNil, isNumber, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import { MeasurerUtil } from 'geo/measurer/Measurer';
+import Measurer from 'geo/measurer';
 import { simplify } from 'geo/utils';
 import Geometry from './Geometry';
 
@@ -24,7 +24,7 @@ Geometry.Poly = {
         var map = this.getMap(),
             fullExtent = map.getFullExtent(),
             projection = this._getProjection();
-        var anti = this.options['antiMeridian'] && MeasurerUtil.isSphere(projection),
+        var anti = this.options['antiMeridian'] && Measurer.isSphere(projection),
             isClip = map.options['clipFullExtent'],
             isSimplify = !disableSimplify && this.getLayer() && this.getLayer().options['enableSimplify'],
             tolerance = 2 * map._getResolution(),

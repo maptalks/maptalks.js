@@ -3,7 +3,7 @@ import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import projections from 'geo/projection';
 import Transformation from 'geo/transformation/Transformation';
-import { MeasurerUtil } from 'geo/measurer/Measurer';
+import Measurer from 'geo/measurer/Measurer';
 
 const DefaultView = {
     'EPSG:3857': {
@@ -87,7 +87,7 @@ export class View {
         }
         projection = extend({}, projections.Common, projection);
         if (!projection.measureLength) {
-            extend(projection, MeasurerUtil.DEFAULT);
+            extend(projection, Measurer.DEFAULT);
         }
         this._projection = projection;
         var defaultView,
