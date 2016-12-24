@@ -96,7 +96,7 @@ gulp.task('watch', ['build'], function () {
 /**
  * Run test once and exit
  */
-gulp.task('test', ['build'], function (done) {
+gulp.task('test', function (done) {
     var karmaConfig = {
         configFile: path.join(__dirname, 'build/karma.unit.config.js'),
         browsers: browsers
