@@ -1,6 +1,6 @@
 import { bind, isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Browser from 'core/Browser';
-import renderer from 'renderer';
+import { Canvas as Renderer } from 'renderer';
 import Layer from './Layer';
 
 /**
@@ -131,7 +131,7 @@ export const CanvasLayer = Layer.extend(/** @lends CanvasLayer.prototype */ {
 
 });
 
-CanvasLayer.registerRenderer('canvas', renderer.Canvas.extend({
+CanvasLayer.registerRenderer('canvas', Renderer.extend({
 
     draw: function () {
         if (!this._predrawed) {
@@ -170,44 +170,44 @@ CanvasLayer.registerRenderer('canvas', renderer.Canvas.extend({
 
     hide: function () {
         this._pause();
-        return renderer.Canvas.prototype.hide.call(this);
+        return Renderer.prototype.hide.call(this);
     },
 
     show: function () {
-        return renderer.Canvas.prototype.show.call(this);
+        return Renderer.prototype.show.call(this);
     },
 
     remove: function () {
         this._pause();
         delete this._drawContext;
-        return renderer.Canvas.prototype.remove.call(this);
+        return Renderer.prototype.remove.call(this);
     },
 
     onZoomStart: function (param) {
         this._pause();
         this.layer.onZoomStart(param);
-        renderer.Canvas.prototype.onZoomStart.call(this);
+        Renderer.prototype.onZoomStart.call(this);
     },
 
     onZoomEnd: function (param) {
         this.layer.onZoomEnd(param);
-        renderer.Canvas.prototype.onZoomEnd.call(this);
+        Renderer.prototype.onZoomEnd.call(this);
     },
 
     onMoveStart: function (param) {
         this._pause();
         this.layer.onMoveStart(param);
-        renderer.Canvas.prototype.onMoveStart.call(this);
+        Renderer.prototype.onMoveStart.call(this);
     },
 
     onMoveEnd: function (param) {
         this.layer.onMoveEnd(param);
-        renderer.Canvas.prototype.onMoveEnd.call(this);
+        Renderer.prototype.onMoveEnd.call(this);
     },
 
     onResize: function (param) {
         this.layer.onResize(param);
-        renderer.Canvas.prototype.onResize.call(this);
+        Renderer.prototype.onResize.call(this);
     },
 
     _pause: function () {

@@ -3,10 +3,10 @@ import Class from 'core/class/index';
 import Size from 'geo/Size';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
-import Marker from 'geometry/Marker';
+import { Marker } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
 import Canvas from 'utils/Canvas';
-import symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as symbolizers from 'renderer/vectorlayer/symbolizers';
 
 //注册的symbolizer
 const registerSymbolizers = [

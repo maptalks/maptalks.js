@@ -1,10 +1,9 @@
 import Class from 'core/class/index';
 import { extend, isNil, isNumber, setOptions } from 'core/util';
 import Eventable from 'core/Event';
-import Marker from 'geometry/Marker';
-import Polygon from 'geometry/Polygon';
+import { Marker, Polygon } from 'geometry';
 import { Renderable } from 'renderer';
-import symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as symbolizers from 'renderer/vectorlayer/symbolizers';
 
 /**
  * @classdesc

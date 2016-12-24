@@ -1,17 +1,26 @@
-maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymbolizer.extend({
+import { isArray, isArrayHasData, getValueOrDefault } from 'core/util';
+import { isGradient as checkGradient } from 'core/util/style';
+import Canvas from 'utils/Canvas';
+import Coordinate from 'geo/Coordinate';
+import PointExtent from 'geo/PointExtent';
+import { Marker, LineString, Polygon } from 'geometry';
+import { CanvasSymbolizer } from './CanvasSymbolizer';
 
-    initialize:function (symbol, geometry, painter) {
+export class StrokeAndFillSymbolizer extends CanvasSymbolizer {
+
+    constructor(symbol, geometry, painter) {
+        super();
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        if (geometry instanceof maptalks.Marker) {
+        if (geometry instanceof Marker) {
             return;
         }
         this.style = this._defineStyle(this.translate());
-    },
+    }
 
-    symbolize:function (ctx, resources) {
-        if (this.geometry instanceof maptalks.Marker) {
+    symbolize(ctx, resources) {
+        if (this.geometry instanceof Marker) {
             return;
         }
         var style = this.style;
@@ -23,22 +32,22 @@ maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymboliz
             return;
         }
         this._prepareContext(ctx);
-        var isGradient = maptalks.Util.isGradient(style['lineColor']),
-            isPath = (this.geometry.constructor === maptalks.Polygon) || (this.geometry instanceof maptalks.LineString);
+        var isGradient = checkGradient(style['lineColor']),
+            isPath = (this.geometry.constructor === Polygon) || (this.geometry instanceof LineString);
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.getPainter().getContainerExtent()._expand(style['lineWidth']);
         }
-        if (maptalks.Util.isGradient(style['polygonFill'])) {
+        if (checkGradient(style['polygonFill'])) {
             style['polygonGradientExtent'] = this.getPainter().getContainerExtent();
         }
 
         var points = paintParams[0],
-            isSplitted = (this.geometry instanceof maptalks.Polygon && points.length > 1 && maptalks.Util.isArray(points[0][0])) ||
-                        (this.geometry instanceof maptalks.LineString  && points.length > 1 && maptalks.Util.isArray(points[0]));
+            isSplitted = (this.geometry instanceof Polygon && points.length > 1 && isArray(points[0][0])) ||
+            (this.geometry instanceof LineString && points.length > 1 && isArray(points[0]));
         var params;
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
-                maptalks.Canvas.prepareCanvas(ctx, style, resources);
+                Canvas.prepareCanvas(ctx, style, resources);
                 if (isGradient && isPath && !style['lineColor']['places']) {
                     this._createGradient(ctx, points[i], style['lineColor']);
                 }
@@ -50,7 +59,7 @@ maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymboliz
                 this.geometry._paintOn.apply(this.geometry, params);
             }
         } else {
-            maptalks.Canvas.prepareCanvas(ctx, style, resources);
+            Canvas.prepareCanvas(ctx, style, resources);
             if (isGradient && isPath && !style['lineColor']['places']) {
                 this._createGradient(ctx, points, style['lineColor']);
             }
@@ -60,13 +69,13 @@ maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymboliz
             this.geometry._paintOn.apply(this.geometry, params);
         }
 
-        if (ctx.setLineDash && maptalks.Util.isArrayHasData(style['lineDasharray'])) {
+        if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash([]);
         }
-    },
+    }
 
-    get2DExtent:function () {
-        if (this.geometry instanceof maptalks.Marker) {
+    get2DExtent() {
+        if (this.geometry instanceof Marker) {
             return null;
         }
         var map = this.getMap();
@@ -77,8 +86,8 @@ maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymboliz
         // this ugly implementation is to improve perf as we can
         // it tries to avoid creating instances to save cpu consumption.
         if (!this._extMin || !this._extMax) {
-            this._extMin = new maptalks.Coordinate(0, 0);
-            this._extMax = new maptalks.Coordinate(0, 0);
+            this._extMin = new Coordinate(0, 0);
+            this._extMax = new Coordinate(0, 0);
         }
         this._extMin.x = extent['xmin'];
         this._extMin.y = extent['ymin'];
@@ -87,7 +96,7 @@ maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymboliz
         var min = map._prjToPoint(this._extMin),
             max = map._prjToPoint(this._extMax);
         if (!this._pxExtent) {
-            this._pxExtent = new maptalks.PointExtent(min, max);
+            this._pxExtent = new PointExtent(min, max);
         } else {
             if (min.x < max.x) {
                 this._pxExtent['xmin'] = min.x;
@@ -105,37 +114,37 @@ maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymboliz
             }
         }
         return this._pxExtent._expand(this.style['lineWidth'] / 2);
-    },
+    }
 
-    _getPaintParams:function () {
+    _getPaintParams() {
         return this.getPainter().getPaintParams();
-    },
+    }
 
-    translate:function () {
+    translate() {
         var s = this.symbol;
         var result = {
-            'lineColor'         : maptalks.Util.getValueOrDefault(s['lineColor'], '#000'),
-            'lineWidth'         : maptalks.Util.getValueOrDefault(s['lineWidth'], 2),
-            'lineOpacity'       : maptalks.Util.getValueOrDefault(s['lineOpacity'], 1),
-            'lineDasharray'     : maptalks.Util.getValueOrDefault(s['lineDasharray'], []),
-            'lineCap'           : maptalks.Util.getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
-            'lineJoin'          : maptalks.Util.getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
-            'linePatternFile'   : maptalks.Util.getValueOrDefault(s['linePatternFile'], null),
-            'polygonFill'       : maptalks.Util.getValueOrDefault(s['polygonFill'], null),
-            'polygonOpacity'    : maptalks.Util.getValueOrDefault(s['polygonOpacity'], 1),
-            'polygonPatternFile': maptalks.Util.getValueOrDefault(s['polygonPatternFile'], null)
+            'lineColor': getValueOrDefault(s['lineColor'], '#000'),
+            'lineWidth': getValueOrDefault(s['lineWidth'], 2),
+            'lineOpacity': getValueOrDefault(s['lineOpacity'], 1),
+            'lineDasharray': getValueOrDefault(s['lineDasharray'], []),
+            'lineCap': getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
+            'lineJoin': getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
+            'linePatternFile': getValueOrDefault(s['linePatternFile'], null),
+            'polygonFill': getValueOrDefault(s['polygonFill'], null),
+            'polygonOpacity': getValueOrDefault(s['polygonOpacity'], 1),
+            'polygonPatternFile': getValueOrDefault(s['polygonPatternFile'], null)
         };
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;
         }
         // fill of arrow
-        if ((this.geometry instanceof maptalks.LineString) && !result['polygonFill']) {
+        if ((this.geometry instanceof LineString) && !result['polygonFill']) {
             result['polygonFill'] = result['lineColor'];
         }
         return result;
-    },
+    }
 
-    _createGradient: function (ctx, points, lineColor) {
+    _createGradient(ctx, points, lineColor) {
         var len = points.length;
         var grad = ctx.createLinearGradient(points[0].x, points[0].y, points[len - 1].x, points[len - 1].y);
         lineColor['colorStops'].forEach(function (stop) {
@@ -144,13 +153,13 @@ maptalks.symbolizer.StrokeAndFillSymbolizer = maptalks.symbolizer.CanvasSymboliz
         ctx.strokeStyle = grad;
     }
 
-});
+}
 
-maptalks.symbolizer.StrokeAndFillSymbolizer.test = function (symbol, geometry) {
+StrokeAndFillSymbolizer.test = function (symbol, geometry) {
     if (!symbol) {
         return false;
     }
-    if (geometry && (geometry instanceof maptalks.Marker)) {
+    if (geometry && (geometry instanceof Marker)) {
         return false;
     }
     for (var p in symbol) {

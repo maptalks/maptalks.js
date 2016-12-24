@@ -14,7 +14,7 @@ import Ellipse from 'geometry/Ellipse';
 import Sector from 'geometry/Sector';
 import Rectangle from 'geometry/Rectangle';
 import VectorLayer from 'layer/VectorLayer';
-import symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as symbolizers from 'renderer/vectorlayer/symbolizers';
 
 /**
  * Geometry editor used internally for geometry editing.

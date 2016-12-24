@@ -2,9 +2,7 @@ import { isNil, isArray, isFunction, isArrayHasData, UID } from 'core/util';
 import { createFilter, getFilterFeature } from 'utils';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import Geometry from 'geometry/Geometry';
-import GeometryCollection from 'geometry/GeometryCollection';
-import LineString from 'geometry/LineString';
+import { Geometry, GeometryCollection, LineString } from 'geometry';
 import Layer from './Layer';
 
 /**

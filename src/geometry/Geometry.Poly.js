@@ -1,7 +1,7 @@
 import { isArray, isNil, isNumber, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import Measurer from 'geo/measurer';
+import * as Measurer from 'geo/measurer';
 import { simplify } from 'geo/utils';
 import Geometry from './Geometry';
 

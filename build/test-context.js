@@ -1,2 +1,2 @@
-const testsContext = require.context('../test', true, /\.js$/);
+const testsContext = require.context('../test/geojson', true, /\.js$/);
 testsContext.keys().forEach(testsContext);

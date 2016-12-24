@@ -1,8 +1,7 @@
 import { isString } from 'core/util';
 import { createEl } from 'core/util/dom';
 import Point from 'geo/Point';
-import Geometry from 'geometry/Geometry';
-import Marker from 'geometry/Marker';
+import { Geometry, Marker } from 'geometry';
 import { UIComponent } from './UI';
 
 /**

@@ -17,8 +17,8 @@ import { convertResourceUrl, getExternalResources } from 'core/util/resource';
 import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import Measurer from 'geo/measurer';
-import { OverlayLayer } from 'layer/OverlayLayer';
+import * as Measurer from 'geo/measurer';
+import { OverlayLayer } from 'layer';
 import { Painter, CollectionPainter } from 'renderer/vectorlayer';
 import { Symbolizer, VectorMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
 import GeometryCollection from './GeometryCollection';
@@ -1282,3 +1282,5 @@ Geometry.getMarkerPathBase64 = function (symbol) {
     var b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' '));
     return b64;
 };
+
+export default Geometry;

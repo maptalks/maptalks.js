@@ -1,5 +1,5 @@
 import { isNumber, loadFunctionTypes } from 'core/util';
-import Symbolizer from './Symbolizer';
+import { Symbolizer } from './Symbolizer';
 
 /**
  * @classdesc

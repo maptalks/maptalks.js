@@ -1,7 +1,7 @@
 import { mapArrayRecursively, isNil } from 'core/util';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
-import CanvasSymbolizer from './CanvasSymbolizer';
+import { CanvasSymbolizer } from './CanvasSymbolizer';
 
 /**
  * @classdesc

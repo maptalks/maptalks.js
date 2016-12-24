@@ -2,8 +2,8 @@ import { isArray } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Geometry from './Geometry';
-import Painter from 'renderer/vectorlayer/Painter';
-import symbolizers from 'renderer/vectorlayer/symbolizers';
+import { Painter } from 'renderer/vectorlayer/Painter';
+import * as symbolizers from 'renderer/vectorlayer/symbolizers';
 
 /**
  * @classdesc

@@ -1,6 +1,6 @@
 import Extent from './Extent';
 import Point from './Point';
-import Size from './size';
+import Size from './Size';
 
 /**
  * Represent a bounding box on 2d surface , a rectangular area with minimum and maximum points. <br>

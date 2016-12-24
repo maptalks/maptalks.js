@@ -2,7 +2,7 @@ import { isNode } from './env';
 import { isArray } from './common';
 import { isURL, extractCssUrl } from './util';
 import utils from 'utils';
-import Symbolizer from 'renderer/vectorlayer/symbolizers';
+import { Symbolizer } from 'renderer/vectorlayer/symbolizers';
 import Geometry from 'geometry/Geometry';
 
 /**
