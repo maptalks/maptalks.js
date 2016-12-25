@@ -2,8 +2,8 @@ import { extend } from 'core/util';
 import splitTextToRow from 'core/util/text';
 import Coordinate from 'geo/Coordinate';
 import Size from 'geo/Size';
-import Geometry from './Geometry';
-import Marker from './Marker';
+import { Geometry } from './Geometry';
+import { Marker } from './Marker';
 
 /**
  * @classdesc
@@ -15,7 +15,7 @@ import Marker from './Marker';
  * @abstract
  * @extends Marker
  */
-export const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
+const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
 
     options: {
         'box': true,
@@ -169,4 +169,5 @@ export const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
     }
 });
 
+export { TextMarker };
 export default TextMarker;

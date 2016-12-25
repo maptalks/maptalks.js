@@ -1,6 +1,6 @@
-import Geometry from './Geometry';
-import GeometryCollection from './GeometryCollection';
-import Marker from './Marker';
+import { Geometry } from './Geometry';
+import { GeometryCollection } from './GeometryCollection';
+import { Marker } from './Marker';
 
 /**
  * @classdesc
@@ -20,7 +20,7 @@ import Marker from './Marker';
  *     ]
  * ).addTo(layer);
  */
-export const MultiPoint = GeometryCollection.extend(/** @lends MultiPoint.prototype */ {
+const MultiPoint = GeometryCollection.extend(/** @lends MultiPoint.prototype */ {
     includes: [Geometry.MultiPoly],
 
     GeometryType: Marker,
@@ -33,4 +33,5 @@ export const MultiPoint = GeometryCollection.extend(/** @lends MultiPoint.protot
     }
 });
 
+export { MultiPoint };
 export default MultiPoint;

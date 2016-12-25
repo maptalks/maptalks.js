@@ -1,4 +1,4 @@
-import Curve from './Curve';
+import { Curve } from './Curve';
 import Canvas from 'utils/Canvas';
 
 /**
@@ -21,7 +21,7 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-export const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype */ {
+const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype */ {
 
     _toJSON: function (options) {
         return {
@@ -57,4 +57,5 @@ QuadBezierCurve.fromJSON = function (json) {
     return curve;
 };
 
+export { QuadBezierCurve };
 export default QuadBezierCurve;

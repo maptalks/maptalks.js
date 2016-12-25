@@ -3,13 +3,12 @@ import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import * as Measurer from 'geo/measurer';
 import { simplify } from 'geo/utils';
-import Geometry from './Geometry';
 
 /**
  * Common methods for geometry classes based on coordinates arrays, e.g. LineString, Polygon
  * @mixin Geometry.Poly
  */
-Geometry.Poly = {
+export const Poly = {
     /**
      * Transform projected coordinates to view points
      * @param  {Coordinate[]} prjCoords  - projected coordinates

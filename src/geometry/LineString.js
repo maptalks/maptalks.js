@@ -2,9 +2,9 @@ import { bind, isNil, isArray } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
 import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
-import Geometry from './Geometry';
-import GeoJSON from './GeoJSON';
-import Vector from './Vector';
+import { Geometry } from './Geometry';
+import { GeoJSON } from './GeoJSON';
+import { Vector } from './Vector';
 
 /**
  * @classdesc Represents a LineString type Geometry.
@@ -24,7 +24,7 @@ import Vector from './Vector';
  *     ]
  * ).addTo(layer);
  */
-export const LineString = Vector.extend(/** @lends LineString.prototype */ {
+const LineString = Vector.extend(/** @lends LineString.prototype */ {
     includes: [Geometry.Poly],
 
     type: Geometry['TYPE_LINESTRING'],
@@ -223,4 +223,5 @@ export const LineString = Vector.extend(/** @lends LineString.prototype */ {
 
 export const Polyline = LineString;
 
+export { LineString };
 export default LineString;

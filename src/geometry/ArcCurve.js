@@ -1,4 +1,4 @@
-import Curve from './Curve';
+import { Curve } from './Curve';
 import Canvas from 'utils/Canvas';
 
 /**
@@ -23,7 +23,7 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-export const ArcCurve = Curve.extend(/** @lends ArcCurve.prototype */ {
+const ArcCurve = Curve.extend(/** @lends ArcCurve.prototype */ {
     /**
      * @property {Object} options
      * @property {Number} [options.arcDegree=90]           - circle arc's degree.
@@ -55,4 +55,5 @@ ArcCurve.fromJSON = function (json) {
     return arc;
 };
 
+export { ArcCurve };
 export default ArcCurve;

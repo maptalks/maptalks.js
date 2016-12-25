@@ -21,8 +21,7 @@ import * as Measurer from 'geo/measurer';
 import { OverlayLayer } from 'layer';
 import { Painter, CollectionPainter } from 'renderer/vectorlayer';
 import { Symbolizer, VectorMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
-import GeometryCollection from './GeometryCollection';
-import GeoJSON from './GeoJSON';
+import { GeoJSON } from './GeoJSON';
 
 /**
  * @classdesc
@@ -38,7 +37,7 @@ import GeoJSON from './GeoJSON';
  * @mixes Handlerable
  * @mixes ui.Menu.Mixin
  */
-export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
+const Geometry = Class.extend(/** @lends Geometry.prototype */ {
     includes: [Eventable, Handlerable],
 
     /** @lends Geometry */
@@ -109,7 +108,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @return {Coordinate} First Coordinate
      */
     getFirstCoordinate: function () {
-        if (this instanceof GeometryCollection) {
+        if (this.type === Geometry.TYPE_GEOMETRYCOLLECTION) {
             var geometries = this.getGeometries();
             if (!geometries || !isArrayHasData(geometries)) {
                 return null;
@@ -133,7 +132,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @return {Coordinate} Last Coordinate
      */
     getLastCoordinate: function () {
-        if (this instanceof GeometryCollection) {
+        if (this.type === Geometry.TYPE_GEOMETRYCOLLECTION) {
             var geometries = this.getGeometries();
             if (!geometries || !isArrayHasData(geometries)) {
                 return null;
@@ -981,7 +980,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
 
     _getPainter: function () {
         if (!this._painter && this.getMap()) {
-            if (this instanceof GeometryCollection) {
+            if (this.type === Geometry.TYPE_GEOMETRYCOLLECTION) {
                 this._painter = new CollectionPainter(this);
             } else {
                 this._painter = new Painter(this);
@@ -1283,4 +1282,23 @@ Geometry.getMarkerPathBase64 = function (symbol) {
     return b64;
 };
 
+import { Center } from './Geometry.Center';
+import { Poly } from './Geometry.Poly';
+import { MultiPoly } from './MultiPoly';
+Geometry.Center = Center;
+Geometry.Poly = Poly;
+Geometry.MultiPoly = MultiPoly;
+
+import { GeometryEditor } from './editor/GeometryEditor';
+Geometry.include(GeometryEditor);
+
+import { initAnimation, initDrag, initEdit, initEvent, initInfoWindow, initMenu } from './ext';
+initAnimation(Geometry);
+initDrag(Geometry);
+initEdit(Geometry);
+initEvent(Geometry);
+initInfoWindow(Geometry);
+initMenu(Geometry);
+
+export { Geometry };
 export default Geometry;

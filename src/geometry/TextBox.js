@@ -1,6 +1,6 @@
 import { extend } from 'core/util';
 import Size from 'geo/Size';
-import TextMarker from './TextMarker';
+import { TextMarker } from './TextMarker';
 
 /**
  * @classdesc
@@ -17,7 +17,7 @@ import TextMarker from './TextMarker';
  * var textBox = new TextBox('This is a textBox',[100,0])
  *     .addTo(layer);
  */
-export const TextBox = TextMarker.extend(/** @lends TextBox.prototype */ {
+const TextBox = TextMarker.extend(/** @lends TextBox.prototype */ {
 
     /**
      * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
@@ -114,4 +114,8 @@ TextBox.fromJSON = function (json) {
     return textBox;
 };
 
+import { TextMarkerEditor } from './editor/TextMarkerEditor';
+TextBox.include(TextMarkerEditor);
+
+export { TextBox };
 export default TextBox;

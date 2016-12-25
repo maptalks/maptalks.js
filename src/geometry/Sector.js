@@ -1,9 +1,9 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import Geometry from './Geometry';
-import GeoJSON from './GeoJSON';
-import Polygon from './Polygon';
+import { Geometry } from './Geometry';
+import { GeoJSON } from './GeoJSON';
+import { Polygon } from './Polygon';
 
 /**
  * @classdesc
@@ -23,7 +23,7 @@ import Polygon from './Polygon';
  *     id : 'sector0'
  * });
  */
-export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
+const Sector = Polygon.extend(/** @lends Sector.prototype */ {
     includes: [Geometry.Center],
 
     /**
@@ -218,4 +218,5 @@ Sector.fromJSON = function (json) {
     return sector;
 };
 
+export { Sector };
 export default Sector;

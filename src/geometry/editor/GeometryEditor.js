@@ -4,7 +4,6 @@ import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/class/index';
 import Eventable from 'core/Event';
 import Point from 'geo/Point';
-import Geometry from 'geometry/Geometry';
 import Marker from 'geometry/Marker';
 import TextMarker from 'geometry/TextMarker';
 import { Polyline } from 'geometry/LineString';
@@ -26,7 +25,7 @@ import * as symbolizers from 'renderer/vectorlayer/symbolizers';
  * @param {_shadow} geometry 待编辑图形
  * @param {Object} opts 属性
  */
-Geometry.Editor = Class.extend(/** @lends Geometry.Editor.prototype */ {
+export const GeometryEditor = Class.extend(/** @lends GeometryEditor.prototype */ {
     includes: [Eventable],
 
     editStageLayerIdPrefix: internalLayerPrefix + '_edit_stage_',

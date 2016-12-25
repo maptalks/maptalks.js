@@ -3,8 +3,8 @@ import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Extent from 'geo/Extent';
-import Polygon from './Polygon';
-import GeoJSON from './GeoJSON';
+import { Polygon } from './Polygon';
+import { GeoJSON } from './GeoJSON';
 
 /**
  * @classdesc
@@ -22,7 +22,7 @@ import GeoJSON from './GeoJSON';
  *     id : 'rectangle0'
  * });
  */
-export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
+const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
 
     initialize: function (coordinates, width, height, opts) {
         this._coordinates = new Coordinate(coordinates);
@@ -239,4 +239,5 @@ Rectangle.fromJSON = function (json) {
     return rect;
 };
 
+export { Rectangle };
 export default Rectangle;

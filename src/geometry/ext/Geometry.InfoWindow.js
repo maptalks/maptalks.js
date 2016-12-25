@@ -1,8 +1,7 @@
 import { extend, setOptions } from 'core/util';
-import Geometry from 'geometry/Geometry';
-import InfoWindow from 'ui';
+import { InfoWindow } from 'ui';
 
-Geometry.include(/** @lends Geometry.prototype */ {
+export const InfoWindowExt = /** @lends Geometry.prototype */ {
     /**
      * Set an InfoWindow to the geometry
      * @param {Object} options - construct [options]{@link ui.InfoWindow#options} for the InfoWindow
@@ -96,4 +95,8 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return this;
     }
 
-});
+};
+
+export function initInfoWindow(Geometry) {
+    Geometry.include(InfoWindowExt);
+}

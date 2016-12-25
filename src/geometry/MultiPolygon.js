@@ -1,6 +1,6 @@
-import Geometry from './Geometry';
-import GeometryCollection from './GeometryCollection';
-import Polygon from './Polygon';
+import { Geometry } from './Geometry';
+import { GeometryCollection } from './GeometryCollection';
+import { Polygon } from './Polygon';
 
 /**
  * @classdesc
@@ -48,7 +48,7 @@ import Polygon from './Polygon';
  *           draggable:true
  * }).addTo(layer);
  */
-export const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.prototype */ {
+const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.prototype */ {
     includes: [Geometry.MultiPoly],
     GeometryType: Polygon,
 
@@ -60,4 +60,5 @@ export const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.pr
     }
 });
 
+export { MultiPolygon };
 export default MultiPolygon;

@@ -1,7 +1,7 @@
 import { isArray } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import Geometry from './Geometry';
+import { Geometry } from './Geometry';
 import { Painter } from 'renderer/vectorlayer/Painter';
 import * as symbolizers from 'renderer/vectorlayer/symbolizers';
 
@@ -27,7 +27,7 @@ import * as symbolizers from 'renderer/vectorlayer/symbolizers';
  *     }
  * });
  */
-export const Marker = Geometry.extend(/** @lends Marker.prototype */ {
+const Marker = Geometry.extend(/** @lends Marker.prototype */ {
     includes: [Geometry.Center],
 
     type: Geometry['TYPE_POINT'],
@@ -97,4 +97,5 @@ export const Marker = Geometry.extend(/** @lends Marker.prototype */ {
     }
 });
 
+export { Marker };
 export default Marker;

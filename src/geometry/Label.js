@@ -1,6 +1,6 @@
 import { getAlignPoint } from 'core/util';
 import Size from 'geo/Size';
-import TextMarker from './TextMarker';
+import { TextMarker } from './TextMarker';
 
 /**
  * @classdesc
@@ -17,7 +17,7 @@ import TextMarker from './TextMarker';
  * var label = new Label('This is a label',[100,0])
  *     .addTo(layer);
  */
-export const Label = TextMarker.extend(/** @lends Label.prototype */ {
+const Label = TextMarker.extend(/** @lends Label.prototype */ {
 
     /**
      * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link Marker#options}
@@ -98,4 +98,8 @@ Label.fromJSON = function (json) {
     return label;
 };
 
+import { TextMarkerEditor } from './editor/TextMarkerEditor';
+Label.include(TextMarkerEditor);
+
+export { Label };
 export default Label;

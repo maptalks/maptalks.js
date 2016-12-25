@@ -1,7 +1,6 @@
 import { preventDefault, stopPropagation, getEventContainerPoint } from 'core/util/dom';
-import Geometry from 'geometry/Geometry';
 
-Geometry.include(/** @lends Geometry.prototype */ {
+export const Events = /** @lends Geometry.prototype */ {
     /**
      * The event handler for all the events.
      * @param  {Event} event - dom event
@@ -102,4 +101,8 @@ Geometry.include(/** @lends Geometry.prototype */ {
          */
         this._fireEvent('mouseout', params);
     }
-});
+};
+
+export function initEvent(Geometry) {
+    Geometry.include(Events);
+}

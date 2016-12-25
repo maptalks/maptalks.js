@@ -1,9 +1,9 @@
 import { isNil, isArray, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
-import Geometry from './Geometry';
-import GeoJSON from './GeoJSON';
-import Vector from './Vector';
+import { Geometry } from './Geometry';
+import { GeoJSON } from './GeoJSON';
+import { Vector } from './Vector';
 
 /**
  * @classdesc
@@ -28,7 +28,7 @@ import Vector from './Vector';
  *      ]
  *  ).addTo(layer);
  */
-export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
+const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
 
     includes: [Geometry.Poly],
 
@@ -278,4 +278,5 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
     }
 });
 
+export { Polygon };
 export default Polygon;

@@ -1,5 +1,5 @@
 import { isArray, isNumber } from 'core/util';
-import Geometry from './Geometry';
+import { Geometry } from './Geometry';
 
 /**
  * @classdesc
@@ -10,7 +10,7 @@ import Geometry from './Geometry';
  * @abstract
  * @extends Geometry
  */
-export const Vector = Geometry.extend(/** @lends Vector.prototype */ {
+const Vector = Geometry.extend(/** @lends Vector.prototype */ {
     /**
      * @property {Object} options - Vector's options
      * @property {Object} options.symbol - Vector's default symbol
@@ -46,4 +46,5 @@ export const Vector = Geometry.extend(/** @lends Vector.prototype */ {
     }
 });
 
+export { Vector };
 export default Vector;

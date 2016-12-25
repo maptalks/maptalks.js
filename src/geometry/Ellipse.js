@@ -2,9 +2,9 @@ import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import Extent from 'geo/Extent';
-import Geometry from './Geometry';
-import GeoJSON from './GeoJSON';
-import Polygon from './Polygon';
+import { Geometry } from './Geometry';
+import { GeoJSON } from './GeoJSON';
+import { Polygon } from './Polygon';
 
 /**
  * @classdesc
@@ -23,7 +23,7 @@ import Polygon from './Polygon';
  *     id : 'ellipse0'
  * });
  */
-export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
+const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
     includes: [Geometry.Center],
 
     /**
@@ -214,4 +214,5 @@ Ellipse.fromJSON = function (json) {
     return ellipse;
 };
 
+export { Ellipse };
 export default Ellipse;

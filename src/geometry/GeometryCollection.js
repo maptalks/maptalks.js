@@ -2,7 +2,7 @@ import { isArray, isArrayHasData } from 'core/util';
 import { getExternalResources } from 'core/util/resource';
 import Coordinate from 'geo/Coordinate';
 import VectorLayer from 'layer/VectorLayer';
-import Geometry from './Geometry';
+import { Geometry } from './Geometry';
 
 /**
  * @classdesc
@@ -19,7 +19,7 @@ import Geometry from './Geometry';
  * var collection = new GeometryCollection([marker, line, polygon])
  *     .addTo(layer);
  */
-export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.prototype */ {
+const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.prototype */ {
     type: Geometry['TYPE_GEOMETRYCOLLECTION'],
 
     initialize: function (geometries, opts) {
@@ -477,4 +477,5 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
     }
 });
 
+export { GeometryCollection };
 export default GeometryCollection;

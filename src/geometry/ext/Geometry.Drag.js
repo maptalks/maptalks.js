@@ -5,15 +5,8 @@ import Browser from 'core/Browser';
 import Handler from 'core/Handler';
 import DragHandler from 'handler/Drag';
 import VectorLayer from 'layer/VectorLayer';
-import Geometry from 'geometry/Geometry';
 import { ConnectorLine } from 'geometry/ConnectorLine';
 import { Canvas } from 'renderer';
-
-Geometry.mergeOptions({
-    'draggable': false,
-    'dragShadow': true,
-    'dragOnAxis': null
-});
 
 /**
  * Drag handler for geometries.
@@ -22,7 +15,7 @@ Geometry.mergeOptions({
  * @protected
  * @extends {Handler}
  */
-Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
+export const Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
     dragStageLayerId: internalLayerPrefix + '_drag_stage',
 
     START: Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
@@ -290,20 +283,30 @@ Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
 
 });
 
-Geometry.addInitHook('addHandler', 'draggable', Geometry.Drag);
+export function initDrag(Geometry) {
+    Geometry.mergeOptions({
+        'draggable': false,
+        'dragShadow': true,
+        'dragOnAxis': null
+    });
 
-Geometry.include(/** @lends Geometry.prototype */ {
-    /**
-     * Whether the geometry is being dragged.
-     * @reutrn {Boolean}
-     */
-    isDragging: function () {
-        if (this._getParent()) {
-            return this._getParent().isDragging();
+    Geometry.Drag = Drag;
+
+    Geometry.addInitHook('addHandler', 'draggable', Drag);
+
+    Geometry.include(/** @lends Geometry.prototype */ {
+        /**
+         * Whether the geometry is being dragged.
+         * @reutrn {Boolean}
+         */
+        isDragging: function () {
+            if (this._getParent()) {
+                return this._getParent().isDragging();
+            }
+            if (this['draggable']) {
+                return this['draggable'].isDragging();
+            }
+            return false;
         }
-        if (this['draggable']) {
-            return this['draggable'].isDragging();
-        }
-        return false;
-    }
-});
+    });
+}

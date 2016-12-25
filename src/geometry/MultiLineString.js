@@ -1,5 +1,5 @@
 import Geometry from './Geometry';
-import GeometryCollection from './GeometryCollection';
+import { GeometryCollection } from './GeometryCollection';
 import { Polyline } from './LineString';
 
 /**
@@ -37,7 +37,7 @@ import { Polyline } from './LineString';
  *      }
  * ).addTo(layer);
  */
-export const MultiLineString = GeometryCollection.extend(/** @lends MultiLineString.prototype */ {
+const MultiLineString = GeometryCollection.extend(/** @lends MultiLineString.prototype */ {
 
     includes: [Geometry.MultiPoly],
 
@@ -53,4 +53,5 @@ export const MultiLineString = GeometryCollection.extend(/** @lends MultiLineStr
 
 export const MultiPolyline = MultiLineString;
 
+export { MultiLineString };
 export default MultiLineString;

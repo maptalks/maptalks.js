@@ -289,3 +289,5 @@ Map.include(/** @lends Map.prototype */ {
     }
 
 });
+
+export default Control;

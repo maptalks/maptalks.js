@@ -1,9 +1,9 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import Geometry from './Geometry';
-import Polygon from './Polygon';
-import GeoJSON from './GeoJSON';
+import { Geometry } from './Geometry';
+import { Polygon } from './Polygon';
+import { GeoJSON } from './GeoJSON';
 
 /**
  * @classdesc
@@ -21,7 +21,7 @@ import GeoJSON from './GeoJSON';
  *     id : 'circle0'
  * });
  */
-export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
+const Circle = Polygon.extend(/** @lends Circle.prototype */ {
     includes: [Geometry.Center],
 
     /**
@@ -152,4 +152,5 @@ Circle.fromJSON = function (json) {
     return circle;
 };
 
+export { Circle };
 export default Circle;

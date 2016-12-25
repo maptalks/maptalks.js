@@ -9,11 +9,26 @@ import {
     mapArrayRecursively
 } from 'core/util';
 import Coordinate from 'geo/Coordinate';
-import GeometryCollection from './GeometryCollection';
-import Sector from './Sector';
-import Circle from './Circle';
-import Ellipse from './Ellipse';
-import Rectangle from './Rectangle';
+import { Marker } from './Marker';
+import { LineString } from './LineString';
+import { Polygon } from './Polygon';
+import { MultiPoint } from './MultiPoint';
+import { MultiLineString } from './MultiLineString';
+import { MultiPolygon } from './MultiPolygon';
+import { GeometryCollection } from './GeometryCollection';
+import { Sector } from './Sector';
+import { Circle } from './Circle';
+import { Ellipse } from './Ellipse';
+import { Rectangle } from './Rectangle';
+
+const types = {
+    'Marker': Marker.constructor,
+    'LineString': LineString.constructor,
+    'Polygon': Polygon.constructor,
+    'MultiPoint': MultiPoint.constructor,
+    'MultiLineString': MultiLineString.constructor,
+    'MultiPolygon': MultiPolygon.constructor
+};
 
 /**
  * @classdesc
@@ -23,7 +38,7 @@ import Rectangle from './Rectangle';
  *  @memberOf maptalks
  * @name GeoJSON
  */
-export const GeoJSON = {
+const GeoJSON = {
 
     /**
      * Convert one or more GeoJSON objects to a geometry
@@ -165,7 +180,7 @@ export const GeoJSON = {
             return result;
         } else if (indexOfArray(type, ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
             var clazz = (type === 'Point' ? 'Marker' : type);
-            return new maptalks[clazz](json['coordinates'], options);
+            return new types[clazz](json['coordinates'], options);
         } else if (type === 'GeometryCollection') {
             var geometries = json['geometries'];
             if (!isArrayHasData(geometries)) {
@@ -190,4 +205,5 @@ export const GeoJSON = {
     }
 };
 
+export { GeoJSON };
 export default GeoJSON;

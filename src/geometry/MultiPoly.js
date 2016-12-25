@@ -1,12 +1,11 @@
 import { isArray, isArrayHasData } from 'core/util';
-import Geometry from './Geometry';
 import GeoJSON from './GeoJSON';
 
 /**
  * Common methods for MultiPoint, MultiLineString and MultiPolygon
  * @mixin Geometry.MultiPoly
  */
-Geometry.MultiPoly = {
+export const MultiPoly = {
     /**
      * Get coordinates of the collection
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
