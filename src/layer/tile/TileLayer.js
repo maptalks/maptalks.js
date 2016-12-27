@@ -48,11 +48,14 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
         },
 
         'tileSystem' : null,
+
         'debug'      : false,
 
         'cacheTiles' : true,
 
         'keepBuffer' : null,
+
+        'container' : 'back',
 
         'baseLayerRenderer' : (function () { return maptalks.node ? 'canvas' : 'dom'; })()
     },

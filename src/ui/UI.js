@@ -502,14 +502,13 @@ maptalks.ui.UIComponent = maptalks.Class.extend(/** @lends maptalks.ui.UICompone
         }
     },
 
-    onZooming : function (param) {
+    onZooming : function () {
         if (!this.isVisible() || !this.getDOM() || !this.getMap()) {
             return;
         }
         var dom = this.getDOM(),
-            point = this.getMap().coordinateToViewPoint(this._coordinate),
-            matrix = param['matrix']['view'];
-        var p = matrix.applyToPointInstance(point)._add(this.options['dx'], this.options['dy']);
+            point = this.getMap().coordinateToViewPoint(this._coordinate);
+        var p = point._add(this.options['dx'], this.options['dy']);
         if (this.getOffset) {
             var o = this.getOffset();
             if (o) { p._add(o); }

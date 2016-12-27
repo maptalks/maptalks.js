@@ -1,6 +1,5 @@
 maptalks.Map.mergeOptions({
-    'touchZoom': true,
-    'touchZoomOrigin' : 'center'
+    'touchZoom': true
 });
 
 //handler to zoom map by pinching
@@ -22,28 +21,23 @@ maptalks.Map.TouchZoom = maptalks.Handler.extend({
 
         this._startDist = p1.distanceTo(p2);
         this._startZoom = map.getZoom();
-        if (map.options['touchZoomOrigin'] === 'pinch') {
-            this._preOrigin = p1.add(p2)._multi(1 / 2);
-        } else {
-            var size = map.getSize();
-            this._preOrigin = new maptalks.Point(size['width'] / 2, size['height'] / 2);
-        }
 
-
-        map._zooming = true;
-
+        var size = map.getSize();
+        this._Origin = new maptalks.Point(size['width'] / 2, size['height'] / 2);
         maptalks.DomUtil.addDomEvent(document, 'touchmove', this._onTouchMove, this)
             .addDomEvent(document, 'touchend', this._onTouchEnd, this);
-
         maptalks.DomUtil.preventDefault(event);
+
+        map.onZoomStart.apply(map);
         /**
           * touchzoomstart event
           * @event maptalks.Map#touchzoomstart
           * @type {Object}
           * @property {String} type                    - touchzoomstart
           * @property {maptalks.Map} target            - the map fires event
+          * @property {Number} from                    - zoom level zooming from
           */
-        map._fireEvent('touchzoomstart');
+        map._fireEvent('touchzoomstart', {'from' : this._startZoom});
     },
 
     _onTouchMove:function (event) {
@@ -53,33 +47,19 @@ maptalks.Map.TouchZoom = maptalks.Handler.extend({
             p1 = maptalks.DomUtil.getEventContainerPoint(event.touches[0], container),
             p2 = maptalks.DomUtil.getEventContainerPoint(event.touches[1], container),
             scale = p1.distanceTo(p2) / this._startDist;
-        var origin;
-        if (map.options['touchZoomOrigin'] === 'pinch') {
-            origin = p1.add(p2)._multi(1 / 2);
-        } else {
-            var size = map.getSize();
-            origin = new maptalks.Point(size['width'] / 2, size['height'] / 2);
-        }
-        var offset = this._preOrigin.substract(origin);
-        map.offsetPlatform(offset);
-        map._offsetCenterByPixel(offset);
-        this._preOrigin = origin;
+
         this._scale = scale;
-
-        var renderer = map._getRenderer();
-
-        var matrix = map._generateMatrices(origin, scale);
-        renderer.transform(matrix);
+        var res = map._getResolution(this._startZoom) / scale;
+        var zoom = map.getZoomFromRes(res);
+        map.onZooming(zoom, this._Origin);
         /**
           * touchzooming event
           * @event maptalks.Map#touchzooming
           * @type {Object}
           * @property {String} type                    - touchzooming
           * @property {maptalks.Map} target            - the map fires event
-          * @property {Matrix} matrix                  - transforming matrix
           */
-        map._fireEvent('touchzooming', {'matrix': matrix});
-        // maptalks.DomUtil.preventDefault(event);
+        map._fireEvent('touchzooming');
     },
 
     _onTouchEnd:function () {
@@ -99,6 +79,12 @@ maptalks.Map.TouchZoom = maptalks.Handler.extend({
         if (zoom === -1) {
             zoom = map.getZoom();
         }
+
+        if (zoom !== map.getZoom()) {
+            map._zoomAnimation(zoom, this._Origin, this._scale);
+        } else {
+            map.onZoomEnd(zoom);
+        }
         /**
           * touchzoomend event
           * @event maptalks.Map#touchzoomend
@@ -107,12 +93,6 @@ maptalks.Map.TouchZoom = maptalks.Handler.extend({
           * @property {maptalks.Map} target            - the map fires event
           */
         map._fireEvent('touchzoomend');
-        if (zoom === map.getZoom()) {
-            //remove scale transform
-            map._getRenderer().transform(null);
-        } else {
-            map._zoomAnimation(zoom, this._preOrigin, this._scale);
-        }
     }
 });
 

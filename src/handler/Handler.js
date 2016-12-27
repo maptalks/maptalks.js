@@ -8,6 +8,7 @@
  * @protected
  */
 maptalks.Handler = maptalks.Class.extend(/** @lends maptalks.Handler.prototype */{
+
     includes: maptalks.Eventable,
 
     initialize: function (target) {

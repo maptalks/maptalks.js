@@ -956,23 +956,32 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         delete this._painter;
     },
 
+    _paint: function () {
+        if (this._painter) {
+            this._painter.paint();
+        }
+    },
+
+    _repaint:function () {
+        if (this._painter) {
+            this._painter.repaint();
+        }
+    },
+
+    _removeZoomCache: function () {
+        if (this._painter) {
+            this._painter.removeZoomCache();
+        }
+    },
+
     onHide: function () {
         this.closeMenu();
         this.closeInfoWindow();
     },
 
-    onZoomEnd:function () {
-        if (this._painter) {
-            this._painter.onZoomEnd();
-        }
-    },
-
     onShapeChanged:function () {
         this._extent = null;
-        var painter = this._getPainter();
-        if (painter) {
-            painter.repaint();
-        }
+        this._repaint();
         /**
          * shapechange event.
          *
@@ -986,10 +995,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
 
     onPositionChanged:function () {
         this._extent = null;
-        var painter = this._getPainter();
-        if (painter) {
-            painter.repaint();
-        }
+        this._repaint();
         /**
          * positionchange event.
          *
@@ -1002,9 +1008,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     },
 
     onSymbolChanged:function () {
-        var painter = this._getPainter();
-        if (painter) {
-            painter.refreshSymbol();
+        if (this._painter) {
+            this._painter.refreshSymbol();
         }
         /**
          * symbolchange event.
@@ -1029,7 +1034,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
             }
         }
         if (needRepaint) {
-            this.onShapeChanged();
+            this._repaint();
         }
     },
 
@@ -1236,5 +1241,6 @@ maptalks.Geometry.getMarkerPathBase64 = function (symbol) {
     }
     svg.push('</svg>');
     var b64 = 'data:image/svg+xml;base64,' + maptalks.Util.btoa(svg.join(' '));
+    // console.log(b64);
     return b64;
 };

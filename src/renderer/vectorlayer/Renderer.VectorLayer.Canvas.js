@@ -147,21 +147,10 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
         this.completeRender();
     },
 
-    //redraw all the geometries with transform matrix
-    //this may bring low performance if number of geometries is large.
-    transform: function (matrix) {
-        if (maptalks.Browser.mobile || this.layer.getMask()) {
-            return false;
+    drawOnZooming: function () {
+        for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
+            this._geosToDraw[i]._paint();
         }
-        //determin whether this layer should be transformed.
-        //if all the geometries to render are vectors including polygons and linestrings,
-        //disable transforming won't reduce user experience.
-        if (!this._hasPointSymbolizer ||
-            this.getMap()._getRenderer()._getCountOfGeosToDraw() > this.layer.options['thresholdOfTransforming']) {
-            return false;
-        }
-        this._drawGeos(matrix);
-        return true;
     },
 
     isBlank: function () {
@@ -174,12 +163,18 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
      */
     show: function () {
         this.layer.forEach(function (geo) {
-            geo.onZoomEnd();
+            geo._repaint();
         });
         maptalks.renderer.Canvas.prototype.show.apply(this, arguments);
     },
 
-    _drawGeos:function (matrix) {
+    isUpdateWhenZooming: function () {
+        var map = this.getMap();
+        var count = map._getRenderer()._getCountOfGeosToDraw();
+        return (this._hasPointSymbolizer && count > 0 && count <= map.options['pointThresholdOfZoomAnimation']);
+    },
+
+    _drawGeos:function () {
         var map = this.getMap();
         if (!map) {
             return;
@@ -193,9 +188,9 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
             this.fireLoadedEvent();
             return;
         }
-        this._prepareToDraw();
-        var extent2D = this._extent2D,
-            maskExtent2D = this.prepareCanvas();
+
+        var maskExtent2D = this.prepareCanvas();
+        var extent2D = this._extent2D;
         if (maskExtent2D) {
             if (!maskExtent2D.intersects(extent2D)) {
                 this.fireLoadedEvent();
@@ -203,10 +198,11 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
             }
             extent2D = extent2D.intersection(maskExtent2D);
         }
+        this._prepareToDraw();
         this._displayExtent = extent2D;
         this._forEachGeo(this._checkGeo, this);
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
-            this._geosToDraw[i]._getPainter().paint(matrix);
+            this._geosToDraw[i]._paint();
         }
     },
 
@@ -238,11 +234,21 @@ maptalks.renderer.vectorlayer.Canvas = maptalks.renderer.overlaylayer.Canvas.ext
         this.layer.forEach(fn, context);
     },
 
+    onZooming: function () {
+        var map = this.getMap();
+        if (this.layer.isVisible() && (map._pitch || this.isUpdateWhenZooming())) {
+            this._geosToDraw.forEach(function (geo) {
+                geo._removeZoomCache();
+            });
+        }
+        maptalks.renderer.Canvas.prototype.onZooming.apply(this, arguments);
+    },
+
     onZoomEnd: function () {
         delete this._extent2D;
         if (this.layer.isVisible()) {
             this.layer.forEach(function (geo) {
-                geo.onZoomEnd();
+                geo._removeZoomCache();
             });
         }
         maptalks.renderer.Canvas.prototype.onZoomEnd.apply(this, arguments);

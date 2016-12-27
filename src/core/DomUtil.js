@@ -502,7 +502,7 @@ maptalks.DomUtil = {
     },
 
     setTransformMatrix: function (el, m) {
-        el.style[maptalks.DomUtil.TRANSFORM] =  m.toCSS();
+        el.style[maptalks.DomUtil.TRANSFORM] =  'matrix(' + m.join() + ')';
         return this;
     },
 

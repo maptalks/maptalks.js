@@ -26,8 +26,9 @@
 maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.prototype */{
 
     options: {
-        'animation' : false,
-        'fps'    : 70
+        'doubleBuffer'  : false,
+        'animation'     : false,
+        'fps'           : 70
     },
 
     /**
@@ -94,6 +95,10 @@ maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.pro
         return this;
     },
 
+    onCanvasCreate: function () {
+        return this;
+    },
+
     /**
      * The event callback for map's zoomstart event.
      * @param  {Object} param - event parameter
@@ -122,11 +127,23 @@ maptalks.CanvasLayer = maptalks.Layer.extend(/** @lends maptalks.CanvasLayer.pro
      * The event callback for map's resize event.
      * @param  {Object} param - event parameter
      */
-    onResize: function () {}
+    onResize: function () {},
+
+    doubleBuffer: function (ctx) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        return this;
+    }
 
 });
 
 maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend({
+
+    onCanvasCreate: function () {
+        if (this.canvas && this.layer.options['doubleBuffer']) {
+            var map = this.getMap();
+            this.buffer = maptalks.Canvas.createCanvas(this.canvas.width, this.canvas.height, map.CanvasClass);
+        }
+    },
 
     draw: function () {
         if (!this._predrawed) {
@@ -143,13 +160,24 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
         this._drawLayer();
     },
 
-    _drawLayer: function () {
-        this.layer.draw.apply(this.layer, [this.context].concat(this._drawContext));
-        this.completeRender();
-        this._play();
+    getCanvasImage: function () {
+        var canvasImg = maptalks.renderer.Canvas.prototype.getCanvasImage.apply(this, arguments);
+        if (canvasImg && canvasImg.image && this.layer.options['doubleBuffer']) {
+            var canvas = canvasImg.image;
+            if (this.buffer.width !== canvas.width || this.buffer.height !== canvas.height) {
+                this.buffer.width = canvas.width;
+                this.buffer.height = canvas.height;
+            }
+            var bufferContext = this.buffer.getContext('2d');
+            this.layer.doubleBuffer(bufferContext, this.context);
+            bufferContext.drawImage(canvas, 0, 0);
+            canvasImg.image = this.buffer;
+        }
+        return canvasImg;
     },
 
     startAnim: function () {
+        this._animTime = maptalks.Util.now();
         this._paused = false;
         this._play();
     },
@@ -157,10 +185,11 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
     pauseAnim: function () {
         this._pause();
         this._paused = true;
+        delete this._animTime;
     },
 
     isPlaying : function () {
-        return !maptalks.Util.isNil(this._frame);
+        return !maptalks.Util.isNil(this._animFrame);
     },
 
     hide: function () {
@@ -205,14 +234,25 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
         maptalks.renderer.Canvas.prototype.onResize.call(this);
     },
 
-    _pause : function () {
-        if (this._frame) {
-            maptalks.Util.cancelAnimFrame(this._frame);
-            delete this._frame;
+    _drawLayer: function () {
+        var args = [this.context];
+        if (this._animTime) {
+            args.push(maptalks.Util.now() - this._animTime);
         }
-        if (this._animTimeout) {
-            clearTimeout(this._animTimeout);
-            delete this._animTimeout;
+        args.push.apply(args, this._drawContext);
+        this.layer.draw.apply(this.layer, args);
+        this.completeRender();
+        this._play();
+    },
+
+    _pause : function () {
+        if (this._animFrame) {
+            maptalks.Util.cancelAnimFrame(this._animFrame);
+            delete this._animFrame;
+        }
+        if (this._fpsFrame) {
+            clearTimeout(this._fpsFrame);
+            delete this._fpsFrame;
         }
     },
 
@@ -220,19 +260,22 @@ maptalks.CanvasLayer.registerRenderer('canvas', maptalks.renderer.Canvas.extend(
         if (this._paused || !this.layer || !this.layer.options['animation']) {
             return;
         }
+        if (!this._animTime) {
+            this._animTime = maptalks.Util.now();
+        }
         var frameFn = maptalks.Util.bind(this._drawLayer, this);
         this._pause();
         var fps = this.layer.options['fps'];
         if (fps >= 1000 / 16) {
-            this._frame = maptalks.Util.requestAnimFrame(frameFn);
+            this._animFrame = maptalks.Util.requestAnimFrame(frameFn);
         } else {
-            this._animTimeout = setTimeout(function () {
+            this._fpsFrame = setTimeout(function () {
                 if (maptalks.Browser.ie9) {
                     // ie9 doesn't support RAF
                     frameFn();
-                    this._frame = 1;
+                    this._animFrame = 1;
                 } else {
-                    this._frame = maptalks.Util.requestAnimFrame(frameFn);
+                    this._animFrame = maptalks.Util.requestAnimFrame(frameFn);
                 }
             }.bind(this), 1000 / this.layer.options['fps']);
         }

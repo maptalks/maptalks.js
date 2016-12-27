@@ -26,12 +26,12 @@ maptalks.CollectionPainter = maptalks.Class.extend(/** @lends maptalks.Collectio
         }
     },
 
-    paint:function (matrix) {
+    paint:function () {
         if (!this.geometry) {
             return;
         }
         this._eachPainter(function (painter) {
-            painter.paint(matrix);
+            painter.paint();
         });
     },
 
@@ -102,5 +102,12 @@ maptalks.CollectionPainter = maptalks.Class.extend(/** @lends maptalks.Collectio
             return true;
         });
         return result;
+    },
+
+    removeZoomCache: function () {
+        var args = arguments;
+        this._eachPainter(function (painter) {
+            painter.removeZoomCache.apply(painter, args);
+        });
     }
 });

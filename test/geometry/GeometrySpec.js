@@ -356,11 +356,11 @@ function registerGeometryCommonTest(geometry,_context) {
     });
     var spy;
     context(type+':map events listeners',function() {
-        it ('onZoomEnd',function() {
+        it ('removeZoomCache',function() {
             var map = _context.map;
             map.config('zoomAnimation',false);
             setupGeometry();
-            spy = sinon.spy(geometry,'onZoomEnd');
+            spy = sinon.spy(geometry,'_removeZoomCache');
             map.zoomOut();
             expect(spy.called).to.be.ok();
         });

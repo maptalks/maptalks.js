@@ -5,7 +5,7 @@ if (maptalks.Browser.canvas) {
         _getPaintParams: function () {
             var map = this.getMap();
             var pcenter = this._getPrjCoordinates();
-            var pt = map._prjToPoint(pcenter);
+            var pt = map._prjToPoint(pcenter, map.getMaxZoom());
             var size = this._getRenderSize();
             return [pt, size['width'], size['height']];
         },
@@ -20,7 +20,7 @@ if (maptalks.Browser.canvas) {
     maptalks.Rectangle.include({
         _getPaintParams: function () {
             var map = this.getMap();
-            var pt = map._prjToPoint(this._getPrjCoordinates());
+            var pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
             var size = this._getRenderSize();
             return [pt, size];
         },
@@ -30,7 +30,7 @@ if (maptalks.Browser.canvas) {
     maptalks.Sector.include({
         _getPaintParams: function () {
             var map = this.getMap();
-            var pt = map._prjToPoint(this._getPrjCoordinates());
+            var pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
             var size = this._getRenderSize();
             return [pt, size['width'], [this.getStartAngle(), this.getEndAngle()]];
         },
@@ -63,7 +63,7 @@ if (maptalks.Browser.canvas) {
 
         _getPaintParams: function () {
             var prjVertexes = this._getPrjCoordinates();
-            var points = this._getPath2DPoints(prjVertexes);
+            var points = this._getPath2DPoints(prjVertexes, false, this.getMap().getMaxZoom());
             return [points];
         },
 
@@ -132,8 +132,9 @@ if (maptalks.Browser.canvas) {
 
     maptalks.Polygon.include({
         _getPaintParams: function () {
+            var maxZoom = this.getMap().getMaxZoom();
             var prjVertexes = this._getPrjCoordinates(),
-                points = this._getPath2DPoints(prjVertexes),
+                points = this._getPath2DPoints(prjVertexes, false, maxZoom),
                 //splitted by anti-meridian
                 isSplitted = points.length > 0 && maptalks.Util.isArray(points[0]);
             if (isSplitted) {
@@ -144,7 +145,7 @@ if (maptalks.Browser.canvas) {
             if (maptalks.Util.isArrayHasData(prjHoles)) {
                 var hole;
                 for (var i = 0; i < prjHoles.length; i++) {
-                    hole = this._getPath2DPoints(prjHoles[i]);
+                    hole = this._getPath2DPoints(prjHoles[i], false, maxZoom);
                     if (isSplitted) {
                         if (maptalks.Util.isArray(hole)) {
                             points[0].push(hole[0]);

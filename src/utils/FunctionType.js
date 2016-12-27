@@ -168,12 +168,20 @@
         if (!obj) {
             return null;
         }
+        var hit = false;
         if (maptalks.Util.isArray(obj)) {
-            var multResult = [];
+            var multResult = [],
+                loaded;
             for (var i = 0; i < obj.length; i++) {
-                multResult.push(maptalks.Util.loadFunctionTypes(obj[i], argFn));
+                loaded = maptalks.Util.loadFunctionTypes(obj[i], argFn);
+                if (!loaded) {
+                    multResult.push(obj[i]);
+                } else {
+                    multResult.push(loaded);
+                    hit = true;
+                }
             }
-            return multResult;
+            return hit ? multResult : null;
         }
         var result = {},
             props = [], p;
@@ -182,9 +190,11 @@
                 props.push(p);
             }
         }
+
         for (var i = 0, len = props.length; i < len; i++) {
             p = props[i];
             if (maptalks.Util.isFunctionDefinition(obj[p])) {
+                hit = true;
                 result['_' + p] = obj[p];
                 (function (_p) {
                     Object.defineProperty(result, _p, {
@@ -205,7 +215,7 @@
                 result[p] = obj[p];
             }
         }
-        return result;
+        return hit ? result : null;
     };
 
     maptalks.Util.getFunctionTypeResources = function (t) {

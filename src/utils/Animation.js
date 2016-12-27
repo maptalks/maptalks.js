@@ -218,7 +218,7 @@ maptalks.Animation = {
 
     _a:function () {
         if (!this._animationFrameId) {
-            this._animationFrameId = maptalks.Util.requestAnimFrame(maptalks.Util.bind(maptalks.Animation._run, maptalks.Animation));
+            this._animationFrameId = maptalks.Util.requestAnimFrame(maptalks.Animation._frameFn);
         }
     },
 
@@ -230,7 +230,7 @@ maptalks.Animation = {
                 running[i]();
             }
             if (this._frameQueue.length) {
-                this._animationFrameId = maptalks.Util.requestAnimFrame(maptalks.Util.bind(maptalks.Animation._run, maptalks.Animation));
+                this._animationFrameId = maptalks.Util.requestAnimFrame(maptalks.Animation._frameFn);
             } else {
                 delete this._animationFrameId;
             }
@@ -252,6 +252,8 @@ maptalks.Animation = {
         return new maptalks.animation.Player(animation, options, step);
     }
 };
+
+maptalks.Animation._frameFn = maptalks.Util.bind(maptalks.Animation._run, maptalks.Animation);
 
 /**
  * @classdesc

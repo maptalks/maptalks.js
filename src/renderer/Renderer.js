@@ -94,8 +94,8 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         var map = this.getMap(),
             size = this._extent2D.getSize(),
             // point = this._extent2D.getMin(),
-            containerPoint = map._pointToContainerPoint(this._northWest);
-        return {'image':this.canvas, 'layer':this.layer, 'point': containerPoint, 'size':size};
+            containerPoint = map._pointToContainerPoint(this._northWest, this._renderZoom);
+        return {'image':this.canvas, 'layer':this.layer, 'point': containerPoint, 'size':size, 'transform' : this._transform};
     },
 
     isLoaded:function () {
@@ -269,7 +269,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             return maskExtent2D;
         }
         this.context.save();
-        mask._getPainter().paint();
+        mask._paint();
         this.context.clip();
         this._clipped = true;
         /**
@@ -290,7 +290,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     },
 
     requestMapToRender: function () {
-        if (this.getMap()) {
+        if (this.getMap() && !this._suppressMapRender) {
             if (this.context) {
                 /**
                  * renderend event, fired when layer ends rendering.
@@ -309,7 +309,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
 
     fireLoadedEvent: function () {
         this._loaded = true;
-        if (this.layer) {
+        if (this.layer && !this._suppressMapRender) {
             /**
              * layerload event, fired when layer is loaded.
              *
@@ -338,6 +338,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         return {
             '_zoomstart' : this.onZoomStart,
             '_zoomend' : this.onZoomEnd,
+            '_zooming' : this.onZooming,
             '_resize'  : this.onResize,
             '_movestart' : this.onMoveStart,
             '_moving' : this.onMoving,
@@ -345,11 +346,35 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         };
     },
 
-    onZoomStart: function () {
+    isUpdateWhenZooming: function () {
+        return false;
+    },
 
+    onZooming: function (param) {
+        var map = this.getMap();
+        if (!map || !this.layer.isVisible()) {
+            return;
+        }
+        this._suppressMapRender = true;
+        this.prepareRender();
+        if (this.drawOnZooming && this.isUpdateWhenZooming()) {
+            this.prepareCanvas();
+            this.drawOnZooming(param);
+        } else if (!map._pitch) {
+            this._transform = param['matrix']['container'];
+        } else if (map._pitch) {
+            // leave the layer to blank when map is pitching
+            this.prepareCanvas();
+        }
+        this._suppressMapRender = false;
+    },
+
+    onZoomStart: function () {
+        delete this._transform;
     },
 
     onZoomEnd: function () {
+        delete this._transform;
         this._drawOnEvent();
     },
 
@@ -358,7 +383,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     },
 
     onMoving: function () {
-        if (this.getMap()._pitching) {
+        if (this.getMap()._pitch) {
             this._drawOnEvent();
         }
     },
