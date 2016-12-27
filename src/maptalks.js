@@ -30,8 +30,17 @@ maptalks.control = control;
 import { Geometry } from 'geometry';
 maptalks.Geometry = Geometry;
 
+import { Layer } from 'layer/Layer';
+maptalks.Layer = Layer;
+
 import { TileLayer } from 'layer/tile/TileLayer';
 maptalks.TileLayer = TileLayer;
+
+import { OverlayLayer } from 'layer/OverlayLayer';
+maptalks.OverlayLayer = OverlayLayer;
+
+import { VectorLayer } from 'layer/VectorLayer';
+maptalks.VectorLayer = VectorLayer;
 
 import * as renderer from 'renderer';
 maptalks.renderer = renderer;
