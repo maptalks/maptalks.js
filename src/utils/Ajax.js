@@ -1,6 +1,5 @@
-import { isNode } from 'core/util';
+import { isNode, isString, parseJSON } from 'core/util';
 import Browser from 'core/Browser';
-import { isString, parseJSON } from 'core/util';
 
 var Ajax;
 if (isNode) {

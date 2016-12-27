@@ -7,6 +7,7 @@ var minimist = require('minimist'),
     rollup = require('rollup').rollup,
     commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
+    localResolve = require('rollup-plugin-local-resolve'),
     babel = require('rollup-plugin-babel'),
     alias = require('rollup-plugin-alias'),
     concat = require('gulp-concat'),
@@ -55,6 +56,8 @@ gulp.task('scripts', function () {
     return rollup({
         entry: 'src/maptalks.js',
         plugins: [
+            alias(require('./build/alias')),
+            localResolve(),
             nodeResolve({
                 jsnext: true,
                 main: true,
@@ -62,7 +65,6 @@ gulp.task('scripts', function () {
             }),
             commonjs(),
             babel(babelrc()),
-            alias(require('./build/alias'))
         ]
     }).then(function (bundle) {
         return bundle.write({

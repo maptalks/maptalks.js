@@ -18,7 +18,7 @@ import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import * as Measurer from 'geo/measurer';
-import { OverlayLayer } from 'layer';
+import { OverlayLayer } from 'layer/OverlayLayer';
 import { Painter, CollectionPainter } from 'renderer/vectorlayer';
 import { Symbolizer, VectorMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
 import { GeoJSON } from './GeoJSON';

@@ -1,5 +1,5 @@
 import { extend } from 'core/util';
-import Common from './Projection';
+import { Common } from './Projection';
 import Coordinate from '../Coordinate';
 import { WGS84Sphere } from '../measurer';
 
@@ -28,5 +28,3 @@ export const EPSG4326 = extend({}, Common, /** @lends projection.EPSG4326 */ {
         return new Coordinate(p);
     }
 }, WGS84Sphere);
-
-export default EPSG4326;

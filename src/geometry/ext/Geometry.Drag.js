@@ -1,4 +1,4 @@
-import internalLayerPrefix from 'core/Constants';
+import { internalLayerPrefix } from 'core/Constants';
 import { isNil } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Browser from 'core/Browser';

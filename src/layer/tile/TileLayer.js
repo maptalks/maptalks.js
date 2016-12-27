@@ -4,7 +4,8 @@ import Point from 'geo/Point';
 import Size from 'geo/Size';
 import PointExtent from 'geo/PointExtent';
 import Layer from '../Layer';
-import { TileConfig, TileSystem } from './tileinfo';
+import { TileConfig } from './tileinfo/TileConfig';
+import { TileSystem } from './tileinfo/TileSystem';
 
 /**
  * @classdesc

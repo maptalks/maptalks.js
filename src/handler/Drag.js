@@ -141,3 +141,5 @@ export const DragHandler = Handler.extend(/** @lends Handler.Drag.prototype */ {
         this.fire('mouseup', param);
     }
 });
+
+export default DragHandler;

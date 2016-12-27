@@ -1,5 +1,5 @@
 import { extend } from 'core/util';
-import Common from './Projection';
+import { Common } from './Projection';
 import Coordinate from '../Coordinate';
 import { BaiduSphere } from '../measurer';
 
@@ -127,5 +127,3 @@ export const BAIDU = extend({}, Common, /** @lends projection.BAIDU */ {
         return cC;
     }
 });
-
-export default BAIDU;

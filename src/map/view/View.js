@@ -1,7 +1,7 @@
 import { extend, isNil, isString, hasOwn } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import projections from 'geo/projection';
+import * as projections from 'geo/projection';
 import Transformation from 'geo/transformation/Transformation';
 import * as Measurer from 'geo/measurer';
 

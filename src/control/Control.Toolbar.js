@@ -1,5 +1,5 @@
-import { isArrayHasData, isHTML, stringLength } from 'core/util';
-import { on, createEl, addClass, stopPropagation, measureDom } from 'core/util/dom';
+import { isArrayHasData, stringLength } from 'core/util';
+import { on, createEl, addClass, stopPropagation, measureDom, isHTML } from 'core/util/dom';
 import Control from './Control';
 
 /**

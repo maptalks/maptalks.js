@@ -3,7 +3,7 @@ import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Map from 'map';
-import { VectorLayer } from 'layer';
+import { VectorLayer } from 'layer/VectorLayer';
 import { Renderer } from './Renderer.Map';
 
 /**

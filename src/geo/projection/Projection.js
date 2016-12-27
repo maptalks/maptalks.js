@@ -42,5 +42,3 @@ export const Common = {
         return mapArrayRecursively(projCoords, this.unproject, this);
     }
 };
-
-export default Common;

@@ -1,4 +1,4 @@
-import GeometryEditor from '../editor/GeometryEditor';
+import { GeometryEditor } from '../editor/GeometryEditor';
 
 export const Editing = /** @lends Geometry.prototype */ {
     /**

@@ -1,4 +1,4 @@
-import internalLayerPrefix from 'core/Constants';
+import { internalLayerPrefix } from 'core/Constants';
 import {
     now,
     extend,
@@ -23,14 +23,12 @@ import PointExtent from 'geo/PointExtent';
 import Extent from 'geo/Extent';
 import Coordinate from 'geo/Coordinate';
 import Layer from 'layer/Layer';
-import {
-    TileLayer,
-    TileSystem
-} from 'layer/tile';
+import { TileLayer } from 'layer/tile/TileLayer';
+import { TileSystem } from 'layer/tile/tileinfo/TileSystem';
 import Matrix from 'utils/Matrix';
 import { Renderable } from 'renderer';
 import { Canvas as TileLayerRenderer } from 'renderer/tilelayer';
-import View from './view/View';
+import { View } from './view/View';
 
 /**
  *

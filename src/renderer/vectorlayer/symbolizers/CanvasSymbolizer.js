@@ -1,4 +1,5 @@
-import { isNumber, loadFunctionTypes } from 'core/util';
+import { isNumber } from 'core/util';
+import { loadFunctionTypes } from 'utils';
 import { Symbolizer } from './Symbolizer';
 
 /**

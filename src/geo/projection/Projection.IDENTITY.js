@@ -1,5 +1,5 @@
 import { extend } from 'core/util';
-import Common from './Projection';
+import { Common } from './Projection';
 import { Identity } from '../measurer';
 
 /**
@@ -27,5 +27,3 @@ export const IDENTITY = extend({}, Common, /** @lends projection.IDENTITY */ {
         return p.copy();
     }
 }, Identity);
-
-export default IDENTITY;

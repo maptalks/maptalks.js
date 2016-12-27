@@ -1,4 +1,4 @@
-import internalLayerPrefix from 'core/Constants';
+import { internalLayerPrefix } from 'core/Constants';
 import { extend, isNil, isNumber, isArrayHasData, indexOfArray, removeFromArray, setOptions, UID } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/class/index';
@@ -495,13 +495,13 @@ export const GeometryEditor = Class.extend(/** @lends GeometryEditor.prototype *
 
         var blackList = null;
 
-        if (symbolizers.VectorMarkersymbolizers.test(symbol)) {
+        if (symbolizers.VectorMarkerSymbolizer.test(symbol)) {
             if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
                 //as these types of markers' anchor stands on its bottom
                 blackList = [5, 6, 7];
             }
-        } else if (symbolizers.ImageMarkersymbolizers.test(symbol) ||
-            symbolizers.VectorPathMarkersymbolizers.test(symbol)) {
+        } else if (symbolizers.ImageMarkerSymbolizer.test(symbol) ||
+            symbolizers.VectorPathMarkerSymbolizer.test(symbol)) {
             blackList = [5, 6, 7];
         }
 
