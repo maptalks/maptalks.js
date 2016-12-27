@@ -71,7 +71,13 @@ gulp.task('scripts', function () {
             format: 'iife',
             moduleName: 'maptalks',
             banner: banner,
-            dest: 'dist/maptalks.js'
+            dest: 'dist/maptalks.browser.js'
+        }).then(function () {
+            bundle.write({
+                format: 'cjs',
+                banner: banner,
+                dest: 'dist/maptalks.js'
+            });
         });
     });
 });

@@ -15,6 +15,7 @@
     "doc": "gulp doc"
   },
   "main": "dist/maptalks.js",
+  "browser": "dist/maptalks.browser.js",
   "style": "dist/maptalks.css",
   "devDependencies": {
     "babel-core": "^6.20.0",

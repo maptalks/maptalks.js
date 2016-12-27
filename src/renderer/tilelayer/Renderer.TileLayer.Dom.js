@@ -12,8 +12,7 @@ import {
     removeTransform,
     removeDomNode,
     setOpacity,
-    CSSFILTER,
-    TRANSITION
+    StyleNames
 } from 'core/util/dom';
 import Class from 'core/class/index';
 import Browser from 'core/Browser';
@@ -165,7 +164,7 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         setOpacity(tileImage, 0);
 
         if (this.layer.options['cssFilter']) {
-            tileImage.style[CSSFILTER] = this.layer.options['cssFilter'];
+            tileImage.style[StyleNames.CSSFILTER] = this.layer.options['cssFilter'];
         }
 
         tileImage.src = tile['url'];
@@ -199,7 +198,7 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         var map = this.getMap();
 
         if (this._fadeAnimated) {
-            tile['el'].style[TRANSITION] = 'opacity 250ms';
+            tile['el'].style[StyleNames.TRANSITION] = 'opacity 250ms';
         }
 
         setOpacity(tile['el'], 1);

@@ -4,9 +4,7 @@ import {
     on,
     removeDomNode,
     stopPropagation,
-    TRANSFORM,
-    TRANSFORMORIGIN,
-    TRANSITION
+    StyleNames
 } from 'core/util/dom';
 import Class from 'core/class/index';
 import Eventable from 'core/Event';
@@ -167,7 +165,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         dom.style.left = point.x + 'px';
         dom.style.top = point.y + 'px';
 
-        dom.style[TRANSITION] = null;
+        dom.style[StyleNames.TRANSITION] = null;
 
         container.appendChild(dom);
 
@@ -180,9 +178,9 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         if (anim.scale) {
             if (this.getTransformOrigin) {
                 var origin = this.getTransformOrigin();
-                dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
+                dom.style[StyleNames.TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
             }
-            dom.style[TRANSFORM] = 'scale(0)';
+            dom.style[StyleNames.TRANSFORM] = 'scale(0)';
         }
 
         dom.style.display = '';
@@ -200,13 +198,13 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         if (transition) {
             var animFn = function () {
                 if (transition) {
-                    dom.style[TRANSITION] = transition;
+                    dom.style[StyleNames.TRANSITION] = transition;
                 }
                 if (anim.fade) {
                     dom.style.opacity = 1;
                 }
                 if (anim.scale) {
-                    dom.style[TRANSFORM] = 'scale(1)';
+                    dom.style[StyleNames.TRANSFORM] = 'scale(1)';
                 }
             };
             if (this.options['animationDelay']) {
@@ -239,7 +237,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
             dom.style.opacity = 0;
         }
         if (anim.scale) {
-            dom.style[TRANSFORM] = 'scale(0)';
+            dom.style[StyleNames.TRANSFORM] = 'scale(0)';
         }
 
         if (!anim.anim) {

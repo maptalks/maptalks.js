@@ -13,72 +13,67 @@ import { splitWords, trim } from './strings';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 
-/**
- * From Leaflet.DomUtil
- * Goes through the array of style names and returns the first name
- * that is a valid style name for an element. If no such name is found,
- * it returns false. Useful for vendor-prefixed styles like `transform`.
- * @param  {String[]} props
- * @return {Boolean}
- */
-function testProp(props) {
+export const StyleNames = {};
 
-    var style = document.documentElement.style;
+if (!isNode) {
+    /**
+     * From Leaflet.DomUtil
+     * Goes through the array of style names and returns the first name
+     * that is a valid style name for an element. If no such name is found,
+     * it returns false. Useful for vendor-prefixed styles like `transform`.
+     * @param  {String[]} props
+     * @return {Boolean}
+     */
+    const testProp = (props) => {
 
-    for (var i = 0; i < props.length; i++) {
-        if (props[i] in style) {
-            return props[i];
+        var style = document.documentElement.style;
+
+        for (var i = 0; i < props.length; i++) {
+            if (props[i] in style) {
+                return props[i];
+            }
         }
-    }
-    return false;
+        return false;
+    };
+
+    // prefix style property names
+
+    /**
+     * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
+     * @property {String} TRANSFORM
+     * @memberOf DomUtil
+     * @type {String}
+     */
+    StyleNames.TRANSFORM = testProp(
+        ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+
+    /**
+     * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
+     * @property {String} TRANSFORMORIGIN
+     * @memberOf DomUtil
+     * @type {String}
+     */
+    StyleNames.TRANSFORMORIGIN = testProp(
+        ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']);
+
+    /**
+     * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
+     * @property {String} TRANSITION
+     * @memberOf DomUtil
+     * @type {String}
+     */
+    StyleNames.TRANSITION = testProp(
+        ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
+
+    /**
+     * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
+     * @property {String} FILTER
+     * @memberOf DomUtil
+     * @type {String}
+     */
+    StyleNames.CSSFILTER = testProp(
+        ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']);
 }
-
-// (function () {
-//     if (isNode) {
-//         return;
-//     }
-
-// Borrowed from Leaflet.DomUtil
-
-// prefix style property names
-
-/**
- * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
- * @property {String} TRANSFORM
- * @memberOf DomUtil
- * @type {String}
- */
-export const TRANSFORM = testProp(
-    ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
-
-/**
- * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
- * @property {String} TRANSFORMORIGIN
- * @memberOf DomUtil
- * @type {String}
- */
-export const TRANSFORMORIGIN = testProp(
-    ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']);
-
-/**
- * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
- * @property {String} TRANSITION
- * @memberOf DomUtil
- * @type {String}
- */
-export const TRANSITION = testProp(
-    ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
-
-/**
- * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
- * @property {String} FILTER
- * @memberOf DomUtil
- * @type {String}
- */
-export const CSSFILTER = testProp(
-    ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']);
-
-// })();
 
 /**
  * Create a html element.
