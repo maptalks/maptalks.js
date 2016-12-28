@@ -2,6 +2,7 @@ import { extend, isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, reque
 import Class from 'core/class/index';
 import Browser from 'core/Browser';
 import Promise from 'utils/Promise';
+import { default as Canvas2D } from 'utils/Canvas';
 import Point from 'geo/Point';
 import TileLayer from 'layer/tile/TileLayer';
 
@@ -60,25 +61,6 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         }
     },
 
-    _tryToDraw: function () {
-        this._clearTimeout();
-        if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
-            this.completeRender();
-            return;
-        }
-        var me = this,
-            args = arguments;
-        if (this.layer.options['drawImmediate']) {
-            this.draw.apply(this, args);
-        } else {
-            this._animReqId = requestAnimFrame(function () {
-                if (me.layer) {
-                    me.draw.apply(me, args);
-                }
-            });
-        }
-    },
-
     remove: function () {
         this._clearTimeout();
         if (this.onRemove) {
@@ -119,7 +101,8 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             'image': this.canvas,
             'layer': this.layer,
             'point': containerPoint,
-            'size': size
+            'size': size,
+            'transform': this._transform
         };
     },
 
@@ -216,79 +199,6 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         return Promise.all(promises);
     },
 
-    _promiseResource: function (url) {
-        var me = this,
-            resources = this.resources,
-            crossOrigin = this.layer.options['crossOrigin'];
-        return function (resolve) {
-            if (resources.isResourceLoaded(url, true)) {
-                resolve(url);
-                return;
-            }
-            var img = new Image();
-            if (crossOrigin) {
-                img['crossOrigin'] = crossOrigin;
-            }
-            if (isSVG(url[0]) && !isNode) {
-                //amplify the svg image to reduce loading.
-                if (url[1]) {
-                    url[1] *= 2;
-                }
-                if (url[2]) {
-                    url[2] *= 2;
-                }
-            }
-            img.onload = function () {
-                me._cacheResource(url, img);
-                resolve(url);
-            };
-            img.onabort = function (err) {
-                if (console) {
-                    console.warn('image loading aborted: ' + url[0]);
-                }
-                if (err) {
-                    if (console) {
-                        console.warn(err);
-                    }
-                }
-                resolve(url);
-            };
-            img.onerror = function (err) {
-                // if (console) { console.warn('image loading failed: ' + url[0]); }
-                if (err && !Browser.phantomjs) {
-                    if (console) {
-                        console.warn(err);
-                    }
-                }
-                resources.markErrorResource(url);
-                resolve(url);
-            };
-            loadImage(img, url);
-        };
-
-    },
-
-    _cacheResource: function (url, img) {
-        if (!this.layer || !this.resources) {
-            return;
-        }
-        var w = url[1],
-            h = url[2];
-        if (this.layer.options['cacheSvgOnCanvas'] && isSVG(url[0]) === 1 && (Browser.edge || Browser.ie)) {
-            //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
-            if (isNil(w)) {
-                w = img.width || this.layer.options['defaultIconSize'][0];
-            }
-            if (isNil(h)) {
-                h = img.height || this.layer.options['defaultIconSize'][1];
-            }
-            var canvas = Canvas.createCanvas(w, h);
-            Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
-            img = canvas;
-        }
-        this.resources.addResource(url, img);
-    },
-
     prepareRender: function () {
         var map = this.getMap();
         this._renderZoom = map.getZoom();
@@ -374,7 +284,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             return maskExtent2D;
         }
         this.context.save();
-        mask._getPainter().paint();
+        mask._paint();
         this.context.clip();
         this._clipped = true;
         /**
@@ -397,7 +307,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
     },
 
     requestMapToRender: function () {
-        if (this.getMap()) {
+        if (this.getMap() && !this._suppressMapRender) {
             if (this.context) {
                 /**
                  * renderend event, fired when layer ends rendering.
@@ -418,7 +328,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
 
     fireLoadedEvent: function () {
         this._loaded = true;
-        if (this.layer) {
+        if (this.layer && !this._suppressMapRender) {
             /**
              * layerload event, fired when layer is loaded.
              *
@@ -445,20 +355,45 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
 
     getEvents: function () {
         return {
-            '_zoomstart': this.onZoomStart,
-            '_zoomend': this.onZoomEnd,
-            '_resize': this.onResize,
-            '_movestart': this.onMoveStart,
-            '_moving': this.onMoving,
-            '_moveend': this.onMoveEnd
+            '_zoomstart' : this.onZoomStart,
+            '_zoomend' : this.onZoomEnd,
+            '_zooming' : this.onZooming,
+            '_resize'  : this.onResize,
+            '_movestart' : this.onMoveStart,
+            '_moving' : this.onMoving,
+            '_moveend' : this.onMoveEnd
         };
     },
 
-    onZoomStart: function () {
+    isUpdateWhenZooming: function () {
+        return false;
+    },
 
+    onZooming: function (param) {
+        var map = this.getMap();
+        if (!map || !this.layer.isVisible()) {
+            return;
+        }
+        this._suppressMapRender = true;
+        this.prepareRender();
+        if (this.drawOnZooming && this.isUpdateWhenZooming()) {
+            this.prepareCanvas();
+            this.drawOnZooming(param);
+        } else if (!map._pitch) {
+            this._transform = param['matrix']['container'];
+        } else if (map._pitch) {
+            // leave the layer to blank when map is pitching
+            this.prepareCanvas();
+        }
+        this._suppressMapRender = false;
+    },
+
+    onZoomStart: function () {
+        delete this._transform;
     },
 
     onZoomEnd: function () {
+        delete this._transform;
         this._drawOnEvent();
     },
 
@@ -467,7 +402,9 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
     },
 
     onMoving: function () {
-
+        if (this.getMap()._pitch) {
+            this._drawOnEvent();
+        }
     },
 
     onMoveEnd: function () {
@@ -475,21 +412,109 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
     },
 
     onResize: function () {
+        delete this._extent2D;
         this.resizeCanvas();
         this._drawOnEvent();
     },
 
+    _tryToDraw:function () {
+        this._clearTimeout();
+        if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
+            this.completeRender();
+            return;
+        }
+        var me = this, args = arguments;
+        if (this.layer.options['drawImmediate']) {
+            this._painted = true;
+            this.draw.apply(this, args);
+        } else {
+            this._currentFrameId = requestAnimFrame(function () {
+                if (me.layer) {
+                    me._painted = true;
+                    me.draw.apply(me, args);
+                }
+            });
+        }
+    },
+
+    _promiseResource: function (url) {
+        var me = this, resources = this.resources,
+            crossOrigin = this.layer.options['crossOrigin'];
+        return function (resolve) {
+            if (resources.isResourceLoaded(url, true)) {
+                resolve(url);
+                return;
+            }
+            var img = new Image();
+            if (crossOrigin) {
+                img['crossOrigin'] = crossOrigin;
+            }
+            if (isSVG(url[0]) && !isNode) {
+                //amplify the svg image to reduce loading.
+                if (url[1]) { url[1] *= 2; }
+                if (url[2]) { url[2] *= 2; }
+            }
+            img.onload = function () {
+                me._cacheResource(url, img);
+                resolve(url);
+            };
+            img.onabort = function (err) {
+                if (console) { console.warn('image loading aborted: ' + url[0]); }
+                if (err) {
+                    if (console) { console.warn(err); }
+                }
+                resolve(url);
+            };
+            img.onerror = function (err) {
+                // if (console) { console.warn('image loading failed: ' + url[0]); }
+                if (err && !Browser.phantomjs) {
+                    if (console) { console.warn(err); }
+                }
+                resources.markErrorResource(url);
+                resolve(url);
+            };
+            loadImage(img,  url);
+        };
+
+    },
+
+    _cacheResource: function (url, img) {
+        if (!this.layer || !this.resources) {
+            return;
+        }
+        var w = url[1], h = url[2];
+        if (this.layer.options['cacheSvgOnCanvas'] && isSVG(url[0]) === 1 && (Browser.edge || Browser.ie)) {
+            //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
+            if (isNil(w)) {
+                w = img.width || this.layer.options['defaultIconSize'][0];
+            }
+            if (isNil(h)) {
+                h = img.height || this.layer.options['defaultIconSize'][1];
+            }
+            var canvas = Canvas2D.createCanvas(w, h);
+            Canvas2D.image(canvas.getContext('2d'), img, 0, 0, w, h);
+            img = canvas;
+        }
+        this.resources.addResource(url, img);
+    },
+
     _drawOnEvent: function () {
-        this.prepareRender();
-        if (this.layer.isVisible()) {
-            this.draw();
+        if (!this._painted) {
+            this.render(true);
+        } else {
+            //prepareRender is called in render not in draw.
+            //Thus prepareRender needs to be called here
+            this.prepareRender();
+            if (this.layer.isVisible()) {
+                this.draw();
+            }
         }
     },
 
     _clearTimeout: function () {
-        if (this._animReqId) {
-            //clearTimeout(this._animReqId);
-            cancelAnimFrame(this._animReqId);
+        if (this._currentFrameId) {
+            //clearTimeout(this._currentFrameId);
+            cancelAnimFrame(this._currentFrameId);
         }
     }
 });

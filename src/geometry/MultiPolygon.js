@@ -48,7 +48,7 @@ import { Polygon } from './Polygon';
  *           draggable:true
  * }).addTo(layer);
  */
-const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.prototype */ {
+export const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.prototype */ {
     includes: [Geometry.MultiPoly],
     GeometryType: Polygon,
 
@@ -59,6 +59,3 @@ const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.prototype
         this._initData(data);
     }
 });
-
-export { MultiPolygon };
-export default MultiPolygon;

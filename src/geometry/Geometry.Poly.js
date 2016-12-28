@@ -11,11 +11,13 @@ import { simplify } from 'geo/utils';
 export const Poly = {
     /**
      * Transform projected coordinates to view points
-     * @param  {Coordinate[]} prjCoords  - projected coordinates
+     * @param  {Coordinate[]} prjCoords           - projected coordinates
+     * @param  {Boolean} disableSimplify          - whether to disable simplify\
+     * @param  {Number} zoom                      - 2d points' zoom level
      * @returns {Point[]}
      * @private
      */
-    _getPath2DPoints: function (prjCoords, disableSimplify) {
+    _getPath2DPoints: function (prjCoords, disableSimplify, zoom) {
         var result = [];
         if (!isArrayHasData(prjCoords)) {
             return result;
@@ -31,6 +33,9 @@ export const Poly = {
         if (isSimplify && !isMulti) {
             prjCoords = simplify(prjCoords, tolerance, false);
         }
+        if (isNil(zoom)) {
+            zoom = map.getZoom();
+        }
         var i, len, p, pre, current, dx, dy, my,
             part1 = [],
             part2 = [],
@@ -38,7 +43,7 @@ export const Poly = {
         for (i = 0, len = prjCoords.length; i < len; i++) {
             p = prjCoords[i];
             if (isMulti) {
-                part.push(this._getPath2DPoints(p));
+                part.push(this._getPath2DPoints(p, disableSimplify, zoom));
                 continue;
             }
             if (isNil(p) || (isClip && !fullExtent.contains(p))) {
@@ -60,22 +65,19 @@ export const Poly = {
                         } else if (anti === 'split') {
                             if (dx > 0) {
                                 my = pre.y + dy * (pre.x - (-180)) / (360 - dx) * (pre.y > current.y ? -1 : 1);
-                                part.push(map.coordinateToPoint(new Coordinate(-180, my)));
                                 part = part === part1 ? part2 : part1;
-                                part.push(map.coordinateToPoint(new Coordinate(180, my)));
-
+                                part.push(map.coordinateToPoint(new Coordinate(180, my), zoom));
                             } else {
                                 my = pre.y + dy * (180 - pre.x) / (360 + dx) * (pre.y > current.y ? 1 : -1);
-                                part.push(map.coordinateToPoint(new Coordinate(180, my)));
+                                part.push(map.coordinateToPoint(new Coordinate(180, my), zoom));
                                 part = part === part1 ? part2 : part1;
-                                part.push(map.coordinateToPoint(new Coordinate(-180, my)));
-
+                                part.push(map.coordinateToPoint(new Coordinate(-180, my), zoom));
                             }
                         }
                     }
                 }
             }
-            part.push(map._prjToPoint(p));
+            part.push(map._prjToPoint(p, zoom));
         }
         if (part2.length > 0) {
             result = [part1, part2];
@@ -209,7 +211,7 @@ export const Poly = {
     },
 
     _get2DLength: function () {
-        var vertexes = this._getPath2DPoints(this._getPrjCoordinates());
+        var vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true);
         var len = 0;
         for (var i = 1, l = vertexes.length; i < l; i++) {
             len += vertexes[i].distanceTo(vertexes[i - 1]);

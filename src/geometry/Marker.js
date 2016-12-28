@@ -3,7 +3,7 @@ import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import { Geometry } from './Geometry';
 import { Painter } from 'renderer/vectorlayer/Painter';
-import * as symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 
 /**
  * @classdesc
@@ -27,7 +27,7 @@ import * as symbolizers from 'renderer/vectorlayer/symbolizers';
  *     }
  * });
  */
-const Marker = Geometry.extend(/** @lends Marker.prototype */ {
+export const Marker = Geometry.extend(/** @lends Marker.prototype */ {
     includes: [Geometry.Center],
 
     type: Geometry['TYPE_POINT'],
@@ -64,8 +64,8 @@ const Marker = Geometry.extend(/** @lends Marker.prototype */ {
         if (isArray(symbol)) {
             return false;
         }
-        return symbolizers.VectorMarkerSymbolizer.test(symbol) || symbolizers.VectorPathMarkerSymbolizer.test(symbol) ||
-            symbolizers.ImageMarkerSymbolizer.test(symbol);
+        return Symbolizers.VectorMarkerSymbolizer.test(symbol) || Symbolizers.VectorPathMarkerSymbolizer.test(symbol) ||
+            Symbolizers.ImageMarkerSymbolizer.test(symbol);
     },
 
     _containsPoint: function (point) {
@@ -96,6 +96,3 @@ const Marker = Geometry.extend(/** @lends Marker.prototype */ {
         return new Painter(this).getSprite(resources);
     }
 });
-
-export { Marker };
-export default Marker;

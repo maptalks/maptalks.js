@@ -19,7 +19,7 @@ import { Geometry } from './Geometry';
  * var collection = new GeometryCollection([marker, line, polygon])
  *     .addTo(layer);
  */
-const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.prototype */ {
+export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.prototype */ {
     type: Geometry['TYPE_GEOMETRYCOLLECTION'],
 
     initialize: function (geometries, opts) {
@@ -476,6 +476,3 @@ const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.prototy
         return true;
     }
 });
-
-export { GeometryCollection };
-export default GeometryCollection;

@@ -37,7 +37,7 @@ import { GeoJSON } from './GeoJSON';
  * @mixes Handlerable
  * @mixes ui.Menu.Mixin
  */
-const Geometry = Class.extend(/** @lends Geometry.prototype */ {
+export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
     includes: [Eventable, Handlerable],
 
     /** @lends Geometry */
@@ -996,23 +996,32 @@ const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         delete this._painter;
     },
 
+    _paint: function () {
+        if (this._painter) {
+            this._painter.paint();
+        }
+    },
+
+    _repaint:function () {
+        if (this._painter) {
+            this._painter.repaint();
+        }
+    },
+
+    _removeZoomCache: function () {
+        if (this._painter) {
+            this._painter.removeZoomCache();
+        }
+    },
+
     onHide: function () {
         this.closeMenu();
         this.closeInfoWindow();
     },
 
-    onZoomEnd: function () {
-        if (this._painter) {
-            this._painter.onZoomEnd();
-        }
-    },
-
     onShapeChanged: function () {
         this._extent = null;
-        var painter = this._getPainter();
-        if (painter) {
-            painter.repaint();
-        }
+        this._repaint();
         /**
          * shapechange event.
          *
@@ -1026,10 +1035,7 @@ const Geometry = Class.extend(/** @lends Geometry.prototype */ {
 
     onPositionChanged: function () {
         this._extent = null;
-        var painter = this._getPainter();
-        if (painter) {
-            painter.repaint();
-        }
+        this._repaint();
         /**
          * positionchange event.
          *
@@ -1042,9 +1048,8 @@ const Geometry = Class.extend(/** @lends Geometry.prototype */ {
     },
 
     onSymbolChanged: function () {
-        var painter = this._getPainter();
-        if (painter) {
-            painter.refreshSymbol();
+        if (this._painter) {
+            this._painter.refreshSymbol();
         }
         /**
          * symbolchange event.
@@ -1069,7 +1074,7 @@ const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             }
         }
         if (needRepaint) {
-            this.onShapeChanged();
+            this._repaint();
         }
     },
 
@@ -1299,6 +1304,3 @@ initEdit(Geometry);
 initEvent(Geometry);
 initInfoWindow(Geometry);
 initMenu(Geometry);
-
-export { Geometry };
-export default Geometry;

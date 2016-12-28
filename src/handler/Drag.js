@@ -129,7 +129,7 @@ export const DragHandler = Handler.extend(/** @lends Handler.Drag.prototype */ {
         if (isNumber(actual.clientX)) {
             param['mousePos'] = new Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
         }
-        if (this.moved /* && this.moving*/ ) {
+        if (this.moved/* && this.moving*/) {
             /**
              * 触发dragend事件
              * @event dragend

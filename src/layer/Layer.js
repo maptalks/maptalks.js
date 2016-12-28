@@ -3,7 +3,7 @@ import { extend, isNil, isNumber, setOptions } from 'core/util';
 import Eventable from 'core/Event';
 import { Marker, Polygon } from 'geometry';
 import { Renderable } from 'renderer';
-import * as symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 
 /**
  * @classdesc
@@ -286,7 +286,7 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
      * @returns {Layer} this
      */
     setMask: function (mask) {
-        if (!((mask instanceof Marker && symbolizers.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
+        if (!((mask instanceof Marker && Symbolizers.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
                 mask instanceof Polygon)) {
             throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }

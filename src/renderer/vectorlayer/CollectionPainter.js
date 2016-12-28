@@ -29,12 +29,12 @@ export const CollectionPainter = Class.extend(/** @lends CollectionPainter.proto
         }
     },
 
-    paint: function (matrix) {
+    paint: function () {
         if (!this.geometry) {
             return;
         }
         this._eachPainter(function (painter) {
-            painter.paint(matrix);
+            painter.paint();
         });
     },
 
@@ -105,5 +105,12 @@ export const CollectionPainter = Class.extend(/** @lends CollectionPainter.proto
             return true;
         });
         return result;
+    },
+
+    removeZoomCache: function () {
+        var args = arguments;
+        this._eachPainter(function (painter) {
+            painter.removeZoomCache.apply(painter, args);
+        });
     }
 });

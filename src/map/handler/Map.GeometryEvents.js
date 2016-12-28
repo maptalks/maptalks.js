@@ -1,6 +1,7 @@
 import { now, isArrayHasData, requestAnimFrame, cancelAnimFrame, bind } from 'core/util';
 import { on, off, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
 import Handler from 'core/Handler';
+import { Geometry } from 'geometry/Geometry';
 import VectorLayer from 'layer/VectorLayer';
 import Map from '../Map';
 
@@ -36,7 +37,7 @@ Map.GeometryEvents = Handler.extend({
             }
             return false;
         });
-        if (map._isBusy() || !vectorLayers || vectorLayers.length === 0) {
+        if (map._isBusy() || map._moving || !vectorLayers || vectorLayers.length === 0) {
             return;
         }
         var eventType = domEvent.type;
@@ -113,6 +114,9 @@ Map.GeometryEvents = Handler.extend({
                 var geoMap = {};
                 if (isArrayHasData(geometries)) {
                     for (i = geometries.length - 1; i >= 0; i--) {
+                        if (!(geometries[i] instanceof Geometry)) {
+                            continue;
+                        }
                         geoMap[geometries[i]._getInternalId()] = geometries[i];
                         geometries[i]._onEvent(domEvent);
                         //the first geometry is on the top, so ignore the latter cursors.
@@ -127,6 +131,9 @@ Map.GeometryEvents = Handler.extend({
                 if (isArrayHasData(oldTargets)) {
                     for (i = oldTargets.length - 1; i >= 0; i--) {
                         var oldTarget = oldTargets[i];
+                        if (!(oldTarget instanceof Geometry)) {
+                            continue;
+                        }
                         var oldTargetId = oldTargets[i]._getInternalId();
                         if (geometries && geometries.length > 0) {
                             var mouseout = true;
@@ -146,10 +153,14 @@ Map.GeometryEvents = Handler.extend({
                 }
 
             } else {
-                if (!geometries || geometries.length === 0) {
-                    return;
+                if (!geometries || geometries.length === 0) { return; }
+                for (i = geometries.length - 1; i >= 0; i--) {
+                    if (!(geometries[i] instanceof Geometry)) {
+                        continue;
+                    }
+                    propagation = geometries[i]._onEvent(domEvent);
+                    break;
                 }
-                propagation = geometries[geometries.length - 1]._onEvent(domEvent);
             }
             if (propagation === false) {
                 stopPropagation(domEvent);

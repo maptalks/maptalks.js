@@ -66,8 +66,8 @@ maptalks.renderer.overlaylayer = overlaylayerRenderer;
 import * as vectorlayerRenderer from 'renderer/vectorlayer';
 maptalks.renderer.vectorlayer = vectorlayerRenderer;
 
-import * as symbolizers from 'renderer/vectorlayer/symbolizers';
-maptalks.symbolizers = symbolizers;
+import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
+maptalks.symbolizers = Symbolizers;
 
 import * as animation from 'utils/Animation';
 maptalks.animation = animation;

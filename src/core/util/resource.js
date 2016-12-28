@@ -3,7 +3,7 @@ import { isArray } from './common';
 import { isURL, extractCssUrl } from './util';
 import * as utils from 'utils';
 import { Symbolizer } from 'renderer/vectorlayer/symbolizers';
-import Geometry from 'geometry/Geometry';
+import { Geometry } from 'geometry/Geometry';
 
 /**
  * Get external resources from the given symbol

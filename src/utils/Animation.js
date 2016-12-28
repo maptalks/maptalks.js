@@ -330,7 +330,7 @@ export const Animation = {
 
     _a: function () {
         if (!this._animationFrameId) {
-            this._animationFrameId = requestAnimFrame(bind(Animation._run, Animation));
+            this._animationFrameId = requestAnimFrame(Animation._frameFn);
         }
     },
 
@@ -342,7 +342,7 @@ export const Animation = {
                 running[i]();
             }
             if (this._frameQueue.length) {
-                this._animationFrameId = requestAnimFrame(bind(Animation._run, Animation));
+                this._animationFrameId = requestAnimFrame(Animation._frameFn);
             } else {
                 delete this._animationFrameId;
             }
@@ -364,6 +364,8 @@ export const Animation = {
         return new Player(animation, options, step);
     }
 };
+
+Animation._frameFn = bind(Animation._run, Animation);
 
 extend(Player.prototype, /** @lends Player.prototype */ {
     _prepare: function () {

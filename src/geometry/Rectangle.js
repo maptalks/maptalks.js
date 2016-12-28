@@ -22,7 +22,7 @@ import { GeoJSON } from './GeoJSON';
  *     id : 'rectangle0'
  * });
  */
-const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
+export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
 
     initialize: function (coordinates, width, height, opts) {
         this._coordinates = new Coordinate(coordinates);
@@ -238,6 +238,3 @@ Rectangle.fromJSON = function (json) {
     rect.setProperties(feature['properties']);
     return rect;
 };
-
-export { Rectangle };
-export default Rectangle;

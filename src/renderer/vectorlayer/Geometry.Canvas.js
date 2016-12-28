@@ -15,7 +15,7 @@ if (Browser.canvas) {
         _getPaintParams: function () {
             var map = this.getMap();
             var pcenter = this._getPrjCoordinates();
-            var pt = map._prjToPoint(pcenter);
+            var pt = map._prjToPoint(pcenter, map.getMaxZoom());
             var size = this._getRenderSize();
             return [pt, size['width'], size['height']];
         },
@@ -30,7 +30,7 @@ if (Browser.canvas) {
     Rectangle.include({
         _getPaintParams: function () {
             var map = this.getMap();
-            var pt = map._prjToPoint(this._getPrjCoordinates());
+            var pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
             var size = this._getRenderSize();
             return [pt, size];
         },
@@ -40,7 +40,7 @@ if (Browser.canvas) {
     Sector.include({
         _getPaintParams: function () {
             var map = this.getMap();
-            var pt = map._prjToPoint(this._getPrjCoordinates());
+            var pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
             var size = this._getRenderSize();
             return [pt, size['width'],
                 [this.getStartAngle(), this.getEndAngle()]
@@ -75,7 +75,7 @@ if (Browser.canvas) {
 
         _getPaintParams: function () {
             var prjVertexes = this._getPrjCoordinates();
-            var points = this._getPath2DPoints(prjVertexes);
+            var points = this._getPath2DPoints(prjVertexes, false, this.getMap().getMaxZoom());
             return [points];
         },
 
@@ -144,8 +144,9 @@ if (Browser.canvas) {
 
     Polygon.include({
         _getPaintParams: function () {
+            var maxZoom = this.getMap().getMaxZoom();
             var prjVertexes = this._getPrjCoordinates(),
-                points = this._getPath2DPoints(prjVertexes),
+                points = this._getPath2DPoints(prjVertexes, false, maxZoom),
                 //splitted by anti-meridian
                 isSplitted = points.length > 0 && isArray(points[0]);
             if (isSplitted) {
@@ -159,7 +160,7 @@ if (Browser.canvas) {
             if (isArrayHasData(prjHoles)) {
                 var hole;
                 for (var i = 0; i < prjHoles.length; i++) {
-                    hole = this._getPath2DPoints(prjHoles[i]);
+                    hole = this._getPath2DPoints(prjHoles[i], false, maxZoom);
                     if (isSplitted) {
                         if (isArray(hole)) {
                             points[0].push(hole[0]);

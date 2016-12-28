@@ -1,3 +1,4 @@
+import { internalLayerPrefix } from 'core/Constants';
 import { extend, isString, isArray, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Map from './Map';

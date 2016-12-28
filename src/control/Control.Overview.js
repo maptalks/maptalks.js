@@ -1,6 +1,6 @@
 import { extend } from 'core/util';
 import { createEl } from 'core/util/dom';
-import Polygon from 'geometry/Polygon';
+import { Polygon } from 'geometry/Polygon';
 import Layer from 'layer/Layer';
 import VectorLayer from 'layer/VectorLayer';
 import Map from 'map';

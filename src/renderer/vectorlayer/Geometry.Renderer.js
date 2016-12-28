@@ -4,9 +4,7 @@ import { Marker, Ellipse, Circle, Sector, Rectangle, LineString as Polyline, Pol
 // 有中心点的图形的共同方法
 const Center = {
     _getRenderPoints: function () {
-        return [
-            [this._getCenter2DPoint()], null
-        ];
+        return [[this._getCenter2DPoint(this.getMap().getMaxZoom())], null];
     }
 };
 
@@ -20,7 +18,7 @@ Ellipse.include(Center, {
         var w = this.getWidth(),
             h = this.getHeight();
         var map = this.getMap();
-        return map.distanceToPixel(w / 2, h / 2);
+        return map.distanceToPixel(w / 2, h / 2, map.getMaxZoom());
     }
 });
 
@@ -28,7 +26,7 @@ Circle.include(Center, {
     _getRenderSize: function () {
         var radius = this.getRadius();
         var map = this.getMap();
-        return map.distanceToPixel(radius, radius);
+        return map.distanceToPixel(radius, radius, map.getMaxZoom());
     }
 });
 //----------------------------------------------------
@@ -36,7 +34,7 @@ Sector.include(Center, {
     _getRenderSize: function () {
         var radius = this.getRadius();
         var map = this.getMap();
-        return map.distanceToPixel(radius, radius);
+        return map.distanceToPixel(radius, radius, map.getMaxZoom());
     }
 });
 //----------------------------------------------------
@@ -61,7 +59,7 @@ Rectangle.include({
         var w = this.getWidth(),
             h = this.getHeight();
         var map = this.getMap();
-        return map.distanceToPixel(w, h);
+        return map.distanceToPixel(w, h, map.getMaxZoom());
     }
 });
 
@@ -69,9 +67,10 @@ Rectangle.include({
 const Poly = {
     _getRenderPoints: function (placement) {
         var map = this.getMap();
+        var maxZoom = map.getMaxZoom();
         var points, rotations = null;
         if (placement === 'vertex') {
-            points = this._getPath2DPoints(this._getPrjCoordinates());
+            points = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom);
             if (points && points.length > 0 && isArray(points[0])) {
                 //anti-meridian
                 points = points[0].concat(points[1]);
@@ -79,8 +78,8 @@ const Poly = {
         } else if (placement === 'line') {
             points = [];
             rotations = [];
-            var vertice = this._getPath2DPoints(this._getPrjCoordinates()),
-                isSplitted = vertice.length > 0 && isArray(vertice[0]);
+            var vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom),
+                isSplitted =  vertice.length > 0 && isArray(vertice[0]);
             var i, len;
             if (isSplitted) {
                 //anti-meridian splitted
@@ -107,13 +106,13 @@ const Poly = {
 
         } else if (placement === 'vertex-first') {
             var first = this._getPrjCoordinates()[0];
-            points = [map._prjToPoint(first)];
+            points = [map._prjToPoint(first, maxZoom)];
         } else if (placement === 'vertex-last') {
             var last = this._getPrjCoordinates()[this._getPrjCoordinates().length - 1];
-            points = [map._prjToPoint(last)];
+            points = [map._prjToPoint(last, maxZoom)];
         } else {
             var pcenter = this._getProjection().project(this.getCenter());
-            points = [map._prjToPoint(pcenter)];
+            points = [map._prjToPoint(pcenter, maxZoom)];
         }
         return [points, rotations];
     }

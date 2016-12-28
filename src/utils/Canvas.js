@@ -14,9 +14,9 @@ import {
 import { isGradient } from 'core/util/style';
 import { createEl } from 'core/util/dom';
 import Browser from 'core/Browser';
-import * as symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 
-const Symbolizer = symbolizers.Symbolizer;
+const Symbolizer = Symbolizers.Symbolizer;
 
 const Canvas = {
     createCanvas: function (width, height, canvasClass) {
@@ -52,7 +52,7 @@ const Canvas = {
 
     prepareCanvasFont: function (ctx, style) {
         ctx.textBaseline = 'top';
-        ctx.font = symbolizers.TextMarkerSymbolizer.getFont(style);
+        ctx.font = Symbolizers.TextMarkerSymbolizer.getFont(style);
         var fill = style['textFill'];
         if (!fill) {
             fill = Symbolizer.DEFAULT_TEXT_COLOR;

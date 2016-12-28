@@ -1,5 +1,5 @@
 import { isNil } from 'core/util';
-import Geometry from 'geometry/Geometry';
+import { Geometry } from 'geometry/Geometry';
 import { ImageMarkerSymbolizer } from './ImageMarkerSymbolizer';
 
 export class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {

@@ -38,7 +38,7 @@ const types = {
  *  @memberOf maptalks
  * @name GeoJSON
  */
-const GeoJSON = {
+export const GeoJSON = {
 
     /**
      * Convert one or more GeoJSON objects to a geometry
@@ -204,6 +204,3 @@ const GeoJSON = {
         return null;
     }
 };
-
-export { GeoJSON };
-export default GeoJSON;

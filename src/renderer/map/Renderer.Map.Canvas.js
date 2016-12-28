@@ -1,10 +1,9 @@
-import { bind, isNode, isNumber, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { bind, isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
-import { Animation } from 'utils/Animation';
 import Point from 'geo/Point';
 import Map from 'map';
-import { VectorLayer } from 'layer/VectorLayer';
+import { OverlayLayer } from 'layer/OverlayLayer';
 import { Renderer } from './Renderer.Map';
 
 /**
@@ -47,7 +46,7 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         if (!this.canvas) {
             this.createCanvas();
         }
-        var layers = this._getAllLayerToTransform();
+        var layers = this._getAllLayerToRender();
 
         if (!this._updateCanvasSize()) {
             this.clearCanvas();
@@ -77,115 +76,6 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
          * @property {Map} target              - the map fires event
          * @property {CanvasRenderingContext2D} context - canvas context
          */
-        this.map._fireEvent('renderend', {
-            'context': this.context
-        });
-    },
-
-    animateZoom: function (options, fn) {
-        if (Browser.ielt9) {
-            fn.call(this);
-            return;
-        }
-        var map = this.map;
-        this.clearCanvas();
-        if (!map.options['zoomAnimation']) {
-            fn.call(this);
-            return;
-        }
-        var baseLayer = map.getBaseLayer(),
-            baseLayerImage = this._getLayerImage(baseLayer);
-        if (baseLayerImage) {
-            this._storeBackground(baseLayerImage);
-        }
-        var layersToTransform = map.options['layerZoomAnimation'] ? null : [baseLayer],
-            matrix;
-        if (options.startScale === 1) {
-            this._beforeTransform();
-        }
-
-        var player = Animation.animate({
-            'scale': [options.startScale, options.endScale]
-        }, {
-            'easing': 'out',
-            'speed': options.duration
-        }, bind(function (frame) {
-            if (player.playState === 'finished') {
-                this._afterTransform(matrix);
-                this._drawCenterCross();
-                fn.call(this);
-            } else if (player.playState === 'running') {
-                matrix = this._transformZooming(options.origin, frame.styles['scale'], layersToTransform);
-                /**
-                 * zooming event
-                 * @event Map#zooming
-                 * @type {Object}
-                 * @property {String} type                    - zooming
-                 * @property {Map} target            - the map fires event
-                 * @property {Matrix} matrix                  - transforming matrix
-                 */
-                map._fireEvent('zooming', {
-                    'matrix': matrix
-                });
-            }
-        }, this)
-        ).play();
-    },
-
-    /**
-     * 对图层进行仿射变换
-     * @param  {Matrix} matrix 变换矩阵
-     * @param  {Layer[]} layersToTransform 参与变换和绘制的图层
-     */
-    transform: function (matrix, layersToTransform) {
-        this.map._fireEvent('renderstart', {
-            'context': this.context
-        });
-
-        var layers = layersToTransform || this._getAllLayerToTransform();
-        this.clearCanvas();
-        //automatically disable layerTransforming with mobile browsers.
-        var transformLayers = !Browser.mobile && this.map.options['layerTransforming'];
-        if (!transformLayers) {
-            this.context.save();
-            this._applyTransform(matrix);
-        }
-
-        for (var i = 0, len = layers.length; i < len; i++) {
-            if (!layers[i].isVisible()) {
-                continue;
-            }
-            var renderer = layers[i]._getRenderer();
-            if (renderer) {
-                if (renderer.isCanvasRender && renderer.isCanvasRender()) {
-                    var transformed = false;
-                    if (transformLayers && renderer.transform) {
-                        transformed = renderer.transform(matrix);
-                    }
-                    if (transformLayers && !transformed) {
-                        this.context.save();
-                        this._applyTransform(matrix);
-                    }
-
-                    var layerImage = this._getLayerImage(layers[i]);
-                    if (layerImage && layerImage['image']) {
-                        this._drawLayerCanvasImage(layers[i], layerImage);
-                    }
-                    if (transformLayers && !transformed) {
-                        this.context.restore();
-                    }
-                } else if (renderer.transform) {
-                    //e.g. baseTileLayer renderered by DOM
-                    renderer.transform(matrix);
-                }
-
-            }
-        }
-        if (!transformLayers) {
-            this.context.restore();
-        }
-
-        this._drawCenterCross();
         this.map._fireEvent('renderend', {
             'context': this.context
         });
@@ -241,7 +131,6 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         delete this._canvasBgRes;
         delete this._canvasBgCoord;
         delete this._canvasBg;
-        delete this._zoomingMatrix;
     },
 
     _getLayerImage: function (layer) {
@@ -251,52 +140,13 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         return null;
     },
 
-    _transformZooming: function (origin, scale, layersToTransform) {
-        var matrix = this.map._generateMatrices(origin, scale);
-        this._zoomingMatrix = matrix;
-        this.transform(matrix, layersToTransform);
-        return matrix;
-    },
-
-    _beforeTransform: function () {
-        var map = this.map;
-        // redraw the map to prepare for zoom transforming.
-        // if startScale is not 1 (usually by touchZoom on mobiles), it means map is already transformed and doesn't need redraw
-        if (!map.options['layerZoomAnimation']) {
-            var baseLayer = map.getBaseLayer(),
-                baseLayerImage = this._getLayerImage(baseLayer);
-            //zoom animation with better performance, only animate baseLayer, ignore other layers.
-            if (baseLayerImage) {
-                this._drawLayerCanvasImage(baseLayer, baseLayerImage);
-            }
-        } else {
-            //default zoom animation, animate all the layers.
-            this.render();
-        }
-    },
-
-    _afterTransform: function (matrix) {
-        this.clearCanvas();
-        this._applyTransform(matrix);
-        this._drawBackground();
-        this.context.setTransform(1, 0, 0, 1, 0, 0);
-    },
-
-    _applyTransform: function (matrix) {
-        if (!matrix) {
-            return;
-        }
-        matrix = Browser.retina ? matrix['retina'] : matrix['container'];
-        matrix.applyToContext(this.context);
-    },
-
     _getCountOfGeosToDraw: function () {
-        var layers = this._getAllLayerToTransform(),
+        var layers = this._getAllLayerToRender(),
             geos, renderer,
             total = 0;
         for (var i = layers.length - 1; i >= 0; i--) {
             renderer = layers[i]._getRenderer();
-            if ((layers[i] instanceof VectorLayer) &&
+            if ((layers[i] instanceof OverlayLayer) &&
                 layers[i].isVisible() && !layers[i].isEmpty() && renderer._hasPointSymbolizer) {
                 geos = renderer._geosToDraw;
                 if (geos) {
@@ -366,6 +216,7 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         if (!layer || !layerImage) {
             return;
         }
+        var ctx = this.context;
         var point = layerImage['point'].multi(Browser.retina ? 2 : 1);
         var canvasImage = layerImage['image'];
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
@@ -386,17 +237,22 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         if (imgOp <= 0) {
             return;
         }
-        var alpha = this.context.globalAlpha;
+        var alpha = ctx.globalAlpha;
 
         if (op < 1) {
-            this.context.globalAlpha *= op;
+            ctx.globalAlpha *= op;
         }
         if (imgOp < 1) {
-            this.context.globalAlpha *= imgOp;
+            ctx.globalAlpha *= imgOp;
         }
 
         if (layer.options['cssFilter']) {
-            this.context.filter = layer.options['cssFilter'];
+            ctx.filter = layer.options['cssFilter'];
+        }
+
+        if (layerImage['transform']) {
+            ctx.save();
+            ctx.setTransform.apply(ctx, layerImage['transform']);
         }
 
         if (isNode) {
@@ -409,10 +265,13 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         if (layer.options['dx'] || layer.options['dy']) {
             point._add(layer.options['dx'], layer.options['dy']);
         }
-        this.context.drawImage(canvasImage, Math.floor(point.x), Math.floor(point.y));
-        this.context.globalAlpha = alpha;
-        if (this.context.filter !== 'none') {
-            this.context.filter = 'none';
+        ctx.drawImage(canvasImage, point.x, point.y);
+        ctx.globalAlpha = alpha;
+        if (ctx.filter !== 'none') {
+            ctx.filter = 'none';
+        }
+        if (layerImage['transform']) {
+            ctx.restore();
         }
     },
 
@@ -442,20 +301,26 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
     },
 
     _drawCenterCross: function () {
-        if (this.map.options['centerCross']) {
+        var cross = this.map.options['centerCross'];
+        if (cross) {
+            var ctx = this.context;
             var p = new Point(this.canvas.width / 2, this.canvas.height / 2);
-            this.context.strokeStyle = '#ff0000';
-            this.context.lineWidth = 2;
-            this.context.beginPath();
-            this.context.moveTo(p.x - 5, p.y);
-            this.context.lineTo(p.x + 5, p.y);
-            this.context.moveTo(p.x, p.y - 5);
-            this.context.lineTo(p.x, p.y + 5);
-            this.context.stroke();
+            if (isFunction(cross)) {
+                cross(ctx, p);
+            } else {
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(p.x - 5, p.y);
+                ctx.lineTo(p.x + 5, p.y);
+                ctx.moveTo(p.x, p.y - 5);
+                ctx.lineTo(p.x, p.y + 5);
+                ctx.stroke();
+            }
         }
     },
 
-    _getAllLayerToTransform: function () {
+    _getAllLayerToRender: function () {
         return this.map._getLayers();
     },
 
@@ -531,7 +396,7 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         }, this);
         map.on('_zoomstart', function () {
             delete this._canvasBg;
-            this.clearCanvas();
+            // this.clearCanvas();
         }, this);
         if (map.options['checkSize'] && !isNode && (typeof window !== 'undefined')) {
             // on(window, 'resize', this._checkSize, this);
@@ -549,10 +414,13 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
                 if (map._isBusy() || map._moving || !map.options['hitDetect']) {
                     return;
                 }
-                if (this._hitDetectTimeout) {
-                    cancelAnimFrame(this._hitDetectTimeout);
+                if (this._hitDetectFrame) {
+                    cancelAnimFrame(this._hitDetectFrame);
                 }
-                this._hitDetectTimeout = requestAnimFrame(function () {
+                this._hitDetectFrame = requestAnimFrame(function () {
+                    if (map._isBusy() || map._moving || !map.options['hitDetect']) {
+                        return;
+                    }
                     var vp = param['point2d'];
                     var layers = map._getLayers();
                     var hit = false,
@@ -578,7 +446,9 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
             map.on('_mousemove', this._onMapMouseMove, this);
         }
         map.on('_moving _moveend', function () {
-            this.render();
+            if (!map._pitch) {
+                this.render();
+            }
         }, this);
     }
 });

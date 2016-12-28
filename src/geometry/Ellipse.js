@@ -23,7 +23,7 @@ import { Polygon } from './Polygon';
  *     id : 'ellipse0'
  * });
  */
-const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
+export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
     includes: [Geometry.Center],
 
     /**
@@ -213,6 +213,3 @@ Ellipse.fromJSON = function (json) {
     ellipse.setProperties(feature['properties']);
     return ellipse;
 };
-
-export { Ellipse };
-export default Ellipse;

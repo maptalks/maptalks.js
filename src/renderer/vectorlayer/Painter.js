@@ -6,15 +6,15 @@ import PointExtent from 'geo/PointExtent';
 import { Marker } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
 import Canvas from 'utils/Canvas';
-import * as symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 
 //注册的symbolizer
 const registerSymbolizers = [
-    symbolizers.StrokeAndFillSymbolizer,
-    symbolizers.ImageMarkerSymbolizer,
-    symbolizers.VectorPathMarkerSymbolizer,
-    symbolizers.VectorMarkerSymbolizer,
-    symbolizers.TextMarkerSymbolizer
+    Symbolizers.StrokeAndFillSymbolizer,
+    Symbolizers.ImageMarkerSymbolizer,
+    Symbolizers.VectorPathMarkerSymbolizer,
+    Symbolizers.VectorMarkerSymbolizer,
+    Symbolizers.TextMarkerSymbolizer
 ];
 
 /**
@@ -66,20 +66,13 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
             }
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
-        this._debugSymbolizer = new symbolizer.DebugSymbolizer(symbol, this.geometry, this);
+        this._debugSymbolizer = new Symbolizers.DebugSymbolizer(symbol, this.geometry, this);
         this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
     },
 
     hasPointSymbolizer: function () {
         return this._hasPointSymbolizer;
-    },
-
-    getTransformMatrix: function () {
-        if (this._matrix) {
-            return this._matrix;
-        }
-        return null;
     },
 
     /**
@@ -112,10 +105,10 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
             return null;
         }
         var map = this.getMap();
-        var matrices = this.getTransformMatrix(),
-            matrix = matrices ? matrices['container'] : null,
-            scale = matrices ? matrices['scale'] : null;
-        var layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest),
+        var maxZoom = map.getMaxZoom();
+        var zoomScale = map.getScale();
+        var layerNorthWest = this.geometry.getLayer()._getRenderer()._northWest;
+        var layerPoint = map._pointToContainerPoint(layerNorthWest),
             paintParams = this._paintParams,
             tPaintParams = [], // transformed params
             //refer to Geometry.Canvas
@@ -124,39 +117,24 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
         //convert view points to container points needed by canvas
         if (isArray(points)) {
             containerPoints = mapArrayRecursively(points, function (point) {
-                // var cp = point.substract(layerPoint);
-                var cp = map._pointToContainerPoint(point)._substract(layerPoint);
-                if (matrix) {
-                    return matrix.applyToPointInstance(cp);
-                }
-                return cp;
+                return map._pointToContainerPoint(point, maxZoom)._substract(layerPoint);
             });
         } else if (points instanceof Point) {
             // containerPoints = points.substract(layerPoint);
-            containerPoints = map._pointToContainerPoint(points)._substract(layerPoint);
-            if (matrix) {
-                containerPoints = matrix.applyToPointInstance(containerPoints);
-            }
+            containerPoints = map._pointToContainerPoint(points, maxZoom)._substract(layerPoint);
         }
         tPaintParams.push(containerPoints);
-
-        //scale width ,height or radius if geometry has
         for (var i = 1, len = paintParams.length; i < len; i++) {
-            if (matrix) {
-                if (isNumber(paintParams[i]) || (paintParams[i] instanceof Size)) {
-                    if (isNumber(paintParams[i])) {
-                        tPaintParams.push(scale.x * paintParams[i]);
-                    } else {
-                        tPaintParams.push(new Size(paintParams[i].width * scale.x, paintParams[i].height * scale.y));
-                    }
+            if (isNumber(paintParams[i]) || (paintParams[i] instanceof Size)) {
+                if (isNumber(paintParams[i])) {
+                    tPaintParams.push(paintParams[i] / zoomScale);
                 } else {
-                    tPaintParams.push(paintParams[i]);
+                    tPaintParams.push(paintParams[i].multi(1 / zoomScale));
                 }
             } else {
                 tPaintParams.push(paintParams[i]);
             }
         }
-
         return tPaintParams;
     },
 
@@ -167,17 +145,16 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
     /**
      * 绘制图形
      */
-    paint: function (matrix) {
+    paint: function () {
         var contexts = this.geometry.getLayer()._getRenderer().getPaintContext();
         if (!contexts || !this.symbolizers) {
             return;
         }
 
-        this._matrix = matrix;
-        this.symbolize(matrix, contexts);
+        this.symbolize(contexts);
     },
 
-    symbolize: function (matrix, contexts) {
+    symbolize: function (contexts) {
         this._prepareShadow(contexts[0]);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
@@ -270,15 +247,8 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
 
     getContainerExtent: function () {
         var map = this.getMap(),
-            matrix = this.getTransformMatrix(),
             extent2D = this.get2DExtent(this.resources);
         var containerExtent = new PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
-        if (matrix) {
-            //FIXME not right for markers
-            var min = matrix['container'].applyToPointInstance(containerExtent.getMin());
-            var max = matrix['container'].applyToPointInstance(containerExtent.getMax());
-            containerExtent = new PointExtent(min, max);
-        }
         return containerExtent;
     },
 
@@ -296,7 +266,6 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
             }
         } else {
             this.removeCache();
-            this._refreshSymbolizers();
             this._eachSymbolizer(function (symbolizer) {
                 symbolizer.show();
             });
@@ -309,20 +278,8 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
         });
     },
 
-    onZoomEnd: function () {
+    repaint:function () {
         this.removeCache();
-        this._refreshSymbolizers();
-    },
-
-    repaint: function () {
-        this.removeCache();
-        this._refreshSymbolizers();
-    },
-
-    _refreshSymbolizers: function () {
-        this._eachSymbolizer(function (symbolizer) {
-            symbolizer.refresh();
-        });
     },
 
     /**
@@ -362,7 +319,11 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
     removeCache: function () {
         delete this._renderPoints;
         delete this._paintParams;
-        delete this._extent2D;
         delete this._sprite;
+        this.removeZoomCache();
+    },
+
+    removeZoomCache: function () {
+        delete this._extent2D;
     }
 });

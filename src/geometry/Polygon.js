@@ -28,7 +28,7 @@ import { Vector } from './Vector';
  *      ]
  *  ).addTo(layer);
  */
-const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
+export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
 
     includes: [Geometry.Poly],
 
@@ -277,6 +277,3 @@ const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
 
     }
 });
-
-export { Polygon };
-export default Polygon;

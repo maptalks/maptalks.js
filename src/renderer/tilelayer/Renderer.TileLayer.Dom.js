@@ -12,7 +12,8 @@ import {
     removeTransform,
     removeDomNode,
     setOpacity,
-    StyleNames
+    TRANSITION,
+    CSSFILTER
 } from 'core/util/dom';
 import Class from 'core/class/index';
 import Browser from 'core/Browser';
@@ -86,6 +87,7 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         if (!tileGrid) {
             return;
         }
+        this._currentTileZoom = this.getMap().getZoom();
         var tiles = tileGrid['tiles'],
             queue = [];
 
@@ -118,20 +120,13 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         }
     },
 
-    transform: function (matrices) {
-        if (!this._canTransform()) {
-            return false;
+    onZooming: function (param) {
+        var zoom = Math.floor(param['from']);
+
+        if (this._levelContainers && this._levelContainers[zoom]) {
+            setTransformMatrix(this._levelContainers[zoom], param.matrix['view']);
+            // maptalks.DomUtil.setTransform(this._levelContainers[zoom], new maptalks.Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
         }
-        var zoom = this.getMap().getZoom();
-        if (this._levelContainers[zoom]) {
-            if (matrices) {
-                setTransformMatrix(this._levelContainers[zoom], matrices['view']);
-            } else {
-                removeTransform(this._levelContainers[zoom]);
-            }
-            // setTransform(this._levelContainers[zoom], new Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
-        }
-        return false;
     },
 
     _loadTile: function (tile) {
@@ -164,7 +159,7 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         setOpacity(tileImage, 0);
 
         if (this.layer.options['cssFilter']) {
-            tileImage.style[StyleNames.CSSFILTER] = this.layer.options['cssFilter'];
+            tileImage.style[CSSFILTER] = this.layer.options['cssFilter'];
         }
 
         tileImage.src = tile['url'];
@@ -198,7 +193,7 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         var map = this.getMap();
 
         if (this._fadeAnimated) {
-            tile['el'].style[StyleNames.TRANSITION] = 'opacity 250ms';
+            tile['el'].style[TRANSITION] = 'opacity 250ms';
         }
 
         setOpacity(tile['el'], 1);
@@ -270,7 +265,7 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         }
 
         var key,
-            zoom = map.getZoom();
+            zoom = this._currentTileZoom;
 
         if (!this.layer.isVisible()) {
             this._removeAllTiles();
@@ -359,7 +354,8 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         if (this._zIndex) {
             container.style.zIndex = this._zIndex;
         }
-        this.getMap()._panels['layer'].appendChild(container);
+        var parentContainer = this.layer.options['container'] === 'front' ? this.getMap()._panels['frontLayer'] : this.getMap()._panels['layer'];
+        parentContainer.appendChild(container);
     },
 
     _clearLayerContainer: function () {
@@ -379,11 +375,12 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
 
     getEvents: function () {
         var events = {
-            '_zoomstart': this.onZoomStart,
-            '_touchzoomstart': this._onTouchZoomStart,
-            '_zoomend': this.onZoomEnd,
-            '_moveend _resize': this.render,
-            '_movestart': this.onMoveStart
+            '_zoomstart'    : this.onZoomStart,
+            '_touchzoomstart' : this._onTouchZoomStart,
+            '_zooming'      : this.onZooming,
+            '_zoomend'      : this.onZoomEnd,
+            '_moveend _resize' : this.render,
+            '_movestart'    : this.onMoveStart
         };
         if (!this._onMapMoving && this.layer.options['renderWhenPanning']) {
             var interval = this.layer.options['updateInterval'];
@@ -421,7 +418,7 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         this._fadeAnimated = !Browser.mobile && true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
-        if (!this._canTransform()) {
+        if (!this._canTransform() && this._container) {
             this._container.style.display = 'none';
         }
     },

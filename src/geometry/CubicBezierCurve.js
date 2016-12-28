@@ -1,4 +1,4 @@
-import Curve from './Curve';
+import { Curve } from './Curve';
 import Canvas from 'utils/Canvas';
 
 /**
@@ -47,5 +47,3 @@ CubicBezierCurve.fromJSON = function (json) {
     curve.setProperties(feature['properties']);
     return curve;
 };
-
-export default CubicBezierCurve;

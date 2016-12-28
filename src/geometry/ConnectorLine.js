@@ -1,7 +1,7 @@
 import { extend, isNil, isArrayHasData, removeFromArray } from 'core/util';
 import { Control } from 'control';
-import LineString from './LineString';
-import ArcCurve from './ArcCurve';
+import { LineString } from './LineString';
+import { ArcCurve } from './ArcCurve';
 
 /**
  * Mixin of connector line methods.

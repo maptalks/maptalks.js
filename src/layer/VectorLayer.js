@@ -2,7 +2,7 @@ import { extend, isNil, isArray } from 'core/util';
 import { compileStyle } from 'core/util/style';
 import { getFilterFeature } from 'utils';
 import Extent from 'geo/Extent';
-import Geometry from 'geometry/Geometry';
+import { Geometry } from 'geometry/Geometry';
 import Layer from './Layer';
 import OverlayLayer from './OverlayLayer';
 
@@ -25,7 +25,6 @@ export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype 
      * @property {Boolean} options.enableSimplify=true   - whether to simplify geometries before rendering.
      * @property {String}  options.cursor=default        - the cursor style of the layer
      * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events
-     * @property {Number}  options.thresholdOfTransforming=50 - threshold of geometry count to update while transforming.
      * @property {Boolean} options.defaultIconSize=[20, 20] - default size of a marker's icon
      * @property {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.
      */
@@ -34,7 +33,6 @@ export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype 
         'enableSimplify': true,
         'cursor': 'pointer',
         'geometryEvents': true,
-        'thresholdOfTransforming': 150,
         'defaultIconSize': [20, 20],
         'cacheVectorOnCanvas': true,
         'cacheSvgOnCanvas': false

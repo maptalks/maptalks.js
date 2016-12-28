@@ -35,16 +35,16 @@ export const Center = {
     },
 
     //Gets view point of the geometry's center
-    _getCenter2DPoint: function () {
-        var pcenter = this._getPrjCoordinates();
-        if (!pcenter) {
-            return null;
-        }
+    _getCenter2DPoint: function (zoom) {
         var map = this.getMap();
         if (!map) {
             return null;
         }
-        return map._prjToPoint(pcenter);
+        var z = maptalks.Util.isNil(zoom) ? map.getZoom() : map.getMaxZoom();
+        var pcenter = this._getPrjCoordinates();
+        if (!pcenter) { return null; }
+
+        return map._prjToPoint(pcenter, z);
     },
 
     _getPrjCoordinates: function () {

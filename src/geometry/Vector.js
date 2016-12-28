@@ -10,7 +10,7 @@ import { Geometry } from './Geometry';
  * @abstract
  * @extends Geometry
  */
-const Vector = Geometry.extend(/** @lends Vector.prototype */ {
+export const Vector = Geometry.extend(/** @lends Vector.prototype */ {
     /**
      * @property {Object} options - Vector's options
      * @property {Object} options.symbol - Vector's default symbol
@@ -45,6 +45,3 @@ const Vector = Geometry.extend(/** @lends Vector.prototype */ {
         return w ? w / 2 : 1.5;
     }
 });
-
-export { Vector };
-export default Vector;

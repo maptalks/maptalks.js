@@ -108,6 +108,15 @@ export function isNumber(val) {
     return (typeof val === 'number') && !isNaN(val);
 }
 
+/**
+ * Whether a number is a integer
+ * @param  {Number}  n
+ * @return {Boolean}
+ */
+export function isInteger(n) {
+    return (n | 0) === n;
+}
+
 /*
  * Whether the obj is a javascript object.
  * @param  {*}  obj     - object to check

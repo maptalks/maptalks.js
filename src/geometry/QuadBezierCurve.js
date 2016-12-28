@@ -21,7 +21,7 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype */ {
+export const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype */ {
 
     _toJSON: function (options) {
         return {
@@ -56,6 +56,3 @@ QuadBezierCurve.fromJSON = function (json) {
     curve.setProperties(feature['properties']);
     return curve;
 };
-
-export { QuadBezierCurve };
-export default QuadBezierCurve;

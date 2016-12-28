@@ -98,7 +98,6 @@ describe('PointSymbolSpec', function() {
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
             expect(v).to.be.painted();
-            expect(v).to.be.painted(0, 0);
         });
 
         it('point placement', function() {
@@ -118,7 +117,6 @@ describe('PointSymbolSpec', function() {
             });
             var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
             expect(v).to.be.painted();
-            expect(v).to.be.painted(0, 0);
         });
 
         it('vertex placement', function() {

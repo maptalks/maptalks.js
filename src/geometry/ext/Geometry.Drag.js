@@ -254,8 +254,8 @@ export const Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
             'draggable': this._mapDraggable
         });
 
-        delete this._autoBorderPanning;
         delete this._mapDraggable;
+        delete this._mapHitDetect;
         if (this._dragStageLayer) {
             this._dragStageLayer.remove();
         }

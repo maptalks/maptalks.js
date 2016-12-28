@@ -65,11 +65,12 @@ export const TileLayer = Layer.extend(/** @lends TileLayer.prototype */ {
 
         'keepBuffer': null,
 
+        'container' : 'back',
+
         'baseLayerRenderer': (function () {
             return isNode ? 'canvas' : 'dom';
         })()
     },
-
 
     /**
      * Get tile size of the tile layer

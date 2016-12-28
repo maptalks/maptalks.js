@@ -4,13 +4,15 @@ import {
     on,
     removeDomNode,
     stopPropagation,
-    StyleNames
+    TRANSFORM,
+    TRANSFORMORIGIN,
+    TRANSITION
 } from 'core/util/dom';
 import Class from 'core/class/index';
 import Eventable from 'core/Event';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
-import Geometry from 'geometry/Geometry';
+import { Geometry } from 'geometry/Geometry';
 
 /**
  * Some instance methods subclasses needs to implement:  <br>
@@ -165,7 +167,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         dom.style.left = point.x + 'px';
         dom.style.top = point.y + 'px';
 
-        dom.style[StyleNames.TRANSITION] = null;
+        dom.style[TRANSITION] = null;
 
         container.appendChild(dom);
 
@@ -178,9 +180,9 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         if (anim.scale) {
             if (this.getTransformOrigin) {
                 var origin = this.getTransformOrigin();
-                dom.style[StyleNames.TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
+                dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
             }
-            dom.style[StyleNames.TRANSFORM] = 'scale(0)';
+            dom.style[TRANSFORM] = 'scale(0)';
         }
 
         dom.style.display = '';
@@ -198,13 +200,13 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         if (transition) {
             var animFn = function () {
                 if (transition) {
-                    dom.style[StyleNames.TRANSITION] = transition;
+                    dom.style[TRANSITION] = transition;
                 }
                 if (anim.fade) {
                     dom.style.opacity = 1;
                 }
                 if (anim.scale) {
-                    dom.style[StyleNames.TRANSFORM] = 'scale(1)';
+                    dom.style[TRANSFORM] = 'scale(1)';
                 }
             };
             if (this.options['animationDelay']) {
@@ -237,7 +239,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
             dom.style.opacity = 0;
         }
         if (anim.scale) {
-            dom.style[StyleNames.TRANSFORM] = 'scale(0)';
+            dom.style[TRANSFORM] = 'scale(0)';
         }
 
         if (!anim.anim) {
@@ -517,14 +519,13 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         }
     },
 
-    onZooming: function (param) {
+    onZooming: function () {
         if (!this.isVisible() || !this.getDOM() || !this.getMap()) {
             return;
         }
         var dom = this.getDOM(),
-            point = this.getMap().coordinateToViewPoint(this._coordinate),
-            matrix = param['matrix']['view'];
-        var p = matrix.applyToPointInstance(point)._add(this.options['dx'], this.options['dy']);
+            point = this.getMap().coordinateToViewPoint(this._coordinate);
+        var p = point._add(this.options['dx'], this.options['dy']);
         if (this.getOffset) {
             var o = this.getOffset();
             if (o) {

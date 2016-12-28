@@ -4,16 +4,16 @@ import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/class/index';
 import Eventable from 'core/Event';
 import Point from 'geo/Point';
-import Marker from 'geometry/Marker';
-import TextMarker from 'geometry/TextMarker';
+import { Marker } from 'geometry/Marker';
+import { TextMarker } from 'geometry/TextMarker';
 import { Polyline } from 'geometry/LineString';
-import Polygon from 'geometry/Polygon';
-import Circle from 'geometry/Circle';
-import Ellipse from 'geometry/Ellipse';
-import Sector from 'geometry/Sector';
-import Rectangle from 'geometry/Rectangle';
+import { Polygon } from 'geometry/Polygon';
+import { Circle } from 'geometry/Circle';
+import { Ellipse } from 'geometry/Ellipse';
+import { Sector } from 'geometry/Sector';
+import { Rectangle } from 'geometry/Rectangle';
 import VectorLayer from 'layer/VectorLayer';
-import * as symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 
 /**
  * Geometry editor used internally for geometry editing.
@@ -495,13 +495,13 @@ export const GeometryEditor = Class.extend(/** @lends GeometryEditor.prototype *
 
         var blackList = null;
 
-        if (symbolizers.VectorMarkerSymbolizer.test(symbol)) {
+        if (Symbolizers.VectorMarkerSymbolizer.test(symbol)) {
             if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
                 //as these types of markers' anchor stands on its bottom
                 blackList = [5, 6, 7];
             }
-        } else if (symbolizers.ImageMarkerSymbolizer.test(symbol) ||
-            symbolizers.VectorPathMarkerSymbolizer.test(symbol)) {
+        } else if (Symbolizers.ImageMarkerSymbolizer.test(symbol) ||
+            Symbolizers.VectorPathMarkerSymbolizer.test(symbol)) {
             blackList = [5, 6, 7];
         }
 

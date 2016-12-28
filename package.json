@@ -12,6 +12,7 @@
     "lint": "eslint src/**/*.js",
     "test": "gulp test --cov",
     "pretest": "npm run lint",
+    "prepublish": "gulp build",
     "doc": "gulp doc"
   },
   "main": "dist/maptalks.js",

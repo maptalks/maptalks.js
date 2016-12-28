@@ -1,4 +1,4 @@
-import { extend, isNil, isString, hasOwn } from 'core/util';
+import { extend, isNil, isString, isInteger, hasOwn } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import * as projections from 'geo/projection';
@@ -140,13 +140,19 @@ export class View {
         return this._resolutions;
     }
 
-    getResolution(z) {
+    getResolution(zoom) {
+        var z = (zoom | 0);
         if (z < 0) {
             z = 0;
         } else if (z > this._resolutions.length - 1) {
             z = this._resolutions.length - 1;
         }
-        return this._resolutions[z];
+        var res = this._resolutions[z];
+        if (!isInteger(zoom) && z !== this._resolutions.length - 1) {
+            var next = this._resolutions[z + 1];
+            return res + (next - res) * (zoom - z);
+        }
+        return res;
     }
 
     getProjection() {

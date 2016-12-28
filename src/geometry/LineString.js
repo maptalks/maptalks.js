@@ -25,7 +25,7 @@ import { Vector } from './Vector';
  *     ]
  * ).addTo(layer);
  */
-const LineString = Vector.extend(/** @lends LineString.prototype */ {
+export const LineString = Vector.extend(/** @lends LineString.prototype */ {
     includes: [Geometry.Poly],
 
     type: Geometry['TYPE_LINESTRING'],
@@ -223,6 +223,3 @@ const LineString = Vector.extend(/** @lends LineString.prototype */ {
 });
 
 export const Polyline = LineString;
-
-export { LineString };
-export default LineString;

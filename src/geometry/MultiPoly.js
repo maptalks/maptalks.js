@@ -1,5 +1,5 @@
 import { isArray, isArrayHasData } from 'core/util';
-import GeoJSON from './GeoJSON';
+import { GeoJSON } from './GeoJSON';
 
 /**
  * Common methods for MultiPoint, MultiLineString and MultiPolygon

@@ -13,67 +13,67 @@ import { splitWords, trim } from './strings';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 
-export const StyleNames = {};
+const first = (props) => {
+    return props[0];
+};
 
-if (!isNode) {
-    /**
-     * From Leaflet.DomUtil
-     * Goes through the array of style names and returns the first name
-     * that is a valid style name for an element. If no such name is found,
-     * it returns false. Useful for vendor-prefixed styles like `transform`.
-     * @param  {String[]} props
-     * @return {Boolean}
-     */
-    const testProp = (props) => {
+/**
+ * From Leaflet.DomUtil
+ * Goes through the array of style names and returns the first name
+ * that is a valid style name for an element. If no such name is found,
+ * it returns false. Useful for vendor-prefixed styles like `transform`.
+ * @param  {String[]} props
+ * @return {Boolean}
+ */
+const testProp = isNode ? first : (props) => {
 
-        var style = document.documentElement.style;
+    var style = document.documentElement.style;
 
-        for (var i = 0; i < props.length; i++) {
-            if (props[i] in style) {
-                return props[i];
-            }
+    for (var i = 0; i < props.length; i++) {
+        if (props[i] in style) {
+            return props[i];
         }
-        return false;
-    };
+    }
+    return false;
+};
 
-    // prefix style property names
+// prefix style property names
 
-    /**
-     * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
-     * @property {String} TRANSFORM
-     * @memberOf DomUtil
-     * @type {String}
-     */
-    StyleNames.TRANSFORM = testProp(
-        ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+/**
+ * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
+ * @property {String} TRANSFORM
+ * @memberOf DomUtil
+ * @type {String}
+ */
+export const TRANSFORM = testProp(
+    ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
 
-    /**
-     * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
-     * @property {String} TRANSFORMORIGIN
-     * @memberOf DomUtil
-     * @type {String}
-     */
-    StyleNames.TRANSFORMORIGIN = testProp(
-        ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']);
+/**
+ * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
+ * @property {String} TRANSFORMORIGIN
+ * @memberOf DomUtil
+ * @type {String}
+ */
+export const TRANSFORMORIGIN = testProp(
+    ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']);
 
-    /**
-     * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
-     * @property {String} TRANSITION
-     * @memberOf DomUtil
-     * @type {String}
-     */
-    StyleNames.TRANSITION = testProp(
-        ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
+/**
+ * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
+ * @property {String} TRANSITION
+ * @memberOf DomUtil
+ * @type {String}
+ */
+export const TRANSITION = testProp(
+    ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
 
-    /**
-     * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
-     * @property {String} FILTER
-     * @memberOf DomUtil
-     * @type {String}
-     */
-    StyleNames.CSSFILTER = testProp(
-        ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']);
-}
+/**
+ * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
+ * @property {String} FILTER
+ * @memberOf DomUtil
+ * @type {String}
+ */
+export const CSSFILTER = testProp(
+    ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']);
 
 /**
  * Create a html element.
@@ -282,8 +282,8 @@ export function preventSelection(dom) {
 /**
  * Get the dom element's current position or offset its position by offset
  * @param  {HTMLElement} dom - HTMLElement
- * @param  {maptalks.Point} [offset=null] - position to set.
- * @return {maptalks.Point} - dom element's current position if offset is null.
+ * @param  {Point} [offset=null] - position to set.
+ * @return {Point} - dom element's current position if offset is null.
  */
 export function offsetDom(dom, offset) {
     if (!dom) {
@@ -313,7 +313,7 @@ export function getPagePosition(obj) {
 /**
  * 获取鼠标在容器上相对容器左上角的坐标值
  * @param {Event} ev  触发的事件
- * @return {maptalks.Point} left:鼠标在页面上的横向位置, top:鼠标在页面上的纵向位置
+ * @return {Point} left:鼠标在页面上的横向位置, top:鼠标在页面上的纵向位置
  */
 export function getEventContainerPoint(ev, dom) {
     if (!ev) {
@@ -488,7 +488,7 @@ export function copyCanvas(src) {
 /**
  * Resets the 3D CSS transform of `el` so it is translated by `offset` pixels
  * @param {HTMLElement} el
- * @param {maptalks.Point} offset
+ * @param {Point} offset
  */
 export function setTransform(el, offset) {
     var pos = offset || new Point(0, 0);
@@ -501,7 +501,7 @@ export function setTransform(el, offset) {
 }
 
 export function setTransformMatrix(el, m) {
-    el.style[TRANSFORM] = m.toCSS();
+    el.style[TRANSFORM] = 'matrix(' + m.join() + ')';
     return this;
 }
 

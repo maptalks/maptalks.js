@@ -164,25 +164,36 @@ export function loadFunctionTypes(obj, argFn) {
     if (!obj) {
         return null;
     }
+    var hit = false;
     var i;
     if (isArray(obj)) {
-        var multResult = [];
+        var multResult = [],
+            loaded;
         for (i = 0; i < obj.length; i++) {
-            multResult.push(loadFunctionTypes(obj[i], argFn));
+            loaded = loadFunctionTypes(obj[i], argFn);
+            if (!loaded) {
+                multResult.push(obj[i]);
+            } else {
+                multResult.push(loaded);
+                hit = true;
+            }
         }
-        return multResult;
+        return hit ? multResult : null;
     }
     var result = {},
-        props = [], p;
+        props = [],
+        p;
     for (p in obj) {
         if (obj.hasOwnProperty(p)) {
             props.push(p);
         }
     }
+
     var len;
     for (i = 0, len = props.length; i < len; i++) {
         p = props[i];
         if (isFunctionDefinition(obj[p])) {
+            hit = true;
             result['_' + p] = obj[p];
             (function (_p) {
                 Object.defineProperty(result, _p, {
@@ -195,15 +206,15 @@ export function loadFunctionTypes(obj, argFn) {
                     set: function (v) {
                         this['_' + _p] = v;
                     },
-                    configurable : true,
-                    enumerable : true
+                    configurable: true,
+                    enumerable: true
                 });
             })(p);
         } else {
             result[p] = obj[p];
         }
     }
-    return result;
+    return hit ? result : null;
 }
 
 export function getFunctionTypeResources(t) {

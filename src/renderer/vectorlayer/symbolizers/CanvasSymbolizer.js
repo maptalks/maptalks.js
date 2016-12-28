@@ -23,8 +23,6 @@ export class CanvasSymbolizer extends Symbolizer {
         }
     }
 
-    refresh() {}
-
     //所有point symbolizer的共同的remove方法
     remove() {}
 
@@ -40,6 +38,12 @@ export class CanvasSymbolizer extends Symbolizer {
             return [me.getMap().getZoom(), me.geometry.getProperties()];
         };
 
-        return loadFunctionTypes(style, argFn);
+        var loaded = loadFunctionTypes(style, argFn);
+        if (loaded) {
+            this._isFunctionStyle = true;
+        } else {
+            loaded = style;
+        }
+        return loaded;
     }
 }
