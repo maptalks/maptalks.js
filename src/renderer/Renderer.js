@@ -59,24 +59,6 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         }
     },
 
-    _tryToDraw:function () {
-        this._clearTimeout();
-        if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
-            this.completeRender();
-            return;
-        }
-        var me = this, args = arguments;
-        if (this.layer.options['drawImmediate']) {
-            this.draw.apply(this, args);
-        } else {
-            this._animReqId = maptalks.Util.requestAnimFrame(function () {
-                if (me.layer) {
-                    me.draw.apply(me, args);
-                }
-            });
-        }
-    },
-
     remove: function () {
         this._clearTimeout();
         if (this.onRemove) {
@@ -112,8 +94,8 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         var map = this.getMap(),
             size = this._extent2D.getSize(),
             // point = this._extent2D.getMin(),
-            containerPoint = map._pointToContainerPoint(this._northWest);
-        return {'image':this.canvas, 'layer':this.layer, 'point': containerPoint, 'size':size};
+            containerPoint = map._pointToContainerPoint(this._northWest, this._renderZoom);
+        return {'image':this.canvas, 'layer':this.layer, 'point': containerPoint, 'size':size, 'transform' : this._transform};
     },
 
     isLoaded:function () {
@@ -206,67 +188,6 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         return maptalks.Promise.all(promises);
     },
 
-    _promiseResource: function (url) {
-        var me = this, resources = this.resources,
-            crossOrigin = this.layer.options['crossOrigin'];
-        return function (resolve) {
-            if (resources.isResourceLoaded(url, true)) {
-                resolve(url);
-                return;
-            }
-            var img = new Image();
-            if (crossOrigin) {
-                img['crossOrigin'] = crossOrigin;
-            }
-            if (maptalks.Util.isSVG(url[0]) && !maptalks.node) {
-                //amplify the svg image to reduce loading.
-                if (url[1]) { url[1] *= 2; }
-                if (url[2]) { url[2] *= 2; }
-            }
-            img.onload = function () {
-                me._cacheResource(url, img);
-                resolve(url);
-            };
-            img.onabort = function (err) {
-                if (console) { console.warn('image loading aborted: ' + url[0]); }
-                if (err) {
-                    if (console) { console.warn(err); }
-                }
-                resolve(url);
-            };
-            img.onerror = function (err) {
-                // if (console) { console.warn('image loading failed: ' + url[0]); }
-                if (err && !maptalks.Browser.phantomjs) {
-                    if (console) { console.warn(err); }
-                }
-                resources.markErrorResource(url);
-                resolve(url);
-            };
-            maptalks.Util.loadImage(img,  url);
-        };
-
-    },
-
-    _cacheResource: function (url, img) {
-        if (!this.layer || !this.resources) {
-            return;
-        }
-        var w = url[1], h = url[2];
-        if (this.layer.options['cacheSvgOnCanvas'] && maptalks.Util.isSVG(url[0]) === 1 && (maptalks.Browser.edge || maptalks.Browser.ie)) {
-            //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
-            if (maptalks.Util.isNil(w)) {
-                w = img.width || this.layer.options['defaultIconSize'][0];
-            }
-            if (maptalks.Util.isNil(h)) {
-                h = img.height || this.layer.options['defaultIconSize'][1];
-            }
-            var canvas = maptalks.Canvas.createCanvas(w, h);
-            maptalks.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
-            img = canvas;
-        }
-        this.resources.addResource(url, img);
-    },
-
     prepareRender: function () {
         var map = this.getMap();
         this._renderZoom = map.getZoom();
@@ -348,7 +269,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             return maskExtent2D;
         }
         this.context.save();
-        mask._getPainter().paint();
+        mask._paint();
         this.context.clip();
         this._clipped = true;
         /**
@@ -369,7 +290,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     },
 
     requestMapToRender: function () {
-        if (this.getMap()) {
+        if (this.getMap() && !this._suppressMapRender) {
             if (this.context) {
                 /**
                  * renderend event, fired when layer ends rendering.
@@ -388,7 +309,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
 
     fireLoadedEvent: function () {
         this._loaded = true;
-        if (this.layer) {
+        if (this.layer && !this._suppressMapRender) {
             /**
              * layerload event, fired when layer is loaded.
              *
@@ -417,6 +338,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         return {
             '_zoomstart' : this.onZoomStart,
             '_zoomend' : this.onZoomEnd,
+            '_zooming' : this.onZooming,
             '_resize'  : this.onResize,
             '_movestart' : this.onMoveStart,
             '_moving' : this.onMoving,
@@ -424,11 +346,35 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         };
     },
 
-    onZoomStart: function () {
+    isUpdateWhenZooming: function () {
+        return false;
+    },
 
+    onZooming: function (param) {
+        var map = this.getMap();
+        if (!map || !this.layer.isVisible()) {
+            return;
+        }
+        this._suppressMapRender = true;
+        this.prepareRender();
+        if (this.drawOnZooming && this.isUpdateWhenZooming()) {
+            this.prepareCanvas();
+            this.drawOnZooming(param);
+        } else if (!map._pitch) {
+            this._transform = param['matrix']['container'];
+        } else if (map._pitch) {
+            // leave the layer to blank when map is pitching
+            this.prepareCanvas();
+        }
+        this._suppressMapRender = false;
+    },
+
+    onZoomStart: function () {
+        delete this._transform;
     },
 
     onZoomEnd: function () {
+        delete this._transform;
         this._drawOnEvent();
     },
 
@@ -437,7 +383,9 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     },
 
     onMoving: function () {
-
+        if (this.getMap()._pitch) {
+            this._drawOnEvent();
+        }
     },
 
     onMoveEnd: function () {
@@ -445,21 +393,109 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     },
 
     onResize: function () {
+        delete this._extent2D;
         this.resizeCanvas();
         this._drawOnEvent();
     },
 
+    _tryToDraw:function () {
+        this._clearTimeout();
+        if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
+            this.completeRender();
+            return;
+        }
+        var me = this, args = arguments;
+        if (this.layer.options['drawImmediate']) {
+            this._painted = true;
+            this.draw.apply(this, args);
+        } else {
+            this._currentFrameId = maptalks.Util.requestAnimFrame(function () {
+                if (me.layer) {
+                    me._painted = true;
+                    me.draw.apply(me, args);
+                }
+            });
+        }
+    },
+
+    _promiseResource: function (url) {
+        var me = this, resources = this.resources,
+            crossOrigin = this.layer.options['crossOrigin'];
+        return function (resolve) {
+            if (resources.isResourceLoaded(url, true)) {
+                resolve(url);
+                return;
+            }
+            var img = new Image();
+            if (crossOrigin) {
+                img['crossOrigin'] = crossOrigin;
+            }
+            if (maptalks.Util.isSVG(url[0]) && !maptalks.node) {
+                //amplify the svg image to reduce loading.
+                if (url[1]) { url[1] *= 2; }
+                if (url[2]) { url[2] *= 2; }
+            }
+            img.onload = function () {
+                me._cacheResource(url, img);
+                resolve(url);
+            };
+            img.onabort = function (err) {
+                if (console) { console.warn('image loading aborted: ' + url[0]); }
+                if (err) {
+                    if (console) { console.warn(err); }
+                }
+                resolve(url);
+            };
+            img.onerror = function (err) {
+                // if (console) { console.warn('image loading failed: ' + url[0]); }
+                if (err && !maptalks.Browser.phantomjs) {
+                    if (console) { console.warn(err); }
+                }
+                resources.markErrorResource(url);
+                resolve(url);
+            };
+            maptalks.Util.loadImage(img,  url);
+        };
+
+    },
+
+    _cacheResource: function (url, img) {
+        if (!this.layer || !this.resources) {
+            return;
+        }
+        var w = url[1], h = url[2];
+        if (this.layer.options['cacheSvgOnCanvas'] && maptalks.Util.isSVG(url[0]) === 1 && (maptalks.Browser.edge || maptalks.Browser.ie)) {
+            //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
+            if (maptalks.Util.isNil(w)) {
+                w = img.width || this.layer.options['defaultIconSize'][0];
+            }
+            if (maptalks.Util.isNil(h)) {
+                h = img.height || this.layer.options['defaultIconSize'][1];
+            }
+            var canvas = maptalks.Canvas.createCanvas(w, h);
+            maptalks.Canvas.image(canvas.getContext('2d'), img, 0, 0, w, h);
+            img = canvas;
+        }
+        this.resources.addResource(url, img);
+    },
+
     _drawOnEvent: function () {
-        this.prepareRender();
-        if (this.layer.isVisible()) {
-            this.draw();
+        if (!this._painted) {
+            this.render(true);
+        } else {
+            //prepareRender is called in render not in draw.
+            //Thus prepareRender needs to be called here
+            this.prepareRender();
+            if (this.layer.isVisible()) {
+                this.draw();
+            }
         }
     },
 
     _clearTimeout:function () {
-        if (this._animReqId) {
-            //clearTimeout(this._animReqId);
-            maptalks.Util.cancelAnimFrame(this._animReqId);
+        if (this._currentFrameId) {
+            //clearTimeout(this._currentFrameId);
+            maptalks.Util.cancelAnimFrame(this._currentFrameId);
         }
     }
 });

@@ -30,7 +30,7 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
             }
             return false;
         });
-        if (map._isBusy() || !vectorLayers || vectorLayers.length === 0) {
+        if (map._isBusy() || map._moving || !vectorLayers || vectorLayers.length === 0) {
             return;
         }
         var eventType = domEvent.type;
@@ -107,6 +107,9 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
                 var geoMap = {};
                 if (maptalks.Util.isArrayHasData(geometries)) {
                     for (i = geometries.length - 1; i >= 0; i--) {
+                        if (!(geometries[i] instanceof maptalks.Geometry)) {
+                            continue;
+                        }
                         geoMap[geometries[i]._getInternalId()] = geometries[i];
                         geometries[i]._onEvent(domEvent);
                         //the first geometry is on the top, so ignore the latter cursors.
@@ -121,6 +124,9 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
                 if (maptalks.Util.isArrayHasData(oldTargets)) {
                     for (i = oldTargets.length - 1; i >= 0; i--) {
                         var oldTarget = oldTargets[i];
+                        if (!(oldTarget instanceof maptalks.Geometry)) {
+                            continue;
+                        }
                         var oldTargetId = oldTargets[i]._getInternalId();
                         if (geometries && geometries.length > 0) {
                             var mouseout = true;
@@ -141,7 +147,13 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
 
             } else {
                 if (!geometries || geometries.length === 0) { return; }
-                propagation = geometries[geometries.length - 1]._onEvent(domEvent);
+                for (i = geometries.length - 1; i >= 0; i--) {
+                    if (!(geometries[i] instanceof maptalks.Geometry)) {
+                        continue;
+                    }
+                    propagation = geometries[i]._onEvent(domEvent);
+                    break;
+                }
             }
             if (propagation === false) {
                 maptalks.DomUtil.stopPropagation(domEvent);

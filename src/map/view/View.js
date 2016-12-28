@@ -137,13 +137,20 @@ maptalks.Util.extend(maptalks.View.prototype, {
         return this._resolutions;
     },
 
-    getResolution:function (z) {
+    getResolution:function (zoom) {
+        var z = (zoom | 0);
         if (z < 0) {
             z = 0;
         } else if (z > this._resolutions.length - 1) {
             z = this._resolutions.length - 1;
         }
-        return this._resolutions[z];
+        var res = this._resolutions[z];
+        if (!maptalks.Util.isInteger(zoom) && z !== this._resolutions.length - 1) {
+
+            var next = this._resolutions[z + 1];
+            return res + (next - res) * (zoom - z);
+        }
+        return res;
     },
 
     getProjection:function () {

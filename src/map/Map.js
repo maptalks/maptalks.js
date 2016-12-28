@@ -50,7 +50,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
      * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
      * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
-     * @property {Boolean} [options.layerTransforming=true]         - update points when transforming (e.g. zoom animation), this may bring drastic low performance when rendering a large number of points.
+     * @property {Number}  [options.pointThresholdOfZoomAnimation=150] - threshold of point count to perform zoom animation.
      * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
      * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
      * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
@@ -81,15 +81,13 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         'clipFullExtent' : false,
 
         'zoomAnimation' : (function () { return !maptalks.node; })(),
-        'zoomAnimationDuration' : 200,
+        'zoomAnimationDuration' : 330,
         //still leave background after zooming, set it to false if baseLayer is a transparent layer
         'zoomBackground' : false,
         //controls whether other layers than base tilelayer will show during zoom animation.
         'layerZoomAnimation' : true,
 
-        //economically transform, whether point symbolizers transforms during transformation (e.g. zoom animation)
-        //set to true can prevent drastic low performance when number of point symbolizers is large.
-        'layerTransforming' : true,
+        'pointThresholdOfZoomAnimation' : 200,
 
         'panAnimation': (function () { return !maptalks.node; })(),
         //default pan animation duration
@@ -466,6 +464,36 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         return hit;
     },
 
+    getZoomFromRes: function (res) {
+        var resolutions = this._getResolutions(),
+            minRes = this._getResolution(this.getMinZoom()),
+            maxRes = this._getResolution(this.getMaxZoom());
+        if (minRes <= maxRes) {
+            if (res <= minRes) {
+                return this.getMinZoom();
+            } else if (res >= maxRes) {
+                return this.getMaxZoom();
+            }
+        } else if (res >= minRes) {
+            return this.getMinZoom();
+        } else if (res <= maxRes) {
+            return this.getMaxZoom();
+        }
+
+        var l = resolutions.length;
+        for (var i = 0; i < l - 1; i++) {
+            if (!resolutions[i]) {
+                continue;
+            }
+            var gap = Math.abs(resolutions[i + 1] - resolutions[i]);
+            var test = Math.abs(res - resolutions[i]);
+            if (gap >= test) {
+                return i + test / gap;
+            }
+        }
+        return l - 1;
+    },
+
     /**
      * Sets zoom of the map
      * @param {Number} zoom
@@ -649,7 +677,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @return {Number} scale
      */
     getScale: function (zoom) {
-        var z = (zoom === undefined ? this.getZoom() : zoom);
+        var z = (maptalks.Util.isNil(zoom) ? this.getZoom() : zoom);
         var max = this._getResolution(this.getMaxZoom()),
             res = this._getResolution(z);
         return res / max;
@@ -1127,14 +1155,14 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} yDist - distance on Y axis.
      * @return {maptalks.Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
      */
-    distanceToPixel: function (xDist, yDist) {
+    distanceToPixel: function (xDist, yDist, zoom) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
         }
         var center = this.getCenter(),
             target = projection.locate(center, xDist, yDist),
-            res = this._getResolution();
+            res = this._getResolution(zoom);
 
         var width = !xDist ? 0 : (projection.project(new maptalks.Coordinate(target.x, center.y)).x - projection.project(center).x) / res;
         var height = !yDist ? 0 : (projection.project(new maptalks.Coordinate(center.x, target.y)).y - projection.project(center).y) / res;
@@ -1148,7 +1176,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @param  {Number} height - pixel height
      * @return {Number}  distance - Geographical distance
      */
-    pixelToDistance:function (width, height) {
+    pixelToDistance:function (width, height, zoom) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
@@ -1156,7 +1184,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         //计算前刷新scales
         var center = this.getCenter(),
             pcenter = this._getPrjCenter(),
-            res = this._getResolution();
+            res = this._getResolution(zoom);
         var pTarget = new maptalks.Coordinate(pcenter.x + width * res, pcenter.y + height * res);
         var target = projection.unproject(pTarget);
         return projection.measureLength(target, center);
@@ -1317,7 +1345,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     _setCursorToPanel:function (cursor) {
         var panel = this.getMainPanel();
-        if (panel && panel.style) {
+        if (panel && panel.style && panel.style.cursor !== cursor) {
             panel.style.cursor = cursor;
         }
     },
@@ -1380,65 +1408,6 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         });
     },
 
-
-    _genViewMatrix : function (origin, scale, rotate) {
-        if (!rotate) {
-            rotate = 0;
-        }
-        this._generatingMatrix = true;
-        if (origin instanceof maptalks.Coordinate) {
-            origin = this.coordinateToContainerPoint(origin);
-        }
-        var point = this._containerPointToPoint(origin),
-            viewPoint = this.containerPointToViewPoint(origin);
-
-        var matrices = {
-            '2dPoint' : point,
-            'view' : new maptalks.Matrix().translate(viewPoint.x, viewPoint.y)
-                    .scaleU(scale).rotate(rotate).translate(-viewPoint.x, -viewPoint.y),
-            '2d' : new maptalks.Matrix().translate(point.x, point.y)
-                    .scaleU(scale).rotate(rotate).translate(-point.x, -point.y)
-        };
-        matrices['inverse'] = {
-            '2d' : matrices['2d'].inverse(),
-            'view' : matrices['view'].inverse()
-        };
-        this._generatingMatrix = false;
-        return matrices;
-    },
-
-    _fillMatrices: function (matrix, scale, rotate) {
-        if (!rotate) {
-            rotate = 0;
-        }
-        this._generatingMatrix = true;
-        var origin = this._pointToContainerPoint(matrix['2dPoint']);
-        //matrix for layers to transform
-        // var view = origin.substract(mapViewPoint);
-        matrix['container'] = new maptalks.Matrix().translate(origin.x, origin.y)
-                        .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
-
-        origin = origin.multi(2);
-        matrix['retina'] = new maptalks.Matrix().translate(origin.x, origin.y)
-                    .scaleU(scale).rotate(rotate).translate(-origin.x, -origin.y);
-        matrix['inverse']['container'] = matrix['container'].inverse();
-        matrix['inverse']['retina'] = matrix['retina'].inverse();
-        // var scale = matrix['container'].decompose()['scale'];
-        matrix['scale'] = {x:scale, y:scale};
-        this._generatingMatrix = false;
-    },
-
-    /**
-     * get Transform Matrix for zooming
-     * @param  {Number} scale  scale
-     * @param  {Point} origin Transform Origin
-     * @private
-     */
-    _generateMatrices:function (origin, scale, rotate) {
-        var viewMatrix = this._genViewMatrix(origin, scale, rotate);
-        this._fillMatrices(viewMatrix, scale, rotate);
-        return viewMatrix;
-    },
 
     /**
      * Gets pixel lenth from pcenter to map's current center.
@@ -1680,7 +1649,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      */
     _prjToPoint:function (pCoord, zoom) {
-        zoom = (zoom === undefined ? this.getZoom() : zoom);
+        zoom = (maptalks.Util.isNil(zoom) ? this.getZoom() : zoom);
         return this._view.getTransformation().transform(pCoord, this._getResolution(zoom));
     },
 
@@ -1692,8 +1661,15 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
      * @private
      */
     _pointToPrj:function (point, zoom) {
-        zoom = (zoom === undefined ? this.getZoom() : zoom);
+        zoom = (maptalks.Util.isNil(zoom) ? this.getZoom() : zoom);
         return this._view.getTransformation().untransform(point, this._getResolution(zoom));
+    },
+
+    _pointToPoint: function (point, zoom) {
+        if (!maptalks.Util.isNil(zoom)) {
+            return point.multi(this.getScale(zoom) / this.getScale());
+        }
+        return point;
     },
 
     /**
@@ -1745,7 +1721,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         return containerPoint._substract(platformOffset);
     },
 
-    _pointToContainerPoint: function (point) {
+    _pointToContainerPoint: function (point, zoom) {
+        point = this._pointToPoint(point, zoom);
         var centerPoint = this._prjToPoint(this._getPrjCenter());
         return new maptalks.Point(
             this.width / 2 + point.x - centerPoint.x,
@@ -1755,7 +1732,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
 
     _containerPointToPoint: function (containerPoint, zoom) {
         var centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
-            scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
+            scale = (!maptalks.Util.isNil(zoom) ? this._getResolution() / this._getResolution(zoom) : 1);
 
         //容器的像素坐标方向是固定方向的, 和html标准一致, 即从左到右增大, 从上到下增大
 

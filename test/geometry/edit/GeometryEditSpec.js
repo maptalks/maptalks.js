@@ -35,7 +35,7 @@ describe('#GeometryEdit', function () {
     });
 
     afterEach(function() {
-        // removeContainer(container)
+        // map.remove();
     });
 
     describe('edit all kinds of geometries',function() {
@@ -181,20 +181,20 @@ describe('#GeometryEdit', function () {
         });
 
         it('update symbol when editing', function (done) {
-            var rect = new maptalks.Circle(map.getCenter(), 1000, {
+            var circle = new maptalks.Circle(map.getCenter(), 1000, {
                 symbol : {
                     'polygonFill' : '#f00'
                 }
             }).addTo(layer);
-            rect.startEdit();
-            var editStage = rect._editor._editStageLayer;
+            circle.startEdit();
+            var editStage = circle._editor._editStageLayer;
             editStage.once('layerload', function () {
                 expect(editStage).to.be.painted(0, 20, [255, 0, 0]);
                 editStage.once('layerload', function () {
                     expect(editStage).to.be.painted(0, 20, [255, 255, 0]);
                     done();
                 });
-                rect.updateSymbol({
+                circle.updateSymbol({
                     'polygonFill' : '#ff0'
                 });
             })

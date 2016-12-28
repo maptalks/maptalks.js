@@ -57,13 +57,6 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
         return this._hasPointSymbolizer;
     },
 
-    getTransformMatrix: function () {
-        if (this._matrix) {
-            return this._matrix;
-        }
-        return null;
-    },
-
     /**
      * for point symbolizers
      * @return {maptalks.Point[]} points to render
@@ -94,10 +87,10 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
             return null;
         }
         var map = this.getMap();
-        var matrices = this.getTransformMatrix(),
-            matrix = matrices ? matrices['container'] : null,
-            scale = matrices ? matrices['scale'] : null;
-        var layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest),
+        var maxZoom = map.getMaxZoom();
+        var zoomScale = map.getScale();
+        var layerNorthWest = this.geometry.getLayer()._getRenderer()._northWest;
+        var layerPoint = map._pointToContainerPoint(layerNorthWest),
             paintParams = this._paintParams,
             tPaintParams = [], // transformed params
         //refer to Geometry.Canvas
@@ -106,39 +99,24 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
         //convert view points to container points needed by canvas
         if (maptalks.Util.isArray(points)) {
             containerPoints = maptalks.Util.mapArrayRecursively(points, function (point) {
-                // var cp = point.substract(layerPoint);
-                var cp = map._pointToContainerPoint(point)._substract(layerPoint);
-                if (matrix) {
-                    return matrix.applyToPointInstance(cp);
-                }
-                return cp;
+                return map._pointToContainerPoint(point, maxZoom)._substract(layerPoint);
             });
         } else if (points instanceof maptalks.Point) {
             // containerPoints = points.substract(layerPoint);
-            containerPoints = map._pointToContainerPoint(points)._substract(layerPoint);
-            if (matrix) {
-                containerPoints = matrix.applyToPointInstance(containerPoints);
-            }
+            containerPoints = map._pointToContainerPoint(points, maxZoom)._substract(layerPoint);
         }
         tPaintParams.push(containerPoints);
-
-        //scale width ,height or radius if geometry has
         for (var i = 1, len = paintParams.length; i < len; i++) {
-            if (matrix) {
-                if (maptalks.Util.isNumber(paintParams[i]) || (paintParams[i] instanceof maptalks.Size)) {
-                    if (maptalks.Util.isNumber(paintParams[i])) {
-                        tPaintParams.push(scale.x * paintParams[i]);
-                    } else {
-                        tPaintParams.push(new maptalks.Size(paintParams[i].width * scale.x, paintParams[i].height * scale.y));
-                    }
+            if (maptalks.Util.isNumber(paintParams[i]) || (paintParams[i] instanceof maptalks.Size)) {
+                if (maptalks.Util.isNumber(paintParams[i])) {
+                    tPaintParams.push(paintParams[i] / zoomScale);
                 } else {
-                    tPaintParams.push(paintParams[i]);
+                    tPaintParams.push(paintParams[i].multi(1 / zoomScale));
                 }
             } else {
                 tPaintParams.push(paintParams[i]);
             }
         }
-
         return tPaintParams;
     },
 
@@ -149,17 +127,16 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
     /**
      * 绘制图形
      */
-    paint: function (matrix) {
+    paint: function () {
         var contexts = this.geometry.getLayer()._getRenderer().getPaintContext();
         if (!contexts || !this.symbolizers) {
             return;
         }
 
-        this._matrix = matrix;
-        this.symbolize(matrix, contexts);
+        this.symbolize(contexts);
     },
 
-    symbolize: function (matrix, contexts) {
+    symbolize: function (contexts) {
         this._prepareShadow(contexts[0]);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
@@ -247,15 +224,8 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
 
     getContainerExtent : function () {
         var map = this.getMap(),
-            matrix = this.getTransformMatrix(),
             extent2D = this.get2DExtent(this.resources);
         var containerExtent = new maptalks.PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
-        if (matrix) {
-            //FIXME not right for markers
-            var min = matrix['container'].applyToPointInstance(containerExtent.getMin());
-            var max = matrix['container'].applyToPointInstance(containerExtent.getMax());
-            containerExtent = new maptalks.PointExtent(min, max);
-        }
         return containerExtent;
     },
 
@@ -273,7 +243,6 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
             }
         } else {
             this.removeCache();
-            this._refreshSymbolizers();
             this._eachSymbolizer(function (symbolizer) {
                 symbolizer.show();
             });
@@ -286,20 +255,8 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
         });
     },
 
-    onZoomEnd:function () {
-        this.removeCache();
-        this._refreshSymbolizers();
-    },
-
     repaint:function () {
         this.removeCache();
-        this._refreshSymbolizers();
-    },
-
-    _refreshSymbolizers:function () {
-        this._eachSymbolizer(function (symbolizer) {
-            symbolizer.refresh();
-        });
     },
 
     /**
@@ -339,8 +296,12 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
     removeCache:function () {
         delete this._renderPoints;
         delete this._paintParams;
-        delete this._extent2D;
         delete this._sprite;
+        this.removeZoomCache();
+    },
+
+    removeZoomCache: function () {
+        delete this._extent2D;
     }
 });
 

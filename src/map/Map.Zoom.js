@@ -1,63 +1,61 @@
 maptalks.Map.include(/** @lends maptalks.Map.prototype */{
-    _zoom:function (nextZoomLevel, origin, startScale) {
+    _zoom:function (nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
-        this._originZoomLevel = this.getZoom();
-        nextZoomLevel = this._checkZoomLevel(nextZoomLevel);
-        this.onZoomStart(nextZoomLevel);
-        var zoomOffset;
-        if (origin) {
-            origin = new maptalks.Point(this.width / 2, this.height / 2);
-            zoomOffset = this._getZoomCenterOffset(nextZoomLevel, origin, startScale);
-        }
-        this.onZoomEnd(nextZoomLevel, zoomOffset);
+        nextZoom = this._checkZoom(nextZoom);
+        this.onZoomStart(nextZoom);
+        this._frameZoom = this.getZoom();
+        this.onZoomEnd(nextZoom, origin, startScale);
     },
 
-    _zoomAnimation:function (nextZoomLevel, origin, startScale) {
+    _isSeamlessZoom: function () {
+        return !maptalks.Util.isInteger(this._zoomLevel);
+    },
+
+    _zoomAnimation:function (nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
-        if (maptalks.Util.isNil(startScale)) {
-            startScale = 1;
-        }
-        if (maptalks.Util.isNil(this._originZoomLevel)) {
-            this._originZoomLevel = this.getZoom();
-        }
-        nextZoomLevel = this._checkZoomLevel(nextZoomLevel);
-        if (this._originZoomLevel === nextZoomLevel) {
+
+        nextZoom = this._checkZoom(nextZoom);
+        if (this.getZoom() === nextZoom) {
             return;
         }
 
-        this.onZoomStart(nextZoomLevel);
+        this.onZoomStart(nextZoom);
         if (!origin) {
             origin = new maptalks.Point(this.width / 2, this.height / 2);
         }
-        this._startZoomAnimation(startScale, origin, nextZoomLevel);
+        this._startZoomAnimation(nextZoom, origin, startScale);
     },
 
-    _startZoomAnimation:function (startScale, transOrigin, nextZoomLevel) {
-        var me = this;
-        var resolutions = this._getResolutions();
-        var endScale = resolutions[this._originZoomLevel] / resolutions[nextZoomLevel];
-        var zoomOffset = this._getZoomCenterOffset(nextZoomLevel, transOrigin, startScale);
-        if (zoomOffset.x === 0 && zoomOffset.y === 0) {
-            //center is out of maxExtent
-            transOrigin = new maptalks.Point(this.width / 2, this.height / 2);
+    _startZoomAnimation:function (nextZoom, origin, startScale) {
+        if (maptalks.Util.isNil(startScale)) {
+            startScale = 1;
         }
+        var me = this;
+        var endScale = this._getResolution(this._startZoomVal) / this._getResolution(nextZoom);
         var duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
-        this._getRenderer().animateZoom(
+        this._frameZoom = this._startZoomVal;
+        maptalks.Animation.animate(
             {
-                startScale : startScale,
-                endScale : endScale,
-                origin : transOrigin,
-                duration : duration
+                'zoom'  : [this._startZoomVal, nextZoom]
             },
-            function () {
-                me.onZoomEnd(nextZoomLevel, zoomOffset);
-            }
-        );
+            {
+                'easing' : 'out',
+                'speed'  : duration
+            },
+            maptalks.Util.bind(function (frame) {
+                if (frame.state.playState === 'finished') {
+                    me.onZoomEnd(frame.styles['zoom'], origin);
+                } else {
+                    me.onZooming(frame.styles['zoom'], origin, startScale);
+                }
+            }, this)
+        ).play();
     },
 
-    onZoomStart: function (nextZoomLevel) {
+    onZoomStart: function (nextZoom) {
         this._zooming = true;
         this._enablePanAnimation = false;
+        this._startZoomVal = this.getZoom();
         /**
           * zoomstart event
           * @event maptalks.Map#zoomstart
@@ -67,18 +65,52 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zoomstart', {'from' : this._originZoomLevel, 'to': nextZoomLevel});
+        this._fireEvent('zoomstart', {'from' : this._startZoomVal, 'to': nextZoom});
     },
 
-    onZoomEnd:function (nextZoomLevel, zoomOffset) {
-        this._zoomLevel = nextZoomLevel;
-        if (zoomOffset && (zoomOffset.x !== 0 || zoomOffset.y !== 0)) {
-            this._offsetCenterByPixel(zoomOffset._multi(-1));
+    onZooming: function (nextZoom, origin, startScale) {
+        var frameZoom = this._frameZoom;
+        if (frameZoom === nextZoom) {
+            return;
         }
-        var _originZoomLevel = this._originZoomLevel;
-        this._originZoomLevel = nextZoomLevel;
-        this._getRenderer().onZoomEnd();
+        if (maptalks.Util.isNil(startScale)) {
+            startScale = 1;
+        }
+        var zoomOffset = this._zoomTo(nextZoom, origin, startScale);
+        var res = this.getResolution(nextZoom);
+        var fromRes = this.getResolution(this._startZoomVal);
+        var scale = fromRes / res / startScale;
+        var pos = this.offsetPlatform();
+        var matrix = {
+            'view' : [scale, 0, 0, scale, (origin.x - pos.x) *  (1 - scale), (origin.y - pos.y) *  (1 - scale)]
+        };
+        if (maptalks.Browser.retina) {
+            origin = origin.multi(2);
+        }
+        matrix['container'] = [scale, 0, 0, scale, origin.x * (1 - scale), origin.y *  (1 - scale)];
+        /**
+          * zooming event
+          * @event maptalks.Map#zooming
+          * @type {Object}
+          * @property {String} type                    - zooming
+          * @property {maptalks.Map} target            - the map fires event
+          * @property {Number} from                    - zoom level zooming from
+          * @property {Number} to                      - zoom level zooming to
+          */
+        this._fireEvent('zooming', {'from' : this._startZoomVal, 'to': nextZoom, 'origin' : zoomOffset, 'matrix' : matrix});
+        this._frameZoom = nextZoom;
+        var renderer = this._getRenderer();
+        if (renderer) {
+            renderer.render();
+        }
+    },
+
+    onZoomEnd:function (nextZoom, origin) {
+        var startZoomVal = this._startZoomVal;
+        this._zoomTo(nextZoom, origin);
         this._zooming = false;
+        this._getRenderer().onZoomEnd();
+
         /**
           * zoomend event
           * @event maptalks.Map#zoomend
@@ -88,44 +120,45 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zoomend', {'from' : _originZoomLevel, 'to': nextZoomLevel});
+        this._fireEvent('zoomend', {'from' : startZoomVal, 'to': nextZoom});
+
     },
 
+    _zoomTo: function (nextZoom, origin, startScale) {
+        var zScale = this._getResolution(this._frameZoom) / this._getResolution(nextZoom);
+        var zoomOffset = this._getZoomCenterOffset(nextZoom, origin, startScale, zScale);
+        this._zoomLevel = nextZoom;
+        if (zoomOffset && (zoomOffset.x !== 0 || zoomOffset.y !== 0)) {
+            this._offsetCenterByPixel(zoomOffset._multi(-1));
+        }
+        return zoomOffset;
+    },
 
-    _checkZoomLevel:function (nextZoomLevel) {
+    _checkZoom:function (nextZoom) {
         var maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
-        if (nextZoomLevel < minZoom) {
-            nextZoomLevel = minZoom;
+        if (nextZoom < minZoom) {
+            nextZoom = minZoom;
         }
-        if (nextZoomLevel > maxZoom) {
-            nextZoomLevel = maxZoom;
+        if (nextZoom > maxZoom) {
+            nextZoom = maxZoom;
         }
-        return nextZoomLevel;
+        return nextZoom;
     },
 
-    _getZoomCenterOffset:function (nextZoomLevel, origin, startScale) {
+    _getZoomCenterOffset:function (nextZoom, origin, startScale, zScale) {
+        if (!origin) {
+            return null;
+        }
         if (maptalks.Util.isNil(startScale)) {
             startScale = 1;
         }
-        var resolutions = this._getResolutions();
-        var zScale;
-        var zoomOffset;
-        if (nextZoomLevel < this._originZoomLevel) {
-            zScale = resolutions[nextZoomLevel + 1] / resolutions[nextZoomLevel];
-            zoomOffset = new maptalks.Point(
-                    -(origin.x - this.width / 2) * (startScale - zScale),
-                    -(origin.y - this.height / 2) * (startScale - zScale)
-                );
-        } else {
-            zScale = resolutions[nextZoomLevel - 1] / resolutions[nextZoomLevel];
-            zoomOffset = new maptalks.Point(
-                    (origin.x - this.width / 2) * (zScale - startScale),
-                    (origin.y - this.height / 2) * (zScale - startScale)
-                );
-        }
+        var zoomOffset = new maptalks.Point(
+            (origin.x - this.width / 2) * (zScale - startScale),
+            (origin.y - this.height / 2) * (zScale - startScale)
+        );
 
-        var newCenter = this.containerPointToCoordinate(new maptalks.Point(this.width / 2 + zoomOffset.x, this.height / 2 + zoomOffset.y));
+        var newCenter = this.containerPointToCoordinate(zoomOffset.add(this.width / 2, this.height / 2));
         if (!this._verifyExtent(newCenter)) {
             return new maptalks.Point(0, 0);
         }

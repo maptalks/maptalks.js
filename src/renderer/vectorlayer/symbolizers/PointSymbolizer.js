@@ -10,11 +10,19 @@
  */
 maptalks.symbolizer.PointSymbolizer = maptalks.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
     get2DExtent: function (resources) {
-        var extent = new maptalks.PointExtent(),
-            m = this.getMarkerExtent(resources);
-        var renderPoints = this._getRenderPoints()[0];
-        for (var i = renderPoints.length - 1; i >= 0; i--) {
-            extent._combine(renderPoints[i]);
+        var map = this.getMap(),
+            maxZoom = map.getMaxZoom();
+        if (!this._2dExtent) {
+            this._2dExtent = new maptalks.PointExtent();
+            var renderPoints = this._getRenderPoints()[0];
+            for (var i = renderPoints.length - 1; i >= 0; i--) {
+                this._2dExtent._combine(renderPoints[i]);
+            }
+        }
+        var extent = new maptalks.PointExtent(map._pointToPoint(this._2dExtent.getMin(), maxZoom), map._pointToPoint(this._2dExtent.getMax(), maxZoom));
+        var m = this._isFunctionStyle ? this.getMarkerExtent(resources) : this._markerExtent;
+        if (!m) {
+            m = this._markerExtent = this.getMarkerExtent(resources);
         }
         extent['xmin'] += m['xmin'];
         extent['ymin'] += m['ymin'];
@@ -38,24 +46,12 @@ maptalks.symbolizer.PointSymbolizer = maptalks.symbolizer.CanvasSymbolizer.exten
             return points;
         }
         var map = this.getMap();
-        var matrices = painter.getTransformMatrix(),
-            matrix = matrices ? matrices['container'] : null,
-            scale = matrices ? matrices['scale'] : null,
-            dxdy = this.getDxDy(),
+        var maxZoom = map.getMaxZoom();
+        var dxdy = this.getDxDy(),
             layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest);
-            // layerPoint = this.geometry.getLayer()._getRenderer()._extent2D.getMin();
-        if (matrix) {
-            dxdy = new maptalks.Point(dxdy.x / scale.x, dxdy.y / scale.y);
-        }
-        // console.log(layerPoint);
         var containerPoints = maptalks.Util.mapArrayRecursively(points, function (point) {
-            // console.log(point);
-            // return point.substract(layerPoint)._add(dxdy);
-            return map._pointToContainerPoint(point)._add(dxdy)._substract(layerPoint);
+            return map._pointToContainerPoint(point, maxZoom)._add(dxdy)._substract(layerPoint);
         });
-        if (matrix) {
-            return matrix.applyToArray(containerPoints);
-        }
         return containerPoints;
     },
 

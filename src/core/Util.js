@@ -437,6 +437,15 @@ maptalks.Util = {
         return (typeof val === 'number') && !isNaN(val);
     },
 
+    /**
+     * Whether a number is a integer
+     * @param  {Number}  n
+     * @return {Boolean}
+     */
+    isInteger: function (n) {
+        return (n | 0) === n;
+    },
+
     /*
      * Whether the obj is a javascript object.
      * @param  {*}  obj     - object to check

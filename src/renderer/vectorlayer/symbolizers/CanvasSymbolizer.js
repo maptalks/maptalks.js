@@ -19,9 +19,6 @@ maptalks.symbolizer.CanvasSymbolizer = maptalks.Symbolizer.extend(/** @lends map
         }
     },
 
-    refresh:function () {
-    },
-
     //所有point symbolizer的共同的remove方法
     remove:function () {
     },
@@ -41,6 +38,12 @@ maptalks.symbolizer.CanvasSymbolizer = maptalks.Symbolizer.extend(/** @lends map
             return [me.getMap().getZoom(), me.geometry.getProperties()];
         };
 
-        return maptalks.Util.loadFunctionTypes(style, argFn);
+        var loaded = maptalks.Util.loadFunctionTypes(style, argFn);
+        if (loaded) {
+            this._isFunctionStyle = true;
+        } else {
+            loaded = style;
+        }
+        return loaded;
     }
 });

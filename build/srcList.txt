@@ -7,7 +7,6 @@
 ../src/core/DomUtil.js
 ../src/core/Event.js
 ../src/core/Class.js
-../src/utils/Matrix.js
 ../src/utils/Animation.js
 ../src/utils/Canvas.js
 ../src/utils/Ajax.js

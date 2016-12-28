@@ -66,6 +66,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         if (!tileGrid) {
             return;
         }
+        this._currentTileZoom = this.getMap().getZoom();
         var tiles = tileGrid['tiles'],
             queue = [];
 
@@ -98,20 +99,13 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         }
     },
 
-    transform: function (matrices) {
-        if (!this._canTransform()) {
-            return false;
-        }
-        var zoom = this.getMap().getZoom();
-        if (this._levelContainers[zoom]) {
-            if (matrices) {
-                maptalks.DomUtil.setTransformMatrix(this._levelContainers[zoom], matrices['view']);
-            } else {
-                maptalks.DomUtil.removeTransform(this._levelContainers[zoom]);
-            }
+    onZooming : function (param) {
+        var zoom = Math.floor(param['from']);
+
+        if (this._levelContainers && this._levelContainers[zoom]) {
+            maptalks.DomUtil.setTransformMatrix(this._levelContainers[zoom], param.matrix['view']);
             // maptalks.DomUtil.setTransform(this._levelContainers[zoom], new maptalks.Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
         }
-        return false;
     },
 
     _loadTile: function (tile) {
@@ -248,7 +242,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         }
 
         var key,
-            zoom = map.getZoom();
+            zoom = this._currentTileZoom;
 
         if (!this.layer.isVisible()) {
             this._removeAllTiles();
@@ -335,7 +329,8 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         if (this._zIndex) {
             container.style.zIndex = this._zIndex;
         }
-        this.getMap()._panels['layer'].appendChild(container);
+        var parentContainer = this.layer.options['container'] === 'front' ? this.getMap()._panels['frontLayer'] : this.getMap()._panels['layer'];
+        parentContainer.appendChild(container);
     },
 
     _clearLayerContainer:function () {
@@ -357,6 +352,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         var events = {
             '_zoomstart'    : this.onZoomStart,
             '_touchzoomstart' : this._onTouchZoomStart,
+            '_zooming'      : this.onZooming,
             '_zoomend'      : this.onZoomEnd,
             '_moveend _resize' : this.render,
             '_movestart'    : this.onMoveStart
@@ -397,7 +393,7 @@ maptalks.renderer.tilelayer.Dom = maptalks.Class.extend(/** @lends maptalks.rend
         this._fadeAnimated = !maptalks.Browser.mobile && true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
-        if (!this._canTransform()) {
+        if (!this._canTransform() && this._container) {
             this._container.style.display = 'none';
         }
     },

@@ -287,7 +287,11 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
             geo.remove();
         });
         this._geoMap = {};
+        var old = this._geoList;
         this._geoList = [];
+        if (this._getRenderer()) {
+            this._getRenderer().onGeometryRemove(old);
+        }
         this._clearing = false;
         /**
          * clear event.
@@ -307,7 +311,7 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
      * @protected
      */
     onRemoveGeometry:function (geometry) {
-        if (!geometry) { return; }
+        if (!geometry || this._clearing) { return; }
         //考察geometry是否属于该图层
         if (this !== geometry.getLayer()) {
             return;
@@ -320,13 +324,10 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
         if (!maptalks.Util.isNil(geoId)) {
             delete this._geoMap[geoId];
         }
-        if (!this._clearing) {
-            var idx = this._findInList(geometry);
-            if (idx >= 0) {
-                this._geoList.splice(idx, 1);
-            }
+        var idx = this._findInList(geometry);
+        if (idx >= 0) {
+            this._geoList.splice(idx, 1);
         }
-
         if (this._getRenderer()) {
             this._getRenderer().onGeometryRemove([geometry]);
         }
