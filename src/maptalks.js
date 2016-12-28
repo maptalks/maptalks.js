@@ -18,6 +18,9 @@ maptalks.Util = util;
 
 maptalks.Util.getJSON = Ajax.getJSON;
 
+import * as DomUtil from 'core/util/dom';
+maptalks.DomUtil = DomUtil;
+
 import Map from 'map';
 maptalks.Map = Map;
 
@@ -65,5 +68,9 @@ maptalks.renderer.vectorlayer = vectorlayerRenderer;
 
 import * as symbolizers from 'renderer/vectorlayer/symbolizers';
 maptalks.symbolizers = symbolizers;
+
+import * as animation from 'utils/Animation';
+maptalks.animation = animation;
+maptalks.Animation = animation.Animation;
 
 export default maptalks;

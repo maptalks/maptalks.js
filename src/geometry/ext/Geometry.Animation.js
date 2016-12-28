@@ -1,8 +1,9 @@
 import { bind, isArray, isFunction } from 'core/util';
 import { extendSymbol } from 'core/util/style';
+import { Animation } from 'utils/Animation';
 import Coordinate from 'geo/Coordinate';
 
-export const Animation = /** @lends Geometry.prototype */ {
+export const Animatable = /** @lends Geometry.prototype */ {
     /**
      * Animate the geometry
      *
@@ -154,11 +155,10 @@ export const Animation = /** @lends Geometry.prototype */ {
                 this._fireEvent('animatestart');
                 this._animationStarted = true;
             }
-
         }
     }
 };
 
 export function initAnimation(Geometry) {
-    Geometry.include(Animation);
+    Geometry.include(Animatable);
 }

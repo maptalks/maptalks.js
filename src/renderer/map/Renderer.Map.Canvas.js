@@ -1,6 +1,7 @@
 import { bind, isNode, isNumber, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
+import { Animation } from 'utils/Animation';
 import Point from 'geo/Point';
 import Map from 'map';
 import { VectorLayer } from 'layer/VectorLayer';

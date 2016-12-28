@@ -1,5 +1,6 @@
 import { offsetDom } from 'core/util/dom';
 import Class from 'core/class/index';
+import { Animation } from 'utils/Animation';
 import Point from 'geo/Point';
 
 /**

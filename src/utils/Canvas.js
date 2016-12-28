@@ -1,9 +1,28 @@
-const Canvas = {
+import {
+    isNode,
+    isNil,
+    isNumber,
+    isString,
+    isArrayHasData,
+    isSVG,
+    isCssUrl,
+    extractCssUrl,
+    round,
+    getAlignPoint,
+    computeDegree
+} from 'core/util';
+import { isGradient } from 'core/util/style';
+import { createEl } from 'core/util/dom';
+import Browser from 'core/Browser';
+import * as symbolizers from 'renderer/vectorlayer/symbolizers';
 
-    createCanvas:function (width, height, canvasClass) {
+const Symbolizer = symbolizers.Symbolizer;
+
+const Canvas = {
+    createCanvas: function (width, height, canvasClass) {
         var canvas;
-        if (!maptalks.node) {
-            canvas = maptalks.DomUtil.createEl('canvas');
+        if (!isNode) {
+            canvas = createEl('canvas');
             canvas.width = width;
             canvas.height = height;
         } else {
@@ -13,7 +32,7 @@ const Canvas = {
         return canvas;
     },
 
-    setDefaultCanvasSetting:function (ctx) {
+    setDefaultCanvasSetting: function (ctx) {
         ctx.lineWidth = 1;
         ctx.lineCap = 'butt';
         ctx.lineJoin = 'miter';
@@ -31,30 +50,32 @@ const Canvas = {
         ctx.globalAlpha = 1;
     },
 
-    prepareCanvasFont:function (ctx, style) {
+    prepareCanvasFont: function (ctx, style) {
         ctx.textBaseline = 'top';
-        ctx.font = maptalks.symbolizer.TextMarkerSymbolizer.getFont(style);
+        ctx.font = symbolizers.TextMarkerSymbolizer.getFont(style);
         var fill = style['textFill'];
-        if (!fill) { fill = maptalks.Symbolizer.DEFAULT_TEXT_COLOR; }
-        ctx.fillStyle = maptalks.Canvas.getRgba(fill, style['textOpacity']);
+        if (!fill) {
+            fill = Symbolizer.DEFAULT_TEXT_COLOR;
+        }
+        ctx.fillStyle = Canvas.getRgba(fill, style['textOpacity']);
     },
 
-    prepareCanvas:function (ctx, style, resources) {
+    prepareCanvas: function (ctx, style, resources) {
         if (!style) {
             return;
         }
         var strokeWidth = style['lineWidth'];
-        if (!maptalks.Util.isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
+        if (!isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
             ctx.lineWidth = strokeWidth;
         }
-        var strokeColor = style['linePatternFile'] || style['lineColor'] || maptalks.Symbolizer.DEFAULT_STROKE_COLOR;
-        if (maptalks.Util.isCssUrl(strokeColor) && resources) {
-            maptalks.Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
+        var strokeColor = style['linePatternFile'] || style['lineColor'] || Symbolizer.DEFAULT_STROKE_COLOR;
+        if (isCssUrl(strokeColor) && resources) {
+            Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
             style['lineDasharray'] = [];
-        } else if (maptalks.Util.isGradient(strokeColor)) {
+        } else if (isGradient(strokeColor)) {
             if (style['lineGradientExtent']) {
-                ctx.strokeStyle = maptalks.Canvas._createGradient(ctx, strokeColor, style['lineGradientExtent']);
+                ctx.strokeStyle = Canvas._createGradient(ctx, strokeColor, style['lineGradientExtent']);
             } else {
                 ctx.strokeStyle = 'rgba(0,0,0,1)';
             }
@@ -67,36 +88,36 @@ const Canvas = {
         if (style['lineCap']) {
             ctx.lineCap = style['lineCap'];
         }
-        if (ctx.setLineDash && maptalks.Util.isArrayHasData(style['lineDasharray'])) {
+        if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-        var fill = style['polygonPatternFile'] || style['polygonFill'] || maptalks.Symbolizer.DEFAULT_FILL_COLOR;
-        if (maptalks.Util.isCssUrl(fill)) {
-            var fillImgUrl = maptalks.Util.extractCssUrl(fill);
+        var fill = style['polygonPatternFile'] || style['polygonFill'] || Symbolizer.DEFAULT_FILL_COLOR;
+        if (isCssUrl(fill)) {
+            var fillImgUrl = extractCssUrl(fill);
             var fillTexture = resources.getImage([fillImgUrl, null, null]);
             if (!fillTexture) {
                 //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
                 fillTexture = resources.getImage([fillImgUrl + '-texture', null, strokeWidth]);
             }
-            if (maptalks.Util.isSVG(fillImgUrl) && (fillTexture instanceof Image) && (maptalks.Browser.edge || maptalks.Browser.ie)) {
+            if (isSVG(fillImgUrl) && (fillTexture instanceof Image) && (Browser.edge || Browser.ie)) {
                 //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
                 var w = fillTexture.width || 20,
                     h = fillTexture.height || 20;
-                var canvas = maptalks.Canvas.createCanvas(w, h);
-                maptalks.Canvas.image(canvas.getContext('2d'), fillTexture, 0, 0, w, h);
+                var canvas = Canvas.createCanvas(w, h);
+                Canvas.image(canvas.getContext('2d'), fillTexture, 0, 0, w, h);
                 fillTexture = canvas;
             }
             if (!fillTexture) {
-                if (!maptalks.Browser.phantomjs && console) {
+                if (!Browser.phantomjs && console) {
                     console.warn('img not found for', fillImgUrl);
                 }
             } else {
                 ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
             }
 
-        } else if (maptalks.Util.isGradient(fill)) {
+        } else if (isGradient(fill)) {
             if (style['polygonGradientExtent']) {
-                ctx.fillStyle = maptalks.Canvas._createGradient(ctx, fill, style['polygonGradientExtent']);
+                ctx.fillStyle = Canvas._createGradient(ctx, fill, style['polygonGradientExtent']);
             } else {
                 ctx.fillStyle = 'rgba(255,255,255,0)';
             }
@@ -106,7 +127,8 @@ const Canvas = {
     },
 
     _createGradient: function (ctx, g, extent) {
-        var gradient = null, places = g['places'],
+        var gradient = null,
+            places = g['places'],
             min = extent.getMin(),
             max = extent.getMax(),
             width = extent.getWidth(),
@@ -146,9 +168,9 @@ const Canvas = {
     },
 
     _setStrokePattern: function (ctx, strokePattern, strokeWidth, resources) {
-        var imgUrl = maptalks.Util.extractCssUrl(strokePattern);
+        var imgUrl = extractCssUrl(strokePattern);
         var imageTexture;
-        if (maptalks.node) {
+        if (isNode) {
             imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
         } else {
             var key = imgUrl + '-texture-' + strokeWidth;
@@ -160,10 +182,10 @@ const Canvas = {
                     if (!imageRes.width || !imageRes.height) {
                         w = strokeWidth;
                     } else {
-                        w = maptalks.Util.round(imageRes.width * strokeWidth / imageRes.height);
+                        w = round(imageRes.width * strokeWidth / imageRes.height);
                     }
-                    var patternCanvas = maptalks.Canvas.createCanvas(w, strokeWidth, ctx.canvas.constructor);
-                    maptalks.Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
+                    var patternCanvas = Canvas.createCanvas(w, strokeWidth, ctx.canvas.constructor);
+                    Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
                     resources.addResource([key, null, strokeWidth], patternCanvas);
                     imageTexture = patternCanvas;
                 }
@@ -171,21 +193,21 @@ const Canvas = {
         }
         if (imageTexture) {
             ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
-        } else if (!maptalks.Browser.phantomjs && console) {
+        } else if (!Browser.phantomjs && console) {
             console.warn('img not found for', imgUrl);
         }
     },
 
-    clearRect:function (ctx, x1, y1, x2, y2) {
+    clearRect: function (ctx, x1, y1, x2, y2) {
         ctx.clearRect(x1, y1, x2, y2);
     },
 
-    fillCanvas:function (ctx, fillOpacity, x, y) {
+    fillCanvas: function (ctx, fillOpacity, x, y) {
         if (fillOpacity === 0) {
             return;
         }
-        var isPattern = maptalks.Canvas._isPattern(ctx.fillStyle);
-        if (maptalks.Util.isNil(fillOpacity)) {
+        var isPattern = Canvas._isPattern(ctx.fillStyle);
+        if (isNil(fillOpacity)) {
             fillOpacity = 1;
         }
         var alpha;
@@ -194,8 +216,8 @@ const Canvas = {
             ctx.globalAlpha *= fillOpacity;
         }
         if (isPattern) {
-            // x = maptalks.Util.round(x);
-            // y = maptalks.Util.round(y);
+            // x = round(x);
+            // y = round(y);
             ctx.translate(x, y);
         }
         ctx.fill();
@@ -211,8 +233,8 @@ const Canvas = {
 
     // support #RRGGBB/#RGB now.
     // if color was like [red, orange...]/rgb(a)/hsl(a), op will not combined to result
-    getRgba:function (color, op) {
-        if (maptalks.Util.isNil(op)) {
+    getRgba: function (color, op) {
+        if (isNil(op)) {
             op = 1;
         }
         if (color[0] !== '#') {
@@ -231,11 +253,11 @@ const Canvas = {
         return 'rgba(' + r + ',' + g + ',' + b + ',' + op + ')';
     },
 
-    image:function (ctx, img, x, y, width, height) {
-        // x = maptalks.Util.round(x);
-        // y = maptalks.Util.round(y);
+    image: function (ctx, img, x, y, width, height) {
+        // x = round(x);
+        // y = round(y);
         try {
-            if (maptalks.Util.isNumber(width) && maptalks.Util.isNumber(height)) {
+            if (isNumber(width) && isNumber(height)) {
                 ctx.drawImage(img, x, y, width, height);
             } else {
                 ctx.drawImage(img, x, y);
@@ -248,20 +270,20 @@ const Canvas = {
         }
     },
 
-    text:function (ctx, text, pt, style, textDesc) {
-        // pt = pt.add(new maptalks.Point(style['textDx'], style['textDy']));
-        maptalks.Canvas._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
+    text: function (ctx, text, pt, style, textDesc) {
+        // pt = pt.add(new Point(style['textDx'], style['textDy']));
+        Canvas._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
     },
 
     _textOnMultiRow: function (ctx, texts, style, point, splitTextSize, textSize) {
-        var ptAlign = maptalks.StringUtil.getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']);
+        var ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']);
         var lineHeight = textSize['height'] + style['textLineSpacing'];
         var basePoint = point.add(0, ptAlign.y);
         var text, rowAlign;
         for (var i = 0, len = texts.length; i < len; i++) {
             text = texts[i]['text'];
-            rowAlign = maptalks.StringUtil.getAlignPoint(texts[i]['size'], style['textHorizontalAlignment'], style['textVerticalAlignment']);
-            maptalks.Canvas._textOnLine(ctx, text, basePoint.add(rowAlign.x, i * lineHeight), style['textHaloRadius'], style['textHaloFill'], style['textHaloOpacity']);
+            rowAlign = getAlignPoint(texts[i]['size'], style['textHorizontalAlignment'], style['textVerticalAlignment']);
+            Canvas._textOnLine(ctx, text, basePoint.add(rowAlign.x, i * lineHeight), style['textHaloRadius'], style['textHaloFill'], style['textHaloOpacity']);
         }
     },
 
@@ -275,7 +297,6 @@ const Canvas = {
                 var alpha = ctx.globalAlpha;
                 ctx.globalAlpha *= textHaloOp;
             }
-
 
             if (textHaloRadius) {
                 ctx.miterLimit = 2;
@@ -295,16 +316,16 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y);
     },
 
-    fillText:function (ctx, text, point, rgba) {
+    fillText: function (ctx, text, point, rgba) {
         if (rgba) {
             ctx.fillStyle = rgba;
         }
         ctx.fillText(text, point.x, point.y);
     },
 
-    _stroke:function (ctx, strokeOpacity, x, y) {
-        var isPattern = maptalks.Canvas._isPattern(ctx.strokeStyle) && !maptalks.Util.isNil(x) && !maptalks.Util.isNil(y);
-        if (maptalks.Util.isNil(strokeOpacity)) {
+    _stroke: function (ctx, strokeOpacity, x, y) {
+        var isPattern = Canvas._isPattern(ctx.strokeStyle) && !isNil(x) && !isNil(y);
+        if (isNil(strokeOpacity)) {
             strokeOpacity = 1;
         }
         var alpha;
@@ -313,8 +334,8 @@ const Canvas = {
             ctx.globalAlpha *= strokeOpacity;
         }
         if (isPattern) {
-            // x = maptalks.Util.round(x);
-            // y = maptalks.Util.round(y);
+            // x = round(x);
+            // y = round(y);
             ctx.translate(x, y);
         }
         ctx.stroke();
@@ -326,33 +347,50 @@ const Canvas = {
         }
     },
 
-    _path:function (ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
+    _path: function (ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
         function fillWithPattern(p1, p2) {
-            var degree = maptalks.Util.computeDegree(p1, p2);
+            var degree = computeDegree(p1, p2);
             ctx.save();
             ctx.translate(p1.x, p1.y - ctx.lineWidth / 2 / Math.cos(degree));
             ctx.rotate(degree);
-            maptalks.Canvas._stroke(ctx, lineOpacity);
+            Canvas._stroke(ctx, lineOpacity);
             ctx.restore();
         }
-        function drawDashLine(startPoint, endPoint, dashArray) {
-          //https://davidowens.wordpress.com/2010/09/07/html-5-canvas-and-dashed-lines/
-          //
-          // Our growth rate for our line can be one of the following:
-          //   (+,+), (+,-), (-,+), (-,-)
-          // Because of this, our algorithm needs to understand if the x-coord and
-          // y-coord should be getting smaller or larger and properly cap the values
-          // based on (x,y).
-            var fromX = startPoint.x, fromY = startPoint.y,
-                toX = endPoint.x, toY = endPoint.y;
-            var pattern = dashArray;
-            var lt = function (a, b) { return a <= b; };
-            var gt = function (a, b) { return a >= b; };
-            var capmin = function (a, b) { return Math.min(a, b); };
-            var capmax = function (a, b) { return Math.max(a, b); };
 
-            var checkX = { thereYet: gt, cap: capmin };
-            var checkY = { thereYet: gt, cap: capmin };
+        function drawDashLine(startPoint, endPoint, dashArray) {
+            //https://davidowens.wordpress.com/2010/09/07/html-5-canvas-and-dashed-lines/
+            //
+            // Our growth rate for our line can be one of the following:
+            //   (+,+), (+,-), (-,+), (-,-)
+            // Because of this, our algorithm needs to understand if the x-coord and
+            // y-coord should be getting smaller or larger and properly cap the values
+            // based on (x,y).
+            var fromX = startPoint.x,
+                fromY = startPoint.y,
+                toX = endPoint.x,
+                toY = endPoint.y;
+            var pattern = dashArray;
+            var lt = function (a, b) {
+                return a <= b;
+            };
+            var gt = function (a, b) {
+                return a >= b;
+            };
+            var capmin = function (a, b) {
+                return Math.min(a, b);
+            };
+            var capmax = function (a, b) {
+                return Math.max(a, b);
+            };
+
+            var checkX = {
+                thereYet: gt,
+                cap: capmin
+            };
+            var checkY = {
+                thereYet: gt,
+                cap: capmin
+            };
 
             if (fromY - toY > 0) {
                 checkY.thereYet = lt;
@@ -366,7 +404,8 @@ const Canvas = {
             ctx.moveTo(fromX, fromY);
             var offsetX = fromX;
             var offsetY = fromY;
-            var idx = 0, dash = true;
+            var idx = 0,
+                dash = true;
             var ang, len;
             while (!(checkX.thereYet(offsetX, toX) && checkY.thereYet(offsetY, toY))) {
                 ang = Math.atan2(toY - fromY, toX - fromX);
@@ -385,17 +424,19 @@ const Canvas = {
                 dash = !dash;
             }
         }
-        if (!maptalks.Util.isArrayHasData(points)) { return; }
+        if (!isArrayHasData(points)) {
+            return;
+        }
 
-        var isDashed = maptalks.Util.isArrayHasData(lineDashArray);
-        var isPatternLine = (ignoreStrokePattern === true ? false : maptalks.Canvas._isPattern(ctx.strokeStyle));
+        var isDashed = isArrayHasData(lineDashArray);
+        var isPatternLine = (ignoreStrokePattern === true ? false : Canvas._isPattern(ctx.strokeStyle));
         var point, prePoint, nextPoint;
         for (var i = 0, len = points.length; i < len; i++) {
-            point = points[i]/*._round()*/;
+            point = points[i];
             if (!isDashed || ctx.setLineDash) { //IE9+
                 ctx.lineTo(point.x, point.y);
                 if (isPatternLine && i > 0) {
-                    prePoint = points[i - 1]/*._round()*/;
+                    prePoint = points[i - 1];
                     fillWithPattern(prePoint, point);
                     ctx.beginPath();
                     ctx.moveTo(point.x, point.y);
@@ -404,26 +445,26 @@ const Canvas = {
                 if (i === len - 1) {
                     break;
                 }
-                nextPoint = points[i + 1]/*._round()*/;
+                nextPoint = points[i + 1];
                 drawDashLine(point, nextPoint, lineDashArray, isPatternLine);
             }
         }
     },
 
-    path:function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
+    path: function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
-        maptalks.Canvas._path(ctx, points, lineDashArray, lineOpacity);
-        maptalks.Canvas._stroke(ctx, lineOpacity);
+        Canvas._path(ctx, points, lineDashArray, lineOpacity);
+        Canvas._stroke(ctx, lineOpacity);
     },
 
-    polygon:function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
+    polygon: function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         function fillPolygon(points, i, op) {
-            maptalks.Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
+            Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
         }
-        var isPatternLine = maptalks.Canvas._isPattern(ctx.strokeStyle),
-            fillFirst = (maptalks.Util.isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
-        if (!maptalks.Util.isArrayHasData(points[0])) {
+        var isPatternLine = Canvas._isPattern(ctx.strokeStyle),
+            fillFirst = (isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
+        if (!isArrayHasData(points[0])) {
             points = [points];
         }
         var op, i, len;
@@ -431,7 +472,7 @@ const Canvas = {
             //因为canvas只填充moveto,lineto,lineto的空间, 而dashline的moveto不再构成封闭空间, 所以重新绘制图形轮廓用于填充
             ctx.save();
             for (i = 0, len = points.length; i < len; i++) {
-                maptalks.Canvas._ring(ctx, points[i], null, 0, true);
+                Canvas._ring(ctx, points[i], null, 0, true);
                 op = fillOpacity;
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'destination-out';
@@ -443,13 +484,13 @@ const Canvas = {
                 } else {
                     ctx.fillStyle = '#fff';
                 }
-                maptalks.Canvas._stroke(ctx, 0);
+                Canvas._stroke(ctx, 0);
             }
             ctx.restore();
         }
         for (i = 0, len = points.length; i < len; i++) {
 
-            maptalks.Canvas._ring(ctx, points[i], lineDashArray, lineOpacity);
+            Canvas._ring(ctx, points[i], lineDashArray, lineOpacity);
 
             if (!fillFirst) {
                 op = fillOpacity;
@@ -465,19 +506,19 @@ const Canvas = {
                     ctx.fillStyle = '#fff';
                 }
             }
-            maptalks.Canvas._stroke(ctx, lineOpacity);
+            Canvas._stroke(ctx, lineOpacity);
         }
 
     },
 
-    _ring:function (ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
-        var isPatternLine = (ignoreStrokePattern === true ? false : maptalks.Canvas._isPattern(ctx.strokeStyle));
+    _ring: function (ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
+        var isPatternLine = (ignoreStrokePattern === true ? false : Canvas._isPattern(ctx.strokeStyle));
         if (isPatternLine && !ring[0].equals(ring[ring.length - 1])) {
             ring = ring.concat([ring[0]]);
         }
         ctx.beginPath();
         ctx.moveTo(ring[0].x, ring[0].y);
-        maptalks.Canvas._path(ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern);
+        Canvas._path(ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern);
         if (!isPatternLine) {
             ctx.closePath();
         }
@@ -490,7 +531,7 @@ const Canvas = {
      * @param  {Point} p2      point 2
      * @param  {Number} degree arc degree between p1 and p2
      */
-    _arcBetween : function (ctx, p1, p2, degree) {
+    _arcBetween: function (ctx, p1, p2, degree) {
         var a = degree,
             dist = p1.distanceTo(p2),
             //radius of circle
@@ -519,65 +560,66 @@ const Canvas = {
         ctx.arc(cx, cy, r, startAngle, endAngle);
     },
 
-    _lineTo:function (ctx, p) {
+    _lineTo: function (ctx, p) {
         ctx.lineTo(p.x, p.y);
     },
 
-    bezierCurveAndFill:function (ctx, points, lineOpacity, fillOpacity) {
+    bezierCurveAndFill: function (ctx, points, lineOpacity, fillOpacity) {
         ctx.beginPath();
-        var start = points[0]/*._round()*/;
+        var start = points[0];
         ctx.moveTo(start.x, start.y);
-        maptalks.Canvas._bezierCurveTo.apply(maptalks.Canvas, [ctx].concat(points.splice(1)));
-        maptalks.Canvas.fillCanvas(ctx, fillOpacity);
-        maptalks.Canvas._stroke(ctx, lineOpacity);
+        Canvas._bezierCurveTo.apply(Canvas, [ctx].concat(points.splice(1)));
+        Canvas.fillCanvas(ctx, fillOpacity);
+        Canvas._stroke(ctx, lineOpacity);
     },
 
-    _bezierCurveTo:function (ctx, p1, p2, p3) {
+    _bezierCurveTo: function (ctx, p1, p2, p3) {
         ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
     },
 
 
     //各种图形的绘制方法
-    ellipse:function (ctx, pt, width, height, lineOpacity, fillOpacity) {
+    ellipse: function (ctx, pt, width, height, lineOpacity, fillOpacity) {
         function bezierEllipse(x, y, a, b) {
             var k = 0.5522848,
                 ox = a * k, // 水平控制点偏移量
                 oy = b * k; // 垂直控制点偏移量
             ctx.beginPath();
-           //从椭圆的左端点开始顺时针绘制四条三次贝塞尔曲线
+            //从椭圆的左端点开始顺时针绘制四条三次贝塞尔曲线
             ctx.moveTo(x - a, y);
             ctx.bezierCurveTo(x - a, y - oy, x - ox, y - b, x, y - b);
             ctx.bezierCurveTo(x + ox, y - b, x + a, y - oy, x + a, y);
             ctx.bezierCurveTo(x + a, y + oy, x + ox, y + b, x, y + b);
             ctx.bezierCurveTo(x - ox, y + b, x - a, y + oy, x - a, y);
             ctx.closePath();
-            maptalks.Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
-            maptalks.Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
+            Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
+            Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
         }
         // pt = pt._round();
         if (width === height) {
             //如果高宽相同,则直接绘制圆形, 提高效率
             ctx.beginPath();
             ctx.arc(pt.x, pt.y, width, 0, 2 * Math.PI);
-            maptalks.Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
-            maptalks.Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
+            Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
+            Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
         } else {
             bezierEllipse(pt.x, pt.y, width, height);
         }
 
     },
 
-    rectangle:function (ctx, pt, size, lineOpacity, fillOpacity) {
+    rectangle: function (ctx, pt, size, lineOpacity, fillOpacity) {
         // pt = pt._round();
         ctx.beginPath();
         ctx.rect(pt.x, pt.y, size['width'], size['height']);
-        maptalks.Canvas.fillCanvas(ctx, fillOpacity, pt.x, pt.y);
-        maptalks.Canvas._stroke(ctx, lineOpacity, pt.x, pt.y);
+        Canvas.fillCanvas(ctx, fillOpacity, pt.x, pt.y);
+        Canvas._stroke(ctx, lineOpacity, pt.x, pt.y);
     },
 
-    sector:function (ctx, pt, size, angles, lineOpacity, fillOpacity) {
+    sector: function (ctx, pt, size, angles, lineOpacity, fillOpacity) {
         var startAngle = angles[0],
             endAngle = angles[1];
+
         function sector(ctx, x, y, radius, startAngle, endAngle) {
             var rad = Math.PI / 180;
             var sDeg = rad * -endAngle;
@@ -586,15 +628,15 @@ const Canvas = {
             ctx.moveTo(x, y);
             ctx.arc(x, y, radius, sDeg, eDeg);
             ctx.lineTo(x, y);
-            maptalks.Canvas.fillCanvas(ctx, fillOpacity, x - radius, y - radius);
-            maptalks.Canvas._stroke(ctx, lineOpacity, x - radius, y - radius);
+            Canvas.fillCanvas(ctx, fillOpacity, x - radius, y - radius);
+            Canvas._stroke(ctx, lineOpacity, x - radius, y - radius);
         }
         // pt = pt._round();
         sector(ctx, pt.x, pt.y, size, startAngle, endAngle);
     },
 
-    _isPattern : function (style) {
-        return !maptalks.Util.isString(style) && !('addColorStop' in style);
+    _isPattern: function (style) {
+        return !isString(style) && !('addColorStop' in style);
     },
 
     // reference:
@@ -606,7 +648,7 @@ const Canvas = {
         var xc = (points[0].x + points[1].x) / 2,
             yc = (points[0].y + points[1].y) / 2;
         ctx.lineTo(xc, yc);
-        var ctrlPts = maptalks.Canvas._getQuadCurvePoints(points);
+        var ctrlPts = Canvas._getQuadCurvePoints(points);
         var i, len = ctrlPts.length;
         for (i = 0; i < len; i += 4) {
             ctx.quadraticCurveTo(ctrlPts[i], ctrlPts[i + 1], ctrlPts[i + 2], ctrlPts[i + 3]);
@@ -614,7 +656,7 @@ const Canvas = {
         ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
     },
 
-    _getQuadCurvePoints : function (points) {
+    _getQuadCurvePoints: function (points) {
         var ctrlPts = [];
         var i, len = points.length;
         var xc, yc;

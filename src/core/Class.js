@@ -1,12 +1,4 @@
-function extend(dest) { // (Object[, Object, ...]) ->
-    for (var i = 1; i < arguments.length; i++) {
-        var src = arguments[i];
-        for (var k in src) {
-            dest[k] = src[k];
-        }
-    }
-    return dest;
-}
+import { extend } from './util/common';
 
 /**
  * OOP facilities of the library. <br/>
@@ -62,7 +54,7 @@ class Class {
             for (let i in conf) {
                 this.options[i] = conf[i];
                 // enable/disable handler
-                // if (this[i] && (this[i] instanceof maptalks.Handler)) {
+                // if (this[i] && (this[i] instanceof Handler)) {
                 //     if (conf[i]) {
                 //         this[i].enable();
                 //     } else {
@@ -103,7 +95,7 @@ class Class {
      */
     static include(...sources) {
         for (let i = 0; i < sources.length; i++) {
-            maptalks.Util.extend(this.prototype, sources[i]);
+            extend(this.prototype, sources[i]);
         }
         return this;
     }

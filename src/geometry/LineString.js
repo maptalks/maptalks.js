@@ -1,4 +1,5 @@
 import { bind, isNil, isArray } from 'core/util';
+import { Animation } from 'utils/Animation';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
 import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';

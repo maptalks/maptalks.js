@@ -1,6 +1,7 @@
 import { extend, isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Class from 'core/class/index';
 import Browser from 'core/Browser';
+import Promise from 'utils/Promise';
 import Point from 'geo/Point';
 import TileLayer from 'layer/tile/TileLayer';
 
