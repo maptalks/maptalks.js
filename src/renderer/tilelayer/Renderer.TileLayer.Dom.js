@@ -125,7 +125,6 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
 
         if (this._levelContainers && this._levelContainers[zoom]) {
             setTransformMatrix(this._levelContainers[zoom], param.matrix['view']);
-            // maptalks.DomUtil.setTransform(this._levelContainers[zoom], new maptalks.Point(matrices['view'].e, matrices['view'].f), matrices.scale.x);
         }
     },
 

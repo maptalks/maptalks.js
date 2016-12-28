@@ -38,10 +38,10 @@ Map.TouchZoom = Handler.extend({
         map.onZoomStart.apply(map);
         /**
           * touchzoomstart event
-          * @event maptalks.Map#touchzoomstart
+          * @event Map#touchzoomstart
           * @type {Object}
           * @property {String} type                    - touchzoomstart
-          * @property {maptalks.Map} target            - the map fires event
+          * @property {Map} target                     - the map fires event
           * @property {Number} from                    - zoom level zooming from
           */
         map._fireEvent('touchzoomstart', { 'from' : this._startZoom });
@@ -63,10 +63,10 @@ Map.TouchZoom = Handler.extend({
         map.onZooming(zoom, this._Origin);
         /**
           * touchzooming event
-          * @event maptalks.Map#touchzooming
+          * @event Map#touchzooming
           * @type {Object}
           * @property {String} type                    - touchzooming
-          * @property {maptalks.Map} target            - the map fires event
+          * @property {Map} target                     - the map fires event
           */
         map._fireEvent('touchzooming');
     },

@@ -1,3 +1,4 @@
+import { isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 
 /**
@@ -40,7 +41,7 @@ export const Center = {
         if (!map) {
             return null;
         }
-        var z = maptalks.Util.isNil(zoom) ? map.getZoom() : map.getMaxZoom();
+        var z = isNil(zoom) ? map.getZoom() : map.getMaxZoom();
         var pcenter = this._getPrjCoordinates();
         if (!pcenter) { return null; }
 

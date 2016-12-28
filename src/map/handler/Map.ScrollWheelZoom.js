@@ -1,4 +1,4 @@
-import { cancelAnimFrame } from 'core/util';
+import { requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
 import Handler from 'core/Handler';
 import Map from '../Map';
@@ -30,7 +30,7 @@ Map.ScrollWheelZoom = Handler.extend({
         if (this._scrollZoomFrame) {
             cancelAnimFrame(this._scrollZoomFrame);
         }
-        this._scrollZoomFrame = maptalks.Util.requestAnimFrame(function () {
+        this._scrollZoomFrame = requestAnimFrame(function () {
             map._zoomAnimation(map.getZoom() + levelValue, mouseOffset);
         });
 

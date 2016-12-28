@@ -4,7 +4,7 @@ import { Animation } from 'utils/Animation';
 import Point from 'geo/Point';
 import Map from './Map';
 
-Map.include(/** @lends maptalks.Map.prototype */{
+Map.include(/** @lends Map.prototype */{
     _zoom: function (nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
         nextZoom = this._checkZoom(nextZoom);
@@ -64,10 +64,10 @@ Map.include(/** @lends maptalks.Map.prototype */{
         this._startZoomVal = this.getZoom();
         /**
           * zoomstart event
-          * @event maptalks.Map#zoomstart
+          * @event Map#zoomstart
           * @type {Object}
           * @property {String} type                    - zoomstart
-          * @property {Map} target            - the map fires event
+          * @property {Map} target                     - the map fires event
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
@@ -96,10 +96,10 @@ Map.include(/** @lends maptalks.Map.prototype */{
         matrix['container'] = [scale, 0, 0, scale, origin.x * (1 - scale), origin.y *  (1 - scale)];
         /**
           * zooming event
-          * @event maptalks.Map#zooming
+          * @event Map#zooming
           * @type {Object}
           * @property {String} type                    - zooming
-          * @property {maptalks.Map} target            - the map fires event
+          * @property {Map} target                     - the map fires event
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
@@ -119,10 +119,10 @@ Map.include(/** @lends maptalks.Map.prototype */{
 
         /**
           * zoomend event
-          * @event maptalks.Map#zoomend
+          * @event Map#zoomend
           * @type {Object}
           * @property {String} type                    - zoomend
-          * @property {maptalks.Map} target            - the map fires event
+          * @property {Map} target                     - the map fires event
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
