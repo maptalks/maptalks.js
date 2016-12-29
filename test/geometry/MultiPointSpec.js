@@ -22,7 +22,7 @@ describe('#MultiPoint', function() {
     it('setCoordinates', function () {
         var points = new maptalks.MultiPoint([[0, 0], [1, 1], [2, 2]]);
         points.setCoordinates([[0, 0]]);
-        expect(maptalks.GeoJSON.toNumberArrays(points.getCoordinates())).to.be.eql([[0, 0]]);
+        expect(maptalks.Coordinate.toNumberArrays(points.getCoordinates())).to.be.eql([[0, 0]]);
     });
 
     it('getCenter', function() {

@@ -1,6 +1,6 @@
-import { Geometry } from './Geometry';
+import MultiType from './MultiPoly';
 import { GeometryCollection } from './GeometryCollection';
-import { Polyline } from './LineString';
+import { LineString } from './LineString';
 
 /**
  * @classdesc
@@ -39,11 +39,11 @@ import { Polyline } from './LineString';
  */
 export const MultiLineString = GeometryCollection.extend(/** @lends MultiLineString.prototype */ {
 
-    includes: [Geometry.MultiPoly],
+    includes: [MultiType],
 
-    GeometryType: Polyline,
+    GeometryType: LineString,
 
-    type: Geometry['TYPE_MULTILINESTRING'],
+    type: 'MultiLineString',
 
     initialize: function (data, opts) {
         this._initOptions(opts);

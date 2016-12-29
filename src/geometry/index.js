@@ -1,6 +1,3 @@
-import './Geometry.Center';
-import './Geometry.Poly';
-import './MultiPoly';
 
 import './editor/GeometryEditor';
 import './editor/TextMarkerEditor';

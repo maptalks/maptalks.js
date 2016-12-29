@@ -1,8 +1,7 @@
 import { isNil, isArray, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
-import { Geometry } from './Geometry';
-import { GeoJSON } from './GeoJSON';
+import { PolyType } from './Geometry.Poly';
 import { Vector } from './Vector';
 
 /**
@@ -30,9 +29,9 @@ import { Vector } from './Vector';
  */
 export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
 
-    includes: [Geometry.Poly],
+    includes: [PolyType],
 
-    type: Geometry['TYPE_POLYGON'],
+    type: 'Polygon',
 
     /**
      * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
@@ -60,7 +59,7 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
             this._projectRings();
             return this;
         }
-        var rings = GeoJSON.toCoordinates(coordinates);
+        var rings = Coordinate.toCoordinates(coordinates);
         var len = rings.length;
         if (!isArray(rings[0])) {
             this._coordinates = this._trimRing(rings);

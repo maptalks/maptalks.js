@@ -131,7 +131,7 @@ describe('#MultiPolygon', function() {
             var multiPolygon = new maptalks.MultiPolygon(points);
             var coordinates = multiPolygon.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = maptalks.GeoJSON.toNumberArrays(coordinates);
+            var geojsonCoordinates = maptalks.Coordinate.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 

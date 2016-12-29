@@ -93,7 +93,7 @@ describe('#LineString', function() {
             var polyline = new maptalks.Polyline(points);
             var coordinates = polyline.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = maptalks.GeoJSON.toNumberArrays(coordinates);
+            var geojsonCoordinates = maptalks.Coordinate.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 

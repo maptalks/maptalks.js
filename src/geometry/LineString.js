@@ -3,8 +3,7 @@ import { Animation } from 'utils/Animation';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
 import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
-import { Geometry } from './Geometry';
-import { GeoJSON } from './GeoJSON';
+import { PolyType } from './Geometry.Poly';
 import { Vector } from './Vector';
 
 /**
@@ -26,9 +25,9 @@ import { Vector } from './Vector';
  * ).addTo(layer);
  */
 export const LineString = Vector.extend(/** @lends LineString.prototype */ {
-    includes: [Geometry.Poly],
+    includes: [PolyType],
 
-    type: Geometry['TYPE_LINESTRING'],
+    type: 'LineString',
 
     /**
      * @property {Object} [options=null]
@@ -59,7 +58,7 @@ export const LineString = Vector.extend(/** @lends LineString.prototype */ {
             this._setPrjCoordinates(null);
             return this;
         }
-        this._coordinates = GeoJSON.toCoordinates(coordinates);
+        this._coordinates = Coordinate.toCoordinates(coordinates);
         if (this.getMap()) {
             this._setPrjCoordinates(this._projectCoords(this._coordinates));
         } else {

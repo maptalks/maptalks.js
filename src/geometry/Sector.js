@@ -1,8 +1,7 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import { Geometry } from './Geometry';
-import { GeoJSON } from './GeoJSON';
+import { CenterType } from './Geometry.Center';
 import { Polygon } from './Polygon';
 
 /**
@@ -24,7 +23,7 @@ import { Polygon } from './Polygon';
  * });
  */
 export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
-    includes: [Geometry.Center],
+    includes: [CenterType],
 
     /**
      * @property {Object} options -
@@ -184,7 +183,7 @@ export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = GeoJSON.toNumberArrays([this.getShell()]);
+        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates

@@ -1,12 +1,11 @@
 import { isArray, isArrayHasData } from 'core/util';
-import { Geometry } from 'geometry/Geometry';
-import { GeoJSON } from './GeoJSON';
+import Coordinate from 'geo/Coordinate';
 
 /**
  * Common methods for MultiPoint, MultiLineString and MultiPolygon
  * @mixin Geometry.MultiPoly
  */
-Geometry.MultiPoly = {
+export default {
     /**
      * Get coordinates of the collection
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
@@ -67,7 +66,7 @@ Geometry.MultiPoly = {
     //override _exportGeoJSONGeometry in GeometryCollection
     _exportGeoJSONGeometry: function () {
         var points = this.getCoordinates();
-        var coordinates = GeoJSON.toNumberArrays(points);
+        var coordinates = Coordinate.toNumberArrays(points);
         return {
             'type': this.getType(),
             'coordinates': coordinates
