@@ -106,6 +106,10 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
         }
     },
 
+    hitDetect: function () {
+        return false;
+    },
+
     _scheduleLoadTileQueue: function () {
 
         if (this._loadQueueTimeout) {
