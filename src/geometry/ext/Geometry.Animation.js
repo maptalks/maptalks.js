@@ -2,8 +2,9 @@ import { bind, isArray, isFunction } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import { Animation } from 'utils/Animation';
 import Coordinate from 'geo/Coordinate';
+import { Geometry } from 'geometry/Geometry';
 
-export const Animatable = /** @lends Geometry.prototype */ {
+Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * Animate the geometry
      *
@@ -157,8 +158,4 @@ export const Animatable = /** @lends Geometry.prototype */ {
             }
         }
     }
-};
-
-export function initAnimation(Geometry) {
-    Geometry.include(Animatable);
-}
+});

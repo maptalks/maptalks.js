@@ -113,6 +113,3 @@ TextBox.fromJSON = function (json) {
     textBox.setId(feature['id']);
     return textBox;
 };
-
-import { TextMarkerEditor } from './editor/TextMarkerEditor';
-TextBox.include(TextMarkerEditor);

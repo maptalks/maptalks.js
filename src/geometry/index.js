@@ -1,3 +1,68 @@
+import './Geometry.Center';
+import './Geometry.Poly';
+import './MultiPoly';
+
+import './editor/GeometryEditor';
+import './editor/TextMarkerEditor';
+
+import './ext/Geometry.Animation';
+import './ext/Geometry.Drag';
+import './ext/Geometry.Edit';
+import './ext/Geometry.Events';
+import './ext/Geometry.InfoWindow';
+import './ext/Geometry.Menu';
+
+import { Geometry } from './Geometry';
+import { Marker } from './Marker';
+import { Vector } from './Vector';
+import { LineString, Polyline } from './LineString';
+import { Polygon } from './Polygon';
+import { MultiPoint } from './MultiPoint';
+import { MultiLineString, MultiPolyline } from './MultiLineString';
+import { MultiPolygon } from './MultiPolygon';
+import { GeometryCollection } from './GeometryCollection';
+import { GeoJSON } from './GeoJSON';
+import { Circle } from './Circle';
+import { Ellipse } from './Ellipse';
+import { Rectangle } from './Rectangle';
+import { Sector } from './Sector';
+import { Curve } from './Curve';
+import { ArcCurve } from './ArcCurve';
+import { CubicBezierCurve } from './CubicBezierCurve';
+import { QuadBezierCurve } from './QuadBezierCurve';
+import { TextMarker } from './TextMarker';
+import { TextBox } from './TextBox';
+import { Label } from './Label';
+import { ConnectorLine, ArcConnectorLine } from './ConnectorLine';
+
+export function initGeometry(Map) {
+    Map.Geometry = Geometry;
+    Map.Marker = Marker;
+    Map.Vector = Vector;
+    Map.LineString = LineString;
+    Map.Polyline = Polyline;
+    Map.Polygon = Polygon;
+    Map.MultiPoint = MultiPoint;
+    Map.MultiLineString = MultiLineString;
+    Map.MultiPolyline = MultiPolyline;
+    Map.MultiPolygon = MultiPolygon;
+    Map.GeometryCollection = GeometryCollection;
+    Map.GeoJSON = GeoJSON;
+    Map.Circle = Circle;
+    Map.Ellipse = Ellipse;
+    Map.Rectangle = Rectangle;
+    Map.Sector = Sector;
+    Map.Curve = Curve;
+    Map.ArcCurve = ArcCurve;
+    Map.CubicBezierCurve = CubicBezierCurve;
+    Map.QuadBezierCurve = QuadBezierCurve;
+    Map.TextMarker = TextMarker;
+    Map.TextBox = TextBox;
+    Map.Label = Label;
+    Map.ConnectorLine = ConnectorLine;
+    Map.ArcConnectorLine = ArcConnectorLine;
+}
+
 export * from './ArcCurve';
 export * from './Circle';
 export * from './ConnectorLine';

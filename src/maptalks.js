@@ -28,8 +28,8 @@ maptalks.ui = ui;
 import * as control from 'control';
 maptalks.control = control;
 
-import { Geometry } from 'geometry';
-maptalks.Geometry = Geometry;
+import { initGeometry } from 'geometry';
+initGeometry(Map);
 
 import { Layer } from 'layer/Layer';
 maptalks.Layer = Layer;

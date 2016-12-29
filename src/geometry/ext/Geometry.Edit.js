@@ -1,6 +1,6 @@
-import { GeometryEditor } from '../editor/GeometryEditor';
+import { Geometry } from 'geometry/Geometry';
 
-export const Editing = /** @lends Geometry.prototype */ {
+Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * Start to edit
      * @param {Object} [options=null]        - edit options
@@ -12,7 +12,7 @@ export const Editing = /** @lends Geometry.prototype */ {
             return this;
         }
         this.endEdit();
-        this._editor = new GeometryEditor(this, opts);
+        this._editor = new Geometry.Editor(this, opts);
         this._editor.start();
         this.fire('editstart');
         return this;
@@ -41,9 +41,4 @@ export const Editing = /** @lends Geometry.prototype */ {
         }
         return false;
     }
-
-};
-
-export function initEdit(Geometry) {
-    Geometry.include(Editing);
-}
+});

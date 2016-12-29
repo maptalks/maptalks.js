@@ -97,6 +97,3 @@ Label.fromJSON = function (json) {
     label.setId(feature['id']);
     return label;
 };
-
-import { TextMarkerEditor } from './editor/TextMarkerEditor';
-Label.include(TextMarkerEditor);

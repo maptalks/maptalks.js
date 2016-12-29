@@ -1286,21 +1286,3 @@ Geometry.getMarkerPathBase64 = function (symbol) {
     var b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' '));
     return b64;
 };
-
-import { Center } from './Geometry.Center';
-import { Poly } from './Geometry.Poly';
-import { MultiPoly } from './MultiPoly';
-Geometry.Center = Center;
-Geometry.Poly = Poly;
-Geometry.MultiPoly = MultiPoly;
-
-import { GeometryEditor } from './editor/GeometryEditor';
-Geometry.include(GeometryEditor);
-
-import { initAnimation, initDrag, initEdit, initEvent, initInfoWindow, initMenu } from './ext';
-initAnimation(Geometry);
-initDrag(Geometry);
-initEdit(Geometry);
-initEvent(Geometry);
-initInfoWindow(Geometry);
-initMenu(Geometry);

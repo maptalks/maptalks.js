@@ -3,6 +3,7 @@ import { isNil } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Browser from 'core/Browser';
 import Handler from 'core/Handler';
+import { Geometry } from 'geometry/Geometry';
 import DragHandler from 'handler/Drag';
 import VectorLayer from 'layer/VectorLayer';
 import { ConnectorLine } from 'geometry/ConnectorLine';
@@ -15,7 +16,7 @@ import { Canvas } from 'renderer';
  * @protected
  * @extends {Handler}
  */
-export const Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
+Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
     dragStageLayerId: internalLayerPrefix + '_drag_stage',
 
     START: Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
@@ -283,30 +284,26 @@ export const Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
 
 });
 
-export function initDrag(Geometry) {
-    Geometry.mergeOptions({
-        'draggable': false,
-        'dragShadow': true,
-        'dragOnAxis': null
-    });
+Geometry.mergeOptions({
+    'draggable': false,
+    'dragShadow': true,
+    'dragOnAxis': null
+});
 
-    Geometry.Drag = Drag;
+Geometry.addInitHook('addHandler', 'draggable', Geometry.Drag);
 
-    Geometry.addInitHook('addHandler', 'draggable', Drag);
-
-    Geometry.include(/** @lends Geometry.prototype */ {
-        /**
-         * Whether the geometry is being dragged.
-         * @reutrn {Boolean}
-         */
-        isDragging: function () {
-            if (this._getParent()) {
-                return this._getParent().isDragging();
-            }
-            if (this['draggable']) {
-                return this['draggable'].isDragging();
-            }
-            return false;
+Geometry.include(/** @lends Geometry.prototype */ {
+    /**
+     * Whether the geometry is being dragged.
+     * @reutrn {Boolean}
+     */
+    isDragging: function () {
+        if (this._getParent()) {
+            return this._getParent().isDragging();
         }
-    });
-}
+        if (this['draggable']) {
+            return this['draggable'].isDragging();
+        }
+        return false;
+    }
+});
