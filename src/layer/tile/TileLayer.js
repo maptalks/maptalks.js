@@ -3,9 +3,9 @@ import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 import PointExtent from 'geo/PointExtent';
-import Layer from '../Layer';
 import { TileConfig } from './tileinfo/TileConfig';
 import { TileSystem } from './tileinfo/TileSystem';
+import Layer from '../Layer';
 
 /**
  * @classdesc

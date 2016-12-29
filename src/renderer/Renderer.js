@@ -4,7 +4,6 @@ import Browser from 'core/Browser';
 import Promise from 'utils/Promise';
 import { default as Canvas2D } from 'utils/Canvas';
 import Point from 'geo/Point';
-import TileLayer from 'layer/tile/TileLayer';
 
 /**
  * @classdesc
@@ -142,7 +141,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
      * @return {Boolean}       true|false
      */
     hitDetect: function (point) {
-        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown || (this.layer instanceof TileLayer)) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
             return false;
         }
         var extent2D = this.getMap()._get2DExtent();
