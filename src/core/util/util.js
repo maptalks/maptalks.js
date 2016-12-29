@@ -9,6 +9,11 @@ import { isNode } from './env';
 import { create, isArray, isString, isNil, hasOwn } from './common';
 import Coordinate from 'geo/Coordinate';
 
+import { readFile } from 'fs';
+import { parse } from 'url';
+import { request as httpsRequest } from 'https';
+import { request as httpRequest } from 'http';
+
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
 (function () {
@@ -94,49 +99,50 @@ export function isSVG(url) {
     return 0;
 }
 
+export const noop = function () {};
+
 // TODO: convertSVG???
-let noop = function () {};
-let convertSVG = noop;
+export let convertSVG = noop;
+
 let _loadRemoteImage = noop;
 let _loadLocalImage = noop;
 
-// if (isNode) {
+if (isNode) {
+    _loadRemoteImage = function (img, url, onComplete) {
+        // http
+        var request;
+        if (url.indexOf('https://') === 0) {
+            request = httpsRequest;
+        } else {
+            request = httpRequest;
+        }
+        var urlObj = parse(url);
+        //mimic the browser to prevent server blocking.
+        urlObj.headers = {
+            'Accept': 'image/*,*/*;q=0.8',
+            'Accept-Encoding': 'gzip, deflate',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Host': urlObj.host,
+            'Pragma': 'no-cache',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'
+        };
+        request(urlObj, function (res) {
+            var data = [];
+            res.on('data', function (chunk) {
+                data.push(chunk);
+            });
+            res.on('end', function () {
+                onComplete(null, Buffer.concat(data));
+            });
+        }).on('error', onComplete).end();
+    };
 
-//     _loadRemoteImage = function (img, url, onComplete) {
-//         //http
-//         var loader;
-//         if (url.indexOf('https://') === 0) {
-//             loader = require('https');
-//         } else {
-//             loader = require('http');
-//         }
-//         var urlObj = require('url').parse(url);
-//         //mimic the browser to prevent server blocking.
-//         urlObj.headers = {
-//             'Accept': 'image/*,*/*;q=0.8',
-//             'Accept-Encoding': 'gzip, deflate',
-//             'Cache-Control': 'no-cache',
-//             'Connection': 'keep-alive',
-//             'Host': urlObj.host,
-//             'Pragma': 'no-cache',
-//             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'
-//         };
-//         loader.request(urlObj, function (res) {
-//             var data = [];
-//             res.on('data', function (chunk) {
-//                 data.push(chunk);
-//             });
-//             res.on('end', function () {
-//                 onComplete(null, Buffer.concat(data));
-//             });
-//         }).on('error', onComplete).end();
-//     };
-
-//     _loadLocalImage = function (img, url, onComplete) {
-//         // local file
-//         require('fs').readFile(url, onComplete);
-//     };
-// }
+    _loadLocalImage = function (img, url, onComplete) {
+        // local file
+        readFile(url, onComplete);
+    };
+}
 
 /**
  * Load a image, can be a remote one or a local file. <br>

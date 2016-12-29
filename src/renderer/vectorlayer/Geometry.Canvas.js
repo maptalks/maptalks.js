@@ -1,12 +1,12 @@
 import { isArray, isArrayHasData } from 'core/util';
 import Browser from 'core/Browser';
 import Canvas from 'utils/Canvas';
-import Ellipse from 'geometry/Ellipse';
-import Circle from 'geometry/Circle';
-import Sector from 'geometry/Sector';
-import Rectangle from 'geometry/Rectangle';
-import LineString from 'geometry/LineString';
-import Polygon from 'geometry/Polygon';
+import { Ellipse } from 'geometry/Ellipse';
+import { Circle } from 'geometry/Circle';
+import { Sector } from 'geometry/Sector';
+import { Rectangle } from 'geometry/Rectangle';
+import { LineString } from 'geometry/LineString';
+import { Polygon } from 'geometry/Polygon';
 
 // 如果不支持canvas, 则不载入canvas的绘制逻辑
 if (Browser.canvas) {

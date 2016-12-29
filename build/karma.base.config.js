@@ -4,6 +4,12 @@ const webpackConfig = {
     resolve: {
         alias: alias
     },
+    node: {
+        fs: 'empty',
+        url: 'empty',
+        http: 'empty',
+        https: 'empty'
+    },
     module: {
         loaders: [{
             test: /\.js/,
