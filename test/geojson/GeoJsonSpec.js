@@ -21,9 +21,8 @@ describe('GeoJSON', function () {
             [100.0, 0.0],
             [101.0, 1.0]
         ]
-    },
-    //Polygon without Holes
-    {
+    }, {
+        //Polygon without Holes
         'type': 'Polygon',
         'coordinates': [
             [
@@ -34,9 +33,8 @@ describe('GeoJSON', function () {
                 [100.0, 0.0]
             ]
         ]
-    },
-    //Polygon with Holes
-    {
+    }, {
+        //Polygon with Holes
         'type': 'Polygon',
         'coordinates': [
             [
