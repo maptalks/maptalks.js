@@ -5,8 +5,8 @@ dist/
 .tern-port
 doc/
 
-### yarn
-yarn*
+### yarn log
+yarn*.log
 
 ### *tags
 GPATH
