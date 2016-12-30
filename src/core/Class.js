@@ -10,7 +10,6 @@ import Handler from 'core/Handler';
  */
 class Class {
     constructor() {
-        // this.options = Object.create(this.options);
         this.callInitHooks();
     }
 
@@ -37,6 +36,9 @@ class Class {
     }
 
     setOptions(options) {
+        if (!this.hasOwnProperty('options')) {
+            this.options = this.options ? Object.create(this.options) : {};
+        }
         for (let i in options) {
             this.options[i] = options[i];
         }

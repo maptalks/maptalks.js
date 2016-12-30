@@ -1,8 +1,16 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import { CenterType } from './Geometry.Center';
-import { Polygon } from './Polygon';
+import CenterMixin from './CenterMixin';
+import Polygon from './Polygon';
+
+/**
+ * @property {Object} options -
+ * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the sector to a polygon.
+ */
+const options = {
+    'numberOfShellPoints': 60
+};
 
 /**
  * @classdesc
@@ -22,32 +30,31 @@ import { Polygon } from './Polygon';
  *     id : 'sector0'
  * });
  */
-export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
-    includes: [CenterType],
+export default class Sector extends CenterMixin(Polygon) {
 
-    /**
-     * @property {Object} options -
-     * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the sector to a polygon.
-     */
-    options: {
-        'numberOfShellPoints': 60
-    },
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const sector = new Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], json['options']);
+        sector.setProperties(feature['properties']);
+        return sector;
+    }
 
-    initialize: function (coordinates, radius, startAngle, endAngle, opts) {
+    constructor(coordinates, radius, startAngle, endAngle, opts) {
+        super();
         this._coordinates = new Coordinate(coordinates);
         this._radius = radius;
         this.startAngle = startAngle;
         this.endAngle = endAngle;
         this._initOptions(opts);
-    },
+    }
 
     /**
      * Get radius of the sector
      * @return {Number}
      */
-    getRadius: function () {
+    getRadius() {
         return this._radius;
-    },
+    }
 
     /**
      * Set a new radius to the sector
@@ -55,19 +62,19 @@ export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
      * @return {Sector} this
      * @fires Sector#shapechange
      */
-    setRadius: function (radius) {
+    setRadius(radius) {
         this._radius = radius;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Get the sector's start angle
      * @return {Number}
      */
-    getStartAngle: function () {
+    getStartAngle() {
         return this.startAngle;
-    },
+    }
 
     /**
      * Set a new start angle to the sector
@@ -75,19 +82,19 @@ export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
      * @return {Sector} this
      * @fires Sector#shapechange
      */
-    setStartAngle: function (startAngle) {
+    setStartAngle(startAngle) {
         this.startAngle = startAngle;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Get the sector's end angle
      * @return {Number}
      */
-    getEndAngle: function () {
+    getEndAngle() {
         return this.endAngle;
-    },
+    }
 
     /**
      * Set a new end angle to the sector
@@ -95,17 +102,17 @@ export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
      * @return {Sector} this
      * @fires Sector#shapechange
      */
-    setEndAngle: function (endAngle) {
+    setEndAngle(endAngle) {
         this.endAngle = endAngle;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Gets the shell of the sector as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Sector#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell: function () {
+    getShell() {
         var measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
@@ -122,17 +129,17 @@ export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
         }
         return shell;
 
-    },
+    }
 
     /**
      * Sector won't have any holes, always returns null
      * @return {null}
      */
-    getHoles: function () {
+    getHoles() {
         return null;
-    },
+    }
 
-    _containsPoint: function (point, tolerance) {
+    _containsPoint(point, tolerance) {
         var center = this._getCenter2DPoint(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
@@ -155,9 +162,9 @@ export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
 
         // TODO: tolerance
         return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
-    },
+    }
 
-    _computeExtent: function (measurer) {
+    _computeExtent(measurer) {
         if (!measurer || !this._coordinates || isNil(this._radius)) {
             return null;
         }
@@ -166,31 +173,31 @@ export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
         var p1 = measurer.locate(this._coordinates, radius, radius);
         var p2 = measurer.locate(this._coordinates, -radius, -radius);
         return new Extent(p1, p2);
-    },
+    }
 
-    _computeGeodesicLength: function () {
+    _computeGeodesicLength() {
         if (isNil(this._radius)) {
             return 0;
         }
         return Math.PI * 2 * this._radius * Math.abs(this.startAngle - this.endAngle) / 360 + 2 * this._radius;
-    },
+    }
 
-    _computeGeodesicArea: function () {
+    _computeGeodesicArea() {
         if (isNil(this._radius)) {
             return 0;
         }
         return Math.PI * Math.pow(this._radius, 2) * Math.abs(this.startAngle - this.endAngle) / 360;
-    },
+    }
 
-    _exportGeoJSONGeometry: function () {
+    _exportGeoJSONGeometry() {
         var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
         };
-    },
+    }
 
-    _toJSON: function (options) {
+    _toJSON(options) {
         var opts = extend({}, options);
         var center = this.getCenter();
         opts.geometry = false;
@@ -208,11 +215,6 @@ export const Sector = Polygon.extend(/** @lends Sector.prototype */ {
         };
     }
 
-});
+}
 
-Sector.fromJSON = function (json) {
-    var feature = json['feature'];
-    var sector = new Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], json['options']);
-    sector.setProperties(feature['properties']);
-    return sector;
-};
+Sector.mergeOptions(options);

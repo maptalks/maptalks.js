@@ -1,4 +1,4 @@
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import PointExtent from 'geo/PointExtent';
 
 /**
@@ -8,12 +8,13 @@ import PointExtent from 'geo/PointExtent';
  * @protected
  * @param {GeometryCollection} geometry - geometry to paint
  */
-export const CollectionPainter = Class.extend(/** @lends CollectionPainter.prototype */ {
-    initialize: function (geometry) {
+export class CollectionPainter extends Class {
+    constructor(geometry) {
+        super();
         this.geometry = geometry;
-    },
+    }
 
-    _eachPainter: function (fn) {
+    _eachPainter(fn) {
         var geometries = this.geometry.getGeometries();
         var painter;
         for (var i = 0, len = geometries.length; i < len; i++) {
@@ -27,75 +28,75 @@ export const CollectionPainter = Class.extend(/** @lends CollectionPainter.proto
                 }
             }
         }
-    },
+    }
 
-    paint: function () {
+    paint() {
         if (!this.geometry) {
             return;
         }
         this._eachPainter(function (painter) {
             painter.paint();
         });
-    },
+    }
 
-    get2DExtent: function (resources) {
+    get2DExtent(resources) {
         var extent = new PointExtent();
         this._eachPainter(function (painter) {
             extent = extent.combine(painter.get2DExtent(resources));
         });
         return extent;
-    },
+    }
 
-    remove: function () {
+    remove() {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.remove.apply(painter, args);
         });
-    },
+    }
 
-    setZIndex: function () {
+    setZIndex() {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.setZIndex.apply(painter, args);
         });
-    },
+    }
 
-    show: function () {
+    show() {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.show.apply(painter, args);
         });
-    },
+    }
 
-    hide: function () {
+    hide() {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.hide.apply(painter, args);
         });
-    },
+    }
 
-    onZoomEnd: function () {
+    onZoomEnd() {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.onZoomEnd.apply(painter, args);
         });
-    },
+    }
 
-    repaint: function () {
+    repaint() {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.repaint.apply(painter, args);
         });
-    },
+    }
 
-    refreshSymbol: function () {
+    refreshSymbol() {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.refreshSymbol.apply(painter, args);
         });
-    },
+    }
 
-    hasPointSymbolizer: function () {
+    hasPointSymbolizer() {
         var result = false;
         this._eachPainter(function (painter) {
             if (painter.hasPointSymbolizer()) {
@@ -105,12 +106,12 @@ export const CollectionPainter = Class.extend(/** @lends CollectionPainter.proto
             return true;
         });
         return result;
-    },
+    }
 
-    removeZoomCache: function () {
+    removeZoomCache() {
         var args = arguments;
         this._eachPainter(function (painter) {
             painter.removeZoomCache.apply(painter, args);
         });
     }
-});
+}

@@ -1,5 +1,5 @@
 import { isArray, isArrayHasData } from 'core/util';
-import { Canvas as Renderer } from 'renderer';
+import { CanvasRenderer } from 'renderer';
 
 /**
  * @classdesc
@@ -10,7 +10,7 @@ import { Canvas as Renderer } from 'renderer';
  * @name Canvas
  * @extends {renderer.Canvas}
  */
-export const Canvas = Renderer.extend({
+export default class OverlayLayerRenderer extends CanvasRenderer {
 
     // geometries can be: true | [geometries] | null
     // true: check layer's all geometries if the checking is the first time.
@@ -21,7 +21,7 @@ export const Canvas = Renderer.extend({
     // 1. if geometries' symbols with external resources change frequently,
     // resources of old symbols will still be stored.
     // 2. removed geometries' resources won't be removed.
-    checkResources: function (geometries) {
+    checkResources(geometries) {
         if (!this._resourceChecked && !isArray(geometries)) {
             geometries = this.layer._geoList;
         }
@@ -53,41 +53,41 @@ export const Canvas = Renderer.extend({
         }
         this._resourceChecked = true;
         return resources;
-    },
+    }
 
-    onGeometryAdd: function (geometries) {
+    onGeometryAdd(geometries) {
         this.render(geometries);
-    },
+    }
 
-    onGeometryRemove: function () {
-        this.render();
-    },
-
-    onGeometrySymbolChange: function (e) {
-        this.render([e.target]);
-    },
-
-    onGeometryShapeChange: function () {
-        this.render();
-    },
-
-    onGeometryPositionChange: function () {
-        this.render();
-    },
-
-    onGeometryZIndexChange: function () {
-        this.render();
-    },
-
-    onGeometryShow: function () {
-        this.render();
-    },
-
-    onGeometryHide: function () {
-        this.render();
-    },
-
-    onGeometryPropertiesChange: function () {
+    onGeometryRemove() {
         this.render();
     }
-});
+
+    onGeometrySymbolChange(e) {
+        this.render([e.target]);
+    }
+
+    onGeometryShapeChange() {
+        this.render();
+    }
+
+    onGeometryPositionChange() {
+        this.render();
+    }
+
+    onGeometryZIndexChange() {
+        this.render();
+    }
+
+    onGeometryShow() {
+        this.render();
+    }
+
+    onGeometryHide() {
+        this.render();
+    }
+
+    onGeometryPropertiesChange() {
+        this.render();
+    }
+}

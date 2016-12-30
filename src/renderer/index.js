@@ -1,5 +1,5 @@
 export * from './Renderable';
-export * from './Renderer';
+export * as CanvasRenderer from './Renderer';
 
 // TODO: can not place below in here
 

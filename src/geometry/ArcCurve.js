@@ -2,6 +2,14 @@ import { Curve } from './Curve';
 import Canvas from 'utils/Canvas';
 
 /**
+ * @property {Object} options
+ * @property {Number} [options.arcDegree=90]           - circle arc's degree.
+ */
+const options = {
+    'arcDegree': 90
+};
+
+/**
  * @classdesc Circle Arc Curve
  * @class
  * @category geometry
@@ -23,34 +31,29 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-export const ArcCurve = Curve.extend(/** @lends ArcCurve.prototype */ {
-    /**
-     * @property {Object} options
-     * @property {Number} [options.arcDegree=90]           - circle arc's degree.
-     */
-    options: {
-        'arcDegree': 90
-    },
+export default class ArcCurve extends Curve {
 
-    _toJSON: function (options) {
+    _toJSON(options) {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'ArcCurve'
         };
-    },
+    }
 
     // paint method on canvas
-    _paintOn: function (ctx, points, lineOpacity) {
+    _paintOn(ctx, points, lineOpacity) {
         ctx.beginPath();
         this._arc(ctx, points, lineOpacity);
         Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity);
     }
-});
 
-ArcCurve.fromJSON = function (json) {
-    var feature = json['feature'];
-    var arc = new ArcCurve(feature['geometry']['coordinates'], json['options']);
-    arc.setProperties(feature['properties']);
-    return arc;
-};
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const arc = new ArcCurve(feature['geometry']['coordinates'], json['options']);
+        arc.setProperties(feature['properties']);
+        return arc;
+    }
+}
+
+ArcCurve.mergeOptions(options);

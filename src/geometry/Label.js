@@ -1,6 +1,26 @@
 import { getAlignPoint } from 'core/util';
 import Size from 'geo/Size';
-import { TextMarker } from './TextMarker';
+import TextMarker from './TextMarker';
+
+/**
+ * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link Marker#options}
+ * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
+ * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
+ * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
+ * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
+ * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
+ * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
+ */
+const options = {
+    'boxAutoSize': true,
+    'boxMinWidth': 0,
+    'boxMinHeight': 0,
+    'boxPadding': {
+        'width': 12,
+        'height': 8
+    },
+    'boxTextAlign': 'middle'
+};
 
 /**
  * @classdesc
@@ -17,37 +37,25 @@ import { TextMarker } from './TextMarker';
  * var label = new Label('This is a label',[100,0])
  *     .addTo(layer);
  */
-export const Label = TextMarker.extend(/** @lends Label.prototype */ {
+export default class Label extends TextMarker {
 
-    /**
-     * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link Marker#options}
-     * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
-     * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
-     * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
-     * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
-     * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
-     * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
-     */
-    options: {
-        'boxAutoSize': true,
-        'boxMinWidth': 0,
-        'boxMinHeight': 0,
-        'boxPadding': {
-            'width': 12,
-            'height': 8
-        },
-        'boxTextAlign': 'middle'
-    },
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const label = new Label(json['content'], feature['geometry']['coordinates'], json['options']);
+        label.setProperties(feature['properties']);
+        label.setId(feature['id']);
+        return label;
+    }
 
-    _toJSON: function (options) {
+    _toJSON(options) {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'Label',
             'content': this._content
         };
-    },
+    }
 
-    _refresh: function () {
+    _refresh() {
         var symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
         if (this.options['box']) {
@@ -88,12 +96,6 @@ export const Label = TextMarker.extend(/** @lends Label.prototype */ {
         this._symbol = symbol;
         this.onSymbolChanged();
     }
-});
+}
 
-Label.fromJSON = function (json) {
-    var feature = json['feature'];
-    var label = new Label(json['content'], feature['geometry']['coordinates'], json['options']);
-    label.setProperties(feature['properties']);
-    label.setId(feature['id']);
-    return label;
-};
+Label.mergeOptions(options);

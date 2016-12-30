@@ -1,5 +1,5 @@
 import { extend, isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'utils/Promise';
 import { default as Canvas2D } from 'utils/Canvas';
@@ -15,13 +15,13 @@ import Point from 'geo/Point';
  * @name Canvas
  * @extends {Class}
  */
-export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
+export default class CanvasRenderer extends Class {
 
-    isCanvasRender: function () {
+    isCanvasRender() {
         return true;
-    },
+    }
 
-    render: function (isCheckRes) {
+    render(isCheckRes) {
         this.prepareRender();
         if (!this.getMap()) {
             return;
@@ -31,7 +31,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             return;
         }
         if (!this.resources) {
-            this.resources = new Canvas.Resources();
+            this.resources = new RenderResources();
         }
         if (this.checkResources && isCheckRes) {
             var me = this,
@@ -58,9 +58,9 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         } else {
             this._tryToDraw.apply(this, arguments);
         }
-    },
+    }
 
-    remove: function () {
+    remove() {
         this._clearTimeout();
         if (this.onRemove) {
             this.onRemove();
@@ -73,16 +73,16 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         // requestMapToRender may be overrided, e.g. renderer.TileLayer.Canvas
         Canvas.prototype.requestMapToRender.call(this);
         delete this.layer;
-    },
+    }
 
-    getMap: function () {
+    getMap() {
         if (!this.layer) {
             return null;
         }
         return this.layer.getMap();
-    },
+    }
 
-    getCanvasImage: function () {
+    getCanvasImage() {
         if (this._renderZoom !== this.getMap().getZoom() || !this.canvas) {
             return null;
         }
@@ -103,44 +103,44 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             'size': size,
             'transform': this._transform
         };
-    },
+    }
 
-    isLoaded: function () {
+    isLoaded() {
         if (this._loaded) {
             return true;
         }
         return false;
-    },
+    }
 
     /**
      * 显示图层
      */
-    show: function () {
+    show() {
         var mask = this.layer.getMask();
         if (mask) {
             mask.onZoomEnd();
         }
         this.render(true);
-    },
+    }
 
     /**
      * 隐藏图层
      */
-    hide: function () {
+    hide() {
         this.clearCanvas();
         this.requestMapToRender();
-    },
+    }
 
-    setZIndex: function () {
+    setZIndex() {
         this.requestMapToRender();
-    },
+    }
 
     /**
      *
      * @param  {ViewPoint} point ViewPoint
      * @return {Boolean}       true|false
      */
-    hitDetect: function (point) {
+    hitDetect(point) {
         if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
             return false;
         }
@@ -169,7 +169,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         }
         return false;
 
-    },
+    }
 
     /**
      * loadResource from resourceUrls
@@ -177,7 +177,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
      * @param  {Function} onComplete          - callback after loading complete
      * @param  {Object} context         - callback's context
      */
-    loadResources: function (resourceUrls) {
+    loadResources(resourceUrls) {
         var resources = this.resources,
             promises = [];
         if (isArrayHasData(resourceUrls)) {
@@ -196,17 +196,17 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             }
         }
         return Promise.all(promises);
-    },
+    }
 
-    prepareRender: function () {
+    prepareRender() {
         var map = this.getMap();
         this._renderZoom = map.getZoom();
         this._extent2D = map._get2DExtent();
         this._northWest = map._containerPointToPoint(new Point(0, 0));
         this._loaded = false;
-    },
+    }
 
-    createCanvas: function () {
+    createCanvas() {
         if (this.canvas) {
             return;
         }
@@ -225,9 +225,9 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         if (this.onCanvasCreate) {
             this.onCanvasCreate();
         }
-    },
+    }
 
-    resizeCanvas: function (canvasSize) {
+    resizeCanvas(canvasSize) {
         if (!this.canvas) {
             return;
         }
@@ -249,16 +249,16 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         if (Browser.retina) {
             this.context.scale(2, 2);
         }
-    },
+    }
 
-    clearCanvas: function () {
+    clearCanvas() {
         if (!this.canvas) {
             return;
         }
         Canvas.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
-    },
+    }
 
-    prepareCanvas: function () {
+    prepareCanvas() {
         if (this._clipped) {
             this.context.restore();
             this._clipped = false;
@@ -299,13 +299,13 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             'context': this.context
         });
         return maskExtent2D;
-    },
+    }
 
-    get2DExtent: function () {
+    get2DExtent() {
         return this._extent2D;
-    },
+    }
 
-    requestMapToRender: function () {
+    requestMapToRender() {
         if (this.getMap() && !this._suppressMapRender) {
             if (this.context) {
                 /**
@@ -323,9 +323,9 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             }
             this.getMap()._getRenderer().render();
         }
-    },
+    }
 
-    fireLoadedEvent: function () {
+    fireLoadedEvent() {
         this._loaded = true;
         if (this.layer && !this._suppressMapRender) {
             /**
@@ -338,21 +338,21 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
              */
             this.layer.fire('layerload');
         }
-    },
+    }
 
-    completeRender: function () {
+    completeRender() {
         this.requestMapToRender();
         this.fireLoadedEvent();
-    },
+    }
 
-    getPaintContext: function () {
+    getPaintContext() {
         if (!this.context) {
             return null;
         }
         return [this.context, this.resources];
-    },
+    }
 
-    getEvents: function () {
+    getEvents() {
         return {
             '_zoomstart' : this.onZoomStart,
             '_zoomend' : this.onZoomEnd,
@@ -362,13 +362,13 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             '_moving' : this.onMoving,
             '_moveend' : this.onMoveEnd
         };
-    },
+    }
 
-    isUpdateWhenZooming: function () {
+    isUpdateWhenZooming() {
         return false;
-    },
+    }
 
-    onZooming: function (param) {
+    onZooming(param) {
         var map = this.getMap();
         if (!map || !this.layer.isVisible()) {
             return;
@@ -385,38 +385,38 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             this.prepareCanvas();
         }
         this._suppressMapRender = false;
-    },
+    }
 
-    onZoomStart: function () {
+    onZoomStart() {
         delete this._transform;
-    },
+    }
 
-    onZoomEnd: function () {
+    onZoomEnd() {
         delete this._transform;
         this._drawOnEvent();
-    },
+    }
 
-    onMoveStart: function () {
+    onMoveStart() {
 
-    },
+    }
 
-    onMoving: function () {
+    onMoving() {
         if (this.getMap()._pitch) {
             this._drawOnEvent();
         }
-    },
+    }
 
-    onMoveEnd: function () {
+    onMoveEnd() {
         this._drawOnEvent();
-    },
+    }
 
-    onResize: function () {
+    onResize() {
         delete this._extent2D;
         this.resizeCanvas();
         this._drawOnEvent();
-    },
+    }
 
-    _tryToDraw:function () {
+    _tryToDraw() {
         this._clearTimeout();
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
             this.completeRender();
@@ -434,9 +434,9 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
                 }
             });
         }
-    },
+    }
 
-    _promiseResource: function (url) {
+    _promiseResource(url) {
         var me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
         return function (resolve) {
@@ -475,9 +475,9 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             loadImage(img,  url);
         };
 
-    },
+    }
 
-    _cacheResource: function (url, img) {
+    _cacheResource(url, img) {
         if (!this.layer || !this.resources) {
             return;
         }
@@ -495,9 +495,9 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
             img = canvas;
         }
         this.resources.addResource(url, img);
-    },
+    }
 
-    _drawOnEvent: function () {
+    _drawOnEvent() {
         if (!this._painted) {
             this.render(true);
         } else {
@@ -508,31 +508,31 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
                 this.draw();
             }
         }
-    },
+    }
 
-    _clearTimeout: function () {
+    _clearTimeout() {
         if (this._currentFrameId) {
             //clearTimeout(this._currentFrameId);
             cancelAnimFrame(this._currentFrameId);
         }
     }
-});
+}
 
-Canvas.Resources = function () {
-    this.resources = {};
-    this._errors = {};
-};
+export class RenderResources {
+    constructor() {
+        this.resources = {};
+        this._errors = {};
+    }
 
-extend(Canvas.Resources.prototype, {
-    addResource: function (url, img) {
+    addResource(url, img) {
         this.resources[url[0]] = {
             image: img,
             width: +url[1],
             height: +url[2]
         };
-    },
+    }
 
-    isResourceLoaded: function (url, checkSVG) {
+    isResourceLoaded(url, checkSVG) {
         if (!url) {
             return false;
         }
@@ -547,20 +547,20 @@ extend(Canvas.Resources.prototype, {
             return false;
         }
         return true;
-    },
+    }
 
-    getImage: function (url) {
+    getImage(url) {
         if (!this.isResourceLoaded(url) || this._errors[this._getImgUrl(url)]) {
             return null;
         }
         return this.resources[this._getImgUrl(url)].image;
-    },
+    }
 
-    markErrorResource: function (url) {
+    markErrorResource(url) {
         this._errors[this._getImgUrl(url)] = 1;
-    },
+    }
 
-    merge: function (res) {
+    merge(res) {
         if (!res) {
             return this;
         }
@@ -569,12 +569,12 @@ extend(Canvas.Resources.prototype, {
             this.addResource([p, img.width, img.height], img.image);
         }
         return this;
-    },
+    }
 
-    _getImgUrl: function (url) {
+    _getImgUrl(url) {
         if (!isArray(url)) {
             return url;
         }
         return url[0];
     }
-});
+}

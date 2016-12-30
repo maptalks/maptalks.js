@@ -1,7 +1,7 @@
 import { internalLayerPrefix } from 'core/Constants';
 import { extend, isNil, isNumber, isArrayHasData, indexOfArray, removeFromArray, setOptions, UID } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Eventable from 'core/Event';
 import Point from 'geo/Point';
 import { Geometry } from 'geometry/Geometry';
@@ -26,24 +26,23 @@ import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
  * @param {_shadow} geometry 待编辑图形
  * @param {Object} opts 属性
  */
-Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
-    includes: [Eventable],
+export default class GeometryEditor extends Eventable(Class) {
 
-    editStageLayerIdPrefix: internalLayerPrefix + '_edit_stage_',
-
-    initialize: function (geometry, opts) {
+    constructor(geometry, opts) {
+        super();
         this._geometry = geometry;
         if (!this._geometry) {
             return;
         }
-        setOptions(this, opts);
-    },
+        this.editStageLayerIdPrefix = internalLayerPrefix + '_edit_stage_';
+        this.setOptions(opts);
+    }
 
-    getMap: function () {
+    getMap() {
         return this._geometry.getMap();
-    },
+    }
 
-    prepare: function () {
+    prepare() {
         var map = this.getMap();
         if (!map) {
             return;
@@ -57,9 +56,9 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
         }
 
         this._prepareEditStageLayer();
-    },
+    }
 
-    _prepareEditStageLayer: function () {
+    _prepareEditStageLayer() {
         var map = this.getMap();
         var uid = UID();
         this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + uid);
@@ -67,12 +66,12 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
             this._editStageLayer = new VectorLayer(this.editStageLayerIdPrefix + uid);
             map.addLayer(this._editStageLayer);
         }
-    },
+    }
 
     /**
      * 开始编辑
      */
-    start: function () {
+    start() {
         if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) {
             return;
         }
@@ -128,13 +127,13 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
             (geometry instanceof Polyline)) {
             this.createPolygonEditor();
         }
-    },
+    }
 
     /**
      * 结束编辑
      * @return {*} [description]
      */
-    stop: function () {
+    stop() {
         this._switchGeometryEvents('off');
         var map = this.getMap();
         if (!map) {
@@ -164,42 +163,42 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
             delete this._originalSymbol;
         }
         this.editing = false;
-    },
+    }
 
-    isEditing: function () {
+    isEditing() {
         if (isNil(this.editing)) {
             return false;
         }
         return this.editing;
-    },
+    }
 
-    _getGeometryEvents: function () {
+    _getGeometryEvents() {
         return {
             'symbolchange': this._onGeometrySymbolChange
         };
-    },
+    }
 
-    _switchGeometryEvents: function (oper) {
+    _switchGeometryEvents(oper) {
         if (this._geometry) {
             var events = this._getGeometryEvents();
             for (var p in events) {
                 this._geometry[oper](p, events[p], this);
             }
         }
-    },
+    }
 
-    _onGeometrySymbolChange: function (param) {
+    _onGeometrySymbolChange(param) {
         if (this._shadow) {
             this._shadow.setSymbol(param['target']._getInternalSymbol());
         }
-    },
+    }
 
-    _onShadowDragEnd: function () {
+    _onShadowDragEnd() {
         this._update();
         this._refresh();
-    },
+    }
 
-    _update: function () {
+    _update() {
         //update geographical properties from shadow to geometry
         this._geometry.setCoordinates(this._shadow.getCoordinates());
         if (this._geometry.getRadius) {
@@ -217,20 +216,20 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
         if (this._geometry.getEndAngle) {
             this._geometry.setEndAngle(this._shadow.getEndAngle());
         }
-    },
+    }
 
-    _updateAndFireEvent: function (eventName) {
+    _updateAndFireEvent(eventName) {
         if (!this._shadow) {
             return;
         }
         this._update();
         this._geometry.fire(eventName);
-    },
+    }
 
     /**
      * create rectangle outline of the geometry
      */
-    _createOrRefreshOutline: function () {
+    _createOrRefreshOutline() {
         var geometry = this._geometry,
             map = this.getMap(),
             outline = this._editOutline;
@@ -256,44 +255,43 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
         }
 
         return outline;
-    },
+    }
 
 
-    _createCenterHandle: function () {
-        var me = this;
-        var center = this._shadow.getCenter();
+    _createCenterHandle() {
+        const center = this._shadow.getCenter();
         var shadow;
-        var handle = me.createHandle(center, {
+        const handle = this.createHandle(center, {
             'markerType': 'ellipse',
             'dxdy': new Point(0, 0),
             'cursor': 'move',
-            onDown: function () {
+            onDown: () => {
                 shadow = this._shadow.copy();
-                var symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
+                const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },
-            onMove: function (v, param) {
-                var dragOffset = param['dragOffset'];
+            onMove: (v, param) => {
+                const dragOffset = param['dragOffset'];
                 if (shadow) {
                     shadow.translate(dragOffset);
                     this._geometry.translate(dragOffset);
                 }
             },
-            onUp: function () {
+            onUp: () => {
                 if (shadow) {
                     this._shadow.setCoordinates(this._geometry.getCoordinates());
                     shadow.remove();
-                    me._refresh();
+                    this._refresh();
                 }
             }
         });
-        this._addRefreshHook(function () {
-            var center = this._shadow.getCenter();
+        this._addRefreshHook(() => {
+            const center = this._shadow.getCenter();
             handle.setCoordinates(center);
         });
-    },
+    }
 
-    _createHandleInstance: function (coordinate, opts) {
+    _createHandleInstance(coordinate, opts) {
         var symbol = {
             'markerType': opts['markerType'],
             'markerFill': '#ffffff', //"#d0d2d6",
@@ -315,9 +313,9 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
             'symbol': symbol
         });
         return handle;
-    },
+    }
 
-    createHandle: function (coordinate, opts) {
+    createHandle(coordinate, opts) {
         if (!opts) {
             opts = {};
         }
@@ -353,14 +351,14 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
         }
         this._editStageLayer.addGeometry(handle);
         return handle;
-    },
+    }
 
     /**
      * create resize handles for geometry that can resize.
      * @param {Array} blackList handle indexes that doesn't display, to prevent change a geometry's coordinates
      * @param {fn} onHandleMove callback
      */
-    _createResizeHandles: function (blackList, onHandleMove) {
+    _createResizeHandles(blackList, onHandleMove) {
         //cursor styles.
         var cursors = [
             'nw-resize', 'n-resize', 'ne-resize',
@@ -442,12 +440,12 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
         //refresh hooks to refresh handles' coordinates
         this._addRefreshHook(fnLocateHandles);
         return resizeHandles;
-    },
+    }
 
     /**
      * 标注和自定义标注编辑器
      */
-    createMarkerEditor: function () {
+    createMarkerEditor() {
         var me = this;
         var marker = this._shadow,
             geometryToEdit = this._geometry,
@@ -573,13 +571,13 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
         this._addListener([map, 'zoomstart', onZoomStart]);
         this._addListener([map, 'zoomend', onZoomEnd]);
 
-    },
+    }
 
     /**
      * 圆形编辑器
      * @return {*} [description]
      */
-    createCircleEditor: function () {
+    createCircleEditor() {
         var shadow = this._shadow,
             circle = this._geometry;
         var map = this.getMap();
@@ -597,13 +595,13 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
             shadow.setRadius(r);
             circle.setRadius(r);
         });
-    },
+    }
 
     /**
      * editor of ellipse or rectangle
      * @return {*} [description]
      */
-    createEllipseOrRectEditor: function () {
+    createEllipseOrRectEditor() {
         var me = this;
         //defines what can be resized by the handle
         //0: resize width; 1: resize height; 2: resize both width and height.
@@ -686,13 +684,13 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
             }
             // me._updateAndFireEvent('shapechange');
         });
-    },
+    }
 
     /**
      * 多边形和多折线的编辑器
      * @return {*} [description]
      */
-    createPolygonEditor: function () {
+    createPolygonEditor() {
 
         var map = this.getMap(),
             shadow = this._shadow,
@@ -888,32 +886,32 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
                 vertexHandles[i][propertyOfVertexRefreshFn]();
             }
         });
-    },
+    }
 
-    _refresh: function () {
+    _refresh() {
         if (this._refreshHooks) {
             for (var i = this._refreshHooks.length - 1; i >= 0; i--) {
                 this._refreshHooks[i].call(this);
             }
         }
-    },
+    }
 
-    _hideContext: function () {
+    _hideContext() {
         if (this._geometry) {
             this._geometry.closeMenu();
             this._geometry.closeInfoWindow();
         }
-    },
+    }
 
-    _addListener: function (listener) {
+    _addListener(listener) {
         if (!this._eventListeners) {
             this._eventListeners = [];
         }
         this._eventListeners.push(listener);
         listener[0].on(listener[1], listener[2], this);
-    },
+    }
 
-    _addRefreshHook: function (fn) {
+    _addRefreshHook(fn) {
         if (!fn) {
             return;
         }
@@ -923,4 +921,4 @@ Geometry.Editor = Class.extend(/** @lends GeometryEditor.prototype */ {
         this._refreshHooks.push(fn);
     }
 
-});
+}

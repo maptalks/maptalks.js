@@ -11,11 +11,10 @@ import './ext/Geometry.Menu';
 
 import { Geometry } from './Geometry';
 import { Marker } from './Marker';
-import { Vector } from './Vector';
 import { LineString, Polyline } from './LineString';
 import { Polygon } from './Polygon';
 import { MultiPoint } from './MultiPoint';
-import { MultiLineString, MultiPolyline } from './MultiLineString';
+import { MultiLineString } from './MultiLineString';
 import { MultiPolygon } from './MultiPolygon';
 import { GeometryCollection } from './GeometryCollection';
 import { GeoJSON } from './GeoJSON';
@@ -35,13 +34,12 @@ import { ConnectorLine, ArcConnectorLine } from './ConnectorLine';
 export function initGeometry(maptalks) {
     maptalks.Geometry = Geometry;
     maptalks.Marker = Marker;
-    maptalks.Vector = Vector;
     maptalks.LineString = LineString;
     maptalks.Polyline = Polyline;
     maptalks.Polygon = Polygon;
     maptalks.MultiPoint = MultiPoint;
     maptalks.MultiLineString = MultiLineString;
-    maptalks.MultiPolyline = MultiPolyline;
+    maptalks.MultiPolyline = MultiLineString;
     maptalks.MultiPolygon = MultiPolygon;
     maptalks.GeometryCollection = GeometryCollection;
     maptalks.GeoJSON = GeoJSON;

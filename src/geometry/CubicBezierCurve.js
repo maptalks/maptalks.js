@@ -1,4 +1,4 @@
-import { Curve } from './Curve';
+import Curve from './Curve';
 import Canvas from 'utils/Canvas';
 
 /**
@@ -22,28 +22,28 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-export const CubicBezierCurve = Curve.extend(/** @lends CubicBezierCurve.prototype */ {
+export default class CubicBezierCurve extends Curve {
 
-    _toJSON: function (options) {
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const curve = new CubicBezierCurve(feature['geometry']['coordinates'], json['options']);
+        curve.setProperties(feature['properties']);
+        return curve;
+    }
+
+    _toJSON(options) {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'CubicBezierCurve'
         };
-    },
+    }
 
     // paint method on canvas
-    _paintOn: function (ctx, points, lineOpacity) {
+    _paintOn(ctx, points, lineOpacity) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         this._bezierCurve(ctx, points, lineOpacity);
         Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity);
     }
-});
-
-CubicBezierCurve.fromJSON = function (json) {
-    var feature = json['feature'];
-    var curve = new CubicBezierCurve(feature['geometry']['coordinates'], json['options']);
-    curve.setProperties(feature['properties']);
-    return curve;
-};
+}

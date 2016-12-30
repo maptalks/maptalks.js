@@ -1,10 +1,24 @@
 import { isArray } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import { CenterType } from './Geometry.Center';
-import { Geometry } from './Geometry';
-import { Painter } from 'renderer/vectorlayer/Painter';
+import CenterMixin from './CenterMixin';
+import Geometry from './Geometry';
+import Painter from 'renderer/vectorlayer/Painter';
 import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
+
+const options = {
+    'symbol': {
+        'markerType': 'path',
+        'markerPath': [{
+            'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
+            'fill': '#DE3333'
+        }],
+        'markerPathWidth': 16,
+        'markerPathHeight': 23,
+        'markerWidth': 24,
+        'markerHeight': 34
+    }
+};
 
 /**
  * @classdesc
@@ -28,72 +42,59 @@ import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
  *     }
  * });
  */
-export const Marker = Geometry.extend(/** @lends Marker.prototype */ {
-    includes: [CenterType],
+export default class Marker extends CenterMixin(Geometry) {
 
-    type: 'Point',
-
-    options: {
-        'symbol': {
-            'markerType': 'path',
-            'markerPath': [{
-                'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
-                'fill': '#DE3333'
-            }],
-            'markerPathWidth': 16,
-            'markerPathHeight': 23,
-            'markerWidth': 24,
-            'markerHeight': 34
-        }
-    },
-
-    initialize: function (coordinates, opts) {
+    constructor(coordinates, opts) {
+        super();
+        this.type = 'Point';
         if (coordinates && !(coordinates instanceof Coordinate)) {
             coordinates = new Coordinate(coordinates);
         }
         this._coordinates = coordinates;
         this._initOptions(opts);
-    },
+    }
 
     /**
      * Can be edited, only marker with a vector symbol, vector path symbol or a image symbol can be edited.
      * @return {Boolean}
      * @private
      */
-    _canEdit: function () {
-        var symbol = this._getInternalSymbol();
+    _canEdit() {
+        const symbol = this._getInternalSymbol();
         if (isArray(symbol)) {
             return false;
         }
         return Symbolizers.VectorMarkerSymbolizer.test(symbol) || Symbolizers.VectorPathMarkerSymbolizer.test(symbol) ||
             Symbolizers.ImageMarkerSymbolizer.test(symbol);
-    },
+    }
 
-    _containsPoint: function (point) {
-        var pxExtent = this._getPainter().get2DExtent();
+    _containsPoint(point) {
+        const pxExtent = this._getPainter().get2DExtent();
         return pxExtent.contains(point);
-    },
+    }
 
-    _computeExtent: function () {
-        var coordinates = this.getCenter();
+    _computeExtent() {
+        const coordinates = this.getCenter();
         if (!coordinates) {
             return null;
         }
         return new Extent(coordinates, coordinates);
-    },
+    }
 
-    _computeGeodesicLength: function () {
+    _computeGeodesicLength() {
         return 0;
-    },
+    }
 
-    _computeGeodesicArea: function () {
+    _computeGeodesicArea() {
         return 0;
-    },
+    }
 
-    _getSprite: function (resources) {
+    _getSprite(resources) {
         if (this._getPainter()) {
             return this._getPainter().getSprite(resources);
         }
         return new Painter(this).getSprite(resources);
     }
-});
+}
+
+Marker.mergeOptions(options);

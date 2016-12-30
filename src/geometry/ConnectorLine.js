@@ -1,41 +1,38 @@
-import { extend, isNil, isArrayHasData, removeFromArray } from 'core/util';
-import { Control } from 'control';
-import { LineString } from './LineString';
-import { ArcCurve } from './ArcCurve';
+import { isNil, isArrayHasData, removeFromArray } from 'core/util';
+import Control from 'control';
+import LineString from './LineString';
+import ArcCurve from './ArcCurve';
 
 /**
  * Mixin of connector line methods.
  * @mixin
- * @name connectorLineMixin
+ * @name Connectable
+ * @private
  */
-const connectorLineMixin = {
+const Connectable = Base => class extends Base {
 
-    initialize: function (src, target, options) {
-        if (arguments.length === 1) {
-            options = src;
-            src = null;
-            target = null;
-        }
-        this._connSource = src;
-        this._connTarget = target;
-        this._initOptions(options);
-        this._registEvents();
-    },
+    static _hasConnectors(geometry) {
+        return (!isNil(geometry.__connectors) && geometry.__connectors.length > 0);
+    }
+
+    static _getConnectors(geometry) {
+        return geometry.__connectors;
+    }
 
     /**
      * Gets the source of the connector line.
      * @return {Geometry|control.Control|UIComponent}
      */
-    getConnectSource: function () {
+    getConnectSource() {
         return this._connSource;
-    },
+    }
 
     /**
      * Sets the source to the connector line.
      * @param {Geometry|control.Control|UIComponent} src
      * @return {ConnectorLine} this
      */
-    setConnectSource: function (src) {
+    setConnectSource(src) {
         var target = this._connTarget;
         this.onRemove();
         this._connSource = src;
@@ -43,22 +40,22 @@ const connectorLineMixin = {
         this._updateCoordinates();
         this._registEvents();
         return this;
-    },
+    }
 
     /**
      * Gets the target of the connector line.
      * @return {Geometry|control.Control|UIComponent}
      */
-    getConnectTarget: function () {
+    getConnectTarget() {
         return this._connTarget;
-    },
+    }
 
     /**
      * Sets the target to the connector line.
      * @param {Geometry|control.Control|UIComponent} target
      * @return {ConnectorLine} this
      */
-    setConnectTarget: function (target) {
+    setConnectTarget(target) {
         var src = this._connSource;
         this.onRemove();
         this._connSource = src;
@@ -66,9 +63,9 @@ const connectorLineMixin = {
         this._updateCoordinates();
         this._registEvents();
         return this;
-    },
+    }
 
-    _updateCoordinates: function () {
+    _updateCoordinates() {
         var map = this.getMap();
         if (!map && this._connSource) {
             map = this._connSource.getMap();
@@ -105,9 +102,9 @@ const connectorLineMixin = {
         if (!isArrayHasData(oldCoordinates) || (!oldCoordinates[0].equals(c1) || !oldCoordinates[1].equals(c2))) {
             this.setCoordinates([c1, c2]);
         }
-    },
+    }
 
-    onRemove: function () {
+    onRemove() {
         if (this._connSource) {
             if (this._connSource.__connectors) {
                 removeFromArray(this, this._connSource.__connectors);
@@ -126,9 +123,9 @@ const connectorLineMixin = {
             this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
             delete this._connTarget;
         }
-    },
+    }
 
-    _showConnect: function () {
+    _showConnect() {
         if (!this._connSource || !this._connTarget) {
             return;
         }
@@ -137,9 +134,9 @@ const connectorLineMixin = {
             this._updateCoordinates();
             this.show();
         }
-    },
+    }
 
-    _registEvents: function () {
+    _registEvents() {
         if (!this._connSource || !this._connTarget) {
             return;
         }
@@ -197,26 +194,31 @@ const connectorLineMixin = {
  *     }).addTo(layer);
  * @mixes connectorLineMixin
  */
-export const ConnectorLine = LineString.extend({
-    includes: [connectorLineMixin],
-    /**
-     * @property {Object} options - ConnectorLine's options
-     * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
-     */
-    options: {
-        showOn: 'always'
+export class ConnectorLine extends Connectable(LineString) {
+    constructor(src, target, options) {
+        super();
+        if (arguments.length === 1) {
+            options = src;
+            src = null;
+            target = null;
+        }
+        this._connSource = src;
+        this._connTarget = target;
+        this._initOptions(options);
+        this._registEvents();
     }
-});
+}
 
-extend(ConnectorLine, {
-    _hasConnectors: function (geometry) {
-        return (!isNil(geometry.__connectors) && geometry.__connectors.length > 0);
-    },
+/**
+ * @property {Object} options - ConnectorLine's options
+ * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
+ */
+const options = {
+    showOn: 'always'
+};
 
-    _getConnectors: function (geometry) {
-        return geometry.__connectors;
-    }
-});
+ConnectorLine.mergeOptions(options)
+
 
 /**
  * An arc curve connector line geometry can connect geometries or ui components with each other. <br>
@@ -242,14 +244,19 @@ extend(ConnectorLine, {
  *     }).addTo(layer);
  * @mixes connectorLineMixin
  */
-export const ArcConnectorLine = ArcCurve.extend({
-    includes: [connectorLineMixin],
-
-    /**
-     * @property {Object} options - ConnectorLine's options
-     * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
-     */
-    options: {
-        showOn: 'always'
+export class ArcConnectorLine extends Connectable(ArcCurve) {
+    constructor(src, target, options) {
+        super();
+        if (arguments.length === 1) {
+            options = src;
+            src = null;
+            target = null;
+        }
+        this._connSource = src;
+        this._connTarget = target;
+        this._initOptions(options);
+        this._registEvents();
     }
-});
+}
+
+ArcConnectorLine.mergeOptions(options);

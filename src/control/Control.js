@@ -1,7 +1,7 @@
-import { extend, isNil, isString, setOptions } from 'core/util';
+import { extend, isNil, isString } from 'core/util';
 import { createEl, addStyle, setStyle, removeDomNode } from 'core/util/dom';
 import Eventable from 'core/Event';
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Point from 'geo/Point';
 import Map from 'map';
 
@@ -17,36 +17,15 @@ import Map from 'map';
  *
  * @mixes Eventable
  */
-export const Control = Class.extend(/** @lends control.Control.prototype */ {
-    includes: [Eventable],
+export default class Control extends Eventable(Class) {
 
-    statics: {
-        'positions': {
-            'top-left': {
-                'top': '20',
-                'left': '20'
-            },
-            'top-right': {
-                'top': '40',
-                'right': '60'
-            },
-            'bottom-left': {
-                'bottom': '20',
-                'left': '60'
-            },
-            'bottom-right': {
-                'bottom': '20',
-                'right': '60'
-            }
-        }
-    },
-
-    initialize: function (options) {
+    constructor(options) {
+        super();
         if (options && options['position'] && !isString(options['position'])) {
             options['position'] = extend({}, options['position']);
         }
-        setOptions(this, options);
-    },
+        this.setOptions(options);
+    }
 
     /**
      * Adds the control to a map.
@@ -54,10 +33,13 @@ export const Control = Class.extend(/** @lends control.Control.prototype */ {
      * @returns {control.Control} this
      * @fires control.Control#add
      */
-    addTo: function (map) {
+    addTo(map) {
         this.remove();
+        if (!map.options['control']) {
+            return this;
+        }
         this._map = map;
-        var controlContainer = map._panels.control;
+        const controlContainer = map._panels.control;
         this.__ctrlContainer = createEl('div');
         setStyle(this.__ctrlContainer, 'position:absolute');
         addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
@@ -76,13 +58,13 @@ export const Control = Class.extend(/** @lends control.Control.prototype */ {
             'dom': controlContainer
         });
         return this;
-    },
+    }
 
     /**
      * update control container
      * @return {control.Control} this
      */
-    update: function () {
+    update() {
         this.__ctrlContainer.innerHTML = '';
         this._controlDom = this.buildOn(this.getMap());
         if (this._controlDom) {
@@ -90,23 +72,23 @@ export const Control = Class.extend(/** @lends control.Control.prototype */ {
             this.__ctrlContainer.appendChild(this._controlDom);
         }
         return this;
-    },
+    }
 
     /**
      * Get the map that the control is added to.
      * @return {Map}
      */
-    getMap: function () {
+    getMap() {
         return this._map;
-    },
+    }
 
     /**
      * Get the position of the control
      * @return {Object}
      */
-    getPosition: function () {
+    getPosition() {
         return extend({}, this._parse(this.options['position']));
-    },
+    }
 
     /**
      * update the control's position
@@ -114,7 +96,7 @@ export const Control = Class.extend(/** @lends control.Control.prototype */ {
      * @return {control.Control} this
      * @fires control.Control#positionchange
      */
-    setPosition: function (position) {
+    setPosition(position) {
         if (isString(position)) {
             this.options['position'] = position;
         } else {
@@ -122,16 +104,16 @@ export const Control = Class.extend(/** @lends control.Control.prototype */ {
         }
         this._updatePosition();
         return this;
-    },
+    }
 
     /**
      * Get the container point of the control.
      * @return {Point}
      */
-    getContainerPoint: function () {
-        var position = this.getPosition();
+    getContainerPoint() {
+        const position = this.getPosition();
 
-        var size = this.getMap().getSize();
+        const size = this.getMap().getSize();
         var x, y;
         if (!isNil(position['top'])) {
             x = position['top'];
@@ -144,57 +126,57 @@ export const Control = Class.extend(/** @lends control.Control.prototype */ {
             y = size['width'] - position['right'];
         }
         return new Point(x, y);
-    },
+    }
 
     /**
      * Get the control's container.
      * Container is a div element wrapping the control's dom and decides the control's position and display.
      * @return {HTMLElement}
      */
-    getContainer: function () {
+    getContainer() {
         return this.__ctrlContainer;
-    },
+    }
 
     /**
      * Get html dom element of the control
      * @return {HTMLElement}
      */
-    getDOM: function () {
+    getDOM() {
         return this._controlDom;
-    },
+    }
 
     /**
      * Show
      * @return {control.Control} this
      */
-    show: function () {
+    show() {
         this.__ctrlContainer.style.display = '';
         return this;
-    },
+    }
 
     /**
      * Hide
      * @return {control.Control} this
      */
-    hide: function () {
+    hide() {
         this.__ctrlContainer.style.display = 'none';
         return this;
-    },
+    }
 
     /**
      * Whether the control is visible
      * @return {Boolean}
      */
-    isVisible: function () {
+    isVisible() {
         return (this.__ctrlContainer && this.__ctrlContainer.style.display === '');
-    },
+    }
 
     /**
      * Remove itself from the map
      * @return {control.Control} this
      * @fires control.Control#remove
      */
-    remove: function () {
+    remove() {
         if (!this._map) {
             return this;
         }
@@ -215,17 +197,17 @@ export const Control = Class.extend(/** @lends control.Control.prototype */ {
          */
         this.fire('remove');
         return this;
-    },
+    }
 
-    _parse: function (position) {
+    _parse(position) {
         var p = position;
         if (isString(position)) {
             p = Control['positions'][p];
         }
         return p;
-    },
+    }
 
-    _updatePosition: function () {
+    _updatePosition() {
         var position = this.getPosition();
         if (!position) {
             //default one
@@ -254,7 +236,26 @@ export const Control = Class.extend(/** @lends control.Control.prototype */ {
         });
     }
 
-});
+}
+
+Control.positions = {
+    'top-left': {
+        'top'   : 20,
+        'left'  : 20
+    },
+    'top-right': {
+        'top'   : 40,
+        'right' : 60
+    },
+    'bottom-left': {
+        'bottom': 20,
+        'left'  : 60
+    },
+    'bottom-right': {
+        'bottom': 20,
+        'right' : 60
+    }
+};
 
 Map.mergeOptions({
     'control': true
@@ -267,8 +268,8 @@ Map.include(/** @lends Map.prototype */ {
      * @return {Map} this
      */
     addControl: function (control) {
-        //map container is a canvas, can't add control on it.
-        if (!this.options['control'] || this._containerDOM.getContext) {
+        // if map container is a canvas, can't add control on it.
+        if (this._containerDOM.getContext) {
             return this;
         }
         control.addTo(this);
@@ -289,5 +290,3 @@ Map.include(/** @lends Map.prototype */ {
     }
 
 });
-
-export default Control;

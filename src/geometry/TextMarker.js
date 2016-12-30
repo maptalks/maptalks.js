@@ -2,8 +2,34 @@ import { extend } from 'core/util';
 import { splitTextToRow } from 'core/util/text';
 import Coordinate from 'geo/Coordinate';
 import Size from 'geo/Size';
-import { Geometry } from './Geometry';
-import { Marker } from './Marker';
+import Geometry from './Geometry';
+import Marker from './Marker';
+
+const defaultSymbol = {
+    'textFaceName': 'monospace',
+    'textSize': 12,
+    'textWrapBefore': false,
+    'textWrapCharacter': '\n',
+    'textLineSpacing': 8,
+    'textHorizontalAlignment': 'middle', //left middle right
+    'textVerticalAlignment': 'middle', //top middle bottom
+    'textOpacity': 1,
+    'textDx': 0,
+    'textDy': 0
+};
+
+const defaultBoxSymbol = {
+    'markerType': 'square',
+    'markerLineColor': '#000',
+    'markerLineWidth': 2,
+    'markerLineOpacity': 1,
+    'markerFill': '#fff',
+    'markerOpacity': 1
+};
+
+const options = {
+    'box': true,
+};
 
 /**
  * @classdesc
@@ -15,57 +41,33 @@ import { Marker } from './Marker';
  * @abstract
  * @extends Marker
  */
-export const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
+export default class TextMarker extends Marker {
 
-    options: {
-        'box': true,
-    },
-
-    defaultSymbol: {
-        'textFaceName': 'monospace',
-        'textSize': 12,
-        'textWrapBefore': false,
-        'textWrapCharacter': '\n',
-        'textLineSpacing': 8,
-        'textHorizontalAlignment': 'middle', //left middle right
-        'textVerticalAlignment': 'middle', //top middle bottom
-        'textOpacity': 1,
-        'textDx': 0,
-        'textDy': 0
-    },
-
-    defaultBoxSymbol: {
-        'markerType': 'square',
-        'markerLineColor': '#000',
-        'markerLineWidth': 2,
-        'markerLineOpacity': 1,
-        'markerFill': '#fff',
-        'markerOpacity': 1
-    },
-
-
-    initialize: function (content, coordinates, options) {
+    constructor(content, coordinates, options) {
+        super();
+        this.defaultSymbol = defaultSymbol;
+        this.defaultBoxSymbol = defaultBoxSymbol;
         this._content = content;
         this._coordinates = new Coordinate(coordinates);
         this._initOptions(options);
         this._registerEvents();
         this._refresh();
-    },
+    }
 
     /**
      * Get text content of the label
      * @returns {String}
      */
-    getContent: function () {
+    getContent() {
         return this._content;
-    },
+    }
 
     /**
      * Set a new text content to the label
      * @return {Label} this
      * @fires Label#contentchange
      */
-    setContent: function (content) {
+    setContent(content) {
         var old = this._content;
         this._content = content;
         this._refresh();
@@ -83,16 +85,16 @@ export const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
             'new': content
         });
         return this;
-    },
+    }
 
-    getSymbol: function () {
+    getSymbol() {
         if (this._textSymbolChanged) {
             return Geometry.prototype.getSymbol.call(this);
         }
         return null;
-    },
+    }
 
-    setSymbol: function (symbol) {
+    setSymbol(symbol) {
         if (!symbol || symbol === this.options['symbol']) {
             this._textSymbolChanged = false;
             symbol = {};
@@ -105,9 +107,9 @@ export const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
         this._symbol = s;
         this._refresh();
         return this;
-    },
+    }
 
-    onConfig: function (conf) {
+    onConfig(conf) {
         var needRepaint = false;
         for (var p in conf) {
             if (conf.hasOwnProperty(p)) {
@@ -121,9 +123,9 @@ export const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
             this._refresh();
         }
         return Marker.prototype.onConfig.apply(this, arguments);
-    },
+    }
 
-    _getBoxSize: function (symbol) {
+    _getBoxSize(symbol) {
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';
         }
@@ -145,26 +147,28 @@ export const TextMarker = Marker.extend(/** @lends TextMarker.prototype */ {
             }
         }
         return [width && height ? new Size(width, height) : null, size];
-    },
+    }
 
-    _getInternalSymbol: function () {
+    _getInternalSymbol() {
         return this._symbol;
-    },
+    }
 
-    _getDefaultTextSymbol: function () {
+    _getDefaultTextSymbol() {
         var s = {};
         extend(s, this.defaultSymbol);
         if (this.options['box']) {
             extend(s, this.defaultBoxSymbol);
         }
         return s;
-    },
+    }
 
-    _registerEvents: function () {
+    _registerEvents() {
         this.on('shapechange', this._refresh, this);
-    },
+    }
 
-    onRemove: function () {
+    onRemove() {
         this.off('shapechange', this._refresh, this);
     }
-});
+}
+
+TextMarker.mergeOptions(options);

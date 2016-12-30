@@ -1,9 +1,32 @@
-import Class from 'core/class/index';
-import { extend, isNil, isNumber, setOptions } from 'core/util';
+import Class from 'core/Class';
+import { extend, isNil, isNumber } from 'core/util';
 import Eventable from 'core/Event';
 import { Marker, Polygon } from 'geometry';
 import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 import { Renderable } from 'renderer';
+
+/**
+ * @property {Object}  [options=null] - base options of layer.
+ * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
+ * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
+ * @property {Boolean} [options.visible=true] - whether to display the layer.
+ * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
+ * @property {String}  [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ */
+var options = {
+    //最大最小可视范围, null表示不受限制
+    'minZoom': null,
+    'maxZoom': null,
+    //图层是否可见
+    'visible': true,
+    'opacity': 1,
+    'drawImmediate': false,
+    // context.globalCompositeOperation, 'source-in' in default
+    'globalCompositeOperation': null,
+    'renderer': 'canvas',
+    'dx': 0,
+    'dy': 0
+};
 
 /**
  * @classdesc
@@ -16,43 +39,17 @@ import { Renderable } from 'renderer';
  * @extends Class
  * @mixes Eventable
  */
-export const Layer = Class.extend(/** @lends Layer.prototype */ {
-
-    includes: Eventable,
-
-    /**
-     * @property {Object}  [options=null] - base options of layer.
-     * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
-     * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
-     * @property {Boolean} [options.visible=true] - whether to display the layer.
-     * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
-     * @property {String}  [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
-     */
-    options: {
-        //最大最小可视范围, null表示不受限制
-        'minZoom': null,
-        'maxZoom': null,
-        //图层是否可见
-        'visible': true,
-        'opacity': 1,
-        'drawImmediate': false,
-        // context.globalCompositeOperation, 'source-in' in default
-        'globalCompositeOperation': null,
-        'renderer': 'canvas',
-        'dx': 0,
-        'dy': 0
-    },
-
-    initialize: function (id, opts) {
+export default class Layer extends Eventable(Renderable(Class)) {
+    constructor(id, opts) {
+        super();
         this.setId(id);
-        setOptions(this, opts);
-    },
-
+        this.setOptions(opts);
+    }
 
     /**
      * load the tile layer, can't be overrided by sub-classes
      */
-    load: function () {
+    load() {
         if (!this.getMap()) {
             return this;
         }
@@ -65,15 +62,15 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
             this._renderer.render(true);
         }
         return this;
-    },
+    }
 
     /**
      * Get the layer id
      * @returns {String} id
      */
-    getId: function () {
+    getId() {
         return this._id;
-    },
+    }
 
     /**
      * Set a new id to the layer
@@ -81,7 +78,7 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
      * @return {Layer} this
      * @fires Layer#idchange
      */
-    setId: function (id) {
+    setId(id) {
         //TODO 设置id可能造成map无法找到layer
         var old = this._id;
         if (!isNil(id)) {
@@ -103,24 +100,24 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
             'new': id
         });
         return this;
-    },
+    }
 
     /**
      * Adds itself to a map.
      * @param {Map} map - map added to
      * @return {Layer} this
      */
-    addTo: function (map) {
+    addTo(map) {
         map.addLayer(this);
         return this;
-    },
+    }
 
     /**
      * Set a z-index to the layer
      * @param {Number} zIndex - layer's z-index
      * @return {Layer} this
      */
-    setZIndex: function (zIndex) {
+    setZIndex(zIndex) {
         this._zIndex = zIndex;
         if (this.map) {
             var layerList = this._getLayerList();
@@ -130,46 +127,46 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
             this._renderer.setZIndex(zIndex);
         }
         return this;
-    },
+    }
 
     /**
      * Get the layer's z-index
      * @return {Number}
      */
-    getZIndex: function () {
+    getZIndex() {
         return this._zIndex;
-    },
+    }
 
     /**
      * If the layer is rendered by HTML5 Canvas 2d.
      * @return {Boolean}
      * @protected
      */
-    isCanvasRender: function () {
+    isCanvasRender() {
         var renderer = this._getRenderer();
         if (renderer) {
             return renderer.isCanvasRender();
         }
         return false;
-    },
+    }
 
     /**
      * Get the map that the layer added to
      * @returns {Map}
      */
-    getMap: function () {
+    getMap() {
         if (this.map) {
             return this.map;
         }
         return null;
-    },
+    }
 
 
     /**
      * Brings the layer to the top of all the layers
      * @returns {Layer} this
      */
-    bringToFront: function () {
+    bringToFront() {
         var layers = this._getLayerList();
         if (!layers) {
             return this;
@@ -181,13 +178,13 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
         var max = topLayer.getZIndex();
         this.setZIndex(max + 1);
         return this;
-    },
+    }
 
     /**
      * Brings the layer under the bottom of all the layers
      * @returns {Layer} this
      */
-    bringToBack: function () {
+    bringToBack() {
         var layers = this._getLayerList();
         if (!layers) {
             return this;
@@ -199,13 +196,13 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
         var min = bottomLayer.getZIndex();
         this.setZIndex(min - 1);
         return this;
-    },
+    }
 
     /**
      * Show the layer
      * @returns {Layer} this
      */
-    show: function () {
+    show() {
         if (!this.options['visible']) {
             this.options['visible'] = true;
             if (this._getRenderer()) {
@@ -214,13 +211,13 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
         }
         this.fire('show');
         return this;
-    },
+    }
 
     /**
      * Hide the layer
      * @returns {Layer} this
      */
-    hide: function () {
+    hide() {
         if (this.options['visible']) {
             this.options['visible'] = false;
             if (this._getRenderer()) {
@@ -229,20 +226,20 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
         }
         this.fire('hide');
         return this;
-    },
+    }
 
-    isLoaded: function () {
+    isLoaded() {
         if (!this._renderer) {
             return false;
         }
         return this._renderer.isLoaded();
-    },
+    }
 
     /**
      * Whether the layer is visible now.
      * @return {Boolean}
      */
-    isVisible: function () {
+    isVisible() {
         if (isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
             return false;
         }
@@ -259,33 +256,33 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
             this.options['visible'] = true;
         }
         return this.options['visible'];
-    },
+    }
 
     /**
      * Remove itself from the map added to.
      * @returns {Layer} this
      */
-    remove: function () {
+    remove() {
         if (this.map) {
             this.map.removeLayer(this);
         }
         return this;
-    },
+    }
 
     /**
      * Get the mask geometry of the layer
      * @return {Geometry}
      */
-    getMask: function () {
+    getMask() {
         return this._mask;
-    },
+    }
 
     /**
      * Set a mask geometry on the layer, only the area in the mask will be displayed.
      * @param {Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
      * @returns {Layer} this
      */
-    setMask: function (mask) {
+    setMask(mask) {
         if (!((mask instanceof Marker && Symbolizers.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
                 mask instanceof Polygon)) {
             throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
@@ -311,13 +308,13 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
             this._getRenderer().render();
         }
         return this;
-    },
+    }
 
     /**
      * Remove the mask
      * @returns {Layer} this
      */
-    removeMask: function () {
+    removeMask() {
         delete this._mask;
         if (!this.getMap() || this.getMap()._isBusy()) {
             return this;
@@ -326,24 +323,24 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
             this._getRenderer().render();
         }
         return this;
-    },
+    }
 
     /**
      * Prepare Layer's loading, this is a method intended to be overrided by subclasses.
      * @return {Boolean} true to continue loading, false to cease.
      * @protected
      */
-    onAdd: function () {
+    onAdd() {
         return true;
-    },
+    }
 
-    _refreshMask: function () {
+    _refreshMask() {
         if (this._mask) {
             this._mask.onZoomEnd();
         }
-    },
+    }
 
-    _bindMap: function (map, zIndex) {
+    _bindMap(map, zIndex) {
         if (!map) {
             return;
         }
@@ -353,9 +350,9 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
         this._switchEvents('on', this);
 
         this.fire('add');
-    },
+    }
 
-    _initRenderer: function () {
+    _initRenderer() {
         var renderer = this.options['renderer'];
         if (!this.constructor.getRendererClass) {
             return;
@@ -368,9 +365,9 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
         this._renderer.layer = this;
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
-    },
+    }
 
-    _doRemove: function () {
+    _doRemove() {
         if (this.onRemove) {
             this.onRemove();
         }
@@ -383,42 +380,40 @@ export const Layer = Class.extend(/** @lends Layer.prototype */ {
         }
         delete this._mask;
         delete this.map;
-    },
+    }
 
-    _switchEvents: function (to, emitter) {
+    _switchEvents(to, emitter) {
         if (emitter && emitter.getEvents) {
             this.getMap()[to](emitter.getEvents(), emitter);
         }
-    },
+    }
 
-    _registerEvents: function () {
+    _registerEvents() {
         this.getMap().on('_zoomend', this._refreshMask, this);
-    },
+    }
 
-    _removeEvents: function () {
+    _removeEvents() {
         this.getMap().off('_zoomend', this._refreshMask, this);
-    },
+    }
 
-    _getRenderer: function () {
+    _getRenderer() {
         return this._renderer;
-    },
+    }
 
-    _getLayerList: function () {
+    _getLayerList() {
         if (!this.map) {
             return null;
         }
         return this.map._layers;
     }
-});
+}
 
-extend(Layer, Renderable);
+Layer.mergeOptions(options);
 
-Layer.extend = function (props) {
+/*Layer.extend = function (props) {
     var NewLayer = Class.extend.call(this, props);
-    if (this._regRenderers) {
-        NewLayer._regRenderers = extend({}, this._regRenderers);
+    if (this._rendererClasses) {
+        NewLayer._rendererClasses = extend({}, this._rendererClasses);
     }
     return NewLayer;
-};
-
-export default Layer;
+};*/

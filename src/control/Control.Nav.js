@@ -1,6 +1,15 @@
 import Map from 'map';
 import Control from './Control';
 
+
+/**
+ * @property {Object} options - options
+ * @property {Object} [options.position='top-left'}] - position of the control
+ */
+const options = {
+    'position': 'top-left'
+};
+
 /**
  * @classdesc
  * A control for map navigation.
@@ -10,20 +19,15 @@ import Control from './Control';
  * @memberOf control
  * @name Nav
  */
-export const Nav = Control.extend(/** @lends Nav.prototype */ {
-    /**
-     * @property {Object} options - options
-     * @property {Object} [options.position='top-left'}] - position of the control
-     */
-    options: {
-        'position': 'top-left'
-    },
+export default class Nav extends Control {
 
-    buildOn: function () {
+    buildOn() {
         return null;
     }
 
-});
+}
+
+Nav.mergeOptions(options);
 
 Map.mergeOptions({
     'navControl': false

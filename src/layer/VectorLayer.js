@@ -2,9 +2,30 @@ import { extend, isNil, isArray } from 'core/util';
 import { compileStyle } from 'core/util/style';
 import { getFilterFeature } from 'utils';
 import Extent from 'geo/Extent';
-import { Geometry } from 'geometry/Geometry';
+import Geometry from 'geometry/Geometry';
 import Layer from './Layer';
 import OverlayLayer from './OverlayLayer';
+
+
+
+/**
+ * @property {Object}  options - VectorLayer's options
+ * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
+ * @property {Boolean} options.enableSimplify=true   - whether to simplify geometries before rendering.
+ * @property {String}  options.cursor=default        - the cursor style of the layer
+ * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events
+ * @property {Boolean} options.defaultIconSize=[20, 20] - default size of a marker's icon
+ * @property {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.
+ */
+const options = {
+    'debug': false,
+    'enableSimplify': true,
+    'cursor': 'pointer',
+    'geometryEvents': true,
+    'defaultIconSize': [20, 20],
+    'cacheVectorOnCanvas': true,
+    'cacheSvgOnCanvas': false
+};
 
 /**
  * @classdesc
@@ -18,52 +39,35 @@ import OverlayLayer from './OverlayLayer';
  * @param {Object}  [options.style=null]    - vectorlayer's style
  * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}
  */
-export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype */ {
-    /**
-     * @property {Object}  options - VectorLayer's options
-     * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
-     * @property {Boolean} options.enableSimplify=true   - whether to simplify geometries before rendering.
-     * @property {String}  options.cursor=default        - the cursor style of the layer
-     * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events
-     * @property {Boolean} options.defaultIconSize=[20, 20] - default size of a marker's icon
-     * @property {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.
-     */
-    options: {
-        'debug': false,
-        'enableSimplify': true,
-        'cursor': 'pointer',
-        'geometryEvents': true,
-        'defaultIconSize': [20, 20],
-        'cacheVectorOnCanvas': true,
-        'cacheSvgOnCanvas': false
-    },
+export default class VectorLayer extends OverlayLayer {
 
-    initialize: function (id, geometries, opts) {
+    constructor(id, geometries, opts) {
         if (geometries && (!(geometries instanceof Geometry) && !(isArray(geometries)))) {
             opts = geometries;
             geometries = null;
         }
-        var options = extend({}, opts);
-        if (options['style']) {
-            this.setStyle(options['style']);
-            delete options['style'];
+        const options = extend({}, opts);
+        const style = options['style'];
+        delete options['style'];
+        super(id, options);
+        if (style) {
+            this.setStyle(style);
         }
-        Layer.prototype.initialize.call(this, id, options);
         if (geometries) {
             this.addGeometry(geometries);
         }
-    },
+    }
 
     /**
      * Gets layer's style.
      * @return {Object|Object[]} layer's style
      */
-    getStyle: function () {
+    getStyle() {
         if (!this._style) {
             return null;
         }
         return this._style;
-    },
+    }
 
     /**
      * Sets style to the layer, styling the geometries satisfying the condition with style's symbol
@@ -83,7 +87,7 @@ export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype 
         }
       ]);
      */
-    setStyle: function (style) {
+    setStyle(style) {
         this._style = style;
         this._cookedStyles = compileStyle(style);
         this.forEach(function (geometry) {
@@ -102,14 +106,14 @@ export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype 
             'style': style
         });
         return this;
-    },
+    }
 
     /**
      * Removes layers' style
      * @returns {VectorLayer} this
      * @fires VectorLayer#removestyle
      */
-    removeStyle: function () {
+    removeStyle() {
         if (!this._style) {
             return this;
         }
@@ -128,16 +132,16 @@ export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype 
          */
         this.fire('removestyle');
         return this;
-    },
+    }
 
-    onAddGeometry: function (geo) {
+    onAddGeometry(geo) {
         var style = this.getStyle();
         if (style) {
             this._styleGeometry(geo);
         }
-    },
+    }
 
-    _styleGeometry: function (geometry) {
+    _styleGeometry(geometry) {
         if (!this._cookedStyles) {
             return false;
         }
@@ -149,7 +153,7 @@ export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype 
             }
         }
         return false;
-    },
+    }
 
     /**
      * Export the vector layer's profile json. <br>
@@ -159,11 +163,11 @@ export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype 
      * @param  {Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
      * @return {Object} layer's profile JSON
      */
-    toJSON: function (options) {
+    toJSON(options) {
         if (!options) {
             options = {};
         }
-        var profile = {
+        const profile = {
             'type': 'VectorLayer',
             'id': this.getId(),
             'options': this.config()
@@ -195,35 +199,34 @@ export const VectorLayer = OverlayLayer.extend(/** @lends VectorLayer.prototype 
         }
         return profile;
     }
-});
 
-/**
- * Reproduce a VectorLayer from layer's profile JSON.
- * @param  {Object} layerJSON - layer's profile JSON
- * @return {VectorLayer}
- * @static
- * @private
- * @function
- */
-VectorLayer.fromJSON = function (profile) {
-    if (!profile || profile['type'] !== 'VectorLayer') {
-        return null;
-    }
-    var layer = new VectorLayer(profile['id'], profile['options']);
-    var geoJSONs = profile['geometries'];
-    var geometries = [],
-        geo;
-    for (var i = 0; i < geoJSONs.length; i++) {
-        geo = Geometry.fromJSON(geoJSONs[i]);
-        if (geo) {
-            geometries.push(geo);
+    /**
+     * Reproduce a VectorLayer from layer's profile JSON.
+     * @param  {Object} layerJSON - layer's profile JSON
+     * @return {VectorLayer}
+     * @static
+     * @private
+     * @function
+     */
+    static fromJSON(profile) {
+        if (!profile || profile['type'] !== 'VectorLayer') {
+            return null;
         }
+        const layer = new VectorLayer(profile['id'], profile['options']);
+        const geoJSONs = profile['geometries'];
+        const geometries = [];
+        for (let i = 0; i < geoJSONs.length; i++) {
+            let geo = Geometry.fromJSON(geoJSONs[i]);
+            if (geo) {
+                geometries.push(geo);
+            }
+        }
+        layer.addGeometry(geometries);
+        if (profile['style']) {
+            layer.setStyle(profile['style']);
+        }
+        return layer;
     }
-    layer.addGeometry(geometries);
-    if (profile['style']) {
-        layer.setStyle(profile['style']);
-    }
-    return layer;
-};
+}
 
-export default VectorLayer;
+VectorLayer.mergeOptions(options);

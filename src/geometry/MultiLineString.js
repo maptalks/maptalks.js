@@ -1,14 +1,12 @@
-import MultiPolyType from './MultiPoly';
-import { GeometryCollection } from './GeometryCollection';
-import { LineString } from './LineString';
+import MultiGeometry from './MultiGeometry';
+import LineString from './LineString';
 
 /**
  * @classdesc
  * Represents a Geometry type of MultiLineString
  * @class
  * @category geometry
- * @extends GeometryCollection
- * @mixes Geometry.MultiPoly
+ * @extends MultiGeometry
  * @param {Number[][][]|Coordinate[][]|LineString[]} data - construct data, coordinates or a array of linestrings
  * @param {Object} [options=null]           - options defined in [MultiLineString]{@link MultiLineString#options}
  * @example
@@ -37,18 +35,12 @@ import { LineString } from './LineString';
  *      }
  * ).addTo(layer);
  */
-export const MultiLineString = GeometryCollection.extend(/** @lends MultiLineString.prototype */ {
+export default class MultiLineString extends MultiGeometry {
 
-    includes: [MultiPolyType],
-
-    GeometryType: LineString,
-
-    type: 'MultiLineString',
-
-    initialize: function (data, opts) {
+    constructor(data, opts) {
+        super(LineString);
+        this.type = 'MultiLineString';
         this._initOptions(opts);
         this._initData(data);
     }
-});
-
-export const MultiPolyline = MultiLineString;
+}

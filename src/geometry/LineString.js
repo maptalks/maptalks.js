@@ -3,15 +3,24 @@ import { Animation } from 'utils/Animation';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
 import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
-import { PolyType } from './Geometry.Poly';
-import { Vector } from './Vector';
+import Path from './Path';
+
+/**
+ * @property {Object} [options=null]
+ * @property {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the linestring when it cross the 180 or -180 longtitude line.
+ * @property {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
+ * @property {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
+ */
+const options = {
+    'arrowStyle': null,
+    'arrowPlacement': 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
+};
 
 /**
  * @classdesc Represents a LineString type Geometry.
  * @class
  * @category geometry
- * @extends {Vector}
- * @mixes   {Geometry.Poly}
+ * @extends maptalks.Path
  * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string
  * @param {Object} [options=null] - construct options defined in [LineString]{@link LineString#options}
  * @example
@@ -24,27 +33,14 @@ import { Vector } from './Vector';
  *     ]
  * ).addTo(layer);
  */
-export const LineString = Vector.extend(/** @lends LineString.prototype */ {
-    includes: [PolyType],
+export default class LineString extends Path {
 
-    type: 'LineString',
-
-    /**
-     * @property {Object} [options=null]
-     * @property {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the linestring when it cross the 180 or -180 longtitude line.
-     * @property {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
-     * @property {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
-     */
-    options: {
-        'antiMeridian': 'continuous',
-        'arrowStyle': null,
-        'arrowPlacement': 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
-    },
-
-    initialize: function (coordinates, opts) {
+    constructor(coordinates, options) {
+        super();
+        this.type = 'LineString';
         this.setCoordinates(coordinates);
-        this._initOptions(opts);
-    },
+        this._initOptions(options);
+    }
 
     /**
      * Set new coordinates to the line string
@@ -52,7 +48,7 @@ export const LineString = Vector.extend(/** @lends LineString.prototype */ {
      * @fires LineString#shapechange
      * @return {LineString} this
      */
-    setCoordinates: function (coordinates) {
+    setCoordinates(coordinates) {
         if (!coordinates) {
             this._coordinates = null;
             this._setPrjCoordinates(null);
@@ -65,20 +61,20 @@ export const LineString = Vector.extend(/** @lends LineString.prototype */ {
             this.onShapeChanged();
         }
         return this;
-    },
+    }
 
     /**
      * Get coordinates of the line string
      * @return {Coordinate[]|Number[][]} coordinates
      */
-    getCoordinates: function () {
+    getCoordinates() {
         if (!this._coordinates) {
             return [];
         }
         return this._coordinates;
-    },
+    }
 
-    animateShow: function (options) {
+    animateShow(options) {
         if (!options) {
             options = {};
         }
@@ -102,9 +98,9 @@ export const LineString = Vector.extend(/** @lends LineString.prototype */ {
         }, this));
         player.play();
         return this;
-    },
+    }
 
-    _drawAnimFrame: function (t, duration, length, coordinates) {
+    _drawAnimFrame(t, duration, length, coordinates) {
         if (t === 0) {
             this.setCoordinates([]);
             return;
@@ -142,17 +138,17 @@ export const LineString = Vector.extend(/** @lends LineString.prototype */ {
         animCoords.push(targetCoord);
 
         this.setCoordinates(animCoords);
-    },
+    }
 
-    _computeGeodesicLength: function (measurer) {
+    _computeGeodesicLength(measurer) {
         return _computeLength(this.getCoordinates(), measurer);
-    },
+    }
 
-    _computeGeodesicArea: function () {
+    _computeGeodesicArea() {
         return 0;
-    },
+    }
 
-    _containsPoint: function (point, tolerance) {
+    _containsPoint(point, tolerance) {
         var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;
 
         function isContains(points) {
@@ -219,6 +215,6 @@ export const LineString = Vector.extend(/** @lends LineString.prototype */ {
 
     }
 
-});
+}
 
-export const Polyline = LineString;
+LineString.mergeOptions(options);

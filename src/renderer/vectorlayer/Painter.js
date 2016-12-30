@@ -1,5 +1,5 @@
 import { isArray, isNumber, mapArrayRecursively } from 'core/util';
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Size from 'geo/Size';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
@@ -24,22 +24,23 @@ const registerSymbolizers = [
  * @protected
  * @param {Geometry} geometry - geometry to paint
  */
-export const Painter = Class.extend(/** @lends Painter.prototype */ {
+export default class Painter extends Class {
 
-    initialize: function (geometry) {
+    constructor(geometry) {
+        super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
-    },
+    }
 
-    getMap: function () {
+    getMap() {
         return this.geometry.getMap();
-    },
+    }
 
     /**
      * 构造symbolizers
      * @return {*} [description]
      */
-    _createSymbolizers: function () {
+    _createSymbolizers() {
         var geoSymbol = this.getSymbol(),
             symbolizers = [],
             regSymbolizers = registerSymbolizers,
@@ -69,17 +70,17 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
         this._debugSymbolizer = new Symbolizers.DebugSymbolizer(symbol, this.geometry, this);
         this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
-    },
+    }
 
-    hasPointSymbolizer: function () {
+    hasPointSymbolizer() {
         return this._hasPointSymbolizer;
-    },
+    }
 
     /**
      * for point symbolizers
      * @return {Point[]} points to render
      */
-    getRenderPoints: function (placement) {
+    getRenderPoints(placement) {
         if (!this._renderPoints) {
             this._renderPoints = {};
         }
@@ -90,13 +91,13 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
             this._renderPoints[placement] = this.geometry._getRenderPoints(placement);
         }
         return this._renderPoints[placement];
-    },
+    }
 
     /**
      * for strokeAndFillSymbolizer
      * @return {Object[]} resources to render vector
      */
-    getPaintParams: function () {
+    getPaintParams() {
         if (!this._paintParams) {
             //render resources geometry returned are based on 2d points.
             this._paintParams = this.geometry._getPaintParams();
@@ -136,34 +137,34 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
             }
         }
         return tPaintParams;
-    },
+    }
 
-    getSymbol: function () {
+    getSymbol() {
         return this.geometry._getInternalSymbol();
-    },
+    }
 
     /**
      * 绘制图形
      */
-    paint: function () {
+    paint() {
         var contexts = this.geometry.getLayer()._getRenderer().getPaintContext();
         if (!contexts || !this.symbolizers) {
             return;
         }
 
         this.symbolize(contexts);
-    },
+    }
 
-    symbolize: function (contexts) {
+    symbolize(contexts) {
         this._prepareShadow(contexts[0]);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._painted = true;
         this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
-    },
+    }
 
-    getSprite: function (resources) {
+    getSprite(resources) {
         if (!(this.geometry instanceof Marker)) {
             return null;
         }
@@ -202,13 +203,13 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
         }
         this._genSprite = false;
         return this._sprite;
-    },
+    }
 
-    isSpriting: function () {
+    isSpriting() {
         return this._genSprite;
-    },
+    }
 
-    _prepareShadow: function (ctx) {
+    _prepareShadow(ctx) {
         if (this._hasShadow) {
             ctx.shadowBlur = this.geometry.options['shadowBlur'];
             ctx.shadowColor = this.geometry.options['shadowColor'];
@@ -216,9 +217,9 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
             ctx.shadowBlur = null;
             ctx.shadowColor = null;
         }
-    },
+    }
 
-    _eachSymbolizer: function (fn, context) {
+    _eachSymbolizer(fn, context) {
         if (!this.symbolizers) {
             return;
         }
@@ -228,10 +229,10 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
             fn.apply(context, [this.symbolizers[i]]);
         }
-    },
+    }
 
     //需要实现的接口方法
-    get2DExtent: function (resources) {
+    get2DExtent(resources) {
         if (!this._extent2D) {
             if (this.symbolizers) {
                 var _extent2D = new PointExtent();
@@ -243,22 +244,22 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
             }
         }
         return this._extent2D;
-    },
+    }
 
-    getContainerExtent: function () {
+    getContainerExtent() {
         var map = this.getMap(),
             extent2D = this.get2DExtent(this.resources);
         var containerExtent = new PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
         return containerExtent;
-    },
+    }
 
-    setZIndex: function (change) {
+    setZIndex(change) {
         this._eachSymbolizer(function (symbolizer) {
             symbolizer.setZIndex(change);
         });
-    },
+    }
 
-    show: function () {
+    show() {
         if (!this._painted) {
             var layer = this.geometry.getLayer();
             if (!layer.isCanvasRender()) {
@@ -270,22 +271,22 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
                 symbolizer.show();
             });
         }
-    },
+    }
 
-    hide: function () {
+    hide() {
         this._eachSymbolizer(function (symbolizer) {
             symbolizer.hide();
         });
-    },
+    }
 
-    repaint:function () {
+    repaint() {
         this.removeCache();
-    },
+    }
 
     /**
      * symbol发生变化后, 刷新symbol
      */
-    refreshSymbol: function () {
+    refreshSymbol() {
         this.removeCache();
         this._removeSymbolizers();
         this.symbolizers = this._createSymbolizers();
@@ -298,32 +299,32 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
                 this.paint();
             }
         }
-    },
+    }
 
-    remove: function () {
+    remove() {
         this.removeCache();
         this._removeSymbolizers();
-    },
+    }
 
-    _removeSymbolizers: function () {
+    _removeSymbolizers() {
         this._eachSymbolizer(function (symbolizer) {
             delete symbolizer.painter;
             symbolizer.remove();
         });
         delete this.symbolizers;
-    },
+    }
 
     /**
      * delete painter's caches
      */
-    removeCache: function () {
+    removeCache() {
         delete this._renderPoints;
         delete this._paintParams;
         delete this._sprite;
         this.removeZoomCache();
-    },
+    }
 
-    removeZoomCache: function () {
+    removeZoomCache() {
         delete this._extent2D;
     }
-});
+}

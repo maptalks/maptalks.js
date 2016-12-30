@@ -1,4 +1,4 @@
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Eventable from 'core/Event';
 import Handlerable from 'core/Handlerable';
 import {
@@ -18,9 +18,34 @@ import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import * as Measurer from 'geo/measurer';
-import { OverlayLayer } from 'layer/OverlayLayer';
+import OverlayLayer from 'layer/OverlayLayer';
 import { Painter, CollectionPainter } from 'renderer/vectorlayer';
 import { Symbolizer, VectorMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
+
+
+
+/**
+ * @property {Object} options                       - geometry options
+ * @property {Boolean} [options.id=null]            - id of the geometry
+ * @property {Boolean} [options.visible=true]       - whether the geometry is visible.
+ * @property {Boolean} [options.editable=true]      - whether the geometry can be edited.
+ * @property {String} [options.cursor=null]         - cursor style when mouseover the geometry, same as the definition in CSS.
+ * @property {Number} [options.shadowBlur=0]        - level of the shadow around the geometry, see [MDN's explanation]{@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur}
+ * @property {String} [options.shadowColor=black]   - color of the shadow around the geometry, a CSS style color
+ * @property {String} [options.measure=EPSG:4326]   - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
+ * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
+ * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
+ * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
+ */
+const options = {
+    'id': null,
+    'visible': true,
+    'editable': true,
+    'cursor': null,
+    'shadowBlur': 0,
+    'shadowColor': 'black',
+    'measure': 'EPSG:4326' // BAIDU, IDENTITY
+};
 
 /**
  * @classdesc
@@ -36,78 +61,15 @@ import { Symbolizer, VectorMarkerSymbolizer } from 'renderer/vectorlayer/symboli
  * @mixes Handlerable
  * @mixes ui.Menu.Mixin
  */
-export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
-    includes: [Eventable, Handlerable],
-
-    /** @lends Geometry */
-    statics: {
-        /**
-         * Type of [Point]{@link http://geojson.org/geojson-spec.html#point}
-         * @constant
-         */
-        'TYPE_POINT': 'Point',
-        /**
-         * Type of [LineString]{@link http://geojson.org/geojson-spec.html#linestring}
-         * @constant
-         */
-        'TYPE_LINESTRING': 'LineString',
-        /**
-         * Type of [Polygon]{@link http://geojson.org/geojson-spec.html#polygon}
-         * @constant
-         */
-        'TYPE_POLYGON': 'Polygon',
-        /**
-         * Type of [MultiPoint]{@link http://geojson.org/geojson-spec.html#multipoint}
-         * @constant
-         */
-        'TYPE_MULTIPOINT': 'MultiPoint',
-        /**
-         * Type of [MultiLineString]{@link http://geojson.org/geojson-spec.html#multilinestring}
-         * @constant
-         */
-        'TYPE_MULTILINESTRING': 'MultiLineString',
-        /**
-         * Type of [MultiPolygon]{@link http://geojson.org/geojson-spec.html#multipolygon}
-         * @constant
-         */
-        'TYPE_MULTIPOLYGON': 'MultiPolygon',
-        /**
-         * Type of [GeometryCollection]{@link http://geojson.org/geojson-spec.html#geometrycollection}
-         * @constant
-         */
-        'TYPE_GEOMETRYCOLLECTION': 'GeometryCollection'
-    },
-
-    /**
-     * @property {Object} options                       - geometry options
-     * @property {Boolean} [options.id=null]            - id of the geometry
-     * @property {Boolean} [options.visible=true]       - whether the geometry is visible.
-     * @property {Boolean} [options.editable=true]      - whether the geometry can be edited.
-     * @property {String} [options.cursor=null]         - cursor style when mouseover the geometry, same as the definition in CSS.
-     * @property {Number} [options.shadowBlur=0]        - level of the shadow around the geometry, see [MDN's explanation]{@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur}
-     * @property {String} [options.shadowColor=black]   - color of the shadow around the geometry, a CSS style color
-     * @property {String} [options.measure=EPSG:4326]   - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
-     * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
-     * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
-     * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
-     */
-    options: {
-        'id': null,
-        'visible': true,
-        'editable': true,
-        'cursor': null,
-        'shadowBlur': 0,
-        'shadowColor': 'black',
-        'measure': 'EPSG:4326' // BAIDU, IDENTITY
-    },
+export default class Geometry extends Eventable(Handlerable(Class)) {
 
     /**
      * Returns the first coordinate of the geometry.
      *
      * @return {Coordinate} First Coordinate
      */
-    getFirstCoordinate: function () {
-        if (this.type === Geometry.TYPE_GEOMETRYCOLLECTION) {
+    getFirstCoordinate() {
+        if (this.type === 'GeometryCollection') {
             var geometries = this.getGeometries();
             if (!geometries || !isArrayHasData(geometries)) {
                 return null;
@@ -123,15 +85,15 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             first = first[0];
         } while (isArray(first));
         return first;
-    },
+    }
 
     /**
      * Returns the last coordinate of the geometry.
      *
      * @return {Coordinate} Last Coordinate
      */
-    getLastCoordinate: function () {
-        if (this.type === Geometry.TYPE_GEOMETRYCOLLECTION) {
+    getLastCoordinate() {
+        if (this.type === 'GeometryCollection') {
             var geometries = this.getGeometries();
             if (!geometries || !isArrayHasData(geometries)) {
                 return null;
@@ -147,7 +109,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             last = last[last.length - 1];
         } while (isArray(last));
         return last;
-    },
+    }
 
     /**
      * Adds the geometry to a layer
@@ -156,40 +118,40 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @return {Geometry} this
      * @fires Geometry#add
      */
-    addTo: function (layer, fitview) {
+    addTo(layer, fitview) {
         layer.addGeometry(this, fitview);
         return this;
-    },
+    }
 
     /**
      * Get the layer which this geometry added to.
      * @returns {Layer} - layer added to
      */
-    getLayer: function () {
+    getLayer() {
         if (!this._layer) {
             return null;
         }
         return this._layer;
-    },
+    }
 
     /**
      * Get the map which this geometry added to
      * @returns {Map} - map added to
      */
-    getMap: function () {
+    getMap() {
         if (!this._layer) {
             return null;
         }
         return this._layer.getMap();
-    },
+    }
 
     /**
      * Gets geometry's id. Id is set by setId or constructor options.
      * @returns {String|Number} geometry的id
      */
-    getId: function () {
+    getId() {
         return this._id;
-    },
+    }
 
     /**
      * Set geometry's id.
@@ -197,7 +159,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @returns {Geometry} this
      * @fires Geometry#idchange
      */
-    setId: function (id) {
+    setId(id) {
         var oldId = this.getId();
         this._id = id;
         /**
@@ -216,14 +178,14 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         });
 
         return this;
-    },
+    }
 
     /**
      * Get geometry's properties. Defined by GeoJSON as [feature's properties]{@link http://geojson.org/geojson-spec.html#feature-objects}.
      *
      * @returns {Object} properties
      */
-    getProperties: function () {
+    getProperties() {
         if (!this.properties) {
             if (this._getParent()) {
                 return this._getParent().getProperties();
@@ -231,7 +193,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             return null;
         }
         return this.properties;
-    },
+    }
 
     /**
      * Set a new properties to geometry.
@@ -239,7 +201,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @returns {Geometry} this
      * @fires Geometry#propertieschange
      */
-    setProperties: function (properties) {
+    setProperties(properties) {
         var old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
         /**
@@ -258,21 +220,21 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         });
 
         return this;
-    },
+    }
 
     /**
      * Get type of the geometry, e.g. "Point", "LineString"
      * @returns {String} type of the geometry
      */
-    getType: function () {
+    getType() {
         return this.type;
-    },
+    }
 
     /**
      * Get symbol of the geometry
      * @returns {Object} geometry's symbol
      */
-    getSymbol: function () {
+    getSymbol() {
         var s = this._symbol;
         if (s) {
             if (!isArray(s)) {
@@ -282,7 +244,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             }
         }
         return null;
-    },
+    }
 
     /**
      * Set a new symbol to style the geometry.
@@ -291,11 +253,11 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @return {Geometry} this
      * @fires Geometry#symbolchange
      */
-    setSymbol: function (symbol) {
+    setSymbol(symbol) {
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
         return this;
-    },
+    }
 
     /**
      * Update geometry's current symbol.
@@ -316,7 +278,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      *     markerWidth : 40
      * });
      */
-    updateSymbol: function (props) {
+    updateSymbol(props) {
         if (!props) {
             return this;
         }
@@ -327,23 +289,23 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             s = extendSymbol(this._getInternalSymbol(), props);
         }
         return this.setSymbol(s);
-    },
+    }
 
     /**
      * Get the geographical center of the geometry.
      *
      * @returns {Coordinate}
      */
-    getCenter: function () {
+    getCenter() {
         return this._computeCenter(this._getMeasurer()).copy();
-    },
+    }
 
     /**
      * Get the geometry's geographical extent
      *
      * @returns {Extent} geometry's extent
      */
-    getExtent: function () {
+    getExtent() {
         var prjExt = this._getPrjExtent();
         if (prjExt) {
             var p = this._getProjection();
@@ -351,21 +313,21 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         } else {
             return this._computeExtent(this._getMeasurer());
         }
-    },
+    }
 
     /**
      * Get pixel size of the geometry, which may vary in different zoom levels.
      *
      * @returns {Size}
      */
-    getSize: function () {
+    getSize() {
         var map = this.getMap();
         if (!map) {
             return null;
         }
         var pxExtent = this._getPainter().get2DExtent();
         return pxExtent.getSize();
-    },
+    }
 
     /**
      * Whehter the geometry contains the input container point.
@@ -378,7 +340,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      *     .addTo(layer);
      * var contains = circle.containsPoint([400, 300]);
      */
-    containsPoint: function (containerPoint, t) {
+    containsPoint(containerPoint, t) {
         if (!this.getMap()) {
             throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
@@ -386,7 +348,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             containerPoint = this.getMap().coordinateToContainerPoint(containerPoint);
         }
         return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
-    },
+    }
 
     /**
      * Show the geometry.
@@ -394,7 +356,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @return {Geometry} this
      * @fires Geometry#show
      */
-    show: function () {
+    show() {
         this.options['visible'] = true;
         if (this.getMap()) {
             var painter = this._getPainter();
@@ -412,7 +374,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             this._fireEvent('show');
         }
         return this;
-    },
+    }
 
     /**
      * Hide the geometry
@@ -420,7 +382,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @return {Geometry} this
      * @fires Geometry#hide
      */
-    hide: function () {
+    hide() {
         this.options['visible'] = false;
         if (this.getMap()) {
             this.onHide();
@@ -439,14 +401,14 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             this._fireEvent('hide');
         }
         return this;
-    },
+    }
 
     /**
      * Whether the geometry is visible
      *
      * @returns {Boolean}
      */
-    isVisible: function () {
+    isVisible() {
         if (!this.options['visible']) {
             return false;
         }
@@ -467,15 +429,15 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         } else {
             return (isNil(symbol['opacity']) || (isNumber(symbol['opacity']) && symbol['opacity'] > 0));
         }
-    },
+    }
 
     /**
      * Get zIndex of the geometry, default is 0
      * @return {Number} zIndex
      */
-    getZIndex: function () {
+    getZIndex() {
         return this._zIndex;
-    },
+    }
 
     /**
      * Set a new zIndex to Geometry and fire zindexchange event (will cause layer to sort geometries and render)
@@ -483,7 +445,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    setZIndex: function (zIndex) {
+    setZIndex(zIndex) {
         var old = this._zIndex;
         this._zIndex = zIndex;
         /**
@@ -502,7 +464,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         });
 
         return this;
-    },
+    }
 
     /**
      * Only set a new zIndex to Geometry without firing zindexchange event. <br>
@@ -511,17 +473,17 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @param {Number} zIndex - new zIndex
      * @return {Geometry} this
      */
-    setZIndexSilently: function (zIndex) {
+    setZIndexSilently(zIndex) {
         this._zIndex = zIndex;
         return this;
-    },
+    }
 
     /**
      * Bring the geometry on the top
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    bringToFront: function () {
+    bringToFront() {
         var layer = this.getLayer();
         if (!layer || !(layer instanceof OverlayLayer)) {
             return this;
@@ -529,14 +491,14 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         var topZ = layer.getLastGeometry().getZIndex();
         this.setZIndex(topZ + 1);
         return this;
-    },
+    }
 
     /**
      * Bring the geometry to the back
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    bringToBack: function () {
+    bringToBack() {
         var layer = this.getLayer();
         if (!layer || !(layer instanceof OverlayLayer)) {
             return this;
@@ -544,7 +506,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         var bottomZ = layer.getFirstGeometry().getZIndex();
         this.setZIndex(bottomZ - 1);
         return this;
-    },
+    }
 
     /**
      * Translate or move the geometry by the given offset.
@@ -554,7 +516,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @fires Geometry#positionchange
      * @fires Geometry#shapechange
      */
-    translate: function (offset) {
+    translate(offset) {
         if (!offset) {
             return this;
         }
@@ -574,7 +536,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             }
         }
         return this;
-    },
+    }
 
     /**
      * Flash the geometry, show and hide by certain internal for times of count.
@@ -585,7 +547,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @param {*} [context=null]          - callback context
      * @return {Geometry} this
      */
-    flash: function (interval, count, cb, context) {
+    flash(interval, count, cb, context) {
         if (!interval) {
             interval = 100;
         }
@@ -621,19 +583,19 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         }
         this._flashTimeout = setTimeout(flashGeo, interval);
         return this;
-    },
+    }
 
     /**
      * Returns a copy of the geometry without the event listeners.
      * @returns {Geometry} copy
      */
-    copy: function () {
+    copy() {
         var json = this.toJSON();
         var ret = Geometry.fromJSON(json);
         //restore visibility
         ret.options['visible'] = true;
         return ret;
-    },
+    }
 
 
     /**
@@ -642,7 +604,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @fires Geometry#removestart
      * @fires Geometry#remove
      */
-    remove: function () {
+    remove() {
         var layer = this.getLayer();
         if (!layer) {
             return this;
@@ -677,16 +639,16 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
          */
         this._fireEvent('remove');
         return this;
-    },
+    }
 
     /**
      * Exports [geometry]{@link http://geojson.org/geojson-spec.html#feature-objects} out of a GeoJSON feature.
      * @return {Object} GeoJSON Geometry
      */
-    toGeoJSONGeometry: function () {
+    toGeoJSONGeometry() {
         var gJson = this._exportGeoJSONGeometry();
         return gJson;
-    },
+    }
 
     /**
      * Exports a GeoJSON feature.
@@ -695,7 +657,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @param {Boolean} [opts.properties=true]  - whether export properties
      * @returns {Object} GeoJSON Feature
      */
-    toGeoJSON: function (opts) {
+    toGeoJSON(opts) {
         if (!opts) {
             opts = {};
         }
@@ -717,7 +679,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         }
         feature['properties'] = properties;
         return feature;
-    },
+    }
 
     /**
      * Export a profile json out of the geometry. <br>
@@ -760,7 +722,7 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
      * @param {Boolean} [opts.infoWindow=true]  - whether export infowindow
      * @return {Object} profile json object
      */
-    toJSON: function (options) {
+    toJSON(options) {
         //一个Graphic的profile
         /*
             //因为响应函数无法被序列化, 所以menu, 事件listener等无法被包含在graphic中
@@ -772,35 +734,35 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         var other = this._exportGraphicOptions(options);
         extend(json, other);
         return json;
-    },
+    }
 
     /**
      * Get the geographic length of the geometry.
      * @returns {Number} geographic length, unit is meter
      */
-    getLength: function () {
+    getLength() {
         return this._computeGeodesicLength(this._getMeasurer());
-    },
+    }
 
     /**
      * Get the geographic area of the geometry.
      * @returns {Number} geographic area, unit is sq.meter
      */
-    getArea: function () {
+    getArea() {
         return this._computeGeodesicArea(this._getMeasurer());
-    },
+    }
 
     /**
      * Get the connect points for [ConnectorLine]{@link ConnectorLine}
      * @return {Coordinate[]} connect points
      * @private
      */
-    _getConnectPoints: function () {
+    _getConnectPoints() {
         return [this.getCenter()];
-    },
+    }
 
     //options initializing
-    _initOptions: function (opts) {
+    _initOptions(opts) {
         if (!opts) {
             opts = {};
         }
@@ -821,10 +783,10 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             this.setId(id);
         }
         this._zIndex = 0;
-    },
+    }
 
     //bind the geometry to a layer
-    _bindLayer: function (layer) {
+    _bindLayer(layer) {
         //check dupliaction
         if (this.getLayer()) {
             throw new Error('Geometry cannot be added to two or more layers at the same time.');
@@ -832,9 +794,9 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         this._layer = layer;
         this._clearProjection();
         // this.callInitHooks();
-    },
+    }
 
-    _prepareSymbol: function (symbol) {
+    _prepareSymbol(symbol) {
         if (isArray(symbol)) {
             var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
@@ -846,9 +808,9 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             return convertResourceUrl(symbol);
         }
         return null;
-    },
+    }
 
-    _checkAndCopySymbol: function (symbol) {
+    _checkAndCopySymbol(symbol) {
         var s = {};
         var numberProperties = Symbolizer.numberProperties;
         for (var i in symbol) {
@@ -859,20 +821,20 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             }
         }
         return s;
-    },
+    }
 
     /**
      * Sets a external symbol to the geometry, e.g. style from VectorLayer's setStyle
      * @private
      * @param {Object} symbol - external symbol
      */
-    _setExternSymbol: function (symbol) {
+    _setExternSymbol(symbol) {
         this._externSymbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
         return this;
-    },
+    }
 
-    _getInternalSymbol: function () {
+    _getInternalSymbol() {
         if (this._symbol) {
             return this._symbol;
         } else if (this._externSymbol) {
@@ -881,9 +843,9 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             return this.options['symbol'];
         }
         return null;
-    },
+    }
 
-    _getPrjExtent: function () {
+    _getPrjExtent() {
         var p = this._getProjection();
         if (!this._extent && p) {
             var ext = this._computeExtent(p);
@@ -912,9 +874,9 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
 
         }
         return this._extent;
-    },
+    }
 
-    _unbind: function () {
+    _unbind() {
         var layer = this.getLayer();
         if (!layer) {
             return;
@@ -943,82 +905,82 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         delete this._layer;
         delete this._internalId;
         delete this._extent;
-    },
+    }
 
-    _getInternalId: function () {
+    _getInternalId() {
         return this._internalId;
-    },
+    }
 
     //只能被图层调用
-    _setInternalId: function (id) {
+    _setInternalId(id) {
         this._internalId = id;
-    },
+    }
 
-    _getMeasurer: function () {
+    _getMeasurer() {
         if (this._getProjection()) {
             return this._getProjection();
         }
         return Measurer.getInstance(this.options['measure']);
-    },
+    }
 
-    _getProjection: function () {
+    _getProjection() {
         var map = this.getMap();
         if (map && map.getProjection()) {
             return map.getProjection();
         }
         return null;
-    },
+    }
 
     //获取geometry样式中依赖的外部图片资源
-    _getExternalResources: function () {
+    _getExternalResources() {
         var geometry = this;
         var symbol = geometry._getInternalSymbol();
         var resources = getExternalResources(symbol);
         return resources;
-    },
+    }
 
-    _getPainter: function () {
+    _getPainter() {
         if (!this._painter && this.getMap()) {
-            if (this.type === Geometry.TYPE_GEOMETRYCOLLECTION) {
+            if (this.type === 'GeometryCollection') {
                 this._painter = new CollectionPainter(this);
             } else {
                 this._painter = new Painter(this);
             }
         }
         return this._painter;
-    },
+    }
 
-    _removePainter: function () {
+    _removePainter() {
         if (this._painter) {
             this._painter.remove();
         }
         delete this._painter;
-    },
+    }
 
-    _paint: function () {
+    _paint() {
         if (this._painter) {
             this._painter.paint();
         }
-    },
+    }
 
-    _repaint:function () {
+    _repaint() {
         if (this._painter) {
             this._painter.repaint();
         }
-    },
+    }
 
-    _removeZoomCache: function () {
+    _removeZoomCache() {
         if (this._painter) {
             this._painter.removeZoomCache();
         }
-    },
+    }
 
-    onHide: function () {
+    onHide() {
         this.closeMenu();
         this.closeInfoWindow();
-    },
+    }
 
-    onShapeChanged: function () {
+    onShapeChanged() {
         this._extent = null;
         this._repaint();
         /**
@@ -1030,9 +992,9 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
          * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('shapechange');
-    },
+    }
 
-    onPositionChanged: function () {
+    onPositionChanged() {
         this._extent = null;
         this._repaint();
         /**
@@ -1044,9 +1006,9 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
          * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('positionchange');
-    },
+    }
 
-    onSymbolChanged: function () {
+    onSymbolChanged() {
         if (this._painter) {
             this._painter.refreshSymbol();
         }
@@ -1059,9 +1021,9 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
          * @property {Geometry} target - the geometry fires the event
          */
         this._fireEvent('symbolchange');
-    },
+    }
 
-    onConfig: function (conf) {
+    onConfig(conf) {
         var needRepaint = false;
         for (var p in conf) {
             if (conf.hasOwnProperty(p)) {
@@ -1075,24 +1037,24 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         if (needRepaint) {
             this._repaint();
         }
-    },
+    }
 
     /**
      * Set a parent to the geometry, which is usually a MultiPolygon, GeometryCollection, etc
      * @param {GeometryCollection} geometry - parent geometry
      * @private
      */
-    _setParent: function (geometry) {
+    _setParent(geometry) {
         if (geometry) {
             this._parent = geometry;
         }
-    },
+    }
 
-    _getParent: function () {
+    _getParent() {
         return this._parent;
-    },
+    }
 
-    _fireEvent: function (eventName, param) {
+    _fireEvent(eventName, param) {
         if (this.getLayer() && this.getLayer()._onGeometryEvent) {
             if (!param) {
                 param = {};
@@ -1102,15 +1064,15 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             this.getLayer()._onGeometryEvent(param);
         }
         this.fire(eventName, param);
-    },
+    }
 
-    _toJSON: function (options) {
+    _toJSON(options) {
         return {
             'feature': this.toGeoJSON(options)
         };
-    },
+    }
 
-    _exportGraphicOptions: function (options) {
+    _exportGraphicOptions(options) {
         var json = {};
         if (isNil(options['options']) || options['options']) {
             json['options'] = this.config();
@@ -1124,18 +1086,18 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
             }
         }
         return json;
-    },
+    }
 
-    _exportGeoJSONGeometry: function () {
+    _exportGeoJSONGeometry() {
         var points = this.getCoordinates();
         var coordinates = Coordinate.toNumberArrays(points);
         return {
             'type': this.getType(),
             'coordinates': coordinates
         };
-    },
+    }
 
-    _exportProperties: function () {
+    _exportProperties() {
         var properties = null;
         var geoProperties = this.getProperties();
         if (geoProperties) {
@@ -1148,7 +1110,9 @@ export const Geometry = Class.extend(/** @lends Geometry.prototype */ {
         return properties;
     }
 
-});
+}
+
+Geometry.mergeOptions(options);
 
 Geometry.getMarkerPathBase64 = function (symbol) {
     if (!symbol['markerPath']) {

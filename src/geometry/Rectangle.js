@@ -3,7 +3,7 @@ import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Extent from 'geo/Extent';
-import { Polygon } from './Polygon';
+import Polygon from './Polygon';
 
 /**
  * @classdesc
@@ -21,22 +21,30 @@ import { Polygon } from './Polygon';
  *     id : 'rectangle0'
  * });
  */
-export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
+export default class Rectangle extends Polygon {
 
-    initialize: function (coordinates, width, height, opts) {
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const rect = new Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
+        rect.setProperties(feature['properties']);
+        return rect;
+    }
+
+    constructor(coordinates, width, height, opts) {
+        super();
         this._coordinates = new Coordinate(coordinates);
         this._width = width;
         this._height = height;
         this._initOptions(opts);
-    },
+    }
 
     /**
      * Get coordinates of rectangle's northwest
      * @return {Coordinate}
      */
-    getCoordinates: function () {
+    getCoordinates() {
         return this._coordinates;
-    },
+    }
 
     /**
      * Set a new coordinate for northwest of the rectangle
@@ -44,7 +52,7 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
      * @return {Rectangle} this
      * @fires Rectangle#positionchange
      */
-    setCoordinates: function (nw) {
+    setCoordinates(nw) {
         this._coordinates = new Coordinate(nw);
 
         if (!this._coordinates || !this.getMap()) {
@@ -54,15 +62,15 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
         var projection = this._getProjection();
         this._setPrjCoordinates(projection.project(this._coordinates));
         return this;
-    },
+    }
 
     /**
      * Get rectangle's width
      * @return {Number}
      */
-    getWidth: function () {
+    getWidth() {
         return this._width;
-    },
+    }
 
     /**
      * Set new width to the rectangle
@@ -70,19 +78,19 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
      * @fires Rectangle#shapechange
      * @return {Rectangle} this
      */
-    setWidth: function (width) {
+    setWidth(width) {
         this._width = width;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Get rectangle's height
      * @return {Number}
      */
-    getHeight: function () {
+    getHeight() {
         return this._height;
-    },
+    }
 
     /**
      * Set new height to rectangle
@@ -90,17 +98,17 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
      * @fires Rectangle#shapechange
      * @return {Rectangle} this
      */
-    setHeight: function (height) {
+    setHeight(height) {
         this._height = height;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Gets the shell of the rectangle as a polygon
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell: function () {
+    getShell() {
         var measurer = this._getMeasurer();
         var nw = this._coordinates;
         var map = this.getMap();
@@ -119,17 +127,17 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
         points.push(nw);
         return points;
 
-    },
+    }
 
     /**
      * Rectangle won't have any holes, always returns null
      * @return {null}
      */
-    getHoles: function () {
+    getHoles() {
         return null;
-    },
+    }
 
-    _getPrjCoordinates: function () {
+    _getPrjCoordinates() {
         var projection = this._getProjection();
         if (!projection) {
             return null;
@@ -140,31 +148,31 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
             }
         }
         return this._pnw;
-    },
+    }
 
-    _setPrjCoordinates: function (pnw) {
+    _setPrjCoordinates(pnw) {
         this._pnw = pnw;
         this.onPositionChanged();
-    },
+    }
 
     //update cached variables if geometry is updated.
-    _updateCache: function () {
+    _updateCache() {
         delete this._extent;
         var projection = this._getProjection();
         if (this._pnw && projection) {
             this._coordinates = projection.unproject(this._pnw);
         }
-    },
+    }
 
-    _clearProjection: function () {
+    _clearProjection() {
         this._pnw = null;
-    },
+    }
 
-    _computeCenter: function (measurer) {
+    _computeCenter(measurer) {
         return measurer.locate(this._coordinates, this._width / 2, -this._height / 2);
-    },
+    }
 
-    _containsPoint: function (point, tolerance) {
+    _containsPoint(point, tolerance) {
         var map = this.getMap(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             sp = map.coordinateToPoint(this._coordinates),
@@ -178,9 +186,9 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
         point = new Point(point.x, point.y);
 
         return pxExtent.contains(point);
-    },
+    }
 
-    _computeExtent: function (measurer) {
+    _computeExtent(measurer) {
         if (!measurer || !this._coordinates || isNil(this._width) || isNil(this._height)) {
             return null;
         }
@@ -188,31 +196,31 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
             height = this.getHeight();
         var p1 = measurer.locate(this._coordinates, width, -height);
         return new Extent(p1, this._coordinates);
-    },
+    }
 
-    _computeGeodesicLength: function () {
+    _computeGeodesicLength() {
         if (isNil(this._width) || isNil(this._height)) {
             return 0;
         }
         return 2 * (this._width + this._height);
-    },
+    }
 
-    _computeGeodesicArea: function () {
+    _computeGeodesicArea() {
         if (isNil(this._width) || isNil(this._height)) {
             return 0;
         }
         return this._width * this._height;
-    },
+    }
 
-    _exportGeoJSONGeometry: function () {
+    _exportGeoJSONGeometry() {
         var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
         };
-    },
+    }
 
-    _toJSON: function (options) {
+    _toJSON(options) {
         var opts = extend({}, options);
         var nw = this.getCoordinates();
         opts.geometry = false;
@@ -229,11 +237,4 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
         };
     }
 
-});
-
-Rectangle.fromJSON = function (json) {
-    var feature = json['feature'];
-    var rect = new Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
-    rect.setProperties(feature['properties']);
-    return rect;
-};
+}

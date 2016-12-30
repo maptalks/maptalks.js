@@ -3,7 +3,7 @@
  * @mixin
  * @protected
  */
-export const Renderable = {
+const Renderable = Base => class extends Base {
     /**
      * Register a renderer class with the given name.
      * @param  {String} name  - renderer's register key
@@ -11,13 +11,15 @@ export const Renderable = {
      * @static
      * @return {*} this
      */
-    registerRenderer: function (name, clazz) {
-        if (!this._regRenderers) {
-            this._regRenderers = {};
+    static registerRenderer(name, clazz) {
+        const proto = this.prototype;
+        const parentProto = Object.getPrototypeOf(proto);
+        if (!proto._rendererClasses || proto._rendererClasses === parentProto._rendererClasses) {
+            proto._rendererClasses = proto._rendererClasses ? Object.create(proto._rendererClasses) : {};
         }
-        this._regRenderers[name.toLowerCase()] = clazz;
+        proto._rendererClasses[name.toLowerCase()] = clazz;
         return this;
-    },
+    }
 
     /**
      * Get the registered renderer class by the given name
@@ -25,10 +27,14 @@ export const Renderable = {
      * @return {Function} renderer's class
      * @static
      */
-    getRendererClass: function (name) {
-        if (!this._regRenderers) {
+    static getRendererClass(name) {
+        const proto = this.prototype;
+        if (!proto._rendererClasses) {
             return null;
         }
-        return this._regRenderers[name.toLowerCase()];
+        return proto._rendererClasses[name.toLowerCase()];
     }
-};
+}
+
+export default Renderable;
+export { Renderable };

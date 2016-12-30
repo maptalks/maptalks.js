@@ -1,16 +1,22 @@
 import { isArray, isArrayHasData } from 'core/util';
+import GeometryCollection from './GeometryCollection';
 import Coordinate from 'geo/Coordinate';
 
 /**
  * Common methods for MultiPoint, MultiLineString and MultiPolygon
  * @mixin Geometry.MultiPoly
  */
-const MultiPolyType = {
+export default class MultiGeometry extends GeometryCollection {
+    constructor(geoType) {
+        super();
+        this.GeometryType = geoType;
+    }
+
     /**
      * Get coordinates of the collection
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
      */
-    getCoordinates: function () {
+    getCoordinates() {
         var coordinates = [];
         var geometries = this.getGeometries();
         if (!isArray(geometries)) {
@@ -20,7 +26,7 @@ const MultiPolyType = {
             coordinates.push(geometries[i].getCoordinates());
         }
         return coordinates;
-    },
+    }
 
     /**
      * Set new coordinates to the collection
@@ -28,7 +34,7 @@ const MultiPolyType = {
      * @returns {Geometry} this
      * @fires maptalk.Geometry#shapechange
      */
-    setCoordinates: function (coordinates) {
+    setCoordinates(coordinates) {
         if (isArrayHasData(coordinates)) {
             var geometries = [];
             for (var i = 0, len = coordinates.length; i < len; i++) {
@@ -40,9 +46,9 @@ const MultiPolyType = {
             this.setGeometries([]);
         }
         return this;
-    },
+    }
 
-    _initData: function (data) {
+    _initData(data) {
         if (isArrayHasData(data)) {
             if (data[0] instanceof this.GeometryType) {
                 this.setGeometries(data);
@@ -50,9 +56,9 @@ const MultiPolyType = {
                 this.setCoordinates(data);
             }
         }
-    },
+    }
 
-    _checkGeometries: function (geometries) {
+    _checkGeometries(geometries) {
         if (isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
                 if (geometries[i] && !(geometries[i] instanceof this.GeometryType)) {
@@ -61,10 +67,10 @@ const MultiPolyType = {
             }
         }
         return geometries;
-    },
+    }
 
     //override _exportGeoJSONGeometry in GeometryCollection
-    _exportGeoJSONGeometry: function () {
+    _exportGeoJSONGeometry() {
         var points = this.getCoordinates();
         var coordinates = Coordinate.toNumberArrays(points);
         return {
@@ -73,5 +79,3 @@ const MultiPolyType = {
         };
     }
 };
-
-export default MultiPolyType;

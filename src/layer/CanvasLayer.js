@@ -1,8 +1,15 @@
 import { bind, now, isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Browser from 'core/Browser';
 import Canvas from 'utils/Canvas';
-import { Canvas as Renderer } from 'renderer';
+import { CanvasRenderer } from 'renderer';
 import Layer from './Layer';
+
+
+const options = {
+    'doubleBuffer'  : false,
+    'animation'     : false,
+    'fps'           : 70
+};
 
 /**
  * CanvasLayer provides some interface methods for canvas context operations. <br>
@@ -29,129 +36,124 @@ import Layer from './Layer';
  * @param {String|Number} id - layer's id
  * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
  */
-export const CanvasLayer = Layer.extend(/** @lends CanvasLayer.prototype */ {
-
-    options: {
-        'doubleBuffer'  : false,
-        'animation'     : false,
-        'fps'           : 70
-    },
+export default class CanvasLayer extends Layer {
 
     /**
      * An optional interface function called only once before the first draw, useful for preparing your canvas operations.
      * @param  {CanvasRenderingContext2D } context - CanvasRenderingContext2D of the layer canvas.
      * @return {Object[]} objects that will be passed to function draw(context, ..) as parameters.
      */
-    prepareToDraw: function () {},
+    prepareToDraw() {}
 
     /**
      * The required interface function to draw things on the layer canvas.
      * @param  {CanvasRenderingContext2D} context - CanvasRenderingContext2D of the layer canvas.
      * @param  {*} params.. - parameters returned by function prepareToDraw(context).
      */
-    draw: function () {},
+    draw() {}
 
-    play: function () {
+    play() {
         if (this._getRenderer()) {
             this._getRenderer().startAnim();
         }
         return this;
-    },
+    }
 
-    pause: function () {
+    pause() {
         if (this._getRenderer()) {
             this._getRenderer().pauseAnim();
         }
         return this;
-    },
+    }
 
-    isPlaying: function () {
+    isPlaying() {
         if (this._getRenderer()) {
             return this._getRenderer().isPlaying();
         }
         return false;
-    },
+    }
 
-    clearCanvas: function () {
+    clearCanvas() {
         if (this._getRenderer()) {
             this._getRenderer().clearCanvas();
         }
         return this;
-    },
+    }
 
     /**
      * Ask the map to redraw the layer canvas without firing any event.
      * @return {CanvasLayer} this
      */
-    requestMapToRender: function () {
+    requestMapToRender() {
         if (this._getRenderer()) {
             this._getRenderer().requestMapToRender();
         }
         return this;
-    },
+    }
 
     /**
      * Ask the map to redraw the layer canvas and fire layerload event
      * @return {CanvasLayer} this
      */
-    completeRender: function () {
+    completeRender() {
         if (this._getRenderer()) {
             this._getRenderer().completeRender();
         }
         return this;
-    },
+    }
 
-    onCanvasCreate: function () {
+    onCanvasCreate() {
         return this;
-    },
+    }
 
     /**
      * The event callback for map's zoomstart event.
      * @param  {Object} param - event parameter
      */
-    onZoomStart: function () {},
+    onZoomStart() {}
 
     /**
      * The event callback for map's zoomend event.
      * @param  {Object} param - event parameter
      */
-    onZoomEnd: function () {},
+    onZoomEnd() {}
 
     /**
      * The event callback for map's movestart event.
      * @param  {Object} param - event parameter
      */
-    onMoveStart: function () {},
+    onMoveStart() {}
 
     /**
      * The event callback for map's moveend event.
      * @param  {Object} param - event parameter
      */
-    onMoveEnd: function () {},
+    onMoveEnd() {}
 
     /**
      * The event callback for map's resize event.
      * @param  {Object} param - event parameter
      */
-    onResize: function () {},
+    onResize() {}
 
-    doubleBuffer: function (ctx) {
+    doubleBuffer(ctx) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         return this;
     }
+}
 
-});
+CanvasLayer.mergeOptions(options);
 
-CanvasLayer.registerRenderer('canvas', Renderer.extend({
+CanvasLayer.registerRenderer('canvas', class extends CanvasRenderer {
 
-    onCanvasCreate: function () {
+    onCanvasCreate() {
         if (this.canvas && this.layer.options['doubleBuffer']) {
             var map = this.getMap();
             this.buffer = Canvas.createCanvas(this.canvas.width, this.canvas.height, map.CanvasClass);
         }
-    },
+    }
 
-    draw: function () {
+    draw() {
         if (!this._predrawed) {
             this._drawContext = this.layer.prepareToDraw(this.context);
             if (!this._drawContext) {
@@ -164,10 +166,10 @@ CanvasLayer.registerRenderer('canvas', Renderer.extend({
         }
         this.prepareCanvas();
         this._drawLayer();
-    },
+    }
 
-    getCanvasImage: function () {
-        var canvasImg = Renderer.prototype.getCanvasImage.apply(this, arguments);
+    getCanvasImage() {
+        var canvasImg = CanvasRenderer.prototype.getCanvasImage.apply(this, arguments);
         if (canvasImg && canvasImg.image && this.layer.options['doubleBuffer']) {
             var canvas = canvasImg.image;
             if (this.buffer.width !== canvas.width || this.buffer.height !== canvas.height) {
@@ -180,67 +182,67 @@ CanvasLayer.registerRenderer('canvas', Renderer.extend({
             canvasImg.image = this.buffer;
         }
         return canvasImg;
-    },
+    }
 
-    startAnim: function () {
+    startAnim() {
         this._animTime = now();
         this._paused = false;
         this._play();
-    },
+    }
 
-    pauseAnim: function () {
+    pauseAnim() {
         this._pause();
         this._paused = true;
         delete this._animTime;
-    },
+    }
 
-    isPlaying: function () {
+    isPlaying() {
         return !isNil(this._animFrame);
-    },
+    }
 
-    hide: function () {
+    hide() {
         this._pause();
-        return Renderer.prototype.hide.call(this);
-    },
+        return CanvasRenderer.prototype.hide.call(this);
+    }
 
-    show: function () {
-        return Renderer.prototype.show.call(this);
-    },
+    show() {
+        return CanvasRenderer.prototype.show.call(this);
+    }
 
-    remove: function () {
+    remove() {
         this._pause();
         delete this._drawContext;
-        return Renderer.prototype.remove.call(this);
-    },
+        return CanvasRenderer.prototype.remove.call(this);
+    }
 
-    onZoomStart: function (param) {
+    onZoomStart(param) {
         this._pause();
         this.layer.onZoomStart(param);
-        Renderer.prototype.onZoomStart.call(this);
-    },
+        CanvasRenderer.prototype.onZoomStart.call(this);
+    }
 
-    onZoomEnd: function (param) {
+    onZoomEnd(param) {
         this.layer.onZoomEnd(param);
-        Renderer.prototype.onZoomEnd.call(this);
-    },
+        CanvasRenderer.prototype.onZoomEnd.call(this);
+    }
 
-    onMoveStart: function (param) {
+    onMoveStart(param) {
         this._pause();
         this.layer.onMoveStart(param);
-        Renderer.prototype.onMoveStart.call(this);
-    },
+        CanvasRenderer.prototype.onMoveStart.call(this);
+    }
 
-    onMoveEnd: function (param) {
+    onMoveEnd(param) {
         this.layer.onMoveEnd(param);
-        Renderer.prototype.onMoveEnd.call(this);
-    },
+        CanvasRenderer.prototype.onMoveEnd.call(this);
+    }
 
-    onResize: function (param) {
+    onResize(param) {
         this.layer.onResize(param);
-        Renderer.prototype.onResize.call(this);
-    },
+        CanvasRenderer.prototype.onResize.call(this);
+    }
 
-    _drawLayer: function () {
+    _drawLayer() {
         var args = [this.context];
         if (this._animTime) {
             args.push(now() - this._animTime);
@@ -249,9 +251,9 @@ CanvasLayer.registerRenderer('canvas', Renderer.extend({
         this.layer.draw.apply(this.layer, args);
         this.completeRender();
         this._play();
-    },
+    }
 
-    _pause : function () {
+    _pause () {
         if (this._animFrame) {
             cancelAnimFrame(this._animFrame);
             delete this._animFrame;
@@ -260,9 +262,9 @@ CanvasLayer.registerRenderer('canvas', Renderer.extend({
             clearTimeout(this._fpsFrame);
             delete this._fpsFrame;
         }
-    },
+    }
 
-    _play: function () {
+    _play() {
         if (this._paused || !this.layer || !this.layer.options['animation']) {
             return;
         }
@@ -286,6 +288,4 @@ CanvasLayer.registerRenderer('canvas', Renderer.extend({
             }.bind(this), 1000 / this.layer.options['fps']);
         }
     }
-}));
-
-export default CanvasLayer;
+});

@@ -1,4 +1,4 @@
-import { isArray, setOptions, parseJSON } from 'core/util';
+import { isArray, parseJSON } from 'core/util';
 import Geometry from 'geometry/Geometry';
 import VectorLayer from './VectorLayer';
 
@@ -12,10 +12,28 @@ import VectorLayer from './VectorLayer';
  * @param {Object}        json      - GeoJSON objects
  * @param {Object} [options=null]   - construct options defined in [GeoJSONLayer]{@link GeoJSONLayer#options}
  */
-export const GeoJSONLayer = VectorLayer.extend(/** @lends GeoJSONLayer.prototype */ {
+export default class GeoJSONLayer extends VectorLayer {
 
-    initialize: function (id, json, options) {
-        this.setId(id);
+    /**
+     * Reproduce a GeoJSONLayer from layer's profile JSON.
+     * @param  {Object} layerJSON - layer's profile JSON
+     * @return {GeoJSONLayer}
+     * @static
+     * @private
+     * @function
+     */
+    static fromJSON(profile) {
+        if (!profile || profile['type'] !== 'GeoJSONLayer') {
+            return null;
+        }
+        var layer = new GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
+        if (profile['style']) {
+            layer.setStyle(profile['style']);
+        }
+        return layer;
+    }
+
+    constructor(id, json, options) {
         if (json && !isArray(json)) {
             if (!json['type']) {
                 //is options
@@ -23,28 +41,28 @@ export const GeoJSONLayer = VectorLayer.extend(/** @lends GeoJSONLayer.prototype
                 json = null;
             }
         }
-        setOptions(this, options);
+        super(id, options);
         if (json) {
             var geometries = this._parse(json);
             this.addGeometry(geometries);
         }
-    },
+    }
 
     /**
      * Add geojson data to the layer
      * @param {Object|Object[]} json - GeoJSON data
      * @return {GeoJSONLayer} this
      */
-    addData: function (json) {
+    addData(json) {
         var geometries = this._parse(json);
         this.addGeometry(geometries);
         return this;
-    },
+    }
 
-    _parse: function (json) {
+    _parse(json) {
         json = parseJSON(json);
         return Geometry.fromJSON(json);
-    },
+    }
 
     /**
      * Export the GeoJSONLayer's profile json. <br>
@@ -54,7 +72,7 @@ export const GeoJSONLayer = VectorLayer.extend(/** @lends GeoJSONLayer.prototype
      * @param  {Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
      * @return {Object} layer's profile JSON
      */
-    toJSON: function (options) {
+    toJSON(options) {
         var profile = VectorLayer.prototype.toJSON.call(this, options);
         profile['type'] = 'GeoJSONLayer';
         var json = [];
@@ -72,25 +90,4 @@ export const GeoJSONLayer = VectorLayer.extend(/** @lends GeoJSONLayer.prototype
         profile['geojson'] = json;
         return profile;
     }
-});
-
-/**
- * Reproduce a GeoJSONLayer from layer's profile JSON.
- * @param  {Object} layerJSON - layer's profile JSON
- * @return {GeoJSONLayer}
- * @static
- * @private
- * @function
- */
-GeoJSONLayer.fromJSON = function (profile) {
-    if (!profile || profile['type'] !== 'GeoJSONLayer') {
-        return null;
-    }
-    var layer = new GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
-    if (profile['style']) {
-        layer.setStyle(profile['style']);
-    }
-    return layer;
-};
-
-export default GeoJSONLayer;
+}

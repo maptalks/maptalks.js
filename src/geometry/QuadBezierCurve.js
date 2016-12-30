@@ -1,4 +1,4 @@
-import { Curve } from './Curve';
+import Curve from './Curve';
 import Canvas from 'utils/Canvas';
 
 /**
@@ -21,26 +21,33 @@ import Canvas from 'utils/Canvas';
  *     }
  * ).addTo(layer);
  */
-export const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype */ {
+export default class QuadBezierCurve extends Curve {
 
-    _toJSON: function (options) {
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const curve = new QuadBezierCurve(feature['geometry']['coordinates'], json['options']);
+        curve.setProperties(feature['properties']);
+        return curve;
+    }
+
+    _toJSON(options) {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'QuadBezierCurve'
         };
-    },
+    }
 
     // paint method on canvas
-    _paintOn: function (ctx, points, lineOpacity) {
+    _paintOn(ctx, points, lineOpacity) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         this._quadraticCurve(ctx, points, lineOpacity);
         Canvas._stroke(ctx, lineOpacity);
 
         this._paintArrow(ctx, points, lineOpacity);
-    },
+    }
 
-    _getArrowPlacement: function () {
+    _getArrowPlacement() {
         var placement = this.options['arrowPlacement'];
         // bezier curves doesn't support point arrows.
         if (placement === 'point') {
@@ -48,11 +55,4 @@ export const QuadBezierCurve = Curve.extend(/** @lends QuadBezierCurve.prototype
         }
         return placement;
     }
-});
-
-QuadBezierCurve.fromJSON = function (json) {
-    var feature = json['feature'];
-    var curve = new QuadBezierCurve(feature['geometry']['coordinates'], json['options']);
-    curve.setProperties(feature['properties']);
-    return curve;
-};
+}
