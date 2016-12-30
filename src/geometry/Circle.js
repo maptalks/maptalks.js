@@ -1,9 +1,8 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import { Geometry } from './Geometry';
+import { CenterType } from './Geometry.Center';
 import { Polygon } from './Polygon';
-import { GeoJSON } from './GeoJSON';
 
 /**
  * @classdesc
@@ -22,7 +21,7 @@ import { GeoJSON } from './GeoJSON';
  * });
  */
 export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
-    includes: [Geometry.Center],
+    includes: [CenterType],
 
     /**
      * @property {Object} options
@@ -120,7 +119,7 @@ export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = GeoJSON.toNumberArrays([this.getShell()]);
+        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates

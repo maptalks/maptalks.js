@@ -1,4 +1,4 @@
-import { isNil, isArray, isCoordinate } from 'core/util';
+import { isNil, isArray, isNumber, isCoordinate, mapArrayRecursively } from 'core/util';
 
 /**
  * Represents a coordinate point <br>
@@ -39,6 +39,52 @@ export default class Coordinate {
         if (this.isNaN()) {
             throw new Error('coordinate is NaN');
         }
+    }
+
+     /**
+     * Convert one or more Coordinate objects to GeoJSON style coordinates
+     * @param  {Coordinate|Coordinate[]} coordinates - coordinates to convert
+     * @return {Number[]|Number[][]}
+     * @static
+     * @example
+     * // result is [[100,0], [101,1]]
+     * var numCoords = Coordinate.toNumberArrays([new Coordinate(100,0), new Coordinate(101,1)]);
+     */
+    static toNumberArrays(coordinates) {
+        if (!isArray(coordinates)) {
+            return [coordinates.x, coordinates.y];
+        }
+        return mapArrayRecursively(coordinates, function (coord) {
+            return [coord.x, coord.y];
+        });
+    }
+
+    /**
+     * Convert one or more GeoJSON style coordiantes to Coordinate objects
+     * @param  {Number[]|Number[][]} coordinates - coordinates to convert
+     * @return {Coordinate|Coordinate[]}
+     * @static
+     * @example
+     * var coordinates = Coordinate.toCoordinates([[100,0], [101,1]]);
+     */
+    static toCoordinates(coordinates) {
+        if (isNumber(coordinates[0]) && isNumber(coordinates[1])) {
+            return new Coordinate(coordinates);
+        }
+        var result = [];
+        for (var i = 0, len = coordinates.length; i < len; i++) {
+            var child = coordinates[i];
+            if (isArray(child)) {
+                if (isNumber(child[0])) {
+                    result.push(new Coordinate(child));
+                } else {
+                    result.push(this.toCoordinates(child));
+                }
+            } else {
+                result.push(new Coordinate(child));
+            }
+        }
+        return result;
     }
 
     /**

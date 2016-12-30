@@ -141,7 +141,7 @@ describe('#Polygon', function() {
             var polygon = new maptalks.Polygon(points);
             var coordinates = polygon.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = maptalks.GeoJSON.toNumberArrays(coordinates);
+            var geojsonCoordinates = maptalks.Coordinate.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 

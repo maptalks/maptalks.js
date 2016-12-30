@@ -171,10 +171,10 @@ describe('GeoJSON', function () {
             [104.0, 0.0],
             [105.0, 1.0]
         ];
-        var result = GeoJSON.toCoordinates(geoJSONCoords);
+        var result = Coordinate.toCoordinates(geoJSONCoords);
         expect(result).to.have.length(geoJSONCoords.length);
         expect(result[0]).to.eql(new Coordinate(geoJSONCoords[0]));
-        var reverse = GeoJSON.toNumberArrays(result);
+        var reverse = Coordinate.toNumberArrays(result);
         expect(reverse).to.eql(geoJSONCoords);
     });
 

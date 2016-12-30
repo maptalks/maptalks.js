@@ -4,7 +4,6 @@ import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Extent from 'geo/Extent';
 import { Polygon } from './Polygon';
-import { GeoJSON } from './GeoJSON';
 
 /**
  * @classdesc
@@ -206,7 +205,7 @@ export const Rectangle = Polygon.extend(/** @lends Rectangle.prototype */ {
     },
 
     _exportGeoJSONGeometry: function () {
-        var coordinates = GeoJSON.toNumberArrays([this.getShell()]);
+        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
