@@ -1,14 +1,11 @@
 import {
     isNil,
     isArray,
-    isNumber,
     isString,
     parseJSON,
     indexOfArray,
-    isArrayHasData,
-    mapArrayRecursively
+    isArrayHasData
 } from 'core/util';
-import Coordinate from 'geo/Coordinate';
 import { Geometry } from './Geometry';
 import { Marker } from './Marker';
 import { LineString } from './LineString';
@@ -226,5 +223,4 @@ Geometry.fromJSON = function (json) {
         geometry.setInfoWindow(json['infoWindow']);
     }
     return geometry;
-}
-
+};

@@ -1,12 +1,11 @@
 import { isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
-import { Geometry } from 'geometry/Geometry';
 
 /**
  * Common methods for geometry classes that base on a center, e.g. Marker, Circle, Ellipse , etc
  * @mixin
  */
-Geometry.Center = {
+export const CenterType = {
     /**
      * Get geometry's center
      * @return {Coordinate} - center of the geometry
@@ -85,3 +84,5 @@ Geometry.Center = {
         return this._coordinates;
     }
 };
+
+export default CenterType;

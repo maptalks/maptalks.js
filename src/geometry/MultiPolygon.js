@@ -1,4 +1,4 @@
-import MultiType from './MultiPoly';
+import MultiPolyType from './MultiPoly';
 import { GeometryCollection } from './GeometryCollection';
 import { Polygon } from './Polygon';
 
@@ -49,7 +49,7 @@ import { Polygon } from './Polygon';
  * }).addTo(layer);
  */
 export const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.prototype */ {
-    includes: [MultiType],
+    includes: [MultiPolyType],
     GeometryType: Polygon,
 
     type: 'MultiPolygon',

@@ -5,7 +5,7 @@ import Coordinate from 'geo/Coordinate';
  * Common methods for MultiPoint, MultiLineString and MultiPolygon
  * @mixin Geometry.MultiPoly
  */
-export default {
+const MultiPolyType = {
     /**
      * Get coordinates of the collection
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
@@ -73,3 +73,5 @@ export default {
         };
     }
 };
+
+export default MultiPolyType;

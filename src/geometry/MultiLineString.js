@@ -1,4 +1,4 @@
-import MultiType from './MultiPoly';
+import MultiPolyType from './MultiPoly';
 import { GeometryCollection } from './GeometryCollection';
 import { LineString } from './LineString';
 
@@ -39,7 +39,7 @@ import { LineString } from './LineString';
  */
 export const MultiLineString = GeometryCollection.extend(/** @lends MultiLineString.prototype */ {
 
-    includes: [MultiType],
+    includes: [MultiPolyType],
 
     GeometryType: LineString,
 

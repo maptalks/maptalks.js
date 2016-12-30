@@ -1,4 +1,4 @@
-import MultiType from './MultiPoly';
+import MultiPolyType from './MultiPoly';
 import { GeometryCollection } from './GeometryCollection';
 import { Marker } from './Marker';
 
@@ -21,7 +21,7 @@ import { Marker } from './Marker';
  * ).addTo(layer);
  */
 export const MultiPoint = GeometryCollection.extend(/** @lends MultiPoint.prototype */ {
-    includes: [MultiType],
+    includes: [MultiPolyType],
 
     GeometryType: Marker,
 
