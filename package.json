@@ -9,7 +9,7 @@
   },
   "scripts": {
     "report-coverage": "codecov",
-    "lint": "eslint src/**/*.js",
+    "lint": "eslint src/**/*.js test/**/*.js",
     "test": "gulp test --cov",
     "pretest": "npm run lint",
     "prepublish": "gulp build",

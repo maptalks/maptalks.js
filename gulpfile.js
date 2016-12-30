@@ -52,8 +52,7 @@ browsers = browsers.map(function (name) {
 var stylesPattern = './assets/css/**/*.css';
 
 gulp.task('lint', () => {
-    // return gulp.src(['src/**/*.js', 'test/**/*.js', '!node_modules/**'])
-    return gulp.src(['src/**/*.js', '!node_modules/**'])
+    return gulp.src(['src/**/*.js', 'test/**/*.js', '!node_modules/**'])
         .pipe(eslint())
         .pipe(eslint.format())
         .pipe(eslint.failAfterError());
