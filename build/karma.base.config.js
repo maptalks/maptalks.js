@@ -23,7 +23,7 @@ const webpackConfig = {
 module.exports = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
     files: [{
-        pattern: 'test-context.js',
+        pattern: '../test/**/*.js',
         watched: false
     }, {
         pattern: '../assets/css/**/*.css',
@@ -48,7 +48,7 @@ module.exports = {
         '/resources/': '/base/test/resources/'
     },
     preprocessors: {
-        'test-context.js': ['webpack', 'sourcemap']
+        '../test/**/*.js': ['webpack', 'sourcemap']
     },
     customLaunchers: {
         IE10: {
