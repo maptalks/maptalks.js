@@ -71,6 +71,7 @@ gulp.task('scripts', ['lint'], function () {
                 main: true,
                 browser: true
             }),
+            //convert zousan to es6 modules
             commonjs(),
             buble(),
         ]
