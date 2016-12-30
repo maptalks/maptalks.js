@@ -1,8 +1,23 @@
+import {
+    commonSetupMap,
+    removeContainer,
+    genAllTypeGeometries
+} from '../SpecCommon';
+import Coordinate from 'geo/Coordinate';
+import {
+    getPagePosition
+} from 'core/util/dom';
+import {
+    Marker,
+    Sector,
+    GeometryCollection
+} from 'geometry';
+import Point from 'geo/Point';
+import VectorLayer from 'layer/VectorLayer';
 
 describe('#GeometryDrag', function () {
-    var container,eventContainer;
+    var container, eventContainer;
     var map;
-    var tile;
     var center = new Coordinate(118.846825, 32.046534);
 
     function dragGeometry(geometry, isMove) {
@@ -16,42 +31,41 @@ describe('#GeometryDrag', function () {
 
         var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(geometry.getFirstCoordinate()).add(domPosition);
-        var requestAnimFn = requestAnimFrame;
+        // var requestAnimFn = requestAnimFrame;
 
-
-        happen.mousedown(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+        happen.mousedown(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
         expect(spy.called).to.be.ok();
         if (isMove === undefined || isMove) {
             for (var i = 0; i < 10; i++) {
-                happen.mousemove(document,{
-                    'clientX':point.x+i,
-                    'clientY':point.y+i
-                    });
-            };
+                happen.mousemove(document, {
+                    'clientX': point.x + i,
+                    'clientY': point.y + i
+                });
+            }
         }
         happen.mouseup(document);
     }
 
     function dragMap() {
         var domPosition = getPagePosition(container);
-        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new Point(30,20));
-        happen.mousedown(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new Point(30, 20));
+        happen.mousedown(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(document,{
-                'clientX':point.x+i,
-                'clientY':point.y+i
-                });
-        };
+            happen.mousemove(document, {
+                'clientX': point.x + i,
+                'clientY': point.y + i
+            });
+        }
         happen.mouseup(document);
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
@@ -59,23 +73,25 @@ describe('#GeometryDrag', function () {
         eventContainer = map._panels.canvasContainer;
     });
 
-    afterEach(function() {
-        removeContainer(container)
+    afterEach(function () {
+        removeContainer(container);
     });
-    describe('drag geometries', function() {
-        it('in default, geometries cannot be dragged', function() {
+    describe('drag geometries', function () {
+        it('in default, geometries cannot be dragged', function () {
             var marker = new Marker(center);
             dragGeometry(marker);
             expect(marker.getCoordinates()).to.be.closeTo(center);
         });
 
-        it('can drag a default marker', function() {
-            var marker = new Marker(center,{draggable:true});
+        it('can drag a default marker', function () {
+            var marker = new Marker(center, {
+                draggable: true
+            });
             dragGeometry(marker);
             expect(marker.getCoordinates()).not.to.be.eql(center);
         });
 
-        it('drag all kinds of geometries', function() {
+        it('drag all kinds of geometries', function () {
             this.timeout(8000);
             var geometries = genAllTypeGeometries();
 
@@ -92,32 +108,35 @@ describe('#GeometryDrag', function () {
             }
         });
 
-        it('enable map draggable after dragging', function() {
+        it('enable map draggable after dragging', function () {
             var center = map.getCenter();
-            var marker = new Marker(center,{draggable:true});
+            var marker = new Marker(center, {
+                draggable: true
+            });
             dragGeometry(marker);
-            var center = map.getCenter();
             dragMap();
             expect(map.getCenter()).not.to.closeTo(center);
         });
 
-        it('enable map draggable after dragging without moving', function() {
+        it('enable map draggable after dragging without moving', function () {
             var center = map.getCenter();
-            var marker = new Marker(center,{draggable:true});
+            var marker = new Marker(center, {
+                draggable: true
+            });
             dragGeometry(marker, false);
-            var center = map.getCenter();
             dragMap();
             expect(map.getCenter()).not.to.closeTo(center);
         });
     });
 
-    describe('drag can be disable', function() {
-        it('disables dragging', function() {
-            var marker = new Marker(center,{draggable:false});
+    describe('drag can be disable', function () {
+        it('disables dragging', function () {
+            var marker = new Marker(center, {
+                draggable: false
+            });
             dragGeometry(marker);
             expect(marker.getCoordinates()).to.be.closeTo(center);
         });
     });
-
 
 });

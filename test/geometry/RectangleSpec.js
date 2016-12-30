@@ -204,22 +204,22 @@ describe('#Rectangle', function () {
     });
 
     describe('can be treated as a polygon', function () {
-            it('has shell', function () {
-                var vector = new Rectangle(center, 1, 1);
-                var shell = vector.getShell();
-                expect(shell).to.have.length(5);
-                expect(shell[0].x === center.x && shell[0].y === center.y).to.be.ok();
-                expect(shell[1].x > shell[0].x && shell[1].y === shell[0].y).to.be.ok();
-                expect(shell[2].x > shell[0].x && shell[2].y < shell[0].y).to.be.ok();
-                expect(shell[3].x === shell[0].x && shell[3].y < shell[0].y).to.be.ok();
-                expect(shell[4].x === shell[0].x && shell[4].y === shell[0].y).to.be.ok();
-            });
+        it('has shell', function () {
+            var vector = new Rectangle(center, 1, 1);
+            var shell = vector.getShell();
+            expect(shell).to.have.length(5);
+            expect(shell[0].x === center.x && shell[0].y === center.y).to.be.ok();
+            expect(shell[1].x > shell[0].x && shell[1].y === shell[0].y).to.be.ok();
+            expect(shell[2].x > shell[0].x && shell[2].y < shell[0].y).to.be.ok();
+            expect(shell[3].x === shell[0].x && shell[3].y < shell[0].y).to.be.ok();
+            expect(shell[4].x === shell[0].x && shell[4].y === shell[0].y).to.be.ok();
+        });
 
-            it('but doesn'
-                t have holes ', function () {
-                var vector = new Rectangle(center, 1, 1);
-                var holes = vector.getHoles(); expect(holes).to.not.be.ok();
-            });
+        it('but does not have holes', function () {
+            var vector = new Rectangle(center, 1, 1);
+            var holes = vector.getHoles();
+            expect(holes).to.not.be.ok();
+        });
 
         it('toGeoJSON exported an polygon', function () {
             var vector = new Rectangle(center, 1, 1);
@@ -229,24 +229,24 @@ describe('#Rectangle', function () {
         });
     });
 
-describe('compute length and area', function () {
-    it('length', function () {
-        var vector = new Rectangle(center, 1, 1);
-        var result = 2 * (vector.getWidth() + vector.getHeight());
-        var length = vector.getLength();
-        expect(length).to.be(result);
+    describe('compute length and area', function () {
+        it('length', function () {
+            var vector = new Rectangle(center, 1, 1);
+            var result = 2 * (vector.getWidth() + vector.getHeight());
+            var length = vector.getLength();
+            expect(length).to.be(result);
+        });
+
+        it('area', function () {
+            var vector = new Rectangle(center, 1, 1);
+            var result = 1;
+            var length = vector.getArea();
+            expect(length).to.be(result);
+        });
     });
 
-    it('area', function () {
+    it('can have various symbols', function (done) {
         var vector = new Rectangle(center, 1, 1);
-        var result = 1;
-        var length = vector.getArea();
-        expect(length).to.be(result);
+        GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
-});
-
-it('can have various symbols', function (done) {
-    var vector = new Rectangle(center, 1, 1);
-    GeoSymbolTester.testGeoSymbols(vector, map, done);
-});
 });

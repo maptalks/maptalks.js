@@ -3,6 +3,7 @@ import Coordinate from 'geo/Coordinate';
 import { Marker, Label, TextBox, Circle, Ellipse, Rectangle, Sector, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, ArcCurve, QuadBezierCurve, CubicBezierCurve } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
 import TileLayer from 'layer/tile/TileLayer';
+import Map from 'map';
 
 export function genAllTypeGeometries() {
     var center = new Coordinate(118.846825, 32.046534);

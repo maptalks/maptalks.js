@@ -1,8 +1,18 @@
-describe("Control.Panel", function() {
+import {
+    commonSetupMap,
+    removeContainer
+} from '../SpecCommon';
+import {
+    getPagePosition
+} from 'core/util/dom';
+import Coordinate from 'geo/Coordinate';
+import Point from 'geo/Point';
+import * as controls from 'control';
+
+describe('Control.Panel', function () {
 
     var container;
     var map;
-    var tile;
     var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
@@ -12,16 +22,16 @@ describe("Control.Panel", function() {
     });
 
     afterEach(function () {
-        removeContainer(container)
+        removeContainer(container);
     });
 
-    it("add a panel", function() {
-        var panel = new control.Panel({
-            position : {//放置panel的位置
+    it('add a panel', function () {
+        var panel = new controls.Panel({
+            position: { //放置panel的位置
                 top: '150',
                 left: '150'
             },
-            draggable: true,//能否拖动
+            draggable: true, //能否拖动
             custom: false, //content值能否为html
             content: '面板内容'
         });
@@ -30,13 +40,13 @@ describe("Control.Panel", function() {
             '<div class="maptalks-panel"><a class="maptalks-close" href="javascript:;"></a><div class="maptalks-panel-content">面板内容</div></div>');
     });
 
-    it("update a panel", function() {
-        var panel = new control.Panel({
-            position : {//放置panel的位置
+    it('update a panel', function () {
+        var panel = new controls.Panel({
+            position: { //放置panel的位置
                 top: '150',
                 left: '150'
             },
-            draggable: true,//能否拖动
+            draggable: true, //能否拖动
             custom: false, //content值能否为html
             content: '面板内容'
         });
@@ -49,31 +59,31 @@ describe("Control.Panel", function() {
             '<div class="maptalks-panel"><a class="maptalks-close" href="javascript:;"></a><div class="maptalks-panel-content">changed</div></div>');
     });
 
-     function dragPanel(panel) {
+    function dragPanel(panel) {
         var dom = panel.getContainer().childNodes[0],
             domPosition = getPagePosition(dom),
-            point = new Point(0,0).add(domPosition);
-        happen.mousedown(dom,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+            point = new Point(0, 0).add(domPosition);
+        happen.mousedown(dom, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(document,{
-                'clientX':point.x+i,
-                'clientY':point.y+i
-                });
-        };
+            happen.mousemove(document, {
+                'clientX': point.x + i,
+                'clientY': point.y + i
+            });
+        }
         happen.mouseup(document);
     }
 
-    it("panel can be dragged", function() {
-        var position = {//放置panel的位置
-                top: '150',
-                left: '150'
-            };
-        var panel = new control.Panel({
-            position : position,
-            draggable: true,//能否拖动
+    it('panel can be dragged', function () {
+        var position = { //放置panel的位置
+            top: '150',
+            left: '150'
+        };
+        var panel = new controls.Panel({
+            position: position,
+            draggable: true, //能否拖动
             custom: false, //content值能否为html
             content: '面板内容'
         });

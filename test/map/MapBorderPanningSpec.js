@@ -1,82 +1,81 @@
-
+import {
+    commonSetupMap,
+    removeContainer
+} from '../SpecCommon';
+import Coordinate from 'geo/Coordinate';
 
 describe('#MapBorderPanningSpec', function () {
-    var container,mapPlatform;
+    var container;
     var map;
-    var tile;
-    var clock;
     var center = new Coordinate(118.846825, 32.046534);
 
-    beforeEach(function() {
+    beforeEach(function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        map.config('autoBorderPanning',true);
-        mapPlatform = map._panels.front;
+        map.config('autoBorderPanning', true);
     });
 
-    afterEach(function() {
-        removeContainer(container)
+    afterEach(function () {
+        removeContainer(container);
     });
 
-    describe('pan map when mousemove on the border of map', function() {
+    describe('pan map when mousemove on the border of map', function () {
 
-        it('pan up when mousemove on the up border', function() {
+        it('pan up when mousemove on the up border', function () {
             var center = map.getCenter();
-            happen.mousemove(container,{
+            happen.mousemove(container, {
                 'clientX': 100,
                 'clientY': 9
-                });
+            });
             expect(map.getCenter().y).to.be.above(center.y);
         });
 
-        it('pan left when mousemove on the left border', function() {
+        it('pan left when mousemove on the left border', function () {
             var center = map.getCenter();
-            happen.mousemove(container,{
+            happen.mousemove(container, {
                 'clientX': 10,
                 'clientY': 100
-                });
+            });
             expect(map.getCenter().x).to.be.below(center.x);
         });
 
-        it('pan right when mousemove on the right border', function() {
+        it('pan right when mousemove on the right border', function () {
             var center = map.getCenter();
-            happen.mousemove(container,{
+            happen.mousemove(container, {
                 'clientX': parseInt(container.style.width),
                 'clientY': 100
-                });
+            });
             expect(map.getCenter().x).to.be.above(center.x);
         });
 
-        it('pan down when mousemove on the botton border', function() {
+        it('pan down when mousemove on the botton border', function () {
             var center = map.getCenter();
-            happen.mousemove(container,{
+            happen.mousemove(container, {
                 'clientX': 100,
                 'clientY': parseInt(container.style.height)
-                });
+            });
             expect(map.getCenter().y).to.be.below(center.y);
         });
 
-        it('not pan if mousemove not on border', function() {
+        it('not pan if mousemove not on border', function () {
             var center = map.getCenter();
-            happen.mousemove(container,{
+            happen.mousemove(container, {
                 'clientX': 100,
                 'clientY': 100
-                });
+            });
             expect(map.getCenter().x).to.be.eql(center.x);
         });
     });
 
-
-
-    describe('autoPanning can be disable', function() {
-        it('disables autoBorderPanning', function() {
+    describe('autoPanning can be disable', function () {
+        it('disables autoBorderPanning', function () {
             var center = map.getCenter();
-            map.config('autoBorderPanning',false);
-            happen.mousemove(container,{
+            map.config('autoBorderPanning', false);
+            happen.mousemove(container, {
                 'clientX': 100,
                 'clientY': 10
-                });
+            });
             expect(map.getCenter()).to.be.eql(center);
         });
     });

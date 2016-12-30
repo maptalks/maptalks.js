@@ -1,30 +1,49 @@
+import {
+    commonSetupMap,
+    genAllTypeGeometries
+} from '../SpecCommon';
+import {
+    getPagePosition
+} from 'core/util/dom';
+import Coordinate from 'geo/Coordinate';
+import {
+    Marker,
+    Circle,
+    Ellipse,
+    Rectangle,
+    Sector,
+    Polygon,
+    GeometryCollection
+} from 'geometry';
+import Point from 'geo/Point';
+import VectorLayer from 'layer/VectorLayer';
 
 describe('#GeometryEdit', function () {
     var container, eventContainer;
     var map;
-    var tile;
     var center = new Coordinate(118.846825, 32.046534);
     var layer;
+
     function dragGeometry(geometry, offset) {
         var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(geometry.getCenter()).add(domPosition);
         if (offset) {
             point._add(offset);
         }
-        happen.mousedown(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+        happen.mousedown(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(document,{
-                'clientX':point.x+i,
-                'clientY':point.y+i
-                });
-        };
+            happen.mousemove(document, {
+                'clientX': point.x + i,
+                'clientY': point.y + i
+            });
+        }
         happen.mouseup(document);
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         var setups = commonSetupMap(center, null);
         container = setups.container;
         map = setups.map;
@@ -34,18 +53,18 @@ describe('#GeometryEdit', function () {
         map.addLayer(layer);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         // map.remove();
     });
 
-    describe('edit all kinds of geometries',function() {
-        it('can only be edited on a map', function() {
+    describe('edit all kinds of geometries', function () {
+        it('can only be edited on a map', function () {
             var marker = new Marker(map.getCenter());
             marker.startEdit();
             expect(marker.isEditing()).not.to.be.ok();
         });
 
-        it('drag all kinds of geometries', function() {
+        it('drag all kinds of geometries', function () {
             this.timeout(8000);
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
@@ -61,13 +80,13 @@ describe('#GeometryEdit', function () {
                 expect(geo.getCenter()).not.to.closeTo(center);
                 //geo can only be dragged by center handle.
                 var newCenter = geo.getCenter();
-                dragGeometry(geo, new Point(500,20));
+                dragGeometry(geo, new Point(500, 20));
                 expect(geo.getCenter()).to.closeTo(newCenter);
             }
         });
     });
 
-    describe('edit a geometry', function() {
+    describe('edit a geometry', function () {
         /*it('not all markers can be edited', function() {
             for (var i = 0; i < GeoSymbolTester.markerSymbols.length; i++) {
                 var symbol = GeoSymbolTester.markerSymbols[i];
@@ -90,100 +109,120 @@ describe('#GeometryEdit', function () {
             expect(label.isEditing()).not.to.be.ok();
         });*/
 
-        it('resize a vector marker',function() {
+        it('resize a vector marker', function () {
             var marker = new Marker(map.getCenter(), {
-                symbol : {
-                    markerType:'ellipse',
-                    markerWidth:20,
-                    markerHeight:20
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             }).addTo(layer);
             var size = marker.getSize();
             marker.startEdit();
-            dragGeometry(marker, new Point(size.width/2,0));
+            dragGeometry(marker, new Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
             expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(20);
         });
 
-        it('resize a vector marker with fix aspect ratio',function() {
+        it('resize a vector marker with fix aspect ratio', function () {
             var marker = new Marker(map.getCenter(), {
-                symbol : {
-                    markerType:'ellipse',
-                    markerWidth:20,
-                    markerHeight:20
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             }).addTo(layer);
-            marker.startEdit({'fixAspectRatio' : true});
+            marker.startEdit({
+                'fixAspectRatio': true
+            });
             var size = marker.getSize();
-            dragGeometry(marker, new Point(size.width/2,0));
+            dragGeometry(marker, new Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
             expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(39);
         });
 
-        it('resize a circle',function() {
+        it('resize a circle', function () {
             var circle = new Circle(map.getCenter(), 1000).addTo(layer);
             circle.startEdit();
             var size = circle.getSize();
-            dragGeometry(circle, new Point(size.width/2,0));
+            dragGeometry(circle, new Point(size.width / 2, 0));
             var r = circle.getRadius();
             expect(r).to.be.eql(1010.22151);
         });
 
-        it('resize a ellipse',function() {
+        it('resize a ellipse', function () {
             var ellipse = new Ellipse(map.getCenter(), 1000, 500).addTo(layer);
             ellipse.startEdit();
             var size = ellipse.getSize();
-            dragGeometry(ellipse, new Point(size.width/2, size.height/2));
+            dragGeometry(ellipse, new Point(size.width / 2, size.height / 2));
             expect(ellipse.getWidth()).to.be.approx(1020.27122);
             expect(ellipse.getHeight()).to.be.approx(520.2339);
         });
 
-        it('resize a ellipse with fix aspect ratio',function() {
+        it('resize a ellipse with fix aspect ratio', function () {
             var ellipse = new Ellipse(map.getCenter(), 1000, 500).addTo(layer);
-            ellipse.startEdit({'fixAspectRatio' : true});
+            ellipse.startEdit({
+                'fixAspectRatio': true
+            });
             var size = ellipse.getSize();
-            dragGeometry(ellipse, new Point(size.width/2, size.height/2));
+            dragGeometry(ellipse, new Point(size.width / 2, size.height / 2));
             expect(ellipse.getWidth()).to.be.approx(1040.55972);
             expect(ellipse.getHeight()).to.be.approx(520.2339);
         });
 
-        it('resize a rectangle',function() {
+        it('resize a rectangle', function () {
             var rect = new Rectangle(map.getCenter(), 1000, 500).addTo(layer);
             rect.startEdit();
             var size = rect.getSize();
-            dragGeometry(rect, new Point(size.width/2,size.height/2));
+            dragGeometry(rect, new Point(size.width / 2, size.height / 2));
             expect(rect.getWidth()).to.be.approx(1011.0866);
             expect(rect.getHeight()).to.be.approx(511.11058);
         });
 
-        it('resize a rectangle with fix aspect ratio',function() {
+        it('resize a rectangle with fix aspect ratio', function () {
             var rect = new Rectangle(map.getCenter(), 1000, 500).addTo(layer);
-            rect.startEdit({'fixAspectRatio' : true});
+            rect.startEdit({
+                'fixAspectRatio': true
+            });
             var size = rect.getSize();
-            dragGeometry(rect, new Point(size.width/2, size.height/2));
+            dragGeometry(rect, new Point(size.width / 2, size.height / 2));
             expect(rect.getWidth()).to.be.approx(1022.39959);
             expect(rect.getHeight()).to.be.approx(511.11058);
         });
 
-        it('change a polygon vertex',function() {
+        it('change a polygon vertex', function () {
             var rect = new Rectangle(map.getCenter(), 1000, 500).addTo(layer);
-            var shell = rect.getShell();
             var polygon = new Polygon(rect.getShell()).addTo(layer);
             var o = polygon.toGeoJSON();
             polygon.startEdit();
             var size = polygon.getSize();
-            dragGeometry(polygon, new Point(size.width/2,size.height/2));
+            dragGeometry(polygon, new Point(size.width / 2, size.height / 2));
             expect(polygon.toGeoJSON()).not.to.be.eqlGeoJSON(o);
-            var expected = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[118.84682500000001,32.046534],[118.85742312186674,32.046534],[118.85751916135895,32.041960573990714],[118.84682500000001,32.04204242358055],[118.84682500000001,32.046534]]]},"properties":null};
+            var expected = {
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': [
+                        [
+                            [118.84682500000001, 32.046534],
+                            [118.85742312186674, 32.046534],
+                            [118.85751916135895, 32.041960573990714],
+                            [118.84682500000001, 32.04204242358055],
+                            [118.84682500000001, 32.046534]
+                        ]
+                    ]
+                },
+                'properties': null
+            };
             expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
         });
 
         it('update symbol when editing', function (done) {
             var circle = new Circle(map.getCenter(), 1000, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             }).addTo(layer);
             circle.startEdit();
@@ -195,9 +234,9 @@ describe('#GeometryEdit', function () {
                     done();
                 });
                 circle.updateSymbol({
-                    'polygonFill' : '#ff0'
+                    'polygonFill': '#ff0'
                 });
-            })
+            });
         });
     });
 

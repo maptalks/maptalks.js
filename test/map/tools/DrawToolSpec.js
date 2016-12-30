@@ -1,10 +1,26 @@
-
-
+import {
+    commonSetupMap,
+    removeContainer
+} from '../SpecCommon';
+import {
+    getPagePosition
+} from 'core/util/dom';
+import {
+    Marker,
+    Ellipse,
+    Rectangle,
+    Circle,
+    LineString,
+    Polygon
+} from 'geometry';
+import Coordinate from 'geo/Coordinate';
+import {
+    DrawTool
+} from 'map/tool';
 
 describe('#DrawTool', function () {
-    var container,eventContainer;
+    var container, eventContainer;
     var map;
-    var tile;
     var center = new Coordinate(118.846825, 32.046534);
 
     function drawLine() {
@@ -12,30 +28,30 @@ describe('#DrawTool', function () {
 
         var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        var requestAnimFn = requestAnimFrame;
+        // var requestAnimFn = requestAnimFrame;
 
-        happen.click(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(eventContainer,{
-                'clientX':point.x+i,
-                'clientY':point.y+i
-                });
-        };
-        happen.click(eventContainer,{
-                'clientX':point.x+10,
-                'clientY':point.y
-                });
-        happen.click(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y+10
-                });
-        happen.dblclick(eventContainer,{
-                'clientX':point.x-1,
-                'clientY':point.y+5
-                });
+            happen.mousemove(eventContainer, {
+                'clientX': point.x + i,
+                'clientY': point.y + i
+            });
+        }
+        happen.click(eventContainer, {
+            'clientX': point.x + 10,
+            'clientY': point.y
+        });
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y + 10
+        });
+        happen.dblclick(eventContainer, {
+            'clientX': point.x - 1,
+            'clientY': point.y + 5
+        });
     }
 
     function dragDraw() {
@@ -43,75 +59,75 @@ describe('#DrawTool', function () {
 
         var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        happen.mousedown(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+        happen.mousedown(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(eventContainer,{
-                'clientX':point.x-i,
-                'clientY':point.y-i
-                });
-        };
-        happen.mouseup(eventContainer,{
-                'clientX':point.x-10,
-                'clientY':point.y-10
-                });
+            happen.mousemove(eventContainer, {
+                'clientX': point.x - i,
+                'clientY': point.y - i
+            });
+        }
+        happen.mouseup(eventContainer, {
+            'clientX': point.x - 10,
+            'clientY': point.y - 10
+        });
     }
+
     function drawPoint() {
         var center = map.getCenter();
 
         var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        happen.click(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
     }
-    beforeEach(function() {
+    beforeEach(function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        eventContainer = map._panels.canvasContainer;;
-
+        eventContainer = map._panels.canvasContainer;
     });
 
-    afterEach(function() {
-        removeContainer(container)
+    afterEach(function () {
+        removeContainer(container);
     });
-    describe('draw geometries', function() {
-        it('throw exception with an undefined mode', function() {
-            expect(function() {
-                var drawTool = new DrawTool({
+
+    describe('draw geometries', function () {
+        it('throw exception with an undefined mode', function () {
+            expect(function () {
+                new DrawTool({});
+            }).to.throwException();
+        });
+
+        it('throw exception with an invalid mode', function () {
+            expect(function () {
+                new DrawTool({
+                    mode: 'invalidMode'
                 });
             }).to.throwException();
         });
 
-        it('throw exception with an invalid mode', function() {
-            expect(function() {
-                var drawTool = new DrawTool({
-                    mode : 'invalidMode'
-                });
-            }).to.throwException();
-        });
-
-        it('can draw a marker', function(done) {
+        it('can draw a marker', function (done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof Marker).to.be.ok();
                 expect(param.geometry.getCoordinates()).to.be.closeTo(map.getCenter());
                 done();
             }
             var drawTool = new DrawTool({
-                mode : 'Point',
-                symbol : {
-                    "markerPlacement":"point",
-                    "markerFile"   : "images/control/2.png",
-                    "markerRotation" : 30,
-                    "markerWidth"  : 20,
-                    "markerHeight" : 20,
-                    "markerOpacity": 1,
-                    "markerDx"     : 0,
-                    "markerDy"     : 0
+                mode: 'Point',
+                symbol: {
+                    'markerPlacement': 'point',
+                    'markerFile': 'images/control/2.png',
+                    'markerRotation': 30,
+                    'markerWidth': 20,
+                    'markerHeight': 20,
+                    'markerOpacity': 1,
+                    'markerDx': 0,
+                    'markerDy': 0
                 }
             });
             drawTool.addTo(map);
@@ -119,53 +135,55 @@ describe('#DrawTool', function () {
             drawPoint();
         });
 
-        it('can draw linestring', function(done) {
+        it('can draw linestring', function (done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof LineString).to.be.ok();
                 expect(param.geometry.getLength()).to.above(0);
                 done();
             }
             var drawTool = new DrawTool({
-                mode : 'LineString'
+                mode: 'LineString'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
             drawLine();
         });
 
-        it('can draw Polygon', function(done) {
+        it('can draw Polygon', function (done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof Polygon).to.be.ok();
                 expect(param.geometry.getArea()).to.above(0);
                 done();
             }
             var drawTool = new DrawTool({
-                mode : 'Polygon'
+                mode: 'Polygon'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
             drawLine();
         });
 
-        it('can draw circle', function(done) {
+        it('can draw circle', function (done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof Circle).to.be.ok();
                 expect(param.geometry.getRadius()).to.above(0);
                 done();
             }
             var drawTool = new DrawTool({
-                mode : 'Circle'
+                mode: 'Circle'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
             dragDraw();
         });
 
-        it('can draw Rectangle', function(done) {
+        it('can draw Rectangle', function (done) {
             var first;
+
             function drawStart(param) {
                 first = param.coordinate;
             }
+
             function drawEnd(param) {
                 expect(param.geometry instanceof Rectangle).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
@@ -176,7 +194,7 @@ describe('#DrawTool', function () {
                 done();
             }
             var drawTool = new DrawTool({
-                mode : 'Rectangle'
+                mode: 'Rectangle'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -185,7 +203,7 @@ describe('#DrawTool', function () {
         });
 
 
-        it('can draw Ellipse', function(done) {
+        it('can draw Ellipse', function (done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof Ellipse).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
@@ -193,7 +211,7 @@ describe('#DrawTool', function () {
                 done();
             }
             var drawTool = new DrawTool({
-                mode : 'Ellipse'
+                mode: 'Ellipse'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -202,7 +220,7 @@ describe('#DrawTool', function () {
     });
 
     describe('common methods', function () {
-        it('enable/disable', function() {
+        it('enable/disable', function () {
             var drawTool = new DrawTool({
                 mode: 'LineString',
                 symbol: {
@@ -216,9 +234,9 @@ describe('#DrawTool', function () {
             drawTool.addTo(map);
 
             expect(function () {
-                 drawTool.disable();
-                 drawTool.enable();
-             }).to.not.throwException();
+                drawTool.disable();
+                drawTool.enable();
+            }).to.not.throwException();
         });
 
         it('setMode', function (done) {
@@ -229,7 +247,7 @@ describe('#DrawTool', function () {
                 done();
             }
             var drawTool = new DrawTool({
-                mode : 'Rectangle'
+                mode: 'Rectangle'
             });
             drawTool.addTo(map);
             drawTool.setMode('Ellipse');
@@ -239,7 +257,7 @@ describe('#DrawTool', function () {
 
         it('setMode after disable', function () {
             var drawTool = new DrawTool({
-                mode : 'Rectangle'
+                mode: 'Rectangle'
             });
             drawTool.addTo(map);
             drawTool.disable();
@@ -249,7 +267,7 @@ describe('#DrawTool', function () {
             expect(spy.callCount).to.be(1);
         });
 
-        it('setSymbol', function(done) {
+        it('setSymbol', function (done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof Ellipse).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
@@ -269,7 +287,7 @@ describe('#DrawTool', function () {
             dragDraw();
         });
 
-        it('getSymbol', function() {
+        it('getSymbol', function () {
             var drawTool = new DrawTool({
                 mode: 'LineString'
             });
@@ -278,6 +296,5 @@ describe('#DrawTool', function () {
             expect(drawTool.getSymbol()).to.not.be(null);
         });
     });
-
 
 });

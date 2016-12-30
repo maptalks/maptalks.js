@@ -1,8 +1,22 @@
-describe("#Geometry.InfoWindow", function() {
+import {
+    removeContainer,
+    genAllTypeGeometries
+} from '../SpecCommon';
+import Coordinate from 'geo/Coordinate';
+import {
+    TRANSFORM
+} from 'core/util/dom';
+import {
+    Marker,
+} from 'geometry';
+import Map from 'map';
+import VectorLayer from 'layer/VectorLayer';
+import * as ui from 'ui';
+
+describe('#Geometry.InfoWindow', function () {
 
     var container;
     var map;
-    var tile;
     var center = new Coordinate(118.846825, 32.046534);
     var layer;
 
@@ -17,20 +31,15 @@ describe("#Geometry.InfoWindow", function() {
             center: center
         };
         map = new Map(container, option);
-        tile = new TileLayer('tile', {
-
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
-        });
         layer = new VectorLayer('vector').addTo(map);
     });
 
     afterEach(function () {
-        removeContainer(container)
+        removeContainer(container);
     });
 
-    it("infowindow has methods to change itself.", function(done) {
-        var marker = new Marker(center);
+    it('infowindow has methods to change itself.', function (done) {
+        var marker = new maptalks.Marker(center);
         marker.addTo(layer);
         var options = {
             title: 'title',
@@ -47,6 +56,7 @@ describe("#Geometry.InfoWindow", function() {
         expect(w.getContent()).to.be.eql('content3');
         w.setTitle('title4');
         expect(w.getTitle()).to.be.eql('title4');
+
         function onZoomEnd() {
             done();
         }
@@ -60,7 +70,7 @@ describe("#Geometry.InfoWindow", function() {
         var options = {
             title: 'title',
             content: 'content',
-            animation : false
+            animation: false
         };
         marker.setInfoWindow(options);
         marker.openInfoWindow();
@@ -71,8 +81,8 @@ describe("#Geometry.InfoWindow", function() {
         done();
     });
 
-    describe("all kinds of geometries can have a infowindow", function() {
-        it('set a infowindow', function() {
+    describe('all kinds of geometries can have a infowindow', function () {
+        it('set a infowindow', function () {
             var options = {
                 title: 'title',
                 content: 'content'
@@ -85,11 +95,11 @@ describe("#Geometry.InfoWindow", function() {
             layer.addGeometry(geometries);
         });
 
-        it('set and open/close and remove a infowindow', function() {
+        it('set and open/close and remove a infowindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
@@ -106,11 +116,11 @@ describe("#Geometry.InfoWindow", function() {
             }
         });
 
-        it('set and open/close and remove a customized infowindow', function() {
+        it('set and open/close and remove a customized infowindow', function () {
             var options = {
-                custom:true,
+                custom: true,
                 content: '<div style="width:400px;height:300;">this is a customized infowindow.</div>',
-                animation : null
+                animation: null
             };
             var geometries = genAllTypeGeometries();
             layer.addGeometry(geometries);
@@ -127,11 +137,11 @@ describe("#Geometry.InfoWindow", function() {
             }
         });
 
-        it('hide when geometry is hided', function() {
+        it('hide when geometry is hided', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
@@ -146,11 +156,11 @@ describe("#Geometry.InfoWindow", function() {
             expect(w.isVisible()).not.to.be.ok();
         });
 
-        it('hide when layer is hided', function() {
+        it('hide when layer is hided', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
@@ -165,18 +175,18 @@ describe("#Geometry.InfoWindow", function() {
             expect(w.isVisible()).not.to.be.ok();
         });
 
-        it('create and hide when layer is hided', function() {
+        it('create and hide when layer is hided', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var infoWindow = new ui.InfoWindow(options);
             var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
 
             infoWindow.addTo(geo);
-            infoWindow.show(geo.getCenter())
+            infoWindow.show(geo.getCenter());
             var w = geo.getInfoWindow();
             expect(w.isVisible()).to.be.ok();
 
@@ -185,11 +195,11 @@ describe("#Geometry.InfoWindow", function() {
             expect(w.isVisible()).not.to.be.ok();
         });
 
-        it('move when geometry is moved', function() {
+        it('move when geometry is moved', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
@@ -211,15 +221,15 @@ describe("#Geometry.InfoWindow", function() {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : 'fade,scale',
-                animationDuration : 100
+                animation: 'fade,scale',
+                animationDuration: 100
             };
             var infoWindow = new ui.InfoWindow(options);
             var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
 
             infoWindow.addTo(geo);
-            infoWindow.show(geo.getCenter())
+            infoWindow.show(geo.getCenter());
             expect(infoWindow.getDOM().style.opacity).to.be.eql(1);
             expect(infoWindow.getDOM().style[TRANSFORM]).to.be.eql('scale(1)');
 

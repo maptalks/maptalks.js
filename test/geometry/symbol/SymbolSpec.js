@@ -1,28 +1,41 @@
-// var CommonSpec = require('./CommonSpec');
+import {
+    commonSetupMap,
+    removeContainer,
+    genAllTypeGeometries
+} from '../SpecCommon';
+import {
+    extend
+} from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import {
+    Marker,
+    Polygon,
+    MultiPoint,
+    GeometryCollection
+} from 'geometry';
+import VectorLayer from 'layer/VectorLayer';
+import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 
-describe('SymbolSpec', function() {
+describe('SymbolSpec', function () {
 
     var container;
     var map;
-    var tile;
     var center = new Coordinate(118.846825, 32.046534);
     var layer;
-    var canvasContainer;
 
-    beforeEach(function() {
+    beforeEach(function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.canvasContainer;
         layer = new VectorLayer('id').addTo(map);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        removeContainer(container);
     });
 
-    it('default', function() {
+    it('default', function () {
         var geometries = genAllTypeGeometries();
         var i;
         for (i = 0; i < geometries.length; i++) {
@@ -39,17 +52,17 @@ describe('SymbolSpec', function() {
 
     it('updateSymbol', function () {
         var expected = {
-            "markerType" : "ellipse",
-            "markerWidth":20,
-            "markerHeight":30
+            'markerType': 'ellipse',
+            'markerWidth': 20,
+            'markerHeight': 30
         };
         var marker = new Marker(center);
         marker.setSymbol({
-            "markerType" : "cross",
-            "markerWidth":20,
-            "markerHeight":30
+            'markerType': 'cross',
+            'markerWidth': 20,
+            'markerHeight': 30
         }).updateSymbol({
-             "markerType" : "ellipse",
+            'markerType': 'ellipse',
         });
         expect(marker.getSymbol()).to.be.eql(expected);
     });
@@ -60,18 +73,18 @@ describe('SymbolSpec', function() {
         var expected = extend({}, marker._getInternalSymbol());
         expected.markerType = 'ellipse';
         marker.updateSymbol({
-             "markerType" : "ellipse",
+            'markerType': 'ellipse',
         });
         expect(marker.getSymbol()).to.be.eql(expected);
     });
 
-    it('marker file', function() {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var marker = new Marker([100,0], {
-            symbol:{
-                "markerFile" : "resources/x.svg",
-                "markerWidth":20,
-                "markerHeight":30
+    it('marker file', function () {
+        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
+        var marker = new Marker([100, 0], {
+            symbol: {
+                'markerFile': 'resources/x.svg',
+                'markerWidth': 20,
+                'markerHeight': 30
             }
         });
         var res = marker._getExternalResources();
@@ -81,19 +94,17 @@ describe('SymbolSpec', function() {
         expect(res[0][2]).to.be.eql(30);
     });
 
-    it('marker path', function() {
-        var expected = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
-        var marker = new Marker([100,0], {
-            symbol:{
-                'markerType'    : 'path',
-                'markerPath'    : [
-                    {
-                        'path' : 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
-                        'fill' : '#DE3333'
-                    }
-                ],
-                "markerWidth":20,
-                "markerHeight":30
+    it('marker path', function () {
+        var expected = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
+        var marker = new Marker([100, 0], {
+            symbol: {
+                'markerType': 'path',
+                'markerPath': [{
+                    'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
+                    'fill': '#DE3333'
+                }],
+                'markerWidth': 20,
+                'markerHeight': 30
             }
         });
         var res = marker._getExternalResources();
@@ -103,21 +114,19 @@ describe('SymbolSpec', function() {
         expect(res[0][2]).to.be.eql(30);
     });
 
-    describe('symbol number properties in type of string', function() {
+    describe('symbol number properties in type of string', function () {
         it('vector path marker symbolizer', function () {
             var symbol = {
-                'markerType'    : 'path',
-                'markerPath'    : [
-                    {
-                        'path' : 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
-                        'fill' : '#DE3333'
-                    }
-                ],
-                "markerWidth": '20',
-                "markerHeight": '30',
-                "markerOpacity" : '0.5'
-            }
-            var symbolizer = new symbolizer.VectorPathMarkerSymbolizer(symbol);
+                'markerType': 'path',
+                'markerPath': [{
+                    'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
+                    'fill': '#DE3333'
+                }],
+                'markerWidth': '20',
+                'markerHeight': '30',
+                'markerOpacity': '0.5'
+            };
+            var symbolizer = new Symbolizers.VectorPathMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
             expect(symbolizer.style.markerOpacity).to.be.eql(0.5);
@@ -125,16 +134,16 @@ describe('SymbolSpec', function() {
 
         it('vector marker symbolizer', function () {
             var symbol = {
-                "markerType" : "ellipse",
-                "markerWidth": '20',
-                "markerHeight": '30',
-                'markerFillOpacity' : '0.5',
-                'markerLineWidth'       : '2',
-                'markerLineOpacity'     : '0.6',
-                'markerDx'              : '1',
-                'markerDy'              : '2'
-            }
-            var symbolizer = new symbolizer.VectorMarkerSymbolizer(symbol);
+                'markerType': 'ellipse',
+                'markerWidth': '20',
+                'markerHeight': '30',
+                'markerFillOpacity': '0.5',
+                'markerLineWidth': '2',
+                'markerLineOpacity': '0.6',
+                'markerDx': '1',
+                'markerDy': '2'
+            };
+            var symbolizer = new Symbolizers.VectorMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
             expect(symbolizer.style.markerFillOpacity).to.be.eql(0.5);
@@ -146,14 +155,14 @@ describe('SymbolSpec', function() {
 
         it('image marker symbolizer', function () {
             var symbol = {
-                "markerFile" : "foo.png",
-                "markerWidth": '20',
-                "markerHeight": '30',
-                "markerOpacity" : '0.5',
-                "markerDx": '1',
-                "markerDy": '2',
-            }
-            var symbolizer = new symbolizer.ImageMarkerSymbolizer(symbol);
+                'markerFile': 'foo.png',
+                'markerWidth': '20',
+                'markerHeight': '30',
+                'markerOpacity': '0.5',
+                'markerDx': '1',
+                'markerDy': '2',
+            };
+            var symbolizer = new Symbolizers.ImageMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
             expect(symbolizer.style.markerOpacity).to.be.eql(0.5);
@@ -163,17 +172,19 @@ describe('SymbolSpec', function() {
 
         it('text marker symbolizer', function () {
             var symbol = {
-                "textName" : "foo",
-                "textSize": '20',
-                'textOpacity' : '0.5',
-                'textHaloRadius' : '4',
-                'textWrapWidth' : '3',
-                'textLineSpacing' : '2',
-                'textDx' : '1',
-                'textDy' : '2',
+                'textName': 'foo',
+                'textSize': '20',
+                'textOpacity': '0.5',
+                'textHaloRadius': '4',
+                'textWrapWidth': '3',
+                'textLineSpacing': '2',
+                'textDx': '1',
+                'textDy': '2',
             };
-            var marker = new Marker([0, 0], {symbol : symbol});
-            var symbolizer = new symbolizer.TextMarkerSymbolizer(symbol, marker);
+            var marker = new Marker([0, 0], {
+                symbol: symbol
+            });
+            var symbolizer = new Symbolizers.TextMarkerSymbolizer(symbol, marker);
             expect(symbolizer.style.textSize).to.be.eql(20);
             expect(symbolizer.style.textOpacity).to.be.eql(0.5);
             expect(symbolizer.style.textHaloRadius).to.be.eql(4);
@@ -184,11 +195,16 @@ describe('SymbolSpec', function() {
         });
     });
 
-    it('line pattern file', function() {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var line = new Polygon([[100,0],[101,1],[105,10],[100,0]], {
-            symbol:{
-                "linePatternFile" : "resources/x.svg"
+    it('line pattern file', function () {
+        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
+        var line = new Polygon([
+            [100, 0],
+            [101, 1],
+            [105, 10],
+            [100, 0]
+        ], {
+            symbol: {
+                'linePatternFile': 'resources/x.svg'
             }
         });
         var res = line._getExternalResources();
@@ -196,11 +212,16 @@ describe('SymbolSpec', function() {
         expect(res[0][0]).to.be.eql(expected);
     });
 
-    it('polygon pattern file', function() {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var polygon = new Polygon([[100,0],[101,1],[105,10],[100,0]], {
-            symbol:{
-                "polygonPatternFile" : "resources/x.svg"
+    it('polygon pattern file', function () {
+        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
+        var polygon = new Polygon([
+            [100, 0],
+            [101, 1],
+            [105, 10],
+            [100, 0]
+        ], {
+            symbol: {
+                'polygonPatternFile': 'resources/x.svg'
             }
         });
         var res = polygon._getExternalResources();
@@ -208,59 +229,61 @@ describe('SymbolSpec', function() {
         expect(res[0][0]).to.be.eql(expected);
     });
 
-    it('with a non-exist svg icon', function(done) {
-        var marker = new Marker([100,0], {
-            symbol:{
-                "markerFile" : "resources/not-existed.svg",
-                "markerWidth":20,
-                "markerHeight":30
+    it('with a non-exist svg icon', function (done) {
+        var marker = new Marker([100, 0], {
+            symbol: {
+                'markerFile': 'resources/not-existed.svg',
+                'markerWidth': 20,
+                'markerHeight': 30
             }
         });
         var vectorLayer = new VectorLayer('v').addGeometry(marker);
-        vectorLayer.once('layerload', function() {
+        vectorLayer.once('layerload', function () {
             done();
         });
         map.addLayer(vectorLayer);
     });
 
-    it('should be reloaded after zoomend', function(done) {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var marker = new Marker([100,0], {
-            symbol:{
-                "markerFile" : "resources/x.svg",
-                "markerWidth":20,
-                "markerHeight":30
+    it('should be reloaded after zoomend', function (done) {
+        var marker = new Marker([100, 0], {
+            symbol: {
+                'markerFile': 'resources/x.svg',
+                'markerWidth': 20,
+                'markerHeight': 30
             }
         });
         /*map.on('zoomstart', function() {
             marker.setSymbol(
                 {
-                    "markerFile" : "resources/x.svg",
-                    "markerWidth":40,
-                    "markerHeight":50
+                    'markerFile' : 'resources/x.svg',
+                    'markerWidth':40,
+                    'markerHeight':50
                 }
             )
         });*/
-        map.on('zoomend', function() {
+        var vectorLayer = new VectorLayer('v').addGeometry(marker);
+        vectorLayer.once('layerload', function () {
+            map.zoomIn();
+        });
+        map.on('zoomend', function () {
             var res = marker._getExternalResources();
             expect(res).to.have.length(1);
             expect(vectorLayer._getRenderer().resources.isResourceLoaded(res[0])).to.be.ok();
             done();
         });
-        var vectorLayer = new VectorLayer('v').addGeometry(marker);
-        vectorLayer.once('layerload', function() {
-            map.zoomIn();
-        });
         map.addLayer(vectorLayer);
     });
 
-    it('collection can _setExternSymbol', function() {
+    it('collection can _setExternSymbol', function () {
         var symbol = {
-            'markerType' : 'ellipse',
-            'markerWidth' : 10,
-            'markerHeight' : 10
-        }
-        var markers = new MultiPoint([[0, 0], [0, 1]]);
+            'markerType': 'ellipse',
+            'markerWidth': 10,
+            'markerHeight': 10
+        };
+        var markers = new MultiPoint([
+            [0, 0],
+            [0, 1]
+        ]);
         markers._setExternSymbol(symbol);
         var children = markers.getGeometries();
         for (var i = 0; i < children.length; i++) {
@@ -269,20 +292,20 @@ describe('SymbolSpec', function() {
     });
 
     it('function type markerFile', function () {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/';
-        var marker = new Marker([100,0], {
-            symbol:{
-                "markerFile" : {
-                    property:'count',
-                    type:'interval',
+        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/';
+        var marker = new Marker([100, 0], {
+            symbol: {
+                'markerFile': {
+                    property: 'count',
+                    type: 'interval',
                     stops: [
                         [0, 'resources/x.svg'],
                         [9, 'resources/x1.svg'],
                         [99, 'resources/x2.svg']
                     ]
                 },
-                "markerWidth":20,
-                "markerHeight":30
+                'markerWidth': 20,
+                'markerHeight': 30
             }
         });
         var res = marker._getExternalResources();
@@ -292,25 +315,25 @@ describe('SymbolSpec', function() {
         expect(res[2]).to.be.eql([expected + 'x2.svg', 20, 30]);
     });
 
-    it('function type markerPath', function() {
-        var expected0 = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
-        var expected1 = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
-        var marker = new Marker([100,0], {
-            symbol:{
-                'markerType'    : 'path',
-                'markerPath'    : {
-                    property:'count',
-                    type:'interval',
+    it('function type markerPath', function () {
+        var expected0 = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
+        var expected1 = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
+        var marker = new Marker([100, 0], {
+            symbol: {
+                'markerType': 'path',
+                'markerPath': {
+                    property: 'count',
+                    type: 'interval',
                     stops: [
                         [0, 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z'],
                         [9, {
-                            'path' : 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
-                            'fill' : '#DE3333'
+                            'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z',
+                            'fill': '#DE3333'
                         }]
                     ]
                 },
-                "markerWidth":20,
-                "markerHeight":30
+                'markerWidth': 20,
+                'markerHeight': 30
             }
         });
         var res = marker._getExternalResources();

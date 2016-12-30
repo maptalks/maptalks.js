@@ -1,7 +1,11 @@
-describe('#View.Conversion', function () {
-    var container, map;
-    beforeEach(function () {
+import {
+    removeContainer
+} from '../SpecCommon';
+import Coordinate from 'geo/Coordinate';
+import Map from 'map';
 
+describe('#View.Conversion', function () {
+    beforeEach(function () {
     });
 
     afterEach(function () {
@@ -13,21 +17,21 @@ describe('#View.Conversion', function () {
         container.style.width = '100px';
         container.style.height = '100px';
         document.body.appendChild(container);
-        return  new Map(container, {
-            'view' : {
-                'resolutions' : [1, 2, 4],
-                'projection' : 'EPSG:4326',
-                'fullExtent' : fullExtent
+        return new Map(container, {
+            'view': {
+                'resolutions': [1, 2, 4],
+                'projection': 'EPSG:4326',
+                'fullExtent': fullExtent
             },
-            'zoom' : 1,
-            'center' : [0, 0]
+            'zoom': 1,
+            'center': [0, 0]
         });
     }
 
     it('2d point system', function () {
         //reverse the x, y direction
         var map = prepareMap({
-            'top':  -90,
+            'top': -90,
             'left': 180,
             'bottom': 90,
             'right': -180
@@ -44,7 +48,7 @@ describe('#View.Conversion', function () {
     it('2d point system 2', function () {
         //reverse the x, y direction
         var map = prepareMap({
-            'top':  90,
+            'top': 90,
             'left': -180,
             'bottom': -90,
             'right': 180

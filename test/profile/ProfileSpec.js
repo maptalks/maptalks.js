@@ -1,3 +1,20 @@
+import {
+    removeContainer,
+    genAllTypeGeometries
+} from '../SpecCommon';
+import {
+    Geometry,
+    ArcCurve,
+    QuadBezierCurve,
+    CubicBezierCurve,
+    MultiLineString,
+    Label
+} from 'geometry';
+import Coordinate from 'geo/Coordinate';
+import Layer from 'layer/Layer';
+import VectorLayer from 'layer/VectorLayer';
+import TileLayer from 'layer/tile/TileLayer';
+
 describe('#Map Profile', function () {
 
     var container;
@@ -5,7 +22,7 @@ describe('#Map Profile', function () {
     var tile;
     var center = new Coordinate(118.846825, 32.046534);
 
-    beforeEach(function() {
+    beforeEach(function () {
         container = document.createElement('div');
         container.style.width = '800px';
         container.style.height = '600px';
@@ -17,18 +34,18 @@ describe('#Map Profile', function () {
         map = new Map(container, option);
         tile = new TileLayer('tile', {
 
-            urlTemplate:"/resources/tile.png",
+            urlTemplate: '/resources/tile.png',
             subdomains: [1, 2, 3],
-            visible:false
+            visible: false
         });
     });
 
-    afterEach(function() {
-        removeContainer(container)
+    afterEach(function () {
+        removeContainer(container);
     });
 
-    describe('Layer can profile', function() {
-        it('get tileLayer\'s profile',function() {
+    describe('Layer can profile', function () {
+        it('get tileLayer\'s profile', function () {
             var json = tile.toJSON();
             expect(json).to.be.ok();
             expect(json.options).to.eql(tile.config());
@@ -36,7 +53,7 @@ describe('#Map Profile', function () {
 
         });
 
-        it('get tilelayer from a profile json',function() {
+        it('get tilelayer from a profile json', function () {
             var tileLayer = Layer.fromJSON(null);
             expect(tileLayer).not.to.be.ok();
             var json = tile.toJSON();
@@ -46,18 +63,17 @@ describe('#Map Profile', function () {
             expect(tileLayer.getId()).to.eql(tile.getId());
         });
 
-        it('get vectorLayer\'s profile',function() {
-            var vectorLayer = new VectorLayer("vector");
+        it('get vectorLayer\'s profile', function () {
+            var vectorLayer = new VectorLayer('vector');
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
             var style = {
-                condition : [
-                                'all',
-                                ['==', '$type', 'Point'],
-                                ['!=', '$subType', 'Label']
-                            ],
+                condition: [
+                    'all', ['==', '$type', 'Point'],
+                    ['!=', '$subType', 'Label']
+                ],
                 symbol: {
-                    markerFile : 'http://www.foo.com/foo.png'
+                    markerFile: 'http://www.foo.com/foo.png'
                 }
             };
             vectorLayer.setStyle(style);
@@ -80,19 +96,21 @@ describe('#Map Profile', function () {
             }
 
             json = vectorLayer.toJSON({
-                geometries:false
+                geometries: false
             });
             expect(json.geometries).not.to.be.ok();
         });
 
-        it('get vectorlayer from a profile json',function() {
-            var vectorLayer = new VectorLayer("vector",{"render":"canvas"});
+        it('get vectorlayer from a profile json', function () {
+            var vectorLayer = new VectorLayer('vector', {
+                'render': 'canvas'
+            });
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
             var style = {
-                condition : 'type === "Point"',
+                condition: 'type === "Point"',
                 symbol: {
-                    markerFile : 'http://www.foo.com/foo.png'
+                    markerFile: 'http://www.foo.com/foo.png'
                 }
             };
             vectorLayer.setStyle(style);
@@ -110,8 +128,8 @@ describe('#Map Profile', function () {
         });
     });
 
-    describe('Map can profile',function() {
-        it('get simple Profile',function() {
+    describe('Map can profile', function () {
+        it('get simple Profile', function () {
             map.setBaseLayer(tile);
             var profile = map.toJSON();
             expect(profile).to.be.ok();
@@ -122,15 +140,15 @@ describe('#Map Profile', function () {
             expect(profile.baseLayer).to.be.ok();
 
             profile = map.toJSON({
-                "baseLayer" : false,
-                "layers" : false
+                'baseLayer': false,
+                'layers': false
             });
             expect(profile.baseLayer).not.to.be.ok();
             expect(profile.layers).to.be.ok();
             expect(profile.layers).to.have.length(0);
         });
 
-        it('get map from a simple profile',function() {
+        it('get map from a simple profile', function () {
             map.setBaseLayer(tile);
             var profile = map.toJSON();
             var container2 = document.createElement('div');
@@ -143,18 +161,20 @@ describe('#Map Profile', function () {
             expect(profileMap.getBaseLayer()).to.be.ok();
         });
 
-        it("get profile with various layers",function() {
+        it('get profile with various layers', function () {
             map.setBaseLayer(tile);
-            var tile2 = new TileLayer('road',{
-                urlTemplate:"/resources/tile.png",
-                subdomains:['1','2','3','4','5'],
-                opacity:0.6
+            var tile2 = new TileLayer('road', {
+                urlTemplate: '/resources/tile.png',
+                subdomains: ['1', '2', '3', '4', '5'],
+                opacity: 0.6
             });
             map.addLayer(tile2);
-            var vectorLayer = new VectorLayer("vector-canvas",{"render":"canvas"});
+            var vectorLayer = new VectorLayer('vector-canvas', {
+                'render': 'canvas'
+            });
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
-            var vectorLayer2 = new VectorLayer("vector");
+            var vectorLayer2 = new VectorLayer('vector');
             vectorLayer2.addGeometry(genAllTypeGeometries());
             map.addLayer([vectorLayer, vectorLayer2]);
 
@@ -165,48 +185,49 @@ describe('#Map Profile', function () {
             expect(profile.layers[2]).to.be.eql(vectorLayer2.toJSON());
         });
 
-        it("get profile of selected layers",function() {
+        it('get profile of selected layers', function () {
             map.setBaseLayer(tile);
-            var tile2 = new TileLayer('road',{
-                urlTemplate:"/resources/tile.png",
-                subdomains:['1','2','3','4','5'],
-                opacity:0.6
+            var tile2 = new TileLayer('road', {
+                urlTemplate: '/resources/tile.png',
+                subdomains: ['1', '2', '3', '4', '5'],
+                opacity: 0.6
             });
             map.addLayer(tile2);
-            var vectorLayer = new VectorLayer("vector-canvas",{"render":"canvas"});
+            var vectorLayer = new VectorLayer('vector-canvas', {
+                'render': 'canvas'
+            });
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
-            var vectorLayer2 = new VectorLayer("vector");
+            var vectorLayer2 = new VectorLayer('vector');
             vectorLayer2.addGeometry(genAllTypeGeometries());
             map.addLayer([vectorLayer, vectorLayer2]);
 
             var profile = map.toJSON({
-                "layers" : [
-                    {
-                        "id" : "road"
-                    },
-                    {
-                        "id" : "vector"
-                    }
-                ]
+                'layers': [{
+                    'id': 'road'
+                }, {
+                    'id': 'vector'
+                }]
             });
             expect(profile.layers).to.have.length(2);
             expect(profile.layers[0]).to.be.eql(tile2.toJSON());
             expect(profile.layers[1]).to.be.eql(vectorLayer2.toJSON());
         });
 
-        it('get map from various profile',function() {
+        it('get map from various profile', function () {
             map.setBaseLayer(tile);
-            var tile2 = new TileLayer('road',{
-                urlTemplate:"/resources/tile.png",
-                subdomains:['1','2','3','4','5'],
-                opacity:0.6
+            var tile2 = new TileLayer('road', {
+                urlTemplate: '/resources/tile.png',
+                subdomains: ['1', '2', '3', '4', '5'],
+                opacity: 0.6
             });
             map.addLayer(tile2);
-            var vectorLayer = new VectorLayer("vector-canvas",{"render":"canvas"});
+            var vectorLayer = new VectorLayer('vector-canvas', {
+                'render': 'canvas'
+            });
             var geometries = genAllTypeGeometries();
             vectorLayer.addGeometry(geometries);
-            var vectorLayer2 = new VectorLayer("vector");
+            var vectorLayer2 = new VectorLayer('vector');
             vectorLayer2.addGeometry(genAllTypeGeometries());
             map.addLayer([vectorLayer, vectorLayer2]);
 
@@ -229,8 +250,8 @@ describe('#Map Profile', function () {
 
     });
 
-    describe('profile basic geometries',function() {
-        it('profile all types of basic geometries',function() {
+    describe('profile basic geometries', function () {
+        it('profile all types of basic geometries', function () {
             var all = genAllTypeGeometries();
             for (var i = 0; i < all.length; i++) {
                 var g = all[i];
@@ -240,29 +261,59 @@ describe('#Map Profile', function () {
                 expect(json).not.to.be.empty();
                 expect(json).to.be.eql(deserJSON);
             }
-
-        })
+        });
     });
 
     describe('profile GeometryCollection', function () {
         it('profile a MultiLineString', function () {
-            var expected = {"feature":{"type":"Feature","geometry":{"type":"MultiLineString","coordinates":[[[121.111,30.111],[121.222,30.222]],[[121.333,30.333],[121.444,30.444]]]},"properties":{"foo":"bla"}},"options":{},"symbol":{"lineColor":"#f00","polygonFill":"#000"}};
-            var mls = new MultiLineString([
-                [
-                    {x: 121.111, y: 30.111},
-                    {x: 121.222, y: 30.222}
-                ],
-                [
-                    {x: 121.333, y: 30.333},
-                    {x: 121.444, y: 30.444}
-                ]
-            ],{
-                symbol : {
-                    lineColor : '#f00',
-                    polygonFill : '#000'
+            var expected = {
+                'feature': {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'MultiLineString',
+                        'coordinates': [
+                            [
+                                [121.111, 30.111],
+                                [121.222, 30.222]
+                            ],
+                            [
+                                [121.333, 30.333],
+                                [121.444, 30.444]
+                            ]
+                        ]
+                    },
+                    'properties': {
+                        'foo': 'bla'
+                    }
                 },
-                properties : {
-                    foo : 'bla'
+                'options': {},
+                'symbol': {
+                    'lineColor': '#f00',
+                    'polygonFill': '#000'
+                }
+            };
+            var mls = new MultiLineString([
+                [{
+                    x: 121.111,
+                    y: 30.111
+                }, {
+                    x: 121.222,
+                    y: 30.222
+                }],
+                [{
+                    x: 121.333,
+                    y: 30.333
+                }, {
+                    x: 121.444,
+                    y: 30.444
+                }]
+            ], {
+                symbol: {
+                    lineColor: '#f00',
+                    polygonFill: '#000'
+                },
+                properties: {
+                    foo: 'bla'
                 }
             });
             var json = mls.toJSON();
@@ -274,18 +325,31 @@ describe('#Map Profile', function () {
         });
     });
 
-    describe('profile CurveLine and Label',function() {
-        it('profile CurveLine',function() {
+    describe('profile CurveLine and Label', function () {
+        it('profile CurveLine', function () {
             var curve = new ArcCurve(
                 //线端点坐标数组
-                [[121.48416288620015,31.24488412311837],[121.48394830947899,31.242664302121515],[121.48595460182202,31.242535881128543],[121.48695238357557,31.244838259576046],[121.48944147354125,31.24487495041167],[121.49018176322932,31.242664302121515],[121.49290688758839,31.242765204207824],[121.49358280426011,31.245040058995645],[121.49601825004554,31.245159303904526],[121.49715550666777,31.242921143583686]],
-                {draggable: true, arcDegree:120});
+                [
+                    [121.48416288620015, 31.24488412311837],
+                    [121.48394830947899, 31.242664302121515],
+                    [121.48595460182202, 31.242535881128543],
+                    [121.48695238357557, 31.244838259576046],
+                    [121.48944147354125, 31.24487495041167],
+                    [121.49018176322932, 31.242664302121515],
+                    [121.49290688758839, 31.242765204207824],
+                    [121.49358280426011, 31.245040058995645],
+                    [121.49601825004554, 31.245159303904526],
+                    [121.49715550666777, 31.242921143583686]
+                ], {
+                    draggable: true,
+                    arcDegree: 120
+                });
             curve.setProperties({
-                'foo' : 1
+                'foo': 1
             });
             curve.setSymbol({
-                'lineWidth' : 2,
-                'lineColor' : '#ff0000'
+                'lineWidth': 2,
+                'lineColor': '#ff0000'
             });
             var json = curve.toJSON();
             var deser = Geometry.fromJSON(json);
@@ -297,17 +361,29 @@ describe('#Map Profile', function () {
             expect(deser.getSymbol()).to.be.eql(curve.getSymbol());
         });
 
-        it('profile Quadaric Bezier CurveLine',function() {
+        it('profile Quadaric Bezier CurveLine', function () {
             var curve = new QuadBezierCurve(
                 //线端点坐标数组
-                [[121.48416288620015,31.24488412311837],[121.48394830947899,31.242664302121515],[121.48595460182202,31.242535881128543],[121.48695238357557,31.244838259576046],[121.48944147354125,31.24487495041167],[121.49018176322932,31.242664302121515],[121.49290688758839,31.242765204207824],[121.49358280426011,31.245040058995645],[121.49601825004554,31.245159303904526],[121.49715550666777,31.242921143583686]],
-                {draggable: true});
+                [
+                    [121.48416288620015, 31.24488412311837],
+                    [121.48394830947899, 31.242664302121515],
+                    [121.48595460182202, 31.242535881128543],
+                    [121.48695238357557, 31.244838259576046],
+                    [121.48944147354125, 31.24487495041167],
+                    [121.49018176322932, 31.242664302121515],
+                    [121.49290688758839, 31.242765204207824],
+                    [121.49358280426011, 31.245040058995645],
+                    [121.49601825004554, 31.245159303904526],
+                    [121.49715550666777, 31.242921143583686]
+                ], {
+                    draggable: true
+                });
             curve.setProperties({
-                'foo' : 1
+                'foo': 1
             });
             curve.setSymbol({
-                'lineWidth' : 2,
-                'lineColor' : '#ff0000'
+                'lineWidth': 2,
+                'lineColor': '#ff0000'
             });
             var json = curve.toJSON();
             var deser = Geometry.fromJSON(json);
@@ -319,17 +395,29 @@ describe('#Map Profile', function () {
             expect(deser.getSymbol()).to.be.eql(curve.getSymbol());
         });
 
-        it('profile Cubic Bezier CurveLine',function() {
+        it('profile Cubic Bezier CurveLine', function () {
             var curve = new CubicBezierCurve(
                 //线端点坐标数组
-                [[121.48416288620015,31.24488412311837],[121.48394830947899,31.242664302121515],[121.48595460182202,31.242535881128543],[121.48695238357557,31.244838259576046],[121.48944147354125,31.24487495041167],[121.49018176322932,31.242664302121515],[121.49290688758839,31.242765204207824],[121.49358280426011,31.245040058995645],[121.49601825004554,31.245159303904526],[121.49715550666777,31.242921143583686]],
-                {draggable: true});
+                [
+                    [121.48416288620015, 31.24488412311837],
+                    [121.48394830947899, 31.242664302121515],
+                    [121.48595460182202, 31.242535881128543],
+                    [121.48695238357557, 31.244838259576046],
+                    [121.48944147354125, 31.24487495041167],
+                    [121.49018176322932, 31.242664302121515],
+                    [121.49290688758839, 31.242765204207824],
+                    [121.49358280426011, 31.245040058995645],
+                    [121.49601825004554, 31.245159303904526],
+                    [121.49715550666777, 31.242921143583686]
+                ], {
+                    draggable: true
+                });
             curve.setProperties({
-                'foo' : 1
+                'foo': 1
             });
             curve.setSymbol({
-                'lineWidth' : 2,
-                'lineColor' : '#ff0000'
+                'lineWidth': 2,
+                'lineColor': '#ff0000'
             });
             var json = curve.toJSON();
             var deser = Geometry.fromJSON(json);
@@ -341,9 +429,9 @@ describe('#Map Profile', function () {
             expect(deser.getSymbol()).to.be.eql(curve.getSymbol());
         });
 
-        it('profile Label',function() {
+        it('profile Label', function () {
             var options = {
-                'id' : 'label',
+                'id': 'label',
                 'symbol': {
                     'markerLineColor': '#ff0000',
                     'markerLineWidth': 1,
@@ -357,32 +445,32 @@ describe('#Map Profile', function () {
                     'textFill': '#ff0000',
                     'textOpacity': 1,
                     'textSpacing': 30,
-                    'textWrapWidth': null,//auto
+                    'textWrapWidth': null, //auto
                     'textWrapBefore': false,
                     //'textWrapCharacter': '\n',
                     'textLineSpacing': 8,
-                    'textHorizontalAlignment': 'middle',//left middle right
-                    'textVerticalAlignment': 'bottom',//top middle bottom
+                    'textHorizontalAlignment': 'middle', //left middle right
+                    'textVerticalAlignment': 'bottom', //top middle bottom
                 },
-               'draggable': false,
-               'boxAutoSize': false,
-               'boxMinWidth': 500,
-               'boxMinHeight': 100
+                'draggable': false,
+                'boxAutoSize': false,
+                'boxMinWidth': 500,
+                'boxMinHeight': 100
             };
             //创建label
-            var label = new Label('文本标签', [100,0], options);
+            var label = new Label('文本标签', [100, 0], options);
             label.setProperties({
-                'foo' : 1
+                'foo': 1
             });
             label.setSymbol({
-                'lineWidth' : 2,
-                'lineColor' : '#ff0000'
+                'lineWidth': 2,
+                'lineColor': '#ff0000'
             });
             var json = label.toJSON();
             var deser = Geometry.fromJSON(json);
             expect(deser instanceof Label).to.be.ok();
             expect(deser.getId()).to.be.eql('label');
-            var options = deser.config();
+            options = deser.config();
             expect(options.draggable).not.to.be.ok();
             expect(options.boxAutoSize).not.to.be.ok();
             expect(options.boxMinWidth).to.be.eql(500);

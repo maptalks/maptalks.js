@@ -1,8 +1,13 @@
-describe("Control.Scale", function() {
+import {
+    removeContainer
+} from '../SpecCommon';
+import Coordinate from 'geo/Coordinate';
+import * as controls from 'control';
+
+describe('Control.Scale', function () {
 
     var container;
     var map;
-    var tile;
     var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
@@ -15,19 +20,14 @@ describe("Control.Scale", function() {
             center: center
         };
         map = new Map(container, option);
-        tile = new TileLayer('tile', {
-
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
-        });
     });
 
     afterEach(function () {
-        removeContainer(container)
+        removeContainer(container);
     });
 
-    it("widgets contain correct value after initialized", function() {
-        var control = new control.Scale({
+    it('widgets contain correct value after initialized', function () {
+        var control = new controls.Scale({
             metric: true,
             imperial: true
         });

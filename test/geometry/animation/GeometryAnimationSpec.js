@@ -1,13 +1,26 @@
+import {
+    commonSetupMap,
+    removeContainer,
+    genAllTypeGeometries
+} from '../SpecCommon';
+import {
+    Marker,
+    Circle
+} from 'geometry';
+import Coordinate from 'geo/Coordinate';
+import VectorLayer from 'layer/VectorLayer';
 
 describe('#GeometryAnimation', function () {
-    describe('geometry can animate', function() {
-        it('all kinds of geometry', function(done) {
+    describe('geometry can animate', function () {
+        it('all kinds of geometry', function (done) {
             var expected = genAllTypeGeometries();
-            for (var i = 0; i < expected.length; i++) {
+            var i;
+            for (i = 0; i < expected.length; i++) {
                 expected[i].translate([0.01, 0.01]);
             }
             var geometries = genAllTypeGeometries();
             var counter = 0;
+
             function cmp(frame) {
                 if (frame.state.playState !== 'finished') {
                     return;
@@ -21,23 +34,24 @@ describe('#GeometryAnimation', function () {
                 }
                 done();
             }
-            for (var i = 0; i < geometries.length; i++) {
-                var player = geometries[i].animate({
-                    translate:new Coordinate(0.01,0.01)
-                }, {speed : 500}, cmp);
-            };
-
-
+            for (i = 0; i < geometries.length; i++) {
+                geometries[i].animate({
+                    translate: new Coordinate(0.01, 0.01)
+                }, {
+                    speed: 500
+                }, cmp);
+            }
         });
 
-        it('animate a normal symbol', function(done) {
-            var marker = new Marker([100,0], {
-                symbol:{
-                    'markerType' : 'ellipse',
-                    'markerWidth' : 10,
-                    'markerHeight' : 10
+        it('animate a normal symbol', function (done) {
+            var marker = new Marker([100, 0], {
+                symbol: {
+                    'markerType': 'ellipse',
+                    'markerWidth': 10,
+                    'markerHeight': 10
                 }
             });
+
             function step(frame) {
                 if (frame.state.playState !== 'finished') {
                     return;
@@ -49,33 +63,30 @@ describe('#GeometryAnimation', function () {
                 done();
             }
             marker.animate({
-                symbol : {
-                    'markerType' : 'x', // string type property
-                    'markerWidth' : 20,
-                    'markerHeight' : 30
+                symbol: {
+                    'markerType': 'x', // string type property
+                    'markerWidth': 20,
+                    'markerHeight': 30
                 }
-            },
-            {
+            }, {
                 speed: 500
             },
             step);
         });
 
-        it('animate a composite symbol', function(done) {
-            var marker = new Marker([100,0], {
-                symbol:[
-                    {
-                        'markerType' : 'ellipse',
-                        'markerWidth' : 10,
-                        'markerHeight' : 10
-                    },
-                    {
-                        'markerType' : 'pin',
-                        'markerWidth' : 20,
-                        'markerHeight' : 30
-                    }
-                ]
+        it('animate a composite symbol', function (done) {
+            var marker = new Marker([100, 0], {
+                symbol: [{
+                    'markerType': 'ellipse',
+                    'markerWidth': 10,
+                    'markerHeight': 10
+                }, {
+                    'markerType': 'pin',
+                    'markerWidth': 20,
+                    'markerHeight': 30
+                }]
             });
+
             function step(frame) {
                 if (frame.state.playState !== 'finished') {
                     return;
@@ -89,73 +100,64 @@ describe('#GeometryAnimation', function () {
                 done();
             }
             marker.animate({
-                symbol : [
-                    {
-                        'markerWidth' : 100,
-                        'markerHeight' : 110
-                    },
-                    {
-                        'markerWidth' : 120,
-                        'markerHeight' : 130
-                    }
-                ]
+                symbol: [{
+                    'markerWidth': 100,
+                    'markerHeight': 110
+                }, {
+                    'markerWidth': 120,
+                    'markerHeight': 130
+                }]
             }, step);
         });
 
-        it('cannot animate a composite symbol when its wwn is not', function() {
-            var marker = new Marker([100,0], {
-                symbol:{
-                    'markerType' : 'ellipse',
-                    'markerWidth' : 10,
-                    'markerHeight' : 10
+        it('cannot animate a composite symbol when its wwn is not', function () {
+            var marker;
+            marker = new Marker([100, 0], {
+                symbol: {
+                    'markerType': 'ellipse',
+                    'markerWidth': 10,
+                    'markerHeight': 10
                 }
             });
             expect(function () {
                 marker.animate({
-                    symbol : [
-                        {
-                            'markerWidth' : 100,
-                            'markerHeight' : 110
-                        },
-                        {
-                            'markerWidth' : 120,
-                            'markerHeight' : 130
-                        }
-                    ]
+                    symbol: [{
+                        'markerWidth': 100,
+                        'markerHeight': 110
+                    }, {
+                        'markerWidth': 120,
+                        'markerHeight': 130
+                    }]
                 });
             }).to.throwException();
 
-
-            var marker = new Marker([100,0], {
-                symbol:[
-                    {
-                        'markerType' : 'ellipse',
-                        'markerWidth' : 10,
-                        'markerHeight' : 10
-                    },
-                    {
-                        'markerType' : 'pin',
-                        'markerWidth' : 20,
-                        'markerHeight' : 30
-                    }
-                ]
+            marker = new Marker([100, 0], {
+                symbol: [{
+                    'markerType': 'ellipse',
+                    'markerWidth': 10,
+                    'markerHeight': 10
+                }, {
+                    'markerType': 'pin',
+                    'markerWidth': 20,
+                    'markerHeight': 30
+                }]
             });
             expect(function () {
                 marker.animate({
-                    symbol:{
-                        'markerWidth' : 10,
-                        'markerHeight' : 10
+                    symbol: {
+                        'markerWidth': 10,
+                        'markerHeight': 10
                     }
-                },
-                {
+                }, {
                     speed: 500,
-                    easing : 'in'
+                    easing: 'in'
                 });
             }).to.throwException();
         });
 
-        it('animate radius', function(done) {
-            var circle = new Circle([100,0], 100);
+        it('animate radius', function (done) {
+            var circle = new Circle([100, 0], 100);
+
             function step(frame) {
                 if (frame.state.playState !== 'finished') {
                     return;
@@ -164,24 +166,22 @@ describe('#GeometryAnimation', function () {
                 done();
             }
             circle.animate({
-                radius:1000
+                radius: 1000
             }, step);
         });
     });
 
-    describe('animate a geometry on a map',function() {
+    describe('animate a geometry on a map', function () {
         var container;
         var map;
-        var tile;
         var center = new Coordinate(118.846825, 32.046534);
         var layer;
         var context = {
-            map:map,
-            layer:layer
+            map: map,
+            layer: layer
         };
-        var canvasContainer;
 
-        beforeEach(function() {
+        beforeEach(function () {
             var setups = commonSetupMap(center);
             container = setups.container;
             map = setups.map;
@@ -189,17 +189,16 @@ describe('#GeometryAnimation', function () {
             map.addLayer(layer);
             context.map = map;
             context.layer = layer;
-            canvasContainer = map._panels.front;
         });
 
-        afterEach(function() {
+        afterEach(function () {
             map.removeLayer(layer);
-            removeContainer(container)
+            removeContainer(container);
         });
 
-
-        it('animate a marker and focus', function(done) {
+        it('animate a marker and focus', function (done) {
             var marker = new Marker(center);
+
             function step(frame) {
                 if (frame.state.playState !== 'finished') {
                     return;
@@ -211,35 +210,33 @@ describe('#GeometryAnimation', function () {
             }
             marker.addTo(layer);
             marker.animate({
-                translate:[0.1, 0.1]
-            },{
-                focus:true
+                translate: [0.1, 0.1]
+            }, {
+                focus: true
             }, step);
         });
 
-        it('fire events during animation', function(done) {
+        it('fire events during animation', function (done) {
             var marker = new Marker(center);
             marker.addTo(layer);
             var counter = 0;
-            marker.on('animatestart', function() {
+            marker.on('animatestart', function () {
                 counter++;
             });
-            marker.once('animating', function() {
+            marker.once('animating', function () {
                 counter++;
             });
-            marker.on('animateend', function() {
+            marker.on('animateend', function () {
                 counter++;
                 if (counter === 3) {
                     done();
-                };
-            })
-            marker.animate({
-                translate:[0.1, 0.1]
-            },{
-                focus:true
+                }
             });
-        })
+            marker.animate({
+                translate: [0.1, 0.1]
+            }, {
+                focus: true
+            });
+        });
     });
 });
-
-

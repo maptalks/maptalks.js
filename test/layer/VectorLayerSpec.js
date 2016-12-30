@@ -1,13 +1,23 @@
-// var utils = require('../SpecUtils.js');
+import {
+    removeContainer,
+    genAllTypeGeometries
+} from '../SpecCommon';
+import {
+    Marker,
+    Circle
+} from 'geometry';
+import Coordinate from 'geo/Coordinate';
+import Point from 'geo/Point';
+import VectorLayer from 'layer/VectorLayer';
 
-describe('#VectorLayer', function() {
+describe('#VectorLayer', function () {
 
     var container;
     var map;
-    var tile, layer;
+    var layer;
     var center = new Coordinate(118.846825, 32.046534);
 
-    beforeEach(function() {
+    beforeEach(function () {
         container = document.createElement('div');
         container.style.width = '800px';
         container.style.height = '600px';
@@ -17,15 +27,10 @@ describe('#VectorLayer', function() {
             center: center
         };
         map = new Map(container, option);
-        tile = new TileLayer('tile', {
-
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
-        });
         layer = new VectorLayer('id');
     });
 
-    afterEach(function() {
+    afterEach(function () {
         removeContainer(container);
     });
 
@@ -37,13 +42,17 @@ describe('#VectorLayer', function() {
         });
 
         it('create with geometries', function () {
-            var layer = new VectorLayer('v', {'cursor' : 'default'});
+            var layer = new VectorLayer('v', {
+                'cursor': 'default'
+            });
             expect(layer.getCount()).to.be.eql(0);
             expect(layer.options['cursor']).to.be.eql('default');
         });
 
         it('create with geometries', function () {
-            var layer = new VectorLayer('v', [Marker(map.getCenter()), Marker(map.getCenter())], {'cursor' : 'default'});
+            var layer = new VectorLayer('v', [Marker(map.getCenter()), Marker(map.getCenter())], {
+                'cursor': 'default'
+            });
             expect(layer.getCount()).to.be.eql(2);
             expect(layer.options['cursor']).to.be.eql('default');
         });
@@ -76,61 +85,63 @@ describe('#VectorLayer', function() {
         });
     });
 
-    describe('can addGeometry', function() {
-        beforeEach(function() {
+    describe('can addGeometry', function () {
+        beforeEach(function () {
             map.addLayer(layer);
         });
 
-        afterEach(function() {
+        afterEach(function () {
             map.removeLayer(layer);
         });
 
-        it('empty geometries', function() {
-            expect(function() {
-                layer.addGeometry([],true);
-                layer.addGeometry(null,true);
+        it('empty geometries', function () {
+            expect(function () {
+                layer.addGeometry([], true);
+                layer.addGeometry(null, true);
                 layer.addGeometry();
             }).to.not.throwException();
 
         });
 
-        it('all type of geometry', function(done) {
+        it('all type of geometry', function (done) {
             var geometries = genAllTypeGeometries();
-            map.on('zoomend', function() {
+            map.on('zoomend', function () {
                 done();
             });
-            layer.on('layerload', function() {
-                map.on('zoomend', function() {
-                    map.panBy(new Point(1,1));
+            layer.on('layerload', function () {
+                map.on('zoomend', function () {
+                    map.panBy(new Point(1, 1));
                 });
                 map.zoomOut();
-            })
-            expect(function() {
-                layer.addGeometry(geometries,true);
+            });
+            expect(function () {
+                layer.addGeometry(geometries, true);
             }).to.not.throwException();
         });
 
-        it('add a geometry with id of 0', function() {
-            layer.addGeometry(new Marker([0, 0], {id:0}));
+        it('add a geometry with id of 0', function () {
+            layer.addGeometry(new Marker([0, 0], {
+                id: 0
+            }));
             var geo = layer.getGeometryById(0);
             expect(geo).to.be.ok();
         });
     });
 
     describe('paint geometry', function () {
-        beforeEach(function() {
+        beforeEach(function () {
             layer = new VectorLayer('id');
             map.addLayer(layer);
         });
 
-        afterEach(function() {
+        afterEach(function () {
             map.removeLayer(layer);
         });
 
-        it('paint a geometry', function(done) {
+        it('paint a geometry', function (done) {
             var circle = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.on('layerload', function () {
@@ -140,10 +151,10 @@ describe('#VectorLayer', function() {
             layer.addGeometry(circle);
         });
 
-        it('update symbol', function(done) {
+        it('update symbol', function (done) {
             var circle = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -152,19 +163,19 @@ describe('#VectorLayer', function() {
                     done();
                 });
                 circle.setSymbol({
-                    'polygonFill' : '#0f0'
+                    'polygonFill': '#0f0'
                 });
 
             });
             layer.addGeometry(circle);
         });
 
-        it('show', function(done) {
+        it('show', function (done) {
             var circle = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 },
-                visible : false
+                visible: false
             });
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, 0);
@@ -178,10 +189,10 @@ describe('#VectorLayer', function() {
             layer.addGeometry(circle);
         });
 
-        it('hide', function(done) {
+        it('hide', function (done) {
             var circle = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -196,10 +207,10 @@ describe('#VectorLayer', function() {
             layer.addGeometry(circle);
         });
 
-        it('remove', function(done) {
+        it('remove', function (done) {
             var circle = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -214,10 +225,10 @@ describe('#VectorLayer', function() {
             layer.addGeometry(circle);
         });
 
-        it('change position', function(done) {
+        it('change position', function (done) {
             var circle = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -232,10 +243,10 @@ describe('#VectorLayer', function() {
             layer.addGeometry(circle);
         });
 
-        it('change shape', function(done) {
+        it('change shape', function (done) {
             var circle = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -249,15 +260,15 @@ describe('#VectorLayer', function() {
             layer.addGeometry(circle);
         });
 
-        it('change zindex', function(done) {
+        it('change zindex', function (done) {
             var circle1 = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             var circle2 = new Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#0f0'
+                symbol: {
+                    'polygonFill': '#0f0'
                 }
             });
             layer.once('layerload', function () {
@@ -273,20 +284,19 @@ describe('#VectorLayer', function() {
 
         it('change properties', function (done) {
             layer.setStyle([{
-                    filter : ['==', 'foo', 1],
-                    symbol : {
-                        'polygonFill' : '#f00'
-                    }
-                },
-                {
-                    filter : ['==', 'foo', 2],
-                    symbol : {
-                        'polygonFill' : '#0f0'
-                    }
+                filter: ['==', 'foo', 1],
+                symbol: {
+                    'polygonFill': '#f00'
+                }
+            }, {
+                filter: ['==', 'foo', 2],
+                symbol: {
+                    'polygonFill': '#0f0'
+                }
             }]);
             var circle = new Circle(map.getCenter(), 100, {
-                properties : {
-                    'foo' : 1
+                properties: {
+                    'foo': 1
                 }
             });
             layer.once('layerload', function () {
@@ -296,62 +306,64 @@ describe('#VectorLayer', function() {
                     done();
                 });
                 circle.setProperties({
-                    'foo' : 2
+                    'foo': 2
                 });
             });
             layer.addGeometry(circle);
         });
     });
 
-    describe('can setStyle', function() {
+    describe('can setStyle', function () {
         function testStyle(style, hitIndex, symbols) {
             layer.clear();
             var points = [
-                new Marker([0,0], {
-                    properties : {
-                        'foo1' : 1,
-                        'foo2' : 'test1',
-                        'foo3' : true
+                new Marker([0, 0], {
+                    properties: {
+                        'foo1': 1,
+                        'foo2': 'test1',
+                        'foo3': true
                     }
                 }),
-                new Marker([0,0], {
-                    properties : {
-                        'foo1' : 2,
-                        'foo2' : 'test2',
-                        'foo3' : false
+                new Marker([0, 0], {
+                    properties: {
+                        'foo1': 2,
+                        'foo2': 'test2',
+                        'foo3': false
                     }
                 }),
-                new Marker([0,0], {
-                    properties : {
-                        'foo1' : 3,
-                        'foo2' : 'test3',
-                        'foo3' : true
+                new Marker([0, 0], {
+                    properties: {
+                        'foo1': 3,
+                        'foo2': 'test3',
+                        'foo3': true
                     }
                 }),
-                new Marker([0,0], {
-                    properties : {
-                        'foo1' : 4,
-                        'foo2' : 'test4',
-                        'foo3' : true
+                new Marker([0, 0], {
+                    properties: {
+                        'foo1': 4,
+                        'foo2': 'test4',
+                        'foo3': true
                     }
                 }),
-                new Circle([0,0], 100, {
-                    properties : {
-                        'foo1' : 5,
-                        'foo2' : 'test5',
-                        'foo3' : true
+                new Circle([0, 0], 100, {
+                    properties: {
+                        'foo1': 5,
+                        'foo2': 'test5',
+                        'foo3': true
                     }
                 })
             ];
 
+            var i;
+
             var defaultSymbols = [];
-            layer.addGeometry(points).forEach(function(geometry) {
+            layer.addGeometry(points).forEach(function (geometry) {
                 defaultSymbols.push(geometry.getSymbol());
             }).setStyle(style);
 
             expect(layer.getStyle()).to.be.eql(style);
 
-            for (var i = 0; i < points.length; i++) {
+            for (i = 0; i < points.length; i++) {
                 var hit = hitIndex.indexOf(i);
                 if (hitIndex.indexOf(i) >= 0) {
                     expect(points[i]._getInternalSymbol()).to.be.eql(symbols[hit]);
@@ -366,7 +378,7 @@ describe('#VectorLayer', function() {
             expect(geoAddLater._getInternalSymbol()).to.be.eql(symbols[0]);
 
             var profile = layer.toJSON();
-            for (var i = 0; i < profile.geometries.length; i++) {
+            for (i = 0; i < profile.geometries.length; i++) {
                 expect(profile.geometries[i].symbol).not.to.be.ok();
             }
 
@@ -374,66 +386,63 @@ describe('#VectorLayer', function() {
 
             expect(layer.getStyle()).not.to.be.ok();
 
-            for (var i = 0; i < points.length; i++) {
+            for (i = 0; i < points.length; i++) {
                 expect(points[i].getSymbol()).to.be.eql(defaultSymbols[i]);
             }
             expect(geoAddLater.getSymbol()).to.be.eql(defaultSymbols[0]);
         }
 
-        it('setStyle with a singleStyle', function() {
+        it('setStyle with a singleStyle', function () {
             var symbol = {
-                'markerFile' : 'http://www.foo.com/foo.png'
+                'markerFile': 'http://www.foo.com/foo.png'
             };
             testStyle({
-                filter : [
-                            'all',
-                            ['==', 'foo1', 2],
-                            ['==', '$type', 'Point']
-                         ],
-                symbol : symbol
+                filter: [
+                    'all', ['==', 'foo1', 2],
+                    ['==', '$type', 'Point']
+                ],
+                symbol: symbol
             }, [1], [symbol]);
         });
 
-        it('setStyle with a array of styles', function() {
+        it('setStyle with a array of styles', function () {
             var symbol = {
-                'markerFile' : 'http://www.foo.com/foo.png'
+                'markerFile': 'http://www.foo.com/foo.png'
             };
             var symbol2 = {
-                'markerFile' : 'http://www.foo.com/foo2.png'
+                'markerFile': 'http://www.foo.com/foo2.png'
             };
-            testStyle([
-                {
-                    filter : ['==', 'foo1', 2],
-                    symbol : symbol
-                },
-                {
-                    filter : [
-                                'all',
-                                ['!=', '$type', 'Polygon'],
-                                ['==', 'foo1', 3]
-                            ],
-                    symbol : symbol2
-                },
-            ], [1, 2], [symbol, symbol2]);
+            testStyle([{
+                filter: ['==', 'foo1', 2],
+                symbol: symbol
+            }, {
+                filter: [
+                    'all', ['!=', '$type', 'Polygon'],
+                    ['==', 'foo1', 3]
+                ],
+                symbol: symbol2
+            }], [1, 2], [symbol, symbol2]);
         });
-        it('symbol first', function() {
+        it('symbol first', function () {
             var symbol = {
-                'markerType' : 'ellipse',
-                'markerWidth' : 20,
-                'markerHeight' : 20
+                'markerType': 'ellipse',
+                'markerWidth': 20,
+                'markerHeight': 20
             };
             var styleSymbol = {
-                'markerFile' : 'http://www.foo.com/foo.png'
+                'markerFile': 'http://www.foo.com/foo.png'
             };
-            var vectors = new VectorLayer('symbol-style', {'drawImmediate' : true})
-                        .setStyle({
-                             filter : ['==', '$type', 'Point'],
-                             symbol : styleSymbol
-                            })
-                        .addTo(map);
+            var vectors = new VectorLayer('symbol-style', {
+                'drawImmediate': true
+            })
+            .setStyle({
+                filter: ['==', '$type', 'Point'],
+                symbol: styleSymbol
+            })
+            .addTo(map);
             var geometries = [
                 new Marker(map.getCenter(), {
-                    'symbol' : symbol
+                    'symbol': symbol
                 }),
                 new Marker(map.getCenter()),
             ];

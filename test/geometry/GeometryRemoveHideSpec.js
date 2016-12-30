@@ -71,7 +71,7 @@ function testRemoveHide(geometry, _context) {
         ];
         var points = [];
         for (var i = 0; i < coordinates.length; i++) {
-            points.push(map.coordinateToContainerPoint(coordinates[i]))
+            points.push(map.coordinateToContainerPoint(coordinates[i]));
         }
         return points;
     }

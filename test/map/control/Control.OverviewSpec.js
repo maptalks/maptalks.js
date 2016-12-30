@@ -1,5 +1,12 @@
-describe("Control.Overview", function() {
-    control.Overview.prototype.loadDelay = 1;
+import {
+    removeContainer
+} from '../SpecCommon';
+import Coordinate from 'geo/Coordinate';
+import TileLayer from 'layer/tile/TileLayer';
+import * as controls from 'control';
+
+describe('Control.Overview', function () {
+    controls.Overview.prototype.loadDelay = 1;
     var container;
     var map;
     var tile;
@@ -13,44 +20,42 @@ describe("Control.Overview", function() {
         var option = {
             zoom: 17,
             center: center,
-            overviewControl : true
+            overviewControl: true
         };
         map = new Map(container, option);
         tile = new TileLayer('tile', {
 
-            urlTemplate:"/resources/tile.png",
+            urlTemplate: '/resources/tile.png',
             subdomains: [1, 2, 3]
         });
-
     });
 
     afterEach(function () {
-        removeContainer(container)
+        removeContainer(container);
     });
 
     it('default', function () {
         expect(map.overviewControl).to.be.ok();
     });
 
-    it("create", function(done) {
+    it('create', function (done) {
         map.on('baselayerload', function () {
-            var overview = new control.Overview().addTo(map);
+            new controls.Overview().addTo(map);
             done();
-        })
+        });
         map.setBaseLayer(tile);
     });
 
-    it("baseLayer", function (done) {
+    it('baseLayer', function (done) {
         var overview = map.overviewControl;
         overview.on('load', function () {
             expect(overview._overview.getBaseLayer()).to.be.ok();
             done();
         });
         map.setBaseLayer(tile);
-
     });
 
-    it("remove", function (done) {
+    it('remove', function (done) {
         var overview = map.overviewControl;
 
         overview.on('load', function () {
@@ -64,7 +69,7 @@ describe("Control.Overview", function() {
         map.setBaseLayer(tile);
     });
 
-    it("move", function (done) {
+    it('move', function (done) {
         var overview = map.overviewControl;
         overview.on('load', function () {
             map.on('moveend', function () {
@@ -73,16 +78,15 @@ describe("Control.Overview", function() {
             });
             map.setCenter([0, 0]);
         });
-
     });
 
-    it("zoom", function (done) {
+    it('zoom', function (done) {
         var overview = map.overviewControl;
 
         overview.on('load', function () {
             var zoom = overview._overview.getZoom();
             overview._overview.on('zoomend', function () {
-            expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
+                expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
                 done();
             });
             map.zoomIn();
