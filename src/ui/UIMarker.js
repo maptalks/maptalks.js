@@ -345,20 +345,23 @@ export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
  * @protected
  * @extends {Handler}
  */
-UIMarker.Drag = Handler.extend(/** @lends UIMarker.Drag.prototype */ {
+class UIMarkerDragHandler extends Handler {
 
-    START: Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
+    constructor(target) {
+        super(target);
+        this.START = Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'];
+    }
 
-    addHooks: function () {
+    addHooks() {
         this.target.on(this.START.join(' '), this._startDrag, this);
 
-    },
+    }
 
-    removeHooks: function () {
+    removeHooks() {
         this.target.off(this.START.join(' '), this._startDrag, this);
-    },
+    }
 
-    _startDrag: function (param) {
+    _startDrag(param) {
         var domEvent = param['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
@@ -383,9 +386,9 @@ UIMarker.Drag = Handler.extend(/** @lends UIMarker.Drag.prototype */ {
          * @property {Event} domEvent                 - dom event
          */
         this.target.fire('dragstart', param);
-    },
+    }
 
-    _prepareDragHandler: function () {
+    _prepareDragHandler() {
         this._dragHandler = new DragHandler(this.target.getDOM(), {
             'cancelOn': bind(this._cancelOn, this)
         });
@@ -393,9 +396,9 @@ UIMarker.Drag = Handler.extend(/** @lends UIMarker.Drag.prototype */ {
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
-    },
+    }
 
-    _cancelOn: function (domEvent) {
+    _cancelOn(domEvent) {
         var target = domEvent.srcElement || domEvent.target,
             tagName = target.tagName.toLowerCase();
         if (tagName === 'button' ||
@@ -406,13 +409,13 @@ UIMarker.Drag = Handler.extend(/** @lends UIMarker.Drag.prototype */ {
             return true;
         }
         return false;
-    },
+    }
 
-    _onMouseDown: function (param) {
+    _onMouseDown(param) {
         stopPropagation(param['domEvent']);
-    },
+    }
 
-    _dragging: function (param) {
+    _dragging(param) {
         var target = this.target,
             map = target.getMap(),
             eventParam = map._parseEvent(param['domEvent']),
@@ -446,9 +449,9 @@ UIMarker.Drag = Handler.extend(/** @lends UIMarker.Drag.prototype */ {
          */
         target.fire('dragging', eventParam);
 
-    },
+    }
 
-    _endDrag: function (param) {
+    _endDrag(param) {
         var target = this.target,
             map = target.getMap();
         if (this._dragHandler) {
@@ -475,17 +478,17 @@ UIMarker.Drag = Handler.extend(/** @lends UIMarker.Drag.prototype */ {
          */
         target.fire('dragend', eventParam);
 
-    },
+    }
 
-    isDragging: function () {
+    isDragging() {
         if (!this._isDragging) {
             return false;
         }
         return true;
     }
-});
+}
 
-UIMarker.addInitHook('addHandler', 'draggable', UIMarker.Drag);
+UIMarker.addInitHook('addHandler', 'draggable', UIMarkerDragHandler);
 
 UIMarker.include(/** @lends UIMarker.prototype */ {
     /**

@@ -6,7 +6,6 @@ import {
     indexOfArray,
     isArrayHasData
 } from 'core/util';
-import { Geometry } from './Geometry';
 import { Marker } from './Marker';
 import { LineString } from './LineString';
 import { Polygon } from './Polygon';
@@ -157,70 +156,4 @@ export const GeoJSON = {
         }
         return null;
     }
-};
-
-/**
- * Produce a geometry from one or more [profile json]{@link Geometry#toJSON} or GeoJSON.
- * @static
- * @param  {Object} json - a geometry's profile json or a geojson
- * @return {Geometry} geometry
- * @example
- * var profile = {
-        "feature": {
-              "type": "Feature",
-              "id" : "point1",
-              "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-              "properties": {"prop0": "value0"}
-        },
-        //construct options.
-        "options":{
-            "draggable" : true
-        },
-        //symbol
-        "symbol":{
-            "markerFile"  : "http://foo.com/icon.png",
-            "markerWidth" : 20,
-            "markerHeight": 20
-        }
-    };
-    var marker = Geometry.fromJSON(profile);
- */
-Geometry.fromJSON = function (json) {
-    if (isArray(json)) {
-        var result = [],
-            c;
-        for (var i = 0, len = json.length; i < len; i++) {
-            c = Geometry.fromJSON(json[i]);
-            if (isArray(json)) {
-                result = result.concat(c);
-            } else {
-                result.push(c);
-            }
-        }
-        return result;
-    }
-
-    if (json && !json['feature']) {
-        return GeoJSON.toGeometry(json);
-    }
-    var geometry;
-    if (json['subType']) {
-        geometry = maptalks[json['subType']].fromJSON(json);
-        if (!isNil(json['feature']['id'])) {
-            geometry.setId(json['feature']['id']);
-        }
-    } else {
-        var feature = json['feature'];
-        geometry = GeoJSON.toGeometry(feature);
-        if (json['options']) {
-            geometry.config(json['options']);
-        }
-    }
-    if (json['symbol']) {
-        geometry.setSymbol(json['symbol']);
-    }
-    if (json['infoWindow']) {
-        geometry.setInfoWindow(json['infoWindow']);
-    }
-    return geometry;
 };

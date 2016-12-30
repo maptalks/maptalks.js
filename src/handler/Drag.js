@@ -11,43 +11,43 @@ import Point from 'geo/Point';
  * @protected
  * @extends Handler
  */
-export const DragHandler = Handler.extend(/** @lends Handler.Drag.prototype */ {
+const DragHandler = class extends Handler {
 
-    START: Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
-    END: {
-        mousedown: 'mouseup',
-        touchstart: 'touchend',
-        pointerdown: 'touchend',
-        MSPointerDown: 'touchend'
-    },
-    MOVE: {
-        mousedown: 'mousemove',
-        touchstart: 'touchmove',
-        pointerdown: 'touchmove',
-        MSPointerDown: 'touchmove'
-    },
-
-    initialize: function (dom, options) {
+    constructor(dom, options) {
+        super(null);
+        this.START = Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'];
+        this.END = {
+            mousedown: 'mouseup',
+            touchstart: 'touchend',
+            pointerdown: 'touchend',
+            MSPointerDown: 'touchend'
+        };
+        this.MOVE = {
+            mousedown: 'mousemove',
+            touchstart: 'touchmove',
+            pointerdown: 'touchmove',
+            MSPointerDown: 'touchmove'
+        };
         this.dom = dom;
         this.options = options;
-    },
+    }
 
-    enable: function () {
+    enable() {
         if (!this.dom) {
             return;
         }
         on(this.dom, this.START.join(' '), this.onMouseDown, this);
-    },
+    }
 
 
-    disable: function () {
+    disable() {
         if (!this.dom) {
             return;
         }
         off(this.dom, this.START.join(' '), this.onMouseDown);
-    },
+    }
 
-    onMouseDown: function (event) {
+    onMouseDown(event) {
         if (isNumber(event.button) && event.button === 2) {
             //不响应右键事件
             return;
@@ -74,9 +74,9 @@ export const DragHandler = Handler.extend(/** @lends Handler.Drag.prototype */ {
             'domEvent': event,
             'mousePos': new Point(actual.clientX, actual.clientY)
         });
-    },
+    }
 
-    onMouseMove: function (event) {
+    onMouseMove(event) {
         if (event.touches && event.touches.length > 1) {
             return;
         }
@@ -109,9 +109,9 @@ export const DragHandler = Handler.extend(/** @lends Handler.Drag.prototype */ {
                 'mousePos': new Point(actual.clientX, actual.clientY)
             });
         }
-    },
+    }
 
-    onMouseUp: function (event) {
+    onMouseUp(event) {
         var dom = this.dom;
         var actual = event.changedTouches ? event.changedTouches[0] : event;
         for (var i in this.MOVE) {
@@ -140,6 +140,6 @@ export const DragHandler = Handler.extend(/** @lends Handler.Drag.prototype */ {
 
         this.fire('mouseup', param);
     }
-});
+};
 
 export default DragHandler;

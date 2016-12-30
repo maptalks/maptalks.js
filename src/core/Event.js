@@ -7,7 +7,7 @@ import { stopPropagation } from 'core/util/dom';
  * @memberOf maptalks
  * @name Eventable
  */
-const Eventable = {
+export default Base => class extends Base {
     /**
      * Register a handler function to be called whenever this event is fired.
      *
@@ -55,7 +55,22 @@ const Eventable = {
             });
         }
         return this;
-    },
+    }
+
+    /**
+     * Alias for [on]{@link Eventable.on}
+     *
+     * @param {String} eventTypes     - event types to register, seperated by space if more than one.
+     * @param {Function} handler                 - handler function to be called
+     * @param {Object} [context=null]            - the context of the handler
+     * @return {*} this
+     * @function
+     * @memberOf Eventable
+     * @name addEventListener
+     */
+    addEventListener() {
+        return this.on.apply(this, arguments);
+    }
 
     /**
      * Same as on, except the listener will only get fired once and then removed.
@@ -82,24 +97,7 @@ const Eventable = {
             this.on(evetTypes[i], this._wrapOnceHandler(evetTypes[i], handler, context));
         }
         return this;
-    },
-
-    _wrapOnceHandler(evtType, handler, context) {
-        var me = this;
-        var called = false;
-        return function onceHandler() {
-            if (called) {
-                return;
-            }
-            called = true;
-            if (context) {
-                handler.apply(context, arguments);
-            } else {
-                handler.apply(this, arguments);
-            }
-            me.off(evtType, onceHandler, this);
-        };
-    },
+    }
 
     /**
      * Unregister the event handler for the specified event types.
@@ -137,31 +135,22 @@ const Eventable = {
             }
         }
         return this;
-    },
+    }
 
-    _switch(to, eventKeys, context) {
-        for (var p in eventKeys) {
-            if (eventKeys.hasOwnProperty(p)) {
-                this[to](p, eventKeys[p], context);
-            }
-        }
-        return this;
-    },
-
-    _clearListeners(eventType) {
-        if (!this._eventMap || !isString(eventType)) {
-            return;
-        }
-        var handlerChain = this._eventMap[eventType.toLowerCase()];
-        if (!handlerChain) {
-            return;
-        }
-        this._eventMap[eventType] = null;
-    },
-
-    _clearAllListeners() {
-        this._eventMap = null;
-    },
+    /**
+     * Alias for [off]{@link Eventable.off}
+     *
+     * @param {String} eventTypes    - event types to unregister, seperated by space if more than one.
+     * @param {Function} handler                - listener handler
+     * @param {Object} [context=null]           - the context of the handler
+     * @return {*} this
+     * @function
+     * @memberOf Eventable
+     * @name removeEventListener
+     */
+    removeEventListener() {
+        return this.off.apply(this, arguments);
+    }
 
     /**
      * Returns listener's count registered for the event type.
@@ -191,7 +180,7 @@ const Eventable = {
             }
         }
         return count;
-    },
+    }
 
     /**
      * Copy all the event listener to the target object
@@ -211,7 +200,7 @@ const Eventable = {
             }
         }
         return this;
-    },
+    }
 
     /**
      * Fire an event, causing all handlers for that event name to run.
@@ -225,7 +214,48 @@ const Eventable = {
             return this._eventParent.fire.apply(this._eventParent, arguments);
         }
         return this._fire.apply(this, arguments);
-    },
+    }
+
+    _wrapOnceHandler(evtType, handler, context) {
+        var me = this;
+        var called = false;
+        return function onceHandler() {
+            if (called) {
+                return;
+            }
+            called = true;
+            if (context) {
+                handler.apply(context, arguments);
+            } else {
+                handler.apply(this, arguments);
+            }
+            me.off(evtType, onceHandler, this);
+        };
+    }
+
+    _switch(to, eventKeys, context) {
+        for (var p in eventKeys) {
+            if (eventKeys.hasOwnProperty(p)) {
+                this[to](p, eventKeys[p], context);
+            }
+        }
+        return this;
+    }
+
+    _clearListeners(eventType) {
+        if (!this._eventMap || !isString(eventType)) {
+            return;
+        }
+        var handlerChain = this._eventMap[eventType.toLowerCase()];
+        if (!handlerChain) {
+            return;
+        }
+        this._eventMap[eventType] = null;
+    }
+
+    _clearAllListeners() {
+        this._eventMap = null;
+    }
 
     /**
      * Set a event parent to handle all the events
@@ -236,7 +266,7 @@ const Eventable = {
     _setEventParent(parent) {
         this._eventParent = parent;
         return this;
-    },
+    }
 
     _fire(eventType, param) {
         if (!this._eventMap) {
@@ -274,32 +304,5 @@ const Eventable = {
             }
         }
         return this;
-    },
-};
-
-/**
- * Alias for [on]{@link Eventable.on}
- *
- * @param {String} eventTypes     - event types to register, seperated by space if more than one.
- * @param {Function} handler                 - handler function to be called
- * @param {Object} [context=null]            - the context of the handler
- * @return {*} this
- * @function
- * @memberOf Eventable
- * @name addEventListener
- */
-Eventable.addEventListener = Eventable.on;
-/**
- * Alias for [off]{@link Eventable.off}
- *
- * @param {String} eventTypes    - event types to unregister, seperated by space if more than one.
- * @param {Function} handler                - listener handler
- * @param {Object} [context=null]           - the context of the handler
- * @return {*} this
- * @function
- * @memberOf Eventable
- * @name removeEventListener
- */
-Eventable.removeEventListener = Eventable.off;
-
-export default Eventable;
+    }
+}
