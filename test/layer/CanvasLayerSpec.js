@@ -5,7 +5,7 @@ describe('#CanvasLayer', function() {
     var container;
     var map;
     var tile, layer;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -16,7 +16,7 @@ describe('#CanvasLayer', function() {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
+        map = new Map(container, option);
     });
 
     afterEach(function() {
@@ -25,7 +25,7 @@ describe('#CanvasLayer', function() {
 
     it('add', function (done) {
         var size = map.getSize();
-        layer = new maptalks.CanvasLayer('v');
+        layer = new CanvasLayer('v');
         layer.prepareToDraw = function (context) {
             return [size.width, size.height]
         };
@@ -44,7 +44,7 @@ describe('#CanvasLayer', function() {
     });
 
     it('zoom events', function (done) {
-        layer = new maptalks.CanvasLayer('v');
+        layer = new CanvasLayer('v');
         layer.draw = function (context) {
             context.fillStyle = "#f00";
             context.fillRect(0, 0, 10, 10);
@@ -64,7 +64,7 @@ describe('#CanvasLayer', function() {
     });
 
     it('move events', function (done) {
-        layer = new maptalks.CanvasLayer('v');
+        layer = new CanvasLayer('v');
         layer.draw = function (context) {
             context.fillStyle = "#f00";
             context.fillRect(0, 0, 10, 10);
@@ -84,7 +84,7 @@ describe('#CanvasLayer', function() {
     });
 
     it('resize events', function (done) {
-        layer = new maptalks.CanvasLayer('v');
+        layer = new CanvasLayer('v');
         layer.draw = function (context) {
             context.fillStyle = "#f00";
             context.fillRect(0, 0, 10, 10);
@@ -98,7 +98,7 @@ describe('#CanvasLayer', function() {
     });
 
     it('remove', function (done) {
-        layer = new maptalks.CanvasLayer('v');
+        layer = new CanvasLayer('v');
         layer.draw = function (context) {
             context.fillStyle = "#f00";
             context.fillRect(0, 0, 10, 10);
@@ -112,13 +112,13 @@ describe('#CanvasLayer', function() {
 
     it('can be masked', function (done) {
         var size = map.getSize();
-        layer = new maptalks.CanvasLayer('v');
+        layer = new CanvasLayer('v');
         layer.draw = function (context) {
             context.fillStyle = "rgba(255, 0, 0, 0.1)";
             context.fillRect(0, 0, size.width, size.height);
         };
         var maskRadius = 10;
-        layer.setMask(new maptalks.Circle(map.getCenter(), maskRadius, {
+        layer.setMask(new Circle(map.getCenter(), maskRadius, {
             symbol : {
                 polygonFill : '#000'
             }
@@ -133,7 +133,7 @@ describe('#CanvasLayer', function() {
 
     it('show', function (done) {
         var size = map.getSize();
-        layer = new maptalks.CanvasLayer('v', {visible : false});
+        layer = new CanvasLayer('v', {visible : false});
         layer.draw = function (context) {
             context.fillStyle = "#f00";
             context.fillRect(0, 0, size.width, size.height);
@@ -152,7 +152,7 @@ describe('#CanvasLayer', function() {
 
     it('hide', function (done) {
         var size = map.getSize();
-        layer = new maptalks.CanvasLayer('v');
+        layer = new CanvasLayer('v');
         layer.draw = function (context) {
             context.fillStyle = "#f00";
             context.fillRect(0, 0, size.width, size.height);

@@ -106,7 +106,7 @@ describe('#GeoJSONLayer', function() {
             zoom: 17,
             center: [100, 0]
         };
-        map = new maptalks.Map(container, option);
+        map = new Map(container, option);
     });
 
     afterEach(function() {
@@ -116,7 +116,7 @@ describe('#GeoJSONLayer', function() {
     it('create', function () {
         var count = geoJSONs.length + 2,
             pos = geoJSONs.length - 1;
-        var layer = new maptalks.GeoJSONLayer('v', {'visible' : true}).addTo(map);
+        var layer = new GeoJSONLayer('v', {'visible' : true}).addTo(map);
         layer.addData(geoJSONs);
         var json = layer.toJSON();
         expect(json).to.be.ok();
@@ -127,20 +127,20 @@ describe('#GeoJSONLayer', function() {
     it('from/toJSON', function () {
         var count = geoJSONs.length + 2,
             pos = geoJSONs.length - 1;
-        var layer = new maptalks.GeoJSONLayer('v', geoJSONs).addTo(map);
+        var layer = new GeoJSONLayer('v', geoJSONs).addTo(map);
         var json = layer.toJSON();
         expect(json).to.be.ok();
         expect(json['geojson']).to.have.length(count);
         expect(json['geojson'].slice(0, pos)).to.be.eql(geoJSONs.slice(0, pos));
 
-        var layer2 = maptalks.Layer.fromJSON(json);
-        expect(layer2).to.be.a(maptalks.GeoJSONLayer);
+        var layer2 = Layer.fromJSON(json);
+        expect(layer2).to.be.a(GeoJSONLayer);
         expect(layer2.getCount()).to.be.eql(count);
     });
 
     it('add again', function (done) {
         var count = geoJSONs.length + 2;
-        var layer = new maptalks.GeoJSONLayer('v', geoJSONs).addTo(map);
+        var layer = new GeoJSONLayer('v', geoJSONs).addTo(map);
         expect(layer.getCount()).to.be(count);
         map.removeLayer(layer);
         expect(layer.getCount()).to.be(count);

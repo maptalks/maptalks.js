@@ -5,7 +5,7 @@ describe('#Map', function () {
     var eventContainer;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -17,8 +17,8 @@ describe('#Map', function () {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3],
             visible : false
@@ -40,7 +40,7 @@ describe('#Map', function () {
                 content: 'content',
                 animation : null
             };
-            var win = new maptalks.ui.InfoWindow(options);
+            var win = new ui.InfoWindow(options);
             win.addTo(map);
             var pos = map.getCenter();
             win.show(pos);
@@ -65,7 +65,7 @@ describe('#Map', function () {
                 ],
                 width: 160
             };
-            var menu = new maptalks.ui.Menu(options);
+            var menu = new ui.Menu(options);
 
             expect(function () {
                 menu.addTo(map);
@@ -73,7 +73,7 @@ describe('#Map', function () {
         });
 
         it('setItems', function() {
-            var menu = new maptalks.ui.Menu();
+            var menu = new ui.Menu();
             var items = [
                 {item: 'item1'},
                 {item: 'item2'}
@@ -94,9 +94,9 @@ describe('#Map', function () {
                 ],
                 width: 160
             };
-            var menu = new maptalks.ui.Menu(options);
+            var menu = new ui.Menu(options);
             menu.addTo(map);
-            var pos = new maptalks.Coordinate(10,10);
+            var pos = new Coordinate(10,10);
             menu.show(pos);
 
             expect(function () {
@@ -116,7 +116,7 @@ describe('#Map', function () {
                 ],
                 width: 160
             };
-            var menu = new maptalks.ui.Menu(options);
+            var menu = new ui.Menu(options);
             menu.addTo(map);
             var pos = map.getCenter();;
             menu.show(pos);

@@ -3,7 +3,7 @@ describe('StrokeAndFillSpec', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -12,7 +12,7 @@ describe('StrokeAndFillSpec', function() {
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.canvasContainer;
-        layer = new maptalks.VectorLayer('id').addTo(map);
+        layer = new VectorLayer('id').addTo(map);
     });
 
     afterEach(function() {
@@ -43,13 +43,13 @@ describe('StrokeAndFillSpec', function() {
 
     describe('pattern', function() {
         it('fill pattern', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var circle = new Circle(center, 10, {
                 symbol:{
                     'polygonPatternFile' : 'resources/pattern.png',
                     'polygonOpacity' : 1
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted();
                 done();
@@ -58,7 +58,7 @@ describe('StrokeAndFillSpec', function() {
         });
 
         it('line pattern', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var circle = new Circle(center, 10, {
                 symbol:{
                     'linePatternFile' : 'resources/pattern.png',
                     'lineOpacity' : 1,
@@ -67,7 +67,7 @@ describe('StrokeAndFillSpec', function() {
                     'polygonOpacity' : 0
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted(11);
                 done();
@@ -76,7 +76,7 @@ describe('StrokeAndFillSpec', function() {
         });
 
         it('vector marker fill pattern', function (done) {
-            var circle = new maptalks.Marker(center, {
+            var circle = new Marker(center, {
                 symbol:{
                     'markerType' : 'ellipse',
                     'markerFillPatternFile' : 'resources/pattern.png',
@@ -85,7 +85,7 @@ describe('StrokeAndFillSpec', function() {
                     'markerHeight' : 20
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted();
                 done();
@@ -94,7 +94,7 @@ describe('StrokeAndFillSpec', function() {
         });
 
         it('vector marker line pattern', function (done) {
-            var circle = new maptalks.Marker(center, {
+            var circle = new Marker(center, {
                 symbol:{
                     'markerType' : 'ellipse',
                     'markerLinePatternFile' : 'resources/pattern.png',
@@ -105,7 +105,7 @@ describe('StrokeAndFillSpec', function() {
                     'markerHeight' : 20
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted(11);
                 done();
@@ -117,7 +117,7 @@ describe('StrokeAndFillSpec', function() {
 
     describe('radial gradient', function () {
         it('fill radial gradient', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var circle = new Circle(center, 10, {
                 symbol:{
                     'polygonFill' : {
                         type : 'radial',
@@ -135,7 +135,7 @@ describe('StrokeAndFillSpec', function() {
                     'polygonOpacity' : 1
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted();
                 done();
@@ -144,7 +144,7 @@ describe('StrokeAndFillSpec', function() {
         });
 
         it('fill radial gradient 2', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var circle = new Circle(center, 10, {
                 symbol:{
                     'polygonFill' : {
                         type : 'radial',
@@ -161,7 +161,7 @@ describe('StrokeAndFillSpec', function() {
                     'polygonOpacity' : 1
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted();
                 done();
@@ -170,7 +170,7 @@ describe('StrokeAndFillSpec', function() {
         });
 
         it('line radial gradient', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var circle = new Circle(center, 10, {
                 symbol:{
                     'lineColor' : {
                         type : 'radial',
@@ -189,7 +189,7 @@ describe('StrokeAndFillSpec', function() {
                     'polygonOpacity' : 0
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).not.to.be.painted();
                 expect(v).to.be.painted(11);
@@ -199,7 +199,7 @@ describe('StrokeAndFillSpec', function() {
         });
 
         it('vector marker', function (done) {
-            var circle = new maptalks.Marker(center, {
+            var circle = new Marker(center, {
                 symbol:{
                     'markerType' : 'ellipse',
                     'markerLineColor' : {
@@ -220,7 +220,7 @@ describe('StrokeAndFillSpec', function() {
                     'markerHeight' : 20
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).not.to.be.painted();
                 expect(v).to.be.painted(11);
@@ -234,7 +234,7 @@ describe('StrokeAndFillSpec', function() {
     describe('linear gradient', function () {
 
         it('fill linear gradient', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var circle = new Circle(center, 10, {
                 symbol:{
                     'polygonFill' : {
                         type : 'linear',
@@ -252,7 +252,7 @@ describe('StrokeAndFillSpec', function() {
                     'polygonOpacity' : 1
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted(0, 0, [255, 255, 255]);
                 done();
@@ -261,7 +261,7 @@ describe('StrokeAndFillSpec', function() {
         });
 
         it('fill linear gradient 2', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var circle = new Circle(center, 10, {
                 symbol:{
                     'polygonFill' : {
                         type : 'linear',
@@ -278,7 +278,7 @@ describe('StrokeAndFillSpec', function() {
                     'polygonOpacity' : 1
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted();
                 done();
@@ -286,7 +286,7 @@ describe('StrokeAndFillSpec', function() {
             v.addGeometry(circle);
         });
         it('line linear gradient', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var circle = new Circle(center, 10, {
                 symbol:{
                     'lineColor' : {
                         type : 'linear',
@@ -305,7 +305,7 @@ describe('StrokeAndFillSpec', function() {
                     'polygonOpacity' : 0
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
                 expect(v).to.be.painted(11);
                 done();
@@ -314,7 +314,7 @@ describe('StrokeAndFillSpec', function() {
         });
 
         it('vector marker', function (done) {
-            var circle = new maptalks.Marker(center, {
+            var circle = new Marker(center, {
                 symbol:{
                     'markerType' : 'ellipse',
                     'markerFill' : {
@@ -329,9 +329,9 @@ describe('StrokeAndFillSpec', function() {
                     'markerHeight' : 20
                 }
             });
-            var v = new maptalks.VectorLayer('v').addTo(map);
+            var v = new VectorLayer('v').addTo(map);
             v.once('layerload', function() {
-                if (maptalks.Browser.phantomjs) {
+                if (Browser.phantomjs) {
                     expect(v).to.be.painted(-9, 0, [255, 18, 18]);
                     expect(v).to.be.painted(-5, 0, [255, 67, 67]);
                     expect(v).to.be.painted(8, 0, [255, 225, 225]);

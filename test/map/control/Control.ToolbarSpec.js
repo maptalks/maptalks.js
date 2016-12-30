@@ -3,7 +3,7 @@ describe("Control.Toolbar", function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         var setups = commonSetupMap(center);
@@ -19,7 +19,7 @@ describe("Control.Toolbar", function() {
         /**
         * 创建多个toolbar控件
         */
-        var toolbar = new maptalks.control.Toolbar({
+        var toolbar = new control.Toolbar({
             position : { //工具条放置位置
                 top: '2',
                 left: '2'

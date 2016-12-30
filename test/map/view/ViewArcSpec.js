@@ -116,7 +116,7 @@ describe('#View.Arc', function () {
     };
 
     it('load from url', function (done) {
-        maptalks.View.loadArcgis('/resources/arcgis.json', function (err, conf) {
+        View.loadArcgis('/resources/arcgis.json', function (err, conf) {
             expect(err).to.be(null);
             expect(conf).to.be.eql(expected);
             done();
@@ -124,7 +124,7 @@ describe('#View.Arc', function () {
     });
 
     it('load from json', function (done) {
-        maptalks.View.loadArcgis(arcgis, function (err, conf) {
+        View.loadArcgis(arcgis, function (err, conf) {
             expect(err).to.be(null);
             expect(conf).to.be.eql(expected);
             done();
@@ -132,7 +132,7 @@ describe('#View.Arc', function () {
     });
 
     it('load from string', function (done) {
-        maptalks.View.loadArcgis(JSON.stringify(arcgis), function (err, conf) {
+        View.loadArcgis(JSON.stringify(arcgis), function (err, conf) {
             expect(err).to.be(null);
             expect(conf).to.be.eql(expected);
             done();

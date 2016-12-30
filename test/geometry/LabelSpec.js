@@ -1,43 +1,50 @@
-// var CommonSpec = require('./CommonSpec');
+import {
+    commonSetupMap,
+    removeContainer,
+    GeoEventsTester
+} from '../SpecCommon';
+import {
+    Label
+} from 'geometry';
+import Coordinate from 'geo/Coordinate';
+import VectorLayer from 'layer/VectorLayer';
 
-describe('#Label', function() {
+describe('#Label', function () {
 
     var container;
     var map;
-    var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
 
-    beforeEach(function() {
+    beforeEach(function () {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
         map.removeBaseLayer();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        removeContainer(container);
     });
 
-    describe('label fires events', function() {
-        it('canvas events', function() {
-            var vector = new maptalks.Label('test label', center);
+    describe('label fires events', function () {
+        it('canvas events', function () {
+            var vector = new Label('test label', center);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
 
-    describe('change position',function() {
-        it('events',function() {
+    describe('change position', function () {
+        it('events', function () {
             var spy = sinon.spy();
 
-            var vector = new maptalks.Label('test label',center);
-            vector.on('positionchange',spy);
+            var vector = new Label('test label', center);
+            vector.on('positionchange', spy);
 
             function evaluate() {
-                var rnd = Math.random()*0.001;
-                var coordinates = new maptalks.Coordinate(center.x+rnd, center.y+rnd);
-                var radius = 1000*rnd;
+                var rnd = Math.random() * 0.001;
+                var coordinates = new Coordinate(center.x + rnd, center.y + rnd);
 
                 vector.setCoordinates(coordinates);
                 expect(spy.calledOnce).to.be.ok();
@@ -47,7 +54,7 @@ describe('#Label', function() {
 
             evaluate();
 
-            layer = new maptalks.VectorLayer('id');
+            layer = new VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             evaluate();
@@ -55,11 +62,11 @@ describe('#Label', function() {
         });
     });
 
-    describe('can get/set content',function() {
-        it("get/set content",function() {
+    describe('can get/set content', function () {
+        it('get/set content', function () {
             var label = '中文标签';
-            var vector = new maptalks.Label(label,center);
-            layer = new maptalks.VectorLayer('id');
+            var vector = new Label(label, center);
+            layer = new VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             expect(vector.getContent()).to.be.eql(label);
@@ -69,32 +76,32 @@ describe('#Label', function() {
         });
     });
 
-    describe('can get/set textAlign',function() {
-        it("get/set textAlign",function() {
+    describe('can get/set textAlign', function () {
+        it('get/set textAlign', function () {
             var label = '中文标签';
-            var vector = new maptalks.Label(label,center);
-            vector.config('boxAutoSize',false);
+            var vector = new Label(label, center);
+            vector.config('boxAutoSize', false);
             //default textalign
             expect(vector.options['boxTextAlign']).to.be.eql('middle');
-            vector.config('boxTextAlign','right');
+            vector.config('boxTextAlign', 'right');
             expect(vector.options['boxTextAlign']).to.be.eql('right');
-            layer = new maptalks.VectorLayer('id');
+            layer = new VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             expect(vector.options['boxTextAlign']).to.be.eql('right');
-            vector.config('boxTextAlign','left');
+            vector.config('boxTextAlign', 'left');
             expect(vector.options['boxTextAlign']).to.be.eql('left');
         });
     });
 
-    describe('can get/set symbol',function() {
-        it("get/set symbol",function() {
+    describe('can get/set symbol', function () {
+        it('get/set symbol', function () {
             var label = '中文标签';
-            var vector = new maptalks.Label(label,center);
+            var vector = new Label(label, center);
             vector.setSymbol(null);
             //null symbol is allowed, means set to default symbol.
             expect(vector.getSymbol()).not.to.be.ok();
-            layer = new maptalks.VectorLayer('id');
+            layer = new VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             var labelSymbol = {
@@ -111,12 +118,12 @@ describe('#Label', function() {
                 // 'textFill': '#ff0000',
                 'textOpacity': 1,
                 'textSpacing': 30,
-                'textWrapWidth': null,//auto
+                'textWrapWidth': null, //auto
                 'textWrapBefore': false,
                 'textWrapCharacter': '\n',
                 'textLineSpacing': 8,
-                'textHorizontalAlignment': 'middle',//left middle right
-                'textVerticalAlignment': 'top'//top middle bottom
+                'textHorizontalAlignment': 'middle', //left middle right
+                'textVerticalAlignment': 'top' //top middle bottom
             };
             vector.setSymbol(labelSymbol);
             //symbol's textName will be set.
@@ -126,51 +133,57 @@ describe('#Label', function() {
 
     describe('alignment', function () {
         it('left', function () {
-            var vector = new maptalks.Label('■■■', center, {
-                box : false,
-                symbol : {
-                    'markerFillOpacity' : 0,
-                    'markerLineOpacity' : 0,
-                    'textHorizontalAlignment' : 'left'
+            var vector = new Label('■■■', center, {
+                box: false,
+                symbol: {
+                    'markerFillOpacity': 0,
+                    'markerLineOpacity': 0,
+                    'textHorizontalAlignment': 'left'
                 }
             });
-            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
+            layer = new VectorLayer('id', {
+                'drawImmediate': true
+            });
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
             expect(layer).to.be.painted(-3, 0);
-            expect(layer).to.be.painted(-Math.floor(size.width/2), 0);
+            expect(layer).to.be.painted(-Math.floor(size.width / 2), 0);
             expect(layer).not.to.be.painted(3, 0);
         });
 
         it('right', function () {
-            var vector = new maptalks.Label('■■■', center, {
-                box : false,
-                symbol : {
-                    'markerFillOpacity' : 0,
-                    'markerLineOpacity' : 0,
-                    'textHorizontalAlignment' : 'right'
+            var vector = new Label('■■■', center, {
+                box: false,
+                symbol: {
+                    'markerFillOpacity': 0,
+                    'markerLineOpacity': 0,
+                    'textHorizontalAlignment': 'right'
                 }
             });
-            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
+            layer = new VectorLayer('id', {
+                'drawImmediate': true
+            });
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
             expect(layer).to.be.painted(3, 0);
-            expect(layer).to.be.painted(Math.floor(size.width/2), 0);
+            expect(layer).to.be.painted(Math.floor(size.width / 2), 0);
             expect(layer).not.to.be.painted(-3, 0);
         });
 
         it('top', function () {
-            var vector = new maptalks.Label('■■■', center, {
-                box : false,
-                symbol : {
-                    'markerFillOpacity' : 0,
-                    'markerLineOpacity' : 0,
-                    'textVerticalAlignment' : 'top'
+            var vector = new Label('■■■', center, {
+                box: false,
+                symbol: {
+                    'markerFillOpacity': 0,
+                    'markerLineOpacity': 0,
+                    'textVerticalAlignment': 'top'
                 }
             });
-            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
+            layer = new VectorLayer('id', {
+                'drawImmediate': true
+            });
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -180,15 +193,17 @@ describe('#Label', function() {
         });
 
         it('bottom', function () {
-            var vector = new maptalks.Label('■■■', center, {
-                box : false,
-                symbol : {
-                    'markerFillOpacity' : 0,
-                    'markerLineOpacity' : 0,
-                    'textVerticalAlignment' : 'bottom'
+            var vector = new Label('■■■', center, {
+                box: false,
+                symbol: {
+                    'markerFillOpacity': 0,
+                    'markerLineOpacity': 0,
+                    'textVerticalAlignment': 'bottom'
                 }
             });
-            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
+            layer = new VectorLayer('id', {
+                'drawImmediate': true
+            });
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
@@ -198,9 +213,9 @@ describe('#Label', function() {
         });
     });
 
-    describe('can config',function() {
-        it("configs",function() {
-            var vector = new maptalks.Label('label',center);
+    describe('can config', function () {
+        it('configs', function () {
+            var vector = new Label('label', center);
             var defaultConfig = vector.config();
             expect(defaultConfig).to.be.empty();
 
@@ -208,8 +223,8 @@ describe('#Label', function() {
     });
 
     it('autoSize', function () {
-        var vector = new maptalks.Label('■■■', center, {
-            box:true,
+        var vector = new Label('■■■', center, {
+            box: true,
             boxAutoSize: true
         });
         var symbol = vector._getInternalSymbol();
@@ -217,9 +232,9 @@ describe('#Label', function() {
         expect(symbol.markerHeight).to.be.above(5);
     });
 
-    it('can edit', function() {
-        var vector = new maptalks.Label('label',center);
-        layer = new maptalks.VectorLayer('id');
+    it('can edit', function () {
+        var vector = new Label('label', center);
+        layer = new VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
         vector.startEditText();
@@ -228,9 +243,9 @@ describe('#Label', function() {
         expect(vector.isEditingText()).not.to.be.ok();
     });
 
-    it('edit with special characters', function() {
-        var vector = new maptalks.Label('label\r\n',center);
-        layer = new maptalks.VectorLayer('id');
+    it('edit with special characters', function () {
+        var vector = new Label('label\r\n', center);
+        layer = new VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
         vector.startEditText();

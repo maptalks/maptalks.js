@@ -1,67 +1,99 @@
-describe('#Polygon', function() {
+import {
+    commonSetupMap,
+    removeContainer,
+    GeoEventsTester,
+    GeoSymbolTester
+} from '../SpecCommon';
+import {
+    Polygon
+} from 'geometry';
+import Coordinate from 'geo/Coordinate';
+import VectorLayer from 'layer/VectorLayer';
+
+describe('#Polygon', function () {
 
     var container;
     var map;
-    var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
-    beforeEach(function() {
-       var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new maptalks.VectorLayer('id');
+        layer = new VectorLayer('id');
         map.addLayer(layer);
         canvasContainer = map._panels.canvasContainer;
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        removeContainer(container);
     });
 
-    it('getCenter', function() {
+    it('getCenter', function () {
         var rings = [
-            [
-                {x: -1, y: 1},
-                {x: 1, y: 1},
-                {x: 1, y: -1},
-                {x: -1, y: -1}
-            ]
+            [{
+                x: -1,
+                y: 1
+            }, {
+                x: 1,
+                y: 1
+            }, {
+                x: 1,
+                y: -1
+            }, {
+                x: -1,
+                y: -1
+            }]
         ];
-        var polygon = new maptalks.Polygon(rings);
+        var polygon = new Polygon(rings);
         var got = polygon.getCenter();
 
-        expect(got).to.closeTo(new maptalks.Coordinate([0, 0]));
+        expect(got).to.closeTo(new Coordinate([0, 0]));
     });
 
-    it('getExtent', function() {
+    it('getExtent', function () {
         var rings = [
-            [
-                {x: 20, y: 0},
-                {x: 20, y: 10},
-                {x: 0, y: 10},
-                {x: 0, y: 0}
-            ]
+            [{
+                x: 20,
+                y: 0
+            }, {
+                x: 20,
+                y: 10
+            }, {
+                x: 0,
+                y: 10
+            }, {
+                x: 0,
+                y: 0
+            }]
         ];
-        var polygon = new maptalks.Polygon(rings);
+        var polygon = new Polygon(rings);
 
         var extent = polygon.getExtent();
         expect(extent.getWidth()).to.be.above(0);
         expect(extent.getHeight()).to.be.above(0);
     });
 
-    it('getSize', function() {
+    it('getSize', function () {
         var rings = [
-            [
-                {x: 20, y: 0},
-                {x: 20, y: 10},
-                {x: 0, y: 10},
-                {x: 0, y: 0}
-            ]
+            [{
+                x: 20,
+                y: 0
+            }, {
+                x: 20,
+                y: 10
+            }, {
+                x: 0,
+                y: 10
+            }, {
+                x: 0,
+                y: 0
+            }]
         ];
-        var polygon = new maptalks.Polygon(rings);
+        var polygon = new Polygon(rings);
         layer.addGeometry(polygon);
         var size = polygon.getSize();
 
@@ -69,19 +101,31 @@ describe('#Polygon', function() {
         expect(size.height).to.be.above(0);
     });
 
-    it('getCoordinates', function() {
-        var rings = [
-            {x: 20, y: 0},
-            {x: 20, y: 10},
-            {x: 0, y: 10},
-            {x: 0, y: 0}
-        ];
-        var holes = [
-            {x: 1, y: 1},
-            {x: 3, y: 2},
-            {x: 2, y: 3}
-        ];
-        var polygon = new maptalks.Polygon([rings, holes]);
+    it('getCoordinates', function () {
+        var rings = [{
+            x: 20,
+            y: 0
+        }, {
+            x: 20,
+            y: 10
+        }, {
+            x: 0,
+            y: 10
+        }, {
+            x: 0,
+            y: 0
+        }];
+        var holes = [{
+            x: 1,
+            y: 1
+        }, {
+            x: 3,
+            y: 2
+        }, {
+            x: 2,
+            y: 3
+        }];
+        var polygon = new Polygon([rings, holes]);
 
         rings.push(rings[0]);
         holes.push(holes[0]);
@@ -89,19 +133,33 @@ describe('#Polygon', function() {
         expect(polygon.getCoordinates()[1]).to.eql(holes);
     });
 
-    it('setCoordinates', function() {
-        var rings = [
-            {x: 20, y: 0},
-            {x: 20, y: 10},
-            {x: 0, y: 10},
-            {x: 0, y: 0}
-        ];
-        var holes = [
-            {x: 1, y: 1},
-            {x: 3, y: 2},
-            {x: 2, y: 3}
-        ];
-        var polygon = new maptalks.Polygon([[]]);
+    it('setCoordinates', function () {
+        var rings = [{
+            x: 20,
+            y: 0
+        }, {
+            x: 20,
+            y: 10
+        }, {
+            x: 0,
+            y: 10
+        }, {
+            x: 0,
+            y: 0
+        }];
+        var holes = [{
+            x: 1,
+            y: 1
+        }, {
+            x: 3,
+            y: 2
+        }, {
+            x: 2,
+            y: 3
+        }];
+        var polygon = new Polygon([
+            []
+        ]);
         polygon.setCoordinates([rings, holes]);
 
         rings.push(rings[0]);
@@ -110,19 +168,31 @@ describe('#Polygon', function() {
         expect(polygon.getCoordinates()[1]).to.eql(holes);
     });
 
-    it('hasHoles', function() {
-        var rings = [
-            {x: 20, y: 0},
-            {x: 20, y: 10},
-            {x: 0, y: 10},
-            {x: 0, y: 0}
-        ];
-        var holes = [
-            {x: 1, y: 1},
-            {x: 3, y: 2},
-            {x: 2, y: 3}
-        ];
-        var polygon = new maptalks.Polygon([rings]);
+    it('hasHoles', function () {
+        var rings = [{
+            x: 20,
+            y: 0
+        }, {
+            x: 20,
+            y: 10
+        }, {
+            x: 0,
+            y: 10
+        }, {
+            x: 0,
+            y: 0
+        }];
+        var holes = [{
+            x: 1,
+            y: 1
+        }, {
+            x: 3,
+            y: 2
+        }, {
+            x: 2,
+            y: 3
+        }];
+        var polygon = new Polygon([rings]);
 
         expect(polygon.hasHoles()).to.not.be.ok();
 
@@ -131,49 +201,80 @@ describe('#Polygon', function() {
         expect(polygon.hasHoles()).to.be.ok();
     });
 
-    describe('constructor', function() {
+    describe('constructor', function () {
 
-        it('normal constructor', function() {
+        it('normal constructor', function () {
             var points = [
-                [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ],
-                [ [100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2] ]
+                [
+                    [100.0, 0.0],
+                    [101.0, 0.0],
+                    [101.0, 1.0],
+                    [100.0, 1.0],
+                    [100.0, 0.0]
+                ],
+                [
+                    [100.2, 0.2],
+                    [100.8, 0.2],
+                    [100.8, 0.8],
+                    [100.2, 0.8],
+                    [100.2, 0.2]
+                ]
             ];
-            var polygon = new maptalks.Polygon(points);
+            var polygon = new Polygon(points);
             var coordinates = polygon.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = maptalks.Coordinate.toNumberArrays(coordinates);
+            var geojsonCoordinates = Coordinate.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 
-        it('can be empty.',function() {
-            var polygon = new maptalks.Polygon();
+        it('can be empty.', function () {
+            var polygon = new Polygon();
             expect(polygon.getCoordinates()).to.have.length(0);
         });
 
     });
 
-    describe('getCenter', function() {
-        it('should返回笛卡尔坐标系上的点集合的中心点', function() {
-            var polygon = new maptalks.Polygon([[
-                {x: 0, y: 0},
-                {x: 0, y: 10},
-                {x: 10, y: 10},
-                {x: 10, y: 0}
-            ]]);
+    describe('getCenter', function () {
+        it('should返回笛卡尔坐标系上的点集合的中心点', function () {
+            var polygon = new Polygon([
+                [{
+                    x: 0,
+                    y: 0
+                }, {
+                    x: 0,
+                    y: 10
+                }, {
+                    x: 10,
+                    y: 10
+                }, {
+                    x: 10,
+                    y: 0
+                }]
+            ]);
             layer.addGeometry(polygon);
 
-            expect(polygon.getCenter()).to.be.closeTo({x:5, y: 5});
+            expect(polygon.getCenter()).to.be.closeTo({
+                x: 5,
+                y: 5
+            });
         });
     });
 
-    it('getExtent', function() {
-        var polygon = new maptalks.Polygon([
-            [
-                {x: 0, y: 0},
-                {x: 0, y: 10},
-                {x: 10, y: 10},
-                {x: 10, y: 0}
-            ]
+    it('getExtent', function () {
+        var polygon = new Polygon([
+            [{
+                x: 0,
+                y: 0
+            }, {
+                x: 0,
+                y: 10
+            }, {
+                x: 10,
+                y: 10
+            }, {
+                x: 10,
+                y: 0
+            }]
         ]);
         layer.addGeometry(polygon);
         var extent = polygon.getExtent();
@@ -185,42 +286,58 @@ describe('#Polygon', function() {
         expect(extent.ymax).to.be.within(10 - delta, 10 + delta);
     });
 
-    describe('geometry fires events', function() {
+    describe('geometry fires events', function () {
 
-        it('canvas events', function() {
+        it('canvas events', function () {
             var points = [
-                [
-                    {x: 0, y: 0},
-                    {x: 0, y: 10},
-                    {x: 10, y: 10},
-                    {x: 10, y: 0}
-                ]
+                [{
+                    x: 0,
+                    y: 0
+                }, {
+                    x: 0,
+                    y: 10
+                }, {
+                    x: 10,
+                    y: 10
+                }, {
+                    x: 10,
+                    y: 0
+                }]
             ];
-            var vector = new maptalks.Polygon(points);
+            var vector = new Polygon(points);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
 
-    it('can have various symbols',function(done) {
+    it('can have various symbols', function (done) {
         var points = [
-                [
-                    {x: 0, y: 0},
-                    {x: 0, y: 10},
-                    {x: 10, y: 10},
-                    {x: 10, y: 0}
-                ]
-            ];
-            var vector = new maptalks.Polygon(points);
+            [{
+                x: 0,
+                y: 0
+            }, {
+                x: 0,
+                y: 10
+            }, {
+                x: 10,
+                y: 10
+            }, {
+                x: 10,
+                y: 0
+            }]
+        ];
+        var vector = new Polygon(points);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
-    it("Polygon._containsPoint", function() {
+    it('Polygon._containsPoint', function () {
         layer.clear();
-        var geometry = new maptalks.Polygon([[
-            new maptalks.Coordinate([center.x, center.y + 0.001]),
-            new maptalks.Coordinate([center.x, center.y]),
-            new maptalks.Coordinate([center.x + 0.002, center.y])
-        ]], {
+        var geometry = new Polygon([
+            [
+                new Coordinate([center.x, center.y + 0.001]),
+                new Coordinate([center.x, center.y]),
+                new Coordinate([center.x + 0.002, center.y])
+            ]
+        ], {
             symbol: {
                 'lineWidth': 6
             }
@@ -243,18 +360,35 @@ describe('#Polygon', function() {
         expect(spy.called).to.be.ok();
     });
 
-    it('can be a anti-meridian polygon',function() {
+    it('can be a anti-meridian polygon', function () {
         var points = [
-            [[179,10],[-170,10],[-169, -10],[179, -10]],
-            [[180,5],[-175,5],[-171, -5],[180, -5]]
-            ];
-        var vector = new maptalks.Polygon(points,{antiMeridian : 'continuous',});
+            [
+                [179, 10],
+                [-170, 10],
+                [-169, -10],
+                [179, -10]
+            ],
+            [
+                [180, 5],
+                [-175, 5],
+                [-171, -5],
+                [180, -5]
+            ]
+        ];
+        var vector = new Polygon(points, {
+            antiMeridian: 'continuous',
+        });
         layer.addGeometry(vector);
 
         var points2 = [
-            [[179,10],[168,10],[167, -10],[179, -10]]
-            ];
-        var comparison = new maptalks.Polygon(points2);
+            [
+                [179, 10],
+                [168, 10],
+                [167, -10],
+                [179, -10]
+            ]
+        ];
+        var comparison = new Polygon(points2);
         layer.addGeometry(comparison);
 
         var size = vector.getSize();

@@ -5,7 +5,7 @@ describe('#ParticleLayer', function() {
     var container;
     var map;
     var tile, layer;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -16,7 +16,7 @@ describe('#ParticleLayer', function() {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
+        map = new Map(container, option);
     });
 
     afterEach(function() {
@@ -27,7 +27,7 @@ describe('#ParticleLayer', function() {
     function getParticles() {
         var size = map.getSize();
         return [{
-            point : new maptalks.Point(size.width / 2, size.height / 2),
+            point : new Point(size.width / 2, size.height / 2),
             r : 50,
             color : 'rgba(255, 0, 0, 0.1)'
         }];
@@ -35,7 +35,7 @@ describe('#ParticleLayer', function() {
 
     it('add', function (done) {
         var size = map.getSize();
-        layer = new maptalks.ParticleLayer('v');
+        layer = new ParticleLayer('v');
         layer.getParticles = getParticles;
 
         layer.once('layerload', function () {
@@ -46,7 +46,7 @@ describe('#ParticleLayer', function() {
     });
 
     it('zoom events', function (done) {
-        layer = new maptalks.ParticleLayer('v');
+        layer = new ParticleLayer('v');
         layer.getParticles = getParticles;
         layer.addTo(map);
         var zoomStartFired = false;
@@ -63,7 +63,7 @@ describe('#ParticleLayer', function() {
     });
 
     it('move events', function (done) {
-        layer = new maptalks.ParticleLayer('v');
+        layer = new ParticleLayer('v');
         layer.getParticles = getParticles;
         layer.addTo(map);
         var moveStartFired = false;
@@ -80,7 +80,7 @@ describe('#ParticleLayer', function() {
     });
 
     it('resize events', function (done) {
-        layer = new maptalks.ParticleLayer('v');
+        layer = new ParticleLayer('v');
         layer.getParticles = getParticles;
         layer.addTo(map);
         var moveStartFired = false;
@@ -91,7 +91,7 @@ describe('#ParticleLayer', function() {
     });
 
     it('remove', function (done) {
-        layer = new maptalks.ParticleLayer('v');
+        layer = new ParticleLayer('v');
         layer.getParticles = getParticles;
         layer.addTo(map);
         layer.on('layerload', function () {
@@ -102,10 +102,10 @@ describe('#ParticleLayer', function() {
 
     it('can be masked', function (done) {
         var size = map.getSize();
-        layer = new maptalks.ParticleLayer('v');
+        layer = new ParticleLayer('v');
         layer.getParticles = getParticles;
         var maskRadius = 10;
-        layer.setMask(new maptalks.Circle(map.getCenter(), maskRadius, {
+        layer.setMask(new Circle(map.getCenter(), maskRadius, {
             symbol : {
                 polygonFill : '#000'
             }
@@ -120,7 +120,7 @@ describe('#ParticleLayer', function() {
 
     it('show', function (done) {
         var size = map.getSize();
-        layer = new maptalks.ParticleLayer('v', {visible : false});
+        layer = new ParticleLayer('v', {visible : false});
         layer.getParticles = getParticles;
 
         layer.once('layerload', function () {
@@ -136,7 +136,7 @@ describe('#ParticleLayer', function() {
 
     it('hide', function (done) {
         var size = map.getSize();
-        layer = new maptalks.ParticleLayer('v');
+        layer = new ParticleLayer('v');
         layer.getParticles = getParticles;
 
         layer.once('layerload', function () {
@@ -152,12 +152,12 @@ describe('#ParticleLayer', function() {
 
     it('animation', function (done) {
         var size = map.getSize();
-        layer = new maptalks.ParticleLayer('v', {animation : true, fps : 20});
+        layer = new ParticleLayer('v', {animation : true, fps : 20});
         var count = 0;
         layer.getParticles = function (t) {
             var size = map.getSize();
             return [{
-                point : new maptalks.Point(size.width / 2 + (count++) * 2, size.height / 2),
+                point : new Point(size.width / 2 + (count++) * 2, size.height / 2),
                 r : 6,
                 color : 'rgba(255, 0, 0, 0.1)'
             }];
@@ -176,12 +176,12 @@ describe('#ParticleLayer', function() {
 
     it('animation pause and play', function (done) {
         var size = map.getSize();
-        layer = new maptalks.ParticleLayer('v', {animation : true});
+        layer = new ParticleLayer('v', {animation : true});
         var count = 0;
         layer.getParticles = function (t) {
             var size = map.getSize();
             return [{
-                point : new maptalks.Point(size.width / 2 + (count++) * 2, size.height / 2),
+                point : new Point(size.width / 2 + (count++) * 2, size.height / 2),
                 r : 6,
                 color : 'rgba(255, 0, 0, 0.1)'
             }];

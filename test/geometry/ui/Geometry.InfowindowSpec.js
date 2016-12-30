@@ -3,7 +3,7 @@ describe("#Geometry.InfoWindow", function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
 
     beforeEach(function () {
@@ -16,13 +16,13 @@ describe("#Geometry.InfoWindow", function() {
             zoom: 15,
             center: center
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
         });
-        layer = new maptalks.VectorLayer('vector').addTo(map);
+        layer = new VectorLayer('vector').addTo(map);
     });
 
     afterEach(function () {
@@ -30,7 +30,7 @@ describe("#Geometry.InfoWindow", function() {
     });
 
     it("infowindow has methods to change itself.", function(done) {
-        var marker = new maptalks.Marker(center);
+        var marker = new Marker(center);
         marker.addTo(layer);
         var options = {
             title: 'title',
@@ -55,7 +55,7 @@ describe("#Geometry.InfoWindow", function() {
     });
 
     it('close when layer is removed', function (done) {
-        var marker = new maptalks.Marker(center);
+        var marker = new Marker(center);
         marker.addTo(layer);
         var options = {
             title: 'title',
@@ -133,7 +133,7 @@ describe("#Geometry.InfoWindow", function() {
                 content: 'content',
                 animation : null
             };
-            var geo = new maptalks.Marker(map.getCenter());
+            var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
 
             geo.setInfoWindow(options);
@@ -152,7 +152,7 @@ describe("#Geometry.InfoWindow", function() {
                 content: 'content',
                 animation : null
             };
-            var geo = new maptalks.Marker(map.getCenter());
+            var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
 
             geo.setInfoWindow(options);
@@ -171,8 +171,8 @@ describe("#Geometry.InfoWindow", function() {
                 content: 'content',
                 animation : null
             };
-            var infoWindow = new maptalks.ui.InfoWindow(options);
-            var geo = new maptalks.Marker(map.getCenter());
+            var infoWindow = new ui.InfoWindow(options);
+            var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
 
             infoWindow.addTo(geo);
@@ -191,7 +191,7 @@ describe("#Geometry.InfoWindow", function() {
                 content: 'content',
                 animation : null
             };
-            var geo = new maptalks.Marker(map.getCenter());
+            var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
 
             geo.setInfoWindow(options);
@@ -214,20 +214,20 @@ describe("#Geometry.InfoWindow", function() {
                 animation : 'fade,scale',
                 animationDuration : 100
             };
-            var infoWindow = new maptalks.ui.InfoWindow(options);
-            var geo = new maptalks.Marker(map.getCenter());
+            var infoWindow = new ui.InfoWindow(options);
+            var geo = new Marker(map.getCenter());
             layer.addGeometry(geo);
 
             infoWindow.addTo(geo);
             infoWindow.show(geo.getCenter())
             expect(infoWindow.getDOM().style.opacity).to.be.eql(1);
-            expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
+            expect(infoWindow.getDOM().style[TRANSFORM]).to.be.eql('scale(1)');
 
             infoWindow.hide();
             //hide animations
             setTimeout(function () {
                 expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
-                expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
+                expect(infoWindow.getDOM().style[TRANSFORM]).to.be.eql('scale(0)');
                 expect(infoWindow.isVisible()).not.to.be.ok();
                 done();
             }, options.animationDuration + 1);

@@ -2,12 +2,12 @@ describe('#UIMarkerDrag', function () {
     var container, eventContainer;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     function dragMarker(marker, isMove) {
         var spy = sinon.spy();
         marker.on('mousedown', spy);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(marker.getCoordinates()).add(domPosition);
         happen.mousedown(marker.getDOM(),{
                 'clientX':point.x,
@@ -30,8 +30,8 @@ describe('#UIMarkerDrag', function () {
     }
 
     function dragMap() {
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
-        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new maptalks.Point(30,20));
+        var domPosition = getPagePosition(container);
+        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new Point(30,20));
         happen.mousedown(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y
@@ -60,7 +60,7 @@ describe('#UIMarkerDrag', function () {
     describe('drag uimarker', function() {
         it('in default, uimarkers cannot be dragged', function() {
             var center = map.getCenter();
-            var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            var marker = new ui.UIMarker(map.getCenter(), {
                 content : '<div id="uimarker">marker</div>'
             });
             marker.addTo(map).show();
@@ -71,7 +71,7 @@ describe('#UIMarkerDrag', function () {
 
     it('can drag a uimarker', function() {
         var center = map.getCenter();
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>',
             draggable : true
         });
@@ -82,7 +82,7 @@ describe('#UIMarkerDrag', function () {
 
     it('can disable draggable', function() {
         var center = map.getCenter();
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>',
             draggable : true
         });
@@ -94,7 +94,7 @@ describe('#UIMarkerDrag', function () {
 
     it('enable map draggable after dragging', function() {
         var center = map.getCenter();
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>',
             draggable : true
         });
@@ -107,7 +107,7 @@ describe('#UIMarkerDrag', function () {
 
     it('enable map draggable after dragging without moving', function() {
         var center = map.getCenter();
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>',
             draggable : true
         });

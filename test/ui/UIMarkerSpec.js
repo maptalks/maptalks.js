@@ -2,7 +2,7 @@ describe('#UIMarker', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
     var context = {
 
@@ -21,7 +21,7 @@ describe('#UIMarker', function() {
     });
 
     it('add', function() {
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
@@ -35,7 +35,7 @@ describe('#UIMarker', function() {
         var dom = document.createElement('div');
         dom.id = 'uimarker';
         dom.innerHTML = 'marker';
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : dom
         });
         marker.addTo(map).show();
@@ -46,7 +46,7 @@ describe('#UIMarker', function() {
     });
 
     it('show when zooming', function(done) {
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
@@ -61,7 +61,7 @@ describe('#UIMarker', function() {
     });
 
     it('can hide', function() {
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>',
             animation : null
         });
@@ -75,7 +75,7 @@ describe('#UIMarker', function() {
     });
 
     it('can remove', function() {
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
@@ -85,11 +85,11 @@ describe('#UIMarker', function() {
     });
 
     it('is not single', function() {
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             content : '<svg>marker</svg>'
         });
         marker.addTo(map).show();
-        var marker2 = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker2 = new ui.UIMarker(map.getCenter(), {
             content : '<svg>marker2</svg>'
         });
         marker2.addTo(map).show();
@@ -99,12 +99,12 @@ describe('#UIMarker', function() {
     });
 
     it('can be set to single', function() {
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             single : true,
             content : '<svg>marker</svg>'
         });
         marker.addTo(map).show();
-        var marker2 = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker2 = new ui.UIMarker(map.getCenter(), {
             single : true,
             content : '<svg>marker2</svg>'
         });
@@ -116,7 +116,7 @@ describe('#UIMarker', function() {
 
     it('can getContent', function() {
         var content = '<svg>marker</svg>';
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             single : true,
             content : content
         });
@@ -126,7 +126,7 @@ describe('#UIMarker', function() {
 
     it('can setContent', function() {
         var content = '<svg>marker</svg>';
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             single : true,
             content : '<div id="uimarker">marker</div>'
         });
@@ -141,7 +141,7 @@ describe('#UIMarker', function() {
 
     it('can getCoordinates', function() {
         var content = '<svg>marker</svg>';
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             single : true,
             content : content
         });
@@ -151,7 +151,7 @@ describe('#UIMarker', function() {
 
     it('can setCoordinates', function() {
         var content = '<svg>marker</svg>';
-        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+        var marker = new ui.UIMarker(map.getCenter(), {
             single : true,
             content : content
         });

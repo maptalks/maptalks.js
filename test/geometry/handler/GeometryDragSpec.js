@@ -3,20 +3,20 @@ describe('#GeometryDrag', function () {
     var container,eventContainer;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     function dragGeometry(geometry, isMove) {
         map.removeLayer('id');
-        var layer = new maptalks.VectorLayer('id');
+        var layer = new VectorLayer('id');
         map.addLayer(layer);
 
         geometry.addTo(layer);
         var spy = sinon.spy();
         geometry.on('mousedown', spy);
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(geometry.getFirstCoordinate()).add(domPosition);
-        var requestAnimFn = maptalks.Util.requestAnimFrame;
+        var requestAnimFn = requestAnimFrame;
 
 
         happen.mousedown(eventContainer,{
@@ -36,8 +36,8 @@ describe('#GeometryDrag', function () {
     }
 
     function dragMap() {
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
-        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new maptalks.Point(30,20));
+        var domPosition = getPagePosition(container);
+        var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new Point(30,20));
         happen.mousedown(eventContainer,{
                 'clientX':point.x,
                 'clientY':point.y
@@ -64,13 +64,13 @@ describe('#GeometryDrag', function () {
     });
     describe('drag geometries', function() {
         it('in default, geometries cannot be dragged', function() {
-            var marker = new maptalks.Marker(center);
+            var marker = new Marker(center);
             dragGeometry(marker);
             expect(marker.getCoordinates()).to.be.closeTo(center);
         });
 
         it('can drag a default marker', function() {
-            var marker = new maptalks.Marker(center,{draggable:true});
+            var marker = new Marker(center,{draggable:true});
             dragGeometry(marker);
             expect(marker.getCoordinates()).not.to.be.eql(center);
         });
@@ -81,7 +81,7 @@ describe('#GeometryDrag', function () {
 
             for (var i = 0; i < geometries.length; i++) {
                 var geo = geometries[i];
-                if (geo instanceof maptalks.GeometryCollection || geo instanceof maptalks.Sector) {
+                if (geo instanceof GeometryCollection || geo instanceof Sector) {
                     //not fit for geometry collection's test.
                     continue;
                 }
@@ -94,7 +94,7 @@ describe('#GeometryDrag', function () {
 
         it('enable map draggable after dragging', function() {
             var center = map.getCenter();
-            var marker = new maptalks.Marker(center,{draggable:true});
+            var marker = new Marker(center,{draggable:true});
             dragGeometry(marker);
             var center = map.getCenter();
             dragMap();
@@ -103,7 +103,7 @@ describe('#GeometryDrag', function () {
 
         it('enable map draggable after dragging without moving', function() {
             var center = map.getCenter();
-            var marker = new maptalks.Marker(center,{draggable:true});
+            var marker = new Marker(center,{draggable:true});
             dragGeometry(marker, false);
             var center = map.getCenter();
             dragMap();
@@ -113,7 +113,7 @@ describe('#GeometryDrag', function () {
 
     describe('drag can be disable', function() {
         it('disables dragging', function() {
-            var marker = new maptalks.Marker(center,{draggable:false});
+            var marker = new Marker(center,{draggable:false});
             dragGeometry(marker);
             expect(marker.getCoordinates()).to.be.closeTo(center);
         });

@@ -3,7 +3,7 @@ describe('#OverlayLayer', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -14,8 +14,8 @@ describe('#OverlayLayer', function() {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
@@ -29,10 +29,10 @@ describe('#OverlayLayer', function() {
     describe('geometries', function () {
 
         it('addGeometry', function() {
-            var layer = new maptalks.VectorLayer('vector');
+            var layer = new VectorLayer('vector');
             layer.setId('id');
             // map.addLayer(layer);
-            var geometry = new maptalks.Polygon([
+            var geometry = new Polygon([
                 [
                     {x: 121.111, y: 30.111},
                     {x: 121.222, y: 30.222},
@@ -47,12 +47,12 @@ describe('#OverlayLayer', function() {
         });
 
         it('getGeometries', function() {
-            var layer = new maptalks.VectorLayer('vector');
+            var layer = new VectorLayer('vector');
             layer.setId('id');
             // map.addLayer(layer);
             var count = 10;
             for (var i = 0; i < count; i++) {
-                var geometry = new maptalks.Polygon([
+                var geometry = new Polygon([
                     [
                         {x: 121.111, y: 30.111},
                         {x: 121.222, y: 30.222},
@@ -67,10 +67,10 @@ describe('#OverlayLayer', function() {
         });
 
         it('getGeometryById', function() {
-            var layer = new maptalks.VectorLayer('vector');
+            var layer = new VectorLayer('vector');
             layer.setId('id');
             // map.addLayer(layer);
-            var geometry = new maptalks.Polygon([
+            var geometry = new Polygon([
                 [
                     {x: 121.111, y: 30.111},
                     {x: 121.222, y: 30.222},
@@ -86,10 +86,10 @@ describe('#OverlayLayer', function() {
         });
 
         it('Geometry\'s id changed', function() {
-            var layer = new maptalks.VectorLayer('vector');
+            var layer = new VectorLayer('vector');
             layer.setId('id');
             // map.addLayer(layer);
-            var geometry = new maptalks.Polygon([
+            var geometry = new Polygon([
                 [
                     {x: 121.111, y: 30.111},
                     {x: 121.222, y: 30.222},
@@ -116,10 +116,10 @@ describe('#OverlayLayer', function() {
         });
 
         it('removeGeometry', function() {
-            var layer = new maptalks.VectorLayer('layer');
+            var layer = new VectorLayer('layer');
             layer.setId('id');
             // map.addLayer(layer);
-            var polygon = new maptalks.Polygon([
+            var polygon = new Polygon([
                 [
                     {x: 121.111, y: 30.111},
                     {x: 121.222, y: 30.222},
@@ -127,7 +127,7 @@ describe('#OverlayLayer', function() {
                 ]
             ]);
             polygon.setId('polygon');
-            var polyline = new maptalks.Polyline([
+            var polyline = new Polyline([
                 {x: 121.111, y: 30.111},
                 {x: 121.222, y: 30.222}
             ]);
@@ -147,10 +147,10 @@ describe('#OverlayLayer', function() {
         });
 
         it('clear', function() {
-            var layer = new maptalks.VectorLayer('layer');
+            var layer = new VectorLayer('layer');
             layer.setId('id');
             // map.addLayer(layer);
-            var polygon = new maptalks.Polygon([
+            var polygon = new Polygon([
                 [
                     {x: 121.111, y: 30.111},
                     {x: 121.222, y: 30.222},
@@ -158,7 +158,7 @@ describe('#OverlayLayer', function() {
                 ]
             ]);
             polygon.setId('polygon');
-            var polyline = new maptalks.Polyline([
+            var polyline = new Polyline([
                 {x: 121.111, y: 30.111},
                 {x: 121.222, y: 30.222}
             ]);
@@ -173,11 +173,11 @@ describe('#OverlayLayer', function() {
         });
 
         it('getExtent', function() {
-            var layer = new maptalks.VectorLayer('layer');
+            var layer = new VectorLayer('layer');
             layer.setId('id');
             expect(layer.getExtent()).not.to.be.ok();
             // map.addLayer(layer);
-            var polygon = new maptalks.Polygon([
+            var polygon = new Polygon([
                 [
                     {x: 121.111, y: 30.111},
                     {x: 121.222, y: 30.222},
@@ -185,7 +185,7 @@ describe('#OverlayLayer', function() {
                 ]
             ]);
             polygon.setId('polygon');
-            var polyline = new maptalks.Polyline([
+            var polyline = new Polyline([
                 {x: 121.111, y: 30.111},
                 {x: 121.222, y: 30.222}
             ]);
@@ -201,13 +201,13 @@ describe('#OverlayLayer', function() {
 
     describe('visibility', function() {
         it('should be true if initialized with default visibility', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
 
             expect(layer.isVisible()).to.be.ok();
         });
 
         it('should be false after hide', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             map.addLayer(layer);
             layer.hide();
 
@@ -215,7 +215,7 @@ describe('#OverlayLayer', function() {
         });
 
         it('should be true after hide then show', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             map.addLayer(layer);
             layer.hide();
             layer.show();
@@ -226,9 +226,9 @@ describe('#OverlayLayer', function() {
 
     describe('addGeometry', function() {
         it('can be called on layer not on map', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             var gid = 'g1';
-            var geo1 = new maptalks.Marker(center);
+            var geo1 = new Marker(center);
             geo1.setId(gid);
             layer.addGeometry(geo1, true);
 
@@ -236,9 +236,9 @@ describe('#OverlayLayer', function() {
         });
 
         it('can be called on layer on map that not loaded', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             var gid = 'g1';
-            var geo1 = new maptalks.Marker(center);
+            var geo1 = new Marker(center);
             geo1.setId(gid);
             layer.addGeometry(geo1, true);
             map.addLayer(layer);
@@ -247,10 +247,10 @@ describe('#OverlayLayer', function() {
         });
 
         it('can be called if geometry is cleared by another layer', function() {
-            var layer1 = new maptalks.VectorLayer('1');
-            var layer2 = new maptalks.VectorLayer('2');
+            var layer1 = new VectorLayer('1');
+            var layer2 = new VectorLayer('2');
             var gid = 'g1';
-            var geo = new maptalks.Marker(center);
+            var geo = new Marker(center);
             geo.setId(gid);
             layer1.addGeometry(geo, true);
             map.addLayer(layer1);
@@ -260,10 +260,10 @@ describe('#OverlayLayer', function() {
         });
 
         it('will fail if geometry is added to another layer', function() {
-            var layer1 = new maptalks.VectorLayer('1');
-            var layer2 = new maptalks.VectorLayer('2');
+            var layer1 = new VectorLayer('1');
+            var layer2 = new VectorLayer('2');
             var gid = 'g1';
-            var geo = new maptalks.Marker(center);
+            var geo = new Marker(center);
             geo.setId(gid);
             layer1.addGeometry(geo, true);
             map.addLayer(layer1);
@@ -276,12 +276,12 @@ describe('#OverlayLayer', function() {
         });
 
         it('shold throw error if geometry to be added has same id', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             var gid = 'g1';
-            var geo1 = new maptalks.Marker(center);
+            var geo1 = new Marker(center);
             geo1.setId(gid);
             layer.addGeometry(geo1);
-            var geo2 = new maptalks.Marker(center);
+            var geo2 = new Marker(center);
             geo2.setId(gid);
 
             expect(layer.addGeometry).withArgs(geo2).to.throwException();
@@ -293,12 +293,12 @@ describe('#OverlayLayer', function() {
         });
 
         it('fit map view after added', function(done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             map.addLayer(layer);
-            var center1 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
-            var center2 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
-            var geo1 = new maptalks.Marker(center1);
-            var geo2 = new maptalks.Marker(center2);
+            var center1 = center.add(new Coordinate(Math.random(), Math.random()));
+            var center2 = center.add(new Coordinate(Math.random(), Math.random()));
+            var geo1 = new Marker(center1);
+            var geo2 = new Marker(center2);
             layer.on('addgeo', function() {
                 var center = center1.add(center2).multi(1/2);
                 expect(map.getCenter()).to.be.closeTo(center);
@@ -309,12 +309,12 @@ describe('#OverlayLayer', function() {
         });
 
         it('support rest parameters', function(done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             map.addLayer(layer);
-            var center1 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
-            var center2 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
-            var geo1 = new maptalks.Marker(center1);
-            var geo2 = new maptalks.Marker(center2);
+            var center1 = center.add(new Coordinate(Math.random(), Math.random()));
+            var center2 = center.add(new Coordinate(Math.random(), Math.random()));
+            var geo1 = new Marker(center1);
+            var geo2 = new Marker(center2);
             layer.on('addgeo', function() {
                 expect(layer.getCount()).to.be(2);
                 done();
@@ -323,12 +323,12 @@ describe('#OverlayLayer', function() {
         });
 
         it('support rest parameters and fit map view', function(done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             map.addLayer(layer);
-            var center1 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
-            var center2 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
-            var geo1 = new maptalks.Marker(center1);
-            var geo2 = new maptalks.Marker(center2);
+            var center1 = center.add(new Coordinate(Math.random(), Math.random()));
+            var center2 = center.add(new Coordinate(Math.random(), Math.random()));
+            var geo1 = new Marker(center1);
+            var geo2 = new Marker(center2);
             layer.on('addgeo', function() {
                 var center = center1.add(center2).multi(1/2);
                 expect(map.getCenter()).to.be.closeTo(center);
@@ -340,46 +340,46 @@ describe('#OverlayLayer', function() {
 
     describe('getGeometry', function() {
         it('return null if called with non-existed id', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
 
             expect(layer.getGeometryById('non-existed')).to.equal(null);
         });
 
         it('return value is empty after call clear', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             var gid = 'g1';
-            var geo1 = new maptalks.Marker(center, {id: gid});
+            var geo1 = new Marker(center, {id: gid});
             layer.addGeometry(geo1);
 
             expect(layer.clear().getGeometries()).to.be.empty();
         });
 
         it('selectAll', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             expect(layer.filter(function(){return true})).not.to.be.ok();
             var points = [
-                new maptalks.Marker([0,0], {
+                new Marker([0,0], {
                     properties : {
                         'foo1' : 1,
                         'foo2' : 'test1',
                         'foo3' : true
                     }
                 }),
-                new maptalks.Marker([0,0], {
+                new Marker([0,0], {
                     properties : {
                         'foo1' : 2,
                         'foo2' : 'test2',
                         'foo3' : false
                     }
                 }),
-                new maptalks.Marker([0,0], {
+                new Marker([0,0], {
                     properties : {
                         'foo1' : 3,
                         'foo2' : 'test3',
                         'foo3' : true
                     }
                 }),
-                new maptalks.Marker([0,0], {
+                new Marker([0,0], {
                     properties : {
                         'foo1' : 4,
                         'foo2' : 'test4',
@@ -397,28 +397,28 @@ describe('#OverlayLayer', function() {
 
         function genPoints() {
             var points = [
-                new maptalks.Marker([0,0], {
+                new Marker([0,0], {
                     properties : {
                         'foo1' : 1,
                         'foo2' : 'test1',
                         'foo3' : true
                     }
                 }),
-                new maptalks.Marker([0,0], {
+                new Marker([0,0], {
                     properties : {
                         'foo1' : 2,
                         'foo2' : 'test2',
                         'foo3' : false
                     }
                 }),
-                new maptalks.Marker([0,0], {
+                new Marker([0,0], {
                     properties : {
                         'foo1' : 3,
                         'foo2' : 'test3',
                         'foo3' : true
                     }
                 }),
-                new maptalks.Marker([0,0], {
+                new Marker([0,0], {
                     properties : {
                         'foo1' : 4,
                         'foo2' : 'test4',
@@ -430,13 +430,13 @@ describe('#OverlayLayer', function() {
         }
 
         it('filter by properties',function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             var points = genPoints();
             var selection = layer.addGeometry(points).filter(function(geometry) {
                 return geometry.getType() === 'Point' && geometry.getProperties().foo1 > 0 && geometry.getProperties().foo2.indexOf("test") >= 0;
             });
 
-            expect(selection).to.be.an(maptalks.GeometryCollection);
+            expect(selection).to.be.an(GeometryCollection);
             expect(selection.getGeometries()).to.have.length(points.length);
             for (var i = points.length - 1; i >= 0; i--) {
                 expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
@@ -453,7 +453,7 @@ describe('#OverlayLayer', function() {
         });
 
         it('filter by feature-filter',function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             var points = genPoints();
             var selection = layer.addGeometry(points).filter([
                                                                 'all',
@@ -461,7 +461,7 @@ describe('#OverlayLayer', function() {
                                                                 ['>', 'foo1', 0]
                                                              ]);
 
-            expect(selection).to.be.an(maptalks.GeometryCollection);
+            expect(selection).to.be.an(GeometryCollection);
             expect(selection.getGeometries()).to.have.length(points.length);
             for (var i = points.length - 1; i >= 0; i--) {
                 expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
@@ -481,27 +481,27 @@ describe('#OverlayLayer', function() {
     describe('isEmpty', function() {
 
         it('return true when clear', function() {
-            var layer = new maptalks.VectorLayer('id').addTo(map);
+            var layer = new VectorLayer('id').addTo(map);
             var gid = 'g1';
-            var geo1 = new maptalks.Marker(center, {id: gid});
+            var geo1 = new Marker(center, {id: gid});
             layer.addGeometry(geo1);
             layer.clear();
             expect(layer.isEmpty()).to.be.ok();
         });
 
         it('return true when removing geometry', function() {
-            var layer = new maptalks.VectorLayer('id').addTo(map);
+            var layer = new VectorLayer('id').addTo(map);
             var gid = 'g1';
-            var geo1 = new maptalks.Marker(center, {id: gid});
+            var geo1 = new Marker(center, {id: gid});
             layer.addGeometry(geo1);
             layer.removeGeometry(geo1);
             expect(layer.isEmpty()).to.be.ok();
         });
 
         it('return true when geometry removes itself', function() {
-            var layer = new maptalks.VectorLayer('id').addTo(map);
+            var layer = new VectorLayer('id').addTo(map);
             var gid = 'g1';
-            var geo1 = new maptalks.Marker(center, {id: gid});
+            var geo1 = new Marker(center, {id: gid});
             layer.addGeometry(geo1);
             geo1.remove();
             expect(layer.isEmpty()).to.be.ok();

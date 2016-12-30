@@ -3,14 +3,14 @@ describe('#Geometry.zindex', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
 
     beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new maptalks.VectorLayer('canvas');
+        layer = new VectorLayer('canvas');
         map.addLayer(layer);
     });
 
@@ -20,7 +20,7 @@ describe('#Geometry.zindex', function() {
     });
     var red, green, blue
     function getMarkers() {
-        red = new maptalks.Marker(map.getCenter(), {
+        red = new Marker(map.getCenter(), {
             symbol : {
                 'markerType' : 'ellipse',
                 'markerWidth' : 10,
@@ -28,7 +28,7 @@ describe('#Geometry.zindex', function() {
                 'markerFill' : '#f00'
             }
         });
-        green = new maptalks.Marker(map.getCenter(), {
+        green = new Marker(map.getCenter(), {
             symbol : {
                 'markerType' : 'ellipse',
                 'markerWidth' : 10,
@@ -36,7 +36,7 @@ describe('#Geometry.zindex', function() {
                 'markerFill' : '#0f0'
             }
         });
-        blue = new maptalks.Marker(map.getCenter(), {
+        blue = new Marker(map.getCenter(), {
             symbol : {
                 'markerType' : 'ellipse',
                 'markerWidth' : 10,

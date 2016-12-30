@@ -1,9 +1,22 @@
+import {
+    commonSetupMap,
+    removeContainer,
+    GeoSymbolTester
+} from '../SpecCommon';
+import Coordinate from 'geo/Coordinate';
+import {
+    LineString,
+    CubicBezierCurve,
+    QuadBezierCurve,
+    Polygon
+} from 'geometry';
+import VectorLayer from 'layer/VectorLayer';
+
 describe('#AntiMeridianSpec', function () {
 
     var container;
     var map;
-    var tile;
-    var center = new maptalks.Coordinate([179, 10]);
+    var center = new Coordinate([179, 10]);
     var layer;
 
     beforeEach(function () {
@@ -12,7 +25,7 @@ describe('#AntiMeridianSpec', function () {
         map = setups.map;
         map.config('zoomAnimation', false);
         map.setZoom(3);
-        layer = new maptalks.VectorLayer('id', {
+        layer = new VectorLayer('id', {
             'drawImmediate': true
         });
         map.addLayer(layer);
@@ -20,13 +33,13 @@ describe('#AntiMeridianSpec', function () {
 
     afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        removeContainer(container);
     });
 
     function genGeometries() {
         return [
             //a continuous anti-meridian line-string with a hole
-            new maptalks.LineString(
+            new LineString(
                 [
                     [179, 10],
                     [-170, 10],
@@ -39,7 +52,7 @@ describe('#AntiMeridianSpec', function () {
                 }
             ),
             //a continuous anti-meridian line-string with a hole
-            new maptalks.LineString(
+            new LineString(
                 [
                     [179, 10],
                     [-170, 10],
@@ -51,7 +64,7 @@ describe('#AntiMeridianSpec', function () {
                     arrowPlacement: 'point'
                 }
             ),
-            new maptalks.QuadBezierCurve(
+            new QuadBezierCurve(
                 //线端点坐标数组
                 [
                     [179, 10],
@@ -66,7 +79,7 @@ describe('#AntiMeridianSpec', function () {
                     antiMeridian: 'split'
                 }
             ),
-            new maptalks.CubicBezierCurve(
+            new CubicBezierCurve(
                 //线端点坐标数组
                 [
                     [179, 10],
@@ -82,7 +95,7 @@ describe('#AntiMeridianSpec', function () {
                 }
             ),
             //a continuous anti-meridian polygon with a hole
-            new maptalks.Polygon([
+            new Polygon([
                 [
                     [179, 10],
                     [-170, 10],
@@ -99,7 +112,7 @@ describe('#AntiMeridianSpec', function () {
                 antiMeridian: 'continuous'
             }),
             //a split anti-meridian polygon with a hole
-            new maptalks.Polygon([
+            new Polygon([
                 [
                     [179, 10],
                     [-170, 10],
@@ -118,11 +131,12 @@ describe('#AntiMeridianSpec', function () {
         ];
     }
     var geometries = genGeometries();
+    const t = (geo) => {
+        it('different symbols', function (done) {
+            GeoSymbolTester.testGeoSymbols(geo, map, done);
+        });
+    };
     for (var i = 0; i < geometries.length; i++) {
-        (function (geo) {
-            it('different symbols', function (done) {
-                GeoSymbolTester.testGeoSymbols(geo, map, done);
-            });
-        })(geometries[i]);
+        t(geometries[i]);
     }
 });

@@ -3,7 +3,7 @@ describe("Control.Attribution", function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -14,8 +14,8 @@ describe("Control.Attribution", function() {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
@@ -27,7 +27,7 @@ describe("Control.Attribution", function() {
     });
 
     it("contains specified content", function() {
-        var control = new maptalks.control.Attribution({
+        var control = new control.Attribution({
             content: 'content'
         });
         map.addControl(control);
@@ -36,7 +36,7 @@ describe("Control.Attribution", function() {
     });
 
     it("setContent correctly", function() {
-        var control = new maptalks.control.Attribution({
+        var control = new control.Attribution({
             content: 'content'
         });
         map.addControl(control);

@@ -4,7 +4,7 @@ describe('#MapPan', function () {
     var eventContainer;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -16,8 +16,8 @@ describe('#MapPan', function () {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3],
             visible : false

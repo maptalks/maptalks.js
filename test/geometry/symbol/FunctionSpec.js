@@ -4,7 +4,7 @@ describe('FunctionTypeSpec', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -13,7 +13,7 @@ describe('FunctionTypeSpec', function() {
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.canvasContainer;
-        layer = new maptalks.VectorLayer('id').addTo(map);
+        layer = new VectorLayer('id').addTo(map);
     });
 
     afterEach(function() {
@@ -23,7 +23,7 @@ describe('FunctionTypeSpec', function() {
 
     function interpolateSymbol(geo, symbol) {
         var result;
-        if (maptalks.Util.isArray(symbol)) {
+        if (isArray(symbol)) {
             result = [];
             for (var i = 0; i < symbol.length; i++) {
                 result.push(interpolateSymbol(symbol[i]));
@@ -33,11 +33,11 @@ describe('FunctionTypeSpec', function() {
         result = {};
         for (var p in symbol) {
             if (symbol.hasOwnProperty(p)) {
-                if (maptalks.Util.isFunctionDefinition(symbol[p])) {
+                if (isFunctionDefinition(symbol[p])) {
                     if (!geo.getMap()) {
                         result[p] = null;
                     } else {
-                        result[p] = maptalks.Util.interpolated(symbol[p])(geo.getMap().getZoom(), geo.getProperties());
+                        result[p] = interpolated(symbol[p])(geo.getMap().getZoom(), geo.getProperties());
                     }
                 } else {
                     result[p] = symbol[p];
@@ -48,7 +48,7 @@ describe('FunctionTypeSpec', function() {
     }
 
     it('markerWidth interpolating with zoom', function(done) {
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : "resources/x.svg",
                 "markerWidth": {stops: [[1, 1], [5, 10]]},
@@ -64,7 +64,7 @@ describe('FunctionTypeSpec', function() {
     });
 
     it('markerWidth interpolating with properties', function(done) {
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : "resources/x.svg",
                 "markerWidth": {property:'foo', stops: [[1, 1], [5, 10], [18,20]]},
@@ -83,7 +83,7 @@ describe('FunctionTypeSpec', function() {
     });
 
     it('markerWidth interpolating with properties', function() {
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerType" : "ellipse",
                 "markerWidth": 20,
@@ -100,7 +100,7 @@ describe('FunctionTypeSpec', function() {
     });
 
     it('markerWidth interpolating with non-existed properties', function(done) {
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : "resources/x.svg",
                 "markerWidth": {property:'foo1', stops: [[1, 1], [5, 10], [18,20]]},
@@ -119,7 +119,7 @@ describe('FunctionTypeSpec', function() {
     });
 
     it('markerWidth interpolating with properties and zoom together', function(done) {
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : "resources/x.svg",
                 "markerWidth": {
@@ -145,7 +145,7 @@ describe('FunctionTypeSpec', function() {
     });
 
     it('markerWidth without adding on a map', function() {
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : "resources/x.svg",
                 "markerWidth": {stops: [[1, 1], [5, 10]]},
@@ -157,7 +157,7 @@ describe('FunctionTypeSpec', function() {
     });
 
     it('interpolate a composite symbol', function (done) {
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:[
                 {
                     "markerFile" : "resources/x.svg",

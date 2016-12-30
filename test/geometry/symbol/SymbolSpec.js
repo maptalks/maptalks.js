@@ -5,7 +5,7 @@ describe('SymbolSpec', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -14,7 +14,7 @@ describe('SymbolSpec', function() {
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.canvasContainer;
-        layer = new maptalks.VectorLayer('id').addTo(map);
+        layer = new VectorLayer('id').addTo(map);
     });
 
     afterEach(function() {
@@ -29,7 +29,7 @@ describe('SymbolSpec', function() {
             expect(geometries[i].getSymbol()).not.to.be.ok();
         }
         for (i = 0; i < geometries.length; i++) {
-            if (!(geometries[i] instanceof maptalks.GeometryCollection)) {
+            if (!(geometries[i] instanceof GeometryCollection)) {
                 expect(geometries[i]._getInternalSymbol()).to.be.ok();
             } else {
                 expect(geometries[i]._getInternalSymbol()).not.to.be.ok();
@@ -43,7 +43,7 @@ describe('SymbolSpec', function() {
             "markerWidth":20,
             "markerHeight":30
         };
-        var marker = new maptalks.Marker(center);
+        var marker = new Marker(center);
         marker.setSymbol({
             "markerType" : "cross",
             "markerWidth":20,
@@ -56,8 +56,8 @@ describe('SymbolSpec', function() {
 
     it('updateSymbol directly', function () {
 
-        var marker = new maptalks.Marker(center);
-        var expected = maptalks.Util.extend({}, marker._getInternalSymbol());
+        var marker = new Marker(center);
+        var expected = extend({}, marker._getInternalSymbol());
         expected.markerType = 'ellipse';
         marker.updateSymbol({
              "markerType" : "ellipse",
@@ -67,7 +67,7 @@ describe('SymbolSpec', function() {
 
     it('marker file', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : "resources/x.svg",
                 "markerWidth":20,
@@ -83,7 +83,7 @@ describe('SymbolSpec', function() {
 
     it('marker path', function() {
         var expected = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 'markerType'    : 'path',
                 'markerPath'    : [
@@ -117,7 +117,7 @@ describe('SymbolSpec', function() {
                 "markerHeight": '30',
                 "markerOpacity" : '0.5'
             }
-            var symbolizer = new maptalks.symbolizer.VectorPathMarkerSymbolizer(symbol);
+            var symbolizer = new symbolizer.VectorPathMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
             expect(symbolizer.style.markerOpacity).to.be.eql(0.5);
@@ -134,7 +134,7 @@ describe('SymbolSpec', function() {
                 'markerDx'              : '1',
                 'markerDy'              : '2'
             }
-            var symbolizer = new maptalks.symbolizer.VectorMarkerSymbolizer(symbol);
+            var symbolizer = new symbolizer.VectorMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
             expect(symbolizer.style.markerFillOpacity).to.be.eql(0.5);
@@ -153,7 +153,7 @@ describe('SymbolSpec', function() {
                 "markerDx": '1',
                 "markerDy": '2',
             }
-            var symbolizer = new maptalks.symbolizer.ImageMarkerSymbolizer(symbol);
+            var symbolizer = new symbolizer.ImageMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
             expect(symbolizer.style.markerOpacity).to.be.eql(0.5);
@@ -172,8 +172,8 @@ describe('SymbolSpec', function() {
                 'textDx' : '1',
                 'textDy' : '2',
             };
-            var marker = new maptalks.Marker([0, 0], {symbol : symbol});
-            var symbolizer = new maptalks.symbolizer.TextMarkerSymbolizer(symbol, marker);
+            var marker = new Marker([0, 0], {symbol : symbol});
+            var symbolizer = new symbolizer.TextMarkerSymbolizer(symbol, marker);
             expect(symbolizer.style.textSize).to.be.eql(20);
             expect(symbolizer.style.textOpacity).to.be.eql(0.5);
             expect(symbolizer.style.textHaloRadius).to.be.eql(4);
@@ -186,7 +186,7 @@ describe('SymbolSpec', function() {
 
     it('line pattern file', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var line = new maptalks.Polygon([[100,0],[101,1],[105,10],[100,0]], {
+        var line = new Polygon([[100,0],[101,1],[105,10],[100,0]], {
             symbol:{
                 "linePatternFile" : "resources/x.svg"
             }
@@ -198,7 +198,7 @@ describe('SymbolSpec', function() {
 
     it('polygon pattern file', function() {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var polygon = new maptalks.Polygon([[100,0],[101,1],[105,10],[100,0]], {
+        var polygon = new Polygon([[100,0],[101,1],[105,10],[100,0]], {
             symbol:{
                 "polygonPatternFile" : "resources/x.svg"
             }
@@ -209,14 +209,14 @@ describe('SymbolSpec', function() {
     });
 
     it('with a non-exist svg icon', function(done) {
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : "resources/not-existed.svg",
                 "markerWidth":20,
                 "markerHeight":30
             }
         });
-        var vectorLayer = new maptalks.VectorLayer('v').addGeometry(marker);
+        var vectorLayer = new VectorLayer('v').addGeometry(marker);
         vectorLayer.once('layerload', function() {
             done();
         });
@@ -225,7 +225,7 @@ describe('SymbolSpec', function() {
 
     it('should be reloaded after zoomend', function(done) {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : "resources/x.svg",
                 "markerWidth":20,
@@ -247,7 +247,7 @@ describe('SymbolSpec', function() {
             expect(vectorLayer._getRenderer().resources.isResourceLoaded(res[0])).to.be.ok();
             done();
         });
-        var vectorLayer = new maptalks.VectorLayer('v').addGeometry(marker);
+        var vectorLayer = new VectorLayer('v').addGeometry(marker);
         vectorLayer.once('layerload', function() {
             map.zoomIn();
         });
@@ -260,7 +260,7 @@ describe('SymbolSpec', function() {
             'markerWidth' : 10,
             'markerHeight' : 10
         }
-        var markers = new maptalks.MultiPoint([[0, 0], [0, 1]]);
+        var markers = new MultiPoint([[0, 0], [0, 1]]);
         markers._setExternSymbol(symbol);
         var children = markers.getGeometries();
         for (var i = 0; i < children.length; i++) {
@@ -270,7 +270,7 @@ describe('SymbolSpec', function() {
 
     it('function type markerFile', function () {
         var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/';
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 "markerFile" : {
                     property:'count',
@@ -295,7 +295,7 @@ describe('SymbolSpec', function() {
     it('function type markerPath', function() {
         var expected0 = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
         var expected1 = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
-        var marker = new maptalks.Marker([100,0], {
+        var marker = new Marker([100,0], {
             symbol:{
                 'markerType'    : 'path',
                 'markerPath'    : {

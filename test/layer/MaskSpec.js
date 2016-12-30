@@ -5,7 +5,7 @@ describe('Spec of Masks', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var context = {
     };
 
@@ -18,7 +18,7 @@ describe('Spec of Masks', function() {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
+        map = new Map(container, option);
         context.map = map;
     });
 
@@ -36,7 +36,7 @@ describe('Spec of Masks', function() {
                 expect(layer).to.be.painted(0, 0, [0, 0, 0]);
                 done();
             });
-            layer.setMask(new maptalks.Marker(map.getCenter(), {
+            layer.setMask(new Marker(map.getCenter(), {
                 'symbol' : {
                     'markerType' : 'ellipse',
                     'markerWidth' : 20,
@@ -48,7 +48,7 @@ describe('Spec of Masks', function() {
                 }
             }));
         });
-        layer.setMask(new maptalks.Circle(map.getCenter(), 5, {
+        layer.setMask(new Circle(map.getCenter(), 5, {
             symbol : {
                 'polygonFill' : 'rgba(255, 255, 255, 0.1)'
             }
@@ -57,12 +57,12 @@ describe('Spec of Masks', function() {
     }
 
     //test tilelayer
-    runTests(new maptalks.TileLayer('tile', {
+    runTests(new TileLayer('tile', {
             urlTemplate:'/resources/tile.png'
         }), context);
 
     //test vectorlayer
-    var vlayer = new maptalks.VectorLayer('v').addGeometry(new maptalks.Circle(center, 2000, {
+    var vlayer = new VectorLayer('v').addGeometry(new Circle(center, 2000, {
         symbol : {
             'polygonFill' : 'rgba(0, 0, 0, 0.1)',
             'polygonOpacity' : 1
@@ -98,7 +98,7 @@ describe('Spec of Masks', function() {
                         });
                         layerToTest.removeMask();
                     });
-                    layerToTest.setMask(new maptalks.Marker(map.getCenter(), {
+                    layerToTest.setMask(new Marker(map.getCenter(), {
                         'symbol' : {
                             'markerType' : 'ellipse',
                             'markerWidth' : 10,

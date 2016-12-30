@@ -3,7 +3,7 @@ describe('PointSymbolSpec', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
@@ -12,7 +12,7 @@ describe('PointSymbolSpec', function() {
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.canvasContainer;
-        layer = new maptalks.VectorLayer('id').addTo(map);
+        layer = new VectorLayer('id').addTo(map);
     });
 
     afterEach(function() {
@@ -22,20 +22,20 @@ describe('PointSymbolSpec', function() {
 
     describe('dx dy', function() {
         it('without dx, dy', function() {
-            var marker = new maptalks.Marker(center, {
+            var marker = new Marker(center, {
                 symbol:{
                     "markerType" : "ellipse",
                     "markerWidth": 2,
                     "markerHeight": 2
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true}).addTo(map);
             v.addGeometry(marker);
             expect(v).to.be.painted();
         });
 
         it('with dx', function() {
-            var marker = new maptalks.Marker(center, {
+            var marker = new Marker(center, {
                 symbol:{
                     "markerType" : "ellipse",
                     "markerWidth": 2,
@@ -43,14 +43,14 @@ describe('PointSymbolSpec', function() {
                     "markerDx": 10
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true}).addTo(map);
             v.addGeometry(marker);
             expect(v).not.to.be.painted();
             expect(v).to.be.painted(10);
         });
 
         it('with dy', function() {
-            var marker = new maptalks.Marker(center, {
+            var marker = new Marker(center, {
                 symbol:{
                     "markerType" : "ellipse",
                     "markerWidth": 2,
@@ -58,14 +58,14 @@ describe('PointSymbolSpec', function() {
                     "markerDy": 10
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true}).addTo(map);
             v.addGeometry(marker);
             expect(v).not.to.be.painted();
             expect(v).to.be.painted(0, 10);
         });
 
         it('with dx, dy', function() {
-            var marker = new maptalks.Marker(center, {
+            var marker = new Marker(center, {
                 symbol:{
                     "markerType" : "ellipse",
                     "markerWidth": 2,
@@ -74,7 +74,7 @@ describe('PointSymbolSpec', function() {
                     "markerDy": 10
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true}).addTo(map);
             v.addGeometry(marker);
             expect(v).not.to.be.painted();
             expect(v).to.be.painted(10, 10);
@@ -88,7 +88,7 @@ describe('PointSymbolSpec', function() {
                 c2 = map.containerPointToCoordinate(p.add(10, -10)),
                 c3 = map.containerPointToCoordinate(p.add(10, 10)),
                 c4 = map.containerPointToCoordinate(p.add(-10, 10));
-            var circle = new maptalks.Polygon([c1, c2, c3, c4], {
+            var circle = new Polygon([c1, c2, c3, c4], {
                 'symbol' : {
                     'lineOpacity' : 0,
                     'markerType' : 'ellipse',
@@ -96,7 +96,7 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
             expect(v).to.be.painted();
         });
 
@@ -106,7 +106,7 @@ describe('PointSymbolSpec', function() {
                 c2 = map.containerPointToCoordinate(p.add(10, -10)),
                 c3 = map.containerPointToCoordinate(p.add(10, 10)),
                 c4 = map.containerPointToCoordinate(p.add(-10, 10));
-            var circle = new maptalks.Polygon([c1, c2, c3, c4], {
+            var circle = new Polygon([c1, c2, c3, c4], {
                 'symbol' : {
                     'lineOpacity' : 0,
                     'markerPlacement' : 'point',
@@ -115,7 +115,7 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
             expect(v).to.be.painted();
         });
 
@@ -123,7 +123,7 @@ describe('PointSymbolSpec', function() {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
-            var line = new maptalks.LineString([map.getCenter(), c2, c3], {
+            var line = new LineString([map.getCenter(), c2, c3], {
                 'symbol' : {
                     'lineOpacity' : 0,
                     'markerPlacement' : 'vertex',
@@ -132,7 +132,7 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
             expect(v).to.be.painted();
             expect(v).to.be.painted(10, 0);
             expect(v).to.be.painted(20, 0);
@@ -142,7 +142,7 @@ describe('PointSymbolSpec', function() {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
-            var line = new maptalks.LineString([map.getCenter(), c2, c3], {
+            var line = new LineString([map.getCenter(), c2, c3], {
                 'symbol' : {
                     'lineOpacity' : 0,
                     'markerPlacement' : 'vertex-first',
@@ -151,7 +151,7 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
             expect(v).to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).not.to.be.painted(20, 0);
@@ -161,7 +161,7 @@ describe('PointSymbolSpec', function() {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
-            var line = new maptalks.LineString([map.getCenter(), c2, c3], {
+            var line = new LineString([map.getCenter(), c2, c3], {
                 'symbol' : {
                     'lineOpacity' : 0,
                     'markerPlacement' : 'vertex-last',
@@ -170,7 +170,7 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
             expect(v).not.to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).to.be.painted(20, 0);
@@ -180,7 +180,7 @@ describe('PointSymbolSpec', function() {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
-            var line = new maptalks.LineString([map.getCenter(), c2, c3], {
+            var line = new LineString([map.getCenter(), c2, c3], {
                 'symbol' : {
                     'lineOpacity' : 0,
                     'markerPlacement' : 'line',
@@ -189,7 +189,7 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 2
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            var v = new VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
             expect(v).not.to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).not.to.be.painted(20, 0);

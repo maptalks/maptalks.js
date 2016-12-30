@@ -5,14 +5,14 @@ describe('#DistanceTool and AreaTool', function () {
     var container,eventContainer;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     function measure() {
         var center = map.getCenter();
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        var requestAnimFn = maptalks.Util.requestAnimFrame;
+        var requestAnimFn = requestAnimFrame;
 
         happen.click(eventContainer,{
                 'clientX':point.x,
@@ -53,7 +53,7 @@ describe('#DistanceTool and AreaTool', function () {
 
 
         it('can measure distance', function() {
-            var distanceTool = new maptalks.DistanceTool({
+            var distanceTool = new DistanceTool({
                 metric : true,
                 imperial:true
             }).addTo(map);
@@ -63,7 +63,7 @@ describe('#DistanceTool and AreaTool', function () {
         });
 
         it('can get measureLayers', function() {
-            var distanceTool = new maptalks.DistanceTool({
+            var distanceTool = new DistanceTool({
                 metric : true,
                 imperial:true
             }).addTo(map);
@@ -75,7 +75,7 @@ describe('#DistanceTool and AreaTool', function () {
         });
 
         it('can clear measure results', function() {
-            var distanceTool = new maptalks.DistanceTool({
+            var distanceTool = new DistanceTool({
                 metric : true,
                 imperial:true
             }).addTo(map);
@@ -88,7 +88,7 @@ describe('#DistanceTool and AreaTool', function () {
         });
 
         it('enable/disable', function() {
-            var tool = new maptalks.DistanceTool().addTo(map).disable();
+            var tool = new DistanceTool().addTo(map).disable();
             tool.disable();
             measure();
             var result = tool.getLastMeasure();
@@ -103,7 +103,7 @@ describe('#DistanceTool and AreaTool', function () {
     describe('test areaTool', function() {
 
         it('can measure area', function() {
-            var areaTool = new maptalks.AreaTool({
+            var areaTool = new AreaTool({
                 metric : true,
                 imperial:true
             });
@@ -114,7 +114,7 @@ describe('#DistanceTool and AreaTool', function () {
         });
 
         it('can get measureLayers', function() {
-            var areaTool = new maptalks.AreaTool({
+            var areaTool = new AreaTool({
                 metric : true,
                 imperial:true
             }).addTo(map);
@@ -126,7 +126,7 @@ describe('#DistanceTool and AreaTool', function () {
         });
 
         it('can clear measure results', function() {
-            var areaTool = new maptalks.AreaTool({
+            var areaTool = new AreaTool({
                 metric : true,
                 imperial:true
             }).addTo(map);
@@ -139,7 +139,7 @@ describe('#DistanceTool and AreaTool', function () {
         });
 
         it('enable/disable', function() {
-            var tool = new maptalks.AreaTool().addTo(map).disable();
+            var tool = new AreaTool().addTo(map).disable();
             measure();
             var result = tool.getLastMeasure();
             expect(result).to.be(0);

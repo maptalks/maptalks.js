@@ -5,18 +5,18 @@ describe('#MapDrag', function () {
     var container,mapPlatform;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     function dragMap() {
         var center = map.getCenter();
         var spy = sinon.spy();
         map.on('mousedown', spy);
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        var requestAnimFn = maptalks.Util.requestAnimFrame;
+        var requestAnimFn = requestAnimFrame;
         //replace original requestAnimFrame to immediate execution.
-            maptalks.Util.requestAnimFrame=function(fn) {
+            requestAnimFrame=function(fn) {
                 fn();
         };
         happen.mousedown(map._panels.front,{
@@ -31,7 +31,7 @@ describe('#MapDrag', function () {
                 });
         };
         happen.mouseup(document);
-        maptalks.Util.requestAnimFrame = requestAnimFn;
+        requestAnimFrame = requestAnimFn;
     }
 
     beforeEach(function() {

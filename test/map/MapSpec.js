@@ -10,7 +10,7 @@ describe('#Map', function () {
     var eventContainer;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -22,8 +22,8 @@ describe('#Map', function () {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3],
             visible : false
@@ -52,7 +52,7 @@ describe('#Map', function () {
                 size = map.getSize();
 
             expect(extent).to.not.be(null);
-            expect(extent).to.be.an(maptalks.Extent);
+            expect(extent).to.be.an(Extent);
 
             var min = projection.project(extent.getMin()),
                 max = projection.project(extent.getMax());
@@ -65,7 +65,7 @@ describe('#Map', function () {
                 size = map.getSize();
 
             expect(extent).to.not.be(null);
-            expect(extent).to.be.an(maptalks.PointExtent);
+            expect(extent).to.be.an(PointExtent);
             expect(extent.getWidth()).to.be.eql(size.width);
             expect(extent.getHeight()).to.be.eql(size.height);
         });
@@ -90,13 +90,13 @@ describe('#Map', function () {
         it('coordinateToContainerPoint', function () {
             var point = map.coordinateToContainerPoint({x: 1, y: 1});
 
-            expect(point).to.be.a(maptalks.Point);
+            expect(point).to.be.a(Point);
         });
 
         it('containerPointToCoordinate', function () {
-            var coord = map.containerPointToCoordinate(new maptalks.Point(0, 0));
+            var coord = map.containerPointToCoordinate(new Point(0, 0));
 
-            expect(coord).to.be.a(maptalks.Coordinate);
+            expect(coord).to.be.a(Coordinate);
         });
     });
 
@@ -122,7 +122,7 @@ describe('#Map', function () {
 
     describe('#setCenter', function() {
         it('setCenterAndZoom', function() {
-            var nc = new maptalks.Coordinate(119, 32);
+            var nc = new Coordinate(119, 32);
             var z = map.getZoom();
             map.setCenterAndZoom(nc);
 
@@ -131,7 +131,7 @@ describe('#Map', function () {
         });
 
         it('setCenterAndZoom2', function() {
-            var nc = new maptalks.Coordinate(119, 32);
+            var nc = new Coordinate(119, 32);
             var nz = map.getZoom() + 1;
             map.setCenterAndZoom(nc, nz);
 
@@ -140,7 +140,7 @@ describe('#Map', function () {
         });
 
         it('setCenter后, getCenter返回结果与指定center近似相等(Load之前)', function() {
-            var nc = new maptalks.Coordinate(119, 32);
+            var nc = new Coordinate(119, 32);
             map.setCenter(nc);
 
             expect(map.getCenter()).to.closeTo(nc);
@@ -149,7 +149,7 @@ describe('#Map', function () {
         it('setCenter后, getCenter返回结果与指定center相等(Load之后)', function() {
             map.setBaseLayer(tile);
 
-            var nc = new maptalks.Coordinate(122, 32);
+            var nc = new Coordinate(122, 32);
             map.setCenter(nc);
 
             expect(map.getCenter()).to.closeTo(nc);
@@ -180,7 +180,7 @@ describe('#Map', function () {
 
             var spy = sinon.spy();
             map.on('movestart', spy);
-            var nc = new maptalks.Coordinate(119, 32);
+            var nc = new Coordinate(119, 32);
             map.setCenter(nc);
 
             expect(spy.called).to.be.ok();
@@ -191,7 +191,7 @@ describe('#Map', function () {
 
             var spy = sinon.spy();
             map.on('moveend', spy);
-            var nc = new maptalks.Coordinate(119, 32);
+            var nc = new Coordinate(119, 32);
             map.setCenter(nc);
 
             expect(spy.called).to.be.ok();
@@ -289,7 +289,7 @@ describe('#Map', function () {
         });
 
         it('fit to extent', function (done) {
-            var extent = new maptalks.Marker(map.getCenter()).getExtent();
+            var extent = new Marker(map.getCenter()).getExtent();
             var maxZoom = map.getMaxZoom();
             map.once('zoomend', function () {
                 expect(maxZoom).to.be.eql(map.getZoom());
@@ -302,7 +302,7 @@ describe('#Map', function () {
     describe('#addLayer', function() {
         it('图层加入地图时触发add事件', function() {
             var spy = sinon.spy();
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             layer.on('add', spy);
             map.addLayer(layer);
             expect(spy.called).to.be.ok();
@@ -316,7 +316,7 @@ describe('#Map', function () {
         it('图层加入已载入地图时立即触发loaded事件', function(done) {
             map.setBaseLayer(tile);
 
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             layer.on('layerload', function() {
                 done();
             });
@@ -324,7 +324,7 @@ describe('#Map', function () {
         });
 
         it('当地图载入完成时, 如果加入的图层已被删除, 不触发loaded事件', function(done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             layer.on('remove', function() {
                 done();
             });
@@ -334,7 +334,7 @@ describe('#Map', function () {
         });
 
         it('当地图载入完成时触发已加入图层的loaded事件', function(done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             layer.on('layerload', function() {
                 done();
             });
@@ -345,7 +345,7 @@ describe('#Map', function () {
 
     describe('#removeLayer', function() {
         it('删除图层后getLayer返回null(地图未载入)', function() {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             map.addLayer(layer);
             map.removeLayer(layer);
 
@@ -355,7 +355,7 @@ describe('#Map', function () {
         it('删除图层后getLayer返回null(地图已载入)', function() {
             map.setBaseLayer(tile);
 
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             map.addLayer(layer);
             map.removeLayer([layer]);
 
@@ -364,7 +364,7 @@ describe('#Map', function () {
 
         it('删除图层时触发图层的removed事件', function() {
             // var spy = sinon.spy();
-            // var layer = new maptalks.VectorLayer('id');
+            // var layer = new VectorLayer('id');
             // layer.on('removed', spy);
             // map.addLayer(layer);
             // map.removeLayer(layer);
@@ -466,7 +466,7 @@ describe('#Map', function () {
         });
 
         it('use vectorlayer as base tile', function(done) {
-            var layer = new maptalks.VectorLayer('vector').addGeometry(new maptalks.Circle(map.getCenter(), 1000, {
+            var layer = new VectorLayer('vector').addGeometry(new Circle(map.getCenter(), 1000, {
                 symbol : {
                     polygonFill : '#000',
                     polygonOpacity : 0.5
@@ -519,8 +519,8 @@ describe('#Map', function () {
     describe('Map.Topo', function() {
 
         it('computeLength', function() {
-            var lonlat1 = new maptalks.Coordinate([0, 0]);
-            var lonlat2 = new maptalks.Coordinate([1, 1]);
+            var lonlat1 = new Coordinate([0, 0]);
+            var lonlat2 = new Coordinate([1, 1]);
             var distance = map.computeLength(lonlat1, lonlat2);
 
             expect(distance).to.be.above(0);
@@ -547,7 +547,7 @@ describe('#Map', function () {
         });
 
         it('identify', function(done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             var geometries = genAllTypeGeometries();
             //var point = map.coordinateToContainerPoint(center);
             layer.addGeometry(geometries, true);
@@ -563,7 +563,7 @@ describe('#Map', function () {
         });
 
         it('identify on invisible layers', function(done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new VectorLayer('id');
             var geometries = genAllTypeGeometries();
             //var point = map.coordinateToContainerPoint(center);
             layer.addGeometry(geometries, true);
@@ -585,7 +585,7 @@ describe('#Map', function () {
         var expected = 'data:image/png;base64';
         var data = map.toDataURL();
         expect(data.substring(0, expected.length)).to.be.eql(expected);
-        var layer = new maptalks.VectorLayer('id');
+        var layer = new VectorLayer('id');
         var geometries = genAllTypeGeometries();
         layer.addGeometry(geometries, true);
         map.addLayer(layer);
@@ -596,10 +596,10 @@ describe('#Map', function () {
 
     it('remove', function (done) {
         map.setBaseLayer(tile);
-        var layer = new maptalks.VectorLayer('id');
+        var layer = new VectorLayer('id');
         var geometries = genAllTypeGeometries();
         layer.addGeometry(geometries, true);
-        var tilelayer = new maptalks.TileLayer('t2', {
+        var tilelayer = new TileLayer('t2', {
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3],
             visible : false

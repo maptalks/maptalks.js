@@ -9,7 +9,7 @@ describe('#Projection', function () {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function() {
         container = document.createElement('div');
@@ -21,8 +21,8 @@ describe('#Projection', function () {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
@@ -51,7 +51,7 @@ describe('#Projection', function () {
         });
 
         it('change center before changing view', function() {
-            var newCenter = new maptalks.Coordinate(100,0);
+            var newCenter = new Coordinate(100,0);
             map.setCenter(newCenter);
             map.setView({
                 projection:'EPSG:4326'
@@ -76,13 +76,13 @@ describe('#Projection', function () {
             expect(map.getProjection().code).to.be.eql('IDENTITY');
             expect(map.getCenter()).to.closeTo(center);
             expect(map.computeLength([0,10],[0,20])).to.be.eql(10);
-            var circle = new maptalks.Circle([10,10],1);
+            var circle = new Circle([10,10],1);
             expect(map.computeGeometryArea(circle)).to.be.eql(Math.PI);
-            var polygon = new maptalks.Polygon([
+            var polygon = new Polygon([
                     [0,0],[0,10],[10,10],[10,0]
                 ]);
             expect(map.computeGeometryArea(polygon)).to.be.eql(100);
-            expect(map.locate([0,0],10,10)).to.be.eql(new maptalks.Coordinate(10,10));
+            expect(map.locate([0,0],10,10)).to.be.eql(new Coordinate(10,10));
         });
     });
 

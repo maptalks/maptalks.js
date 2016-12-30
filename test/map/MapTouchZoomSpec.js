@@ -3,16 +3,16 @@ describe('MapTouchZoomSpec', function () {
     var container,eventContainer;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var centerPoint;
 
     beforeEach(function() {
-        var setups = commonSetupMap(center, new maptalks.VectorLayer('id'));
+        var setups = commonSetupMap(center, new VectorLayer('id'));
             container = setups.container;
             map = setups.map;
             delay = map.options['zoomAnimationDuration'];
             eventContainer = map._panels.canvasContainer;;
-            var domPosition = maptalks.DomUtil.getPagePosition(container);
+            var domPosition = getPagePosition(container);
             centerPoint = map.coordinateToContainerPoint(center).add(domPosition);
     });
 

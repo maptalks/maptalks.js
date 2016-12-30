@@ -2,7 +2,7 @@ describe('#ContextMenu', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var layer;
     var context = {
 
@@ -28,8 +28,8 @@ describe('#ContextMenu', function() {
 
     it('hide when geometry is hided', function() {
         map.removeLayer('vector');
-        var layer = new maptalks.VectorLayer('vector');
-        var target = new maptalks.Marker(map.getCenter());
+        var layer = new VectorLayer('vector');
+        var target = new Marker(map.getCenter());
         layer.addGeometry(target).addTo(map);
         var items = [
                 {item: 'item1', click: function(){}},
@@ -51,8 +51,8 @@ describe('#ContextMenu', function() {
 
     it('move when geometry is moved', function() {
         map.removeLayer('vector');
-        var layer = new maptalks.VectorLayer('vector');
-        var target = new maptalks.Marker(map.getCenter());
+        var layer = new VectorLayer('vector');
+        var target = new Marker(map.getCenter());
         layer.addGeometry(target).addTo(map);
         var items = [
                 {item: 'item1', click: function(){}},
@@ -78,8 +78,8 @@ describe('#ContextMenu', function() {
 
     it('hide when layer is hided', function() {
         map.removeLayer('vector');
-        var layer = new maptalks.VectorLayer('vector');
-        var target = new maptalks.Marker(map.getCenter());
+        var layer = new VectorLayer('vector');
+        var target = new Marker(map.getCenter());
         layer.addGeometry(target).addTo(map);
         var items = [
                 {item: 'item1', click: function(){}},
@@ -102,20 +102,20 @@ describe('#ContextMenu', function() {
 
 function runTests(target, _context) {
         var type;
-        if (target instanceof maptalks.Geometry) {
+        if (target instanceof Geometry) {
             type = target.getType();
         } else {
             type = 'Map';
         }
 
         function prepareGeometry() {
-            if (!(target instanceof maptalks.Geometry)) {
+            if (!(target instanceof Geometry)) {
                 return;
             }
             var map = _context.map;
             if (target.getLayer()) {target.remove();}
             map.removeLayer('vector');
-            var layer = new maptalks.VectorLayer('vector');
+            var layer = new VectorLayer('vector');
             layer.addGeometry(target).addTo(map);
         }
 
@@ -135,7 +135,7 @@ function runTests(target, _context) {
         function rightclick() {
             _context.map.setCenter(target.getFirstCoordinate());
             var eventContainer = _context.map._panels.canvasContainer;
-            var domPosition = maptalks.DomUtil.getPagePosition(eventContainer);
+            var domPosition = getPagePosition(eventContainer);
             var point = _context.map.coordinateToContainerPoint(target.getFirstCoordinate()).add(domPosition);
 
             happen.click(eventContainer,{
@@ -171,10 +171,10 @@ function runTests(target, _context) {
                     });
                 target.openMenu();
                 expect(target._menu.getDOM().style.display).to.be.eql('');
-                expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
+                expect(target._menu.getDOM().style[TRANSFORM]).to.be.eql('scale(0)');
                 setTimeout(function () {
                     assertItems();
-                    expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
+                    expect(target._menu.getDOM().style[TRANSFORM]).to.be.eql('scale(1)');
                     target.closeMenu();
                     expect(target._menu.getDOM().style.display).to.be.eql('');
                     setTimeout(function () {
@@ -289,7 +289,7 @@ function runTests(target, _context) {
             });
 
             it('openMenu by click', function() {
-                if (target instanceof maptalks.Sector) {
+                if (target instanceof Sector) {
                     return;
                 }
                 prepareGeometry();
@@ -305,7 +305,7 @@ function runTests(target, _context) {
             });
 
             it('openMenu by click when target is being edited', function(done) {
-                // if (target instanceof maptalks.Sector) {
+                // if (target instanceof Sector) {
                 //     return;
                 // }
                 // prepareGeometry();

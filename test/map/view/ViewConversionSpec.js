@@ -13,7 +13,7 @@ describe('#View.Conversion', function () {
         container.style.width = '100px';
         container.style.height = '100px';
         document.body.appendChild(container);
-        return  new maptalks.Map(container, {
+        return  new Map(container, {
             'view' : {
                 'resolutions' : [1, 2, 4],
                 'projection' : 'EPSG:4326',
@@ -33,10 +33,10 @@ describe('#View.Conversion', function () {
             'right': -180
         });
         //2d point system is always same as
-        var p1 = map.coordinateToPoint(new maptalks.Coordinate([180, -90]));
-        var p2 = map.coordinateToPoint(new maptalks.Coordinate([-180, 90]));
-        var c1 = map.coordinateToContainerPoint(new maptalks.Coordinate([180, -90]));
-        var c2 = map.coordinateToContainerPoint(new maptalks.Coordinate([-180, 90]));
+        var p1 = map.coordinateToPoint(new Coordinate([180, -90]));
+        var p2 = map.coordinateToPoint(new Coordinate([-180, 90]));
+        var c1 = map.coordinateToContainerPoint(new Coordinate([180, -90]));
+        var c2 = map.coordinateToContainerPoint(new Coordinate([-180, 90]));
         expect(p1.x < p2.x && p1.y < p2.y).to.be.ok();
         expect(c1.x < c2.x && c1.y < c2.y).to.be.ok();
     });
@@ -50,10 +50,10 @@ describe('#View.Conversion', function () {
             'right': 180
         });
         //2d point system is always same as
-        var p1 = map.coordinateToPoint(new maptalks.Coordinate([-180, 90]));
-        var p2 = map.coordinateToPoint(new maptalks.Coordinate([180, -90]));
-        var c1 = map.coordinateToContainerPoint(new maptalks.Coordinate([-180, 90]));
-        var c2 = map.coordinateToContainerPoint(new maptalks.Coordinate([180, -90]));
+        var p1 = map.coordinateToPoint(new Coordinate([-180, 90]));
+        var p2 = map.coordinateToPoint(new Coordinate([180, -90]));
+        var c1 = map.coordinateToContainerPoint(new Coordinate([-180, 90]));
+        var c2 = map.coordinateToContainerPoint(new Coordinate([180, -90]));
         expect(p1.x < p2.x && p1.y < p2.y).to.be.ok();
         expect(c1.x < c2.x && c1.y < c2.y).to.be.ok();
     });

@@ -2,7 +2,7 @@ describe('#Sprite', function() {
 
     it('image sprite', function(done) {
         var url = 'http://localhost:12345/resources/pattern.png';
-        var marker = new maptalks.Marker([0, 0], {
+        var marker = new Marker([0, 0], {
             symbol : {
                 'markerFile' : url,
                 'markerWidth' : 80,
@@ -14,7 +14,7 @@ describe('#Sprite', function() {
         var symbol = marker.getSymbol();
         var image = new Image();
         image.onload = function () {
-            var resources = new maptalks.renderer.Canvas.Resources();
+            var resources = new renderer.Canvas.Resources();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
@@ -31,7 +31,7 @@ describe('#Sprite', function() {
 
     it('image sprite without markerWidth and markerHeight', function(done) {
         var url = 'http://localhost:12345/resources/pattern.png';
-        var marker = new maptalks.Marker([0, 0], {
+        var marker = new Marker([0, 0], {
             symbol : {
                 'markerFile' : url,
                 'markerDx' : 10,
@@ -41,7 +41,7 @@ describe('#Sprite', function() {
         var symbol = marker.getSymbol();
         var image = new Image();
         image.onload = function () {
-            var resources = new maptalks.renderer.Canvas.Resources();
+            var resources = new renderer.Canvas.Resources();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
@@ -58,7 +58,7 @@ describe('#Sprite', function() {
 
     it('composite symbol sprite', function(done) {
         var url = 'http://localhost:12345/resources/pattern.png';
-        var marker = new maptalks.Marker([0, 0], {
+        var marker = new Marker([0, 0], {
             symbol : [
                 {
                     'markerFile' : url,
@@ -78,7 +78,7 @@ describe('#Sprite', function() {
         var symbol = marker.getSymbol();
         var image = new Image();
         image.onload = function () {
-            var resources = new maptalks.renderer.Canvas.Resources();
+            var resources = new renderer.Canvas.Resources();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
@@ -94,7 +94,7 @@ describe('#Sprite', function() {
     });
 
     it('vector marker sprite: ellipse', function() {
-        var marker = new maptalks.Marker([0, 0], {
+        var marker = new Marker([0, 0], {
             symbol : {
                 'markerType' : 'ellipse',
                 'markerWidth' : 80,
@@ -115,7 +115,7 @@ describe('#Sprite', function() {
     });
 
     it('vector marker sprite: bar', function() {
-        var marker = new maptalks.Marker([0, 0], {
+        var marker = new Marker([0, 0], {
             symbol : {
                 'markerType' : 'bar',
                 'markerWidth' : 80,
@@ -136,7 +136,7 @@ describe('#Sprite', function() {
     });
 
     it('vector path marker sprite', function(done) {
-        var marker = new maptalks.Marker([0, 0], {
+        var marker = new Marker([0, 0], {
             symbol : {
                 'markerType' : 'path',
                 'markerPath' : [
@@ -155,9 +155,9 @@ describe('#Sprite', function() {
         });
         var symbol = marker.getSymbol();
 
-        if (maptalks.Browser.phantomjs) {
+        if (Browser.phantomjs) {
             // unlike chrome, in phantomjs, the image with svg base64 can't be loaded immediately.
-            var url = maptalks.Geometry.getMarkerPathBase64(symbol);
+            var url = Geometry.getMarkerPathBase64(symbol);
             var img = new Image();
             img.onload = function () {
                 var sprite = marker._getSprite();
@@ -184,7 +184,7 @@ describe('#Sprite', function() {
     });
 
     it('text marker sprite', function() {
-        var marker = new maptalks.Marker([0, 0], {
+        var marker = new Marker([0, 0], {
             symbol : {
                 'textName' : '■■■■■■■■■',
                 'textSize' : 20,

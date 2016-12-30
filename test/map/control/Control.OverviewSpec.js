@@ -1,9 +1,9 @@
 describe("Control.Overview", function() {
-    maptalks.control.Overview.prototype.loadDelay = 1;
+    control.Overview.prototype.loadDelay = 1;
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -15,8 +15,8 @@ describe("Control.Overview", function() {
             center: center,
             overviewControl : true
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
@@ -34,7 +34,7 @@ describe("Control.Overview", function() {
 
     it("create", function(done) {
         map.on('baselayerload', function () {
-            var overview = new maptalks.control.Overview().addTo(map);
+            var overview = new control.Overview().addTo(map);
             done();
         })
         map.setBaseLayer(tile);

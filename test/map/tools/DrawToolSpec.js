@@ -5,14 +5,14 @@ describe('#DrawTool', function () {
     var container,eventContainer;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     function drawLine() {
         var center = map.getCenter();
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        var requestAnimFn = maptalks.Util.requestAnimFrame;
+        var requestAnimFn = requestAnimFrame;
 
         happen.click(eventContainer,{
                 'clientX':point.x,
@@ -41,7 +41,7 @@ describe('#DrawTool', function () {
     function dragDraw() {
         var center = map.getCenter();
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.mousedown(eventContainer,{
                 'clientX':point.x,
@@ -61,7 +61,7 @@ describe('#DrawTool', function () {
     function drawPoint() {
         var center = map.getCenter();
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.click(eventContainer,{
                 'clientX':point.x,
@@ -82,14 +82,14 @@ describe('#DrawTool', function () {
     describe('draw geometries', function() {
         it('throw exception with an undefined mode', function() {
             expect(function() {
-                var drawTool = new maptalks.DrawTool({
+                var drawTool = new DrawTool({
                 });
             }).to.throwException();
         });
 
         it('throw exception with an invalid mode', function() {
             expect(function() {
-                var drawTool = new maptalks.DrawTool({
+                var drawTool = new DrawTool({
                     mode : 'invalidMode'
                 });
             }).to.throwException();
@@ -97,11 +97,11 @@ describe('#DrawTool', function () {
 
         it('can draw a marker', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Marker).to.be.ok();
+                expect(param.geometry instanceof Marker).to.be.ok();
                 expect(param.geometry.getCoordinates()).to.be.closeTo(map.getCenter());
                 done();
             }
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode : 'Point',
                 symbol : {
                     "markerPlacement":"point",
@@ -121,11 +121,11 @@ describe('#DrawTool', function () {
 
         it('can draw linestring', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.LineString).to.be.ok();
+                expect(param.geometry instanceof LineString).to.be.ok();
                 expect(param.geometry.getLength()).to.above(0);
                 done();
             }
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode : 'LineString'
             });
             drawTool.addTo(map);
@@ -135,11 +135,11 @@ describe('#DrawTool', function () {
 
         it('can draw Polygon', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Polygon).to.be.ok();
+                expect(param.geometry instanceof Polygon).to.be.ok();
                 expect(param.geometry.getArea()).to.above(0);
                 done();
             }
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode : 'Polygon'
             });
             drawTool.addTo(map);
@@ -149,11 +149,11 @@ describe('#DrawTool', function () {
 
         it('can draw circle', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Circle).to.be.ok();
+                expect(param.geometry instanceof Circle).to.be.ok();
                 expect(param.geometry.getRadius()).to.above(0);
                 done();
             }
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode : 'Circle'
             });
             drawTool.addTo(map);
@@ -167,7 +167,7 @@ describe('#DrawTool', function () {
                 first = param.coordinate;
             }
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Rectangle).to.be.ok();
+                expect(param.geometry instanceof Rectangle).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
                 var nw = param.geometry.getCoordinates();
@@ -175,7 +175,7 @@ describe('#DrawTool', function () {
                 expect(nw.y > first.y).to.be.ok();
                 done();
             }
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode : 'Rectangle'
             });
             drawTool.addTo(map);
@@ -187,12 +187,12 @@ describe('#DrawTool', function () {
 
         it('can draw Ellipse', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
+                expect(param.geometry instanceof Ellipse).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
                 done();
             }
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode : 'Ellipse'
             });
             drawTool.addTo(map);
@@ -203,7 +203,7 @@ describe('#DrawTool', function () {
 
     describe('common methods', function () {
         it('enable/disable', function() {
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode: 'LineString',
                 symbol: {
                     strokeSymbol: {
@@ -223,12 +223,12 @@ describe('#DrawTool', function () {
 
         it('setMode', function (done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
+                expect(param.geometry instanceof Ellipse).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
                 done();
             }
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode : 'Rectangle'
             });
             drawTool.addTo(map);
@@ -238,7 +238,7 @@ describe('#DrawTool', function () {
         });
 
         it('setMode after disable', function () {
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode : 'Rectangle'
             });
             drawTool.addTo(map);
@@ -251,12 +251,12 @@ describe('#DrawTool', function () {
 
         it('setSymbol', function(done) {
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
+                expect(param.geometry instanceof Ellipse).to.be.ok();
                 expect(param.geometry.getWidth()).to.above(0);
                 expect(param.geometry.getHeight()).to.above(0);
                 done();
             }
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode: 'Ellipse'
             });
             drawTool.addTo(map);
@@ -270,7 +270,7 @@ describe('#DrawTool', function () {
         });
 
         it('getSymbol', function() {
-            var drawTool = new maptalks.DrawTool({
+            var drawTool = new DrawTool({
                 mode: 'LineString'
             });
             drawTool.addTo(map);

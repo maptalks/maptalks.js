@@ -3,7 +3,7 @@ describe("Control Common Tests", function() {
     var container;
     var map;
     var tile,control;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -14,13 +14,13 @@ describe("Control Common Tests", function() {
             zoom: 17,
             center: center
         };
-        map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
+        map = new Map(container, option);
+        tile = new TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
         });
-        control = new maptalks.control.Scale({
+        control = new control.Scale({
             metric: true,
             imperial: true
         });
@@ -32,11 +32,11 @@ describe("Control Common Tests", function() {
     });
 
     function buildOn() {
-        return maptalks.DomUtil.createEl('div');
+        return createEl('div');
     }
 
     it('addTo', function() {
-        var control = new maptalks.control.Control({
+        var control = new control.Control({
             id: 'id1',
             position: {top: 10, left: 10}
         });
@@ -48,7 +48,7 @@ describe("Control Common Tests", function() {
     });
 
     it('setPosition', function() {
-        var control = new maptalks.control.Control({
+        var control = new control.Control({
             id: 'id1',
             position: {top: 10, left: 10}
         });
@@ -64,7 +64,7 @@ describe("Control Common Tests", function() {
     });
 
     it("has common methods", function() {
-        expect(control.getContainerPoint() instanceof maptalks.Point).to.be.ok();
+        expect(control.getContainerPoint() instanceof Point).to.be.ok();
         control.hide();
         expect(control.getContainer().style.display==='none').to.be.ok();
         control.show();

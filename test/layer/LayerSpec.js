@@ -3,7 +3,7 @@ describe('#Layer', function() {
     var container;
     var map;
     var tile;
-    var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var center = new Coordinate(118.846825, 32.046534);
     var context = {
         map:map
     };
@@ -21,19 +21,19 @@ describe('#Layer', function() {
 
     describe('id methods', function() {
         it('id will be converted to string', function() {
-            var layer1 = new maptalks.TileLayer(1);
+            var layer1 = new TileLayer(1);
             expect(layer1.getId()).to.be.eql('1');
         });
 
         it('id can be null or undefined', function() {
-            var layer1 = new maptalks.TileLayer(null);
+            var layer1 = new TileLayer(null);
             expect(layer1.getId() === null).to.be.ok();
             layer1.setId(undefined);
             expect(layer1.getId() === undefined).to.be.ok();
         });
 
         it('null id can\'t be added to map', function () {
-            var layer1 = new maptalks.TileLayer(null);
+            var layer1 = new TileLayer(null);
             try {
                 map.addLayer(layer1);
                 expect(false).to.be.ok();
@@ -47,9 +47,9 @@ describe('#Layer', function() {
     describe('change order of layers', function() {
 
         it('bring a layer to front', function() {
-            var layer1 = new maptalks.TileLayer('1');
-            var layer2 = new maptalks.VectorLayer('2');
-            var layer3 = new maptalks.VectorLayer('3');
+            var layer1 = new TileLayer('1');
+            var layer2 = new VectorLayer('2');
+            var layer3 = new VectorLayer('3');
 
             map.addLayer([layer1, layer2, layer3]);
 
@@ -66,9 +66,9 @@ describe('#Layer', function() {
         });
 
         it('bring a layer to back', function() {
-            var layer1 = new maptalks.TileLayer('1');
-            var layer2 = new maptalks.VectorLayer('2');
-            var layer3 = new maptalks.VectorLayer('3');
+            var layer1 = new TileLayer('1');
+            var layer2 = new VectorLayer('2');
+            var layer3 = new VectorLayer('3');
 
             map.addLayer([layer1, layer2, layer3]);
 
@@ -85,9 +85,9 @@ describe('#Layer', function() {
         });
 
         it('sort layers by map',function() {
-            var layer1 = new maptalks.TileLayer('1');
-            var layer2 = new maptalks.VectorLayer('2');
-            var layer3 = new maptalks.VectorLayer('3');
+            var layer1 = new TileLayer('1');
+            var layer2 = new VectorLayer('2');
+            var layer3 = new VectorLayer('3');
 
             map.addLayer([layer1, layer2, layer3]);
 
@@ -100,7 +100,7 @@ describe('#Layer', function() {
         var mask, mask2;
 
         beforeEach(function() {
-           mask = new maptalks.Marker(map.getCenter(), {
+           mask = new Marker(map.getCenter(), {
                 symbol:{
                     markerType:'ellipse',
                     markerWidth:400,
@@ -108,11 +108,11 @@ describe('#Layer', function() {
                 }
             });
 
-            mask2 = new maptalks.Circle(map.getCenter(), 1000);
+            mask2 = new Circle(map.getCenter(), 1000);
         });
 
         it('to a tile layer',function() {
-            var tilelayer = new maptalks.TileLayer("tile with mask",{
+            var tilelayer = new TileLayer("tile with mask",{
                 urlTemplate:'http://www.aacaward.com/jiema/html/data/aac/{z}/{x}/{y}.png',
                 subdomains:[1,2,3,4]
             });
@@ -129,7 +129,7 @@ describe('#Layer', function() {
         });
 
         it('to a VectorLayer',function() {
-            var vectorlayer = new maptalks.VectorLayer("vector with mask");
+            var vectorlayer = new VectorLayer("vector with mask");
             map.addLayer(vectorlayer);
             vectorlayer.addGeometry(genAllTypeGeometries());
             vectorlayer.setMask(mask);

@@ -23,7 +23,7 @@ describe('#GeometryAnimation', function () {
             }
             for (var i = 0; i < geometries.length; i++) {
                 var player = geometries[i].animate({
-                    translate:new maptalks.Coordinate(0.01,0.01)
+                    translate:new Coordinate(0.01,0.01)
                 }, {speed : 500}, cmp);
             };
 
@@ -31,7 +31,7 @@ describe('#GeometryAnimation', function () {
         });
 
         it('animate a normal symbol', function(done) {
-            var marker = new maptalks.Marker([100,0], {
+            var marker = new Marker([100,0], {
                 symbol:{
                     'markerType' : 'ellipse',
                     'markerWidth' : 10,
@@ -62,7 +62,7 @@ describe('#GeometryAnimation', function () {
         });
 
         it('animate a composite symbol', function(done) {
-            var marker = new maptalks.Marker([100,0], {
+            var marker = new Marker([100,0], {
                 symbol:[
                     {
                         'markerType' : 'ellipse',
@@ -103,7 +103,7 @@ describe('#GeometryAnimation', function () {
         });
 
         it('cannot animate a composite symbol when its wwn is not', function() {
-            var marker = new maptalks.Marker([100,0], {
+            var marker = new Marker([100,0], {
                 symbol:{
                     'markerType' : 'ellipse',
                     'markerWidth' : 10,
@@ -126,7 +126,7 @@ describe('#GeometryAnimation', function () {
             }).to.throwException();
 
 
-            var marker = new maptalks.Marker([100,0], {
+            var marker = new Marker([100,0], {
                 symbol:[
                     {
                         'markerType' : 'ellipse',
@@ -155,7 +155,7 @@ describe('#GeometryAnimation', function () {
         });
 
         it('animate radius', function(done) {
-            var circle = new maptalks.Circle([100,0], 100);
+            var circle = new Circle([100,0], 100);
             function step(frame) {
                 if (frame.state.playState !== 'finished') {
                     return;
@@ -173,7 +173,7 @@ describe('#GeometryAnimation', function () {
         var container;
         var map;
         var tile;
-        var center = new maptalks.Coordinate(118.846825, 32.046534);
+        var center = new Coordinate(118.846825, 32.046534);
         var layer;
         var context = {
             map:map,
@@ -185,7 +185,7 @@ describe('#GeometryAnimation', function () {
             var setups = commonSetupMap(center);
             container = setups.container;
             map = setups.map;
-            layer = new maptalks.VectorLayer('vector');
+            layer = new VectorLayer('vector');
             map.addLayer(layer);
             context.map = map;
             context.layer = layer;
@@ -199,12 +199,12 @@ describe('#GeometryAnimation', function () {
 
 
         it('animate a marker and focus', function(done) {
-            var marker = new maptalks.Marker(center);
+            var marker = new Marker(center);
             function step(frame) {
                 if (frame.state.playState !== 'finished') {
                     return;
                 }
-                var expected = center.add(new maptalks.Coordinate(0.1, 0.1));
+                var expected = center.add(new Coordinate(0.1, 0.1));
                 expect(marker.getCenter()).to.closeTo(expected);
                 expect(map.getCenter()).to.closeTo(expected);
                 done();
@@ -218,7 +218,7 @@ describe('#GeometryAnimation', function () {
         });
 
         it('fire events during animation', function(done) {
-            var marker = new maptalks.Marker(center);
+            var marker = new Marker(center);
             marker.addTo(layer);
             var counter = 0;
             marker.on('animatestart', function() {
