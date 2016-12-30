@@ -34,6 +34,7 @@
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.0.0",
     "gulp-cssnano": "^2.1.0",
+    "gulp-eslint": "^3.0.1",
     "gulp-gzip": "^1.2.0",
     "gulp-rename": "~1.2.2",
     "gulp-uglify": "^1.5.3",

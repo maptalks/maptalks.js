@@ -10,6 +10,7 @@ var minimist = require('minimist'),
     localResolve = require('rollup-plugin-local-resolve'),
     babel = require('rollup-plugin-babel'),
     alias = require('rollup-plugin-alias'),
+    eslint = require('gulp-eslint'),
     concat = require('gulp-concat'),
     cssnano = require('gulp-cssnano'),
     connect = require('gulp-connect'),
@@ -51,8 +52,16 @@ browsers = browsers.map(function (name) {
 
 var stylesPattern = './assets/css/**/*.css';
 
+gulp.task('lint', () => {
+    // return gulp.src(['src/**/*.js', 'test/**/*.js', '!node_modules/**'])
+    return gulp.src(['src/**/*.js', '!node_modules/**'])
+        .pipe(eslint())
+        .pipe(eslint.format())
+        .pipe(eslint.failAfterError());
+});
+
 // TODO: minify
-gulp.task('scripts', function () {
+gulp.task('scripts', ['lint'], function () {
     return rollup({
         entry: 'src/maptalks.js',
         plugins: [
@@ -104,7 +113,7 @@ gulp.task('watch', ['build'], function () {
 /**
  * Run test once and exit
  */
-gulp.task('test', function (done) {
+gulp.task('test', ['lint'], function (done) {
     var karmaConfig = {
         configFile: path.join(__dirname, 'build/karma.unit.config.js'),
         browsers: browsers
