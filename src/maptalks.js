@@ -29,7 +29,7 @@ import * as control from 'control';
 maptalks.control = control;
 
 import { initGeometry } from 'geometry';
-initGeometry(Map);
+initGeometry(maptalks);
 
 import { Layer } from 'layer/Layer';
 maptalks.Layer = Layer;

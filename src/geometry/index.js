@@ -35,32 +35,32 @@ import { TextBox } from './TextBox';
 import { Label } from './Label';
 import { ConnectorLine, ArcConnectorLine } from './ConnectorLine';
 
-export function initGeometry(Map) {
-    Map.Geometry = Geometry;
-    Map.Marker = Marker;
-    Map.Vector = Vector;
-    Map.LineString = LineString;
-    Map.Polyline = Polyline;
-    Map.Polygon = Polygon;
-    Map.MultiPoint = MultiPoint;
-    Map.MultiLineString = MultiLineString;
-    Map.MultiPolyline = MultiPolyline;
-    Map.MultiPolygon = MultiPolygon;
-    Map.GeometryCollection = GeometryCollection;
-    Map.GeoJSON = GeoJSON;
-    Map.Circle = Circle;
-    Map.Ellipse = Ellipse;
-    Map.Rectangle = Rectangle;
-    Map.Sector = Sector;
-    Map.Curve = Curve;
-    Map.ArcCurve = ArcCurve;
-    Map.CubicBezierCurve = CubicBezierCurve;
-    Map.QuadBezierCurve = QuadBezierCurve;
-    Map.TextMarker = TextMarker;
-    Map.TextBox = TextBox;
-    Map.Label = Label;
-    Map.ConnectorLine = ConnectorLine;
-    Map.ArcConnectorLine = ArcConnectorLine;
+export function initGeometry(maptalks) {
+    maptalks.Geometry = Geometry;
+    maptalks.Marker = Marker;
+    maptalks.Vector = Vector;
+    maptalks.LineString = LineString;
+    maptalks.Polyline = Polyline;
+    maptalks.Polygon = Polygon;
+    maptalks.MultiPoint = MultiPoint;
+    maptalks.MultiLineString = MultiLineString;
+    maptalks.MultiPolyline = MultiPolyline;
+    maptalks.MultiPolygon = MultiPolygon;
+    maptalks.GeometryCollection = GeometryCollection;
+    maptalks.GeoJSON = GeoJSON;
+    maptalks.Circle = Circle;
+    maptalks.Ellipse = Ellipse;
+    maptalks.Rectangle = Rectangle;
+    maptalks.Sector = Sector;
+    maptalks.Curve = Curve;
+    maptalks.ArcCurve = ArcCurve;
+    maptalks.CubicBezierCurve = CubicBezierCurve;
+    maptalks.QuadBezierCurve = QuadBezierCurve;
+    maptalks.TextMarker = TextMarker;
+    maptalks.TextBox = TextBox;
+    maptalks.Label = Label;
+    maptalks.ConnectorLine = ConnectorLine;
+    maptalks.ArcConnectorLine = ArcConnectorLine;
 }
 
 export * from './ArcCurve';
