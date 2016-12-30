@@ -1,4 +1,3 @@
-import Class from 'core/class/index';
 import Eventable from 'core/Event';
 
 class Handler {
