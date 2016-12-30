@@ -3,12 +3,11 @@
 var minimist = require('minimist'),
     path = require('path'),
     gulp = require('gulp'),
-    babelrc = require('babelrc-rollup').default,
     rollup = require('rollup').rollup,
     commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
-    babel = require('rollup-plugin-babel'),
+    buble = require('rollup-plugin-buble'),
     alias = require('rollup-plugin-alias'),
     eslint = require('gulp-eslint'),
     concat = require('gulp-concat'),
@@ -73,11 +72,11 @@ gulp.task('scripts', ['lint'], function () {
                 browser: true
             }),
             commonjs(),
-            babel(babelrc()),
+            buble(),
         ]
     }).then(function (bundle) {
         return bundle.write({
-            format: 'iife',
+            format: 'umd',
             moduleName: 'maptalks',
             banner: banner,
             dest: 'dist/maptalks.browser.js'
