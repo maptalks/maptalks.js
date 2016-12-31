@@ -9,6 +9,9 @@ import './ext/Geometry.Events';
 import './ext/Geometry.InfoWindow';
 import './ext/Geometry.Menu';
 
+import 'renderer/vectorlayer/Geometry.Renderer';
+import 'renderer/vectorlayer/Geometry.Canvas';
+
 import { Geometry } from './Geometry';
 import { Marker } from './Marker';
 import { Vector } from './Vector';

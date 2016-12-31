@@ -14,8 +14,8 @@ const styles = {
 
 export class DebugSymbolizer extends PointSymbolizer {
 
-
-    initialize(symbol, geometry, painter) {
+    constructor(symbol, geometry, painter) {
+        super();
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
