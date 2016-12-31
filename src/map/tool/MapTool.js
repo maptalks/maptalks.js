@@ -18,8 +18,7 @@ import Eventable from 'core/Event';
  * @extends Class
  * @mixins Eventable
  */
-export const MapTool = Class.extend(/** @lends MapTool.prototype */ {
-    includes: [Eventable],
+export default class MapTool extends Eventable(Class) {
 
     /**
      * Adds the map tool to a map.
@@ -27,7 +26,7 @@ export const MapTool = Class.extend(/** @lends MapTool.prototype */ {
      * @return {MapTool} this
      * @fires MapTool#add
      */
-    addTo: function (map) {
+    addTo(map) {
         if (!map) {
             return this;
         }
@@ -52,22 +51,22 @@ export const MapTool = Class.extend(/** @lends MapTool.prototype */ {
          */
         this._fireEvent('add');
         return this;
-    },
+    }
 
     /**
      * Gets the map it added to.
      * @return {Map} map
      */
-    getMap: function () {
+    getMap() {
         return this._map;
-    },
+    }
 
     /**
      * Enable the map tool.
      * @return {MapTool} this
      * @fires MapTool#enable
      */
-    enable: function () {
+    enable() {
         var map = this._map;
         if (!map || this._enabled) {
             return this;
@@ -89,14 +88,14 @@ export const MapTool = Class.extend(/** @lends MapTool.prototype */ {
          */
         this._fireEvent('enable');
         return this;
-    },
+    }
 
     /**
      * Disable the map tool
      * @return {MapTool} this
      * @fires MapTool#disable
      */
-    disable: function () {
+    disable() {
         if (!this._enabled || !this._map) {
             return this;
         }
@@ -115,34 +114,34 @@ export const MapTool = Class.extend(/** @lends MapTool.prototype */ {
          */
         this._fireEvent('disable');
         return this;
-    },
+    }
 
     /**
      * Returns whether the tool is enabled
      * @return {Boolean} true | false
      */
-    isEnabled: function () {
+    isEnabled() {
         if (!this._enabled) {
             return false;
         }
         return true;
-    },
+    }
 
-    _registerEvents: function () {
+    _registerEvents() {
         this._switchEvents('on');
-    },
+    }
 
-    _switchEvents: function (to) {
+    _switchEvents(to) {
         var events = this.getEvents();
         if (events) {
             this._map[to](events, this);
         }
-    },
+    }
 
-    _fireEvent: function (eventName, param) {
+    _fireEvent(eventName, param) {
         if (!param) {
             param = {};
         }
         this.fire(eventName, param);
     }
-});
+}

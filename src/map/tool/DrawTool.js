@@ -18,6 +18,24 @@ import VectorLayer from 'layer/VectorLayer';
 import MapTool from './MapTool';
 
 /**
+ * @property {Object} [options=null] - construct options
+ * @property {String} [options.mode=null]   - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
+ * @property {Object} [options.symbol=null] - symbol of the geometries drawn
+ * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+ */
+const options = {
+    'symbol': {
+        'lineColor': '#000',
+        'lineWidth': 2,
+        'lineOpacity': 1,
+        'polygonFill': '#fff',
+        'polygonOpacity': 0.3
+    },
+    'mode': null,
+    'once': false
+};
+
+/**
  * @classdesc
  * A map tool to help draw geometries
  * @class
@@ -38,48 +56,45 @@ import MapTool from './MapTool';
  *     once : true
  * }).addTo(map);
  */
-export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
+export default class DrawTool extends MapTool {
 
-    /**
-     * @property {Object} [options=null] - construct options
-     * @property {String} [options.mode=null]   - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
-     * @property {Object} [options.symbol=null] - symbol of the geometries drawn
-     * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
-     */
-    options: {
-        'symbol': {
-            'lineColor': '#000',
-            'lineWidth': 2,
-            'lineOpacity': 1,
-            'polygonFill': '#fff',
-            'polygonOpacity': 0.3
-        },
-        'mode': null,
-        'once': false
-    },
+    static registerMode(name, modeAction) {
+        if (!DrawTool._registeredMode) {
+            DrawTool._registeredMode = {};
+        }
+        DrawTool._registeredMode[name.toLowerCase()] = modeAction;
+    }
 
-    initialize: function (options) {
+    static getRegisterMode(name) {
+        if (DrawTool._registeredMode) {
+            return DrawTool._registeredMode[name.toLowerCase()];
+        }
+        return null;
+    }
+
+
+    constructor(options) {
         setOptions(this, options);
         this._checkMode();
-    },
+    }
 
     /**
      * Get current mode of draw tool
      * @return {String} mode
      */
-    getMode: function () {
+    getMode() {
         if (this.options['mode']) {
             return this.options['mode'].toLowerCase();
         }
         return null;
-    },
+    }
 
     /**
      * Set mode of the draw tool
      * @param {String} mode - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
      * @expose
      */
-    setMode: function (mode) {
+    setMode(mode) {
         if (this._geometry) {
             this._geometry.remove();
             delete this._geometry;
@@ -92,27 +107,27 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
             this._switchEvents('on');
         }
         return this;
-    },
+    }
 
     /**
      * Get symbol of the draw tool
      * @return {Object} symbol
      */
-    getSymbol: function () {
+    getSymbol() {
         var symbol = this.options['symbol'];
         if (symbol) {
             return extendSymbol(symbol);
         } else {
             return extendSymbol(this.options['symbol']);
         }
-    },
+    }
 
     /**
      * Set draw tool's symbol
      * @param {Object} symbol - symbol set
      * @returns {DrawTool} this
      */
-    setSymbol: function (symbol) {
+    setSymbol(symbol) {
         if (!symbol) {
             return this;
         }
@@ -121,13 +136,13 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
             this._geometry.setSymbol(symbol);
         }
         return this;
-    },
+    }
 
-    onAdd: function () {
+    onAdd() {
         this._checkMode();
-    },
+    }
 
-    onEnable: function () {
+    onEnable() {
         var map = this.getMap();
         this._mapDraggable = map.options['draggable'];
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
@@ -141,13 +156,13 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
         this._clearStage();
         this._loadResources();
         return this;
-    },
+    }
 
-    _checkMode: function () {
+    _checkMode() {
         this._getRegisterMode();
-    },
+    }
 
-    onDisable: function () {
+    onDisable() {
         var map = this.getMap();
         map.config({
             'autoBorderPanning': this._autoBorderPanning,
@@ -160,32 +175,32 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
         this._endDraw();
         map.removeLayer(this._getDrawLayer());
         return this;
-    },
+    }
 
 
-    _loadResources: function () {
+    _loadResources() {
         var symbol = this.getSymbol();
         var resources = getExternalResources(symbol);
         if (isArrayHasData(resources)) {
             //load external resources at first
             this._drawToolLayer._getRenderer().loadResources(resources);
         }
-    },
+    }
 
-    _getProjection: function () {
+    _getProjection() {
         return this._map.getProjection();
-    },
+    }
 
-    _getRegisterMode: function () {
+    _getRegisterMode() {
         var mode = this.getMode();
         var registerMode = DrawTool.getRegisterMode(mode);
         if (!registerMode) {
             throw new Error(mode + ' is not a valid mode of DrawTool.');
         }
         return registerMode;
-    },
+    }
 
-    getEvents: function () {
+    getEvents() {
         var action = this._getRegisterMode()['action'];
         if (action === 'clickDblclick') {
             return {
@@ -203,23 +218,23 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
             };
         }
         return null;
-    },
+    }
 
-    _addGeometryToStage: function (geometry) {
+    _addGeometryToStage(geometry) {
         var drawLayer = this._getDrawLayer();
         drawLayer.addGeometry(geometry);
-    },
+    }
 
-    _clickForPoint: function (param) {
+    _clickForPoint(param) {
         var registerMode = this._getRegisterMode();
         this._geometry = registerMode['create'](param['coordinate']);
         if (this.options['symbol'] && this.options.hasOwnProperty('symbol')) {
             this._geometry.setSymbol(this.options['symbol']);
         }
         this._endDraw();
-    },
+    }
 
-    _clickForPath: function (param) {
+    _clickForPath(param) {
         var registerMode = this._getRegisterMode();
         var coordinate = param['coordinate'];
         var symbol = this.getSymbol();
@@ -262,9 +277,9 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
             this._fireEvent('drawvertex', param);
 
         }
-    },
+    }
 
-    _mousemoveForPath: function (param) {
+    _mousemoveForPath(param) {
         if (!this._geometry) {
             return;
         }
@@ -293,9 +308,9 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('mousemove', param);
-    },
+    }
 
-    _dblclickForPath: function (param) {
+    _dblclickForPath(param) {
         if (!this._geometry) {
             return;
         }
@@ -327,9 +342,9 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
         }
         registerMode['update'](path, this._geometry);
         this._endDraw(param);
-    },
+    }
 
-    _mousedownToDraw: function (param) {
+    _mousedownToDraw(param) {
         var registerMode = this._getRegisterMode();
         var me = this,
             firstPoint = this._getMouseContainerPoint(param);
@@ -384,9 +399,9 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
         this._map.on('mousemove', onMouseMove, this);
         this._map.on('mouseup', onMouseUp, this);
         return false;
-    },
+    }
 
-    _endDraw: function (param) {
+    _endDraw(param) {
         if (!this._geometry || this._ending) {
             return;
         }
@@ -416,13 +431,13 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
             this.disable();
         }
         delete this._ending;
-    },
+    }
 
-    _clearStage: function () {
+    _clearStage() {
         this._getDrawLayer().clear();
         delete this._geometry;
         delete this._clickCoords;
-    },
+    }
 
     /**
      * Get container point of the mouse event
@@ -430,13 +445,13 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
      * @return {Point}
      * @private
      */
-    _getMouseContainerPoint: function (event) {
+    _getMouseContainerPoint(event) {
         stopPropagation(event['domEvent']);
         var result = event['containerPoint'];
         return result;
-    },
+    }
 
-    _isValidContainerPoint: function (containerPoint) {
+    _isValidContainerPoint(containerPoint) {
         var mapSize = this._map.getSize();
         var w = mapSize['width'],
             h = mapSize['height'];
@@ -446,9 +461,9 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
             return false;
         }
         return true;
-    },
+    }
 
-    _getDrawLayer: function () {
+    _getDrawLayer() {
         var drawLayerId = internalLayerPrefix + 'drawtool';
         var drawToolLayer = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
@@ -458,9 +473,9 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
             this._map.addLayer(drawToolLayer);
         }
         return drawToolLayer;
-    },
+    }
 
-    _fireEvent: function (eventName, param) {
+    _fireEvent(eventName, param) {
         if (!param) {
             param = {};
         }
@@ -470,21 +485,9 @@ export const DrawTool = MapTool.extend(/** @lends DrawTool.prototype */ {
         MapTool.prototype._fireEvent.call(this, eventName, param);
     }
 
-});
+}
 
-DrawTool.registerMode = function (name, modeAction) {
-    if (!DrawTool._registeredMode) {
-        DrawTool._registeredMode = {};
-    }
-    DrawTool._registeredMode[name.toLowerCase()] = modeAction;
-};
-
-DrawTool.getRegisterMode = function (name) {
-    if (DrawTool._registeredMode) {
-        return DrawTool._registeredMode[name.toLowerCase()];
-    }
-    return null;
-};
+DrawTool.mergeOptions(options);
 
 DrawTool.registerMode('circle', {
     'action': 'drag',

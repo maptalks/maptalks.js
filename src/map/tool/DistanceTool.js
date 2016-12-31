@@ -6,7 +6,51 @@ import Geometry from 'geometry/Geometry';
 import Marker from 'geometry/Marker';
 import Label from 'geometry/Labe';
 import VectorLayer from 'layer/VectorLayer';
-import { DrawTool } from './DrawTool';
+import DrawTool from './DrawTool';
+
+/**
+ * @property {options} options
+ * @property {String}  options.language         - language of the distance tool, zh-CN or en-US
+ * @property {Boolean} options.metric           - display result in metric system
+ * @property {Boolean} options.imperial         - display result in imperial system.
+ * @property {Object}  options.symbol           - symbol of the line
+ * @property {Object}  options.vertexSymbol     - symbol of the vertice
+ * @property {Object}  options.labelOptions     - construct options of the vertice labels.
+ */
+const options = {
+    'mode': 'LineString',
+    'language': 'zh-CN', //'en-US'
+    'metric': true,
+    'imperial': false,
+    'symbol': {
+        'lineColor': '#000', //'#3388ff',
+        'lineWidth': 3,
+        'lineOpacity': 1
+    },
+    'vertexSymbol': {
+        'markerType': 'ellipse',
+        'markerFill': '#fff', //"#d0d2d6",
+        'markerLineColor': '#000',
+        'markerLineWidth': 3,
+        'markerWidth': 10,
+        'markerHeight': 10
+    },
+    'labelOptions': {
+        'symbol': {
+            'textWrapCharacter': '\n',
+            'textFaceName': 'monospace',
+            'textLineSpacing': 1,
+            'textHorizontalAlignment': 'right',
+            'markerLineColor': '#b4b3b3',
+            'textDx': 15
+        },
+        'boxPadding': {
+            'width': 6,
+            'height': 4
+        }
+    }
+};
+
 
 /**
  * @classdesc
@@ -41,63 +85,20 @@ import { DrawTool } from './DrawTool';
  *  }).addTo(map);
  *
  */
-export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */ {
+export default class DistanceTool extends DrawTool {
 
-    /**
-     * @property {options} options
-     * @property {String}  options.language         - language of the distance tool, zh-CN or en-US
-     * @property {Boolean} options.metric           - display result in metric system
-     * @property {Boolean} options.imperial         - display result in imperial system.
-     * @property {Object}  options.symbol           - symbol of the line
-     * @property {Object}  options.vertexSymbol     - symbol of the vertice
-     * @property {Object}  options.labelOptions     - construct options of the vertice labels.
-     */
-    options: {
-        'mode': 'LineString',
-        'language': 'zh-CN', //'en-US'
-        'metric': true,
-        'imperial': false,
-        'symbol': {
-            'lineColor': '#000', //'#3388ff',
-            'lineWidth': 3,
-            'lineOpacity': 1
-        },
-        'vertexSymbol': {
-            'markerType': 'ellipse',
-            'markerFill': '#fff', //"#d0d2d6",
-            'markerLineColor': '#000',
-            'markerLineWidth': 3,
-            'markerWidth': 10,
-            'markerHeight': 10
-        },
-        'labelOptions': {
-            'symbol': {
-                'textWrapCharacter': '\n',
-                'textFaceName': 'monospace',
-                'textLineSpacing': 1,
-                'textHorizontalAlignment': 'right',
-                'markerLineColor': '#b4b3b3',
-                'textDx': 15
-            },
-            'boxPadding': {
-                'width': 6,
-                'height': 4
-            }
-        }
-    },
-
-    initialize: function (options) {
+    constructor(options) {
         setOptions(this, options);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
-    },
+    }
 
     /**
      * Clear the measurements
      * @return {DistanceTool} this
      */
-    clear: function () {
+    clear() {
         if (isArrayHasData(this._measureLayers)) {
             for (var i = 0; i < this._measureLayers.length; i++) {
                 this._measureLayers[i].remove();
@@ -107,28 +108,28 @@ export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */
         delete this._lastVertex;
         this._measureLayers = [];
         return this;
-    },
+    }
 
     /**
      * Get the VectorLayers with the geometries drawn on the map during measuring.
      * @return {Layer[]}
      */
-    getMeasureLayers: function () {
+    getMeasureLayers() {
         return this._measureLayers;
-    },
+    }
 
     /**
      * Get last measuring result
      * @return {Number}
      */
-    getLastMeasure: function () {
+    getLastMeasure() {
         if (!this._lastMeasure) {
             return 0;
         }
         return this._lastMeasure;
-    },
+    }
 
-    _measure: function (toMeasure) {
+    _measure(toMeasure) {
         var map = this.getMap();
         var length;
         if (toMeasure instanceof Geometry) {
@@ -155,27 +156,27 @@ export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */
             content += length < 5280 ? length.toFixed(0) + units[2] : (length / 5280).toFixed(2) + units[3];
         }
         return content;
-    },
+    }
 
-    _registerMeasureEvents: function () {
+    _registerMeasureEvents() {
         this.on('drawstart', this._msOnDrawStart, this)
             .on('drawvertex', this._msOnDrawVertex, this)
             .on('mousemove', this._msOnMouseMove, this)
             .on('drawend', this._msOnDrawEnd, this);
-    },
+    }
 
-    _afterEnable: function () {
+    _afterEnable() {
         this._registerMeasureEvents();
-    },
+    }
 
-    _afterDisable: function () {
+    _afterDisable() {
         this.off('drawstart', this._msOnDrawStart, this)
             .off('drawvertex', this._msOnDrawVertex, this)
             .off('mousemove', this._msOnMouseMove, this)
             .off('drawend', this._msOnDrawEnd, this);
-    },
+    }
 
-    _msOnDrawStart: function (param) {
+    _msOnDrawStart(param) {
         var map = this.getMap();
         var uid = UID();
         var layerId = 'distancetool_' + uid;
@@ -200,9 +201,9 @@ export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */
         var content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
         var startLabel = new Label(content, param['coordinate'], this.options['labelOptions']);
         this._measureMarkerLayer.addGeometry(startLabel);
-    },
+    }
 
-    _msOnMouseMove: function (param) {
+    _msOnMouseMove(param) {
         var ms = this._measure(param['geometry'].getCoordinates().concat([param['coordinate']]));
         if (!this._tailMarker) {
             var symbol = extendSymbol(this.options['vertexSymbol']);
@@ -218,9 +219,9 @@ export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */
         this._tailLabel.setContent(ms);
         this._tailLabel.setCoordinates(param['coordinate']);
 
-    },
+    }
 
-    _msOnDrawVertex: function (param) {
+    _msOnDrawVertex(param) {
         var geometry = param['geometry'];
         //vertex marker
         new Marker(param['coordinate'], {
@@ -230,9 +231,9 @@ export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */
         var vertexLabel = new Label(length, param['coordinate'], this.options['labelOptions']);
         this._measureMarkerLayer.addGeometry(vertexLabel);
         this._lastVertex = vertexLabel;
-    },
+    }
 
-    _msOnDrawEnd: function (param) {
+    _msOnDrawEnd(param) {
         this._clearTailMarker();
         var size = this._lastVertex.getSize();
         if (!size) {
@@ -242,9 +243,9 @@ export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */
         var geo = param['geometry'].copy();
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getLength();
-    },
+    }
 
-    _addClearMarker: function (coordinates, dx) {
+    _addClearMarker(coordinates, dx) {
         var endMarker = new Marker(coordinates, {
             'symbol': [{
                 'markerType': 'square',
@@ -270,9 +271,9 @@ export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */
             return false;
         }, this);
         endMarker.addTo(this._measureMarkerLayer);
-    },
+    }
 
-    _clearTailMarker: function () {
+    _clearTailMarker() {
         if (this._tailMarker) {
             this._tailMarker.remove();
             delete this._tailMarker;
@@ -283,5 +284,6 @@ export const DistanceTool = DrawTool.extend(/** @lends DistanceTool.prototype */
         }
     }
 
-});
+}
 
+DistanceTool.mergeOptions(options);

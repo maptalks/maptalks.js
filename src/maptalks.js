@@ -22,6 +22,12 @@ maptalks.DomUtil = DomUtil;
 import Map from 'map';
 maptalks.Map = Map;
 
+import * from 'map/tool';
+maptalks.MapTool = MapTool;
+maptalks.DrawTool = DrawTool;
+maptalks.AreaTool = AreaTool;
+maptalks.DistanceTool = DistanceTool;
+
 import * as ui from 'ui';
 maptalks.ui = ui;
 

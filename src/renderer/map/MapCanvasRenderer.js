@@ -3,8 +3,8 @@ import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Map from 'map';
-import { OverlayLayer } from 'layer/OverlayLayer';
-import { Renderer } from './Renderer.Map';
+import OverlayLayer from 'layer/OverlayLayer';
+import MapRenderer from './Renderer.Map';
 
 /**
  * @classdesc
@@ -16,22 +16,22 @@ import { Renderer } from './Renderer.Map';
  * @extends {renderer.map.Renderer}
  * @param {Map} map - map for the renderer
  */
-export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype */ {
-    initialize: function (map) {
+export default class MapCanvasRenderer extends MapRenderer {
+    constructor(map) {
         this.map = map;
         //container is a <canvas> element
         this._isCanvasContainer = !!map._containerDOM.getContext;
         this._registerEvents();
-    },
+    }
 
-    isCanvasRender: function () {
+    isCanvasRender() {
         return true;
-    },
+    }
 
     /**
      * Renders the layers
      */
-    render: function () {
+    render() {
         /**
          * renderstart event, an event fired when map starts to render.
          * @event Map#renderstart
@@ -79,9 +79,9 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         this.map._fireEvent('renderend', {
             'context': this.context
         });
-    },
+    }
 
-    updateMapSize: function (mSize) {
+    updateMapSize(mSize) {
         if (!mSize || this._isCanvasContainer) {
             return;
         }
@@ -96,9 +96,9 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         panels.back.style.height = panels.layer.style.height = height;
         panels.front.style.perspective = panels.back.style.perspective = height;
         this._updateCanvasSize();
-    },
+    }
 
-    getMainPanel: function () {
+    getMainPanel() {
         if (!this.map) {
             return null;
         }
@@ -109,16 +109,16 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
             return this.map._panels.mapWrapper;
         }
         return null;
-    },
+    }
 
-    toDataURL: function (mimeType) {
+    toDataURL(mimeType) {
         if (!this.canvas) {
             return null;
         }
         return this.canvas.toDataURL(mimeType);
-    },
+    }
 
-    remove: function () {
+    remove() {
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
         }
@@ -131,16 +131,16 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         delete this._canvasBgRes;
         delete this._canvasBgCoord;
         delete this._canvasBg;
-    },
+    }
 
-    _getLayerImage: function (layer) {
+    _getLayerImage(layer) {
         if (layer && layer._getRenderer() && layer._getRenderer().getCanvasImage) {
             return layer._getRenderer().getCanvasImage();
         }
         return null;
-    },
+    }
 
-    _getCountOfGeosToDraw: function () {
+    _getCountOfGeosToDraw() {
         var layers = this._getAllLayerToRender(),
             geos, renderer,
             total = 0;
@@ -155,12 +155,12 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
             }
         }
         return total;
-    },
+    }
 
     /**
      * initialize container DOM of panels
      */
-    initContainer: function () {
+    initContainer() {
         var panels = this.map._panels;
 
         function createContainer(name, className, cssText, enableSelect) {
@@ -210,9 +210,9 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         this.resetContainer();
         var mapSize = this.map._getContainerDomSize();
         this.updateMapSize(mapSize);
-    },
+    }
 
-    _drawLayerCanvasImage: function (layer, layerImage) {
+    _drawLayerCanvasImage(layer, layerImage) {
         if (!layer || !layerImage) {
             return;
         }
@@ -273,18 +273,18 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         if (layerImage['transform']) {
             ctx.restore();
         }
-    },
+    }
 
-    _storeBackground: function (baseLayerImage) {
+    _storeBackground(baseLayerImage) {
         if (baseLayerImage) {
             var map = this.map;
             this._canvasBg = copyCanvas(baseLayerImage['image']);
             this._canvasBgRes = map._getResolution();
             this._canvasBgCoord = map.containerPointToCoordinate(baseLayerImage['point']);
         }
-    },
+    }
 
-    _drawBackground: function () {
+    _drawBackground() {
         var map = this.map;
         if (this._canvasBg) {
             var baseLayer = this.map.getBaseLayer();
@@ -298,9 +298,9 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
                 this.context.filter = 'none';
             }
         }
-    },
+    }
 
-    _drawCenterCross: function () {
+    _drawCenterCross() {
         var cross = this.map.options['centerCross'];
         if (cross) {
             var ctx = this.context;
@@ -318,20 +318,20 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
                 ctx.stroke();
             }
         }
-    },
+    }
 
-    _getAllLayerToRender: function () {
+    _getAllLayerToRender() {
         return this.map._getLayers();
-    },
+    }
 
-    clearCanvas: function () {
+    clearCanvas() {
         if (!this.canvas) {
             return;
         }
         Canvas.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
-    },
+    }
 
-    _updateCanvasSize: function () {
+    _updateCanvasSize() {
         if (!this.canvas || this._isCanvasContainer) {
             return false;
         }
@@ -352,9 +352,9 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         }
 
         return true;
-    },
+    }
 
-    createCanvas: function () {
+    createCanvas() {
         if (this._isCanvasContainer) {
             this.canvas = this.map._containerDOM;
         } else {
@@ -363,9 +363,9 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
             this.map._panels.canvasContainer.appendChild(this.canvas);
         }
         this.context = this.canvas.getContext('2d');
-    },
+    }
 
-    _checkSize: function () {
+    _checkSize() {
         cancelAnimFrame(this._resizeFrame);
         if (this.map._zooming || this.map._moving || this.map._panAnimating) {
             return;
@@ -378,9 +378,9 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
                 this.map.checkSize();
             }, this)
         );
-    },
+    }
 
-    _registerEvents: function () {
+    _registerEvents() {
         var map = this.map;
         map.on('_baselayerchangestart', function () {
             delete this._canvasBg;
@@ -451,6 +451,6 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
             }
         }, this);
     }
-});
+}
 
-Map.registerRenderer('canvas', Canvas);
+Map.registerRenderer('canvas', MapCanvasRenderer);

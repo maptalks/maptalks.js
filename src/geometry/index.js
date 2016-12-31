@@ -34,7 +34,7 @@ export function exportGeometries(maptalks) {
     maptalks.Geometry = Geometry;
     maptalks.Marker = Marker;
     maptalks.LineString = LineString;
-    maptalks.Polyline = ;
+    maptalks.Polyline = LineString;
     maptalks.Polygon = Polygon;
     maptalks.MultiPoint = MultiPoint;
     maptalks.MultiLineString = MultiLineString;
