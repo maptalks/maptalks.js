@@ -1,7 +1,7 @@
 import { isNil, isArray, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
-import { Path } from './Path';
+import Path from './Path';
 
 
 /**

@@ -3,9 +3,59 @@ import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 import PointExtent from 'geo/PointExtent';
-import { TileConfig } from './tileinfo/TileConfig';
-import { TileSystem } from './tileinfo/TileSystem';
+import TileConfig from './tileinfo/TileConfig';
+import TileSystem from './tileinfo/TileSystem';
 import Layer from '../Layer';
+
+/**
+ * @property {Object}              options                     - TileLayer's options
+ * @property {String}              [options.errorTileUrl=null] - tile's url when error
+ * @property {String}              options.urlTemplate         - url templates
+ * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
+ * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
+ * @property {String}              [options.crossOrigin=null]  - tile Image's corssOrigin
+ * @property {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
+ * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
+ * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+ */
+const options = {
+    'errorTileUrl': null,
+    'urlTemplate': null,
+    'subdomains': null,
+
+    'gradualLoading': true,
+
+    'repeatWorld': true,
+
+    'renderWhenPanning': false,
+    //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
+    'updateInterval': (function () {
+        return Browser.mobile ? -1 : 200;
+    })(),
+
+    'cssFilter': null,
+
+    'crossOrigin': null,
+
+    'tileSize': {
+        'width': 256,
+        'height': 256
+    },
+
+    'tileSystem': null,
+    'debug': false,
+
+    'cacheTiles': true,
+
+    'keepBuffer': null,
+
+    'container' : 'back',
+
+    'baseLayerRenderer': (function () {
+        return isNode ? 'canvas' : 'dom';
+    })()
+};
+
 
 /**
  * @classdesc
@@ -21,71 +71,38 @@ import Layer from '../Layer';
         subdomains:['a','b','c']
     })
  */
-export const TileLayer = Layer.extend(/** @lends TileLayer.prototype */ {
+export default class TileLayer extends Layer {
 
     /**
-     * @property {Object}              options                     - TileLayer's options
-     * @property {String}              [options.errorTileUrl=null] - tile's url when error
-     * @property {String}              options.urlTemplate         - url templates
-     * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
-     * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
-     * @property {String}              [options.crossOrigin=null]  - tile Image's corssOrigin
-     * @property {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
-     * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
-     * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+     * Reproduce a TileLayer from layer's profile JSON.
+     * @param  {Object} layerJSON - layer's profile JSON
+     * @return {TileLayer}
+     * @static
+     * @private
+     * @function
      */
-    options: {
-        'errorTileUrl': null,
-        'urlTemplate': null,
-        'subdomains': null,
+    static fromJSON(layerJSON) {
+        if (!layerJSON || layerJSON['type'] !== 'TileLayer') {
+            return null;
+        }
+        return new TileLayer(layerJSON['id'], layerJSON['options']);
+    }
 
-        'gradualLoading': true,
-
-        'repeatWorld': true,
-
-        'renderWhenPanning': false,
-        //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
-        'updateInterval': (function () {
-            return Browser.mobile ? -1 : 200;
-        })(),
-
-        'cssFilter': null,
-
-        'crossOrigin': null,
-
-        'tileSize': {
-            'width': 256,
-            'height': 256
-        },
-
-        'tileSystem': null,
-        'debug': false,
-
-        'cacheTiles': true,
-
-        'keepBuffer': null,
-
-        'container' : 'back',
-
-        'baseLayerRenderer': (function () {
-            return isNode ? 'canvas' : 'dom';
-        })()
-    },
 
     /**
      * Get tile size of the tile layer
      * @return {Size}
      */
-    getTileSize: function () {
+    getTileSize() {
         var size = this.options['tileSize'];
         return new Size(size['width'], size['height']);
-    },
+    }
 
     /**
      * Clear the layer
      * @return {TileLayer} this
      */
-    clear: function () {
+    clear() {
         if (this._renderer) {
             this._renderer.clear();
         }
@@ -99,9 +116,24 @@ export const TileLayer = Layer.extend(/** @lends TileLayer.prototype */ {
          */
         this.fire('clear');
         return this;
-    },
+    }
 
-    _initRenderer: function () {
+    /**
+     * Export the tile layer's profile json. <br>
+     * Layer's profile is a snapshot of the layer in JSON format. <br>
+     * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
+     * @return {Object} layer's profile JSON
+     */
+    toJSON() {
+        var profile = {
+            'type': 'TileLayer',
+            'id': this.getId(),
+            'options': this.config()
+        };
+        return profile;
+    }
+
+    _initRenderer() {
         var renderer = this.options['renderer'];
         if (this.getMap().getBaseLayer() === this) {
             renderer = this.options['baseLayerRenderer'];
@@ -119,21 +151,21 @@ export const TileLayer = Layer.extend(/** @lends TileLayer.prototype */ {
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
-    },
+    }
 
     /**
      * initialize [tileConfig]{@link TileConfig} for the tilelayer
      * @private
      */
-    _initTileConfig: function () {
+    _initTileConfig() {
         var map = this.getMap();
         this._defaultTileConfig = new TileConfig(TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
         if (this.options['tileSystem']) {
             this._tileConfig = new TileConfig(this.options['tileSystem'], map.getFullExtent(), this.getTileSize());
         }
-    },
+    }
 
-    _getTileConfig: function () {
+    _getTileConfig() {
         if (!this._defaultTileConfig) {
             this._initTileConfig();
         }
@@ -147,9 +179,9 @@ export const TileLayer = Layer.extend(/** @lends TileLayer.prototype */ {
             return map.getBaseLayer()._getTileConfig();
         }
         return this._defaultTileConfig;
-    },
+    }
 
-    _getTiles: function () {
+    _getTiles() {
         // rendWhenReady = false;
         var map = this.getMap();
         if (!map) {
@@ -219,9 +251,9 @@ export const TileLayer = Layer.extend(/** @lends TileLayer.prototype */ {
             'fullExtent': fullExtent,
             'northWest': northWest
         };
-    },
+    }
 
-    _getTileUrl: function (x, y, z) {
+    _getTileUrl(x, y, z) {
         if (!this.options['urlTemplate']) {
             return this.options['errorTileUrl'];
         }
@@ -259,36 +291,6 @@ export const TileLayer = Layer.extend(/** @lends TileLayer.prototype */ {
             return value;
         });
     }
-});
+}
 
-/**
- * Export the tile layer's profile json. <br>
- * Layer's profile is a snapshot of the layer in JSON format. <br>
- * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
- * @return {Object} layer's profile JSON
- */
-TileLayer.prototype.toJSON = function () {
-    var profile = {
-        'type': 'TileLayer',
-        'id': this.getId(),
-        'options': this.config()
-    };
-    return profile;
-};
-
-/**
- * Reproduce a TileLayer from layer's profile JSON.
- * @param  {Object} layerJSON - layer's profile JSON
- * @return {TileLayer}
- * @static
- * @private
- * @function
- */
-TileLayer.fromJSON = function (layerJSON) {
-    if (!layerJSON || layerJSON['type'] !== 'TileLayer') {
-        return null;
-    }
-    return new TileLayer(layerJSON['id'], layerJSON['options']);
-};
-
-export default TileLayer;
+TileLayer.mergeOptions(options);

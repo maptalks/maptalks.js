@@ -1,4 +1,4 @@
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Eventable from 'core/Event';
 
 /**

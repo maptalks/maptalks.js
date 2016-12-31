@@ -1,5 +1,5 @@
 import { isArray, isArrayHasData } from 'core/util';
-import { CanvasRenderer } from 'renderer';
+import CanvasRenderer from 'renderer/CanvasRenderer';
 
 /**
  * @classdesc

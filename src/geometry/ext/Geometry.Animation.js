@@ -2,7 +2,7 @@ import { bind, isArray, isFunction } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import { Animation } from 'utils/Animation';
 import Coordinate from 'geo/Coordinate';
-import { Geometry } from 'geometry/Geometry';
+import Geometry from 'geometry/Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**

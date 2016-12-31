@@ -2,7 +2,7 @@ import { isArray, isString } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Transformation from 'geo/transformation/Transformation';
-import { TileSystem } from './TileSystem';
+import TileSystem from './TileSystem';
 
 /**
  * Tile config for tile layers, a utilities class for tile layers to render tiles

@@ -5,11 +5,11 @@ const maptalks = {};
 
 import Ajax from './utils/Ajax';
 import Canvas from './utils/Canvas';
-import Promise from './utils/Promise';
+// import Promise from './utils/Promise';
 
 maptalks.Ajax = Ajax;
 maptalks.Canvas = Canvas;
-maptalks.Promise = Promise;
+// maptalks.Promise = Promise;
 
 import * as util from 'core/util';
 maptalks.Util = util;
@@ -28,8 +28,8 @@ maptalks.ui = ui;
 import * as control from 'control';
 maptalks.control = control;
 
-import { initGeometry } from 'geometry';
-initGeometry(maptalks);
+import { exportGeometries } from 'geometry';
+exportGeometries(maptalks);
 
 import { Layer } from 'layer/Layer';
 maptalks.Layer = Layer;

@@ -1,4 +1,4 @@
-import { Geometry } from 'geometry/Geometry';
+import Geometry from 'geometry/Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**

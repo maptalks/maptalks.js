@@ -3,7 +3,7 @@
  * @mixin
  * @protected
  */
-const Renderable = Base => class extends Base {
+export default Base => class extends Base {
     /**
      * Register a renderer class with the given name.
      * @param  {String} name  - renderer's register key
@@ -35,6 +35,3 @@ const Renderable = Base => class extends Base {
         return proto._rendererClasses[name.toLowerCase()];
     }
 }
-
-export default Renderable;
-export { Renderable };

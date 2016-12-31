@@ -1,4 +1,4 @@
-import { Curve } from './Curve';
+import Curve from './Curve';
 import Canvas from 'utils/Canvas';
 
 /**

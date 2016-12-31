@@ -1,5 +1,4 @@
-import { extend, trim, setOptions
-} from 'core/util';
+import { extend, trim } from 'core/util';
 import {
     on,
     removeDomNode,
@@ -8,11 +7,34 @@ import {
     TRANSFORMORIGIN,
     TRANSITION
 } from 'core/util/dom';
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Eventable from 'core/Event';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
-import { Geometry } from 'geometry/Geometry';
+import Geometry from 'geometry/Geometry';
+
+/**
+ * @property {Object} options
+ * @property {Boolean} [options.eventsToStop='mousedown dblclick']  - UI's dom events to stop propagation.
+ * @property {Number}  [options.dx=0]     - pixel offset on x axis
+ * @property {Number}  [options.dy=0]     - pixel offset on y axis
+ * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened UI.
+ * @property {Boolean} [options.single=true]    - whether the UI is a global single one, only one UI will be shown at the same time if set to true.
+ * @property {Boolean} [options.animation=null]         - fade | scale | fade,scale, add animation effect when showing and hiding.
+ * @property {Number}  [options.animationDuration=300]  - animation duration, in milliseconds.
+ * @property {Number}  [options.animationDelay=0]       - time delay for animation, in milliseconds.
+ */
+const options = {
+    'eventsToStop': 'mousedown dblclick',
+    'dx': 0,
+    'dy': 0,
+    'autoPan': false,
+    'single': true,
+    'animation': 'scale',
+    'animationOnHide': true,
+    'animationDuration': 500,
+    'animationDelay': 0
+};
 
 /**
  * Some instance methods subclasses needs to implement:  <br>
@@ -40,35 +62,12 @@ import { Geometry } from 'geometry/Geometry';
  * @memberOf ui
  * @name UIComponent
  */
-export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
-    includes: [Eventable],
+export default class UIComponent extends Eventable(Class) {
 
-    /**
-     * @property {Object} options
-     * @property {Boolean} [options.eventsToStop='mousedown dblclick']  - UI's dom events to stop propagation.
-     * @property {Number}  [options.dx=0]     - pixel offset on x axis
-     * @property {Number}  [options.dy=0]     - pixel offset on y axis
-     * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened UI.
-     * @property {Boolean} [options.single=true]    - whether the UI is a global single one, only one UI will be shown at the same time if set to true.
-     * @property {Boolean} [options.animation=null]         - fade | scale | fade,scale, add animation effect when showing and hiding.
-     * @property {Number}  [options.animationDuration=300]  - animation duration, in milliseconds.
-     * @property {Number}  [options.animationDelay=0]       - time delay for animation, in milliseconds.
-     */
-    options: {
-        'eventsToStop': 'mousedown dblclick',
-        'dx': 0,
-        'dy': 0,
-        'autoPan': false,
-        'single': true,
-        'animation': 'scale',
-        'animationOnHide': true,
-        'animationDuration': 500,
-        'animationDelay': 0
-    },
-
-    initialize: function (options) {
-        setOptions(this, options);
-    },
+    constructor(options) {
+        super();
+        this.setOptions(options);
+    }
 
     /**
      * Adds the UI Component to a geometry or a map
@@ -76,7 +75,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
      * @returns {ui.UIComponent} this
      * @fires ui.UIComponent#add
      */
-    addTo: function (owner) {
+    addTo(owner) {
         this._owner = owner;
         /**
          * add event.
@@ -88,14 +87,14 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
          */
         this.fire('add');
         return this;
-    },
+    }
 
     /**
      * Get the map it added to
      * @return {Map} map instance
      * @override
      */
-    getMap: function () {
+    getMap() {
         if (!this._owner) {
             return null;
         }
@@ -103,7 +102,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
             return this._owner;
         }
         return this._owner.getMap();
-    },
+    }
 
     /**
      * Show the UI Component, if it is a global single one, it will close previous one.
@@ -112,7 +111,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
      * @fires ui.UIComponent#showstart
      * @fires ui.UIComponent#showend
      */
-    show: function (coordinate) {
+    show(coordinate) {
         var map = this.getMap();
         if (!map) {
             return this;
@@ -218,14 +217,14 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
 
         this.fire('showend');
         return this;
-    },
+    }
 
     /**
      * Hide the UI Component.
      * @return {ui.UIComponent} this
      * @fires ui.UIComponent#hide
      */
-    hide: function () {
+    hide() {
         if (!this.getDOM() || !this.getMap()) {
             return this;
         }
@@ -245,7 +244,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         if (!anim.anim) {
             dom.style.display = 'none';
         } else {
-            setTimeout(function () {
+            setTimeout(() => {
                 dom.style.display = 'none';
             }, this.options['animationDuration']);
         }
@@ -260,15 +259,15 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
          */
         this.fire('hide');
         return this;
-    },
+    }
 
     /**
      * Decide whether the ui component is open
      * @returns {Boolean} true|false
      */
-    isVisible: function () {
+    isVisible() {
         return this.getDOM() && this.getDOM().style.display !== 'none';
-    },
+    }
 
     /**
      * Remove the UI Component
@@ -276,7 +275,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
      * @fires ui.UIComponent#hide
      * @fires ui.UIComponent#remove
      */
-    remove: function () {
+    remove() {
         if (!this._owner) {
             return this;
         }
@@ -299,29 +298,29 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
          */
         this.fire('remove');
         return this;
-    },
+    }
 
     /**
      * Get pixel size of the UI Component.
      * @return {Size} size
      */
-    getSize: function () {
+    getSize() {
         if (this._size) {
             return this._size.copy();
         } else {
             return null;
         }
-    },
+    }
 
-    getOwner: function () {
+    getOwner() {
         return this._owner;
-    },
+    }
 
-    getDOM: function () {
+    getDOM() {
         return this.__uiDOM;
-    },
+    }
 
-    getPosition: function () {
+    getPosition() {
         if (!this.getMap()) {
             return null;
         }
@@ -333,9 +332,9 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
             }
         }
         return p;
-    },
+    }
 
-    _getAnimation: function () {
+    _getAnimation() {
         var anim = {
             'fade': false,
             'scale': false
@@ -360,14 +359,14 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         anim.transition = transition;
         anim.anim = (transition !== null);
         return anim;
-    },
+    }
 
-    _getViewPoint: function () {
+    _getViewPoint() {
         return this.getMap().coordinateToViewPoint(this._coordinate)
             ._add(this.options['dx'], this.options['dy']);
-    },
+    }
 
-    _autoPan: function () {
+    _autoPan() {
         var map = this.getMap(),
             dom = this.getDOM();
         if (map._moving || map._panAnimating) {
@@ -396,7 +395,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         if (top !== 0 || left !== 0) {
             map._panAnimation(new Point(left, top), 600);
         }
-    },
+    }
 
     /**
      * Measure dom's size
@@ -404,7 +403,7 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
      * @return {Size} size
      * @private
      */
-    _measureSize: function (dom) {
+    _measureSize(dom) {
         var container = this._getUIContainer();
         dom.style.position = 'absolute';
         dom.style.left = -99999 + 'px';
@@ -414,14 +413,14 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         this._size = new Size(dom.clientWidth, dom.clientHeight);
         dom.style.display = 'none';
         return this._size;
-    },
+    }
 
     /**
      * Remove previous UI DOM if it has.
      *
      * @private
      */
-    _removePrevDOM: function () {
+    _removePrevDOM() {
         if (this.onDomRemove) {
             this.onDomRemove();
         }
@@ -437,26 +436,26 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
             removeDomNode(this.__uiDOM);
             delete this.__uiDOM;
         }
-    },
+    }
 
     /**
      * generate the cache key to store the singletong UI DOM
      * @private
      * @return {String} cache key
      */
-    _uiDomKey: function () {
+    _uiDomKey() {
         return '__ui_' + this._getClassName();
-    },
+    }
 
-    _singleton: function () {
+    _singleton() {
         return this.options['single'];
-    },
+    }
 
-    _getUIContainer: function () {
+    _getUIContainer() {
         return this.getMap()._panels['ui'];
-    },
+    }
 
-    _getClassName: function () {
+    _getClassName() {
         /*
         for (var p in ui) {
             if (ui.hasOwnProperty(p)) {
@@ -471,9 +470,9 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         return null;
         */
         return 'UIComponent';
-    },
+    }
 
-    _switchEvents: function (to) {
+    _switchEvents(to) {
         var events = this._getDefaultEvents();
         if (this.getEvents) {
             extend(events, this.getEvents());
@@ -495,31 +494,31 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
                 }
             }
         }
-    },
+    }
 
-    _getDefaultEvents: function () {
+    _getDefaultEvents() {
         return {
             'zooming': this.onZooming,
             'zoomend': this.onZoomEnd
         };
-    },
+    }
 
-    _getOwnerEvents: function () {
+    _getOwnerEvents() {
         if (this._owner && (this._owner instanceof Geometry)) {
             return {
                 'positionchange': this.onGeometryPositionChange
             };
         }
         return null;
-    },
+    }
 
-    onGeometryPositionChange: function (param) {
+    onGeometryPositionChange(param) {
         if (this._owner && this.getDOM() && this.isVisible()) {
             this.show(param['target'].getCenter());
         }
-    },
+    }
 
-    onZooming: function () {
+    onZooming() {
         if (!this.isVisible() || !this.getDOM() || !this.getMap()) {
             return;
         }
@@ -534,9 +533,9 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         }
         dom.style.left = p.x + 'px';
         dom.style.top = p.y + 'px';
-    },
+    }
 
-    onZoomEnd: function () {
+    onZoomEnd() {
         if (!this.isVisible() || !this.getDOM() || !this.getMap()) {
             return;
         }
@@ -545,4 +544,6 @@ export const UIComponent = Class.extend(/** @lends ui.UIComponent.prototype */ {
         dom.style.left = p.x + 'px';
         dom.style.top = p.y + 'px';
     }
-});
+}
+
+UIComponent.mergeOptions(options);

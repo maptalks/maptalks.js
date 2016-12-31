@@ -6,7 +6,165 @@ import Handlerable from 'core/Handlerable';
 import DragHandler from 'handler/Drag';
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
-import { UIComponent } from './UI';
+import UIComponent from './UI';
+
+/**
+ * @property {Object} options - construct options
+ * @property {Boolean} [options.draggable=false]  - if the marker can be dragged.
+ * @property {Number}  [options.single=false]     - if the marker is a global single one.
+ * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
+ */
+const options = {
+    'draggable': false,
+    'single': false,
+    'content': null
+};
+
+const domEvents =
+    /**
+     * mousedown event
+     * @event UIMarker#mousedown
+     * @type {Object}
+     * @property {String} type                    - mousedown
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mousedown ' +
+    /**
+     * mouseup event
+     * @event UIMarker#mouseup
+     * @type {Object}
+     * @property {String} type                    - mouseup
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseup ' +
+    /**
+     * mouseover event
+     * @event UIMarker#mouseover
+     * @type {Object}
+     * @property {String} type                    - mouseover
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseover ' +
+    /**
+     * mouseout event
+     * @event UIMarker#mouseout
+     * @type {Object}
+     * @property {String} type                    - mouseout
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseout ' +
+    /**
+     * mousemove event
+     * @event UIMarker#mousemove
+     * @type {Object}
+     * @property {String} type                    - mousemove
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mousemove ' +
+    /**
+     * click event
+     * @event UIMarker#click
+     * @type {Object}
+     * @property {String} type                    - click
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'click ' +
+    /**
+     * dblclick event
+     * @event UIMarker#dblclick
+     * @type {Object}
+     * @property {String} type                    - dblclick
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'dblclick ' +
+    /**
+     * contextmenu event
+     * @event UIMarker#contextmenu
+     * @type {Object}
+     * @property {String} type                    - contextmenu
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'contextmenu ' +
+    /**
+     * keypress event
+     * @event UIMarker#keypress
+     * @type {Object}
+     * @property {String} type                    - keypress
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'keypress ' +
+    /**
+     * touchstart event
+     * @event UIMarker#touchstart
+     * @type {Object}
+     * @property {String} type                    - touchstart
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'touchstart ' +
+    /**
+     * touchmove event
+     * @event UIMarker#touchmove
+     * @type {Object}
+     * @property {String} type                    - touchmove
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'touchmove ' +
+    /**
+     * touchend event
+     * @event UIMarker#touchend
+     * @type {Object}
+     * @property {String} type                    - touchend
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'touchend';
 
 /**
  * As it's renderered by HTMLElement such as a DIV, it: <br>
@@ -30,31 +188,18 @@ import { UIComponent } from './UI';
  *      content : dom
  *  }).addTo(map);
  */
-export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
+export default class UIMarker extends Handlerable(UIComponent) {
 
-    includes: [Handlerable],
-
-    /**
-     * @property {Object} options - construct options
-     * @property {Boolean} [options.draggable=false]  - if the marker can be dragged.
-     * @property {Number}  [options.single=false]     - if the marker is a global single one.
-     * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
-     */
-    options: {
-        'draggable': false,
-        'single': false,
-        'content': null
-    },
-
-    initialize: function (coordinate, options) {
+    constructor(coordinate, options) {
+        super();
         this._markerCoord = new Coordinate(coordinate);
         setOptions(this, options);
-    },
+    }
 
     // TODO: obtain class in super
-    _getClassName: function () {
+    _getClassName() {
         return 'UIMarker';
-    },
+    }
 
     /**
      * Sets the coordinates
@@ -62,7 +207,7 @@ export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
      * @returns {UIMarker} this
      * @fires UIMarker#positionchange
      */
-    setCoordinates: function (coordinates) {
+    setCoordinates(coordinates) {
         this._markerCoord = coordinates;
         /**
          * positionchange event.
@@ -77,15 +222,15 @@ export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
             this.show();
         }
         return this;
-    },
+    }
 
     /**
      * Gets the coordinates
      * @return {Coordinate} coordinates
      */
-    getCoordinates: function () {
+    getCoordinates() {
         return this._markerCoord;
-    },
+    }
 
     /**
      * Sets the content of the UIMarker
@@ -93,7 +238,7 @@ export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
      * @returns {UIMarker} this
      * @fires UIMarker#contentchange
      */
-    setContent: function (content) {
+    setContent(content) {
         var old = this.options['content'];
         this.options['content'] = content;
         /**
@@ -114,15 +259,15 @@ export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
             this.show();
         }
         return this;
-    },
+    }
 
     /**
      * Gets the content of the UIMarker
      * @return {String|HTMLElement} content
      */
-    getContent: function () {
+    getContent() {
         return this.options['content'];
-    },
+    }
 
     /**
      * Show the UIMarker
@@ -130,9 +275,9 @@ export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
      * @fires UIMarker#showstart
      * @fires UIMarker#showend
      */
-    show: function () {
+    show() {
         return UIComponent.prototype.show.call(this, this._markerCoord);
-    },
+    }
 
     /**
      * A callback method to build UIMarker's HTMLElement
@@ -140,7 +285,7 @@ export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
      * @param {Map} map - map to be built on
      * @return {HTMLElement} UIMarker's HTMLElement
      */
-    buildOn: function () {
+    buildOn() {
         var dom;
         if (isString(this.options['content'])) {
             dom = createEl('div');
@@ -150,193 +295,60 @@ export const UIMarker = UIComponent.extend(/** @lends UIMarker.prototype */ {
         }
         this._registerDOMEvents(dom);
         return dom;
-    },
+    }
 
     /**
      * Gets UIMarker's HTMLElement's position offset, it's caculated dynamically accordiing to its actual size.
      * @protected
      * @return {Point} offset
      */
-    getOffset: function () {
+    getOffset() {
         var size = this.getSize();
         return new Point(-size['width'] / 2, -size['height'] / 2);
-    },
+    }
 
     /**
      * Gets UIMarker's transform origin for animation transform
      * @protected
      * @return {Point} transform origin
      */
-    getTransformOrigin: function () {
+    getTransformOrigin() {
         var size = this.getSize();
         return new Point(size['width'] / 2, size['height'] / 2);
-    },
-
-    onDomRemove: function () {
-        var dom = this.getDOM();
-        this._removeDOMEvents(dom);
-    },
-
-    _domEvents:
-    /**
-     * mousedown event
-     * @event UIMarker#mousedown
-     * @type {Object}
-     * @property {String} type                    - mousedown
-     * @property {UIMarker} target    - the uimarker fires event
-     * @property {Coordinate} coordinate - coordinate of the event
-     * @property {Point} containerPoint  - container point of the event
-     * @property {Point} viewPoint       - view point of the event
-     * @property {Event} domEvent                 - dom event
-     */
-        'mousedown ' +
-        /**
-         * mouseup event
-         * @event UIMarker#mouseup
-         * @type {Object}
-         * @property {String} type                    - mouseup
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'mouseup ' +
-        /**
-         * mouseover event
-         * @event UIMarker#mouseover
-         * @type {Object}
-         * @property {String} type                    - mouseover
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'mouseover ' +
-        /**
-         * mouseout event
-         * @event UIMarker#mouseout
-         * @type {Object}
-         * @property {String} type                    - mouseout
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'mouseout ' +
-        /**
-         * mousemove event
-         * @event UIMarker#mousemove
-         * @type {Object}
-         * @property {String} type                    - mousemove
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'mousemove ' +
-        /**
-         * click event
-         * @event UIMarker#click
-         * @type {Object}
-         * @property {String} type                    - click
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'click ' +
-        /**
-         * dblclick event
-         * @event UIMarker#dblclick
-         * @type {Object}
-         * @property {String} type                    - dblclick
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'dblclick ' +
-        /**
-         * contextmenu event
-         * @event UIMarker#contextmenu
-         * @type {Object}
-         * @property {String} type                    - contextmenu
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'contextmenu ' +
-        /**
-         * keypress event
-         * @event UIMarker#keypress
-         * @type {Object}
-         * @property {String} type                    - keypress
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'keypress ' +
-        /**
-         * touchstart event
-         * @event UIMarker#touchstart
-         * @type {Object}
-         * @property {String} type                    - touchstart
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'touchstart ' +
-        /**
-         * touchmove event
-         * @event UIMarker#touchmove
-         * @type {Object}
-         * @property {String} type                    - touchmove
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'touchmove ' +
-        /**
-         * touchend event
-         * @event UIMarker#touchend
-         * @type {Object}
-         * @property {String} type                    - touchend
-         * @property {UIMarker} target    - the uimarker fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        'touchend',
-
-    _registerDOMEvents: function (dom) {
-        on(dom, this._domEvents, this._onDomEvents, this);
-    },
-
-    _onDomEvents: function (e) {
-        var event = this.getMap()._parseEvent(e, e.type);
-        this.fire(e.type, event);
-    },
-
-    _removeDOMEvents: function (dom) {
-        off(dom, this._domEvents, this._onDomEvents, this);
     }
 
-});
+    onDomRemove() {
+        var dom = this.getDOM();
+        this._removeDOMEvents(dom);
+    }
+
+    /**
+     * Whether the uimarker is being dragged.
+     * @returns {Boolean}
+     */
+    isDragging() {
+        if (this['draggable']) {
+            return this['draggable'].isDragging();
+        }
+        return false;
+    }
+
+    _registerDOMEvents(dom) {
+        on(dom, domEvents, this._onDomEvents, this);
+    }
+
+    _onDomEvents(e) {
+        var event = this.getMap()._parseEvent(e, e.type);
+        this.fire(e.type, event);
+    }
+
+    _removeDOMEvents(dom) {
+        off(dom, domEvents, this._onDomEvents, this);
+    }
+
+}
+
+UIMarker.mergeOptions(options);
 
 /**
  * Drag handler for UIMarker.
@@ -489,17 +501,3 @@ class UIMarkerDragHandler extends Handler {
 }
 
 UIMarker.addInitHook('addHandler', 'draggable', UIMarkerDragHandler);
-
-UIMarker.include(/** @lends UIMarker.prototype */ {
-    /**
-     * Whether the uimarker is being dragged.
-     * @returns {Boolean}
-     */
-    isDragging: function () {
-        if (this['draggable']) {
-            return this['draggable'].isDragging();
-        }
-        return false;
-    }
-});
-

@@ -7,7 +7,7 @@ import {
 import PointExtent from 'geo/PointExtent';
 import Canvas2D from 'utils/Canvas';
 import TileLayer from 'layer/tile/TileLayer';
-import { Canvas as Renderer } from 'renderer';
+import CanvasRenderer from 'renderer/CanvasRenderer';
 
 /**
  * @classdesc
@@ -19,31 +19,31 @@ import { Canvas as Renderer } from 'renderer';
  * @extends {renderer.Canvas}
  * @param {TileLayer} layer - layer of the renderer
  */
-export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
+export default class TileLayerCanvasRenderer extends CanvasRenderer {
 
-    propertyOfPointOnTile: '--maptalks-tile-point',
-    propertyOfTileId: '--maptalks-tile-id',
-    propertyOfTileZoom: '--maptalks-tile-zoom',
-
-    initialize: function (layer) {
+    constructor(layer) {
+        super();
+        this.propertyOfPointOnTile = '--maptalks-tile-point';
+        this.propertyOfTileId = '--maptalks-tile-id';
+        this.propertyOfTileZoom = '--maptalks-tile-zoom';
         this.layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
         if (!isNode && this.layer.options['cacheTiles']) {
             this._tileCache = new TileLayer.TileCache();
         }
         this._tileQueue = {};
-    },
+    }
 
-    clear: function () {
+    clear() {
         this.clearCanvas();
         this.requestMapToRender();
-    },
+    }
 
-    clearExecutors: function () {
+    clearExecutors() {
         clearTimeout(this._loadQueueTimeout);
-    },
+    }
 
-    draw: function () {
+    draw() {
         var layer = this.layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
@@ -104,13 +104,13 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
             }
             this._scheduleLoadTileQueue();
         }
-    },
+    }
 
-    hitDetect: function () {
+    hitDetect() {
         return false;
-    },
+    }
 
-    _scheduleLoadTileQueue: function () {
+    _scheduleLoadTileQueue() {
 
         if (this._loadQueueTimeout) {
             cancelAnimFrame(this._loadQueueTimeout);
@@ -120,9 +120,9 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
         this._loadQueueTimeout = requestAnimFrame(function () {
             me._loadTileQueue();
         });
-    },
+    }
 
-    _loadTileQueue: function () {
+    _loadTileQueue() {
         var me = this;
 
         function onTileLoad() {
@@ -153,10 +153,10 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
             }
         }
 
-    },
+    }
 
 
-    _loadTile: function (tileId, tile, onTileLoad, onTileError) {
+    _loadTile(tileId, tile, onTileLoad, onTileError) {
         var crossOrigin = this.layer.options['crossOrigin'];
         var tileSize = this.layer.getTileSize();
         var tileImage = new Image();
@@ -172,10 +172,10 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
             tileImage.crossOrigin = crossOrigin;
         }
         loadImage(tileImage, [tile['url']]);
-    },
+    }
 
 
-    _drawTile: function (point, tileImage) {
+    _drawTile(point, tileImage) {
         if (!point) {
             return;
         }
@@ -196,14 +196,14 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
             this.context.restore();
         }
         tileImage = null;
-    },
+    }
 
     /**
      * 绘制瓦片, 并请求地图重绘
      * @param  {Point} point        瓦片左上角坐标
      * @param  {Image} tileImage 瓦片图片对象
      */
-    _drawTileAndRequest: function (tileImage) {
+    _drawTileAndRequest(tileImage) {
         //sometimes, layer may be removed from map here.
         if (!this.getMap()) {
             return;
@@ -226,22 +226,22 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
         if (this._tileToLoadCounter === 0) {
             this._onTileLoadComplete();
         }
-    },
+    }
 
-    _onTileLoadComplete: function () {
+    _onTileLoadComplete() {
         //In browser, map will be requested to render once a tile was loaded.
         //but in node, map will be requested to render when the layer is loaded.
         if (isNode) {
             this.requestMapToRender();
         }
         this.fireLoadedEvent();
-    },
+    }
 
     /**
      * 清除瓦片区域, 并请求地图重绘
      * @param  {Point} point        瓦片左上角坐标
      */
-    _clearTileRectAndRequest: function (tileImage) {
+    _clearTileRectAndRequest(tileImage) {
         if (!this.getMap()) {
             return;
         }
@@ -256,12 +256,12 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
         if (this._tileToLoadCounter === 0) {
             this._onTileLoadComplete();
         }
-    },
+    }
 
     /**
      * @override
      */
-    requestMapToRender: function () {
+    requestMapToRender() {
         if (isNode) {
             if (this.getMap() && !this.getMap()._isBusy()) {
                 this._mapRender.render();
@@ -277,14 +277,14 @@ export const Canvas = Renderer.extend(/** @lends tilelayer.Canvas.prototype */ {
                 me._mapRender.render();
             }
         });
-    },
+    }
 
-    onRemove: function () {
+    onRemove() {
         delete this._mapRender;
         delete this._tileCache;
         delete this._tileRended;
         delete this._tileQueue;
     }
-});
+}
 
-TileLayer.registerRenderer('canvas', Canvas);
+TileLayer.registerRenderer('canvas', TileLayerCanvasRenderer);

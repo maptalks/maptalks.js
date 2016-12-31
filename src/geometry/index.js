@@ -7,35 +7,34 @@ import './ext/Geometry.Drag';
 import './ext/Geometry.Edit';
 import './ext/Geometry.Events';
 import './ext/Geometry.InfoWindow';
-import './ext/Geometry.Menu';
 
-import { Geometry } from './Geometry';
-import { Marker } from './Marker';
-import { LineString, Polyline } from './LineString';
-import { Polygon } from './Polygon';
-import { MultiPoint } from './MultiPoint';
-import { MultiLineString } from './MultiLineString';
-import { MultiPolygon } from './MultiPolygon';
-import { GeometryCollection } from './GeometryCollection';
-import { GeoJSON } from './GeoJSON';
-import { Circle } from './Circle';
-import { Ellipse } from './Ellipse';
-import { Rectangle } from './Rectangle';
-import { Sector } from './Sector';
-import { Curve } from './Curve';
-import { ArcCurve } from './ArcCurve';
-import { CubicBezierCurve } from './CubicBezierCurve';
-import { QuadBezierCurve } from './QuadBezierCurve';
-import { TextMarker } from './TextMarker';
-import { TextBox } from './TextBox';
-import { Label } from './Label';
+import Geometry from './Geometry';
+import Marker from './Marker';
+import LineString from './LineString';
+import Polygon from './Polygon';
+import MultiPoint from './MultiPoint';
+import MultiLineString from './MultiLineString';
+import MultiPolygon from './MultiPolygon';
+import GeometryCollection from './GeometryCollection';
+import GeoJSON from './GeoJSON';
+import Circle from './Circle';
+import Ellipse from './Ellipse';
+import Rectangle from './Rectangle';
+import Sector from './Sector';
+import Curve from './Curve';
+import ArcCurve from './ArcCurve';
+import CubicBezierCurve from './CubicBezierCurve';
+import QuadBezierCurve from './QuadBezierCurve';
+import TextMarker from './TextMarker';
+import TextBox from './TextBox';
+import Label from './Label';
 import { ConnectorLine, ArcConnectorLine } from './ConnectorLine';
 
-export function initGeometry(maptalks) {
+export function exportGeometries(maptalks) {
     maptalks.Geometry = Geometry;
     maptalks.Marker = Marker;
     maptalks.LineString = LineString;
-    maptalks.Polyline = Polyline;
+    maptalks.Polyline = ;
     maptalks.Polygon = Polygon;
     maptalks.MultiPoint = MultiPoint;
     maptalks.MultiLineString = MultiLineString;
@@ -58,25 +57,26 @@ export function initGeometry(maptalks) {
     maptalks.ArcConnectorLine = ArcConnectorLine;
 }
 
-export * from './ArcCurve';
-export * from './Circle';
-export * from './ConnectorLine';
-export * from './CubicBezierCurve';
-export * from './Curve';
-export * from './Ellipse';
-export * from './GeoJSON';
-export * from './Geometry';
-export * from './GeometryCollection';
-export * from './Label';
-export * from './LineString';
-export * from './Marker';
-export * from './MultiLineString';
-export * from './MultiPoint';
-export * from './MultiPolygon';
-export * from './Polygon';
-export * from './QuadBezierCurve';
-export * from './Rectangle';
-export * from './Sector';
-export * from './TextBox';
-export * from './TextMarker';
-export * from './Vector';
+export {
+    ArcCurve,
+    Circle,
+    ConnectorLine, ArcConnectorLine,
+    CubicBezierCurve,
+    Curve,
+    Ellipse,
+    GeoJSON,
+    Geometry,
+    GeometryCollection,
+    Label,
+    LineString,
+    Marker,
+    MultiLineString,
+    MultiPoint,
+    MultiPolygon,
+    Polygon,
+    QuadBezierCurve,
+    Rectangle,
+    Sector,
+    TextBox,
+    TextMarker
+};

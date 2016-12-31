@@ -3,11 +3,10 @@ import { isNil } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Browser from 'core/Browser';
 import Handler from 'core/Handler';
-import { Geometry } from 'geometry/Geometry';
+import Geometry from 'geometry/Geometry';
 import DragHandler from 'handler/Drag';
 import VectorLayer from 'layer/VectorLayer';
 import { ConnectorLine } from 'geometry/ConnectorLine';
-import { Canvas } from 'renderer';
 
 /**
  * Drag handler for geometries.
@@ -16,7 +15,7 @@ import { Canvas } from 'renderer';
  * @protected
  * @extends {Handler}
  */
-class GeometryDragHandler extends Handler  {
+export default class GeometryDragHandler extends Handler  {
 
     constructor(target) {
         super(target);
@@ -309,5 +308,3 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return false;
     }
 });
-
-export default GeometryDragHandler;

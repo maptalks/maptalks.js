@@ -1,8 +1,8 @@
 import { isArray } from 'core/util';
 import { getExternalResources } from 'core/util/resource';
-import VectorLayer from 'layer/VectorLayer';
-import { Canvas as Renderer } from 'renderer/overlaylayer';
-import { Canvas as CanvasRenderer } from 'renderer';
+// import VectorLayer from 'layer/VectorLayer';
+import CanvasRenderer from '../CanvasRenderer';
+import OverlayLayerRenderer from './OverlayLayerRenderer';
 
 /**
  * @classdesc
@@ -14,15 +14,16 @@ import { Canvas as CanvasRenderer } from 'renderer';
  * @extends {renderer.overlaylayer.Canvas}
  * @param {VectorLayer} layer - layer of the renderer
  */
-export const Canvas = Renderer.extend(/** @lends renderer.vectorlayer.Canvas.prototype */ {
+export default class VectorLayerRenderer extends OverlayLayerRenderer {
 
-    initialize: function (layer) {
+    constructor(layer) {
+        super();
         this.layer = layer;
-    },
+    }
 
-    checkResources: function () {
+    checkResources() {
         var me = this;
-        var resources = Renderer.prototype.checkResources.apply(this, arguments);
+        var resources = OverlayLayerRenderer.prototype.checkResources.apply(this, arguments);
         var style = this.layer.getStyle();
         if (style) {
             if (!isArray(style)) {
@@ -40,14 +41,14 @@ export const Canvas = Renderer.extend(/** @lends renderer.vectorlayer.Canvas.pro
             });
         }
         return resources;
-    },
+    }
 
     /**
      * render layer
      * @param  {Geometry[]} geometries   geometries to render
      * @param  {Boolean} ignorePromise   whether escape step of promise
      */
-    draw: function () {
+    draw() {
         if (!this.getMap()) {
             return;
         }
@@ -60,36 +61,36 @@ export const Canvas = Renderer.extend(/** @lends renderer.vectorlayer.Canvas.pro
         this._drawGeos();
 
         this.completeRender();
-    },
+    }
 
-    drawOnZooming: function () {
+    drawOnZooming() {
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
         }
-    },
+    }
 
-    isBlank: function () {
+    isBlank() {
         return this._isBlank;
-    },
+    }
 
     /**
      * Show and render
      * @override
      */
-    show: function () {
+    show() {
         this.layer.forEach(function (geo) {
             geo._repaint();
         });
-        Renderer.prototype.show.apply(this, arguments);
-    },
+        OverlayLayerRenderer.prototype.show.apply(this, arguments);
+    }
 
-    isUpdateWhenZooming: function () {
+    isUpdateWhenZooming() {
         var map = this.getMap();
         var count = map._getRenderer()._getCountOfGeosToDraw();
         return (this._hasPointSymbolizer && count > 0 && count <= map.options['pointThresholdOfZoomAnimation']);
-    },
+    }
 
-    _drawGeos: function () {
+    _drawGeos() {
         var map = this.getMap();
         if (!map) {
             return;
@@ -119,15 +120,15 @@ export const Canvas = Renderer.extend(/** @lends renderer.vectorlayer.Canvas.pro
         for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
         }
-    },
+    }
 
-    _prepareToDraw: function () {
+    _prepareToDraw() {
         this._isBlank = true;
         this._hasPointSymbolizer = false;
         this._geosToDraw = [];
-    },
+    }
 
-    _checkGeo: function (geo) {
+    _checkGeo(geo) {
         if (!geo || !geo.isVisible() || !geo.getMap() ||
             !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
             return;
@@ -142,44 +143,44 @@ export const Canvas = Renderer.extend(/** @lends renderer.vectorlayer.Canvas.pro
             this._hasPointSymbolizer = true;
         }
         this._geosToDraw.push(geo);
-    },
+    }
 
-    _forEachGeo: function (fn, context) {
+    _forEachGeo(fn, context) {
         this.layer.forEach(fn, context);
-    },
+    }
 
-    onZooming: function () {
+    onZooming() {
         var map = this.getMap();
         if (this.layer.isVisible() && (map._pitch || this.isUpdateWhenZooming())) {
             this._geosToDraw.forEach(function (geo) {
                 geo._removeZoomCache();
             });
         }
-        CanvasRenderer.prototype.onZooming.apply(this, arguments);
-    },
+        OverlayLayerRenderer.prototype.onZooming.apply(this, arguments);
+    }
 
-    onZoomEnd: function () {
+    onZoomEnd() {
         delete this._extent2D;
         if (this.layer.isVisible()) {
             this.layer.forEach(function (geo) {
                 geo._removeZoomCache();
             });
         }
-        CanvasRenderer.prototype.onZoomEnd.apply(this, arguments);
-    },
+        OverlayLayerRenderer.prototype.onZoomEnd.apply(this, arguments);
+    }
 
-    onRemove: function () {
+    onRemove() {
         this._forEachGeo(function (g) {
             g.onHide();
         });
         delete this._geosToDraw;
-    },
+    }
 
-    onGeometryPropertiesChange: function (param) {
+    onGeometryPropertiesChange(param) {
         if (param) {
             this.layer._styleGeometry(param['target']);
         }
     }
-});
+}
 
-VectorLayer.registerRenderer('canvas', Canvas);
+// VectorLayer.registerRenderer('canvas', VectorLayerRenderer);

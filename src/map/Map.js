@@ -13,7 +13,7 @@ import {
     indexOfArray,
     executeWhen
 } from 'core/util';
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Eventable from 'core/Event';
 import Handlerable from 'core/Handlerable';
@@ -23,11 +23,83 @@ import PointExtent from 'geo/PointExtent';
 import Extent from 'geo/Extent';
 import Coordinate from 'geo/Coordinate';
 import Layer from 'layer/Layer';
-import { TileLayer } from 'layer/tile/TileLayer';
-import { TileSystem } from 'layer/tile/tileinfo/TileSystem';
-import { Renderable } from 'renderer';
-import { Canvas as TileLayerRenderer } from 'renderer/tilelayer';
-import { View } from './view/View';
+import TileLayer from 'layer/tile/TileLayer';
+import TileSystem from 'layer/tile/tileinfo/TileSystem';
+import Renderable from 'renderer/Renderable';
+import TileLayerRenderer from 'renderer/tilelayer/TileLayerCanvasRenderer';
+import View from './view/View';
+
+
+/**
+ * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
+ * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
+ * @property {Boolean} [options.clipFullExtent=false]           - clip geometries outside map's full extent
+ * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
+ * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
+ * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
+ * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
+ * @property {Number}  [options.pointThresholdOfZoomAnimation=150] - threshold of point count to perform zoom animation.
+ * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
+ * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
+ * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
+ * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
+ * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
+ * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
+ * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
+ * @property {Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
+ *
+ * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
+ * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
+ * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
+ * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
+ * @property {Boolean} [options.autoBorderPanning=false]                - whether to pan the map automatically if mouse moves on the border of the map
+ * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
+ *
+ * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
+ * @property {Boolean|Object} [options.attributionControl=false]        - display the attribution control on the map if set to true or a object as the control construct option.
+ * @property {Boolean|Object} [options.zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
+ * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
+ * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
+ *
+ * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ */
+const options = {
+    'centerCross': false,
+
+    'clipFullExtent': false,
+
+    'zoomAnimation': (function () {
+        return !isNode;
+    })(),
+    'zoomAnimationDuration': 330,
+    //still leave background after zooming, set it to false if baseLayer is a transparent layer
+    'zoomBackground': false,
+    //controls whether other layers than base tilelayer will show during zoom animation.
+    'layerZoomAnimation': true,
+
+    'pointThresholdOfZoomAnimation': 200,
+
+    'panAnimation': (function () {
+        return !isNode;
+    })(),
+    //default pan animation duration
+    'panAnimationDuration': 600,
+
+    'zoomable': true,
+    'enableInfoWindow': true,
+
+    'hitDetect': (function () {
+        return !Browser.mobile;
+    })(),
+
+    'maxZoom': null,
+    'minZoom': null,
+    'maxExtent': null,
+
+    'checkSize': true,
+
+    'renderer': 'canvas'
+};
 
 /**
  *
@@ -69,84 +141,10 @@ import { View } from './view/View';
         ]
     });
  */
-export const Map = Class.extend(/** @lends Map.prototype */ {
+export default class Map extends Handlerable(Eventable(Class)) {
 
-    includes: [Eventable, Handlerable],
-
-    /**
-     * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
-     * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
-     * @property {Boolean} [options.clipFullExtent=false]           - clip geometries outside map's full extent
-     * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
-     * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
-     * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
-     * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
-     * @property {Number}  [options.pointThresholdOfZoomAnimation=150] - threshold of point count to perform zoom animation.
-     * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
-     * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
-     * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
-     * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
-     * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
-     * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
-     * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
-     * @property {Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
-     *
-     * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
-     * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
-     * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
-     * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
-     * @property {Boolean} [options.autoBorderPanning=false]                - whether to pan the map automatically if mouse moves on the border of the map
-     * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
-     *
-     * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
-     * @property {Boolean|Object} [options.attributionControl=false]        - display the attribution control on the map if set to true or a object as the control construct option.
-     * @property {Boolean|Object} [options.zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
-     * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
-     * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
-     *
-     * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
-     */
-    options: {
-        'centerCross': false,
-
-        'clipFullExtent': false,
-
-        'zoomAnimation': (function () {
-            return !isNode;
-        })(),
-        'zoomAnimationDuration': 330,
-        //still leave background after zooming, set it to false if baseLayer is a transparent layer
-        'zoomBackground': false,
-        //controls whether other layers than base tilelayer will show during zoom animation.
-        'layerZoomAnimation': true,
-
-        'pointThresholdOfZoomAnimation': 200,
-
-        'panAnimation': (function () {
-            return !isNode;
-        })(),
-        //default pan animation duration
-        'panAnimationDuration': 600,
-
-        'zoomable': true,
-        'enableInfoWindow': true,
-
-        'hitDetect': (function () {
-            return !Browser.mobile;
-        })(),
-
-        'maxZoom': null,
-        'minZoom': null,
-        'maxExtent': null,
-
-        'checkSize': true,
-
-        'renderer': 'canvas'
-    },
-
-
-    initialize: function (container, options) {
-
+    constructor(container, options) {
+        super();
         if (!options) {
             throw new Error('Invalid options when creating map.');
         }
@@ -214,15 +212,33 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         this._updateMapSize(this._getContainerDomSize());
 
         this._Load();
-    },
+    }
+
+    /**
+     * Add hooks for additional codes when map's loading complete, useful for plugin developping.
+     * @param {function} fn
+     * @returns {Map}
+     * @static
+     * @protected
+     */
+    static addOnLoadHook(fn) { // (Function) || (String, args...)
+        const args = Array.prototype.slice.call(arguments, 1);
+        var onload = typeof fn === 'function' ? fn : function () {
+            this[fn].apply(this, args);
+        };
+        this.prototype._onLoadHooks = this.prototype._onLoadHooks || [];
+        this.prototype._onLoadHooks.push(onload);
+        return this;
+    }
+
 
     /**
      * Whether the map is loaded or not.
      * @return {Boolean}
      */
-    isLoaded: function () {
+    isLoaded() {
         return this._loaded;
-    },
+    }
 
     /**
      * Whether the map is rendered by canvas
@@ -231,24 +247,24 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @example
      * var isCanvas = map.isCanvasRender();
      */
-    isCanvasRender: function () {
+    isCanvasRender() {
         var renderer = this._getRenderer();
         if (renderer) {
             return renderer.isCanvasRender();
         }
         return false;
-    },
+    }
 
     /**
      * Get the view of the Map.
      * @return {View} map's view
      */
-    getView: function () {
+    getView() {
         if (!this._view) {
             return null;
         }
         return this._view;
-    },
+    }
 
     /**
      * Change the view of the map. <br>
@@ -273,7 +289,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             })()
         });
      */
-    setView: function (view) {
+    setView(view) {
         var oldView = this.options['view'];
         if (oldView && !view) {
             return this;
@@ -302,7 +318,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             'new': extend({}, this.options['view'])
         });
         return this;
-    },
+    }
 
     /**
      * Callback when any option is updated
@@ -310,12 +326,12 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param  {Object} conf - options to update
      * @return {Map}   this
      */
-    onConfig: function (conf) {
+    onConfig(conf) {
         if (!isNil(conf['view'])) {
             this.setView(conf['view']);
         }
         return this;
-    },
+    }
 
     /**
      * Get the projection of the map. <br>
@@ -329,18 +345,18 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * 3. locate(coord, distx, disty) - compute the coordinate from the coord with xdist on axis x and ydist on axis y.
      * @return {Object}
      */
-    getProjection: function () {
+    getProjection() {
         return this._view.getProjection();
-    },
+    }
 
     /**
      * Get map's full extent, which is defined in map's view. <br>
      * eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
      * @return {Extent}
      */
-    getFullExtent: function () {
+    getFullExtent() {
         return this._view.getFullExtent();
-    },
+    }
 
     /**
      * Set map's cursor style, cursor style is same with CSS.
@@ -349,31 +365,31 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @example
      * map.setCursor('url(cursor.png) 4 12, auto');
      */
-    setCursor: function (cursor) {
+    setCursor(cursor) {
         delete this._cursor;
         this._trySetCursor(cursor);
         this._cursor = cursor;
         return this;
-    },
+    }
 
     /**
      * Get center of the map.
      * @return {Coordinate}
      */
-    getCenter: function () {
+    getCenter() {
         if (!this._loaded || !this._prjCenter) {
             return this._center;
         }
         var projection = this.getProjection();
         return projection.unproject(this._prjCenter);
-    },
+    }
 
     /**
      * Set a new center to the map.
      * @param {Coordinate} center
      * @return {Map} this
      */
-    setCenter: function (center) {
+    setCenter(center) {
         if (!center) {
             return this;
         }
@@ -391,59 +407,59 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         this._setPrjCenterAndMove(_pcenter);
         this.onMoveEnd();
         return this;
-    },
+    }
 
     /**
      * Get map's size (width and height) in pixel.
      * @return {Size}
      */
-    getSize: function () {
+    getSize() {
         if (isNil(this.width) || isNil(this.height)) {
             return this._getContainerDomSize();
         }
         return new Size(this.width, this.height);
-    },
+    }
 
     /**
      * Get container extent of the map
      * @return {PointExtent}
      */
-    getContainerExtent: function () {
+    getContainerExtent() {
         return new PointExtent(0, 0, this.width, this.height);
-    },
+    }
 
     /**
      * Get the geographical extent of map's current view extent.
      *
      * @return {Extent}
      */
-    getExtent: function () {
+    getExtent() {
         return this._pointToExtent(this._get2DExtent());
-    },
+    }
 
     /**
      * Get the projected geographical extent of map's current view extent.
      *
      * @return {Extent}
      */
-    getProjExtent: function () {
+    getProjExtent() {
         var extent2D = this._get2DExtent();
         return new Extent(
             this._pointToPrj(extent2D.getMin()),
             this._pointToPrj(extent2D.getMax())
         );
-    },
+    }
 
     /**
      * Get the max extent that the map is restricted to.
      * @return {Extent}
      */
-    getMaxExtent: function () {
+    getMaxExtent() {
         if (!this.options['maxExtent']) {
             return null;
         }
         return new Extent(this.options['maxExtent']);
-    },
+    }
 
     /**
      * Sets the max extent that the map is restricted to.
@@ -452,7 +468,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @example
      * map.setMaxExtent(map.getExtent());
      */
-    setMaxExtent: function (extent) {
+    setMaxExtent(extent) {
         if (extent) {
             var maxExt = new Extent(extent);
             this.options['maxExtent'] = maxExt;
@@ -464,15 +480,15 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             delete this.options['maxExtent'];
         }
         return this;
-    },
+    }
 
     /**
      * Get map's current zoom.
      * @return {Number}
      */
-    getZoom: function () {
+    getZoom() {
         return this._zoomLevel;
-    },
+    }
 
     /**
      * Caculate the target zoom if scaling from "fromZoom" by "scale"
@@ -480,7 +496,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param  {Number} fromZoom
      * @return {Number} zoom fit for scale starting from fromZoom
      */
-    getZoomForScale: function (scale, fromZoom) {
+    getZoomForScale(scale, fromZoom) {
         if (isNil(fromZoom)) {
             fromZoom = this.getZoom();
         }
@@ -504,9 +520,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             hit = maxZoom;
         }
         return hit;
-    },
+    }
 
-    getZoomFromRes: function (res) {
+    getZoomFromRes(res) {
         var resolutions = this._getResolutions(),
             minRes = this._getResolution(this.getMinZoom()),
             maxRes = this._getResolution(this.getMaxZoom());
@@ -534,14 +550,14 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             }
         }
         return l - 1;
-    },
+    }
 
     /**
      * Sets zoom of the map
      * @param {Number} zoom
      * @returns {Map} this
      */
-    setZoom: function (zoom) {
+    setZoom(zoom) {
         var me = this;
         executeWhen(function () {
             if (me._loaded && me.options['zoomAnimation']) {
@@ -553,13 +569,13 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             return !me._zooming;
         });
         return this;
-    },
+    }
 
     /**
      * Get the max zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMaxZoom: function () {
+    getMaxZoom() {
         if (!isNil(this.options['maxZoom'])) {
             return this.options['maxZoom'];
         }
@@ -568,14 +584,14 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             return null;
         }
         return view.getResolutions().length - 1;
-    },
+    }
 
     /**
      * Sets the max zoom that the map can be zoom to.
      * @param {Number} maxZoom
      * @returns {Map} this
      */
-    setMaxZoom: function (maxZoom) {
+    setMaxZoom(maxZoom) {
         var viewMaxZoom = this._view.getMaxZoom();
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
@@ -585,38 +601,38 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         }
         this.options['maxZoom'] = maxZoom;
         return this;
-    },
+    }
 
     /**
      * Get the min zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMinZoom: function () {
+    getMinZoom() {
         if (!isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
         return 0;
-    },
+    }
 
     /**
      * Sets the min zoom that the map can be zoom to.
      * @param {Number} minZoom
      * @return {Map} this
      */
-    setMinZoom: function (minZoom) {
+    setMinZoom(minZoom) {
         var viewMinZoom = this._view.getMinZoom();
         if (minZoom < viewMinZoom) {
             minZoom = viewMinZoom;
         }
         this.options['minZoom'] = minZoom;
         return this;
-    },
+    }
 
     /**
      * zoom in
      * @return {Map} this
      */
-    zoomIn: function () {
+    zoomIn() {
         var me = this;
         executeWhen(function () {
             me.setZoom(me.getZoom() + 1);
@@ -624,13 +640,13 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             return !me._zooming;
         });
         return this;
-    },
+    }
 
     /**
      * zoom out
      * @return {Map} this
      */
-    zoomOut: function () {
+    zoomOut() {
         var me = this;
         executeWhen(function () {
             me.setZoom(me.getZoom() - 1);
@@ -638,7 +654,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             return !me._zooming;
         });
         return this;
-    },
+    }
 
     /**
      * Sets the center and zoom at the same time.
@@ -646,7 +662,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param {Number} zoom
      * @return {Map} this
      */
-    setCenterAndZoom: function (center, zoom) {
+    setCenterAndZoom(center, zoom) {
         if (this._zoomLevel !== zoom) {
             this.setCenter(center);
             if (!isNil(zoom)) {
@@ -656,7 +672,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             this.setCenter(center);
         }
         return this;
-    },
+    }
 
 
     /**
@@ -664,7 +680,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param {Extent} extent
      * @return {Number} zoom fit for the extent
      */
-    getFitZoom: function (extent) {
+    getFitZoom(extent) {
         if (!extent || !(extent instanceof Extent)) {
             return this._zoomLevel;
         }
@@ -705,28 +721,28 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             return this.getMaxZoom();
         }
         return ret;
-    },
+    }
 
     /**
      * Get map's resolution
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} resolution
      */
-    getResolution: function (zoom) {
+    getResolution(zoom) {
         return this._getResolution(zoom);
-    },
+    }
 
     /**
      * Get scale of resolutions from zoom to max zoom
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} scale
      */
-    getScale: function (zoom) {
+    getScale(zoom) {
         var z = (isNil(zoom) ? this.getZoom() : zoom);
         var max = this._getResolution(this.getMaxZoom()),
             res = this._getResolution(z);
         return res / max;
-    },
+    }
 
     /**
      * Set the map to be fit for the given extent with the max zoom level possible.
@@ -734,7 +750,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param  {Number} zoomOffset - zoom offset
      * @return {Map} - this
      */
-    fitExtent: function (extent, zoomOffset) {
+    fitExtent(extent, zoomOffset) {
         if (!extent) {
             return this;
         }
@@ -743,15 +759,15 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         zoom += zoomOffset;
         var center = new Extent(extent).getCenter();
         return this.setCenterAndZoom(center, zoom);
-    },
+    }
 
     /**
      * Get the base layer of the map.
      * @return {Layer}
      */
-    getBaseLayer: function () {
+    getBaseLayer() {
         return this._baseLayer;
-    },
+    }
 
     /**
      * Sets a new base layer to the map.<br>
@@ -762,7 +778,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @fires Map#baselayerchangestart
      * @fires Map#baselayerchangeend
      */
-    setBaseLayer: function (baseLayer) {
+    setBaseLayer(baseLayer) {
         var isChange = false;
         if (this._baseLayer) {
             isChange = true;
@@ -831,14 +847,14 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         }
         this._fireEvent('setbaselayer');
         return this;
-    },
+    }
 
     /**
      * Remove the base layer from the map
      * @return {Map} this
      * @fires Map#baselayerremove
      */
-    removeBaseLayer: function () {
+    removeBaseLayer() {
         if (this._baseLayer) {
             this._baseLayer.remove();
             delete this._baseLayer;
@@ -853,7 +869,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             this._fireEvent('baselayerremove');
         }
         return this;
-    },
+    }
 
     /**
      * Get the layers of the map, except base layer (which should be by getBaseLayer). <br>
@@ -865,7 +881,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      *     return (layer instanceof VectorLayer);
      * });
      */
-    getLayers: function (filter) {
+    getLayers(filter) {
         return this._getLayers(function (layer) {
             if (layer === this._baseLayer || layer.getId().indexOf(internalLayerPrefix) >= 0) {
                 return false;
@@ -875,19 +891,19 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             }
             return true;
         });
-    },
+    }
 
     /**
      * Get the layer with the given id.
      * @param  {String} id - layer id
      * @return {Layer}
      */
-    getLayer: function (id) {
+    getLayer(id) {
         if (!id || !this._layerCache || !this._layerCache[id]) {
             return null;
         }
         return this._layerCache[id];
-    },
+    }
 
     /**
      * Add a new layer on the top of the map.
@@ -895,7 +911,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Map} this
      * @fires Map#addlayer
      */
-    addLayer: function (layers) {
+    addLayer(layers) {
         if (!layers) {
             return this;
         }
@@ -934,7 +950,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             'layers': layers
         });
         return this;
-    },
+    }
 
     /**
      * Remove a layer from the map
@@ -942,7 +958,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Map} this
      * @fires Map#removelayer
      */
-    removeLayer: function (layers) {
+    removeLayer(layers) {
         if (!layers) {
             return this;
         }
@@ -984,7 +1000,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             'layers': layers
         });
         return this;
-    },
+    }
 
     /**
      * Sort layers according to the order provided, the last will be on the top.
@@ -995,7 +1011,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * map.sortLayers([layer2, layer3, layer1]);
      * map.sortLayers(['3', '2', '1']); // sort by layer ids.
      */
-    sortLayers: function (layers) {
+    sortLayers(layers) {
         if (!layers || !isArray(layers)) {
             return this;
         }
@@ -1018,7 +1034,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             layersToOrder[ii].setZIndex(minZ + ii);
         }
         return this;
-    },
+    }
 
     /**
      * Exports image from the map's canvas.
@@ -1028,7 +1044,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param {String} [options.filename=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
      */
-    toDataURL: function (options) {
+    toDataURL(options) {
         if (!options) {
             options = {};
         }
@@ -1059,7 +1075,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             return dataURL;
         }
         return null;
-    },
+    }
 
 
     /**
@@ -1071,10 +1087,10 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @example
      * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
      */
-    coordinateToPoint: function (coordinate, zoom) {
+    coordinateToPoint(coordinate, zoom) {
         var prjCoord = this.getProjection().project(coordinate);
         return this._prjToPoint(prjCoord, zoom);
-    },
+    }
 
     /**
      * Converts a 2D point in current zoom or a specific zoom to a coordinate.
@@ -1084,10 +1100,10 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @example
      * var coord = map.pointToCoordinate(new Point(4E6, 3E4));
      */
-    pointToCoordinate: function (point, zoom) {
+    pointToCoordinate(point, zoom) {
         var prjCoord = this._pointToPrj(point, zoom);
         return this.getProjection().unproject(prjCoord);
-    },
+    }
 
     /**
      * Converts a geographical coordinate to view point.<br>
@@ -1095,18 +1111,18 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param {Coordinate} coordinate
      * @return {Point}
      */
-    coordinateToViewPoint: function (coordinate) {
+    coordinateToViewPoint(coordinate) {
         return this._prjToViewPoint(this.getProjection().project(coordinate));
-    },
+    }
 
     /**
      * Converts a view point to the geographical coordinate.
      * @param {Point} viewPoint
      * @return {Coordinate}
      */
-    viewPointToCoordinate: function (viewPoint) {
+    viewPointToCoordinate(viewPoint) {
         return this.getProjection().unproject(this._viewPointToPrj(viewPoint));
-    },
+    }
 
     /**
      * Convert a geographical coordinate to the container point. <br>
@@ -1114,20 +1130,20 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param {Coordinate}
      * @return {Point}
      */
-    coordinateToContainerPoint: function (coordinate) {
+    coordinateToContainerPoint(coordinate) {
         var pCoordinate = this.getProjection().project(coordinate);
         return this._prjToContainerPoint(pCoordinate);
-    },
+    }
 
     /**
      * Converts a container point to geographical coordinate.
      * @param {Point}
      * @return {Coordinate}
      */
-    containerPointToCoordinate: function (containerPoint) {
+    containerPointToCoordinate(containerPoint) {
         var pCoordinate = this._containerPointToPrj(containerPoint);
         return this.getProjection().unproject(pCoordinate);
-    },
+    }
 
     /**
      * Converts a container point to the view point.
@@ -1135,9 +1151,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param {Point}
      * @returns {Point}
      */
-    containerPointToViewPoint: function (containerPoint) {
+    containerPointToViewPoint(containerPoint) {
         return containerPoint.substract(this.offsetPlatform());
-    },
+    }
 
     /**
      * Converts a view point to the container point.
@@ -1145,29 +1161,29 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param {Point}
      * @returns {Point}
      */
-    viewPointToContainerPoint: function (viewPoint) {
+    viewPointToContainerPoint(viewPoint) {
         return viewPoint.add(this.offsetPlatform());
-    },
+    }
 
     /**
      * Converts a container point extent to the geographic extent.
      * @param  {PointExtent} containerExtent - containeproints extent
      * @return {Extent}  geographic extent
      */
-    containerToExtent: function (containerExtent) {
+    containerToExtent(containerExtent) {
         var extent2D = new PointExtent(
             this._containerPointToPoint(containerExtent.getMin()),
             this._containerPointToPoint(containerExtent.getMax())
         );
         return this._pointToExtent(extent2D);
-    },
+    }
 
     /**
      * Checks if the map container size changed and updates the map if so.
      * @return {Map} this
      * @fires Map#resize
      */
-    checkSize: function () {
+    checkSize() {
         var justStart = ((now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
 
         var watched = this._getContainerDomSize(),
@@ -1195,7 +1211,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         this._fireEvent('resize');
 
         return this;
-    },
+    }
 
     /**
      * Converts geographical distances to the pixel length.<br>
@@ -1205,7 +1221,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param  {Number} yDist - distance on Y axis.
      * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
      */
-    distanceToPixel: function (xDist, yDist, zoom) {
+    distanceToPixel(xDist, yDist, zoom) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
@@ -1217,7 +1233,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         var width = !xDist ? 0 : (projection.project(new Coordinate(target.x, center.y)).x - projection.project(center).x) / res;
         var height = !yDist ? 0 : (projection.project(new Coordinate(center.x, target.y)).y - projection.project(center).y) / res;
         return new Size(Math.abs(width), Math.abs(height));
-    },
+    }
 
     /**
      * Converts pixel size to geographical distance.
@@ -1226,7 +1242,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param  {Number} height - pixel height
      * @return {Number}  distance - Geographical distance
      */
-    pixelToDistance: function (width, height, zoom) {
+    pixelToDistance(width, height, zoom) {
         var projection = this.getProjection();
         if (!projection) {
             return null;
@@ -1238,7 +1254,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         var pTarget = new Coordinate(pcenter.x + width * res, pcenter.y + height * res);
         var target = projection.unproject(pTarget);
         return projection.measureLength(target, center);
-    },
+    }
 
     /**
      * Computes the coordinate from the given coordinate with xdist on axis x and ydist on axis y.
@@ -1247,27 +1263,27 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @param  {Number} dy           - distance on Y axis from the source coordinate
      * @return {Coordinate} Result coordinate
      */
-    locate: function (coordinate, dx, dy) {
+    locate(coordinate, dx, dy) {
         return this.getProjection().locate(new Coordinate(coordinate), dx, dy);
-    },
+    }
 
     /**
      * Return map's main panel
      * @returns {HTMLElement}
      */
-    getMainPanel: function () {
+    getMainPanel() {
         return this._getRenderer().getMainPanel();
-    },
+    }
 
     /**
      * Returns map panels.
      * @return {Object}
      */
-    getPanels: function () {
+    getPanels() {
         return this._panels;
-    },
+    }
 
-    remove: function () {
+    remove() {
         this._registerDomEvents(true);
         this._clearHandlers();
         this.removeBaseLayer();
@@ -1285,14 +1301,14 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         delete this._panels;
         delete this._containerDOM;
         return this;
-    },
+    }
 
     /**
      * The callback function when move started
      * @private
      * @fires Map#movestart
      */
-    onMoveStart: function (param) {
+    onMoveStart(param) {
         this._originCenter = this.getCenter();
         this._enablePanAnimation = false;
         this._moving = true;
@@ -1309,9 +1325,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('movestart', this._parseEvent(param ? param['domEvent'] : null, 'movestart'));
-    },
+    }
 
-    onMoving: function (param) {
+    onMoving(param) {
         /**
          * moving event
          * @event Map#moving
@@ -1324,9 +1340,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moving', this._parseEvent(param ? param['domEvent'] : null, 'moving'));
-    },
+    }
 
-    onMoveEnd: function (param) {
+    onMoveEnd(param) {
         this._moving = false;
         this._trySetCursor('default');
         /**
@@ -1348,7 +1364,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             }
             this.panTo(moveTo);
         }
-    },
+    }
 
     //-----------------------------------------------------------
 
@@ -1357,16 +1373,16 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @private
      * @return {Boolean}
      */
-    _isBusy: function () {
+    _isBusy() {
         return this._zooming/* || this._moving*/;
-    },
+    }
 
     /**
      * try to change cursor when map is not setCursored
      * @private
      * @param  {String} cursor css cursor
      */
-    _trySetCursor: function (cursor) {
+    _trySetCursor(cursor) {
         if (!this._cursor && !this._priorityCursor) {
             if (!cursor) {
                 cursor = 'default';
@@ -1374,9 +1390,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             this._setCursorToPanel(cursor);
         }
         return this;
-    },
+    }
 
-    _setPriorityCursor: function (cursor) {
+    _setPriorityCursor(cursor) {
         if (!cursor) {
             var hasCursor = false;
             if (this._priorityCursor) {
@@ -1391,14 +1407,14 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             this._setCursorToPanel(cursor);
         }
         return this;
-    },
+    }
 
-    _setCursorToPanel: function (cursor) {
+    _setCursorToPanel(cursor) {
         var panel = this.getMainPanel();
         if (panel && panel.style && panel.style.cursor !== cursor) {
             panel.style.cursor = cursor;
         }
-    },
+    }
 
     /**
      * Get map's extent in view points.
@@ -1406,7 +1422,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {PointExtent}
      * @private
      */
-    _get2DExtent: function (zoom) {
+    _get2DExtent(zoom) {
         var c1 = this._containerPointToPoint(new Point(0, 0), zoom),
             c2 = this._containerPointToPoint(new Point(this.width, 0), zoom),
             c3 = this._containerPointToPoint(new Point(this.width, this.height), zoom),
@@ -1416,7 +1432,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             ymin = Math.min(c1.y, c2.y, c3.y, c4.y),
             ymax = Math.max(c1.y, c2.y, c3.y, c4.y);
         return new PointExtent(xmin, ymin, xmax, ymax);
-    },
+    }
 
     /**
      * Converts a view point extent to the geographic extent.
@@ -1424,21 +1440,21 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Extent}  geographic extent
      * @protected
      */
-    _pointToExtent: function (extent2D) {
+    _pointToExtent(extent2D) {
         return new Extent(
             this.pointToCoordinate(extent2D.getMin()),
             this.pointToCoordinate(extent2D.getMax())
         );
-    },
+    }
 
-    _setPrjCenterAndMove: function (pcenter) {
+    _setPrjCenterAndMove(pcenter) {
         var offset = this._getPixelDistance(pcenter);
         this._setPrjCenter(pcenter);
         this.offsetPlatform(offset);
-    },
+    }
 
     //remove a layer from the layerList
-    _removeLayer: function (layer, layerList) {
+    _removeLayer(layer, layerList) {
         if (!layer || !layerList) {
             return;
         }
@@ -1452,13 +1468,13 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
                 }
             }
         }
-    },
+    }
 
-    _sortLayersByZIndex: function (layerList) {
+    _sortLayersByZIndex(layerList) {
         layerList.sort(function (a, b) {
             return a.getZIndex() - b.getZIndex();
         });
-    },
+    }
 
     /**
      * Gets pixel lenth from pcenter to map's current center.
@@ -1466,24 +1482,24 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Point}
      * @private
      */
-    _getPixelDistance: function (pCoord) {
+    _getPixelDistance(pCoord) {
         var center = this._getPrjCenter();
         var pxCenter = this._prjToContainerPoint(center);
         var pxCoord = this._prjToContainerPoint(pCoord);
         var dist = new Point(-pxCoord.x + pxCenter.x, pxCenter.y - pxCoord.y);
         return dist;
-    },
+    }
 
-    _fireEvent: function (eventName, param) {
+    _fireEvent(eventName, param) {
         if (this._eventSuppressed) {
             return;
         }
         //fire internal events at first
         this.fire('_' + eventName, param);
         this.fire(eventName, param);
-    },
+    }
 
-    _Load: function () {
+    _Load() {
         this._resetMapStatus();
         this._registerDomEvents();
         this._loadAllLayers();
@@ -1500,19 +1516,19 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
          * @property {Map} target - map
          */
         this._fireEvent('load');
-    },
+    }
 
-    _initRenderer: function () {
+    _initRenderer() {
         var renderer = this.options['renderer'];
         var clazz = Map.getRendererClass(renderer);
         this._renderer = new clazz(this);
-    },
+    }
 
-    _getRenderer: function () {
+    _getRenderer() {
         return this._renderer;
-    },
+    }
 
-    _loadAllLayers: function () {
+    _loadAllLayers() {
         function loadLayer(layer) {
             if (layer) {
                 layer.load();
@@ -1522,7 +1538,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             this._baseLayer.load();
         }
         this._eachLayer(loadLayer, this.getLayers());
-    },
+    }
 
 
 
@@ -1532,7 +1548,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Layer[]}
      * @private
      */
-    _getLayers: function (filter) {
+    _getLayers(filter) {
         var layers = this._baseLayer ? [this._baseLayer].concat(this._layers) : this._layers;
         var result = [];
         for (var i = 0; i < layers.length; i++) {
@@ -1541,9 +1557,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             }
         }
         return result;
-    },
+    }
 
-    _eachLayer: function (fn) {
+    _eachLayer(fn) {
         if (arguments.length < 2) {
             return;
         }
@@ -1558,10 +1574,10 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         for (var j = 0, jlen = layers.length; j < jlen; j++) {
             fn.call(fn, layers[j]);
         }
-    },
+    }
 
     //Check and reset map's status when map'sview is changed.
-    _resetMapStatus: function () {
+    _resetMapStatus() {
         var maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
         var viewMaxZoom = this._view.getMaxZoom(),
@@ -1586,9 +1602,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
         delete this._prjCenter;
         var projection = this.getProjection();
         this._prjCenter = projection.project(this._center);
-    },
+    }
 
-    _getContainerDomSize: function () {
+    _getContainerDomSize() {
         if (!this._containerDOM) {
             return null;
         }
@@ -1609,29 +1625,29 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             throw new Error('can not get size of container');
         }
         return new Size(width, height);
-    },
+    }
 
-    _updateMapSize: function (mSize) {
+    _updateMapSize(mSize) {
         this.width = mSize['width'];
         this.height = mSize['height'];
         this._getRenderer().updateMapSize(mSize);
         return this;
-    },
+    }
 
     /**
      * Gets projected center of the map
      * @return {Coordinate}
      * @private
      */
-    _getPrjCenter: function () {
+    _getPrjCenter() {
         return this._prjCenter;
-    },
+    }
 
-    _setPrjCenter: function (pcenter) {
+    _setPrjCenter(pcenter) {
         this._prjCenter = pcenter;
-    },
+    }
 
-    _verifyExtent: function (center) {
+    _verifyExtent(center) {
         if (!center) {
             return false;
         }
@@ -1640,7 +1656,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             return true;
         }
         return maxExt.contains(center);
-    },
+    }
 
     /**
      * Move map's center by pixels.
@@ -1651,12 +1667,12 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @private
      * @returns {Coordinate} the new projected center.
      */
-    _offsetCenterByPixel: function (pixel) {
+    _offsetCenterByPixel(pixel) {
         var pos = new Point(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
         var pCenter = this._containerPointToPrj(pos);
         this._setPrjCenter(pCenter);
         return pCenter;
-    },
+    }
 
     /**
      * offset map platform panel.
@@ -1668,7 +1684,7 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * Gets map platform panel's current view point.
      * @return {Point}
      */
-    offsetPlatform: function (offset) {
+    offsetPlatform(offset) {
         if (!offset) {
             return this._mapViewPoint;
         } else {
@@ -1676,27 +1692,27 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
             this._mapViewPoint = this._mapViewPoint.add(offset);
             return this;
         }
-    },
+    }
 
-    _resetMapViewPoint: function () {
+    _resetMapViewPoint() {
         this._mapViewPoint = new Point(0, 0);
-    },
+    }
 
     /**
      * Get map's current resolution
      * @return {Number} resolution
      * @private
      */
-    _getResolution: function (zoom) {
+    _getResolution(zoom) {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
         return this._view.getResolution(zoom);
-    },
+    }
 
-    _getResolutions: function () {
+    _getResolutions() {
         return this._view.getResolutions();
-    },
+    }
 
     /**
      * Converts the projected coordinate to a 2D point in the specific zoom
@@ -1705,10 +1721,10 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Point} 2D point
      * @private
      */
-    _prjToPoint: function (pCoord, zoom) {
+    _prjToPoint(pCoord, zoom) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         return this._view.getTransformation().transform(pCoord, this._getResolution(zoom));
-    },
+    }
 
     /**
      * Converts the 2D point to projected coordinate
@@ -1717,17 +1733,17 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Coordinate} projected coordinate
      * @private
      */
-    _pointToPrj: function (point, zoom) {
+    _pointToPrj(point, zoom) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         return this._view.getTransformation().untransform(point, this._getResolution(zoom));
-    },
+    }
 
-    _pointToPoint: function (point, zoom) {
+    _pointToPoint(point, zoom) {
         if (!isNil(zoom)) {
             return point.multi(this.getScale(zoom) / this.getScale());
         }
         return point;
-    },
+    }
 
     /**
      * transform container point to geographical projected coordinate
@@ -1736,9 +1752,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Coordinate}
      * @private
      */
-    _containerPointToPrj: function (containerPoint) {
+    _containerPointToPrj(containerPoint) {
         return this._pointToPrj(this._containerPointToPoint(containerPoint));
-    },
+    }
 
     /**
      * transform view point to geographical projected coordinate
@@ -1746,9 +1762,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Coordinate}
      * @private
      */
-    _viewPointToPrj: function (viewPoint) {
+    _viewPointToPrj(viewPoint) {
         return this._containerPointToPrj(this.viewPointToContainerPoint(viewPoint));
-    },
+    }
 
     /**
      * transform geographical projected coordinate to container point
@@ -1756,9 +1772,9 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Point}
      * @private
      */
-    _prjToContainerPoint: function (pCoordinate) {
+    _prjToContainerPoint(pCoordinate) {
         return this._pointToContainerPoint(this._prjToPoint(pCoordinate));
-    },
+    }
 
     /**
      * transform geographical projected coordinate to view point
@@ -1766,75 +1782,53 @@ export const Map = Class.extend(/** @lends Map.prototype */ {
      * @return {Point}
      * @private
      */
-    _prjToViewPoint: function (pCoordinate) {
+    _prjToViewPoint(pCoordinate) {
         var containerPoint = this._prjToContainerPoint(pCoordinate);
         return this._containerPointToViewPoint(containerPoint);
-    },
+    }
 
     //destructive containerPointToViewPoint
-    _containerPointToViewPoint: function (containerPoint) {
+    _containerPointToViewPoint(containerPoint) {
         if (!containerPoint) {
             return null;
         }
         var platformOffset = this.offsetPlatform();
         return containerPoint._substract(platformOffset);
-    },
+    }
 
-    _pointToContainerPoint: function (point, zoom) {
+    _pointToContainerPoint(point, zoom) {
         point = this._pointToPoint(point, zoom);
         var centerPoint = this._prjToPoint(this._getPrjCenter());
         return new Point(
             this.width / 2 + point.x - centerPoint.x,
             this.height / 2 + point.y - centerPoint.y
         );
-    },
+    }
 
-    _containerPointToPoint: function (containerPoint, zoom) {
+    _containerPointToPoint(containerPoint, zoom) {
         var centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (!isNil(zoom) ? this._getResolution() / this._getResolution(zoom) : 1);
 
         //�������������귽���ǹ̶�������, ��html��׼һ��, ��������������, ���ϵ�������
 
         return new Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
-    },
-
-    _viewPointToPoint: function (viewPoint) {
-        return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint));
-    },
-
-    _pointToViewPoint: function (point) {
-        return this._prjToViewPoint(this._pointToPrj(point));
-    },
-});
-
-//--------------hooks after map loaded----------------
-/* eslint no-extend-native: 0 */
-Map.prototype._callOnLoadHooks = function () {
-    var proto = Map.prototype;
-    for (var i = 0, len = proto._onLoadHooks.length; i < len; i++) {
-        proto._onLoadHooks[i].call(this);
     }
-};
 
-/**
- * Add hooks for additional codes when map's loading complete, useful for plugin developping.
- * @param {function} fn
- * @returns {Map}
- * @static
- * @protected
- */
-Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
-    var args = Array.prototype.slice.call(arguments, 1);
+    _viewPointToPoint(viewPoint) {
+        return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint));
+    }
 
-    var onload = typeof fn === 'function' ? fn : function () {
-        this[fn].apply(this, args);
-    };
+    _pointToViewPoint(point) {
+        return this._prjToViewPoint(this._pointToPrj(point));
+    }
 
-    this.prototype._onLoadHooks = this.prototype._onLoadHooks || [];
-    this.prototype._onLoadHooks.push(onload);
-    return this;
-};
+    /* eslint no-extend-native: 0 */
+    _callOnLoadHooks() {
+        var proto = Map.prototype;
+        for (var i = 0, len = proto._onLoadHooks.length; i < len; i++) {
+            proto._onLoadHooks[i].call(this);
+        }
+    }
+}
 
-extend(Map, Renderable);
-
-export default Map;
+Map.mergeOptions(options);

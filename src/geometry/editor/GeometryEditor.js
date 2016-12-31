@@ -4,15 +4,7 @@ import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
 import Eventable from 'core/Event';
 import Point from 'geo/Point';
-import { Geometry } from 'geometry/Geometry';
-import { Marker } from 'geometry/Marker';
-import { TextMarker } from 'geometry/TextMarker';
-import { Polyline } from 'geometry/LineString';
-import { Polygon } from 'geometry/Polygon';
-import { Circle } from 'geometry/Circle';
-import { Ellipse } from 'geometry/Ellipse';
-import { Sector } from 'geometry/Sector';
-import { Rectangle } from 'geometry/Rectangle';
+import { Geometry, Marker, TextMarker, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
 import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 
@@ -124,7 +116,7 @@ export default class GeometryEditor extends Eventable(Class) {
         } else if (geometry instanceof Sector) {
             // TODO: createSectorEditor
         } else if ((geometry instanceof Polygon) ||
-            (geometry instanceof Polyline)) {
+            (geometry instanceof LineString)) {
             this.createPolygonEditor();
         }
     }
