@@ -1,8 +1,9 @@
 import {
     removeContainer,
-} from '../SpecCommon';
+} from '../../SpecCommon';
 import Coordinate from 'geo/Coordinate';
 import * as controls from 'control';
+import Map from 'map';
 
 describe('Control.Attribution', function () {
 

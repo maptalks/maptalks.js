@@ -4,7 +4,7 @@ import Size from 'geo/Size';
 import { _computeLength } from 'geo/utils';
 import Geometry from 'geometry/Geometry';
 import Marker from 'geometry/Marker';
-import Label from 'geometry/Labe';
+import Label from 'geometry/Label';
 import VectorLayer from 'layer/VectorLayer';
 import { DrawTool } from './DrawTool';
 

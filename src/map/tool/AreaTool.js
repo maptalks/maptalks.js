@@ -3,7 +3,7 @@ import Size from 'geo/Size';
 import { _computeArea } from 'geo/utils';
 import Geometry from 'geometry/Geometry';
 import Marker from 'geometry/Marker';
-import Label from 'geometry/Labe';
+import Label from 'geometry/Label';
 import { DistanceTool } from './DistanceTool';
 
 /**

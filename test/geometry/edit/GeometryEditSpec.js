@@ -1,7 +1,7 @@
 import {
     commonSetupMap,
     genAllTypeGeometries
-} from '../SpecCommon';
+} from '../../SpecCommon';
 import {
     getPagePosition
 } from 'core/util/dom';

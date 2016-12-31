@@ -3,6 +3,7 @@ import {
 } from '../SpecCommon';
 import Coordinate from 'geo/Coordinate';
 import TileLayer from 'layer/tile/TileLayer';
+import Map from 'map';
 
 describe('#TileLayer', function () {
 

@@ -1,7 +1,7 @@
 import {
     commonSetupMap,
     removeContainer
-} from '../SpecCommon';
+} from '../../SpecCommon';
 import {
     getPagePosition
 } from 'core/util/dom';

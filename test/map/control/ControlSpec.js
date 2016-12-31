@@ -1,12 +1,13 @@
 import {
     removeContainer
-} from '../SpecCommon';
+} from '../../SpecCommon';
 import {
     createEl
 } from 'core/util/dom';
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import * as controls from 'control';
+import Map from 'map';
 
 describe('Control Common Tests', function () {
 

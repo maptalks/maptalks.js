@@ -6,6 +6,7 @@ import {
 } from 'geometry';
 import Coordinate from 'geo/Coordinate';
 import CanvasLayer from 'layer/CanvasLayer';
+import Map from 'map';
 
 describe('#CanvasLayer', function () {
 

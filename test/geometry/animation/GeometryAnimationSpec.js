@@ -2,7 +2,7 @@ import {
     commonSetupMap,
     removeContainer,
     genAllTypeGeometries
-} from '../SpecCommon';
+} from '../../SpecCommon';
 import {
     Marker,
     Circle

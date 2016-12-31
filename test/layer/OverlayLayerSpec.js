@@ -9,6 +9,7 @@ import {
 } from 'geometry';
 import Coordinate from 'geo/Coordinate';
 import VectorLayer from 'layer/VectorLayer';
+import Map from 'map';
 
 describe('#OverlayLayer', function () {
 

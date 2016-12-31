@@ -1,6 +1,6 @@
 import {
     removeContainer
-} from '../SpecCommon';
+} from '../../SpecCommon';
 import Coordinate from 'geo/Coordinate';
 import Map from 'map';
 

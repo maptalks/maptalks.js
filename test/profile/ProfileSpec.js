@@ -14,6 +14,7 @@ import Coordinate from 'geo/Coordinate';
 import Layer from 'layer/Layer';
 import VectorLayer from 'layer/VectorLayer';
 import TileLayer from 'layer/tile/TileLayer';
+import Map from 'map';
 
 describe('#Map Profile', function () {
 

@@ -12,6 +12,7 @@ import Extent from 'geo/Extent';
 import PointExtent from 'geo/PointExtent';
 import VectorLayer from 'layer/VectorLayer';
 import TileLayer from 'layer/tile/TileLayer';
+import Map from 'map';
 
 describe('#Map', function () {
 

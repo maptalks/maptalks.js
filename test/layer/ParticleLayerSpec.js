@@ -7,6 +7,7 @@ import {
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import ParticleLayer from 'layer/ParticleLayer';
+import Map from 'map';
 
 describe('#ParticleLayer', function () {
 

@@ -1,7 +1,7 @@
 import {
     commonSetupMap,
     removeContainer
-} from '../SpecCommon';
+} from '../../SpecCommon';
 import Coordinate from 'geo/Coordinate';
 import {
     getPagePosition

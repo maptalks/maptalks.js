@@ -3,6 +3,7 @@ import {
 } from '../SpecCommon';
 import Layer from 'layer/Layer';
 import GeoJSONLayer from 'layer/GeoJSONLayer';
+import Map from 'map';
 
 describe('#GeoJSONLayer', function () {
     //examples are from geoJSON.org

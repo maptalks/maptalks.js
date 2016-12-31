@@ -1,7 +1,7 @@
 import {
     commonSetupMap,
     removeContainer
-} from '../SpecCommon';
+} from '../../SpecCommon';
 import {
     stringLength
 } from 'core/util';
@@ -13,7 +13,7 @@ import {
     Label
 } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
-import { TextMarkerSymbolizer } from 'renderer/vectorlayer/symbilizers';
+import { TextMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
 
 describe('LabelEdit', function () {
     var container;

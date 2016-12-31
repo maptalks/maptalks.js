@@ -54,7 +54,7 @@ export const Painter = Class.extend(/** @lends Painter.prototype */ {
                 if (regSymbolizers[i].test(symbol, this.geometry)) {
                     symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
                     symbolizers.push(symbolizer);
-                    if (symbolizer instanceof symbolizer.PointSymbolizer) {
+                    if (symbolizer instanceof Symbolizers.PointSymbolizer) {
                         this._hasPointSymbolizer = true;
                     }
                 }

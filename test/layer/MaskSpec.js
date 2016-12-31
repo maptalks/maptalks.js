@@ -8,6 +8,7 @@ import {
 import Coordinate from 'geo/Coordinate';
 import VectorLayer from 'layer/VectorLayer';
 import TileLayer from 'layer/tile/TileLayer';
+import Map from 'map';
 
 describe('Spec of Masks', function () {
 

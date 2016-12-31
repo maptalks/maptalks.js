@@ -9,6 +9,7 @@ import {
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import VectorLayer from 'layer/VectorLayer';
+import Map from 'map';
 
 describe('#VectorLayer', function () {
 
