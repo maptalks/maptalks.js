@@ -22,22 +22,22 @@ const webpackConfig = {
 
 module.exports = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
+    basePath: '..',
     files: [{
-        // pattern: '../test/**/*.js',
-        pattern: 'test-context.js',
+        pattern: 'build/test-context.js',
         watched: false
     }, {
-        pattern: '../assets/css/**/*.css',
+        pattern: 'assets/css/**/*.css',
         watched: true,
         included: false,
         served: true
     }, {
-        pattern: '../assets/images/**/*.png',
+        pattern: 'assets/images/**/*.png',
         watched: false,
         included: false,
         served: true
     }, {
-        pattern: '../test/resources/*',
+        pattern: 'test/resources/*',
         watched: false,
         included: false,
         served: true
@@ -49,8 +49,7 @@ module.exports = {
         '/resources/': '/base/test/resources/'
     },
     preprocessors: {
-        // '../test/**/*.js': ['webpack', 'sourcemap']
-        'test-context.js': ['webpack', 'sourcemap']
+        'build/test-context.js': ['webpack', 'sourcemap']
     },
     customLaunchers: {
         IE10: {

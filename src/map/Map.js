@@ -1837,4 +1837,7 @@ Map.addOnLoadHook = function (fn) { // (Function) || (String, args...)
 
 extend(Map, Renderable);
 
+import { Canvas } from 'renderer/map';
+Map.registerRenderer('canvas', Canvas);
+
 export default Map;

@@ -2,7 +2,7 @@ import { extend, isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, reque
 import Class from 'core/class/index';
 import Browser from 'core/Browser';
 import Promise from 'utils/Promise';
-import { default as Canvas2D } from 'utils/Canvas';
+import Canvas2D from 'utils/Canvas';
 import Point from 'geo/Point';
 
 /**
@@ -213,7 +213,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         var map = this.getMap();
         var size = map.getSize();
         var r = Browser.retina ? 2 : 1;
-        this.canvas = Canvas.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
+        this.canvas = Canvas2D.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
@@ -221,7 +221,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         if (Browser.retina) {
             this.context.scale(2, 2);
         }
-        Canvas.setDefaultCanvasSetting(this.context);
+        Canvas2D.setDefaultCanvasSetting(this.context);
         if (this.onCanvasCreate) {
             this.onCanvasCreate();
         }
@@ -255,7 +255,7 @@ export const Canvas = Class.extend(/** @lends renderer.Canvas.prototype */ {
         if (!this.canvas) {
             return;
         }
-        Canvas.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
+        Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
     },
 
     prepareCanvas: function () {

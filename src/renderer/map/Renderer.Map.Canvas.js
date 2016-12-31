@@ -2,7 +2,8 @@ import { bind, isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame }
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
-import Map from 'map';
+// import Map from 'map';
+import Canvas2D from 'utils/Canvas';
 import { OverlayLayer } from 'layer/OverlayLayer';
 import { Renderer } from './Renderer.Map';
 
@@ -293,7 +294,7 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
             }
             var scale = this._canvasBgRes / map._getResolution();
             var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Browser.retina ? 2 : 1);
-            Canvas.image(this.context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
+            Canvas2D.image(this.context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
             if (this.context.filter !== 'none') {
                 this.context.filter = 'none';
             }
@@ -328,7 +329,7 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
         if (!this.canvas) {
             return;
         }
-        Canvas.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
+        Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
     },
 
     _updateCanvasSize: function () {
@@ -453,4 +454,4 @@ export const Canvas = Renderer.extend(/** @lends renderer.map.Canvas.prototype *
     }
 });
 
-Map.registerRenderer('canvas', Canvas);
+// Map.registerRenderer('canvas', Canvas);
