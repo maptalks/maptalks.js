@@ -1,8 +1,18 @@
 import { isNil } from 'core/util';
-import { Geometry } from 'geometry/Geometry';
-import { ImageMarkerSymbolizer } from './ImageMarkerSymbolizer';
+import { Geometry } from 'geometry';
+import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
 
-export class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
+export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
+
+    static test(symbol) {
+        if (!symbol) {
+            return false;
+        }
+        if (isNil(symbol['markerFile']) && symbol['markerType'] === 'path') {
+            return true;
+        }
+        return false;
+    }
 
     constructor(symbol, geometry, painter) {
         super();
@@ -38,13 +48,3 @@ export class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
         // return resources ? resources.getImage(this._url) : null;
     }
 }
-
-VectorPathMarkerSymbolizer.test = function (symbol) {
-    if (!symbol) {
-        return false;
-    }
-    if (isNil(symbol['markerFile']) && symbol['markerType'] === 'path') {
-        return true;
-    }
-    return false;
-};

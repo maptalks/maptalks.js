@@ -4,11 +4,21 @@ import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'utils/Canvas';
-import { PointSymbolizer } from './PointSymbolizer';
+import PointSymbolizer from './PointSymbolizer';
 
 const padding = [2, 2];
 
-export class VectorMarkerSymbolizer extends PointSymbolizer {
+export default class VectorMarkerSymbolizer extends PointSymbolizer {
+
+    static test(symbol) {
+        if (!symbol) {
+            return false;
+        }
+        if (isNil(symbol['markerFile']) && !isNil(symbol['markerType']) && (symbol['markerType'] !== 'path')) {
+            return true;
+        }
+        return false;
+    }
 
     constructor(symbol, geometry, painter) {
         super();
@@ -287,113 +297,105 @@ export class VectorMarkerSymbolizer extends PointSymbolizer {
         }
         return result;
     }
+
+    static translateLineAndFill(s) {
+        var result = {
+            'lineColor': s['markerLineColor'],
+            'linePatternFile': s['markerLinePatternFile'],
+            'lineWidth': s['markerLineWidth'],
+            'lineOpacity': s['markerLineOpacity'],
+            'lineDasharray': null,
+            'lineCap': 'butt',
+            'lineJoin': 'round',
+            'polygonFill': s['markerFill'],
+            'polygonPatternFile': s['markerFillPatternFile'],
+            'polygonOpacity': s['markerFillOpacity']
+        };
+        if (result['lineWidth'] === 0) {
+            result['lineOpacity'] = 0;
+        }
+        return result;
+    }
+
+    static translateToSVGStyles(s) {
+        var result = {
+            'stroke': {
+                'stroke': s['markerLineColor'],
+                'stroke-width': s['markerLineWidth'],
+                'stroke-opacity': s['markerLineOpacity'],
+                'stroke-dasharray': null,
+                'stroke-linecap': 'butt',
+                'stroke-linejoin': 'round'
+            },
+            'fill': {
+                'fill': s['markerFill'],
+                'fill-opacity': s['markerFillOpacity']
+            }
+        };
+        //vml和svg对linecap的定义不同
+        if (result['stroke']['stroke-linecap'] === 'butt') {
+            if (Browser.vml) {
+                result['stroke']['stroke-linecap'] = 'flat';
+            }
+        }
+        if (result['stroke']['stroke-width'] === 0) {
+            result['stroke']['stroke-opacity'] = 0;
+        }
+        return result;
+    }
+
+    static _getVectorPoints(markerType, width, height) {
+        //half height and half width
+        var hh = height / 2,
+            hw = width / 2;
+        var left = 0,
+            top = 0;
+        var v0, v1, v2, v3;
+        if (markerType === 'triangle') {
+            v0 = new Point(left, top - hh);
+            v1 = new Point(left - hw, top + hh);
+            v2 = new Point(left + hw, top + hh);
+            return [v0, v1, v2];
+        } else if (markerType === 'cross') {
+            v0 = new Point((left - hw), top);
+            v1 = new Point((left + hw), top);
+            v2 = new Point((left), (top - hh));
+            v3 = new Point((left), (top + hh));
+            return [v0, v1, v2, v3];
+        } else if (markerType === 'diamond') {
+            v0 = new Point((left - hw), top);
+            v1 = new Point(left, (top - hh));
+            v2 = new Point((left + hw), top);
+            v3 = new Point((left), (top + hh));
+            return [v0, v1, v2, v3];
+        } else if (markerType === 'square') {
+            v0 = new Point((left - hw), (top + hh));
+            v1 = new Point((left + hw), (top + hh));
+            v2 = new Point((left + hw), (top - hh));
+            v3 = new Point((left - hw), (top - hh));
+            return [v0, v1, v2, v3];
+        } else if (markerType === 'x') {
+            v0 = new Point(left - hw, top + hh);
+            v1 = new Point(left + hw, top - hh);
+            v2 = new Point(left + hw, top + hh);
+            v3 = new Point(left - hw, top - hh);
+            return [v0, v1, v2, v3];
+        } else if (markerType === 'bar') {
+            v0 = new Point((left - hw), (top - height));
+            v1 = new Point((left + hw), (top - height));
+            v2 = new Point((left + hw), top);
+            v3 = new Point((left - hw), top);
+            return [v0, v1, v2, v3];
+        } else if (markerType === 'pin') {
+            var extWidth = height * Math.atan(hw / hh);
+            v0 = new Point(left, top);
+            v1 = new Point(left - extWidth, top - height);
+            v2 = new Point(left + extWidth, top - height);
+            v3 = new Point(left, top);
+            return [v0, v1, v2, v3];
+        }
+        return null;
+    }
 }
 
-VectorMarkerSymbolizer.translateLineAndFill = function (s) {
-    var result = {
-        'lineColor': s['markerLineColor'],
-        'linePatternFile': s['markerLinePatternFile'],
-        'lineWidth': s['markerLineWidth'],
-        'lineOpacity': s['markerLineOpacity'],
-        'lineDasharray': null,
-        'lineCap': 'butt',
-        'lineJoin': 'round',
-        'polygonFill': s['markerFill'],
-        'polygonPatternFile': s['markerFillPatternFile'],
-        'polygonOpacity': s['markerFillOpacity']
-    };
-    if (result['lineWidth'] === 0) {
-        result['lineOpacity'] = 0;
-    }
-    return result;
-};
 
-VectorMarkerSymbolizer.test = function (symbol) {
-    if (!symbol) {
-        return false;
-    }
-    if (isNil(symbol['markerFile']) && !isNil(symbol['markerType']) && (symbol['markerType'] !== 'path')) {
-        return true;
-    }
-    return false;
-};
-
-VectorMarkerSymbolizer.translateToSVGStyles = function (s) {
-    var result = {
-        'stroke': {
-            'stroke': s['markerLineColor'],
-            'stroke-width': s['markerLineWidth'],
-            'stroke-opacity': s['markerLineOpacity'],
-            'stroke-dasharray': null,
-            'stroke-linecap': 'butt',
-            'stroke-linejoin': 'round'
-        },
-        'fill': {
-            'fill': s['markerFill'],
-            'fill-opacity': s['markerFillOpacity']
-        }
-    };
-    //vml和svg对linecap的定义不同
-    if (result['stroke']['stroke-linecap'] === 'butt') {
-        if (Browser.vml) {
-            result['stroke']['stroke-linecap'] = 'flat';
-        }
-    }
-    if (result['stroke']['stroke-width'] === 0) {
-        result['stroke']['stroke-opacity'] = 0;
-    }
-    return result;
-};
-
-VectorMarkerSymbolizer._getVectorPoints = function (markerType, width, height) {
-    //half height and half width
-    var hh = height / 2,
-        hw = width / 2;
-    var left = 0,
-        top = 0;
-    var v0, v1, v2, v3;
-    if (markerType === 'triangle') {
-        v0 = new Point(left, top - hh);
-        v1 = new Point(left - hw, top + hh);
-        v2 = new Point(left + hw, top + hh);
-        return [v0, v1, v2];
-    } else if (markerType === 'cross') {
-        v0 = new Point((left - hw), top);
-        v1 = new Point((left + hw), top);
-        v2 = new Point((left), (top - hh));
-        v3 = new Point((left), (top + hh));
-        return [v0, v1, v2, v3];
-    } else if (markerType === 'diamond') {
-        v0 = new Point((left - hw), top);
-        v1 = new Point(left, (top - hh));
-        v2 = new Point((left + hw), top);
-        v3 = new Point((left), (top + hh));
-        return [v0, v1, v2, v3];
-    } else if (markerType === 'square') {
-        v0 = new Point((left - hw), (top + hh));
-        v1 = new Point((left + hw), (top + hh));
-        v2 = new Point((left + hw), (top - hh));
-        v3 = new Point((left - hw), (top - hh));
-        return [v0, v1, v2, v3];
-    } else if (markerType === 'x') {
-        v0 = new Point(left - hw, top + hh);
-        v1 = new Point(left + hw, top - hh);
-        v2 = new Point(left + hw, top + hh);
-        v3 = new Point(left - hw, top - hh);
-        return [v0, v1, v2, v3];
-    } else if (markerType === 'bar') {
-        v0 = new Point((left - hw), (top - height));
-        v1 = new Point((left + hw), (top - height));
-        v2 = new Point((left + hw), top);
-        v3 = new Point((left - hw), top);
-        return [v0, v1, v2, v3];
-    } else if (markerType === 'pin') {
-        var extWidth = height * Math.atan(hw / hh);
-        v0 = new Point(left, top);
-        v1 = new Point(left - extWidth, top - height);
-        v2 = new Point(left + extWidth, top - height);
-        v3 = new Point(left, top);
-        return [v0, v1, v2, v3];
-    }
-    return null;
-};

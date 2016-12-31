@@ -49,8 +49,8 @@ maptalks.OverlayLayer = OverlayLayer;
 import { VectorLayer } from 'layer/VectorLayer';
 maptalks.VectorLayer = VectorLayer;
 
-import { TileCache } from 'renderer/tilelayer/TileCache';
-maptalks.TileLayer.TileCache = TileCache;
+// import { TileCache } from 'renderer/tilelayer/TileCache';
+// maptalks.TileLayer.TileCache = TileCache;
 
 import * as renderer from 'renderer';
 maptalks.renderer = renderer;

@@ -8,6 +8,7 @@ import PointExtent from 'geo/PointExtent';
 import Canvas2D from 'utils/Canvas';
 import TileLayer from 'layer/tile/TileLayer';
 import CanvasRenderer from 'renderer/CanvasRenderer';
+import TileCache from './TileCache';
 
 /**
  * @classdesc
@@ -29,7 +30,7 @@ export default class TileLayerCanvasRenderer extends CanvasRenderer {
         this.layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
         if (!isNode && this.layer.options['cacheTiles']) {
-            this._tileCache = new TileLayer.TileCache();
+            this._tileCache = new TileCache();
         }
         this._tileQueue = {};
     }

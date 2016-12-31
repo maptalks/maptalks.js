@@ -3,10 +3,20 @@ import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'utils/Canvas';
-import { PointSymbolizer } from './PointSymbolizer';
+import PointSymbolizer from './PointSymbolizer';
 // import { VectorPathMarkerSymbolizer } from './VectorPathMarkerSymbolizer';
 
-export class ImageMarkerSymbolizer extends PointSymbolizer {
+export default class ImageMarkerSymbolizer extends PointSymbolizer {
+
+    static test(symbol) {
+        if (!symbol) {
+            return false;
+        }
+        if (!isNil(symbol['markerFile'])) {
+            return true;
+        }
+        return false;
+    }
 
     constructor(symbol, geometry, painter) {
         super();
@@ -124,13 +134,3 @@ export class ImageMarkerSymbolizer extends PointSymbolizer {
         };
     }
 }
-
-ImageMarkerSymbolizer.test = function (symbol) {
-    if (!symbol) {
-        return false;
-    }
-    if (!isNil(symbol['markerFile'])) {
-        return true;
-    }
-    return false;
-};

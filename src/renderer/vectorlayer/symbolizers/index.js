@@ -1,9 +1,21 @@
-export * from './Symbolizer';
-export * from './CanvasSymbolizer';
-export * from './DebugSymbolizer';
-export * from './ImageMarkerSymbolizer';
-export * from './PointSymbolizer';
-export * from './StrokeAndFillSymbolizer';
-export * from './TextMarkerSymbolizer';
-export * from './VectorMarkerSymbolizer';
-export * from './VectorPathMarkerSymbolizer';
+import Symbolizer from './Symbolizer';
+import CanvasSymbolizer from './CanvasSymbolizer';
+import DebugSymbolizer from './DebugSymbolizer';
+import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
+import PointSymbolizer from './PointSymbolizer';
+import StrokeAndFillSymbolizer from './StrokeAndFillSymbolizer';
+import TextMarkerSymbolizer from './TextMarkerSymbolizer';
+import VectorMarkerSymbolizer from './VectorMarkerSymbolizer';
+import VectorPathMarkerSymbolizer from './VectorPathMarkerSymbolizer';
+
+export {
+    Symbolizer,
+    CanvasSymbolizer,
+    DebugSymbolizer,
+    ImageMarkerSymbolizer,
+    PointSymbolizer,
+    StrokeAndFillSymbolizer,
+    TextMarkerSymbolizer,
+    VectorMarkerSymbolizer,
+    VectorPathMarkerSymbolizer
+};

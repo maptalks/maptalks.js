@@ -3,8 +3,8 @@ import {
 } from 'core/util';
 import Point from 'geo/Point';
 import Canvas from 'utils/Canvas';
-import { PointSymbolizer } from './PointSymbolizer';
-import { VectorMarkerSymbolizer } from './VectorMarkerSymbolizer';
+import PointSymbolizer from './PointSymbolizer';
+import VectorMarkerSymbolizer from './VectorMarkerSymbolizer';
 
 const styles = {
     'lineColor': '#000',
@@ -12,10 +12,9 @@ const styles = {
     'lineWidth': 1
 };
 
-export class DebugSymbolizer extends PointSymbolizer {
+export default class DebugSymbolizer extends PointSymbolizer {
 
-
-    initialize(symbol, geometry, painter) {
+    constructor(symbol, geometry, painter) {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;

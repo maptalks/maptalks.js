@@ -1,6 +1,6 @@
 import { isNumber } from 'core/util';
 import { loadFunctionTypes } from 'utils';
-import { Symbolizer } from './Symbolizer';
+import Symbolizer from './Symbolizer';
 
 /**
  * @classdesc
@@ -12,7 +12,7 @@ import { Symbolizer } from './Symbolizer';
  * @name CanvasSymbolizer
  * @extends {Symbolizer}
  */
-export class CanvasSymbolizer extends Symbolizer {
+export default class CanvasSymbolizer extends Symbolizer {
     _prepareContext(ctx) {
         if (isNumber(this.symbol['opacity'])) {
             if (ctx.globalAlpha !== this.symbol['opacity']) {
