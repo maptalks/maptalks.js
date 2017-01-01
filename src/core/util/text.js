@@ -1,7 +1,17 @@
 import { isString } from './common';
 import { stringLength, splitContent } from './strings';
 import Size from 'geo/Size';
-import { TextMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
+
+export function getFont(style) {
+    if (style['textFont']) {
+        return style['textFont'];
+    } else {
+        return (style['textStyle'] ? style['textStyle'] + ' ' : '') +
+            (style['textWeight'] ? style['textWeight'] + ' ' : '') +
+            style['textSize'] + 'px ' +
+            (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
+    }
+}
 
 /**
  * Split a text to multiple rows according to the style.<br>
@@ -11,7 +21,7 @@ import { TextMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
  * @return {Object[]} the object's structure: {rowNum: rowNum, textSize: textSize, rows: textRows}
  */
 export function splitTextToRow(text, style) {
-    var font = TextMarkerSymbolizer.getFont(style),
+    var font = getFont(style),
         lineSpacing = style['textLineSpacing'] || 0,
         rawTextSize = stringLength(text, font),
         textWidth = rawTextSize['width'],

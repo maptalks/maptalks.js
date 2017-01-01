@@ -84,7 +84,3 @@ Symbolizer.numberProperties = {
 Symbolizer.colorProperties = [
     'lineColor', 'polygonFill', 'markerFill', 'markerLineColor', 'textFill'
 ];
-
-Symbolizer.DEFAULT_STROKE_COLOR = '#000';
-Symbolizer.DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
-Symbolizer.DEFAULT_TEXT_COLOR = '#000';

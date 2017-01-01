@@ -15,7 +15,7 @@ import ArcCurve from 'geometry/ArcCurve';
 import CubicBezierCurve from 'geometry/CubicBezierCurve';
 import QuadBezierCurve from 'geometry/QuadBezierCurve';
 import VectorLayer from 'layer/VectorLayer';
-import { MapTool } from './MapTool';
+import MapTool from './MapTool';
 
 /**
  * @property {Object} [options=null] - construct options

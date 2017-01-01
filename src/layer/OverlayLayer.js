@@ -1,5 +1,4 @@
-import { isNil, isArray, isFunction, isArrayHasData, UID } from 'core/util';
-import { createFilter, getFilterFeature } from 'utils';
+import { isNil, isArray, isArrayHasData, UID } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import { Geometry, GeometryCollection, LineString } from 'geometry';
@@ -127,26 +126,8 @@ export default class OverlayLayer extends Layer {
      * @param  {*} [context=undefined]  - Function's context, value to use as this when executing function.
      * @return {GeometryCollection} A GeometryCollection with all the geometries that pass the test
      */
-    filter(fn, context) {
-        var selected = [];
-        if (isFunction(fn)) {
-            if (fn) {
-                this.forEach(geometry => {
-                    if (context ? fn.call(context, geometry) : fn(geometry)) {
-                        selected.push(geometry);
-                    }
-                });
-            }
-        } else {
-            var filter = createFilter(fn);
-            this.forEach(geometry => {
-                var g = getFilterFeature(geometry);
-                if (filter(g)) {
-                    selected.push(geometry);
-                }
-            }, this);
-        }
-        return selected.length > 0 ? new GeometryCollection(selected) : null;
+    filter() {
+        return GeometryCollection.prototype.filter.apply(this, arguments);
     }
 
     /**

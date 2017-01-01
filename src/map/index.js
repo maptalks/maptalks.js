@@ -17,6 +17,6 @@ import './Map.Zoom';
 import './view/View.Arc';
 
 // export * from './Map';
-export * from './view/View';
+// import View from './view/View';
 
 export default Map;

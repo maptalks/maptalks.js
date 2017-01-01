@@ -1,7 +1,7 @@
-import { isArray, isArrayHasData } from 'core/util';
+import { isArray, isFunction, isArrayHasData } from 'core/util';
+import { createFilter, getFilterFeature } from 'utils';
 import { getExternalResources } from 'core/util/resource';
 import Coordinate from 'geo/Coordinate';
-import VectorLayer from 'layer/VectorLayer';
 import Geometry from './Geometry';
 
 /**
@@ -91,8 +91,22 @@ export default class GeometryCollection extends Geometry {
      * @param  {*} [context=undefined]    - Function's context
      * @return {GeometryCollection} A GeometryCollection with all elements that pass the test
      */
-    filter() {
-        return VectorLayer.prototype.filter.apply(this, arguments);
+    filter(fn, context) {
+        if (!fn) {
+            return null;
+        }
+        const selected = [];
+        const isFn = isFunction(fn);
+        const filter = isFn ? fn : createFilter(fn);
+
+        this.forEach(geometry => {
+            var g = isFn ? geometry : getFilterFeature(geometry);
+            if (context ? filter.call(context, g) : filter(g)) {
+                selected.push(geometry);
+            }
+        }, this);
+
+        return selected.length > 0 ? new GeometryCollection(selected) : null;
     }
 
     /**

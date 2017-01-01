@@ -52,6 +52,14 @@ export default class Marker extends CenterMixin(Geometry) {
         this._initOptions(opts);
     }
 
+    _isVectorMarker() {
+        const symbol = this._getInternalSymbol();
+        if (isArray(symbol)) {
+            return false;
+        }
+        return Symbolizers.VectorMarkerSymbolizer.test(symbol);
+    }
+
     /**
      * Can be edited, only marker with a vector symbol, vector path symbol or a image symbol can be edited.
      * @return {Boolean}

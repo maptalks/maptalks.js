@@ -3,8 +3,8 @@
  */
 const maptalks = {};
 
-import Ajax from './utils/Ajax';
-import Canvas from './utils/Canvas';
+import Ajax from 'utils/Ajax';
+import Canvas from 'utils/Canvas';
 // import Promise from './utils/Promise';
 
 maptalks.Ajax = Ajax;
@@ -37,23 +37,35 @@ maptalks.control = control;
 import { exportGeometries } from 'geometry';
 exportGeometries(maptalks);
 
-import { Layer } from 'layer/Layer';
+import Layer from 'layer/Layer';
 maptalks.Layer = Layer;
 
-import { TileLayer } from 'layer/tile/TileLayer';
+import TileLayer from 'layer/tile/TileLayer';
 maptalks.TileLayer = TileLayer;
 
-import { OverlayLayer } from 'layer/OverlayLayer';
+import OverlayLayer from 'layer/OverlayLayer';
 maptalks.OverlayLayer = OverlayLayer;
 
-import { VectorLayer } from 'layer/VectorLayer';
+import VectorLayer from 'layer/VectorLayer';
 maptalks.VectorLayer = VectorLayer;
+
+import 'geometry/editor/GeometryEditor';
+import 'geometry/editor/TextMarkerEditor';
+
+import 'geometry/ext/Geometry.Animation';
+import 'geometry/ext/Geometry.Drag';
+import 'geometry/ext/Geometry.Edit';
+import 'geometry/ext/Geometry.Events';
+import 'geometry/ext/Geometry.InfoWindow';
+
+import 'renderer/vectorlayer/Geometry.Renderer';
+import 'renderer/vectorlayer/Geometry.Canvas';
 
 // import { TileCache } from 'renderer/tilelayer/TileCache';
 // maptalks.TileLayer.TileCache = TileCache;
 
-import * as renderer from 'renderer';
-maptalks.renderer = renderer;
+// import * as renderer from 'renderer';
+// maptalks.renderer = renderer;
 
 import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 maptalks.symbolizers = Symbolizers;

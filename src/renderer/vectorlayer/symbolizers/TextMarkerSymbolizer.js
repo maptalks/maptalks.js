@@ -25,17 +25,6 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         return false;
     }
 
-    static getFont(style) {
-        if (style['textFont']) {
-            return style['textFont'];
-        } else {
-            return (style['textStyle'] ? style['textStyle'] + ' ' : '') +
-                (style['textWeight'] ? style['textWeight'] + ' ' : '') +
-                style['textSize'] + 'px ' +
-                (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
-        }
-    }
-
     constructor(symbol, geometry, painter) {
         super();
         this.symbol = symbol;

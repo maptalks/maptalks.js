@@ -14,9 +14,11 @@ import {
 import { isGradient } from 'core/util/style';
 import { createEl } from 'core/util/dom';
 import Browser from 'core/Browser';
-import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
+import { getFont } from 'core/util/text';
 
-const Symbolizer = Symbolizers.Symbolizer;
+const DEFAULT_STROKE_COLOR = '#000';
+const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
+const DEFAULT_TEXT_COLOR = '#000';
 
 const Canvas = {
     createCanvas: function (width, height, canvasClass) {
@@ -52,10 +54,10 @@ const Canvas = {
 
     prepareCanvasFont: function (ctx, style) {
         ctx.textBaseline = 'top';
-        ctx.font = Symbolizers.TextMarkerSymbolizer.getFont(style);
+        ctx.font = getFont(style);
         var fill = style['textFill'];
         if (!fill) {
-            fill = Symbolizer.DEFAULT_TEXT_COLOR;
+            fill = DEFAULT_TEXT_COLOR;
         }
         ctx.fillStyle = Canvas.getRgba(fill, style['textOpacity']);
     },
@@ -68,7 +70,7 @@ const Canvas = {
         if (!isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
             ctx.lineWidth = strokeWidth;
         }
-        var strokeColor = style['linePatternFile'] || style['lineColor'] || Symbolizer.DEFAULT_STROKE_COLOR;
+        var strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
         if (isCssUrl(strokeColor) && resources) {
             Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
@@ -91,7 +93,7 @@ const Canvas = {
         if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-        var fill = style['polygonPatternFile'] || style['polygonFill'] || Symbolizer.DEFAULT_FILL_COLOR;
+        var fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
         if (isCssUrl(fill)) {
             var fillImgUrl = extractCssUrl(fill);
             var fillTexture = resources.getImage([fillImgUrl, null, null]);

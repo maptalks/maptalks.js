@@ -1,6 +1,5 @@
 import { isNil, isNumber, isArray, isArrayHasData, getValueOrDefault } from 'core/util';
 import { isGradient, getGradientStamp } from 'core/util/style';
-import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'utils/Canvas';
@@ -313,33 +312,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         };
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;
-        }
-        return result;
-    }
-
-    static translateToSVGStyles(s) {
-        var result = {
-            'stroke': {
-                'stroke': s['markerLineColor'],
-                'stroke-width': s['markerLineWidth'],
-                'stroke-opacity': s['markerLineOpacity'],
-                'stroke-dasharray': null,
-                'stroke-linecap': 'butt',
-                'stroke-linejoin': 'round'
-            },
-            'fill': {
-                'fill': s['markerFill'],
-                'fill-opacity': s['markerFillOpacity']
-            }
-        };
-        //vml和svg对linecap的定义不同
-        if (result['stroke']['stroke-linecap'] === 'butt') {
-            if (Browser.vml) {
-                result['stroke']['stroke-linecap'] = 'flat';
-            }
-        }
-        if (result['stroke']['stroke-width'] === 0) {
-            result['stroke']['stroke-opacity'] = 0;
         }
         return result;
     }

@@ -1,9 +1,106 @@
 import { isNode } from './env';
-import { isArray } from './common';
+import Browser from '../Browser';
+import { extend, isNil, isArray, isNumber, isString } from './common';
 import { isURL, extractCssUrl } from './util';
 import * as utils from 'utils';
 import { Symbolizer } from 'renderer/vectorlayer/symbolizers';
-import { Geometry } from 'geometry/Geometry';
+
+export function translateToSVGStyles(s) {
+    var result = {
+        'stroke': {
+            'stroke': s['markerLineColor'],
+            'stroke-width': s['markerLineWidth'],
+            'stroke-opacity': s['markerLineOpacity'],
+            'stroke-dasharray': null,
+            'stroke-linecap': 'butt',
+            'stroke-linejoin': 'round'
+        },
+        'fill': {
+            'fill': s['markerFill'],
+            'fill-opacity': s['markerFillOpacity']
+        }
+    };
+    //vml和svg对linecap的定义不同
+    if (result['stroke']['stroke-linecap'] === 'butt') {
+        if (Browser.vml) {
+            result['stroke']['stroke-linecap'] = 'flat';
+        }
+    }
+    if (result['stroke']['stroke-width'] === 0) {
+        result['stroke']['stroke-opacity'] = 0;
+    }
+    return result;
+}
+
+export function getMarkerPathBase64(symbol) {
+    if (!symbol['markerPath']) {
+        return null;
+    }
+    var op = 1,
+        styles = translateToSVGStyles(symbol);
+    //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
+    if (isNumber(symbol['markerOpacity'])) {
+        op = symbol['markerOpacity'];
+    }
+    if (isNumber(symbol['opacity'])) {
+        op *= symbol['opacity'];
+    }
+    var p, svgStyles = {};
+    if (styles) {
+        for (p in styles['stroke']) {
+            if (styles['stroke'].hasOwnProperty(p)) {
+                if (!isNil(styles['stroke'][p])) {
+                    svgStyles[p] = styles['stroke'][p];
+                }
+            }
+        }
+        for (p in styles['fill']) {
+            if (styles['fill'].hasOwnProperty(p)) {
+                if (!isNil(styles['fill'][p])) {
+                    svgStyles[p] = styles['fill'][p];
+                }
+            }
+        }
+    }
+
+    var pathes = isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    var i, path, pathesToRender = [];
+    for (i = 0; i < pathes.length; i++) {
+        path = isString(pathes[i]) ? {
+            'path': pathes[i]
+        } : pathes[i];
+        path = extend({}, path, svgStyles);
+        path['d'] = path['path'];
+        delete path['path'];
+        pathesToRender.push(path);
+    }
+    var svg = ['<svg version="1.1"', 'xmlns="http://www.w3.org/2000/svg"'];
+    if (op < 1) {
+        svg.push('opacity="' + op + '"');
+    }
+    // if (symbol['markerWidth'] && symbol['markerHeight']) {
+    //     svg.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
+    // }
+    if (symbol['markerPathWidth'] && symbol['markerPathHeight']) {
+        svg.push('viewBox="0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
+    }
+    svg.push('preserveAspectRatio="none"');
+    svg.push('><defs></defs>');
+
+    for (i = 0; i < pathesToRender.length; i++) {
+        var strPath = '<path ';
+        for (p in pathesToRender[i]) {
+            if (pathesToRender[i].hasOwnProperty(p)) {
+                strPath += ' ' + p + '="' + pathesToRender[i][p] + '"';
+            }
+        }
+        strPath += '></path>';
+        svg.push(strPath);
+    }
+    svg.push('</svg>');
+    var b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' '));
+    return b64;
+}
 
 /**
  * Get external resources from the given symbol
@@ -58,11 +155,11 @@ export function getExternalResources(symbol, toAbsolute) {
                 var path = symbol['markerPath'];
                 for (iii = 0; iii < res.length; iii++) {
                     symbol['markerPath'] = res[iii];
-                    resources.push([Geometry.getMarkerPathBase64(symbol), w, h]);
+                    resources.push([getMarkerPathBase64(symbol), w, h]);
                 }
                 symbol['markerPath'] = path;
             } else {
-                resources.push([Geometry.getMarkerPathBase64(symbol), w, h]);
+                resources.push([getMarkerPathBase64(symbol), w, h]);
             }
         }
     }

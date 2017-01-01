@@ -17,9 +17,8 @@ import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import * as Measurer from 'geo/measurer';
-import OverlayLayer from 'layer/OverlayLayer';
 import { Painter, CollectionPainter } from 'renderer/vectorlayer';
-import { Symbolizer, VectorMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
+import { Symbolizer } from 'renderer/vectorlayer/symbolizers';
 
 
 
@@ -484,7 +483,7 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
      */
     bringToFront() {
         var layer = this.getLayer();
-        if (!layer || !(layer instanceof OverlayLayer)) {
+        if (!layer || !layer.getLastGeometry) {
             return this;
         }
         var topZ = layer.getLastGeometry().getZIndex();
@@ -499,7 +498,7 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
      */
     bringToBack() {
         var layer = this.getLayer();
-        if (!layer || !(layer instanceof OverlayLayer)) {
+        if (!layer || !layer.getFirstGeometry) {
             return this;
         }
         var bottomZ = layer.getFirstGeometry().getZIndex();
@@ -1112,73 +1111,3 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
 }
 
 Geometry.mergeOptions(options);
-
-Geometry.getMarkerPathBase64 = function (symbol) {
-    if (!symbol['markerPath']) {
-        return null;
-    }
-    var op = 1,
-        styles = VectorMarkerSymbolizer.translateToSVGStyles(symbol);
-    //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
-    if (isNumber(symbol['markerOpacity'])) {
-        op = symbol['markerOpacity'];
-    }
-    if (isNumber(symbol['opacity'])) {
-        op *= symbol['opacity'];
-    }
-    var p, svgStyles = {};
-    if (styles) {
-        for (p in styles['stroke']) {
-            if (styles['stroke'].hasOwnProperty(p)) {
-                if (!isNil(styles['stroke'][p])) {
-                    svgStyles[p] = styles['stroke'][p];
-                }
-            }
-        }
-        for (p in styles['fill']) {
-            if (styles['fill'].hasOwnProperty(p)) {
-                if (!isNil(styles['fill'][p])) {
-                    svgStyles[p] = styles['fill'][p];
-                }
-            }
-        }
-    }
-
-    var pathes = isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
-    var i, path, pathesToRender = [];
-    for (i = 0; i < pathes.length; i++) {
-        path = isString(pathes[i]) ? {
-            'path': pathes[i]
-        } : pathes[i];
-        path = extend({}, path, svgStyles);
-        path['d'] = path['path'];
-        delete path['path'];
-        pathesToRender.push(path);
-    }
-    var svg = ['<svg version="1.1"', 'xmlns="http://www.w3.org/2000/svg"'];
-    if (op < 1) {
-        svg.push('opacity="' + op + '"');
-    }
-    // if (symbol['markerWidth'] && symbol['markerHeight']) {
-    //     svg.push('height="' + symbol['markerHeight'] + '" width="' + symbol['markerWidth'] + '"');
-    // }
-    if (symbol['markerPathWidth'] && symbol['markerPathHeight']) {
-        svg.push('viewBox="0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
-    }
-    svg.push('preserveAspectRatio="none"');
-    svg.push('><defs></defs>');
-
-    for (i = 0; i < pathesToRender.length; i++) {
-        var strPath = '<path ';
-        for (p in pathesToRender[i]) {
-            if (pathesToRender[i].hasOwnProperty(p)) {
-                strPath += ' ' + p + '="' + pathesToRender[i][p] + '"';
-            }
-        }
-        strPath += '></path>';
-        svg.push(strPath);
-    }
-    svg.push('</svg>');
-    var b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' '));
-    return b64;
-};

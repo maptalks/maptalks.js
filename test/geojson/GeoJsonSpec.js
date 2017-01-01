@@ -2,10 +2,10 @@ import Coordinate from 'geo/Coordinate';
 import {
     GeoJSON,
     Marker,
-    Polyline,
+    LineString,
     Polygon,
     MultiPoint,
-    MultiPolyline,
+    MultiLineString,
     MultiPolygon,
     GeometryCollection
 } from 'geometry';
@@ -184,7 +184,7 @@ describe('GeoJSON', function () {
             expect(features[0]).to.an(Marker);
             expect(features[0].toGeoJSON()).to.eql(fJsons[0]);
             expect(features[0].getProperties()).to.eql(featureCollectionGeoJSON['features'][0]['properties']);
-            expect(features[1]).to.an(Polyline);
+            expect(features[1]).to.an(LineString);
             expect(features[1].toGeoJSON()).to.eql(fJsons[1]);
             expect(features[2]).to.an(Polygon);
             expect(features[2].toGeoJSON()).to.eql(fJsons[2]);
@@ -213,7 +213,7 @@ describe('GeoJSON', function () {
 
         it('evaluate polyline', function () {
             var polyline = geometries[1];
-            expect(polyline).to.an(Polyline);
+            expect(polyline).to.an(LineString);
             expect(polyline.getType()).to.eql(geoJSONs[1].type);
             expect(polyline.toGeoJSON()['geometry']).to.eql(geoJSONs[1]);
             expect(polyline.toGeoJSONGeometry()).to.eql(geoJSONs[1]);
@@ -246,7 +246,7 @@ describe('GeoJSON', function () {
 
         it('evaluate MultiLineString', function () {
             var multiPolyline = geometries[5];
-            expect(multiPolyline).to.an(MultiPolyline);
+            expect(multiPolyline).to.an(MultiLineString);
             expect(multiPolyline.getType()).to.eql(geoJSONs[5].type);
             expect(multiPolyline.toGeoJSON()['geometry']).to.eql(geoJSONs[5]);
             expect(multiPolyline.toGeoJSONGeometry()).to.eql(geoJSONs[5]);

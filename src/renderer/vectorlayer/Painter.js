@@ -3,8 +3,6 @@ import Class from 'core/Class';
 import Size from 'geo/Size';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
-import { Marker } from 'geometry';
-import VectorLayer from 'layer/VectorLayer';
 import Canvas from 'utils/Canvas';
 import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 
@@ -165,7 +163,7 @@ export default class Painter extends Class {
     }
 
     getSprite(resources) {
-        if (!(this.geometry instanceof Marker)) {
+        if (this.geometry.type !== 'Point') {
             return null;
         }
         this._genSprite = true;
@@ -290,15 +288,15 @@ export default class Painter extends Class {
         this.removeCache();
         this._removeSymbolizers();
         this.symbolizers = this._createSymbolizers();
-        if (!this.getMap()) {
-            return;
-        }
-        var layer = this.geometry.getLayer();
-        if (this.geometry.isVisible() && (layer instanceof VectorLayer)) {
-            if (!layer.isCanvasRender()) {
-                this.paint();
-            }
-        }
+        // if (!this.getMap()) {
+        //     return;
+        // }
+        // var layer = this.geometry.getLayer();
+        // if (this.geometry.isVisible() && layer.addGeometry) {
+        //     if (!layer.isCanvasRender()) {
+        //         this.paint();
+        //     }
+        // }
     }
 
     remove() {

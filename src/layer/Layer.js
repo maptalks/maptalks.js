@@ -1,8 +1,6 @@
 import Class from 'core/Class';
 import { isNil, isNumber } from 'core/util';
 import Eventable from 'core/Event';
-import { Marker, Polygon } from 'geometry';
-import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 import Renderable from 'renderer/Renderable';
 
 /**
@@ -283,12 +281,11 @@ export default class Layer extends Eventable(Renderable(Class)) {
      * @returns {Layer} this
      */
     setMask(mask) {
-        if (!((mask instanceof Marker && Symbolizers.VectorMarkerSymbolizer.test(mask.getSymbol())) ||
-                mask instanceof Polygon)) {
+        if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon')) {
             throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }
 
-        if (mask instanceof Marker) {
+        if (mask.type === 'Point') {
             mask.updateSymbol({
                 'markerLineColor': 'rgba(0, 0, 0, 0)',
                 'markerFillOpacity': 0

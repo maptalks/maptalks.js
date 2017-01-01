@@ -1,5 +1,5 @@
 import { isNil } from 'core/util';
-import { Geometry } from 'geometry';
+import { getMarkerPathBase64 } from 'core/util/resource';
 import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
 
 export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
@@ -19,7 +19,7 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        this._url = [Geometry.getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
+        this._url = [getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
         this.style = this._defineStyle(this.translate());
         //IE must have a valid width and height to draw a svg image
         //otherwise, error will be thrown

@@ -1,16 +1,3 @@
-
-import './editor/GeometryEditor';
-import './editor/TextMarkerEditor';
-
-import './ext/Geometry.Animation';
-import './ext/Geometry.Drag';
-import './ext/Geometry.Edit';
-import './ext/Geometry.Events';
-import './ext/Geometry.InfoWindow';
-
-import 'renderer/vectorlayer/Geometry.Renderer';
-import 'renderer/vectorlayer/Geometry.Canvas';
-
 import Geometry from './Geometry';
 import Marker from './Marker';
 import LineString from './LineString';

@@ -8,7 +8,7 @@ import PointExtent from 'geo/PointExtent';
  * @protected
  * @param {GeometryCollection} geometry - geometry to paint
  */
-export class CollectionPainter extends Class {
+export default class CollectionPainter extends Class {
     constructor(geometry) {
         super();
         this.geometry = geometry;

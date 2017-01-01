@@ -7,7 +7,7 @@ import * as controls from 'control';
 import Map from 'map';
 
 describe('Control.Overview', function () {
-    controls.Overview.prototype.loadDelay = 1;
+    controls.OverviewControl.prototype.loadDelay = 1;
     var container;
     var map;
     var tile;

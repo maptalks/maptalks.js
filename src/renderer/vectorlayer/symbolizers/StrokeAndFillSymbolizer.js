@@ -3,7 +3,6 @@ import { isGradient as checkGradient } from 'core/util/style';
 import Canvas from 'utils/Canvas';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
-import { Marker, LineString, Polygon } from 'geometry';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
 export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
@@ -12,7 +11,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (!symbol) {
             return false;
         }
-        if (geometry && (geometry instanceof Marker)) {
+        if (geometry && (geometry.type === 'Point')) {
             return false;
         }
         for (var p in symbol) {
@@ -29,14 +28,14 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        if (geometry instanceof Marker) {
+        if (geometry.type === 'Point') {
             return;
         }
         this.style = this._defineStyle(this.translate());
     }
 
     symbolize(ctx, resources) {
-        if (this.geometry instanceof Marker) {
+        if (this.geometry.type === 'Point') {
             return;
         }
         var style = this.style;
@@ -49,7 +48,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
         this._prepareContext(ctx);
         var isGradient = checkGradient(style['lineColor']),
-            isPath = (this.geometry.constructor === Polygon) || (this.geometry instanceof LineString);
+            isPath = (this.geometry.type === 'Polygon') || (this.geometry.type === 'LineString');
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.getPainter().getContainerExtent()._expand(style['lineWidth']);
         }
@@ -58,8 +57,8 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
 
         var points = paintParams[0],
-            isSplitted = (this.geometry instanceof Polygon && points.length > 1 && isArray(points[0][0])) ||
-            (this.geometry instanceof LineString && points.length > 1 && isArray(points[0]));
+            isSplitted = (this.geometry.type === 'Polygon' && points.length > 1 && isArray(points[0][0])) ||
+            (this.geometry.type === 'LineString' && points.length > 1 && isArray(points[0]));
         var params;
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
@@ -91,7 +90,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
     get2DExtent() {
-        if (this.geometry instanceof Marker) {
+        if (this.geometry.type === 'Point') {
             return null;
         }
         var map = this.getMap();
@@ -154,7 +153,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             result['lineOpacity'] = 0;
         }
         // fill of arrow
-        if ((this.geometry instanceof LineString) && !result['polygonFill']) {
+        if ((this.geometry.type === 'LineString') && !result['polygonFill']) {
             result['polygonFill'] = result['lineColor'];
         }
         return result;
