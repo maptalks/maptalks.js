@@ -31,11 +31,12 @@ export default class Rectangle extends Polygon {
     }
 
     constructor(coordinates, width, height, opts) {
-        super();
-        this._coordinates = new Coordinate(coordinates);
+        super(null, opts);
+        if (coordinates) {
+            this.setCoordinates(coordinates);
+        }
         this._width = width;
         this._height = height;
-        this._initOptions(opts);
     }
 
     /**
@@ -53,8 +54,7 @@ export default class Rectangle extends Polygon {
      * @fires Rectangle#positionchange
      */
     setCoordinates(nw) {
-        this._coordinates = new Coordinate(nw);
-
+        this._coordinates = (nw instanceof Coordinate) ? nw : new Coordinate(nw);
         if (!this._coordinates || !this.getMap()) {
             this.onPositionChanged();
             return this;

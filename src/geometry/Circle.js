@@ -39,10 +39,11 @@ export default class Circle extends CenterMixin(Polygon) {
 
 
     constructor(coordinates, radius, opts) {
-        super();
-        this._coordinates = new Coordinate(coordinates);
+        super(null, opts);
+        if (coordinates) {
+            this.setCoordinates(coordinates);
+        }
         this._radius = radius;
-        this._initOptions(opts);
     }
 
     /**

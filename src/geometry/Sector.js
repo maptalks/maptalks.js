@@ -40,12 +40,13 @@ export default class Sector extends CenterMixin(Polygon) {
     }
 
     constructor(coordinates, radius, startAngle, endAngle, opts) {
-        super();
-        this._coordinates = new Coordinate(coordinates);
+        super(null, opts);
+        if (coordinates) {
+            this.setCoordinates(coordinates);
+        }
         this._radius = radius;
         this.startAngle = startAngle;
         this.endAngle = endAngle;
-        this._initOptions(opts);
     }
 
     /**

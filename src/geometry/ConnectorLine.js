@@ -196,7 +196,7 @@ const Connectable = Base => class extends Base {
  */
 export class ConnectorLine extends Connectable(LineString) {
     constructor(src, target, options) {
-        super();
+        super(null, options);
         if (arguments.length === 1) {
             options = src;
             src = null;
@@ -204,7 +204,6 @@ export class ConnectorLine extends Connectable(LineString) {
         }
         this._connSource = src;
         this._connTarget = target;
-        this._initOptions(options);
         this._registEvents();
     }
 }
@@ -245,7 +244,7 @@ ConnectorLine.mergeOptions(options);
  */
 export class ArcConnectorLine extends Connectable(ArcCurve) {
     constructor(src, target, options) {
-        super();
+        super(null, options);
         if (arguments.length === 1) {
             options = src;
             src = null;
@@ -253,7 +252,6 @@ export class ArcConnectorLine extends Connectable(ArcCurve) {
         }
         this._connSource = src;
         this._connTarget = target;
-        this._initOptions(options);
         this._registEvents();
     }
 }

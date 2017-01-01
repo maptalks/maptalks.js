@@ -48,9 +48,6 @@ import Polygon from './Polygon';
 export default class MultiPolygon extends MultiGeometry {
 
     constructor(data, opts) {
-        super(Polygon);
-        this.type = 'MultiPolygon';
-        this._initOptions(opts);
-        this._initData(data);
+        super(Polygon, 'MultiPolygon', data, opts);
     }
 }

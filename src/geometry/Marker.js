@@ -1,5 +1,4 @@
 import { isArray } from 'core/util';
-import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import CenterMixin from './CenterMixin';
 import Geometry from './Geometry';
@@ -47,10 +46,9 @@ export default class Marker extends CenterMixin(Geometry) {
     constructor(coordinates, opts) {
         super();
         this.type = 'Point';
-        if (coordinates && !(coordinates instanceof Coordinate)) {
-            coordinates = new Coordinate(coordinates);
+        if (coordinates) {
+            this.setCoordinates(coordinates);
         }
-        this._coordinates = coordinates;
         this._initOptions(opts);
     }
 

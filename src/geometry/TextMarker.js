@@ -1,6 +1,5 @@
 import { extend } from 'core/util';
 import { splitTextToRow } from 'core/util/text';
-import Coordinate from 'geo/Coordinate';
 import Size from 'geo/Size';
 import Geometry from './Geometry';
 import Marker from './Marker';
@@ -44,12 +43,10 @@ const options = {
 export default class TextMarker extends Marker {
 
     constructor(content, coordinates, options) {
-        super();
+        super(coordinates, options);
         this.defaultSymbol = defaultSymbol;
         this.defaultBoxSymbol = defaultBoxSymbol;
         this._content = content;
-        this._coordinates = new Coordinate(coordinates);
-        this._initOptions(options);
         this._registerEvents();
         this._refresh();
     }

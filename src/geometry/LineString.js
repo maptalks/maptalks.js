@@ -38,7 +38,9 @@ export default class LineString extends Path {
     constructor(coordinates, options) {
         super();
         this.type = 'LineString';
-        this.setCoordinates(coordinates);
+        if (coordinates) {
+            this.setCoordinates(coordinates);
+        }
         this._initOptions(options);
     }
 

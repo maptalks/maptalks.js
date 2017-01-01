@@ -37,10 +37,7 @@ import LineString from './LineString';
  */
 export default class MultiLineString extends MultiGeometry {
 
-    constructor(data, opts) {
-        super(LineString);
-        this.type = 'MultiLineString';
-        this._initOptions(opts);
-        this._initData(data);
+    constructor(data, options) {
+        super(LineString, 'MultiLineString', data, options);
     }
 }

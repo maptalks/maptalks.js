@@ -21,9 +21,6 @@ import Marker from './Marker';
 export default class MultiPoint extends MultiGeometry {
 
     constructor(data, opts) {
-        super(Marker);
-        this.type = 'MultiPoint';
-        this._initOptions(opts);
-        this._initData(data);
+        super(Marker, 'MultiPoint', data, opts);
     }
 }

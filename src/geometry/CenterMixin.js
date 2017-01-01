@@ -21,7 +21,7 @@ export default Base => class extends Base {
      * @fires Geometry#positionchange
      */
     setCoordinates(coordinates) {
-        const center = new Coordinate(coordinates);
+        const center = (coordinates instanceof Coordinate) ? coordinates : new Coordinate(coordinates);
         if (center.equals(this._coordinates)) {
             return this;
         }

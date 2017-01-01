@@ -3,13 +3,16 @@ import GeometryCollection from './GeometryCollection';
 import Coordinate from 'geo/Coordinate';
 
 /**
- * Common methods for MultiPoint, MultiLineString and MultiPolygon
- * @mixin Geometry.MultiPoly
+ * The parent class for MultiPoint, MultiLineString and MultiPolygon
+ * @class
+ * @extends {GeometryCollection}
  */
 export default class MultiGeometry extends GeometryCollection {
-    constructor(geoType) {
-        super();
+    constructor(geoType, type, data, options) {
+        super(null, options);
         this.GeometryType = geoType;
+        this.type = type;
+        this._initData(data);
     }
 
     /**

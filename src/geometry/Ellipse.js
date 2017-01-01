@@ -40,11 +40,12 @@ export default class Ellipse extends CenterMixin(Polygon) {
     }
 
     constructor(coordinates, width, height, opts) {
-        super();
-        this._coordinates = new Coordinate(coordinates);
+        super(null, opts);
+        if (coordinates) {
+            this.setCoordinates(coordinates);
+        }
         this.width = width;
         this.height = height;
-        this._initOptions(opts);
     }
 
     /**
