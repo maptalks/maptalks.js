@@ -3,10 +3,7 @@ import { compileStyle } from 'core/util/style';
 import { getFilterFeature } from 'utils';
 import Extent from 'geo/Extent';
 import Geometry from 'geometry/Geometry';
-import Layer from './Layer';
 import OverlayLayer from './OverlayLayer';
-
-
 
 /**
  * @property {Object}  options - VectorLayer's options

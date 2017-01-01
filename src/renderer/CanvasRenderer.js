@@ -1,9 +1,70 @@
-import { extend, isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'utils/Promise';
 import Canvas2D from 'utils/Canvas';
 import Point from 'geo/Point';
+
+export class RenderResources {
+    constructor() {
+        this.resources = {};
+        this._errors = {};
+    }
+
+    addResource(url, img) {
+        this.resources[url[0]] = {
+            image: img,
+            width: +url[1],
+            height: +url[2]
+        };
+    }
+
+    isResourceLoaded(url, checkSVG) {
+        if (!url) {
+            return false;
+        }
+        if (this._errors[this._getImgUrl(url)]) {
+            return true;
+        }
+        var img = this.resources[this._getImgUrl(url)];
+        if (!img) {
+            return false;
+        }
+        if (checkSVG && isSVG(url[0]) && (+url[1] > img.width || +url[2] > img.height)) {
+            return false;
+        }
+        return true;
+    }
+
+    getImage(url) {
+        if (!this.isResourceLoaded(url) || this._errors[this._getImgUrl(url)]) {
+            return null;
+        }
+        return this.resources[this._getImgUrl(url)].image;
+    }
+
+    markErrorResource(url) {
+        this._errors[this._getImgUrl(url)] = 1;
+    }
+
+    merge(res) {
+        if (!res) {
+            return this;
+        }
+        for (var p in res.resources) {
+            var img = res.resources[p];
+            this.addResource([p, img.width, img.height], img.image);
+        }
+        return this;
+    }
+
+    _getImgUrl(url) {
+        if (!isArray(url)) {
+            return url;
+        }
+        return url[0];
+    }
+}
 
 /**
  * @classdesc
@@ -71,7 +132,7 @@ export default class CanvasRenderer extends Class {
         delete this._extent2D;
         delete this.resources;
         // requestMapToRender may be overrided, e.g. renderer.TileLayer.Canvas
-        Canvas.prototype.requestMapToRender.call(this);
+        CanvasRenderer.prototype.requestMapToRender.call(this);
         delete this.layer;
     }
 
@@ -515,66 +576,5 @@ export default class CanvasRenderer extends Class {
             //clearTimeout(this._currentFrameId);
             cancelAnimFrame(this._currentFrameId);
         }
-    }
-}
-
-export class RenderResources {
-    constructor() {
-        this.resources = {};
-        this._errors = {};
-    }
-
-    addResource(url, img) {
-        this.resources[url[0]] = {
-            image: img,
-            width: +url[1],
-            height: +url[2]
-        };
-    }
-
-    isResourceLoaded(url, checkSVG) {
-        if (!url) {
-            return false;
-        }
-        if (this._errors[this._getImgUrl(url)]) {
-            return true;
-        }
-        var img = this.resources[this._getImgUrl(url)];
-        if (!img) {
-            return false;
-        }
-        if (checkSVG && isSVG(url[0]) && (+url[1] > img.width || +url[2] > img.height)) {
-            return false;
-        }
-        return true;
-    }
-
-    getImage(url) {
-        if (!this.isResourceLoaded(url) || this._errors[this._getImgUrl(url)]) {
-            return null;
-        }
-        return this.resources[this._getImgUrl(url)].image;
-    }
-
-    markErrorResource(url) {
-        this._errors[this._getImgUrl(url)] = 1;
-    }
-
-    merge(res) {
-        if (!res) {
-            return this;
-        }
-        for (var p in res.resources) {
-            var img = res.resources[p];
-            this.addResource([p, img.width, img.height], img.image);
-        }
-        return this;
-    }
-
-    _getImgUrl(url) {
-        if (!isArray(url)) {
-            return url;
-        }
-        return url[0];
     }
 }

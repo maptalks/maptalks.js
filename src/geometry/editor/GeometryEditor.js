@@ -1,10 +1,10 @@
 import { internalLayerPrefix } from 'core/Constants';
-import { extend, isNil, isNumber, isArrayHasData, indexOfArray, removeFromArray, setOptions, UID } from 'core/util';
+import { extend, isNil, isNumber, isArrayHasData, indexOfArray, removeFromArray, UID } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
 import Eventable from 'core/Event';
 import Point from 'geo/Point';
-import { Geometry, Marker, TextMarker, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
+import { Marker, TextMarker, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
 import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
 

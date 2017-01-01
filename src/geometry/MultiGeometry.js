@@ -78,4 +78,4 @@ export default class MultiGeometry extends GeometryCollection {
             'coordinates': coordinates
         };
     }
-};
+}

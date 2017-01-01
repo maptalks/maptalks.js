@@ -30,4 +30,4 @@ export default class CanvasTileLayerRenderer extends TileLayerCanvasRenderer {
     }
 }
 
-CanvasTileLayer.registerRenderer('canvas', Canvas);
+CanvasTileLayer.registerRenderer('canvas', CanvasTileLayerRenderer);

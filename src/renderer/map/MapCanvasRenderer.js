@@ -4,7 +4,7 @@ import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Canvas2D from 'utils/Canvas';
 import OverlayLayer from 'layer/OverlayLayer';
-import MapRenderer from './Renderer.Map';
+import MapRenderer from './MapRenderer';
 
 /**
  * @classdesc
@@ -18,6 +18,7 @@ import MapRenderer from './Renderer.Map';
  */
 export default class MapCanvasRenderer extends MapRenderer {
     constructor(map) {
+        super();
         this.map = map;
         //container is a <canvas> element
         this._isCanvasContainer = !!map._containerDOM.getContext;

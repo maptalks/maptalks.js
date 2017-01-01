@@ -76,7 +76,7 @@ class MapAutoBorderPanningHandler extends Handler {
             this._animationId = requestAnimFrame(bind(this._pan, this));
         }
     }
-};
+}
 
 Map.mergeOptions({
     'autoBorderPanning': false

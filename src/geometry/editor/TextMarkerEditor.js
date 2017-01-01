@@ -1,5 +1,4 @@
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
-import TextMarker from 'geometry/TextMarker';
 import TextBox from 'geometry/TextBox';
 import Label from 'geometry/Label';
 import { UIMarker } from 'ui';

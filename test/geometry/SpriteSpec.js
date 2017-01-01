@@ -3,9 +3,7 @@ import {
     Marker,
     Geometry
 } from 'geometry';
-import {
-    Canvas
-} from 'renderer';
+import { RenderResources } from 'renderer/CanvasRenderer';
 
 describe('#Sprite', function () {
 
@@ -23,7 +21,7 @@ describe('#Sprite', function () {
         var symbol = marker.getSymbol();
         var image = new Image();
         image.onload = function () {
-            var resources = new Canvas.Resources();
+            var resources = new RenderResources();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
@@ -49,7 +47,7 @@ describe('#Sprite', function () {
         });
         var image = new Image();
         image.onload = function () {
-            var resources = new Canvas.Resources();
+            var resources = new RenderResources();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
@@ -81,7 +79,7 @@ describe('#Sprite', function () {
         });
         var image = new Image();
         image.onload = function () {
-            var resources = new Canvas.Resources();
+            var resources = new RenderResources();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;

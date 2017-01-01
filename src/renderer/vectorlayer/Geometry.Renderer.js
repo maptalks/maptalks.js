@@ -1,5 +1,13 @@
 import { isArray, computeDegree } from 'core/util';
-import { Marker, Ellipse, Circle, Sector, Rectangle, LineString as Polyline, Polygon } from 'geometry';
+import Marker from 'geometry/Marker';
+import Ellipse from 'geometry/Ellipse';
+import Circle from 'geometry/Circle';
+import Sector from 'geometry/Sector';
+import Rectangle from 'geometry/Rectangle';
+import LineString from 'geometry/LineString';
+import Polygon from 'geometry/Polygon';
+
+const Polyline = LineString;
 
 // 有中心点的图形的共同方法
 const Center = {

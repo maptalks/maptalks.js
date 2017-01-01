@@ -22,7 +22,7 @@ maptalks.DomUtil = DomUtil;
 import Map from 'map';
 maptalks.Map = Map;
 
-import * from 'map/tool';
+import { MapTool, DrawTool, AreaTool, DistanceTool } from 'map/tool';
 maptalks.MapTool = MapTool;
 maptalks.DrawTool = DrawTool;
 maptalks.AreaTool = AreaTool;

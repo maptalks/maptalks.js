@@ -6,7 +6,6 @@ import VectorLayer from 'layer/VectorLayer';
 import Map from 'map';
 import Control from './Control';
 
-
  /**
  * @property {Object} options - options
  * @property {Object} [options.position='bottom-right'] - position of the control
@@ -41,7 +40,7 @@ const options = {
  *     size : {'width' : 300,'height' : 200}
  * }).addTo(map);
  */
-export default class Overview extends Control{
+export default class Overview extends Control {
 
     buildOn(map) {
         this.loadDelay = 1600;

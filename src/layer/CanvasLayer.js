@@ -1,9 +1,8 @@
 import { bind, now, isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Browser from 'core/Browser';
 import Canvas from 'utils/Canvas';
-import { CanvasRenderer } from 'renderer';
+import CanvasRenderer from 'renderer/CanvasRenderer';
 import Layer from './Layer';
-
 
 const options = {
     'doubleBuffer'  : false,
@@ -253,7 +252,7 @@ CanvasLayer.registerRenderer('canvas', class extends CanvasRenderer {
         this._play();
     }
 
-    _pause () {
+    _pause() {
         if (this._animFrame) {
             cancelAnimFrame(this._animFrame);
             delete this._animFrame;

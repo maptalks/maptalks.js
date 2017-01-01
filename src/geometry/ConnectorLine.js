@@ -217,8 +217,7 @@ const options = {
     showOn: 'always'
 };
 
-ConnectorLine.mergeOptions(options)
-
+ConnectorLine.mergeOptions(options);
 
 /**
  * An arc curve connector line geometry can connect geometries or ui components with each other. <br>

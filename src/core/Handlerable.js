@@ -65,4 +65,4 @@ export default Base => class extends Base {
         }
         this._handlers = [];
     }
-}
+};

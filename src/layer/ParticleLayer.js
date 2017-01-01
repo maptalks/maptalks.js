@@ -1,6 +1,11 @@
 import { now } from 'core/util';
 import CanvasLayer from './CanvasLayer';
 
+const options = {
+    'animation': true,
+    'fps': 70
+};
+
 /**
  * ParticleLayer provides some interface methods to render particles. <br>
  * You can use it directly, but can't ser/dser a ParticleLayer with json in this way. <br>
@@ -21,20 +26,14 @@ import CanvasLayer from './CanvasLayer';
  * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
  */
 export default class ParticleLayer extends CanvasLayer {
-    options: {
-        'animation': true,
-        'fps': 70
-    },
-
     /**
      * Interface method to get particles's position at time t.
      * @param  {Number} t - current time in milliseconds
      */
-    getParticles: function () {
+    getParticles() {
+    }
 
-    },
-
-    draw: function (context) {
+    draw(context) {
         var map = this.getMap(),
             extent = map.getContainerExtent();
         var points = this.getParticles(now());
@@ -52,9 +51,9 @@ export default class ParticleLayer extends CanvasLayer {
             }
         }
         this._fillCanvas(context);
-    },
+    }
 
-    _fillCanvas: function (context) {
+    _fillCanvas(context) {
         var g = context.globalCompositeOperation;
         context.globalCompositeOperation = 'destination-out';
         var trail = this.options['trail'] || 30;
@@ -62,6 +61,6 @@ export default class ParticleLayer extends CanvasLayer {
         context.fillRect(0, 0, context.canvas.width, context.canvas.height);
         context.globalCompositeOperation = g;
     }
-});
+}
 
-export default ParticleLayer;
+ParticleLayer.mergeOptions(options);

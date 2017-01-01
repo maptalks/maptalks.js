@@ -98,7 +98,7 @@ class MapGeometryEventsHandler extends Handler {
             cancelAnimFrame(this._queryIdentifyTimeout);
         }
         if (eventType === 'mousemove' || eventType === 'touchmove') {
-            this._queryIdentifyTimeout = requestAnimFrame( () => {
+            this._queryIdentifyTimeout = requestAnimFrame(() => {
                 map.identify(identifyOptions, callback);
             });
         } else {

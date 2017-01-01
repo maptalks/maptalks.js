@@ -72,8 +72,8 @@ export default class DrawTool extends MapTool {
         return null;
     }
 
-
     constructor(options) {
+        super();
         setOptions(this, options);
         this._checkMode();
     }

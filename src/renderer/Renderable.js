@@ -34,4 +34,4 @@ export default Base => class extends Base {
         }
         return proto._rendererClasses[name.toLowerCase()];
     }
-}
+};

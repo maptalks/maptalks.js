@@ -1,5 +1,5 @@
 import Class from 'core/Class';
-import { extend, isNil, isNumber } from 'core/util';
+import { isNil, isNumber } from 'core/util';
 import Eventable from 'core/Event';
 import { Marker, Polygon } from 'geometry';
 import * as Symbolizers from 'renderer/vectorlayer/symbolizers';

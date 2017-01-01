@@ -81,7 +81,7 @@ export default class VectorLayerRenderer extends OverlayLayerRenderer {
         this.layer.forEach(function (geo) {
             geo._repaint();
         });
-        OverlayLayerRenderer.prototype.show.apply(this, arguments);
+        CanvasRenderer.prototype.show.apply(this, arguments);
     }
 
     isUpdateWhenZooming() {
@@ -156,7 +156,7 @@ export default class VectorLayerRenderer extends OverlayLayerRenderer {
                 geo._removeZoomCache();
             });
         }
-        OverlayLayerRenderer.prototype.onZooming.apply(this, arguments);
+        CanvasRenderer.prototype.onZooming.apply(this, arguments);
     }
 
     onZoomEnd() {
@@ -166,7 +166,7 @@ export default class VectorLayerRenderer extends OverlayLayerRenderer {
                 geo._removeZoomCache();
             });
         }
-        OverlayLayerRenderer.prototype.onZoomEnd.apply(this, arguments);
+        CanvasRenderer.prototype.onZoomEnd.apply(this, arguments);
     }
 
     onRemove() {

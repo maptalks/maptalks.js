@@ -83,4 +83,4 @@ export default Base => class extends Base {
     _computeCenter() {
         return this._coordinates;
     }
-}
+};

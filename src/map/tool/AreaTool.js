@@ -61,6 +61,7 @@ const options = {
 export default class AreaTool extends DistanceTool {
 
     constructor(options) {
+        super();
         setOptions(this, options);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);

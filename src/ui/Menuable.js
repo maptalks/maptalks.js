@@ -1,6 +1,18 @@
 import { extend, isArray, setOptions } from 'core/util';
 import Map from '../map/Map';
 import Geometry from '../geometry/Geometry';
+import Menu from './Menu';
+
+const defaultOptions = {
+    'animation' : null,
+    'animationDelay' : 10,
+    'animationOnHide' : false,
+    'eventsToStop' : 'mousedown dblclick click',
+    'autoPan': false,
+    'width'  : 160,
+    'custom' : false,
+    'items'  : []
+};
 
 /**
  * Mixin of the context menu methods.
@@ -35,7 +47,7 @@ const Menuable = {
             this.on('contextmenu', this._defaultOpenMenu, this);
         }
         return this;
-    }
+    },
 
     /**
      * Open the context menu, default on the center of the geometry or map.
@@ -56,7 +68,7 @@ const Menuable = {
             this._menu.show(coordinate);
         }
         return this;
-    }
+    },
 
     /**
      * Set menu items to the context menu
@@ -73,7 +85,7 @@ const Menuable = {
         this._menuOptions['items'] = items;
         this.setMenu(this._menuOptions);
         return this;
-    }
+    },
 
     /**
      * Get the context menu items
@@ -86,7 +98,7 @@ const Menuable = {
             return this._menuOptions['items'];
         }
         return null;
-    }
+    },
 
     /**
      * Close the contexnt menu
@@ -97,7 +109,7 @@ const Menuable = {
             this._menu.hide();
         }
         return this;
-    }
+    },
 
     /**
      * Remove the context menu
@@ -108,14 +120,14 @@ const Menuable = {
         this._unbindMenu();
         delete this._menuOptions;
         return this;
-    }
+    },
 
     _bindMenu(options) {
         this._menu = new Menu(options);
         this._menu.addTo(this);
 
         return this;
-    }
+    },
 
     _unbindMenu() {
         if (this._menu) {
@@ -124,7 +136,7 @@ const Menuable = {
             delete this._menu;
         }
         return this;
-    }
+    },
 
     /**
      * 应用没有注册contextmenu事件时, 默认在contextmenu事件时打开右键菜单

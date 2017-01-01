@@ -7,6 +7,7 @@ import Geometry from 'geometry/Geometry';
 import DragHandler from 'handler/Drag';
 import VectorLayer from 'layer/VectorLayer';
 import { ConnectorLine } from 'geometry/ConnectorLine';
+import { RenderResources } from 'renderer/CanvasRenderer';
 
 /**
  * Drag handler for geometries.
@@ -147,7 +148,7 @@ export default class GeometryDragHandler extends Handler  {
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
-        var resources = new Canvas.Resources();
+        var resources = new RenderResources();
         resources.merge(layer._getRenderer().resources);
         this._dragStageLayer._getRenderer().resources = resources;
     }

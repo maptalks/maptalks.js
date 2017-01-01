@@ -101,6 +101,7 @@ const options = {
     'renderer': 'canvas'
 };
 
+const RenderableClass = Renderable(Class);
 /**
  *
  * @class
@@ -141,7 +142,7 @@ const options = {
         ]
     });
  */
-export default class Map extends Handlerable(Eventable(Class)) {
+export default class Map extends Handlerable(Eventable(RenderableClass)) {
 
     constructor(container, options) {
         super();

@@ -305,4 +305,4 @@ export default Base => class extends Base {
         }
         return this;
     }
-}
+};

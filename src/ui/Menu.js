@@ -1,4 +1,4 @@
-import { extend, isArray, isString, isFunction, setOptions } from 'core/util';
+import { isString, isFunction } from 'core/util';
 import { on, createEl, addClass } from 'core/util/dom';
 import Point from 'geo/Point';
 import UIComponent from './UI';
