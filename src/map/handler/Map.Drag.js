@@ -120,6 +120,6 @@ Map.mergeOptions({
     'draggable': true
 });
 
-Map.addInitHook('addHandler', 'draggable', MapDragHandler);
+Map.addOnLoadHook('addHandler', 'draggable', MapDragHandler);
 
 export default MapDragHandler;

@@ -104,6 +104,6 @@ Map.mergeOptions({
     'touchZoom': true
 });
 
-Map.addInitHook('addHandler', 'touchZoom', MapTouchZoomHandler);
+Map.addOnLoadHook('addHandler', 'touchZoom', MapTouchZoomHandler);
 
 export default MapTouchZoomHandler;

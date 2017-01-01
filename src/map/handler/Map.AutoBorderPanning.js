@@ -82,6 +82,6 @@ Map.mergeOptions({
     'autoBorderPanning': false
 });
 
-Map.addInitHook('addHandler', 'autoBorderPanning', MapAutoBorderPanningHandler);
+Map.addOnLoadHook('addHandler', 'autoBorderPanning', MapAutoBorderPanningHandler);
 
 export default MapAutoBorderPanningHandler;

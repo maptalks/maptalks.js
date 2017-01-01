@@ -4,14 +4,12 @@ import Eventable from 'core/Event';
  * Base class for all the interaction handlers
  * @class
  * @category handler
- * @extends Class
  * @mixins Eventable
  * @abstract
  * @protected
  */
-export default class Handler extends Eventable(Object) {
+class Handler {
     constructor(target) {
-        super();
         this.target = target;
     }
 
@@ -55,3 +53,6 @@ export default class Handler extends Eventable(Object) {
         delete this.dom;
     }
 }
+
+
+export default Eventable(Handler);

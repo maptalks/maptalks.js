@@ -172,6 +172,6 @@ Map.mergeOptions({
     'geometryEvents': true
 });
 
-Map.addInitHook('addHandler', 'geometryEvents', MapGeometryEventsHandler);
+Map.addOnLoadHook('addHandler', 'geometryEvents', MapGeometryEventsHandler);
 
 export default MapGeometryEventsHandler;

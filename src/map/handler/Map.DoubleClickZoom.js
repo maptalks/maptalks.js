@@ -25,6 +25,6 @@ Map.mergeOptions({
     'doubleClickZoom': true
 });
 
-Map.addInitHook('addHandler', 'doubleClickZoom', MapDoubleClickZoomHandler);
+Map.addOnLoadHook('addHandler', 'doubleClickZoom', MapDoubleClickZoomHandler);
 
 export default MapDoubleClickZoomHandler;

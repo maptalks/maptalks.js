@@ -38,6 +38,6 @@ Map.mergeOptions({
     'scrollWheelZoom': true
 });
 
-Map.addInitHook('addHandler', 'scrollWheelZoom', MapScrollWheelZoomHandler);
+Map.addOnLoadHook('addHandler', 'scrollWheelZoom', MapScrollWheelZoomHandler);
 
 export default MapScrollWheelZoomHandler;
