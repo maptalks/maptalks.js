@@ -20,7 +20,7 @@ import CanvasLayer from './CanvasLayer';
  * @param {String|Number} id - layer's id
  * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
  */
-export const ParticleLayer = CanvasLayer.extend({
+export default class ParticleLayer extends CanvasLayer {
     options: {
         'animation': true,
         'fps': 70

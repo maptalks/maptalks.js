@@ -4,29 +4,28 @@ import Handler from 'core/Handler';
 import Point from 'geo/Point';
 import Map from '../Map';
 
-Map.mergeOptions({
-    'autoBorderPanning': false
-});
+class MapAutoBorderPanningHandler extends Handler {
+    constructor(target) {
+        super(target);
+        //threshold to trigger panning, in px
+        this.threshold = 10;
+        //number of px to move when panning is triggered
+        this.step = 4;
+    }
 
-Map.AutoBorderPanning = Handler.extend({
-    //threshold to trigger panning, in px
-    threshold: 10,
-    //number of px to move when panning is triggered
-    step: 4,
-
-    addHooks: function () {
+    addHooks() {
         this.dom = this.target._containerDOM;
         on(this.dom, 'mousemove', this._onMouseMove, this);
         on(this.dom, 'mouseout', this._onMouseOut, this);
-    },
+    }
 
-    removeHooks: function () {
+    removeHooks() {
         this._cancelPan();
         off(this.dom, 'mousemove', this._onMouseMove, this);
         off(this.dom, 'mouseout', this._onMouseOut, this);
-    },
+    }
 
-    _onMouseMove: function (event) {
+    _onMouseMove(event) {
         var eventParam = this.target._parseEvent(event);
         var mousePos = eventParam['containerPoint'];
         var size = this.target.getSize();
@@ -55,21 +54,21 @@ Map.AutoBorderPanning = Handler.extend({
         }
         this._stepOffset = offset;
         this._pan();
-    },
+    }
 
-    _onMouseOut: function () {
+    _onMouseOut() {
         this._cancelPan();
-    },
+    }
 
-    _cancelPan: function () {
+    _cancelPan() {
         delete this._stepOffset;
         if (this._animationId) {
             cancelAnimFrame(this._animationId);
             delete this._animationId;
         }
-    },
+    }
 
-    _pan: function () {
+    _pan() {
         if (this._stepOffset) {
             this.target.panBy(this._stepOffset, {
                 'animation': false
@@ -77,6 +76,12 @@ Map.AutoBorderPanning = Handler.extend({
             this._animationId = requestAnimFrame(bind(this._pan, this));
         }
     }
+};
+
+Map.mergeOptions({
+    'autoBorderPanning': false
 });
 
-Map.addInitHook('addHandler', 'autoBorderPanning', Map.AutoBorderPanning);
+Map.addInitHook('addHandler', 'autoBorderPanning', MapAutoBorderPanningHandler);
+
+export default MapAutoBorderPanningHandler;

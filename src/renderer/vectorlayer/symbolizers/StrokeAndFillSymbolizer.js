@@ -4,9 +4,25 @@ import Canvas from 'utils/Canvas';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
 import { Marker, LineString, Polygon } from 'geometry';
-import { CanvasSymbolizer } from './CanvasSymbolizer';
+import CanvasSymbolizer from './CanvasSymbolizer';
 
-export class StrokeAndFillSymbolizer extends CanvasSymbolizer {
+export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
+
+    static test(symbol, geometry) {
+        if (!symbol) {
+            return false;
+        }
+        if (geometry && (geometry instanceof Marker)) {
+            return false;
+        }
+        for (var p in symbol) {
+            var f = p.slice(0, 4);
+            if (f === 'line' || f === 'poly') {
+                return true;
+            }
+        }
+        return false;
+    }
 
     constructor(symbol, geometry, painter) {
         super();
@@ -154,19 +170,3 @@ export class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
 }
-
-StrokeAndFillSymbolizer.test = function (symbol, geometry) {
-    if (!symbol) {
-        return false;
-    }
-    if (geometry && (geometry instanceof Marker)) {
-        return false;
-    }
-    for (var p in symbol) {
-        var f = p.slice(0, 4);
-        if (f === 'line' || f === 'poly') {
-            return true;
-        }
-    }
-    return false;
-};

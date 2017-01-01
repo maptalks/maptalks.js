@@ -5,33 +5,31 @@ import { Geometry } from 'geometry/Geometry';
 import VectorLayer from 'layer/VectorLayer';
 import Map from '../Map';
 
-Map.mergeOptions({
-    'geometryEvents': true
-});
+class MapGeometryEventsHandler extends Handler {
+    constructor(target) {
+        super(target);
+        this.EVENTS = 'mousedown mouseup mousemove click dblclick contextmenu touchstart touchmove touchend';
+    }
 
-Map.GeometryEvents = Handler.extend({
-    EVENTS: 'mousedown mouseup mousemove click dblclick contextmenu touchstart touchmove touchend',
-
-    addHooks: function () {
+    addHooks() {
         var map = this.target;
         var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
             on(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
+    }
 
-    },
-
-    removeHooks: function () {
+    removeHooks() {
         var map = this.target;
         var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
             off(dom, this.EVENTS, this._identifyGeometryEvents, this);
         }
-    },
+    }
 
-    _identifyGeometryEvents: function (domEvent) {
+    _identifyGeometryEvents(domEvent) {
         var map = this.target;
-        var vectorLayers = map._getLayers(function (layer) {
+        var vectorLayers = map._getLayers(layer => {
             if (layer instanceof VectorLayer) {
                 return true;
             }
@@ -75,7 +73,7 @@ Map.GeometryEvents = Handler.extend({
         var identifyOptions = {
             'includeInternals': true,
             //return only one geometry on top,
-            'filter': function (geometry) {
+            'filter': geometry => {
                 var eventToFire = geometry._getEventTypeToFire(domEvent);
                 if (eventType === 'mousemove') {
                     if (!geometryCursorStyle && geometry.options['cursor']) {
@@ -100,7 +98,7 @@ Map.GeometryEvents = Handler.extend({
             cancelAnimFrame(this._queryIdentifyTimeout);
         }
         if (eventType === 'mousemove' || eventType === 'touchmove') {
-            this._queryIdentifyTimeout = requestAnimFrame(function () {
+            this._queryIdentifyTimeout = requestAnimFrame( () => {
                 map.identify(identifyOptions, callback);
             });
         } else {
@@ -168,6 +166,12 @@ Map.GeometryEvents = Handler.extend({
         }
 
     }
+}
+
+Map.mergeOptions({
+    'geometryEvents': true
 });
 
-Map.addInitHook('addHandler', 'geometryEvents', Map.GeometryEvents);
+Map.addInitHook('addHandler', 'geometryEvents', MapGeometryEventsHandler);
+
+export default MapGeometryEventsHandler;

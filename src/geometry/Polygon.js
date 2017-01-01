@@ -1,8 +1,8 @@
 import { isNil, isArray, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
-import { PolyType } from './Geometry.Poly';
-import { Vector } from './Vector';
+import Path from './Path';
+
 
 /**
  * @classdesc
@@ -27,23 +27,14 @@ import { Vector } from './Vector';
  *      ]
  *  ).addTo(layer);
  */
-export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
+export default class Polygon extends Path {
 
-    includes: [PolyType],
-
-    type: 'Polygon',
-
-    /**
-     * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
-     */
-    options: {
-        'antiMeridian': 'continuous'
-    },
-
-    initialize: function (coordinates, opts) {
+    constructor(coordinates, opts) {
+        super();
+        this.type = 'Polygon';
         this.setCoordinates(coordinates);
         this._initOptions(opts);
-    },
+    }
 
     /**
      * Set coordinates to the polygon
@@ -52,7 +43,7 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
      * @return {Polygon} this
      * @fires Polygon#shapechange
      */
-    setCoordinates: function (coordinates) {
+    setCoordinates(coordinates) {
         if (!coordinates) {
             this._coordinates = null;
             this._holes = null;
@@ -79,14 +70,14 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
 
         this._projectRings();
         return this;
-    },
+    }
 
     /**
      * Gets polygons's coordinates
      *
      * @returns {Coordinate[][]}
      */
-    getCoordinates: function () {
+    getCoordinates() {
         if (!this._coordinates) {
             return [];
         }
@@ -98,44 +89,44 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
             return [this._closeRing(this._coordinates)].concat(holes);
         }
         return [this._closeRing(this._coordinates)];
-    },
+    }
 
     /**
      * Gets shell's coordinates of the polygon
      *
      * @returns {Coordinate[]}
      */
-    getShell: function () {
+    getShell() {
         return this._coordinates;
-    },
+    }
 
 
     /**
      * Gets holes' coordinates of the polygon if it has.
      * @returns {Coordinate[][]}
      */
-    getHoles: function () {
+    getHoles() {
         if (this.hasHoles()) {
             return this._holes;
         }
         return null;
-    },
+    }
 
     /**
      * Whether the polygon has any holes inside.
      *
      * @returns {Boolean}
      */
-    hasHoles: function () {
+    hasHoles() {
         if (isArrayHasData(this._holes)) {
             if (isArrayHasData(this._holes[0])) {
                 return true;
             }
         }
         return false;
-    },
+    }
 
-    _projectRings: function () {
+    _projectRings() {
         if (!this.getMap()) {
             this.onShapeChanged();
             return;
@@ -143,22 +134,22 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
         this._prjCoords = this._projectCoords(this._coordinates);
         this._prjHoles = this._projectCoords(this._holes);
         this.onShapeChanged();
-    },
+    }
 
-    _cleanRing: function (ring) {
+    _cleanRing(ring) {
         for (var i = ring.length - 1; i >= 0; i--) {
             if (!ring[i]) {
                 ring.splice(i, 1);
             }
         }
-    },
+    }
 
     /**
      * 检查ring是否合法, 并返回ring是否闭合
      * @param  {*} ring [description]
      * @private
      */
-    _checkRing: function (ring) {
+    _checkRing(ring) {
         this._cleanRing(ring);
         if (!ring || !isArrayHasData(ring)) {
             return false;
@@ -169,43 +160,43 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
             isClose = false;
         }
         return isClose;
-    },
+    }
 
     /**
      * 如果最后一个端点与第一个端点相同, 则去掉最后一个端点
      * @private
      */
-    _trimRing: function (ring) {
+    _trimRing(ring) {
         var isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && isClose) {
             return ring.slice(0, ring.length - 1);
         } else {
             return ring;
         }
-    },
+    }
 
     /**
      * 如果最后一个端点与第一个端点不同, 则在最后增加与第一个端点相同的点
      * @private
      */
-    _closeRing: function (ring) {
+    _closeRing(ring) {
         var isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && !isClose) {
             return ring.concat([new Coordinate(ring[0].x, ring[0].y)]);
         } else {
             return ring;
         }
-    },
+    }
 
 
-    _getPrjHoles: function () {
+    _getPrjHoles() {
         if (!this._prjHoles) {
             this._prjHoles = this._projectCoords(this._holes);
         }
         return this._prjHoles;
-    },
+    }
 
-    _computeGeodesicLength: function (measurer) {
+    _computeGeodesicLength(measurer) {
         var rings = this.getCoordinates();
         if (!isArrayHasData(rings)) {
             return 0;
@@ -215,9 +206,9 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
             result += _computeLength(rings[i], measurer);
         }
         return result;
-    },
+    }
 
-    _computeGeodesicArea: function (measurer) {
+    _computeGeodesicArea(measurer) {
         var rings = this.getCoordinates();
         if (!isArrayHasData(rings)) {
             return 0;
@@ -229,9 +220,9 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
 
         }
         return result;
-    },
+    }
 
-    _containsPoint: function (point, tolerance) {
+    _containsPoint(point, tolerance) {
         var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pxExtent = this._getPainter().get2DExtent().expand(t);
 
@@ -275,4 +266,4 @@ export const Polygon = Vector.extend(/** @lends Polygon.prototype */ {
         }
 
     }
-});
+}

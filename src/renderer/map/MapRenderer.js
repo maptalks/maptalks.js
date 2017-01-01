@@ -1,5 +1,5 @@
 import { offsetDom } from 'core/util/dom';
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import { Animation } from 'utils/Animation';
 import Point from 'geo/Point';
 
@@ -13,9 +13,9 @@ import Point from 'geo/Point';
  * @name Renderer
  * @extends {Class}
  */
-export const Renderer = Class.extend(/** @lends renderer.map.Renderer.prototype */ {
+export default class MapRenderer extends Class {
 
-    panAnimation: function (distance, t, onFinish) {
+    panAnimation(distance, t, onFinish) {
         distance = new Point(distance);
         var map = this.map;
         if (map.options['panAnimation']) {
@@ -63,14 +63,14 @@ export const Renderer = Class.extend(/** @lends renderer.map.Renderer.prototype 
         } else {
             map.onMoveEnd();
         }
-    },
+    }
 
     /**
      * 获取地图容器偏移量或更新地图容器偏移量
      * @param  {Point} offset 偏移量
      * @return {this | Point}
      */
-    offsetPlatform: function (offset) {
+    offsetPlatform(offset) {
         if (!this.map._panels.front) {
             return this;
         }
@@ -78,22 +78,22 @@ export const Renderer = Class.extend(/** @lends renderer.map.Renderer.prototype 
         offsetDom(this.map._panels.back, pos);
         offsetDom(this.map._panels.front, pos);
         return this;
-    },
+    }
 
-    resetContainer: function () {
+    resetContainer() {
         this.map._resetMapViewPoint();
         if (this.map._panels.front) {
             var pos = new Point(0, 0);
             offsetDom(this.map._panels.back, pos);
             offsetDom(this.map._panels.front, pos);
         }
-    },
+    }
 
-    onZoomEnd: function () {
+    onZoomEnd() {
         this.resetContainer();
-    },
+    }
 
-    onLoad: function () {
+    onLoad() {
         this.render();
     }
-});
+}

@@ -6,6 +6,26 @@ import VectorLayer from 'layer/VectorLayer';
 import Map from 'map';
 import Control from './Control';
 
+
+ /**
+ * @property {Object} options - options
+ * @property {Object} [options.position='bottom-right'] - position of the control
+ * @property {Number} [options.level=4]  - the zoom level of the overview
+ * @property {Object} [options.size={"width":300, "height":200}  - size of the Control
+ * @property {Object} [options.style={"color":"#1bbc9b"}] - style of the control, color is the overview rectangle's color
+ */
+const options = {
+    'level': 4,
+    'position': 'bottom-right',
+    'size': {
+        'width': 300,
+        'height': 200
+    },
+    'style': {
+        'color': '#1bbc9b'
+    }
+};
+
 /**
  * @classdesc
  * An overview control for the map.
@@ -21,30 +41,10 @@ import Control from './Control';
  *     size : {'width' : 300,'height' : 200}
  * }).addTo(map);
  */
-export const Overview = Control.extend(/** @lends Overview.prototype */ {
+export default class Overview extends Control{
 
-    loadDelay: 1600,
-
-    /**
-     * @property {Object} options - options
-     * @property {Object} [options.position='bottom-right'] - position of the control
-     * @property {Number} [options.level=4]  - the zoom level of the overview
-     * @property {Object} [options.size={"width":300, "height":200}  - size of the Control
-     * @property {Object} [options.style={"color":"#1bbc9b"}] - style of the control, color is the overview rectangle's color
-     */
-    options: {
-        'level': 4,
-        'position': 'bottom-right',
-        'size': {
-            'width': 300,
-            'height': 200
-        },
-        'style': {
-            'color': '#1bbc9b'
-        }
-    },
-
-    buildOn: function (map) {
+    buildOn(map) {
+        this.loadDelay = 1600;
         var container = createEl('div');
         container.style.cssText = 'border:1px solid #000;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
         if (map.isLoaded()) {
@@ -53,16 +53,16 @@ export const Overview = Control.extend(/** @lends Overview.prototype */ {
             map.on('load', this._initOverview, this);
         }
         return container;
-    },
+    }
 
-    _initOverview: function () {
+    _initOverview() {
         var me = this;
         setTimeout(function () {
             me._createOverview();
         }, this.loadDelay);
-    },
+    }
 
-    _createOverview: function (container) {
+    _createOverview(container) {
         var map = this.getMap(),
             dom = container || this.getDOM(),
             extent = map.getExtent();
@@ -94,15 +94,15 @@ export const Overview = Control.extend(/** @lends Overview.prototype */ {
             .on('setbaselayer', this._updateBaseLayer, this);
         new VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
         this.fire('load');
-    },
+    }
 
-    onRemove: function () {
+    onRemove() {
         this.getMap().off('load', this._initOverview, this)
             .off('resize moveend zoomend', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this);
-    },
+    }
 
-    _getOverviewZoom: function () {
+    _getOverviewZoom() {
         var map = this.getMap(),
             zoom = map.getZoom(),
             minZoom = map.getMinZoom(),
@@ -123,26 +123,26 @@ export const Overview = Control.extend(/** @lends Overview.prototype */ {
         }
 
         return zoom;
-    },
+    }
 
-    _onDragStart: function () {
+    _onDragStart() {
         this._origDraggable = this.getMap().options['draggable'];
         this.getMap().config('draggable', false);
-    },
+    }
 
-    _onDragEnd: function () {
+    _onDragEnd() {
         var center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
         this.getMap().config('draggable', this._origDraggable);
-    },
+    }
 
-    _update: function () {
+    _update() {
         this._perspective.setCoordinates(this.getMap().getExtent().toArray());
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
-    },
+    }
 
-    _updateBaseLayer: function () {
+    _updateBaseLayer() {
         var map = this.getMap();
         if (map.getBaseLayer()) {
             this._overview.setBaseLayer(Layer.fromJSON(map.getBaseLayer().toJSON()));
@@ -151,7 +151,9 @@ export const Overview = Control.extend(/** @lends Overview.prototype */ {
         }
     }
 
-});
+}
+
+Overview.mergeOptions(options);
 
 Map.mergeOptions({
     'overviewControl': false

@@ -5,7 +5,7 @@ import { indexOfArray } from 'core/util';
  * @protected
  * @mixin
  */
-const Handlerable = {
+export default Base => class extends Base {
     /**
      * Register a handler
      * @param {String} name       - name of the handler
@@ -13,7 +13,7 @@ const Handlerable = {
      * @return {*} this
      * @protected
      */
-    addHandler: function (name, handlerClass) {
+    addHandler(name, handlerClass) {
         if (!handlerClass) {
             return this;
         }
@@ -34,7 +34,7 @@ const Handlerable = {
             handler.enable();
         }
         return this;
-    },
+    }
 
     /**
      * Removes a handler
@@ -42,7 +42,7 @@ const Handlerable = {
      * @return {*} this
      * @protected
      */
-    removeHandler: function (name) {
+    removeHandler(name) {
         if (!name) {
             return this;
         }
@@ -57,14 +57,12 @@ const Handlerable = {
             delete this[name];
         }
         return this;
-    },
+    }
 
-    _clearHandlers: function () {
+    _clearHandlers() {
         for (var i = 0, len = this._handlers.length; i < len; i++) {
             this._handlers[i].remove();
         }
         this._handlers = [];
     }
-};
-
-export default Handlerable;
+}

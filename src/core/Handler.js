@@ -1,4 +1,3 @@
-import Class from 'core/class/index';
 import Eventable from 'core/Event';
 
 /**
@@ -10,52 +9,49 @@ import Eventable from 'core/Event';
  * @abstract
  * @protected
  */
-const Handler = Class.extend(/** @lends Handler.prototype */ {
-    includes: Eventable,
-
-    initialize: function (target) {
+export default class Handler extends Eventable(Object) {
+    constructor(target) {
+        super();
         this.target = target;
-    },
+    }
 
     /**
      * Enables the handler
      * @return {Handler} this
      */
-    enable: function () {
+    enable() {
         if (this._enabled) {
             return this;
         }
         this._enabled = true;
         this.addHooks();
         return this;
-    },
+    }
 
     /**
      * Disablesthe handler
      * @return {Handler} this
      */
-    disable: function () {
+    disable() {
         if (!this._enabled) {
             return this;
         }
         this._enabled = false;
         this.removeHooks();
         return this;
-    },
+    }
 
     /**
      * Returns true if the handler is enabled.
      * @return {Boolean}
      */
-    enabled: function () {
+    enabled() {
         return !!this._enabled;
-    },
+    }
 
-    remove: function () {
+    remove() {
         this.disable();
         delete this.target;
         delete this.dom;
     }
-});
-
-export default Handler;
+}

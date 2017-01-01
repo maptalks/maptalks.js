@@ -3,20 +3,16 @@ import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, st
 import Handler from 'core/Handler';
 import Map from '../Map';
 
-Map.mergeOptions({
-    'scrollWheelZoom': true
-});
-
-Map.ScrollWheelZoom = Handler.extend({
-    addHooks: function () {
+class MapScrollWheelZoomHandler extends Handler {
+    addHooks() {
         addDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll, this);
-    },
+    }
 
-    removeHooks: function () {
+    removeHooks() {
         removeDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll);
-    },
+    }
 
-    _onWheelScroll: function (evt) {
+    _onWheelScroll(evt) {
         var map = this.target;
         var container = map._containerDOM;
         preventDefault(evt);
@@ -36,6 +32,12 @@ Map.ScrollWheelZoom = Handler.extend({
 
         return false;
     }
+}
+
+Map.mergeOptions({
+    'scrollWheelZoom': true
 });
 
-Map.addInitHook('addHandler', 'scrollWheelZoom', Map.ScrollWheelZoom);
+Map.addInitHook('addHandler', 'scrollWheelZoom', MapScrollWheelZoomHandler);
+
+export default MapScrollWheelZoomHandler;

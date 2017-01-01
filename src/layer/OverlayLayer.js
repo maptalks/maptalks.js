@@ -14,14 +14,14 @@ import Layer from './Layer';
  * @abstract
  * @extends {Layer}
  */
-export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
+export default class OverlayLayer extends Layer {
 
     /**
      * Get a geometry by its id
      * @param  {String|Number} id   - id of the geometry
      * @return {Geometry}
      */
-    getGeometryById: function (id) {
+    getGeometryById(id) {
         if (isNil(id) || id === '') {
             return null;
         }
@@ -29,7 +29,7 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             return null;
         }
         return this._geoMap[id];
-    },
+    }
 
     /**
      * Get all the geometries or the ones filtered if a filter function is provided.
@@ -37,7 +37,7 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
      * @param {Object} [context=undefined]   - context of the filter function, value to use as this when executing filter.
      * @return {Geometry[]}
      */
-    getGeometries: function (filter, context) {
+    getGeometries(filter, context) {
         if (!filter) {
             return this._geoList.slice(0);
         }
@@ -55,53 +55,53 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             }
         }
         return result;
-    },
+    }
 
     /**
      * Get the first geometry, the geometry at the bottom.
      * @return {Geometry} first geometry
      */
-    getFirstGeometry: function () {
+    getFirstGeometry() {
         if (this._geoList.length === 0) {
             return null;
         }
         return this._geoList[0];
-    },
+    }
 
     /**
      * Get the last geometry, the geometry on the top
      * @return {Geometry} last geometry
      */
-    getLastGeometry: function () {
+    getLastGeometry() {
         var len = this._geoList.length;
         if (len === 0) {
             return null;
         }
         return this._geoList[len - 1];
-    },
+    }
 
     /**
      * Get count of the geometries
      * @return {Number} count
      */
-    getCount: function () {
+    getCount() {
         return this._geoList.length;
-    },
+    }
 
     /**
      * Get extent of all the geometries in the layer, return null if the layer is empty.
      * @return {Extent} - extent of the layer
      */
-    getExtent: function () {
+    getExtent() {
         if (this.getCount() === 0) {
             return null;
         }
         var extent = new Extent();
-        this.forEach(function (g) {
+        this.forEach(g => {
             extent._combine(g.getExtent());
         });
         return extent;
-    },
+    }
 
     /**
      * Executes the provided callback once for each geometry present in the layer in order.
@@ -109,7 +109,7 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
      * @param  {*} [context=undefined]   - callback's context, value to use as this when executing callback.
      * @return {OverlayLayer} this
      */
-    forEach: function (fn, context) {
+    forEach(fn, context) {
         var copyOnWrite = this._geoList.slice(0);
         for (var i = 0, l = copyOnWrite.length; i < l; i++) {
             if (!context) {
@@ -119,7 +119,7 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             }
         }
         return this;
-    },
+    }
 
     /**
      * Creates a GeometryCollection with all the geometries that pass the test implemented by the provided function.
@@ -127,11 +127,11 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
      * @param  {*} [context=undefined]  - Function's context, value to use as this when executing function.
      * @return {GeometryCollection} A GeometryCollection with all the geometries that pass the test
      */
-    filter: function (fn, context) {
+    filter(fn, context) {
         var selected = [];
         if (isFunction(fn)) {
             if (fn) {
-                this.forEach(function (geometry) {
+                this.forEach(geometry => {
                     if (context ? fn.call(context, geometry) : fn(geometry)) {
                         selected.push(geometry);
                     }
@@ -139,7 +139,7 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             }
         } else {
             var filter = createFilter(fn);
-            this.forEach(function (geometry) {
+            this.forEach(geometry => {
                 var g = getFilterFeature(geometry);
                 if (filter(g)) {
                     selected.push(geometry);
@@ -147,15 +147,15 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             }, this);
         }
         return selected.length > 0 ? new GeometryCollection(selected) : null;
-    },
+    }
 
     /**
      * Whether the layer is empty.
      * @return {Boolean}
      */
-    isEmpty: function () {
+    isEmpty() {
         return this._geoList.length === 0;
-    },
+    }
 
     /**
      * Adds one or more geometries to the layer
@@ -163,7 +163,7 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
      * @param {Boolean} [fitView=false]  - automatically set the map to a fit center and zoom for the geometries
      * @return {OverlayLayer} this
      */
-    addGeometry: function (geometries, fitView) {
+    addGeometry(geometries, fitView) {
         if (!geometries) {
             return this;
         }
@@ -259,14 +259,14 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             'geometries': geometries
         });
         return this;
-    },
+    }
 
     /**
      * Removes one or more geometries from the layer
      * @param  {String|String[]|Geometry|Geometry[]} geometries - geometry ids or geometries to remove
      * @returns {OverlayLayer} this
      */
-    removeGeometry: function (geometries) {
+    removeGeometry(geometries) {
         if (!isArray(geometries)) {
             return this.removeGeometry([geometries]);
         }
@@ -290,15 +290,15 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             'geometries': geometries
         });
         return this;
-    },
+    }
 
     /**
      * Clear all geometries in this layer
      * @returns {OverlayLayer} this
      */
-    clear: function () {
+    clear() {
         this._clearing = true;
-        this.forEach(function (geo) {
+        this.forEach(geo => {
             geo.remove();
         });
         this._geoMap = {};
@@ -318,14 +318,14 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
          */
         this.fire('clear');
         return this;
-    },
+    }
 
     /**
      * Called when geometry is being removed to clear the context concerned.
      * @param  {Geometry} geometry - the geometry instance to remove
      * @protected
      */
-    onRemoveGeometry: function (geometry) {
+    onRemoveGeometry(geometry) {
         if (!geometry || this._clearing) { return; }
         //考察geometry是否属于该图层
         if (this !== geometry.getLayer()) {
@@ -346,14 +346,14 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryRemove([geometry]);
         }
-    },
+    }
 
-    hide: function () {
+    hide() {
         for (var i = 0, l = this._geoList.length; i < l; i++) {
             this._geoList[i].onHide();
         }
         return Layer.prototype.hide.call(this);
-    },
+    }
 
     /**
      * Identify the geometries on the given container point
@@ -362,7 +362,7 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
      * @param  {Object} [options.count=null] - result count
      * @return {Geometry[]} geometries identified
      */
-    identify: function (point, options) {
+    identify(point, options) {
         var geometries = this._geoList,
             filter = options ? options.filter : null,
             extent2d,
@@ -389,31 +389,30 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             }
         }
         return hits;
-    },
+    }
 
-    _initCache: function () {
+    _initCache() {
         if (!this._geoList) {
             this._geoList = [];
             this._geoMap = {};
         }
-    },
+    }
 
-    _sortGeometries: function () {
-        var me = this;
-        this._geoList.sort(function (a, b) {
-            return me._compare(a, b);
+    _sortGeometries() {
+        this._geoList.sort((a, b) => {
+            return this._compare(a, b);
         });
-    },
+    }
 
-    _compare: function (a, b) {
+    _compare(a, b) {
         if (a._zIndex === b._zIndex) {
             return a._getInternalId() - b._getInternalId();
         }
         return a._zIndex - b._zIndex;
-    },
+    }
 
     //binarySearch
-    _findInList: function (geo) {
+    _findInList(geo) {
         var len = this._geoList.length;
         if (len === 0) {
             return -1;
@@ -432,9 +431,9 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             }
         }
         return -1;
-    },
+    }
 
-    _onGeometryEvent: function (param) {
+    _onGeometryEvent(param) {
         if (!param || !param['target']) {
             return;
         }
@@ -456,9 +455,9 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
         } else if (type === 'propertieschange') {
             this._onGeometryPropertiesChange(param);
         }
-    },
+    }
 
-    _onGeometryIdChange: function (param) {
+    _onGeometryIdChange(param) {
         if (param['new'] === param['old']) {
             if (this._geoMap[param['old']] && this._geoMap[param['old']] === param['target']) {
                 return;
@@ -474,56 +473,54 @@ export const OverlayLayer = Layer.extend(/** @lends OverlayLayer.prototype */ {
             delete this._geoMap[param['old']];
         }
 
-    },
+    }
 
-    _onGeometryZIndexChange: function (param) {
+    _onGeometryZIndexChange(param) {
         if (param['old'] !== param['new']) {
             this._sortGeometries();
             if (this._getRenderer()) {
                 this._getRenderer().onGeometryZIndexChange(param);
             }
         }
-    },
+    }
 
-    _onGeometryPositionChange: function (param) {
+    _onGeometryPositionChange(param) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPositionChange(param);
         }
-    },
+    }
 
-    _onGeometryShapeChange: function (param) {
+    _onGeometryShapeChange(param) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryShapeChange(param);
         }
-    },
+    }
 
-    _onGeometrySymbolChange: function (param) {
+    _onGeometrySymbolChange(param) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometrySymbolChange(param);
         }
-    },
+    }
 
-    _onGeometryShow: function (param) {
+    _onGeometryShow(param) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryShow(param);
         }
-    },
+    }
 
-    _onGeometryHide: function (param) {
+    _onGeometryHide(param) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryHide(param);
         }
-    },
+    }
 
-    _onGeometryPropertiesChange: function (param) {
+    _onGeometryPropertiesChange(param) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPropertiesChange(param);
         }
     }
-});
+}
 
-OverlayLayer.addInitHook(function () {
+OverlayLayer.addInitHook(() => {
     this._initCache();
 });
-
-export default OverlayLayer;

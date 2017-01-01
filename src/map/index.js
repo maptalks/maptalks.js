@@ -7,7 +7,6 @@ import './handler/Map.GeometryEvents';
 import './handler/Map.ScrollWheelZoom';
 import './handler/Map.TouchZoom';
 
-import './Map.ContextMenu';
 import './Map.DomEvents';
 import './Map.FullScreen';
 import './Map.Pan';

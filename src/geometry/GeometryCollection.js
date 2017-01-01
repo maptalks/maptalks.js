@@ -2,7 +2,7 @@ import { isArray, isArrayHasData } from 'core/util';
 import { getExternalResources } from 'core/util/resource';
 import Coordinate from 'geo/Coordinate';
 import VectorLayer from 'layer/VectorLayer';
-import { Geometry } from './Geometry';
+import Geometry from './Geometry';
 
 /**
  * @classdesc
@@ -19,13 +19,14 @@ import { Geometry } from './Geometry';
  * var collection = new GeometryCollection([marker, line, polygon])
  *     .addTo(layer);
  */
-export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.prototype */ {
-    type: Geometry['TYPE_GEOMETRYCOLLECTION'],
+export default class GeometryCollection extends Geometry {
 
-    initialize: function (geometries, opts) {
+    constructor(geometries, opts) {
+        super();
+        this.type = 'GeometryCollection';
         this._initOptions(opts);
         this.setGeometries(geometries);
-    },
+    }
 
     /**
      * Set new geometries to the geometry collection
@@ -33,7 +34,7 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
      * @return {GeometryCollection} this
      * @fires GeometryCollection#shapechange
      */
-    setGeometries: function (_geometries) {
+    setGeometries(_geometries) {
         var geometries = this._checkGeometries(_geometries);
         //Set the collection as child geometries' parent.
         if (isArray(geometries)) {
@@ -50,18 +51,18 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             this.onShapeChanged();
         }
         return this;
-    },
+    }
 
     /**
      * Get geometries of the geometry collection
      * @return {Geometry[]} geometries
      */
-    getGeometries: function () {
+    getGeometries() {
         if (!this._geometries) {
             return [];
         }
         return this._geometries;
-    },
+    }
 
     /**
      * Executes the provided callback once for each geometry present in the collection in order.
@@ -69,7 +70,7 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
      * @param  {*} [context=undefined]   - callback's context
      * @return {GeometryCollection} this
      */
-    forEach: function (fn, context) {
+    forEach(fn, context) {
         var geometries = this.getGeometries();
         for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
@@ -82,7 +83,7 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             }
         }
         return this;
-    },
+    }
 
     /**
      * Creates a GeometryCollection with all elements that pass the test implemented by the provided function.
@@ -90,16 +91,16 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
      * @param  {*} [context=undefined]    - Function's context
      * @return {GeometryCollection} A GeometryCollection with all elements that pass the test
      */
-    filter: function () {
+    filter() {
         return VectorLayer.prototype.filter.apply(this, arguments);
-    },
+    }
 
     /**
      * Translate or move the geometry collection by the given offset.
      * @param  {Coordinate} offset - translate offset
      * @return {GeometryCollection} this
      */
-    translate: function (offset) {
+    translate(offset) {
         if (!offset) {
             return this;
         }
@@ -112,15 +113,15 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             }
         });
         return this;
-    },
+    }
 
     /**
      * Whether the geometry collection is empty
      * @return {Boolean}
      */
-    isEmpty: function () {
+    isEmpty() {
         return !isArrayHasData(this.getGeometries());
-    },
+    }
 
     /**
      * remove itself from the layer if any.
@@ -129,40 +130,40 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
      * @fires GeometryCollection#remove
      * @fires GeometryCollection#removeend
      */
-    remove: function () {
+    remove() {
         this.forEach(function (geometry) {
             geometry._unbind();
         });
         return Geometry.prototype.remove.apply(this, arguments);
-    },
+    }
 
     /**
      * Show the geometry collection.
      * @return {GeometryCollection} this
      * @fires GeometryCollection#show
      */
-    show: function () {
+    show() {
         this.options['visible'] = true;
         this.forEach(function (geometry) {
             geometry.show();
         });
         return this;
-    },
+    }
 
     /**
      * Hide the geometry collection.
      * @return {GeometryCollection} this
      * @fires GeometryCollection#hide
      */
-    hide: function () {
+    hide() {
         this.options['visible'] = false;
         this.forEach(function (geometry) {
             geometry.hide();
         });
         return this;
-    },
+    }
 
-    setSymbol: function (symbol) {
+    setSymbol(symbol) {
         symbol = this._prepareSymbol(symbol);
         this._symbol = symbol;
         this.forEach(function (geometry) {
@@ -170,23 +171,23 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
         });
         this.onSymbolChanged();
         return this;
-    },
+    }
 
-    updateSymbol: function (symbol) {
+    updateSymbol(symbol) {
         this.forEach(function (geometry) {
             geometry.updateSymbol(symbol);
         });
         this.onSymbolChanged();
         return this;
-    },
+    }
 
-    onConfig: function (config) {
+    onConfig(config) {
         this.forEach(function (geometry) {
             geometry.config(config);
         });
-    },
+    }
 
-    _setExternSymbol: function (symbol) {
+    _setExternSymbol(symbol) {
         symbol = this._prepareSymbol(symbol);
         this._externSymbol = symbol;
         this.forEach(function (geometry) {
@@ -194,31 +195,31 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
         });
         this.onSymbolChanged();
         return this;
-    },
+    }
 
     /**
      * bind this geometry collection to a layer
      * @param  {Layer} layer
      * @private
      */
-    _bindLayer: function () {
+    _bindLayer() {
         Geometry.prototype._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
-    },
+    }
 
-    _bindGeometriesToLayer: function () {
+    _bindGeometriesToLayer() {
         var layer = this.getLayer();
         this.forEach(function (geometry) {
             geometry._bindLayer(layer);
         });
-    },
+    }
 
     /**
      * Check whether the type of geometries is valid
      * @param  {Geometry[]} geometries - geometries to check
      * @private
      */
-    _checkGeometries: function (geometries) {
+    _checkGeometries(geometries) {
         var invalidGeoError = 'The geometry added to collection is invalid.';
         if (geometries && !isArray(geometries)) {
             if (geometries instanceof Geometry) {
@@ -235,9 +236,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             return geometries;
         }
         return null;
-    },
+    }
 
-    _updateCache: function () {
+    _updateCache() {
         delete this._extent;
         if (this.isEmpty()) {
             return;
@@ -247,9 +248,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
                 geometry._updateCache();
             }
         });
-    },
+    }
 
-    _removePainter: function () {
+    _removePainter() {
         if (this._painter) {
             this._painter.remove();
         }
@@ -257,9 +258,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
         this.forEach(function (geometry) {
             geometry._removePainter();
         });
-    },
+    }
 
-    _computeCenter: function (projection) {
+    _computeCenter(projection) {
         if (!projection || this.isEmpty()) {
             return null;
         }
@@ -282,9 +283,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             return null;
         }
         return new Coordinate(sumX / counter, sumY / counter);
-    },
+    }
 
-    _containsPoint: function (point, t) {
+    _containsPoint(point, t) {
         if (this.isEmpty()) {
             return false;
         }
@@ -297,9 +298,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
         }
 
         return false;
-    },
+    }
 
-    _computeExtent: function (projection) {
+    _computeExtent(projection) {
         if (this.isEmpty()) {
             return null;
         }
@@ -315,9 +316,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             }
         }
         return result;
-    },
+    }
 
-    _computeGeodesicLength: function (projection) {
+    _computeGeodesicLength(projection) {
         if (!projection || this.isEmpty()) {
             return 0;
         }
@@ -330,9 +331,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             result += geometries[i]._computeGeodesicLength(projection);
         }
         return result;
-    },
+    }
 
-    _computeGeodesicArea: function (projection) {
+    _computeGeodesicArea(projection) {
         if (!projection || this.isEmpty()) {
             return 0;
         }
@@ -345,9 +346,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             result += geometries[i]._computeGeodesicArea(projection);
         }
         return result;
-    },
+    }
 
-    _exportGeoJSONGeometry: function () {
+    _exportGeoJSONGeometry() {
         var geoJSON = [];
         if (!this.isEmpty()) {
             var geometries = this.getGeometries();
@@ -362,9 +363,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             'type': 'GeometryCollection',
             'geometries': geoJSON
         };
-    },
+    }
 
-    _clearProjection: function () {
+    _clearProjection() {
         if (this.isEmpty()) {
             return;
         }
@@ -376,14 +377,14 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             geometries[i]._clearProjection();
         }
 
-    },
+    }
 
     /**
      * Get connect points if being connected by [ConnectorLine]{@link ConnectorLine}
      * @private
      * @return {Coordinate[]}
      */
-    _getConnectPoints: function () {
+    _getConnectPoints() {
         var extent = this.getExtent();
         var anchors = [
             new Coordinate(extent.xmin, extent.ymax),
@@ -392,9 +393,9 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             new Coordinate(extent.xmax, extent.ymax)
         ];
         return anchors;
-    },
+    }
 
-    _getExternalResources: function () {
+    _getExternalResources() {
         if (this.isEmpty()) {
             return null;
         }
@@ -421,10 +422,10 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
             }
         }
         return resources;
-    },
+    }
 
     //----------覆盖Geometry中的编辑相关方法-----------------
-    startEdit: function (opts) {
+    startEdit(opts) {
         if (this.isEmpty()) {
             return this;
         }
@@ -443,14 +444,13 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
         }
         this._editing = true;
         this.hide();
-        var me = this;
-        setTimeout(function () {
-            me.fire('editstart');
+        setTimeout(() => {
+            this.fire('editstart');
         }, 1);
         return this;
-    },
+    }
 
-    endEdit: function () {
+    endEdit() {
         if (this.isEmpty()) {
             return this;
         }
@@ -467,12 +467,12 @@ export const GeometryCollection = Geometry.extend(/** @lends GeometryCollection.
         this.config('draggable', this._draggbleBeforeEdit);
         this.fire('editend');
         return this;
-    },
+    }
 
-    isEditing: function () {
+    isEditing() {
         if (!this._editing) {
             return false;
         }
         return true;
     }
-});
+}

@@ -1,8 +1,16 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import { CenterType } from './Geometry.Center';
-import { Polygon } from './Polygon';
+import CenterMixin from './CenterMixin';
+import Polygon from './Polygon';
+
+/**
+ * @property {Object} options
+ * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the circle to a polygon.
+ */
+const options = {
+    'numberOfShellPoints': 60
+};
 
 /**
  * @classdesc
@@ -20,30 +28,30 @@ import { Polygon } from './Polygon';
  *     id : 'circle0'
  * });
  */
-export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
-    includes: [CenterType],
+export default class Circle extends CenterMixin(Polygon) {
 
-    /**
-     * @property {Object} options
-     * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the circle to a polygon.
-     */
-    options: {
-        'numberOfShellPoints': 60
-    },
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const circle = new Circle(json['coordinates'], json['radius'], json['options']);
+        circle.setProperties(feature['properties']);
+        return circle;
+    }
 
-    initialize: function (coordinates, radius, opts) {
+
+    constructor(coordinates, radius, opts) {
+        super();
         this._coordinates = new Coordinate(coordinates);
         this._radius = radius;
         this._initOptions(opts);
-    },
+    }
 
     /**
      * Get radius of the circle
      * @return {Number}
      */
-    getRadius: function () {
+    getRadius() {
         return this._radius;
-    },
+    }
 
     /**
      * Set a new radius to the circle
@@ -51,17 +59,17 @@ export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
      * @return {Circle} this
      * @fires Circle#shapechange
      */
-    setRadius: function (radius) {
+    setRadius(radius) {
         this._radius = radius;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Gets the shell of the circle as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Circle#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell: function () {
+    getShell() {
         var measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
@@ -76,24 +84,24 @@ export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
             shell.push(vertex);
         }
         return shell;
-    },
+    }
 
     /**
      * Circle won't have any holes, always returns null
      * @return {null}
      */
-    getHoles: function () {
+    getHoles() {
         return null;
-    },
+    }
 
-    _containsPoint: function (point, tolerance) {
+    _containsPoint(point, tolerance) {
         var center = this._getCenter2DPoint(),
             size = this.getSize(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;
         return center.distanceTo(point) <= size.width / 2 + t;
-    },
+    }
 
-    _computeExtent: function (measurer) {
+    _computeExtent(measurer) {
         if (!measurer || !this._coordinates || isNil(this._radius)) {
             return null;
         }
@@ -102,31 +110,31 @@ export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
         var p1 = measurer.locate(this._coordinates, radius, radius);
         var p2 = measurer.locate(this._coordinates, -radius, -radius);
         return new Extent(p1, p2);
-    },
+    }
 
-    _computeGeodesicLength: function () {
+    _computeGeodesicLength() {
         if (isNil(this._radius)) {
             return 0;
         }
         return Math.PI * 2 * this._radius;
-    },
+    }
 
-    _computeGeodesicArea: function () {
+    _computeGeodesicArea() {
         if (isNil(this._radius)) {
             return 0;
         }
         return Math.PI * Math.pow(this._radius, 2);
-    },
+    }
 
-    _exportGeoJSONGeometry: function () {
+    _exportGeoJSONGeometry() {
         var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
         };
-    },
+    }
 
-    _toJSON: function (options) {
+    _toJSON(options) {
         var center = this.getCenter();
         var opts = extend({}, options);
         opts.geometry = false;
@@ -142,11 +150,6 @@ export const Circle = Polygon.extend(/** @lends Circle.prototype */ {
         };
     }
 
-});
+}
 
-Circle.fromJSON = function (json) {
-    var feature = json['feature'];
-    var circle = new Circle(json['coordinates'], json['radius'], json['options']);
-    circle.setProperties(feature['properties']);
-    return circle;
-};
+Circle.mergeOptions(options);

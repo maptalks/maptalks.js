@@ -3,21 +3,17 @@ import Handler from 'core/Handler';
 import Point from 'geo/Point';
 import Map from '../Map';
 
-Map.mergeOptions({
-    'touchZoom': true
-});
-
 //handler to zoom map by pinching
-Map.TouchZoom = Handler.extend({
-    addHooks: function () {
+class MapTouchZoomHandler extends Handler {
+    addHooks() {
         addDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart, this);
-    },
+    }
 
-    removeHooks: function () {
+    removeHooks() {
         removeDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart);
-    },
+    }
 
-    _onTouchStart: function (event) {
+    _onTouchStart(event) {
         var map = this.target;
         if (!event.touches || event.touches.length !== 2 || map._zooming) {
             return;
@@ -45,9 +41,9 @@ Map.TouchZoom = Handler.extend({
           * @property {Number} from                    - zoom level zooming from
           */
         map._fireEvent('touchzoomstart', { 'from' : this._startZoom });
-    },
+    }
 
-    _onTouchMove: function (event) {
+    _onTouchMove(event) {
         var map = this.target;
         if (!event.touches || event.touches.length !== 2 || !map._zooming) {
             return;
@@ -69,9 +65,9 @@ Map.TouchZoom = Handler.extend({
           * @property {Map} target                     - the map fires event
           */
         map._fireEvent('touchzooming');
-    },
+    }
 
-    _onTouchEnd: function () {
+    _onTouchEnd() {
         var map = this.target;
         if (!map._zooming) {
             map._zooming = false;
@@ -102,6 +98,12 @@ Map.TouchZoom = Handler.extend({
          */
         map._fireEvent('touchzoomend');
     }
+}
+
+Map.mergeOptions({
+    'touchZoom': true
 });
 
-Map.addInitHook('addHandler', 'touchZoom', Map.TouchZoom);
+Map.addInitHook('addHandler', 'touchZoom', MapTouchZoomHandler);
+
+export default MapTouchZoomHandler;

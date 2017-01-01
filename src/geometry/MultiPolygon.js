@@ -1,15 +1,12 @@
-import MultiPolyType from './MultiPoly';
-import { GeometryCollection } from './GeometryCollection';
-import { Polygon } from './Polygon';
+import MultiGeometry from './MultiGeometry';
+import Polygon from './Polygon';
 
 /**
  * @classdesc
  * Represents a Geometry type of MultiPolygon
  * @class
  * @category geometry
- * @category geometry
- * @extends GeometryCollection
- * @mixes Geometry.MultiPoly
+ * @extends MultiGeometry
  * @param {Number[][][][]|Coordinate[][][]|Polygon[]} data - construct data, coordinates or a array of polygons
  * @param {Object} [options=null]           - options defined in [MultiPolygon]{@link MultiPolygon#options}
  * @example
@@ -48,14 +45,12 @@ import { Polygon } from './Polygon';
  *           draggable:true
  * }).addTo(layer);
  */
-export const MultiPolygon = GeometryCollection.extend(/** @lends MultiPolygon.prototype */ {
-    includes: [MultiPolyType],
-    GeometryType: Polygon,
+export default class MultiPolygon extends MultiGeometry {
 
-    type: 'MultiPolygon',
-
-    initialize: function (data, opts) {
+    constructor(data, opts) {
+        super(Polygon);
+        this.type = 'MultiPolygon';
         this._initOptions(opts);
         this._initData(data);
     }
-});
+}

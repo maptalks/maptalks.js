@@ -1,20 +1,16 @@
 import Handler from 'core/Handler';
 import Map from '../Map';
 
-Map.mergeOptions({
-    'doubleClickZoom': true
-});
-
-Map.DoubleClickZoom = Handler.extend({
-    addHooks: function () {
+class MapDoubleClickZoomHandler extends Handler {
+    addHooks() {
         this.target.on('_dblclick', this._onDoubleClick, this);
-    },
+    }
 
-    removeHooks: function () {
+    removeHooks() {
         this.target.off('_dblclick', this._onDoubleClick, this);
-    },
+    }
 
-    _onDoubleClick: function (param) {
+    _onDoubleClick(param) {
         var map = this.target;
         if (map.options['doubleClickZoom']) {
             var oldZoom = map.getZoom(),
@@ -23,6 +19,12 @@ Map.DoubleClickZoom = Handler.extend({
         }
 
     }
+}
+
+Map.mergeOptions({
+    'doubleClickZoom': true
 });
 
-Map.addInitHook('addHandler', 'doubleClickZoom', Map.DoubleClickZoom);
+Map.addInitHook('addHandler', 'doubleClickZoom', MapDoubleClickZoomHandler);
+
+export default MapDoubleClickZoomHandler;

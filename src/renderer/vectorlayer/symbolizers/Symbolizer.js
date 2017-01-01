@@ -16,7 +16,7 @@ import { isString, indexOfArray } from 'core/util';
  * @abstract
  * @protected
  */
-export class Symbolizer {
+export default class Symbolizer {
     getMap() {
         return this.geometry.getMap();
     }

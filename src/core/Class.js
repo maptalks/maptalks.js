@@ -1,4 +1,5 @@
 import { extend } from './util/common';
+import Handler from 'core/Handler';
 
 /**
  * OOP facilities of the library. <br/>
@@ -9,7 +10,6 @@ import { extend } from './util/common';
  */
 class Class {
     constructor() {
-        // this.options = Object.create(this.options);
         this.callInitHooks();
     }
 
@@ -36,6 +36,9 @@ class Class {
     }
 
     setOptions(options) {
+        if (!this.hasOwnProperty('options')) {
+            this.options = this.options ? Object.create(this.options) : {};
+        }
         for (let i in options) {
             this.options[i] = options[i];
         }
@@ -54,13 +57,13 @@ class Class {
             for (let i in conf) {
                 this.options[i] = conf[i];
                 // enable/disable handler
-                // if (this[i] && (this[i] instanceof Handler)) {
-                //     if (conf[i]) {
-                //         this[i].enable();
-                //     } else {
-                //         this[i].disable();
-                //     }
-                // }
+                if (this[i] && (this[i] instanceof Handler)) {
+                    if (conf[i]) {
+                        this[i].enable();
+                    } else {
+                        this[i].disable();
+                    }
+                }
             }
             // callback when set config
             if (this.onConfig) {

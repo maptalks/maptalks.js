@@ -1,14 +1,12 @@
-import MultiPolyType from './MultiPoly';
-import { GeometryCollection } from './GeometryCollection';
-import { Marker } from './Marker';
+import MultiGeometry from './MultiGeometry';
+import Marker from './Marker';
 
 /**
  * @classdesc
  * Represents a Geometry type of MultiPoint.
  * @class
  * @category geometry
- * @extends GeometryCollection
- * @mixes Geometry.MultiPoly
+ * @extends MultiGeometry
  * @param {Number[][]|Coordinate[]|Marker[]} data - construct data, coordinates or a array of markers
  * @param {Object} [options=null] - options defined in [nMultiPoint]{@link MultiPoint#options}
  * @example
@@ -20,15 +18,12 @@ import { Marker } from './Marker';
  *     ]
  * ).addTo(layer);
  */
-export const MultiPoint = GeometryCollection.extend(/** @lends MultiPoint.prototype */ {
-    includes: [MultiPolyType],
+export default class MultiPoint extends MultiGeometry {
 
-    GeometryType: Marker,
-
-    type: 'MultiPoint',
-
-    initialize: function (data, opts) {
+    constructor(data, opts) {
+        super(Marker);
+        this.type = 'MultiPoint';
         this._initOptions(opts);
         this._initData(data);
     }
-});
+}

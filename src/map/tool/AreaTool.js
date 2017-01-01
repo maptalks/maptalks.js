@@ -4,7 +4,28 @@ import { _computeArea } from 'geo/utils';
 import Geometry from 'geometry/Geometry';
 import Marker from 'geometry/Marker';
 import Label from 'geometry/Label';
-import { DistanceTool } from './DistanceTool';
+import DistanceTool from './DistanceTool';
+
+/**
+ * @property {options} options
+ * @property {String}  options.language         - language of the distance tool, zh-CN or en-US
+ * @property {Boolean} options.metric           - display result in metric system
+ * @property {Boolean} options.imperial         - display result in imperial system.
+ * @property {Object}  options.symbol           - symbol of the line
+ * @property {Object}  options.vertexSymbol     - symbol of the vertice
+ * @property {Object}  options.labelOptions     - construct options of the vertice labels.
+ */
+const options = {
+    'mode': 'Polygon',
+    'symbol': {
+        'lineColor': '#000000',
+        'lineWidth': 2,
+        'lineOpacity': 1,
+        'lineDasharray': '',
+        'polygonFill': '#ffffff',
+        'polygonOpacity': 0.5
+    }
+};
 
 /**
  * @classdesc
@@ -37,36 +58,16 @@ import { DistanceTool } from './DistanceTool';
  *    'language' : 'en-US'
  *  }).addTo(map);
  */
-export const AreaTool = DistanceTool.extend(/** @lends AreaTool.prototype */ {
-    /**
-     * @property {options} options
-     * @property {String}  options.language         - language of the distance tool, zh-CN or en-US
-     * @property {Boolean} options.metric           - display result in metric system
-     * @property {Boolean} options.imperial         - display result in imperial system.
-     * @property {Object}  options.symbol           - symbol of the line
-     * @property {Object}  options.vertexSymbol     - symbol of the vertice
-     * @property {Object}  options.labelOptions     - construct options of the vertice labels.
-     */
-    options: {
-        'mode': 'Polygon',
-        'symbol': {
-            'lineColor': '#000000',
-            'lineWidth': 2,
-            'lineOpacity': 1,
-            'lineDasharray': '',
-            'polygonFill': '#ffffff',
-            'polygonOpacity': 0.5
-        }
-    },
+export default class AreaTool extends DistanceTool {
 
-    initialize: function (options) {
+    constructor(options) {
         setOptions(this, options);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
-    },
+    }
 
-    _measure: function (toMeasure) {
+    _measure(toMeasure) {
         var map = this.getMap();
         var area;
         if (toMeasure instanceof Geometry) {
@@ -94,17 +95,17 @@ export const AreaTool = DistanceTool.extend(/** @lends AreaTool.prototype */ {
             content += area < sqmi ? area.toFixed(0) + units[2] : (area / sqmi).toFixed(2) + units[3];
         }
         return content;
-    },
+    }
 
-    _msOnDrawVertex: function (param) {
+    _msOnDrawVertex(param) {
         var vertexMarker = new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
 
         this._lastVertex = vertexMarker;
-    },
+    }
 
-    _msOnDrawEnd: function (param) {
+    _msOnDrawEnd(param) {
         this._clearTailMarker();
 
         var ms = this._measure(param['geometry']);
@@ -119,4 +120,6 @@ export const AreaTool = DistanceTool.extend(/** @lends AreaTool.prototype */ {
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getArea();
     }
-});
+}
+
+AreaTool.mergeOptions(options);

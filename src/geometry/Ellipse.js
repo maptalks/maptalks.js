@@ -2,8 +2,16 @@ import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import Extent from 'geo/Extent';
-import { CenterType } from './Geometry.Center';
-import { Polygon } from './Polygon';
+import CenterMixin from './CenterMixin';
+import Polygon from './Polygon';
+
+/**
+ * @property {Object} [options=null]
+ * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
+ */
+const options = {
+    'numberOfShellPoints': 60
+};
 
 /**
  * @classdesc
@@ -22,31 +30,30 @@ import { Polygon } from './Polygon';
  *     id : 'ellipse0'
  * });
  */
-export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
-    includes: [CenterType],
+export default class Ellipse extends CenterMixin(Polygon) {
 
-    /**
-     * @property {Object} [options=null]
-     * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
-     */
-    options: {
-        'numberOfShellPoints': 60
-    },
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const ellipse = new Ellipse(json['coordinates'], json['width'], json['height'], json['options']);
+        ellipse.setProperties(feature['properties']);
+        return ellipse;
+    }
 
-    initialize: function (coordinates, width, height, opts) {
+    constructor(coordinates, width, height, opts) {
+        super();
         this._coordinates = new Coordinate(coordinates);
         this.width = width;
         this.height = height;
         this._initOptions(opts);
-    },
+    }
 
     /**
      * Get ellipse's width
      * @return {Number}
      */
-    getWidth: function () {
+    getWidth() {
         return this.width;
-    },
+    }
 
     /**
      * Set new width to ellipse
@@ -54,19 +61,19 @@ export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
      * @fires Ellipse#shapechange
      * @return {Ellipse} this
      */
-    setWidth: function (width) {
+    setWidth(width) {
         this.width = width;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Get ellipse's height
      * @return {Number}
      */
-    getHeight: function () {
+    getHeight() {
         return this.height;
-    },
+    }
 
     /**
      * Set new height to ellipse
@@ -74,17 +81,17 @@ export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
      * @fires Ellipse#shapechange
      * @return {Ellipse} this
      */
-    setHeight: function (height) {
+    setHeight(height) {
         this.height = height;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Gets the shell of the ellipse as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Circle#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell: function () {
+    getShell() {
         var measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
@@ -110,17 +117,17 @@ export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
             shell.push(vertex);
         }
         return shell;
-    },
+    }
 
     /**
      * Ellipse won't have any holes, always returns null
      * @return {null}
      */
-    getHoles: function () {
+    getHoles() {
         return null;
-    },
+    }
 
-    _containsPoint: function (point, tolerance) {
+    _containsPoint(point, tolerance) {
         var map = this.getMap(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pa = map.distanceToPixel(this.width / 2, 0),
@@ -149,9 +156,9 @@ export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
          D + 2t >= L1' + L2'
          */
         return point.distanceTo(f1) + point.distanceTo(f2) <= d + 2 * t;
-    },
+    }
 
-    _computeExtent: function (measurer) {
+    _computeExtent(measurer) {
         if (!measurer || !this._coordinates || isNil(this.width) || isNil(this.height)) {
             return null;
         }
@@ -160,9 +167,9 @@ export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
         var p1 = measurer.locate(this._coordinates, width / 2, height / 2);
         var p2 = measurer.locate(this._coordinates, -width / 2, -height / 2);
         return new Extent(p1, p2);
-    },
+    }
 
-    _computeGeodesicLength: function () {
+    _computeGeodesicLength() {
         if (isNil(this.width) || isNil(this.height)) {
             return 0;
         }
@@ -170,24 +177,24 @@ export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
         //近似值
         var longer = (this.width > this.height ? this.width : this.height);
         return 2 * Math.PI * longer / 2 - 4 * Math.abs(this.width - this.height);
-    },
+    }
 
-    _computeGeodesicArea: function () {
+    _computeGeodesicArea() {
         if (isNil(this.width) || isNil(this.height)) {
             return 0;
         }
         return Math.PI * this.width * this.height / 4;
-    },
+    }
 
-    _exportGeoJSONGeometry: function () {
+    _exportGeoJSONGeometry() {
         var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
         };
-    },
+    }
 
-    _toJSON: function (options) {
+    _toJSON(options) {
         var opts = extend({}, options);
         var center = this.getCenter();
         opts.geometry = false;
@@ -204,11 +211,6 @@ export const Ellipse = Polygon.extend(/** @lends Ellipse.prototype */ {
         };
     }
 
-});
+}
 
-Ellipse.fromJSON = function (json) {
-    var feature = json['feature'];
-    var ellipse = new Ellipse(json['coordinates'], json['width'], json['height'], json['options']);
-    ellipse.setProperties(feature['properties']);
-    return ellipse;
-};
+Ellipse.mergeOptions(options);

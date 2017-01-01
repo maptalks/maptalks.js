@@ -1,13 +1,13 @@
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
-import { TextMarker } from 'geometry/TextMarker';
-import { TextBox } from 'geometry/TextBox';
-import { Label } from 'geometry/Label';
+import TextMarker from 'geometry/TextMarker';
+import TextBox from 'geometry/TextBox';
+import Label from 'geometry/Label';
 import { UIMarker } from 'ui';
 
 /**
  * @mixin TextMarker.Edit
  */
-TextMarker.Editor = {
+const TextEditable = {
     /**
      * Start to edit the text, editing will be ended automatically whenever map is clicked.
      *
@@ -184,5 +184,7 @@ TextMarker.Editor = {
     }
 };
 
-TextBox.include(TextMarker.Editor);
-Label.include(TextMarker.Editor);
+TextBox.include(TextEditable);
+Label.include(TextEditable);
+
+export default TextEditable;

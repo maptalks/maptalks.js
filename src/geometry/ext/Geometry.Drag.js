@@ -3,11 +3,10 @@ import { isNil } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Browser from 'core/Browser';
 import Handler from 'core/Handler';
-import { Geometry } from 'geometry/Geometry';
+import Geometry from 'geometry/Geometry';
 import DragHandler from 'handler/Drag';
 import VectorLayer from 'layer/VectorLayer';
 import { ConnectorLine } from 'geometry/ConnectorLine';
-import { Canvas } from 'renderer';
 
 /**
  * Drag handler for geometries.
@@ -16,21 +15,23 @@ import { Canvas } from 'renderer';
  * @protected
  * @extends {Handler}
  */
-Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
-    dragStageLayerId: internalLayerPrefix + '_drag_stage',
+export default class GeometryDragHandler extends Handler  {
 
-    START: Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
+    constructor(target) {
+        super(target);
+        this.dragStageLayerId = internalLayerPrefix + '_drag_stage';
+        this.START = Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'];
+    }
 
-    addHooks: function () {
+    addHooks() {
         this.target.on(this.START.join(' '), this._startDrag, this);
+    }
 
-    },
-    removeHooks: function () {
+    removeHooks() {
         this.target.off(this.START.join(' '), this._startDrag, this);
+    }
 
-    },
-
-    _startDrag: function (param) {
+    _startDrag(param) {
         var map = this.target.getMap();
         if (!map) {
             return;
@@ -64,9 +65,9 @@ Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
          * @property {Event} domEvent                 - dom event
          */
         this.target._fireEvent('dragstart', param);
-    },
+    }
 
-    _prepareMap: function () {
+    _prepareMap() {
         var map = this.target.getMap();
         this._mapDraggable = map.options['draggable'];
         this._mapHitDetect = map.options['hitDetect'];
@@ -75,17 +76,17 @@ Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
             'hitDetect': false,
             'draggable': false
         });
-    },
+    }
 
-    _prepareDragHandler: function () {
+    _prepareDragHandler() {
         var map = this.target.getMap();
         this._dragHandler = new DragHandler(map._panels.mapWrapper || map._containerDOM);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
-    },
+    }
 
-    _prepareShadow: function () {
+    _prepareShadow() {
         var target = this.target;
         this._prepareDragStageLayer();
         var resources = this._dragStageLayer._getRenderer().resources;
@@ -127,15 +128,15 @@ Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
         this._shadowConnectors = shadowConnectors;
         shadowConnectors.push(shadow);
         this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
-    },
+    }
 
-    _onTargetUpdated: function () {
+    _onTargetUpdated() {
         if (this._shadow) {
             this._shadow.setSymbol(this.target.getSymbol());
         }
-    },
+    }
 
-    _prepareDragStageLayer: function () {
+    _prepareDragStageLayer() {
         var map = this.target.getMap(),
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(this.dragStageLayerId);
@@ -149,9 +150,9 @@ Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
         var resources = new Canvas.Resources();
         resources.merge(layer._getRenderer().resources);
         this._dragStageLayer._getRenderer().resources = resources;
-    },
+    }
 
-    _dragging: function (param) {
+    _dragging(param) {
         var target = this.target;
         var map = target.getMap(),
             eventParam = map._parseEvent(param['domEvent']);
@@ -208,9 +209,9 @@ Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
          */
         target._fireEvent('dragging', eventParam);
 
-    },
+    }
 
-    _endDrag: function (param) {
+    _endDrag(param) {
         var target = this.target,
             map = target.getMap();
         if (this._dragHandler) {
@@ -273,16 +274,16 @@ Geometry.Drag = Handler.extend(/** @lends Geometry.Drag.prototype */ {
          * @property {Event} domEvent                 - dom event
          */
         target._fireEvent('dragend', eventParam);
-    },
+    }
 
-    isDragging: function () {
+    isDragging() {
         if (!this._isDragging) {
             return false;
         }
         return true;
     }
 
-});
+}
 
 Geometry.mergeOptions({
     'draggable': false,
@@ -290,7 +291,7 @@ Geometry.mergeOptions({
     'dragOnAxis': null
 });
 
-Geometry.addInitHook('addHandler', 'draggable', Geometry.Drag);
+Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**

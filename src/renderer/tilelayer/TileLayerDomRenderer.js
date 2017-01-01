@@ -15,7 +15,7 @@ import {
     TRANSITION,
     CSSFILTER
 } from 'core/util/dom';
-import Class from 'core/class/index';
+import Class from 'core/Class';
 import Browser from 'core/Browser';
 import TileLayer from 'layer/tile/TileLayer';
 
@@ -30,55 +30,56 @@ import TileLayer from 'layer/tile/TileLayer';
  * @extends {Class}
  * @param {TileLayer} layer - layer of the renderer
  */
-export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
+export default class TileLayerDomRenderer extends Class {
 
-    initialize: function (layer) {
+    constructor(layer) {
+        super();
         this.layer = layer;
         this._tiles = {};
         this._fadeAnimated = !Browser.mobile && true;
-    },
+    }
 
-    getMap: function () {
+    getMap() {
         return this.layer.getMap();
-    },
+    }
 
-    show: function () {
+    show() {
         if (this._container) {
             this.render();
             this._container.style.display = '';
         }
-    },
+    }
 
-    hide: function () {
+    hide() {
         if (this._container) {
             this._container.style.display = 'none';
             this.clear();
         }
-    },
+    }
 
-    remove: function () {
+    remove() {
         delete this._tiles;
         delete this.layer;
         this._removeLayerContainer();
-    },
+    }
 
-    clear: function () {
+    clear() {
         this._removeAllTiles();
         this._clearLayerContainer();
-    },
+    }
 
-    setZIndex: function (z) {
+    setZIndex(z) {
         this._zIndex = z;
         if (this._container) {
             this._container.style.zIndex = z;
         }
-    },
+    }
 
-    isCanvasRender: function () {
+    isCanvasRender() {
         return false;
-    },
+    }
 
-    render: function () {
+    render() {
         var layer = this.layer;
         if (!this._container) {
             this._createLayerContainer();
@@ -118,22 +119,22 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
             }
             container.appendChild(fragment);
         }
-    },
+    }
 
-    onZooming: function (param) {
+    onZooming(param) {
         var zoom = Math.floor(param['from']);
 
         if (this._levelContainers && this._levelContainers[zoom]) {
             setTransformMatrix(this._levelContainers[zoom], param.matrix['view']);
         }
-    },
+    }
 
-    _loadTile: function (tile) {
+    _loadTile(tile) {
         this._tiles[tile['id']] = tile;
         return this._createTile(tile, bind(this._tileReady, this));
-    },
+    }
 
-    _createTile: function (tile, done) {
+    _createTile(tile, done) {
         var tileSize = this.layer.getTileSize();
         var tileImage = createEl('img');
 
@@ -164,9 +165,9 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         tileImage.src = tile['url'];
 
         return tileImage;
-    },
+    }
 
-    _tileReady: function (err, tile) {
+    _tileReady(err, tile) {
         if (!this.layer) {
             return;
         }
@@ -227,18 +228,18 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
                 this._pruneTimeout = setTimeout(bind(this._pruneTiles, this, pruneLevels), timeout + 100);
             }
         }
-    },
+    }
 
-    _tileOnLoad: function (done, tile) {
+    _tileOnLoad(done, tile) {
         // For https://github.com/Leaflet/Leaflet/issues/3332
         if (Browser.ielt9) {
             setTimeout(bind(done, this, null, tile), 0);
         } else {
             done.call(this, null, tile);
         }
-    },
+    }
 
-    _tileOnError: function (done, tile) {
+    _tileOnError(done, tile) {
         var errorUrl = this.layer.options['errorTileUrl'];
         if (errorUrl) {
             tile['el'].src = errorUrl;
@@ -246,18 +247,18 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
             tile['el'].style.display = 'none';
         }
         done.call(this, 'error', tile);
-    },
+    }
 
-    _noTilesToLoad: function () {
+    _noTilesToLoad() {
         for (var key in this._tiles) {
             if (!this._tiles[key].loaded) {
                 return false;
             }
         }
         return true;
-    },
+    }
 
-    _pruneTiles: function (pruneLevels) {
+    _pruneTiles(pruneLevels) {
         var map = this.getMap();
         if (!map || map._moving) {
             return;
@@ -292,9 +293,9 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
             }
         }
 
-    },
+    }
 
-    _removeTile: function (key) {
+    _removeTile(key) {
         var tile = this._tiles[key];
         if (!tile) {
             return;
@@ -316,24 +317,24 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         this.layer.fire('tileunload', {
             tile: tile
         });
-    },
+    }
 
-    _removeTilesAtZoom: function (zoom) {
+    _removeTilesAtZoom(zoom) {
         for (var key in this._tiles) {
             if (+this._tiles[key]['zoom'] !== +zoom) {
                 continue;
             }
             this._removeTile(key);
         }
-    },
+    }
 
-    _removeAllTiles: function () {
+    _removeAllTiles() {
         for (var key in this._tiles) {
             this._removeTile(key);
         }
-    },
+    }
 
-    _getTileContainer: function () {
+    _getTileContainer() {
         if (!this._levelContainers) {
             this._levelContainers = {};
         }
@@ -345,9 +346,9 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
             this._container.appendChild(container);
         }
         return this._levelContainers[zoom];
-    },
+    }
 
-    _createLayerContainer: function () {
+    _createLayerContainer() {
         var container = this._container = createEl('div', 'maptalks-tilelayer');
         container.style.cssText = 'position:absolute;left:0px;top:0px;';
         if (this._zIndex) {
@@ -355,24 +356,24 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
         }
         var parentContainer = this.layer.options['container'] === 'front' ? this.getMap()._panels['frontLayer'] : this.getMap()._panels['layer'];
         parentContainer.appendChild(container);
-    },
+    }
 
-    _clearLayerContainer: function () {
+    _clearLayerContainer() {
         if (this._container) {
             this._container.innerHTML = '';
         }
         delete this._levelContainers;
-    },
+    }
 
-    _removeLayerContainer: function () {
+    _removeLayerContainer() {
         if (this._container) {
             removeDomNode(this._container);
         }
         delete this._container;
         delete this._levelContainers;
-    },
+    }
 
-    getEvents: function () {
+    getEvents() {
         var events = {
             '_zoomstart'    : this.onZoomStart,
             '_touchzoomstart' : this._onTouchZoomStart,
@@ -399,30 +400,30 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
             events['_moving'] = this._onMapMoving;
         }
         return events;
-    },
+    }
 
-    _canTransform: function () {
+    _canTransform() {
         return Browser.any3d || Browser.ie9;
-    },
+    }
 
-    onMoveStart: function () {
+    onMoveStart() {
         // this._fadeAnimated = false;
-    },
+    }
 
-    _onTouchZoomStart: function () {
+    _onTouchZoomStart() {
         this._pruneTiles(true);
-    },
+    }
 
-    onZoomStart: function () {
+    onZoomStart() {
         this._fadeAnimated = !Browser.mobile && true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
         if (!this._canTransform() && this._container) {
             this._container.style.display = 'none';
         }
-    },
+    }
 
-    onZoomEnd: function (param) {
+    onZoomEnd(param) {
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }
@@ -441,6 +442,6 @@ export const Dom = Class.extend(/** @lends tilelayer.Dom.prototype */ {
             }
         }
     }
-});
+}
 
-TileLayer.registerRenderer('dom', Dom);
+TileLayer.registerRenderer('dom', TileLayerDomRenderer);

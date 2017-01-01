@@ -5,12 +5,8 @@ import DragHandler from 'handler/Drag';
 import Point from 'geo/Point';
 import Map from '../Map';
 
-Map.mergeOptions({
-    'draggable': true
-});
-
-Map.Drag = Handler.extend({
-    addHooks: function () {
+class MapDragHandler extends Handler {
+    addHooks() {
         var map = this.target;
         if (!map) {
             return;
@@ -24,9 +20,9 @@ Map.Drag = Handler.extend({
             .on('dragging', this._onDragging, this)
             .on('dragend', this._onDragEnd, this)
             .enable();
-    },
+    }
 
-    removeHooks: function () {
+    removeHooks() {
         this._dragHandler.off('mousedown', this._onMouseDown, this)
             .off('dragstart', this._onDragStart, this)
             .off('dragging', this._onDragging, this)
@@ -34,16 +30,16 @@ Map.Drag = Handler.extend({
             .disable();
         this._dragHandler.remove();
         delete this._dragHandler;
-    },
+    }
 
-    _cancelOn: function (domEvent) {
+    _cancelOn(domEvent) {
         if (this._ignore(domEvent)) {
             return true;
         }
         return false;
-    },
+    }
 
-    _ignore: function (param) {
+    _ignore(param) {
         if (!param) {
             return false;
         }
@@ -51,17 +47,17 @@ Map.Drag = Handler.extend({
             param = param.domEvent;
         }
         return this.target._ignoreEvent(param);
-    },
+    }
 
 
-    _onMouseDown: function (param) {
+    _onMouseDown(param) {
         if (this.target._panAnimating) {
             this.target._enablePanAnimation = false;
         }
         preventDefault(param['domEvent']);
-    },
+    }
 
-    _onDragStart: function (param) {
+    _onDragStart(param) {
         var map = this.target;
         this.startDragTime = now();
         var domOffset = map.offsetPlatform();
@@ -72,9 +68,9 @@ Map.Drag = Handler.extend({
         this.startX = this.preX;
         this.startY = this.preY;
         map.onMoveStart(param);
-    },
+    }
 
-    _onDragging: function (param) {
+    _onDragging(param) {
         //preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
@@ -89,9 +85,9 @@ Map.Drag = Handler.extend({
         map.offsetPlatform(offset);
         map._offsetCenterByPixel(offset);
         map.onMoving(param);
-    },
+    }
 
-    _onDragEnd: function (param) {
+    _onDragEnd(param) {
         //preventDefault(param['domEvent']);
         if (this.startLeft === undefined) {
             return;
@@ -118,6 +114,12 @@ Map.Drag = Handler.extend({
             map.onMoveEnd(param);
         }
     }
+}
+
+Map.mergeOptions({
+    'draggable': true
 });
 
-Map.addInitHook('addHandler', 'draggable', Map.Drag);
+Map.addInitHook('addHandler', 'draggable', MapDragHandler);
+
+export default MapDragHandler;

@@ -1,14 +1,34 @@
 import { isArray, isNil, isNumber, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
+import Geometry from './Geometry';
 import * as Measurer from 'geo/measurer';
 import { simplify } from 'geo/utils';
 
 /**
- * Common methods for geometry classes based on coordinates arrays, e.g. LineString, Polygon
- * @mixin Geometry.Poly
+ * @property {Object} options - Vector's options
+ * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
+ * @property {Object} options.symbol - Vector's default symbol
  */
-export const PolyType = {
+const options = {
+    'antiMeridian': 'continuous',
+    'symbol': {
+        'lineColor': '#000',
+        'lineWidth': 2,
+        'lineOpacity': 1,
+
+        'polygonFill': '#fff', //default color in cartoCSS
+        'polygonOpacity': 1,
+        'opacity': 1
+    }
+};
+
+/**
+ * An abstract class Path containing common methods for Path geometry classes, e.g. LineString, Polygon
+ *
+ * @extends Geometry
+ */
+export default class Path extends Geometry {
     /**
      * Transform projected coordinates to view points
      * @param  {Coordinate[]} prjCoords           - projected coordinates
@@ -17,7 +37,7 @@ export const PolyType = {
      * @returns {Point[]}
      * @private
      */
-    _getPath2DPoints: function (prjCoords, disableSimplify, zoom) {
+    _getPath2DPoints(prjCoords, disableSimplify, zoom) {
         var result = [];
         if (!isArrayHasData(prjCoords)) {
             return result;
@@ -85,31 +105,31 @@ export const PolyType = {
             result = part;
         }
         return result;
-    },
+    }
 
-    _anti: function (c, dx) {
+    _anti(c, dx) {
         if (dx > 0) {
             return c.substract(180 * 2, 0);
         } else {
             return c.add(180 * 2, 0);
         }
-    },
+    }
 
-    _setPrjCoordinates: function (prjPoints) {
+    _setPrjCoordinates(prjPoints) {
         this._prjCoords = prjPoints;
         this.onShapeChanged();
-    },
+    }
 
-    _getPrjCoordinates: function () {
+    _getPrjCoordinates() {
         if (!this._prjCoords) {
             var points = this._coordinates;
             this._prjCoords = this._projectCoords(points);
         }
         return this._prjCoords;
-    },
+    }
 
     //update cached variables if geometry is updated.
-    _updateCache: function () {
+    _updateCache() {
         delete this._extent;
         var projection = this._getProjection();
         if (!projection) {
@@ -121,32 +141,32 @@ export const PolyType = {
         if (this._prjHoles) {
             this._holes = this._unprojectCoords(this._getPrjHoles());
         }
-    },
+    }
 
-    _clearProjection: function () {
+    _clearProjection() {
         this._prjCoords = null;
         if (this._prjHoles) {
             this._prjHoles = null;
         }
-    },
+    }
 
-    _projectCoords: function (points) {
+    _projectCoords(points) {
         var projection = this._getProjection();
         if (projection) {
             return projection.projectCoords(points);
         }
         return null;
-    },
+    }
 
-    _unprojectCoords: function (prjPoints) {
+    _unprojectCoords(prjPoints) {
         var projection = this._getProjection();
         if (projection) {
             return projection.unprojectCoords(prjPoints);
         }
         return null;
-    },
+    }
 
-    _computeCenter: function () {
+    _computeCenter() {
         var ring = this._coordinates;
         if (!isArrayHasData(ring)) {
             return null;
@@ -165,9 +185,9 @@ export const PolyType = {
             }
         }
         return new Coordinate(sumx / counter, sumy / counter);
-    },
+    }
 
-    _computeExtent: function () {
+    _computeExtent() {
         var ring = this._coordinates;
         if (!isArrayHasData(ring)) {
             return null;
@@ -177,7 +197,7 @@ export const PolyType = {
             rings = rings.concat(this.getHoles());
         }
         return this._computeCoordsExtent(rings);
-    },
+    }
 
     /**
      * Compute extent of a group of coordinates
@@ -185,7 +205,7 @@ export const PolyType = {
      * @returns {Extent}
      * @private
      */
-    _computeCoordsExtent: function (coords) {
+    _computeCoordsExtent(coords) {
         var result = null,
             anti = this.options['antiMeridian'];
         var ext, p, dx, pre;
@@ -208,9 +228,9 @@ export const PolyType = {
 
         }
         return result;
-    },
+    }
 
-    _get2DLength: function () {
+    _get2DLength() {
         var vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true);
         var len = 0;
         for (var i = 1, l = vertexes.length; i < l; i++) {
@@ -218,6 +238,24 @@ export const PolyType = {
         }
         return len;
     }
-};
 
-export default PolyType;
+    _hitTestTolerance() {
+        var symbol = this._getInternalSymbol();
+        var w;
+        if (isArray(symbol)) {
+            w = 0;
+            for (var i = 0; i < symbol.length; i++) {
+                if (isNumber(symbol[i]['lineWidth'])) {
+                    if (symbol[i]['lineWidth'] > w) {
+                        w = symbol[i]['lineWidth'];
+                    }
+                }
+            }
+        } else {
+            w = symbol['lineWidth'];
+        }
+        return w ? w / 2 : 1.5;
+    }
+}
+
+Path.mergeOptions(options);

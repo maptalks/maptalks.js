@@ -11,9 +11,30 @@ import { splitTextToRow } from 'core/util/text';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'utils/Canvas';
-import { PointSymbolizer } from './PointSymbolizer';
+import PointSymbolizer from './PointSymbolizer';
 
-export class TextMarkerSymbolizer extends PointSymbolizer {
+export default class TextMarkerSymbolizer extends PointSymbolizer {
+
+    static test(symbol) {
+        if (!symbol) {
+            return false;
+        }
+        if (!isNil(symbol['textName'])) {
+            return true;
+        }
+        return false;
+    }
+
+    static getFont(style) {
+        if (style['textFont']) {
+            return style['textFont'];
+        } else {
+            return (style['textStyle'] ? style['textStyle'] + ' ' : '') +
+                (style['textWeight'] ? style['textWeight'] + ' ' : '') +
+                style['textSize'] + 'px ' +
+                (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
+        }
+    }
 
     constructor(symbol, geometry, painter) {
         super();
@@ -169,24 +190,3 @@ export class TextMarkerSymbolizer extends PointSymbolizer {
         return key.join('-');
     }
 }
-
-TextMarkerSymbolizer.test = function (symbol) {
-    if (!symbol) {
-        return false;
-    }
-    if (!isNil(symbol['textName'])) {
-        return true;
-    }
-    return false;
-};
-
-TextMarkerSymbolizer.getFont = function (style) {
-    if (style['textFont']) {
-        return style['textFont'];
-    } else {
-        return (style['textStyle'] ? style['textStyle'] + ' ' : '') +
-            (style['textWeight'] ? style['textWeight'] + ' ' : '') +
-            style['textSize'] + 'px ' +
-            (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
-    }
-};

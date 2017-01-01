@@ -1,5 +1,5 @@
 import { extend, setOptions } from 'core/util';
-import { Geometry } from 'geometry/Geometry';
+import Geometry from 'geometry/Geometry';
 import { InfoWindow } from 'ui';
 
 Geometry.include(/** @lends Geometry.prototype */ {

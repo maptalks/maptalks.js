@@ -1,7 +1,7 @@
 import { mapArrayRecursively, isNil } from 'core/util';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
-import { CanvasSymbolizer } from './CanvasSymbolizer';
+import CanvasSymbolizer from './CanvasSymbolizer';
 
 /**
  * @classdesc
@@ -13,7 +13,7 @@ import { CanvasSymbolizer } from './CanvasSymbolizer';
  * @name PointSymbolizer
  * @extends {CanvasSymbolizer}
  */
-export class PointSymbolizer extends CanvasSymbolizer {
+export default class PointSymbolizer extends CanvasSymbolizer {
     get2DExtent(resources) {
         var map = this.getMap(),
             maxZoom = map.getMaxZoom();

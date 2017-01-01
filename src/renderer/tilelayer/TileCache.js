@@ -1,4 +1,4 @@
-export class TileCache {
+export default class TileCache {
     constructor(capacity) {
         this._queue = [];
         this._cache = {};
@@ -26,13 +26,12 @@ export class TileCache {
         if (this._expTimeout) {
             clearTimeout(this._expTimeout);
         }
-        var me = this;
-        this._expTimeout = setTimeout(function () {
-            var len = me._queue.length;
-            if (len > me.capacity) {
-                var expir = me._queue.splice(0, len - me.capacity);
-                for (var i = expir.length - 1; i >= 0; i--) {
-                    delete me._cache[expir[i]];
+        this._expTimeout = setTimeout(() => {
+            const len = this._queue.length;
+            if (len > this.capacity) {
+                const expir = this._queue.splice(0, len - this.capacity);
+                for (let i = expir.length - 1; i >= 0; i--) {
+                    delete this._cache[expir[i]];
                 }
             }
         }, 1000);

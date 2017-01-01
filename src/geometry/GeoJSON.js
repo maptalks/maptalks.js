@@ -6,18 +6,17 @@ import {
     indexOfArray,
     isArrayHasData
 } from 'core/util';
-import { Geometry } from './Geometry';
-import { Marker } from './Marker';
-import { LineString } from './LineString';
-import { Polygon } from './Polygon';
-import { MultiPoint } from './MultiPoint';
-import { MultiLineString } from './MultiLineString';
-import { MultiPolygon } from './MultiPolygon';
-import { GeometryCollection } from './GeometryCollection';
-import { Sector } from './Sector';
-import { Circle } from './Circle';
-import { Ellipse } from './Ellipse';
-import { Rectangle } from './Rectangle';
+import Marker from './Marker';
+import LineString from './LineString';
+import Polygon from './Polygon';
+import MultiPoint from './MultiPoint';
+import MultiLineString from './MultiLineString';
+import MultiPolygon from './MultiPolygon';
+import GeometryCollection from './GeometryCollection';
+import Sector from './Sector';
+import Circle from './Circle';
+import Ellipse from './Ellipse';
+import Rectangle from './Rectangle';
 
 const types = {
     'Marker': Marker,
@@ -36,7 +35,7 @@ const types = {
  *  @memberOf maptalks
  * @name GeoJSON
  */
-export const GeoJSON = {
+export default {
 
     /**
      * Convert one or more GeoJSON objects to a geometry
@@ -130,7 +129,7 @@ export const GeoJSON = {
                 return null;
             }
             //返回geometry数组
-            var result = GeoJSON.toGeometry(features);
+            var result = this.toGeometry(features);
             return result;
         } else if (indexOfArray(type, ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
             var clazz = (type === 'Point' ? 'Marker' : type);
@@ -159,68 +158,3 @@ export const GeoJSON = {
     }
 };
 
-/**
- * Produce a geometry from one or more [profile json]{@link Geometry#toJSON} or GeoJSON.
- * @static
- * @param  {Object} json - a geometry's profile json or a geojson
- * @return {Geometry} geometry
- * @example
- * var profile = {
-        "feature": {
-              "type": "Feature",
-              "id" : "point1",
-              "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-              "properties": {"prop0": "value0"}
-        },
-        //construct options.
-        "options":{
-            "draggable" : true
-        },
-        //symbol
-        "symbol":{
-            "markerFile"  : "http://foo.com/icon.png",
-            "markerWidth" : 20,
-            "markerHeight": 20
-        }
-    };
-    var marker = Geometry.fromJSON(profile);
- */
-Geometry.fromJSON = function (json) {
-    if (isArray(json)) {
-        var result = [],
-            c;
-        for (var i = 0, len = json.length; i < len; i++) {
-            c = Geometry.fromJSON(json[i]);
-            if (isArray(json)) {
-                result = result.concat(c);
-            } else {
-                result.push(c);
-            }
-        }
-        return result;
-    }
-
-    if (json && !json['feature']) {
-        return GeoJSON.toGeometry(json);
-    }
-    var geometry;
-    if (json['subType']) {
-        geometry = maptalks[json['subType']].fromJSON(json);
-        if (!isNil(json['feature']['id'])) {
-            geometry.setId(json['feature']['id']);
-        }
-    } else {
-        var feature = json['feature'];
-        geometry = GeoJSON.toGeometry(feature);
-        if (json['options']) {
-            geometry.config(json['options']);
-        }
-    }
-    if (json['symbol']) {
-        geometry.setSymbol(json['symbol']);
-    }
-    if (json['infoWindow']) {
-        geometry.setInfoWindow(json['infoWindow']);
-    }
-    return geometry;
-};

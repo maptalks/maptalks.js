@@ -1,6 +1,23 @@
 import { extend } from 'core/util';
 import Size from 'geo/Size';
-import { TextMarker } from './TextMarker';
+import TextMarker from './TextMarker';
+
+/**
+ * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
+ * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the box automatically to fit for the textbox's text.
+ * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the box.
+ * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
+ * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the text to the border of the box.
+ */
+const options = {
+    'boxAutoSize': false,
+    'boxMinWidth': 0,
+    'boxMinHeight': 0,
+    'boxPadding': {
+        'width': 12,
+        'height': 8
+    }
+};
 
 /**
  * @classdesc
@@ -17,34 +34,25 @@ import { TextMarker } from './TextMarker';
  * var textBox = new TextBox('This is a textBox',[100,0])
  *     .addTo(layer);
  */
-export const TextBox = TextMarker.extend(/** @lends TextBox.prototype */ {
+export default class TextBox extends TextMarker {
 
-    /**
-     * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
-     * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the box automatically to fit for the textbox's text.
-     * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the box.
-     * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
-     * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the text to the border of the box.
-     */
-    options: {
-        'boxAutoSize': false,
-        'boxMinWidth': 0,
-        'boxMinHeight': 0,
-        'boxPadding': {
-            'width': 12,
-            'height': 8
-        }
-    },
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
+        textBox.setProperties(feature['properties']);
+        textBox.setId(feature['id']);
+        return textBox;
+    }
 
-    _toJSON: function (options) {
+    _toJSON(options) {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'TextBox',
             'content': this._content
         };
-    },
+    }
 
-    _refresh: function () {
+    _refresh() {
         var symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
 
@@ -87,9 +95,9 @@ export const TextBox = TextMarker.extend(/** @lends TextBox.prototype */ {
 
         this._symbol = symbol;
         this.onSymbolChanged();
-    },
+    }
 
-    _getInternalSymbol: function () {
+    _getInternalSymbol() {
         //In TextBox, textHorizontalAlignment's meaning is textAlign in the box which is reversed from original textHorizontalAlignment.
         var textSymbol = extend({}, this._symbol);
         if (textSymbol['textHorizontalAlignment'] === 'left') {
@@ -104,12 +112,6 @@ export const TextBox = TextMarker.extend(/** @lends TextBox.prototype */ {
         }
         return textSymbol;
     }
-});
+}
 
-TextBox.fromJSON = function (json) {
-    var feature = json['feature'];
-    var textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
-    textBox.setProperties(feature['properties']);
-    textBox.setId(feature['id']);
-    return textBox;
-};
+TextBox.mergeOptions(options);

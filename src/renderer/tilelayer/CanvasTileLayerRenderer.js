@@ -2,10 +2,10 @@ import Browser from 'core/Browser';
 import PointExtent from 'geo/PointExtent';
 import CanvasTileLayer from 'layer/tile/CanvasTileLayer';
 import Canvas2D from 'utils/Canvas';
-import { Canvas as Renderer } from './Renderer.TileLayer.Canvas';
+import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 
-export const Canvas = Renderer.extend({
-    _loadTile: function (tileId, tile, onTileLoad, onTileError) {
+export default class CanvasTileLayerRenderer extends TileLayerCanvasRenderer {
+    _loadTile(tileId, tile, onTileLoad, onTileError) {
         var tileSize = this.layer.getTileSize(),
             canvasClass = this.canvas.constructor,
             map = this.getMap();
@@ -28,6 +28,6 @@ export const Canvas = Renderer.extend({
             onTileLoad.call(tileCanvas);
         });
     }
-});
+}
 
 CanvasTileLayer.registerRenderer('canvas', Canvas);

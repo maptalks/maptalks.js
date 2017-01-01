@@ -14,7 +14,7 @@ import { isArray, extend } from 'core/util';
  * @example
  * var ts = new TileSystem([1, -1, -20037508.34, 20037508.34]);
  */
-export class TileSystem {
+export default class TileSystem {
     constructor(sx, sy, ox, oy) {
         if (isArray(sx)) {
             this.scale = {

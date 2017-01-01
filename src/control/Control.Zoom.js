@@ -3,6 +3,18 @@ import Map from 'map';
 import Control from './Control';
 
 /**
+ * @property {Object}   options - options
+ * @property {String|Object}   [options.position="top-left"]  - position of the zoom control.
+ * @property {Boolean}  [options.slider=true]                         - Whether to display the slider
+ * @property {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
+ */
+const options = {
+    'position': 'top-left',
+    'slider': true,
+    'zoomLevel': true
+};
+
+/**
  * @classdesc
  * A zoom control with buttons to zoomin/zoomout and a slider indicator for the zoom level.
  * @class
@@ -18,21 +30,9 @@ import Control from './Control';
  *     zoomLevel : false
  * }).addTo(map);
  */
-export const Zoom = Control.extend(/** @lends Zoom.prototype */ {
+export default class ZoomControl extends Control {
 
-    /**
-     * @property {Object}   options - options
-     * @property {String|Object}   [options.position="top-left"]  - position of the zoom control.
-     * @property {Boolean}  [options.slider=true]                         - Whether to display the slider
-     * @property {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
-     */
-    options: {
-        'position': 'top-left',
-        'slider': true,
-        'zoomLevel': true
-    },
-
-    buildOn: function (map) {
+    buildOn(map) {
         this._map = map;
         var options = this.options;
 
@@ -81,9 +81,9 @@ export const Zoom = Control.extend(/** @lends Zoom.prototype */ {
         this._registerDomEvents();
 
         return dom;
-    },
+    }
 
-    _update: function () {
+    _update() {
         var map = this.getMap();
         if (this._sliderBox) {
             var pxUnit = 10;
@@ -98,9 +98,9 @@ export const Zoom = Control.extend(/** @lends Zoom.prototype */ {
             this._levelDOM.innerHTML = map.getZoom();
         }
 
-    },
+    }
 
-    _registerDomEvents: function () {
+    _registerDomEvents() {
         var map = this.getMap();
         if (this._zoomInButton) {
             on(this._zoomInButton, 'click', map.zoomIn, map);
@@ -109,9 +109,9 @@ export const Zoom = Control.extend(/** @lends Zoom.prototype */ {
             on(this._zoomOutButton, 'click', map.zoomOut, map);
         }
         //TODO slider dot拖放缩放逻辑还没有实现
-    },
+    }
 
-    onRemove: function () {
+    onRemove() {
         var map = this.getMap();
         if (this._zoomInButton) {
             off(this._zoomInButton, 'click', map.zoomIn, map);
@@ -120,16 +120,17 @@ export const Zoom = Control.extend(/** @lends Zoom.prototype */ {
             off(this._zoomOutButton, 'click', map.zoomOut, map);
         }
     }
-});
+}
+
+ZoomControl.mergeOptions(options);
 
 Map.mergeOptions({
-
     'zoomControl': false
 });
 
 Map.addOnLoadHook(function () {
     if (this.options['zoomControl']) {
-        this.zoomControl = new Zoom(this.options['zoomControl']);
+        this.zoomControl = new ZoomControl(this.options['zoomControl']);
         this.addControl(this.zoomControl);
     }
 });

@@ -2,6 +2,20 @@ import { createEl, createElOn } from 'core/util/dom';
 import Map from 'map';
 import Control from './Control';
 
+ /**
+ * @property {Object} [options=null] - options
+ * @property {String|Object}   [options.position="bottom-left"]  - position of the scale control.
+ * @property {Number} [options.maxWidth=100]               - max width of the scale control.
+ * @property {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
+ * @property {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
+ */
+const options = {
+    'position': 'bottom-left',
+    'maxWidth': 100,
+    'metric': true,
+    'imperial': false
+};
+
 /**
  * @classdesc
  * Based on the implementation in Leaflet, a simple scale control that shows the scale of the current center of screen in metric (m/km) and imperial (mi/ft) systems.
@@ -19,23 +33,9 @@ import Control from './Control';
  *     imperial : true
  * }).addTo(map);
  */
-export const Scale = Control.extend(/** @lends Scale.prototype */ {
+export default class Scale extends Control {
 
-    /**
-     * @property {Object} [options=null] - options
-     * @property {String|Object}   [options.position="bottom-left"]  - position of the scale control.
-     * @property {Number} [options.maxWidth=100]               - max width of the scale control.
-     * @property {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
-     * @property {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
-     */
-    options: {
-        'position': 'bottom-left',
-        'maxWidth': 100,
-        'metric': true,
-        'imperial': false
-    },
-
-    buildOn: function (map) {
+    buildOn(map) {
         this._map = map;
         this._scaleContainer = createEl('div');
         this._addScales();
@@ -44,13 +44,13 @@ export const Scale = Control.extend(/** @lends Scale.prototype */ {
             this._update();
         }
         return this._scaleContainer;
-    },
+    }
 
-    onRemove: function () {
+    onRemove() {
         this.getMap().off('zoomend', this._update, this);
-    },
+    }
 
-    _addScales: function () {
+    _addScales() {
         var css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
             'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
             ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
@@ -60,31 +60,31 @@ export const Scale = Control.extend(/** @lends Scale.prototype */ {
         if (this.options['imperial']) {
             this._iScale = createElOn('div', css, this._scaleContainer);
         }
-    },
+    }
 
-    _update: function () {
+    _update() {
         var map = this._map;
         var maxMeters = map.pixelToDistance(this.options['maxWidth'], 0);
         this._updateScales(maxMeters);
-    },
+    }
 
-    _updateScales: function (maxMeters) {
+    _updateScales(maxMeters) {
         if (this.options['metric'] && maxMeters) {
             this._updateMetric(maxMeters);
         }
         if (this.options['imperial'] && maxMeters) {
             this._updateImperial(maxMeters);
         }
-    },
+    }
 
-    _updateMetric: function (maxMeters) {
+    _updateMetric(maxMeters) {
         var meters = this._getRoundNum(maxMeters),
             label = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
 
         this._updateScale(this._mScale, label, meters / maxMeters);
-    },
+    }
 
-    _updateImperial: function (maxMeters) {
+    _updateImperial(maxMeters) {
         var maxFeet = maxMeters * 3.2808399,
             maxMiles, miles, feet;
 
@@ -97,14 +97,14 @@ export const Scale = Control.extend(/** @lends Scale.prototype */ {
             feet = this._getRoundNum(maxFeet);
             this._updateScale(this._iScale, feet + ' feet', feet / maxFeet);
         }
-    },
+    }
 
-    _updateScale: function (scale, text, ratio) {
+    _updateScale(scale, text, ratio) {
         scale['style']['width'] = Math.round(this.options['maxWidth'] * ratio) + 'px';
         scale['innerHTML'] = text;
-    },
+    }
 
-    _getRoundNum: function (num) {
+    _getRoundNum(num) {
         var pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
             d = num / pow10;
 
@@ -115,7 +115,9 @@ export const Scale = Control.extend(/** @lends Scale.prototype */ {
 
         return pow10 * d;
     }
-});
+}
+
+Scale.mergeOptions(options);
 
 Map.mergeOptions({
     'scaleControl': false
