@@ -13,7 +13,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      *     content  : '<div style="color:#f00">This is content of the InfoWindow</div>'
      * });
      */
-    setInfoWindow: function (options) {
+    setInfoWindow(options) {
         this._infoWinOptions = extend({}, options);
         if (this._infoWindow) {
             setOptions(this._infoWindow, options);
@@ -28,7 +28,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Get the InfoWindow instance.
      * @return {ui.InfoWindow}
      */
-    getInfoWindow: function () {
+    getInfoWindow() {
         if (!this._infoWindow) {
             return null;
         }
@@ -40,7 +40,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param  {Coordinate} [coordinate=null] - coordinate to open the InfoWindow
      * @return {Geometry} this
      */
-    openInfoWindow: function (coordinate) {
+    openInfoWindow(coordinate) {
         if (!this.getMap()) {
             return this;
         }
@@ -62,7 +62,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Close the InfoWindow
      * @return {Geometry} this
      */
-    closeInfoWindow: function () {
+    closeInfoWindow() {
         if (this._infoWindow) {
             this._infoWindow.hide();
         }
@@ -73,21 +73,21 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Remove the InfoWindow
      * @return {Geometry} this
      */
-    removeInfoWindow: function () {
+    removeInfoWindow() {
         this._unbindInfoWindow();
         delete this._infoWinOptions;
         delete this._infoWindow;
         return this;
     },
 
-    _bindInfoWindow: function (options) {
+    _bindInfoWindow(options) {
         this._infoWindow = new InfoWindow(options);
         this._infoWindow.addTo(this);
 
         return this;
     },
 
-    _unbindInfoWindow: function () {
+    _unbindInfoWindow() {
         if (this._infoWindow) {
             this.closeInfoWindow();
             this._infoWindow.remove();

@@ -83,7 +83,7 @@ export const WGS84Sphere = {
      * @param  {Coordinate} c2
      * @return {Number}
      */
-    measureLength: function () {
+    measureLength() {
         return this.sphere.measureLength.apply(this.sphere, arguments);
     },
     /**
@@ -91,7 +91,7 @@ export const WGS84Sphere = {
      * @param  {Coordinate[]} coordinates
      * @return {number}
      */
-    measureArea: function () {
+    measureArea() {
         return this.sphere.measureArea.apply(this.sphere, arguments);
     },
     /**
@@ -101,7 +101,7 @@ export const WGS84Sphere = {
      * @param  {Number} yDist              - y-axis distance
      * @return {Coordinate}
      */
-    locate: function () {
+    locate() {
         return this.sphere.locate.apply(this.sphere, arguments);
     }
 };
@@ -123,7 +123,7 @@ export const BaiduSphere = {
      * @param  {Coordinate} c2
      * @return {Number}
      */
-    measureLength: function () {
+    measureLength() {
         return this.sphere.measureLength.apply(this.sphere, arguments);
     },
     /**
@@ -131,7 +131,7 @@ export const BaiduSphere = {
      * @param  {Coordinate[]} coordinates
      * @return {number}
      */
-    measureArea: function () {
+    measureArea() {
         return this.sphere.measureArea.apply(this.sphere, arguments);
     },
     /**
@@ -141,7 +141,7 @@ export const BaiduSphere = {
      * @param  {Number} yDist              - y-axis distance
      * @return {Coordinate}
      */
-    locate: function () {
+    locate() {
         return this.sphere.locate.apply(this.sphere, arguments);
     }
 };

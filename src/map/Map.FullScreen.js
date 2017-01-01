@@ -5,7 +5,7 @@ Map.include(/** @lends Map.prototype */ {
      * Request for the full screen
      * @return {Map} this
      */
-    requestFullScreen: function () {
+    requestFullScreen() {
         /**
          * fullscreenstart event
          * @event Map#fullscreenstart
@@ -30,7 +30,7 @@ Map.include(/** @lends Map.prototype */ {
      * Cancel full screen
      * @return {Map} this
      */
-    cancelFullScreen: function () {
+    cancelFullScreen() {
         this._cancelFullScreen(this._containerDOM);
         /**
          * cancelfullscreen event
@@ -43,7 +43,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _requestFullScreen: function (dom) {
+    _requestFullScreen(dom) {
         if (dom.requestFullScreen) {
             dom.requestFullScreen();
         } else if (dom.mozRequestFullScreen) {
@@ -65,7 +65,7 @@ Map.include(/** @lends Map.prototype */ {
         }
     },
 
-    _cancelFullScreen: function () {
+    _cancelFullScreen() {
         if (document.cancelFullScreen) {
             document.cancelFullScreen();
         } else if (document.mozCancelFullScreen) {

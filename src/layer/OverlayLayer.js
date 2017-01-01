@@ -521,6 +521,6 @@ export default class OverlayLayer extends Layer {
     }
 }
 
-OverlayLayer.addInitHook(() => {
+OverlayLayer.addInitHook(function () {
     this._initCache();
 });

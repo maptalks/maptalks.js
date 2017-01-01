@@ -25,7 +25,7 @@ export const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    in: function (t) {
+    in(t) {
         return Math.pow(t, 2);
     },
 
@@ -34,7 +34,7 @@ export const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    out: function (t) {
+    out(t) {
         return 1 - Easing.in(1 - t);
     },
 
@@ -43,7 +43,7 @@ export const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    inAndOut: function (t) {
+    inAndOut(t) {
         return 3 * t * t - 2 * t * t * t;
     },
 
@@ -52,7 +52,7 @@ export const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    linear: function (t) {
+    linear(t) {
         return t;
     },
 
@@ -63,7 +63,7 @@ export const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    upAndDown: function (t) {
+    upAndDown(t) {
         if (t < 0.5) {
             return Easing.inAndOut(2 * t);
         } else {
@@ -133,7 +133,7 @@ export const Animation = {
      * @return {Object[]}  styles resolved
      * @private
      */
-    _resolveStyles: function (styles) {
+    _resolveStyles(styles) {
         if (!styles) {
             return null;
         }
@@ -240,7 +240,7 @@ export const Animation = {
      * @param  {Object} [options.easing=null]  - animation easing
      * @return {Function} framing function helps to generate animation frames.
      */
-    framing: function (styles, options) {
+    framing(styles, options) {
         if (!options) {
             options = {};
         }
@@ -320,7 +320,7 @@ export const Animation = {
 
     },
 
-    _requestAnimFrame: function (fn) {
+    _requestAnimFrame(fn) {
         if (!this._frameQueue) {
             this._frameQueue = [];
         }
@@ -328,13 +328,13 @@ export const Animation = {
         this._a();
     },
 
-    _a: function () {
+    _a() {
         if (!this._animationFrameId) {
             this._animationFrameId = requestAnimFrame(Animation._frameFn);
         }
     },
 
-    _run: function () {
+    _run() {
         if (this._frameQueue.length) {
             var running = this._frameQueue;
             this._frameQueue = [];
@@ -356,7 +356,7 @@ export const Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {Player} player
      */
-    animate: function (styles, options, step) {
+    animate(styles, options, step) {
         if (!options) {
             options = {};
         }
@@ -368,7 +368,7 @@ export const Animation = {
 Animation._frameFn = bind(Animation._run, Animation);
 
 extend(Player.prototype, /** @lends Player.prototype */ {
-    _prepare: function () {
+    _prepare() {
         var options = this._options;
         var duration = options['speed'];
         if (isString(duration)) {
@@ -384,7 +384,7 @@ extend(Player.prototype, /** @lends Player.prototype */ {
      * Start or resume the animation
      * @return {Player} this
      */
-    play: function () {
+    play() {
         if (this.playState !== 'idle' && this.playState !== 'paused') {
             return this;
         }
@@ -410,7 +410,7 @@ extend(Player.prototype, /** @lends Player.prototype */ {
      * Pause the animation
      * @return {Player} this
      */
-    pause: function () {
+    pause() {
         this.playState = 'paused';
         //this.duration = this.duration - this.currentTime;
         return this;
@@ -420,7 +420,7 @@ extend(Player.prototype, /** @lends Player.prototype */ {
      * Cancel the animation play and ready to play again
      * @return {Player} this
      */
-    cancel: function () {
+    cancel() {
         this.playState = 'idle';
         this.finished = false;
         return this;
@@ -430,16 +430,16 @@ extend(Player.prototype, /** @lends Player.prototype */ {
      * Finish the animation play, and can't be played any more.
      * @return {Player} this
      */
-    finish: function () {
+    finish() {
         this.playState = 'finished';
         this.finished = true;
         return this;
     },
 
-    reverse: function () {
+    reverse() {
     },
 
-    _run: function () {
+    _run() {
         if (this.playState === 'finished' || this.playState === 'paused') {
             return;
         }

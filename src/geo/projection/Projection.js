@@ -14,21 +14,21 @@ export const Common = {
      * @return {Coordinate}
      * @static
      */
-    project: function () {},
+    project() {},
     /**
      * Unproject a projected coordinate to a geographical coordinate (2d coordinate)
      * @param  {Coordinate} p - coordinate to project
      * @return {Coordinate}
      * @static
      */
-    unproject: function () {},
+    unproject() {},
     /**
      * Project a group of geographical coordinates to projected coordinates.
      * @param  {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates - coordinates to project
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]}
      * @static
      */
-    projectCoords: function (coordinates) {
+    projectCoords(coordinates) {
         return mapArrayRecursively(coordinates, this.project, this);
     },
 
@@ -38,7 +38,7 @@ export const Common = {
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]}
      * @static
      */
-    unprojectCoords: function (projCoords) {
+    unprojectCoords(projCoords) {
         return mapArrayRecursively(projCoords, this.unproject, this);
     }
 };

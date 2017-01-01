@@ -299,7 +299,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Whether the geometry is being dragged.
      * @reutrn {Boolean}
      */
-    isDragging: function () {
+    isDragging() {
         if (this._getParent()) {
             return this._getParent().isDragging();
         }

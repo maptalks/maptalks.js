@@ -13,7 +13,7 @@ const TextEditable = {
      * @return {TextMarker} this
      * @fires TextMarker#edittextstart
      */
-    startEditText: function () {
+    startEditText() {
         if (!this.getMap()) {
             return this;
         }
@@ -37,7 +37,7 @@ const TextEditable = {
      * @return {TextMarker} this
      * @fires TextMarker#edittextend
      */
-    endEditText: function () {
+    endEditText() {
         if (this._textEditor) {
             var content = this._textEditor.innerText;
             content = this._filterContent(content);
@@ -66,7 +66,7 @@ const TextEditable = {
      *
      * @return {Boolean}
      */
-    isEditingText: function () {
+    isEditingText() {
         if (this._textEditor) {
             return true;
         }
@@ -77,11 +77,11 @@ const TextEditable = {
      * Get the text editor which is a [ui.UIMarker]{@link ui.UIMarker}
      * @return {ui.UIMarker} text editor
      */
-    getTextEditor: function () {
+    getTextEditor() {
         return this._editUIMarker;
     },
 
-    _prepareEditor: function () {
+    _prepareEditor() {
         var map = this.getMap();
         var editContainer = this._createEditor();
         this._textEditor = editContainer;
@@ -95,7 +95,7 @@ const TextEditable = {
         this._setCursorToLast(this._textEditor);
     },
 
-    _getEditorOffset: function () {
+    _getEditorOffset() {
         var symbol = this._getInternalSymbol() || {},
             dx = 0,
             dy = 0;
@@ -116,7 +116,7 @@ const TextEditable = {
         };
     },
 
-    _createEditor: function () {
+    _createEditor() {
         var content = this.getContent();
         var labelSize = this.getSize(),
             symbol = this._getInternalSymbol() || {},
@@ -159,7 +159,7 @@ const TextEditable = {
         return editor;
     },
 
-    _setCursorToLast: function (obj) {
+    _setCursorToLast(obj) {
         var range;
         if (window.getSelection) {
             obj.focus();
@@ -174,7 +174,7 @@ const TextEditable = {
         }
     },
 
-    _filterContent: function (content) {
+    _filterContent(content) {
         var pattern = /\\[v f t b]{1}/gi;
         var enterPattern = /[\r\n]+$/gi;
         var result = content.replace(pattern, '');

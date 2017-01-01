@@ -12,7 +12,7 @@ import Polygon from 'geometry/Polygon';
 if (Browser.canvas) {
 
     var ellipseReources = {
-        _getPaintParams: function () {
+        _getPaintParams() {
             var map = this.getMap();
             var pcenter = this._getPrjCoordinates();
             var pt = map._prjToPoint(pcenter, map.getMaxZoom());
@@ -28,7 +28,7 @@ if (Browser.canvas) {
     Circle.include(ellipseReources);
     //----------------------------------------------------
     Rectangle.include({
-        _getPaintParams: function () {
+        _getPaintParams() {
             var map = this.getMap();
             var pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
             var size = this._getRenderSize();
@@ -38,7 +38,7 @@ if (Browser.canvas) {
     });
     //----------------------------------------------------
     Sector.include({
-        _getPaintParams: function () {
+        _getPaintParams() {
             var map = this.getMap();
             var pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
             var size = this._getRenderSize();
@@ -56,7 +56,7 @@ if (Browser.canvas) {
             'classic': [3, 4]
         },
 
-        _getArrowPoints: function (prePoint, point, lineWidth, arrowStyle, tolerance) {
+        _getArrowPoints(prePoint, point, lineWidth, arrowStyle, tolerance) {
             if (!tolerance) {
                 tolerance = 0;
             }
@@ -73,22 +73,22 @@ if (Browser.canvas) {
             return [p0, p1, p2, p0];
         },
 
-        _getPaintParams: function () {
+        _getPaintParams() {
             var prjVertexes = this._getPrjCoordinates();
             var points = this._getPath2DPoints(prjVertexes, false, this.getMap().getMaxZoom());
             return [points];
         },
 
-        _paintOn: function (ctx, points, lineOpacity, fillOpacity, dasharray) {
+        _paintOn(ctx, points, lineOpacity, fillOpacity, dasharray) {
             Canvas.path(ctx, points, lineOpacity, null, dasharray);
             this._paintArrow(ctx, points, lineOpacity);
         },
 
-        _getArrowPlacement: function () {
+        _getArrowPlacement() {
             return this.options['arrowPlacement'];
         },
 
-        _getArrowStyle: function () {
+        _getArrowStyle() {
             var arrowStyle = this.options['arrowStyle'];
             if (arrowStyle) {
                 return isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
@@ -96,7 +96,7 @@ if (Browser.canvas) {
             return null;
         },
 
-        _getArrows: function (points, lineWidth, tolerance) {
+        _getArrows(points, lineWidth, tolerance) {
             var arrowStyle = this._getArrowStyle();
             if (!arrowStyle || points.length < 2) {
                 return null;
@@ -120,7 +120,7 @@ if (Browser.canvas) {
             return arrows.length > 0 ? arrows : null;
         },
 
-        _paintArrow: function (ctx, points, lineOpacity) {
+        _paintArrow(ctx, points, lineOpacity) {
             var lineWidth = this._getInternalSymbol()['lineWidth'];
             if (!lineWidth || lineWidth < 3) {
                 lineWidth = 3;
@@ -143,7 +143,7 @@ if (Browser.canvas) {
     });
 
     Polygon.include({
-        _getPaintParams: function () {
+        _getPaintParams() {
             var maxZoom = this.getMap().getMaxZoom();
             var prjVertexes = this._getPrjCoordinates(),
                 points = this._getPath2DPoints(prjVertexes, false, maxZoom),

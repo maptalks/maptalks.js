@@ -7,7 +7,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param {Object} [options.symbol=null] - symbol for the geometry during editing
      * @return {Geometry} this
      */
-    startEdit: function (opts) {
+    startEdit(opts) {
         if (!this.getMap() || !this.options['editable']) {
             return this;
         }
@@ -22,7 +22,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * End editing.
      * @return {Geometry} this
      */
-    endEdit: function () {
+    endEdit() {
         if (this._editor) {
             this._editor.stop();
             delete this._editor;
@@ -35,7 +35,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Whether the geometry is being edited.
      * @return {Boolean}
      */
-    isEditing: function () {
+    isEditing() {
         if (this._editor) {
             return this._editor.isEditing();
         }

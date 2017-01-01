@@ -7,11 +7,9 @@ import Rectangle from 'geometry/Rectangle';
 import LineString from 'geometry/LineString';
 import Polygon from 'geometry/Polygon';
 
-const Polyline = LineString;
-
 // 有中心点的图形的共同方法
 const Center = {
-    _getRenderPoints: function () {
+    _getRenderPoints() {
         return [[this._getCenter2DPoint(this.getMap().getMaxZoom())], null];
     }
 };
@@ -22,7 +20,7 @@ const Center = {
 Marker.include(Center);
 
 Ellipse.include(Center, {
-    _getRenderSize: function () {
+    _getRenderSize() {
         var w = this.getWidth(),
             h = this.getHeight();
         var map = this.getMap();
@@ -31,7 +29,7 @@ Ellipse.include(Center, {
 });
 
 Circle.include(Center, {
-    _getRenderSize: function () {
+    _getRenderSize() {
         var radius = this.getRadius();
         var map = this.getMap();
         return map.distanceToPixel(radius, radius, map.getMaxZoom());
@@ -39,7 +37,7 @@ Circle.include(Center, {
 });
 //----------------------------------------------------
 Sector.include(Center, {
-    _getRenderSize: function () {
+    _getRenderSize() {
         var radius = this.getRadius();
         var map = this.getMap();
         return map.distanceToPixel(radius, radius, map.getMaxZoom());
@@ -47,7 +45,7 @@ Sector.include(Center, {
 });
 //----------------------------------------------------
 Rectangle.include({
-    _getRenderPoints: function (placement) {
+    _getRenderPoints(placement) {
         if (placement === 'vertex') {
             var shell = this.getShell();
             var points = [];
@@ -63,7 +61,7 @@ Rectangle.include({
         }
     },
 
-    _getRenderSize: function () {
+    _getRenderSize() {
         var w = this.getWidth(),
             h = this.getHeight();
         var map = this.getMap();
@@ -73,7 +71,7 @@ Rectangle.include({
 
 //----------------------------------------------------
 const Poly = {
-    _getRenderPoints: function (placement) {
+    _getRenderPoints(placement) {
         var map = this.getMap();
         var maxZoom = map.getMaxZoom();
         var points, rotations = null;
@@ -126,6 +124,6 @@ const Poly = {
     }
 };
 
-Polyline.include(Poly);
+LineString.include(Poly);
 
 Polygon.include(Poly);

@@ -9,8 +9,7 @@ import {
     isArray,
     isObject,
     isArrayHasData,
-    mapArrayRecursively,
-    setOptions
+    mapArrayRecursively
 } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import { convertResourceUrl, getExternalResources } from 'core/util/resource';
@@ -769,7 +768,7 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
         var symbol = opts['symbol'];
         var properties = opts['properties'];
         var id = opts['id'];
-        setOptions(this, opts);
+        this.setOptions(opts);
         delete this.options['symbol'];
         delete this.options['id'];
         delete this.options['properties'];

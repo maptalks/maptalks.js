@@ -5,7 +5,7 @@ import Point from 'geo/Point';
 import Map from './Map';
 
 Map.include(/** @lends Map.prototype */{
-    _zoom: function (nextZoom, origin, startScale) {
+    _zoom(nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
         nextZoom = this._checkZoom(nextZoom);
         this.onZoomStart(nextZoom);
@@ -13,11 +13,11 @@ Map.include(/** @lends Map.prototype */{
         this.onZoomEnd(nextZoom, origin, startScale);
     },
 
-    _isSeamlessZoom: function () {
+    _isSeamlessZoom() {
         return !isInteger(this._zoomLevel);
     },
 
-    _zoomAnimation: function (nextZoom, origin, startScale) {
+    _zoomAnimation(nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
 
         nextZoom = this._checkZoom(nextZoom);
@@ -32,7 +32,7 @@ Map.include(/** @lends Map.prototype */{
         this._startZoomAnimation(nextZoom, origin, startScale);
     },
 
-    _startZoomAnimation: function (nextZoom, origin, startScale) {
+    _startZoomAnimation(nextZoom, origin, startScale) {
         if (isNil(startScale)) {
             startScale = 1;
         }
@@ -58,7 +58,7 @@ Map.include(/** @lends Map.prototype */{
         ).play();
     },
 
-    onZoomStart: function (nextZoom) {
+    onZoomStart(nextZoom) {
         this._zooming = true;
         this._enablePanAnimation = false;
         this._startZoomVal = this.getZoom();
@@ -74,7 +74,7 @@ Map.include(/** @lends Map.prototype */{
         this._fireEvent('zoomstart', { 'from' : this._startZoomVal, 'to': nextZoom });
     },
 
-    onZooming: function (nextZoom, origin, startScale) {
+    onZooming(nextZoom, origin, startScale) {
         var frameZoom = this._frameZoom;
         if (frameZoom === nextZoom) {
             return;
@@ -111,7 +111,7 @@ Map.include(/** @lends Map.prototype */{
         }
     },
 
-    onZoomEnd: function (nextZoom, origin) {
+    onZoomEnd(nextZoom, origin) {
         var startZoomVal = this._startZoomVal;
         this._zoomTo(nextZoom, origin);
         this._zooming = false;
@@ -129,7 +129,7 @@ Map.include(/** @lends Map.prototype */{
         this._fireEvent('zoomend', { 'from' : startZoomVal, 'to': nextZoom });
     },
 
-    _zoomTo: function (nextZoom, origin, startScale) {
+    _zoomTo(nextZoom, origin, startScale) {
         var zScale = this._getResolution(this._frameZoom) / this._getResolution(nextZoom);
         var zoomOffset = this._getZoomCenterOffset(nextZoom, origin, startScale, zScale);
         this._zoomLevel = nextZoom;
@@ -139,7 +139,7 @@ Map.include(/** @lends Map.prototype */{
         return zoomOffset;
     },
 
-    _checkZoom:function (nextZoom) {
+    _checkZoom(nextZoom) {
         var maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
         if (nextZoom < minZoom) {
@@ -151,7 +151,7 @@ Map.include(/** @lends Map.prototype */{
         return nextZoom;
     },
 
-    _getZoomCenterOffset: function (nextZoom, origin, startScale, zScale) {
+    _getZoomCenterOffset(nextZoom, origin, startScale, zScale) {
         if (!origin) {
             return null;
         }
@@ -171,7 +171,7 @@ Map.include(/** @lends Map.prototype */{
         return zoomOffset;
     },
 
-    _getZoomMillisecs: function () {
+    _getZoomMillisecs() {
         return 600;
     }
 });
