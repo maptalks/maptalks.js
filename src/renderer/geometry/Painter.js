@@ -4,7 +4,7 @@ import Size from 'geo/Size';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'utils/Canvas';
-import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as Symbolizers from 'renderer/geometry/symbolizers';
 
 //注册的symbolizer
 const registerSymbolizers = [

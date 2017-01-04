@@ -1,5 +1,5 @@
-import { extend, isString, isNil } from 'core/util';
-import { stopPropagation } from 'core/util/dom';
+import { extend, isString, isNil } from './util';
+import { stopPropagation } from './util/dom';
 
 /**
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.

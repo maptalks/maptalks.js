@@ -269,3 +269,5 @@ export default class Polygon extends Path {
 
     }
 }
+
+Polygon.registerAs('Polygon');

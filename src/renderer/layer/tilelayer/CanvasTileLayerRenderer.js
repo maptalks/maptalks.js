@@ -11,7 +11,7 @@ export default class CanvasTileLayerRenderer extends TileLayerCanvasRenderer {
             map = this.getMap();
         var r = Browser.retina ? 2 : 1;
         var tileCanvas = Canvas2D.createCanvas(tileSize['width'] * r, tileSize['height'] * r, canvasClass);
-
+        tileCanvas['layer'] = this.layer;
         tileCanvas[this.propertyOfTileId] = tileId;
         tileCanvas[this.propertyOfPointOnTile] = tile['viewPoint'];
         tileCanvas[this.propertyOfTileZoom] = tile['zoom'];

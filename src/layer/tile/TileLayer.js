@@ -293,4 +293,6 @@ export default class TileLayer extends Layer {
     }
 }
 
+TileLayer.registerAs('TileLayer');
+
 TileLayer.mergeOptions(options);

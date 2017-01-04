@@ -14,7 +14,7 @@ import {
     GeometryCollection
 } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
-import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as Symbolizers from 'renderer/geometry/symbolizers';
 
 describe('SymbolSpec', function () {
 

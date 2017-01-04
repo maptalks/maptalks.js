@@ -1,4 +1,4 @@
-import { isNil, isArray, isNumber, isCoordinate, mapArrayRecursively } from 'core/util';
+import { isNil, isArray, isNumber, mapArrayRecursively } from 'core/util';
 
 /**
  * Represents a coordinate point <br>
@@ -36,7 +36,7 @@ export default class Coordinate {
             this.x = +(x['x']);
             this.y = +(x['y']);
         }
-        if (this.isNaN()) {
+        if (this._isNaN()) {
             throw new Error('coordinate is NaN');
         }
     }
@@ -78,7 +78,7 @@ export default class Coordinate {
                 if (isNumber(child[0])) {
                     result.push(new Coordinate(child));
                 } else {
-                    result.push(this.toCoordinates(child));
+                    result.push(Coordinate.toCoordinates(child));
                 }
             } else {
                 result.push(new Coordinate(child));
@@ -174,7 +174,7 @@ export default class Coordinate {
      * @return {Boolean}
      */
     equals(c2) {
-        if (!isCoordinate(c2)) {
+        if (!(c2 instanceof Coordinate)) {
             return false;
         }
         return this.x === c2.x && this.y === c2.y;
@@ -184,7 +184,7 @@ export default class Coordinate {
      * Whether the coordinate is NaN
      * @return {Boolean}
      */
-    isNaN() {
+    _isNaN() {
         return isNaN(this.x) || isNaN(this.y);
     }
 

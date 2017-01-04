@@ -56,4 +56,6 @@ export default class ArcCurve extends Curve {
     }
 }
 
+ArcCurve.registerAs('ArcCurve');
+
 ArcCurve.mergeOptions(options);

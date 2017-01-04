@@ -51,3 +51,5 @@ export default class MultiPolygon extends MultiGeometry {
         super(Polygon, 'MultiPolygon', data, opts);
     }
 }
+
+MultiPolygon.registerAs('MultiPolygon');

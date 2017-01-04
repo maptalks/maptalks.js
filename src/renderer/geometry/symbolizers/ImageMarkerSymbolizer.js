@@ -4,7 +4,6 @@ import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'utils/Canvas';
 import PointSymbolizer from './PointSymbolizer';
-// import { VectorPathMarkerSymbolizer } from './VectorPathMarkerSymbolizer';
 
 export default class ImageMarkerSymbolizer extends PointSymbolizer {
 
@@ -61,8 +60,8 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             }
         }
         var alpha;
-        // if (!(this instanceof of VectorPathMarkerSymbolizer) &&
-        if (!(this.constructor.name === 'VectorPathMarkerSymbolizer') &&
+        // for VectorPathMarkerSymbolizer, opacity is already set into SVG element.
+        if (this.symbol['markerType'] !== 'path' &&
             isNumber(style['markerOpacity']) && style['markerOpacity'] < 1) {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= style['markerOpacity'];

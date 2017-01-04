@@ -1,5 +1,5 @@
 import { extend } from 'core/util';
-import { Common } from './Projection';
+import Common from './Projection';
 import Coordinate from '../Coordinate';
 import { WGS84Sphere } from '../measurer';
 
@@ -14,7 +14,7 @@ import { WGS84Sphere } from '../measurer';
  * @mixes projection.Common
  * @mixes measurer.WGS84Sphere
  */
-export const EPSG4326 = extend({}, Common, /** @lends projection.EPSG4326 */ {
+export default extend({}, Common, /** @lends projection.EPSG4326 */ {
     /**
      * "EPSG:4326", Code of the projection, used by [View]{@link View} to get projection instance.
      * @type {String}

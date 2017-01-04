@@ -7,10 +7,10 @@
  */
 
 import { isNil, hasOwn } from 'core/util';
-import { Identity } from './Identity';
+import Identity from './Identity';
 import { WGS84Sphere, BaiduSphere } from './Sphere';
 
-export * from './Identity';
+export { Identity };
 export * from './Sphere';
 
 const measurers = {};

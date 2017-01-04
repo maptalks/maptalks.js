@@ -3,12 +3,12 @@ import {
     Marker,
     Geometry
 } from 'geometry';
-import { RenderResources } from 'renderer/CanvasRenderer';
+import { RenderResources } from 'renderer/layer/CanvasRenderer';
 
 describe('#Sprite', function () {
 
     it('image sprite', function (done) {
-        var url = 'http://localhost:12345/resources/pattern.png';
+        var url = 'http://localhost:9876/resources/pattern.png';
         var marker = new Marker([0, 0], {
             symbol: {
                 'markerFile': url,
@@ -37,7 +37,7 @@ describe('#Sprite', function () {
     });
 
     it('image sprite without markerWidth and markerHeight', function (done) {
-        var url = 'http://localhost:12345/resources/pattern.png';
+        var url = 'http://localhost:9876/resources/pattern.png';
         var marker = new Marker([0, 0], {
             symbol: {
                 'markerFile': url,
@@ -63,7 +63,7 @@ describe('#Sprite', function () {
     });
 
     it('composite symbol sprite', function (done) {
-        var url = 'http://localhost:12345/resources/pattern.png';
+        var url = 'http://localhost:9876/resources/pattern.png';
         var marker = new Marker([0, 0], {
             symbol: [{
                 'markerFile': url,

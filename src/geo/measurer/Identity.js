@@ -10,7 +10,7 @@ import Coordinate from 'geo/Coordinate';
  * @memberOf measurer
  * @name Identity
  */
-export const Identity = {
+export default {
     /**
      * the code of the measurer
      * @static

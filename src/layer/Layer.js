@@ -3,6 +3,8 @@ import { isNil, isNumber } from 'core/util';
 import Eventable from 'core/Event';
 import Renderable from 'renderer/Renderable';
 
+const registeredTypes = {};
+
 /**
  * @property {Object}  [options=null] - base options of layer.
  * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
@@ -38,6 +40,21 @@ var options = {
  * @mixes Eventable
  */
 export default class Layer extends Eventable(Renderable(Class)) {
+
+    static registerAs(name) {
+        if (!name) {
+            return;
+        }
+        registeredTypes[name] = this;
+    }
+
+    static getClass(name) {
+        if (!name) {
+            return null;
+        }
+        return registeredTypes[name];
+    }
+
     constructor(id, opts) {
         super();
         this.setId(id);

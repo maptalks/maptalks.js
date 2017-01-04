@@ -7,7 +7,7 @@
  */
 const internal = {
     // square distance between 2 points
-    getSqDist: function (p1, p2) {
+    getSqDist(p1, p2) {
 
         var dx = p1.x - p2.x,
             dy = p1.y - p2.y;
@@ -16,7 +16,7 @@ const internal = {
     },
 
     // square distance from a point to a segment
-    getSqSegDist: function (p, p1, p2) {
+    getSqSegDist(p, p1, p2) {
 
         var x = p1.x,
             y = p1.y,
@@ -44,7 +44,7 @@ const internal = {
     // rest of the code doesn't care about point format
 
     // basic distance-based simplification
-    simplifyRadialDist: function (points, sqTolerance) {
+    simplifyRadialDist(points, sqTolerance) {
 
         var prevPoint = points[0],
             newPoints = [prevPoint],
@@ -64,7 +64,7 @@ const internal = {
         return newPoints;
     },
 
-    simplifyDPStep: function (points, first, last, sqTolerance, simplified) {
+    simplifyDPStep(points, first, last, sqTolerance, simplified) {
         var maxSqDist = sqTolerance,
             index;
 
@@ -85,7 +85,7 @@ const internal = {
     },
 
     // simplification using Ramer-Douglas-Peucker algorithm
-    simplifyDouglasPeucker: function (points, sqTolerance) {
+    simplifyDouglasPeucker(points, sqTolerance) {
         var last = points.length - 1;
 
         var simplified = [points[0]];

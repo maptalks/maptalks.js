@@ -7,7 +7,7 @@ import {
 import PointExtent from 'geo/PointExtent';
 import Canvas2D from 'utils/Canvas';
 import TileLayer from 'layer/tile/TileLayer';
-import CanvasRenderer from 'renderer/CanvasRenderer';
+import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 import TileCache from './TileCache';
 
 /**
@@ -20,7 +20,7 @@ import TileCache from './TileCache';
  * @extends {renderer.Canvas}
  * @param {TileLayer} layer - layer of the renderer
  */
-export default class TileLayerCanvasRenderer extends CanvasRenderer {
+export default class TileLayerRenderer extends CanvasRenderer {
 
     constructor(layer) {
         super();
@@ -288,4 +288,4 @@ export default class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 }
 
-TileLayer.registerRenderer('canvas', TileLayerCanvasRenderer);
+TileLayer.registerRenderer('canvas', TileLayerRenderer);

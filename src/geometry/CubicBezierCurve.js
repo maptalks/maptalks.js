@@ -47,3 +47,5 @@ export default class CubicBezierCurve extends Curve {
         this._paintArrow(ctx, points, lineOpacity);
     }
 }
+
+CubicBezierCurve.registerAs('CubicBezierCurve');

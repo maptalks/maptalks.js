@@ -30,3 +30,5 @@ export default class CanvasTileLayer extends TileLayer {
         return new CanvasTileLayer(layerJSON['id'], layerJSON['options']);
     }
 }
+
+CanvasTileLayer.registerAs('CanvasTileLayer');

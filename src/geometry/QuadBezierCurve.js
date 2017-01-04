@@ -56,3 +56,5 @@ export default class QuadBezierCurve extends Curve {
         return placement;
     }
 }
+
+QuadBezierCurve.registerAs('QuadBezierCurve');

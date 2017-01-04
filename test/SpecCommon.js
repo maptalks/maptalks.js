@@ -1,3 +1,4 @@
+import 'src/maptalks';
 import { getPagePosition } from 'core/util/dom';
 import Coordinate from 'geo/Coordinate';
 import { Marker, Label, TextBox, Circle, Ellipse, Rectangle, Sector, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, ArcCurve, QuadBezierCurve, CubicBezierCurve } from 'geometry';

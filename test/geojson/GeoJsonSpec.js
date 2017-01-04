@@ -1,4 +1,4 @@
-import Coordinate from 'geo/Coordinate';
+/*import Coordinate from 'geo/Coordinate';
 import {
     GeoJSON,
     Marker,
@@ -8,9 +8,9 @@ import {
     MultiLineString,
     MultiPolygon,
     GeometryCollection
-} from 'geometry';
+} from 'geometry';*/
 
-describe('GeoJSON', function () {
+describe('#GeoJSON', function () {
     //examples are from geoJSON.org
     var geoJSONs = [{
         'type': 'Point',
@@ -169,14 +169,14 @@ describe('GeoJSON', function () {
             [104.0, 0.0],
             [105.0, 1.0]
         ];
-        var result = Coordinate.toCoordinates(geoJSONCoords);
+        var result = maptalks.Coordinate.toCoordinates(geoJSONCoords);
         expect(result).to.have.length(geoJSONCoords.length);
-        expect(result[0]).to.eql(new Coordinate(geoJSONCoords[0]));
-        var reverse = Coordinate.toNumberArrays(result);
+        expect(result[0]).to.eql(new maptalks.Coordinate(geoJSONCoords[0]));
+        var reverse = maptalks.Coordinate.toNumberArrays(result);
         expect(reverse).to.eql(geoJSONCoords);
     });
 
-    describe('parse FeatureCollection', function () {
+    /*describe('parse FeatureCollection', function () {
         var fJsons = featureCollectionGeoJSON['features'];
         var features = GeoJSON.toGeometry(featureCollectionGeoJSON);
         it('parse FeatureCollection', function () {
@@ -268,6 +268,6 @@ describe('GeoJSON', function () {
             expect(geometryCollection.toGeoJSONGeometry()).to.eql(geoJSONs[7]);
         });
 
-    });
+    });*/
 
 });

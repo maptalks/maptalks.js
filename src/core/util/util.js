@@ -7,7 +7,6 @@
 
 import { isNode } from './env';
 import { create, isArray, isString, isNil, hasOwn } from './common';
-import Coordinate from 'geo/Coordinate';
 
 import { readFile } from 'fs';
 import { parse } from 'url';
@@ -381,20 +380,6 @@ export function round(num) {
     }
 }
 
-/*
- * Whether the object is a coordinate
- * @param  {Object} obj     - object
- * @return {Boolean}
- */
-export function isCoordinate(obj) {
-    if (obj instanceof Coordinate) {
-        return true;
-    }
-    /*if (obj && !Util.isNil(obj.x) && !Util.isNil(obj.y)) {
-        return true;
-    }*/
-    return false;
-}
 
 /*
  * 判断数组中是否包含obj

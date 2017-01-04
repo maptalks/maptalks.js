@@ -1,7 +1,7 @@
 import { bind, now, isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Browser from 'core/Browser';
 import Canvas from 'utils/Canvas';
-import CanvasRenderer from 'renderer/CanvasRenderer';
+import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 import Layer from './Layer';
 
 const options = {
@@ -288,3 +288,5 @@ CanvasLayer.registerRenderer('canvas', class extends CanvasRenderer {
         }
     }
 });
+
+CanvasLayer.registerAs('CanvasLayer');

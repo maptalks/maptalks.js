@@ -13,7 +13,7 @@ import {
     Label
 } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
-import { TextMarkerSymbolizer } from 'renderer/vectorlayer/symbolizers';
+import { TextMarkerSymbolizer } from 'renderer/geometry/symbolizers';
 
 describe('LabelEdit', function () {
     var container;

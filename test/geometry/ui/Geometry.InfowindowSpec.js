@@ -39,7 +39,7 @@ describe('#Geometry.InfoWindow', function () {
     });
 
     it('infowindow has methods to change itself.', function (done) {
-        var marker = new maptalks.Marker(center);
+        var marker = new Marker(center);
         marker.addTo(layer);
         var options = {
             title: 'title',

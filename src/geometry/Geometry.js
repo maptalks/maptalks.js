@@ -17,10 +17,12 @@ import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import * as Measurer from 'geo/measurer';
-import { Painter, CollectionPainter } from 'renderer/vectorlayer';
-import { Symbolizer } from 'renderer/vectorlayer/symbolizers';
+import Painter from 'renderer/geometry/Painter';
+import CollectionPainter from 'renderer/geometry/CollectionPainter';
+import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
 
 
+const registeredTypes = {};
 
 /**
  * @property {Object} options                       - geometry options
@@ -60,6 +62,20 @@ const options = {
  * @mixes ui.Menu.Mixin
  */
 export default class Geometry extends Eventable(Handlerable(Class)) {
+
+    static registerAs(name) {
+        if (!name) {
+            return;
+        }
+        registeredTypes[name] = this;
+    }
+
+    static getClass(name) {
+        if (!name) {
+            return null;
+        }
+        return registeredTypes[name];
+    }
 
     /**
      * Returns the first coordinate of the geometry.

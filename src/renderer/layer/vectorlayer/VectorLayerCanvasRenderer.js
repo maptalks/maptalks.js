@@ -1,8 +1,8 @@
 import { isArray } from 'core/util';
 import { getExternalResources } from 'core/util/resource';
-// import VectorLayer from 'layer/VectorLayer';
+import VectorLayer from 'layer/VectorLayer';
 import CanvasRenderer from '../CanvasRenderer';
-import OverlayLayerRenderer from './OverlayLayerRenderer';
+import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 
 /**
  * @classdesc
@@ -14,7 +14,7 @@ import OverlayLayerRenderer from './OverlayLayerRenderer';
  * @extends {renderer.overlaylayer.Canvas}
  * @param {VectorLayer} layer - layer of the renderer
  */
-export default class VectorLayerRenderer extends OverlayLayerRenderer {
+export default class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     constructor(layer) {
         super();
@@ -23,7 +23,7 @@ export default class VectorLayerRenderer extends OverlayLayerRenderer {
 
     checkResources() {
         var me = this;
-        var resources = OverlayLayerRenderer.prototype.checkResources.apply(this, arguments);
+        var resources = OverlayLayerCanvasRenderer.prototype.checkResources.apply(this, arguments);
         var style = this.layer.getStyle();
         if (style) {
             if (!isArray(style)) {
@@ -183,4 +183,4 @@ export default class VectorLayerRenderer extends OverlayLayerRenderer {
     }
 }
 
-// VectorLayer.registerRenderer('canvas', VectorLayerRenderer);
+VectorLayer.registerRenderer('canvas', VectorLayerRenderer);

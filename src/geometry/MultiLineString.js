@@ -41,3 +41,5 @@ export default class MultiLineString extends MultiGeometry {
         super(LineString, 'MultiLineString', data, options);
     }
 }
+
+MultiLineString.registerAs('MultiLineString');

@@ -7,7 +7,7 @@ import Geometry from 'geometry/Geometry';
 import DragHandler from 'handler/Drag';
 import VectorLayer from 'layer/VectorLayer';
 import { ConnectorLine } from 'geometry/ConnectorLine';
-import { RenderResources } from 'renderer/CanvasRenderer';
+import { RenderResources } from 'renderer/layer/CanvasRenderer';
 
 /**
  * Drag handler for geometries.

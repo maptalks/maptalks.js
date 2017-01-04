@@ -227,3 +227,5 @@ export default class VectorLayer extends OverlayLayer {
 }
 
 VectorLayer.mergeOptions(options);
+
+VectorLayer.registerAs('VectorLayer');

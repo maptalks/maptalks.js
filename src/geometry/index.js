@@ -20,33 +20,6 @@ import TextBox from './TextBox';
 import Label from './Label';
 import { ConnectorLine, ArcConnectorLine } from './ConnectorLine';
 
-export function exportGeometries(maptalks) {
-    maptalks.Geometry = Geometry;
-    maptalks.Marker = Marker;
-    maptalks.LineString = LineString;
-    maptalks.Polyline = LineString;
-    maptalks.Polygon = Polygon;
-    maptalks.MultiPoint = MultiPoint;
-    maptalks.MultiLineString = MultiLineString;
-    maptalks.MultiPolyline = MultiLineString;
-    maptalks.MultiPolygon = MultiPolygon;
-    maptalks.GeometryCollection = GeometryCollection;
-    maptalks.GeoJSON = GeoJSON;
-    maptalks.Circle = Circle;
-    maptalks.Ellipse = Ellipse;
-    maptalks.Rectangle = Rectangle;
-    maptalks.Sector = Sector;
-    maptalks.Curve = Curve;
-    maptalks.ArcCurve = ArcCurve;
-    maptalks.CubicBezierCurve = CubicBezierCurve;
-    maptalks.QuadBezierCurve = QuadBezierCurve;
-    maptalks.TextMarker = TextMarker;
-    maptalks.TextBox = TextBox;
-    maptalks.Label = Label;
-    maptalks.ConnectorLine = ConnectorLine;
-    maptalks.ArcConnectorLine = ArcConnectorLine;
-}
-
 export {
     ArcCurve,
     Circle,

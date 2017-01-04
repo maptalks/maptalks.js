@@ -215,3 +215,5 @@ export default class Ellipse extends CenterMixin(Polygon) {
 }
 
 Ellipse.mergeOptions(options);
+
+Ellipse.registerAs('Ellipse');

@@ -99,3 +99,5 @@ export default class Label extends TextMarker {
 }
 
 Label.mergeOptions(options);
+
+Label.registerAs('Label');

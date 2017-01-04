@@ -5,6 +5,7 @@ import Point from 'geo/Point';
 import Canvas2D from 'utils/Canvas';
 import OverlayLayer from 'layer/OverlayLayer';
 import MapRenderer from './MapRenderer';
+import Map from 'map/Map';
 
 /**
  * @classdesc
@@ -453,3 +454,5 @@ export default class MapCanvasRenderer extends MapRenderer {
         }, this);
     }
 }
+
+Map.registerRenderer('canvas', MapCanvasRenderer);

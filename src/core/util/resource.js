@@ -3,7 +3,7 @@ import Browser from '../Browser';
 import { extend, isNil, isArray, isNumber, isString } from './common';
 import { isURL, extractCssUrl } from './util';
 import * as utils from 'utils';
-import { Symbolizer } from 'renderer/vectorlayer/symbolizers';
+import { Symbolizer } from 'renderer/geometry/symbolizers';
 
 export function translateToSVGStyles(s) {
     var result = {

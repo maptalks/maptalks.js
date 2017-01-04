@@ -24,3 +24,5 @@ export default class MultiPoint extends MultiGeometry {
         super(Marker, 'MultiPoint', data, opts);
     }
 }
+
+MultiPoint.registerAs('MultiPoint');

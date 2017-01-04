@@ -3,6 +3,8 @@
  * @mixin
  * @protected
  */
+// buble.js doesn't support arrow functions:
+// export default Base => class extends Base {..}
 export default function (Base) {
     return class extends Base {
         /**

@@ -1,53 +1,35 @@
-/**
- * @namespace
- */
-const maptalks = {};
-
-import Ajax from 'utils/Ajax';
-import Canvas from 'utils/Canvas';
-// import Promise from './utils/Promise';
-
-maptalks.Ajax = Ajax;
-maptalks.Canvas = Canvas;
-// maptalks.Promise = Promise;
-
-import * as util from 'core/util';
-maptalks.Util = util;
-
-// maptalks.Util.getJSON = Ajax.getJSON;
-
+export { default as Browser } from 'core/Browser';
+import * as Util from 'core/util';
 import * as DomUtil from 'core/util/dom';
-maptalks.DomUtil = DomUtil;
+export { Util, DomUtil };
+export { default as Ajax } from 'utils/Ajax';
+export { default as Canvas } from 'utils/Canvas';
 
-import Map from 'map';
-maptalks.Map = Map;
+// core classes
+export { default as Class } from 'core/Class';
+export { default as Handler } from 'core/Handler';
+export { default as Handlerable } from 'core/Handlerable';
 
-import { MapTool, DrawTool, AreaTool, DistanceTool } from 'map/tool';
-maptalks.MapTool = MapTool;
-maptalks.DrawTool = DrawTool;
-maptalks.AreaTool = AreaTool;
-maptalks.DistanceTool = DistanceTool;
+// geo classes
+export * from 'geo';
 
+export { default as Map } from 'map';
+export { MapTool, DrawTool, AreaTool, DistanceTool } from 'map/tool';
+
+// maptalks.ui.*
 import * as ui from 'ui';
-maptalks.ui = ui;
-
+// maptalks.control.*
 import * as control from 'control';
-maptalks.control = control;
+export { ui, control };
 
-import { exportGeometries } from 'geometry';
-exportGeometries(maptalks);
-
-import Layer from 'layer/Layer';
-maptalks.Layer = Layer;
-
-import TileLayer from 'layer/tile/TileLayer';
-maptalks.TileLayer = TileLayer;
-
-import OverlayLayer from 'layer/OverlayLayer';
-maptalks.OverlayLayer = OverlayLayer;
-
-import VectorLayer from 'layer/VectorLayer';
-maptalks.VectorLayer = VectorLayer;
+export { default as Layer } from 'layer/Layer';
+export { default as TileLayer } from 'layer/tile/TileLayer';
+export { default as CanvasTileLayer } from 'layer/tile/CanvasTileLayer';
+export { default as OverlayLayer } from 'layer/OverlayLayer';
+export { default as VectorLayer } from 'layer/VectorLayer';
+export { default as GeoJSONLayer } from 'layer/GeoJSONLayer';
+export { default as CanvasLayer } from 'layer/CanvasLayer';
+export { default as ParticleLayer } from 'layer/ParticleLayer';
 
 import 'geometry/editor/GeometryEditor';
 import 'geometry/editor/TextMarkerEditor';
@@ -58,20 +40,14 @@ import 'geometry/ext/Geometry.Edit';
 import 'geometry/ext/Geometry.Events';
 import 'geometry/ext/Geometry.InfoWindow';
 
-import 'renderer/vectorlayer/Geometry.Renderer';
-import 'renderer/vectorlayer/Geometry.Canvas';
-
-// import { TileCache } from 'renderer/tilelayer/TileCache';
-// maptalks.TileLayer.TileCache = TileCache;
-
-// import * as renderer from 'renderer';
-// maptalks.renderer = renderer;
-
-import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
-maptalks.symbolizers = Symbolizers;
-
+/**
+ * @namespace
+ */
+// import layer renderers
+import * as renderer from 'renderer';
+export { renderer };
+// import geometry renderers
+import 'renderer/geometry';
+import * as symbolizer from 'renderer/geometry/symbolizers';
 import * as animation from 'utils/Animation';
-maptalks.animation = animation;
-maptalks.Animation = animation.Animation;
-
-export default maptalks;
+export { symbolizer, animation };

@@ -57,7 +57,7 @@ Geometry.fromJSON = function (json) {
     }
     var geometry;
     if (json['subType']) {
-        geometry = maptalks[json['subType']].fromJSON(json);
+        geometry = Geometry.getClass(json['subType']).fromJSON(json);
         if (!isNil(json['feature']['id'])) {
             geometry.setId(json['feature']['id']);
         }
@@ -97,46 +97,46 @@ Layer.fromJSON = function (layerJSON) {
     } else if (layerType === 'tile') {
         layerType = layerJSON['type'] = 'TileLayer';
     }
-    if (typeof maptalks[layerType] === 'undefined' || !maptalks[layerType].fromJSON) {
+    var clazz = Layer.getClass(layerType);
+    if (!clazz || !clazz.fromJSON) {
         throw new Error('unsupported layer type:' + layerType);
     }
-    return maptalks[layerType].fromJSON(layerJSON);
+    return clazz.fromJSON(layerJSON);
 };
 
 Map.include(/** @lends Map.prototype */ {
     /**
-     * @property {String}  - Version of the [profile]{@link Map#toJSON} JSON schema.
+     * @property {String}  - Version of the [JSON]{@link Map#toJSON} schema.
      * @constant
      * @static
      */
-    'PROFILE_VERSION': '1.0',
+    'JSON_VERSION': '1.0',
     /**
-     * Export the map's profile json. <br>
-     * Map's profile is a snapshot of the map in JSON format. <br>
+     * Export the map's json, a snapshot of the map in JSON format.<br>
      * It can be used to reproduce the instance by [fromJSON]{@link Map#fromJSON} method
      * @param  {Object} [options=null] - export options
-     * @param  {Boolean|Object} [options.baseLayer=null] - whether to export base layer's profile, if yes, it will be used as layer's toJSON options.
+     * @param  {Boolean|Object} [options.baseLayer=null] - whether to export base layer's JSON, if yes, it will be used as layer's toJSON options.
      * @param  {Boolean|Extent} [options.clipExtent=null] - if set with an extent instance, only the geometries intersectes with the extent will be exported.
      *                                                             If set to true, map's current extent will be used.
-     * @param  {Boolean|Object|Object[]} [options.layers=null] - whether to export other layers' profile, if yes, it will be used as layer's toJSON options.
+     * @param  {Boolean|Object|Object[]} [options.layers=null] - whether to export other layers' JSON, if yes, it will be used as layer's toJSON options.
      *                                                        It can also be a array of layer export options with a "id" attribute to filter the layers to export.
-     * @return {Object} layer's profile JSON
+     * @return {Object} layer's JSON
      */
     toJSON: function (options) {
         if (!options) {
             options = {};
         }
-        var profile = {
-            'version': this['PROFILE_VERSION'],
+        var json = {
+            'version': this['JSON_VERSION'],
             'extent': this.getExtent().toJSON()
         };
-        profile['options'] = this.config();
-        profile['options']['center'] = this.getCenter();
-        profile['options']['zoom'] = this.getZoom();
+        json['options'] = this.config();
+        json['options']['center'] = this.getCenter();
+        json['options']['zoom'] = this.getZoom();
 
         var baseLayer = this.getBaseLayer();
         if ((isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
-            profile['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
+            json['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
         }
         var extraLayerOptions = {};
         if (options['clipExtent']) {
@@ -159,7 +159,7 @@ Map.include(/** @lends Map.prototype */ {
                 opts = extend({}, isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
                 layersJSON.push(layers[i].toJSON(opts));
             }
-            profile['layers'] = layersJSON;
+            json['layers'] = layersJSON;
         } else if (isArrayHasData(options['layers'])) {
             layers = options['layers'];
             for (i = 0; i < layers.length; i++) {
@@ -171,11 +171,11 @@ Map.include(/** @lends Map.prototype */ {
                 opts = extend({}, exportOption['options'], extraLayerOptions);
                 layersJSON.push(layer.toJSON(opts));
             }
-            profile['layers'] = layersJSON;
+            json['layers'] = layersJSON;
         } else {
-            profile['layers'] = [];
+            json['layers'] = [];
         }
-        return profile;
+        return json;
     }
 });
 

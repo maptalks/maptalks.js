@@ -8,7 +8,7 @@ import LineString from 'geometry/LineString';
 import Polygon from 'geometry/Polygon';
 
 // 有中心点的图形的共同方法
-const Center = {
+const CenterPointRenderer = {
     _getRenderPoints() {
         return [[this._getCenter2DPoint(this.getMap().getMaxZoom())], null];
     }
@@ -17,9 +17,9 @@ const Center = {
 /**
  * 获取symbolizer所需的数据
  */
-Marker.include(Center);
+Marker.include(CenterPointRenderer);
 
-Ellipse.include(Center, {
+Ellipse.include(CenterPointRenderer, {
     _getRenderSize() {
         var w = this.getWidth(),
             h = this.getHeight();
@@ -28,7 +28,7 @@ Ellipse.include(Center, {
     }
 });
 
-Circle.include(Center, {
+Circle.include(CenterPointRenderer, {
     _getRenderSize() {
         var radius = this.getRadius();
         var map = this.getMap();
@@ -36,7 +36,7 @@ Circle.include(Center, {
     }
 });
 //----------------------------------------------------
-Sector.include(Center, {
+Sector.include(CenterPointRenderer, {
     _getRenderSize() {
         var radius = this.getRadius();
         var map = this.getMap();
@@ -46,15 +46,16 @@ Sector.include(Center, {
 //----------------------------------------------------
 Rectangle.include({
     _getRenderPoints(placement) {
+        const map = this.getMap();
         if (placement === 'vertex') {
-            var shell = this.getShell();
-            var points = [];
-            for (var i = 0, len = shell.length; i < len; i++) {
-                points.push(this.getMap().coordinateToPoint(shell[i]));
+            const shell = this.getShell();
+            const points = [];
+            for (let i = 0, len = shell.length; i < len; i++) {
+                points.push(this.getMap().coordinateToPoint(shell[i]), map.getMaxZoom());
             }
             return [points, null];
         } else {
-            var c = this.getMap().coordinateToPoint(this.getCenter());
+            const c = this.getMap().coordinateToPoint(this.getCenter(), map.getMaxZoom());
             return [
                 [c], null
             ];
@@ -70,7 +71,7 @@ Rectangle.include({
 });
 
 //----------------------------------------------------
-const Poly = {
+const PolyRenderer = {
     _getRenderPoints(placement) {
         var map = this.getMap();
         var maxZoom = map.getMaxZoom();
@@ -124,6 +125,6 @@ const Poly = {
     }
 };
 
-LineString.include(Poly);
+LineString.include(PolyRenderer);
 
-Polygon.include(Poly);
+Polygon.include(PolyRenderer);

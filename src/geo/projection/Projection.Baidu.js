@@ -1,5 +1,5 @@
 import { extend } from 'core/util';
-import { Common } from './Projection';
+import Common from './Projection';
 import Coordinate from '../Coordinate';
 import { BaiduSphere } from '../measurer';
 
@@ -13,7 +13,7 @@ import { BaiduSphere } from '../measurer';
  * @mixes projection.Common
  * @mixes measurer.BaiduSphere
  */
-export const BAIDU = extend({}, Common, /** @lends projection.BAIDU */ {
+export default extend({}, Common, /** @lends projection.BAIDU */ {
     /**
      * "BAIDU", Code of the projection, used by [View]{@link View} to get projection instance.
      * @type {String}

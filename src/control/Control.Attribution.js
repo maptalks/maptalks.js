@@ -1,6 +1,6 @@
-import { createEl } from 'core/util/dom';
+import { createEl } from '../core/util/dom';
 import Control from './Control';
-import Map from 'map';
+import Map from '../map/Map';
 
 /**
  * @property {Object} options - options

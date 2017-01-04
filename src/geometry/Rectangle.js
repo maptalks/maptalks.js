@@ -238,3 +238,5 @@ export default class Rectangle extends Polygon {
     }
 
 }
+
+Rectangle.registerAs('Rectangle');

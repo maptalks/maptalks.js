@@ -13,6 +13,7 @@ import {
     Geometry
 } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
+import * as measurers from 'geo/measurer';
 
 describe('#Geometry', function () {
 
@@ -361,17 +362,17 @@ function registerGeometryCommonTest(geometry, _context) {
 
         it('getMeasurer', function () {
             var measurer = geometry._getMeasurer();
-            expect(measurer).to.be(measurer.WGS84Sphere);
+            expect(measurer).to.be(measurers.WGS84Sphere);
 
             geometry.config('measure', 'identity');
 
             measurer = geometry._getMeasurer();
-            expect(measurer).to.be(measurer.Identity);
+            expect(measurer).to.be(measurers.Identity);
 
             geometry.config('measure', 'baidu');
 
             measurer = geometry._getMeasurer();
-            expect(measurer).to.be(measurer.BaiduSphere);
+            expect(measurer).to.be(measurers.BaiduSphere);
         });
     });
     var spy;

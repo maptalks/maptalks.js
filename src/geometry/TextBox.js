@@ -115,3 +115,5 @@ export default class TextBox extends TextMarker {
 }
 
 TextBox.mergeOptions(options);
+
+TextBox.registerAs('TextBox');

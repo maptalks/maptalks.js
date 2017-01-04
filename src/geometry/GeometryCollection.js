@@ -490,3 +490,5 @@ export default class GeometryCollection extends Geometry {
         return true;
     }
 }
+
+GeometryCollection.registerAs('GeometryCollection');

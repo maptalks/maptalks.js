@@ -2,8 +2,8 @@ import { isArray } from 'core/util';
 import Extent from 'geo/Extent';
 import CenterMixin from './CenterMixin';
 import Geometry from './Geometry';
-import Painter from 'renderer/vectorlayer/Painter';
-import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
+import Painter from 'renderer/geometry/Painter';
+import * as Symbolizers from 'renderer/geometry/symbolizers';
 
 const options = {
     'symbol': {
@@ -104,3 +104,5 @@ export default class Marker extends CenterMixin(Geometry) {
 }
 
 Marker.mergeOptions(options);
+
+Marker.registerAs('Marker');

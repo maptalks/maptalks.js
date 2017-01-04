@@ -11,27 +11,27 @@ export default class CRS {
         this.type = type;
         this.properties = properties;
     }
-}
 
-/**
- * Create a [proj4]{@link https://github.com/OSGeo/proj.4} style CRS used by maptalks <br>
- * @example
- * {
- *     "type"       : "proj4",
- *     "properties" : {
- *         "proj"   : "+proj=longlat +datum=WGS84 +no_defs"
- *     }
- * }
- * var crs_wgs84 = CRS.createProj4("+proj=longlat +datum=WGS84 +no_defs");
- * @static
- * @param  {String} proj - a proj4 projection string.
- * @return {CRS}
- */
-CRS.createProj4 = function (proj) {
-    return new CRS('proj4', {
-        'proj': proj
-    });
-};
+    /**
+     * Create a [proj4]{@link https://github.com/OSGeo/proj.4} style CRS used by maptalks <br>
+     * @example
+     * {
+     *     "type"       : "proj4",
+     *     "properties" : {
+     *         "proj"   : "+proj=longlat +datum=WGS84 +no_defs"
+     *     }
+     * }
+     * var crs_wgs84 = CRS.createProj4("+proj=longlat +datum=WGS84 +no_defs");
+     * @static
+     * @param  {String} proj - a proj4 projection string.
+     * @return {CRS}
+     */
+    static createProj4(proj) {
+        return new CRS('proj4', {
+            'proj': proj
+        });
+    }
+}
 
 // some common CRS definitions
 

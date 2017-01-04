@@ -8,7 +8,6 @@ import {
     isString,
     isFunction,
     isNumber,
-    setOptions,
     round,
     indexOfArray,
     executeWhen
@@ -26,7 +25,6 @@ import Layer from 'layer/Layer';
 import TileLayer from 'layer/tile/TileLayer';
 import TileSystem from 'layer/tile/tileinfo/TileSystem';
 import Renderable from 'renderer/Renderable';
-import TileLayerRenderer from 'renderer/tilelayer/TileLayerCanvasRenderer';
 import View from './view/View';
 
 
@@ -196,7 +194,7 @@ export default class Map extends Handlerable(Eventable(RenderableClass)) {
         var layers = opts['layers'];
         delete opts['layers'];
 
-        setOptions(this, opts);
+        this.setOptions(opts);
         this.setView(opts['view']);
 
         if (baseLayer) {
@@ -1614,7 +1612,7 @@ export default class Map extends Handlerable(Eventable(RenderableClass)) {
         if (!isNil(containerDOM.width) && !isNil(containerDOM.height)) {
             width = containerDOM.width;
             height = containerDOM.height;
-            if (Browser.retina && containerDOM[TileLayerRenderer.prototype.propertyOfTileId]) {
+            if (Browser.retina && containerDOM['layer']) {
                 //is a canvas tile of CanvasTileLayer
                 width /= 2;
                 height /= 2;
@@ -1831,8 +1829,5 @@ export default class Map extends Handlerable(Eventable(RenderableClass)) {
         }
     }
 }
-
-import MapCanvasRenderer from 'renderer/map/MapCanvasRenderer';
-Map.registerRenderer('canvas', MapCanvasRenderer);
 
 Map.mergeOptions(options);

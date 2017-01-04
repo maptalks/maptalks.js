@@ -91,3 +91,5 @@ export default class GeoJSONLayer extends VectorLayer {
         return profile;
     }
 }
+
+GeoJSONLayer.registerAs('GeoJSONLayer');

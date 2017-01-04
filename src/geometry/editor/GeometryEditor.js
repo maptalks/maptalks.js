@@ -6,7 +6,7 @@ import Eventable from 'core/Event';
 import Point from 'geo/Point';
 import { Marker, TextMarker, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
-import * as Symbolizers from 'renderer/vectorlayer/symbolizers';
+import * as Symbolizers from 'renderer/geometry/symbolizers';
 
 /**
  * Geometry editor used internally for geometry editing.
