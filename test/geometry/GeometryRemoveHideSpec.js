@@ -2,7 +2,6 @@ describe('Remove and Hide Geometry', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var context = {
@@ -27,13 +26,13 @@ describe('Remove and Hide Geometry', function () {
 
     afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container);
+        REMOVE_CONTAINER(container);
     });
 
     // 测试所有类型Geometry的公共方法
-    var geometries = genAllTypeGeometries();
+    var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
 
-    for (var i=0, len = geometries.length;i<len;i++){
+    for (var i = 0, len = geometries.length; i < len; i++) {
         testRemoveHide.call(this, geometries[i], context);
     }
 
@@ -51,10 +50,10 @@ function testRemoveHide(geometry, _context) {
         var layer = _context.layer,
             map = layer.getMap();
         var coordinates = [
-                    geometry.getCenter(),
-                    geometry.getFirstCoordinate(),
-                    geometry.getLastCoordinate()
-                ];
+            geometry.getCenter(),
+            geometry.getFirstCoordinate(),
+            geometry.getLastCoordinate()
+        ];
         var points = [];
         for (var i = 0; i < coordinates.length; i++) {
             points.push(map.coordinateToContainerPoint(coordinates[i]));
@@ -125,51 +124,51 @@ function testRemoveHide(geometry, _context) {
     }
 
     var type = geometry.getType();
-    context('Type of ' + type + ' geometry',function () {
-        it('should be removed', function(done) {
+    context('Type of ' + type + ' geometry', function () {
+        it('should be removed', function (done) {
             test(function () {
                 geometry.remove();
             }, done);
         });
 
-        it('should be removed by layer', function(done) {
+        it('should be removed by layer', function (done) {
             test(function () {
                 _context.layer.removeGeometry(geometry);
             }, done);
         });
 
-        it('should be cleared by layer', function(done) {
+        it('should be cleared by layer', function (done) {
             test(function () {
                 _context.layer.clear();
             }, done);
         });
 
-        it('should be hided with layer', function(done) {
+        it('should be hided with layer', function (done) {
             test(function () {
                 _context.layer.hide();
             }, done);
         });
 
-        it('should be removed with layer', function(done) {
+        it('should be removed with layer', function (done) {
             test(function () {
                 _context.layer.remove();
             }, done);
         });
 
-        it('should be removed with layer by map', function(done) {
+        it('should be removed with layer by map', function (done) {
             test(function () {
                 var map = _context.layer.getMap();
                 map.removeLayer(_context.layer);
             }, done);
         });
 
-        it('should be hided',function(done) {
-             test(function () {
+        it('should be hided', function (done) {
+            test(function () {
                 geometry.hide();
             }, done);
         });
 
-        it('should be removed when it is being edited', function(done) {
+        it('should be removed when it is being edited', function (done) {
             setupGeometry();
             var layer = _context.layer,
                 map = layer.getMap();

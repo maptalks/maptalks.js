@@ -1,11 +1,10 @@
 describe('#View.Conversion', function () {
-    var container, map;
     beforeEach(function () {
 
     });
 
     afterEach(function () {
-        removeContainer();
+        REMOVE_CONTAINER();
     });
 
     function prepareMap(fullExtent) {

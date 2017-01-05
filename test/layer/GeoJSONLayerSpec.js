@@ -1,42 +1,42 @@
 
-describe('#GeoJSONLayer', function() {
+describe('#GeoJSONLayer', function () {
     //examples are from geoJSON.org
     var geoJSONs = [
 
-        { "type": "Point", "coordinates": [100.0, 0.0] },
+        { 'type': 'Point', 'coordinates': [100.0, 0.0] },
         {
-            "type": "LineString",
-            "coordinates": [ [100.0, 0.0], [101.0, 1.0] ]
+            'type': 'LineString',
+            'coordinates': [[100.0, 0.0], [101.0, 1.0]]
         },
         //Polygon without Holes
         {
-            "type": "Polygon",
-            "coordinates": [
-                [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]
+            'type': 'Polygon',
+            'coordinates': [
+                [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]
             ]
         },
         //Polygon with Holes
         {
-            "type": "Polygon",
-            "coordinates": [
-                [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ],
-                [ [100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2] ]
+            'type': 'Polygon',
+            'coordinates': [
+                [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]],
+                [[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]
             ]
         },
         {
-            "type": "MultiPoint",
-            "coordinates": [ [100.0, 0.0], [101.0, 1.0] ]
+            'type': 'MultiPoint',
+            'coordinates': [[100.0, 0.0], [101.0, 1.0]]
         },
         {
-            "type": "MultiLineString",
-            "coordinates": [
-                [ [100.0, 0.0], [101.0, 1.0] ],
-                [ [102.0, 2.0], [103.0, 3.0] ]
+            'type': 'MultiLineString',
+            'coordinates': [
+                [[100.0, 0.0], [101.0, 1.0]],
+                [[102.0, 2.0], [103.0, 3.0]]
             ]
         },
         {
-            "type": "MultiPolygon",
-            "coordinates": [
+            'type': 'MultiPolygon',
+            'coordinates': [
                 [
                     [[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]
                 ],
@@ -47,47 +47,47 @@ describe('#GeoJSONLayer', function() {
             ]
         },
         {
-            "type": "GeometryCollection",
-            "geometries": [
-                { "type": "Point",
-                  "coordinates": [100.0, 0.0]
+            'type': 'GeometryCollection',
+            'geometries': [
+                { 'type': 'Point',
+                    'coordinates': [100.0, 0.0]
                 },
-                { "type": "LineString",
-                  "coordinates": [ [101.0, 0.0], [102.0, 1.0] ]
+                { 'type': 'LineString',
+                    'coordinates': [[101.0, 0.0], [102.0, 1.0]]
                 }
             ]
         },
         {
-            "type": "FeatureCollection",
-            "features": [
-                { "type": "Feature",
-                  "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-                  "properties": {"prop0": "value0"}
+            'type': 'FeatureCollection',
+            'features': [
+                { 'type': 'Feature',
+                    'geometry': { 'type': 'Point', 'coordinates': [102.0, 0.5] },
+                    'properties': { 'prop0': 'value0' }
                 },
-                { "type": "Feature",
-                  "geometry": {
-                      "type": "LineString",
-                      "coordinates": [
+                { 'type': 'Feature',
+                    'geometry': {
+                        'type': 'LineString',
+                        'coordinates': [
                           [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
-                      ]
-                  },
-                  "properties": {
-                      "prop0": "value0",
-                      "prop1": 0.0
-                  }
+                        ]
+                    },
+                    'properties': {
+                        'prop0': 'value0',
+                        'prop1': 0.0
+                    }
                 },
-                { "type": "Feature",
-                  "geometry": {
-                      "type": "Polygon",
-                      "coordinates": [
-                          [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
-                            [100.0, 1.0], [100.0, 0.0] ]
-                      ]
-                  },
-                  "properties": {
-                      "prop0": "value0",
-                      "prop1": {"this": "that"}
-                  }
+                { 'type': 'Feature',
+                    'geometry': {
+                        'type': 'Polygon',
+                        'coordinates': [
+                            [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+                            [100.0, 1.0], [100.0, 0.0]]
+                        ]
+                    },
+                    'properties': {
+                        'prop0': 'value0',
+                        'prop1': { 'this': 'that' }
+                    }
                 }
             ]
         }
@@ -97,7 +97,7 @@ describe('#GeoJSONLayer', function() {
     var container;
     var map;
 
-    beforeEach(function() {
+    beforeEach(function () {
         container = document.createElement('div');
         container.style.width = '800px';
         container.style.height = '600px';
@@ -109,14 +109,14 @@ describe('#GeoJSONLayer', function() {
         map = new maptalks.Map(container, option);
     });
 
-    afterEach(function() {
-        removeContainer(container);
+    afterEach(function () {
+        REMOVE_CONTAINER(container);
     });
 
     it('create', function () {
         var count = geoJSONs.length + 2,
             pos = geoJSONs.length - 1;
-        var layer = new maptalks.GeoJSONLayer('v', {'visible' : true}).addTo(map);
+        var layer = new maptalks.GeoJSONLayer('v', { 'visible' : true }).addTo(map);
         layer.addData(geoJSONs);
         var json = layer.toJSON();
         expect(json).to.be.ok();

@@ -74,7 +74,6 @@ describe('#Sprite', function () {
 
             ]
         });
-        var symbol = marker.getSymbol();
         var image = new Image();
         image.onload = function () {
             var resources = new maptalks.renderer.ResourceCache();
@@ -88,7 +87,7 @@ describe('#Sprite', function () {
             expect(canvas.width).to.be.eql(80 / 2 + 50 + 20 / 2);
             expect(canvas.height).to.be.eql(71);
             done();
-        }
+        };
         image.src = url;
     });
 
@@ -156,7 +155,7 @@ describe('#Sprite', function () {
 
         if (maptalks.Browser.phantomjs) {
             // unlike chrome, in phantomjs, the image with svg base64 can't be loaded immediately.
-            var url = maptalks.Geometry.getMarkerPathBase64(symbol);
+            var url = maptalks.Util.getMarkerPathBase64(symbol);
             var img = new Image();
             img.onload = function () {
                 var sprite = marker._getSprite();
@@ -167,9 +166,9 @@ describe('#Sprite', function () {
                 expect(canvas.width).to.be.eql(symbol.markerWidth);
                 expect(canvas.height).to.be.eql(symbol.markerHeight);
                 done();
-            }
+            };
             img.src = url;
-        } else{
+        } else {
             var sprite = marker._getSprite();
             var canvas = sprite.canvas;
             expect(sprite.offset.x).to.be.eql(0 + 10);
@@ -191,7 +190,6 @@ describe('#Sprite', function () {
                 'textDy' : 20
             }
         });
-        var symbol = marker.getSymbol();
         var sprite = marker._getSprite().canvas;
         expect(sprite).to.be.ok();
         expect(sprite.getContext('2d').getImageData(10, 10, 1, 1).data[3]).to.be.above(0);

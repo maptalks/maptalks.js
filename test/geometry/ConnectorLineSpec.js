@@ -1,29 +1,28 @@
 // var CommonSpec = require('./CommonSpec');
 
-describe('#ConnectorLineSpec', function() {
+describe('#ConnectorLineSpec', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
-    beforeEach(function() {
-        var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    describe('connect geometries', function() {
-        it('can connect geometries with each other', function() {
+    describe('connect geometries', function () {
+        it('can connect geometries with each other', function () {
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
-            var geometries = genAllTypeGeometries();
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
                 for (var ii = 0; ii < geometries.length; ii++) {
@@ -35,35 +34,35 @@ describe('#ConnectorLineSpec', function() {
             }
         });
 
-        it('can connect geometries with panel', function() {
+        it('can connect geometries with panel', function () {
             var panel = new maptalks.control.Panel({
                 position : {//放置panel的位置
                     top: '150',
                     left: '150'
                 },
-                draggable: true,//能否拖动
+                draggable: true, //能否拖动
                 custom: false, //content值能否为html
                 content: '面板内容'
             });
             map.addControl(panel);
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
-            var geometries = genAllTypeGeometries();
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
 
-                    var conn = new maptalks.ArcConnectorLine(geometries[i], panel);
-                    layer.addGeometry(conn);
-                    expect(conn.getConnectSource()).to.be.eql(geometries[i]);
-                    expect(conn.getConnectTarget()).to.be.eql(panel);
+                var conn = new maptalks.ArcConnectorLine(geometries[i], panel);
+                layer.addGeometry(conn);
+                expect(conn.getConnectSource()).to.be.eql(geometries[i]);
+                expect(conn.getConnectTarget()).to.be.eql(panel);
 
             }
         });
 
-        it('remove connector line', function() {
+        it('remove connector line', function () {
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
-            var geometries = genAllTypeGeometries();
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
                 for (var ii = 0; ii < geometries.length; ii++) {
@@ -75,10 +74,10 @@ describe('#ConnectorLineSpec', function() {
             }
         });
 
-        it('setConnectSource and setConnectTarget', function() {
+        it('setConnectSource and setConnectTarget', function () {
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
-            var geometries = genAllTypeGeometries();
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
                 for (var ii = 0; ii < geometries.length; ii++) {

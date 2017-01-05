@@ -1,31 +1,30 @@
-describe('#Layer', function() {
+describe('#Layer', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var context = {
-        map:map
+        map : map
     };
 
-    beforeEach(function() {
-       var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
         context.map = map;
     });
 
-    afterEach(function() {
-        removeContainer(container)
+    afterEach(function () {
+        REMOVE_CONTAINER(container);
     });
 
-    describe('id methods', function() {
-        it('id will be converted to string', function() {
+    describe('id methods', function () {
+        it('id will be converted to string', function () {
             var layer1 = new maptalks.TileLayer(1);
             expect(layer1.getId()).to.be.eql('1');
         });
 
-        it('id can be null or undefined', function() {
+        it('id can be null or undefined', function () {
             var layer1 = new maptalks.TileLayer(null);
             expect(layer1.getId() === null).to.be.ok();
             layer1.setId(undefined);
@@ -34,19 +33,20 @@ describe('#Layer', function() {
 
         it('null id can\'t be added to map', function () {
             var layer1 = new maptalks.TileLayer(null);
+            /*eslint-disable no-empty */
             try {
                 map.addLayer(layer1);
                 expect(false).to.be.ok();
-            } catch (err) {
+            } catch (e) {
 
             }
-
+            /*eslint-enable no-empty */
         });
     });
 
-    describe('change order of layers', function() {
+    describe('change order of layers', function () {
 
-        it('bring a layer to front', function() {
+        it('bring a layer to front', function () {
             var layer1 = new maptalks.TileLayer('1');
             var layer2 = new maptalks.VectorLayer('2');
             var layer3 = new maptalks.VectorLayer('3');
@@ -65,7 +65,7 @@ describe('#Layer', function() {
             expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
         });
 
-        it('bring a layer to back', function() {
+        it('bring a layer to back', function () {
             var layer1 = new maptalks.TileLayer('1');
             var layer2 = new maptalks.VectorLayer('2');
             var layer3 = new maptalks.VectorLayer('3');
@@ -84,7 +84,7 @@ describe('#Layer', function() {
             expect(map.getLayers()).to.be.eql([layer3, layer2, layer1]);
         });
 
-        it('sort layers by map',function() {
+        it('sort layers by map', function () {
             var layer1 = new maptalks.TileLayer('1');
             var layer2 = new maptalks.VectorLayer('2');
             var layer3 = new maptalks.VectorLayer('3');
@@ -96,11 +96,11 @@ describe('#Layer', function() {
         });
     });
 
-    describe('set a mask of a vector marker', function() {
+    describe('set a mask of a vector marker', function () {
         var mask, mask2;
 
-        beforeEach(function() {
-           mask = new maptalks.Marker(map.getCenter(), {
+        beforeEach(function () {
+            mask = new maptalks.Marker(map.getCenter(), {
                 symbol:{
                     markerType:'ellipse',
                     markerWidth:400,
@@ -111,10 +111,10 @@ describe('#Layer', function() {
             mask2 = new maptalks.Circle(map.getCenter(), 1000);
         });
 
-        it('to a tile layer',function() {
-            var tilelayer = new maptalks.TileLayer("tile with mask",{
+        it('to a tile layer', function () {
+            var tilelayer = new maptalks.TileLayer('tile with mask', {
                 urlTemplate:'http://www.aacaward.com/jiema/html/data/aac/{z}/{x}/{y}.png',
-                subdomains:[1,2,3,4]
+                subdomains:[1, 2, 3, 4]
             });
             map.addLayer(tilelayer);
             tilelayer.setMask(mask);
@@ -128,10 +128,10 @@ describe('#Layer', function() {
             expect(tilelayer.getMask()).not.to.be.ok();
         });
 
-        it('to a VectorLayer',function() {
-            var vectorlayer = new maptalks.VectorLayer("vector with mask");
+        it('to a VectorLayer', function () {
+            var vectorlayer = new maptalks.VectorLayer('vector with mask');
             map.addLayer(vectorlayer);
-            vectorlayer.addGeometry(genAllTypeGeometries());
+            vectorlayer.addGeometry(GEN_GEOMETRIES_OF_ALL_TYPES());
             vectorlayer.setMask(mask);
             expect(vectorlayer.getMask()).not.to.be.empty();
             vectorlayer.removeMask();

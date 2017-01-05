@@ -1,6 +1,6 @@
-describe("EventSpec", function() {
+describe('EventSpec', function () {
 
-    it("on and off", function() {
+    it('on and off', function () {
         function listener() {
 
         }
@@ -12,7 +12,7 @@ describe("EventSpec", function() {
         expect(marker.listens('click')).to.be.eql(0);
     });
 
-    it("duplicate on", function() {
+    it('duplicate on', function () {
         function listener() {
 
         }
@@ -25,7 +25,7 @@ describe("EventSpec", function() {
         expect(marker.listens('click')).to.be.eql(0);
     });
 
-    it('fire', function() {
+    it('fire', function () {
         var counter = 0;
         function listener() {
             counter++;
@@ -42,17 +42,14 @@ describe("EventSpec", function() {
         expect(counter).to.be.eql(4);
     });
 
-    it('param is isolated', function() {
-        var counter = 0;
+    it('param is isolated', function () {
         function listener(param) {
             param.foo = 1;
             expect(param.foo2).not.to.be.ok();
-            counter++;
         }
         function listener2(param) {
             param.foo2 = 1;
             expect(param.foo).not.to.be.ok();
-            counter++;
         }
         var marker = new maptalks.Marker([0, 0]);
         marker.once('click', listener, marker);
@@ -61,7 +58,7 @@ describe("EventSpec", function() {
 
     });
 
-    it('turn off itself in listener', function() {
+    it('turn off itself in listener', function () {
         var counter = 0;
         function listener(param) {
             counter++;
@@ -79,7 +76,7 @@ describe("EventSpec", function() {
         expect(counter).to.be.eql(3);
     });
 
-    it('once', function() {
+    it('once', function () {
         var counter = 0;
         var marker = new maptalks.Marker([0, 0]);
         function listener() {
@@ -98,7 +95,7 @@ describe("EventSpec", function() {
         expect(counter).to.be.eql(3);
     });
 
-    it('once 2', function() {
+    it('once 2', function () {
         var counter = 0;
         var marker = new maptalks.Marker([0, 0]);
         function listener() {
@@ -124,8 +121,8 @@ describe("EventSpec", function() {
             counter2++;
             expect(this).to.be.eql(marker);
         }
-        marker.once({'click':listener, 'mousedown' : listener2}, marker);
-        marker.on({'click':listener, 'mousedown' : listener2}, marker);
+        marker.once({ 'click':listener, 'mousedown' : listener2 }, marker);
+        marker.on({ 'click':listener, 'mousedown' : listener2 }, marker);
         marker.fire('click')
             .fire('click');
 
@@ -150,8 +147,8 @@ describe("EventSpec", function() {
             counter2++;
             expect(this).to.be.eql(marker);
         }
-        marker.on({'click':listener, 'mousedown' : listener2}, marker);
-        marker.off({'click':listener, 'mousedown' : listener2}, marker);
+        marker.on({ 'click':listener, 'mousedown' : listener2 }, marker);
+        marker.off({ 'click':listener, 'mousedown' : listener2 }, marker);
         marker.fire('click')
             .fire('click');
 

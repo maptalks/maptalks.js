@@ -40,6 +40,7 @@
     "gulp-uglify": "^1.5.3",
     "happen": "^0.3.1",
     "karma": "~0.13.22",
+    "karma-babel-preprocessor": "^6.0.1",
     "karma-chrome-launcher": "^1.0.1",
     "karma-coverage": "~1.0.0",
     "karma-expect": "^1.1.1",

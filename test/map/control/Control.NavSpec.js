@@ -24,7 +24,7 @@
     });
 
     afterEach(function () {
-        removeContainer(container)
+        REMOVE_CONTAINER(container)
     });
 
     it("events", function() {

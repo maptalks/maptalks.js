@@ -1,24 +1,23 @@
-describe('#Geometry.zindex', function() {
+describe('#Geometry.zindex', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
-    beforeEach(function() {
-        var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
         layer = new maptalks.VectorLayer('canvas');
         map.addLayer(layer);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
-    var red, green, blue
+    var red, green, blue;
     function getMarkers() {
         red = new maptalks.Marker(map.getCenter(), {
             symbol : {

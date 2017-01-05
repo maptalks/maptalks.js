@@ -28,6 +28,7 @@ module.exports = {
     files: [
         { pattern: 'src/maptalks.js', included: true },
         { pattern: 'src/**/*.js', included: false },
+        'test/core/ClassSpec.js',
         'test/**/*.js',
     // {
     //     pattern: 'build/test-context.js',
@@ -57,7 +58,8 @@ module.exports = {
         '/resources/': '/base/test/resources/'
     },
     preprocessors: {
-        'src/maptalks.js': ['rollup']
+        'test/core/ClassSpec.js' : ['babel'],
+        'src/maptalks.js': ['rollup'],
     },
     rollupPreprocessor: {
         plugins : [
@@ -83,23 +85,7 @@ module.exports = {
           ],
         "sourceMap" : 'inline',
         "plugins": [
-            ["transform-es2015-modules-umd"],
-            /*["module-resolver", {
-              "root": ["./"],
-              "alias": {
-                src: '/base/src',
-                control: '/base/src/control',
-                core: '/base/src/core',
-                geo: '/base/src/geo',
-                geometry: '/base/src/geometry',
-                handler: '/base/src/handler',
-                layer: '/base/src/layer',
-                map: '/base/src/map',
-                renderer: '/base/src/renderer',
-                ui: '/base/src/ui',
-                utils: '/base/src/utils'
-              }
-            }]*/
+            // ["transform-es2015-modules-umd"],
         ]
       }
     },

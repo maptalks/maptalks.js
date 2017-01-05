@@ -1,8 +1,7 @@
-describe("Control.Zoom", function() {
+describe('Control.Zoom', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
@@ -16,20 +15,15 @@ describe("Control.Zoom", function() {
             center: center
         };
         map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
-
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
-        });
     });
 
     afterEach(function () {
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    describe("Zoom button", function() {
+    describe('Zoom button', function () {
 
-        it("when enabled, can trigger correct events", function() {
+        it('when enabled, can trigger correct events', function () {
             var control = new maptalks.control.Zoom();
             var spy = sinon.spy();
             map.zoomIn = spy;
@@ -46,7 +40,7 @@ describe("Control.Zoom", function() {
             expect(spy.calledOnce).to.be.ok();
         });
 
-        it("when zoom in button clicked, change zoom correctly", function() {
+        it('when zoom in button clicked, change zoom correctly', function () {
             var control = new maptalks.control.Zoom();
             map.addControl(control);
             var zoom = map.getZoom();
@@ -55,7 +49,7 @@ describe("Control.Zoom", function() {
             expect(map.getZoom()).to.be(zoom + 1);
         });
 
-        it("when zoom out button clicked, change zoom correctly", function() {
+        it('when zoom out button clicked, change zoom correctly', function () {
             var control = new maptalks.control.Zoom();
             map.addControl(control);
             var zoom = map.getZoom();

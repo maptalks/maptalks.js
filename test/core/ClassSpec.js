@@ -1,4 +1,4 @@
-/*describe('Class', () => {
+describe('Class', () => {
     it('addInitHook', () => {
         const D = class extends maptalks.Class {
             constructor() {
@@ -83,9 +83,7 @@
     });
 
     it('throws an error when creating without new operator', () => {
-        const D = class extends maptalks.Class {
-        };
-        expect(D()).to.throwException();
+        expect(() => { maptalks.Marker(); }).to.throwException();
     });
 });
-*/
+

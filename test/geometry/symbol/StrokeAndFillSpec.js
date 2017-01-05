@@ -1,48 +1,24 @@
-describe('StrokeAndFillSpec', function() {
+describe('StrokeAndFillSpec', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-    var canvasContainer;
 
-    beforeEach(function() {
-        var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.canvasContainer;
         layer = new maptalks.VectorLayer('id').addTo(map);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    function isCenterDrawn(layer, dx, dy) {
-        if (!dx) {
-            dx = 0;
-        }
-        if (!dy) {
-            dy = 0;
-        }
-        var image = layer._getRenderer().getCanvasImage(),
-            canvas = image.image;
-        return isDrawn(parseInt(container.style.width)/2 - image.point.x + dx, parseInt(container.style.height)/2 - image.point.y + dy, canvas);
-    }
-
-    function isDrawn(x, y, canvas) {
-        var context = canvas.getContext('2d');
-        var imgData = context.getImageData(x, y, 1, 1).data;
-        if (imgData[3] > 0) {
-            return imgData;
-        }
-        return null;
-    }
-
-    describe('pattern', function() {
-        /*it('fill pattern', function (done) {
+    describe('pattern', function () {
+        it('fill pattern', function (done) {
             var circle = new maptalks.Circle(center, 10, {
                 symbol:{
                     'polygonPatternFile' : 'resources/pattern.png',
@@ -50,10 +26,10 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted();
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
 
@@ -68,10 +44,10 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted(11);
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
 
@@ -86,10 +62,10 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted();
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
 
@@ -106,17 +82,17 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted(11);
                 done();
-            })
+            });
             v.addGeometry(circle);
-        });*/
+        });
     });
 
 
     describe('radial gradient', function () {
-        /*it('fill radial gradient', function (done) {
+        it('fill radial gradient', function (done) {
             var circle = new maptalks.Circle(center, 10, {
                 symbol:{
                     'polygonFill' : {
@@ -136,10 +112,10 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted();
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
 
@@ -162,12 +138,12 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted();
                 done();
-            })
+            });
             v.addGeometry(circle);
-        });*/
+        });
 
         it('line radial gradient', function (done) {
             var circle = new maptalks.Circle(center, 10, {
@@ -190,11 +166,11 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).not.to.be.painted();
                 expect(v).to.be.painted(11);
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
 
@@ -221,11 +197,11 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).not.to.be.painted();
                 expect(v).to.be.painted(11);
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
     });
@@ -253,10 +229,10 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted(0, 0, [255, 255, 255]);
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
 
@@ -279,10 +255,10 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted();
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
         it('line linear gradient', function (done) {
@@ -306,10 +282,10 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 expect(v).to.be.painted(11);
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
 
@@ -330,7 +306,7 @@ describe('StrokeAndFillSpec', function() {
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
-            v.once('layerload', function() {
+            v.once('layerload', function () {
                 if (maptalks.Browser.phantomjs) {
                     expect(v).to.be.painted(-9, 0, [255, 18, 18]);
                     expect(v).to.be.painted(-5, 0, [255, 67, 67]);
@@ -341,7 +317,7 @@ describe('StrokeAndFillSpec', function() {
                     expect(v).to.be.painted(8, 0);
                 }
                 done();
-            })
+            });
             v.addGeometry(circle);
         });
     });

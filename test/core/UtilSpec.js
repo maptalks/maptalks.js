@@ -1,10 +1,10 @@
-describe('Util', function() {
+describe('Util', function () {
 
 
-    describe('replace variable', function() {
+    describe('replace variable', function () {
         it('replace variables with value', function () {
             var str = '{foo} is not {foo2}.';
-            var r = maptalks.Util.replaceVariable(str, {foo : 'apple', foo2 : 'pear'});
+            var r = maptalks.Util.replaceVariable(str, { foo : 'apple', foo2 : 'pear' });
             expect(r).to.eql('apple is not pear.');
         });
 

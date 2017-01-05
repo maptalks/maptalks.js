@@ -1,8 +1,8 @@
-describe("Control Common Tests", function() {
+describe('Control Common Tests', function () {
 
     var container;
     var map;
-    var tile,control;
+    var control;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
@@ -15,11 +15,6 @@ describe("Control Common Tests", function() {
             center: center
         };
         map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
-
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
-        });
         control = new maptalks.control.Scale({
             metric: true,
             imperial: true
@@ -28,17 +23,17 @@ describe("Control Common Tests", function() {
     });
 
     afterEach(function () {
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
     function buildOn() {
         return maptalks.DomUtil.createEl('div');
     }
 
-    it('addTo', function() {
+    it('addTo', function () {
         var control = new maptalks.control.Control({
             id: 'id1',
-            position: {top: 10, left: 10}
+            position: { top: 10, left: 10 }
         });
         control.buildOn = buildOn;
 
@@ -47,10 +42,10 @@ describe("Control Common Tests", function() {
         }).to.not.throwException();
     });
 
-    it('setPosition', function() {
+    it('setPosition', function () {
         var control = new maptalks.control.Control({
             id: 'id1',
-            position: {top: 10, left: 10}
+            position: { top: 10, left: 10 }
         });
         control.buildOn = buildOn;
         control.addTo(map);
@@ -63,12 +58,12 @@ describe("Control Common Tests", function() {
         expect(control.getPosition()).to.be.eql(pos);
     });
 
-    it("has common methods", function() {
+    it('has common methods', function () {
         expect(control.getContainerPoint() instanceof maptalks.Point).to.be.ok();
         control.hide();
-        expect(control.getContainer().style.display==='none').to.be.ok();
+        expect(control.getContainer().style.display === 'none').to.be.ok();
         control.show();
-        expect(control.getContainer().style.display==='').to.be.ok();
+        expect(control.getContainer().style.display === '').to.be.ok();
         var position = control.getPosition();
         expect(position).not.to.be.empty();
         control.setPosition('top-right');
@@ -77,7 +72,7 @@ describe("Control Common Tests", function() {
         expect(control.getContainer()).not.to.be.ok();
     });
 
-    it("can be removed by map",function() {
+    it('can be removed by map', function () {
         map.removeControl(control);
         expect(control.getContainer()).not.to.be.ok();
     });

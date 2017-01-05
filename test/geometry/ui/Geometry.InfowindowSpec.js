@@ -1,8 +1,7 @@
-describe("#Geometry.InfoWindow", function() {
+describe('#Geometry.InfoWindow', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
@@ -17,19 +16,14 @@ describe("#Geometry.InfoWindow", function() {
             center: center
         };
         map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
-
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
-        });
         layer = new maptalks.VectorLayer('vector').addTo(map);
     });
 
     afterEach(function () {
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    it("infowindow has methods to change itself.", function(done) {
+    it('infowindow has methods to change itself.', function (done) {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);
         var options = {
@@ -71,13 +65,13 @@ describe("#Geometry.InfoWindow", function() {
         done();
     });
 
-    describe("all kinds of geometries can have a infowindow", function() {
-        it('set a infowindow', function() {
+    describe('all kinds of geometries can have a infowindow', function () {
+        it('set a infowindow', function () {
             var options = {
                 title: 'title',
                 content: 'content'
             };
-            var geometries = genAllTypeGeometries();
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             for (var i = 0; i < geometries.length; i++) {
                 geometries[i].setInfoWindow(options);
                 expect(geometries[i].getInfoWindow()).not.to.be.ok();
@@ -85,13 +79,13 @@ describe("#Geometry.InfoWindow", function() {
             layer.addGeometry(geometries);
         });
 
-        it('set and open/close and remove a infowindow', function() {
+        it('set and open/close and remove a infowindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
                 animation : null
             };
-            var geometries = genAllTypeGeometries();
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
                 var geo = geometries[i];
@@ -106,13 +100,13 @@ describe("#Geometry.InfoWindow", function() {
             }
         });
 
-        it('set and open/close and remove a customized infowindow', function() {
+        it('set and open/close and remove a customized infowindow', function () {
             var options = {
                 custom:true,
                 content: '<div style="width:400px;height:300;">this is a customized infowindow.</div>',
                 animation : null
             };
-            var geometries = genAllTypeGeometries();
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             layer.addGeometry(geometries);
             for (var i = 0; i < geometries.length; i++) {
                 var geo = geometries[i];
@@ -127,7 +121,7 @@ describe("#Geometry.InfoWindow", function() {
             }
         });
 
-        it('hide when geometry is hided', function() {
+        it('hide when geometry is hided', function () {
             var options = {
                 title: 'title',
                 content: 'content',
@@ -146,7 +140,7 @@ describe("#Geometry.InfoWindow", function() {
             expect(w.isVisible()).not.to.be.ok();
         });
 
-        it('hide when layer is hided', function() {
+        it('hide when layer is hided', function () {
             var options = {
                 title: 'title',
                 content: 'content',
@@ -165,7 +159,7 @@ describe("#Geometry.InfoWindow", function() {
             expect(w.isVisible()).not.to.be.ok();
         });
 
-        it('create and hide when layer is hided', function() {
+        it('create and hide when layer is hided', function () {
             var options = {
                 title: 'title',
                 content: 'content',
@@ -176,7 +170,7 @@ describe("#Geometry.InfoWindow", function() {
             layer.addGeometry(geo);
 
             infoWindow.addTo(geo);
-            infoWindow.show(geo.getCenter())
+            infoWindow.show(geo.getCenter());
             var w = geo.getInfoWindow();
             expect(w.isVisible()).to.be.ok();
 
@@ -185,7 +179,7 @@ describe("#Geometry.InfoWindow", function() {
             expect(w.isVisible()).not.to.be.ok();
         });
 
-        it('move when geometry is moved', function() {
+        it('move when geometry is moved', function () {
             var options = {
                 title: 'title',
                 content: 'content',
@@ -219,7 +213,7 @@ describe("#Geometry.InfoWindow", function() {
             layer.addGeometry(geo);
 
             infoWindow.addTo(geo);
-            infoWindow.show(geo.getCenter())
+            infoWindow.show(geo.getCenter());
             expect(infoWindow.getDOM().style.opacity).to.be.eql(1);
             expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
 
