@@ -50,10 +50,10 @@
     "karma-mocha": "~1.1.1",
     "karma-mocha-reporter": "^2.2.1",
     "karma-phantomjs-launcher": "^1.0.0",
+    "karma-rollup-preprocessor": "^3.0.3",
     "karma-safari-launcher": "~1.0.0",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.7",
-    "karma-webpack": "^1.8.0",
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
     "phantomjs-prebuilt": "^2.1.6",
@@ -71,6 +71,7 @@
     "webpack": "^1.14.0"
   },
   "dependencies": {
+    "simplify-js": "^1.2.1",
     "zousan": "^2.3.3"
   }
 }

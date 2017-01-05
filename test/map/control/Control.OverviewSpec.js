@@ -12,8 +12,11 @@ describe("Control.Overview", function() {
         document.body.appendChild(container);
         var option = {
             zoom: 17,
+            zoomAnimationDuration : 50,
             center: center,
-            overviewControl : true
+            overviewControl : {
+                'loadDelay' : 50
+            }
         };
         map = new maptalks.Map(container, option);
         tile = new maptalks.TileLayer('tile', {
@@ -82,7 +85,7 @@ describe("Control.Overview", function() {
         overview.on('load', function () {
             var zoom = overview._overview.getZoom();
             overview._overview.on('zoomend', function () {
-            expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
+                expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
                 done();
             });
             map.zoomIn();

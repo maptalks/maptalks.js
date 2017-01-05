@@ -43,7 +43,7 @@ describe('#VectorLayer', function() {
         });
 
         it('create with geometries', function () {
-            var layer = new maptalks.VectorLayer('v', [maptalks.Marker(map.getCenter()), maptalks.Marker(map.getCenter())], {'cursor' : 'default'});
+            var layer = new maptalks.VectorLayer('v', [new maptalks.Marker(map.getCenter()), new maptalks.Marker(map.getCenter())], {'cursor' : 'default'});
             expect(layer.getCount()).to.be.eql(2);
             expect(layer.options['cursor']).to.be.eql('default');
         });

@@ -27,26 +27,28 @@ module.exports = {
     basePath: '..',
     files: [
         { pattern: 'src/maptalks.js', included: true },
-        'test/**/*.js'
+        { pattern: 'src/**/*.js', included: false },
+        'test/**/*.js',
     // {
     //     pattern: 'build/test-context.js',
     //     watched: false
-    // }, {
-    //     pattern: 'assets/css/**/*.css',
-    //     watched: true,
-    //     included: false,
-    //     served: true
-    // }, {
-    //     pattern: 'assets/images/**/*.png',
-    //     watched: false,
-    //     included: false,
-    //     served: true
-    // }, {
-    //     pattern: 'test/resources/*',
-    //     watched: false,
-    //     included: false,
-    //     served: true
-    // }
+    // },
+        {
+            pattern: 'assets/css/**/*.css',
+            watched: true,
+            included: false,
+            served: true
+        }, {
+            pattern: 'assets/images/**/*.png',
+            watched: false,
+            included: false,
+            served: true
+        }, {
+            pattern: 'test/resources/*',
+            watched: false,
+            included: false,
+            served: true
+        }
     ],
     proxies: {
         '/images/': '/base/assets/images/',
@@ -55,8 +57,7 @@ module.exports = {
         '/resources/': '/base/test/resources/'
     },
     preprocessors: {
-        'src/maptalks.js': ['rollup'],
-        'test/**/*.js': ['babel', 'sourcemap']
+        'src/maptalks.js': ['rollup']
     },
     rollupPreprocessor: {
         plugins : [
@@ -72,7 +73,7 @@ module.exports = {
             require('rollup-plugin-buble')(),
         ],
         format: 'iife',               // helps prevent naming collisions
-        moduleName: 'window', // required for 'iife' format
+        moduleName: 'maptalks', // required for 'iife' format
         sourceMap: 'inline',          // sensible for testing
     },
     babelPreprocessor: {
@@ -83,7 +84,7 @@ module.exports = {
         "sourceMap" : 'inline',
         "plugins": [
             ["transform-es2015-modules-umd"],
-            ["module-resolver", {
+            /*["module-resolver", {
               "root": ["./"],
               "alias": {
                 src: '/base/src',
@@ -98,7 +99,7 @@ module.exports = {
                 ui: '/base/src/ui',
                 utils: '/base/src/utils'
               }
-            }]
+            }]*/
         ]
       }
     },

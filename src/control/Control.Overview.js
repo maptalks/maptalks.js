@@ -14,6 +14,7 @@ import Control from './Control';
  * @property {Object} [options.style={"color":"#1bbc9b"}] - style of the control, color is the overview rectangle's color
  */
 const options = {
+    'loadDelay' : 1600,
     'level': 4,
     'position': 'bottom-right',
     'size': {
@@ -43,7 +44,6 @@ const options = {
 export default class Overview extends Control {
 
     buildOn(map) {
-        this.loadDelay = 1600;
         var container = createEl('div');
         container.style.cssText = 'border:1px solid #000;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
         if (map.isLoaded()) {
@@ -58,7 +58,7 @@ export default class Overview extends Control {
         var me = this;
         setTimeout(function () {
             me._createOverview();
-        }, this.loadDelay);
+        }, this.options['loadDelay']);
     }
 
     _createOverview(container) {
