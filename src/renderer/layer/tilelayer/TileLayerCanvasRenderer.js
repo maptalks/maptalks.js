@@ -23,11 +23,10 @@ import TileCache from './TileCache';
 export default class TileLayerRenderer extends CanvasRenderer {
 
     constructor(layer) {
-        super();
+        super(layer);
         this.propertyOfPointOnTile = '--maptalks-tile-point';
         this.propertyOfTileId = '--maptalks-tile-id';
         this.propertyOfTileZoom = '--maptalks-tile-zoom';
-        this.layer = layer;
         this._mapRender = layer.getMap()._getRenderer();
         if (!isNode && this.layer.options['cacheTiles']) {
             this._tileCache = new TileCache();

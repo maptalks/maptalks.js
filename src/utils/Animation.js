@@ -1,8 +1,6 @@
 import {
-    bind,
     extend,
     now,
-    isArray,
     isNumber,
     isString,
     requestAnimFrame
@@ -99,14 +97,16 @@ export const Frame = function (state, styles) {
  * @memberOf animation
  * @name Player
  */
-export const Player = function (animation, options, step) {
-    this._animation = animation;
-    this._options = options;
-    this._stepFn = step;
-    this.playState = 'idle';
-    this.ready = true;
-    this.finished = false;
-};
+export class Player {
+    constructor(animation, options, step) {
+        this._animation = animation;
+        this._options = options;
+        this._stepFn = step;
+        this.playState = 'idle';
+        this.ready = true;
+        this.finished = false;
+    }
+}
 
 /**
  * @classdesc
@@ -139,7 +139,7 @@ export const Animation = {
         }
         //resolve a child styles.
         function resolveChild(child) {
-            if (!isArray(child)) {
+            if (!Array.isArray(child)) {
                 return Animation._resolveStyles(child);
             }
             var start = [],
@@ -164,7 +164,7 @@ export const Animation = {
             var values = val,
                 clazz;
             //val is just a destination value, so we set start value to 0 or a 0-point or a 0-coordinate.
-            if (!isArray(val)) {
+            if (!Array.isArray(val)) {
                 if (isNumber(val)) {
                     values = [0, val];
                 } else if (val instanceof Point || val instanceof Coordinate) {
@@ -182,9 +182,9 @@ export const Animation = {
                     return null;
                 }
                 return [v1, v2 - v1, v2];
-            } else if (isArray(v1) || v1 instanceof Coordinate || v1 instanceof Point) {
+            } else if (Array.isArray(v1) || v1 instanceof Coordinate || v1 instanceof Point) {
                 // is a coordinate (array or a coordinate) or a point
-                if (isArray(v1)) {
+                if (Array.isArray(v1)) {
                     v1 = new Coordinate(v1);
                     v2 = new Coordinate(v2);
                 } else {
@@ -203,9 +203,9 @@ export const Animation = {
         }
 
         function isChild(val) {
-            if (!isArray(val) && val.constructor === Object) {
+            if (!Array.isArray(val) && val.constructor === Object) {
                 return true;
-            } else if (isArray(val) && val[0].constructor === Object) {
+            } else if (Array.isArray(val) && val[0].constructor === Object) {
                 return true;
             }
             return false;
@@ -271,7 +271,7 @@ export const Animation = {
                     if (isNumber(d)) {
                         //e.g. radius, width, height
                         result[p] = s + delta * d;
-                    } else if (isArray(d)) {
+                    } else if (Array.isArray(d)) {
                         //e.g. a composite symbol, element in array can only be a object.
                         var children = [];
                         for (var i = 0; i < d.length; i++) {
@@ -365,14 +365,17 @@ export const Animation = {
     }
 };
 
-Animation._frameFn = bind(Animation._run, Animation);
+Animation._frameFn = Animation._run.bind(Animation);
 
-extend(Player.prototype, /** @lends Player.prototype */ {
+extend(Player.prototype, {
     _prepare() {
         var options = this._options;
         var duration = options['speed'];
         if (isString(duration)) {
             duration = Animation.speed[duration];
+            if (!duration) {
+                duration = +duration;
+            }
         }
         if (!duration) {
             duration = Animation.speed['normal'];
@@ -443,29 +446,28 @@ extend(Player.prototype, /** @lends Player.prototype */ {
         if (this.playState === 'finished' || this.playState === 'paused') {
             return;
         }
-        var me = this;
-        var t = now();
+        const t = now();
         var elapsed = t - this._playStartTime;
         if (this._options['repeat'] && elapsed >= this.duration) {
             this._playStartTime = t;
             elapsed = 0;
         }
         //elapsed, duration
-        var frame = this._animation(elapsed, this.duration);
+        const frame = this._animation(elapsed, this.duration);
         this.playState = frame.state['playState'];
-        var step = this._stepFn;
+        const step = this._stepFn;
         if (this.playState === 'idle') {
-            setTimeout(bind(this._run, this), this.startTime - t);
+            setTimeout(this._run.bind(this), this.startTime - t);
         } else if (this.playState === 'running') {
-            this._animeFrameId = Animation._requestAnimFrame(function () {
-                if (me.playState !== 'running') {
+            this._animeFrameId = Animation._requestAnimFrame(() => {
+                if (this.playState !== 'running') {
                     return;
                 }
-                me.currentTime = now - me._playStartTime;
+                this.currentTime = now - this._playStartTime;
                 if (step) {
                     step(frame);
                 }
-                me._run();
+                this._run();
             });
         } else if (this.playState === 'finished') {
             this.finished = true;
@@ -477,5 +479,5 @@ extend(Player.prototype, /** @lends Player.prototype */ {
             }
         }
 
-    }
+    },
 });

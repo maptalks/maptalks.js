@@ -33,7 +33,7 @@ export default class Point {
             this.x = x[0];
             this.y = x[1];
         }
-        if (this.isNaN()) {
+        if (this._isNaN()) {
             throw new Error('point is NaN');
         }
     }
@@ -180,7 +180,7 @@ export default class Point {
      * Whether the point is NaN
      * @return {Boolean}
      */
-    isNaN() {
+    _isNaN() {
         return isNaN(this.x) || isNaN(this.y);
     }
 

@@ -14,9 +14,4 @@ import './Map.Profile';
 import './Map.Topo';
 import './Map.Zoom';
 
-import './view/View.Arc';
-
-// export * from './Map';
-// import View from './view/View';
-
 export default Map;

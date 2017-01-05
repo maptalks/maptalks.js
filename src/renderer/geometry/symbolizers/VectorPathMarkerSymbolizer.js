@@ -16,8 +16,8 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
 
     constructor(symbol, geometry, painter) {
         super(symbol, geometry, painter);
-        this._url = [getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
         this.style = this._defineStyle(this.translate());
+        this._url = [getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
         //IE must have a valid width and height to draw a svg image
         //otherwise, error will be thrown
         if (isNil(this.style['markerWidth'])) {

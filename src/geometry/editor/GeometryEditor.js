@@ -1,4 +1,4 @@
-import { internalLayerPrefix } from 'core/Constants';
+import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import { extend, isNil, isNumber, isArrayHasData, indexOfArray, removeFromArray, UID } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
@@ -7,6 +7,8 @@ import Point from 'geo/Point';
 import { Marker, TextMarker, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
 import * as Symbolizers from 'renderer/geometry/symbolizers';
+
+const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
 
 /**
  * Geometry editor used internally for geometry editing.
@@ -21,13 +23,11 @@ import * as Symbolizers from 'renderer/geometry/symbolizers';
 export default class GeometryEditor extends Eventable(Class) {
 
     constructor(geometry, opts) {
-        super();
+        super(opts);
         this._geometry = geometry;
         if (!this._geometry) {
             return;
         }
-        this.editStageLayerIdPrefix = internalLayerPrefix + '_edit_stage_';
-        this.setOptions(opts);
     }
 
     getMap() {
@@ -53,9 +53,9 @@ export default class GeometryEditor extends Eventable(Class) {
     _prepareEditStageLayer() {
         var map = this.getMap();
         var uid = UID();
-        this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + uid);
+        this._editStageLayer = map.getLayer(EDIT_STAGE_LAYER_PREFIX + uid);
         if (!this._editStageLayer) {
-            this._editStageLayer = new VectorLayer(this.editStageLayerIdPrefix + uid);
+            this._editStageLayer = new VectorLayer(EDIT_STAGE_LAYER_PREFIX + uid);
             map.addLayer(this._editStageLayer);
         }
     }

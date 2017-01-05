@@ -4,6 +4,20 @@ import Browser from 'core/Browser';
 import { on, off } from 'core/util/dom';
 import Point from 'geo/Point';
 
+const START_EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
+const MOVE_EVENTS = {
+    mousedown: 'mousemove',
+    touchstart: 'touchmove',
+    pointerdown: 'touchmove',
+    MSPointerDown: 'touchmove'
+};
+const END_EVENTS = {
+    mousedown: 'mouseup',
+    touchstart: 'touchend',
+    pointerdown: 'touchend',
+    MSPointerDown: 'touchend'
+};
+
 /**
  * Drag handler
  * @class
@@ -15,19 +29,6 @@ const DragHandler = class extends Handler {
 
     constructor(dom, options) {
         super(null);
-        this.START = Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'];
-        this.END = {
-            mousedown: 'mouseup',
-            touchstart: 'touchend',
-            pointerdown: 'touchend',
-            MSPointerDown: 'touchend'
-        };
-        this.MOVE = {
-            mousedown: 'mousemove',
-            touchstart: 'touchmove',
-            pointerdown: 'touchmove',
-            MSPointerDown: 'touchmove'
-        };
         this.dom = dom;
         this.options = options;
     }
@@ -36,7 +37,7 @@ const DragHandler = class extends Handler {
         if (!this.dom) {
             return;
         }
-        on(this.dom, this.START.join(' '), this.onMouseDown, this);
+        on(this.dom, START_EVENTS, this.onMouseDown, this);
     }
 
 
@@ -44,7 +45,7 @@ const DragHandler = class extends Handler {
         if (!this.dom) {
             return;
         }
-        off(this.dom, this.START.join(' '), this.onMouseDown);
+        off(this.dom, START_EVENTS, this.onMouseDown);
     }
 
     onMouseDown(event) {
@@ -68,8 +69,8 @@ const DragHandler = class extends Handler {
         var actual = event.touches ? event.touches[0] : event;
         this.startPos = new Point(actual.clientX, actual.clientY);
         //2015-10-26 fuzhen 改为document, 解决鼠标移出地图容器后的不可控现象
-        on(document, this.MOVE[event.type], this.onMouseMove, this)
-            .on(document, this.END[event.type], this.onMouseUp, this);
+        on(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
+        on(document, END_EVENTS[event.type], this.onMouseUp, this);
         this.fire('mousedown', {
             'domEvent': event,
             'mousePos': new Point(actual.clientX, actual.clientY)
@@ -114,9 +115,9 @@ const DragHandler = class extends Handler {
     onMouseUp(event) {
         var dom = this.dom;
         var actual = event.changedTouches ? event.changedTouches[0] : event;
-        for (var i in this.MOVE) {
-            off(document, this.MOVE[i], this.onMouseMove, this);
-            off(document, this.END[i], this.onMouseUp, this);
+        for (var i in MOVE_EVENTS) {
+            off(document, MOVE_EVENTS[i], this.onMouseMove, this);
+            off(document, END_EVENTS[i], this.onMouseUp, this);
         }
         if (dom['releaseCapture']) {
             dom['releaseCapture']();

@@ -26,13 +26,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     constructor(symbol, geometry, painter) {
-        super();
-        this.symbol = symbol;
-        this.geometry = geometry;
-        this.painter = painter;
-        var style = this.translate();
-        this.style = this._defineStyle(style);
-        this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
+        super(symbol, geometry, painter);
+        this.style = this._defineStyle(this.translate());
+        this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
         var textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
         this._descText(textContent);
     }

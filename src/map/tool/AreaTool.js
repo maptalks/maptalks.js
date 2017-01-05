@@ -1,4 +1,4 @@
-import { isArray, setOptions } from 'core/util';
+import { isArray } from 'core/util';
 import Size from 'geo/Size';
 import { _computeArea } from 'geo/utils';
 import Geometry from 'geometry/Geometry';
@@ -61,8 +61,7 @@ const options = {
 export default class AreaTool extends DistanceTool {
 
     constructor(options) {
-        super();
-        setOptions(this, options);
+        super(options);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];

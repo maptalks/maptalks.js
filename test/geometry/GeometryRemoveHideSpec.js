@@ -1,27 +1,12 @@
-import {
-    removeContainer,
-    genAllTypeGeometries
-} from '../SpecCommon';
-import {
-    isArray
-} from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import {
-    Marker,
-    LineString,
-    Polygon,
-    MultiPoint,
-    GeometryCollection
-} from 'geometry';
-import VectorLayer from 'layer/VectorLayer';
-
 describe('Remove and Hide Geometry', function () {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-    var context = {};
+    var context = {
+    };
 
     beforeEach(function () {
         container = document.createElement('canvas');
@@ -32,9 +17,9 @@ describe('Remove and Hide Geometry', function () {
             zoom: 17,
             center: center
         };
-        map = new Map(container, option);
+        map = new maptalks.Map(container, option);
 
-        layer = new VectorLayer('canvas');
+        layer = new maptalks.VectorLayer('canvas');
         map.addLayer(layer);
         context.layer = layer;
         context.container = container;
@@ -48,7 +33,7 @@ describe('Remove and Hide Geometry', function () {
     // 测试所有类型Geometry的公共方法
     var geometries = genAllTypeGeometries();
 
-    for (var i = 0, len = geometries.length; i < len; i++) {
+    for (var i=0, len = geometries.length;i<len;i++){
         testRemoveHide.call(this, geometries[i], context);
     }
 
@@ -59,16 +44,17 @@ function testRemoveHide(geometry, _context) {
         if (geometry.getLayer()) {
             geometry.remove();
         }
+
     }
 
     function getTestPoints(geometry) {
         var layer = _context.layer,
             map = layer.getMap();
         var coordinates = [
-            geometry.getCenter(),
-            geometry.getFirstCoordinate(),
-            geometry.getLastCoordinate()
-        ];
+                    geometry.getCenter(),
+                    geometry.getFirstCoordinate(),
+                    geometry.getLastCoordinate()
+                ];
         var points = [];
         for (var i = 0; i < coordinates.length; i++) {
             points.push(map.coordinateToContainerPoint(coordinates[i]));
@@ -78,7 +64,7 @@ function testRemoveHide(geometry, _context) {
 
     function isDrawn(p, canvas) {
         var i;
-        if (isArray(p)) {
+        if (Array.isArray(p)) {
             for (i = 0; i < p.length; i++) {
                 if (isDrawn(p[i], canvas)) {
                     return true;
@@ -105,13 +91,13 @@ function testRemoveHide(geometry, _context) {
         layer.clear();
         layer._clearAllListeners();
         map.setCenter(geometry.getFirstCoordinate());
-        if (geometry instanceof Polygon || geometry instanceof LineString) {
+        if (geometry instanceof maptalks.Polygon || geometry instanceof maptalks.LineString) {
             geometry.setSymbol({
-                'lineWidth': 2,
-                'lineColor': '#000000',
-                'lineOpacity': 1,
-                'polygonFill': '#000000',
-                'polygonOpacity': 1
+                'lineWidth' : 2,
+                'lineColor' : '#000000',
+                'lineOpacity' : 1,
+                'polygonFill' : '#000000',
+                'polygonOpacity' : 1
             });
         }
         var testPoints = getTestPoints(geometry);
@@ -139,80 +125,80 @@ function testRemoveHide(geometry, _context) {
     }
 
     var type = geometry.getType();
-    context('Type of ' + type + ' geometry', function () {
-        it('should be removed', function (done) {
+    context('Type of ' + type + ' geometry',function () {
+        it('should be removed', function(done) {
             test(function () {
                 geometry.remove();
             }, done);
         });
 
-        it('should be removed by layer', function (done) {
+        it('should be removed by layer', function(done) {
             test(function () {
                 _context.layer.removeGeometry(geometry);
             }, done);
         });
 
-        it('should be cleared by layer', function (done) {
+        it('should be cleared by layer', function(done) {
             test(function () {
                 _context.layer.clear();
             }, done);
         });
 
-        it('should be hided with layer', function (done) {
+        it('should be hided with layer', function(done) {
             test(function () {
                 _context.layer.hide();
             }, done);
         });
 
-        it('should be removed with layer', function (done) {
+        it('should be removed with layer', function(done) {
             test(function () {
                 _context.layer.remove();
             }, done);
         });
 
-        it('should be removed with layer by map', function (done) {
+        it('should be removed with layer by map', function(done) {
             test(function () {
                 var map = _context.layer.getMap();
                 map.removeLayer(_context.layer);
             }, done);
         });
 
-        it('should be hided', function (done) {
-            test(function () {
+        it('should be hided',function(done) {
+             test(function () {
                 geometry.hide();
             }, done);
         });
 
-        it('should be removed when it is being edited', function (done) {
+        it('should be removed when it is being edited', function(done) {
             setupGeometry();
             var layer = _context.layer,
                 map = layer.getMap();
             layer.config('drawImmediate', true);
             layer.clear();
             map.setCenter(geometry.getFirstCoordinate());
-            if (!(geometry instanceof Marker) && !(geometry instanceof MultiPoint)) {
+            if (!(geometry instanceof maptalks.Marker) && !(geometry instanceof maptalks.MultiPoint)) {
                 geometry.setSymbol({
-                    'lineWidth': 5,
-                    'lineColor': '#000000',
-                    'lineOpacity': 1,
-                    'polygonFill': '#000000',
-                    'polygonOpacity': 1
+                    'lineWidth' : 5,
+                    'lineColor' : '#000000',
+                    'lineOpacity' : 1,
+                    'polygonFill' : '#000000',
+                    'polygonOpacity' : 1
                 });
             } else {
                 geometry.setSymbol({
-                    'markerType': 'pie',
-                    'markerHeight': 24,
-                    'markerWidth': 24,
-                    'markerFill': '#de3333',
-                    'markerLineColor': '#ffffff',
-                    'markerLineWidth': 1,
-                    'opacity': 1
+                    'markerType'    : 'pie',
+                    'markerHeight'  : 24,
+                    'markerWidth'   : 24,
+                    'markerFill'    : '#de3333',
+                    'markerLineColor' : '#ffffff',
+                    'markerLineWidth' : 1,
+                    'opacity' : 1
                 });
             }
             var testPoints = getTestPoints(geometry);
             layer.addGeometry(geometry);
             geometry.startEdit();
-            var editLayer = (geometry instanceof GeometryCollection) ? geometry.getGeometries()[0]._editor._editStageLayer : geometry._editor._editStageLayer;
+            var editLayer = (geometry instanceof maptalks.GeometryCollection) ? geometry.getGeometries()[0]._editor._editStageLayer : geometry._editor._editStageLayer;
             editLayer.once('layerload', function () {
                 if (layer.isEmpty()) {
                     return;

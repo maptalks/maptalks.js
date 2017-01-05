@@ -1,6 +1,6 @@
 import Zousan from 'zousan';
 
-let promise;
+var promise;
 
 if (typeof Promise !== 'undefined') {
     // built-in Promise

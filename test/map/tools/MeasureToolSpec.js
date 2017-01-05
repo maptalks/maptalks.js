@@ -1,53 +1,44 @@
-import {
-    commonSetupMap,
-    removeContainer
-} from '../../SpecCommon';
-import {
-    getPagePosition
-} from 'core/util/dom';
-import Coordinate from 'geo/Coordinate';
-import {
-    DistanceTool,
-    AreaTool
-} from 'map/tool';
+
+
 
 describe('#DistanceTool and AreaTool', function () {
-    var container, eventContainer;
+    var container,eventContainer;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     function measure() {
         var center = map.getCenter();
 
-        var domPosition = getPagePosition(container);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        // var requestAnimFn = requestAnimFrame;
+        var requestAnimFn = maptalks.Util.requestAnimFrame;
 
-        happen.click(eventContainer, {
-            'clientX': point.x,
-            'clientY': point.y
-        });
+        happen.click(eventContainer,{
+                'clientX':point.x,
+                'clientY':point.y
+                });
         for (var i = 0; i < 10; i++) {
-            happen.mousemove(eventContainer, {
-                'clientX': point.x + i,
-                'clientY': point.y + i
-            });
-        }
-        happen.click(eventContainer, {
-            'clientX': point.x + 10,
-            'clientY': point.y
-        });
-        happen.click(eventContainer, {
-            'clientX': point.x,
-            'clientY': point.y + 10
-        });
-        happen.dblclick(eventContainer, {
-            'clientX': point.x - 1,
-            'clientY': point.y + 5
-        });
+            happen.mousemove(eventContainer,{
+                'clientX':point.x+i,
+                'clientY':point.y+i
+                });
+        };
+        happen.click(eventContainer,{
+                'clientX':point.x+10,
+                'clientY':point.y
+                });
+        happen.click(eventContainer,{
+                'clientX':point.x,
+                'clientY':point.y+10
+                });
+        happen.dblclick(eventContainer,{
+                'clientX':point.x-1,
+                'clientY':point.y+5
+                });
     }
 
-    beforeEach(function () {
+    beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
@@ -55,26 +46,26 @@ describe('#DistanceTool and AreaTool', function () {
 
     });
 
-    afterEach(function () {
-        removeContainer(container);
+    afterEach(function() {
+        removeContainer(container)
     });
-    describe('test distanceTool', function () {
+    describe('test distanceTool', function() {
 
 
-        it('can measure distance', function () {
-            var distanceTool = new DistanceTool({
-                metric: true,
-                imperial: true
+        it('can measure distance', function() {
+            var distanceTool = new maptalks.DistanceTool({
+                metric : true,
+                imperial:true
             }).addTo(map);
             expect(distanceTool.getLastMeasure()).to.be.eql(0);
             measure();
             expect(distanceTool.getLastMeasure()).to.be.above(0);
         });
 
-        it('can get measureLayers', function () {
-            var distanceTool = new DistanceTool({
-                metric: true,
-                imperial: true
+        it('can get measureLayers', function() {
+            var distanceTool = new maptalks.DistanceTool({
+                metric : true,
+                imperial:true
             }).addTo(map);
             measure();
             var measureLayers = distanceTool.getMeasureLayers();
@@ -83,10 +74,10 @@ describe('#DistanceTool and AreaTool', function () {
             expect(measureLayers[0].getGeometries()[0].getLength()).to.be.eql(result);
         });
 
-        it('can clear measure results', function () {
-            var distanceTool = new DistanceTool({
-                metric: true,
-                imperial: true
+        it('can clear measure results', function() {
+            var distanceTool = new maptalks.DistanceTool({
+                metric : true,
+                imperial:true
             }).addTo(map);
             measure();
             distanceTool.clear();
@@ -96,8 +87,8 @@ describe('#DistanceTool and AreaTool', function () {
             expect(result).to.be.eql(0);
         });
 
-        it('enable/disable', function () {
-            var tool = new DistanceTool().addTo(map).disable();
+        it('enable/disable', function() {
+            var tool = new maptalks.DistanceTool().addTo(map).disable();
             tool.disable();
             measure();
             var result = tool.getLastMeasure();
@@ -109,12 +100,12 @@ describe('#DistanceTool and AreaTool', function () {
         });
     });
 
-    describe('test areaTool', function () {
+    describe('test areaTool', function() {
 
-        it('can measure area', function () {
-            var areaTool = new AreaTool({
-                metric: true,
-                imperial: true
+        it('can measure area', function() {
+            var areaTool = new maptalks.AreaTool({
+                metric : true,
+                imperial:true
             });
             areaTool.addTo(map);
             expect(areaTool.getLastMeasure()).to.be.eql(0);
@@ -122,10 +113,10 @@ describe('#DistanceTool and AreaTool', function () {
             expect(areaTool.getLastMeasure()).to.be.above(0);
         });
 
-        it('can get measureLayers', function () {
-            var areaTool = new AreaTool({
-                metric: true,
-                imperial: true
+        it('can get measureLayers', function() {
+            var areaTool = new maptalks.AreaTool({
+                metric : true,
+                imperial:true
             }).addTo(map);
             measure();
             var measureLayers = areaTool.getMeasureLayers();
@@ -134,10 +125,10 @@ describe('#DistanceTool and AreaTool', function () {
             expect(measureLayers[0].getGeometries()[0].getArea()).to.be.eql(result);
         });
 
-        it('can clear measure results', function () {
-            var areaTool = new AreaTool({
-                metric: true,
-                imperial: true
+        it('can clear measure results', function() {
+            var areaTool = new maptalks.AreaTool({
+                metric : true,
+                imperial:true
             }).addTo(map);
             measure();
             areaTool.clear();
@@ -147,8 +138,8 @@ describe('#DistanceTool and AreaTool', function () {
             expect(result).to.be.eql(0);
         });
 
-        it('enable/disable', function () {
-            var tool = new AreaTool().addTo(map).disable();
+        it('enable/disable', function() {
+            var tool = new maptalks.AreaTool().addTo(map).disable();
             measure();
             var result = tool.getLastMeasure();
             expect(result).to.be(0);
@@ -158,5 +149,6 @@ describe('#DistanceTool and AreaTool', function () {
             expect(result).to.be.above(0);
         });
     });
+
 
 });

@@ -1,18 +1,18 @@
 import Control from './Control';
-import AttributionControl from './Control.Attribution';
+import Attribution from './Control.Attribution';
 // import './Control.Nav';
-import OverviewControl from './Control.Overview';
-import PanelControl from './Control.Panel';
-import ScaleControl from './Control.Scale';
-import ToolbarControl from './Control.Toolbar';
-import ZoomControl from './Control.Zoom';
+import Overview from './Control.Overview';
+import Panel from './Control.Panel';
+import Scale from './Control.Scale';
+import Toolbar from './Control.Toolbar';
+import Zoom from './Control.Zoom';
 
 export {
     Control,
-    AttributionControl,
-    OverviewControl,
-    PanelControl,
-    ScaleControl,
-    ToolbarControl,
-    ZoomControl
+    Attribution,
+    Overview,
+    Panel,
+    Scale,
+    Toolbar,
+    Zoom
 };

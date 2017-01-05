@@ -1,4 +1,4 @@
-import { bind, isArray, isFunction } from 'core/util';
+import { isFunction } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import { Animation } from 'utils/Animation';
 import Coordinate from 'geo/Coordinate';
@@ -46,7 +46,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         }
         delete this._animationStarted;
 
-        var player = Animation.animate(stylesToAnimate, options, bind(function (frame) {
+        var player = Animation.animate(stylesToAnimate, options, frame => {
             if (!this._animationStarted && isFocusing) {
                 map.onMoveStart();
             }
@@ -83,7 +83,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             if (step) {
                 step(frame);
             }
-        }, this));
+        });
         this._animPlayer = player;
         return this._animPlayer.play();
     },
@@ -106,8 +106,8 @@ Geometry.include(/** @lends Geometry.prototype */ {
                     stylesToAnimate[p] = [current, v];
                 } else if (p === 'symbol') {
                     var symbolToAnimate;
-                    if (isArray(styles['symbol'])) {
-                        if (!isArray(symbol)) {
+                    if (Array.isArray(styles['symbol'])) {
+                        if (!Array.isArray(symbol)) {
                             throw new Error('geometry\'symbol isn\'t a composite symbol, while the symbol in styles is.');
                         }
                         symbolToAnimate = [];
@@ -126,7 +126,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
                             symbolToAnimate.push(a);
                         }
                     } else {
-                        if (isArray(symbol)) {
+                        if (Array.isArray(symbol)) {
                             throw new Error('geometry\'symbol is a composite symbol, while the symbol in styles isn\'t.');
                         }
                         symbolToAnimate = {};

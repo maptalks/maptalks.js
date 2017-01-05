@@ -1,4 +1,4 @@
-import { internalLayerPrefix } from 'core/Constants';
+import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import { extend, isString, isArray, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Map from './Map';
@@ -89,7 +89,7 @@ Map.include(/** @lends Map.prototype */ {
                 break;
             }
             var layer = layers[i];
-            if (!layer || !layer.getMap() || !layer.isVisible() || (!opts['includeInternals'] && layer.getId().indexOf(internalLayerPrefix) >= 0)) {
+            if (!layer || !layer.getMap() || !layer.isVisible() || (!opts['includeInternals'] && layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0)) {
                 continue;
             }
             var layerHits = layer.identify(point, options);

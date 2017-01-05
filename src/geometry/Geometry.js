@@ -1,3 +1,4 @@
+import { GEOMETRY_COLLECTION_TYPES } from 'core/Constants';
 import Class from 'core/Class';
 import Eventable from 'core/Event';
 import Handlerable from 'core/Handlerable';
@@ -20,7 +21,6 @@ import * as Measurer from 'geo/measurer';
 import Painter from 'renderer/geometry/Painter';
 import CollectionPainter from 'renderer/geometry/CollectionPainter';
 import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
-
 
 const registeredTypes = {};
 
@@ -75,6 +75,43 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
             return null;
         }
         return registeredTypes[name];
+    }
+
+    constructor(options) {
+        var opts = extend({}, options);
+        var symbol = opts['symbol'];
+        var properties = opts['properties'];
+        var id = opts['id'];
+        delete opts['symbol'];
+        delete opts['id'];
+        delete opts['properties'];
+        super(opts);
+        if (symbol) {
+            this.setSymbol(symbol);
+        }
+        if (properties) {
+            this.setProperties(properties);
+        }
+        if (!isNil(id)) {
+            this.setId(id);
+        }
+        this._zIndex = 0;
+    }
+
+    getClassName() {
+        if (this._className === undefined) {
+            const clazz = Object.getPrototypeOf(this).constructor;
+            for (let p in registeredTypes) {
+                if (registeredTypes[p] === clazz) {
+                    this._className = p;
+                    break;
+                }
+            }
+        }
+        if (!this._className) {
+            throw new Error('Found an unregister geometry class!');
+        }
+        return this._className;
     }
 
     /**
@@ -776,17 +813,15 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
     }
 
     //options initializing
-    _initOptions(opts) {
-        if (!opts) {
-            opts = {};
-        }
+    _initOptions(options) {
+        var opts = extend({}, options);
         var symbol = opts['symbol'];
         var properties = opts['properties'];
         var id = opts['id'];
+        delete opts['symbol'];
+        delete opts['id'];
+        delete opts['properties'];
         this.setOptions(opts);
-        delete this.options['symbol'];
-        delete this.options['id'];
-        delete this.options['properties'];
         if (symbol) {
             this.setSymbol(symbol);
         }
@@ -955,7 +990,7 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
 
     _getPainter() {
         if (!this._painter && this.getMap()) {
-            if (this.type === 'GeometryCollection') {
+            if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {
                 this._painter = new CollectionPainter(this);
             } else {
                 this._painter = new Painter(this);

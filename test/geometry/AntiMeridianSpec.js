@@ -1,142 +1,73 @@
-import {
-    commonSetupMap,
-    removeContainer,
-    GeoSymbolTester
-} from '../SpecCommon';
-import Coordinate from 'geo/Coordinate';
-import {
-    LineString,
-    CubicBezierCurve,
-    QuadBezierCurve,
-    Polygon
-} from 'geometry';
-import VectorLayer from 'layer/VectorLayer';
 
-describe('#AntiMeridianSpec', function () {
+describe('#AntiMeridianSpec', function() {
 
     var container;
     var map;
-    var center = new Coordinate([179, 10]);
+    var tile;
+    var center = new maptalks.Coordinate([179,10]);
     var layer;
 
-    beforeEach(function () {
-        var setups = commonSetupMap(center);
+    beforeEach(function() {
+       var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
         map.config('zoomAnimation', false);
         map.setZoom(3);
-        layer = new VectorLayer('id', {
-            'drawImmediate': true
-        });
+        layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
         map.addLayer(layer);
     });
 
-    afterEach(function () {
+    afterEach(function() {
         map.removeLayer(layer);
-        removeContainer(container);
+        removeContainer(container)
     });
 
     function genGeometries() {
         return [
             //a continuous anti-meridian line-string with a hole
-            new LineString(
-                [
-                    [179, 10],
-                    [-170, 10],
-                    [-169, -10],
-                    [179, -10]
-                ], {
-                    antiMeridian: 'continuous',
-                    arrowStyle: 'classic',
-                    arrowPlacement: 'vertex-firstlast'
-                }
+            new maptalks.LineString(
+                [[179,10],[-170,10],[-169, -10],[179, -10]],
+                {antiMeridian : 'continuous', arrowStyle:'classic', arrowPlacement : 'vertex-firstlast'}
             ),
             //a continuous anti-meridian line-string with a hole
-            new LineString(
-                [
-                    [179, 10],
-                    [-170, 10],
-                    [-169, -10],
-                    [179, -10]
-                ], {
-                    antiMeridian: 'split',
-                    arrowStyle: 'classic',
-                    arrowPlacement: 'point'
-                }
+            new maptalks.LineString(
+                [[179,10],[-170,10],[-169, -10],[179, -10]],
+                {antiMeridian : 'split', arrowStyle:'classic', arrowPlacement : 'point'}
             ),
-            new QuadBezierCurve(
-                //线端点坐标数组
-                [
-                    [179, 10],
-                    [-170, 10],
-                    [-169, -10],
-                    [179, -10]
-                ],
-                //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-                {
-                    arrowStyle: 'classic',
-                    arrowPlacement: 'point',
-                    antiMeridian: 'split'
-                }
+            new maptalks.QuadBezierCurve(
+                    //线端点坐标数组
+                    [[179,10],[-170,10],[-169, -10],[179, -10]],
+                    //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
+                    {arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'split'}
             ),
-            new CubicBezierCurve(
-                //线端点坐标数组
-                [
-                    [179, 10],
-                    [-170, 10],
-                    [-169, -10],
-                    [179, -10]
-                ],
-                //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-                {
-                    arrowStyle: 'classic',
-                    arrowPlacement: 'point',
-                    antiMeridian: 'continuous'
-                }
+            new maptalks.CubicBezierCurve(
+                    //线端点坐标数组
+                    [[179,10],[-170,10],[-169, -10],[179, -10]],
+                    //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
+                    {arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'continuous'}
             ),
             //a continuous anti-meridian polygon with a hole
-            new Polygon([
-                [
-                    [179, 10],
-                    [-170, 10],
-                    [-169, -10],
-                    [179, -10]
+            new maptalks.Polygon([
+                    [[179,10],[-170,10],[-169, -10],[179, -10]],
+                    [[180,5],[-175,5],[-171, -5],[180, -5]]
                 ],
-                [
-                    [180, 5],
-                    [-175, 5],
-                    [-171, -5],
-                    [180, -5]
-                ]
-            ], {
-                antiMeridian: 'continuous'
-            }),
+                {antiMeridian : 'continuous'}
+            ),
             //a split anti-meridian polygon with a hole
-            new Polygon([
-                [
-                    [179, 10],
-                    [-170, 10],
-                    [-169, -10],
-                    [179, -10]
+            new maptalks.Polygon([
+                    [[179,10],[-170,10],[-169, -10],[179, -10]],
+                    [[180,5],[-175,5],[-171, -5],[180, -5]]
                 ],
-                [
-                    [180, 5],
-                    [-175, 5],
-                    [-171, -5],
-                    [180, -5]
-                ]
-            ], {
-                antiMeridian: 'split'
-            })
+                {antiMeridian : 'split'}
+            )
         ];
     }
     var geometries = genGeometries();
-    const t = (geo) => {
-        it('different symbols', function (done) {
-            GeoSymbolTester.testGeoSymbols(geo, map, done);
-        });
-    };
     for (var i = 0; i < geometries.length; i++) {
-        t(geometries[i]);
+        (function(geo) {
+            it('different symbols', function(done) {
+                GeoSymbolTester.testGeoSymbols(geo, map, done);
+            });
+        })(geometries[i]);
     }
 });

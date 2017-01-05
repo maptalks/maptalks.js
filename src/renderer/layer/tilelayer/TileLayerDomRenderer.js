@@ -240,6 +240,9 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _tileOnError(done, tile) {
+        if (!this.layer) {
+            return;
+        }
         var errorUrl = this.layer.options['errorTileUrl'];
         if (errorUrl) {
             tile['el'].src = errorUrl;

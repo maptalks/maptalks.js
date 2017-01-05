@@ -5,7 +5,7 @@ import Promise from 'utils/Promise';
 import Canvas2D from 'utils/Canvas';
 import Point from 'geo/Point';
 
-export class RenderResources {
+export class ResourceCache {
     constructor() {
         this.resources = {};
         this._errors = {};
@@ -78,6 +78,11 @@ export class RenderResources {
  */
 export default class CanvasRenderer extends Class {
 
+    constructor(layer) {
+        super();
+        this.layer = layer;
+    }
+
     isCanvasRender() {
         return true;
     }
@@ -92,7 +97,7 @@ export default class CanvasRenderer extends Class {
             return;
         }
         if (!this.resources) {
-            this.resources = new RenderResources();
+            this.resources = new ResourceCache();
         }
         if (this.checkResources && isCheckRes) {
             var me = this,

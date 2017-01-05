@@ -41,6 +41,11 @@ var options = {
  */
 export default class Layer extends Eventable(Renderable(Class)) {
 
+    /**
+     * Register layer for JSON serialization and assign a JSON type.
+     * @param  {[type]} name [description]
+     * @return {[type]}      [description]
+     */
     static registerAs(name) {
         if (!name) {
             return;
@@ -55,10 +60,9 @@ export default class Layer extends Eventable(Renderable(Class)) {
         return registeredTypes[name];
     }
 
-    constructor(id, opts) {
-        super();
+    constructor(id, options) {
+        super(options);
         this.setId(id);
-        this.setOptions(opts);
     }
 
     /**

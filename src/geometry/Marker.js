@@ -44,12 +44,11 @@ const options = {
 export default class Marker extends CenterMixin(Geometry) {
 
     constructor(coordinates, opts) {
-        super();
+        super(opts);
         this.type = 'Point';
         if (coordinates) {
             this.setCoordinates(coordinates);
         }
-        this._initOptions(opts);
     }
 
     _isVectorMarker() {

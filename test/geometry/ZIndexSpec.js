@@ -1,57 +1,47 @@
-import {
-    commonSetupMap,
-    removeContainer,
-} from '../SpecCommon';
-import {
-    Marker
-} from 'geometry';
-import Coordinate from 'geo/Coordinate';
-import VectorLayer from 'layer/VectorLayer';
-
-describe('#Geometry.zindex', function () {
+describe('#Geometry.zindex', function() {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
-    beforeEach(function () {
+    beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new VectorLayer('canvas');
+        layer = new maptalks.VectorLayer('canvas');
         map.addLayer(layer);
     });
 
-    afterEach(function () {
+    afterEach(function() {
         map.removeLayer(layer);
-        removeContainer(container);
+        removeContainer(container)
     });
-    var red, green, blue;
-
+    var red, green, blue
     function getMarkers() {
-        red = new Marker(map.getCenter(), {
-            symbol: {
-                'markerType': 'ellipse',
-                'markerWidth': 10,
-                'markerHeight': 10,
-                'markerFill': '#f00'
+        red = new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#f00'
             }
         });
-        green = new Marker(map.getCenter(), {
-            symbol: {
-                'markerType': 'ellipse',
-                'markerWidth': 10,
-                'markerHeight': 10,
-                'markerFill': '#0f0'
+        green = new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#0f0'
             }
         });
-        blue = new Marker(map.getCenter(), {
-            symbol: {
-                'markerType': 'ellipse',
-                'markerWidth': 10,
-                'markerHeight': 10,
-                'markerFill': '#00f'
+        blue = new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#00f'
             }
         });
         return [red, green, blue];

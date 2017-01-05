@@ -1,5 +1,5 @@
-import { internalLayerPrefix } from 'core/Constants';
-import { isArrayHasData, setOptions } from 'core/util';
+import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
+import { isArrayHasData } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import { getExternalResources } from 'core/util/resource';
 import { stopPropagation } from 'core/util/dom';
@@ -73,8 +73,7 @@ export default class DrawTool extends MapTool {
     }
 
     constructor(options) {
-        super();
-        setOptions(this, options);
+        super(options);
         this._checkMode();
     }
 
@@ -464,7 +463,7 @@ export default class DrawTool extends MapTool {
     }
 
     _getDrawLayer() {
-        var drawLayerId = internalLayerPrefix + 'drawtool';
+        var drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
         var drawToolLayer = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
             drawToolLayer = new VectorLayer(drawLayerId, {
@@ -510,7 +509,7 @@ DrawTool.registerMode('ellipse', {
     'action': 'drag',
     'geometryClass': Ellipse,
     'create': function (coordinate) {
-        return Ellipse(coordinate, 0, 0);
+        return new Ellipse(coordinate, 0, 0);
     },
     'update': function (coordinate, geometry) {
         var map = geometry.getMap();
@@ -535,7 +534,7 @@ DrawTool.registerMode('rectangle', {
     'action': 'drag',
     'geometryClass': Rectangle,
     'create': function (coordinate) {
-        var rect = Rectangle(coordinate, 0, 0);
+        var rect = new Rectangle(coordinate, 0, 0);
         rect._firstClick = coordinate;
         return rect;
     },

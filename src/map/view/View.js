@@ -4,6 +4,7 @@ import Extent from 'geo/Extent';
 import * as projections from 'geo/projection';
 import Transformation from 'geo/transformation/Transformation';
 import * as Measurer from 'geo/measurer';
+import loadArcgis from './View.Arc';
 
 const DefaultView = {
     'EPSG:3857': {
@@ -186,3 +187,5 @@ export default class View {
     }
 
 }
+
+View.loadArcgis = loadArcgis;

@@ -14,20 +14,22 @@ import CanvasSymbolizer from './CanvasSymbolizer';
  * @extends {CanvasSymbolizer}
  */
 export default class PointSymbolizer extends CanvasSymbolizer {
+
+    constructor(symbol, geometry, painter) {
+        super();
+        this.symbol = symbol;
+        this.geometry = geometry;
+        this.painter = painter;
+    }
+
     get2DExtent(resources) {
-        var map = this.getMap(),
-            maxZoom = map.getMaxZoom();
-        if (!this._2dExtent) {
-            this._2dExtent = new PointExtent();
-            var renderPoints = this._getRenderPoints()[0];
-            for (var i = renderPoints.length - 1; i >= 0; i--) {
-                this._2dExtent._combine(renderPoints[i]);
-            }
-        }
-        var extent = new PointExtent(map._pointToPoint(this._2dExtent.getMin(), maxZoom), map._pointToPoint(this._2dExtent.getMax(), maxZoom));
-        var m = this._isFunctionStyle ? this.getMarkerExtent(resources) : this._markerExtent;
-        if (!m) {
-            m = this._markerExtent = this.getMarkerExtent(resources);
+        const map = this.getMap();
+        const maxZoom = map.getMaxZoom();
+        const extent = new PointExtent(),
+            m = this.getMarkerExtent(resources);
+        const renderPoints = this._getRenderPoints()[0];
+        for (let i = renderPoints.length - 1; i >= 0; i--) {
+            extent._combine(map._pointToPoint(renderPoints[i], maxZoom));
         }
         extent['xmin'] += m['xmin'];
         extent['ymin'] += m['ymin'];

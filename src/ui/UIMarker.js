@@ -1,4 +1,4 @@
-import { bind, isString, setOptions } from 'core/util';
+import { bind, isString } from 'core/util';
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Handler from 'core/Handler';
@@ -191,9 +191,8 @@ const domEvents =
 export default class UIMarker extends Handlerable(UIComponent) {
 
     constructor(coordinate, options) {
-        super();
+        super(options);
         this._markerCoord = new Coordinate(coordinate);
-        setOptions(this, options);
     }
 
     // TODO: obtain class in super
@@ -350,6 +349,8 @@ export default class UIMarker extends Handlerable(UIComponent) {
 
 UIMarker.mergeOptions(options);
 
+const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
+
 /**
  * Drag handler for UIMarker.
  * @class
@@ -361,16 +362,15 @@ class UIMarkerDragHandler extends Handler {
 
     constructor(target) {
         super(target);
-        this.START = Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'];
     }
 
     addHooks() {
-        this.target.on(this.START.join(' '), this._startDrag, this);
+        this.target.on(EVENTS, this._startDrag, this);
 
     }
 
     removeHooks() {
-        this.target.off(this.START.join(' '), this._startDrag, this);
+        this.target.off(EVENTS, this._startDrag, this);
     }
 
     _startDrag(param) {

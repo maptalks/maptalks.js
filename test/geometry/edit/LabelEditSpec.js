@@ -1,28 +1,10 @@
-import {
-    commonSetupMap,
-    removeContainer
-} from '../../SpecCommon';
-import {
-    stringLength
-} from 'core/util';
-import {
-    on
-} from 'core/util/dom';
-import Coordinate from 'geo/Coordinate';
-import {
-    Label
-} from 'geometry';
-import VectorLayer from 'layer/VectorLayer';
-import { TextMarkerSymbolizer } from 'renderer/geometry/symbolizers';
-
 describe('LabelEdit', function () {
-    var container;
+    var container, eventContainer;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-
     function getLabel() {
-        var label = new Label('I am a Text', map.getCenter()).addTo(layer);
+        var label = new maptalks.Label('I am a Text', map.getCenter()).addTo(layer);
         return label;
     }
 
@@ -31,9 +13,8 @@ describe('LabelEdit', function () {
         container = setups.container;
         map = setups.map;
         map.config('panAnimation', false);
-        layer = new VectorLayer('id', {
-            'drawImmediate': true
-        });
+        eventContainer = map._panels.canvasContainer;
+        layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
         map.addLayer(layer);
     });
 
@@ -42,20 +23,20 @@ describe('LabelEdit', function () {
     });
 
     describe('edit label', function () {
-        it('edit content', function () {
+        it('edit content',function () {
             var label = getLabel();
             label.on('edittextstart', startEdit);
             label.on('edittextend', endEdit);
             label.startEditText();
 
-            function startEdit() {
+            function startEdit(param) {
                 expect(label.isEditingText()).to.be.ok();
                 var dom = label.getTextEditor().getDOM();
-                on(dom, 'keyup', function (ev) {
+                maptalks.DomUtil.on(dom, 'keyup', function (ev){
                     var oEvent = ev || event;
                     var char = String.fromCharCode(oEvent.keyCode);
-                    if (oEvent.shiftKey) {
-                        if (char === '1') {
+                    if(oEvent.shiftKey) {
+                        if(char == '1') {
                             char = '!';
                         }
                     }
@@ -68,28 +49,27 @@ describe('LabelEdit', function () {
                 });
                 expect(label.isEditingText()).to.not.be.ok();
             }
-
-            function endEdit() {
+            function endEdit(param) {
                 expect(label.getContent()).to.eql('I am a Text!');
             }
         });
 
-        it('edit content with “Enter” key', function () {
+        it('edit content with “Enter” key',function () {
             var label = getLabel();
+            var size = label.getSize();
             label.on('edittextstart', startEdit);
             label.on('edittextend', endEdit);
             label.startEditText();
-
-            function startEdit() {
+            function startEdit(param) {
                 var dom = label.getTextEditor().getDOM();
-                on(dom, 'keyup', function (ev) {
+                maptalks.DomUtil.on(dom, 'keyup', function (ev){
                     var oEvent = ev || event;
-                    if (oEvent.keyCode === 13) {
+                    if(oEvent.keyCode === 13) {
                         dom.innerText += '\n';
                     }
                     var char = String.fromCharCode(oEvent.keyCode);
-                    if (oEvent.shiftKey) {
-                        if (char === '1') {
+                    if(oEvent.shiftKey) {
+                        if(char == '1') {
                             char = '!';
                             dom.innerText += char;
                             label.endEditText();
@@ -104,12 +84,12 @@ describe('LabelEdit', function () {
                     keyCode: 49
                 });
             }
-
-            function endEdit() {
+            function endEdit(param) {
                 var symbol = label._getInternalSymbol(),
-                    font = TextMarkerSymbolizer.getFont(symbol),
+                    font = maptalks.Util.getFont(symbol);
+                    textSize = symbol['textSize'] || 12,
                     spacing = symbol['textLineSpacing'] || 0;
-                var h = stringLength('test', font).height;
+                var h = maptalks.Util.stringLength('test', font).height;
                 var expected = h * 2 + spacing;
                 expect(label.getSize()['height'] >= expected).to.be.ok();
             }

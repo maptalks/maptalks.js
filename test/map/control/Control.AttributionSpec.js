@@ -1,15 +1,9 @@
-import {
-    removeContainer,
-} from '../../SpecCommon';
-import Coordinate from 'geo/Coordinate';
-import * as controls from 'control';
-import Map from 'map';
-
-describe('Control.Attribution', function () {
+describe("Control.Attribution", function() {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -20,15 +14,20 @@ describe('Control.Attribution', function () {
             zoom: 17,
             center: center
         };
-        map = new Map(container, option);
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
+
+            urlTemplate:"/resources/tile.png",
+            subdomains: [1, 2, 3]
+        });
     });
 
     afterEach(function () {
-        removeContainer(container);
+        removeContainer(container)
     });
 
-    it('contains specified content', function () {
-        var control = new controls.Attribution({
+    it("contains specified content", function() {
+        var control = new maptalks.control.Attribution({
             content: 'content'
         });
         map.addControl(control);
@@ -36,8 +35,8 @@ describe('Control.Attribution', function () {
         expect(control._attributionContainer.innerHTML).to.eql('content');
     });
 
-    it('setContent correctly', function () {
-        var control = new controls.Attribution({
+    it("setContent correctly", function() {
+        var control = new maptalks.control.Attribution({
             content: 'content'
         });
         map.addControl(control);

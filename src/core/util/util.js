@@ -8,11 +8,6 @@
 import { isNode } from './env';
 import { create, isArray, isString, isNil, hasOwn } from './common';
 
-import { readFile } from 'fs';
-import { parse } from 'url';
-import { request as httpsRequest } from 'https';
-import { request as httpRequest } from 'http';
-
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
 (function () {
@@ -111,11 +106,11 @@ if (isNode) {
         // http
         var request;
         if (url.indexOf('https://') === 0) {
-            request = httpsRequest;
+            request = require('https').request;
         } else {
-            request = httpRequest;
+            request = require('http').request;
         }
-        var urlObj = parse(url);
+        var urlObj = require('url').parse(url);
         //mimic the browser to prevent server blocking.
         urlObj.headers = {
             'Accept': 'image/*,*/*;q=0.8',
@@ -139,10 +134,9 @@ if (isNode) {
 
     _loadLocalImage = function (img, url, onComplete) {
         // local file
-        readFile(url, onComplete);
+        require('fs').readFile(url, onComplete);
     };
 }
-
 /**
  * Load a image, can be a remote one or a local file. <br>
  * If in node, a SVG image will be converted to a png file by [svg2img]{@link https://github.com/FuZhenn/node-svg2img}<br>

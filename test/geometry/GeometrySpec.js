@@ -1,63 +1,49 @@
-import {
-    commonSetupMap,
-    removeContainer,
-    genAllTypeGeometries
-} from '../SpecCommon';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
-import Size from 'geo/Size';
-import {
-    Marker,
-    Polygon,
-    MultiPolygon,
-    Geometry
-} from 'geometry';
-import VectorLayer from 'layer/VectorLayer';
-import * as measurers from 'geo/measurer';
-
-describe('#Geometry', function () {
+describe('#Geometry', function() {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var context = {
-        map: map,
-        layer: layer
+        map:map,
+        layer:layer
     };
+    var canvasContainer;
 
-    beforeEach(function () {
+    beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new VectorLayer('canvas');
+        layer = new maptalks.VectorLayer('canvas');
         map.addLayer(layer);
         context.map = map;
         context.layer = layer;
+        canvasContainer = map._panels.front;
     });
 
-    afterEach(function () {
+    afterEach(function() {
         map.removeLayer(layer);
-        removeContainer(container);
+        removeContainer(container)
     });
 
-    it('constructor options', function () {
-        it('some common options', function () {
+    it('constructor options', function() {
+        it ('some common options', function() {
             var symbol = {
-                markerFile: 'file',
-                // markerWidth: 10,
-                markerWidth: 15
+                markerFile : 'file',
+                markerWidth : 10,
+                markerWidth : 15
             };
             var properties = {
-                foo1: 1,
-                foo2: 'test',
-                foo3: true
+                foo1 : 1,
+                foo2 : 'test',
+                foo3 : true
             };
             var id = '1';
-            var marker = new Marker([0, 0], {
-                id: id,
-                symbol: symbol,
-                properties: properties
+            var marker = new maptalks.Marker([0, 0], {
+                id : id,
+                symbol : symbol,
+                properties : properties
             });
 
             expect(marker.getProperties()).to.be.eql(properties);
@@ -69,15 +55,15 @@ describe('#Geometry', function () {
     // 测试所有类型Geometry的公共方法
     var geometries = genAllTypeGeometries();
 
-    for (var i = 0, len = geometries.length; i < len; i++) {
-        registerGeometryCommonTest.call(this, geometries[i], context);
+    for (var i=0, len = geometries.length;i<len;i++){
+        registerGeometryCommonTest.call(this,geometries[i],context);
     }
 
 });
 //测试Geometry的公共方法
-function registerGeometryCommonTest(geometry, _context) {
+function registerGeometryCommonTest(geometry,_context) {
     function setupGeometry() {
-        // var layer = new VectorLayer('common_test_layer');
+        // var layer = new maptalks.VectorLayer('common_test_layer');
         if (geometry.getLayer()) {
             geometry.remove();
         }
@@ -91,8 +77,8 @@ function registerGeometryCommonTest(geometry, _context) {
     }
 
     var type = geometry.getType();
-    context(type + ':getter and setters.', function () {
-        it('id', function () {
+    context(type+':getter and setters.',function() {
+        it('id', function() {
             geometry.setId('id');
             var id = geometry.getId();
             expect(id).to.be('id');
@@ -100,9 +86,9 @@ function registerGeometryCommonTest(geometry, _context) {
             expect(geometry.getId()).to.not.be.ok();
         });
 
-        it('Layer', function () {
+        it('Layer',function() {
             expect(geometry.getLayer()).to.not.be.ok();
-            var layer = new VectorLayer('id');
+            var layer = new maptalks.VectorLayer('id');
             layer.addGeometry(geometry);
             expect(geometry.getLayer()).to.be.ok();
             //delete
@@ -110,7 +96,7 @@ function registerGeometryCommonTest(geometry, _context) {
             expect(geometry.getLayer()).to.not.be.ok();
         });
 
-        it('Map', function () {
+        it('Map',function() {
             setupGeometry();
 
             expect(geometry.getMap()).to.be.ok();
@@ -120,96 +106,92 @@ function registerGeometryCommonTest(geometry, _context) {
             expect(geometry.getMap()).to.not.be.ok();
         });
 
-        it('Type', function () {
+        it('Type',function() {
             var type = geometry.getType();
             expect(type).to.not.be.empty();
         });
 
-        it('flash', function (done) {
-            geometry.flash(100, 4, function () {
+        it('flash',function(done) {
+           geometry.flash(100, 4, function() {
                 done();
-            });
+           });
         });
 
-        it('Properties', function () {
-            var oldProps = geometry.getProperties();
+        it('Properties',function() {
+            var old_props = geometry.getProperties();
 
-            var propsTest = {
-                'foo_num': 1,
-                'foo_str': 'str',
-                'foo_bool': false
-            };
-            geometry.setProperties(propsTest);
+            var props_test = {'foo_num':1, 'foo_str':'str', 'foo_bool':false};
+            geometry.setProperties(props_test);
 
             var props = geometry.getProperties();
-            expect(props).to.eql(propsTest);
+            expect(props).to.eql(props_test);
 
-            geometry.setProperties(oldProps);
-            expect(geometry.getProperties()).to.not.eql(propsTest);
+            geometry.setProperties(old_props);
+            expect(geometry.getProperties()).to.not.eql(props_test);
         });
 
     });
 
-    context(type + ':can be measured.', function () {
-        it('it has geodesic length', function () {
+    context(type+':can be measured.',function() {
+        it('it has geodesic length',function() {
             var length = geometry.getLength();
-            if (geometry instanceof Marker) {
-                expect(length === 0).to.be.ok();
+            if (geometry instanceof maptalks.Marker) {
+                expect(length===0).to.be.ok();
             } else {
-                expect(length > 0).to.be.ok();
+                expect(length>0).to.be.ok();
             }
 
         });
 
-        it('it has geodesic area', function () {
-            var types = [Polygon, MultiPolygon];
+        it('it has geodesic area',function() {
+            var types = [maptalks.Polygon, maptalks.MultiPolygon];
             var area = geometry.getArea();
             var hit = false;
-            for (var i = 0, len = types.length; i < len; i++) {
+            for (var i=0, len=types.length;i<len;i++) {
                 if (geometry instanceof types[i]) {
                     hit = true;
                     break;
                 }
             }
             if (!hit) {
-                expect(area === 0).to.be.ok();
+                expect(area===0).to.be.ok();
             } else {
-                expect(area > 0).to.be.ok();
+                expect(area>0).to.be.ok();
             }
 
         });
 
-        it('it has extent', function () {
+        it('it has extent',function() {
             setupGeometry();
 
             var extent = geometry.getExtent();
-            expect(extent).to.be.a(Extent);
+            expect(extent).to.be.a(maptalks.Extent);
             expect(extent).to.not.be.empty();
 
             teardownGeometry();
         });
 
-        it('it has size', function () {
+        it('it has size',function() {
             setupGeometry();
 
             var size = geometry.getSize();
-            expect(size).to.be.a(Size);
+            expect(size).to.be.a(maptalks.Size);
             expect(size.width).to.be.above(0);
             expect(size.height).to.be.above(0);
 
             teardownGeometry();
         });
 
-        it('it has center', function () {
+        it('it has center',function() {
             var center = geometry.getCenter();
-            expect(center).to.be.a(Coordinate);
+            expect(center).to.be.a(maptalks.Coordinate);
             expect(center.x).to.be.a('number');
             expect(center.y).to.be.a('number');
 
             setupGeometry();
 
             center = geometry.getCenter();
-            expect(center).to.be.a(Coordinate);
+            expect(center).to.be.a(maptalks.Coordinate);
             expect(center.x).to.be.a('number');
             expect(center.y).to.be.a('number');
 
@@ -217,8 +199,8 @@ function registerGeometryCommonTest(geometry, _context) {
         });
     });
 
-    context(type + ':can show and hide.', function () {
-        it('show and hide', function () {
+    context(type+':can show and hide.',function() {
+        it('show and hide',function() {
             geometry.show();
             expect(geometry.isVisible()).to.be.ok();
             geometry.hide();
@@ -238,8 +220,8 @@ function registerGeometryCommonTest(geometry, _context) {
         });
     });
 
-    context(type + ':copy', function () {
-        it('copy', function () {
+    context(type+':copy',function() {
+        it ('copy',function() {
             var json = geometry.toJSON();
 
             var cloned = geometry.copy();
@@ -259,23 +241,23 @@ function registerGeometryCommonTest(geometry, _context) {
     //                 "name" : "gcj02"
     //             }
     //         };
-    //         var parsed = GeoJSON.toGeometry(json);
+    //         var parsed = maptalks.GeoJSON.toGeometry(json);
 
     //         expect(parsed.getCRS()).to.eql(json.crs);
     //     });
 
     //     it ('has crs',function() {
-    //         var coordinateType = CRS.GCJ02;
+    //         var coordinateType = maptalks.CRS.GCJ02;
     //         var json = geometry.setCRS(coordinateType).toGeoJSON();
     //         expect(json['crs']).to.be.ok();
     //         expect(json['crs']).to.eql({"type":"cnCoordinateType","properties":{"name":"gcj02"}});
     //     });
     // });
 
-    context(type + ':remove', function () {
-        it('remove from layer', function () {
+    context(type+':remove',function() {
+        it ('remove from layer',function() {
             //layer not on map
-            var layer = new VectorLayer('svg');
+            var layer = new maptalks.VectorLayer('svg');
             layer.addGeometry(geometry);
             expect(geometry.getLayer()).to.be.ok();
             expect(geometry.getMap()).to.not.be.ok();
@@ -289,9 +271,7 @@ function registerGeometryCommonTest(geometry, _context) {
             geometry.remove();
             expect(geometry.getLayer()).to.not.be.ok();
 
-            var canvasLayer = new VectorLayer('event_test_canvas', {
-                'render': 'canvas'
-            });
+            var canvasLayer = new maptalks.VectorLayer('event_test_canvas',{'render':'canvas'});
             canvasLayer.addGeometry(geometry);
             _context.map.addLayer(canvasLayer);
 
@@ -304,17 +284,15 @@ function registerGeometryCommonTest(geometry, _context) {
         });
     });
 
-    context(type + ':some internal methods should be tested.', function () {
-        it('painter', function () {
+    context(type+':some internal methods should be tested.',function() {
+        it('painter',function() {
             setupGeometry();
 
             var painter = geometry._getPainter();
             expect(painter).to.be.ok();
             geometry.remove();
 
-            var canvasLayer = new VectorLayer('event_test_canvas', {
-                'render': 'canvas'
-            });
+            var canvasLayer = new maptalks.VectorLayer('event_test_canvas',{'render':'canvas'});
             canvasLayer.addGeometry(geometry);
             _context.map.addLayer(canvasLayer);
 
@@ -324,64 +302,65 @@ function registerGeometryCommonTest(geometry, _context) {
             teardownGeometry();
         });
 
-        it('getExternalResources', function () {
+        it('getExternalResources',function() {
+            var oldSymbol = geometry.getSymbol();
+
             var type = geometry.getType();
-            var symbol, resource;
-            if (type === Geometry.TYPE_POINT) {
-                symbol = {
-                    'markerFile': 'http://foo.com/foo.png'
+            if (type === maptalks.Geometry.TYPE_POINT) {
+                var symbol = {
+                    'markerFile':'http://foo.com/foo.png'
                 };
                 geometry.setSymbol(symbol);
-                resource = geometry._getExternalResources();
+                var resource = geometry._getExternalResources();
                 expect(resource).to.have.length(1);
                 expect(resource[0][0]).to.be(symbol['markerFile']);
             } else {
-                symbol = {
-                    'polygonPatternFile': 'url(\'http://foo.com/foo.png\')',
-                    'linePatternFile': 'url(\'http://foo.com/foo2.png\')',
+                var symbol = {
+                    'polygonPatternFile':'url(\'http://foo.com/foo.png\')',
+                    'linePatternFile':'url(\'http://foo.com/foo2.png\')',
                 };
                 geometry.setSymbol(symbol);
-                resource = geometry._getExternalResources();
+                var resource = geometry._getExternalResources();
                 expect(resource).to.have.length(2);
                 expect(resource[0][0]).to.be('http://foo.com/foo.png');
                 expect(resource[1][0]).to.be('http://foo.com/foo2.png');
             }
         });
 
-        it('getProjection', function () {
+        it('getProjection',function() {
             var projection = geometry._getProjection();
             expect(projection).not.to.be.ok();
 
             setupGeometry();
 
-            projection = geometry._getProjection();
+            var projection = geometry._getProjection();
             expect(projection.code).to.be(_context.map.getProjection().code);
 
             teardownGeometry();
         });
 
-        it('getMeasurer', function () {
+        it('getMeasurer',function() {
             var measurer = geometry._getMeasurer();
-            expect(measurer).to.be(measurers.WGS84Sphere);
+            expect(measurer).to.be(maptalks.measurer.WGS84Sphere);
 
             geometry.config('measure', 'identity');
 
             measurer = geometry._getMeasurer();
-            expect(measurer).to.be(measurers.Identity);
+            expect(measurer).to.be(maptalks.measurer.Identity);
 
             geometry.config('measure', 'baidu');
 
             measurer = geometry._getMeasurer();
-            expect(measurer).to.be(measurers.BaiduSphere);
+            expect(measurer).to.be(maptalks.measurer.BaiduSphere);
         });
     });
     var spy;
-    context(type + ':map events listeners', function () {
-        it('removeZoomCache', function () {
+    context(type+':map events listeners',function() {
+        it ('removeZoomCache',function() {
             var map = _context.map;
-            map.config('zoomAnimation', false);
+            map.config('zoomAnimation',false);
             setupGeometry();
-            spy = sinon.spy(geometry, '_removeZoomCache');
+            spy = sinon.spy(geometry,'_removeZoomCache');
             map.zoomOut();
             expect(spy.called).to.be.ok();
         });

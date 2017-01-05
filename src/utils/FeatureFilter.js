@@ -5,8 +5,6 @@
     www.mapbox.com
     License: MIT, header required.
 */
-import { indexOfArray, mapArray } from 'core/util';
-
 var types = ['Unknown', 'Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'];
 
 /**
@@ -49,20 +47,20 @@ function compilePropertyReference(property) {
 
 function compileComparisonOp(property, value, op, checkType) {
     var left = compilePropertyReference(property);
-    var right = property === '$type' ? indexOfArray(value, types) : JSON.stringify(value);
+    var right = property === '$type' ? types.indexOf(value) : JSON.stringify(value);
     return (checkType ? 'typeof ' + left + '=== typeof ' + right + '&&' : '') + left + op + right;
 }
 
 function compileLogicalOp(expressions, op) {
-    return mapArray(expressions, compile).join(op);
+    return expressions.map(compile).join(op);
 }
 
 function compileInOp(property, values) {
-    if (property === '$type') values = mapArray(values, function (value) { return indexOfArray(value, types); });
+    if (property === '$type') values = values.map(function (value) { return types.indexOf(value); });
     var left = JSON.stringify(values.sort(compare));
     var right = compilePropertyReference(property);
 
-    if (values.length <= 200) return 'indexOfArray(' + right + ', ' + left + ') !== -1';
+    if (values.length <= 200) return left + '.indexOf(' + right + ') !== -1';
     return 'function(v, a, i, j) {' +
         'while (i <= j) { var m = (i + j) >> 1;' +
         '    if (a[m] === v) return true; if (a[m] > v) j = m - 1; else i = m + 1;' +
@@ -86,7 +84,43 @@ function compare(a, b) {
 export function getFilterFeature(geometry) {
     var json = geometry._toJSON(),
         g = json['feature'];
-    g['type'] = indexOfArray(g['geometry']['type'], types);
+    g['type'] = types.indexOf(g['geometry']['type']);
     g['subType'] = json['subType'];
     return g;
+}
+
+/**
+ * Compile layer's style, styles to symbolize layer's geometries, e.g.<br>
+ * <pre>
+ * [
+ *   {
+ *     'filter' : ['==', 'foo', 'val'],
+ *     'symbol' : {'markerFile':'foo.png'}
+ *   }
+ * ]
+ * </pre>
+ * @param  {Object|Object[]} styles - style to compile
+ * @return {Object[]}       compiled styles
+ */
+export function compileStyle(styles) {
+    if (!Array.isArray(styles)) {
+        return compileStyle([styles]);
+    }
+    var compiled = [];
+    for (var i = 0; i < styles.length; i++) {
+        if (styles[i]['filter'] === true) {
+            compiled.push({
+                filter: function () {
+                    return true;
+                },
+                symbol: styles[i].symbol
+            });
+        } else {
+            compiled.push({
+                filter: createFilter(styles[i]['filter']),
+                symbol: styles[i].symbol
+            });
+        }
+    }
+    return compiled;
 }

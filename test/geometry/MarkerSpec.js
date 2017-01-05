@@ -1,68 +1,56 @@
-import {
-    commonSetupMap,
-    removeContainer,
-    GeoSymbolTester,
-    GeoEventsTester
-} from '../SpecCommon';
-import {
-    Marker
-} from 'geometry';
-import Coordinate from 'geo/Coordinate';
-import VectorLayer from 'layer/VectorLayer';
-
-describe('#Marker', function () {
+describe('#Marker', function() {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var canvasContainer;
     var layer;
 
-    beforeEach(function () {
+    beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.front;
-        layer = new VectorLayer('v').addTo(map);
+        layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
-    afterEach(function () {
+    afterEach(function() {
         map.removeLayer('v');
         layer = null;
-        removeContainer(container);
+        removeContainer(container)
     });
 
-    it('setCoordinates', function () {
-        var marker = new Marker([0, 0]);
+    it('setCoordinates', function() {
+        var marker = new maptalks.Marker([0, 0]);
         marker.setCoordinates([1, 1]);
         expect(marker.getCoordinates().toArray()).to.be.eql([1, 1]);
     });
 
-    it('getCenter', function () {
-        var marker = new Marker({
-            x: 0,
-            y: 0
-        });
+    it('getCenter', function() {
+        var marker = new maptalks.Marker({x: 0, y: 0});
         expect(marker.getCenter().toArray()).to.be.eql([0, 0]);
     });
 
-    it('getExtent', function () {
-        var marker = new Marker({
-            x: 0,
-            y: 0
-        });
+    it('getExtent', function() {
+        var marker = new maptalks.Marker({x: 0, y: 0});
 
-        expect(marker.getExtent().toJSON()).to.be.eql({
-            xmin: 0,
-            xmax: 0,
-            ymin: 0,
-            ymax: 0
-        });
+        expect(marker.getExtent().toJSON()).to.be.eql({xmin : 0, xmax : 0, ymin : 0, ymax : 0});
 
     });
 
-    it('getSize', function () {
-        var marker = new Marker(map.getCenter());
+    it('get2dExtent', function () {
+        var marker = new maptalks.Marker({x: 0, y: 0});
+        layer.addGeometry(marker);
+        var extent = marker._getPainter().get2DExtent();
+        expect(extent).to.be.ok();
+        marker.setCoordinates(map.getCenter());
+        var extent2 = marker._getPainter().get2DExtent();
+        expect(extent).not.to.eql(extent2);
+    });
+
+    it('getSize', function() {
+        var marker = new maptalks.Marker(map.getCenter());
         layer.addGeometry(marker);
         var size = marker.getSize();
 
@@ -70,43 +58,35 @@ describe('#Marker', function () {
         expect(size.height).to.be.above(0);
     });
 
-    it('show/hide/isVisible', function () {
-        var marker = new Marker({
-            x: 0,
-            y: 0
-        });
+    it('show/hide/isVisible', function() {
+        var marker = new maptalks.Marker({x: 0, y: 0});
         layer.addGeometry(marker);
         marker.show();
         marker.hide();
         expect(marker.isVisible()).not.to.be.ok();
     });
 
-    it('remove', function () {
-        var marker = new Marker({
-            x: 0,
-            y: 0
-        });
+    it('remove', function() {
+        var marker = new maptalks.Marker({x: 0, y: 0});
         layer.addGeometry(marker);
         marker.remove();
 
         expect(marker.getLayer()).to.be(null);
     });
 
-    describe('symbol', function () {
+    describe("symbol", function() {
 
-        beforeEach(function () {
-            layer = new VectorLayer('id', {
-                'drawImmediate': true
-            });
+        beforeEach(function() {
+            layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
             map.addLayer(layer);
         });
 
-        afterEach(function () {
+        afterEach(function() {
             map.removeLayer(layer);
         });
 
-        it('can be icon', function () {
-            var marker = new Marker(center, {
+        it("can be icon", function() {
+            var marker = new maptalks.Marker(center, {
                 symbol: {
                     markerFile: 'images/control/2.png',
                     markerWidth: 30,
@@ -119,8 +99,8 @@ describe('#Marker', function () {
             }).to.not.throwException();
         });
 
-        it('can be text', function () {
-            var marker = new Marker(center, {
+        it("can be text", function() {
+            var marker = new maptalks.Marker(center, {
                 symbol: {
                     textName: 'texxxxxt',
                     textFaceName: 'monospace'
@@ -133,12 +113,12 @@ describe('#Marker', function () {
         });
 
 
-        it('can be vector', function () {
+        it("can be vector", function() {
             var types = ['ellipse', 'triangle', 'cross', 'diamond', 'square', 'x', 'bar'];
 
             expect(function () {
-                for (var i = 0; i < types.length; i++) {
-                    var marker = new Marker(center, {
+                for(var i = 0; i < types.length; i++) {
+                    var marker = new maptalks.Marker(center, {
                         symbol: {
                             markerType: types[i],
                             markerLineDasharray: [20, 10, 5, 5, 5, 10]
@@ -151,51 +131,49 @@ describe('#Marker', function () {
 
     });
 
-    describe('set marker\'s Symbol', function () {
+    describe('set marker\'s Symbol', function() {
 
-        it('fires symbolchange event', function () {
+        it('fires symbolchange event', function() {
             var spy = sinon.spy();
-            var marker = new Marker(center);
+            var marker = new maptalks.Marker(center);
             marker.on('symbolchange', spy);
             marker.setSymbol({
-                'markerType': 'ellipse',
+                'markerType' : 'ellipse',
                 'markerLineColor': '#ff0000',
                 'markerFill': '#ffffff',
                 'markerFillOpacity': 0.6,
-                'markerHeight': 8,
-                'markerWidth': 8
+                'markerHeight' : 8,
+                'markerWidth' : 8
             });
 
             expect(spy.called).to.be.ok();
         });
 
-        it('unsuppored markerType', function () {
-            var layer = new VectorLayer('vector', {
-                'drawImmediate': true
-            });
+        it('unsuppored markerType', function() {
+            var layer = new maptalks.VectorLayer('vector', {'drawImmediate' : true});
             map.addLayer(layer);
-            var marker = new Marker(map.getCenter(), {
-                symbol: {
-                    'markerType': 'unsupported',
-                    'markerWidth': 20,
-                    'markerHeight': 30
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol:{
+                    "markerType" : "unsupported",
+                    "markerWidth":20,
+                    "markerHeight":30
                 }
             });
-            expect(function () {
+            expect(function() {
                 layer.addGeometry(marker);
             }).to.throwException();
         });
 
         it('change symbol in event listener', function (done) {
-            var marker = new Marker(map.getCenter());
-            var layer = new VectorLayer('vector', [marker]);
+            var marker = new maptalks.Marker(map.getCenter());
+            var layer = new maptalks.VectorLayer('vector', [marker]);
             marker.on('click', function (e) {
                 layer.once('layerload', function () {
                     expect(layer).to.be.painted(0, -5);
                     done();
                 });
                 e.target.setSymbol({
-                    'markerFile': 'images/control/2.png'
+                    'markerFile' : 'images/control/2.png'
                 });
             });
             layer.once('layerload', function () {
@@ -206,30 +184,30 @@ describe('#Marker', function () {
 
     });
 
-    describe('events', function () {
-        it('canvas events', function () {
-            var vector = new Marker(center);
+    describe('events', function() {
+        it('canvas events', function() {
+            var vector = new maptalks.Marker(center);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
 
-    it('can have various symbols', function (done) {
-        var vector = new Marker(center);
+    it('can have various symbols',function(done) {
+        var vector = new maptalks.Marker(center);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
-    it('Marker.containsPoint', function () {
+    it("Marker.containsPoint", function() {
 
-        var geometry = new Marker(center, {
+        var geometry = new maptalks.Marker(center, {
             symbol: {
-                markerFile: 'images/control/2.png',
-                markerHeight: 30,
-                markerWidth: 22,
-                dx: 0,
-                dy: 0
+                markerFile : 'images/control/2.png',
+                markerHeight : 30,
+                markerWidth : 22,
+                dx : 0,
+                dy : 0
             }
         });
-        layer = new VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(geometry);
 
@@ -245,12 +223,12 @@ describe('#Marker', function () {
     });
 
     it('get image marker\'s extent', function (done) {
-        var geometry = new Marker(map.getExtent().getMin().substract(1E-7, 0), {
+        var geometry = new maptalks.Marker(map.getExtent().getMin().substract(1E-7, 0), {
             symbol: {
-                markerFile: 'images/control/2.png'
+                markerFile : 'images/control/2.png'
             }
         });
-        layer = new VectorLayer('id').addGeometry(geometry);
+        layer = new maptalks.VectorLayer('id').addGeometry(geometry);
         layer.on('renderend', function () {
             expect(layer._getRenderer()._geosToDraw.length).to.be.ok();
             done();

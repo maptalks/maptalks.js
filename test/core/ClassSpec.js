@@ -1,8 +1,6 @@
-import Class from 'core/Class';
-
-describe('Class', () => {
+/*describe('Class', () => {
     it('addInitHook', () => {
-        const D = class extends Class {
+        const D = class extends maptalks.Class {
             constructor() {
                 super();
             }
@@ -19,13 +17,13 @@ describe('Class', () => {
         const F = class extends E {
         };
 
-        const EHandler = class extends Class {
+        const EHandler = class extends maptalks.Class {
             getV() {
                 return 'e';
             }
         };
 
-        const FHandler = class extends Class {
+        const FHandler = class extends maptalks.Class {
             getV() {
                 return 'f';
             }
@@ -44,7 +42,7 @@ describe('Class', () => {
     });
 
     it('include', () => {
-        const D = class extends Class {
+        const D = class extends maptalks.Class {
             constructor() {
                 super();
             }
@@ -58,7 +56,7 @@ describe('Class', () => {
     });
 
     it('mergeOptions', () => {
-        const D = class extends Class {
+        const D = class extends maptalks.Class {
         };
         D.mergeOptions({
             'foo' : 'd',
@@ -83,4 +81,11 @@ describe('Class', () => {
         expect(e.options['foo']).to.be.eql('e');
         expect(e.options['bar']).to.be.eql('d');
     });
+
+    it('throws an error when creating without new operator', () => {
+        const D = class extends maptalks.Class {
+        };
+        expect(D()).to.throwException();
+    });
 });
+*/

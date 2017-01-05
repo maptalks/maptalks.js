@@ -9,10 +9,11 @@ import Handler from './Handler';
  * @abstract
  */
 class Class {
-    constructor() {
-        if (!this.hasOwnProperty('options')) {
-            this.options = this.options ? Object.create(this.options) : {};
+    constructor(options) {
+        if (!this) {
+            throw new Error('Class instance is being created without "new" operator.');
         }
+        this.setOptions(options);
         this.callInitHooks();
     }
 
@@ -21,24 +22,13 @@ class Class {
         this._traverseInitHooks(proto);
     }
 
-    _traverseInitHooks(proto) {
-        if (this._initHooksCalled) {
-            return;
-        }
-        const parentProto = Object.getPrototypeOf(proto);
-        if (parentProto._traverseInitHooks) {
-            parentProto._traverseInitHooks.call(this, parentProto);
-        }
-        this._initHooksCalled = true;
-        const hooks = proto._initHooks;
-        if (hooks && hooks !== parentProto._initHooks) {
-            for (let i = 0; i < hooks.length; i++) {
-                hooks[i].call(this);
-            }
-        }
-    }
-
     setOptions(options) {
+        if (!this.hasOwnProperty('options')) {
+            this.options = this.options ? Object.create(this.options) : {};
+        }
+        if (!options) {
+            return this;
+        }
         for (let i in options) {
             this.options[i] = options[i];
         }
@@ -47,7 +37,13 @@ class Class {
 
     config(conf) {
         if (!conf) {
-            return extend({}, this.options);
+            const config = {};
+            for (let p in this.options) {
+                if (this.options.hasOwnProperty(p)) {
+                    config[p] = this.options[p];
+                }
+            }
+            return config;
         } else {
             if (arguments.length === 2) {
                 let t = {};
@@ -71,6 +67,23 @@ class Class {
             }
         }
         return this;
+    }
+
+    _traverseInitHooks(proto) {
+        if (this._initHooksCalled) {
+            return;
+        }
+        const parentProto = Object.getPrototypeOf(proto);
+        if (parentProto._traverseInitHooks) {
+            parentProto._traverseInitHooks.call(this, parentProto);
+        }
+        this._initHooksCalled = true;
+        const hooks = proto._initHooks;
+        if (hooks && hooks !== parentProto._initHooks) {
+            for (let i = 0; i < hooks.length; i++) {
+                hooks[i].call(this);
+            }
+        }
     }
 
     /**

@@ -1,18 +1,8 @@
-import {
-    removeContainer,
-    genAllTypeGeometries
-} from '../SpecCommon';
-import {
-    Marker,
-    Circle
-} from 'geometry';
-import Coordinate from 'geo/Coordinate';
-import Point from 'geo/Point';
-import Extent from 'geo/Extent';
-import PointExtent from 'geo/PointExtent';
-import VectorLayer from 'layer/VectorLayer';
-import TileLayer from 'layer/tile/TileLayer';
-import Map from 'map';
+/*
+ sinon(spy): http://sinonjs.org/docs/
+ --- chai(assert): http://chaijs.com/api/bdd/
+ expect.js: https://github.com/Automattic/expect.js
+ */
 
 describe('#Map', function () {
 
@@ -20,32 +10,32 @@ describe('#Map', function () {
     var eventContainer;
     var map;
     var tile;
-    var center = new Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    beforeEach(function () {
+    beforeEach(function() {
         container = document.createElement('div');
         container.style.width = '4px';
         container.style.height = '3px';
         document.body.appendChild(container);
         var option = {
-            zoomAnimation: false,
+            zoomAnimation:false,
             zoom: 17,
             center: center
         };
-        map = new Map(container, option);
-        tile = new TileLayer('tile', {
-            urlTemplate: '/resources/tile.png',
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
+            urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3],
-            visible: false
+            visible : false
         });
         eventContainer = map._panels.front;
     });
 
-    afterEach(function () {
-        removeContainer(container);
+    afterEach(function() {
+        removeContainer(container)
     });
 
-    describe('status', function () {
+    describe('status', function() {
         it('getSize', function () {
             var size = map.getSize();
 
@@ -62,7 +52,7 @@ describe('#Map', function () {
                 size = map.getSize();
 
             expect(extent).to.not.be(null);
-            expect(extent).to.be.an(Extent);
+            expect(extent).to.be.an(maptalks.Extent);
 
             var min = projection.project(extent.getMin()),
                 max = projection.project(extent.getMax());
@@ -75,7 +65,7 @@ describe('#Map', function () {
                 size = map.getSize();
 
             expect(extent).to.not.be(null);
-            expect(extent).to.be.an(PointExtent);
+            expect(extent).to.be.an(maptalks.PointExtent);
             expect(extent.getWidth()).to.be.eql(size.width);
             expect(extent.getHeight()).to.be.eql(size.height);
         });
@@ -87,45 +77,42 @@ describe('#Map', function () {
 
 
 
-        it('isLoaded', function () {
+        it('isLoaded',function() {
             expect(map.isLoaded()).to.be.ok();
         });
 
-        it('is rendered by canvas', function () {
+        it('is rendered by canvas',function() {
             expect(map.isCanvasRender()).to.be.ok();
         });
     });
 
     describe('conversions', function () {
         it('coordinateToContainerPoint', function () {
-            var point = map.coordinateToContainerPoint({
-                x: 1,
-                y: 1
-            });
+            var point = map.coordinateToContainerPoint({x: 1, y: 1});
 
-            expect(point).to.be.a(Point);
+            expect(point).to.be.a(maptalks.Point);
         });
 
         it('containerPointToCoordinate', function () {
-            var coord = map.containerPointToCoordinate(new Point(0, 0));
+            var coord = map.containerPointToCoordinate(new maptalks.Point(0, 0));
 
-            expect(coord).to.be.a(Coordinate);
+            expect(coord).to.be.a(maptalks.Coordinate);
         });
     });
 
-    describe('#getCenter', function () {
-        it('getCenter返回结果与初始化时指定center相等(Load之前)', function () {
+    describe('#getCenter', function() {
+        it('getCenter返回结果与初始化时指定center相等(Load之前)', function() {
 
             expect(map.getCenter()).to.closeTo(center);
         });
 
-        it('getCenter返回结果与初始化时指定center相等(Load之后)', function () {
+        it('getCenter返回结果与初始化时指定center相等(Load之后)', function() {
             map.setBaseLayer(tile);
 
             expect(map.getCenter()).to.closeTo(center);
         });
 
-        it('getCenter返回结果与初始化时指定center相等(setZoom之后)', function () {
+        it('getCenter返回结果与初始化时指定center相等(setZoom之后)', function() {
             map.setBaseLayer(tile);
             map.setZoom(13);
 
@@ -133,9 +120,9 @@ describe('#Map', function () {
         });
     });
 
-    describe('#setCenter', function () {
-        it('setCenterAndZoom', function () {
-            var nc = new Coordinate(119, 32);
+    describe('#setCenter', function() {
+        it('setCenterAndZoom', function() {
+            var nc = new maptalks.Coordinate(119, 32);
             var z = map.getZoom();
             map.setCenterAndZoom(nc);
 
@@ -143,8 +130,8 @@ describe('#Map', function () {
             expect(map.getZoom()).to.be.eql(z);
         });
 
-        it('setCenterAndZoom2', function () {
-            var nc = new Coordinate(119, 32);
+        it('setCenterAndZoom2', function() {
+            var nc = new maptalks.Coordinate(119, 32);
             var nz = map.getZoom() + 1;
             map.setCenterAndZoom(nc, nz);
 
@@ -152,23 +139,23 @@ describe('#Map', function () {
             expect(map.getZoom()).to.be.eql(nz);
         });
 
-        it('setCenter后, getCenter返回结果与指定center近似相等(Load之前)', function () {
-            var nc = new Coordinate(119, 32);
+        it('setCenter后, getCenter返回结果与指定center近似相等(Load之前)', function() {
+            var nc = new maptalks.Coordinate(119, 32);
             map.setCenter(nc);
 
             expect(map.getCenter()).to.closeTo(nc);
         });
 
-        it('setCenter后, getCenter返回结果与指定center相等(Load之后)', function () {
+        it('setCenter后, getCenter返回结果与指定center相等(Load之后)', function() {
             map.setBaseLayer(tile);
 
-            var nc = new Coordinate(122, 32);
+            var nc = new maptalks.Coordinate(122, 32);
             map.setCenter(nc);
 
             expect(map.getCenter()).to.closeTo(nc);
         });
 
-        it('setCenter设定中心点为当前地图中心点, 应该触发movestart', function () {
+        it('setCenter设定中心点为当前地图中心点, 应该触发movestart', function() {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
@@ -178,7 +165,7 @@ describe('#Map', function () {
             expect(spy.called).to.be.ok();
         });
 
-        it('setCenter设定中心点为当前地图中心点, 应该触发moveend', function () {
+        it('setCenter设定中心点为当前地图中心点, 应该触发moveend', function() {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
@@ -188,31 +175,31 @@ describe('#Map', function () {
             expect(spy.called).to.be.ok();
         });
 
-        it('setCenter设定中心点不同于当前地图中心点, 应该触发movestart', function () {
+        it('setCenter设定中心点不同于当前地图中心点, 应该触发movestart', function() {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
             map.on('movestart', spy);
-            var nc = new Coordinate(119, 32);
+            var nc = new maptalks.Coordinate(119, 32);
             map.setCenter(nc);
 
             expect(spy.called).to.be.ok();
         });
 
-        it('setCenter设定中心点不同于当前地图中心点, 应该触发moveend', function () {
+        it('setCenter设定中心点不同于当前地图中心点, 应该触发moveend', function() {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
             map.on('moveend', spy);
-            var nc = new Coordinate(119, 32);
+            var nc = new maptalks.Coordinate(119, 32);
             map.setCenter(nc);
 
             expect(spy.called).to.be.ok();
         });
     });
 
-    describe('#Zoom Level', function () {
-        it('get (min/max/current)zoom level', function () {
+    describe('#Zoom Level', function() {
+        it('get (min/max/current)zoom level', function() {
             map.setBaseLayer(tile);
 
             expect(map.getZoom()).to.eql(17);
@@ -220,12 +207,10 @@ describe('#Map', function () {
             expect(map.getMaxZoom()).to.be.a('number');
         });
 
-        it('set (min/max/current)zoom level', function () {
+        it('set (min/max/current)zoom level', function() {
             map.setBaseLayer(tile);
 
-            var min = 3,
-                max = 14,
-                cur = max + 1;
+            var min = 3, max = 14, cur = max + 1;
             map.setMinZoom(min);
             map.setMaxZoom(max);
             map.setZoom(cur);
@@ -235,11 +220,10 @@ describe('#Map', function () {
             expect(map.getMaxZoom()).to.equal(max);
         });
 
-        it('set max zoom level to less than current zoom level', function () {
+        it('set max zoom level to less than current zoom level', function() {
             map.setBaseLayer(tile);
 
-            var max = 14,
-                cur = max + 1;
+            var max = 14, cur = max + 1;
             map.setZoom(cur);
             map.setMaxZoom(max);
 
@@ -247,12 +231,10 @@ describe('#Map', function () {
             expect(map.getMaxZoom()).to.equal(max);
         });
 
-        it('zoom in/out', function () {
+        it('zoom in/out', function() {
             map.setBaseLayer(tile);
 
-            var min = 3,
-                max = 14,
-                cur = 8;
+            var min = 3, max = 14, cur = 8;
             map.setMinZoom(min);
             map.setMaxZoom(max);
             map.setZoom(cur);
@@ -261,7 +243,7 @@ describe('#Map', function () {
             expect(map.zoomOut().getZoom()).to.equal(cur);
         });
 
-        it('zoom in/out with animation', function (done) {
+        it('zoom in/out with animation', function(done) {
             map.setBaseLayer(tile);
             map.config('zoomAnimation', true);
             var cur = map.getZoom();
@@ -307,7 +289,7 @@ describe('#Map', function () {
         });
 
         it('fit to extent', function (done) {
-            var extent = new Marker(map.getCenter()).getExtent();
+            var extent = new maptalks.Marker(map.getCenter()).getExtent();
             var maxZoom = map.getMaxZoom();
             map.once('zoomend', function () {
                 expect(maxZoom).to.be.eql(map.getZoom());
@@ -317,10 +299,10 @@ describe('#Map', function () {
         });
     });
 
-    describe('#addLayer', function () {
-        it('图层加入地图时触发add事件', function () {
+    describe('#addLayer', function() {
+        it('图层加入地图时触发add事件', function() {
             var spy = sinon.spy();
-            var layer = new VectorLayer('id');
+            var layer = new maptalks.VectorLayer('id');
             layer.on('add', spy);
             map.addLayer(layer);
             expect(spy.called).to.be.ok();
@@ -331,19 +313,19 @@ describe('#Map', function () {
             expect(spy2.called).to.be.ok();
         });
 
-        it('图层加入已载入地图时立即触发loaded事件', function (done) {
+        it('图层加入已载入地图时立即触发loaded事件', function(done) {
             map.setBaseLayer(tile);
 
-            var layer = new VectorLayer('id');
-            layer.on('layerload', function () {
+            var layer = new maptalks.VectorLayer('id');
+            layer.on('layerload', function() {
                 done();
             });
             map.addLayer(layer);
         });
 
-        it('当地图载入完成时, 如果加入的图层已被删除, 不触发loaded事件', function (done) {
-            var layer = new VectorLayer('id');
-            layer.on('remove', function () {
+        it('当地图载入完成时, 如果加入的图层已被删除, 不触发loaded事件', function(done) {
+            var layer = new maptalks.VectorLayer('id');
+            layer.on('remove', function() {
                 done();
             });
             map.addLayer(layer);
@@ -351,9 +333,9 @@ describe('#Map', function () {
             map.setBaseLayer(tile);
         });
 
-        it('当地图载入完成时触发已加入图层的loaded事件', function (done) {
-            var layer = new VectorLayer('id');
-            layer.on('layerload', function () {
+        it('当地图载入完成时触发已加入图层的loaded事件', function(done) {
+            var layer = new maptalks.VectorLayer('id');
+            layer.on('layerload', function() {
                 done();
             });
             map.addLayer(layer);
@@ -361,28 +343,28 @@ describe('#Map', function () {
         });
     });
 
-    describe('#removeLayer', function () {
-        it('删除图层后getLayer返回null(地图未载入)', function () {
-            var layer = new VectorLayer('id');
+    describe('#removeLayer', function() {
+        it('删除图层后getLayer返回null(地图未载入)', function() {
+            var layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             map.removeLayer(layer);
 
             expect(map.getLayer(layer)).to.equal(null);
         });
 
-        it('删除图层后getLayer返回null(地图已载入)', function () {
+        it('删除图层后getLayer返回null(地图已载入)', function() {
             map.setBaseLayer(tile);
 
-            var layer = new VectorLayer('id');
+            var layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             map.removeLayer([layer]);
 
             expect(map.getLayer(layer)).to.equal(null);
         });
 
-        it('删除图层时触发图层的removed事件', function () {
+        it('删除图层时触发图层的removed事件', function() {
             // var spy = sinon.spy();
-            // var layer = new VectorLayer('id');
+            // var layer = new maptalks.VectorLayer('id');
             // layer.on('removed', spy);
             // map.addLayer(layer);
             // map.removeLayer(layer);
@@ -391,9 +373,9 @@ describe('#Map', function () {
         });
     });
 
-    describe('events', function () {
+    describe('events', function() {
 
-        it('double click', function () {
+        it('double click', function() {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
@@ -404,7 +386,7 @@ describe('#Map', function () {
             expect(spy.called).to.be.ok();
         });
 
-        it('mousedown following mouseup on map should not trigger move events', function () {
+        it("mousedown following mouseup on map should not trigger move events", function() {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
@@ -417,13 +399,13 @@ describe('#Map', function () {
         });
 
         it('fire resize when dom\'s size is changed', function (done) {
-            map.on('resize', function () {
+            map.on('resize', function(param) {
                 done();
             });
             container.style.width = '10px';
         });
 
-        it('event properties', function (done) {
+        it('event properties', function(done) {
             map.setBaseLayer(tile);
 
             function listener(param) {
@@ -442,7 +424,7 @@ describe('#Map', function () {
 
     });
 
-    describe('#setBaseLayer', function () {
+    describe('#setBaseLayer', function() {
         function isDrawn(x, y, canvas) {
             var context = canvas.getContext('2d');
             var imgData = context.getImageData(x, y, 1, 1).data;
@@ -452,29 +434,28 @@ describe('#Map', function () {
             return false;
         }
 
-        it('use tilelayer as base tile', function (done) {
+        it('use tilelayer as base tile', function(done) {
             this.timeout(6000);
             tile.config({
                 'baseLayerRenderer': 'canvas',
-                'crossOrigin': 'anonymous',
-                'gradualLoading': false,
-                'visible': true
+                'crossOrigin' : 'anonymous',
+                'gradualLoading' : false,
+                'visible' : true
             });
             var size = map.getSize();
             var baseLoaded = false,
                 baseRemoved = false;
-            map.on('baselayerload', function () {
+            map.on('baselayerload', function() {
                 baseLoaded = true;
             });
-
             function onRenderEnd() {
                 if (baseLoaded) {
                     if (!baseRemoved) {
-                        expect(isDrawn(size.width / 2, size.height / 2, map._getRenderer().canvas)).to.be.ok();
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer().canvas)).to.be.ok();
                         baseRemoved = true;
                         map.removeBaseLayer();
                     } else {
-                        expect(isDrawn(size.width / 2, size.height / 2, map._getRenderer().canvas)).not.to.be.ok();
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer().canvas)).not.to.be.ok();
                         done();
                     }
                 }
@@ -484,31 +465,30 @@ describe('#Map', function () {
             expect(map.getBaseLayer()).to.be.eql(tile);
         });
 
-        it('use vectorlayer as base tile', function (done) {
-            var layer = new VectorLayer('vector').addGeometry(new Circle(map.getCenter(), 1000, {
-                symbol: {
-                    polygonFill: '#000',
-                    polygonOpacity: 0.5
+        it('use vectorlayer as base tile', function(done) {
+            var layer = new maptalks.VectorLayer('vector').addGeometry(new maptalks.Circle(map.getCenter(), 1000, {
+                symbol : {
+                    polygonFill : '#000',
+                    polygonOpacity : 0.5
                 }
             }));
             var size = map.getSize();
             var baseLoaded = false,
                 baseRemoved = false;
-            layer.on('renderend', function () {
+            layer.on('renderend', function() {
                 baseLoaded = true;
             });
-            map.on('baselayerload', function () {
+            map.on('baselayerload', function() {
                 baseRemoved = true;
                 map.removeBaseLayer();
             });
-
             function onRenderEnd() {
                 if (!baseRemoved) {
                     if (baseLoaded) {
-                        expect(isDrawn(size.width / 2, size.height / 2, map._getRenderer().canvas)).to.be.ok();
+                        expect(isDrawn(size.width/2, size.height/2, map._getRenderer().canvas)).to.be.ok();
                     }
                 } else {
-                    expect(isDrawn(size.width / 2, size.height / 2, map._getRenderer().canvas)).not.to.be.ok();
+                    expect(isDrawn(size.width/2, size.height/2, map._getRenderer().canvas)).not.to.be.ok();
                     done();
                 }
             }
@@ -518,16 +498,16 @@ describe('#Map', function () {
         });
     });
 
-    describe('Map.FullScreen', function () {
+    describe('Map.FullScreen', function() {
 
-        it('requestFullScreen', function (done) {
+        it('requestFullScreen', function(done) {
             expect(function () {
                 map.requestFullScreen();
                 done();
             }).to.not.throwException();
         });
 
-        it('cancelFullScreen', function (done) {
+        it('cancelFullScreen', function(done) {
             expect(function () {
                 map.cancelFullScreen();
                 done();
@@ -536,17 +516,17 @@ describe('#Map', function () {
 
     });
 
-    describe('Map.Topo', function () {
+    describe('Map.Topo', function() {
 
-        it('computeLength', function () {
-            var lonlat1 = new Coordinate([0, 0]);
-            var lonlat2 = new Coordinate([1, 1]);
+        it('computeLength', function() {
+            var lonlat1 = new maptalks.Coordinate([0, 0]);
+            var lonlat2 = new maptalks.Coordinate([1, 1]);
             var distance = map.computeLength(lonlat1, lonlat2);
 
             expect(distance).to.be.above(0);
         });
 
-        it('computeGeodesicLength', function () {
+        it('computeGeodesicLength', function() {
             var all = genAllTypeGeometries();
 
             for (var i = 0; i < all.length; i++) {
@@ -556,7 +536,7 @@ describe('#Map', function () {
             }
         });
 
-        it('computeGeodesicArea', function () {
+        it('computeGeodesicArea', function() {
             var all = genAllTypeGeometries();
 
             for (var i = 0; i < all.length; i++) {
@@ -566,8 +546,8 @@ describe('#Map', function () {
             }
         });
 
-        it('identify', function (done) {
-            var layer = new VectorLayer('id');
+        it('identify', function(done) {
+            var layer = new maptalks.VectorLayer('id');
             var geometries = genAllTypeGeometries();
             //var point = map.coordinateToContainerPoint(center);
             layer.addGeometry(geometries, true);
@@ -582,8 +562,8 @@ describe('#Map', function () {
             });
         });
 
-        it('identify on invisible layers', function (done) {
-            var layer = new VectorLayer('id');
+        it('identify on invisible layers', function(done) {
+            var layer = new maptalks.VectorLayer('id');
             var geometries = genAllTypeGeometries();
             //var point = map.coordinateToContainerPoint(center);
             layer.addGeometry(geometries, true);
@@ -605,7 +585,7 @@ describe('#Map', function () {
         var expected = 'data:image/png;base64';
         var data = map.toDataURL();
         expect(data.substring(0, expected.length)).to.be.eql(expected);
-        var layer = new VectorLayer('id');
+        var layer = new maptalks.VectorLayer('id');
         var geometries = genAllTypeGeometries();
         layer.addGeometry(geometries, true);
         map.addLayer(layer);
@@ -616,18 +596,20 @@ describe('#Map', function () {
 
     it('remove', function (done) {
         map.setBaseLayer(tile);
-        var layer = new VectorLayer('id');
+        var layer = new maptalks.VectorLayer('id');
         var geometries = genAllTypeGeometries();
         layer.addGeometry(geometries, true);
-        var tilelayer = new TileLayer('t2', {
-            urlTemplate: '/resources/tile.png',
+        var tilelayer = new maptalks.TileLayer('t2', {
+            urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3],
-            visible: false
+            visible : false
         });
         tilelayer.on('layerload', function () {
             map.remove();
             done();
         });
         map.addLayer([tilelayer, layer]);
+
+
     });
 });

@@ -1,15 +1,9 @@
-import {
-    removeContainer
-} from '../../SpecCommon';
-import Coordinate from 'geo/Coordinate';
-import * as controls from 'control';
-import Map from 'map';
-
-describe('Control.Zoom', function () {
+describe("Control.Zoom", function() {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -21,17 +15,22 @@ describe('Control.Zoom', function () {
             zoom: 15,
             center: center
         };
-        map = new Map(container, option);
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
+
+            urlTemplate:"/resources/tile.png",
+            subdomains: [1, 2, 3]
+        });
     });
 
     afterEach(function () {
-        removeContainer(container);
+        removeContainer(container)
     });
 
-    describe('Zoom button', function () {
+    describe("Zoom button", function() {
 
-        it('when enabled, can trigger correct events', function () {
-            var control = new controls.Zoom();
+        it("when enabled, can trigger correct events", function() {
+            var control = new maptalks.control.Zoom();
             var spy = sinon.spy();
             map.zoomIn = spy;
             map.zoomOut = spy;
@@ -47,8 +46,8 @@ describe('Control.Zoom', function () {
             expect(spy.calledOnce).to.be.ok();
         });
 
-        it('when zoom in button clicked, change zoom correctly', function () {
-            var control = new controls.Zoom();
+        it("when zoom in button clicked, change zoom correctly", function() {
+            var control = new maptalks.control.Zoom();
             map.addControl(control);
             var zoom = map.getZoom();
 
@@ -56,8 +55,8 @@ describe('Control.Zoom', function () {
             expect(map.getZoom()).to.be(zoom + 1);
         });
 
-        it('when zoom out button clicked, change zoom correctly', function () {
-            var control = new controls.Zoom();
+        it("when zoom out button clicked, change zoom correctly", function() {
+            var control = new maptalks.control.Zoom();
             map.addControl(control);
             var zoom = map.getZoom();
 
@@ -65,18 +64,18 @@ describe('Control.Zoom', function () {
             expect(map.getZoom()).to.be(zoom - 1);
         });
 
-        /* it('when disabled, don't update zoom of map', function() {
-             var control = new control.Zoom();
-             map.addControl(control);
-             var zoom = map.getZoom();
-             control.disable();
+       /* it("when disabled, don't update zoom of map", function() {
+            var control = new maptalks.control.Zoom();
+            map.addControl(control);
+            var zoom = map.getZoom();
+            control.disable();
 
-             happen.click(control._zoomInButton);
-             expect(map.getZoom()).to.be(zoom);
+            happen.click(control._zoomInButton);
+            expect(map.getZoom()).to.be(zoom);
 
-             happen.click(control._zoomOutButton);
-             expect(map.getZoom()).to.be(zoom);
-         });*/
+            happen.click(control._zoomOutButton);
+            expect(map.getZoom()).to.be(zoom);
+        });*/
 
     });
 

@@ -15,6 +15,17 @@ import Layer from './Layer';
  */
 export default class OverlayLayer extends Layer {
 
+    constructor(id, geometries, options) {
+        if (geometries && (!(geometries instanceof Geometry) && !(Array.isArray(geometries)))) {
+            options = geometries;
+            geometries = null;
+        }
+        super(id, options);
+        if (geometries) {
+            this.addGeometry(geometries);
+        }
+    }
+
     /**
      * Get a geometry by its id
      * @param  {String|Number} id   - id of the geometry

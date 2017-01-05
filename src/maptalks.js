@@ -31,6 +31,8 @@ export { default as GeoJSONLayer } from 'layer/GeoJSONLayer';
 export { default as CanvasLayer } from 'layer/CanvasLayer';
 export { default as ParticleLayer } from 'layer/ParticleLayer';
 
+export * from 'geometry';
+
 import 'geometry/editor/GeometryEditor';
 import 'geometry/editor/TextMarkerEditor';
 

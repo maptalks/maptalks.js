@@ -1,6 +1,5 @@
 import { isString, parseJSON } from 'core/util';
 import Ajax from 'utils/Ajax';
-import View from './View';
 
 function parse(arcConf) {
     var tileInfo = arcConf['tileInfo'],
@@ -28,7 +27,7 @@ function parse(arcConf) {
     };
 }
 
-View.loadArcgis = function (url, cb, context) {
+export default function loadArcgis(url, cb, context) {
     if (isString(url) && url.substring(0, 1) !== '{') {
         Ajax.getJSON(url, function (err, json) {
             if (err) {
@@ -59,4 +58,4 @@ View.loadArcgis = function (url, cb, context) {
 
     }
     return this;
-};
+}

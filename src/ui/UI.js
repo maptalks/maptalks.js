@@ -65,8 +65,7 @@ const options = {
 export default class UIComponent extends Eventable(Class) {
 
     constructor(options) {
-        super();
-        this.setOptions(options);
+        super(options);
     }
 
     /**
@@ -98,7 +97,8 @@ export default class UIComponent extends Eventable(Class) {
         if (!this._owner) {
             return null;
         }
-        if (this._owner instanceof Map) {
+        // is a map
+        if (this._owner.getBaseLayer) {
             return this._owner;
         }
         return this._owner.getMap();

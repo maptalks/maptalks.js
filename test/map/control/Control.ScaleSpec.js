@@ -1,15 +1,9 @@
-import {
-    removeContainer
-} from '../../SpecCommon';
-import Coordinate from 'geo/Coordinate';
-import * as controls from 'control';
-import Map from 'map';
-
-describe('Control.Scale', function () {
+describe("Control.Scale", function() {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -20,15 +14,20 @@ describe('Control.Scale', function () {
             zoom: 17,
             center: center
         };
-        map = new Map(container, option);
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
+
+            urlTemplate:"/resources/tile.png",
+            subdomains: [1, 2, 3]
+        });
     });
 
     afterEach(function () {
-        removeContainer(container);
+        removeContainer(container)
     });
 
-    it('widgets contain correct value after initialized', function () {
-        var control = new controls.Scale({
+    it("widgets contain correct value after initialized", function() {
+        var control = new maptalks.control.Scale({
             metric: true,
             imperial: true
         });

@@ -3,7 +3,7 @@
     var container;
     var map;
     var tile;
-    var center = new Coordinate(118.846825, 32.046534);
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
         container = document.createElement('div');
@@ -14,8 +14,8 @@
             zoom: 17,
             center: center
         };
-        map = new Map(container, option);
-        tile = new TileLayer('tile', {
+        map = new maptalks.Map(container, option);
+        tile = new maptalks.TileLayer('tile', {
 
             urlTemplate:"/resources/tile.png",
             subdomains: [1, 2, 3]
@@ -28,7 +28,7 @@
     });
 
     it("events", function() {
-        var nav = new control.Nav();
+        var nav = new maptalks.control.Nav();
         var spy = sinon.spy();
         nav._panToLeft = spy;
         nav._panToRight = spy;
@@ -66,7 +66,7 @@
         });
 
         it("can pan left correctly", function() {
-            var control = new control.Nav();
+            var control = new maptalks.control.Nav();
             map.addControl(control);
             var pos = map.offsetPlatform();
             var offset;
@@ -81,7 +81,7 @@
         });
 
         it("can pan right correctly", function() {
-            var control = new control.Nav();
+            var control = new maptalks.control.Nav();
             map.addControl(control);
             var pos = map.offsetPlatform();
             var offset;
@@ -95,7 +95,7 @@
         });
 
         it("can pan down correctly", function() {
-            var control = new control.Nav();
+            var control = new maptalks.control.Nav();
             map.addControl(control);
             var pos = map.offsetPlatform();
             var offset;
@@ -110,7 +110,7 @@
         });
 
         it("can pan up correctly", function() {
-            var control = new control.Nav();
+            var control = new maptalks.control.Nav();
             map.addControl(control);
             var pos = map.offsetPlatform();
             var offset;

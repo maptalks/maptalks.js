@@ -22,9 +22,8 @@ import Geometry from './Geometry';
 export default class GeometryCollection extends Geometry {
 
     constructor(geometries, opts) {
-        super();
+        super(opts);
         this.type = 'GeometryCollection';
-        this._initOptions(opts);
         this.setGeometries(geometries);
     }
 

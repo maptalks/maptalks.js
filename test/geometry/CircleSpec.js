@@ -1,74 +1,50 @@
-import {
-    commonSetupMap,
-    removeContainer,
-    GeoSymbolTester,
-    GeoEventsTester
-} from '../SpecCommon';
-import Coordinate from 'geo/Coordinate';
-import {
-    Circle
-} from 'geometry';
-import VectorLayer from 'layer/VectorLayer';
+// var CommonSpec = require('./CommonSpec');
 
-describe('#Circle', function () {
+describe('#Circle', function() {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
 
-    beforeEach(function () {
+    beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
         canvasContainer = map._panels.canvasContainer;
-        layer = new VectorLayer('v').addTo(map);
+        layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
-    afterEach(function () {
+    afterEach(function() {
         map.removeLayer(layer);
-        removeContainer(container);
+        removeContainer(container)
     });
 
-    it('setCoordinates', function () {
-        var circle = new Circle({
-            x: 0,
-            y: 0
-        }, 1);
-        circle.setCoordinates({
-            x: 1,
-            y: 1
-        });
-        expect(circle.getCoordinates().toArray()).to.be.eql([1, 1]);
+    it('setCoordinates', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
+        circle.setCoordinates({x: 1, y: 1});
+        expect(circle.getCoordinates().toArray()).to.be.eql([1, 1])
     });
 
-    it('getCenter', function () {
-        var circle = new Circle({
-            x: 0,
-            y: 0
-        }, 1);
+    it('getCenter', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
         var got = circle.getCenter();
 
         expect(got.x).to.eql(0);
         expect(got.y).to.eql(0);
     });
 
-    it('getExtent', function () {
-        var circle = new Circle({
-            x: 0,
-            y: 0
-        }, 1);
+    it('getExtent', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
         var extent = circle.getExtent();
         expect(extent.getWidth()).to.be.above(0);
         expect(extent.getHeight()).to.be.above(0);
     });
 
-    it('getSize', function () {
-        var circle = new Circle({
-            x: 0,
-            y: 0
-        }, 100);
+    it('getSize', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 100);
         layer.addGeometry(circle);
         var size = circle.getSize();
 
@@ -77,11 +53,8 @@ describe('#Circle', function () {
     });
 
 
-    it('setRadius/getRadius', function () {
-        var circle = new Circle({
-            x: 0,
-            y: 0
-        }, 1);
+    it('setRadius/getRadius', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
 
         expect(circle.getRadius()).to.eql(1);
 
@@ -90,18 +63,13 @@ describe('#Circle', function () {
         expect(circle.getRadius()).to.eql(20);
     });
 
-    it('getShell', function () {
-        var circle = new Circle({
-            x: 0,
-            y: 0
-        }, 1);
+    it('getShell', function() {
+        var circle = new maptalks.Circle({x: 0, y: 0}, 1);
         var shell = circle.getShell();
 
         var num = circle.options.numberOfShellPoints;
         expect(shell).to.have.length(num);
-        var sumx = 0,
-            sumy = 0,
-            len = shell.length;
+        var sumx = 0, sumy = 0, len = shell.length;
         for (var i = 0; i < len; i++) {
             sumx += shell[i].x;
             sumy += shell[i].y;
@@ -114,24 +82,24 @@ describe('#Circle', function () {
         expect(map.computeLength(shell[num / 2], [0, 0])).to.be.approx(circle.getRadius());
     });
 
-    describe('geometry fires events', function () {
-        it('canvas events', function () {
-            var vector = new Circle(center, 1);
+    describe('geometry fires events', function() {
+        it('canvas events', function() {
+            var vector = new maptalks.Circle(center, 1);
             new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
 
-    describe('change shape and position', function () {
-        it('events', function () {
+    describe('change shape and position',function() {
+        it('events',function() {
             var spy = sinon.spy();
 
-            var vector = new Circle(center, 1);
-            vector.on('shapechange positionchange', spy);
+            var vector = new maptalks.Circle(center, 1);
+            vector.on('shapechange positionchange',spy);
 
             function evaluate() {
-                var rnd = Math.random() * 0.001;
-                var coordinates = new Coordinate(center.x + rnd, center.y + rnd);
-                var radius = 1000 * rnd;
+                var rnd = Math.random()*0.001;
+                var coordinates = new maptalks.Coordinate(center.x+rnd, center.y+rnd);
+                var radius = 1000*rnd;
 
                 vector.setCoordinates(coordinates);
                 expect(spy.calledOnce).to.be.ok();
@@ -146,71 +114,69 @@ describe('#Circle', function () {
             evaluate();
 
             //svg
-            layer = new VectorLayer('id');
+            layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             evaluate();
             vector.remove();
             //canvas
-            layer = new VectorLayer('canvas', {
-                render: 'canvas'
-            });
+            layer = new maptalks.VectorLayer('canvas',{render:'canvas'});
             layer.addGeometry(vector);
             map.addLayer(layer);
             evaluate();
         });
     });
 
-    describe('can be treated as a polygon', function () {
-        it('has shell', function () {
-            var vector = new Circle(center, 100);
+    describe('can be treated as a polygon',function() {
+        it('has shell',function() {
+            var vector = new maptalks.Circle(center,100);
             var shell = vector.getShell();
             expect(shell).to.have.length(vector.options['numberOfShellPoints']);
         });
 
-        it('but doesn\'t have holes', function () {
-            var vector = new Circle(center, 100);
+        it("but doesn't have holes",function() {
+            var vector = new maptalks.Circle(center,100);
             var holes = vector.getHoles();
             expect(holes).to.not.be.ok();
         });
 
-        it('toGeoJSON exported an polygon', function () {
-            var vector = new Circle(center, 100);
-            var geojson = vector.toGeoJSON().geometry;
+        it("toGeoJSON exported an polygon", function() {
+            var vector = new maptalks.Circle(center,100);
+            var geojson = vector.toGeoJSON().geometry ;
             expect(geojson.type).to.be.eql('Polygon');
             expect(geojson.coordinates[0]).to.have.length(vector.options['numberOfShellPoints']);
         });
     });
 
-    describe('compute length and area', function () {
-        it('length', function () {
-            var vector = new Circle(center, 100);
-            var result = Math.PI * 2 * 100;
+    describe('compute length and area',function() {
+        it('length',function() {
+            var vector = new maptalks.Circle(center,100);
+            var result = Math.PI*2*100;
             var length = vector.getLength();
             expect(length).to.be(result);
         });
 
-        it('area', function () {
-            var vector = new Circle(center, 100);
-            var result = Math.PI * 100 * 100;
+        it('area',function() {
+            var vector = new maptalks.Circle(center,100);
+            var result = Math.PI*100*100;
             var length = vector.getArea();
             expect(length).to.be(result);
         });
     });
 
-    it('can have various symbols', function (done) {
-        var vector = new Circle(center, 100);
+    it('can have various symbols',function(done) {
+        var vector = new maptalks.Circle(center,100);
         GeoSymbolTester.testGeoSymbols(vector, map, done);
     });
 
-    it('Circle._containsPoint', function () {
+    it("Circle._containsPoint", function() {
 
-        var geometry = new Circle(center, 10, {
+        var geometry = new maptalks.Circle(center, 10, {
             symbol: {
                 'lineWidth': 6
             }
         });
-        layer = new VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(geometry);
 

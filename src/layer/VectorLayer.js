@@ -1,6 +1,5 @@
-import { extend, isNil, isArray } from 'core/util';
-import { compileStyle } from 'core/util/style';
-import { getFilterFeature } from 'utils';
+import { extend, isNil } from 'core/util';
+import { getFilterFeature, compileStyle } from 'utils';
 import Extent from 'geo/Extent';
 import Geometry from 'geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
@@ -38,20 +37,13 @@ const options = {
  */
 export default class VectorLayer extends OverlayLayer {
 
-    constructor(id, geometries, opts) {
-        if (geometries && (!(geometries instanceof Geometry) && !(isArray(geometries)))) {
-            opts = geometries;
-            geometries = null;
-        }
-        const options = extend({}, opts);
-        const style = options['style'];
-        delete options['style'];
-        super(id, options);
+    constructor(id, geometries, options) {
+        const opts = extend({}, options);
+        const style = opts['style'];
+        delete opts['style'];
+        super(id, geometries, opts);
         if (style) {
             this.setStyle(style);
-        }
-        if (geometries) {
-            this.addGeometry(geometries);
         }
     }
 

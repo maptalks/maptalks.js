@@ -1,4 +1,4 @@
-import { isArray, isArrayHasData, getValueOrDefault } from 'core/util';
+import { getValueOrDefault } from 'core/util';
 import { isGradient as checkGradient } from 'core/util/style';
 import Canvas from 'utils/Canvas';
 import Coordinate from 'geo/Coordinate';
@@ -48,7 +48,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
         this._prepareContext(ctx);
         var isGradient = checkGradient(style['lineColor']),
-            isPath = (this.geometry.type === 'Polygon') || (this.geometry.type === 'LineString');
+            isPath = (this.geometry.getClassName() === 'Polygon') || (this.geometry.type === 'LineString');
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.getPainter().getContainerExtent()._expand(style['lineWidth']);
         }
@@ -57,8 +57,8 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
 
         var points = paintParams[0],
-            isSplitted = (this.geometry.type === 'Polygon' && points.length > 1 && isArray(points[0][0])) ||
-            (this.geometry.type === 'LineString' && points.length > 1 && isArray(points[0]));
+            isSplitted = (this.geometry.getClassName() === 'Polygon' && points.length > 1 && Array.isArray(points[0][0])) ||
+            (this.geometry.type === 'LineString' && points.length > 1 && Array.isArray(points[0]));
         var params;
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
@@ -84,7 +84,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             this.geometry._paintOn.apply(this.geometry, params);
         }
 
-        if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
+        if (ctx.setLineDash && Array.isArray(style['lineDasharray'])) {
             ctx.setLineDash([]);
         }
     }
@@ -160,6 +160,9 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
     _createGradient(ctx, points, lineColor) {
+        if (!Array.isArray(points)) {
+            return;
+        }
         var len = points.length;
         var grad = ctx.createLinearGradient(points[0].x, points[0].y, points[len - 1].x, points[len - 1].y);
         lineColor['colorStops'].forEach(function (stop) {

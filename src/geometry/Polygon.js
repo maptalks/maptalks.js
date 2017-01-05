@@ -30,12 +30,11 @@ import Path from './Path';
 export default class Polygon extends Path {
 
     constructor(coordinates, opts) {
-        super();
+        super(opts);
         this.type = 'Polygon';
         if (coordinates) {
             this.setCoordinates(coordinates);
         }
-        this._initOptions(opts);
     }
 
     /**

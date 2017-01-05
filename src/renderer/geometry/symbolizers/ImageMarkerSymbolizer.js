@@ -18,10 +18,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     constructor(symbol, geometry, painter) {
-        super();
-        this.symbol = symbol;
-        this.geometry = geometry;
-        this.painter = painter;
+        super(symbol, geometry, painter);
         this.style = this._defineStyle(this.translate());
     }
 

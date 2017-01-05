@@ -36,12 +36,11 @@ const options = {
 export default class LineString extends Path {
 
     constructor(coordinates, options) {
-        super();
+        super(options);
         this.type = 'LineString';
         if (coordinates) {
             this.setCoordinates(coordinates);
         }
-        this._initOptions(options);
     }
 
     /**

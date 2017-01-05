@@ -44,8 +44,6 @@ export default class TextMarker extends Marker {
 
     constructor(content, coordinates, options) {
         super(coordinates, options);
-        this.defaultSymbol = defaultSymbol;
-        this.defaultBoxSymbol = defaultBoxSymbol;
         this._content = content;
         this._registerEvents();
         this._refresh();
@@ -152,9 +150,9 @@ export default class TextMarker extends Marker {
 
     _getDefaultTextSymbol() {
         var s = {};
-        extend(s, this.defaultSymbol);
+        extend(s, defaultSymbol);
         if (this.options['box']) {
-            extend(s, this.defaultBoxSymbol);
+            extend(s, defaultBoxSymbol);
         }
         return s;
     }

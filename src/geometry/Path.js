@@ -29,6 +29,7 @@ const options = {
  * @extends Geometry
  */
 export default class Path extends Geometry {
+
     /**
      * Transform projected coordinates to view points
      * @param  {Coordinate[]} prjCoords           - projected coordinates

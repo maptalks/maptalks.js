@@ -1,4 +1,5 @@
 import Geometry from 'geometry/Geometry';
+import GeometryEditor from 'geometry/editor/GeometryEditor';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
@@ -12,7 +13,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             return this;
         }
         this.endEdit();
-        this._editor = new Geometry.Editor(this, opts);
+        this._editor = new GeometryEditor(this, opts);
         this._editor.start();
         this.fire('editstart');
         return this;

@@ -16,11 +16,6 @@ import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
  */
 export default class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
-    constructor(layer) {
-        super();
-        this.layer = layer;
-    }
-
     checkResources() {
         var me = this;
         var resources = OverlayLayerCanvasRenderer.prototype.checkResources.apply(this, arguments);

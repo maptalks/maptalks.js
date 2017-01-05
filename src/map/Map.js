@@ -1,4 +1,4 @@
-import { internalLayerPrefix } from 'core/Constants';
+import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import {
     now,
     extend,
@@ -99,7 +99,6 @@ const options = {
     'renderer': 'canvas'
 };
 
-const RenderableClass = Renderable(Class);
 /**
  *
  * @class
@@ -140,16 +139,30 @@ const RenderableClass = Renderable(Class);
         ]
     });
  */
-export default class Map extends Handlerable(Eventable(RenderableClass)) {
+export default class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     constructor(container, options) {
-        super();
         if (!options) {
             throw new Error('Invalid options when creating map.');
         }
+        if (!options['center']) {
+            throw new Error('Invalid center when creating map.');
+        }
+        // copy options
+        const opts = extend({}, options);
+        const zoom = opts['zoom'];
+        delete opts['zoom'];
+        const center = new Coordinate(opts['center']);
+        delete opts['center'];
+
+        const baseLayer = opts['baseLayer'];
+        delete opts['baseLayer'];
+        const layers = opts['layers'];
+        delete opts['layers'];
+
+        super(opts);
 
         this._loaded = false;
-
         if (isString(container)) {
             this._containerDOM = document.getElementById(container);
             if (!this._containerDOM) {
@@ -171,30 +184,15 @@ export default class Map extends Handlerable(Eventable(RenderableClass)) {
             }
         }
 
-        if (!options['center']) {
-            throw new Error('Invalid center when creating map.');
-        }
-
         this._panels = {};
 
         //Layers
         this._baseLayer = null;
         this._layers = [];
 
-        //shallow copy options
-        var opts = extend({}, options);
+        this._zoomLevel = zoom;
+        this._center = center;
 
-        this._zoomLevel = opts['zoom'];
-        delete opts['zoom'];
-        this._center = new Coordinate(opts['center']);
-        delete opts['center'];
-
-        var baseLayer = opts['baseLayer'];
-        delete opts['baseLayer'];
-        var layers = opts['layers'];
-        delete opts['layers'];
-
-        this.setOptions(opts);
         this.setView(opts['view']);
 
         if (baseLayer) {
@@ -882,7 +880,7 @@ export default class Map extends Handlerable(Eventable(RenderableClass)) {
      */
     getLayers(filter) {
         return this._getLayers(function (layer) {
-            if (layer === this._baseLayer || layer.getId().indexOf(internalLayerPrefix) >= 0) {
+            if (layer === this._baseLayer || layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0) {
                 return false;
             }
             if (filter) {

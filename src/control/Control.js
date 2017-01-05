@@ -20,11 +20,10 @@ import Map from 'map/Map';
 export default class Control extends Eventable(Class) {
 
     constructor(options) {
-        super();
         if (options && options['position'] && !isString(options['position'])) {
             options['position'] = extend({}, options['position']);
         }
-        this.setOptions(options);
+        super(options);
     }
 
     /**

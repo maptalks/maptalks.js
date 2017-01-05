@@ -1,4 +1,4 @@
-import { internalLayerPrefix } from 'core/Constants';
+import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import { isNil } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Browser from 'core/Browser';
@@ -7,7 +7,11 @@ import Geometry from 'geometry/Geometry';
 import DragHandler from 'handler/Drag';
 import VectorLayer from 'layer/VectorLayer';
 import { ConnectorLine } from 'geometry/ConnectorLine';
-import { RenderResources } from 'renderer/layer/CanvasRenderer';
+import { ResourceCache } from 'renderer/layer/CanvasRenderer';
+
+const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
+
+const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
 /**
  * Drag handler for geometries.
@@ -20,16 +24,14 @@ export default class GeometryDragHandler extends Handler  {
 
     constructor(target) {
         super(target);
-        this.dragStageLayerId = internalLayerPrefix + '_drag_stage';
-        this.START = Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'];
     }
 
     addHooks() {
-        this.target.on(this.START.join(' '), this._startDrag, this);
+        this.target.on(EVENTS, this._startDrag, this);
     }
 
     removeHooks() {
-        this.target.off(this.START.join(' '), this._startDrag, this);
+        this.target.off(EVENTS, this._startDrag, this);
     }
 
     _startDrag(param) {
@@ -140,15 +142,15 @@ export default class GeometryDragHandler extends Handler  {
     _prepareDragStageLayer() {
         var map = this.target.getMap(),
             layer = this.target.getLayer();
-        this._dragStageLayer = map.getLayer(this.dragStageLayerId);
+        this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
-            this._dragStageLayer = new VectorLayer(this.dragStageLayerId, {
+            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
                 'drawImmediate': true
             });
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
-        var resources = new RenderResources();
+        var resources = new ResourceCache();
         resources.merge(layer._getRenderer().resources);
         this._dragStageLayer._getRenderer().resources = resources;
     }
@@ -242,7 +244,7 @@ export default class GeometryDragHandler extends Handler  {
             delete this._shadow;
         }
         if (this._shadowConnectors) {
-            map.getLayer(this.dragStageLayerId).removeGeometry(this._shadowConnectors);
+            map.getLayer(DRAG_STAGE_LAYER_ID).removeGeometry(this._shadowConnectors);
             delete this._shadowConnectors;
         }
         delete this._lastPos;

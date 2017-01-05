@@ -1,54 +1,43 @@
-import {
-    commonSetupMap,
-    removeContainer,
-    genAllTypeGeometries
-} from '../SpecCommon';
-import Coordinate from 'geo/Coordinate';
-import {
-    Marker,
-    GeometryCollection
-} from 'geometry';
-import VectorLayer from 'layer/VectorLayer';
-
-describe('#GeometryCollection', function () {
+describe('#GeometryCollection', function() {
 
     var container;
     var map;
-    var center = new Coordinate(118.846825, 32.046534);
+    var tile;
+    var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
 
-    beforeEach(function () {
+    beforeEach(function() {
         var setups = commonSetupMap(center);
         container = setups.container;
         map = setups.map;
-        layer = new VectorLayer('id');
+        layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
     });
 
-    afterEach(function () {
+    afterEach(function() {
         map.removeLayer(layer);
-        removeContainer(container);
+        removeContainer(container)
     });
 
-    it('getCenter', function () {
+    it('getCenter', function() {
         var geometries = genAllTypeGeometries();
-        var collection = new GeometryCollection(geometries);
+        var collection = new maptalks.GeometryCollection(geometries);
 
         expect(collection.getCenter()).to.not.be(null);
     });
 
-    it('getExtent', function () {
+    it('getExtent', function() {
         var geometries = genAllTypeGeometries();
-        var collection = new GeometryCollection(geometries);
+        var collection = new maptalks.GeometryCollection(geometries);
 
         var extent = collection.getExtent();
         expect(extent.getWidth()).to.be.above(0);
         expect(extent.getHeight()).to.be.above(0);
     });
 
-    it('getSize', function () {
+    it('getSize', function() {
         var geometries = genAllTypeGeometries();
-        var collection = new GeometryCollection(geometries);
+        var collection = new maptalks.GeometryCollection(geometries);
         layer.addGeometry(collection);
         var size = collection.getSize();
 
@@ -56,17 +45,17 @@ describe('#GeometryCollection', function () {
         expect(size.height).to.be.above(0);
     });
 
-    it('remove', function () {
+    it('remove', function() {
         var geometries = genAllTypeGeometries();
-        var collection = new GeometryCollection(geometries);
+        var collection = new maptalks.GeometryCollection(geometries);
         layer.addGeometry(collection);
         collection.remove();
 
         expect(collection.getLayer()).to.be(null);
     });
 
-    it('getGeometries/setGeometries', function () {
-        var collection = new GeometryCollection([]);
+    it('getGeometries/setGeometries', function() {
+        var collection = new maptalks.GeometryCollection([]);
 
         expect(collection.getGeometries()).to.be.empty();
 
@@ -76,8 +65,8 @@ describe('#GeometryCollection', function () {
         expect(collection.getGeometries()).to.eql(geometries);
     });
 
-    it('isEmpty', function () {
-        var collection = new GeometryCollection([]);
+    it('isEmpty', function() {
+        var collection = new maptalks.GeometryCollection([]);
 
         expect(collection.isEmpty()).to.be.ok();
 
@@ -88,146 +77,135 @@ describe('#GeometryCollection', function () {
     });
 
     it('getExternalResource', function () {
-        var collection = new GeometryCollection([new Marker(center)]);
+        var collection = new maptalks.GeometryCollection([new maptalks.Marker(center)]);
         var resources = collection._getExternalResources();
         expect(resources).to.have.length(1);
     });
 
-    describe('constructor', function () {
+    describe('constructor', function() {
 
-        it('normal constructor', function () {
+        it('normal constructor', function() {
             var geometries = genAllTypeGeometries();
-            var collection = new GeometryCollection(geometries);
+            var collection = new maptalks.GeometryCollection(geometries);
             expect(collection.getGeometries()).to.have.length(geometries.length);
         });
 
-        it('can be empty.', function () {
-            var collection = new GeometryCollection();
+        it('can be empty.',function() {
+            var collection = new maptalks.GeometryCollection();
             expect(collection.getGeometries()).to.have.length(0);
             expect(collection.isEmpty()).to.be.ok();
         });
 
     });
 
-    describe('collection add to layer', function () {
+    describe('collection add to layer',function() {
         var layers = [
-            new VectorLayer('geometrycollection_test_svg'),
-            new VectorLayer('geometrycollection_test_canvas', {
-                'render': 'canvas'
-            })
-        ];
-        const t = (layer) => {
-            it('can be add to layer', function () {
+                    new maptalks.VectorLayer('geometrycollection_test_svg'),
+                    new maptalks.VectorLayer('geometrycollection_test_canvas',{'render':'canvas'})
+                    ];
+        for (var i=0, len=layers.length;i<len;i++) {
+            var layer = layers[i];
+            it('can be add to layer',function() {
                 var geometries = genAllTypeGeometries();
-                var collection = new GeometryCollection(geometries);
+                var collection = new maptalks.GeometryCollection(geometries);
                 layer.addGeometry(collection);
                 map.addLayer(layer);
             });
 
-            it('can be add to layer already on map', function () {
+            it('can be add to layer already on map',function() {
                 map.addLayer(layer);
                 var geometries = genAllTypeGeometries();
-                var collection = new GeometryCollection(geometries);
+                var collection = new maptalks.GeometryCollection(geometries);
                 layer.addGeometry(collection);
             });
-        };
-        for (var i = 0, len = layers.length; i < len; i++) {
-            var layer = layers[i];
-            t(layer);
         }
     });
 
-    describe('update collection', function () {
-        it('setSymbol to children geometries', function () {
+    describe('update collection',function() {
+        it('setSymbol to children geometries', function() {
             var points = genPoints();
-            var collection = new GeometryCollection(points);
+            var collection = new maptalks.GeometryCollection(points);
             var symbol = {
-                'markerFile': 'test',
-                'markerWidth': 40,
-                'markerHeight': 50
+                'markerFile' : 'test',
+                'markerWidth' : 40,
+                'markerHeight' : 50
             };
             var expected = {
-                'markerFile': 'http://localhost:9876/test',
-                'markerWidth': 40,
-                'markerHeight': 50
+                'markerFile' : 'http://localhost:9876/test',
+                'markerWidth' : 40,
+                'markerHeight' : 50
             };
 
             collection.setSymbol(symbol);
 
             var counter = 0;
-            collection.forEach(function (geometry) {
+            collection.forEach(function(geometry) {
                 counter++;
                 expect(geometry.getSymbol()).to.be.eql(expected);
             });
             expect(counter).to.be.eql(points.length);
         });
 
-        it('can be updated', function () {
+        it('can be updated',function() {
             var geometries = genAllTypeGeometries();
-            var collection = new GeometryCollection(geometries);
+            var collection = new maptalks.GeometryCollection(geometries);
             collection.setGeometries([]);
             expect(collection.getGeometries()).to.have.length(0);
         });
 
         var layers = [
-            new VectorLayer('geometrycollection_test_svg'),
-            new VectorLayer('geometrycollection_test_canvas', {
-                'render': 'canvas'
-            })
-        ];
-        const t = (layer) => {
-
-            it('can be updated after added to layer', function () {
+                    new maptalks.VectorLayer('geometrycollection_test_svg'),
+                    new maptalks.VectorLayer('geometrycollection_test_canvas',{'render':'canvas'})
+                    ];
+        for (var i=0, len=layers.length;i<len;i++) {
+            var layer = layers[i];
+            it('can be updated after added to layer',function() {
                 map.addLayer(layer);
                 var geometries = genAllTypeGeometries();
-                var collection = new GeometryCollection(geometries);
+                var collection = new maptalks.GeometryCollection(geometries);
                 layer.addGeometry(collection);
 
                 collection.setGeometries([]);
                 expect(collection.getGeometries()).to.have.length(0);
                 expect(collection.isEmpty()).to.be.ok();
             });
-        };
-        for (var i = 0, len = layers.length; i < len; i++) {
-            var layer = layers[i];
-            t(layer);
         }
     });
 
-    describe('test filter', function () {
-        it('filter with function', function () {
+    describe('test filter', function() {
+        it('filter with function',function() {
             var points = genPoints();
 
-            var collection = new GeometryCollection(points);
+            var collection = new maptalks.GeometryCollection(points);
 
-            var selection = collection.filter(function (geometry) {
-                return geometry.getType() === 'Point' && geometry.getProperties().foo1 > 0 && geometry.getProperties().foo2.indexOf('test') >= 0;
+            var selection = collection.filter(function(geometry) {
+                return geometry.getType() === 'Point' && geometry.getProperties().foo1 > 0 && geometry.getProperties().foo2.indexOf("test") >= 0;
             });
 
-            expect(selection).to.be.an(GeometryCollection);
+            expect(selection).to.be.an(maptalks.GeometryCollection);
             expect(selection.getGeometries()).to.have.length(points.length);
             for (var i = points.length - 1; i >= 0; i--) {
                 expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
             }
 
-            expect(collection.filter(function (geometry) {
+            expect(collection.filter(function(geometry) {
                 return geometry.getProperties().foo3 === true;
             }).getGeometries()).to.have.length(3);
 
-            selection = collection.filter(function (geometry) {
+            selection = collection.filter(function(geometry) {
                 return geometry.getType() !== 'Point';
             });
             expect(selection).not.to.be.ok();
         });
 
-        it('filter with feature-filter', function () {
+        it('filter with feature-filter',function() {
             var points = genPoints();
 
-            var collection = new GeometryCollection(points);
+            var collection = new maptalks.GeometryCollection(points);
 
             var selection = collection.filter(['in', '$type', 'Point']);
 
-            expect(selection).to.be.an(GeometryCollection);
+            expect(selection).to.be.an(maptalks.GeometryCollection);
             expect(selection.getGeometries()).to.have.length(points.length);
         });
     });
@@ -235,33 +213,33 @@ describe('#GeometryCollection', function () {
 
 function genPoints() {
     return [
-        new Marker([0, 0], {
-            properties: {
-                'foo1': 1,
-                'foo2': 'test1',
-                'foo3': true
-            }
-        }),
-        new Marker([0, 0], {
-            properties: {
-                'foo1': 2,
-                'foo2': 'test2',
-                'foo3': false
-            }
-        }),
-        new Marker([0, 0], {
-            properties: {
-                'foo1': 3,
-                'foo2': 'test3',
-                'foo3': true
-            }
-        }),
-        new Marker([0, 0], {
-            properties: {
-                'foo1': 4,
-                'foo2': 'test4',
-                'foo3': true
-            }
-        })
-    ];
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 1,
+                        'foo2' : 'test1',
+                        'foo3' : true
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 2,
+                        'foo2' : 'test2',
+                        'foo3' : false
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 3,
+                        'foo2' : 'test3',
+                        'foo3' : true
+                    }
+                }),
+                new maptalks.Marker([0,0], {
+                    properties : {
+                        'foo1' : 4,
+                        'foo2' : 'test4',
+                        'foo3' : true
+                    }
+                })
+            ];
 }

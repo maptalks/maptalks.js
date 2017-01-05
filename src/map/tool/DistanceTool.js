@@ -1,4 +1,4 @@
-import { isArray, isArrayHasData, setOptions, UID } from 'core/util';
+import { isArray, isArrayHasData, UID } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import Size from 'geo/Size';
 import { _computeLength } from 'geo/utils';
@@ -88,8 +88,7 @@ const options = {
 export default class DistanceTool extends DrawTool {
 
     constructor(options) {
-        super();
-        setOptions(this, options);
+        super(options);
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];

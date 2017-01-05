@@ -1,5 +1,4 @@
-import { extend, isArray, isNil, isFunction, hasOwn } from './common';
-import { createFilter } from 'utils';
+import { extend, isNil, isFunction, hasOwn } from './common';
 
 export function isGradient(g) {
     return g && g['colorStops'];
@@ -22,7 +21,7 @@ export function getGradientStamp(g) {
 
 export function getSymbolStamp(symbol) {
     var keys = [];
-    if (isArray(symbol)) {
+    if (Array.isArray(symbol)) {
         for (var i = 0; i < symbol.length; i++) {
             keys.push(getSymbolStamp(symbol[i]));
         }
@@ -52,7 +51,7 @@ export function lowerSymbolOpacity(symbol, ratio) {
         }
     }
     var lower;
-    if (isArray(symbol)) {
+    if (Array.isArray(symbol)) {
         lower = [];
         for (var i = 0; i < symbol.length; i++) {
             var d = extend({}, symbol[i]);
@@ -71,14 +70,14 @@ export function extendSymbol(symbol) {
     if (!sources || !sources.length) {
         sources = [{}];
     }
-    if (isArray(symbol)) {
+    if (Array.isArray(symbol)) {
         var s, dest, i, ii, l, ll;
         var result = [];
         for (i = 0, l = symbol.length; i < l; i++) {
             s = symbol[i];
             dest = {};
             for (ii = 0, ll = sources.length; ii < ll; ii++) {
-                if (!isArray(sources[ii])) {
+                if (!Array.isArray(sources[ii])) {
                     extend(dest, s, sources[ii] ? sources[ii] : {});
                 } else if (!isNil(sources[ii][i])) {
                     extend(dest, s, sources[ii][i]);
@@ -90,43 +89,8 @@ export function extendSymbol(symbol) {
         }
         return result;
     } else {
-        return extendSymbol([symbol]);
+        var args = [{}, symbol];
+        args.push.apply(args, sources);
+        return extend.apply(this, args);
     }
-}
-
-
-/**
- * Compile layer's style, styles to symbolize layer's geometries, e.g.<br>
- * <pre>
- * [
- *   {
- *     'filter' : ['==', 'foo', 'val'],
- *     'symbol' : {'markerFile':'foo.png'}
- *   }
- * ]
- * </pre>
- * @param  {Object|Object[]} styles - style to compile
- * @return {Object[]}       compiled styles
- */
-export function compileStyle(styles) {
-    if (!isArray(styles)) {
-        return compileStyle([styles]);
-    }
-    var compiled = [];
-    for (var i = 0; i < styles.length; i++) {
-        if (styles[i]['filter'] === true) {
-            compiled.push({
-                filter: function () {
-                    return true;
-                },
-                symbol: styles[i].symbol
-            });
-        } else {
-            compiled.push({
-                filter: createFilter(styles[i]['filter']),
-                symbol: styles[i].symbol
-            });
-        }
-    }
-    return compiled;
 }
