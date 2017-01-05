@@ -1,5 +1,5 @@
 import { isNumber } from 'core/util';
-import { loadFunctionTypes } from 'utils';
+import { loadFunctionTypes } from 'core/mapbox';
 import Symbolizer from './Symbolizer';
 
 /**

@@ -1,2 +1,2 @@
-export * from './FunctionType';
 export * from './FeatureFilter';
+export * from './FunctionType';

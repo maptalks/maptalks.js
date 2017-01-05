@@ -1,5 +1,5 @@
 import LineString from './LineString';
-import Canvas2d from 'utils/Canvas';
+import Canvas2d from 'core/Canvas';
 
 /**
  * @classdesc Curve style LineString, an abstract parent class for all the curves.

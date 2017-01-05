@@ -1,5 +1,5 @@
 import { on, off, createEl } from 'core/util/dom';
-import Map from 'map';
+import Map from 'map/Map';
 import Control from './Control';
 
 /**

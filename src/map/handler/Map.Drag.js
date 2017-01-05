@@ -1,6 +1,6 @@
 import { now, bind } from 'core/util';
 import { preventDefault } from 'core/util/dom';
-import Handler from 'core/Handler';
+import Handler from 'handler/Handler';
 import DragHandler from 'handler/Drag';
 import Point from 'geo/Point';
 import Map from '../Map';

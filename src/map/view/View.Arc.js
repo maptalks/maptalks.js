@@ -1,5 +1,5 @@
 import { isString, parseJSON } from 'core/util';
-import Ajax from 'utils/Ajax';
+import Ajax from 'core/Ajax';
 
 function parse(arcConf) {
     var tileInfo = arcConf['tileInfo'],

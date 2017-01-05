@@ -1,4 +1,6 @@
+import { extend } from 'core/util';
 import Coordinate from '../Coordinate';
+import Common from './Common';
 
 class Sphere {
     constructor(radius) {
@@ -9,7 +11,7 @@ class Sphere {
         return a * Math.PI / 180;
     }
 
-    measureLength(c1, c2) {
+    measureLenBetween(c1, c2) {
         if (!c1 || !c2) {
             return 0;
         }
@@ -74,7 +76,7 @@ class Sphere {
  * @memberOf measurer
  * @name WGS84Sphere
  */
-export const WGS84Sphere = {
+export const WGS84Sphere = extend({
     'measure': 'EPSG:4326',
     sphere: new Sphere(6378137),
     /**
@@ -83,8 +85,8 @@ export const WGS84Sphere = {
      * @param  {Coordinate} c2
      * @return {Number}
      */
-    measureLength() {
-        return this.sphere.measureLength.apply(this.sphere, arguments);
+    measureLenBetween() {
+        return this.sphere.measureLenBetween.apply(this.sphere, arguments);
     },
     /**
      * Measure the area closed by the given coordinates.
@@ -104,7 +106,7 @@ export const WGS84Sphere = {
     locate() {
         return this.sphere.locate.apply(this.sphere, arguments);
     }
-};
+}, Common);
 
 /**
  * Baidu sphere measurer
@@ -114,7 +116,7 @@ export const WGS84Sphere = {
  * @memberOf measurer
  * @name BaiduSphere
  */
-export const BaiduSphere = {
+export const BaiduSphere = extend({
     'measure': 'BAIDU',
     sphere: new Sphere(6370996.81),
     /**
@@ -123,8 +125,8 @@ export const BaiduSphere = {
      * @param  {Coordinate} c2
      * @return {Number}
      */
-    measureLength() {
-        return this.sphere.measureLength.apply(this.sphere, arguments);
+    measureLenBetween() {
+        return this.sphere.measureLenBetween.apply(this.sphere, arguments);
     },
     /**
      * Measure the area closed by the given coordinates.
@@ -144,4 +146,4 @@ export const BaiduSphere = {
     locate() {
         return this.sphere.locate.apply(this.sphere, arguments);
     }
-};
+}, Common);

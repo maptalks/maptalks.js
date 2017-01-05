@@ -1,8 +1,8 @@
 import { bind, isString } from 'core/util';
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
 import Browser from 'core/Browser';
-import Handler from 'core/Handler';
-import Handlerable from 'core/Handlerable';
+import Handler from 'handler/Handler';
+import Handlerable from 'handler/Handlerable';
 import DragHandler from 'handler/Drag';
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';

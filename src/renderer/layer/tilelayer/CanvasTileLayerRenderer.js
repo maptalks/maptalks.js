@@ -1,7 +1,7 @@
 import Browser from 'core/Browser';
 import PointExtent from 'geo/PointExtent';
 import CanvasTileLayer from 'layer/tile/CanvasTileLayer';
-import Canvas2D from 'utils/Canvas';
+import Canvas2D from 'core/Canvas';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 
 export default class CanvasTileLayerRenderer extends TileLayerCanvasRenderer {

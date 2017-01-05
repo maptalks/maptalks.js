@@ -1,6 +1,6 @@
 import { requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
-import Handler from 'core/Handler';
+import Handler from 'handler/Handler';
 import Map from '../Map';
 
 class MapScrollWheelZoomHandler extends Handler {

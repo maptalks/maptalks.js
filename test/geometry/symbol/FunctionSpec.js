@@ -33,11 +33,11 @@ describe('FunctionTypeSpec', function() {
         result = {};
         for (var p in symbol) {
             if (symbol.hasOwnProperty(p)) {
-                if (maptalks.Util.isFunctionDefinition(symbol[p])) {
+                if (maptalks.MapboxUtil.isFunctionDefinition(symbol[p])) {
                     if (!geo.getMap()) {
                         result[p] = null;
                     } else {
-                        result[p] = maptalks.Util.interpolated(symbol[p])(geo.getMap().getZoom(), geo.getProperties());
+                        result[p] = maptalks.MapboxUtil.interpolated(symbol[p])(geo.getMap().getZoom(), geo.getProperties());
                     }
                 } else {
                     result[p] = symbol[p];

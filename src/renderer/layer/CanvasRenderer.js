@@ -1,8 +1,8 @@
 import { isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
-import Promise from 'utils/Promise';
-import Canvas2D from 'utils/Canvas';
+import Promise from 'core/Promise';
+import Canvas2D from 'core/Canvas';
 import Point from 'geo/Point';
 
 export class ResourceCache {

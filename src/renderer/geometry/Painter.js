@@ -3,7 +3,7 @@ import Class from 'core/Class';
 import Size from 'geo/Size';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
-import Canvas from 'utils/Canvas';
+import Canvas from 'core/Canvas';
 import * as Symbolizers from 'renderer/geometry/symbolizers';
 
 //注册的symbolizer

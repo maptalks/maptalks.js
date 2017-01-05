@@ -1,5 +1,5 @@
 import { isNumber } from 'core/util';
-import Handler from 'core/Handler';
+import Handler from 'handler/Handler';
 import Browser from 'core/Browser';
 import { on, off } from 'core/util/dom';
 import Point from 'geo/Point';

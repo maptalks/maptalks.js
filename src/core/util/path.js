@@ -1,9 +1,4 @@
 /**
- * Utilities for geo
- * @class
- * @protected
- */
-/**
  * caculate the distance from a point to a segment.
  * @param {Point} p
  * @param {Point} p1
@@ -55,16 +50,4 @@ export function pointInsidePolygon(p, points) {
     }
 
     return c;
-}
-
-export function _computeLength(coordinates, measurer) {
-    var result = 0;
-    for (var i = 0, len = coordinates.length; i < len - 1; i++) {
-        result += measurer.measureLength(coordinates[i], coordinates[i + 1]);
-    }
-    return result;
-}
-
-export function _computeArea(coordinates, measurer) {
-    return measurer.measureArea(coordinates);
 }

@@ -15,7 +15,7 @@ import {
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Eventable from 'core/Event';
-import Handlerable from 'core/Handlerable';
+import Handlerable from 'handler/Handlerable';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 import PointExtent from 'geo/PointExtent';

@@ -5,7 +5,7 @@ import {
     loadImage
 } from 'core/util';
 import PointExtent from 'geo/PointExtent';
-import Canvas2D from 'utils/Canvas';
+import Canvas2D from 'core/Canvas';
 import TileLayer from 'layer/tile/TileLayer';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 import TileCache from './TileCache';

@@ -1,6 +1,6 @@
 import { isNil, isArray, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
-import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
+import { pointInsidePolygon, distanceToSegment } from 'core/util/path';
 import Path from './Path';
 
 
@@ -204,7 +204,7 @@ export default class Polygon extends Path {
         }
         var result = 0;
         for (var i = 0, len = rings.length; i < len; i++) {
-            result += _computeLength(rings[i], measurer);
+            result += measurer.measureLength(rings[i]);
         }
         return result;
     }

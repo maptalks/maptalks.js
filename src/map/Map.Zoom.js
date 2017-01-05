@@ -1,6 +1,6 @@
 import { bind, isNil, isInteger } from 'core/util';
 import Browser from 'core/Browser';
-import { Animation } from 'utils/Animation';
+import { Animation } from 'core/Animation';
 import Point from 'geo/Point';
 import Map from './Map';
 

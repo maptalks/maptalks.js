@@ -1,5 +1,5 @@
 import { extend } from './util/common';
-import Handler from './Handler';
+import Handler from 'handler/Handler';
 
 /**
  * OOP facilities of the library. <br/>

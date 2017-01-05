@@ -1,6 +1,6 @@
 import { bind, now, isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Browser from 'core/Browser';
-import Canvas from 'utils/Canvas';
+import Canvas from 'core/Canvas';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 import Layer from './Layer';
 

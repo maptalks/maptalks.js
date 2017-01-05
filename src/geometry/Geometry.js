@@ -1,7 +1,7 @@
 import { GEOMETRY_COLLECTION_TYPES } from 'core/Constants';
 import Class from 'core/Class';
 import Eventable from 'core/Event';
-import Handlerable from 'core/Handlerable';
+import Handlerable from 'handler/Handlerable';
 import {
     extend,
     isNil,

@@ -1,6 +1,6 @@
 import { now, isArrayHasData, requestAnimFrame, cancelAnimFrame, bind } from 'core/util';
 import { on, off, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
-import Handler from 'core/Handler';
+import Handler from 'handler/Handler';
 import Geometry from 'geometry/Geometry';
 import VectorLayer from 'layer/VectorLayer';
 import Map from '../Map';

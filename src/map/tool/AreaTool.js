@@ -1,9 +1,5 @@
-import { isArray } from 'core/util';
 import Size from 'geo/Size';
-import { _computeArea } from 'geo/utils';
-import Geometry from 'geometry/Geometry';
-import Marker from 'geometry/Marker';
-import Label from 'geometry/Label';
+import { Geometry, Marker, Label } from 'geometry';
 import DistanceTool from './DistanceTool';
 
 /**
@@ -72,8 +68,8 @@ export default class AreaTool extends DistanceTool {
         var area;
         if (toMeasure instanceof Geometry) {
             area = map.computeGeometryArea(toMeasure);
-        } else if (isArray(toMeasure)) {
-            area = _computeArea(toMeasure, map.getProjection());
+        } else if (Array.isArray(toMeasure)) {
+            area = map.getProjection().measureArea(toMeasure);
         }
         this._lastMeasure = area;
         var units;

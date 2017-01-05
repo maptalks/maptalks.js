@@ -1,7 +1,6 @@
 import { isArray, isArrayHasData, UID } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import Size from 'geo/Size';
-import { _computeLength } from 'geo/utils';
 import Geometry from 'geometry/Geometry';
 import Marker from 'geometry/Marker';
 import Label from 'geometry/Label';
@@ -135,7 +134,7 @@ export default class DistanceTool extends DrawTool {
         if (toMeasure instanceof Geometry) {
             length = map.computeGeometryLength(toMeasure);
         } else if (isArray(toMeasure)) {
-            length = _computeLength(toMeasure, map.getProjection());
+            length = map.getProjection().measureLength(toMeasure);
         }
         this._lastMeasure = length;
         var units;

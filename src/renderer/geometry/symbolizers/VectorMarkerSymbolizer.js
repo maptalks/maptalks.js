@@ -2,7 +2,7 @@ import { isNil, isNumber, isArray, isArrayHasData, getValueOrDefault } from 'cor
 import { isGradient, getGradientStamp } from 'core/util/style';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
-import Canvas from 'utils/Canvas';
+import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
 const padding = [2, 2];

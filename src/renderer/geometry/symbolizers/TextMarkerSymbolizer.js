@@ -10,7 +10,7 @@ import {
 import { splitTextToRow } from 'core/util/text';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
-import Canvas from 'utils/Canvas';
+import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
 export default class TextMarkerSymbolizer extends PointSymbolizer {

@@ -2,7 +2,7 @@ import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
-import Canvas from 'utils/Canvas';
+import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
 export default class ImageMarkerSymbolizer extends PointSymbolizer {

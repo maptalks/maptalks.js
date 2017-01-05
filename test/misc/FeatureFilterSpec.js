@@ -7,7 +7,7 @@
 */
 
 describe('FeatureFilter', function() {
-    var filter = maptalks.Util.createFilter;
+    var filter = maptalks.MapboxUtil.createFilter;
     it('degenerate', function () {
         expect(filter()()).to.be.ok();
         expect(filter(undefined)()).to.be.ok();

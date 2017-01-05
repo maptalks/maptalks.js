@@ -1,6 +1,6 @@
 import { isFunction } from 'core/util';
 import { extendSymbol } from 'core/util/style';
-import { Animation } from 'utils/Animation';
+import { Animation } from 'core/Animation';
 import Coordinate from 'geo/Coordinate';
 import Geometry from 'geometry/Geometry';
 

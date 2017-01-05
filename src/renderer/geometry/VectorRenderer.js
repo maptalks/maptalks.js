@@ -1,6 +1,6 @@
 import { isArray, isArrayHasData } from 'core/util';
 import Browser from 'core/Browser';
-import Canvas from 'utils/Canvas';
+import Canvas from 'core/Canvas';
 import Ellipse from 'geometry/Ellipse';
 import Circle from 'geometry/Circle';
 import Sector from 'geometry/Sector';

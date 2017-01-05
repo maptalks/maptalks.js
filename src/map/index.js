@@ -14,4 +14,7 @@ import './Map.Profile';
 import './Map.Topo';
 import './Map.Zoom';
 
-export default Map;
+export { Map };
+
+export { MapTool, DrawTool, AreaTool, DistanceTool } from './tool';
+export { default as View } from './view/View';

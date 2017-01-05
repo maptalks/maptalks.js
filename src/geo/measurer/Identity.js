@@ -1,6 +1,6 @@
-import { isArrayHasData } from 'core/util';
+import { extend } from 'core/util';
 import Coordinate from 'geo/Coordinate';
-
+import Common from './Common';
 /**
  * Identity measurer, a measurer for Cartesian coordinate system.
  *
@@ -10,7 +10,7 @@ import Coordinate from 'geo/Coordinate';
  * @memberOf measurer
  * @name Identity
  */
-export default {
+export default extend({
     /**
      * the code of the measurer
      * @static
@@ -24,7 +24,7 @@ export default {
      * @return {Number}
      * @static
      */
-    measureLength: function (c1, c2) {
+    measureLenBetween: function (c1, c2) {
         if (!c1 || !c2) {
             return 0;
         }
@@ -41,7 +41,7 @@ export default {
      * @static
      */
     measureArea: function (coordinates) {
-        if (!isArrayHasData(coordinates)) {
+        if (!Array.isArray(coordinates)) {
             return 0;
         }
         var area = 0;
@@ -81,4 +81,4 @@ export default {
         }
         return new Coordinate(c.x + xDist, c.y + yDist);
     }
-};
+}, Common);

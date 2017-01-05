@@ -2,7 +2,7 @@ import { isNode } from './env';
 import Browser from '../Browser';
 import { extend, isNil, isArray, isNumber, isString } from './common';
 import { isURL, extractCssUrl } from './util';
-import * as utils from 'utils';
+import { isFunctionDefinition, getFunctionTypeResources } from 'core/mapbox';
 import { Symbolizer } from 'renderer/geometry/symbolizers';
 
 export function translateToSVGStyles(s) {
@@ -130,8 +130,8 @@ export function getExternalResources(symbol, toAbsolute) {
         }
         for (ii = 0; ii < props.length; ii++) {
             res = symbol[props[ii]];
-            if (utils.isFunctionDefinition(res)) {
-                res = utils.getFunctionTypeResources(res);
+            if (isFunctionDefinition(res)) {
+                res = getFunctionTypeResources(res);
             }
             if (!res) {
                 continue;
@@ -148,10 +148,10 @@ export function getExternalResources(symbol, toAbsolute) {
             }
         }
         if (symbol['markerType'] === 'path' && symbol['markerPath']) {
-            w = utils.isFunctionDefinition(symbol['markerWidth']) ? 200 : symbol['markerWidth'];
-            h = utils.isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
-            if (utils.isFunctionDefinition(symbol['markerPath'])) {
-                res = utils.getFunctionTypeResources(symbol['markerPath']);
+            w = isFunctionDefinition(symbol['markerWidth']) ? 200 : symbol['markerWidth'];
+            h = isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
+            if (isFunctionDefinition(symbol['markerPath'])) {
+                res = getFunctionTypeResources(symbol['markerPath']);
                 var path = symbol['markerPath'];
                 for (iii = 0; iii < res.length; iii++) {
                     symbol['markerPath'] = res[iii];
@@ -193,7 +193,7 @@ export function convertResourceUrl(symbol) {
 }
 
 function _convertUrlToAbsolute(res) {
-    if (utils.isFunctionDefinition(res)) {
+    if (isFunctionDefinition(res)) {
         var stops = res.stops;
         for (var i = 0; i < stops.length; i++) {
             stops[i][1] = _convertUrlToAbsolute(stops[i][1]);

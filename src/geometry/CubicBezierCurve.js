@@ -1,5 +1,5 @@
 import Curve from './Curve';
-import Canvas from 'utils/Canvas';
+import Canvas from 'core/Canvas';
 
 /**
  * @classdesc Cubic Bezier Curve

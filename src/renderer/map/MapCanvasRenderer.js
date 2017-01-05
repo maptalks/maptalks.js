@@ -2,7 +2,7 @@ import { bind, isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame }
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
-import Canvas2D from 'utils/Canvas';
+import Canvas2D from 'core/Canvas';
 import OverlayLayer from 'layer/OverlayLayer';
 import MapRenderer from './MapRenderer';
 import Map from 'map/Map';

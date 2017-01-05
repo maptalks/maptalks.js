@@ -1,5 +1,5 @@
 import { off, addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault } from 'core/util/dom';
-import Handler from 'core/Handler';
+import Handler from 'handler/Handler';
 import Point from 'geo/Point';
 import Map from '../Map';
 

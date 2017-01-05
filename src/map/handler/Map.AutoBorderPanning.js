@@ -1,6 +1,6 @@
 import { requestAnimFrame, cancelAnimFrame, bind } from 'core/util';
 import { on, off } from 'core/util/dom';
-import Handler from 'core/Handler';
+import Handler from 'handler/Handler';
 import Point from 'geo/Point';
 import Map from '../Map';
 

@@ -1,5 +1,5 @@
 import { isArray, isFunction, isArrayHasData } from 'core/util';
-import { createFilter, getFilterFeature } from 'utils';
+import { createFilter, getFilterFeature } from 'core/mapbox';
 import { getExternalResources } from 'core/util/resource';
 import Coordinate from 'geo/Coordinate';
 import Geometry from './Geometry';

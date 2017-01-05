@@ -1,8 +1,8 @@
 import { bind, isNil, isArray } from 'core/util';
-import { Animation } from 'utils/Animation';
+import { Animation } from 'core/Animation';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
-import { pointInsidePolygon, distanceToSegment, _computeLength } from 'geo/utils';
+import { pointInsidePolygon, distanceToSegment } from 'core/util/path';
 import Path from './Path';
 
 /**
@@ -142,7 +142,7 @@ export default class LineString extends Path {
     }
 
     _computeGeodesicLength(measurer) {
-        return _computeLength(this.getCoordinates(), measurer);
+        return measurer.measureLength(this.getCoordinates());
     }
 
     _computeGeodesicArea() {

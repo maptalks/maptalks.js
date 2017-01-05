@@ -2,7 +2,7 @@ import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import { isNil } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Browser from 'core/Browser';
-import Handler from 'core/Handler';
+import Handler from 'handler/Handler';
 import Geometry from 'geometry/Geometry';
 import DragHandler from 'handler/Drag';
 import VectorLayer from 'layer/VectorLayer';
