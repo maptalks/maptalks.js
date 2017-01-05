@@ -1,4 +1,4 @@
-import { bind, isNil, isInteger } from 'core/util';
+import { isNil, isInteger } from 'core/util';
 import Browser from 'core/Browser';
 import { Animation } from 'core/Animation';
 import Point from 'geo/Point';
@@ -36,7 +36,6 @@ Map.include(/** @lends Map.prototype */{
         if (isNil(startScale)) {
             startScale = 1;
         }
-        var me = this;
         var endScale = this._getResolution(this._startZoomVal) / this._getResolution(nextZoom);
         var duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
         this._frameZoom = this._startZoomVal;
@@ -48,13 +47,13 @@ Map.include(/** @lends Map.prototype */{
                 'easing' : 'out',
                 'speed'  : duration
             },
-            bind(function (frame) {
+            frame => {
                 if (frame.state.playState === 'finished') {
-                    me.onZoomEnd(frame.styles['zoom'], origin);
+                    this.onZoomEnd(frame.styles['zoom'], origin);
                 } else {
-                    me.onZooming(frame.styles['zoom'], origin, startScale);
+                    this.onZooming(frame.styles['zoom'], origin, startScale);
                 }
-            }, this)
+            }
         ).play();
     },
 

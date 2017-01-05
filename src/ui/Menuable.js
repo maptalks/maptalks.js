@@ -1,4 +1,4 @@
-import { extend, isArray, setOptions } from 'core/util';
+import { extend, setOptions } from 'core/util';
 import Map from '../map/Map';
 import Geometry from '../geometry/Geometry';
 import Menu from './Menu';
@@ -79,7 +79,7 @@ const Menuable = {
         if (!this._menuOptions) {
             this._menuOptions = {};
         }
-        if (isArray(items)) {
+        if (Array.isArray(items)) {
             this._menuOptions['custom'] = false;
         }
         this._menuOptions['items'] = items;

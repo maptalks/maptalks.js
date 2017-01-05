@@ -1,4 +1,4 @@
-import { now, bind } from 'core/util';
+import { now } from 'core/util';
 import { preventDefault } from 'core/util/dom';
 import Handler from 'handler/Handler';
 import DragHandler from 'handler/Drag';
@@ -13,7 +13,7 @@ class MapDragHandler extends Handler {
         }
         var dom = map._panels.mapWrapper || map._containerDOM;
         this._dragHandler = new DragHandler(dom, {
-            'cancelOn': bind(this._cancelOn, this)
+            'cancelOn': this._cancelOn.bind(this)
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)

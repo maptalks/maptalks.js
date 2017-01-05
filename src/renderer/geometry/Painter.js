@@ -1,4 +1,4 @@
-import { isArray, isNumber, mapArrayRecursively } from 'core/util';
+import { isNumber, mapArrayRecursively } from 'core/util';
 import Class from 'core/Class';
 import Size from 'geo/Size';
 import Point from 'geo/Point';
@@ -43,7 +43,7 @@ export default class Painter extends Class {
             symbolizers = [],
             regSymbolizers = registerSymbolizers,
             symbols = geoSymbol;
-        if (!isArray(geoSymbol)) {
+        if (!Array.isArray(geoSymbol)) {
             symbols = [geoSymbol];
         }
         var symbol, symbolizer;
@@ -114,7 +114,7 @@ export default class Painter extends Class {
             points = paintParams[0],
             containerPoints;
         //convert view points to container points needed by canvas
-        if (isArray(points)) {
+        if (Array.isArray(points)) {
             containerPoints = mapArrayRecursively(points, function (point) {
                 return map._pointToContainerPoint(point, maxZoom)._substract(layerPoint);
             });

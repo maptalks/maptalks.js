@@ -21,37 +21,6 @@ export function extend(dest) { // (Object[, Object, ...]) ->
     return dest;
 }
 
-/**
- * Object.create or a polyfill in old browsers.
- * @function
- * @param {Object} proto - the proto to create on.
- * @return {Object}
- */
-const create = Object.create || (function () {
-    function F() {}
-    return function (proto) {
-        F.prototype = proto;
-        return new F();
-    };
-})();
-export { create };
-
-/**
- * Function.bind or a polyfill in old browsers.
- * @param {Function} fn     - function to bind
- * @param {Object} obj      - context to bind
- * @return {Function} function binded.
- */
-export function bind(fn, obj) {
-    var slice = Array.prototype.slice;
-    if (fn.bind) {
-        return fn.bind.apply(fn, slice.call(arguments, 1));
-    }
-    var args = slice.call(arguments, 2);
-    return function () {
-        return fn.apply(obj, args.length ? args.concat(slice.call(arguments)) : arguments);
-    };
-}
 
 /**
  * from leaflet <br>
@@ -124,21 +93,6 @@ export function isInteger(n) {
  */
 export function isObject(obj) {
     return typeof obj === 'object' && !!obj;
-}
-
-/*
- * 判断是否数组
- * @param {Object} obj
- * @return {Boolean} true|false
- */
-export function isArray(obj) {
-    if (!obj) {
-        return false;
-    }
-    if (Array.isArray) {
-        return Array.isArray(obj);
-    }
-    return Object.prototype.toString.call(obj) === '[object Array]';
 }
 
 /**

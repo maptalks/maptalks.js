@@ -4,7 +4,6 @@ import {
     extend,
     isNode,
     isNil,
-    isArray,
     isString,
     isFunction,
     isNumber,
@@ -912,7 +911,7 @@ export default class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!layers) {
             return this;
         }
-        if (!isArray(layers)) {
+        if (!Array.isArray(layers)) {
             return this.addLayer([layers]);
         }
         if (!this._layerCache) {
@@ -959,7 +958,7 @@ export default class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!layers) {
             return this;
         }
-        if (!isArray(layers)) {
+        if (!Array.isArray(layers)) {
             return this.removeLayer([layers]);
         }
         for (var i = 0, len = layers.length; i < len; i++) {
@@ -1009,7 +1008,7 @@ export default class Map extends Handlerable(Eventable(Renderable(Class))) {
      * map.sortLayers(['3', '2', '1']); // sort by layer ids.
      */
     sortLayers(layers) {
-        if (!layers || !isArray(layers)) {
+        if (!layers || !Array.isArray(layers)) {
             return this;
         }
         var layersToOrder = [];
@@ -1561,7 +1560,7 @@ export default class Map extends Handlerable(Eventable(Renderable(Class))) {
             return;
         }
         var layerLists = Array.prototype.slice.call(arguments, 1);
-        if (layerLists && !isArray(layerLists)) {
+        if (layerLists && !Array.isArray(layerLists)) {
             layerLists = [layerLists];
         }
         var layers = [];

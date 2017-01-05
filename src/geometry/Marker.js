@@ -1,4 +1,3 @@
-import { isArray } from 'core/util';
 import Extent from 'geo/Extent';
 import CenterMixin from './CenterMixin';
 import Geometry from './Geometry';
@@ -53,7 +52,7 @@ export default class Marker extends CenterMixin(Geometry) {
 
     _isVectorMarker() {
         const symbol = this._getInternalSymbol();
-        if (isArray(symbol)) {
+        if (Array.isArray(symbol)) {
             return false;
         }
         return Symbolizers.VectorMarkerSymbolizer.test(symbol);
@@ -66,7 +65,7 @@ export default class Marker extends CenterMixin(Geometry) {
      */
     _canEdit() {
         const symbol = this._getInternalSymbol();
-        if (isArray(symbol)) {
+        if (Array.isArray(symbol)) {
             return false;
         }
         return Symbolizers.VectorMarkerSymbolizer.test(symbol) || Symbolizers.VectorPathMarkerSymbolizer.test(symbol) ||

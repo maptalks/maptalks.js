@@ -1,4 +1,4 @@
-import { isArray, isFunction, isArrayHasData } from 'core/util';
+import { isFunction, isArrayHasData } from 'core/util';
 import { createFilter, getFilterFeature } from 'core/mapbox';
 import { getExternalResources } from 'core/util/resource';
 import Coordinate from 'geo/Coordinate';
@@ -36,7 +36,7 @@ export default class GeometryCollection extends Geometry {
     setGeometries(_geometries) {
         var geometries = this._checkGeometries(_geometries);
         //Set the collection as child geometries' parent.
-        if (isArray(geometries)) {
+        if (Array.isArray(geometries)) {
             for (var i = geometries.length - 1; i >= 0; i--) {
                 geometries[i]._initOptions(this.config());
                 geometries[i]._setParent(this);
@@ -234,13 +234,13 @@ export default class GeometryCollection extends Geometry {
      */
     _checkGeometries(geometries) {
         var invalidGeoError = 'The geometry added to collection is invalid.';
-        if (geometries && !isArray(geometries)) {
+        if (geometries && !Array.isArray(geometries)) {
             if (geometries instanceof Geometry) {
                 return [geometries];
             } else {
                 throw new Error(invalidGeoError);
             }
-        } else if (isArray(geometries)) {
+        } else if (Array.isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
                 if (!(geometries[i] instanceof Geometry)) {
                     throw new Error(invalidGeoError + ' Index: ' + i);

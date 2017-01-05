@@ -1,4 +1,4 @@
-import { isArray, isArrayHasData, UID } from 'core/util';
+import { isArrayHasData, UID } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import Size from 'geo/Size';
 import Geometry from 'geometry/Geometry';
@@ -133,7 +133,7 @@ export default class DistanceTool extends DrawTool {
         var length;
         if (toMeasure instanceof Geometry) {
             length = map.computeGeometryLength(toMeasure);
-        } else if (isArray(toMeasure)) {
+        } else if (Array.isArray(toMeasure)) {
             length = map.getProjection().measureLength(toMeasure);
         }
         this._lastMeasure = length;

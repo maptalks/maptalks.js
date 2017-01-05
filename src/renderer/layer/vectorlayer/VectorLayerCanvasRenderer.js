@@ -1,4 +1,3 @@
-import { isArray } from 'core/util';
 import { getExternalResources } from 'core/util/resource';
 import VectorLayer from 'layer/VectorLayer';
 import CanvasRenderer from '../CanvasRenderer';
@@ -21,7 +20,7 @@ export default class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         var resources = OverlayLayerCanvasRenderer.prototype.checkResources.apply(this, arguments);
         var style = this.layer.getStyle();
         if (style) {
-            if (!isArray(style)) {
+            if (!Array.isArray(style)) {
                 style = [style];
             }
             style.forEach(function (s) {

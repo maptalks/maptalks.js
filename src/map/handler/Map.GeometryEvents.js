@@ -1,4 +1,4 @@
-import { now, isArrayHasData, requestAnimFrame, cancelAnimFrame, bind } from 'core/util';
+import { now, isArrayHasData, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { on, off, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
 import Handler from 'handler/Handler';
 import Geometry from 'geometry/Geometry';
@@ -92,7 +92,7 @@ class MapGeometryEventsHandler extends Handler {
             'coordinate': coordinate,
             'layers': layers
         };
-        var callback = bind(fireGeometryEvent, this);
+        var callback = fireGeometryEvent.bind(this);
         var me = this;
         if (this._queryIdentifyTimeout) {
             cancelAnimFrame(this._queryIdentifyTimeout);

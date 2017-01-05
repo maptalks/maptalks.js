@@ -1,4 +1,4 @@
-import { bind, isNil, isArray } from 'core/util';
+import { isNil } from 'core/util';
 import { Animation } from 'core/Animation';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
@@ -89,14 +89,14 @@ export default class LineString extends Path {
         }, {
             'speed': duration,
             'easing': easing
-        }, bind(function (frame) {
+        }, frame => {
             if (!this.getMap()) {
                 player.finish();
                 this.setCoordinates(coordinates);
                 return;
             }
             this._drawAnimFrame(frame.styles.t, duration, length, coordinates);
-        }, this));
+        });
         player.play();
         return this;
     }
@@ -202,7 +202,7 @@ export default class LineString extends Path {
         }
 
         points = points || this._getPath2DPoints(this._getPrjCoordinates());
-        var isSplitted = points.length > 0 && isArray(points[0]);
+        var isSplitted = points.length > 0 && Array.isArray(points[0]);
         if (isSplitted) {
             for (var i = 0, l = points.length; i < l; i++) {
                 if (isContains(points[i])) {

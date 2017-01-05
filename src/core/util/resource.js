@@ -1,6 +1,6 @@
 import { isNode } from './env';
 import Browser from '../Browser';
-import { extend, isNil, isArray, isNumber, isString } from './common';
+import { extend, isNil, isNumber, isString } from './common';
 import { isURL, extractCssUrl } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from 'core/mapbox';
 import { Symbolizer } from 'renderer/geometry/symbolizers';
@@ -63,7 +63,7 @@ export function getMarkerPathBase64(symbol) {
         }
     }
 
-    var pathes = isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    var pathes = Array.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
     var i, path, pathesToRender = [];
     for (i = 0; i < pathes.length; i++) {
         path = isString(pathes[i]) ? {
@@ -113,7 +113,7 @@ export function getExternalResources(symbol, toAbsolute) {
         return null;
     }
     var symbols = symbol;
-    if (!isArray(symbol)) {
+    if (!Array.isArray(symbol)) {
         symbols = [symbol];
     }
     var resources = [];
@@ -136,7 +136,7 @@ export function getExternalResources(symbol, toAbsolute) {
             if (!res) {
                 continue;
             }
-            if (!isArray(res)) {
+            if (!Array.isArray(res)) {
                 res = [res];
             }
             for (iii = 0; iii < res.length; iii++) {

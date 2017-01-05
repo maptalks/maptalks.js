@@ -1,4 +1,4 @@
-import { isNil, isArray, isNumber, mapArrayRecursively } from 'core/util';
+import { isNil, isNumber, mapArrayRecursively } from 'core/util';
 
 /**
  * Represents a coordinate point <br>
@@ -27,7 +27,7 @@ export default class Coordinate {
              * @property {Number} y - value on Y-Axis or Latitude in degrees
              */
             this.y = +(y);
-        } else if (isArray(x)) {
+        } else if (Array.isArray(x)) {
             //数组
             this.x = +(x[0]);
             this.y = +(x[1]);
@@ -51,7 +51,7 @@ export default class Coordinate {
      * var numCoords = Coordinate.toNumberArrays([new Coordinate(100,0), new Coordinate(101,1)]);
      */
     static toNumberArrays(coordinates) {
-        if (!isArray(coordinates)) {
+        if (!Array.isArray(coordinates)) {
             return [coordinates.x, coordinates.y];
         }
         return mapArrayRecursively(coordinates, function (coord) {
@@ -74,7 +74,7 @@ export default class Coordinate {
         var result = [];
         for (var i = 0, len = coordinates.length; i < len; i++) {
             var child = coordinates[i];
-            if (isArray(child)) {
+            if (Array.isArray(child)) {
                 if (isNumber(child[0])) {
                     result.push(new Coordinate(child));
                 } else {

@@ -1,4 +1,4 @@
-import { isNil, isArray, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { isNil, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'core/Promise';
@@ -59,7 +59,7 @@ export class ResourceCache {
     }
 
     _getImgUrl(url) {
-        if (!isArray(url)) {
+        if (!Array.isArray(url)) {
             return url;
         }
         return url[0];

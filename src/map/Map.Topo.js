@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { extend, isString, isArray, isArrayHasData } from 'core/util';
+import { extend, isString, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Map from './Map';
 
@@ -94,7 +94,7 @@ Map.include(/** @lends Map.prototype */ {
             }
             var layerHits = layer.identify(point, options);
             if (layerHits) {
-                if (isArray(layerHits)) {
+                if (Array.isArray(layerHits)) {
                     hits = hits.concat(layerHits);
                 } else {
                     hits.push(layerHits);

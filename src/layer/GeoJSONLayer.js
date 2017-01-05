@@ -1,4 +1,4 @@
-import { isArray, parseJSON } from 'core/util';
+import { parseJSON } from 'core/util';
 import Geometry from 'geometry/Geometry';
 import VectorLayer from './VectorLayer';
 
@@ -34,7 +34,7 @@ export default class GeoJSONLayer extends VectorLayer {
     }
 
     constructor(id, json, options) {
-        if (json && !isArray(json)) {
+        if (json && !Array.isArray(json)) {
             if (!json['type']) {
                 //is options
                 options = json;

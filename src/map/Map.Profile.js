@@ -3,7 +3,6 @@ import {
     extend,
     isNil,
     isObject,
-    isArray,
     isArrayHasData
 } from 'core/util';
 import Layer from 'layer/Layer';
@@ -38,12 +37,12 @@ import GeoJSON from 'geometry/GeoJSON';
     var marker = Geometry.fromJSON(profile);
  */
 Geometry.fromJSON = function (json) {
-    if (isArray(json)) {
+    if (Array.isArray(json)) {
         var result = [],
             c;
         for (var i = 0, len = json.length; i < len; i++) {
             c = Geometry.fromJSON(json[i]);
-            if (isArray(json)) {
+            if (Array.isArray(json)) {
                 result = result.concat(c);
             } else {
                 result.push(c);
@@ -150,7 +149,7 @@ Map.include(/** @lends Map.prototype */ {
         }
         var i, len, layers, opts,
             layersJSON = [];
-        if (isNil(options['layers']) || (options['layers'] && !isArray(options['layers']))) {
+        if (isNil(options['layers']) || (options['layers'] && !Array.isArray(options['layers']))) {
             layers = this.getLayers();
             for (i = 0, len = layers.length; i < len; i++) {
                 if (!layers[i].toJSON) {

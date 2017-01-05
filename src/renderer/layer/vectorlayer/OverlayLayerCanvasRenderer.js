@@ -1,4 +1,4 @@
-import { isArray, isArrayHasData } from 'core/util';
+import { isArrayHasData } from 'core/util';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 
 /**
@@ -22,7 +22,7 @@ export default class OverlayLayerRenderer extends CanvasRenderer {
     // resources of old symbols will still be stored.
     // 2. removed geometries' resources won't be removed.
     checkResources(geometries) {
-        if (!this._resourceChecked && !isArray(geometries)) {
+        if (!this._resourceChecked && !Array.isArray(geometries)) {
             geometries = this.layer._geoList;
         }
         if (!geometries || !isArrayHasData(geometries)) {

@@ -1,4 +1,4 @@
-import { isArray, isString } from 'core/util';
+import { isString } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Transformation from 'geo/transformation/Transformation';
@@ -25,7 +25,7 @@ export default class TileConfig {
     prepareTileInfo(tileSystem, fullExtent) {
         if (isString(tileSystem)) {
             tileSystem = TileSystem[tileSystem.toLowerCase()];
-        } else if (isArray(tileSystem)) {
+        } else if (Array.isArray(tileSystem)) {
             tileSystem = new TileSystem(tileSystem);
         }
 

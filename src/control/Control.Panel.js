@@ -1,4 +1,4 @@
-import { extend, bind, isNil, isString } from 'core/util';
+import { extend, isNil, isString } from 'core/util';
 import { createEl } from 'core/util/dom';
 import Point from 'geo/Point';
 import DragHandler from 'handler/Drag';
@@ -68,7 +68,7 @@ export default class Panel extends Control {
         }
 
         this.draggable = new DragHandler(dom, {
-            'cancelOn': bind(this._cancelOn, this)
+            'cancelOn': this._cancelOn.bind(this)
         });
 
         this.draggable.on('dragstart', this._onDragStart, this)

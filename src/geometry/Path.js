@@ -1,4 +1,4 @@
-import { isArray, isNil, isNumber, isArrayHasData } from 'core/util';
+import { isNil, isNumber, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Geometry from './Geometry';
@@ -50,7 +50,7 @@ export default class Path extends Geometry {
             isClip = map.options['clipFullExtent'],
             isSimplify = !disableSimplify && this.getLayer() && this.getLayer().options['enableSimplify'],
             tolerance = 2 * map._getResolution(),
-            isMulti = isArray(prjCoords[0]);
+            isMulti = Array.isArray(prjCoords[0]);
         if (isSimplify && !isMulti) {
             prjCoords = simplify(prjCoords, tolerance, false);
         }
@@ -243,7 +243,7 @@ export default class Path extends Geometry {
     _hitTestTolerance() {
         var symbol = this._getInternalSymbol();
         var w;
-        if (isArray(symbol)) {
+        if (Array.isArray(symbol)) {
             w = 0;
             for (var i = 0; i < symbol.length; i++) {
                 if (isNumber(symbol[i]['lineWidth'])) {

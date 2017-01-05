@@ -1,4 +1,4 @@
-import { isArray, extend } from 'core/util';
+import { extend } from 'core/util';
 
 /**
  * @classdesc
@@ -16,7 +16,7 @@ import { isArray, extend } from 'core/util';
  */
 export default class TileSystem {
     constructor(sx, sy, ox, oy) {
-        if (isArray(sx)) {
+        if (Array.isArray(sx)) {
             this.scale = {
                 x: sx[0],
                 y: sx[1]

@@ -1,4 +1,4 @@
-import { isNil, isNumber, isArray, isArrayHasData, getValueOrDefault } from 'core/util';
+import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
 import { isGradient, getGradientStamp } from 'core/util/style';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
@@ -148,7 +148,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     _getGraidentExtent(points) {
         var e = new PointExtent(),
             m = this.getMarkerExtent();
-        if (isArray(points)) {
+        if (Array.isArray(points)) {
             for (var i = points.length - 1; i >= 0; i--) {
                 e._combine(points[i]);
             }

@@ -1,4 +1,4 @@
-import { isArray, computeDegree } from 'core/util';
+import { computeDegree } from 'core/util';
 import Marker from 'geometry/Marker';
 import Ellipse from 'geometry/Ellipse';
 import Circle from 'geometry/Circle';
@@ -78,7 +78,7 @@ const PolyRenderer = {
         var points, rotations = null;
         if (placement === 'vertex') {
             points = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom);
-            if (points && points.length > 0 && isArray(points[0])) {
+            if (points && points.length > 0 && Array.isArray(points[0])) {
                 //anti-meridian
                 points = points[0].concat(points[1]);
             }
@@ -86,7 +86,7 @@ const PolyRenderer = {
             points = [];
             rotations = [];
             var vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom),
-                isSplitted =  vertice.length > 0 && isArray(vertice[0]);
+                isSplitted =  vertice.length > 0 && Array.isArray(vertice[0]);
             var i, len;
             if (isSplitted) {
                 //anti-meridian splitted

@@ -6,7 +6,7 @@
  */
 
 import { isNode } from './env';
-import { create, isArray, isString, isNil, hasOwn } from './common';
+import { isString, isNil, hasOwn } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
@@ -75,7 +75,7 @@ let uid = 0;
  */
 export function setOptions(obj, options) {
     if (hasOwn(obj, 'options')) {
-        obj.options = obj.options ? create(obj.options) : {};
+        obj.options = obj.options ? Object.create(obj.options) : {};
     }
     for (var i in options) {
         obj.options[i] = options[i];
@@ -233,7 +233,7 @@ export function removeFromArray(obj, array) {
 }
 
 export function mapArrayRecursively(arr, fn, context) {
-    if (!isArray(arr)) {
+    if (!Array.isArray(arr)) {
         return null;
     }
     var result = [],
@@ -244,7 +244,7 @@ export function mapArrayRecursively(arr, fn, context) {
             result.push(null);
             continue;
         }
-        if (isArray(p)) {
+        if (Array.isArray(p)) {
             result.push(mapArrayRecursively(p, fn, context));
         } else {
             pp = context ? fn.call(context, p) : fn(p);
@@ -256,7 +256,7 @@ export function mapArrayRecursively(arr, fn, context) {
 }
 
 export function mapArray(array, fn, context) {
-    if (!isArray(array)) {
+    if (!Array.isArray(array)) {
         return null;
     }
     var result = [],
@@ -381,7 +381,7 @@ export function round(num) {
  * @return {Boolean} true|false
  */
 export function isArrayHasData(obj) {
-    return isArray(obj) && obj.length > 0;
+    return Array.isArray(obj) && obj.length > 0;
 }
 
 /**

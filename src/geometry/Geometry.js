@@ -7,7 +7,6 @@ import {
     isNil,
     isString,
     isNumber,
-    isArray,
     isObject,
     isArrayHasData,
     mapArrayRecursively
@@ -128,13 +127,13 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
             return geometries[0].getFirstCoordinate();
         }
         var coordinates = this.getCoordinates();
-        if (!isArray(coordinates)) {
+        if (!Array.isArray(coordinates)) {
             return coordinates;
         }
         var first = coordinates;
         do {
             first = first[0];
-        } while (isArray(first));
+        } while (Array.isArray(first));
         return first;
     }
 
@@ -152,13 +151,13 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
             return geometries[geometries.length - 1].getLastCoordinate();
         }
         var coordinates = this.getCoordinates();
-        if (!isArray(coordinates)) {
+        if (!Array.isArray(coordinates)) {
             return coordinates;
         }
         var last = coordinates;
         do {
             last = last[last.length - 1];
-        } while (isArray(last));
+        } while (Array.isArray(last));
         return last;
     }
 
@@ -288,7 +287,7 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
     getSymbol() {
         var s = this._symbol;
         if (s) {
-            if (!isArray(s)) {
+            if (!Array.isArray(s)) {
                 return extend({}, s);
             } else {
                 return extendSymbol(s);
@@ -467,7 +466,7 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
         if (!symbol) {
             return true;
         }
-        if (isArray(symbol)) {
+        if (Array.isArray(symbol)) {
             if (symbol.length === 0) {
                 return true;
             }
@@ -577,7 +576,7 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
         }
         var coordinates = this.getCoordinates();
         if (coordinates) {
-            if (isArray(coordinates)) {
+            if (Array.isArray(coordinates)) {
                 var translated = mapArrayRecursively(coordinates, function (coord) {
                     return coord.add(offset);
                 });
@@ -846,7 +845,7 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
     }
 
     _prepareSymbol(symbol) {
-        if (isArray(symbol)) {
+        if (Array.isArray(symbol)) {
             var cookedSymbols = [];
             for (var i = 0; i < symbol.length; i++) {
                 cookedSymbols.push(convertResourceUrl(this._checkAndCopySymbol(symbol[i])));

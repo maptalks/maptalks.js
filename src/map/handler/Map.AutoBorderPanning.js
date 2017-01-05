@@ -1,4 +1,4 @@
-import { requestAnimFrame, cancelAnimFrame, bind } from 'core/util';
+import { requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { on, off } from 'core/util/dom';
 import Handler from 'handler/Handler';
 import Point from 'geo/Point';
@@ -73,7 +73,7 @@ class MapAutoBorderPanningHandler extends Handler {
             this.target.panBy(this._stepOffset, {
                 'animation': false
             });
-            this._animationId = requestAnimFrame(bind(this._pan, this));
+            this._animationId = requestAnimFrame(this._pan.bind(this));
         }
     }
 }

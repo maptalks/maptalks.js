@@ -1,6 +1,4 @@
 import {
-    now,
-    bind,
     isNumber,
     throttle,
     requestAnimFrame
@@ -131,7 +129,7 @@ export default class TileLayerDomRenderer extends Class {
 
     _loadTile(tile) {
         this._tiles[tile['id']] = tile;
-        return this._createTile(tile, bind(this._tileReady, this));
+        return this._createTile(tile, this._tileReady.bind(this));
     }
 
     _createTile(tile, done) {
@@ -140,8 +138,8 @@ export default class TileLayerDomRenderer extends Class {
 
         tile['el'] = tileImage;
 
-        on(tileImage, 'load', bind(this._tileOnLoad, this, done, tile));
-        on(tileImage, 'error', bind(this._tileOnError, this, done, tile));
+        on(tileImage, 'load', this._tileOnLoad.bind(this, done, tile));
+        on(tileImage, 'error', this._tileOnError.bind(this, done, tile));
 
         if (this.layer.options['crossOrigin']) {
             tile.crossOrigin = this.layer.options['crossOrigin'];
@@ -188,7 +186,7 @@ export default class TileLayerDomRenderer extends Class {
             });
         }
 
-        tile.loaded = now();
+        tile.loaded = Date.now();
 
         var map = this.getMap();
 
@@ -225,7 +223,7 @@ export default class TileLayerDomRenderer extends Class {
                     pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
                 // to trigger a pruning.
-                this._pruneTimeout = setTimeout(bind(this._pruneTiles, this, pruneLevels), timeout + 100);
+                this._pruneTimeout = setTimeout(this._pruneTiles.bind(this, pruneLevels), timeout + 100);
             }
         }
     }
@@ -233,7 +231,7 @@ export default class TileLayerDomRenderer extends Class {
     _tileOnLoad(done, tile) {
         // For https://github.com/Leaflet/Leaflet/issues/3332
         if (Browser.ielt9) {
-            setTimeout(bind(done, this, null, tile), 0);
+            setTimeout(done.bind(this, null, tile), 0);
         } else {
             done.call(this, null, tile);
         }

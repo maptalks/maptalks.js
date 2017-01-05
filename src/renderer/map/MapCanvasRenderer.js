@@ -1,4 +1,4 @@
-import { bind, isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
@@ -373,12 +373,12 @@ export default class MapCanvasRenderer extends MapRenderer {
             return;
         }
         this._resizeFrame = requestAnimFrame(
-            bind(function () {
+            () => {
                 if (this.map._moving || this.map._isBusy()) {
                     return;
                 }
                 this.map.checkSize();
-            }, this)
+            }
         );
     }
 
@@ -402,14 +402,14 @@ export default class MapCanvasRenderer extends MapRenderer {
         }, this);
         if (map.options['checkSize'] && !isNode && (typeof window !== 'undefined')) {
             // on(window, 'resize', this._checkSize, this);
-            this._resizeInterval = setInterval(bind(function () {
+            this._resizeInterval = setInterval(() => {
                 if (!map._containerDOM.parentNode) {
                     //is deleted
                     clearInterval(this._resizeInterval);
                 } else {
                     this._checkSize();
                 }
-            }, this), 1000);
+            }, 1000);
         }
         if (!Browser.mobile && Browser.canvas) {
             this._onMapMouseMove = function (param) {

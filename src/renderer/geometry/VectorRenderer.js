@@ -1,4 +1,4 @@
-import { isArray, isArrayHasData } from 'core/util';
+import { isArrayHasData } from 'core/util';
 import Browser from 'core/Browser';
 import Canvas from 'core/Canvas';
 import Ellipse from 'geometry/Ellipse';
@@ -91,7 +91,7 @@ if (Browser.canvas) {
         _getArrowStyle() {
             var arrowStyle = this.options['arrowStyle'];
             if (arrowStyle) {
-                return isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
+                return Array.isArray(arrowStyle) ? arrowStyle : this.arrowStyles[arrowStyle];
             }
             return null;
         },
@@ -101,7 +101,7 @@ if (Browser.canvas) {
             if (!arrowStyle || points.length < 2) {
                 return null;
             }
-            var isSplitted = points.length > 0 && isArray(points[0]);
+            var isSplitted = points.length > 0 && Array.isArray(points[0]);
             var segments = isSplitted ? points : [points];
             var placement = this._getArrowPlacement();
             var arrows = [];
@@ -148,7 +148,7 @@ if (Browser.canvas) {
             var prjVertexes = this._getPrjCoordinates(),
                 points = this._getPath2DPoints(prjVertexes, false, maxZoom),
                 //splitted by anti-meridian
-                isSplitted = points.length > 0 && isArray(points[0]);
+                isSplitted = points.length > 0 && Array.isArray(points[0]);
             if (isSplitted) {
                 points = [
                     [points[0]],
@@ -162,7 +162,7 @@ if (Browser.canvas) {
                 for (var i = 0; i < prjHoles.length; i++) {
                     hole = this._getPath2DPoints(prjHoles[i], false, maxZoom);
                     if (isSplitted) {
-                        if (isArray(hole)) {
+                        if (Array.isArray(hole)) {
                             points[0].push(hole[0]);
                             points[1].push(hole[1]);
                         } else {

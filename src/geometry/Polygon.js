@@ -1,4 +1,4 @@
-import { isNil, isArray, isArrayHasData } from 'core/util';
+import { isNil, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import { pointInsidePolygon, distanceToSegment } from 'core/util/path';
 import Path from './Path';
@@ -53,7 +53,7 @@ export default class Polygon extends Path {
         }
         var rings = Coordinate.toCoordinates(coordinates);
         var len = rings.length;
-        if (!isArray(rings[0])) {
+        if (!Array.isArray(rings[0])) {
             this._coordinates = this._trimRing(rings);
         } else {
             this._coordinates = this._trimRing(rings[0]);
@@ -254,7 +254,7 @@ export default class Polygon extends Path {
 
         // screen points
         var points = this._getPath2DPoints(this._getPrjCoordinates()),
-            isSplitted = isArray(points[0]);
+            isSplitted = Array.isArray(points[0]);
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {
                 if (isContains(points[i])) {

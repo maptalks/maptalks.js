@@ -1,6 +1,5 @@
 import {
     isNil,
-    isArray,
     isString,
     parseJSON,
     indexOfArray,
@@ -83,11 +82,11 @@ export default {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
-        if (isArray(geoJSON)) {
+        if (Array.isArray(geoJSON)) {
             var resultGeos = [];
             for (var i = 0, len = geoJSON.length; i < len; i++) {
                 var geo = this._convert(geoJSON[i]);
-                if (isArray(geo)) {
+                if (Array.isArray(geo)) {
                     resultGeos = resultGeos.concat(geo);
                 } else {
                     resultGeos.push(geo);

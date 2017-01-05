@@ -20,7 +20,7 @@ describe('FunctionTypeSpec', function () {
 
     function interpolateSymbol(geo, symbol) {
         var result;
-        if (maptalks.Util.isArray(symbol)) {
+        if (Array.isArray(symbol)) {
             result = [];
             for (var i = 0; i < symbol.length; i++) {
                 result.push(interpolateSymbol(symbol[i]));

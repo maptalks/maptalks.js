@@ -1,4 +1,4 @@
-import { isArray, isArrayHasData } from 'core/util';
+import { isArrayHasData } from 'core/util';
 import GeometryCollection from './GeometryCollection';
 import Coordinate from 'geo/Coordinate';
 
@@ -22,7 +22,7 @@ export default class MultiGeometry extends GeometryCollection {
     getCoordinates() {
         var coordinates = [];
         var geometries = this.getGeometries();
-        if (!isArray(geometries)) {
+        if (!Array.isArray(geometries)) {
             return null;
         }
         for (var i = 0, len = geometries.length; i < len; i++) {
@@ -62,7 +62,7 @@ export default class MultiGeometry extends GeometryCollection {
     }
 
     _checkGeometries(geometries) {
-        if (isArray(geometries)) {
+        if (Array.isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
                 if (geometries[i] && !(geometries[i] instanceof this.GeometryType)) {
                     throw new Error('Geometry is not valid for collection, index:' + i);

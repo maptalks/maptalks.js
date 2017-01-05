@@ -1,4 +1,4 @@
-import { bind, isString } from 'core/util';
+import { isString } from 'core/util';
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Handler from 'handler/Handler';
@@ -402,7 +402,7 @@ class UIMarkerDragHandler extends Handler {
 
     _prepareDragHandler() {
         this._dragHandler = new DragHandler(this.target.getDOM(), {
-            'cancelOn': bind(this._cancelOn, this)
+            'cancelOn': this._cancelOn.bind(this)
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this);
         this._dragHandler.on('dragging', this._dragging, this);

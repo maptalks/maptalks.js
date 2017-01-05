@@ -1,6 +1,5 @@
 import {
     extend,
-    now,
     isNumber,
     isString,
     requestAnimFrame
@@ -395,7 +394,7 @@ extend(Player.prototype, {
             this.currentTime = 0;
             this._prepare();
         }
-        var t = now();
+        var t = Date.now();
         if (!this.startTime) {
             var options = this._options;
             this.startTime = options['startTime'] ? options['startTime'] : t;
@@ -446,7 +445,7 @@ extend(Player.prototype, {
         if (this.playState === 'finished' || this.playState === 'paused') {
             return;
         }
-        const t = now();
+        const t = Date.now();
         var elapsed = t - this._playStartTime;
         if (this._options['repeat'] && elapsed >= this.duration) {
             this._playStartTime = t;
@@ -463,7 +462,7 @@ extend(Player.prototype, {
                 if (this.playState !== 'running') {
                     return;
                 }
-                this.currentTime = now - this._playStartTime;
+                this.currentTime = elapsed;
                 if (step) {
                     step(frame);
                 }

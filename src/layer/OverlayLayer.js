@@ -1,4 +1,4 @@
-import { isNil, isArray, isArrayHasData, UID } from 'core/util';
+import { isNil, isArrayHasData, UID } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import { Geometry, GeometryCollection, LineString } from 'geometry';
@@ -159,7 +159,7 @@ export default class OverlayLayer extends Layer {
         if (!geometries) {
             return this;
         }
-        if (!isArray(geometries)) {
+        if (!Array.isArray(geometries)) {
             var count = arguments.length;
             var last = arguments[count - 1];
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
@@ -259,7 +259,7 @@ export default class OverlayLayer extends Layer {
      * @returns {OverlayLayer} this
      */
     removeGeometry(geometries) {
-        if (!isArray(geometries)) {
+        if (!Array.isArray(geometries)) {
             return this.removeGeometry([geometries]);
         }
         for (var i = geometries.length - 1; i >= 0; i--) {

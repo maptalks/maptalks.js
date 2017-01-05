@@ -1,4 +1,4 @@
-import { bind, now, isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import Browser from 'core/Browser';
 import Canvas from 'core/Canvas';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
@@ -184,7 +184,7 @@ CanvasLayer.registerRenderer('canvas', class extends CanvasRenderer {
     }
 
     startAnim() {
-        this._animTime = now();
+        this._animTime = Date.now();
         this._paused = false;
         this._play();
     }
@@ -244,7 +244,7 @@ CanvasLayer.registerRenderer('canvas', class extends CanvasRenderer {
     _drawLayer() {
         var args = [this.context];
         if (this._animTime) {
-            args.push(now() - this._animTime);
+            args.push(Date.now() - this._animTime);
         }
         args.push.apply(args, this._drawContext);
         this.layer.draw.apply(this.layer, args);
@@ -268,9 +268,9 @@ CanvasLayer.registerRenderer('canvas', class extends CanvasRenderer {
             return;
         }
         if (!this._animTime) {
-            this._animTime = now();
+            this._animTime = Date.now();
         }
-        var frameFn = bind(this._drawLayer, this);
+        var frameFn = this._drawLayer.bind(this);
         this._pause();
         var fps = this.layer.options['fps'];
         if (fps >= 1000 / 16) {
