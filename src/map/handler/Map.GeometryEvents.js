@@ -5,17 +5,15 @@ import Geometry from 'geometry/Geometry';
 import VectorLayer from 'layer/VectorLayer';
 import Map from '../Map';
 
+const EVENTS = 'mousedown mouseup mousemove click dblclick contextmenu touchstart touchmove touchend';
+
 class MapGeometryEventsHandler extends Handler {
-    constructor(target) {
-        super(target);
-        this.EVENTS = 'mousedown mouseup mousemove click dblclick contextmenu touchstart touchmove touchend';
-    }
 
     addHooks() {
         var map = this.target;
         var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
-            on(dom, this.EVENTS, this._identifyGeometryEvents, this);
+            on(dom, EVENTS, this._identifyGeometryEvents, this);
         }
     }
 
@@ -23,7 +21,7 @@ class MapGeometryEventsHandler extends Handler {
         var map = this.target;
         var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
-            off(dom, this.EVENTS, this._identifyGeometryEvents, this);
+            off(dom, EVENTS, this._identifyGeometryEvents, this);
         }
     }
 
@@ -93,7 +91,7 @@ class MapGeometryEventsHandler extends Handler {
             'layers': layers
         };
         var callback = fireGeometryEvent.bind(this);
-        var me = this;
+
         if (this._queryIdentifyTimeout) {
             cancelAnimFrame(this._queryIdentifyTimeout);
         }
@@ -107,11 +105,10 @@ class MapGeometryEventsHandler extends Handler {
 
         function fireGeometryEvent(geometries) {
             var propagation = true;
-            var i;
             if (eventType === 'mousemove') {
                 var geoMap = {};
                 if (isArrayHasData(geometries)) {
-                    for (i = geometries.length - 1; i >= 0; i--) {
+                    for (let i = geometries.length - 1; i >= 0; i--) {
                         if (!(geometries[i] instanceof Geometry)) {
                             continue;
                         }
@@ -124,10 +121,10 @@ class MapGeometryEventsHandler extends Handler {
 
                 map._setPriorityCursor(geometryCursorStyle);
 
-                var oldTargets = me._prevMouseOverTargets;
-                me._prevMouseOverTargets = geometries;
+                var oldTargets = this._prevMouseOverTargets;
+                this._prevMouseOverTargets = geometries;
                 if (isArrayHasData(oldTargets)) {
-                    for (i = oldTargets.length - 1; i >= 0; i--) {
+                    for (let i = oldTargets.length - 1; i >= 0; i--) {
                         var oldTarget = oldTargets[i];
                         if (!(oldTarget instanceof Geometry)) {
                             continue;
@@ -152,7 +149,7 @@ class MapGeometryEventsHandler extends Handler {
 
             } else {
                 if (!geometries || geometries.length === 0) { return; }
-                for (i = geometries.length - 1; i >= 0; i--) {
+                for (let i = geometries.length - 1; i >= 0; i--) {
                     if (!(geometries[i] instanceof Geometry)) {
                         continue;
                     }

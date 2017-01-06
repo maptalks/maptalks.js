@@ -2,43 +2,17 @@ const alias = require('./alias');
 const commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve');
-/*const webpackConfig = {
-    resolve: {
-        alias: alias
-    },
-    node: {
-        fs: 'empty',
-        url: 'empty',
-        http: 'empty',
-        https: 'empty'
-    },
-    module: {
-        loaders: [{
-            test: /\.js/,
-            exclude: /node_modules/,
-            loader: 'babel-loader'
-        }]
-    },
-    devtool: '#inline-source-map'
-};*/
 
 module.exports = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
     basePath: '..',
     files: [
-        { pattern: 'src/maptalks.js', included: true },
-        { pattern: 'src/**/*.js', included: false },
+        'src/maptalks.js',
         'test/core/ClassSpec.js',
         'test/**/*.js',
-    // {
-    //     pattern: 'build/test-context.js',
-    //     watched: false
-    // },
         {
             pattern: 'assets/css/**/*.css',
-            watched: true,
-            included: false,
-            served: true
+            included: false
         }, {
             pattern: 'assets/images/**/*.png',
             watched: false,
@@ -79,15 +53,15 @@ module.exports = {
         sourceMap: 'inline',          // sensible for testing
     },
     babelPreprocessor: {
-      options: {
-        "presets": [
-            "es2015"
-          ],
-        "sourceMap" : 'inline',
-        "plugins": [
-            // ["transform-es2015-modules-umd"],
-        ]
-      }
+        'options': {
+            'presets': [
+                'es2015'
+            ],
+            'sourceMap' : 'inline',
+            'plugins': [
+                // ["transform-es2015-modules-umd"],
+            ]
+        }
     },
     customLaunchers: {
         IE10: {
@@ -98,9 +72,5 @@ module.exports = {
             base: 'IE',
             'x-ua-compatible': 'IE=EmulateIE9'
         }
-    }/*,
-    webpack: webpackConfig,
-    webpackMiddleward: {
-        noInfo: true
-    }*/
+    }
 };

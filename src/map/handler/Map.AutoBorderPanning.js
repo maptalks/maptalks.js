@@ -26,22 +26,23 @@ class MapAutoBorderPanningHandler extends Handler {
     }
 
     _onMouseMove(event) {
-        var eventParam = this.target._parseEvent(event);
-        var mousePos = eventParam['containerPoint'];
-        var size = this.target.getSize();
-        var tests = [mousePos.x, size['width'] - mousePos.x,
+        const eventParam = this.target._parseEvent(event);
+        const mousePos = eventParam['containerPoint'];
+        const size = this.target.getSize();
+        const tests = [
+            mousePos.x, size['width'] - mousePos.x,
             mousePos.y, size['height'] - mousePos.y
         ];
 
-        var min = Math.min.apply(Math, tests),
+        const min = Math.min.apply(Math, tests),
             absMin = Math.abs(min);
 
         if (absMin === 0 || absMin > this.threshold) {
             this._cancelPan();
             return;
         }
-        var step = this.step;
-        var offset = new Point(0, 0);
+        const step = this.step;
+        const offset = new Point(0, 0);
         if (tests[0] === min) {
             offset.x = -step;
         } else if (tests[1] === min) {

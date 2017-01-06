@@ -1,11 +1,11 @@
 {
   "name": "maptalks",
-  "version": "0.14.10",
+  "version": "0.16.0",
   "description": "An open-source javascript library for map applications.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MapTalks/maptalks.js.git"
+    "url": "https://github.com/maptalks/maptalks.js.git"
   },
   "scripts": {
     "report-coverage": "codecov",
@@ -68,8 +68,7 @@
     "rollup-plugin-replace": "^1.1.1",
     "rollup-plugin-uglify": "^1.0.1",
     "rollup-watch": "^2.5.0",
-    "sinon": "^1.14.1",
-    "webpack": "^1.14.0"
+    "sinon": "^1.14.1"
   },
   "dependencies": {
     "simplify-js": "^1.2.1",

@@ -11,9 +11,9 @@ class MapDoubleClickZoomHandler extends Handler {
     }
 
     _onDoubleClick(param) {
-        var map = this.target;
+        const map = this.target;
         if (map.options['doubleClickZoom']) {
-            var oldZoom = map.getZoom(),
+            const oldZoom = map.getZoom(),
                 zoom = param['domEvent']['shiftKey'] ? Math.ceil(oldZoom) - 1 : Math.floor(oldZoom) + 1;
             map._zoomAnimation(zoom, param['containerPoint']);
         }

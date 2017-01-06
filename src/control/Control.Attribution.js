@@ -5,11 +5,11 @@ import Map from '../map/Map';
 /**
  * @property {Object} options - options
  * @property {Object} [options.position='bottom-left'] - position of the control
- * @property {String} [options.content='Powered By <a href="http://www.org" target="_blank">MapTalks</a>']  - content of the attribution control, HTML format
+ * @property {String} [options.content='Powered By <a href="http://www.org" target="_blank">maptalks</a>']  - content of the attribution control, HTML format
  */
 const options = {
     'position': 'bottom-left',
-    'content': 'Powered By <a href="http://www.org" target="_blank">MapTalks</a>'
+    'content': 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>'
 };
 
 /**

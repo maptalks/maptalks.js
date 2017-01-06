@@ -81,14 +81,14 @@ gulp.task('scripts', ['lint'], function () {
             format: 'umd',
             moduleName: 'maptalks',
             banner: banner,
-            dest: 'dist/maptalks.browser.js'
-        }).then(function () {
+            dest: 'dist/maptalks.js'
+        })/*.then(function () {
             bundle.write({
                 format: 'cjs',
                 banner: banner,
                 dest: 'dist/maptalks.js'
             });
-        });
+        })*/;
     });
 });
 
@@ -132,6 +132,8 @@ gulp.task('test', ['lint'], function (done) {
     new Server(karmaConfig, done).start();
 });
 
+var karmaServer;
+
 /**
  * Watch for file changes and re-run tests on each change
  */
@@ -146,7 +148,13 @@ gulp.task('tdd', function (done) {
             }
         };
     }
-    new Server(karmaConfig, done).start();
+    karmaServer = new Server(karmaConfig, done);
+    gulp.watch(['src/**/*.js'], ['karma.refreshFiles()']);
+    karmaServer.start();
+});
+
+gulp.task('karma.refreshFiles()', function () {
+    karmaServer && karmaServer.refreshFiles();
 });
 
 gulp.task('connect', ['watch'], function () {
