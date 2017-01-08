@@ -33,7 +33,7 @@ module.exports = {
     },
     preprocessors: {
         'test/core/ClassSpec.js' : ['babel'],
-        'src/maptalks.js': ['rollup'],
+        'src/maptalks.js': ['rollup']
     },
     rollupPreprocessor: {
         plugins : [
@@ -57,10 +57,7 @@ module.exports = {
             'presets': [
                 'es2015'
             ],
-            'sourceMap' : 'inline',
-            'plugins': [
-                // ["transform-es2015-modules-umd"],
-            ]
+            'sourceMap' : 'inline'
         }
     },
     customLaunchers: {

@@ -60,7 +60,7 @@ gulp.task('lint', () => {
 });
 
 // TODO: minify
-gulp.task('scripts', ['lint'], function () {
+gulp.task('scripts', function () {
     return rollup({
         entry: 'src/maptalks.js',
         plugins: [
@@ -114,7 +114,7 @@ gulp.task('watch', ['build'], function () {
 /**
  * Run test once and exit
  */
-gulp.task('test', ['lint'], function (done) {
+gulp.task('test', function (done) {
     var karmaConfig = {
         configFile: path.join(__dirname, 'build/karma.unit.config.js'),
         browsers: browsers
