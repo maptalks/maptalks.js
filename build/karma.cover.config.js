@@ -14,7 +14,7 @@ module.exports = function (config) {
                     subdir: '.'
                 }
             ]
-        }
+        },
         singleRun: true
     });
 
