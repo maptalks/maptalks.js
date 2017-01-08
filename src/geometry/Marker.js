@@ -103,4 +103,4 @@ export default class Marker extends CenterMixin(Geometry) {
 
 Marker.mergeOptions(options);
 
-Marker.registerAs('Marker');
+Marker.registerJSONType('Marker');

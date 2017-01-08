@@ -220,4 +220,4 @@ export default class Sector extends CenterMixin(Polygon) {
 
 Sector.mergeOptions(options);
 
-Sector.registerAs('Sector');
+Sector.registerJSONType('Sector');

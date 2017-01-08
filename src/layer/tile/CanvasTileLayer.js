@@ -31,4 +31,4 @@ export default class CanvasTileLayer extends TileLayer {
     }
 }
 
-CanvasTileLayer.registerAs('CanvasTileLayer');
+CanvasTileLayer.registerJSONType('CanvasTileLayer');

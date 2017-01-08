@@ -218,7 +218,7 @@ const options = {
 
 ConnectorLine.mergeOptions(options);
 
-ConnectorLine.registerAs('ConnectorLine');
+ConnectorLine.registerJSONType('ConnectorLine');
 
 /**
  * An arc curve connector line geometry can connect geometries or ui components with each other. <br>
@@ -260,4 +260,4 @@ export class ArcConnectorLine extends Connectable(ArcCurve) {
 
 ArcConnectorLine.mergeOptions(options);
 
-ArcConnectorLine.registerAs('ArcConnectorLine');
+ArcConnectorLine.registerJSONType('ArcConnectorLine');

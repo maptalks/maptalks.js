@@ -155,4 +155,4 @@ export default class Circle extends CenterMixin(Polygon) {
 
 Circle.mergeOptions(options);
 
-Circle.registerAs('Circle');
+Circle.registerJSONType('Circle');

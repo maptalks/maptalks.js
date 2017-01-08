@@ -289,4 +289,4 @@ CanvasLayer.registerRenderer('canvas', class extends CanvasRenderer {
     }
 });
 
-CanvasLayer.registerAs('CanvasLayer');
+CanvasLayer.registerJSONType('CanvasLayer');

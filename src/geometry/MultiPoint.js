@@ -25,4 +25,4 @@ export default class MultiPoint extends MultiGeometry {
     }
 }
 
-MultiPoint.registerAs('MultiPoint');
+MultiPoint.registerJSONType('MultiPoint');

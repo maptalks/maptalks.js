@@ -62,18 +62,27 @@ const options = {
  */
 export default class Geometry extends Eventable(Handlerable(Class)) {
 
-    static registerAs(name) {
-        if (!name) {
+    /**
+     * Register layer for JSON serialization and assign a JSON type.
+     * @param  {String} type - JSON type
+     */
+    static registerJSONType(type) {
+        if (!type) {
             return;
         }
-        registeredTypes[name] = this;
+        registeredTypes[type] = this;
     }
 
-    static getClass(name) {
-        if (!name) {
+    /**
+     * Get geometry class of input JSON type
+     * @param  {String} type - JSON type
+     * @return {class}      Geometry Class
+     */
+    static getClass(type) {
+        if (!type) {
             return null;
         }
-        return registeredTypes[name];
+        return registeredTypes[type];
     }
 
     constructor(options) {

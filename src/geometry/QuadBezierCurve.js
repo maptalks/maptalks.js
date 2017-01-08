@@ -57,4 +57,4 @@ export default class QuadBezierCurve extends Curve {
     }
 }
 
-QuadBezierCurve.registerAs('QuadBezierCurve');
+QuadBezierCurve.registerJSONType('QuadBezierCurve');

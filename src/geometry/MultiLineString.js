@@ -42,4 +42,4 @@ export default class MultiLineString extends MultiGeometry {
     }
 }
 
-MultiLineString.registerAs('MultiLineString');
+MultiLineString.registerJSONType('MultiLineString');

@@ -490,4 +490,4 @@ export default class GeometryCollection extends Geometry {
     }
 }
 
-GeometryCollection.registerAs('GeometryCollection');
+GeometryCollection.registerJSONType('GeometryCollection');

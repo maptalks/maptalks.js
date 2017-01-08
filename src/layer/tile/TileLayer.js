@@ -293,6 +293,6 @@ export default class TileLayer extends Layer {
     }
 }
 
-TileLayer.registerAs('TileLayer');
+TileLayer.registerJSONType('TileLayer');
 
 TileLayer.mergeOptions(options);

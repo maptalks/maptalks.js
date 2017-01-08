@@ -52,4 +52,4 @@ export default class MultiPolygon extends MultiGeometry {
     }
 }
 
-MultiPolygon.registerAs('MultiPolygon');
+MultiPolygon.registerJSONType('MultiPolygon');

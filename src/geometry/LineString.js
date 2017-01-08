@@ -220,4 +220,4 @@ export default class LineString extends Path {
 
 LineString.mergeOptions(options);
 
-LineString.registerAs('LineString');
+LineString.registerJSONType('LineString');

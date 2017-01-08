@@ -48,4 +48,4 @@ export default class CubicBezierCurve extends Curve {
     }
 }
 
-CubicBezierCurve.registerAs('CubicBezierCurve');
+CubicBezierCurve.registerJSONType('CubicBezierCurve');

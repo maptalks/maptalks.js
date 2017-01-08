@@ -43,21 +43,25 @@ export default class Layer extends Eventable(Renderable(Class)) {
 
     /**
      * Register layer for JSON serialization and assign a JSON type.
-     * @param  {[type]} name [description]
-     * @return {[type]}      [description]
+     * @param  {String} type - JSON type
      */
-    static registerAs(name) {
-        if (!name) {
+    static registerJSONType(type) {
+        if (!type) {
             return;
         }
-        registeredTypes[name] = this;
+        registeredTypes[type] = this;
     }
 
-    static getClass(name) {
-        if (!name) {
+    /**
+     * Get layer class of input JSON type
+     * @param  {String} type - JSON type
+     * @return {class}      Layer Class
+     */
+    static getClass(type) {
+        if (!type) {
             return null;
         }
-        return registeredTypes[name];
+        return registeredTypes[type];
     }
 
     constructor(id, options) {
