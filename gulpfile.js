@@ -7,7 +7,7 @@ var minimist = require('minimist'),
     commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
-    buble = require('rollup-plugin-buble'),
+    babel = require('rollup-plugin-babel'),
     alias = require('rollup-plugin-alias'),
     eslint = require('gulp-eslint'),
     concat = require('gulp-concat'),
@@ -72,7 +72,7 @@ gulp.task('scripts', function () {
             }),
             //convert zousan to es6 modules
             commonjs(),
-            buble(),
+            babel(),
         ]
     }).then(function (bundle) {
         return bundle.write({

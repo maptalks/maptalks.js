@@ -1,7 +1,8 @@
-const alias = require('./alias');
-const commonjs = require('rollup-plugin-commonjs'),
-    nodeResolve = require('rollup-plugin-node-resolve'),
-    localResolve = require('rollup-plugin-local-resolve');
+const alias = require('rollup-plugin-alias');
+const commonjs = require('rollup-plugin-commonjs');
+const nodeResolve = require('rollup-plugin-node-resolve');
+const localResolve = require('rollup-plugin-local-resolve');
+const babel = require('rollup-plugin-babel');
 
 module.exports = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
@@ -29,12 +30,11 @@ module.exports = {
     },
     preprocessors: {
         'test/core/ClassSpec.js': ['babel'],
-        // 'src/maptalks.js': ['rollup', 'sourcemap']
-        'src/maptalks.js': ['rollup', 'sourcemap', 'coverage']
+        'src/maptalks.js': ['rollup']
     },
     rollupPreprocessor: {
         plugins: [
-            require('rollup-plugin-alias')(alias),
+            alias(require('./alias')),
             localResolve(),
             nodeResolve({
                 jsnext: true,
@@ -43,7 +43,7 @@ module.exports = {
             }),
             //convert zousan to es6 modules
             commonjs(),
-            require('rollup-plugin-buble')(),
+            babel(),
         ],
         format: 'iife', // helps prevent naming collisions
         moduleName: 'maptalks', // required for 'iife' format

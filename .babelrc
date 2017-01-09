@@ -1,7 +1,10 @@
 {
   "presets": [
-    "es2015"
+    ["es2015", {
+      "modules": false
+    }]
   ],
+  "plugins": ["transform-proto-to-assign"],
   "ignore": [
     "dist/*.js"
   ]
