@@ -85,5 +85,27 @@ describe('Class', () => {
     it('throws an error when creating without new operator', () => {
         expect(() => { maptalks.Marker(); }).to.throwException();
     });
+
+    it('call parent\'s method by super', function () {
+        const D = class extends maptalks.Class {
+            constructor() {
+                super();
+            }
+
+            foo(name, gender) {
+                return name + ',' + gender;
+            }
+        };
+        const E = class extends D {
+            constructor() {
+                super();
+            }
+
+            foo2() {
+                return super.foo.apply(this, arguments);
+            }
+        };
+        expect(new E().foo2('bar', 'male')).to.be.eql('bar,male');
+    });
 });
 

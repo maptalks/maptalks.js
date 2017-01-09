@@ -49,14 +49,6 @@ module.exports = {
         moduleName: 'maptalks', // required for 'iife' format
         sourceMap: 'inline', // sensible for testing
     },
-    babelPreprocessor: {
-        'options': {
-            'presets': [
-                'es2015'
-            ],
-            'sourceMap': 'inline'
-        }
-    },
     customLaunchers: {
         IE10: {
             base: 'IE',

@@ -9,7 +9,6 @@ var minimist = require('minimist'),
     localResolve = require('rollup-plugin-local-resolve'),
     babel = require('rollup-plugin-babel'),
     alias = require('rollup-plugin-alias'),
-    eslint = require('gulp-eslint'),
     concat = require('gulp-concat'),
     cssnano = require('gulp-cssnano'),
     connect = require('gulp-connect'),
@@ -49,15 +48,6 @@ browsers = browsers.map(function (name) {
     }
 });
 
-var stylesPattern = './assets/css/**/*.css';
-
-gulp.task('lint', () => {
-    return gulp.src(['src/**/*.js', 'test/**/*.js', '!node_modules/**'])
-        .pipe(eslint())
-        .pipe(eslint.format())
-        .pipe(eslint.failAfterError());
-});
-
 // TODO: minify
 gulp.task('scripts', function () {
     return rollup({
@@ -72,7 +62,7 @@ gulp.task('scripts', function () {
             }),
             //convert zousan to es6 modules
             commonjs(),
-            babel(),
+            babel()
         ]
     }).then(function (bundle) {
         return bundle.write({
@@ -89,6 +79,8 @@ gulp.task('scripts', function () {
         })*/;
     });
 });
+
+var stylesPattern = './assets/css/**/*.css';
 
 gulp.task('styles', function () {
     return gulp.src(stylesPattern)
@@ -139,6 +131,9 @@ gulp.task('tdd', function (done) {
     var karmaConfig = {
         configFile: path.join(__dirname, 'build/karma.dev.config.js')
     };
+    if (browsers) {
+        karmaConfig.browsers = browsers;
+    }
     if (options.pattern) {
         karmaConfig.client = {
             mocha: {
