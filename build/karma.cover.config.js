@@ -12,7 +12,7 @@ module.exports = function (config) {
         //         { type: 'lcov', subdir: '.' }
         //     ]
         // },
-        reporters: ['mocha', 'coverage', 'remap-coverate'],
+        reporters: ['mocha', 'coverage', 'remap-coverage'],
         coverageReporter: {
             type: 'in-memory'
         },
