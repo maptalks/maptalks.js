@@ -15,14 +15,10 @@ module.exports = {
             included: false
         }, {
             pattern: 'assets/images/**/*.png',
-            watched: false,
-            included: false,
-            served: true
+            included: false
         }, {
             pattern: 'test/resources/*',
-            watched: false,
-            included: false,
-            served: true
+            included: false
         }
     ],
     proxies: {
@@ -32,11 +28,12 @@ module.exports = {
         '/resources/': '/base/test/resources/'
     },
     preprocessors: {
-        'test/core/ClassSpec.js' : ['babel'],
-        'src/maptalks.js': ['rollup']
+        'test/core/ClassSpec.js': ['babel'],
+        // 'src/maptalks.js': ['rollup', 'sourcemap']
+        'src/maptalks.js': ['rollup', 'sourcemap', 'coverage']
     },
     rollupPreprocessor: {
-        plugins : [
+        plugins: [
             require('rollup-plugin-alias')(alias),
             localResolve(),
             nodeResolve({
@@ -48,16 +45,16 @@ module.exports = {
             commonjs(),
             require('rollup-plugin-buble')(),
         ],
-        format: 'iife',               // helps prevent naming collisions
+        format: 'iife', // helps prevent naming collisions
         moduleName: 'maptalks', // required for 'iife' format
-        sourceMap: 'inline',          // sensible for testing
+        sourceMap: 'inline', // sensible for testing
     },
     babelPreprocessor: {
         'options': {
             'presets': [
                 'es2015'
             ],
-            'sourceMap' : 'inline'
+            'sourceMap': 'inline'
         }
     },
     customLaunchers: {

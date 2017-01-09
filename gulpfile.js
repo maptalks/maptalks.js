@@ -8,7 +8,6 @@ var minimist = require('minimist'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
     buble = require('rollup-plugin-buble'),
-    // babel = require('rollup-plugin-babel'),
     alias = require('rollup-plugin-alias'),
     eslint = require('gulp-eslint'),
     concat = require('gulp-concat'),
@@ -74,7 +73,6 @@ gulp.task('scripts', function () {
             //convert zousan to es6 modules
             commonjs(),
             buble(),
-            // babel(),
         ]
     }).then(function (bundle) {
         return bundle.write({
@@ -154,7 +152,9 @@ gulp.task('tdd', function (done) {
 });
 
 gulp.task('karma.refreshFiles()', function () {
-    karmaServer && karmaServer.refreshFiles();
+    if (karmaServer) {
+        karmaServer.refreshFiles();
+    }
 });
 
 gulp.task('connect', ['watch'], function () {
