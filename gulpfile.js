@@ -28,23 +28,26 @@ var knownOptions = {
         'coverage': 'cov'
     },
     default: {
-        browsers: 'PhantomJS',
+        browsers: '',
         coverage: false
     }
 };
 
 var options = minimist(process.argv.slice(2), knownOptions);
 
-var browsers = options.browsers.split(',');
-browsers = browsers.map(function (name) {
+var browsers = [];
+options.browsers.split(',').forEach(function (name) {
+    if (!name || name.length < 2) {
+        return;
+    }
     var lname = name.toLowerCase();
     if (lname.indexOf('phantom') === 0) {
-        return 'PhantomJS';
+        browsers.push('PhantomJS');
     }
-    if (lname[0] === 'i') {
-        return 'IE' + lname.substr(2);
+    if (lname[0] === 'i' && lname[1] === 'e') {
+        browsers.push('IE' + lname.substr(2));
     } else {
-        return lname[0].toUpperCase() + lname.substr(1);
+        browsers.push(lname[0].toUpperCase() + lname.substr(1));
     }
 });
 
@@ -106,9 +109,11 @@ gulp.task('watch', ['build'], function () {
  */
 gulp.task('test', function (done) {
     var karmaConfig = {
-        configFile: path.join(__dirname, 'build/karma.unit.config.js'),
-        browsers: browsers
+        configFile: path.join(__dirname, 'build/karma.unit.config.js')
     };
+    if (browsers.length > 0) {
+        karmaConfig.browsers = browsers;
+    }
     if (options.coverage) {
         karmaConfig.configFile = path.join(__dirname, 'build/karma.cover.config.js');
     }
@@ -131,7 +136,7 @@ gulp.task('tdd', function (done) {
     var karmaConfig = {
         configFile: path.join(__dirname, 'build/karma.dev.config.js')
     };
-    if (browsers) {
+    if (browsers.length > 0) {
         karmaConfig.browsers = browsers;
     }
     if (options.pattern) {
