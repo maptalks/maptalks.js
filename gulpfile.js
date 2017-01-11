@@ -65,7 +65,9 @@ gulp.task('scripts', function () {
             }),
             //convert zousan to es6 modules
             commonjs(),
-            babel()
+            babel({
+                plugins : ['transform-proto-to-assign']
+            })
         ]
     }).then(function (bundle) {
         return bundle.write({

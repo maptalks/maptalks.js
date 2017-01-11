@@ -4157,9 +4157,9 @@ rndm@1.2.0:
   version "1.2.0"
   resolved "https://codeload.github.com/wsw0108/rollup-plugin-alias/tar.gz/f9c37f0afa4285be4637d70577dddccbf07fcea8"
 
-rollup-plugin-babel@^2.7.1:
+"rollup-plugin-babel@https://github.com/fuzhenn/rollup-plugin-babel.git":
   version "2.7.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-babel/-/rollup-plugin-babel-2.7.1.tgz#16528197b0f938a1536f44683c7a93d573182f57"
+  resolved "https://github.com/fuzhenn/rollup-plugin-babel.git#d4ac9a00a28df340e2cf60846951a7be02fa7e5b"
   dependencies:
     babel-core "6"
     babel-plugin-transform-es2015-classes "^6.9.0"
