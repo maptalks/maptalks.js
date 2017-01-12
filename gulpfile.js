@@ -1,5 +1,3 @@
-'use strict';
-
 const minimist = require('minimist'),
     path = require('path'),
     gulp = require('gulp'),
