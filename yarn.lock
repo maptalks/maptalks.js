@@ -3093,15 +3093,14 @@ map-stream@~0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/map-stream/-/map-stream-0.1.0.tgz#e56aa94c4c8055a16404a0674b78f215f7c8e194"
 
-"maptalks-build-helpers@https://github.com/maptalks/maptalks-build-helpers.git":
+"maptalks-build-helpers@github:maptalks/maptalks-build-helpers":
   version "0.1.0"
-  resolved "https://github.com/maptalks/maptalks-build-helpers.git#a8435c96b712f5caa4f09f0effe025ed74cbb987"
+  resolved "https://codeload.github.com/maptalks/maptalks-build-helpers/tar.gz/f26864fb70bbf6614d107023bfb036f4f9fc2811"
   dependencies:
     babel-plugin-transform-proto-to-assign "^6.9.0"
     rollup "^0.41.1"
     rollup-plugin-babel "https://github.com/fuzhenn/rollup-plugin-babel.git"
     uglify-js "^2.7.5"
-    zlib "^1.0.5"
 
 math-expression-evaluator@^1.2.14:
   version "1.2.14"
@@ -4176,9 +4175,9 @@ rndm@1.2.0:
     object-assign "^4.1.0"
     rollup-pluginutils "^1.5.0"
 
-rollup-plugin-commonjs@^6.0.0:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-6.0.1.tgz#d6587badda75b6f7e6bc351e616da7802e6082b8"
+rollup-plugin-commonjs@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-7.0.0.tgz#510762d5c423c761cd16d8e8451715b39f0ceb08"
   dependencies:
     acorn "^4.0.1"
     estree-walker "^0.3.0"
@@ -4721,16 +4720,7 @@ typedarray@^0.0.6, typedarray@~0.0.5:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-uglify-js@^2.6:
-  version "2.6.4"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.6.4.tgz#65ea2fb3059c9394692f15fed87c2b36c16b9adf"
-  dependencies:
-    async "~0.2.6"
-    source-map "~0.5.1"
-    uglify-to-browserify "~1.0.0"
-    yargs "~3.10.0"
-
-uglify-js@^2.7.5:
+uglify-js@^2.6, uglify-js@^2.7.5:
   version "2.7.5"
   resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.7.5.tgz#4612c0c7baaee2ba7c487de4904ae122079f2ca8"
   dependencies:
@@ -5002,10 +4992,6 @@ yauzl@2.4.1:
 yeast@0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
-
-zlib@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/zlib/-/zlib-1.0.5.tgz#6e7c972fc371c645a6afb03ab14769def114fcc0"
 
 zousan@^2.3.3:
   version "2.3.3"

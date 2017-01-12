@@ -53,9 +53,6 @@
     "mocha": "^2.4.5",
     "phantomjs-prebuilt": "^2.1.6",
     "rollup-plugin-alias": "github:wsw0108/rollup-plugin-alias",
-    "rollup-plugin-commonjs": "^6.0.0",
-    "rollup-plugin-local-resolve": "^1.0.7",
-    "rollup-plugin-node-resolve": "^2.0.0",
     "sinon": "^1.14.1"
   },
   "dependencies": {
