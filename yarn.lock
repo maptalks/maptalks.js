@@ -204,7 +204,7 @@ babel-code-frame@^6.16.0, babel-code-frame@^6.20.0:
     esutils "^2.0.2"
     js-tokens "^2.0.0"
 
-babel-core@6, babel-core@^6.0.0, babel-core@^6.18.0, babel-core@^6.20.0:
+babel-core@6, babel-core@^6.0.0, babel-core@^6.18.0:
   version "6.21.0"
   resolved "https://registry.yarnpkg.com/babel-core/-/babel-core-6.21.0.tgz#75525480c21c803f826ef3867d22c19f080a3724"
   dependencies:
@@ -3093,6 +3093,16 @@ map-stream@~0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/map-stream/-/map-stream-0.1.0.tgz#e56aa94c4c8055a16404a0674b78f215f7c8e194"
 
+"maptalks-build-helpers@https://github.com/maptalks/maptalks-build-helpers.git":
+  version "0.1.0"
+  resolved "https://github.com/maptalks/maptalks-build-helpers.git#a8435c96b712f5caa4f09f0effe025ed74cbb987"
+  dependencies:
+    babel-plugin-transform-proto-to-assign "^6.9.0"
+    rollup "^0.41.1"
+    rollup-plugin-babel "https://github.com/fuzhenn/rollup-plugin-babel.git"
+    uglify-js "^2.7.5"
+    zlib "^1.0.5"
+
 math-expression-evaluator@^1.2.14:
   version "1.2.14"
   resolved "https://registry.yarnpkg.com/math-expression-evaluator/-/math-expression-evaluator-1.2.14.tgz#39511771ed9602405fba9affff17eb4d2a3843ab"
@@ -4195,7 +4205,13 @@ rollup-pluginutils@^1.5.0, rollup-pluginutils@^1.5.1:
     estree-walker "^0.2.1"
     minimatch "^3.0.2"
 
-rollup@^0.37.0, rollup@^0.x:
+rollup@^0.41.1:
+  version "0.41.1"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.41.1.tgz#5be8192c196c35977551e52ec0c98c3f83280525"
+  dependencies:
+    source-map-support "^0.4.0"
+
+rollup@^0.x:
   version "0.37.2"
   resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.37.2.tgz#cc159d20a2f3615ccc2248a4385aacbb3d6d6042"
   dependencies:
@@ -4714,6 +4730,15 @@ uglify-js@^2.6:
     uglify-to-browserify "~1.0.0"
     yargs "~3.10.0"
 
+uglify-js@^2.7.5:
+  version "2.7.5"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.7.5.tgz#4612c0c7baaee2ba7c487de4904ae122079f2ca8"
+  dependencies:
+    async "~0.2.6"
+    source-map "~0.5.1"
+    uglify-to-browserify "~1.0.0"
+    yargs "~3.10.0"
+
 uglify-to-browserify@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/uglify-to-browserify/-/uglify-to-browserify-1.0.2.tgz#6e0924d6bda6b5afe349e39a6d632850a0f882b7"
@@ -4977,6 +5002,10 @@ yauzl@2.4.1:
 yeast@0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
+
+zlib@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/zlib/-/zlib-1.0.5.tgz#6e7c972fc371c645a6afb03ab14769def114fcc0"
 
 zousan@^2.3.3:
   version "2.3.3"

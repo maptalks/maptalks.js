@@ -1,9 +1,8 @@
 'use strict';
 
-var minimist = require('minimist'),
+const minimist = require('minimist'),
     path = require('path'),
     gulp = require('gulp'),
-    rollup = require('rollup').rollup,
     commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
@@ -11,17 +10,13 @@ var minimist = require('minimist'),
     alias = require('rollup-plugin-alias'),
     concat = require('gulp-concat'),
     cssnano = require('gulp-cssnano'),
-    connect = require('gulp-connect'),
-    version = require('./package.json').version;
-var Server = require('karma').Server;
+    connect = require('gulp-connect');
 
-const banner =
-  '/*!\n' +
-  ' * maptalks.js v' + version + '\n' +
-  ' * (c) 2016 MapTalks\n' +
-  ' */';
+const BundleHelper = require('maptalks-build-helpers').BundleHelper;
+const bundler = new BundleHelper(require('./package.json'));
+const Server = require('karma').Server;
 
-var knownOptions = {
+const knownOptions = {
     string: ['browsers', 'pattern'],
     boolean: 'coverage',
     alias: {
@@ -35,8 +30,8 @@ var knownOptions = {
 
 var options = minimist(process.argv.slice(2), knownOptions);
 
-var browsers = [];
-options.browsers.split(',').forEach(function (name) {
+const browsers = [];
+options.browsers.split(',').forEach(name => {
     if (!name || name.length < 2) {
         return;
     }
@@ -51,10 +46,8 @@ options.browsers.split(',').forEach(function (name) {
     }
 });
 
-// TODO: minify
-gulp.task('scripts', function () {
-    return rollup({
-        entry: 'src/maptalks.js',
+gulp.task('scripts', () => {
+    return bundler.bundle('src/maptalks.js', {
         plugins: [
             alias(require('./build/alias')),
             localResolve(),
@@ -68,40 +61,32 @@ gulp.task('scripts', function () {
             babel({
                 plugins : ['transform-proto-to-assign']
             })
-        ]
-    }).then(function (bundle) {
-        return bundle.write({
-            format: 'umd',
-            moduleName: 'maptalks',
-            banner: banner,
-            dest: 'dist/maptalks.js'
-        })/*.then(function () {
-            bundle.write({
-                format: 'cjs',
-                banner: banner,
-                dest: 'dist/maptalks.js'
-            });
-        })*/;
+        ],
+        'sourceMap': false
     });
 });
 
 var stylesPattern = './assets/css/**/*.css';
 
-gulp.task('styles', function () {
+gulp.task('styles', () => {
     return gulp.src(stylesPattern)
         .pipe(concat('maptalks.css'))
         .pipe(cssnano())
         .pipe(gulp.dest('./dist/'));
 });
 
-gulp.task('images', function () {
+gulp.task('images', () => {
     return gulp.src('./assets/images/**/*')
         .pipe(gulp.dest('./dist/images'));
 });
 
-gulp.task('build', ['scripts', 'styles', 'images'], function () {});
+gulp.task('build', ['scripts', 'styles', 'images'], () => {});
 
-gulp.task('watch', ['build'], function () {
+gulp.task('minify', ['build'], () => {
+    bundler.minify();
+});
+
+gulp.task('watch', ['build'], () => {
     gulp.watch(['src/**/*.js', './gulpfile.js'], ['reload']); // watch the same files in our scripts task
     gulp.watch(stylesPattern, ['styles']);
 });
@@ -153,13 +138,13 @@ gulp.task('tdd', function (done) {
     karmaServer.start();
 });
 
-gulp.task('karma.refreshFiles()', function () {
+gulp.task('karma.refreshFiles()', () => {
     if (karmaServer) {
         karmaServer.refreshFiles();
     }
 });
 
-gulp.task('connect', ['watch'], function () {
+gulp.task('connect', ['watch'], () => {
     connect.server({
         root: 'dist',
         livereload: true,
@@ -167,12 +152,12 @@ gulp.task('connect', ['watch'], function () {
     });
 });
 
-gulp.task('reload', ['scripts'], function () {
+gulp.task('reload', ['scripts'], () => {
     gulp.src('./dist/*.js')
         .pipe(connect.reload());
 });
 
-gulp.task('doc', function () {
+gulp.task('doc', () => {
 });
 
 gulp.task('default', ['connect']);
