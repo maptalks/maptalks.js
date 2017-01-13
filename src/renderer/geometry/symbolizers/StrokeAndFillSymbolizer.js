@@ -48,7 +48,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
         this._prepareContext(ctx);
         var isGradient = checkGradient(style['lineColor']),
-            isPath = (this.geometry.getClassName() === 'Polygon') || (this.geometry.type === 'LineString');
+            isPath = (this.geometry.getJSONType() === 'Polygon') || (this.geometry.type === 'LineString');
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.getPainter().getContainerExtent()._expand(style['lineWidth']);
         }
@@ -57,7 +57,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
 
         var points = paintParams[0],
-            isSplitted = (this.geometry.getClassName() === 'Polygon' && points.length > 1 && Array.isArray(points[0][0])) ||
+            isSplitted = (this.geometry.getJSONType() === 'Polygon' && points.length > 1 && Array.isArray(points[0][0])) ||
             (this.geometry.type === 'LineString' && points.length > 1 && Array.isArray(points[0]));
         var params;
         if (isSplitted) {

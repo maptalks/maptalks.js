@@ -4,6 +4,7 @@ import { indexOfArray } from 'core/util';
  * A mixin, to enable a class with [interaction handlers]{@link Handler}
  * @protected
  * @mixin
+ * @name Handlerable
  */
 export default function (Base) {
     return class extends Base {

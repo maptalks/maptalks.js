@@ -1,9 +1,8 @@
 import Class from 'core/Class';
 import { isNil, isNumber } from 'core/util';
 import Eventable from 'core/Event';
+import JSONAble from 'core/JSONAble';
 import Renderable from 'renderer/Renderable';
-
-const registeredTypes = {};
 
 /**
  * @property {Object}  [options=null] - base options of layer.
@@ -39,30 +38,7 @@ var options = {
  * @extends Class
  * @mixes Eventable
  */
-export default class Layer extends Eventable(Renderable(Class)) {
-
-    /**
-     * Register layer for JSON serialization and assign a JSON type.
-     * @param  {String} type - JSON type
-     */
-    static registerJSONType(type) {
-        if (!type) {
-            return;
-        }
-        registeredTypes[type] = this;
-    }
-
-    /**
-     * Get layer class of input JSON type
-     * @param  {String} type - JSON type
-     * @return {class}      Layer Class
-     */
-    static getClass(type) {
-        if (!type) {
-            return null;
-        }
-        return registeredTypes[type];
-    }
+export default class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     constructor(id, options) {
         super(options);

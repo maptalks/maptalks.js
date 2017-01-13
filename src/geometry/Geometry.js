@@ -1,6 +1,7 @@
 import { GEOMETRY_COLLECTION_TYPES } from 'core/Constants';
 import Class from 'core/Class';
 import Eventable from 'core/Event';
+import JSONAble from 'core/JSONAble';
 import Handlerable from 'handler/Handlerable';
 import {
     extend,
@@ -20,8 +21,6 @@ import * as Measurer from 'geo/measurer';
 import Painter from 'renderer/geometry/Painter';
 import CollectionPainter from 'renderer/geometry/CollectionPainter';
 import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
-
-const registeredTypes = {};
 
 /**
  * @property {Object} options                       - geometry options
@@ -60,30 +59,7 @@ const options = {
  * @mixes Handlerable
  * @mixes ui.Menu.Mixin
  */
-export default class Geometry extends Eventable(Handlerable(Class)) {
-
-    /**
-     * Register layer for JSON serialization and assign a JSON type.
-     * @param  {String} type - JSON type
-     */
-    static registerJSONType(type) {
-        if (!type) {
-            return;
-        }
-        registeredTypes[type] = this;
-    }
-
-    /**
-     * Get geometry class of input JSON type
-     * @param  {String} type - JSON type
-     * @return {class}      Geometry Class
-     */
-    static getClass(type) {
-        if (!type) {
-            return null;
-        }
-        return registeredTypes[type];
-    }
+export default class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     constructor(options) {
         var opts = extend({}, options);
@@ -104,22 +80,6 @@ export default class Geometry extends Eventable(Handlerable(Class)) {
             this.setId(id);
         }
         this._zIndex = 0;
-    }
-
-    getClassName() {
-        if (this._className === undefined) {
-            const clazz = Object.getPrototypeOf(this).constructor;
-            for (let p in registeredTypes) {
-                if (registeredTypes[p] === clazz) {
-                    this._className = p;
-                    break;
-                }
-            }
-        }
-        if (!this._className) {
-            throw new Error('Found an unregister geometry class!');
-        }
-        return this._className;
     }
 
     /**
