@@ -224,7 +224,7 @@ export default class Polygon extends Path {
     }
 
     _containsPoint(point, tolerance) {
-        var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+        const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pxExtent = this._getPainter().get2DExtent().expand(t);
 
         function isContains(points) {
@@ -253,7 +253,7 @@ export default class Polygon extends Path {
         }
 
         // screen points
-        var points = this._getPath2DPoints(this._getPrjCoordinates()),
+        const points = this._getPath2DPoints(this._getPrjCoordinates()),
             isSplitted = Array.isArray(points[0]);
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {

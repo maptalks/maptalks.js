@@ -52,7 +52,8 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Object}   opts.layers        - the layers to perform identify on.
      * @param {Function} [opts.filter=null] - filter function of the result geometries, return false to exclude.
      * @param {Number}   [opts.count=null]  - limit of the result count.
-     * @param {Boolean}  [opts.includeInternals=false] - whether to identify the internal layers.
+     * @param {Boolean}  [opts.includeInternals=false] - whether to identify internal layers.
+     * @param {Boolean}  [opts.includeInvisible=false] - whether to identify invisible layers.
      * @param {Function} callback           - the callback function using the result geometries as the parameter.
      * @return {Map} this
      * @example
@@ -68,34 +69,33 @@ Map.include(/** @lends Map.prototype */ {
         if (!opts) {
             return this;
         }
-        var reqLayers = opts['layers'];
+        const reqLayers = opts['layers'];
         if (!isArrayHasData(reqLayers)) {
             return this;
         }
-        var layers = [];
-        var i, len;
-        for (i = 0, len = reqLayers.length; i < len; i++) {
+        const layers = [];
+        for (let i = 0, len = reqLayers.length; i < len; i++) {
             if (isString(reqLayers[i])) {
                 layers.push(this.getLayer(reqLayers[i]));
             } else {
                 layers.push(reqLayers[i]);
             }
         }
-        var point = this.coordinateToPoint(new Coordinate(opts['coordinate']));
-        var options = extend({}, opts);
-        var hits = [];
-        for (i = layers.length - 1; i >= 0; i--) {
+        const coordinate = new Coordinate(opts['coordinate']);
+        const options = extend({}, opts);
+        const hits = [];
+        for (let i = layers.length - 1; i >= 0; i--) {
             if (opts['count'] && hits.length >= opts['count']) {
                 break;
             }
-            var layer = layers[i];
-            if (!layer || !layer.getMap() || !layer.isVisible() || (!opts['includeInternals'] && layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0)) {
+            let layer = layers[i];
+            if (!layer || !layer.getMap() || (!opts['includeInvisible'] && !layer.isVisible()) || (!opts['includeInternals'] && layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0)) {
                 continue;
             }
-            var layerHits = layer.identify(point, options);
+            let layerHits = layer.identify(coordinate, options);
             if (layerHits) {
                 if (Array.isArray(layerHits)) {
-                    hits = hits.concat(layerHits);
+                    hits.push.apply(hits, layerHits);
                 } else {
                     hits.push(layerHits);
                 }

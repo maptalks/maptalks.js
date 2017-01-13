@@ -348,19 +348,20 @@ export default class OverlayLayer extends Layer {
     }
 
     /**
-     * Identify the geometries on the given container point
-     * @param  {Point} point   - container point
+     * Identify the geometries on the given coordinate
+     * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
      * @param  {Object} [options=null]  - options
      * @param  {Object} [options.count=null] - result count
      * @return {Geometry[]} geometries identified
      */
-    identify(point, options) {
-        var geometries = this._geoList,
+    identify(coordinate, options) {
+        const geometries = this._geoList,
             filter = options ? options.filter : null,
-            extent2d,
             hits = [];
-        for (var i = geometries.length - 1; i >= 0; i--) {
-            var geo = geometries[i];
+        var extent2d;
+        const point = this.getMap().coordinateToPoint(coordinate);
+        for (let i = geometries.length - 1; i >= 0; i--) {
+            let geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter()) {
                 continue;
             }
