@@ -166,7 +166,7 @@ Map.include(/** @lends Map.prototype */ {
 
     _handleDOMEvent: function (e) {
         var type = e.type;
-        if (type === 'mousedown' || type === 'click') {
+        if (type === 'click') {
             var button = e.button;
             if (button === 2) {
                 type = 'contextmenu';
