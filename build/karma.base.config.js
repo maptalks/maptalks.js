@@ -45,8 +45,8 @@ module.exports = {
             commonjs(),
             babel(),
         ],
-        format: 'iife', // helps prevent naming collisions
-        moduleName: 'maptalks', // required for 'iife' format
+        format: 'umd', // helps prevent naming collisions
+        moduleName: 'maptalks', // required for 'umd' format
         sourceMap: 'inline', // sensible for testing
     },
     customLaunchers: {
