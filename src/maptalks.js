@@ -9,8 +9,11 @@ export { default as Canvas } from 'core/Canvas';
 
 // core classes
 export { default as Class } from 'core/Class';
-export { default as Handler } from 'handler/Handler';
+export { default as Eventable } from 'core/Event';
+export { default as JSONAble } from 'core/JSONAble';
+
 export { default as Handlerable } from 'handler/Handlerable';
+export { default as Handler } from 'handler/Handler';
 
 // geo classes
 export * from 'geo';
