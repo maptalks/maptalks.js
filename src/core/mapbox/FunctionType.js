@@ -176,9 +176,11 @@ export function loadFunctionTypes(obj, argFn) {
                 hit = true;
             }
         }
-        return hit ? multResult : null;
+        return hit ? multResult : obj;
     }
-    var result = {},
+    var result = {
+            '__fn_types_loaded' : true
+        },
         props = [],
         p;
     for (p in obj) {
@@ -212,7 +214,7 @@ export function loadFunctionTypes(obj, argFn) {
             result[p] = obj[p];
         }
     }
-    return hit ? result : null;
+    return hit ? result : obj;
 }
 
 export function getFunctionTypeResources(t) {

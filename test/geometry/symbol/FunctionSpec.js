@@ -190,7 +190,6 @@ describe('FunctionTypeSpec', function () {
             expect(marker.getMap()).to.be.ok();
             expect(marker.getSize().width).to.be.eql(18);
             expect(marker.getSize().height).to.be.eql(40);
-            console.log(marker.getSize());
             done();
         });
         layer.addGeometry(marker);

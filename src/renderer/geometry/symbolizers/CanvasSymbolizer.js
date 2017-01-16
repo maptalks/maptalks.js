@@ -33,17 +33,6 @@ export default class CanvasSymbolizer extends Symbolizer {
     hide() {}
 
     _defineStyle(style) {
-        var me = this;
-        var argFn = function () {
-            return [me.getMap().getZoom(), me.geometry.getProperties()];
-        };
-
-        var loaded = loadFunctionTypes(style, argFn);
-        if (loaded) {
-            this._isFunctionStyle = true;
-        } else {
-            loaded = style;
-        }
-        return loaded;
+        return loadFunctionTypes(style, () => [this.getMap().getZoom(), this.geometry.getProperties()]);
     }
 }
