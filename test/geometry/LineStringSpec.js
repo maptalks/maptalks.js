@@ -190,9 +190,9 @@ describe('#LineString', function () {
         });
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
-        expect(line.containsPoint(cp.add(- 4 * lineWidth, lineWidth + 7))).to.be.ok();
-        expect(line.containsPoint(cp.add(- 4 * lineWidth, -lineWidth - 7))).to.be.ok();
-        expect(line.containsPoint(cp.add(- 4 * lineWidth, -lineWidth - 8))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(-4 * lineWidth, lineWidth + 7))).to.be.ok();
+        expect(line.containsPoint(cp.add(-4 * lineWidth, -lineWidth - 7))).to.be.ok();
+        expect(line.containsPoint(cp.add(-4 * lineWidth, -lineWidth - 8))).not.to.be.ok();
     });
     it('bug: create with dynamic textSize', function () {
         // bug desc:
