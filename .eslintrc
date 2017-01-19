@@ -5,6 +5,7 @@
       "define" : true
   },
   "rules": {
+    "object-curly-spacing": false,
     "new-cap"     : 0,
     "key-spacing" : 0,
     "strict"      : 0,
