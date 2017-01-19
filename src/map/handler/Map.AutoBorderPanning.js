@@ -24,8 +24,10 @@ maptalks.Map.AutoBorderPanning = maptalks.Handler.extend({
         var eventParam = this.target._parseEvent(event);
         var mousePos = eventParam['containerPoint'];
         var size = this.target.getSize();
-        var tests = [mousePos.x, size['width'] - mousePos.x,
-                mousePos.y, size['height'] - mousePos.y];
+        var tests = [
+            mousePos.x, size['width'] - mousePos.x,
+            mousePos.y, size['height'] - mousePos.y
+        ];
 
         var min = Math.min.apply(Math, tests),
             absMin = Math.abs(min);
