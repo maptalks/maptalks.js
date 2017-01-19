@@ -60,17 +60,17 @@ if (Browser.canvas) {
             if (!tolerance) {
                 tolerance = 0;
             }
-            var width = lineWidth * arrowStyle[0],
+            const width = lineWidth * arrowStyle[0],
                 height = lineWidth * arrowStyle[1] + tolerance,
                 hw = width / 2 + tolerance;
 
-            var normal = point.substract(prePoint)._unit();
-            var p1 = point.add(normal.multi(height));
+            const normal = point.substract(prePoint)._unit();
+            const p1 = point.substract(normal.multi(height));
             normal._perp();
-            var p0 = point.add(normal.multi(hw));
+            const p0 = p1.add(normal.multi(hw));
             normal._multi(-1);
-            var p2 = point.add(normal.multi(hw));
-            return [p0, p1, p2, p0];
+            const p2 = p1.add(normal.multi(hw));
+            return [p0, point, p2, p0];
         },
 
         _getPaintParams() {

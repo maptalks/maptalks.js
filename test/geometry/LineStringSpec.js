@@ -174,9 +174,9 @@ describe('#LineString', function () {
         });
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
-        expect(line.containsPoint(cp.add(-lineWidth * 4, 0))).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth * 4 - 4, 0))).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth * 4 - 5, 0))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(-lineWidth / 2, 0))).to.be.ok();
+        expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 7))).to.be.ok();
+        expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 8))).not.to.be.ok();
     });
 
     it('containsPoint with arrow of point', function () {
@@ -190,12 +190,10 @@ describe('#LineString', function () {
         });
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
-        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + lineWidth / 2 + 1))).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + lineWidth / 2 + 2))).not.to.be.ok();
-        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + lineWidth / 2 + 1)))).to.be.ok();
-        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + lineWidth / 2 + 2)))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(- 4 * lineWidth, lineWidth + 7))).to.be.ok();
+        expect(line.containsPoint(cp.add(- 4 * lineWidth, -lineWidth - 7))).to.be.ok();
+        expect(line.containsPoint(cp.add(- 4 * lineWidth, -lineWidth - 8))).not.to.be.ok();
     });
-
     it('bug: create with dynamic textSize', function () {
         // bug desc:
         // when creating a linestring with dynamic textsize, geometry._getPainter() will create a textMarkerSymbolizer.
