@@ -17,19 +17,20 @@
   "main": "dist/maptalks.js",
   "style": "dist/maptalks.css",
   "devDependencies": {
+    "del": "^2.2.2",
     "eslint": "^3.0.0",
     "eslint-config-maptalks": "^0.2.1",
     "expect-maptalks": "^0.2.0",
     "expect.js": "^0.3.1",
     "gulp": "^3.9.0",
-    "gulp-concat": "^2.6.0",
+    "gulp-concat": "^2.6.1",
     "gulp-connect": "^4.0.0",
-    "gulp-cssnano": "^2.1.0",
+    "gulp-cssnano": "^2.1.2",
     "gulp-footer": "^1.0.5",
-    "gulp-gzip": "^1.2.0",
-    "gulp-header": "^1.7.1",
-    "gulp-rename": "~1.2.2",
-    "gulp-uglify": "^1.5.3",
+    "gulp-gzip": "^1.4.0",
+    "gulp-header": "^1.8.8",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.0",
     "karma": "~0.13.22",
     "karma-chrome-launcher": "^1.0.1",
     "karma-coverage": "~1.0.0",
@@ -44,8 +45,7 @@
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
     "phantomjs-prebuilt": "^2.1.6",
-    "sinon": "^1.14.1",
-    "del": "^2.2.2"
+    "sinon": "^1.14.1"
   },
   "dependencies": {}
 }

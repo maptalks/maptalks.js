@@ -53,12 +53,12 @@ if (maptalks.Browser.canvas) {
                 hw = width / 2 + tolerance;
 
             var normal = point.substract(prePoint)._unit();
-            var p1 = point.add(normal.multi(height));
+            var p1 = point.substract(normal.multi(height));
             normal._perp();
-            var p0 = point.add(normal.multi(hw));
+            var p0 = p1.add(normal.multi(hw));
             normal._multi(-1);
-            var p2 = point.add(normal.multi(hw));
-            return [p0, p1, p2, p0];
+            var p2 = p1.add(normal.multi(hw));
+            return [p0, point, p2, p0];
         },
 
         _getPaintParams: function () {
