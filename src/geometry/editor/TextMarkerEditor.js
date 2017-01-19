@@ -153,7 +153,7 @@ const TextEditable = {
                 h = 0;
             }
             if (event.keyCode === 13) {
-                editor.style.height = (parseInt(h) + textSize) + 'px';
+                editor.style.height = (parseInt(h) + textSize / 2) + 'px';
             }
         };
         return editor;
