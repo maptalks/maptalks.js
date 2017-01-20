@@ -75,13 +75,6 @@ export default class CollectionPainter extends Class {
         });
     }
 
-    onZoomEnd() {
-        var args = arguments;
-        this._eachPainter(function (painter) {
-            painter.onZoomEnd.apply(painter, args);
-        });
-    }
-
     repaint() {
         var args = arguments;
         this._eachPainter(function (painter) {
