@@ -1,58 +1,62 @@
+import { on, off, createEl } from 'core/util/dom';
+import Map from 'map/Map';
+import Control from './Control';
+
+/**
+ * @property {Object}   options - options
+ * @property {String|Object}   [options.position="top-left"]  - position of the zoom control.
+ * @property {Boolean}  [options.slider=true]                         - Whether to display the slider
+ * @property {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
+ */
+const options = {
+    'position': 'top-left',
+    'slider': true,
+    'zoomLevel': true
+};
+
 /**
  * @classdesc
  * A zoom control with buttons to zoomin/zoomout and a slider indicator for the zoom level.
  * @class
  * @category control
- * @extends maptalks.control.Control
- * @memberOf maptalks.control
+ * @extends Control
+ * @memberOf control
  * @name Zoom
- * @param {Object} [options=null] - options defined in [maptalks.control.Zoom]{@link maptalks.control.Zoom#options}
+ * @param {Object} [options=null] - options defined in [Zoom]{@link Zoom#options}
  * @example
- * var zoomControl = new maptalks.control.Zoom({
+ * var zoomControl = new Zoom({
  *     position : 'top-left',
  *     slider : true,
  *     zoomLevel : false
  * }).addTo(map);
  */
-maptalks.control.Zoom = maptalks.control.Control.extend(/** @lends maptalks.control.Zoom.prototype */{
+export default class ZoomControl extends Control {
 
-    /**
-     * @property {Object}   options - options
-     * @property {String|Object}   [options.position="top-left"]  - position of the zoom control.
-     * @property {Boolean}  [options.slider=true]                         - Whether to display the slider
-     * @property {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
-     */
-    options:{
-        'position'  : 'top-left',
-        'slider'    : true,
-        'zoomLevel' : true
-    },
-
-    buildOn: function (map) {
+    buildOn(map) {
         this._map = map;
         var options = this.options;
 
-        var dom = maptalks.DomUtil.createEl('div', 'maptalks-zoom');
+        var dom = createEl('div', 'maptalks-zoom');
 
         if (options['zoomLevel']) {
-            var levelDOM = maptalks.DomUtil.createEl('span', 'maptalks-zoom-zoomlevel');
+            var levelDOM = createEl('span', 'maptalks-zoom-zoomlevel');
             dom.appendChild(levelDOM);
             this._levelDOM = levelDOM;
         }
 
-        var zoomDOM = maptalks.DomUtil.createEl('div', 'maptalks-zoom-slider');
+        var zoomDOM = createEl('div', 'maptalks-zoom-slider');
 
-        var zoomInButton = maptalks.DomUtil.createEl('a', 'maptalks-zoom-zoomin');
+        var zoomInButton = createEl('a', 'maptalks-zoom-zoomin');
         zoomInButton.href = 'javascript:;';
         zoomInButton.innerHTML = '+';
         zoomDOM.appendChild(zoomInButton);
         this._zoomInButton = zoomInButton;
 
         if (options['slider']) {
-            var sliderDOM = maptalks.DomUtil.createEl('div', 'maptalks-zoom-slider-box');
-            var ruler = maptalks.DomUtil.createEl('div', 'maptalks-zoom-slider-ruler');
-            var reading = maptalks.DomUtil.createEl('span', 'maptalks-zoom-slider-reading');
-            var dot = maptalks.DomUtil.createEl('span', 'maptalks-zoom-slider-dot');
+            var sliderDOM = createEl('div', 'maptalks-zoom-slider-box');
+            var ruler = createEl('div', 'maptalks-zoom-slider-ruler');
+            var reading = createEl('span', 'maptalks-zoom-slider-reading');
+            var dot = createEl('span', 'maptalks-zoom-slider-dot');
             ruler.appendChild(reading);
             ruler.appendChild(dot);
             sliderDOM.appendChild(ruler);
@@ -63,7 +67,7 @@ maptalks.control.Zoom = maptalks.control.Control.extend(/** @lends maptalks.cont
             this._sliderDot = dot;
         }
 
-        var zoomOutButton = maptalks.DomUtil.createEl('a', 'maptalks-zoom-zoomout');
+        var zoomOutButton = createEl('a', 'maptalks-zoom-zoomout');
         zoomOutButton.href = 'javascript:;';
         zoomOutButton.innerHTML = '-';
         zoomDOM.appendChild(zoomOutButton);
@@ -77,9 +81,9 @@ maptalks.control.Zoom = maptalks.control.Control.extend(/** @lends maptalks.cont
         this._registerDomEvents();
 
         return dom;
-    },
+    }
 
-    _update:function () {
+    _update() {
         var map = this.getMap();
         if (this._sliderBox) {
             var pxUnit = 10;
@@ -94,38 +98,39 @@ maptalks.control.Zoom = maptalks.control.Control.extend(/** @lends maptalks.cont
             this._levelDOM.innerHTML = map.getZoom();
         }
 
-    },
+    }
 
-    _registerDomEvents:function () {
+    _registerDomEvents() {
         var map = this.getMap();
         if (this._zoomInButton) {
-            maptalks.DomUtil.on(this._zoomInButton, 'click', map.zoomIn, map);
+            on(this._zoomInButton, 'click', map.zoomIn, map);
         }
         if (this._zoomOutButton) {
-            maptalks.DomUtil.on(this._zoomOutButton, 'click', map.zoomOut, map);
+            on(this._zoomOutButton, 'click', map.zoomOut, map);
         }
         //TODO slider dot拖放缩放逻辑还没有实现
-    },
+    }
 
-    onRemove: function () {
+    onRemove() {
         var map = this.getMap();
         if (this._zoomInButton) {
-            maptalks.DomUtil.off(this._zoomInButton, 'click', map.zoomIn, map);
+            off(this._zoomInButton, 'click', map.zoomIn, map);
         }
         if (this._zoomOutButton) {
-            maptalks.DomUtil.off(this._zoomOutButton, 'click', map.zoomOut, map);
+            off(this._zoomOutButton, 'click', map.zoomOut, map);
         }
     }
-});
+}
 
-maptalks.Map.mergeOptions({
+ZoomControl.mergeOptions(options);
 
+Map.mergeOptions({
     'zoomControl': false
 });
 
-maptalks.Map.addOnLoadHook(function () {
+Map.addOnLoadHook(function () {
     if (this.options['zoomControl']) {
-        this.zoomControl = new maptalks.control.Zoom(this.options['zoomControl']);
+        this.zoomControl = new ZoomControl(this.options['zoomControl']);
         this.addControl(this.zoomControl);
     }
 });

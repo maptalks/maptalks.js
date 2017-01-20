@@ -1,51 +1,62 @@
 {
   "name": "maptalks",
-  "version": "0.14.10",
+  "version": "0.16.0",
   "description": "An open-source javascript library for map applications.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MapTalks/maptalks.js.git"
+    "url": "https://github.com/maptalks/maptalks.js.git"
   },
   "scripts": {
     "report-coverage": "codecov",
-    "lint": "eslint src/**/*.js",
+    "lint": "eslint src/**/*.js test/**/*.js",
     "test": "gulp test --cov",
     "pretest": "npm run lint",
+    "prepublish": "npm run lint && gulp minify",
     "doc": "gulp doc"
   },
   "main": "dist/maptalks.js",
+  "module": "src/maptalks.js",
   "style": "dist/maptalks.css",
   "devDependencies": {
+    "babel-eslint": "^7.1.1",
+    "babel-plugin-external-helpers": "^6.18.0",
+    "babel-plugin-istanbul": "^3.1.2",
+    "babel-preset-es2015": "^6.18.0",
     "eslint": "^3.0.0",
-    "eslint-config-maptalks": "^0.2.1",
+    "eslint-config-maptalks": "^0.2.2",
+    "eslint-plugin-mocha": "^4.7.0",
     "expect-maptalks": "^0.2.0",
     "expect.js": "^0.3.1",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.0.0",
     "gulp-cssnano": "^2.1.0",
-    "gulp-footer": "^1.0.5",
-    "gulp-gzip": "^1.2.0",
-    "gulp-header": "^1.7.1",
-    "gulp-rename": "~1.2.2",
-    "gulp-uglify": "^1.5.3",
+    "happen": "^0.3.1",
     "karma": "~0.13.22",
+    "karma-babel-preprocessor": "^6.0.1",
     "karma-chrome-launcher": "^1.0.1",
     "karma-coverage": "~1.0.0",
     "karma-expect": "^1.1.1",
     "karma-expect-maptalks": "^0.1.3",
     "karma-firefox-launcher": "~1.0.0",
+    "karma-happen": "^0.1.0",
     "karma-ie-launcher": "^1.0.0",
     "karma-mocha": "~1.1.1",
+    "karma-mocha-reporter": "^2.2.1",
     "karma-phantomjs-launcher": "^1.0.0",
+    "karma-rollup-plugin": "^0.2.4",
     "karma-safari-launcher": "~1.0.0",
     "karma-sinon": "^1.0.5",
+    "maptalks-build-helpers": "github:maptalks/maptalks-build-helpers",
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
     "phantomjs-prebuilt": "^2.1.6",
-    "sinon": "^1.14.1",
-    "del": "^2.2.2"
+    "rollup-plugin-alias": "github:wsw0108/rollup-plugin-alias",
+    "sinon": "^1.14.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "simplify-js": "^1.2.1",
+    "zousan": "^2.3.3"
+  }
 }

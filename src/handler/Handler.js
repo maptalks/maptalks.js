@@ -1,53 +1,58 @@
+import Eventable from 'core/Event';
+
 /**
  * Base class for all the interaction handlers
  * @class
  * @category handler
- * @extends maptalks.Class
- * @mixins maptalks.Eventable
+ * @mixins Eventable
  * @abstract
  * @protected
  */
-maptalks.Handler = maptalks.Class.extend(/** @lends maptalks.Handler.prototype */{
-
-    includes: maptalks.Eventable,
-
-    initialize: function (target) {
+class Handler {
+    constructor(target) {
         this.target = target;
-    },
+    }
 
     /**
      * Enables the handler
-     * @return {maptalks.Handler} this
+     * @return {Handler} this
      */
-    enable: function () {
-        if (this._enabled) { return this; }
+    enable() {
+        if (this._enabled) {
+            return this;
+        }
         this._enabled = true;
         this.addHooks();
         return this;
-    },
+    }
 
     /**
      * Disablesthe handler
-     * @return {maptalks.Handler} this
+     * @return {Handler} this
      */
-    disable: function () {
-        if (!this._enabled) { return this; }
+    disable() {
+        if (!this._enabled) {
+            return this;
+        }
         this._enabled = false;
         this.removeHooks();
         return this;
-    },
+    }
 
     /**
      * Returns true if the handler is enabled.
      * @return {Boolean}
      */
-    enabled: function () {
+    enabled() {
         return !!this._enabled;
-    },
+    }
 
-    remove: function () {
+    remove() {
         this.disable();
         delete this.target;
         delete this.dom;
     }
-});
+}
+
+
+export default Eventable(Handler);

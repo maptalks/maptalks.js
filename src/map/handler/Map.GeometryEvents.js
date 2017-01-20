@@ -1,31 +1,34 @@
-maptalks.Map.mergeOptions({
-    'geometryEvents': true
-});
+import { now, isArrayHasData, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { on, off, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
+import Handler from 'handler/Handler';
+import Geometry from 'geometry/Geometry';
+import VectorLayer from 'layer/VectorLayer';
+import Map from '../Map';
 
-maptalks.Map.GeometryEvents = maptalks.Handler.extend({
-    EVENTS: 'mousedown mouseup mousemove click dblclick contextmenu touchstart touchmove touchend',
+const EVENTS = 'mousedown mouseup mousemove click dblclick contextmenu touchstart touchmove touchend';
 
-    addHooks: function () {
+class MapGeometryEventsHandler extends Handler {
+
+    addHooks() {
         var map = this.target;
         var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
-            maptalks.DomUtil.on(dom, this.EVENTS, this._identifyGeometryEvents, this);
+            on(dom, EVENTS, this._identifyGeometryEvents, this);
         }
+    }
 
-    },
-
-    removeHooks: function () {
+    removeHooks() {
         var map = this.target;
         var dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
-            maptalks.DomUtil.off(dom, this.EVENTS, this._identifyGeometryEvents, this);
+            off(dom, EVENTS, this._identifyGeometryEvents, this);
         }
-    },
+    }
 
-    _identifyGeometryEvents: function (domEvent) {
+    _identifyGeometryEvents(domEvent) {
         var map = this.target;
-        var vectorLayers = map._getLayers(function (layer) {
-            if (layer instanceof maptalks.VectorLayer) {
+        var vectorLayers = map._getLayers(layer => {
+            if (layer instanceof VectorLayer) {
                 return true;
             }
             return false;
@@ -36,10 +39,10 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
         var eventType = domEvent.type;
         // ignore click lasted for more than 300ms.
         if (eventType === 'mousedown') {
-            this._mouseDownTime = maptalks.Util.now();
+            this._mouseDownTime = now();
         } else if (eventType === 'click' && this._mouseDownTime) {
-            var now = maptalks.Util.now();
-            if (now - this._mouseDownTime > 300) {
+            var time = now();
+            if (time - this._mouseDownTime > 300) {
                 return;
             }
         }
@@ -59,16 +62,16 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
         if (!actual) {
             return;
         }
-        var containerPoint = maptalks.DomUtil.getEventContainerPoint(actual, map._containerDOM),
+        var containerPoint = getEventContainerPoint(actual, map._containerDOM),
             coordinate = map.containerPointToCoordinate(containerPoint);
         if (eventType === 'touchstart') {
-            maptalks.DomUtil.preventDefault(domEvent);
+            preventDefault(domEvent);
         }
         var geometryCursorStyle = null;
         var identifyOptions = {
-            'includeInternals' : true,
+            'includeInternals': true,
             //return only one geometry on top,
-            'filter':function (geometry) {
+            'filter': geometry => {
                 var eventToFire = geometry._getEventTypeToFire(domEvent);
                 if (eventType === 'mousemove') {
                     if (!geometryCursorStyle && geometry.options['cursor']) {
@@ -83,17 +86,17 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
 
                 return true;
             },
-            'count' : 1,
-            'coordinate' : coordinate,
+            'count': 1,
+            'coordinate': coordinate,
             'layers': layers
         };
-        var callback = maptalks.Util.bind(fireGeometryEvent, this);
-        var me = this;
+        var callback = fireGeometryEvent.bind(this);
+
         if (this._queryIdentifyTimeout) {
-            maptalks.Util.cancelAnimFrame(this._queryIdentifyTimeout);
+            cancelAnimFrame(this._queryIdentifyTimeout);
         }
-        if (eventType === 'mousemove'  || eventType === 'touchmove') {
-            this._queryIdentifyTimeout = maptalks.Util.requestAnimFrame(function () {
+        if (eventType === 'mousemove' || eventType === 'touchmove') {
+            this._queryIdentifyTimeout = requestAnimFrame(() => {
                 map.identify(identifyOptions, callback);
             });
         } else {
@@ -102,12 +105,11 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
 
         function fireGeometryEvent(geometries) {
             var propagation = true;
-            var i;
             if (eventType === 'mousemove') {
                 var geoMap = {};
-                if (maptalks.Util.isArrayHasData(geometries)) {
-                    for (i = geometries.length - 1; i >= 0; i--) {
-                        if (!(geometries[i] instanceof maptalks.Geometry)) {
+                if (isArrayHasData(geometries)) {
+                    for (let i = geometries.length - 1; i >= 0; i--) {
+                        if (!(geometries[i] instanceof Geometry)) {
                             continue;
                         }
                         geoMap[geometries[i]._getInternalId()] = geometries[i];
@@ -119,20 +121,20 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
 
                 map._setPriorityCursor(geometryCursorStyle);
 
-                var oldTargets = me._prevMouseOverTargets;
-                me._prevMouseOverTargets = geometries;
-                if (maptalks.Util.isArrayHasData(oldTargets)) {
-                    for (i = oldTargets.length - 1; i >= 0; i--) {
+                var oldTargets = this._prevMouseOverTargets;
+                this._prevMouseOverTargets = geometries;
+                if (isArrayHasData(oldTargets)) {
+                    for (let i = oldTargets.length - 1; i >= 0; i--) {
                         var oldTarget = oldTargets[i];
-                        if (!(oldTarget instanceof maptalks.Geometry)) {
+                        if (!(oldTarget instanceof Geometry)) {
                             continue;
                         }
                         var oldTargetId = oldTargets[i]._getInternalId();
                         if (geometries && geometries.length > 0) {
                             var mouseout = true;
                             /**
-                            * 鼠标经过的新位置中不包含老的目标geometry
-                            */
+                             * 鼠标经过的新位置中不包含老的目标geometry
+                             */
                             if (geoMap[oldTargetId]) {
                                 mouseout = false;
                             }
@@ -147,8 +149,8 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
 
             } else {
                 if (!geometries || geometries.length === 0) { return; }
-                for (i = geometries.length - 1; i >= 0; i--) {
-                    if (!(geometries[i] instanceof maptalks.Geometry)) {
+                for (let i = geometries.length - 1; i >= 0; i--) {
+                    if (!(geometries[i] instanceof Geometry)) {
                         continue;
                     }
                     propagation = geometries[i]._onEvent(domEvent);
@@ -156,11 +158,17 @@ maptalks.Map.GeometryEvents = maptalks.Handler.extend({
                 }
             }
             if (propagation === false) {
-                maptalks.DomUtil.stopPropagation(domEvent);
+                stopPropagation(domEvent);
             }
         }
 
     }
+}
+
+Map.mergeOptions({
+    'geometryEvents': true
 });
 
-maptalks.Map.addInitHook('addHandler', 'geometryEvents', maptalks.Map.GeometryEvents);
+Map.addOnLoadHook('addHandler', 'geometryEvents', MapGeometryEventsHandler);
+
+export default MapGeometryEventsHandler;

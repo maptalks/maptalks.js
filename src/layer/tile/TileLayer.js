@@ -1,96 +1,139 @@
+import { isNode, isArrayHasData, isFunction } from 'core/util';
+import Browser from 'core/Browser';
+import Point from 'geo/Point';
+import Size from 'geo/Size';
+import PointExtent from 'geo/PointExtent';
+import TileConfig from './tileinfo/TileConfig';
+import TileSystem from './tileinfo/TileSystem';
+import Layer from '../Layer';
+
+/**
+ * @property {Object}              options                     - TileLayer's options
+ * @property {String}              [options.errorTileUrl=null] - tile's url when error
+ * @property {String}              options.urlTemplate         - url templates
+ * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
+ * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
+ * @property {String}              [options.crossOrigin=null]  - tile Image's corssOrigin
+ * @property {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
+ * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
+ * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+ */
+const options = {
+    'errorTileUrl': null,
+    'urlTemplate': null,
+    'subdomains': null,
+
+    'gradualLoading': true,
+
+    'repeatWorld': true,
+
+    'renderWhenPanning': false,
+    //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
+    'updateInterval': (function () {
+        return Browser.mobile ? -1 : 200;
+    })(),
+
+    'cssFilter': null,
+
+    'crossOrigin': null,
+
+    'tileSize': {
+        'width': 256,
+        'height': 256
+    },
+
+    'tileSystem': null,
+    'debug': false,
+
+    'cacheTiles': true,
+
+    'keepBuffer': null,
+
+    'container' : 'back',
+
+    'baseLayerRenderer': (function () {
+        return isNode ? 'canvas' : 'dom';
+    })()
+};
+
+
 /**
  * @classdesc
  * A layer used to display tiled map services, such as [google maps]{@link http://maps.google.com}, [open street maps]{@link http://www.osm.org}
  * @class
  * @category layer
- * @extends maptalks.Layer
+ * @extends Layer
  * @param {String|Number} id - tile layer's id
- * @param {Object} [options=null] - options defined in [maptalks.TileLayer]{@link maptalks.TileLayer#options}
+ * @param {Object} [options=null] - options defined in [TileLayer]{@link TileLayer#options}
  * @example
- * new maptalks.TileLayer("tile",{
+ * new TileLayer("tile",{
         urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         subdomains:['a','b','c']
     })
  */
-maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototype */{
+export default class TileLayer extends Layer {
 
     /**
-     * @property {Object}              options                     - TileLayer's options
-     * @property {String}              [options.errorTileUrl=null] - tile's url when error
-     * @property {String}              options.urlTemplate         - url templates
-     * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
-     * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
-     * @property {String}              [options.crossOrigin=null]  - tile Image's corssOrigin
-     * @property {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
-     * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
-     * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+     * Reproduce a TileLayer from layer's profile JSON.
+     * @param  {Object} layerJSON - layer's profile JSON
+     * @return {TileLayer}
+     * @static
+     * @private
+     * @function
      */
-    options: {
-        'errorTileUrl'  : null,
-        'urlTemplate'   : null,
-        'subdomains'    : null,
-
-        'gradualLoading' : true,
-
-        'repeatWorld'   : true,
-
-        'renderWhenPanning' : false,
-        //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
-        'updateInterval' : (function () { return maptalks.Browser.mobile ? -1 : 200; })(),
-
-        'cssFilter' : null,
-
-        'crossOrigin' : null,
-
-        'tileSize' : {
-            'width'   : 256,
-            'height'  : 256
-        },
-
-        'tileSystem' : null,
-
-        'debug'      : false,
-
-        'cacheTiles' : true,
-
-        'keepBuffer' : null,
-
-        'container' : 'back',
-
-        'baseLayerRenderer' : (function () { return maptalks.node ? 'canvas' : 'dom'; })()
-    },
+    static fromJSON(layerJSON) {
+        if (!layerJSON || layerJSON['type'] !== 'TileLayer') {
+            return null;
+        }
+        return new TileLayer(layerJSON['id'], layerJSON['options']);
+    }
 
 
     /**
      * Get tile size of the tile layer
-     * @return {maptalks.Size}
+     * @return {Size}
      */
-    getTileSize:function () {
+    getTileSize() {
         var size = this.options['tileSize'];
-        return new maptalks.Size(size['width'], size['height']);
-    },
+        return new Size(size['width'], size['height']);
+    }
 
     /**
      * Clear the layer
-     * @return {maptalks.TileLayer} this
+     * @return {TileLayer} this
      */
-    clear:function () {
+    clear() {
         if (this._renderer) {
             this._renderer.clear();
         }
         /**
          * clear event, fired when tile layer is cleared.
          *
-         * @event maptalks.TileLayer#clear
+         * @event TileLayer#clear
          * @type {Object}
          * @property {String} type - clear
-         * @property {maptalks.TileLayer} target - tile layer
+         * @property {TileLayer} target - tile layer
          */
         this.fire('clear');
         return this;
-    },
+    }
 
-    _initRenderer:function () {
+    /**
+     * Export the tile layer's profile json. <br>
+     * Layer's profile is a snapshot of the layer in JSON format. <br>
+     * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
+     * @return {Object} layer's profile JSON
+     */
+    toJSON() {
+        var profile = {
+            'type': 'TileLayer',
+            'id': this.getId(),
+            'options': this.config()
+        };
+        return profile;
+    }
+
+    _initRenderer() {
         var renderer = this.options['renderer'];
         if (this.getMap().getBaseLayer() === this) {
             renderer = this.options['baseLayerRenderer'];
@@ -108,35 +151,37 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
         this._renderer = new clazz(this);
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
-    },
+    }
 
     /**
-     * initialize [tileConfig]{@link maptalks.TileConfig} for the tilelayer
+     * initialize [tileConfig]{@link TileConfig} for the tilelayer
      * @private
      */
-    _initTileConfig:function () {
+    _initTileConfig() {
         var map = this.getMap();
-        this._defaultTileConfig = new maptalks.TileConfig(maptalks.TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
+        this._defaultTileConfig = new TileConfig(TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
         if (this.options['tileSystem']) {
-            this._tileConfig = new maptalks.TileConfig(this.options['tileSystem'], map.getFullExtent(), this.getTileSize());
+            this._tileConfig = new TileConfig(this.options['tileSystem'], map.getFullExtent(), this.getTileSize());
         }
-    },
+    }
 
-    _getTileConfig:function () {
+    _getTileConfig() {
         if (!this._defaultTileConfig) {
             this._initTileConfig();
         }
         var tileConfig = this._tileConfig;
-        if (tileConfig) { return tileConfig; }
+        if (tileConfig) {
+            return tileConfig;
+        }
         var map = this.getMap();
         //inherit baselayer's tileconfig
         if (map && map.getBaseLayer() && map.getBaseLayer()._getTileConfig) {
             return map.getBaseLayer()._getTileConfig();
         }
         return this._defaultTileConfig;
-    },
+    }
 
-    _getTiles:function () {
+    _getTiles() {
         // rendWhenReady = false;
         var map = this.getMap();
         if (!map) {
@@ -147,7 +192,9 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
         }
 
         var tileConfig = this._getTileConfig();
-        if (!tileConfig) { return null; }
+        if (!tileConfig) {
+            return null;
+        }
 
         var tileSize = this.getTileSize(),
             zoom = map.getZoom(),
@@ -155,14 +202,14 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
 
         var mapW = map.width,
             mapH = map.height,
-            containerCenter = new maptalks.Point(mapW / 2, mapH / 2),
+            containerCenter = new Point(mapW / 2, mapH / 2),
             containerExtent = map.getContainerExtent();
 
         //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
-        var centerTile =  tileConfig.getCenterTile(map._getPrjCenter(), res),
-         //计算中心瓦片的top和left偏移值
-            centerPoint = new maptalks.Point(mapW / 2 - centerTile['offsetLeft'],
-                                                mapH / 2 - centerTile['offsetTop']);
+        var centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res),
+            //计算中心瓦片的top和left偏移值
+            centerPoint = new Point(mapW / 2 - centerTile['offsetLeft'],
+                mapH / 2 - centerTile['offsetTop']);
         var center2D = map._containerPointToPoint(centerPoint);
 
         var keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
@@ -173,8 +220,8 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
             right = Math.ceil(Math.abs(containerExtent['xmax'] - containerCenter.x + centerTile['offsetLeft']) / tileSize['width']) + keepBuffer;
 
         var tiles = [],
-            fullExtent = new maptalks.PointExtent(),
-            northWest = new maptalks.Point(center2D.x - left * tileSize['width'], center2D.y - top * tileSize['height']);
+            fullExtent = new PointExtent(),
+            northWest = new Point(center2D.x - left * tileSize['width'], center2D.y - top * tileSize['height']);
 
         for (var i = -(left); i < right; i++) {
             for (var j = -(top); j < bottom; j++) {
@@ -182,17 +229,16 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
                     tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
                     tileId = [tileIndex['y'], tileIndex['x'], zoom].join('__'),
                     tileDesc = {
-                        'url' : tileUrl,
-                        'point' : new maptalks.Point(center2D.x + tileSize['width'] * i, center2D.y + tileSize['height'] * j),
-                        'id'  : tileId,
-                        'zoom' : zoom
+                        'url': tileUrl,
+                        'point': new Point(center2D.x + tileSize['width'] * i, center2D.y + tileSize['height'] * j),
+                        'id': tileId,
+                        'zoom': zoom
                     };
                 tiles.push(tileDesc);
-                fullExtent._combine(new maptalks.PointExtent(
-                        tileDesc['point'],
-                        tileDesc['point'].add(tileSize['width'], tileSize['height'])
-                        )
-                    );
+                fullExtent._combine(new PointExtent(
+                    tileDesc['point'],
+                    tileDesc['point'].add(tileSize['width'], tileSize['height'])
+                ));
             }
         }
 
@@ -201,13 +247,13 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
             return (b['point'].distanceTo(center2D) - a['point'].distanceTo(center2D));
         });
         return {
-            'tiles' : tiles,
-            'fullExtent' : fullExtent,
-            'northWest' : northWest
+            'tiles': tiles,
+            'fullExtent': fullExtent,
+            'northWest': northWest
         };
-    },
+    }
 
-    _getTileUrl:function (x, y, z) {
+    _getTileUrl(x, y, z) {
         if (!this.options['urlTemplate']) {
             return this.options['errorTileUrl'];
         }
@@ -215,7 +261,7 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
         var domain = '';
         if (this.options['subdomains']) {
             var subdomains = this.options['subdomains'];
-            if (maptalks.Util.isArrayHasData(subdomains)) {
+            if (isArrayHasData(subdomains)) {
                 var length = subdomains.length;
                 var s = (x + y) % length;
                 if (s < 0) {
@@ -224,14 +270,14 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
                 domain = subdomains[s];
             }
         }
-        if (maptalks.Util.isFunction(urlTemplate)) {
+        if (isFunction(urlTemplate)) {
             return urlTemplate(x, y, z, domain);
         }
         var data = {
-            'x' : x,
-            'y' : y,
-            'z' : z,
-            's' : domain
+            'x': x,
+            'y': y,
+            'z': z,
+            's': domain
         };
         return urlTemplate.replace(/\{ *([\w_]+) *\}/g, function (str, key) {
             var value = data[key];
@@ -245,32 +291,8 @@ maptalks.TileLayer = maptalks.Layer.extend(/** @lends maptalks.TileLayer.prototy
             return value;
         });
     }
-});
+}
 
-/**
- * Export the tile layer's profile json. <br>
- * Layer's profile is a snapshot of the layer in JSON format. <br>
- * It can be used to reproduce the instance by [fromJSON]{@link maptalks.Layer#fromJSON} method
- * @return {Object} layer's profile JSON
- */
-maptalks.TileLayer.prototype.toJSON = function () {
-    var profile = {
-        'type':'TileLayer',
-        'id':this.getId(),
-        'options' : this.config()
-    };
-    return profile;
-};
+TileLayer.registerJSONType('TileLayer');
 
-/**
- * Reproduce a TileLayer from layer's profile JSON.
- * @param  {Object} layerJSON - layer's profile JSON
- * @return {maptalks.TileLayer}
- * @static
- * @private
- * @function
- */
-maptalks.TileLayer.fromJSON = function (layerJSON) {
-    if (!layerJSON || layerJSON['type'] !== 'TileLayer') { return null; }
-    return new maptalks.TileLayer(layerJSON['id'], layerJSON['options']);
-};
+TileLayer.mergeOptions(options);

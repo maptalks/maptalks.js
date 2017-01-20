@@ -1,88 +1,85 @@
-describe('PointSymbolSpec', function() {
+describe('PointSymbolSpec', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-    var canvasContainer;
 
-    beforeEach(function() {
-        var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.canvasContainer;
         layer = new maptalks.VectorLayer('id').addTo(map);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    describe('dx dy', function() {
-        it('without dx, dy', function() {
+    describe('dx dy', function () {
+        it('without dx, dy', function () {
             var marker = new maptalks.Marker(center, {
                 symbol:{
-                    "markerType" : "ellipse",
-                    "markerWidth": 2,
-                    "markerHeight": 2
+                    'markerType' : 'ellipse',
+                    'markerWidth': 2,
+                    'markerHeight': 2
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true }).addTo(map);
             v.addGeometry(marker);
             expect(v).to.be.painted();
         });
 
-        it('with dx', function() {
+        it('with dx', function () {
             var marker = new maptalks.Marker(center, {
                 symbol:{
-                    "markerType" : "ellipse",
-                    "markerWidth": 2,
-                    "markerHeight": 2,
-                    "markerDx": 10
+                    'markerType' : 'ellipse',
+                    'markerWidth': 2,
+                    'markerHeight': 2,
+                    'markerDx': 10
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true }).addTo(map);
             v.addGeometry(marker);
             expect(v).not.to.be.painted();
             expect(v).to.be.painted(10);
         });
 
-        it('with dy', function() {
+        it('with dy', function () {
             var marker = new maptalks.Marker(center, {
                 symbol:{
-                    "markerType" : "ellipse",
-                    "markerWidth": 2,
-                    "markerHeight": 2,
-                    "markerDy": 10
+                    'markerType' : 'ellipse',
+                    'markerWidth': 2,
+                    'markerHeight': 2,
+                    'markerDy': 10
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true }).addTo(map);
             v.addGeometry(marker);
             expect(v).not.to.be.painted();
             expect(v).to.be.painted(0, 10);
         });
 
-        it('with dx, dy', function() {
+        it('with dx, dy', function () {
             var marker = new maptalks.Marker(center, {
                 symbol:{
-                    "markerType" : "ellipse",
-                    "markerWidth": 2,
-                    "markerHeight": 2,
-                    "markerDx": 10,
-                    "markerDy": 10
+                    'markerType' : 'ellipse',
+                    'markerWidth': 2,
+                    'markerHeight': 2,
+                    'markerDx': 10,
+                    'markerDy': 10
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true}).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true }).addTo(map);
             v.addGeometry(marker);
             expect(v).not.to.be.painted();
             expect(v).to.be.painted(10, 10);
         });
     });
 
-    describe('placement', function() {
-        it('default placement', function() {
+    describe('placement', function () {
+        it('default placement', function () {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c1 = map.containerPointToCoordinate(p.add(-10, -10)),
                 c2 = map.containerPointToCoordinate(p.add(10, -10)),
@@ -96,11 +93,11 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(circle).addTo(map);
             expect(v).to.be.painted();
         });
 
-        it('point placement', function() {
+        it('point placement', function () {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c1 = map.containerPointToCoordinate(p.add(-10, -10)),
                 c2 = map.containerPointToCoordinate(p.add(10, -10)),
@@ -115,11 +112,11 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(circle).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(circle).addTo(map);
             expect(v).to.be.painted();
         });
 
-        it('vertex placement', function() {
+        it('vertex placement', function () {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
@@ -132,13 +129,13 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(line).addTo(map);
             expect(v).to.be.painted();
             expect(v).to.be.painted(10, 0);
             expect(v).to.be.painted(20, 0);
         });
 
-        it('vertex-first placement', function() {
+        it('vertex-first placement', function () {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
@@ -151,13 +148,13 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(line).addTo(map);
             expect(v).to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).not.to.be.painted(20, 0);
         });
 
-        it('vertex-last placement', function() {
+        it('vertex-last placement', function () {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
@@ -170,13 +167,13 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(line).addTo(map);
             expect(v).not.to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).to.be.painted(20, 0);
         });
 
-        it('line placement', function() {
+        it('line placement', function () {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c2 = map.containerPointToCoordinate(p.add(10, 0)),
                 c3 = map.containerPointToCoordinate(p.add(20, 0));
@@ -189,7 +186,7 @@ describe('PointSymbolSpec', function() {
                     'markerHeight': 2
                 }
             });
-            var v = new maptalks.VectorLayer('v', {'drawImmediate' : true, 'enableSimplify':false}).addGeometry(line).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(line).addTo(map);
             expect(v).not.to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).not.to.be.painted(20, 0);

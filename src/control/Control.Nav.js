@@ -1,35 +1,41 @@
+import Map from 'map/Map';
+import Control from './Control';
+
+
+/**
+ * @property {Object} options - options
+ * @property {Object} [options.position='top-left'}] - position of the control
+ */
+const options = {
+    'position': 'top-left'
+};
+
 /**
  * @classdesc
  * A control for map navigation.
  * @class
  * @category control
- * @extends maptalks.control.Control
- * @memberOf maptalks.control
+ * @extends Control
+ * @memberOf control
  * @name Nav
  */
-maptalks.control.Nav = maptalks.control.Control.extend(/** @lends maptalks.control.Nav.prototype */{
-    /**
-     * @property {Object} options - options
-     * @property {Object} [options.position='top-left'}] - position of the control
-     */
-    options:{
-        'position' : 'top-left'
-    },
+export default class Nav extends Control {
 
-    buildOn: function () {
+    buildOn() {
         return null;
     }
 
+}
+
+Nav.mergeOptions(options);
+
+Map.mergeOptions({
+    'navControl': false
 });
 
-maptalks.Map.mergeOptions({
-
-    'navControl' : false
-});
-
-maptalks.Map.addOnLoadHook(function () {
+Map.addOnLoadHook(function () {
     if (this.options['navControl']) {
-        this.navControl = new maptalks.control.Nav(this.options['navControl']);
+        this.navControl = new Nav(this.options['navControl']);
         this.addControl(this.navControl);
     }
 });

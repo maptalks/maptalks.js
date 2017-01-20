@@ -2,12 +2,10 @@
 describe('#Map', function () {
 
     var container;
-    var eventContainer;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    beforeEach(function() {
+    beforeEach(function () {
         container = document.createElement('div');
         container.style.width = '2px';
         container.style.height = '2px';
@@ -18,22 +16,16 @@ describe('#Map', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3],
-            visible : false
-        });
-        eventContainer = map._panels.front;
     });
 
-    afterEach(function() {
-        removeContainer(container)
+    afterEach(function () {
+        REMOVE_CONTAINER(container);
     });
 
 
-    describe('Map.UI.InfoWindow', function() {
+    describe('Map.UI.InfoWindow', function () {
 
-        it('show/hide/isVisible', function() {
+        it('show/hide/isVisible', function () {
 
             var options = {
                 title: 'title',
@@ -44,24 +36,24 @@ describe('#Map', function () {
             win.addTo(map);
             var pos = map.getCenter();
             win.show(pos);
-            expect(win.isVisible()).to.be.ok();;
+            expect(win.isVisible()).to.be.ok();
             win.hide();
-            expect(win.isVisible()).not.to.be.ok();;
+            expect(win.isVisible()).not.to.be.ok();
         });
 
     });
 
-    describe('Map.UI.Menu', function() {
+    describe('Map.UI.Menu', function () {
 
 
-        it('addTo', function() {
+        it('addTo', function () {
 
             var options = {
                 position: null,
                 beforeOpen: null,
                 items: [
-                    {item: 'item1'},
-                    {item: 'item2'}
+                    { item: 'item1' },
+                    { item: 'item2' }
                 ],
                 width: 160
             };
@@ -72,11 +64,11 @@ describe('#Map', function () {
             }).to.not.throwException();
         });
 
-        it('setItems', function() {
+        it('setItems', function () {
             var menu = new maptalks.ui.Menu();
             var items = [
-                {item: 'item1'},
-                {item: 'item2'}
+                { item: 'item1' },
+                { item: 'item2' }
             ];
 
             expect(function () {
@@ -84,19 +76,19 @@ describe('#Map', function () {
             }).to.not.throwException();
         });
 
-        it('close/remove', function() {
+        it('close/remove', function () {
             var options = {
                 position: null,
                 beforeOpen: null,
                 items: [
-                    {item: 'item1'},
-                    {item: 'item2'}
+                    { item: 'item1' },
+                    { item: 'item2' }
                 ],
                 width: 160
             };
             var menu = new maptalks.ui.Menu(options);
             menu.addTo(map);
-            var pos = new maptalks.Coordinate(10,10);
+            var pos = new maptalks.Coordinate(10, 10);
             menu.show(pos);
 
             expect(function () {
@@ -105,20 +97,20 @@ describe('#Map', function () {
             }).to.not.throwException();
         });
 
-        it('show/hide/isVisible', function() {
+        it('show/hide/isVisible', function () {
             var options = {
                 animation : null,
                 position: null,
                 beforeOpen: null,
                 items: [
-                    {item: 'item1'},
-                    {item: 'item2'}
+                    { item: 'item1' },
+                    { item: 'item2' }
                 ],
                 width: 160
             };
             var menu = new maptalks.ui.Menu(options);
             menu.addTo(map);
-            var pos = map.getCenter();;
+            var pos = map.getCenter();
             menu.show(pos);
             expect(menu.isVisible()).to.be.ok();
             menu.hide();

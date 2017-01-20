@@ -1,3 +1,171 @@
+import { isString } from 'core/util';
+import { on, off, createEl, stopPropagation } from 'core/util/dom';
+import Browser from 'core/Browser';
+import Handler from 'handler/Handler';
+import Handlerable from 'handler/Handlerable';
+import DragHandler from 'handler/Drag';
+import Coordinate from 'geo/Coordinate';
+import Point from 'geo/Point';
+import UIComponent from './UI';
+
+/**
+ * @property {Object} options - construct options
+ * @property {Boolean} [options.draggable=false]  - if the marker can be dragged.
+ * @property {Number}  [options.single=false]     - if the marker is a global single one.
+ * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
+ */
+const options = {
+    'draggable': false,
+    'single': false,
+    'content': null
+};
+
+const domEvents =
+    /**
+     * mousedown event
+     * @event UIMarker#mousedown
+     * @type {Object}
+     * @property {String} type                    - mousedown
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mousedown ' +
+    /**
+     * mouseup event
+     * @event UIMarker#mouseup
+     * @type {Object}
+     * @property {String} type                    - mouseup
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseup ' +
+    /**
+     * mouseover event
+     * @event UIMarker#mouseover
+     * @type {Object}
+     * @property {String} type                    - mouseover
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseover ' +
+    /**
+     * mouseout event
+     * @event UIMarker#mouseout
+     * @type {Object}
+     * @property {String} type                    - mouseout
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseout ' +
+    /**
+     * mousemove event
+     * @event UIMarker#mousemove
+     * @type {Object}
+     * @property {String} type                    - mousemove
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mousemove ' +
+    /**
+     * click event
+     * @event UIMarker#click
+     * @type {Object}
+     * @property {String} type                    - click
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'click ' +
+    /**
+     * dblclick event
+     * @event UIMarker#dblclick
+     * @type {Object}
+     * @property {String} type                    - dblclick
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'dblclick ' +
+    /**
+     * contextmenu event
+     * @event UIMarker#contextmenu
+     * @type {Object}
+     * @property {String} type                    - contextmenu
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'contextmenu ' +
+    /**
+     * keypress event
+     * @event UIMarker#keypress
+     * @type {Object}
+     * @property {String} type                    - keypress
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'keypress ' +
+    /**
+     * touchstart event
+     * @event UIMarker#touchstart
+     * @type {Object}
+     * @property {String} type                    - touchstart
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'touchstart ' +
+    /**
+     * touchmove event
+     * @event UIMarker#touchmove
+     * @type {Object}
+     * @property {String} type                    - touchmove
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'touchmove ' +
+    /**
+     * touchend event
+     * @event UIMarker#touchend
+     * @type {Object}
+     * @property {String} type                    - touchend
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'touchend';
+
 /**
  * As it's renderered by HTMLElement such as a DIV, it: <br>
  * 1. always on the top of all the map layers <br>
@@ -8,338 +176,204 @@
  *
  * @class
  * @category ui
- * @extends maptalks.ui.UIComponent
- * @param {Object} options - options defined in [maptalks.ui.UIMarker]{@link maptalks.ui.UIMarker#options}
- * @memberOf maptalks.ui
+ * @extends UIComponent
+ * @param {Object} options - options defined in [UIMarker]{@link UIMarker#options}
+ * @memberOf ui
  * @name UIMarker
  * @example
  * var dom = document.createElement('div');
  * dom.innerHTML = 'hello ui marker';
- * var marker = new maptalks.ui.UIMarker([0, 0], {
+ * var marker = new UIMarker([0, 0], {
  *      draggable : true,
  *      content : dom
  *  }).addTo(map);
  */
-maptalks.ui.UIMarker = maptalks.ui.UIComponent.extend(/** @lends maptalks.ui.UIMarker.prototype */{
+export default class UIMarker extends Handlerable(UIComponent) {
 
-    includes: [maptalks.Handlerable],
+    constructor(coordinate, options) {
+        super(options);
+        this._markerCoord = new Coordinate(coordinate);
+    }
 
-    /**
-     * @property {Object} options - construct options
-     * @property {Boolean} [options.draggable=false]  - if the marker can be dragged.
-     * @property {Number}  [options.single=false]     - if the marker is a global single one.
-     * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
-     */
-    options : {
-        'draggable': false,
-        'single' : false,
-        'content' : null
-    },
-
-    initialize: function (coordinate, options) {
-        this._markerCoord = new maptalks.Coordinate(coordinate);
-        maptalks.Util.setOptions(this, options);
-    },
+    // TODO: obtain class in super
+    _getClassName() {
+        return 'UIMarker';
+    }
 
     /**
      * Sets the coordinates
-     * @param {maptalks.Coordinate} coordinates - UIMarker's coordinate
-     * @returns {maptalks.ui.UIMarker} this
-     * @fires maptalks.ui.UIMarker#positionchange
+     * @param {Coordinate} coordinates - UIMarker's coordinate
+     * @returns {UIMarker} this
+     * @fires UIMarker#positionchange
      */
-    setCoordinates: function (coordinates) {
+    setCoordinates(coordinates) {
         this._markerCoord = coordinates;
         /**
          * positionchange event.
          *
-         * @event maptalks.ui.UIMarker#positionchange
+         * @event UIMarker#positionchange
          * @type {Object}
          * @property {String} type - positionchange
-         * @property {maptalks.ui.UIMarker} target - ui marker
+         * @property {UIMarker} target - ui marker
          */
         this.fire('positionchange');
         if (this.isVisible()) {
             this.show();
         }
         return this;
-    },
+    }
 
     /**
      * Gets the coordinates
-     * @return {maptalks.Coordinate} coordinates
+     * @return {Coordinate} coordinates
      */
-    getCoordinates: function () {
+    getCoordinates() {
         return this._markerCoord;
-    },
+    }
 
     /**
      * Sets the content of the UIMarker
      * @param {String|HTMLElement} content - UIMarker's content
-     * @returns {maptalks.ui.UIMarker} this
-     * @fires maptalks.ui.UIMarker#contentchange
+     * @returns {UIMarker} this
+     * @fires UIMarker#contentchange
      */
-    setContent: function (content) {
+    setContent(content) {
         var old = this.options['content'];
         this.options['content'] = content;
         /**
          * contentchange event.
          *
-         * @event maptalks.ui.UIMarker#contentchange
+         * @event UIMarker#contentchange
          * @type {Object}
          * @property {String} type - contentchange
-         * @property {maptalks.ui.UIMarker} target - ui marker
+         * @property {UIMarker} target - ui marker
          * @property {String|HTMLElement} old      - old content
          * @property {String|HTMLElement} new      - new content
          */
-        this.fire('contentchange', {'old' : old, 'new' : content});
+        this.fire('contentchange', {
+            'old': old,
+            'new': content
+        });
         if (this.isVisible()) {
             this.show();
         }
         return this;
-    },
+    }
 
     /**
      * Gets the content of the UIMarker
      * @return {String|HTMLElement} content
      */
-    getContent: function () {
+    getContent() {
         return this.options['content'];
-    },
+    }
 
     /**
      * Show the UIMarker
-     * @returns {maptalks.ui.UIMarker} this
-     * @fires maptalks.ui.UIMarker#showstart
-     * @fires maptalks.ui.UIMarker#showend
+     * @returns {UIMarker} this
+     * @fires UIMarker#showstart
+     * @fires UIMarker#showend
      */
-    show: function () {
-        return maptalks.ui.UIComponent.prototype.show.call(this, this._markerCoord);
-    },
+    show() {
+        return UIComponent.prototype.show.call(this, this._markerCoord);
+    }
 
     /**
      * A callback method to build UIMarker's HTMLElement
      * @protected
-     * @param {maptalks.Map} map - map to be built on
+     * @param {Map} map - map to be built on
      * @return {HTMLElement} UIMarker's HTMLElement
      */
-    buildOn: function () {
+    buildOn() {
         var dom;
-        if (maptalks.Util.isString(this.options['content'])) {
-            dom = maptalks.DomUtil.createEl('div');
+        if (isString(this.options['content'])) {
+            dom = createEl('div');
             dom.innerHTML = this.options['content'];
         } else {
             dom = this.options['content'];
         }
         this._registerDOMEvents(dom);
         return dom;
-    },
+    }
 
     /**
      * Gets UIMarker's HTMLElement's position offset, it's caculated dynamically accordiing to its actual size.
      * @protected
-     * @return {maptalks.Point} offset
+     * @return {Point} offset
      */
-    getOffset: function () {
+    getOffset() {
         var size = this.getSize();
-        return new maptalks.Point(-size['width'] / 2, -size['height'] / 2);
-    },
+        return new Point(-size['width'] / 2, -size['height'] / 2);
+    }
 
     /**
      * Gets UIMarker's transform origin for animation transform
      * @protected
-     * @return {maptalks.Point} transform origin
+     * @return {Point} transform origin
      */
-    getTransformOrigin: function () {
+    getTransformOrigin() {
         var size = this.getSize();
-        return new maptalks.Point(size['width'] / 2, size['height'] / 2);
-    },
-
-    onDomRemove: function () {
-        var dom = this.getDOM();
-        this._removeDOMEvents(dom);
-    },
-
-    _domEvents : /**
-                  * mousedown event
-                  * @event maptalks.ui.UIMarker#mousedown
-                  * @type {Object}
-                  * @property {String} type                    - mousedown
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'mousedown ' +
-                 /**
-                  * mouseup event
-                  * @event maptalks.ui.UIMarker#mouseup
-                  * @type {Object}
-                  * @property {String} type                    - mouseup
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'mouseup ' +
-                 /**
-                  * mouseover event
-                  * @event maptalks.ui.UIMarker#mouseover
-                  * @type {Object}
-                  * @property {String} type                    - mouseover
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'mouseover ' +
-                 /**
-                  * mouseout event
-                  * @event maptalks.ui.UIMarker#mouseout
-                  * @type {Object}
-                  * @property {String} type                    - mouseout
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'mouseout ' +
-                 /**
-                  * mousemove event
-                  * @event maptalks.ui.UIMarker#mousemove
-                  * @type {Object}
-                  * @property {String} type                    - mousemove
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'mousemove ' +
-                 /**
-                  * click event
-                  * @event maptalks.ui.UIMarker#click
-                  * @type {Object}
-                  * @property {String} type                    - click
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'click ' +
-                 /**
-                  * dblclick event
-                  * @event maptalks.ui.UIMarker#dblclick
-                  * @type {Object}
-                  * @property {String} type                    - dblclick
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'dblclick ' +
-                 /**
-                  * contextmenu event
-                  * @event maptalks.ui.UIMarker#contextmenu
-                  * @type {Object}
-                  * @property {String} type                    - contextmenu
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'contextmenu ' +
-                 /**
-                  * keypress event
-                  * @event maptalks.ui.UIMarker#keypress
-                  * @type {Object}
-                  * @property {String} type                    - keypress
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'keypress ' +
-                 /**
-                  * touchstart event
-                  * @event maptalks.ui.UIMarker#touchstart
-                  * @type {Object}
-                  * @property {String} type                    - touchstart
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'touchstart ' +
-                 /**
-                  * touchmove event
-                  * @event maptalks.ui.UIMarker#touchmove
-                  * @type {Object}
-                  * @property {String} type                    - touchmove
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'touchmove ' +
-                 /**
-                  * touchend event
-                  * @event maptalks.ui.UIMarker#touchend
-                  * @type {Object}
-                  * @property {String} type                    - touchend
-                  * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-                  * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                  * @property {maptalks.Point} containerPoint  - container point of the event
-                  * @property {maptalks.Point} viewPoint       - view point of the event
-                  * @property {Event} domEvent                 - dom event
-                  */
-                 'touchend',
-
-    _registerDOMEvents: function (dom) {
-        maptalks.DomUtil.on(dom, this._domEvents, this._onDomEvents, this);
-    },
-
-    _onDomEvents: function (e) {
-        var event = this.getMap()._parseEvent(e, e.type);
-        this.fire(e.type, event);
-    },
-
-    _removeDOMEvents: function (dom) {
-        maptalks.DomUtil.off(dom, this._domEvents, this._onDomEvents, this);
+        return new Point(size['width'] / 2, size['height'] / 2);
     }
 
-});
+    onDomRemove() {
+        var dom = this.getDOM();
+        this._removeDOMEvents(dom);
+    }
+
+    /**
+     * Whether the uimarker is being dragged.
+     * @returns {Boolean}
+     */
+    isDragging() {
+        if (this['draggable']) {
+            return this['draggable'].isDragging();
+        }
+        return false;
+    }
+
+    _registerDOMEvents(dom) {
+        on(dom, domEvents, this._onDomEvents, this);
+    }
+
+    _onDomEvents(e) {
+        var event = this.getMap()._parseEvent(e, e.type);
+        this.fire(e.type, event);
+    }
+
+    _removeDOMEvents(dom) {
+        off(dom, domEvents, this._onDomEvents, this);
+    }
+
+}
+
+UIMarker.mergeOptions(options);
+
+const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
 /**
- * Drag handler for maptalks.ui.UIMarker.
+ * Drag handler for UIMarker.
  * @class
  * @category handler
  * @protected
- * @extends {maptalks.Handler}
+ * @extends {Handler}
  */
-maptalks.ui.UIMarker.Drag = maptalks.Handler.extend(/** @lends maptalks.ui.UIMarker.Drag.prototype */{
+class UIMarkerDragHandler extends Handler {
 
-    START: maptalks.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
+    constructor(target) {
+        super(target);
+    }
 
-    addHooks: function () {
-        this.target.on(this.START.join(' '), this._startDrag, this);
+    addHooks() {
+        this.target.on(EVENTS, this._startDrag, this);
 
-    },
+    }
 
-    removeHooks: function () {
-        this.target.off(this.START.join(' '), this._startDrag, this);
-    },
+    removeHooks() {
+        this.target.off(EVENTS, this._startDrag, this);
+    }
 
-    _startDrag: function (param) {
+    _startDrag(param) {
         var domEvent = param['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
@@ -354,29 +388,29 @@ maptalks.ui.UIMarker.Drag = maptalks.Handler.extend(/** @lends maptalks.ui.UIMar
         this._dragHandler.onMouseDown(param['domEvent']);
         /**
          * drag start event
-         * @event maptalks.ui.UIMarker#dragstart
+         * @event UIMarker#dragstart
          * @type {Object}
          * @property {String} type                    - dragstart
-         * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {UIMarker} target    - the uimarker fires event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         this.target.fire('dragstart', param);
-    },
+    }
 
-    _prepareDragHandler:function () {
-        this._dragHandler = new maptalks.Handler.Drag(this.target.getDOM(), {
-            'cancelOn' : maptalks.Util.bind(this._cancelOn, this)
+    _prepareDragHandler() {
+        this._dragHandler = new DragHandler(this.target.getDOM(), {
+            'cancelOn': this._cancelOn.bind(this)
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
-    },
+    }
 
-    _cancelOn: function (domEvent) {
+    _cancelOn(domEvent) {
         var target = domEvent.srcElement || domEvent.target,
             tagName = target.tagName.toLowerCase();
         if (tagName === 'button' ||
@@ -387,13 +421,13 @@ maptalks.ui.UIMarker.Drag = maptalks.Handler.extend(/** @lends maptalks.ui.UIMar
             return true;
         }
         return false;
-    },
+    }
 
-    _onMouseDown: function (param) {
-        maptalks.DomUtil.stopPropagation(param['domEvent']);
-    },
+    _onMouseDown(param) {
+        stopPropagation(param['domEvent']);
+    }
 
-    _dragging: function (param) {
+    _dragging(param) {
         var target = this.target,
             map = target.getMap(),
             eventParam = map._parseEvent(param['domEvent']),
@@ -416,20 +450,20 @@ maptalks.ui.UIMarker.Drag = maptalks.Handler.extend(/** @lends maptalks.ui.UIMar
 
         /**
          * dragging event
-         * @event maptalks.ui.UIMarker#dragging
+         * @event UIMarker#dragging
          * @type {Object}
          * @property {String} type                    - dragging
-         * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {UIMarker} target    - the uimarker fires event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         target.fire('dragging', eventParam);
 
-    },
+    }
 
-    _endDrag: function (param) {
+    _endDrag(param) {
         var target = this.target,
             map = target.getMap();
         if (this._dragHandler) {
@@ -445,38 +479,25 @@ maptalks.ui.UIMarker.Drag = maptalks.Handler.extend(/** @lends maptalks.ui.UIMar
         var eventParam = map._parseEvent(param['domEvent']);
         /**
          * dragend event
-         * @event maptalks.ui.UIMarker#dragend
+         * @event UIMarker#dragend
          * @type {Object}
          * @property {String} type                    - dragend
-         * @property {maptalks.ui.UIMarker} target    - the uimarker fires event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {UIMarker} target    - the uimarker fires event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         target.fire('dragend', eventParam);
 
-    },
+    }
 
-    isDragging:function () {
+    isDragging() {
         if (!this._isDragging) {
             return false;
         }
         return true;
     }
-});
+}
 
-maptalks.ui.UIMarker.addInitHook('addHandler', 'draggable', maptalks.ui.UIMarker.Drag);
-
-maptalks.ui.UIMarker.include(/** @lends maptalks.ui.UIMarker.prototype */{
-    /**
-     * Whether the uimarker is being dragged.
-     * @returns {Boolean}
-     */
-    isDragging: function () {
-        if (this['draggable']) {
-            return this['draggable'].isDragging();
-        }
-        return false;
-    }
-});
+UIMarker.addInitHook('addHandler', 'draggable', UIMarkerDragHandler);

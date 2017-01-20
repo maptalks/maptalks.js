@@ -1,25 +1,30 @@
-maptalks.Map.mergeOptions({
-    'doubleClickZoom': true
-});
+import Handler from 'handler/Handler';
+import Map from '../Map';
 
-maptalks.Map.DoubleClickZoom = maptalks.Handler.extend({
-    addHooks: function () {
+class MapDoubleClickZoomHandler extends Handler {
+    addHooks() {
         this.target.on('_dblclick', this._onDoubleClick, this);
-    },
+    }
 
-    removeHooks: function () {
+    removeHooks() {
         this.target.off('_dblclick', this._onDoubleClick, this);
-    },
+    }
 
-    _onDoubleClick: function (param) {
-        var map = this.target;
+    _onDoubleClick(param) {
+        const map = this.target;
         if (map.options['doubleClickZoom']) {
-            var oldZoom = map.getZoom(),
+            const oldZoom = map.getZoom(),
                 zoom = param['domEvent']['shiftKey'] ? Math.ceil(oldZoom) - 1 : Math.floor(oldZoom) + 1;
             map._zoomAnimation(zoom, param['containerPoint']);
         }
 
     }
+}
+
+Map.mergeOptions({
+    'doubleClickZoom': true
 });
 
-maptalks.Map.addInitHook('addHandler', 'doubleClickZoom', maptalks.Map.DoubleClickZoom);
+Map.addOnLoadHook('addHandler', 'doubleClickZoom', MapDoubleClickZoomHandler);
+
+export default MapDoubleClickZoomHandler;

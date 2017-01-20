@@ -1,28 +1,31 @@
+import LineString from './LineString';
+import Canvas2d from 'core/Canvas';
+
 /**
  * @classdesc Curve style LineString, an abstract parent class for all the curves.
  * @class
  * @category geometry
- * @extends {maptalks.LineString}
+ * @extends {LineString}
  */
-maptalks.Curve = maptalks.LineString.extend(/** @lends maptalks.Curve.prototype */{
+export default class Curve extends LineString {
 
-    _arc: function (ctx, points, lineOpacity) {
-        var degree = this.options['arcDegree']  * Math.PI / 180;
+    _arc(ctx, points, lineOpacity) {
+        var degree = this.options['arcDegree'] * Math.PI / 180;
         for (var i = 1, l = points.length; i < l; i++) {
-            maptalks.Canvas._arcBetween(ctx, points[i - 1], points[i], degree);
-            maptalks.Canvas._stroke(ctx, lineOpacity);
+            Canvas2d._arcBetween(ctx, points[i - 1], points[i], degree);
+            Canvas2d._stroke(ctx, lineOpacity);
         }
-    },
+    }
 
-    _quadraticCurve: function (ctx, points) {
+    _quadraticCurve(ctx, points) {
         if (points.length <= 2) {
-            maptalks.Canvas._path(ctx, points);
+            Canvas2d._path(ctx, points);
             return;
         }
-        maptalks.Canvas.quadraticCurve(ctx, points);
-    },
+        Canvas2d.quadraticCurve(ctx, points);
+    }
 
-    _getCubicCurvePoints: function (points) {
+    _getCubicCurvePoints(points) {
         var ctrlPts = [];
         var f = 0.3;
         var t = 0.6;
@@ -51,12 +54,12 @@ maptalks.Curve = maptalks.LineString.extend(/** @lends maptalks.Curve.prototype 
             preP = curP;
         }
         return ctrlPts;
-    },
+    }
 
-    _bezierCurve: function (ctx, points) {
+    _bezierCurve(ctx, points) {
 
         if (points.length <= 2) {
-            maptalks.Canvas._path(ctx, points);
+            Canvas2d._path(ctx, points);
             return;
         }
         var ctrlPts = this._getCubicCurvePoints(points);
@@ -65,4 +68,4 @@ maptalks.Curve = maptalks.LineString.extend(/** @lends maptalks.Curve.prototype 
             ctx.bezierCurveTo(ctrlPts[i], ctrlPts[i + 1], ctrlPts[i + 2], ctrlPts[i + 3], ctrlPts[i + 4], ctrlPts[i + 5]);
         }
     }
-});
+}

@@ -1,3 +1,6 @@
+import Point from './Point';
+import { round } from 'core/util';
+
 /**
  * Represents a size.
  * @class
@@ -5,84 +8,89 @@
  * @param {Number} width - width value
  * @param {Number} height - height value
  */
-maptalks.Size = function (width, height) {
-    /**
-     * @property {Number} width - width
-     */
-    this.width = width;
-    /**
-     * @property {Number} height - height
-     */
-    this.height = height;
-};
+export default class Size {
+    constructor(width, height) {
+        /**
+         * @property {Number} width - width
+         */
+        this.width = width;
+        /**
+         * @property {Number} height - height
+         */
+        this.height = height;
+    }
 
-maptalks.Util.extend(maptalks.Size.prototype, /** @lends maptalks.Size.prototype */{
     /**
      * Returns a copy of the size
-     * @return {maptalks.Size} copy
+     * @return {Size} copy
      */
-    copy:function () {
-        return new maptalks.Size(this['width'], this['height']);
-    },
+    copy() {
+        return new Size(this['width'], this['height']);
+    }
+
     /**
      * Returns the result of addition of another size.
-     * @param {maptalks.Size} size - size to add
-     * @return {maptalks.Size} result
+     * @param {Size} size - size to add
+     * @return {Size} result
      */
-    add:function (size) {
-        return new maptalks.Size(this['width'] + size['width'], this['height'] + size['height']);
-    },
+    add(size) {
+        return new Size(this['width'] + size['width'], this['height'] + size['height']);
+    }
+
     /**
      * Compare with another size to see whether they are equal.
-     * @param {maptalks.Size} size - size to compare
+     * @param {Size} size - size to compare
      * @return {Boolean}
      */
-    equals:function (size) {
+    equals(size) {
         return this['width'] === size['width'] && this['height'] === size['height'];
-    },
+    }
+
     /**
      * Returns the result of multiplication of the current size by the given number.
      * @param {Number} ratio - ratio to multi
-     * @return {maptalks.Size} result
+     * @return {Size} result
      */
-    multi:function (ratio) {
-        return new maptalks.Size(this['width'] * ratio, this['height'] * ratio);
-    },
-    _multi:function (ratio) {
+    multi(ratio) {
+        return new Size(this['width'] * ratio, this['height'] * ratio);
+    }
+
+    _multi(ratio) {
         this['width'] *= ratio;
         this['height'] *= ratio;
         return this;
-    },
-    _round:function () {
-        this['width'] = maptalks.Util.round(this['width']);
-        this['height'] = maptalks.Util.round(this['height']);
+    }
+
+    _round() {
+        this['width'] = round(this['width']);
+        this['height'] = round(this['height']);
         return this;
-    },
+    }
 
     /**
-     * Converts the size object to a [maptalks.Point]{maptalks.Point}
-     * @return {maptalks.Point} point
+     * Converts the size object to a [Point]{Point}
+     * @return {Point} point
      */
-    toPoint:function () {
-        return new maptalks.Point(this['width'], this['height']);
-    },
+    toPoint() {
+        return new Point(this['width'], this['height']);
+    }
 
     /**
      * Converts the size object to a array [width, height]
      * @return {Number[]}
      */
-    toArray: function () {
+    toArray() {
         return [this['width'], this['height']];
-    },
+    }
 
     /**
      * Convert the size object to a json object {width : .., height : ..}
      * @return {Object} json
      */
-    toJSON: function () {
+    toJSON() {
         return {
-            'width' : this['width'],
+            'width': this['width'],
             'height': this['height']
         };
     }
-});
+}

@@ -1,7 +1,9 @@
-/**
- * @namespace
- */
-maptalks.control = {};
+import { extend, isNil, isString } from 'core/util';
+import { createEl, addStyle, setStyle, removeDomNode } from 'core/util/dom';
+import Eventable from 'core/Event';
+import Class from 'core/Class';
+import Point from 'geo/Point';
+import Map from 'map/Map';
 
 /**
  * Base class for all the map controls, you can extend it to build your own customized Control.
@@ -9,64 +11,59 @@ maptalks.control = {};
  * @class
  * @category control
  * @abstract
- * @extends maptalks.Class
- * @memberOf maptalks.control
+ * @extends Class
+ * @memberOf control
  * @name  Control
  *
- * @mixes maptalks.Eventable
+ * @mixes Eventable
  */
-maptalks.control.Control = maptalks.Class.extend(/** @lends maptalks.control.Control.prototype */{
-    includes: [maptalks.Eventable],
+export default class Control extends Eventable(Class) {
 
-    statics : {
-        'positions' : {
-            'top-left' : {'top': '20', 'left': '20'},
-            'top-right' : {'top': '40', 'right': '60'},
-            'bottom-left' : {'bottom': '20', 'left': '60'},
-            'bottom-right' : {'bottom': '20', 'right': '60'}
+    constructor(options) {
+        if (options && options['position'] && !isString(options['position'])) {
+            options['position'] = extend({}, options['position']);
         }
-    },
-
-    initialize: function (options) {
-        if (options && options['position'] && !maptalks.Util.isString(options['position'])) {
-            options['position'] = maptalks.Util.extend({}, options['position']);
-        }
-        maptalks.Util.setOptions(this, options);
-    },
+        super(options);
+    }
 
     /**
      * Adds the control to a map.
-     * @param {maptalks.Map} map
-     * @returns {maptalks.control.Control} this
-     * @fires maptalks.control.Control#add
+     * @param {Map} map
+     * @returns {control.Control} this
+     * @fires control.Control#add
      */
-    addTo: function (map) {
+    addTo(map) {
         this.remove();
+        if (!map.options['control']) {
+            return this;
+        }
         this._map = map;
-        var controlContainer = map._panels.control;
-        this.__ctrlContainer = maptalks.DomUtil.createEl('div');
-        maptalks.DomUtil.setStyle(this.__ctrlContainer, 'position:absolute');
-        maptalks.DomUtil.addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
-        // maptalks.DomUtil.on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', maptalks.DomUtil.stopPropagation)
+        const controlContainer = map._panels.control;
+        this.__ctrlContainer = createEl('div');
+        setStyle(this.__ctrlContainer, 'position:absolute');
+        addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
+        // on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', stopPropagation)
         this.update();
         controlContainer.appendChild(this.__ctrlContainer);
         /**
          * add event.
          *
-         * @event maptalks.control.Control#add
+         * @event control.Control#add
          * @type {Object}
          * @property {String} type - add
-         * @property {maptalks.control.Control} target - the control instance
+         * @property {control.Control} target - the control instance
          */
-        this.fire('add', {'dom' : controlContainer});
+        this.fire('add', {
+            'dom': controlContainer
+        });
         return this;
-    },
+    }
 
     /**
      * update control container
-     * @return {maptalks.control.Control} this
+     * @return {control.Control} this
      */
-    update: function () {
+    update() {
         this.__ctrlContainer.innerHTML = '';
         this._controlDom = this.buildOn(this.getMap());
         if (this._controlDom) {
@@ -74,115 +71,115 @@ maptalks.control.Control = maptalks.Class.extend(/** @lends maptalks.control.Con
             this.__ctrlContainer.appendChild(this._controlDom);
         }
         return this;
-    },
+    }
 
     /**
      * Get the map that the control is added to.
-     * @return {maptalks.Map}
+     * @return {Map}
      */
-    getMap:function () {
+    getMap() {
         return this._map;
-    },
+    }
 
     /**
      * Get the position of the control
      * @return {Object}
      */
-    getPosition: function () {
-        return maptalks.Util.extend({}, this._parse(this.options['position']));
-    },
+    getPosition() {
+        return extend({}, this._parse(this.options['position']));
+    }
 
     /**
      * update the control's position
      * @param {String|Object} position - can be one of 'top-left', 'top-right', 'bottom-left', 'bottom-right' or a position object like {'top': 40,'left': 60}
-     * @return {maptalks.control.Control} this
-     * @fires maptalks.control.Control#positionchange
+     * @return {control.Control} this
+     * @fires control.Control#positionchange
      */
-    setPosition: function (position) {
-        if (maptalks.Util.isString(position)) {
+    setPosition(position) {
+        if (isString(position)) {
             this.options['position'] = position;
         } else {
-            this.options['position'] = maptalks.Util.extend({}, position);
+            this.options['position'] = extend({}, position);
         }
         this._updatePosition();
         return this;
-    },
+    }
 
     /**
      * Get the container point of the control.
-     * @return {maptalks.Point}
+     * @return {Point}
      */
-    getContainerPoint:function () {
-        var position = this.getPosition();
+    getContainerPoint() {
+        const position = this.getPosition();
 
-        var size = this.getMap().getSize();
+        const size = this.getMap().getSize();
         var x, y;
-        if (!maptalks.Util.isNil(position['top'])) {
+        if (!isNil(position['top'])) {
             x = position['top'];
-        } else if (!maptalks.Util.isNil(position['bottom'])) {
+        } else if (!isNil(position['bottom'])) {
             x = size['height'] - position['bottom'];
         }
-        if (!maptalks.Util.isNil(position['left'])) {
+        if (!isNil(position['left'])) {
             y = position['left'];
-        } else if (!maptalks.Util.isNil(position['right'])) {
+        } else if (!isNil(position['right'])) {
             y = size['width'] - position['right'];
         }
-        return new maptalks.Point(x, y);
-    },
+        return new Point(x, y);
+    }
 
     /**
      * Get the control's container.
      * Container is a div element wrapping the control's dom and decides the control's position and display.
      * @return {HTMLElement}
      */
-    getContainer: function () {
+    getContainer() {
         return this.__ctrlContainer;
-    },
+    }
 
     /**
      * Get html dom element of the control
      * @return {HTMLElement}
      */
-    getDOM: function () {
+    getDOM() {
         return this._controlDom;
-    },
+    }
 
     /**
      * Show
-     * @return {maptalks.control.Control} this
+     * @return {control.Control} this
      */
-    show: function () {
+    show() {
         this.__ctrlContainer.style.display = '';
         return this;
-    },
+    }
 
     /**
      * Hide
-     * @return {maptalks.control.Control} this
+     * @return {control.Control} this
      */
-    hide: function () {
+    hide() {
         this.__ctrlContainer.style.display = 'none';
         return this;
-    },
+    }
 
     /**
      * Whether the control is visible
      * @return {Boolean}
      */
-    isVisible:function () {
+    isVisible() {
         return (this.__ctrlContainer && this.__ctrlContainer.style.display === '');
-    },
+    }
 
     /**
      * Remove itself from the map
-     * @return {maptalks.control.Control} this
-     * @fires maptalks.control.Control#remove
+     * @return {control.Control} this
+     * @fires control.Control#remove
      */
-    remove: function () {
+    remove() {
         if (!this._map) {
             return this;
         }
-        maptalks.DomUtil.removeDomNode(this.__ctrlContainer);
+        removeDomNode(this.__ctrlContainer);
         if (this.onRemove) {
             this.onRemove();
         }
@@ -192,28 +189,31 @@ maptalks.control.Control = maptalks.Class.extend(/** @lends maptalks.control.Con
         /**
          * remove event.
          *
-         * @event maptalks.control.Control#remove
+         * @event control.Control#remove
          * @type {Object}
          * @property {String} type - remove
-         * @property {maptalks.control.Control} target - the control instance
+         * @property {control.Control} target - the control instance
          */
         this.fire('remove');
         return this;
-    },
+    }
 
-    _parse: function (position) {
+    _parse(position) {
         var p = position;
-        if (maptalks.Util.isString(position)) {
-            p = maptalks.control.Control['positions'][p];
+        if (isString(position)) {
+            p = Control['positions'][p];
         }
         return p;
-    },
+    }
 
-    _updatePosition: function () {
+    _updatePosition() {
         var position = this.getPosition();
         if (!position) {
             //default one
-            position = {'top': 20, 'left': 20};
+            position = {
+                'top': 20,
+                'left': 20
+            };
         }
         for (var p in position) {
             if (position.hasOwnProperty(p)) {
@@ -224,33 +224,51 @@ maptalks.control.Control = maptalks.Class.extend(/** @lends maptalks.control.Con
         /**
          * Control's position update event.
          *
-         * @event maptalks.control.Control#positionchange
+         * @event control.Control#positionchange
          * @type {Object}
          * @property {String} type - positionchange
-         * @property {maptalks.control.Control} target - the control instance
+         * @property {control.Control} target - the control instance
          * @property {Object} position - Position of the control, eg:{"top" : 100, "left" : 50}
          */
         this.fire('positionchange', {
-            'position' : maptalks.Util.extend({}, position)
+            'position': extend({}, position)
         });
     }
 
+}
+
+Control.positions = {
+    'top-left': {
+        'top'   : 20,
+        'left'  : 20
+    },
+    'top-right': {
+        'top'   : 40,
+        'right' : 60
+    },
+    'bottom-left': {
+        'bottom': 20,
+        'left'  : 60
+    },
+    'bottom-right': {
+        'bottom': 20,
+        'right' : 60
+    }
+};
+
+Map.mergeOptions({
+    'control': true
 });
 
-maptalks.Map.mergeOptions({
-
-    'control' : true
-});
-
-maptalks.Map.include(/** @lends maptalks.Map.prototype */{
+Map.include(/** @lends Map.prototype */ {
     /**
      * Add a control on the map.
-     * @param {maptalks.control.Control} control - contorl to add
-     * @return {maptalks.Map} this
+     * @param {control.Control} control - contorl to add
+     * @return {Map} this
      */
     addControl: function (control) {
-        //map container is a canvas, can't add control on it.
-        if (!this.options['control'] || this._containerDOM.getContext) {
+        // if map container is a canvas, can't add control on it.
+        if (this._containerDOM.getContext) {
             return this;
         }
         control.addTo(this);
@@ -259,8 +277,8 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
 
     /**
      * Remove a control from the map.
-     * @param {maptalks.control.Control} control - control to remove
-     * @return {maptalks.Map} this
+     * @param {control.Control} control - control to remove
+     * @return {Map} this
      */
     removeControl: function (control) {
         if (!control || control.getMap() !== this) {

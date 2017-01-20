@@ -1,29 +1,26 @@
 // var CommonSpec = require('./CommonSpec');
 
-describe('SymbolSpec', function() {
+describe('SymbolSpec', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-    var canvasContainer;
 
-    beforeEach(function() {
-        var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.canvasContainer;
         layer = new maptalks.VectorLayer('id').addTo(map);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    it('default', function() {
-        var geometries = genAllTypeGeometries();
+    it('default', function () {
+        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
         var i;
         for (i = 0; i < geometries.length; i++) {
             expect(geometries[i].getSymbol()).not.to.be.ok();
@@ -39,17 +36,17 @@ describe('SymbolSpec', function() {
 
     it('updateSymbol', function () {
         var expected = {
-            "markerType" : "ellipse",
-            "markerWidth":20,
-            "markerHeight":30
+            'markerType' : 'ellipse',
+            'markerWidth':20,
+            'markerHeight':30
         };
         var marker = new maptalks.Marker(center);
         marker.setSymbol({
-            "markerType" : "cross",
-            "markerWidth":20,
-            "markerHeight":30
+            'markerType' : 'cross',
+            'markerWidth':20,
+            'markerHeight':30
         }).updateSymbol({
-             "markerType" : "ellipse",
+            'markerType' : 'ellipse',
         });
         expect(marker.getSymbol()).to.be.eql(expected);
     });
@@ -60,18 +57,18 @@ describe('SymbolSpec', function() {
         var expected = maptalks.Util.extend({}, marker._getInternalSymbol());
         expected.markerType = 'ellipse';
         marker.updateSymbol({
-             "markerType" : "ellipse",
+            'markerType' : 'ellipse',
         });
         expect(marker.getSymbol()).to.be.eql(expected);
     });
 
-    it('marker file', function() {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var marker = new maptalks.Marker([100,0], {
+    it('marker file', function () {
+        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
+        var marker = new maptalks.Marker([100, 0], {
             symbol:{
-                "markerFile" : "resources/x.svg",
-                "markerWidth":20,
-                "markerHeight":30
+                'markerFile' : 'resources/x.svg',
+                'markerWidth':20,
+                'markerHeight':30
             }
         });
         var res = marker._getExternalResources();
@@ -81,9 +78,9 @@ describe('SymbolSpec', function() {
         expect(res[0][2]).to.be.eql(30);
     });
 
-    it('marker path', function() {
-        var expected = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
-        var marker = new maptalks.Marker([100,0], {
+    it('marker path', function () {
+        var expected = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
+        var marker = new maptalks.Marker([100, 0], {
             symbol:{
                 'markerType'    : 'path',
                 'markerPath'    : [
@@ -92,8 +89,8 @@ describe('SymbolSpec', function() {
                         'fill' : '#DE3333'
                     }
                 ],
-                "markerWidth":20,
-                "markerHeight":30
+                'markerWidth':20,
+                'markerHeight':30
             }
         });
         var res = marker._getExternalResources();
@@ -103,7 +100,7 @@ describe('SymbolSpec', function() {
         expect(res[0][2]).to.be.eql(30);
     });
 
-    describe('symbol number properties in type of string', function() {
+    describe('symbol number properties in type of string', function () {
         it('vector path marker symbolizer', function () {
             var symbol = {
                 'markerType'    : 'path',
@@ -113,10 +110,10 @@ describe('SymbolSpec', function() {
                         'fill' : '#DE3333'
                     }
                 ],
-                "markerWidth": '20',
-                "markerHeight": '30',
-                "markerOpacity" : '0.5'
-            }
+                'markerWidth': '20',
+                'markerHeight': '30',
+                'markerOpacity' : '0.5'
+            };
             var symbolizer = new maptalks.symbolizer.VectorPathMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
@@ -125,15 +122,15 @@ describe('SymbolSpec', function() {
 
         it('vector marker symbolizer', function () {
             var symbol = {
-                "markerType" : "ellipse",
-                "markerWidth": '20',
-                "markerHeight": '30',
+                'markerType' : 'ellipse',
+                'markerWidth': '20',
+                'markerHeight': '30',
                 'markerFillOpacity' : '0.5',
                 'markerLineWidth'       : '2',
                 'markerLineOpacity'     : '0.6',
                 'markerDx'              : '1',
                 'markerDy'              : '2'
-            }
+            };
             var symbolizer = new maptalks.symbolizer.VectorMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
@@ -146,13 +143,13 @@ describe('SymbolSpec', function() {
 
         it('image marker symbolizer', function () {
             var symbol = {
-                "markerFile" : "foo.png",
-                "markerWidth": '20',
-                "markerHeight": '30',
-                "markerOpacity" : '0.5',
-                "markerDx": '1',
-                "markerDy": '2',
-            }
+                'markerFile' : 'foo.png',
+                'markerWidth': '20',
+                'markerHeight': '30',
+                'markerOpacity' : '0.5',
+                'markerDx': '1',
+                'markerDy': '2',
+            };
             var symbolizer = new maptalks.symbolizer.ImageMarkerSymbolizer(symbol);
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
@@ -163,8 +160,8 @@ describe('SymbolSpec', function() {
 
         it('text marker symbolizer', function () {
             var symbol = {
-                "textName" : "foo",
-                "textSize": '20',
+                'textName' : 'foo',
+                'textSize': '20',
                 'textOpacity' : '0.5',
                 'textHaloRadius' : '4',
                 'textWrapWidth' : '3',
@@ -172,7 +169,7 @@ describe('SymbolSpec', function() {
                 'textDx' : '1',
                 'textDy' : '2',
             };
-            var marker = new maptalks.Marker([0, 0], {symbol : symbol});
+            var marker = new maptalks.Marker([0, 0], { symbol : symbol });
             var symbolizer = new maptalks.symbolizer.TextMarkerSymbolizer(symbol, marker);
             expect(symbolizer.style.textSize).to.be.eql(20);
             expect(symbolizer.style.textOpacity).to.be.eql(0.5);
@@ -184,11 +181,11 @@ describe('SymbolSpec', function() {
         });
     });
 
-    it('line pattern file', function() {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var line = new maptalks.Polygon([[100,0],[101,1],[105,10],[100,0]], {
+    it('line pattern file', function () {
+        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
+        var line = new maptalks.Polygon([[100, 0], [101, 1], [105, 10], [100, 0]], {
             symbol:{
-                "linePatternFile" : "resources/x.svg"
+                'linePatternFile' : 'resources/x.svg'
             }
         });
         var res = line._getExternalResources();
@@ -196,11 +193,11 @@ describe('SymbolSpec', function() {
         expect(res[0][0]).to.be.eql(expected);
     });
 
-    it('polygon pattern file', function() {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var polygon = new maptalks.Polygon([[100,0],[101,1],[105,10],[100,0]], {
+    it('polygon pattern file', function () {
+        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
+        var polygon = new maptalks.Polygon([[100, 0], [101, 1], [105, 10], [100, 0]], {
             symbol:{
-                "polygonPatternFile" : "resources/x.svg"
+                'polygonPatternFile' : 'resources/x.svg'
             }
         });
         var res = polygon._getExternalResources();
@@ -208,28 +205,27 @@ describe('SymbolSpec', function() {
         expect(res[0][0]).to.be.eql(expected);
     });
 
-    it('with a non-exist svg icon', function(done) {
-        var marker = new maptalks.Marker([100,0], {
+    it('with a non-exist svg icon', function (done) {
+        var marker = new maptalks.Marker([100, 0], {
             symbol:{
-                "markerFile" : "resources/not-existed.svg",
-                "markerWidth":20,
-                "markerHeight":30
+                'markerFile' : 'resources/not-existed.svg',
+                'markerWidth':20,
+                'markerHeight':30
             }
         });
         var vectorLayer = new maptalks.VectorLayer('v').addGeometry(marker);
-        vectorLayer.once('layerload', function() {
+        vectorLayer.once('layerload', function () {
             done();
         });
         map.addLayer(vectorLayer);
     });
 
-    it('should be reloaded after zoomend', function(done) {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/x.svg';
-        var marker = new maptalks.Marker([100,0], {
+    it('should be reloaded after zoomend', function (done) {
+        var marker = new maptalks.Marker([100, 0], {
             symbol:{
-                "markerFile" : "resources/x.svg",
-                "markerWidth":20,
-                "markerHeight":30
+                'markerFile' : 'resources/x.svg',
+                'markerWidth':20,
+                'markerHeight':30
             }
         });
         /*map.on('zoomstart', function() {
@@ -241,25 +237,25 @@ describe('SymbolSpec', function() {
                 }
             )
         });*/
-        map.on('zoomend', function() {
+        var vectorLayer = new maptalks.VectorLayer('v').addGeometry(marker);
+        map.on('zoomend', function () {
             var res = marker._getExternalResources();
             expect(res).to.have.length(1);
             expect(vectorLayer._getRenderer().resources.isResourceLoaded(res[0])).to.be.ok();
             done();
         });
-        var vectorLayer = new maptalks.VectorLayer('v').addGeometry(marker);
-        vectorLayer.once('layerload', function() {
+        vectorLayer.once('layerload', function () {
             map.zoomIn();
         });
         map.addLayer(vectorLayer);
     });
 
-    it('collection can _setExternSymbol', function() {
+    it('collection can _setExternSymbol', function () {
         var symbol = {
             'markerType' : 'ellipse',
             'markerWidth' : 10,
             'markerHeight' : 10
-        }
+        };
         var markers = new maptalks.MultiPoint([[0, 0], [0, 1]]);
         markers._setExternSymbol(symbol);
         var children = markers.getGeometries();
@@ -269,10 +265,10 @@ describe('SymbolSpec', function() {
     });
 
     it('function type markerFile', function () {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/'))+'/resources/';
-        var marker = new maptalks.Marker([100,0], {
+        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/';
+        var marker = new maptalks.Marker([100, 0], {
             symbol:{
-                "markerFile" : {
+                'markerFile' : {
                     property:'count',
                     type:'interval',
                     stops: [
@@ -281,8 +277,8 @@ describe('SymbolSpec', function() {
                         [99, 'resources/x2.svg']
                     ]
                 },
-                "markerWidth":20,
-                "markerHeight":30
+                'markerWidth':20,
+                'markerHeight':30
             }
         });
         var res = marker._getExternalResources();
@@ -292,10 +288,10 @@ describe('SymbolSpec', function() {
         expect(res[2]).to.be.eql([expected + 'x2.svg', 20, 30]);
     });
 
-    it('function type markerPath', function() {
-        var expected0 = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
-        var expected1 = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+";
-        var marker = new maptalks.Marker([100,0], {
+    it('function type markerPath', function () {
+        var expected0 = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
+        var expected1 = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
+        var marker = new maptalks.Marker([100, 0], {
             symbol:{
                 'markerType'    : 'path',
                 'markerPath'    : {
@@ -309,8 +305,8 @@ describe('SymbolSpec', function() {
                         }]
                     ]
                 },
-                "markerWidth":20,
-                "markerHeight":30
+                'markerWidth':20,
+                'markerHeight':30
             }
         });
         var res = marker._getExternalResources();

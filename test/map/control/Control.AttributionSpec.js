@@ -1,8 +1,7 @@
-describe("Control.Attribution", function() {
+describe('Control.Attribution', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
@@ -15,18 +14,13 @@ describe("Control.Attribution", function() {
             center: center
         };
         map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
-
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
-        });
     });
 
     afterEach(function () {
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    it("contains specified content", function() {
+    it('contains specified content', function () {
         var control = new maptalks.control.Attribution({
             content: 'content'
         });
@@ -35,7 +29,7 @@ describe("Control.Attribution", function() {
         expect(control._attributionContainer.innerHTML).to.eql('content');
     });
 
-    it("setContent correctly", function() {
+    it('setContent correctly', function () {
         var control = new maptalks.control.Attribution({
             content: 'content'
         });

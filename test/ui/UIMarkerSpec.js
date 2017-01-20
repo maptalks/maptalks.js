@@ -1,26 +1,25 @@
-describe('#UIMarker', function() {
+describe('#UIMarker', function () {
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var context = {
 
     };
 
-    beforeEach(function() {
-       var setups = commonSetupMap(center);
-       container = setups.container;
-       map = setups.map;
-       context.map = map;
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
+        container = setups.container;
+        map = setups.map;
+        context.map = map;
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    it('add', function() {
+    it('add', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>'
         });
@@ -31,7 +30,7 @@ describe('#UIMarker', function() {
         expect(m.clientWidth).to.be.above(0);
     });
 
-    it('add2', function() {
+    it('add2', function () {
         var dom = document.createElement('div');
         dom.id = 'uimarker';
         dom.innerHTML = 'marker';
@@ -45,22 +44,22 @@ describe('#UIMarker', function() {
         expect(m.clientWidth).to.be.above(0);
     });
 
-    it('show when zooming', function(done) {
+    it('show when zooming', function (done) {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
-        map.on('zoomstart', function() {
-             expect(marker.isVisible()).to.be.ok();
+        map.on('zoomstart', function () {
+            expect(marker.isVisible()).to.be.ok();
         });
-        map.on('zoomend', function() {
-             expect(marker.isVisible()).to.be.ok();
-             done();
+        map.on('zoomend', function () {
+            expect(marker.isVisible()).to.be.ok();
+            done();
         });
         map.zoomIn();
     });
 
-    it('can hide', function() {
+    it('can hide', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>',
             animation : null
@@ -74,7 +73,7 @@ describe('#UIMarker', function() {
         expect(m.clientWidth).to.be.eql(0);
     });
 
-    it('can remove', function() {
+    it('can remove', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             content : '<div id="uimarker">marker</div>'
         });
@@ -84,7 +83,7 @@ describe('#UIMarker', function() {
         expect(m).not.to.be.ok();
     });
 
-    it('is not single', function() {
+    it('is not single', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             content : '<svg>marker</svg>'
         });
@@ -98,7 +97,7 @@ describe('#UIMarker', function() {
         expect(m).to.have.length(2);
     });
 
-    it('can be set to single', function() {
+    it('can be set to single', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             single : true,
             content : '<svg>marker</svg>'
@@ -114,7 +113,7 @@ describe('#UIMarker', function() {
         expect(m).to.have.length(1);
     });
 
-    it('can getContent', function() {
+    it('can getContent', function () {
         var content = '<svg>marker</svg>';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             single : true,
@@ -124,7 +123,7 @@ describe('#UIMarker', function() {
         expect(marker.getContent()).to.be.eql(content);
     });
 
-    it('can setContent', function() {
+    it('can setContent', function () {
         var content = '<svg>marker</svg>';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             single : true,
@@ -139,7 +138,7 @@ describe('#UIMarker', function() {
         expect(m).not.to.be.ok();
     });
 
-    it('can getCoordinates', function() {
+    it('can getCoordinates', function () {
         var content = '<svg>marker</svg>';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             single : true,
@@ -149,7 +148,7 @@ describe('#UIMarker', function() {
         expect(marker.getCoordinates().toArray()).to.be.eql(map.getCenter().toArray());
     });
 
-    it('can setCoordinates', function() {
+    it('can setCoordinates', function () {
         var content = '<svg>marker</svg>';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             single : true,

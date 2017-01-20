@@ -1,41 +1,41 @@
-describe('GeoJSON', function() {
+describe('GeoJSON', function () {
     //examples are from geoJSON.org
     var geoJSONs = [
 
-        { "type": "Point", "coordinates": [100.0, 0.0] },
+        { 'type': 'Point', 'coordinates': [100.0, 0.0] },
         {
-            "type": "LineString",
-            "coordinates": [ [100.0, 0.0], [101.0, 1.0] ]
+            'type': 'LineString',
+            'coordinates': [[100.0, 0.0], [101.0, 1.0]]
         },
         //Polygon without Holes
         {
-            "type": "Polygon",
-            "coordinates": [
-                [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]
+            'type': 'Polygon',
+            'coordinates': [
+                [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]
             ]
         },
         //Polygon with Holes
         {
-            "type": "Polygon",
-            "coordinates": [
-                [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ],
-                [ [100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2] ]
+            'type': 'Polygon',
+            'coordinates': [
+                [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]],
+                [[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]
             ]
         },
         {
-            "type": "MultiPoint",
-            "coordinates": [ [100.0, 0.0], [101.0, 1.0] ]
+            'type': 'MultiPoint',
+            'coordinates': [[100.0, 0.0], [101.0, 1.0]]
         },
         {
-            "type": "MultiLineString",
-            "coordinates": [
-                [ [100.0, 0.0], [101.0, 1.0] ],
-                [ [102.0, 2.0], [103.0, 3.0] ]
+            'type': 'MultiLineString',
+            'coordinates': [
+                [[100.0, 0.0], [101.0, 1.0]],
+                [[102.0, 2.0], [103.0, 3.0]]
             ]
         },
         {
-            "type": "MultiPolygon",
-            "coordinates": [
+            'type': 'MultiPolygon',
+            'coordinates': [
                 [
                     [[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]
                 ],
@@ -46,73 +46,73 @@ describe('GeoJSON', function() {
             ]
         },
         {
-            "type": "GeometryCollection",
-            "geometries": [
-                { "type": "Point",
-                  "coordinates": [100.0, 0.0]
+            'type': 'GeometryCollection',
+            'geometries': [
+                { 'type': 'Point',
+                    'coordinates': [100.0, 0.0]
                 },
-                { "type": "LineString",
-                  "coordinates": [ [101.0, 0.0], [102.0, 1.0] ]
+                { 'type': 'LineString',
+                    'coordinates': [[101.0, 0.0], [102.0, 1.0]]
                 }
             ]
         }
     ];
 
     var featureCollectionGeoJSON = {
-        "type": "FeatureCollection",
-        "features": [
-            { "type": "Feature",
-              "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-              "properties": {"prop0": "value0"}
+        'type': 'FeatureCollection',
+        'features': [
+            { 'type': 'Feature',
+                'geometry': { 'type': 'Point', 'coordinates': [102.0, 0.5] },
+                'properties': { 'prop0': 'value0' }
             },
-            { "type": "Feature",
-              "geometry": {
-                  "type": "LineString",
-                  "coordinates": [
+            { 'type': 'Feature',
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': [
                       [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
-                  ]
-              },
-              "properties": {
-                  "prop0": "value0",
-                  "prop1": 0.0
-              }
+                    ]
+                },
+                'properties': {
+                    'prop0': 'value0',
+                    'prop1': 0.0
+                }
             },
-            { "type": "Feature",
-              "geometry": {
-                  "type": "Polygon",
-                  "coordinates": [
-                      [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
-                        [100.0, 1.0], [100.0, 0.0] ]
-                  ]
-              },
-              "properties": {
-                  "prop0": "value0",
-                  "prop1": {"this": "that"}
-              }
+            { 'type': 'Feature',
+                'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': [
+                        [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+                        [100.0, 1.0], [100.0, 0.0]]
+                    ]
+                },
+                'properties': {
+                    'prop0': 'value0',
+                    'prop1': { 'this': 'that' }
+                }
             }
         ]
     };
 
-    describe('geojson to coordinate',function(){
+    describe('geojson to coordinate', function () {
         var geoJSONCoords = [
             [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
         ];
-        var result = maptalks.GeoJSON.toCoordinates(geoJSONCoords);
+        var result = maptalks.Coordinate.toCoordinates(geoJSONCoords);
         expect(result).to.have.length(geoJSONCoords.length);
         expect(result[0]).to.eql(new maptalks.Coordinate(geoJSONCoords[0]));
-        var reverse = maptalks.GeoJSON.toNumberArrays(result);
+        var reverse = maptalks.Coordinate.toNumberArrays(result);
         expect(reverse).to.eql(geoJSONCoords);
     });
 
-    describe('parse FeatureCollection',function(){
+    describe('parse FeatureCollection', function () {
         var fJsons = featureCollectionGeoJSON['features'];
         var features = maptalks.GeoJSON.toGeometry(featureCollectionGeoJSON);
-        it('parse FeatureCollection', function() {
+        it('parse FeatureCollection', function () {
             expect(features).to.have.length(3);
             expect(features[0]).to.an(maptalks.Marker);
             expect(features[0].toGeoJSON()).to.eql(fJsons[0]);
             expect(features[0].getProperties()).to.eql(featureCollectionGeoJSON['features'][0]['properties']);
-            expect(features[1]).to.an(maptalks.Polyline);
+            expect(features[1]).to.an(maptalks.LineString);
             expect(features[1].toGeoJSON()).to.eql(fJsons[1]);
             expect(features[2]).to.an(maptalks.Polygon);
             expect(features[2].toGeoJSON()).to.eql(fJsons[2]);
@@ -120,19 +120,19 @@ describe('GeoJSON', function() {
 
     });
 
-    describe('parse GeoJSON Objects', function() {
+    describe('parse GeoJSON Objects', function () {
         var geometries = maptalks.GeoJSON.toGeometry(geoJSONs);
-        beforeEach(function() {
+        beforeEach(function () {
         });
 
-        afterEach(function() {
+        afterEach(function () {
         });
 
-        it('parse GeoJSON Objects', function() {
+        it('parse GeoJSON Objects', function () {
             expect(geometries).to.have.length(geoJSONs.length);
         });
 
-        it('evaluate point', function() {
+        it('evaluate point', function () {
             var point = geometries[0];
             expect(point).to.an(maptalks.Marker);
             expect(point.getType()).to.eql(geoJSONs[0].type);
@@ -141,15 +141,15 @@ describe('GeoJSON', function() {
             expect(point.toGeoJSONGeometry()).to.eql(geoJSONs[0]);
         });
 
-        it('evaluate polyline', function() {
+        it('evaluate polyline', function () {
             var polyline = geometries[1];
-            expect(polyline).to.an(maptalks.Polyline);
+            expect(polyline).to.an(maptalks.LineString);
             expect(polyline.getType()).to.eql(geoJSONs[1].type);
             expect(polyline.toGeoJSON()['geometry']).to.eql(geoJSONs[1]);
             expect(polyline.toGeoJSONGeometry()).to.eql(geoJSONs[1]);
         });
 
-        it('evaluate polygon', function() {
+        it('evaluate polygon', function () {
             var polygon = geometries[2];
             expect(polygon).to.an(maptalks.Polygon);
             expect(polygon.getType()).to.eql(geoJSONs[2].type);
@@ -157,7 +157,7 @@ describe('GeoJSON', function() {
             expect(polygon.toGeoJSONGeometry()).to.eql(geoJSONs[2]);
         });
 
-        it('evaluate polygon with holes', function() {
+        it('evaluate polygon with holes', function () {
             var polygon = geometries[3];
             expect(polygon).to.an(maptalks.Polygon);
             expect(polygon.toGeoJSON()['geometry']).to.eql(geoJSONs[3]);
@@ -166,7 +166,7 @@ describe('GeoJSON', function() {
             expect(holes).to.have.length(1);
         });
 
-        it('evaluate multipoint', function() {
+        it('evaluate multipoint', function () {
             var multipoint = geometries[4];
             expect(multipoint).to.an(maptalks.MultiPoint);
             expect(multipoint.getType()).to.eql(geoJSONs[4].type);
@@ -174,15 +174,15 @@ describe('GeoJSON', function() {
             expect(multipoint.toGeoJSONGeometry()).to.eql(geoJSONs[4]);
         });
 
-        it('evaluate MultiLineString', function() {
+        it('evaluate MultiLineString', function () {
             var multiPolyline = geometries[5];
-            expect(multiPolyline).to.an(maptalks.MultiPolyline);
+            expect(multiPolyline).to.an(maptalks.MultiLineString);
             expect(multiPolyline.getType()).to.eql(geoJSONs[5].type);
             expect(multiPolyline.toGeoJSON()['geometry']).to.eql(geoJSONs[5]);
             expect(multiPolyline.toGeoJSONGeometry()).to.eql(geoJSONs[5]);
         });
 
-        it('evaluate MultiPolygon', function() {
+        it('evaluate MultiPolygon', function () {
             var multiPolygon = geometries[6];
             expect(multiPolygon).to.an(maptalks.MultiPolygon);
             expect(multiPolygon.getType()).to.eql(geoJSONs[6].type);
@@ -190,7 +190,7 @@ describe('GeoJSON', function() {
             expect(multiPolygon.toGeoJSONGeometry()).to.eql(geoJSONs[6]);
         });
 
-        it('evaluate GeometryCollection', function() {
+        it('evaluate GeometryCollection', function () {
             var geometryCollection = geometries[7];
             expect(geometryCollection).to.an(maptalks.GeometryCollection);
             expect(geometryCollection.getType()).to.eql(geoJSONs[7].type);

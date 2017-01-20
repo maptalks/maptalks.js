@@ -1,15 +1,16 @@
+import MultiGeometry from './MultiGeometry';
+import Polygon from './Polygon';
+
 /**
  * @classdesc
  * Represents a Geometry type of MultiPolygon
  * @class
  * @category geometry
- * @category geometry
- * @extends maptalks.GeometryCollection
- * @mixes maptalks.Geometry.MultiPoly
- * @param {Number[][][][]|maptalks.Coordinate[][][]|maptalks.Polygon[]} data - construct data, coordinates or a array of polygons
- * @param {Object} [options=null]           - options defined in [maptalks.MultiPolygon]{@link maptalks.MultiPolygon#options}
+ * @extends MultiGeometry
+ * @param {Number[][][][]|Coordinate[][][]|Polygon[]} data - construct data, coordinates or a array of polygons
+ * @param {Object} [options=null]           - options defined in [MultiPolygon]{@link MultiPolygon#options}
  * @example
- * var multiPolygon = new maptalks.MultiPolygon(
+ * var multiPolygon = new MultiPolygon(
  *       [
  *           [
  *               [
@@ -44,14 +45,11 @@
  *           draggable:true
  * }).addTo(layer);
  */
-maptalks.MultiPolygon = maptalks.GeometryCollection.extend(/** @lends maptalks.MultiPolygon.prototype */{
-    includes:[maptalks.Geometry.MultiPoly],
-    GeometryType:maptalks.Polygon,
+export default class MultiPolygon extends MultiGeometry {
 
-    type:maptalks.Geometry['TYPE_MULTIPOLYGON'],
-
-    initialize:function (data, opts) {
-        this._initOptions(opts);
-        this._initData(data);
+    constructor(data, opts) {
+        super(Polygon, 'MultiPolygon', data, opts);
     }
-});
+}
+
+MultiPolygon.registerJSONType('MultiPolygon');

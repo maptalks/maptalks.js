@@ -1,47 +1,44 @@
-/**
- * @namespace
- */
-maptalks.projection = {};
+import { mapArrayRecursively } from 'core/util';
 
 /**
  * Common Methods of Projections.
  * @mixin
  * @protected
- * @memberOf maptalks.projection
+ * @memberOf projection
  * @name Common
  */
-maptalks.projection.Common = {
+export default {
     /**
      * Project a geographical coordinate to a projected coordinate (2d coordinate)
-     * @param  {maptalks.Coordinate} p - coordinate to project
-     * @return {maptalks.Coordinate}
+     * @param  {Coordinate} p - coordinate to project
+     * @return {Coordinate}
      * @static
      */
-    project:function () {},
+    project() {},
     /**
      * Unproject a projected coordinate to a geographical coordinate (2d coordinate)
-     * @param  {maptalks.Coordinate} p - coordinate to project
-     * @return {maptalks.Coordinate}
+     * @param  {Coordinate} p - coordinate to project
+     * @return {Coordinate}
      * @static
      */
-    unproject:function () {},
+    unproject() {},
     /**
      * Project a group of geographical coordinates to projected coordinates.
-     * @param  {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} coordinates - coordinates to project
-     * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]}
+     * @param  {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates - coordinates to project
+     * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]}
      * @static
      */
-    projectCoords:function (coordinates) {
-        return maptalks.Util.mapArrayRecursively(coordinates, this.project, this);
+    projectCoords(coordinates) {
+        return mapArrayRecursively(coordinates, this.project, this);
     },
 
     /**
      * Unproject a group of projected coordinates to geographical coordinates.
-     * @param  {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]} projCoords - projected coordinates to unproject
-     * @return {maptalks.Coordinate[]|maptalks.Coordinate[][]|maptalks.Coordinate[][][]}
+     * @param  {Coordinate[]|Coordinate[][]|Coordinate[][][]} projCoords - projected coordinates to unproject
+     * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]}
      * @static
      */
-    unprojectCoords:function (projCoords) {
-        return maptalks.Util.mapArrayRecursively(projCoords, this.unproject, this);
+    unprojectCoords(projCoords) {
+        return mapArrayRecursively(projCoords, this.unproject, this);
     }
 };

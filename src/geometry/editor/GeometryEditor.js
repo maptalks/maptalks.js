@@ -1,31 +1,44 @@
+import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
+import { extend, isNil, isNumber, isArrayHasData, indexOfArray, removeFromArray, UID } from 'core/util';
+import { lowerSymbolOpacity } from 'core/util/style';
+import Class from 'core/Class';
+import Eventable from 'core/Event';
+import Point from 'geo/Point';
+import { Marker, TextMarker, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
+import VectorLayer from 'layer/VectorLayer';
+import * as Symbolizers from 'renderer/geometry/symbolizers';
+
+const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
+
 /**
  * Geometry editor used internally for geometry editing.
  * @class
  * @category geometry
  * @protected
- * @extends maptalks.Class
- * @mixes maptalks.Eventable
- * @param {maptalks._shadow} geometry 待编辑图形
+ * @extends Class
+ * @mixes Eventable
+ * @param {_shadow} geometry 待编辑图形
  * @param {Object} opts 属性
  */
-maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Editor.prototype */{
-    includes: [maptalks.Eventable],
+export default class GeometryEditor extends Eventable(Class) {
 
-    editStageLayerIdPrefix : maptalks.internalLayerPrefix + '_edit_stage_',
-
-    initialize:function (geometry, opts) {
+    constructor(geometry, opts) {
+        super(opts);
         this._geometry = geometry;
-        if (!this._geometry) { return; }
-        maptalks.Util.setOptions(this, opts);
-    },
+        if (!this._geometry) {
+            return;
+        }
+    }
 
-    getMap:function () {
+    getMap() {
         return this._geometry.getMap();
-    },
+    }
 
-    prepare:function () {
+    prepare() {
         var map = this.getMap();
-        if (!map) { return; }
+        if (!map) {
+            return;
+        }
         /**
          * 保存原有的symbol
          */
@@ -35,23 +48,25 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         }
 
         this._prepareEditStageLayer();
-    },
+    }
 
-    _prepareEditStageLayer:function () {
+    _prepareEditStageLayer() {
         var map = this.getMap();
-        var uid = maptalks.Util.UID();
-        this._editStageLayer = map.getLayer(this.editStageLayerIdPrefix + uid);
+        var uid = UID();
+        this._editStageLayer = map.getLayer(EDIT_STAGE_LAYER_PREFIX + uid);
         if (!this._editStageLayer) {
-            this._editStageLayer = new maptalks.VectorLayer(this.editStageLayerIdPrefix + uid);
+            this._editStageLayer = new VectorLayer(EDIT_STAGE_LAYER_PREFIX + uid);
             map.addLayer(this._editStageLayer);
         }
-    },
+    }
 
     /**
      * 开始编辑
      */
-    start:function () {
-        if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) { return; }
+    start() {
+        if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) {
+            return;
+        }
         this.editing = true;
         var geometry = this._geometry;
         this._geometryDraggble = geometry.options['draggable'];
@@ -67,49 +82,50 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             shadow.copyEventListeners(geometry._getParent());
         }
         //drag shadow by center handle instead.
-        shadow.setId(null).config({'draggable': false});
+        shadow.setId(null).config({
+            'draggable': false
+        });
 
         this._shadow = shadow;
 
         this._switchGeometryEvents('on');
 
         geometry.hide();
-        if (geometry instanceof maptalks.Marker ||
-                geometry instanceof maptalks.Circle ||
-                geometry instanceof maptalks.Rectangle ||
-                geometry instanceof maptalks.Ellipse) {
+        if (geometry instanceof Marker ||
+            geometry instanceof Circle ||
+            geometry instanceof Rectangle ||
+            geometry instanceof Ellipse) {
             //ouline has to be added before shadow to let shadow on top of it, otherwise shadow's events will be overrided by outline
             this._createOrRefreshOutline();
         }
         this._editStageLayer.bringToFront().addGeometry(shadow);
-        if (!(geometry instanceof maptalks.Marker)) {
+        if (!(geometry instanceof Marker)) {
             this._createCenterHandle();
         } else {
             shadow.config('draggable', true);
             shadow.on('dragend', this._onShadowDragEnd, this);
         }
-        if (geometry instanceof maptalks.Marker) {
+        if (geometry instanceof Marker) {
             this.createMarkerEditor();
-        } else if (geometry instanceof maptalks.Circle) {
+        } else if (geometry instanceof Circle) {
             this.createCircleEditor();
-        } else if (geometry instanceof maptalks.Rectangle) {
+        } else if (geometry instanceof Rectangle) {
             this.createEllipseOrRectEditor();
-        } else if (geometry instanceof maptalks.Ellipse) {
+        } else if (geometry instanceof Ellipse) {
             this.createEllipseOrRectEditor();
-        } else if (geometry instanceof maptalks.Sector) {
+        } else if (geometry instanceof Sector) {
             // TODO: createSectorEditor
-        } else if ((geometry instanceof maptalks.Polygon) ||
-                   (geometry instanceof maptalks.Polyline)) {
+        } else if ((geometry instanceof Polygon) ||
+            (geometry instanceof LineString)) {
             this.createPolygonEditor();
         }
-
-    },
+    }
 
     /**
      * 结束编辑
      * @return {*} [description]
      */
-    stop:function () {
+    stop() {
         this._switchGeometryEvents('off');
         var map = this.getMap();
         if (!map) {
@@ -126,7 +142,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         this._geometry.show();
 
         this._editStageLayer.remove();
-        if (maptalks.Util.isArrayHasData(this._eventListeners)) {
+        if (isArrayHasData(this._eventListeners)) {
             for (var i = this._eventListeners.length - 1; i >= 0; i--) {
                 var listener = this._eventListeners[i];
                 listener[0].off(listener[1], listener[2], this);
@@ -139,42 +155,42 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             delete this._originalSymbol;
         }
         this.editing = false;
-    },
+    }
 
-    isEditing:function () {
-        if (maptalks.Util.isNil(this.editing)) {
+    isEditing() {
+        if (isNil(this.editing)) {
             return false;
         }
         return this.editing;
-    },
+    }
 
-    _getGeometryEvents: function () {
+    _getGeometryEvents() {
         return {
-            'symbolchange' : this._onGeometrySymbolChange
+            'symbolchange': this._onGeometrySymbolChange
         };
-    },
+    }
 
-    _switchGeometryEvents: function (oper) {
+    _switchGeometryEvents(oper) {
         if (this._geometry) {
             var events = this._getGeometryEvents();
             for (var p in events) {
                 this._geometry[oper](p, events[p], this);
             }
         }
-    },
+    }
 
-    _onGeometrySymbolChange: function (param) {
+    _onGeometrySymbolChange(param) {
         if (this._shadow) {
             this._shadow.setSymbol(param['target']._getInternalSymbol());
         }
-    },
+    }
 
-    _onShadowDragEnd:function () {
+    _onShadowDragEnd() {
         this._update();
         this._refresh();
-    },
+    }
 
-    _update:function () {
+    _update() {
         //update geographical properties from shadow to geometry
         this._geometry.setCoordinates(this._shadow.getCoordinates());
         if (this._geometry.getRadius) {
@@ -192,20 +208,20 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         if (this._geometry.getEndAngle) {
             this._geometry.setEndAngle(this._shadow.getEndAngle());
         }
-    },
+    }
 
-    _updateAndFireEvent:function (eventName) {
+    _updateAndFireEvent(eventName) {
         if (!this._shadow) {
             return;
         }
         this._update();
         this._geometry.fire(eventName);
-    },
+    }
 
     /**
      * create rectangle outline of the geometry
      */
-    _createOrRefreshOutline:function () {
+    _createOrRefreshOutline() {
         var geometry = this._geometry,
             map = this.getMap(),
             outline = this._editOutline;
@@ -215,10 +231,10 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         var width = map.pixelToDistance(size['width'], 0),
             height = map.pixelToDistance(0, size['height']);
         if (!outline) {
-            outline = new maptalks.Rectangle(nw, width, height, {
-                'symbol':{
-                    'lineWidth' : 1,
-                    'lineColor' : '6b707b'
+            outline = new Rectangle(nw, width, height, {
+                'symbol': {
+                    'lineWidth': 1,
+                    'lineColor': '6b707b'
                 }
             });
             this._editStageLayer.addGeometry(outline);
@@ -231,79 +247,80 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         }
 
         return outline;
-    },
+    }
 
 
-    _createCenterHandle:function () {
-        var me = this;
-        var center = this._shadow.getCenter();
+    _createCenterHandle() {
+        const center = this._shadow.getCenter();
         var shadow;
-        var handle = me.createHandle(center, {
-            'markerType' : 'ellipse',
-            'dxdy'       : new maptalks.Point(0, 0),
-            'cursor'     : 'move',
-            onDown:function () {
+        const handle = this.createHandle(center, {
+            'markerType': 'ellipse',
+            'dxdy': new Point(0, 0),
+            'cursor': 'move',
+            onDown: () => {
                 shadow = this._shadow.copy();
-                var symbol = maptalks.Util.lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
+                const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },
-            onMove:function (v, param) {
-                var dragOffset = param['dragOffset'];
+            onMove: (v, param) => {
+                const dragOffset = param['dragOffset'];
                 if (shadow) {
                     shadow.translate(dragOffset);
                     this._geometry.translate(dragOffset);
                 }
             },
-            onUp:function () {
+            onUp: () => {
                 if (shadow) {
                     this._shadow.setCoordinates(this._geometry.getCoordinates());
                     shadow.remove();
-                    me._refresh();
+                    this._refresh();
                 }
             }
         });
-        this._addRefreshHook(function () {
-            var center = this._shadow.getCenter();
+        this._addRefreshHook(() => {
+            const center = this._shadow.getCenter();
             handle.setCoordinates(center);
         });
-    },
+    }
 
-    _createHandleInstance:function (coordinate, opts) {
+    _createHandleInstance(coordinate, opts) {
         var symbol = {
-            'markerType'        : opts['markerType'],
-            'markerFill'        : '#ffffff', //"#d0d2d6",
-            'markerLineColor'   : '#000000',
-            'markerLineWidth'   : 2,
-            'markerWidth'       : 10,
-            'markerHeight'      : 10,
-            'markerDx'          : opts['dxdy'].x,
-            'markerDy'          : opts['dxdy'].y
+            'markerType': opts['markerType'],
+            'markerFill': '#ffffff', //"#d0d2d6",
+            'markerLineColor': '#000000',
+            'markerLineWidth': 2,
+            'markerWidth': 10,
+            'markerHeight': 10,
+            'markerDx': opts['dxdy'].x,
+            'markerDy': opts['dxdy'].y
         };
         if (opts['symbol']) {
-            maptalks.Util.extend(symbol, opts['symbol']);
+            extend(symbol, opts['symbol']);
         }
-        var handle = new maptalks.Marker(coordinate, {
-            'draggable' : true,
-            'dragShadow' : false,
-            'dragOnAxis' : opts['axis'],
-            'cursor'    : opts['cursor'],
-            'symbol'    : symbol
+        var handle = new Marker(coordinate, {
+            'draggable': true,
+            'dragShadow': false,
+            'dragOnAxis': opts['axis'],
+            'cursor': opts['cursor'],
+            'symbol': symbol
         });
         return handle;
-    },
+    }
 
-    createHandle:function (coordinate, opts) {
+    createHandle(coordinate, opts) {
         if (!opts) {
             opts = {};
         }
         var map = this.getMap();
         var handle = this._createHandleInstance(coordinate, opts);
         var me = this;
+
         function onHandleDragstart(param) {
             if (opts.onDown) {
                 opts.onDown.call(me, param['viewPoint'], param);
             }
         }
+
         function onHandleDragging(param) {
             me._hideContext();
             var viewPoint = map._prjToViewPoint(handle._getPrjCoordinates());
@@ -311,6 +328,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                 opts.onMove.call(me, viewPoint, param);
             }
         }
+
         function onHandleDragEnd(ev) {
             if (opts.onUp) {
                 opts.onUp.call(me, ev);
@@ -325,36 +343,37 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         }
         this._editStageLayer.addGeometry(handle);
         return handle;
-    },
+    }
 
     /**
      * create resize handles for geometry that can resize.
      * @param {Array} blackList handle indexes that doesn't display, to prevent change a geometry's coordinates
      * @param {fn} onHandleMove callback
      */
-    _createResizeHandles:function (blackList, onHandleMove) {
+    _createResizeHandles(blackList, onHandleMove) {
         //cursor styles.
         var cursors = [
             'nw-resize', 'n-resize', 'ne-resize',
-            'w-resize',            'e-resize',
+            'w-resize', 'e-resize',
             'sw-resize', 's-resize', 'se-resize'
         ];
         //defines dragOnAxis of resize handle
         var axis = [
             null, 'y', null,
-            'x',       'x',
+            'x', 'x',
             null, 'y', null
         ];
         var geometry = this._geometry;
+
         function getResizeAnchors(ext) {
             return [
                 ext.getMin(),
-                new maptalks.Point((ext['xmax'] + ext['xmin']) / 2, ext['ymin']),
-                new maptalks.Point(ext['xmax'], ext['ymin']),
-                new maptalks.Point(ext['xmin'], (ext['ymax'] + ext['ymin']) / 2),
-                new maptalks.Point(ext['xmax'], (ext['ymax'] + ext['ymin']) / 2),
-                new maptalks.Point(ext['xmin'], ext['ymax']),
-                new maptalks.Point((ext['xmax'] + ext['xmin']) / 2, ext['ymax']),
+                new Point((ext['xmax'] + ext['xmin']) / 2, ext['ymin']),
+                new Point(ext['xmax'], ext['ymin']),
+                new Point(ext['xmin'], (ext['ymax'] + ext['ymin']) / 2),
+                new Point(ext['xmax'], (ext['ymax'] + ext['ymin']) / 2),
+                new Point(ext['xmin'], ext['ymax']),
+                new Point((ext['xmax'] + ext['xmin']) / 2, ext['ymax']),
                 ext.getMax()
             ];
         }
@@ -363,13 +382,14 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         }
         var resizeHandles = [];
         var anchorIndexes = {};
-        var me = this, map = this.getMap();
+        var me = this,
+            map = this.getMap();
         var fnLocateHandles = function () {
             var pExt = geometry._getPainter().get2DExtent(),
                 anchors = getResizeAnchors(pExt);
             for (var i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist
-                if (maptalks.Util.isArrayHasData(blackList)) {
+                if (isArrayHasData(blackList)) {
                     var isBlack = false;
                     for (var ii = blackList.length - 1; ii >= 0; ii--) {
                         if (blackList[ii] === i) {
@@ -385,16 +405,16 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                     coordinate = map.pointToCoordinate(anchor);
                 if (resizeHandles.length < anchors.length - blackList.length) {
                     var handle = me.createHandle(coordinate, {
-                        'markerType' : 'square',
-                        'dxdy'       : new maptalks.Point(0, 0),
-                        'cursor'     : cursors[i],
-                        'axis'       : axis[i],
-                        onMove:(function (_index) {
+                        'markerType': 'square',
+                        'dxdy': new Point(0, 0),
+                        'cursor': cursors[i],
+                        'axis': axis[i],
+                        onMove: (function (_index) {
                             return function (handleViewPoint) {
                                 onHandleMove(handleViewPoint, _index);
                             };
                         })(i),
-                        onUp:function () {
+                        onUp: function () {
                             me._refresh();
                         }
                     });
@@ -412,19 +432,20 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         //refresh hooks to refresh handles' coordinates
         this._addRefreshHook(fnLocateHandles);
         return resizeHandles;
-    },
+    }
 
     /**
      * 标注和自定义标注编辑器
      */
-    createMarkerEditor:function () {
+    createMarkerEditor() {
         var me = this;
         var marker = this._shadow,
             geometryToEdit = this._geometry,
             map = this.getMap(),
             resizeHandles;
+
         function onZoomStart() {
-            if (maptalks.Util.isArrayHasData(resizeHandles)) {
+            if (isArrayHasData(resizeHandles)) {
                 for (var i = resizeHandles.length - 1; i >= 0; i--) {
                     resizeHandles[i].hide();
                 }
@@ -433,9 +454,10 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                 this._editOutline.hide();
             }
         }
+
         function onZoomEnd() {
             this._refresh();
-            if (maptalks.Util.isArrayHasData(resizeHandles)) {
+            if (isArrayHasData(resizeHandles)) {
                 for (var i = resizeHandles.length - 1; i >= 0; i--) {
                     resizeHandles[i].show();
                 }
@@ -453,23 +475,23 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         //only image marker and vector marker can be edited now.
 
         var symbol = marker._getInternalSymbol();
-        var dxdy = new maptalks.Point(0, 0);
-        if (maptalks.Util.isNumber(symbol['markerDx'])) {
+        var dxdy = new Point(0, 0);
+        if (isNumber(symbol['markerDx'])) {
             dxdy.x = symbol['markerDx'];
         }
-        if (maptalks.Util.isNumber(symbol['markerDy'])) {
+        if (isNumber(symbol['markerDy'])) {
             dxdy.y = symbol['markerDy'];
         }
 
         var blackList = null;
 
-        if (maptalks.symbolizer.VectorMarkerSymbolizer.test(symbol)) {
+        if (Symbolizers.VectorMarkerSymbolizer.test(symbol)) {
             if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
                 //as these types of markers' anchor stands on its bottom
                 blackList = [5, 6, 7];
             }
-        } else if (maptalks.symbolizer.ImageMarkerSymbolizer.test(symbol) ||
-                    maptalks.symbolizer.VectorPathMarkerSymbolizer.test(symbol)) {
+        } else if (Symbolizers.ImageMarkerSymbolizer.test(symbol) ||
+            Symbolizers.VectorPathMarkerSymbolizer.test(symbol)) {
             blackList = [5, 6, 7];
         }
 
@@ -477,12 +499,12 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         //0: resize width; 1: resize height; 2: resize both width and height.
         var resizeAbilities = [
             2, 1, 2,
-            0,    0,
+            0, 0,
             2, 1, 2
         ];
 
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
-            if (blackList && maptalks.Util.indexOfArray(i, blackList) >= 0) {
+            if (blackList && indexOfArray(i, blackList) >= 0) {
                 //need to change marker's coordinates
                 var newCoordinates = map.viewPointToCoordinate(handleViewPoint.substract(dxdy));
                 var coordinates = marker.getCoordinates();
@@ -518,7 +540,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                 height = width / aspectRatio;
             }
             var ability = resizeAbilities[i];
-            if (!(marker instanceof maptalks.TextMarker)) {
+            if (!(marker instanceof TextMarker)) {
                 if (aspectRatio || ability === 0 || ability === 2) {
                     symbol['markerWidth'] = width;
                 }
@@ -541,13 +563,13 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         this._addListener([map, 'zoomstart', onZoomStart]);
         this._addListener([map, 'zoomend', onZoomEnd]);
 
-    },
+    }
 
     /**
      * 圆形编辑器
      * @return {*} [description]
      */
-    createCircleEditor:function () {
+    createCircleEditor() {
         var shadow = this._shadow,
             circle = this._geometry;
         var map = this.getMap();
@@ -565,25 +587,25 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             shadow.setRadius(r);
             circle.setRadius(r);
         });
-    },
+    }
 
     /**
      * editor of ellipse or rectangle
      * @return {*} [description]
      */
-    createEllipseOrRectEditor:function () {
+    createEllipseOrRectEditor() {
         var me = this;
         //defines what can be resized by the handle
         //0: resize width; 1: resize height; 2: resize both width and height.
         var resizeAbilities = [
             2, 1, 2,
-            0,    0,
+            0, 0,
             2, 1, 2
         ];
         var shadow = this._shadow,
             geometryToEdit = this._geometry;
         var map = this.getMap();
-        var isRect = this._geometry instanceof maptalks.Rectangle;
+        var isRect = this._geometry instanceof Rectangle;
         var resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
             //ratio of width and height
             var r;
@@ -612,7 +634,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                     }
                     handleViewPoint.x = anchorViewPoint.x + (wh.x === 0 ? -currentSize.width / 2 : wh.x / awh.x * w);
                     handleViewPoint.y = anchorViewPoint.y + (wh.y === 0 ? -currentSize.height / 2 : wh.y / awh.y * h);
-                    wh = new maptalks.Point(w, h);
+                    wh = new Point(w, h);
                 } else {
                     wh = handleViewPoint.substract(anchorViewPoint)._abs();
                     if (wh.x === 0) {
@@ -623,7 +645,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                     }
                 }
                 //change rectangle's coordinates
-                var newCoordinates = map.viewPointToCoordinate(new maptalks.Point(Math.min(handleViewPoint.x, anchorViewPoint.x), Math.min(handleViewPoint.y, anchorViewPoint.y)));
+                var newCoordinates = map.viewPointToCoordinate(new Point(Math.min(handleViewPoint.x, anchorViewPoint.x), Math.min(handleViewPoint.y, anchorViewPoint.y)));
                 shadow.setCoordinates(newCoordinates);
                 geometryToEdit.setCoordinates(newCoordinates);
                 r = 1;
@@ -654,25 +676,26 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             }
             // me._updateAndFireEvent('shapechange');
         });
-    },
+    }
 
     /**
      * 多边形和多折线的编辑器
      * @return {*} [description]
      */
-    createPolygonEditor:function () {
+    createPolygonEditor() {
 
         var map = this.getMap(),
             shadow = this._shadow,
             me = this,
             projection = map.getProjection();
-        var verticeLimit = shadow instanceof maptalks.Polygon ? 3 : 2;
+        var verticeLimit = shadow instanceof Polygon ? 3 : 2;
         var propertyOfVertexRefreshFn = 'maptalks--editor-refresh-fn',
             propertyOfVertexIndex = 'maptalks--editor-vertex-index';
         var vertexHandles = [],
             newVertexHandles = [];
+
         function getVertexCoordinates() {
-            if (shadow instanceof maptalks.Polygon) {
+            if (shadow instanceof Polygon) {
                 var coordinates = shadow.getCoordinates()[0];
                 return coordinates.slice(0, coordinates.length - 1);
             } else {
@@ -680,9 +703,11 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             }
 
         }
+
         function getVertexPrjCoordinates() {
             return shadow._getPrjCoordinates();
         }
+
         function onVertexAddOrRemove() {
             //restore index property of each handles.
             var i;
@@ -721,6 +746,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             newVertexHandles.splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex));
             onVertexAddOrRemove();
         }
+
         function moveVertexHandle(handleViewPoint, index) {
             var vertice = getVertexPrjCoordinates();
             var nVertex = map._viewPointToPrj(handleViewPoint);
@@ -745,21 +771,22 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
 
             me._updateAndFireEvent('shapechange');
         }
+
         function createVertexHandle(index) {
             var vertex = getVertexCoordinates()[index];
             var handle = me.createHandle(vertex, {
-                'markerType' : 'square',
-                'dxdy'       : new maptalks.Point(0, 0),
-                'cursor'     : 'pointer',
-                'axis'       : null,
-                onMove:function (handleViewPoint) {
+                'markerType': 'square',
+                'dxdy': new Point(0, 0),
+                'cursor': 'pointer',
+                'axis': null,
+                onMove: function (handleViewPoint) {
                     moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex]);
                 },
-                onRefresh:function () {
+                onRefresh: function () {
                     vertex = getVertexCoordinates()[handle[propertyOfVertexIndex]];
                     handle.setCoordinates(vertex);
                 },
-                onUp:function () {
+                onUp: function () {
                     me._refresh();
                 }
             });
@@ -767,6 +794,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             handle.on('contextmenu', removeVertex);
             return handle;
         }
+
         function createNewVertexHandle(index) {
             var vertexCoordinates = getVertexCoordinates();
             var nextVertex;
@@ -777,12 +805,14 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             }
             var vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
             var handle = me.createHandle(vertex, {
-                'markerType' : 'square',
-                'symbol'     : {'opacity' : 0.4},
-                'dxdy'       : new maptalks.Point(0, 0),
-                'cursor'     : 'pointer',
-                'axis'       : null,
-                onDown:function () {
+                'markerType': 'square',
+                'symbol': {
+                    'opacity': 0.4
+                },
+                'dxdy': new Point(0, 0),
+                'cursor': 'pointer',
+                'axis': null,
+                onDown: function () {
                     var prjCoordinates = getVertexPrjCoordinates();
                     var vertexIndex = handle[propertyOfVertexIndex];
                     //add a new vertex
@@ -800,19 +830,19 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                     newVertexHandles.splice(vertexIndex, 0, createNewVertexHandle.call(me, vertexIndex), createNewVertexHandle.call(me, vertexIndex + 1));
                     me._updateAndFireEvent('shapechange');
                 },
-                onMove:function (handleViewPoint) {
+                onMove: function (handleViewPoint) {
                     moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex] + 1);
                 },
-                onUp:function () {
+                onUp: function () {
                     var vertexIndex = handle[propertyOfVertexIndex];
                     //remove this handle
-                    maptalks.Util.removeFromArray(handle, newVertexHandles);
+                    removeFromArray(handle, newVertexHandles);
                     handle.remove();
                     //add a new vertex handle
                     vertexHandles.splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1));
                     onVertexAddOrRemove();
                 },
-                onRefresh:function () {
+                onRefresh: function () {
                     vertexCoordinates = getVertexCoordinates();
                     var vertexIndex = handle[propertyOfVertexIndex];
                     var nextIndex;
@@ -835,7 +865,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                 newVertexHandles.push(createNewVertexHandle.call(this, i));
             }
         }
-        if (shadow instanceof maptalks.Polygon) {
+        if (shadow instanceof Polygon) {
             //1 more vertex handle for polygon
             newVertexHandles.push(createNewVertexHandle.call(this, vertexCoordinates.length - 1));
         }
@@ -848,32 +878,32 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                 vertexHandles[i][propertyOfVertexRefreshFn]();
             }
         });
-    },
+    }
 
-    _refresh:function () {
+    _refresh() {
         if (this._refreshHooks) {
             for (var i = this._refreshHooks.length - 1; i >= 0; i--) {
                 this._refreshHooks[i].call(this);
             }
         }
-    },
+    }
 
-    _hideContext:function () {
+    _hideContext() {
         if (this._geometry) {
             this._geometry.closeMenu();
             this._geometry.closeInfoWindow();
         }
-    },
+    }
 
-    _addListener:function (listener) {
+    _addListener(listener) {
         if (!this._eventListeners) {
             this._eventListeners = [];
         }
         this._eventListeners.push(listener);
         listener[0].on(listener[1], listener[2], this);
-    },
+    }
 
-    _addRefreshHook:function (fn) {
+    _addRefreshHook(fn) {
         if (!fn) {
             return;
         }
@@ -883,4 +913,4 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         this._refreshHooks.push(fn);
     }
 
-});
+}

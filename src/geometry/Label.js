@@ -1,46 +1,61 @@
+import { getAlignPoint } from 'core/util';
+import Size from 'geo/Size';
+import TextMarker from './TextMarker';
+
+/**
+ * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link Marker#options}
+ * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
+ * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
+ * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
+ * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
+ * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
+ * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
+ */
+const options = {
+    'boxAutoSize': true,
+    'boxMinWidth': 0,
+    'boxMinHeight': 0,
+    'boxPadding': {
+        'width': 12,
+        'height': 8
+    },
+    'boxTextAlign': 'middle'
+};
+
 /**
  * @classdesc
  * Represents point type geometry for text labels.<br>
  * A label is used to draw text (with a box background if specified) on a particular coordinate.
  * @class
  * @category geometry
- * @extends maptalks.TextMarker
- * @mixes maptalks.TextMarker.Editor
+ * @extends TextMarker
+ * @mixes TextMarker.Editor
  * @param {String} content                          - Label's text content
- * @param {maptalks.Coordinate} coordinates         - center
- * @param {Object} [options=null]                   - construct options defined in [maptalks.Label]{@link maptalks.Label#options}
+ * @param {Coordinate} coordinates         - center
+ * @param {Object} [options=null]                   - construct options defined in [Label]{@link Label#options}
  * @example
- * var label = new maptalks.Label('This is a label',[100,0])
+ * var label = new Label('This is a label',[100,0])
  *     .addTo(layer);
  */
-maptalks.Label = maptalks.TextMarker.extend(/** @lends maptalks.Label.prototype */{
+export default class Label extends TextMarker {
 
-    /**
-     * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link maptalks.Marker#options}
-     * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
-     * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
-     * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
-     * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
-     * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
-     * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
-     */
-    options: {
-        'boxAutoSize'  :   true,
-        'boxMinWidth'  :   0,
-        'boxMinHeight' :   0,
-        'boxPadding'   :   {'width' : 12, 'height' : 8},
-        'boxTextAlign' :   'middle'
-    },
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const label = new Label(json['content'], feature['geometry']['coordinates'], json['options']);
+        label.setProperties(feature['properties']);
+        label.setId(feature['id']);
+        return label;
+    }
 
-    _toJSON:function (options) {
+    _toJSON(options) {
         return {
-            'feature' : this.toGeoJSON(options),
-            'subType' : 'Label',
-            'content' : this._content
+            'feature': this.toGeoJSON(options),
+            'subType': 'Label',
+            'content': this._content
         };
-    },
+    }
 
-    _refresh:function () {
+    _refresh() {
         var symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
         if (this.options['box']) {
@@ -53,7 +68,7 @@ maptalks.Label = maptalks.TextMarker.extend(/** @lends maptalks.Label.prototype 
             if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
                 var width = textSize['width'] + padding['width'] * 2,
                     height = textSize['height'] + padding['height'] * 2;
-                boxSize = new maptalks.Size(width, height);
+                boxSize = new Size(width, height);
                 symbol['markerWidth'] = boxSize['width'];
                 symbol['markerHeight'] = boxSize['height'];
             } else if (boxSize) {
@@ -63,7 +78,7 @@ maptalks.Label = maptalks.TextMarker.extend(/** @lends maptalks.Label.prototype 
 
             var align = this.options['boxTextAlign'];
             if (align) {
-                var textAlignPoint = maptalks.StringUtil.getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
+                var textAlignPoint = getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
                     dx = symbol['textDx'] || 0,
                     dy = symbol['textDy'] || 0;
                 textAlignPoint = textAlignPoint._add(dx, dy);
@@ -81,12 +96,8 @@ maptalks.Label = maptalks.TextMarker.extend(/** @lends maptalks.Label.prototype 
         this._symbol = symbol;
         this.onSymbolChanged();
     }
-});
+}
 
-maptalks.Label.fromJSON = function (json) {
-    var feature = json['feature'];
-    var label = new maptalks.Label(json['content'], feature['geometry']['coordinates'], json['options']);
-    label.setProperties(feature['properties']);
-    label.setId(feature['id']);
-    return label;
-};
+Label.mergeOptions(options);
+
+Label.registerJSONType('Label');

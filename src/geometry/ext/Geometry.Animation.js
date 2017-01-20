@@ -1,4 +1,10 @@
-maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+import { isFunction } from 'core/util';
+import { extendSymbol } from 'core/util/style';
+import { Animation } from 'core/Animation';
+import Coordinate from 'geo/Coordinate';
+import Geometry from 'geometry/Geometry';
+
+Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * Animate the geometry
      *
@@ -8,7 +14,7 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @param  {Object}   [options.startTime=null]  - time to start animation in ms
      * @param  {Object}   [options.easing=linear]   - animation easing: in, out, inAndOut, linear, upAndDown
      * @param  {Function} [step=null]               - step function when animating
-     * @return {maptalks.animation.Player} animation player
+     * @return {animation.Player} animation player
      * @example
      * var player = marker.animate({
      *     'symbol': {
@@ -21,11 +27,11 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * });
      * player.pause();
      */
-    animate:function (styles, options, step) {
+    animate: function (styles, options, step) {
         if (this._animPlayer) {
             this._animPlayer.finish();
         }
-        if (maptalks.Util.isFunction(options)) {
+        if (isFunction(options)) {
             step = options;
             options = null;
         }
@@ -35,10 +41,12 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             stylesToAnimate = this._prepareAnimationStyles(styles),
             preTranslate, isFocusing;
 
-        if (options) { isFocusing = options['focus']; }
+        if (options) {
+            isFocusing = options['focus'];
+        }
         delete this._animationStarted;
 
-        var player = maptalks.Animation.animate(stylesToAnimate, options, maptalks.Util.bind(function (frame) {
+        var player = Animation.animate(stylesToAnimate, options, frame => {
             if (!this._animationStarted && isFocusing) {
                 map.onMoveStart();
             }
@@ -60,7 +68,7 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             }
             var dSymbol = styles['symbol'];
             if (dSymbol) {
-                this.setSymbol(maptalks.Util.extendSymbol(symbol, dSymbol));
+                this.setSymbol(extendSymbol(symbol, dSymbol));
             }
             if (isFocusing) {
                 var pcenter = projection.project(this.getCenter());
@@ -75,7 +83,7 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
             if (step) {
                 step(frame);
             }
-        }, this));
+        });
         this._animPlayer = player;
         return this._animPlayer.play();
     },
@@ -84,7 +92,7 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * @return {Object} styles
      * @private
      */
-    _prepareAnimationStyles:function (styles) {
+    _prepareAnimationStyles: function (styles) {
         var symbol = this._getInternalSymbol();
         var stylesToAnimate = {};
         for (var p in styles) {
@@ -98,8 +106,8 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                     stylesToAnimate[p] = [current, v];
                 } else if (p === 'symbol') {
                     var symbolToAnimate;
-                    if (maptalks.Util.isArray(styles['symbol'])) {
-                        if (!maptalks.Util.isArray(symbol)) {
+                    if (Array.isArray(styles['symbol'])) {
+                        if (!Array.isArray(symbol)) {
                             throw new Error('geometry\'symbol isn\'t a composite symbol, while the symbol in styles is.');
                         }
                         symbolToAnimate = [];
@@ -118,7 +126,7 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                             symbolToAnimate.push(a);
                         }
                     } else {
-                        if (maptalks.Util.isArray(symbol)) {
+                        if (Array.isArray(symbol)) {
                             throw new Error('geometry\'symbol is a composite symbol, while the symbol in styles isn\'t.');
                         }
                         symbolToAnimate = {};
@@ -130,14 +138,14 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                     }
                     stylesToAnimate['symbol'] = symbolToAnimate;
                 } else if (p === 'translate') {
-                    stylesToAnimate['translate'] = new maptalks.Coordinate(v);
+                    stylesToAnimate['translate'] = new Coordinate(v);
                 }
             }
         }
         return stylesToAnimate;
     },
 
-    _fireAnimateEvent:function (playState) {
+    _fireAnimateEvent: function (playState) {
         if (playState === 'finished') {
             delete this._animationStarted;
             this._fireEvent('animateend');
@@ -148,7 +156,6 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
                 this._fireEvent('animatestart');
                 this._animationStarted = true;
             }
-
         }
     }
 });

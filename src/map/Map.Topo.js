@@ -1,51 +1,61 @@
+import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
+import { extend, isString, isArrayHasData } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import Map from './Map';
+
 /**
  * Methods of topo computations
  */
-maptalks.Map.include(/** @lends maptalks.Map.prototype */{
+Map.include(/** @lends Map.prototype */ {
     /**
      * Caculate distance of two coordinates.
-     * @param {Number[]|maptalks.Coordinate} coord1 - coordinate 1
-     * @param {Number[]|maptalks.Coordinate} coord2 - coordinate 2
+     * @param {Number[]|Coordinate} coord1 - coordinate 1
+     * @param {Number[]|Coordinate} coord2 - coordinate 2
      * @return {Number} distance, unit is meter
      * @example
      * var distance = map.computeLength([0, 0], [0, 20]);
      */
     computeLength: function (coord1, coord2) {
-        if (!this.getProjection()) { return null; }
-        var p1 = new maptalks.Coordinate(coord1),
-            p2 = new maptalks.Coordinate(coord2);
-        if (p1.equals(p2)) { return 0; }
+        if (!this.getProjection()) {
+            return null;
+        }
+        var p1 = new Coordinate(coord1),
+            p2 = new Coordinate(coord2);
+        if (p1.equals(p2)) {
+            return 0;
+        }
         return this.getProjection().measureLength(p1, p2);
     },
 
     /**
      * Caculate a geometry's length.
-     * @param {maptalks.Geometry} geometry - geometry to caculate
+     * @param {Geometry} geometry - geometry to caculate
      * @return {Number} length, unit is meter
      */
-    computeGeometryLength:function (geometry) {
+    computeGeometryLength: function (geometry) {
         return geometry._computeGeodesicLength(this.getProjection());
     },
 
     /**
      * Caculate a geometry's area.
-     * @param  {maptalks.Geometry} geometry - geometry to caculate
+     * @param  {Geometry} geometry - geometry to caculate
      * @return {Number} area, unit is sq.meter
      */
-    computeGeometryArea:function (geometry) {
+    computeGeometryArea: function (geometry) {
         return geometry._computeGeodesicArea(this.getProjection());
     },
 
     /**
      * Identify the geometries on the given coordinate.
      * @param {Object} opts - the identify options
-     * @param {maptalks.Coordinate} opts.coordinate - coordinate to identify
+     * @param {Coordinate} opts.coordinate - coordinate to identify
      * @param {Object}   opts.layers        - the layers to perform identify on.
      * @param {Function} [opts.filter=null] - filter function of the result geometries, return false to exclude.
      * @param {Number}   [opts.count=null]  - limit of the result count.
-     * @param {Boolean}  [opts.includeInternals=false] - whether to identify the internal layers.
+     * @param {Boolean}  [opts.includeInternals=false] - whether to identify internal layers.
+     * @param {Boolean}  [opts.includeInvisible=false] - whether to identify invisible layers.
      * @param {Function} callback           - the callback function using the result geometries as the parameter.
-     * @return {maptalks.Map} this
+     * @return {Map} this
      * @example
      * map.identify({
      *      coordinate: [0, 0],
@@ -59,34 +69,33 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         if (!opts) {
             return this;
         }
-        var reqLayers = opts['layers'];
-        if (!maptalks.Util.isArrayHasData(reqLayers)) {
+        const reqLayers = opts['layers'];
+        if (!isArrayHasData(reqLayers)) {
             return this;
         }
-        var layers = [];
-        var i, len;
-        for (i = 0, len = reqLayers.length; i < len; i++) {
-            if (maptalks.Util.isString(reqLayers[i])) {
+        const layers = [];
+        for (let i = 0, len = reqLayers.length; i < len; i++) {
+            if (isString(reqLayers[i])) {
                 layers.push(this.getLayer(reqLayers[i]));
             } else {
                 layers.push(reqLayers[i]);
             }
         }
-        var point = this.coordinateToPoint(new maptalks.Coordinate(opts['coordinate']));
-        var options = maptalks.Util.extend({}, opts);
-        var hits = [];
-        for (i = layers.length - 1; i >= 0; i--) {
+        const coordinate = new Coordinate(opts['coordinate']);
+        const options = extend({}, opts);
+        const hits = [];
+        for (let i = layers.length - 1; i >= 0; i--) {
             if (opts['count'] && hits.length >= opts['count']) {
                 break;
             }
-            var layer = layers[i];
-            if (!layer || !layer.getMap() || !layer.isVisible() || (!opts['includeInternals'] && layer.getId().indexOf(maptalks.internalLayerPrefix) >= 0)) {
+            let layer = layers[i];
+            if (!layer || !layer.getMap() || (!opts['includeInvisible'] && !layer.isVisible()) || (!opts['includeInternals'] && layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0)) {
                 continue;
             }
-            var layerHits = layer.identify(point, options);
+            let layerHits = layer.identify(coordinate, options);
             if (layerHits) {
-                if (maptalks.Util.isArray(layerHits)) {
-                    hits = hits.concat(layerHits);
+                if (Array.isArray(layerHits)) {
+                    hits.push.apply(hits, layerHits);
                 } else {
                     hits.push(layerHits);
                 }

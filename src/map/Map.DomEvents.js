@@ -1,162 +1,172 @@
-maptalks.Map.include(/** @lends maptalks.Map.prototype */{
+import { now } from 'core/util';
+import {
+    addDomEvent,
+    removeDomEvent,
+    preventDefault,
+    getEventContainerPoint
+} from 'core/util/dom';
+import Map from './Map';
+
+Map.include(/** @lends Map.prototype */ {
     _registerDomEvents: function (remove) {
-        var events = /**
-                      * mousedown event
-                      * @event maptalks.Map#mousedown
-                      * @type {Object}
-                      * @property {String} type                    - mousedown
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'mousedown ' +
-                     /**
-                      * mouseup event
-                      * @event maptalks.Map#mouseup
-                      * @type {Object}
-                      * @property {String} type                    - mouseup
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'mouseup ' +
-                     /**
-                      * mouseover event
-                      * @event maptalks.Map#mouseover
-                      * @type {Object}
-                      * @property {String} type                    - mouseover
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'mouseover ' +
-                     /**
-                      * mouseout event
-                      * @event maptalks.Map#mouseout
-                      * @type {Object}
-                      * @property {String} type                    - mouseout
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'mouseout ' +
-                     /**
-                      * mousemove event
-                      * @event maptalks.Map#mousemove
-                      * @type {Object}
-                      * @property {String} type                    - mousemove
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'mousemove ' +
-                     /**
-                      * click event
-                      * @event maptalks.Map#click
-                      * @type {Object}
-                      * @property {String} type                    - click
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'click ' +
-                     /**
-                      * dblclick event
-                      * @event maptalks.Map#dblclick
-                      * @type {Object}
-                      * @property {String} type                    - dblclick
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'dblclick ' +
-                     /**
-                      * contextmenu event
-                      * @event maptalks.Map#contextmenu
-                      * @type {Object}
-                      * @property {String} type                    - contextmenu
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'contextmenu ' +
-                     /**
-                      * keypress event
-                      * @event maptalks.Map#keypress
-                      * @type {Object}
-                      * @property {String} type                    - keypress
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'keypress ' +
-                     /**
-                      * touchstart event
-                      * @event maptalks.Map#touchstart
-                      * @type {Object}
-                      * @property {String} type                    - touchstart
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'touchstart ' +
-                     /**
-                      * touchmove event
-                      * @event maptalks.Map#touchmove
-                      * @type {Object}
-                      * @property {String} type                    - touchmove
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'touchmove ' +
-                     /**
-                      * touchend event
-                      * @event maptalks.Map#touchend
-                      * @type {Object}
-                      * @property {String} type                    - touchend
-                      * @property {maptalks.Map} target            - the map fires event
-                      * @property {maptalks.Coordinate} coordinate - coordinate of the event
-                      * @property {maptalks.Point} containerPoint  - container point of the event
-                      * @property {maptalks.Point} viewPoint       - view point of the event
-                      * @property {Event} domEvent                 - dom event
-                      */
-                     'touchend ';
+        var events =
+            /**
+             * mousedown event
+             * @event Map#mousedown
+             * @type {Object}
+             * @property {String} type                    - mousedown
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'mousedown ' +
+            /**
+             * mouseup event
+             * @event Map#mouseup
+             * @type {Object}
+             * @property {String} type                    - mouseup
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'mouseup ' +
+            /**
+             * mouseover event
+             * @event Map#mouseover
+             * @type {Object}
+             * @property {String} type                    - mouseover
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'mouseover ' +
+            /**
+             * mouseout event
+             * @event Map#mouseout
+             * @type {Object}
+             * @property {String} type                    - mouseout
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'mouseout ' +
+            /**
+             * mousemove event
+             * @event Map#mousemove
+             * @type {Object}
+             * @property {String} type                    - mousemove
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'mousemove ' +
+            /**
+             * click event
+             * @event Map#click
+             * @type {Object}
+             * @property {String} type                    - click
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'click ' +
+            /**
+             * dblclick event
+             * @event Map#dblclick
+             * @type {Object}
+             * @property {String} type                    - dblclick
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'dblclick ' +
+            /**
+             * contextmenu event
+             * @event Map#contextmenu
+             * @type {Object}
+             * @property {String} type                    - contextmenu
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'contextmenu ' +
+            /**
+             * keypress event
+             * @event Map#keypress
+             * @type {Object}
+             * @property {String} type                    - keypress
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'keypress ' +
+            /**
+             * touchstart event
+             * @event Map#touchstart
+             * @type {Object}
+             * @property {String} type                    - touchstart
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'touchstart ' +
+            /**
+             * touchmove event
+             * @event Map#touchmove
+             * @type {Object}
+             * @property {String} type                    - touchmove
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'touchmove ' +
+            /**
+             * touchend event
+             * @event Map#touchend
+             * @type {Object}
+             * @property {String} type                    - touchend
+             * @property {Map} target            - the map fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            'touchend ';
         //phantomjs will crash when registering events on canvasContainer
         var dom = this._panels.mapWrapper || this._containerDOM;
         if (remove) {
-            maptalks.DomUtil.removeDomEvent(dom, events, this._handleDOMEvent, this);
+            removeDomEvent(dom, events, this._handleDOMEvent, this);
         } else {
-            maptalks.DomUtil.addDomEvent(dom, events, this._handleDOMEvent, this);
+            addDomEvent(dom, events, this._handleDOMEvent, this);
         }
 
     },
 
     _handleDOMEvent: function (e) {
         var type = e.type;
-        if (type === 'mousedown' || type === 'click') {
+        if (type === 'click') {
             var button = e.button;
             if (button === 2) {
                 type = 'contextmenu';
@@ -164,17 +174,17 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         }
         // prevent default contextmenu
         if (type === 'contextmenu') {
-            maptalks.DomUtil.preventDefault(e);
+            preventDefault(e);
         }
         if (this._ignoreEvent(e)) {
             return;
         }
         // ignore click lasted for more than 300ms.
         if (type === 'mousedown') {
-            this._mouseDownTime = maptalks.Util.now();
+            this._mouseDownTime = now();
         } else if (type === 'click' && this._mouseDownTime) {
-            var now = maptalks.Util.now();
-            if (now - this._mouseDownTime > 300) {
+            var time = now();
+            if (time - this._mouseDownTime > 300) {
                 return;
             }
         }
@@ -200,7 +210,7 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         return false;
     },
 
-    _parseEvent:function (e, type) {
+    _parseEvent: function (e, type) {
         if (!e) {
             return null;
         }
@@ -212,7 +222,7 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
                 e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
                 e.changedTouches[0] : e;
             if (actual) {
-                var containerPoint = maptalks.DomUtil.getEventContainerPoint(actual, this._containerDOM);
+                var containerPoint = getEventContainerPoint(actual, this._containerDOM);
                 eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
                 eventParam['containerPoint'] = containerPoint;
                 eventParam['viewPoint'] = this.containerPointToViewPoint(containerPoint);

@@ -1,34 +1,40 @@
-maptalks.Geometry.mergeOptions({
+import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
+import { isNil } from 'core/util';
+import { lowerSymbolOpacity } from 'core/util/style';
+import Browser from 'core/Browser';
+import Handler from 'handler/Handler';
+import Geometry from 'geometry/Geometry';
+import DragHandler from 'handler/Drag';
+import VectorLayer from 'layer/VectorLayer';
+import { ConnectorLine } from 'geometry/ConnectorLine';
+import { ResourceCache } from 'renderer/layer/CanvasRenderer';
 
-    'draggable': false,
+const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 
-    'dragShadow' : true,
-
-    'dragOnAxis' : null
-});
+const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
 /**
  * Drag handler for geometries.
  * @class
  * @category handler
  * @protected
- * @extends {maptalks.Handler}
+ * @extends {Handler}
  */
-maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Drag.prototype */{
-    dragStageLayerId : maptalks.internalLayerPrefix + '_drag_stage',
+export default class GeometryDragHandler extends Handler  {
 
-    START: maptalks.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
+    constructor(target) {
+        super(target);
+    }
 
-    addHooks: function () {
-        this.target.on(this.START.join(' '), this._startDrag, this);
+    addHooks() {
+        this.target.on(EVENTS, this._startDrag, this);
+    }
 
-    },
-    removeHooks: function () {
-        this.target.off(this.START.join(' '), this._startDrag, this);
+    removeHooks() {
+        this.target.off(EVENTS, this._startDrag, this);
+    }
 
-    },
-
-    _startDrag: function (param) {
+    _startDrag(param) {
         var map = this.target.getMap();
         if (!map) {
             return;
@@ -52,38 +58,38 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
         this._moved = false;
         /**
          * drag start event
-         * @event maptalks.Geometry#dragstart
+         * @event Geometry#dragstart
          * @type {Object}
          * @property {String} type                    - dragstart
-         * @property {maptalks.Geometry} target       - the geometry fires event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Geometry} target       - the geometry fires event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         this.target._fireEvent('dragstart', param);
-    },
+    }
 
-    _prepareMap:function () {
+    _prepareMap() {
         var map = this.target.getMap();
         this._mapDraggable = map.options['draggable'];
         this._mapHitDetect = map.options['hitDetect'];
         map._trySetCursor('move');
         map.config({
-            'hitDetect' : false,
-            'draggable' : false
+            'hitDetect': false,
+            'draggable': false
         });
-    },
+    }
 
-    _prepareDragHandler:function () {
+    _prepareDragHandler() {
         var map = this.target.getMap();
-        this._dragHandler = new maptalks.Handler.Drag(map._panels.mapWrapper || map._containerDOM);
+        this._dragHandler = new DragHandler(map._panels.mapWrapper || map._containerDOM);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
-    },
+    }
 
-    _prepareShadow:function () {
+    _prepareShadow() {
         var target = this.target;
         this._prepareDragStageLayer();
         var resources = this._dragStageLayer._getRenderer().resources;
@@ -95,25 +101,25 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
         this._shadow.setSymbol(target._getInternalSymbol());
         var shadow = this._shadow;
         if (target.options['dragShadow']) {
-            var symbol = maptalks.Util.lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
+            var symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
             shadow.setSymbol(symbol);
         }
         shadow.setId(null);
         //copy connectors
         var shadowConnectors = [];
-        if (maptalks.ConnectorLine._hasConnectors(target)) {
-            var connectors = maptalks.ConnectorLine._getConnectors(target);
+        if (ConnectorLine._hasConnectors(target)) {
+            var connectors = ConnectorLine._getConnectors(target);
 
             for (var i = 0; i < connectors.length; i++) {
                 var targetConn = connectors[i];
                 var connOptions = targetConn.config(),
                     connSymbol = targetConn._getInternalSymbol();
-                connOptions['symbol'] = maptalks.Util.lowerSymbolOpacity(connSymbol, 0.5);
+                connOptions['symbol'] = lowerSymbolOpacity(connSymbol, 0.5);
                 var conn;
                 if (targetConn.getConnectSource() === target) {
-                    conn = new maptalks.ConnectorLine(shadow, targetConn.getConnectTarget(), connOptions);
+                    conn = new ConnectorLine(shadow, targetConn.getConnectTarget(), connOptions);
                 } else {
-                    conn = new maptalks.ConnectorLine(targetConn.getConnectSource(), shadow, connOptions);
+                    conn = new ConnectorLine(targetConn.getConnectSource(), shadow, connOptions);
                 }
                 shadowConnectors.push(conn);
                 if (targetConn.getLayer() && targetConn.getLayer()._getRenderer()) {
@@ -125,29 +131,31 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
         this._shadowConnectors = shadowConnectors;
         shadowConnectors.push(shadow);
         this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
-    },
+    }
 
-    _onTargetUpdated:function () {
+    _onTargetUpdated() {
         if (this._shadow) {
             this._shadow.setSymbol(this.target.getSymbol());
         }
-    },
+    }
 
-    _prepareDragStageLayer:function () {
+    _prepareDragStageLayer() {
         var map = this.target.getMap(),
             layer = this.target.getLayer();
-        this._dragStageLayer = map.getLayer(this.dragStageLayerId);
+        this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
-            this._dragStageLayer = new maptalks.VectorLayer(this.dragStageLayerId, {'drawImmediate' : true});
+            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
+                'drawImmediate': true
+            });
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
-        var resources = new maptalks.renderer.Canvas.Resources();
+        var resources = new ResourceCache();
         resources.merge(layer._getRenderer().resources);
         this._dragStageLayer._getRenderer().resources = resources;
-    },
+    }
 
-    _dragging: function (param) {
+    _dragging(param) {
         var target = this.target;
         var map = target.getMap(),
             eventParam = map._parseEvent(param['domEvent']);
@@ -193,20 +201,20 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
 
         /**
          * dragging event
-         * @event maptalks.Geometry#dragging
+         * @event Geometry#dragging
          * @type {Object}
          * @property {String} type                    - dragging
-         * @property {maptalks.Geometry} target       - the geometry fires event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Geometry} target       - the geometry fires event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         target._fireEvent('dragging', eventParam);
 
-    },
+    }
 
-    _endDrag: function (param) {
+    _endDrag(param) {
         var target = this.target,
             map = target.getMap();
         if (this._dragHandler) {
@@ -236,14 +244,14 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
             delete this._shadow;
         }
         if (this._shadowConnectors) {
-            map.getLayer(this.dragStageLayerId).removeGeometry(this._shadowConnectors);
+            map.getLayer(DRAG_STAGE_LAYER_ID).removeGeometry(this._shadowConnectors);
             delete this._shadowConnectors;
         }
         delete this._lastPos;
 
         //restore map status
         map._trySetCursor('default');
-        if (maptalks.Util.isNil(this._mapDraggable)) {
+        if (isNil(this._mapDraggable)) {
             this._mapDraggable = true;
         }
         map.config({
@@ -259,37 +267,41 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
         this._isDragging = false;
         /**
          * dragend event
-         * @event maptalks.Geometry#dragend
+         * @event Geometry#dragend
          * @type {Object}
          * @property {String} type                    - dragend
-         * @property {maptalks.Geometry} target       - the geometry fires event
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Geometry} target       - the geometry fires event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         target._fireEvent('dragend', eventParam);
+    }
 
-    },
-
-    isDragging:function () {
+    isDragging() {
         if (!this._isDragging) {
             return false;
         }
         return true;
     }
 
+}
 
+Geometry.mergeOptions({
+    'draggable': false,
+    'dragShadow': true,
+    'dragOnAxis': null
 });
 
-maptalks.Geometry.addInitHook('addHandler', 'draggable', maptalks.Geometry.Drag);
+Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
 
-maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * Whether the geometry is being dragged.
      * @reutrn {Boolean}
      */
-    isDragging: function () {
+    isDragging() {
         if (this._getParent()) {
             return this._getParent().isDragging();
         }

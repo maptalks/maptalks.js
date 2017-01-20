@@ -1,18 +1,22 @@
-maptalks.Map.include(/** @lends maptalks.Map.prototype */{
+import Coordinate from 'geo/Coordinate';
+import Point from 'geo/Point';
+import Map from './Map';
+
+Map.include(/** @lends Map.prototype */ {
     /**
      * Pan to the given coordinate
-     * @param {maptalks.Coordinate} coordinate - coordinate to pan to
+     * @param {Coordinate} coordinate - coordinate to pan to
      * @param {Object} [options=null] - pan options
      * @param {Boolean} [options.animation=null] - whether pan with animation
      * @param {Boolean} [options.duration=600] - pan animation duration
-     * @return {maptalks.Map} this
+     * @return {Map} this
      */
-    panTo:function (coordinate, options) {
+    panTo: function (coordinate, options) {
         if (!coordinate) {
             return this;
         }
         var map = this;
-        coordinate = new maptalks.Coordinate(coordinate);
+        coordinate = new Coordinate(coordinate);
         var dest = this.coordinateToContainerPoint(coordinate),
             current = this.coordinateToContainerPoint(this.getCenter());
         return this._panBy(dest.substract(current), options, function () {
@@ -23,13 +27,13 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
 
     /**
      * Pan the map by the give point
-     * @param  {maptalks.Point} point - distance to pan, in pixel
+     * @param  {Point} point - distance to pan, in pixel
      * @param {Object} [options=null] - pan options
      * @param {Boolean} [options.animation=null] - whether pan with animation
      * @param {Boolean} [options.duration=600] - pan animation duration
-     * @return {maptalks.Map} this
+     * @return {Map} this
      */
-    panBy:function (offset, options) {
+    panBy: function (offset, options) {
         return this._panBy(offset, options);
     },
 
@@ -37,7 +41,7 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         if (!offset) {
             return this;
         }
-        offset = new maptalks.Point(offset).multi(-1);
+        offset = new Point(offset).multi(-1);
         this.onMoveStart();
         if (!options) {
             options = {};
@@ -56,7 +60,7 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         return this;
     },
 
-    _panAnimation:function (offset, t, onFinish) {
+    _panAnimation: function (offset, t, onFinish) {
         this._getRenderer().panAnimation(offset, t, onFinish);
     }
 

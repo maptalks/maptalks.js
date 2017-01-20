@@ -1,37 +1,38 @@
-(function () {
-    /**
-     * Mixin of connector line methods.
-     * @mixin
-     * @name connectorLineMixin
-     */
-    var connectorLineMixin = {
+import { isNil, isArrayHasData, removeFromArray } from 'core/util';
+import LineString from './LineString';
+import ArcCurve from './ArcCurve';
 
-        initialize: function (src, target, options) {
-            if (arguments.length === 1) {
-                options = src;
-                src = null;
-                target = null;
-            }
-            this._connSource = src;
-            this._connTarget = target;
-            this._initOptions(options);
-            this._registEvents();
-        },
+/**
+ * Mixin of connector line methods.
+ * @mixin
+ * @name Connectable
+ * @private
+ */
+const Connectable = function (Base) {
+    return class extends Base {
+
+        static _hasConnectors(geometry) {
+            return (!isNil(geometry.__connectors) && geometry.__connectors.length > 0);
+        }
+
+        static _getConnectors(geometry) {
+            return geometry.__connectors;
+        }
 
         /**
          * Gets the source of the connector line.
-         * @return {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent}
+         * @return {Geometry|control.Control|UIComponent}
          */
-        getConnectSource:function () {
+        getConnectSource() {
             return this._connSource;
-        },
+        }
 
         /**
          * Sets the source to the connector line.
-         * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} src
-         * @return {maptalks.ConnectorLine} this
+         * @param {Geometry|control.Control|UIComponent} src
+         * @return {ConnectorLine} this
          */
-        setConnectSource:function (src) {
+        setConnectSource(src) {
             var target = this._connTarget;
             this.onRemove();
             this._connSource = src;
@@ -39,22 +40,22 @@
             this._updateCoordinates();
             this._registEvents();
             return this;
-        },
+        }
 
         /**
          * Gets the target of the connector line.
-         * @return {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent}
+         * @return {Geometry|control.Control|UIComponent}
          */
-        getConnectTarget:function () {
+        getConnectTarget() {
             return this._connTarget;
-        },
+        }
 
         /**
          * Sets the target to the connector line.
-         * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} target
-         * @return {maptalks.ConnectorLine} this
+         * @param {Geometry|control.Control|UIComponent} target
+         * @return {ConnectorLine} this
          */
-        setConnectTarget:function (target) {
+        setConnectTarget(target) {
             var src = this._connSource;
             this.onRemove();
             this._connSource = src;
@@ -62,9 +63,9 @@
             this._updateCoordinates();
             this._registEvents();
             return this;
-        },
+        }
 
-        _updateCoordinates:function () {
+        _updateCoordinates() {
             var map = this.getMap();
             if (!map && this._connSource) {
                 map = this._connSource.getMap();
@@ -98,44 +99,43 @@
                     }
                 }
             }
-            if (!maptalks.Util.isArrayHasData(oldCoordinates) || (!oldCoordinates[0].equals(c1) || !oldCoordinates[1].equals(c2))) {
+            if (!isArrayHasData(oldCoordinates) || (!oldCoordinates[0].equals(c1) || !oldCoordinates[1].equals(c2))) {
                 this.setCoordinates([c1, c2]);
             }
-        },
+        }
 
-        onRemove: function () {
+        onRemove() {
             if (this._connSource) {
                 if (this._connSource.__connectors) {
-                    maptalks.Util.removeFromArray(this, this._connSource.__connectors);
+                    removeFromArray(this, this._connSource.__connectors);
                 }
                 this._connSource.off('dragging positionchange', this._updateCoordinates, this)
-                                .off('remove', this.onRemove, this);
+                    .off('remove', this.onRemove, this);
                 this._connSource.off('dragstart mousedown mouseover', this._showConnect, this);
                 this._connSource.off('dragend mouseup mouseout', this.hide, this);
                 this._connSource.off('show', this._showConnect, this).off('hide', this.hide, this);
                 delete this._connSource;
             }
             if (this._connTarget) {
-                maptalks.Util.removeFromArray(this, this._connTarget.__connectors);
+                removeFromArray(this, this._connTarget.__connectors);
                 this._connTarget.off('dragging positionchange', this._updateCoordinates, this)
-                                .off('remove', this.onRemove, this);
+                    .off('remove', this.onRemove, this);
                 this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
                 delete this._connTarget;
             }
-        },
+        }
 
-        _showConnect:function () {
+        _showConnect() {
             if (!this._connSource || !this._connTarget) {
                 return;
             }
-            if ((this._connSource instanceof maptalks.control.Control || this._connSource.isVisible()) &&
-                (this._connTarget instanceof maptalks.control.Control || this._connTarget.isVisible())) {
+            if (this._connSource.isVisible() && this._connTarget.isVisible()) {
                 this._updateCoordinates();
                 this.show();
             }
-        },
+        }
 
-        _registEvents: function () {
+        _registEvents() {
             if (!this._connSource || !this._connTarget) {
                 return;
             }
@@ -148,9 +148,9 @@
             this._connSource.__connectors.push(this);
             this._connTarget.__connectors.push(this);
             this._connSource.on('dragging positionchange', this._updateCoordinates, this)
-                            .on('remove', this.remove, this);
+                .on('remove', this.remove, this);
             this._connTarget.on('dragging positionchange', this._updateCoordinates, this)
-                            .on('remove', this.remove, this);
+                .on('remove', this.remove, this);
             this._connSource.on('show', this._showConnect, this).on('hide', this.hide, this);
             this._connTarget.on('show', this._showConnect, this).on('hide', this.hide, this);
             var trigger = this.options['showOn'];
@@ -169,85 +169,95 @@
             }
         }
     };
+};
 
-    /**
-     * A straight connector line geometry can connect geometries or ui components with each other. <br>
-     *
-     * @class
-     * @category geometry
-     * @extends maptalks.LineString
-     * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} src     - source to connect
-     * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} target  - target to connect
-     * @param {Object} [options=null]                   - construct options defined in [maptalks.ConnectorLine]{@link maptalks.ConnectorLine#options}
-     * @example
-     * var src = new maptalks.Marker([0,0]).addTo(layer),
-     *     dst = new maptalks.Marker([1,0]).addTo(layer),
-     *     line = new maptalks.ConnectorLine(src, dst, {
-     *         showOn : 'always', //'moving', 'click', 'mouseover', 'always'
-     *         arrowStyle : 'classic',
-     *         arrowPlacement : 'vertex-last', //vertex-first, vertex-last, vertex-firstlast, point
-     *         symbol: {
-     *           lineColor: '#34495e',
-     *           lineWidth: 2
-     *        }
-     *     }).addTo(layer);
-     * @mixes connectorLineMixin
-     */
-    maptalks.ConnectorLine = maptalks.LineString.extend({
-        includes : [connectorLineMixin],
-        /**
-         * @property {Object} options - ConnectorLine's options
-         * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
-         */
-        options: {
-            showOn : 'always'
+/**
+ * A straight connector line geometry can connect geometries or ui components with each other. <br>
+ *
+ * @class
+ * @category geometry
+ * @extends LineString
+ * @param {Geometry|control.Control|UIComponent} src     - source to connect
+ * @param {Geometry|control.Control|UIComponent} target  - target to connect
+ * @param {Object} [options=null]                   - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
+ * @example
+ * var src = new Marker([0,0]).addTo(layer),
+ *     dst = new Marker([1,0]).addTo(layer),
+ *     line = new ConnectorLine(src, dst, {
+ *         showOn : 'always', //'moving', 'click', 'mouseover', 'always'
+ *         arrowStyle : 'classic',
+ *         arrowPlacement : 'vertex-last', //vertex-first, vertex-last, vertex-firstlast, point
+ *         symbol: {
+ *           lineColor: '#34495e',
+ *           lineWidth: 2
+ *        }
+ *     }).addTo(layer);
+ * @mixes connectorLineMixin
+ */
+export class ConnectorLine extends Connectable(LineString) {
+    constructor(src, target, options) {
+        super(null, options);
+        if (arguments.length === 1) {
+            options = src;
+            src = null;
+            target = null;
         }
-    });
+        this._connSource = src;
+        this._connTarget = target;
+        this._registEvents();
+    }
+}
 
+/**
+ * @property {Object} options - ConnectorLine's options
+ * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
+ */
+const options = {
+    showOn: 'always'
+};
 
-    maptalks.Util.extend(maptalks.ConnectorLine, {
-        _hasConnectors:function (geometry) {
-            return (!maptalks.Util.isNil(geometry.__connectors) && geometry.__connectors.length > 0);
-        },
+ConnectorLine.mergeOptions(options);
 
-        _getConnectors:function (geometry) {
-            return geometry.__connectors;
+ConnectorLine.registerJSONType('ConnectorLine');
+
+/**
+ * An arc curve connector line geometry can connect geometries or ui components with each other. <br>
+ *
+ * @class
+ * @category geometry
+ * @extends ArcCurve
+ * @param {Geometry|control.Control|UIComponent} src     - source to connect
+ * @param {Geometry|control.Control|UIComponent} target  - target to connect
+ * @param {Object} [options=null]                   - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
+ * @example
+ * var src = new Marker([0,0]).addTo(layer),
+ *     dst = new Marker([1,0]).addTo(layer),
+ *     line = new ArcConnectorLine(src, dst, {
+ *         arcDegree : 120,
+ *         showOn : 'always', //'moving', 'click', 'mouseover', 'always'
+ *         arrowStyle : 'classic',
+ *         arrowPlacement : 'vertex-last', //vertex-first, vertex-last, vertex-firstlast, point
+ *         symbol: {
+ *           lineColor: '#34495e',
+ *           lineWidth: 2
+ *        }
+ *     }).addTo(layer);
+ * @mixes connectorLineMixin
+ */
+export class ArcConnectorLine extends Connectable(ArcCurve) {
+    constructor(src, target, options) {
+        super(null, options);
+        if (arguments.length === 1) {
+            options = src;
+            src = null;
+            target = null;
         }
-    });
+        this._connSource = src;
+        this._connTarget = target;
+        this._registEvents();
+    }
+}
 
-    /**
-     * An arc curve connector line geometry can connect geometries or ui components with each other. <br>
-     *
-     * @class
-     * @category geometry
-     * @extends maptalks.ArcCurve
-     * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} src     - source to connect
-     * @param {maptalks.Geometry|maptalks.control.Control|maptalks.UIComponent} target  - target to connect
-     * @param {Object} [options=null]                   - construct options defined in [maptalks.ConnectorLine]{@link maptalks.ConnectorLine#options}
-     * @example
-     * var src = new maptalks.Marker([0,0]).addTo(layer),
-     *     dst = new maptalks.Marker([1,0]).addTo(layer),
-     *     line = new maptalks.ArcConnectorLine(src, dst, {
-     *         arcDegree : 120,
-     *         showOn : 'always', //'moving', 'click', 'mouseover', 'always'
-     *         arrowStyle : 'classic',
-     *         arrowPlacement : 'vertex-last', //vertex-first, vertex-last, vertex-firstlast, point
-     *         symbol: {
-     *           lineColor: '#34495e',
-     *           lineWidth: 2
-     *        }
-     *     }).addTo(layer);
-     * @mixes connectorLineMixin
-     */
-    maptalks.ArcConnectorLine = maptalks.ArcCurve.extend({
-        includes : [connectorLineMixin],
+ArcConnectorLine.mergeOptions(options);
 
-        /**
-         * @property {Object} options - ConnectorLine's options
-         * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
-         */
-        options: {
-            showOn : 'always'
-        }
-    });
-})();
+ArcConnectorLine.registerJSONType('ArcConnectorLine');

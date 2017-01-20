@@ -1,46 +1,60 @@
+import { extend, isNil } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import Point from 'geo/Point';
+import PointExtent from 'geo/PointExtent';
+import Extent from 'geo/Extent';
+import Polygon from './Polygon';
+
 /**
  * @classdesc
- * Represents a Rectangle geometry, a child class of [maptalks.Polygon]{@link maptalks.Polygon}. <br>
- *     It means it shares all the methods defined in [maptalks.Polygon]{@link maptalks.Polygon} besides some overrided ones.
+ * Represents a Rectangle geometry, a child class of [Polygon]{@link Polygon}. <br>
+ *     It means it shares all the methods defined in [Polygon]{@link Polygon} besides some overrided ones.
  * @class
  * @category geometry
- * @extends {maptalks.Polygon}
- * @param {maptalks.Coordinate} coordinates  - northwest of the rectangle
+ * @extends {Polygon}
+ * @param {Coordinate} coordinates  - northwest of the rectangle
  * @param {Number} width                     - width of the rectangle
  * @param {Number} height                    - height of the rectangle
- * @param {Object} [options=null]            - options defined in [maptalks.Rectangle]{@link maptalks.Rectangle#options}
+ * @param {Object} [options=null]            - options defined in [Rectangle]{@link Rectangle#options}
  * @example
- * var rectangle = new maptalks.Rectangle([100, 0], 1000, 500, {
+ * var rectangle = new Rectangle([100, 0], 1000, 500, {
  *     id : 'rectangle0'
  * });
  */
-maptalks.Rectangle = maptalks.Polygon.extend(/** @lends maptalks.Rectangle.prototype */{
+export default class Rectangle extends Polygon {
 
-    initialize:function (coordinates, width, height, opts) {
-        this._coordinates = new maptalks.Coordinate(coordinates);
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const rect = new Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
+        rect.setProperties(feature['properties']);
+        return rect;
+    }
+
+    constructor(coordinates, width, height, opts) {
+        super(null, opts);
+        if (coordinates) {
+            this.setCoordinates(coordinates);
+        }
         this._width = width;
         this._height = height;
-        this._initOptions(opts);
-    },
-
+    }
 
     /**
      * Get coordinates of rectangle's northwest
-     * @return {maptalks.Coordinate}
+     * @return {Coordinate}
      */
-    getCoordinates:function () {
+    getCoordinates() {
         return this._coordinates;
-    },
+    }
 
     /**
      * Set a new coordinate for northwest of the rectangle
-     * @param {maptalks.Coordinate} nw - coordinates of new northwest
-     * @return {maptalks.Rectangle} this
-     * @fires maptalks.Rectangle#positionchange
+     * @param {Coordinate} nw - coordinates of new northwest
+     * @return {Rectangle} this
+     * @fires Rectangle#positionchange
      */
-    setCoordinates:function (nw) {
-        this._coordinates = new maptalks.Coordinate(nw);
-
+    setCoordinates(nw) {
+        this._coordinates = (nw instanceof Coordinate) ? nw : new Coordinate(nw);
         if (!this._coordinates || !this.getMap()) {
             this.onPositionChanged();
             return this;
@@ -48,53 +62,53 @@ maptalks.Rectangle = maptalks.Polygon.extend(/** @lends maptalks.Rectangle.proto
         var projection = this._getProjection();
         this._setPrjCoordinates(projection.project(this._coordinates));
         return this;
-    },
+    }
 
     /**
      * Get rectangle's width
      * @return {Number}
      */
-    getWidth:function () {
+    getWidth() {
         return this._width;
-    },
+    }
 
     /**
      * Set new width to the rectangle
      * @param {Number} width - new width
-     * @fires maptalks.Rectangle#shapechange
-     * @return {maptalks.Rectangle} this
+     * @fires Rectangle#shapechange
+     * @return {Rectangle} this
      */
-    setWidth:function (width) {
+    setWidth(width) {
         this._width = width;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Get rectangle's height
      * @return {Number}
      */
-    getHeight:function () {
+    getHeight() {
         return this._height;
-    },
+    }
 
     /**
      * Set new height to rectangle
      * @param {Number} height - new height
-     * @fires maptalks.Rectangle#shapechange
-     * @return {maptalks.Rectangle} this
+     * @fires Rectangle#shapechange
+     * @return {Rectangle} this
      */
-    setHeight:function (height) {
+    setHeight(height) {
         this._height = height;
         this.onShapeChanged();
         return this;
-    },
+    }
 
-   /**
+    /**
      * Gets the shell of the rectangle as a polygon
-     * @return {maptalks.Coordinate[]} - shell coordinates
+     * @return {Coordinate[]} - shell coordinates
      */
-    getShell:function () {
+    getShell() {
         var measurer = this._getMeasurer();
         var nw = this._coordinates;
         var map = this.getMap();
@@ -113,121 +127,116 @@ maptalks.Rectangle = maptalks.Polygon.extend(/** @lends maptalks.Rectangle.proto
         points.push(nw);
         return points;
 
-    },
+    }
 
     /**
      * Rectangle won't have any holes, always returns null
      * @return {null}
      */
-    getHoles:function () {
+    getHoles() {
         return null;
-    },
+    }
 
-    _getPrjCoordinates:function () {
+    _getPrjCoordinates() {
         var projection = this._getProjection();
-        if (!projection) { return null; }
+        if (!projection) {
+            return null;
+        }
         if (!this._pnw) {
             if (this._coordinates) {
                 this._pnw = projection.project(this._coordinates);
             }
         }
         return this._pnw;
-    },
+    }
 
-
-    _setPrjCoordinates:function (pnw) {
+    _setPrjCoordinates(pnw) {
         this._pnw = pnw;
         this.onPositionChanged();
-    },
-
+    }
 
     //update cached variables if geometry is updated.
-    _updateCache:function () {
+    _updateCache() {
         delete this._extent;
         var projection = this._getProjection();
         if (this._pnw && projection) {
             this._coordinates = projection.unproject(this._pnw);
         }
-    },
+    }
 
-    _clearProjection:function () {
+    _clearProjection() {
         this._pnw = null;
-    },
+    }
 
-    _computeCenter:function (measurer) {
+    _computeCenter(measurer) {
         return measurer.locate(this._coordinates, this._width / 2, -this._height / 2);
-    },
+    }
 
-    _containsPoint: function (point, tolerance) {
+    _containsPoint(point, tolerance) {
         var map = this.getMap(),
-            t = maptalks.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             sp = map.coordinateToPoint(this._coordinates),
             pxSize = map.distanceToPixel(this._width, this._height);
 
-        var pxMin = new maptalks.Point(sp.x, sp.y),
-            pxMax = new maptalks.Point(sp.x + pxSize.width, sp.y + pxSize.height),
-            pxExtent = new maptalks.PointExtent(pxMin.x - t, pxMin.y - t,
-                                    pxMax.x + t, pxMax.y + t);
+        var pxMin = new Point(sp.x, sp.y),
+            pxMax = new Point(sp.x + pxSize.width, sp.y + pxSize.height),
+            pxExtent = new PointExtent(pxMin.x - t, pxMin.y - t,
+                pxMax.x + t, pxMax.y + t);
 
-        point = new maptalks.Point(point.x, point.y);
+        point = new Point(point.x, point.y);
 
         return pxExtent.contains(point);
-    },
+    }
 
-    _computeExtent:function (measurer) {
-        if (!measurer || !this._coordinates || maptalks.Util.isNil(this._width) || maptalks.Util.isNil(this._height)) {
+    _computeExtent(measurer) {
+        if (!measurer || !this._coordinates || isNil(this._width) || isNil(this._height)) {
             return null;
         }
         var width = this.getWidth(),
             height = this.getHeight();
         var p1 = measurer.locate(this._coordinates, width, -height);
-        return new maptalks.Extent(p1, this._coordinates);
-    },
+        return new Extent(p1, this._coordinates);
+    }
 
-    _computeGeodesicLength:function () {
-        if (maptalks.Util.isNil(this._width) || maptalks.Util.isNil(this._height)) {
+    _computeGeodesicLength() {
+        if (isNil(this._width) || isNil(this._height)) {
             return 0;
         }
         return 2 * (this._width + this._height);
-    },
+    }
 
-    _computeGeodesicArea:function () {
-        if (maptalks.Util.isNil(this._width) || maptalks.Util.isNil(this._height)) {
+    _computeGeodesicArea() {
+        if (isNil(this._width) || isNil(this._height)) {
             return 0;
         }
         return this._width * this._height;
-    },
+    }
 
-    _exportGeoJSONGeometry: function () {
-        var coordinates = maptalks.GeoJSON.toNumberArrays([this.getShell()]);
+    _exportGeoJSONGeometry() {
+        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
-            'type' : 'Polygon',
-            'coordinates' : coordinates
+            'type': 'Polygon',
+            'coordinates': coordinates
         };
-    },
+    }
 
-    _toJSON:function (options) {
-        var opts = maptalks.Util.extend({}, options);
+    _toJSON(options) {
+        var opts = extend({}, options);
         var nw = this.getCoordinates();
         opts.geometry = false;
         var feature = this.toGeoJSON(opts);
         feature['geometry'] = {
-            'type' : 'Polygon'
+            'type': 'Polygon'
         };
         return {
-            'feature'    :  feature,
-            'subType'    :  'Rectangle',
+            'feature': feature,
+            'subType': 'Rectangle',
             'coordinates': [nw.x, nw.y],
-            'width'      : this.getWidth(),
-            'height'     : this.getHeight()
+            'width': this.getWidth(),
+            'height': this.getHeight()
         };
     }
 
-});
+}
 
-maptalks.Rectangle.fromJSON = function (json) {
-    var feature = json['feature'];
-    var rect = new maptalks.Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
-    rect.setProperties(feature['properties']);
-    return rect;
-};
+Rectangle.registerJSONType('Rectangle');

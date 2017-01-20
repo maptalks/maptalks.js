@@ -1,13 +1,17 @@
 {
+  "root": true,
+  "env": {
+    "es6": true
+  },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module"
+  },
   "extends": "maptalks",
   "globals": {
-      "THREE" : true,
-      "define" : true
+    "THREE": true
   },
   "rules": {
-    "new-cap"     : 0,
-    "key-spacing" : 0,
-    "strict"      : 0,
-    "global-require" : 0
+    "global-require": 0
   }
 }

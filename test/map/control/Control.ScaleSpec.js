@@ -1,8 +1,7 @@
-describe("Control.Scale", function() {
+describe('Control.Scale', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
@@ -15,18 +14,13 @@ describe("Control.Scale", function() {
             center: center
         };
         map = new maptalks.Map(container, option);
-        tile = new maptalks.TileLayer('tile', {
-
-            urlTemplate:"/resources/tile.png",
-            subdomains: [1, 2, 3]
-        });
     });
 
     afterEach(function () {
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    it("widgets contain correct value after initialized", function() {
+    it('widgets contain correct value after initialized', function () {
         var control = new maptalks.control.Scale({
             metric: true,
             imperial: true

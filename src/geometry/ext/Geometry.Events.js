@@ -1,4 +1,7 @@
-maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+import { preventDefault, stopPropagation, getEventContainerPoint } from 'core/util/dom';
+import Geometry from 'geometry/Geometry';
+
+Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * The event handler for all the events.
      * @param  {Event} event - dom event
@@ -10,14 +13,14 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         }
         var eventType = this._getEventTypeToFire(event);
         if (eventType === 'contextmenu' && this.listens('contextmenu')) {
-            maptalks.DomUtil.stopPropagation(event);
-            maptalks.DomUtil.preventDefault(event);
+            stopPropagation(event);
+            preventDefault(event);
         }
         var params = this._getEventParams(event);
         this._fireEvent(eventType, params);
     },
 
-    _getEventTypeToFire:function (originalEvent) {
+    _getEventTypeToFire: function (originalEvent) {
         var eventType = originalEvent.type;
         //change event type to contextmenu
         if (eventType === 'click' || eventType === 'mousedown') {
@@ -37,11 +40,11 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
     _getEventParams: function (e) {
         var map = this.getMap();
         var eventParam = {
-            'domEvent':e
+            'domEvent': e
         };
         var actual = e.touches ? e.touches[0] : e;
         if (actual) {
-            var containerPoint = maptalks.DomUtil.getEventContainerPoint(actual, map._containerDOM);
+            var containerPoint = getEventContainerPoint(actual, map._containerDOM);
             eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
             eventParam['containerPoint'] = containerPoint;
             eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
@@ -63,13 +66,13 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         var params = this._getEventParams(originalEvent);
         /**
          * mouseover event for geometry
-         * @event maptalks.Geometry#mouseover
+         * @event Geometry#mouseover
          * @type {Object}
          * @property {String} type                    - mouseover
-         * @property {maptalks.Geometry} target       - the geometry fires mouseover
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Geometry} target       - the geometry fires mouseover
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('mouseover', params);
@@ -88,13 +91,13 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         var params = this._getEventParams(originalEvent);
         /**
          * mouseout event for geometry
-         * @event maptalks.Geometry#mouseout
+         * @event Geometry#mouseout
          * @type {Object}
          * @property {String} type                    - mouseout
-         * @property {maptalks.Geometry} target       - the geometry fires mouseout
-         * @property {maptalks.Coordinate} coordinate - coordinate of the event
-         * @property {maptalks.Point} containerPoint  - container point of the event
-         * @property {maptalks.Point} viewPoint       - view point of the event
+         * @property {Geometry} target       - the geometry fires mouseout
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('mouseout', params);

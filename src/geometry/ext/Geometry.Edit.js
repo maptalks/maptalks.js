@@ -1,16 +1,19 @@
-maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+import Geometry from 'geometry/Geometry';
+import GeometryEditor from 'geometry/editor/GeometryEditor';
+
+Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * Start to edit
      * @param {Object} [options=null]        - edit options
      * @param {Object} [options.symbol=null] - symbol for the geometry during editing
-     * @return {maptalks.Geometry} this
+     * @return {Geometry} this
      */
-    startEdit: function (opts) {
+    startEdit(opts) {
         if (!this.getMap() || !this.options['editable']) {
             return this;
         }
         this.endEdit();
-        this._editor = new maptalks.Geometry.Editor(this, opts);
+        this._editor = new GeometryEditor(this, opts);
         this._editor.start();
         this.fire('editstart');
         return this;
@@ -18,9 +21,9 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * End editing.
-     * @return {maptalks.Geometry} this
+     * @return {Geometry} this
      */
-    endEdit: function () {
+    endEdit() {
         if (this._editor) {
             this._editor.stop();
             delete this._editor;
@@ -33,11 +36,10 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
      * Whether the geometry is being edited.
      * @return {Boolean}
      */
-    isEditing: function () {
+    isEditing() {
         if (this._editor) {
             return this._editor.isEditing();
         }
         return false;
     }
-
 });

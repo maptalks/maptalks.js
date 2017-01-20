@@ -1,106 +1,119 @@
+import { extend, isNil } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import Extent from 'geo/Extent';
+import CenterMixin from './CenterMixin';
+import Polygon from './Polygon';
+
+/**
+ * @property {Object} options -
+ * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the sector to a polygon.
+ */
+const options = {
+    'numberOfShellPoints': 60
+};
+
 /**
  * @classdesc
- * Represents a sector Geometry, a child class of [maptalks.Polygon]{@link maptalks.Polygon}. <br>
- *     It means it shares all the methods defined in [maptalks.Polygon]{@link maptalks.Polygon} besides some overrided ones.
+ * Represents a sector Geometry, a child class of [Polygon]{@link Polygon}. <br>
+ *     It means it shares all the methods defined in [Polygon]{@link Polygon} besides some overrided ones.
  * @class
  * @category geometry
- * @extends maptalks.Polygon
- * @mixes maptalks.Geometry.Center
- * @param {maptalks.Coordinate} center - center of the sector
+ * @extends Polygon
+ * @mixes Geometry.Center
+ * @param {Coordinate} center - center of the sector
  * @param {Number} radius           - radius of the sector
  * @param {Number} startAngle       - start angle of the sector
  * @param {Number} endAngle         - end angle of the sector
- * @param {Object} [options=null]   - construct options defined in [maptalks.Sector]{@link maptalks.Sector#options}
+ * @param {Object} [options=null]   - construct options defined in [Sector]{@link Sector#options}
  * @example
- * var sector = new maptalks.Sector([100, 0], 1000, 30, 120, {
+ * var sector = new Sector([100, 0], 1000, 30, 120, {
  *     id : 'sector0'
  * });
  */
-maptalks.Sector = maptalks.Polygon.extend(/** @lends maptalks.Sector.prototype */{
-    includes:[maptalks.Geometry.Center],
+export default class Sector extends CenterMixin(Polygon) {
 
-    /**
-     * @property {Object} options -
-     * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the sector to a polygon.
-     */
-    options:{
-        'numberOfShellPoints':60
-    },
+    static fromJSON(json) {
+        const feature = json['feature'];
+        const sector = new Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], json['options']);
+        sector.setProperties(feature['properties']);
+        return sector;
+    }
 
-
-    initialize:function (coordinates, radius, startAngle, endAngle, opts) {
-        this._coordinates = new maptalks.Coordinate(coordinates);
+    constructor(coordinates, radius, startAngle, endAngle, opts) {
+        super(null, opts);
+        if (coordinates) {
+            this.setCoordinates(coordinates);
+        }
         this._radius = radius;
         this.startAngle = startAngle;
         this.endAngle = endAngle;
-        this._initOptions(opts);
-    },
+    }
 
     /**
      * Get radius of the sector
      * @return {Number}
      */
-    getRadius:function () {
+    getRadius() {
         return this._radius;
-    },
+    }
 
     /**
      * Set a new radius to the sector
      * @param {Number} radius - new radius
-     * @return {maptalks.Sector} this
-     * @fires maptalks.Sector#shapechange
+     * @return {Sector} this
+     * @fires Sector#shapechange
      */
-    setRadius:function (radius) {
+    setRadius(radius) {
         this._radius = radius;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Get the sector's start angle
      * @return {Number}
      */
-    getStartAngle:function () {
+    getStartAngle() {
         return this.startAngle;
-    },
+    }
 
     /**
      * Set a new start angle to the sector
      * @param {Number} startAngle
-     * @return {maptalks.Sector} this
-     * @fires maptalks.Sector#shapechange
+     * @return {Sector} this
+     * @fires Sector#shapechange
      */
-    setStartAngle:function (startAngle) {
+    setStartAngle(startAngle) {
         this.startAngle = startAngle;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
      * Get the sector's end angle
      * @return {Number}
      */
-    getEndAngle:function () {
+    getEndAngle() {
         return this.endAngle;
-    },
+    }
 
     /**
      * Set a new end angle to the sector
      * @param {Number} endAngle
-     * @return {maptalks.Sector} this
-     * @fires maptalks.Sector#shapechange
+     * @return {Sector} this
+     * @fires Sector#shapechange
      */
-    setEndAngle:function (endAngle) {
+    setEndAngle(endAngle) {
         this.endAngle = endAngle;
         this.onShapeChanged();
         return this;
-    },
+    }
 
     /**
-     * Gets the shell of the sector as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link maptalks.Sector#options}
-     * @return {maptalks.Coordinate[]} - shell coordinates
+     * Gets the shell of the sector as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Sector#options}
+     * @return {Coordinate[]} - shell coordinates
      */
-    getShell:function () {
+    getShell() {
         var measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
@@ -117,19 +130,19 @@ maptalks.Sector = maptalks.Polygon.extend(/** @lends maptalks.Sector.prototype *
         }
         return shell;
 
-    },
+    }
 
     /**
      * Sector won't have any holes, always returns null
      * @return {null}
      */
-    getHoles:function () {
+    getHoles() {
         return null;
-    },
+    }
 
-    _containsPoint: function (point, tolerance) {
+    _containsPoint(point, tolerance) {
         var center = this._getCenter2DPoint(),
-            t = maptalks.Util.isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
             pc = center,
             pp = point,
@@ -138,7 +151,7 @@ maptalks.Sector = maptalks.Polygon.extend(/** @lends maptalks.Sector.prototype *
             atan2 = Math.atan2(y, x),
             // [0.0, 360.0)
             angle = atan2 < 0 ? (atan2 + 2 * Math.PI) * 360 / (2 * Math.PI) :
-                atan2 * 360 / (2 * Math.PI);
+            atan2 * 360 / (2 * Math.PI);
         var sAngle = this.startAngle % 360,
             eAngle = this.endAngle % 360;
         var between = false;
@@ -150,64 +163,61 @@ maptalks.Sector = maptalks.Polygon.extend(/** @lends maptalks.Sector.prototype *
 
         // TODO: tolerance
         return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
-    },
+    }
 
-    _computeExtent:function (measurer) {
-        if (!measurer || !this._coordinates || maptalks.Util.isNil(this._radius)) {
+    _computeExtent(measurer) {
+        if (!measurer || !this._coordinates || isNil(this._radius)) {
             return null;
         }
 
         var radius = this._radius;
         var p1 = measurer.locate(this._coordinates, radius, radius);
         var p2 = measurer.locate(this._coordinates, -radius, -radius);
-        return new maptalks.Extent(p1, p2);
-    },
+        return new Extent(p1, p2);
+    }
 
-    _computeGeodesicLength:function () {
-        if (maptalks.Util.isNil(this._radius)) {
+    _computeGeodesicLength() {
+        if (isNil(this._radius)) {
             return 0;
         }
         return Math.PI * 2 * this._radius * Math.abs(this.startAngle - this.endAngle) / 360 + 2 * this._radius;
-    },
+    }
 
-    _computeGeodesicArea:function () {
-        if (maptalks.Util.isNil(this._radius)) {
+    _computeGeodesicArea() {
+        if (isNil(this._radius)) {
             return 0;
         }
         return Math.PI * Math.pow(this._radius, 2) * Math.abs(this.startAngle - this.endAngle) / 360;
-    },
+    }
 
-    _exportGeoJSONGeometry: function () {
-        var coordinates = maptalks.GeoJSON.toNumberArrays([this.getShell()]);
+    _exportGeoJSONGeometry() {
+        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
-            'type' : 'Polygon',
-            'coordinates' : coordinates
+            'type': 'Polygon',
+            'coordinates': coordinates
         };
-    },
+    }
 
-    _toJSON:function (options) {
-        var opts = maptalks.Util.extend({}, options);
+    _toJSON(options) {
+        var opts = extend({}, options);
         var center = this.getCenter();
         opts.geometry = false;
         var feature = this.toGeoJSON(opts);
         feature['geometry'] = {
-            'type' : 'Polygon'
+            'type': 'Polygon'
         };
         return {
-            'feature'   :  feature,
-            'subType'   :  'Sector',
-            'coordinates'  :  [center.x, center.y],
-            'radius'    :  this.getRadius(),
-            'startAngle':  this.getStartAngle(),
-            'endAngle'  :  this.getEndAngle()
+            'feature': feature,
+            'subType': 'Sector',
+            'coordinates': [center.x, center.y],
+            'radius': this.getRadius(),
+            'startAngle': this.getStartAngle(),
+            'endAngle': this.getEndAngle()
         };
     }
 
-});
+}
 
-maptalks.Sector.fromJSON = function (json) {
-    var feature = json['feature'];
-    var sector = new maptalks.Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], json['options']);
-    sector.setProperties(feature['properties']);
-    return sector;
-};
+Sector.mergeOptions(options);
+
+Sector.registerJSONType('Sector');

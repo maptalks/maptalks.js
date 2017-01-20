@@ -1,36 +1,42 @@
+import { isFunction, isArrayHasData } from 'core/util';
+import { createFilter, getFilterFeature } from 'core/mapbox';
+import { getExternalResources } from 'core/util/resource';
+import Coordinate from 'geo/Coordinate';
+import Geometry from './Geometry';
+
 /**
  * @classdesc
  * Represents a GeometryCollection.
  * @class
  * @category geometry
- * @extends maptalks.Geometry
- * @param {maptalks.Geometry[]} geometries - GeometryCollection's geometries
- * @param {Object} [options=null] - options defined in [nmaptalks.GeometryCollection]{@link maptalks.GeometryCollection#options}
+ * @extends Geometry
+ * @param {Geometry[]} geometries - GeometryCollection's geometries
+ * @param {Object} [options=null] - options defined in [nGeometryCollection]{@link GeometryCollection#options}
  * @example
- * var marker = new maptalks.Marker([0, 0]),
- *     line = new maptalks.LineString([[0, 0], [0, 1]]),
- *     polygon = new maptalks.Polygon([[0, 0], [0, 1], [1, 3]]);
- * var collection = new maptalks.GeometryCollection([marker, line, polygon])
+ * var marker = new Marker([0, 0]),
+ *     line = new LineString([[0, 0], [0, 1]]),
+ *     polygon = new Polygon([[0, 0], [0, 1], [1, 3]]);
+ * var collection = new GeometryCollection([marker, line, polygon])
  *     .addTo(layer);
  */
-maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.GeometryCollection.prototype */{
-    type:maptalks.Geometry['TYPE_GEOMETRYCOLLECTION'],
+export default class GeometryCollection extends Geometry {
 
-    initialize:function (geometries, opts) {
-        this._initOptions(opts);
+    constructor(geometries, opts) {
+        super(opts);
+        this.type = 'GeometryCollection';
         this.setGeometries(geometries);
-    },
+    }
 
     /**
      * Set new geometries to the geometry collection
-     * @param {maptalks.Geometry[]} geometries
-     * @return {maptalks.GeometryCollection} this
-     * @fires maptalks.GeometryCollection#shapechange
+     * @param {Geometry[]} geometries
+     * @return {GeometryCollection} this
+     * @fires GeometryCollection#shapechange
      */
-    setGeometries:function (_geometries) {
+    setGeometries(_geometries) {
         var geometries = this._checkGeometries(_geometries);
         //Set the collection as child geometries' parent.
-        if (maptalks.Util.isArray(geometries)) {
+        if (Array.isArray(geometries)) {
             for (var i = geometries.length - 1; i >= 0; i--) {
                 geometries[i]._initOptions(this.config());
                 geometries[i]._setParent(this);
@@ -44,26 +50,26 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             this.onShapeChanged();
         }
         return this;
-    },
+    }
 
     /**
      * Get geometries of the geometry collection
-     * @return {maptalks.Geometry[]} geometries
+     * @return {Geometry[]} geometries
      */
-    getGeometries:function () {
+    getGeometries() {
         if (!this._geometries) {
             return [];
         }
         return this._geometries;
-    },
+    }
 
     /**
      * Executes the provided callback once for each geometry present in the collection in order.
      * @param  {Function} fn             - a callback function
      * @param  {*} [context=undefined]   - callback's context
-     * @return {maptalks.GeometryCollection} this
+     * @return {GeometryCollection} this
      */
-    forEach: function (fn, context) {
+    forEach(fn, context) {
         var geometries = this.getGeometries();
         for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
@@ -76,24 +82,38 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             }
         }
         return this;
-    },
+    }
 
     /**
      * Creates a GeometryCollection with all elements that pass the test implemented by the provided function.
      * @param  {Function} fn      - Function to test each geometry
      * @param  {*} [context=undefined]    - Function's context
-     * @return {maptalks.GeometryCollection} A GeometryCollection with all elements that pass the test
+     * @return {GeometryCollection} A GeometryCollection with all elements that pass the test
      */
-    filter: function () {
-        return maptalks.VectorLayer.prototype.filter.apply(this, arguments);
-    },
+    filter(fn, context) {
+        if (!fn) {
+            return null;
+        }
+        const selected = [];
+        const isFn = isFunction(fn);
+        const filter = isFn ? fn : createFilter(fn);
+
+        this.forEach(geometry => {
+            var g = isFn ? geometry : getFilterFeature(geometry);
+            if (context ? filter.call(context, g) : filter(g)) {
+                selected.push(geometry);
+            }
+        }, this);
+
+        return selected.length > 0 ? new GeometryCollection(selected) : null;
+    }
 
     /**
      * Translate or move the geometry collection by the given offset.
-     * @param  {maptalks.Coordinate} offset - translate offset
-     * @return {maptalks.GeometryCollection} this
+     * @param  {Coordinate} offset - translate offset
+     * @return {GeometryCollection} this
      */
-    translate:function (offset) {
+    translate(offset) {
         if (!offset) {
             return this;
         }
@@ -106,57 +126,57 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             }
         });
         return this;
-    },
+    }
 
     /**
      * Whether the geometry collection is empty
      * @return {Boolean}
      */
-    isEmpty:function () {
-        return !maptalks.Util.isArrayHasData(this.getGeometries());
-    },
+    isEmpty() {
+        return !isArrayHasData(this.getGeometries());
+    }
 
     /**
      * remove itself from the layer if any.
-     * @returns {maptalks.Geometry} this
-     * @fires maptalks.GeometryCollection#removestart
-     * @fires maptalks.GeometryCollection#remove
-     * @fires maptalks.GeometryCollection#removeend
+     * @returns {Geometry} this
+     * @fires GeometryCollection#removestart
+     * @fires GeometryCollection#remove
+     * @fires GeometryCollection#removeend
      */
-    remove:function () {
+    remove() {
         this.forEach(function (geometry) {
             geometry._unbind();
         });
-        return maptalks.Geometry.prototype.remove.apply(this, arguments);
-    },
+        return Geometry.prototype.remove.apply(this, arguments);
+    }
 
     /**
      * Show the geometry collection.
-     * @return {maptalks.GeometryCollection} this
-     * @fires maptalks.GeometryCollection#show
+     * @return {GeometryCollection} this
+     * @fires GeometryCollection#show
      */
-    show:function () {
+    show() {
         this.options['visible'] = true;
         this.forEach(function (geometry) {
             geometry.show();
         });
         return this;
-    },
+    }
 
     /**
      * Hide the geometry collection.
-     * @return {maptalks.GeometryCollection} this
-     * @fires maptalks.GeometryCollection#hide
+     * @return {GeometryCollection} this
+     * @fires GeometryCollection#hide
      */
-    hide:function () {
+    hide() {
         this.options['visible'] = false;
         this.forEach(function (geometry) {
             geometry.hide();
         });
         return this;
-    },
+    }
 
-    setSymbol:function (symbol) {
+    setSymbol(symbol) {
         symbol = this._prepareSymbol(symbol);
         this._symbol = symbol;
         this.forEach(function (geometry) {
@@ -164,23 +184,23 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
         });
         this.onSymbolChanged();
         return this;
-    },
+    }
 
-    updateSymbol: function (symbol) {
+    updateSymbol(symbol) {
         this.forEach(function (geometry) {
             geometry.updateSymbol(symbol);
         });
         this.onSymbolChanged();
         return this;
-    },
+    }
 
-    onConfig:function (config) {
+    onConfig(config) {
         this.forEach(function (geometry) {
             geometry.config(config);
         });
-    },
+    }
 
-    _setExternSymbol:function (symbol) {
+    _setExternSymbol(symbol) {
         symbol = this._prepareSymbol(symbol);
         this._externSymbol = symbol;
         this.forEach(function (geometry) {
@@ -188,50 +208,50 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
         });
         this.onSymbolChanged();
         return this;
-    },
+    }
 
     /**
      * bind this geometry collection to a layer
-     * @param  {maptalks.Layer} layer
+     * @param  {Layer} layer
      * @private
      */
-    _bindLayer:function () {
-        maptalks.Geometry.prototype._bindLayer.apply(this, arguments);
+    _bindLayer() {
+        Geometry.prototype._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
-    },
+    }
 
-    _bindGeometriesToLayer:function () {
+    _bindGeometriesToLayer() {
         var layer = this.getLayer();
         this.forEach(function (geometry) {
             geometry._bindLayer(layer);
         });
-    },
+    }
 
     /**
      * Check whether the type of geometries is valid
-     * @param  {maptalks.Geometry[]} geometries - geometries to check
+     * @param  {Geometry[]} geometries - geometries to check
      * @private
      */
-    _checkGeometries:function (geometries) {
+    _checkGeometries(geometries) {
         var invalidGeoError = 'The geometry added to collection is invalid.';
-        if (geometries && !maptalks.Util.isArray(geometries)) {
-            if (geometries instanceof maptalks.Geometry) {
+        if (geometries && !Array.isArray(geometries)) {
+            if (geometries instanceof Geometry) {
                 return [geometries];
             } else {
                 throw new Error(invalidGeoError);
             }
-        } else if (maptalks.Util.isArray(geometries)) {
+        } else if (Array.isArray(geometries)) {
             for (var i = 0, len = geometries.length; i < len; i++) {
-                if (!(geometries[i] instanceof maptalks.Geometry)) {
+                if (!(geometries[i] instanceof Geometry)) {
                     throw new Error(invalidGeoError + ' Index: ' + i);
                 }
             }
             return geometries;
         }
         return null;
-    },
+    }
 
-    _updateCache:function () {
+    _updateCache() {
         delete this._extent;
         if (this.isEmpty()) {
             return;
@@ -241,9 +261,9 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
                 geometry._updateCache();
             }
         });
-    },
+    }
 
-    _removePainter:function () {
+    _removePainter() {
         if (this._painter) {
             this._painter.remove();
         }
@@ -251,13 +271,15 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
         this.forEach(function (geometry) {
             geometry._removePainter();
         });
-    },
+    }
 
-    _computeCenter:function (projection) {
+    _computeCenter(projection) {
         if (!projection || this.isEmpty()) {
             return null;
         }
-        var sumX = 0, sumY = 0, counter = 0;
+        var sumX = 0,
+            sumY = 0,
+            counter = 0;
         var geometries = this.getGeometries();
         for (var i = 0, len = geometries.length; i < len; i++) {
             if (!geometries[i]) {
@@ -273,10 +295,10 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
         if (counter === 0) {
             return null;
         }
-        return new maptalks.Coordinate(sumX / counter, sumY / counter);
-    },
+        return new Coordinate(sumX / counter, sumY / counter);
+    }
 
-    _containsPoint: function (point, t) {
+    _containsPoint(point, t) {
         if (this.isEmpty()) {
             return false;
         }
@@ -289,9 +311,9 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
         }
 
         return false;
-    },
+    }
 
-    _computeExtent:function (projection) {
+    _computeExtent(projection) {
         if (this.isEmpty()) {
             return null;
         }
@@ -307,11 +329,9 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             }
         }
         return result;
-    },
+    }
 
-
-
-    _computeGeodesicLength:function (projection) {
+    _computeGeodesicLength(projection) {
         if (!projection || this.isEmpty()) {
             return 0;
         }
@@ -324,9 +344,9 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             result += geometries[i]._computeGeodesicLength(projection);
         }
         return result;
-    },
+    }
 
-    _computeGeodesicArea:function (projection) {
+    _computeGeodesicArea(projection) {
         if (!projection || this.isEmpty()) {
             return 0;
         }
@@ -339,10 +359,9 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             result += geometries[i]._computeGeodesicArea(projection);
         }
         return result;
-    },
+    }
 
-
-    _exportGeoJSONGeometry:function () {
+    _exportGeoJSONGeometry() {
         var geoJSON = [];
         if (!this.isEmpty()) {
             var geometries = this.getGeometries();
@@ -354,12 +373,12 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             }
         }
         return {
-            'type':         'GeometryCollection',
-            'geometries':   geoJSON
+            'type': 'GeometryCollection',
+            'geometries': geoJSON
         };
-    },
+    }
 
-    _clearProjection:function () {
+    _clearProjection() {
         if (this.isEmpty()) {
             return;
         }
@@ -371,37 +390,39 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             geometries[i]._clearProjection();
         }
 
-    },
+    }
 
     /**
-     * Get connect points if being connected by [ConnectorLine]{@link maptalks.ConnectorLine}
+     * Get connect points if being connected by [ConnectorLine]{@link ConnectorLine}
      * @private
-     * @return {maptalks.Coordinate[]}
+     * @return {Coordinate[]}
      */
-    _getConnectPoints: function () {
+    _getConnectPoints() {
         var extent = this.getExtent();
         var anchors = [
-            new maptalks.Coordinate(extent.xmin, extent.ymax),
-            new maptalks.Coordinate(extent.xmax, extent.ymin),
-            new maptalks.Coordinate(extent.xmin, extent.ymin),
-            new maptalks.Coordinate(extent.xmax, extent.ymax)
+            new Coordinate(extent.xmin, extent.ymax),
+            new Coordinate(extent.xmax, extent.ymin),
+            new Coordinate(extent.xmin, extent.ymin),
+            new Coordinate(extent.xmax, extent.ymax)
         ];
         return anchors;
-    },
+    }
 
-    _getExternalResources:function () {
+    _getExternalResources() {
         if (this.isEmpty()) {
             return null;
         }
         var i, l, ii, ll;
         var geometries = this.getGeometries(),
-            resources = [], symbol, res, cache = {}, key;
+            resources = [],
+            symbol, res, cache = {},
+            key;
         for (i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
             symbol = geometries[i]._getInternalSymbol();
-            res = maptalks.Util.getExternalResources(symbol);
+            res = getExternalResources(symbol);
             if (!res) {
                 continue;
             }
@@ -414,12 +435,10 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
             }
         }
         return resources;
-    },
+    }
 
-//----------覆盖Geometry中的编辑相关方法-----------------
-
-
-    startEdit:function (opts) {
+    //----------覆盖Geometry中的编辑相关方法-----------------
+    startEdit(opts) {
         if (this.isEmpty()) {
             return this;
         }
@@ -438,15 +457,13 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
         }
         this._editing = true;
         this.hide();
-        var me = this;
-        setTimeout(function () {
-            me.fire('editstart');
+        setTimeout(() => {
+            this.fire('editstart');
         }, 1);
         return this;
-    },
+    }
 
-
-    endEdit:function () {
+    endEdit() {
         if (this.isEmpty()) {
             return this;
         }
@@ -463,13 +480,14 @@ maptalks.GeometryCollection = maptalks.Geometry.extend(/** @lends maptalks.Geome
         this.config('draggable', this._draggbleBeforeEdit);
         this.fire('editend');
         return this;
-    },
+    }
 
-
-    isEditing:function () {
+    isEditing() {
         if (!this._editing) {
             return false;
         }
         return true;
     }
-});
+}
+
+GeometryCollection.registerJSONType('GeometryCollection');

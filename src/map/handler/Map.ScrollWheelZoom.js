@@ -1,36 +1,43 @@
-maptalks.Map.mergeOptions({
-    'scrollWheelZoom': true
-});
+import { requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
+import Handler from 'handler/Handler';
+import Map from '../Map';
 
-maptalks.Map.ScrollWheelZoom = maptalks.Handler.extend({
-    addHooks: function () {
-        maptalks.DomUtil.addDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll, this);
-    },
+class MapScrollWheelZoomHandler extends Handler {
+    addHooks() {
+        addDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll, this);
+    }
 
-    removeHooks: function () {
-        maptalks.DomUtil.removeDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll);
-    },
+    removeHooks() {
+        removeDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll);
+    }
 
-    _onWheelScroll: function (evt) {
+    _onWheelScroll(evt) {
         var map = this.target;
         var container = map._containerDOM;
-        maptalks.DomUtil.preventDefault(evt);
-        maptalks.DomUtil.stopPropagation(evt);
+        preventDefault(evt);
+        stopPropagation(evt);
         if (map._zooming) { return false; }
         var levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             levelValue *= -1;
         }
-        var mouseOffset = maptalks.DomUtil.getEventContainerPoint(evt, container);
+        var mouseOffset = getEventContainerPoint(evt, container);
         if (this._scrollZoomFrame) {
-            maptalks.Util.cancelAnimFrame(this._scrollZoomFrame);
+            cancelAnimFrame(this._scrollZoomFrame);
         }
-        this._scrollZoomFrame = maptalks.Util.requestAnimFrame(function () {
+        this._scrollZoomFrame = requestAnimFrame(function () {
             map._zoomAnimation(map.getZoom() + levelValue, mouseOffset);
         });
 
         return false;
     }
+}
+
+Map.mergeOptions({
+    'scrollWheelZoom': true
 });
 
-maptalks.Map.addInitHook('addHandler', 'scrollWheelZoom', maptalks.Map.ScrollWheelZoom);
+Map.addOnLoadHook('addHandler', 'scrollWheelZoom', MapScrollWheelZoomHandler);
+
+export default MapScrollWheelZoomHandler;

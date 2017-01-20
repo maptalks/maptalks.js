@@ -1,28 +1,33 @@
+import { extend } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import Common from './Common';
 /**
  * Identity measurer, a measurer for Cartesian coordinate system.
  *
  * @class
  * @category geo
  * @protected
- * @memberOf maptalks.measurer
+ * @memberOf measurer
  * @name Identity
  */
-maptalks.measurer.Identity = {
+export default extend({
     /**
-     * the code of the measurer, used by [MeasurerUtil]{@link maptalks.MeasurerUtil} to as its key get measurer instance.
+     * the code of the measurer
      * @static
      * @type {String}
      */
-    'measure' : 'IDENTITY',
+    'measure': 'IDENTITY',
     /**
      * Measure the length between 2 coordinates.
-     * @param  {maptalks.Coordinate} c1
-     * @param  {maptalks.Coordinate} c2
+     * @param  {Coordinate} c1
+     * @param  {Coordinate} c2
      * @return {Number}
      * @static
      */
-    measureLength:function (c1, c2) {
-        if (!c1 || !c2) { return 0; }
+    measureLenBetween: function (c1, c2) {
+        if (!c1 || !c2) {
+            return 0;
+        }
         try {
             return Math.sqrt(Math.pow(c1.x - c2.x, 2) + Math.pow(c1.y - c2.y, 2));
         } catch (err) {
@@ -31,12 +36,12 @@ maptalks.measurer.Identity = {
     },
     /**
      * Measure the area closed by the given coordinates.
-     * @param  {maptalks.Coordinate[]} coordinates
+     * @param  {Coordinate[]} coordinates
      * @return {number}
      * @static
      */
-    measureArea:function (coordinates) {
-        if (!maptalks.Util.isArrayHasData(coordinates)) {
+    measureArea: function (coordinates) {
+        if (!Array.isArray(coordinates)) {
             return 0;
         }
         var area = 0;
@@ -55,17 +60,25 @@ maptalks.measurer.Identity = {
 
     /**
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-     * @param  {maptalks.Coordinate} c     - source coordinate
-     * @param  {Number} xDist              - x-axis distance
-     * @param  {Number} yDist              - y-axis distance
-     * @return {maptalks.Coordinate}
+     * @param  {Coordinate} c     - source coordinate
+     * @param  {Number} xDist     - x-axis distance
+     * @param  {Number} yDist     - y-axis distance
+     * @return {Coordinate}
      * @static
      */
-    locate:function (c, xDist, yDist) {
-        if (!c) { return null; }
-        if (!xDist) { xDist = 0; }
-        if (!yDist) { yDist = 0; }
-        if (!xDist && !yDist) { return c; }
-        return new maptalks.Coordinate(c.x + xDist, c.y + yDist);
+    locate: function (c, xDist, yDist) {
+        if (!c) {
+            return null;
+        }
+        if (!xDist) {
+            xDist = 0;
+        }
+        if (!yDist) {
+            yDist = 0;
+        }
+        if (!xDist && !yDist) {
+            return c;
+        }
+        return new Coordinate(c.x + xDist, c.y + yDist);
     }
-};
+}, Common);

@@ -1,7 +1,7 @@
-describe('#Sprite', function() {
+describe('#Sprite', function () {
 
-    it('image sprite', function(done) {
-        var url = 'http://localhost:12345/resources/pattern.png';
+    it('image sprite', function (done) {
+        var url = 'http://localhost:9876/resources/pattern.png';
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
                 'markerFile' : url,
@@ -14,7 +14,7 @@ describe('#Sprite', function() {
         var symbol = marker.getSymbol();
         var image = new Image();
         image.onload = function () {
-            var resources = new maptalks.renderer.Canvas.Resources();
+            var resources = new maptalks.renderer.ResourceCache();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
@@ -25,12 +25,12 @@ describe('#Sprite', function() {
             expect(canvas.width).to.be.eql(symbol.markerWidth);
             expect(canvas.height).to.be.eql(symbol.markerHeight);
             done();
-        }
+        };
         image.src = url;
     });
 
-    it('image sprite without markerWidth and markerHeight', function(done) {
-        var url = 'http://localhost:12345/resources/pattern.png';
+    it('image sprite without markerWidth and markerHeight', function (done) {
+        var url = 'http://localhost:9876/resources/pattern.png';
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
                 'markerFile' : url,
@@ -38,10 +38,9 @@ describe('#Sprite', function() {
                 'markerDy' : 5
             }
         });
-        var symbol = marker.getSymbol();
         var image = new Image();
         image.onload = function () {
-            var resources = new maptalks.renderer.Canvas.Resources();
+            var resources = new maptalks.renderer.ResourceCache();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
@@ -52,12 +51,12 @@ describe('#Sprite', function() {
             expect(canvas.width).to.be.eql(image.width);
             expect(canvas.height).to.be.eql(image.height);
             done();
-        }
+        };
         image.src = url;
     });
 
-    it('composite symbol sprite', function(done) {
-        var url = 'http://localhost:12345/resources/pattern.png';
+    it('composite symbol sprite', function (done) {
+        var url = 'http://localhost:9876/resources/pattern.png';
         var marker = new maptalks.Marker([0, 0], {
             symbol : [
                 {
@@ -75,10 +74,9 @@ describe('#Sprite', function() {
 
             ]
         });
-        var symbol = marker.getSymbol();
         var image = new Image();
         image.onload = function () {
-            var resources = new maptalks.renderer.Canvas.Resources();
+            var resources = new maptalks.renderer.ResourceCache();
             resources.addResource([url], image);
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
@@ -89,11 +87,11 @@ describe('#Sprite', function() {
             expect(canvas.width).to.be.eql(80 / 2 + 50 + 20 / 2);
             expect(canvas.height).to.be.eql(71);
             done();
-        }
+        };
         image.src = url;
     });
 
-    it('vector marker sprite: ellipse', function() {
+    it('vector marker sprite: ellipse', function () {
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
                 'markerType' : 'ellipse',
@@ -114,7 +112,7 @@ describe('#Sprite', function() {
         expect(canvas.height).to.be.eql(symbol.markerHeight + 1); // +1 cos of lineWidth
     });
 
-    it('vector marker sprite: bar', function() {
+    it('vector marker sprite: bar', function () {
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
                 'markerType' : 'bar',
@@ -135,7 +133,7 @@ describe('#Sprite', function() {
         expect(canvas.height).to.be.eql(symbol.markerHeight + 1); // +1 cos of lineWidth
     });
 
-    it('vector path marker sprite', function(done) {
+    it('vector path marker sprite', function (done) {
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
                 'markerType' : 'path',
@@ -157,7 +155,7 @@ describe('#Sprite', function() {
 
         if (maptalks.Browser.phantomjs) {
             // unlike chrome, in phantomjs, the image with svg base64 can't be loaded immediately.
-            var url = maptalks.Geometry.getMarkerPathBase64(symbol);
+            var url = maptalks.Util.getMarkerPathBase64(symbol);
             var img = new Image();
             img.onload = function () {
                 var sprite = marker._getSprite();
@@ -168,9 +166,9 @@ describe('#Sprite', function() {
                 expect(canvas.width).to.be.eql(symbol.markerWidth);
                 expect(canvas.height).to.be.eql(symbol.markerHeight);
                 done();
-            }
+            };
             img.src = url;
-        } else{
+        } else {
             var sprite = marker._getSprite();
             var canvas = sprite.canvas;
             expect(sprite.offset.x).to.be.eql(0 + 10);
@@ -183,7 +181,7 @@ describe('#Sprite', function() {
         }
     });
 
-    it('text marker sprite', function() {
+    it('text marker sprite', function () {
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
                 'textName' : '■■■■■■■■■',
@@ -192,7 +190,6 @@ describe('#Sprite', function() {
                 'textDy' : 20
             }
         });
-        var symbol = marker.getSymbol();
         var sprite = marker._getSprite().canvas;
         expect(sprite).to.be.ok();
         expect(sprite.getContext('2d').getImageData(10, 10, 1, 1).data[3]).to.be.above(0);

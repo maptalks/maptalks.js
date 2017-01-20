@@ -1,3 +1,6 @@
+import Class from 'core/Class';
+import Eventable from 'core/Event';
+
 /**
  * @classdesc
  * <pre>
@@ -12,19 +15,18 @@
  * @class
  * @abstract
  * @category maptool
- * @extends maptalks.Class
- * @mixins maptalks.Eventable
+ * @extends Class
+ * @mixins Eventable
  */
-maptalks.MapTool = maptalks.Class.extend(/** @lends maptalks.MapTool.prototype */{
-    includes: [maptalks.Eventable],
+export default class MapTool extends Eventable(Class) {
 
     /**
      * Adds the map tool to a map.
-     * @param {maptalks.Map} map
-     * @return {maptalks.MapTool} this
-     * @fires maptalks.MapTool#add
+     * @param {Map} map
+     * @return {MapTool} this
+     * @fires MapTool#add
      */
-    addTo: function (map) {
+    addTo(map) {
         if (!map) {
             return this;
         }
@@ -42,31 +44,33 @@ maptalks.MapTool = maptalks.Class.extend(/** @lends maptalks.MapTool.prototype *
         /**
          * add event.
          *
-         * @event maptalks.MapTool#add
+         * @event MapTool#add
          * @type {Object}
          * @property {String} type - add
-         * @property {maptalks.MapTool} target - map tool
+         * @property {MapTool} target - map tool
          */
         this._fireEvent('add');
         return this;
-    },
+    }
 
     /**
      * Gets the map it added to.
-     * @return {maptalks.Map} map
+     * @return {Map} map
      */
-    getMap:function () {
+    getMap() {
         return this._map;
-    },
+    }
 
     /**
      * Enable the map tool.
-     * @return {maptalks.MapTool} this
-     * @fires maptalks.MapTool#enable
+     * @return {MapTool} this
+     * @fires MapTool#enable
      */
-    enable:function () {
+    enable() {
         var map = this._map;
-        if (!map || this._enabled) { return this; }
+        if (!map || this._enabled) {
+            return this;
+        }
         this._enabled = true;
         this._switchEvents('off');
 
@@ -77,21 +81,21 @@ maptalks.MapTool = maptalks.Class.extend(/** @lends maptalks.MapTool.prototype *
         /**
          * enable event.
          *
-         * @event maptalks.MapTool#enable
+         * @event MapTool#enable
          * @type {Object}
          * @property {String} type - enable
-         * @property {maptalks.MapTool} target - map tool
+         * @property {MapTool} target - map tool
          */
         this._fireEvent('enable');
         return this;
-    },
+    }
 
     /**
      * Disable the map tool
-     * @return {maptalks.MapTool} this
-     * @fires maptalks.MapTool#disable
+     * @return {MapTool} this
+     * @fires MapTool#disable
      */
-    disable:function () {
+    disable() {
         if (!this._enabled || !this._map) {
             return this;
         }
@@ -103,41 +107,41 @@ maptalks.MapTool = maptalks.Class.extend(/** @lends maptalks.MapTool.prototype *
         /**
          * disable event.
          *
-         * @event maptalks.MapTool#disable
+         * @event MapTool#disable
          * @type {Object}
          * @property {String} type - disable
-         * @property {maptalks.MapTool} target - map tool
+         * @property {MapTool} target - map tool
          */
         this._fireEvent('disable');
         return this;
-    },
+    }
 
     /**
      * Returns whether the tool is enabled
      * @return {Boolean} true | false
      */
-    isEnabled: function () {
+    isEnabled() {
         if (!this._enabled) {
             return false;
         }
         return true;
-    },
+    }
 
-    _registerEvents: function () {
+    _registerEvents() {
         this._switchEvents('on');
-    },
+    }
 
-    _switchEvents: function (to) {
+    _switchEvents(to) {
         var events = this.getEvents();
         if (events) {
             this._map[to](events, this);
         }
-    },
+    }
 
-    _fireEvent:function (eventName, param) {
+    _fireEvent(eventName, param) {
         if (!param) {
             param = {};
         }
         this.fire(eventName, param);
     }
-});
+}

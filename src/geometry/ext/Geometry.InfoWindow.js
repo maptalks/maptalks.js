@@ -1,18 +1,22 @@
-maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
+import { extend, setOptions } from 'core/util';
+import Geometry from 'geometry/Geometry';
+import { InfoWindow } from 'ui';
+
+Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * Set an InfoWindow to the geometry
-     * @param {Object} options - construct [options]{@link maptalks.ui.InfoWindow#options} for the InfoWindow
-     * @return {maptalks.Geometry} this
+     * @param {Object} options - construct [options]{@link ui.InfoWindow#options} for the InfoWindow
+     * @return {Geometry} this
      * @example
      * geometry.setInfoWindow({
      *     title    : 'This is a title',
      *     content  : '<div style="color:#f00">This is content of the InfoWindow</div>'
      * });
      */
-    setInfoWindow:function (options) {
-        this._infoWinOptions = maptalks.Util.extend({}, options);
+    setInfoWindow(options) {
+        this._infoWinOptions = extend({}, options);
         if (this._infoWindow) {
-            maptalks.Util.setOptions(this._infoWindow, options);
+            setOptions(this._infoWindow, options);
         } else if (this.getMap()) {
             this._bindInfoWindow(this._infoWinOptions);
         }
@@ -22,9 +26,9 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Get the InfoWindow instance.
-     * @return {maptalks.ui.InfoWindow}
+     * @return {ui.InfoWindow}
      */
-    getInfoWindow:function () {
+    getInfoWindow() {
         if (!this._infoWindow) {
             return null;
         }
@@ -33,10 +37,10 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Open the InfoWindow, default on the center of the geometry.
-     * @param  {maptalks.Coordinate} [coordinate=null] - coordinate to open the InfoWindow
-     * @return {maptalks.Geometry} this
+     * @param  {Coordinate} [coordinate=null] - coordinate to open the InfoWindow
+     * @return {Geometry} this
      */
-    openInfoWindow:function (coordinate) {
+    openInfoWindow(coordinate) {
         if (!this.getMap()) {
             return this;
         }
@@ -56,9 +60,9 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Close the InfoWindow
-     * @return {maptalks.Geometry} this
+     * @return {Geometry} this
      */
-    closeInfoWindow:function () {
+    closeInfoWindow() {
         if (this._infoWindow) {
             this._infoWindow.hide();
         }
@@ -67,23 +71,23 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
 
     /**
      * Remove the InfoWindow
-     * @return {maptalks.Geometry} this
+     * @return {Geometry} this
      */
-    removeInfoWindow:function () {
+    removeInfoWindow() {
         this._unbindInfoWindow();
         delete this._infoWinOptions;
         delete this._infoWindow;
         return this;
     },
 
-    _bindInfoWindow: function (options) {
-        this._infoWindow = new maptalks.ui.InfoWindow(options);
+    _bindInfoWindow(options) {
+        this._infoWindow = new InfoWindow(options);
         this._infoWindow.addTo(this);
 
         return this;
     },
 
-    _unbindInfoWindow:function () {
+    _unbindInfoWindow() {
         if (this._infoWindow) {
             this.closeInfoWindow();
             this._infoWindow.remove();
@@ -91,5 +95,4 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         }
         return this;
     }
-
 });

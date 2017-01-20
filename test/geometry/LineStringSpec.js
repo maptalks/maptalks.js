@@ -1,40 +1,37 @@
-describe('#LineString', function() {
+describe('#LineString', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-    var canvasContainer;
 
-    beforeEach(function() {
-        var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
-        canvasContainer = map._panels.canvasContainer;
     });
 
-    afterEach(function() {
+    afterEach(function () {
         map.removeLayer(layer);
-        removeContainer(container)
+        REMOVE_CONTAINER(container);
     });
 
-    it('getCenter', function() {
+    it('getCenter', function () {
         var polyline = new maptalks.LineString([
-          {x: 0, y: 0},
-          {x: 120, y: 0}
+          { x: 0, y: 0 },
+          { x: 120, y: 0 }
         ]);
         var got = polyline.getCenter();
         expect(got.x).to.eql(60);
         expect(got.y).to.eql(0);
     });
 
-    it('getExtent', function() {
+    it('getExtent', function () {
         var polyline = new maptalks.LineString([
-          {x: 0, y: 0},
-          {x: 120, y: 10}
+          { x: 0, y: 0 },
+          { x: 120, y: 10 }
         ]);
 
         var extent = polyline.getExtent();
@@ -42,11 +39,11 @@ describe('#LineString', function() {
         expect(extent.getHeight()).to.be.above(0);
     });
 
-    it('getSize', function() {
+    it('getSize', function () {
         var polyline = new maptalks.LineString([
-          {x: 0, y: 0},
-          {x: 10, y: 10},
-          {x: 20, y: 30}
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+          { x: 20, y: 30 }
         ]);
         layer.addGeometry(polyline);
         var size = polyline.getSize();
@@ -56,27 +53,27 @@ describe('#LineString', function() {
     });
 
 
-    it('getCoordinates', function() {
+    it('getCoordinates', function () {
         var path = [
-          {x: 0, y: 0},
-          {x: 10, y: 10},
-          {x: 20, y: 30}
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+          { x: 20, y: 30 }
         ];
         var polyline = new maptalks.LineString(path);
         layer.addGeometry(polyline);
         var coords = polyline.getCoordinates();
 
-        for(var i = 0; i < coords.length; i++) {
+        for (var i = 0; i < coords.length; i++) {
             expect(coords[i]).to.closeTo(path[i]);
         }
         // expect(polyline.getCoordinates()).to.eql(path);
     });
 
-    it('setCoordinates', function() {
+    it('setCoordinates', function () {
         var path = [
-          {x: 0, y: 0},
-          {x: 10, y: 10},
-          {x: 20, y: 30}
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+          { x: 20, y: 30 }
         ];
         var polyline = new maptalks.LineString([]);
         layer.addGeometry(polyline);
@@ -86,30 +83,30 @@ describe('#LineString', function() {
     });
 
 
-    describe('constructor', function() {
+    describe('constructor', function () {
 
-        it('normal constructor', function() {
-            var points = [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ];
-            var polyline = new maptalks.Polyline(points);
+        it('normal constructor', function () {
+            var points = [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]];
+            var polyline = new maptalks.LineString(points);
             var coordinates = polyline.getCoordinates();
             expect(coordinates).to.have.length(points.length);
-            var geojsonCoordinates = maptalks.GeoJSON.toNumberArrays(coordinates);
+            var geojsonCoordinates = maptalks.Coordinate.toNumberArrays(coordinates);
             expect(geojsonCoordinates).to.eql(points);
         });
 
-        it('can be empty.',function() {
-            var polyline = new maptalks.Polyline();
+        it('can be empty.', function () {
+            var polyline = new maptalks.LineString();
             expect(polyline.getCoordinates()).to.have.length(0);
         });
 
     });
 
-    describe('getCenter', function() {
-        it('should返回笛卡尔坐标系上的点集合的中心点', function() {
-            var polyline = new maptalks.Polyline([
-                {x: 0, y: 0},
-                {x: 0, y: 10},
-                {x: 0, y: 80}
+    describe('getCenter', function () {
+        it('should返回笛卡尔坐标系上的点集合的中心点', function () {
+            var polyline = new maptalks.LineString([
+                { x: 0, y: 0 },
+                { x: 0, y: 10 },
+                { x: 0, y: 80 }
             ]);
             layer.addGeometry(polyline);
 
@@ -117,37 +114,37 @@ describe('#LineString', function() {
         });
     });
 
-    it('getExtent', function() {
-        var polyline = new maptalks.Polyline([
-            {x: 0, y: 0},
-            {x: 0, y: 10},
-            {x: 0, y: 80}
+    it('getExtent', function () {
+        var polyline = new maptalks.LineString([
+            { x: 0, y: 0 },
+            { x: 0, y: 10 },
+            { x: 0, y: 80 }
         ]);
         // layer.addGeometry(polyline);
 
         expect(polyline.getExtent()).to.eql(new maptalks.Extent(0, 0, 0, 80));
     });
 
-    describe('geometry fires events', function() {
-        it('events', function() {
+    describe('geometry fires events', function () {
+        it('events', function () {
             var points = [
-                {x: 0, y: 0},
-                {x: 0, y: 10},
-                {x: 0, y: 80}
+                { x: 0, y: 0 },
+                { x: 0, y: 10 },
+                { x: 0, y: 80 }
             ];
-            var vector = new maptalks.Polyline(points);
-            new GeoEventsTester().testCanvasEvents(vector, map, vector.getCenter());
+            var vector = new maptalks.LineString(points);
+            new COMMON_GEOEVENTS_TESTOR().testCanvasEvents(vector, map, vector.getCenter());
         });
     });
 
-    it('can have various symbols',function(done) {
+    it('can have various symbols', function (done) {
         var points = [
-                {x: 0, y: 0},
-                {x: 0, y: 10},
-                {x: 0, y: 80}
-            ];
-            var vector = new maptalks.Polyline(points);
-        GeoSymbolTester.testGeoSymbols(vector, map, done);
+                { x: 0, y: 0 },
+                { x: 0, y: 10 },
+                { x: 0, y: 80 }
+        ];
+        var vector = new maptalks.LineString(points);
+        COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
     });
 
     it('containsPoint', function () {
@@ -177,9 +174,9 @@ describe('#LineString', function() {
         });
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
-        expect(line.containsPoint(cp.add(-lineWidth * 4, 0))).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth * 4 - 4, 0))).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth * 4 - 5, 0))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(-lineWidth / 2, 0))).to.be.ok();
+        expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 7))).to.be.ok();
+        expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 8))).not.to.be.ok();
     });
 
     it('containsPoint with arrow of point', function () {
@@ -193,12 +190,10 @@ describe('#LineString', function() {
         });
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
-        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + lineWidth / 2 + 1))).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth * 3 / 2 + lineWidth / 2 + 2))).not.to.be.ok();
-        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + lineWidth / 2 + 1)))).to.be.ok();
-        expect(line.containsPoint(cp.add(0, -(lineWidth * 3 / 2 + lineWidth / 2 + 2)))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(-4 * lineWidth, lineWidth + 7))).to.be.ok();
+        expect(line.containsPoint(cp.add(-4 * lineWidth, -lineWidth - 7))).to.be.ok();
+        expect(line.containsPoint(cp.add(-4 * lineWidth, -lineWidth - 8))).not.to.be.ok();
     });
-
     it('bug: create with dynamic textSize', function () {
         // bug desc:
         // when creating a linestring with dynamic textsize, geometry._getPainter() will create a textMarkerSymbolizer.
@@ -207,14 +202,14 @@ describe('#LineString', function() {
         // fix:
         // forbidden to getPainter when geometry is not added to a map.
         var points = [
-                {x: 0, y: 0},
-                {x: 0, y: 10},
-                {x: 0, y: 80}
-            ];
-        var symbol = {"lineWidth":1,"lineColor":"#000","textName":"{count}","textSize":{"type":"interval","stops":[[0,0],[16,5],[17,10],[18,20],[19,40]]}};
+                { x: 0, y: 0 },
+                { x: 0, y: 10 },
+                { x: 0, y: 80 }
+        ];
+        var symbol = { 'lineWidth':1, 'lineColor':'#000', 'textName':'{count}', 'textSize':{ 'type':'interval', 'stops':[[0, 0], [16, 5], [17, 10], [18, 20], [19, 40]] }};
         new maptalks.LineString(points, {
             'symbol' : symbol,
-            'properties' : {'count' : 1}
+            'properties' : { 'count' : 1 }
         });
     });
 
@@ -222,11 +217,11 @@ describe('#LineString', function() {
         it('animateShow', function (done) {
             layer = new maptalks.VectorLayer('id2');
             var polyline = new maptalks.LineString([
-                  map.getCenter(),
-                  map.getCenter().add(0.01, 0.01)
-                ],{
-                    'visible' : false
-                });
+                map.getCenter(),
+                map.getCenter().add(0.01, 0.01)
+            ], {
+                'visible' : false
+            });
             layer.once('layerload', function () {
                 expect(layer._getRenderer().isBlank()).to.be.ok();
                 polyline.animateShow({

@@ -1,3 +1,6 @@
+import Coordinate from '../Coordinate';
+import Point from '../Point';
+
 /**
  * Transformation between projected coordinates and base 2d point system.
  * @class
@@ -18,35 +21,34 @@
  * <br>
  * Parameter scale in transform/untransform method is used to scale the result 2d points on map's different zoom levels.
  */
-maptalks.Transformation = function (matrix) {
-    this.matrix = matrix;
-};
-
-maptalks.Util.extend(maptalks.Transformation.prototype,  /** @lends maptalks.Transformation.prototype */{
+export default class Transformation {
+    constructor(matrix) {
+        this.matrix = matrix;
+    }
 
     /**
      * Transform a projected coordinate to a 2d point.
-     * @param  {Number[]|maptalks.Coordinate} coordinates - projected coordinate to transform
+     * @param  {Number[]|Coordinate} coordinates - projected coordinate to transform
      * @param  {Number} scale                              - transform scale
-     * @return {maptalks.Point} 2d point.
+     * @return {Point} 2d point.
      */
-    transform : function (coordinates, scale) {
-        return new maptalks.Point(
+    transform(coordinates, scale) {
+        return new Point(
             this.matrix[0] * (coordinates.x - this.matrix[2]) / scale,
             this.matrix[1] * (coordinates.y - this.matrix[3]) / scale
-            );
-    },
+        );
+    }
 
     /**
      * Transform a 2d point to a projected coordinate.
-     * @param  {maptalks.Point} point   - 2d point
+     * @param  {Point} point   - 2d point
      * @param  {Number} scale           - transform scale
-     * @return {maptalks.Coordinate}  projected coordinate.
+     * @return {Coordinate}  projected coordinate.
      */
-    untransform : function (point, scale) {
-        return new maptalks.Coordinate(
+    untransform(point, scale) {
+        return new Coordinate(
             point.x * scale / this.matrix[0] + this.matrix[2],
             point.y * scale / this.matrix[1] + this.matrix[3]
-            );
+        );
     }
-});
+}

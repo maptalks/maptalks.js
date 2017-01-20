@@ -1,5 +1,11 @@
-maptalks.Map.include(/** @lends maptalks.Map.prototype */{
-    _zoom:function (nextZoom, origin, startScale) {
+import { isNil, isInteger } from 'core/util';
+import Browser from 'core/Browser';
+import { Animation } from 'core/Animation';
+import Point from 'geo/Point';
+import Map from './Map';
+
+Map.include(/** @lends Map.prototype */{
+    _zoom(nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
         nextZoom = this._checkZoom(nextZoom);
         this.onZoomStart(nextZoom);
@@ -7,11 +13,11 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         this.onZoomEnd(nextZoom, origin, startScale);
     },
 
-    _isSeamlessZoom: function () {
-        return !maptalks.Util.isInteger(this._zoomLevel);
+    _isSeamlessZoom() {
+        return !isInteger(this._zoomLevel);
     },
 
-    _zoomAnimation:function (nextZoom, origin, startScale) {
+    _zoomAnimation(nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this._zooming) { return; }
 
         nextZoom = this._checkZoom(nextZoom);
@@ -21,20 +27,19 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
 
         this.onZoomStart(nextZoom);
         if (!origin) {
-            origin = new maptalks.Point(this.width / 2, this.height / 2);
+            origin = new Point(this.width / 2, this.height / 2);
         }
         this._startZoomAnimation(nextZoom, origin, startScale);
     },
 
-    _startZoomAnimation:function (nextZoom, origin, startScale) {
-        if (maptalks.Util.isNil(startScale)) {
+    _startZoomAnimation(nextZoom, origin, startScale) {
+        if (isNil(startScale)) {
             startScale = 1;
         }
-        var me = this;
         var endScale = this._getResolution(this._startZoomVal) / this._getResolution(nextZoom);
         var duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
         this._frameZoom = this._startZoomVal;
-        maptalks.Animation.animate(
+        Animation.animate(
             {
                 'zoom'  : [this._startZoomVal, nextZoom]
             },
@@ -42,38 +47,38 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
                 'easing' : 'out',
                 'speed'  : duration
             },
-            maptalks.Util.bind(function (frame) {
+            frame => {
                 if (frame.state.playState === 'finished') {
-                    me.onZoomEnd(frame.styles['zoom'], origin);
+                    this.onZoomEnd(frame.styles['zoom'], origin);
                 } else {
-                    me.onZooming(frame.styles['zoom'], origin, startScale);
+                    this.onZooming(frame.styles['zoom'], origin, startScale);
                 }
-            }, this)
+            }
         ).play();
     },
 
-    onZoomStart: function (nextZoom) {
+    onZoomStart(nextZoom) {
         this._zooming = true;
         this._enablePanAnimation = false;
         this._startZoomVal = this.getZoom();
         /**
           * zoomstart event
-          * @event maptalks.Map#zoomstart
+          * @event Map#zoomstart
           * @type {Object}
           * @property {String} type                    - zoomstart
-          * @property {maptalks.Map} target            - the map fires event
+          * @property {Map} target                     - the map fires event
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zoomstart', {'from' : this._startZoomVal, 'to': nextZoom});
+        this._fireEvent('zoomstart', { 'from' : this._startZoomVal, 'to': nextZoom });
     },
 
-    onZooming: function (nextZoom, origin, startScale) {
+    onZooming(nextZoom, origin, startScale) {
         var frameZoom = this._frameZoom;
         if (frameZoom === nextZoom) {
             return;
         }
-        if (maptalks.Util.isNil(startScale)) {
+        if (isNil(startScale)) {
             startScale = 1;
         }
         var zoomOffset = this._zoomTo(nextZoom, origin, startScale);
@@ -84,20 +89,20 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         var matrix = {
             'view' : [scale, 0, 0, scale, (origin.x - pos.x) *  (1 - scale), (origin.y - pos.y) *  (1 - scale)]
         };
-        if (maptalks.Browser.retina) {
+        if (Browser.retina) {
             origin = origin.multi(2);
         }
         matrix['container'] = [scale, 0, 0, scale, origin.x * (1 - scale), origin.y *  (1 - scale)];
         /**
           * zooming event
-          * @event maptalks.Map#zooming
+          * @event Map#zooming
           * @type {Object}
           * @property {String} type                    - zooming
-          * @property {maptalks.Map} target            - the map fires event
+          * @property {Map} target                     - the map fires event
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zooming', {'from' : this._startZoomVal, 'to': nextZoom, 'origin' : zoomOffset, 'matrix' : matrix});
+        this._fireEvent('zooming', { 'from' : this._startZoomVal, 'to': nextZoom, 'origin' : zoomOffset, 'matrix' : matrix });
         this._frameZoom = nextZoom;
         var renderer = this._getRenderer();
         if (renderer) {
@@ -105,7 +110,7 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         }
     },
 
-    onZoomEnd:function (nextZoom, origin) {
+    onZoomEnd(nextZoom, origin) {
         var startZoomVal = this._startZoomVal;
         this._zoomTo(nextZoom, origin);
         this._zooming = false;
@@ -113,18 +118,17 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
 
         /**
           * zoomend event
-          * @event maptalks.Map#zoomend
+          * @event Map#zoomend
           * @type {Object}
           * @property {String} type                    - zoomend
-          * @property {maptalks.Map} target            - the map fires event
+          * @property {Map} target                     - the map fires event
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zoomend', {'from' : startZoomVal, 'to': nextZoom});
-
+        this._fireEvent('zoomend', { 'from' : startZoomVal, 'to': nextZoom });
     },
 
-    _zoomTo: function (nextZoom, origin, startScale) {
+    _zoomTo(nextZoom, origin, startScale) {
         var zScale = this._getResolution(this._frameZoom) / this._getResolution(nextZoom);
         var zoomOffset = this._getZoomCenterOffset(nextZoom, origin, startScale, zScale);
         this._zoomLevel = nextZoom;
@@ -134,7 +138,7 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         return zoomOffset;
     },
 
-    _checkZoom:function (nextZoom) {
+    _checkZoom(nextZoom) {
         var maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
         if (nextZoom < minZoom) {
@@ -146,27 +150,27 @@ maptalks.Map.include(/** @lends maptalks.Map.prototype */{
         return nextZoom;
     },
 
-    _getZoomCenterOffset:function (nextZoom, origin, startScale, zScale) {
+    _getZoomCenterOffset(nextZoom, origin, startScale, zScale) {
         if (!origin) {
             return null;
         }
-        if (maptalks.Util.isNil(startScale)) {
+        if (isNil(startScale)) {
             startScale = 1;
         }
-        var zoomOffset = new maptalks.Point(
+        var zoomOffset = new Point(
             (origin.x - this.width / 2) * (zScale - startScale),
             (origin.y - this.height / 2) * (zScale - startScale)
         );
 
         var newCenter = this.containerPointToCoordinate(zoomOffset.add(this.width / 2, this.height / 2));
         if (!this._verifyExtent(newCenter)) {
-            return new maptalks.Point(0, 0);
+            return new Point(0, 0);
         }
 
         return zoomOffset;
     },
 
-    _getZoomMillisecs:function () {
+    _getZoomMillisecs() {
         return 600;
     }
 });

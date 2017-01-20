@@ -1,14 +1,13 @@
-describe('Geometry.Events', function() {
+describe('Geometry.Events', function () {
 
     var container;
     var map;
-    var tile;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var eventContainer;
     var layer;
 
-    beforeEach(function() {
-        var setups = commonSetupMap(center);
+    beforeEach(function () {
+        var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
         eventContainer = map._panels.canvasContainer;
@@ -16,39 +15,9 @@ describe('Geometry.Events', function() {
         map.addLayer(layer);
     });
 
-    afterEach(function() {
-        removeContainer(container)
+    afterEach(function () {
+        REMOVE_CONTAINER(container);
     });
-
-    function dragGeometry(geometry) {
-        var layer = new maptalks.VectorLayer('id');
-        map.addLayer(layer);
-
-        geometry.addTo(layer);
-        var spy = sinon.spy();
-        geometry.on('mousedown', spy);
-
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
-        var point = map.coordinateToContainerPoint(center).add(domPosition);
-        var requestAnimFn = maptalks.Util.requestAnimFrame;
-        //replace original requestAnimFrame to immediate execution.
-        maptalks.Util.requestAnimFrame=function(fn) {
-            fn();
-        };
-        happen.mousedown(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
-        expect(spy.called).to.be.ok();
-        for (var i = 0; i < 10; i++) {
-            happen.mousemove(eventContainer,{
-                'clientX':point.x+i,
-                'clientY':point.y+i
-                });
-        };
-        happen.mouseup(eventContainer);
-        maptalks.Util.requestAnimFrame = requestAnimFn;
-    }
 
     it('event propagation to map', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);
@@ -59,11 +28,11 @@ describe('Geometry.Events', function() {
         var spy = sinon.spy();
         circle.on('click', spy);
         var spy2 = sinon.spy();
-        map.on('click', spy2)
-        happen.click(eventContainer,{
+        map.on('click', spy2);
+        happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
-            });
+        });
         expect(spy.called).to.be.ok();
         expect(spy2.called).to.be.ok();
     });
@@ -80,115 +49,112 @@ describe('Geometry.Events', function() {
             return false;
         });
         var spy = sinon.spy();
-        map.on('click', spy)
-        happen.click(eventContainer,{
+        map.on('click', spy);
+        happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
-            });
+        });
         expect(circleClicked).to.be.ok();
         expect(spy.called).not.to.be.ok();
     });
 
-    describe('events',function() {
-        it('mousemove and mouseout',function(done) {
-            var circle = new maptalks.Circle(map.getCenter(), 10);
-            circle.addTo(layer);
-            var circle2 = new maptalks.Circle(map.locate(map.getCenter(), 100, 100), 10).addTo(layer);
-            var domPosition = maptalks.DomUtil.getPagePosition(container);
-            var point = map.coordinateToContainerPoint(center).add(domPosition);
-            function onMouseMove(param) {
-                expect(param.type).to.be.eql('mousemove');
-                circle.off('mousemove', onMouseMove);
-                happen.mousemove(eventContainer,{
-                        'clientX':point.x+100,
-                        'clientY':point.y+100
-                        });
-            }
-            circle.on('mousemove', onMouseMove);
-            circle.on('mouseout',function(param) {
-                expect(param.type).to.be.eql('mouseout');
-                done();
+    it('mousemove and mouseout', function (done) {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        function onMouseMove(param) {
+            expect(param.type).to.be.eql('mousemove');
+            circle.off('mousemove', onMouseMove);
+            happen.mousemove(eventContainer, {
+                'clientX':point.x + 100,
+                'clientY':point.y + 100
             });
-
-            happen.mousemove(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+        }
+        circle.on('mousemove', onMouseMove);
+        circle.on('mouseout', function (param) {
+            expect(param.type).to.be.eql('mouseout');
+            done();
         });
 
-        it('mouseover',function(done) {
-            var circle = new maptalks.Circle(map.getCenter(), 10);
-            circle.addTo(layer);
-            var domPosition = maptalks.DomUtil.getPagePosition(container);
-            var point = map.coordinateToContainerPoint(center).add(domPosition);
-            function onMouseOver(param) {
-                expect(param.type).to.be.eql('mouseover');
-                expect(param.target === circle).to.be.ok();
-                done();
-            }
-            circle.on('mouseover', onMouseOver);
-            happen.mousemove(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
+        happen.mousemove(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
         });
+    });
 
-        it('click',function() {
-            var circle = new maptalks.Circle(map.getCenter(), 10);
-            circle.addTo(layer);
-            var domPosition = maptalks.DomUtil.getPagePosition(container);
-            var point = map.coordinateToContainerPoint(center).add(domPosition);
-            var spy = sinon.spy();
-            circle.on('click', spy);
-
-            happen.click(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
-            expect(spy.called).to.be.ok();
-            spy.reset();
-            happen.click(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
-            expect(spy.called).to.be.ok();
+    it('mouseover', function (done) {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        function onMouseOver(param) {
+            expect(param.type).to.be.eql('mouseover');
+            expect(param.target === circle).to.be.ok();
+            done();
+        }
+        circle.on('mouseover', onMouseOver);
+        happen.mousemove(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
         });
+    });
 
-        it('listen click once',function() {
-            var circle = new maptalks.Circle(map.getCenter(), 10);
-            circle.addTo(layer);
-            var domPosition = maptalks.DomUtil.getPagePosition(container);
-            var point = map.coordinateToContainerPoint(center).add(domPosition);
-            var spy = sinon.spy();
-            circle.once('click', spy);
+    it('click', function () {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        circle.on('click', spy);
 
-            happen.click(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
-            expect(spy.called).to.be.ok();
-            spy.reset();
-            happen.click(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
-            expect(spy.called).not.to.be.ok();
+        happen.click(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
         });
-
-        it('disable events listening',function() {
-            var circle = new maptalks.Circle(map.getCenter(), 10);
-            circle.addTo(layer);
-            map.config('geometryEvents', false);
-            var domPosition = maptalks.DomUtil.getPagePosition(container);
-            var point = map.coordinateToContainerPoint(center).add(domPosition);
-            var spy = sinon.spy();
-            circle.on('click', spy);
-
-            happen.click(eventContainer,{
-                'clientX':point.x,
-                'clientY':point.y
-                });
-            expect(spy.called).not.to.be.ok();
+        expect(spy.called).to.be.ok();
+        spy.reset();
+        happen.click(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
         });
+        expect(spy.called).to.be.ok();
+    });
+
+    it('listen click once', function () {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        circle.once('click', spy);
+
+        happen.click(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
+        expect(spy.called).to.be.ok();
+        spy.reset();
+        happen.click(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
+        expect(spy.called).not.to.be.ok();
+    });
+
+    it('disable events listening', function () {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        map.config('geometryEvents', false);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        circle.on('click', spy);
+
+        happen.click(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
+        expect(spy.called).not.to.be.ok();
     });
 });

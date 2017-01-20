@@ -1,3 +1,8 @@
+import { isNil, isNumber, round } from 'core/util';
+import Coordinate from './Coordinate';
+import Point from './Point';
+import Size from './Size';
+
 /**
  * Represent a bounding box on the map, a rectangular geographical area with minimum and maximum coordinates. <br>
  * There are serveral ways to create a extent:
@@ -9,25 +14,25 @@
  * @param {Number} y2   - y of coordinate 2
  * @example
  * //with 4 numbers
- * var extent = new maptalks.Extent(100, 10, 120, 20);
+ * var extent = new Extent(100, 10, 120, 20);
  * @example
  * //with 2 coordinates
- * var extent = new maptalks.Extent(new maptalks.Coordinate(100, 10), new maptalks.Coordinate(120, 20));
+ * var extent = new Extent(new Coordinate(100, 10), new Coordinate(120, 20));
  * @example
  * //with a json object containing xmin, ymin, xmax and ymax
- * var extent = new maptalks.Extent({xmin : 100, ymin: 10, xmax: 120, ymax:20});
+ * var extent = new Extent({xmin : 100, ymin: 10, xmax: 120, ymax:20});
  * @example
- * var extent1 = new maptalks.Extent(100, 10, 120, 20);
+ * var extent1 = new Extent(100, 10, 120, 20);
  * //with another extent
- * var extent2 = new maptalks.Extent(extent1);
+ * var extent2 = new Extent(extent1);
  */
-maptalks.Extent = function (p1, p2, p3, p4) {
-    this._clazz = maptalks.Coordinate;
-    this._initialize(p1, p2, p3, p4);
-};
+export default class Extent {
+    constructor(p1, p2, p3, p4) {
+        this._clazz = Coordinate;
+        this._initialize(p1, p2, p3, p4);
+    }
 
-maptalks.Util.extend(maptalks.Extent.prototype, /** @lends maptalks.Extent.prototype */{
-    _initialize:function (p1, p2, p3, p4) {
+    _initialize(p1, p2, p3, p4) {
         /**
          * @property {Number} xmin - minimum x
          */
@@ -44,23 +49,23 @@ maptalks.Util.extend(maptalks.Extent.prototype, /** @lends maptalks.Extent.proto
          * @property {Number} ymax - maximum y
          */
         this.ymax = null;
-        if (maptalks.Util.isNil(p1)) {
+        if (isNil(p1)) {
             return;
         }
         //Constructor 1: all numbers
-        if (maptalks.Util.isNumber(p1) &&
-            maptalks.Util.isNumber(p2) &&
-            maptalks.Util.isNumber(p3) &&
-            maptalks.Util.isNumber(p4)) {
+        if (isNumber(p1) &&
+            isNumber(p2) &&
+            isNumber(p3) &&
+            isNumber(p4)) {
             this['xmin'] = Math.min(p1, p3);
             this['ymin'] = Math.min(p2, p4);
             this['xmax'] = Math.max(p1, p3);
             this['ymax'] = Math.max(p2, p4);
             return;
-        } else if (maptalks.Util.isNumber(p1.x) &&
-            maptalks.Util.isNumber(p2.x) &&
-            maptalks.Util.isNumber(p1.y) &&
-            maptalks.Util.isNumber(p2.y)) {
+        } else if (isNumber(p1.x) &&
+            isNumber(p2.x) &&
+            isNumber(p1.y) &&
+            isNumber(p2.y)) {
             //Constructor 2: two coordinates
             if (p1.x > p2.x) {
                 this['xmin'] = p2.x;
@@ -77,209 +82,206 @@ maptalks.Util.extend(maptalks.Extent.prototype, /** @lends maptalks.Extent.proto
                 this['ymax'] = p2.y;
             }
             //constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
-        } else if (maptalks.Util.isNumber(p1['xmin']) &&
-                maptalks.Util.isNumber(p1['xmax']) &&
-                maptalks.Util.isNumber(p1['ymin']) &&
-                maptalks.Util.isNumber(p1['ymax'])) {
+        } else if (isNumber(p1['xmin']) &&
+            isNumber(p1['xmax']) &&
+            isNumber(p1['ymin']) &&
+            isNumber(p1['ymax'])) {
             this['xmin'] = p1['xmin'];
             this['ymin'] = p1['ymin'];
             this['xmax'] = p1['xmax'];
             this['ymax'] = p1['ymax'];
         }
-    },
+    }
 
-    _add: function (p) {
+    _add(p) {
         this['xmin'] += p.x;
         this['ymin'] += p.y;
         this['xmax'] += p.x;
         this['ymax'] += p.y;
         return this;
-    },
+    }
 
     /**
      * Add the extent with a coordinate or a point.
-     * @param {maptalks.Coordinate|maptalks.Point} p - point or coordinate to add
-     * @returns {maptalks.Extent} a new extent
+     * @param {Coordinate|Point} p - point or coordinate to add
+     * @returns {Extent} a new extent
      */
-    add: function (p) {
+    add(p) {
         return new this.constructor(this['xmin'] + p.x, this['ymin'] + p.y, this['xmax'] + p.x, this['ymax'] + p.y);
-    },
+    }
 
-    _substract: function (p) {
+    _substract(p) {
         this['xmin'] -= p.x;
         this['ymin'] -= p.y;
         this['xmax'] -= p.x;
         this['ymax'] -= p.y;
         return this;
-    },
+    }
 
     /**
      * Substract the extent with a coordinate or a point.
-     * @param {maptalks.Coordinate|maptalks.Point} p - point or coordinate to substract
-     * @returns {maptalks.Extent} a new extent
+     * @param {Coordinate|Point} p - point or coordinate to substract
+     * @returns {Extent} a new extent
      */
-    substract: function (p) {
+    substract(p) {
         return new this.constructor(this['xmin'] - p.x, this['ymin'] - p.y, this['xmax'] - p.x, this['ymax'] - p.y);
-    },
+    }
 
     /**
      * Round the extent
-     * @return {maptalks.Extent} rounded extent
+     * @return {Extent} rounded extent
      */
-    round:function () {
-        return new this.constructor(maptalks.Util.round(this['xmin']), maptalks.Util.round(this['ymin']),
-            maptalks.Util.round(this['xmax']), maptalks.Util.round(this['ymax']));
-    },
+    round() {
+        return new this.constructor(round(this['xmin']), round(this['ymin']),
+            round(this['xmax']), round(this['ymax']));
+    }
 
-    _round:function () {
-        this['xmin'] = maptalks.Util.round(this['xmin']);
-        this['ymin'] = maptalks.Util.round(this['ymin']);
-        this['xmax'] = maptalks.Util.round(this['xmax']);
-        this['ymax'] = maptalks.Util.round(this['ymax']);
+    _round() {
+        this['xmin'] = round(this['xmin']);
+        this['ymin'] = round(this['ymin']);
+        this['xmax'] = round(this['xmax']);
+        this['ymax'] = round(this['ymax']);
         return this;
-    },
+    }
 
     /**
      * Get the minimum point
-     * @return {maptalks.Coordinate}
+     * @return {Coordinate}
      */
-    getMin:function () {
+    getMin() {
         return new this._clazz(this['xmin'], this['ymin']);
-    },
+    }
 
     /**
      * Get the maximum point
-     * @return {maptalks.Coordinate}
+     * @return {Coordinate}
      */
-    getMax:function () {
+    getMax() {
         return new this._clazz(this['xmax'], this['ymax']);
-    },
-
+    }
 
     /**
      * Get center of the extent.
-     * @return {maptalks.Coordinate}
+     * @return {Coordinate}
      */
-    getCenter:function () {
+    getCenter() {
         return new this._clazz((this['xmin'] + this['xmax']) / 2, (this['ymin'] + this['ymax']) / 2);
-    },
+    }
 
     /**
      * Whether the extent is valid
      * @protected
      * @return {Boolean}
      */
-    isValid:function () {
-        return maptalks.Util.isNumber(this['xmin']) &&
-                maptalks.Util.isNumber(this['ymin']) &&
-                maptalks.Util.isNumber(this['xmax']) &&
-                maptalks.Util.isNumber(this['ymax']);
-    },
-
+    isValid() {
+        return isNumber(this['xmin']) &&
+            isNumber(this['ymin']) &&
+            isNumber(this['xmax']) &&
+            isNumber(this['ymax']);
+    }
 
     /**
      * Compare with another extent to see whether they are equal.
-     * @param  {maptalks.Extent}  ext2 - extent to compare
+     * @param  {Extent}  ext2 - extent to compare
      * @return {Boolean}
      */
-    equals:function (ext2) {
+    equals(ext2) {
         return (this['xmin'] === ext2['xmin'] &&
             this['xmax'] === ext2['xmax'] &&
             this['ymin'] === ext2['ymin'] &&
             this['ymax'] === ext2['ymax']);
-    },
+    }
 
     /**
      * Whether it intersects with another extent
-     * @param  {maptalks.Extent}  ext2 - another extent
+     * @param  {Extent}  ext2 - another extent
      * @return {Boolean}
      */
-    intersects:function (ext2) {
+    intersects(ext2) {
         var rxmin = Math.max(this['xmin'], ext2['xmin']);
         var rymin = Math.max(this['ymin'], ext2['ymin']);
         var rxmax = Math.min(this['xmax'], ext2['xmax']);
         var rymax = Math.min(this['ymax'], ext2['ymax']);
         var intersects = !((rxmin > rxmax) || (rymin > rymax));
         return intersects;
-    },
+    }
 
     /**
      * Whether the extent contains the input point.
-     * @param  {maptalks.Coordinate|Number[]} coordinate - input point
+     * @param  {Coordinate|Number[]} coordinate - input point
      * @returns {Boolean}
      */
-    contains: function (c) {
+    contains(c) {
         return (c.x >= this.xmin) &&
             (c.x <= this.xmax) &&
             (c.y >= this.ymin) &&
             (c.y <= this.ymax);
-    },
+    }
 
     /**
      * Get the width of the Extent
      * @return {Number}
      */
-    getWidth:function () {
+    getWidth() {
         return this['xmax'] - this['xmin'];
-    },
+    }
 
     /**
      * Get the height of the Extent
      * @return {Number}
      */
-    getHeight:function () {
+    getHeight() {
         return this['ymax'] - this['ymin'];
-    },
+    }
 
-
-    __combine:function (extent) {
-        if (extent instanceof maptalks.Point) {
+    __combine(extent) {
+        if (extent instanceof Point) {
             extent = {
-                'xmin' : extent.x,
-                'xmax' : extent.x,
-                'ymin' : extent.y,
-                'ymax' : extent.y
+                'xmin': extent.x,
+                'xmax': extent.x,
+                'ymin': extent.y,
+                'ymax': extent.y
             };
         }
         var xmin = this['xmin'];
-        if (!maptalks.Util.isNumber(xmin)) {
+        if (!isNumber(xmin)) {
             xmin = extent['xmin'];
-        } else if (maptalks.Util.isNumber(extent['xmin'])) {
+        } else if (isNumber(extent['xmin'])) {
             if (xmin > extent['xmin']) {
                 xmin = extent['xmin'];
             }
         }
 
         var xmax = this['xmax'];
-        if (!maptalks.Util.isNumber(xmax)) {
+        if (!isNumber(xmax)) {
             xmax = extent['xmax'];
-        } else if (maptalks.Util.isNumber(extent['xmax'])) {
+        } else if (isNumber(extent['xmax'])) {
             if (xmax < extent['xmax']) {
                 xmax = extent['xmax'];
             }
         }
 
         var ymin = this['ymin'];
-        if (!maptalks.Util.isNumber(ymin)) {
+        if (!isNumber(ymin)) {
             ymin = extent['ymin'];
-        } else if (maptalks.Util.isNumber(extent['ymin'])) {
+        } else if (isNumber(extent['ymin'])) {
             if (ymin > extent['ymin']) {
                 ymin = extent['ymin'];
             }
         }
 
         var ymax = this['ymax'];
-        if (!maptalks.Util.isNumber(ymax)) {
+        if (!isNumber(ymax)) {
             ymax = extent['ymax'];
-        } else if (maptalks.Util.isNumber(extent['ymax'])) {
+        } else if (isNumber(extent['ymax'])) {
             if (ymax < extent['ymax']) {
                 ymax = extent['ymax'];
             }
         }
         return [xmin, ymin, xmax, ymax];
-    },
+    }
 
-    _combine:function (extent) {
+    _combine(extent) {
         if (!extent) {
             return this;
         }
@@ -289,50 +291,50 @@ maptalks.Util.extend(maptalks.Extent.prototype, /** @lends maptalks.Extent.proto
         this['xmax'] = ext[2];
         this['ymax'] = ext[3];
         return this;
-    },
+    }
 
     /**
      * Combine it with another extent to a larger extent.
-     * @param  {maptalks.Extent} extent - another extent
-     * @returns {maptalks.Extent} extent combined
+     * @param  {Extent} extent - another extent
+     * @returns {Extent} extent combined
      */
-    combine:function (extent) {
+    combine(extent) {
         if (!extent) {
             return this;
         }
         var ext = this.__combine(extent);
         return new this.constructor(ext[0], ext[1], ext[2], ext[3]);
-    },
+    }
 
     /**
      * Gets the intersection extent of this and another extent.
-     * @param  {maptalks.Extent} extent - another extent
-     * @return {maptalks.Extent} intersection extent
+     * @param  {Extent} extent - another extent
+     * @return {Extent} intersection extent
      */
-    intersection:function (extent) {
+    intersection(extent) {
         if (!this.intersects(extent)) {
             return null;
         }
         return new this.constructor(Math.max(this['xmin'], extent['xmin']), Math.max(this['ymin'], extent['ymin']),
             Math.min(this['xmax'], extent['xmax']), Math.min(this['ymax'], extent['ymax'])
-            );
-    },
+        );
+    }
 
     /**
      * Expand the extent by distance
-     * @param  {maptalks.Size|Number} distance  - distance to expand
-     * @returns {maptalks.Extent} a new extent expanded from
+     * @param  {Size|Number} distance  - distance to expand
+     * @returns {Extent} a new extent expanded from
      */
-    expand:function (distance) {
-        if (distance instanceof maptalks.Size) {
+    expand(distance) {
+        if (distance instanceof Size) {
             return new this.constructor(this['xmin'] - distance['width'], this['ymin'] - distance['height'], this['xmax'] + distance['width'], this['ymax'] + distance['height']);
         } else {
             return new this.constructor(this['xmin'] - distance, this['ymin'] - distance, this['xmax'] + distance, this['ymax'] + distance);
         }
-    },
+    }
 
-    _expand:function (distance) {
-        if (distance instanceof maptalks.Size) {
+    _expand(distance) {
+        if (distance instanceof Size) {
             this['xmin'] -= distance['width'];
             this['ymin'] -= distance['height'];
             this['xmax'] += distance['width'];
@@ -344,7 +346,7 @@ maptalks.Util.extend(maptalks.Extent.prototype, /** @lends maptalks.Extent.proto
             this['ymax'] += distance;
         }
         return this;
-    },
+    }
 
     /**
      * Get extent's JSON object.
@@ -353,20 +355,20 @@ maptalks.Util.extend(maptalks.Extent.prototype, /** @lends maptalks.Extent.proto
      * // {xmin : 100, ymin: 10, xmax: 120, ymax:20}
      * var json = extent.toJSON();
      */
-    toJSON:function () {
+    toJSON() {
         return {
-            'xmin':this['xmin'],
-            'ymin':this['ymin'],
-            'xmax':this['xmax'],
-            'ymax':this['ymax']
+            'xmin': this['xmin'],
+            'ymin': this['ymin'],
+            'xmax': this['xmax'],
+            'ymax': this['ymax']
         };
-    },
+    }
 
     /**
      * Get a coordinate array of extent's rectangle area, containing 5 coordinates in which the first equals with the last.
-     * @return {maptalks.Coordinate[]} coordinates array
+     * @return {Coordinate[]} coordinates array
      */
-    toArray:function () {
+    toArray() {
         var xmin = this['xmin'],
             ymin = this['ymin'],
             xmax = this['xmax'],
@@ -376,13 +378,13 @@ maptalks.Util.extend(maptalks.Extent.prototype, /** @lends maptalks.Extent.proto
             new this._clazz([xmax, ymin]), new this._clazz([xmin, ymin]),
             new this._clazz([xmin, ymax])
         ];
-    },
+    }
 
     /**
      * Get a copy of the extent.
-     * @return {maptalks.Extent} copy
+     * @return {Extent} copy
      */
-    copy:function () {
+    copy() {
         return new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
     }
-});
+}

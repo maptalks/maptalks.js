@@ -1,55 +1,103 @@
+import { isNil, isNumber, mapArrayRecursively } from 'core/util';
+
 /**
  * Represents a coordinate point <br>
  * e.g. <br>
  * a geographical point with a certain latitude and longitude <br>
  * a point in a indoor room
  * @example
- * var coord = new maptalks.Coordinate(0, 0);
+ * var coord = new Coordinate(0, 0);
  * @example
- * var coord = new maptalks.Coordinate([0,0]);
+ * var coord = new Coordinate([0,0]);
  * @example
- * var coord = new maptalks.Coordinate({x:0, y:0});
+ * var coord = new Coordinate({x:0, y:0});
  * @class
  * @category basic types
  * @param {Number} x - x value
  * @param {Number} y - y value
  */
-maptalks.Coordinate = function (x, y) {
-    if (!maptalks.Util.isNil(x) && !maptalks.Util.isNil(y)) {
-        /**
-         * @property {Number} x - value on X-Axis or longitude in degrees
-         */
-        this.x = +(x);
-        /**
-         * @property {Number} y - value on Y-Axis or Latitude in degrees
-         */
-        this.y = +(y);
-    } else if (maptalks.Util.isArray(x)) {
-        //数组
-        this.x = +(x[0]);
-        this.y = +(x[1]);
-    } else if (!maptalks.Util.isNil(x['x']) && !maptalks.Util.isNil(x['y'])) {
-        //对象
-        this.x = +(x['x']);
-        this.y = +(x['y']);
+export default class Coordinate {
+    constructor(x, y) {
+        if (!isNil(x) && !isNil(y)) {
+            /**
+             * @property {Number} x - value on X-Axis or longitude in degrees
+             */
+            this.x = +(x);
+            /**
+             * @property {Number} y - value on Y-Axis or Latitude in degrees
+             */
+            this.y = +(y);
+        } else if (Array.isArray(x)) {
+            //数组
+            this.x = +(x[0]);
+            this.y = +(x[1]);
+        } else if (!isNil(x['x']) && !isNil(x['y'])) {
+            //对象
+            this.x = +(x['x']);
+            this.y = +(x['y']);
+        }
+        if (this._isNaN()) {
+            throw new Error('coordinate is NaN');
+        }
     }
-    if (this.isNaN()) {
-        throw new Error('coordinate is NaN');
-    }
-};
 
-maptalks.Util.extend(maptalks.Coordinate.prototype, /** @lends maptalks.Coordinate.prototype */{
+     /**
+     * Convert one or more Coordinate objects to GeoJSON style coordinates
+     * @param  {Coordinate|Coordinate[]} coordinates - coordinates to convert
+     * @return {Number[]|Number[][]}
+     * @static
+     * @example
+     * // result is [[100,0], [101,1]]
+     * var numCoords = Coordinate.toNumberArrays([new Coordinate(100,0), new Coordinate(101,1)]);
+     */
+    static toNumberArrays(coordinates) {
+        if (!Array.isArray(coordinates)) {
+            return [coordinates.x, coordinates.y];
+        }
+        return mapArrayRecursively(coordinates, function (coord) {
+            return [coord.x, coord.y];
+        });
+    }
+
+    /**
+     * Convert one or more GeoJSON style coordiantes to Coordinate objects
+     * @param  {Number[]|Number[][]} coordinates - coordinates to convert
+     * @return {Coordinate|Coordinate[]}
+     * @static
+     * @example
+     * var coordinates = Coordinate.toCoordinates([[100,0], [101,1]]);
+     */
+    static toCoordinates(coordinates) {
+        if (isNumber(coordinates[0]) && isNumber(coordinates[1])) {
+            return new Coordinate(coordinates);
+        }
+        var result = [];
+        for (var i = 0, len = coordinates.length; i < len; i++) {
+            var child = coordinates[i];
+            if (Array.isArray(child)) {
+                if (isNumber(child[0])) {
+                    result.push(new Coordinate(child));
+                } else {
+                    result.push(Coordinate.toCoordinates(child));
+                }
+            } else {
+                result.push(new Coordinate(child));
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns a copy of the coordinate
-     * @return {maptalks.Coordinate} copy
+     * @return {Coordinate} copy
      */
-    copy:function () {
-        return new maptalks.Coordinate(this.x, this.y);
-    },
+    copy() {
+        return new Coordinate(this.x, this.y);
+    }
 
     //destructive add, to improve performance in some circumstances.
-    _add: function (x, y) {
-        if (x instanceof maptalks.Coordinate) {
+    _add(x, y) {
+        if (x instanceof Coordinate) {
             this.x += x.x;
             this.y += x.y;
         } else {
@@ -57,27 +105,28 @@ maptalks.Util.extend(maptalks.Coordinate.prototype, /** @lends maptalks.Coordina
             this.y += y;
         }
         return this;
-    },
+    }
+
     /**
      * Returns the result of addition of another coordinate.
-     * @param {maptalks.Coordinate} coordinate - coordinate to add
-     * @return {maptalks.Coordinate} result
+     * @param {Coordinate} coordinate - coordinate to add
+     * @return {Coordinate} result
      */
-    add:function (x, y) {
+    add(x, y) {
         var nx, ny;
-        if (x instanceof maptalks.Coordinate) {
+        if (x instanceof Coordinate) {
             nx = this.x + x.x;
             ny = this.y + x.y;
         } else {
             nx = this.x + x;
             ny = this.y + y;
         }
-        return new maptalks.Coordinate(nx, ny);
-    },
+        return new Coordinate(nx, ny);
+    }
 
     //destructive substract
-    _substract: function (x, y) {
-        if (x instanceof maptalks.Coordinate) {
+    _substract(x, y) {
+        if (x instanceof Coordinate) {
             this.x -= x.x;
             this.y -= x.y;
         } else {
@@ -85,76 +134,76 @@ maptalks.Util.extend(maptalks.Coordinate.prototype, /** @lends maptalks.Coordina
             this.y -= y;
         }
         return this;
-    },
+    }
 
     /**
      * Returns the result of subtraction of another coordinate.
-     * @param {maptalks.Coordinate} coordinate - coordinate to substract
-     * @return {maptalks.Coordinate} result
+     * @param {Coordinate} coordinate - coordinate to substract
+     * @return {Coordinate} result
      */
-    substract:function (x, y) {
+    substract(x, y) {
         var nx, ny;
-        if (x instanceof maptalks.Coordinate) {
+        if (x instanceof Coordinate) {
             nx = this.x - x.x;
             ny = this.y - x.y;
         } else {
             nx = this.x - x;
             ny = this.y - y;
         }
-        return new maptalks.Coordinate(nx, ny);
-    },
+        return new Coordinate(nx, ny);
+    }
 
     /**
      * Returns the result of multiplication of the current coordinate by the given number.
      * @param {Number} ratio - ratio to multi
-     * @return {maptalks.Coordinate} result
+     * @return {Coordinate} result
      */
-    multi: function (ratio) {
-        return new maptalks.Coordinate(this.x * ratio, this.y * ratio);
-    },
+    multi(ratio) {
+        return new Coordinate(this.x * ratio, this.y * ratio);
+    }
 
-    _multi: function (ratio) {
+    _multi(ratio) {
         this.x *= ratio;
         this.y *= ratio;
         return this;
-    },
+    }
 
     /**
      * Compare with another coordinate to see whether they are equal.
-     * @param {maptalks.Coordinate} c2 - coordinate to compare
+     * @param {Coordinate} c2 - coordinate to compare
      * @return {Boolean}
      */
-    equals:function (c2) {
-        if (!maptalks.Util.isCoordinate(c2)) {
+    equals(c2) {
+        if (!(c2 instanceof Coordinate)) {
             return false;
         }
         return this.x === c2.x && this.y === c2.y;
-    },
+    }
 
     /**
      * Whether the coordinate is NaN
      * @return {Boolean}
      */
-    isNaN:function () {
+    _isNaN() {
         return isNaN(this.x) || isNaN(this.y);
-    },
+    }
 
     /**
      * Convert the coordinate to a number array [x, y]
      * @return {Number[]} number array
      */
-    toArray:function () {
+    toArray() {
         return [this.x, this.y];
-    },
+    }
 
     /**
      * Convert the coordinate to a json object {x : .., y : ..}
      * @return {Object} json
      */
-    toJSON: function () {
+    toJSON() {
         return {
-            x : this.x,
-            y : this.y
+            x: this.x,
+            y: this.y
         };
     }
-});
+}
