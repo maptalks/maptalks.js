@@ -355,7 +355,7 @@ export default class TileLayerDomRenderer extends Class {
         if (this._zIndex) {
             container.style.zIndex = this._zIndex;
         }
-        var parentContainer = this.layer.options['container'] === 'front' ? this.getMap()._panels['frontLayer'] : this.getMap()._panels['layer'];
+        var parentContainer = this.layer.options['container'] === 'front' ? this.getMap()._panels['frontLayer'] : this.getMap()._panels['backLayer'];
         parentContainer.appendChild(container);
     }
 

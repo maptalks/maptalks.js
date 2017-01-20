@@ -74,7 +74,7 @@ export class ResourceCache {
  * @protected
  * @memberOf renderer
  * @name Canvas
- * @extends {Class}
+ * @extends {maptalks.Class}
  */
 export default class CanvasRenderer extends Class {
 
@@ -184,7 +184,7 @@ export default class CanvasRenderer extends Class {
     show() {
         var mask = this.layer.getMask();
         if (mask) {
-            mask.onZoomEnd();
+            mask._removeZoomCache();
         }
         this.render(true);
     }

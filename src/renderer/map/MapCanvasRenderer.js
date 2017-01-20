@@ -94,8 +94,8 @@ export default class MapCanvasRenderer extends MapRenderer {
         panels.mapWrapper.style.height = height;
         panels.front.style.width = panels.frontLayer.style.width = width;
         panels.front.style.height = panels.frontLayer.style.height = height;
-        panels.back.style.width = panels.layer.style.width = width;
-        panels.back.style.height = panels.layer.style.height = height;
+        panels.back.style.width = panels.backLayer.style.width = width;
+        panels.back.style.height = panels.backLayer.style.height = height;
         panels.front.style.perspective = panels.back.style.perspective = height;
         this._updateCanvasSize();
     }
@@ -176,7 +176,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             }
             return c;
         }
-        var containerDOM = this.map._containerDOM;
+        const containerDOM = this.map._containerDOM;
 
         if (this._isCanvasContainer) {
             //container is a <canvas> element.
@@ -185,19 +185,19 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         containerDOM.innerHTML = '';
 
-        var control = createContainer('control', 'maptalks-control', null, true);
-        var mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
-        var front = createContainer('front', 'maptalks-front', 'position:absolute;top:0px;left:0px;will-change:transform;', true);
-        var ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
-        var mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;', true);
-        var back = createContainer('back', 'maptalks-back', 'position:absolute;left:0px;top:0px;will-change:transform;');
-        var layer = createContainer('layer', 'maptalks-layer', 'position:absolute;left:0px;top:0px;');
-        var frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
-        var canvasContainer = createContainer('canvasContainer', 'maptalks-layer-canvas', 'position:relative;border:none;');
+        const control = createContainer('control', 'maptalks-control', null, true);
+        const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
+        const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;', true);
+        const front = createContainer('front', 'maptalks-front', 'position:absolute;top:0px;left:0px;will-change:transform;', true);
+        const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
+        const ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
+        const back = createContainer('back', 'maptalks-back', 'position:absolute;left:0px;top:0px;will-change:transform;');
+        const backLayer = createContainer('backLayer', 'maptalks-back-layer', 'position:absolute;left:0px;top:0px;');
+        const canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
 
         containerDOM.appendChild(mapWrapper);
 
-        back.appendChild(layer);
+        back.appendChild(backLayer);
         mapAllLayers.appendChild(back);
         mapAllLayers.appendChild(canvasContainer);
         front.appendChild(frontLayer);
@@ -210,7 +210,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         this.createCanvas();
 
         this.resetContainer();
-        var mapSize = this.map._getContainerDomSize();
+        const mapSize = this.map._getContainerDomSize();
         this.updateMapSize(mapSize);
     }
 
