@@ -334,7 +334,7 @@ export default class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _refreshMask() {
         if (this._mask) {
-            this._mask.onZoomEnd();
+            this._mask._removeZoomCache();
         }
     }
 
@@ -407,11 +407,3 @@ export default class Layer extends JSONAble(Eventable(Renderable(Class))) {
 }
 
 Layer.mergeOptions(options);
-
-/*Layer.extend = function (props) {
-    var NewLayer = Class.extend.call(this, props);
-    if (this._rendererClasses) {
-        NewLayer._rendererClasses = extend({}, this._rendererClasses);
-    }
-    return NewLayer;
-};*/

@@ -108,6 +108,23 @@ describe('Spec of Masks', function () {
                     }));
                 });
             });
+
+            it('zoom with mask', function (done) {
+                layerToTest.once('layerload', function () {
+                    var zoomed = false;
+                    layerToTest.on('layerload', function () {
+                        if (zoomed) {
+                            // expect(layer).not.to.be.painted(-11, 0);
+                            expect(layerToTest).to.be.painted(0, 0, [0, 0, 0]);
+                            done();
+                        }
+                    });
+                    testMask(layerToTest, function () {
+                        zoomed = true;
+                        context.map.zoomIn();
+                    });
+                });
+            });
         });
     }
 
