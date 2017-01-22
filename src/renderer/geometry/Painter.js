@@ -95,7 +95,7 @@ export default class Painter extends Class {
      * for strokeAndFillSymbolizer
      * @return {Object[]} resources to render vector
      */
-    getPaintParams() {
+    getPaintParams(dx, dy) {
         if (!this._paintParams) {
             //render resources geometry returned are based on 2d points.
             this._paintParams = this.geometry._getPaintParams();
@@ -103,24 +103,31 @@ export default class Painter extends Class {
         if (!this._paintParams) {
             return null;
         }
-        var map = this.getMap();
-        var maxZoom = map.getMaxZoom();
-        var zoomScale = map.getScale();
-        var layerNorthWest = this.geometry.getLayer()._getRenderer()._northWest;
-        var layerPoint = map._pointToContainerPoint(layerNorthWest),
+        const map = this.getMap();
+        const maxZoom = map.getMaxZoom();
+        const zoomScale = map.getScale();
+        const layerNorthWest = this.geometry.getLayer()._getRenderer()._northWest;
+        const layerPoint = map._pointToContainerPoint(layerNorthWest),
             paintParams = this._paintParams,
             tPaintParams = [], // transformed params
             //refer to Geometry.Canvas
-            points = paintParams[0],
-            containerPoints;
+            points = paintParams[0];
+        var containerPoints;
         //convert view points to container points needed by canvas
         if (Array.isArray(points)) {
-            containerPoints = mapArrayRecursively(points, function (point) {
-                return map._pointToContainerPoint(point, maxZoom)._substract(layerPoint);
+            containerPoints = mapArrayRecursively(points, point => {
+                const p = map._pointToContainerPoint(point, maxZoom)._substract(layerPoint);
+                if (dx || dy) {
+                    p._add(dx, dy);
+                }
+                return p;
             });
         } else if (points instanceof Point) {
             // containerPoints = points.substract(layerPoint);
             containerPoints = map._pointToContainerPoint(points, maxZoom)._substract(layerPoint);
+            if (dx || dy) {
+                containerPoints._add(dx, dy);
+            }
         }
         tPaintParams.push(containerPoints);
         for (var i = 1, len = paintParams.length; i < len; i++) {

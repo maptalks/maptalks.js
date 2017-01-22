@@ -321,4 +321,51 @@ describe('StrokeAndFillSpec', function () {
             v.addGeometry(circle);
         });
     });
+
+    describe('lineDx and lineDy', function () {
+        it('displace LineString with lineDx', function (done) {
+            var center = map.getCenter();
+            var line = new maptalks.LineString([
+                [center.x, center.y + 0.1], [center.x, center.y], [center.x, center.y - 0.1]
+            ]);
+
+
+            var v = new maptalks.VectorLayer('v').addTo(map);
+            v.once('layerload', function () {
+                expect(v).to.be.painted();
+                v.once('layerload', function () {
+                    expect(v).not.to.be.painted();
+                    expect(v).to.be.painted(10, 0);
+                    done();
+                });
+                line.setSymbol({
+                    'lineWidth' : 2,
+                    'lineDx'   : 10
+                });
+            });
+            v.addGeometry(line);
+        });
+
+        it('displace LineString with lineDy', function (done) {
+            var center = map.getCenter();
+            var line = new maptalks.LineString([
+                [center.x + 0.1, center.y], [center.x, center.y], [center.x - 0.1, center.y]
+            ]);
+
+            var v = new maptalks.VectorLayer('v').addTo(map);
+            v.once('layerload', function () {
+                expect(v).to.be.painted();
+                v.once('layerload', function () {
+                    expect(v).not.to.be.painted();
+                    expect(v).to.be.painted(0, 10);
+                    done();
+                });
+                line.setSymbol({
+                    'lineWidth' : 2,
+                    'lineDy'   : 10
+                });
+            });
+            v.addGeometry(line);
+        });
+    });
 });

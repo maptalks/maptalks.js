@@ -38,16 +38,16 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (this.geometry.type === 'Point') {
             return;
         }
-        var style = this.style;
+        const style = this.style;
         if (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0) {
             return;
         }
-        var paintParams = this._getPaintParams();
+        const paintParams = this._getPaintParams();
         if (!paintParams) {
             return;
         }
         this._prepareContext(ctx);
-        var isGradient = checkGradient(style['lineColor']),
+        const isGradient = checkGradient(style['lineColor']),
             isPath = (this.geometry.getJSONType() === 'Polygon') || (this.geometry.type === 'LineString');
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.getPainter().getContainerExtent()._expand(style['lineWidth']);
@@ -56,12 +56,12 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             style['polygonGradientExtent'] = this.getPainter().getContainerExtent();
         }
 
-        var points = paintParams[0],
+        const points = paintParams[0],
             isSplitted = (this.geometry.getJSONType() === 'Polygon' && points.length > 1 && Array.isArray(points[0][0])) ||
             (this.geometry.type === 'LineString' && points.length > 1 && Array.isArray(points[0]));
         var params;
         if (isSplitted) {
-            for (var i = 0; i < points.length; i++) {
+            for (let i = 0; i < points.length; i++) {
                 Canvas.prepareCanvas(ctx, style, resources);
                 if (isGradient && isPath && !style['lineColor']['places']) {
                     this._createGradient(ctx, points[i], style['lineColor']);
@@ -93,8 +93,8 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (this.geometry.type === 'Point') {
             return null;
         }
-        var map = this.getMap();
-        var extent = this.geometry._getPrjExtent();
+        const map = this.getMap();
+        const extent = this.geometry._getPrjExtent();
         if (!extent) {
             return null;
         }
@@ -108,7 +108,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         this._extMin.y = extent['ymin'];
         this._extMax.x = extent['xmax'];
         this._extMax.y = extent['ymax'];
-        var min = map._prjToPoint(this._extMin),
+        const min = map._prjToPoint(this._extMin),
             max = map._prjToPoint(this._extMax);
         if (!this._pxExtent) {
             this._pxExtent = new PointExtent(min, max);
@@ -132,12 +132,12 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
     _getPaintParams() {
-        return this.getPainter().getPaintParams();
+        return this.getPainter().getPaintParams(this.style['lineDx'], this.style['lineDy']);
     }
 
     translate() {
-        var s = this.symbol;
-        var result = {
+        const s = this.symbol;
+        const result = {
             'lineColor': getValueOrDefault(s['lineColor'], '#000'),
             'lineWidth': getValueOrDefault(s['lineWidth'], 2),
             'lineOpacity': getValueOrDefault(s['lineOpacity'], 1),
@@ -145,6 +145,8 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             'lineCap': getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
             'lineJoin': getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
             'linePatternFile': getValueOrDefault(s['linePatternFile'], null),
+            'lineDx' : getValueOrDefault(s['lineDx'], 0),
+            'lineDy' : getValueOrDefault(s['lineDy'], 0),
             'polygonFill': getValueOrDefault(s['polygonFill'], null),
             'polygonOpacity': getValueOrDefault(s['polygonOpacity'], 1),
             'polygonPatternFile': getValueOrDefault(s['polygonPatternFile'], null)
@@ -163,8 +165,8 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (!Array.isArray(points)) {
             return;
         }
-        var len = points.length;
-        var grad = ctx.createLinearGradient(points[0].x, points[0].y, points[len - 1].x, points[len - 1].y);
+        const len = points.length;
+        const grad = ctx.createLinearGradient(points[0].x, points[0].y, points[len - 1].x, points[len - 1].y);
         lineColor['colorStops'].forEach(function (stop) {
             grad.addColorStop.apply(grad, stop);
         });
