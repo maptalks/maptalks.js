@@ -55,9 +55,11 @@ Symbolizer.resourceSizeProperties = [
     [null, 'markerLineWidth']
 ];
 
-Symbolizer.numberProperties = {
+Symbolizer.numericalProperties = {
     'lineWidth': 1,
     'lineOpacity': 1,
+    'lineDx': 1,
+    'lineDy': 1,
     'polygonOpacity': 1,
     'markerWidth': 1,
     'markerHeight': 1,
