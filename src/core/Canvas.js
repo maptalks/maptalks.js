@@ -21,7 +21,7 @@ const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
 const DEFAULT_TEXT_COLOR = '#000';
 
 const Canvas = {
-    createCanvas: function (width, height, canvasClass) {
+    createCanvas(width, height, canvasClass) {
         var canvas;
         if (!isNode) {
             canvas = createEl('canvas');
@@ -34,7 +34,7 @@ const Canvas = {
         return canvas;
     },
 
-    setDefaultCanvasSetting: function (ctx) {
+    setDefaultCanvasSetting(ctx) {
         ctx.lineWidth = 1;
         ctx.lineCap = 'butt';
         ctx.lineJoin = 'miter';
@@ -52,7 +52,7 @@ const Canvas = {
         ctx.globalAlpha = 1;
     },
 
-    prepareCanvasFont: function (ctx, style) {
+    prepareCanvasFont(ctx, style) {
         ctx.textBaseline = 'top';
         ctx.font = getFont(style);
         var fill = style['textFill'];
@@ -62,7 +62,7 @@ const Canvas = {
         ctx.fillStyle = Canvas.getRgba(fill, style['textOpacity']);
     },
 
-    prepareCanvas: function (ctx, style, resources) {
+    prepareCanvas(ctx, style, resources) {
         if (!style) {
             return;
         }
@@ -128,7 +128,7 @@ const Canvas = {
         }
     },
 
-    _createGradient: function (ctx, g, extent) {
+    _createGradient(ctx, g, extent) {
         var gradient = null,
             places = g['places'],
             min = extent.getMin(),
@@ -163,13 +163,13 @@ const Canvas = {
             }
             gradient = ctx.createRadialGradient.apply(ctx, places);
         }
-        g['colorStops'].forEach(function (stop) {
+        g['colorStops'].forEach(stop => {
             gradient.addColorStop.apply(gradient, stop);
         });
         return gradient;
     },
 
-    _setStrokePattern: function (ctx, strokePattern, strokeWidth, resources) {
+    _setStrokePattern(ctx, strokePattern, strokeWidth, resources) {
         var imgUrl = extractCssUrl(strokePattern);
         var imageTexture;
         if (isNode) {
@@ -200,11 +200,11 @@ const Canvas = {
         }
     },
 
-    clearRect: function (ctx, x1, y1, x2, y2) {
+    clearRect(ctx, x1, y1, x2, y2) {
         ctx.clearRect(x1, y1, x2, y2);
     },
 
-    fillCanvas: function (ctx, fillOpacity, x, y) {
+    fillCanvas(ctx, fillOpacity, x, y) {
         if (fillOpacity === 0) {
             return;
         }
@@ -235,7 +235,7 @@ const Canvas = {
 
     // support #RRGGBB/#RGB now.
     // if color was like [red, orange...]/rgb(a)/hsl(a), op will not combined to result
-    getRgba: function (color, op) {
+    getRgba(color, op) {
         if (isNil(op)) {
             op = 1;
         }
@@ -255,7 +255,7 @@ const Canvas = {
         return 'rgba(' + r + ',' + g + ',' + b + ',' + op + ')';
     },
 
-    image: function (ctx, img, x, y, width, height) {
+    image(ctx, img, x, y, width, height) {
         // x = round(x);
         // y = round(y);
         try {
@@ -272,12 +272,12 @@ const Canvas = {
         }
     },
 
-    text: function (ctx, text, pt, style, textDesc) {
+    text(ctx, text, pt, style, textDesc) {
         // pt = pt.add(new Point(style['textDx'], style['textDy']));
         Canvas._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
     },
 
-    _textOnMultiRow: function (ctx, texts, style, point, splitTextSize, textSize) {
+    _textOnMultiRow(ctx, texts, style, point, splitTextSize, textSize) {
         var ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']);
         var lineHeight = textSize['height'] + style['textLineSpacing'];
         var basePoint = point.add(0, ptAlign.y);
@@ -289,7 +289,7 @@ const Canvas = {
         }
     },
 
-    _textOnLine: function (ctx, text, pt, textHaloRadius, textHaloFill, textHaloOp) {
+    _textOnLine(ctx, text, pt, textHaloRadius, textHaloFill, textHaloOp) {
         // pt = pt._round();
         ctx.textBaseline = 'top';
         if (textHaloOp !== 0 && textHaloRadius !== 0) {
@@ -318,14 +318,14 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y);
     },
 
-    fillText: function (ctx, text, point, rgba) {
+    fillText(ctx, text, point, rgba) {
         if (rgba) {
             ctx.fillStyle = rgba;
         }
         ctx.fillText(text, point.x, point.y);
     },
 
-    _stroke: function (ctx, strokeOpacity, x, y) {
+    _stroke(ctx, strokeOpacity, x, y) {
         var isPattern = Canvas._isPattern(ctx.strokeStyle) && !isNil(x) && !isNil(y);
         if (isNil(strokeOpacity)) {
             strokeOpacity = 1;
@@ -349,7 +349,7 @@ const Canvas = {
         }
     },
 
-    _path: function (ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
+    _path(ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
         function fillWithPattern(p1, p2) {
             var degree = computeDegree(p1, p2);
             ctx.save();
@@ -453,14 +453,14 @@ const Canvas = {
         }
     },
 
-    path: function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
+    path(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         Canvas._path(ctx, points, lineDashArray, lineOpacity);
         Canvas._stroke(ctx, lineOpacity);
     },
 
-    polygon: function (ctx, points, lineOpacity, fillOpacity, lineDashArray) {
+    polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
         function fillPolygon(points, i, op) {
             Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
         }
@@ -513,7 +513,7 @@ const Canvas = {
 
     },
 
-    _ring: function (ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
+    _ring(ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
         var isPatternLine = (ignoreStrokePattern === true ? false : Canvas._isPattern(ctx.strokeStyle));
         if (isPatternLine && !ring[0].equals(ring[ring.length - 1])) {
             ring = ring.concat([ring[0]]);
@@ -533,7 +533,7 @@ const Canvas = {
      * @param  {Point} p2      point 2
      * @param  {Number} degree arc degree between p1 and p2
      */
-    _arcBetween: function (ctx, p1, p2, degree) {
+    _arcBetween(ctx, p1, p2, degree) {
         var a = degree,
             dist = p1.distanceTo(p2),
             //radius of circle
@@ -562,11 +562,11 @@ const Canvas = {
         ctx.arc(cx, cy, r, startAngle, endAngle);
     },
 
-    _lineTo: function (ctx, p) {
+    _lineTo(ctx, p) {
         ctx.lineTo(p.x, p.y);
     },
 
-    bezierCurveAndFill: function (ctx, points, lineOpacity, fillOpacity) {
+    bezierCurveAndFill(ctx, points, lineOpacity, fillOpacity) {
         ctx.beginPath();
         var start = points[0];
         ctx.moveTo(start.x, start.y);
@@ -575,13 +575,13 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity);
     },
 
-    _bezierCurveTo: function (ctx, p1, p2, p3) {
+    _bezierCurveTo(ctx, p1, p2, p3) {
         ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
     },
 
 
     //各种图形的绘制方法
-    ellipse: function (ctx, pt, width, height, lineOpacity, fillOpacity) {
+    ellipse(ctx, pt, width, height, lineOpacity, fillOpacity) {
         function bezierEllipse(x, y, a, b) {
             var k = 0.5522848,
                 ox = a * k, // 水平控制点偏移量
@@ -610,7 +610,7 @@ const Canvas = {
 
     },
 
-    rectangle: function (ctx, pt, size, lineOpacity, fillOpacity) {
+    rectangle(ctx, pt, size, lineOpacity, fillOpacity) {
         // pt = pt._round();
         ctx.beginPath();
         ctx.rect(pt.x, pt.y, size['width'], size['height']);
@@ -618,7 +618,7 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity, pt.x, pt.y);
     },
 
-    sector: function (ctx, pt, size, angles, lineOpacity, fillOpacity) {
+    sector(ctx, pt, size, angles, lineOpacity, fillOpacity) {
         var startAngle = angles[0],
             endAngle = angles[1];
 
@@ -637,13 +637,13 @@ const Canvas = {
         sector(ctx, pt.x, pt.y, size, startAngle, endAngle);
     },
 
-    _isPattern: function (style) {
+    _isPattern(style) {
         return !isString(style) && !('addColorStop' in style);
     },
 
     // reference:
     // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
-    quadraticCurve: function (ctx, points) {
+    quadraticCurve(ctx, points) {
         if (!points || points.length <= 2) {
             return;
         }
@@ -658,7 +658,7 @@ const Canvas = {
         ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
     },
 
-    _getQuadCurvePoints: function (points) {
+    _getQuadCurvePoints(points) {
         var ctrlPts = [];
         var i, len = points.length;
         var xc, yc;

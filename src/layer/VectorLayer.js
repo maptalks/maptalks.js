@@ -145,19 +145,19 @@ export default class VectorLayer extends OverlayLayer {
     }
 
     /**
-     * Export the vector layer's profile json. <br>
+     * Export the VectorLayer's JSON. <br>
      * @param  {Object} [options=null] - export options
      * @param  {Object} [options.geometries=null] - If not null and the layer is a [OverlayerLayer]{@link OverlayLayer},
      *                                            the layer's geometries will be exported with the given "options.geometries" as a parameter of geometry's toJSON.
      * @param  {Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
-     * @return {Object} layer's profile JSON
+     * @return {Object} layer's JSON
      */
     toJSON(options) {
         if (!options) {
             options = {};
         }
         const profile = {
-            'type': 'VectorLayer',
+            'type': this.getJSONType(),
             'id': this.getId(),
             'options': this.config()
         };
@@ -190,19 +190,19 @@ export default class VectorLayer extends OverlayLayer {
     }
 
     /**
-     * Reproduce a VectorLayer from layer's profile JSON.
-     * @param  {Object} layerJSON - layer's profile JSON
+     * Reproduce a VectorLayer from layer's JSON.
+     * @param  {Object} layerJSON - layer's JSON
      * @return {VectorLayer}
      * @static
      * @private
      * @function
      */
-    static fromJSON(profile) {
-        if (!profile || profile['type'] !== 'VectorLayer') {
+    static fromJSON(json) {
+        if (!json || json['type'] !== 'VectorLayer') {
             return null;
         }
-        const layer = new VectorLayer(profile['id'], profile['options']);
-        const geoJSONs = profile['geometries'];
+        const layer = new VectorLayer(json['id'], json['options']);
+        const geoJSONs = json['geometries'];
         const geometries = [];
         for (let i = 0; i < geoJSONs.length; i++) {
             let geo = Geometry.fromJSON(geoJSONs[i]);
@@ -211,8 +211,8 @@ export default class VectorLayer extends OverlayLayer {
             }
         }
         layer.addGeometry(geometries);
-        if (profile['style']) {
-            layer.setStyle(profile['style']);
+        if (json['style']) {
+            layer.setStyle(json['style']);
         }
         return layer;
     }

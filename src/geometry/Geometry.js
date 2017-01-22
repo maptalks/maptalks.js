@@ -829,9 +829,9 @@ export default class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _checkAndCopySymbol(symbol) {
         var s = {};
-        var numberProperties = Symbolizer.numberProperties;
+        var numericalProperties = Symbolizer.numericalProperties;
         for (var i in symbol) {
-            if (numberProperties[i] && isString(symbol[i])) {
+            if (numericalProperties[i] && isString(symbol[i])) {
                 s[i] = +symbol[i];
             } else {
                 s[i] = symbol[i];
