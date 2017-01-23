@@ -10,19 +10,13 @@
  */
 maptalks.symbolizer.PointSymbolizer = maptalks.symbolizer.CanvasSymbolizer.extend(/** @lends maptalks.symbolizer.PointSymbolizer */{
     get2DExtent: function (resources) {
-        var map = this.getMap(),
-            maxZoom = map.getMaxZoom();
-        if (!this._2dExtent) {
-            this._2dExtent = new maptalks.PointExtent();
-            var renderPoints = this._getRenderPoints()[0];
-            for (var i = renderPoints.length - 1; i >= 0; i--) {
-                this._2dExtent._combine(renderPoints[i]);
-            }
-        }
-        var extent = new maptalks.PointExtent(map._pointToPoint(this._2dExtent.getMin(), maxZoom), map._pointToPoint(this._2dExtent.getMax(), maxZoom));
-        var m = this._isFunctionStyle ? this.getMarkerExtent(resources) : this._markerExtent;
-        if (!m) {
-            m = this._markerExtent = this.getMarkerExtent(resources);
+        var map = this.getMap();
+        var maxZoom = map.getMaxZoom();
+        var extent = new maptalks.PointExtent(),
+            m = this.getMarkerExtent(resources);
+        var renderPoints = this._getRenderPoints()[0];
+        for (var i = renderPoints.length - 1; i >= 0; i--) {
+            extent._combine(map._pointToPoint(renderPoints[i], maxZoom));
         }
         extent['xmin'] += m['xmin'];
         extent['ymin'] += m['ymin'];
