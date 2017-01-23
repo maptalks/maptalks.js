@@ -129,7 +129,7 @@ maptalks.TextMarker.Editor = {
             'height: ' + (height - 2) + 'px;' +
             'margin-left: auto;' +
             'margin-right: auto;' +
-            'line-height: ' + (textSize + spacing) + 'px;' +
+            'line-height: ' + (textSize + spacing*2) + 'px;' +
             'outline: 0;' +
             'word-wrap: break-word;' +
             'overflow-x: hidden;' +
@@ -166,10 +166,8 @@ maptalks.TextMarker.Editor = {
     },
 
     _filterContent: function (content) {
-        var pattern = /\\[v f t b]{1}/gi;
-        var enterPattern = /[\r\n]+$/gi;
-        var result = content.replace(pattern, '');
-        result = result.replace(enterPattern, '');
+        var result = content.replace(/\r/ig, "").replace(/\v/ig, "").replace(/\f/ig, "").replace(/\t/ig, "").replace(/\b/ig, "")
+                 .replace(/\n\n/ig, "\n");
         return result;
     }
 };
