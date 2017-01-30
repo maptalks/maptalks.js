@@ -130,6 +130,18 @@ function registerGeometryCommonTest(geometry,_context) {
             expect(geometry.getProperties()).to.not.eql(props_test);
         });
 
+        it('set properties with special characters',function() {
+            var old_props = geometry.getProperties();
+
+            var props_test = {'foo_num':1, 'foo_str':'\b\t\v\ftextbox', 'foo_bool':false};
+            geometry.setProperties(props_test);
+
+            var props_result = {'foo_num':1, 'foo_str':'textbox', 'foo_bool':false};
+            var props = geometry.getProperties();
+            expect(props).to.eql(props_result);
+            expect(props).to.not.eql(props_test);
+        });
+
     });
 
     context(type+':can be measured.',function() {
