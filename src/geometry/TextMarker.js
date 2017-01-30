@@ -60,6 +60,7 @@ maptalks.TextMarker = maptalks.Marker.extend(/** @lends maptalks.TextMarker.prot
      */
     setContent: function (content) {
         var old = this._content;
+        content = maptalks.StringUtil.filterContent(content);
         this._content = content;
         this._refresh();
         /**

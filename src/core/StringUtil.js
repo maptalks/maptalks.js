@@ -172,5 +172,16 @@ maptalks.StringUtil = {
             alignH = 0;
         }
         return new maptalks.Point(alignW, alignH);
+    },
+
+    /**
+     * Filter special characters in text content
+     * @param {String} content
+     * @return {String}
+     * '\b\t\r\v\f';
+     */
+    filterContent: function (content) {
+        var pattern = /[\b\t\r\v\f]/igm;
+        return content.replace(pattern, '');
     }
 };
