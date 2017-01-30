@@ -215,10 +215,14 @@ describe('#TextBox', function() {
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
+        vector.on('edittextstart',function(){
+            expect(vector.isEditingText()).to.be.ok();
+        });
+        vector.on('edittextend',function(){
+            expect(vector.isEditingText()).not.to.be.ok();
+        });
         vector.startEditText();
-        expect(vector.isEditingText()).to.be.ok();
         vector.endEditText();
-        expect(vector.isEditingText()).not.to.be.ok();
         expect(vector.getContent()).to.be.eql('textbox');
     });
 
@@ -233,4 +237,6 @@ describe('#TextBox', function() {
         expect(vector.isEditingText()).not.to.be.ok();
         expect(vector.getContent()).to.be.eql('textbox\n');
     });
+
+    
 });

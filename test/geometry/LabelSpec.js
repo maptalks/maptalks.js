@@ -57,13 +57,13 @@ describe('#Label', function() {
 
     describe('can get/set content',function() {
         it("get/set content",function() {
-            var label = 'ä¸­æ–‡æ ‡ç­¾';
+            var label = 'ÖÐÎÄ±êÇ©';
             var vector = new maptalks.Label(label,center);
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
             expect(vector.getContent()).to.be.eql(label);
-            label = 'ä¸­æ–‡æ ‡ç­¾-2';
+            label = 'ÖÐÎÄ±êÇ©-2';
             vector.setContent(label);
             expect(vector.getContent()).to.be.eql(label);
         });
@@ -71,7 +71,7 @@ describe('#Label', function() {
 
     describe('can get/set textAlign',function() {
         it("get/set textAlign",function() {
-            var label = 'ä¸­æ–‡æ ‡ç­¾';
+            var label = 'ÖÐÎÄ±êÇ©';
             var vector = new maptalks.Label(label,center);
             vector.config('boxAutoSize',false);
             //default textalign
@@ -89,7 +89,7 @@ describe('#Label', function() {
 
     describe('can get/set symbol',function() {
         it("get/set symbol",function() {
-            var label = 'ä¸­æ–‡æ ‡ç­¾';
+            var label = 'ÖÐÎÄ±êÇ©';
             var vector = new maptalks.Label(label,center);
             vector.setSymbol(null);
             //null symbol is allowed, means set to default symbol.
@@ -126,7 +126,7 @@ describe('#Label', function() {
 
     describe('alignment', function () {
         it('left', function () {
-            var vector = new maptalks.Label('â– â– â– ', center, {
+            var vector = new maptalks.Label('¡ö¡ö¡ö', center, {
                 box : false,
                 symbol : {
                     'markerFillOpacity' : 0,
@@ -144,7 +144,7 @@ describe('#Label', function() {
         });
 
         it('right', function () {
-            var vector = new maptalks.Label('â– â– â– ', center, {
+            var vector = new maptalks.Label('¡ö¡ö¡ö', center, {
                 box : false,
                 symbol : {
                     'markerFillOpacity' : 0,
@@ -162,7 +162,7 @@ describe('#Label', function() {
         });
 
         it('top', function () {
-            var vector = new maptalks.Label('â– â– â– ', center, {
+            var vector = new maptalks.Label('¡ö¡ö¡ö', center, {
                 box : false,
                 symbol : {
                     'markerFillOpacity' : 0,
@@ -180,7 +180,7 @@ describe('#Label', function() {
         });
 
         it('bottom', function () {
-            var vector = new maptalks.Label('â– â– â– ', center, {
+            var vector = new maptalks.Label('¡ö¡ö¡ö', center, {
                 box : false,
                 symbol : {
                     'markerFillOpacity' : 0,
@@ -208,7 +208,7 @@ describe('#Label', function() {
     });
 
     it('autoSize', function () {
-        var vector = new maptalks.Label('â– â– â– ', center, {
+        var vector = new maptalks.Label('¡ö¡ö¡ö', center, {
             box:true,
             boxAutoSize: true
         });
@@ -217,38 +217,187 @@ describe('#Label', function() {
         expect(symbol.markerHeight).to.be.above(5);
     });
 
-    it('can edit', function() {
-        var vector = new maptalks.Label('label',center);
-        layer = new maptalks.VectorLayer('id');
-        map.addLayer(layer);
-        layer.addGeometry(vector);
-        vector.startEditText();
-        expect(vector.isEditingText()).to.be.ok();
-        vector.endEditText();
-        expect(vector.isEditingText()).not.to.be.ok();
-    });
+    describe('edit label',function() {
+        it('can edit', function() {
+            var vector = new maptalks.Label('label',center);
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            vector.startEditText();
+            expect(vector.isEditingText()).to.be.ok();
+            vector.endEditText();
+            expect(vector.isEditingText()).not.to.be.ok();
+        });
 
-    it('edit with special characters', function() {
-        var vector = new maptalks.Label('\b\t\v\fLabel',center);
-        layer = new maptalks.VectorLayer('id');
-        map.addLayer(layer);
-        layer.addGeometry(vector);
-        vector.startEditText();
-        expect(vector.isEditingText()).to.be.ok();
-        vector.endEditText();
-        expect(vector.isEditingText()).not.to.be.ok();
-        expect(vector.getContent()).to.be.eql('Label');
-    });
+        it('horizontal left', function() {
+            var vector = new maptalks.Label('¡ö¡ö¡ö', center, {
+                box : false,
+                symbol : {
+                    'markerDx' : 0,
+                    'markerDy' : 0,
+                    'textDx' : 0,
+                    'textDy' : 0,
+                    'textHorizontalAlignment' : 'left'
+                }
+            });
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            vector.startEditText();
+            expect(vector.isEditingText()).to.be.ok();
+            var editor = vector.getTextEditor();
+            expect(editor.options['dx']).to.be(-2);
+            expect(editor.options['dy']).to.be(-2);
+            vector.endEditText();
+            expect(vector.isEditingText()).not.to.be.ok();
+        });
 
-    it('edit with "Enter" characters', function() {
-        var vector = new maptalks.Label('Label\r',center);
-        layer = new maptalks.VectorLayer('id');
-        map.addLayer(layer);
-        layer.addGeometry(vector);
-        vector.startEditText();
-        expect(vector.isEditingText()).to.be.ok();
-        vector.endEditText();
-        expect(vector.isEditingText()).not.to.be.ok();
-        expect(vector.getContent()).to.be.eql('Label\n');
+        it('horizontal right', function() {
+            var vector = new maptalks.Label('¡ö¡ö¡ö', center, {
+                box : false,
+                symbol : {
+                    'markerDx' : 0,
+                    'markerDy' : 0,
+                    'textDx' : 0,
+                    'textDy' : 0,
+                    'textHorizontalAlignment' : 'right'
+                }
+            });
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            vector.startEditText();
+            expect(vector.isEditingText()).to.be.ok();
+            var editor = vector.getTextEditor();
+            expect(editor.options['dx']).to.be(-2);
+            expect(editor.options['dy']).to.be(-2);
+            vector.endEditText();
+            expect(vector.isEditingText()).not.to.be.ok();
+        });
+
+        it('horizontal middle', function() {
+            var vector = new maptalks.Label('¡ö¡ö¡ö', center, {
+                box : false,
+                symbol : {
+                    'markerDx' : 0,
+                    'markerDy' : 0,
+                    'textDx' : 0,
+                    'textDy' : 0,
+                    'textHorizontalAlignment' : 'middle'
+                }
+            });
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            vector.startEditText();
+            expect(vector.isEditingText()).to.be.ok();
+            var editor = vector.getTextEditor();
+            expect(editor.options['dx']).to.be(-2);
+            expect(editor.options['dy']).to.be(-2);
+            vector.endEditText();
+            expect(vector.isEditingText()).not.to.be.ok();
+        });
+
+        it('filter with special characters', function() {
+            var vector = new maptalks.Label('\b\t\v\fLabel',center);
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            vector.startEditText();
+            expect(vector.isEditingText()).to.be.ok();
+            vector.endEditText();
+            expect(vector.isEditingText()).not.to.be.ok();
+            expect(vector.getContent()).to.be.eql('Label');
+        });
+
+        it('filter with "Enter" characters', function() {
+            var vector = new maptalks.Label('Label\r',center);
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            vector.startEditText();
+            expect(vector.isEditingText()).to.be.ok();
+            vector.endEditText();
+            expect(vector.isEditingText()).not.to.be.ok();
+            expect(vector.getContent()).to.be.eql('Label\n');
+        });
+
+        it('mock input characters',function() {
+            var label = new maptalks.Label('I am a Text',center);
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(label);
+            label.on('edittextstart', startEdit);
+            label.on('edittextend', endEdit);
+            label.startEditText();
+
+            function startEdit(param) {
+                expect(label.isEditingText()).to.be.ok();
+                var dom = label.getTextEditor().getDOM();
+                maptalks.DomUtil.on(dom, 'keyup', function(ev){
+                    var oEvent = ev || event;
+                    var char = String.fromCharCode(oEvent.keyCode);
+                    if(oEvent.shiftKey) {
+                        if(char == '1') {
+                            char = '!';
+                        }
+                    }
+                    dom.innerText += char;
+                    label.endEditText();
+                });
+                happen.keyup(dom, {
+                    shiftKey: true,
+                    keyCode: 49
+                });
+                expect(label.isEditingText()).to.not.be.ok();
+            }
+            function endEdit(param) {
+                expect(label.getContent()).to.eql('I am a Text!');
+            }
+        });
+
+        it('mock press ¡°Enter¡± key',function() {
+            var label = new maptalks.Label('I am a Text',center);
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(label);
+            var size = label.getSize();
+            label.on('edittextstart', startEdit);
+            label.on('edittextend', endEdit);
+            label.startEditText();
+            function startEdit(param) {
+                var dom = label.getTextEditor().getDOM();
+                maptalks.DomUtil.on(dom, 'keyup', function(ev){
+                    var oEvent = ev || event;
+                    if(oEvent.keyCode === 13) {
+                        dom.innerText += '\n';
+                    }
+                    var char = String.fromCharCode(oEvent.keyCode);
+                    if(oEvent.shiftKey) {
+                        if(char == '1') {
+                            char = '!';
+                            dom.innerText += char;
+                            label.endEditText();
+                        }
+                    }
+                });
+                happen.keyup(dom, {
+                    keyCode: 13
+                });
+                happen.keyup(dom, {
+                    shiftKey: true,
+                    keyCode: 49
+                });
+            }
+            function endEdit(param) {
+                var symbol = label._getInternalSymbol(),
+                    font = maptalks.symbolizer.TextMarkerSymbolizer.getFont(symbol);
+                    textSize = symbol['textSize'] || 12,
+                    spacing = symbol['textLineSpacing'] || 0;
+                var h = maptalks.StringUtil.stringLength('test', font).height;
+                var expected = h * 2 + spacing;
+                expect(label.getSize()['height'] >= expected).to.be.ok();
+            }
+        });
     });
 });
