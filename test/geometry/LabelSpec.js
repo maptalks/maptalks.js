@@ -229,7 +229,7 @@ describe('#Label', function() {
     });
 
     it('edit with special characters', function() {
-        var vector = new maptalks.Label('label\r\n',center);
+        var vector = new maptalks.Label('\b\t\v\fLabel',center);
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
@@ -237,6 +237,18 @@ describe('#Label', function() {
         expect(vector.isEditingText()).to.be.ok();
         vector.endEditText();
         expect(vector.isEditingText()).not.to.be.ok();
-        expect(vector.getContent()).to.be.eql('label');
+        expect(vector.getContent()).to.be.eql('Label');
+    });
+
+    it('edit with "Enter" characters', function() {
+        var vector = new maptalks.Label('Label\r',center);
+        layer = new maptalks.VectorLayer('id');
+        map.addLayer(layer);
+        layer.addGeometry(vector);
+        vector.startEditText();
+        expect(vector.isEditingText()).to.be.ok();
+        vector.endEditText();
+        expect(vector.isEditingText()).not.to.be.ok();
+        expect(vector.getContent()).to.be.eql('Label\n');
     });
 });
