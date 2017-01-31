@@ -128,7 +128,7 @@ maptalks.TextMarker.Editor = {
             'height: ' + (height - 2) + 'px;' +
             'margin-left: auto;' +
             'margin-right: auto;' +
-            'line-height: ' + (textSize + spacing*2) + 'px;' +
+            'line-height: ' + (textSize + spacing * 2) + 'px;' +
             'outline: 0;' +
             'word-wrap: break-word;' +
             'overflow-x: hidden;' +

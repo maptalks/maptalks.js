@@ -213,12 +213,12 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         /**
          * filter string props
          */
-         for(var prop in this.properties) {
+        for (var prop in this.properties) {
             var val = this.properties[prop];
-            if(maptalks.Util.isString(val)) {
+            if (maptalks.Util.isString(val)) {
                 this.properties[prop] = maptalks.StringUtil.filterContent(val);
             }
-         }
+        }
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
