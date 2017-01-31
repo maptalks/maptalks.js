@@ -47,7 +47,7 @@ export default class ParticleLayer extends CanvasLayer {
                 if (context.fillStyle !== points[i].color) {
                     context.fillStyle = points[i].color || this.options['lineColor'] || '#fff';
                 }
-                context.fillRect(pos.x - points[i].r / 2, pos.y - points[i].r / 2, points[i].r, points[i].r);
+                context.fillRect(pos.x - points[i].r/2, pos.y - points[i].r / 2, points[i].r, points[i].r);
             }
         }
         this._fillCanvas(context);
