@@ -313,4 +313,8 @@ COMMON_GEOEVENTS_TESTOR.prototype = {
     }
 
 };
+
+var COMMON_GET_MAP_COLOR = function (map, x, y) {
+    return  map._getRenderer().canvas.getContext('2d').getImageData(x, y, 1, 1).data;
+};
 /*eslint-enable no-unused-vars */

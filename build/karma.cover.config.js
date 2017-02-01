@@ -1,6 +1,7 @@
 const base = require('./karma.base.config.js');
 
 module.exports = function (config) {
+
     const options = Object.assign(base, {
         browsers: ['Chrome'],
         reporters: ['mocha', 'coverage'],
@@ -13,7 +14,7 @@ module.exports = function (config) {
         },
         singleRun: true
     });
-
+    options.rollupPreprocessor.sourceMap = 'inline';
     const plugins = options.rollupPreprocessor.plugins;
     const idx = plugins.findIndex(plugin => {
         return plugin.name === 'babel';
