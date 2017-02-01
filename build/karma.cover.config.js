@@ -1,6 +1,7 @@
 const base = require('./karma.base.config.js');
 
 module.exports = function (config) {
+    config.rollupPreprocessor.sourceMap = 'inline';
     const options = Object.assign(base, {
         browsers: ['Chrome'],
         reporters: ['mocha', 'coverage'],
