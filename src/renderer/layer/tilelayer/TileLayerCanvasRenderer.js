@@ -15,10 +15,9 @@ import TileCache from './TileCache';
  * Renderer class based on HTML5 Canvas2D for TileLayers
  * @class
  * @protected
- * @memberOf tilelayer
- * @name Canvas
- * @extends {renderer.Canvas}
- * @param {TileLayer} layer - layer of the renderer
+ * @memberOf maptalks.renderer
+ * @extends {renderer.CanvasRenderer}
+ * @param {maptalks.TileLayer} layer - TileLayer to render
  */
 export default class TileLayerRenderer extends CanvasRenderer {
 
@@ -39,10 +38,6 @@ export default class TileLayerRenderer extends CanvasRenderer {
         this.requestMapToRender();
     }
 
-    clearExecutors() {
-        clearTimeout(this._loadQueueTimeout);
-    }
-
     draw() {
         var layer = this.layer;
         var tileGrid = layer._getTiles();
@@ -60,8 +55,6 @@ export default class TileLayerRenderer extends CanvasRenderer {
             tileCache = this._tileCache,
             tileSize = layer.getTileSize();
 
-        this._extent2D = tileGrid['fullExtent'];
-        this._northWest = tileGrid['northWest'];
         if (!this.canvas) {
             this.createCanvas();
         }
@@ -72,13 +65,13 @@ export default class TileLayerRenderer extends CanvasRenderer {
             return;
         }
 
-        //遍历瓦片
+        //visit all the tiles
         this._totalTileToLoad = this._tileToLoadCounter = 0;
         var tile, tileId, cached, tile2DExtent;
         for (var i = tiles.length - 1; i >= 0; i--) {
             tile = tiles[i];
             tileId = tiles[i]['id'];
-            //如果缓存中已存有瓦片, 则从不再请求而从缓存中读取.
+            //load tile in cache at first if it has.
             cached = tileRended[tileId] || (tileCache ? tileCache.get(tileId) : null);
             tile2DExtent = new PointExtent(tile['point'],
                 tile['point'].add(tileSize.toPoint()));
@@ -116,9 +109,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
             cancelAnimFrame(this._loadQueueTimeout);
         }
 
-        var me = this;
-        this._loadQueueTimeout = requestAnimFrame(function () {
-            me._loadTileQueue();
+        this._loadQueueTimeout = requestAnimFrame(() => {
+            this._loadTileQueue();
         });
     }
 
@@ -199,9 +191,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     /**
-     * 绘制瓦片, 并请求地图重绘
-     * @param  {Point} point        瓦片左上角坐标
-     * @param  {Image} tileImage 瓦片图片对象
+     * draw tiles and request map to render
+     * @param  {Image} tileImage
      */
     _drawTileAndRequest(tileImage) {
         //sometimes, layer may be removed from map here.
@@ -238,8 +229,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     /**
-     * 清除瓦片区域, 并请求地图重绘
-     * @param  {Point} point        瓦片左上角坐标
+     * Clear tiles and request map to render
+     * @param  {Image} tileImage
      */
     _clearTileRectAndRequest(tileImage) {
         if (!this.getMap()) {
@@ -271,15 +262,16 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (this._mapRenderRequest) {
             cancelAnimFrame(this._mapRenderRequest);
         }
-        var me = this;
-        this._mapRenderRequest = requestAnimFrame(function () {
-            if (me.getMap() && !me.getMap()._isBusy()) {
-                me._mapRender.render();
+        this._mapRenderRequest = requestAnimFrame(() => {
+            if (this.getMap() && !this.getMap()._isBusy()) {
+                this._mapRender.render();
             }
         });
     }
 
     onRemove() {
+        cancelAnimFrame(this._loadQueueTimeout);
+        cancelAnimFrame(this._mapRenderRequest);
         delete this._mapRender;
         delete this._tileCache;
         delete this._tileRended;

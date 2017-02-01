@@ -74,7 +74,7 @@ export class ResourceCache {
  * @protected
  * @memberOf renderer
  * @name Canvas
- * @extends {maptalks.Class}
+ * @extends {Class}
  */
 export default class CanvasRenderer extends Class {
 
