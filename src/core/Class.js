@@ -19,7 +19,7 @@ class Class {
 
     callInitHooks() {
         const proto = Object.getPrototypeOf(this);
-        this._traverseInitHooks(proto);
+        this._visitInitHooks(proto);
     }
 
     setOptions(options) {
@@ -69,13 +69,13 @@ class Class {
         return this;
     }
 
-    _traverseInitHooks(proto) {
+    _visitInitHooks(proto) {
         if (this._initHooksCalled) {
             return;
         }
         const parentProto = Object.getPrototypeOf(proto);
-        if (parentProto._traverseInitHooks) {
-            parentProto._traverseInitHooks.call(this, parentProto);
+        if (parentProto._visitInitHooks) {
+            parentProto._visitInitHooks.call(this, parentProto);
         }
         this._initHooksCalled = true;
         const hooks = proto._initHooks;
