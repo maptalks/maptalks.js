@@ -47,7 +47,7 @@ module.exports = {
         ],
         format: 'umd', // helps prevent naming collisions
         moduleName: 'maptalks', // required for 'umd' format
-        sourceMap: 'inline', // sensible for testing
+        sourceMap: false, // sensible for testing
     },
     customLaunchers: {
         IE10: {

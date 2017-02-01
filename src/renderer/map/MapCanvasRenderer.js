@@ -247,7 +247,6 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (imgOp < 1) {
             ctx.globalAlpha *= imgOp;
         }
-
         if (layer.options['cssFilter']) {
             ctx.filter = layer.options['cssFilter'];
         }
@@ -268,13 +267,13 @@ export default class MapCanvasRenderer extends MapRenderer {
             point._add(layer.options['dx'], layer.options['dy']);
         }
         ctx.drawImage(canvasImage, point.x, point.y);
-        ctx.globalAlpha = alpha;
-        if (ctx.filter !== 'none') {
-            ctx.filter = 'none';
-        }
         if (layerImage['transform']) {
             ctx.restore();
         }
+        if (ctx.filter !== 'none') {
+            ctx.filter = 'none';
+        }
+        ctx.globalAlpha = alpha;
     }
 
     _storeBackground(baseLayerImage) {

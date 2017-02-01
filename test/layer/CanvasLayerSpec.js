@@ -167,4 +167,26 @@ describe('#CanvasLayer', function () {
         });
         layer.addTo(map);
     });
+
+    it('set opacity to the layer', function (done) {
+        var size = map.getSize();
+        layer = new maptalks.CanvasLayer('v', { 'opacity' : 0.4 });
+        layer.draw = function (context) {
+            context.fillStyle = '#f00';
+            context.fillRect(0, 0, size.width, size.height);
+        };
+        layer.once('layerload', function () {
+            /*eslint-disable no-undef */
+            var mapImage = COMMON_GET_MAP_COLOR(map, size.width / 2, size.height / 2);
+            expect([mapImage[0], mapImage[1], mapImage[2], mapImage[3]]).to.be.eql([255, 0, 0, 255 * 0.4]);
+            layer.once('layerload', function () {
+                mapImage = COMMON_GET_MAP_COLOR(map, size.width / 2, size.height / 2);
+                expect([mapImage[0], mapImage[1], mapImage[2], mapImage[3]]).to.be.eql([255, 0, 0, 255 * 0.4]);
+                done();
+            });
+            map.zoomIn();
+            /*eslint-enable no-undef */
+        });
+        layer.addTo(map);
+    });
 });

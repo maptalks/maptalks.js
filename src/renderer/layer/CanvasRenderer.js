@@ -178,9 +178,7 @@ export default class CanvasRenderer extends Class {
         return false;
     }
 
-    /**
-     * 显示图层
-     */
+
     show() {
         var mask = this.layer.getMask();
         if (mask) {
@@ -189,9 +187,7 @@ export default class CanvasRenderer extends Class {
         this.render(true);
     }
 
-    /**
-     * 隐藏图层
-     */
+
     hide() {
         this.clearCanvas();
         this.requestMapToRender();
@@ -201,11 +197,7 @@ export default class CanvasRenderer extends Class {
         this.requestMapToRender();
     }
 
-    /**
-     *
-     * @param  {ViewPoint} point ViewPoint
-     * @return {Boolean}       true|false
-     */
+
     hitDetect(point) {
         if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
             return false;
