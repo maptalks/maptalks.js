@@ -301,6 +301,10 @@ maptalks.Painter = maptalks.Class.extend(/** @lends maptalks.Painter.prototype *
     },
 
     removeZoomCache: function () {
+        if (this.geometry._simplified) {
+            // remove cached points if the geometry is simplified on the zoom.
+            delete this._paintParams;
+        }
         delete this._extent2D;
     }
 });
