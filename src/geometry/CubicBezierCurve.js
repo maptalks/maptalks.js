@@ -2,10 +2,9 @@ import Curve from './Curve';
 import Canvas from 'core/Canvas';
 
 /**
- * @classdesc Cubic Bezier Curve
- * @class
+ * Cubic Bezier Curve
  * @category geometry
- * @extends {Curve}
+ * @extends Curve
  * @param {Coordinate[]|Number[][]} coordinates - coordinates of the curve
  * @param {Object} [options=null]   - construct options defined in [CubicBezierCurve]{@link CubicBezierCurve#options}
  * @example
@@ -22,7 +21,7 @@ import Canvas from 'core/Canvas';
  *     }
  * ).addTo(layer);
  */
-export default class CubicBezierCurve extends Curve {
+class CubicBezierCurve extends Curve {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -49,3 +48,5 @@ export default class CubicBezierCurve extends Curve {
 }
 
 CubicBezierCurve.registerJSONType('CubicBezierCurve');
+
+export default CubicBezierCurve;

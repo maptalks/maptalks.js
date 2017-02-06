@@ -3,7 +3,7 @@ import Coordinate from 'geo/Coordinate';
 
 /**
  * Common methods for geometry classes that base on a center, e.g. Marker, Circle, Ellipse , etc
- * @mixin
+ * @mixin CenterMixin
  */
 export default function (Base) {
     return class extends Base {
@@ -11,6 +11,7 @@ export default function (Base) {
         /**
          * Get geometry's center
          * @return {Coordinate} - center of the geometry
+         * @function CenterMixin.getCoordinates
          */
         getCoordinates() {
             return this._coordinates;
@@ -21,6 +22,7 @@ export default function (Base) {
          * @param {Coordinate|Number[]} coordinates - new center
          * @return {Geometry} this
          * @fires Geometry#positionchange
+         * @function CenterMixin.setCoordinates
          */
         setCoordinates(coordinates) {
             const center = (coordinates instanceof Coordinate) ? coordinates : new Coordinate(coordinates);

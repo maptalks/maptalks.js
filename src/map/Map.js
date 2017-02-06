@@ -13,7 +13,7 @@ import {
 } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
-import Eventable from 'core/Event';
+import Eventable from 'core/Eventable';
 import Handlerable from 'handler/Handlerable';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
@@ -59,6 +59,8 @@ import View from './view/View';
  * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
  *
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ * @memberOf Map
+ * @instance
  */
 const options = {
     'centerCross': false,
@@ -99,31 +101,15 @@ const options = {
 };
 
 /**
- *
- * @class
+ * The central class of the library, to create a map on a container.
  * @category map
- * @extends {Class}
- *
- * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
- *                                          1. A HTMLElement container.<br/>
- *                                          2. ID of a HTMLElement container.<br/>
- *                                          3. A canvas compatible container in node,
- *                                          e.g. [node-canvas]{@link https://github.com/Automattic/node-canvas},
- *                                              [canvas2svg]{@link https://github.com/gliffy/canvas2svg}
- * @param {Object} options - construct options
- * @param {(Number[]|Coordinate)} options.center - initial center of the map.
- * @param {Number} options.zoom - initial zoom of the map.
- * @param {Object} [options.view=null] - map's view config, default is using projection EPSG:3857 with resolutions used by google map/osm.
- * @param {Layer} [options.baseLayer=null] - base layer that will be set to map initially.
- * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
- * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}
+ * @extends Class
  *
  * @mixes Eventable
  * @mixes Handlerable
- * @mixes ui.Menu.Mixin
+ * @mixes Menuable
+ * @mixes Renderable
  *
- * @classdesc
- * The central class of the library, to create a map on a container.
  * @example
  * var map = new Map("map",{
         center:     [180,0],
@@ -138,8 +124,23 @@ const options = {
         ]
     });
  */
-export default class Map extends Handlerable(Eventable(Renderable(Class))) {
+class Map extends Handlerable(Eventable(Renderable(Class))) {
 
+    /**
+     * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
+     *                                          1. A HTMLElement container.<br/>
+     *                                          2. ID of a HTMLElement container.<br/>
+     *                                          3. A canvas compatible container in node,
+     *                                          e.g. [node-canvas]{@link https://github.com/Automattic/node-canvas},
+     *                                              [canvas2svg]{@link https://github.com/gliffy/canvas2svg}
+     * @param {Object} options - construct options
+     * @param {(Number[]|Coordinate)} options.center - initial center of the map.
+     * @param {Number} options.zoom - initial zoom of the map.
+     * @param {Object} [options.view=null] - map's view config, default is using projection EPSG:3857 with resolutions used by google map/osm.
+     * @param {Layer} [options.baseLayer=null] - base layer that will be set to map initially.
+     * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
+     * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
+     */
     constructor(container, options) {
         if (!options) {
             throw new Error('Invalid options when creating map.');
@@ -212,9 +213,8 @@ export default class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Add hooks for additional codes when map's loading complete, useful for plugin developping.
-     * @param {function} fn
+     * @param {Function} fn
      * @returns {Map}
-     * @static
      * @protected
      */
     static addOnLoadHook(fn) { // (Function) || (String, args...)
@@ -1736,7 +1736,7 @@ export default class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     _pointToPoint(point, zoom) {
         if (!isNil(zoom)) {
-            return point.multi(this.getScale(zoom) / this.getScale());
+            return point.multi(this._getResolution(zoom) / this._getResolution(this.getZoom()));
         }
         return point;
     }
@@ -1805,8 +1805,6 @@ export default class Map extends Handlerable(Eventable(Renderable(Class))) {
         var centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (!isNil(zoom) ? this._getResolution() / this._getResolution(zoom) : 1);
 
-        //�������������귽���ǹ̶�������, ��html��׼һ��, ��������������, ���ϵ�������
-
         return new Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
     }
 
@@ -1828,3 +1826,5 @@ export default class Map extends Handlerable(Eventable(Renderable(Class))) {
 }
 
 Map.mergeOptions(options);
+
+export default Map;

@@ -11,7 +11,9 @@ import OverlayLayer from './OverlayLayer';
  * @property {String}  options.cursor=default        - the cursor style of the layer
  * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events
  * @property {Boolean} options.defaultIconSize=[20, 20] - default size of a marker's icon
- * @property {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.
+ * @property {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.\
+ * @memberOf VectorLayer
+ * @instance
  */
 const options = {
     'debug': false,
@@ -26,17 +28,18 @@ const options = {
 /**
  * @classdesc
  * A layer for managing and rendering geometries.
- * @class
  * @category layer
- * @extends {OverlayLayer}
- * @param {String|Number} id - layer's id
- * @param {Geometry|Geometry[]} [geometries=null] - geometries to add
- * @param {Object}  [options=null]          - construct options
- * @param {Object}  [options.style=null]    - vectorlayer's style
- * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}
+ * @extends OverlayLayer
  */
-export default class VectorLayer extends OverlayLayer {
+class VectorLayer extends OverlayLayer {
 
+    /**
+     * @param {String|Number} id - layer's id
+     * @param {Geometry|Geometry[]} [geometries=null] - geometries to add
+     * @param {Object}  [options=null]          - construct options
+     * @param {Object}  [options.style=null]    - vectorlayer's style
+     * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}
+     */
     constructor(id, geometries, options) {
         const opts = extend({}, options);
         const style = opts['style'];
@@ -221,3 +224,5 @@ export default class VectorLayer extends OverlayLayer {
 VectorLayer.mergeOptions(options);
 
 VectorLayer.registerJSONType('VectorLayer');
+
+export default VectorLayer;

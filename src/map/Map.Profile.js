@@ -11,9 +11,8 @@ import Geometry from 'geometry/Geometry';
 import GeoJSON from 'geometry/GeoJSON';
 
 /**
- * Produce a geometry from one or more [profile json]{@link Geometry#toJSON} or GeoJSON.
- * @static
- * @param  {Object} json - a geometry's profile json or a geojson
+ * Produce a geometry from one or more [JSON]{@link Geometry#toJSON} or GeoJSON.
+ * @param  {Object} json - a geometry's JSON or a geojson
  * @return {Geometry} geometry
  * @example
  * var profile = {
@@ -77,11 +76,9 @@ Geometry.fromJSON = function (json) {
 };
 
 /**
- * Reproduce a Layer from layer's profile JSON.
- * @param  {Object} layerJSON - layer's profile JSON
+ * Reproduce a Layer from layer's JSON.
+ * @param  {Object} layerJSON - layer's JSON
  * @return {Layer}
- * @static
- * @function
  */
 Layer.fromJSON = function (layerJSON) {
     if (!layerJSON) {
@@ -118,7 +115,7 @@ Map.include(/** @lends Map.prototype */ {
      * @param  {Boolean|Extent} [options.clipExtent=null] - if set with an extent instance, only the geometries intersectes with the extent will be exported.
      *                                                             If set to true, map's current extent will be used.
      * @param  {Boolean|Object|Object[]} [options.layers=null] - whether to export other layers' JSON, if yes, it will be used as layer's toJSON options.
-     *                                                        It can also be a array of layer export options with a "id" attribute to filter the layers to export.
+     *                                                        It can also be an array of layer export options with a "id" attribute to filter the layers to export.
      * @return {Object} layer's JSON
      */
     toJSON: function (options) {

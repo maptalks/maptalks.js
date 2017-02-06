@@ -3,12 +3,14 @@ import { round } from 'core/util';
 
 /**
  * Represents a size.
- * @class
  * @category basic types
- * @param {Number} width - width value
- * @param {Number} height - height value
  */
-export default class Size {
+class Size {
+
+    /**
+     * @param {Number} width - width value
+     * @param {Number} height - height value
+     */
     constructor(width, height) {
         /**
          * @property {Number} width - width
@@ -76,7 +78,7 @@ export default class Size {
     }
 
     /**
-     * Converts the size object to a array [width, height]
+     * Converts the size object to an array [width, height]
      * @return {Number[]}
      */
     toArray() {
@@ -94,3 +96,5 @@ export default class Size {
         };
     }
 }
+
+export default Size;

@@ -2,10 +2,10 @@ import Curve from './Curve';
 import Canvas from 'core/Canvas';
 
 /**
- * @classdesc Quadratic Bezier Curve
- * @class
+ * @classdesc
+ * Quadratic Bezier Curve
  * @category geometry
- * @extends {Curve}
+ * @extends Curve
  * @param {Coordinate[]|Number[][]} coordinates - coordinates of the curve
  * @example
  * var curve = new QuadBezierCurve(
@@ -21,7 +21,7 @@ import Canvas from 'core/Canvas';
  *     }
  * ).addTo(layer);
  */
-export default class QuadBezierCurve extends Curve {
+class QuadBezierCurve extends Curve {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -58,3 +58,5 @@ export default class QuadBezierCurve extends Curve {
 }
 
 QuadBezierCurve.registerJSONType('QuadBezierCurve');
+
+export default QuadBezierCurve;

@@ -27,14 +27,12 @@ const types = {
 };
 
 /**
- * @classdesc
  * GeoJSON utilities
  * @class
  * @category geometry
- *  @memberOf maptalks
  * @name GeoJSON
  */
-export default {
+const GeoJSON = {
 
     /**
      * Convert one or more GeoJSON objects to a geometry
@@ -157,3 +155,4 @@ export default {
     }
 };
 
+export default GeoJSON;

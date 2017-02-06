@@ -7,21 +7,15 @@ import Polygon from './Polygon';
 
 /**
  * @classdesc
- * Represents a Rectangle geometry, a child class of [Polygon]{@link Polygon}. <br>
- *     It means it shares all the methods defined in [Polygon]{@link Polygon} besides some overrided ones.
- * @class
+ * Represents a Rectangle geometry.
  * @category geometry
- * @extends {Polygon}
- * @param {Coordinate} coordinates  - northwest of the rectangle
- * @param {Number} width                     - width of the rectangle
- * @param {Number} height                    - height of the rectangle
- * @param {Object} [options=null]            - options defined in [Rectangle]{@link Rectangle#options}
+ * @extends Polygon
  * @example
  * var rectangle = new Rectangle([100, 0], 1000, 500, {
  *     id : 'rectangle0'
  * });
  */
-export default class Rectangle extends Polygon {
+class Rectangle extends Polygon {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -30,6 +24,12 @@ export default class Rectangle extends Polygon {
         return rect;
     }
 
+    /**
+     * @param {Coordinate} coordinates  - northwest of the rectangle
+     * @param {Number} width                     - width of the rectangle
+     * @param {Number} height                    - height of the rectangle
+     * @param {Object} [options=null]            - options defined in [Rectangle]{@link Rectangle#options}
+     */
     constructor(coordinates, width, height, opts) {
         super(null, opts);
         if (coordinates) {
@@ -240,3 +240,5 @@ export default class Rectangle extends Polygon {
 }
 
 Rectangle.registerJSONType('Rectangle');
+
+export default Rectangle;

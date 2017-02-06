@@ -20,12 +20,11 @@ const END_EVENTS = {
 
 /**
  * Drag handler
- * @class
  * @category handler
  * @protected
  * @extends Handler
  */
-const DragHandler = class extends Handler {
+class DragHandler extends Handler {
 
     constructor(dom, options) {
         super(null);

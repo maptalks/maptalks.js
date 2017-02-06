@@ -8,29 +8,24 @@ import Polygon from './Polygon';
 /**
  * @property {Object} [options=null]
  * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
+ * @memberOf Ellipse
+ * @instance
  */
 const options = {
     'numberOfShellPoints': 60
 };
 
 /**
- * @classdesc
- * Represents a Ellipse Geometry, a child class of [Polygon]{@link Polygon}. <br>
- *     It means it shares all the methods defined in [Polygon]{@link Polygon} besides some overrided ones.
- * @class
+ * Represents a Ellipse Geometry. <br>
  * @category geometry
  * @extends Polygon
- * @mixes Geometry.Center
- * @param {Coordinate} center  - center of the ellipse
- * @param {Number} width                - width of the ellipse
- * @param {Number} height                - height of the ellipse
- * @param {Object}  [options=null] - construct options defined in [Ellipse]{@link Ellipse#options}
+ * @mixes CenterMixin
  * @example
  * var ellipse = new Ellipse([100, 0], 1000, 500, {
  *     id : 'ellipse0'
  * });
  */
-export default class Ellipse extends CenterMixin(Polygon) {
+class Ellipse extends CenterMixin(Polygon) {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -39,6 +34,12 @@ export default class Ellipse extends CenterMixin(Polygon) {
         return ellipse;
     }
 
+    /**
+     * @param {Coordinate} center  - center of the ellipse
+     * @param {Number} width  - width of the ellipse
+     * @param {Number} height - height of the ellipse
+     * @param {Object}  [options=null] - construct options defined in [Ellipse]{@link Ellipse#options}
+     */
     constructor(coordinates, width, height, opts) {
         super(null, opts);
         if (coordinates) {
@@ -217,3 +218,5 @@ export default class Ellipse extends CenterMixin(Polygon) {
 Ellipse.mergeOptions(options);
 
 Ellipse.registerJSONType('Ellipse');
+
+export default Ellipse;

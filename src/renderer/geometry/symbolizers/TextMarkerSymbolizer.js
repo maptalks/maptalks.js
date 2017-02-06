@@ -3,11 +3,9 @@ import {
     isNil,
     isNumber,
     isArrayHasData,
-    replaceVariable,
-    getAlignPoint,
     getValueOrDefault
 } from 'core/util';
-import { splitTextToRow } from 'core/util/text';
+import { splitTextToRow, getAlignPoint, replaceVariable } from 'core/util/strings';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';

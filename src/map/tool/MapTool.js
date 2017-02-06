@@ -1,5 +1,5 @@
 import Class from 'core/Class';
-import Eventable from 'core/Event';
+import Eventable from 'core/Eventable';
 
 /**
  * @classdesc

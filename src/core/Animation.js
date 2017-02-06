@@ -7,16 +7,17 @@ import {
 import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 
+/** @namespace animation */
+
 /**
  * @classdesc
  * Easing functions for anmation, from openlayers 3
  * @class
  * @category animation
- * @memberOf animation
- * @name Easing
+ * @memberof animation
  * @protected
  */
-export const Easing = {
+const Easing = {
     /**
      * Start slow and speed up.
      * @param {number} t Input between 0 and 1.
@@ -70,33 +71,36 @@ export const Easing = {
 };
 
 /**
- * @classdesc
- * Animation Frame used internally n animation player.
- * @class
+ * Animation Frame used internally in animation player.
  * @category animation
- * @memberOf animation
- * @name Frame
+ * @memberof animation
  * @protected
- * @param {Object} state  - animation state
- * @param {Object} styles - styles to animate
  */
-export const Frame = function (state, styles) {
-    this.state = state;
-    this.styles = styles;
-};
+class Frame {
+    /**
+     * Create an animation frame.
+     * @param {Object} state  - animation state
+     * @param {Object} styles - styles to animate
+     */
+    constructor(state, styles) {
+        this.state = state;
+        this.styles = styles;
+    }
+}
 
 /**
- * @classdesc
- * [Web Animation API]{@link https://developer.mozilla.org/zh-CN/docs/Web/API/Animation} style animation player
- * @param {Function} animation - animation [framing]{@link framing} function
- * @param {Object} options     - animation options
- * @param  {Function} step  - callback function for animation steps
- * @class
+ * An [Web Animation API]{@link https://developer.mozilla.org/zh-CN/docs/Web/API/Animation} style animation player
  * @category animation
- * @memberOf animation
- * @name Player
+ * @memberof animation
  */
-export class Player {
+class Player {
+
+    /**
+     * Create an animation player
+     * @param {Function} animation - animation [framing]{@link framing} function
+     * @param {Object} options     - animation options
+     * @param {Function} step  - callback function for animation steps
+     */
     constructor(animation, options, step) {
         this._animation = animation;
         this._options = options;
@@ -112,8 +116,9 @@ export class Player {
  * Utilities for animation
  * @class
  * @category animation
+ * @memberof animation
  */
-export const Animation = {
+const Animation = {
     /**
      * @property {Object} speed         - predefined animation speed
      * @property {Number} speed.slow    - 2000ms
@@ -144,8 +149,8 @@ export const Animation = {
             var start = [],
                 d = [],
                 dest = [];
-            for (var i = 0; i < child.length; i++) {
-                var styles = Animation._resolveStyles(child[i]);
+            for (let i = 0; i < child.length; i++) {
+                let styles = Animation._resolveStyles(child[i]);
                 if (styles) {
                     start.push(styles[0]);
                     d.push(styles[1]);
@@ -173,7 +178,7 @@ export const Animation = {
                     values = [val, val];
                 }
             }
-            //val is a array and val[0] is the start value and val[1] is the destination value.
+            //val is an array and val[0] is the start value and val[1] is the destination value.
             var v1 = values[0],
                 v2 = values[1];
             if (isNumber(v1) && isNumber(v2)) {
@@ -337,7 +342,7 @@ export const Animation = {
         if (this._frameQueue.length) {
             var running = this._frameQueue;
             this._frameQueue = [];
-            for (var i = 0, len = running.length; i < len; i++) {
+            for (let i = 0, len = running.length; i < len; i++) {
                 running[i]();
             }
             if (this._frameQueue.length) {
@@ -349,7 +354,7 @@ export const Animation = {
     },
 
     /**
-     * Get a animation player
+     * Create an animation player
      * @param  {Object} styles  - styles to animate
      * @param  {Object} options - animation options
      * @param  {Function} step  - callback function for animation steps
@@ -366,10 +371,10 @@ export const Animation = {
 
 Animation._frameFn = Animation._run.bind(Animation);
 
-extend(Player.prototype, {
+extend(Player.prototype, /** @lends animation.Player.prototype */{
     _prepare() {
         var options = this._options;
-        var duration = options['speed'];
+        var duration = options['speed'] || options['duration'];
         if (isString(duration)) {
             duration = Animation.speed[duration];
             if (!duration) {
@@ -478,5 +483,7 @@ extend(Player.prototype, {
             }
         }
 
-    },
+    }
 });
+
+export { Animation, Easing, Player, Frame };

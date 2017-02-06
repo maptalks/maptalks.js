@@ -6,6 +6,8 @@ import Map from '../map/Map';
  * @property {Object} options - options
  * @property {Object} [options.position='bottom-left'] - position of the control
  * @property {String} [options.content='Powered By <a href="http://www.org" target="_blank">maptalks</a>']  - content of the attribution control, HTML format
+ * @memberOf control.Attribution
+ * @instance
  */
 const options = {
     'position': 'bottom-left',
@@ -15,19 +17,16 @@ const options = {
 /**
  * @classdesc
  * A control to allows to display attribution content in a small text box on the map.
- * @class
  * @category control
- * @extends Control
+ * @extends control.Control
  * @memberOf control
- * @name Attribution
- * @param {Object} [options=null] - options defined in [Attribution]{@link Attribution#options}
  * @example
- * var attribution = new Attribution({
+ * var attribution = new maptalks.control.Attribution({
  *     position : 'bottom-left',
  *     content : 'hello maptalks'
  * }).addTo(map);
  */
-export default class Attribution extends Control {
+class Attribution extends Control {
 
     buildOn() {
         this._attributionContainer = createEl('div', 'maptalks-attribution');
@@ -66,3 +65,5 @@ Map.addOnLoadHook(function () {
         this.addControl(this.attributionControl);
     }
 });
+
+export default Attribution;

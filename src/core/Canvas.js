@@ -8,13 +8,12 @@ import {
     isCssUrl,
     extractCssUrl,
     round,
-    getAlignPoint,
     computeDegree
 } from 'core/util';
 import { isGradient } from 'core/util/style';
 import { createEl } from 'core/util/dom';
 import Browser from 'core/Browser';
-import { getFont } from 'core/util/text';
+import { getFont, getAlignPoint } from 'core/util/strings';
 
 const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';

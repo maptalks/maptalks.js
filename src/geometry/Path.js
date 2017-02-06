@@ -6,9 +6,11 @@ import * as Measurer from 'geo/measurer';
 import simplify from 'simplify-js';
 
 /**
- * @property {Object} options - Vector's options
+ * @property {Object} options - configuration options
  * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
- * @property {Object} options.symbol - Vector's default symbol
+ * @property {Object} options.symbol - Path's default symbol
+ * @memberOf Path
+ * @instance
  */
 const options = {
     'antiMeridian': 'continuous',
@@ -25,10 +27,11 @@ const options = {
 
 /**
  * An abstract class Path containing common methods for Path geometry classes, e.g. LineString, Polygon
- *
+ * @abstract
+ * @category geometry
  * @extends Geometry
  */
-export default class Path extends Geometry {
+class Path extends Geometry {
 
     /**
      * Transform projected coordinates to view points
@@ -260,3 +263,5 @@ export default class Path extends Geometry {
 }
 
 Path.mergeOptions(options);
+
+export default Path;

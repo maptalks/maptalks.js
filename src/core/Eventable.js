@@ -1,21 +1,21 @@
 import { extend, isString, isNil } from './util';
 import { stopPropagation } from './util/dom';
-
 /**
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.
- * @mixin
- * @memberOf maptalks
- * @name Eventable
+ * @mixin Eventable
  */
-export default function (Base) {
-    return class extends Base {
+
+const Eventable = Base =>
+
+    class Eventable extends Base {
         /**
          * Register a handler function to be called whenever this event is fired.
          *
          * @param {String} eventsOn                  - event types to register, seperated by space if more than one.
          * @param {Function} handler                 - handler function to be called
          * @param {Object} [context=null]            - the context of the handler
-         * @return {*} this
+         * @return {Any} this
+         * @function Eventable.on
          * @example
          * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
          */
@@ -64,10 +64,8 @@ export default function (Base) {
          * @param {String} eventTypes     - event types to register, seperated by space if more than one.
          * @param {Function} handler                 - handler function to be called
          * @param {Object} [context=null]            - the context of the handler
-         * @return {*} this
-         * @function
-         * @memberOf Eventable
-         * @name addEventListener
+         * @return {} this
+         * @function Eventable.addEventListener
          */
         addEventListener() {
             return this.on.apply(this, arguments);
@@ -79,9 +77,10 @@ export default function (Base) {
          * @param {String} eventTypes                - event types to register, seperated by space if more than one.
          * @param {Function} handler                 - listener handler
          * @param {Object} [context=null]            - the context of the handler
-         * @return {*} this
+         * @return {} this
          * @example
          * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
+         * @function Eventable.once
          */
         once(eventTypes, handler, context) {
             if (!isString(eventTypes)) {
@@ -106,9 +105,10 @@ export default function (Base) {
          * @param {String} eventsOff                - event types to unregister, seperated by space if more than one.
          * @param {Function} handler                - listener handler
          * @param {Object} [context=null]           - the context of the handler
-         * @return {*} this
+         * @return {} this
          * @example
          * foo.off('mousedown mousemove mouseup', onMouseEvent, foo);
+         * @function Eventable.off
          */
         off(eventsOff, handler, context) {
             if (!eventsOff || !this._eventMap || !handler) {
@@ -144,10 +144,8 @@ export default function (Base) {
          * @param {String} eventTypes    - event types to unregister, seperated by space if more than one.
          * @param {Function} handler                - listener handler
          * @param {Object} [context=null]           - the context of the handler
-         * @return {*} this
-         * @function
-         * @memberOf Eventable
-         * @name removeEventListener
+         * @return {} this
+         * @function Eventable.removeEventListener
          */
         removeEventListener() {
             return this.off.apply(this, arguments);
@@ -160,6 +158,7 @@ export default function (Base) {
          * @param {Function} [hanlder=null] - listener function
          * @param {Object} [context=null]   - the context of the handler
          * @return {Number}
+         * @function Eventable.listens
          */
         listens(eventType, handler, context) {
             if (!this._eventMap || !isString(eventType)) {
@@ -186,7 +185,8 @@ export default function (Base) {
         /**
          * Copy all the event listener to the target object
          * @param {Object} target - target object to copy to.
-         * @return {*} this
+         * @return {} this
+         * @function Eventable.copyEventListeners
          */
         copyEventListeners(target) {
             var eventMap = target._eventMap;
@@ -208,7 +208,8 @@ export default function (Base) {
          *
          * @param  {String} eventType - an event type to fire
          * @param  {Object} param     - parameters for the listener function.
-         * @return {*} this
+         * @return {} this
+         * @function Eventable.fire
          */
         fire() {
             if (this._eventParent) {
@@ -263,6 +264,7 @@ export default function (Base) {
          * @param {Any} parent - event parent
          * @return {Any} this
          * @private
+         * @function Eventable._setEventParent
          */
         _setEventParent(parent) {
             this._eventParent = parent;
@@ -307,4 +309,5 @@ export default function (Base) {
             return this;
         }
     };
-}
+
+export default Eventable;

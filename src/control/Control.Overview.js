@@ -12,6 +12,8 @@ import Control from './Control';
  * @property {Number} [options.level=4]  - the zoom level of the overview
  * @property {Object} [options.size={"width":300, "height":200}  - size of the Control
  * @property {Object} [options.style={"color":"#1bbc9b"}] - style of the control, color is the overview rectangle's color
+ * @memberOf control.Overview
+ * @instance
  */
 const options = {
     'loadDelay' : 1600,
@@ -29,20 +31,22 @@ const options = {
 /**
  * @classdesc
  * An overview control for the map.
- * @class
  * @category control
- * @extends Control
+ * @extends control.Control
  * @memberOf control
- * @name Overview
- * @param {Object} [options=null] - options defined in [Overview]{@link Overview#options}
  * @example
  * var overview = new Overview({
  *     position : {'bottom': '0', 'right': '0'},
  *     size : {'width' : 300,'height' : 200}
  * }).addTo(map);
  */
-export default class Overview extends Control {
+class Overview extends Control {
 
+    /**
+     * method to build DOM of the control
+     * @param  {Map} map map to build on
+     * @return {HTMLDOMElement}
+     */
     buildOn(map) {
         var container = createEl('div');
         container.style.cssText = 'border:1px solid #000;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
@@ -164,3 +168,5 @@ Map.addOnLoadHook(function () {
         this.addControl(this.overviewControl);
     }
 });
+
+export default Overview;

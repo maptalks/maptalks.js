@@ -7,6 +7,8 @@ import Control from './Control';
  * @property {String|Object}   [options.position="top-left"]  - position of the zoom control.
  * @property {Boolean}  [options.slider=true]                         - Whether to display the slider
  * @property {Boolean}  [options.zoomLevel=true]                      - Whether to display the text box of zoom level
+ * @memberOf control.Zoom
+ * @instance
  */
 const options = {
     'position': 'top-left',
@@ -17,12 +19,9 @@ const options = {
 /**
  * @classdesc
  * A zoom control with buttons to zoomin/zoomout and a slider indicator for the zoom level.
- * @class
  * @category control
- * @extends Control
+ * @extends control.Control
  * @memberOf control
- * @name Zoom
- * @param {Object} [options=null] - options defined in [Zoom]{@link Zoom#options}
  * @example
  * var zoomControl = new Zoom({
  *     position : 'top-left',
@@ -30,8 +29,12 @@ const options = {
  *     zoomLevel : false
  * }).addTo(map);
  */
-export default class ZoomControl extends Control {
-
+class Zoom extends Control {
+    /**
+     * method to build DOM of the control
+     * @param  {Map} map map to build on
+     * @return {HTMLDOMElement}
+     */
     buildOn(map) {
         this._map = map;
         var options = this.options;
@@ -122,7 +125,7 @@ export default class ZoomControl extends Control {
     }
 }
 
-ZoomControl.mergeOptions(options);
+Zoom.mergeOptions(options);
 
 Map.mergeOptions({
     'zoomControl': false
@@ -130,7 +133,9 @@ Map.mergeOptions({
 
 Map.addOnLoadHook(function () {
     if (this.options['zoomControl']) {
-        this.zoomControl = new ZoomControl(this.options['zoomControl']);
+        this.zoomControl = new Zoom(this.options['zoomControl']);
         this.addControl(this.zoomControl);
     }
 });
+
+export default Zoom;

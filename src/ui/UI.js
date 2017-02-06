@@ -1,4 +1,5 @@
-import { extend, trim } from 'core/util';
+import { extend } from 'core/util';
+import { trim } from 'core/util/strings';
 import {
     on,
     removeDomNode,
@@ -8,7 +9,7 @@ import {
     TRANSITION
 } from 'core/util/dom';
 import Class from 'core/Class';
-import Eventable from 'core/Event';
+import Eventable from 'core/Eventable';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 import Geometry from 'geometry/Geometry';

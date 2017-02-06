@@ -3,6 +3,8 @@
  * @param {Point} p
  * @param {Point} p1
  * @param {Point} p2
+ * @return {Number} distance from p to (p1, p2)
+ * @memberOf Util
  */
 export function distanceToSegment(p, p1, p2) {
     var x = p.x,
@@ -30,10 +32,11 @@ export function distanceToSegment(p, p1, p2) {
 }
 
 /**
- * 判断点坐标是否在面中
- * @param {Polygon} 面对象
- * @param {Coordinate} 点对象
- * @return {Boolean} true：点在面中
+ * Whether the coordinate is inside the polygon
+ * @param {Polygon}         - polygon
+ * @param {Coordinate}      - coordinate
+ * @return {Boolean}
+ * @memberOf Util
  */
 export function pointInsidePolygon(p, points) {
     var i, j, p1, p2,

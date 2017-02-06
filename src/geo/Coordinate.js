@@ -3,20 +3,20 @@ import { isNil, isNumber, mapArrayRecursively } from 'core/util';
 /**
  * Represents a coordinate point <br>
  * e.g. <br>
- * a geographical point with a certain latitude and longitude <br>
- * a point in a indoor room
+ * A geographical point (longitude, latitude)
  * @example
  * var coord = new Coordinate(0, 0);
  * @example
- * var coord = new Coordinate([0,0]);
+ * var coord = new Coordinate([ 0, 0 ]);
  * @example
- * var coord = new Coordinate({x:0, y:0});
- * @class
+ * var coord = new Coordinate({ x : 0, y : 0 });
  * @category basic types
- * @param {Number} x - x value
- * @param {Number} y - y value
  */
-export default class Coordinate {
+class Coordinate {
+    /**
+     * @param {Number} x - x value
+     * @param {Number} y - y value
+     */
     constructor(x, y) {
         if (!isNil(x) && !isNil(y)) {
             /**
@@ -45,7 +45,6 @@ export default class Coordinate {
      * Convert one or more Coordinate objects to GeoJSON style coordinates
      * @param  {Coordinate|Coordinate[]} coordinates - coordinates to convert
      * @return {Number[]|Number[][]}
-     * @static
      * @example
      * // result is [[100,0], [101,1]]
      * var numCoords = Coordinate.toNumberArrays([new Coordinate(100,0), new Coordinate(101,1)]);
@@ -63,7 +62,6 @@ export default class Coordinate {
      * Convert one or more GeoJSON style coordiantes to Coordinate objects
      * @param  {Number[]|Number[][]} coordinates - coordinates to convert
      * @return {Coordinate|Coordinate[]}
-     * @static
      * @example
      * var coordinates = Coordinate.toCoordinates([[100,0], [101,1]]);
      */
@@ -170,19 +168,20 @@ export default class Coordinate {
 
     /**
      * Compare with another coordinate to see whether they are equal.
-     * @param {Coordinate} c2 - coordinate to compare
+     * @param {Coordinate} c - coordinate to compare
      * @return {Boolean}
      */
-    equals(c2) {
-        if (!(c2 instanceof Coordinate)) {
+    equals(c) {
+        if (!(c instanceof Coordinate)) {
             return false;
         }
-        return this.x === c2.x && this.y === c2.y;
+        return this.x === c.x && this.y === c.y;
     }
 
     /**
      * Whether the coordinate is NaN
      * @return {Boolean}
+     * @private
      */
     _isNaN() {
         return isNaN(this.x) || isNaN(this.y);
@@ -207,3 +206,5 @@ export default class Coordinate {
         };
     }
 }
+
+export default Coordinate;

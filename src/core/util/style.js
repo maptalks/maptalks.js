@@ -1,9 +1,21 @@
 import { extend, isNil, isFunction, hasOwn } from './common';
 
+/**
+ * Whether the color is a gradient
+ * @param  {Object}  g - color to test
+ * @return {Boolean}
+ * @memberOf Util
+ */
 export function isGradient(g) {
     return g && g['colorStops'];
 }
 
+/**
+ * Get stamp of a gradient color object.
+ * @param  {Object} g gradient color object
+ * @return {String}     gradient stamp
+ * @memberOf Util
+ */
 export function getGradientStamp(g) {
     var keys = [g['type']];
     if (g['places']) {
@@ -19,6 +31,12 @@ export function getGradientStamp(g) {
     return keys.join('_');
 }
 
+/**
+ * Get stamp of a symbol
+ * @param  {Object|Object[]} symbol symbol
+ * @return {String}        symbol's stamp
+ * @memberOf Util
+ */
 export function getSymbolStamp(symbol) {
     var keys = [];
     if (Array.isArray(symbol)) {
@@ -41,6 +59,13 @@ export function getSymbolStamp(symbol) {
     return keys.join(';');
 }
 
+/**
+ * Reduce opacity of the color by ratio
+ * @param  {Object|Object[]} symbol symbols to set
+ * @param  {Number} ratio  ratio of opacity to reduce
+ * @return {Object|Object[]}      new symbol or symbols
+ * @memberOf Util
+ */
 export function lowerSymbolOpacity(symbol, ratio) {
     function s(_symbol, _ratio) {
         var op = _symbol['opacity'];
@@ -53,7 +78,7 @@ export function lowerSymbolOpacity(symbol, ratio) {
     var lower;
     if (Array.isArray(symbol)) {
         lower = [];
-        for (var i = 0; i < symbol.length; i++) {
+        for (let i = 0; i < symbol.length; i++) {
             var d = extend({}, symbol[i]);
             s(d, ratio);
             lower.push(d);
@@ -65,18 +90,25 @@ export function lowerSymbolOpacity(symbol, ratio) {
     return lower;
 }
 
+/**
+ * Merges the properties of sources into the symbol. <br>
+ * @param  {Object|Object[]} symbol symbol to extend
+ * @param  {...Object} src - sources
+ * @return {Object|Object[]}        merged symbol
+ * @memberOf Util
+ */
 export function extendSymbol(symbol) {
     var sources = Array.prototype.slice.call(arguments, 1);
     if (!sources || !sources.length) {
         sources = [{}];
     }
     if (Array.isArray(symbol)) {
-        var s, dest, i, ii, l, ll;
-        var result = [];
-        for (i = 0, l = symbol.length; i < l; i++) {
+        var s, dest;
+        const result = [];
+        for (let i = 0, l = symbol.length; i < l; i++) {
             s = symbol[i];
             dest = {};
-            for (ii = 0, ll = sources.length; ii < ll; ii++) {
+            for (let ii = 0, ll = sources.length; ii < ll; ii++) {
                 if (!Array.isArray(sources[ii])) {
                     extend(dest, s, sources[ii] ? sources[ii] : {});
                 } else if (!isNil(sources[ii][i])) {
@@ -89,7 +121,7 @@ export function extendSymbol(symbol) {
         }
         return result;
     } else {
-        var args = [{}, symbol];
+        const args = [{}, symbol];
         args.push.apply(args, sources);
         return extend.apply(this, args);
     }

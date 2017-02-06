@@ -1,15 +1,8 @@
-/**
- * Misc utilities used internally
- * @class
- * @category core
- * @protected
- */
-
 import { isNode } from './env';
 import { isString, isNil, hasOwn } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
-let requestAnimFrame, cancelAnimFrame;
+var requestAnimFrame, cancelAnimFrame;
 (function () {
     if (isNode) {
         requestAnimFrame = function (fn) {
@@ -49,10 +42,21 @@ let requestAnimFrame, cancelAnimFrame;
             clearTimeout(id);
         };
     }
+    /**
+     * Polyfill of RequestAnimationFrame
+     * @param  {Function} fn callback
+     * @return {Number}      request id
+     * @memberOf Util
+     */
     requestAnimFrame = function (fn) {
         return requestFn(fn);
     };
 
+    /**
+     * Polyfill of cancelAnimationFrame
+     * @param  {Number}      request id
+     * @memberOf Util
+     */
     cancelAnimFrame = function (id) {
         if (id) {
             cancelFn(id);
@@ -61,17 +65,14 @@ let requestAnimFrame, cancelAnimFrame;
 })();
 export { requestAnimFrame, cancelAnimFrame };
 
-/**
- * @property {Number} uid
- * @static
- */
-let uid = 0;
+var uid = 0;
 
 /**
- * Set options to a object, extends its options member.
- * @param {Object} obj      - object to set options to
- * @param {Object} options  - options to set
- * @returns {Object} options set
+ * Merges options with the default options of the object.
+ * @param {Object} obj      - object
+ * @param {Object} options  - options
+ * @returns {Object} options
+ * @memberOf Util
  */
 export function setOptions(obj, options) {
     if (hasOwn(obj, 'options')) {
@@ -96,10 +97,10 @@ export function isSVG(url) {
 export const noop = function () {};
 
 // TODO: convertSVG???
-export let convertSVG = noop;
+export var convertSVG = noop;
 
-let _loadRemoteImage = noop;
-let _loadLocalImage = noop;
+var _loadRemoteImage = noop;
+var _loadLocalImage = noop;
 
 if (isNode) {
     _loadRemoteImage = function (img, url, onComplete) {
@@ -141,7 +142,9 @@ if (isNode) {
  * Load a image, can be a remote one or a local file. <br>
  * If in node, a SVG image will be converted to a png file by [svg2img]{@link https://github.com/FuZhenn/node-svg2img}<br>
  * @param  {Image} img  - the image object to load.
- * @param  {Object[]} imgDesc - image's descriptor, it's a array. imgUrl[0] is the url string, imgUrl[1] is the width, imgUrl[2] is the height.
+ * @param  {Object[]} imgDesc - image's descriptor, it's an array. imgUrl[0] is the url string, imgUrl[1] is the width, imgUrl[2] is the height.
+ * @private
+ * @memberOf Util
  */
 export function loadImage(img, imgDesc) {
     if (!isNode) {
@@ -190,10 +193,6 @@ export function loadImage(img, imgDesc) {
     }
 }
 
-/**
- * Generate a global UID, not a real UUID, just a auto increment key with a prefix.
- * @return {Number}
- */
 export function UID() {
     return uid++;
 }
@@ -203,6 +202,7 @@ export const GUID = UID;
  * Parse a JSON string to a object
  * @param {String} str      - a JSON string
  * @return {Object}
+ * @memberOf Util
  */
 export function parseJSON(str) {
     if (!str || !isString(str)) {
@@ -255,29 +255,11 @@ export function mapArrayRecursively(arr, fn, context) {
     return result;
 }
 
-export function mapArray(array, fn, context) {
-    if (!Array.isArray(array)) {
-        return null;
-    }
-    var result = [],
-        p, pp;
-    for (var i = 0, len = array.length; i < len; i++) {
-        p = array[i];
-        if (isNil(p)) {
-            result.push(null);
-            continue;
-        }
-        pp = context ? fn.call(context, p) : fn(p);
-        result.push(pp);
-    }
-    return result;
-}
-
 export function indexOfArray(obj, arr) {
     if (!isArrayHasData(arr)) {
         return -1;
     }
-    for (var i = 0, len = arr.length; i < len; i++) {
+    for (var i = 0, l = arr.length; i < l; i++) {
         if (arr[i] === obj) {
             return i;
         }
@@ -289,82 +271,11 @@ export function getValueOrDefault(v, d) {
     return v === undefined ? d : v;
 }
 
-/**
- * Shallow comparison of two objects <br>
- * borrowed from expect.js
- * @param  {Object} a
- * @param  {Object} b
- * @return {Boolean}
- */
-export function objEqual(a, b) {
-    return _objEqual(a, b);
-}
-
-/**
- * Deep comparison of two objects <br>
- * borrowed from expect.js
- * @param  {Object} a
- * @param  {Object} b
- * @return {Boolean}
- */
-export function objDeepEqual(a, b) {
-    return _objEqual(a, b, true);
-}
-
-function _objEqual(a, b, isDeep) {
-    function getKeys(obj) {
-        if (Object.keys) {
-            return Object.keys(obj);
-        }
-        var keys = [];
-        for (var i in obj) {
-            if (hasOwn(obj, i)) {
-                keys.push(i);
-            }
-        }
-        return keys;
-    }
-    if (isNil(a) || isNil(b)) {
-        return false;
-    }
-    // an identical "prototype" property.
-    if (a.prototype !== b.prototype) {
-        return false;
-    }
-    var ka, kb, key, i;
-    try {
-        ka = getKeys(a);
-        kb = getKeys(b);
-    } catch (e) { //happens when one is a string literal and the other isn't
-        return false;
-    }
-    // having the same number of owned properties (keys incorporates hasOwnProperty)
-    if (ka.length !== kb.length) {
-        return false;
-    }
-    //~~~cheap key test
-    for (i = ka.length - 1; i >= 0; i--) {
-        if (ka[i] !== kb[i]) {
-            return false;
-        }
-    }
-    //equivalent values for every corresponding key, and
-    //~~~possibly expensive deep test
-    if (isDeep) {
-        for (i = ka.length - 1; i >= 0; i--) {
-            key = ka[i];
-            if (!objEqual(a[key], b[key])) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 /*
- * round a number, more efficient one.
+ * Caculate round of a number, more efficient.
  * @param  {Number} num - num to round
  * @return {Number}
+ * @memberOf Util
  */
 export function round(num) {
     if (num > 0) {
@@ -376,9 +287,11 @@ export function round(num) {
 
 
 /*
- * 判断数组中是否包含obj
+ * Is object an array and not empty.
  * @param {Object} obj
  * @return {Boolean} true|false
+ * @private
+ * @memberOf Util
  */
 export function isArrayHasData(obj) {
     return Array.isArray(obj) && obj.length > 0;
@@ -388,6 +301,8 @@ export function isArrayHasData(obj) {
  * Whether the input string is a valid url.
  * @param  {String}  url - url to check
  * @return {Boolean}
+ * @memberOf Util
+ * @private
  */
 export function isURL(url) {
     if (!url) {
@@ -451,6 +366,7 @@ const b64chrs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
  * From https://github.com/davidchambers/Base64.js
  * @param  {Buffer} input - input string to convert
  * @return {String} ascii
+ * @memberOf Util
  * @example
  *     var encodedData = Util.btoa(stringToEncode);
  */
@@ -479,26 +395,12 @@ export function btoa(input) {
 }
 
 /**
- * Borrowed from jquery, evaluates a javascript snippet in a global context
- * @param {String} code
+ * Compute degree bewteen 2 points.
+ * @param  {Point} p1 point 1
+ * @param  {Point} p2 point 2
+ * @return {Number}    degree between 2 points
+ * @memberOf Util
  */
-export function globalEval(code) {
-    var script = document.createElement('script');
-    script.text = code;
-    document.head.appendChild(script).parentNode.removeChild(script);
-}
-
-/**
- * Borrowed from jquery, evaluates a script in a global context.
- * @param  {String} file    - javascript file to eval
- */
-export function globalScript(file) {
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = file;
-    document.head.appendChild(script);
-}
-
 export function computeDegree(p1, p2) {
     var dx = p2.x - p1.x;
     var dy = p2.y - p1.y;

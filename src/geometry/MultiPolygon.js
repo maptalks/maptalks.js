@@ -4,11 +4,8 @@ import Polygon from './Polygon';
 /**
  * @classdesc
  * Represents a Geometry type of MultiPolygon
- * @class
  * @category geometry
  * @extends MultiGeometry
- * @param {Number[][][][]|Coordinate[][][]|Polygon[]} data - construct data, coordinates or a array of polygons
- * @param {Object} [options=null]           - options defined in [MultiPolygon]{@link MultiPolygon#options}
  * @example
  * var multiPolygon = new MultiPolygon(
  *       [
@@ -45,11 +42,17 @@ import Polygon from './Polygon';
  *           draggable:true
  * }).addTo(layer);
  */
-export default class MultiPolygon extends MultiGeometry {
+class MultiPolygon extends MultiGeometry {
 
+    /**
+     * @param {Number[][][][]|Coordinate[][][]|Polygon[]} data - construct data, coordinates or an array of polygons
+     * @param {Object} [options=null]           - options defined in [MultiPolygon]{@link MultiPolygon#options}
+     */
     constructor(data, opts) {
         super(Polygon, 'MultiPolygon', data, opts);
     }
 }
 
 MultiPolygon.registerJSONType('MultiPolygon');
+
+export default MultiPolygon;

@@ -9,8 +9,9 @@ import Common from './Common';
  * @protected
  * @memberOf measurer
  * @name Identity
+ * @mixes measurer.Common
  */
-export default extend({
+export default extend(/** @lends measurer.Identity */{
     /**
      * the code of the measurer
      * @static
@@ -22,7 +23,6 @@ export default extend({
      * @param  {Coordinate} c1
      * @param  {Coordinate} c2
      * @return {Number}
-     * @static
      */
     measureLenBetween: function (c1, c2) {
         if (!c1 || !c2) {
@@ -38,7 +38,6 @@ export default extend({
      * Measure the area closed by the given coordinates.
      * @param  {Coordinate[]} coordinates
      * @return {number}
-     * @static
      */
     measureArea: function (coordinates) {
         if (!Array.isArray(coordinates)) {
@@ -64,7 +63,6 @@ export default extend({
      * @param  {Number} xDist     - x-axis distance
      * @param  {Number} yDist     - y-axis distance
      * @return {Coordinate}
-     * @static
      */
     locate: function (c, xDist, yDist) {
         if (!c) {

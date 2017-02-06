@@ -21,12 +21,9 @@ const options = {
 /**
  * @classdesc
  * Represents a Point type Geometry.
- * @class
  * @category geometry
  * @extends Geometry
- * @mixes Geometry.Center
- * @param {Coordinate} center      - center of the marker
- * @param {Object} [options=null]           - construct options defined in [Marker]{@link Marker#options}
+ * @mixes CenterMixin
  * @example
  * var marker = new Marker([100, 0], {
  *     'id' : 'marker0',
@@ -40,8 +37,12 @@ const options = {
  *     }
  * });
  */
-export default class Marker extends CenterMixin(Geometry) {
+class Marker extends CenterMixin(Geometry) {
 
+    /**
+     * @param {Coordinate} coordinates      - coordinates of the marker
+     * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
+     */
     constructor(coordinates, opts) {
         super(opts);
         this.type = 'Point';
@@ -104,3 +105,5 @@ export default class Marker extends CenterMixin(Geometry) {
 Marker.mergeOptions(options);
 
 Marker.registerJSONType('Marker');
+
+export default Marker;

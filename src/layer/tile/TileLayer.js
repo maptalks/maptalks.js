@@ -17,6 +17,8 @@ import Layer from '../Layer';
  * @property {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
  * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
  * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+ * @memberOf TileLayer
+ * @instance
  */
 const options = {
     'errorTileUrl': null,
@@ -60,7 +62,6 @@ const options = {
 /**
  * @classdesc
  * A layer used to display tiled map services, such as [google maps]{@link http://maps.google.com}, [open street maps]{@link http://www.osm.org}
- * @class
  * @category layer
  * @extends Layer
  * @param {String|Number} id - tile layer's id
@@ -71,7 +72,7 @@ const options = {
         subdomains:['a','b','c']
     })
  */
-export default class TileLayer extends Layer {
+class TileLayer extends Layer {
 
     /**
      * Reproduce a TileLayer from layer's profile JSON.
@@ -126,7 +127,7 @@ export default class TileLayer extends Layer {
      */
     toJSON() {
         var profile = {
-            'type': 'TileLayer',
+            'type': this.getJSONType(),
             'id': this.getId(),
             'options': this.config()
         };
@@ -296,3 +297,5 @@ export default class TileLayer extends Layer {
 TileLayer.registerJSONType('TileLayer');
 
 TileLayer.mergeOptions(options);
+
+export default TileLayer;

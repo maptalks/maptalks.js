@@ -1,6 +1,6 @@
 import Class from 'core/Class';
 import { isNil, isNumber } from 'core/util';
-import Eventable from 'core/Event';
+import Eventable from 'core/Eventable';
 import JSONAble from 'core/JSONAble';
 import Renderable from 'renderer/Renderable';
 
@@ -11,6 +11,8 @@ import Renderable from 'renderer/Renderable';
  * @property {Boolean} [options.visible=true] - whether to display the layer.
  * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
  * @property {String}  [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ * @memberOf Layer
+ * @instance
  */
 var options = {
     //最大最小可视范围, null表示不受限制
@@ -32,13 +34,14 @@ var options = {
  * Base class for all the layers, defines common methods that all the layer classes share. <br>
  * It is abstract and not intended to be instantiated.
  *
- * @class
  * @category layer
  * @abstract
  * @extends Class
  * @mixes Eventable
+ * @mixes JSONAble
+ * @mixes Renderable
  */
-export default class Layer extends JSONAble(Eventable(Renderable(Class))) {
+class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     constructor(id, options) {
         super(options);
@@ -407,3 +410,5 @@ export default class Layer extends JSONAble(Eventable(Renderable(Class))) {
 }
 
 Layer.mergeOptions(options);
+
+export default Layer;

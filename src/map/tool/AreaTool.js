@@ -10,6 +10,8 @@ import DistanceTool from './DistanceTool';
  * @property {Object}  options.symbol           - symbol of the line
  * @property {Object}  options.vertexSymbol     - symbol of the vertice
  * @property {Object}  options.labelOptions     - construct options of the vertice labels.
+ * @memberOf AreaTool
+ * @instance
  */
 const options = {
     'mode': 'Polygon',
@@ -24,18 +26,9 @@ const options = {
 };
 
 /**
- * @classdesc
  * A map tool to help measure area on the map
- * @class
  * @category maptool
  * @extends DistanceTool
- * @param {options} [options=null] - construct options
- * @param {String} [options.language=zh-CN]         - language of the distance tool, zh-CN or en-US
- * @param {Boolean} [options.metric=true]           - display result in metric system
- * @param {Boolean} [options.imperial=false]        - display result in imperial system.
- * @param {Object}  [options.symbol=null]           - symbol of the line
- * @param {Object}  [options.vertexSymbol=null]     - symbol of the vertice
- * @param {Object}  [options.labelOptions=null]     - construct options of the vertice labels.
  * @example
  * var areaTool = new AreaTool({
  *     'once' : true,
@@ -54,8 +47,17 @@ const options = {
  *    'language' : 'en-US'
  *  }).addTo(map);
  */
-export default class AreaTool extends DistanceTool {
+class AreaTool extends DistanceTool {
 
+    /**
+     * @param {options} [options=null] - construct options
+     * @param {String} [options.language=zh-CN]         - language of the distance tool, zh-CN or en-US
+     * @param {Boolean} [options.metric=true]           - display result in metric system
+     * @param {Boolean} [options.imperial=false]        - display result in imperial system.
+     * @param {Object}  [options.symbol=null]           - symbol of the line
+     * @param {Object}  [options.vertexSymbol=null]     - symbol of the vertice
+     * @param {Object}  [options.labelOptions=null]     - construct options of the vertice labels.
+     */
     constructor(options) {
         super(options);
         this.on('enable', this._afterEnable, this)
@@ -119,3 +121,5 @@ export default class AreaTool extends DistanceTool {
 }
 
 AreaTool.mergeOptions(options);
+
+export default AreaTool;

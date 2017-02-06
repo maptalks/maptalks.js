@@ -1,11 +1,32 @@
 import TileLayer from './TileLayer';
 
-export default class CanvasTileLayer extends TileLayer {
+/**
+ * @classdesc
+ * @ignore
+ * @category layer
+ * @extends TileLayer
+ * @param {String|Number} id - tile layer's id
+ * @param {Object} [options=null] - options defined in [CanvasTileLayer]{@link TileLayer#options}
+ * @example
+ * var layer = new CanvasTileLayer("tile");
+ * layer.drawTile = ()
+ */
+class CanvasTileLayer extends TileLayer {
+
     /**
-     * Export the CanvasTileLayer's profile json. <br>
-     * Layer's profile is a snapshot of the layer in JSON format. <br>
+     * The interface method to draw on canvsa tile
+     * @param  {HTMLCanvasElement} canvas  canvas to draw on
+     * @param  {Object} options current options
+     * @param  {Object} options current options
+     */
+    drawTile(/*canvas, options*/) {
+
+    }
+
+    /**
+     * Export the CanvasTileLayer's json. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
-     * @return {Object} layer's profile JSON
+     * @return {Object} layer's JSON
      */
     toJSON() {
         return {
@@ -16,9 +37,9 @@ export default class CanvasTileLayer extends TileLayer {
     }
 
     /**
-     * Reproduce a CanvasTileLayer from layer's profile JSON.
-     * @param  {Object} layerJSON - layer's profile JSON
-     * @return {TileLayer}
+     * Reproduce a CanvasTileLayer from layer's JSON.
+     * @param  {Object} layerJSON - layer's JSON
+     * @return {CanvasTileLayer}
      * @static
      * @private
      * @function
@@ -32,3 +53,5 @@ export default class CanvasTileLayer extends TileLayer {
 }
 
 CanvasTileLayer.registerJSONType('CanvasTileLayer');
+
+export default CanvasTileLayer;

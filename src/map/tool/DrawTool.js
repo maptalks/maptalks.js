@@ -19,9 +19,11 @@ import MapTool from './MapTool';
 
 /**
  * @property {Object} [options=null] - construct options
- * @property {String} [options.mode=null]   - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
+ * @property {String} [options.mode=null]   - mode of the draw tool
  * @property {Object} [options.symbol=null] - symbol of the geometries drawn
  * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+ * @memberOf DrawTool
+ * @instance
  */
 const options = {
     'symbol': {
@@ -35,17 +37,13 @@ const options = {
     'once': false
 };
 
+const registeredMode = {};
+
 /**
- * @classdesc
- * A map tool to help draw geometries
- * @class
+ * A map tool to help draw geometries.
  * @category maptool
  * @extends MapTool
  * @mixins Eventable
- * @param {Object} [options=null] - construct options
- * @param {String} [options.mode=null]   - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
- * @param {Object} [options.symbol=null] - symbol of the geometries drawn
- * @param {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
  * @example
  * var drawTool = new DrawTool({
  *     mode : 'Polygon',
@@ -56,22 +54,50 @@ const options = {
  *     once : true
  * }).addTo(map);
  */
-export default class DrawTool extends MapTool {
+class DrawTool extends MapTool {
 
+    /**
+     * Register a new mode for DrawTool
+     * @param  {String} name       mode name
+     * @param  {Object} modeAction modeActions
+     * @param  {Object} modeAction.action the action of DrawTool: click, drag, clickDblclick
+     * @param  {Object} modeAction.create the create method of drawn geometry
+     * @param  {Object} modeAction.update the update method of drawn geometry
+     * @param  {Object} modeAction.generate the method to generate geometry at the end of drawing.
+     * @example
+     * //Register "CubicBezierCurve" mode to draw Cubic Bezier Curves.
+     * DrawTool.registerMode('CubicBezierCurve', {
+        'action': 'clickDblclick',
+        'create': path => new CubicBezierCurve(path),
+        'update': (path, geometry) => {
+            geometry.setCoordinates(path);
+        },
+        'generate': geometry => geometry
+       }
+    });
+     */
     static registerMode(name, modeAction) {
-        if (!DrawTool._registeredMode) {
-            DrawTool._registeredMode = {};
-        }
-        DrawTool._registeredMode[name.toLowerCase()] = modeAction;
+        registeredMode[name.toLowerCase()] = modeAction;
     }
 
+    /**
+     * Get mode actions by mode name
+     * @param  {String} name DrawTool mode name
+     * @return {Object}      mode actions
+     */
     static getRegisterMode(name) {
-        if (DrawTool._registeredMode) {
-            return DrawTool._registeredMode[name.toLowerCase()];
-        }
-        return null;
+        return registeredMode[name.toLowerCase()];
     }
 
+    /**
+     * In default, DrawTool supports the following modes: <br>
+     * [Point, LineString, Polygon, Circle, Ellipse, Rectangle, ArcCurve, QuadBezierCurve, CubicBezierCurve] <br>
+     * You can easily add new mode to DrawTool by calling [registerMode]{@link DrawTool.registerMode}
+     * @param {Object} [options=null] - construct options
+     * @param {String} [options.mode=null]   - mode of the draw tool
+     * @param {Object} [options.symbol=null] - symbol of the geometries drawn
+     * @param {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+     */
     constructor(options) {
         super(options);
         this._checkMode();
@@ -90,7 +116,7 @@ export default class DrawTool extends MapTool {
 
     /**
      * Set mode of the draw tool
-     * @param {String} mode - mode of the draw tool: Point, LineString, Polygon, Circle, Ellipse, Rectangle
+     * @param {String} mode - mode of the draw tool
      * @expose
      */
     setMode(mode) {
@@ -490,7 +516,6 @@ DrawTool.mergeOptions(options);
 
 DrawTool.registerMode('circle', {
     'action': 'drag',
-    'geometryClass': Circle,
     'create': function (coordinate) {
         return new Circle(coordinate, 0);
     },
@@ -507,7 +532,6 @@ DrawTool.registerMode('circle', {
 
 DrawTool.registerMode('ellipse', {
     'action': 'drag',
-    'geometryClass': Ellipse,
     'create': function (coordinate) {
         return new Ellipse(coordinate, 0, 0);
     },
@@ -532,7 +556,6 @@ DrawTool.registerMode('ellipse', {
 
 DrawTool.registerMode('rectangle', {
     'action': 'drag',
-    'geometryClass': Rectangle,
     'create': function (coordinate) {
         var rect = new Rectangle(coordinate, 0, 0);
         rect._firstClick = coordinate;
@@ -652,3 +675,5 @@ DrawTool.registerMode('cubicbeziercurve', {
         return geometry;
     }
 });
+
+export default DrawTool;

@@ -15,13 +15,15 @@ const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
 /**
  * Drag handler for geometries.
- * @class
  * @category handler
  * @protected
- * @extends {Handler}
+ * @extends Handler
  */
-export default class GeometryDragHandler extends Handler  {
+class GeometryDragHandler extends Handler  {
 
+    /**
+     * @param  {Geometry} target geometry target to drag
+     */
     constructor(target) {
         super(target);
     }
@@ -311,3 +313,5 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return false;
     }
 });
+
+export default GeometryDragHandler;

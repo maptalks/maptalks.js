@@ -146,28 +146,41 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
     return output;
 }
 
-export function isFunctionDefinition(value) {
-    return value && typeof value === 'object' && value.stops;
+/**
+ * Check if object is a definition of function type
+ * @param  {Object}  obj object
+ * @return {Boolean}
+ * @memberOf MapboxUtil
+ */
+export function isFunctionDefinition(obj) {
+    return obj && typeof obj === 'object' && obj.stops;
 }
+
 
 export function interpolated(parameters) {
     return createFunction(parameters, 'exponential');
 }
 
+
 export function piecewiseConstant(parameters) {
     return createFunction(parameters, 'interval');
 }
 
+/**
+ * Load function types defined in object
+ * @param  {Object[]} parameters parameters
+ * @return {Object}   loaded object
+ * @memberOf MapboxUtil
+ */
 export function loadFunctionTypes(obj, argFn) {
     if (!obj) {
         return null;
     }
     var hit = false;
-    var i;
     if (Array.isArray(obj)) {
         var multResult = [],
             loaded;
-        for (i = 0; i < obj.length; i++) {
+        for (let i = 0; i < obj.length; i++) {
             loaded = loadFunctionTypes(obj[i], argFn);
             if (!loaded) {
                 multResult.push(obj[i]);
@@ -189,8 +202,7 @@ export function loadFunctionTypes(obj, argFn) {
         }
     }
 
-    var len;
-    for (i = 0, len = props.length; i < len; i++) {
+    for (let i = 0, len = props.length; i < len; i++) {
         p = props[i];
         if (isFunctionDefinition(obj[p])) {
             hit = true;
@@ -217,12 +229,18 @@ export function loadFunctionTypes(obj, argFn) {
     return hit ? result : obj;
 }
 
+/**
+ * Get external resources in the function type
+ * @param  {Object} t Function type definition
+ * @return {String[]}   resouces
+ * @memberOf MapboxUtil
+ */
 export function getFunctionTypeResources(t) {
     if (!t || !t.stops) {
         return null;
     }
-    var res = [];
-    for (var i = 0, l = t.stops.length; i < l; i++) {
+    const res = [];
+    for (let i = 0, l = t.stops.length; i < l; i++) {
         res.push(t.stops[i][1]);
     }
     return res;

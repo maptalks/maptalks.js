@@ -1,5 +1,5 @@
 import { extend } from 'core/util';
-import { splitTextToRow } from 'core/util/text';
+import { splitTextToRow } from 'core/util/strings';
 import Size from 'geo/Size';
 import Geometry from './Geometry';
 import Marker from './Marker';
@@ -26,6 +26,11 @@ const defaultBoxSymbol = {
     'markerOpacity': 1
 };
 
+/**
+ * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
+ * @memberOf TextMarker
+ * @instance
+ */
 const options = {
     'box': true,
 };
@@ -34,13 +39,12 @@ const options = {
  * @classdesc
  * Base class for  the Text marker classes, a marker which has text and background box. <br>
  * It is abstract and not intended to be instantiated.
- *
- * @class
  * @category geometry
  * @abstract
  * @extends Marker
  */
-export default class TextMarker extends Marker {
+class TextMarker extends Marker {
+
 
     constructor(content, coordinates, options) {
         super(coordinates, options);
@@ -167,3 +171,5 @@ export default class TextMarker extends Marker {
 }
 
 TextMarker.mergeOptions(options);
+
+export default TextMarker;

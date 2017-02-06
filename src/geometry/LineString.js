@@ -10,6 +10,8 @@ import Path from './Path';
  * @property {String} [options.antiMeridian=continuous] - how to deal with the anti-meridian problem, split or continue the linestring when it cross the 180 or -180 longtitude line.
  * @property {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
  * @property {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
+ * @memberOf LineString
+ * @instance
  */
 const options = {
     'arrowStyle': null,
@@ -17,24 +19,25 @@ const options = {
 };
 
 /**
- * @classdesc Represents a LineString type Geometry.
- * @class
+ * Represents a LineString type Geometry.
  * @category geometry
- * @extends maptalks.Path
- * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string
- * @param {Object} [options=null] - construct options defined in [LineString]{@link LineString#options}
+ * @extends Path
  * @example
  * var line = new LineString(
  *     [
- *         [121.4594221902467, 31.241237891628657],
- *         [121.46371372467041, 31.242265291152066],
- *         [121.46727569824205, 31.238706037961997],
- *         [121.47019394165014, 31.24145804961012]
+ *         [121.45942, 31.24123],
+ *         [121.46371, 31.24226],
+ *         [121.46727, 31.23870],
+ *         [121.47019, 31.24145]
  *     ]
  * ).addTo(layer);
  */
-export default class LineString extends Path {
+class LineString extends Path {
 
+    /**
+     * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string
+     * @param {Object} [options=null] - construct options defined in [LineString]{@link LineString#options}
+     */
     constructor(coordinates, options) {
         super(options);
         this.type = 'LineString';
@@ -221,3 +224,5 @@ export default class LineString extends Path {
 LineString.mergeOptions(options);
 
 LineString.registerJSONType('LineString');
+
+export default LineString;

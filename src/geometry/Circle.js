@@ -7,6 +7,8 @@ import Polygon from './Polygon';
 /**
  * @property {Object} options
  * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the circle to a polygon.
+ * @memberOf Circle
+ * @instance
  */
 const options = {
     'numberOfShellPoints': 60
@@ -14,21 +16,20 @@ const options = {
 
 /**
  * @classdesc
- * Represents a Circle Geometry, a child class of [Polygon]{@link Polygon}. <br>
- *     It means it shares all the methods defined in [Polygon]{@link Polygon} besides some overrided ones.
- * @class
+ * Represents a Circle Geometry. <br>
  * @category geometry
  * @extends Polygon
  * @mixes Geometry.Center
- * @param {Coordinate} center - center of the circle
- * @param {Number} radius           - radius of the circle
- * @param {Object} [options=null]   - construct options defined in [Circle]{@link Circle#options}
  * @example
  * var circle = new Circle([100, 0], 1000, {
- *     id : 'circle0'
+ *     id : 'circle0',
+ *     properties : {
+ *         foo : 'bar'
+ *     }
  * });
+ * @mixes CenterMixin
  */
-export default class Circle extends CenterMixin(Polygon) {
+class Circle extends CenterMixin(Polygon) {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -37,7 +38,11 @@ export default class Circle extends CenterMixin(Polygon) {
         return circle;
     }
 
-
+    /**
+     * @param {Coordinate} center - center of the circle
+     * @param {Number} radius           - radius of the circle
+     * @param {Object} [options=null]   - construct options defined in [Circle]{@link Circle#options}
+     */
     constructor(coordinates, radius, opts) {
         super(null, opts);
         if (coordinates) {
@@ -156,3 +161,5 @@ export default class Circle extends CenterMixin(Polygon) {
 Circle.mergeOptions(options);
 
 Circle.registerJSONType('Circle');
+
+export default Circle;

@@ -8,12 +8,11 @@ import Layer from './Layer';
  * @classdesc
  * Base class of all the layers that can add/remove geometries. <br>
  * It is abstract and not intended to be instantiated.
- * @class
  * @category layer
  * @abstract
- * @extends {Layer}
+ * @extends Layer
  */
-export default class OverlayLayer extends Layer {
+class OverlayLayer extends Layer {
 
     constructor(id, geometries, options) {
         if (geometries && (!(geometries instanceof Geometry) && !(Array.isArray(geometries)))) {
@@ -21,6 +20,7 @@ export default class OverlayLayer extends Layer {
             geometries = null;
         }
         super(id, options);
+        this._initCache();
         if (geometries) {
             this.addGeometry(geometries);
         }
@@ -514,6 +514,4 @@ export default class OverlayLayer extends Layer {
     }
 }
 
-OverlayLayer.addInitHook(function () {
-    this._initCache();
-});
+export default OverlayLayer;

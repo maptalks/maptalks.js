@@ -2,7 +2,15 @@ import { extend } from 'core/util';
 import Coordinate from '../Coordinate';
 import Common from './Common';
 
+/**
+ * A helper class with common measure methods for Sphere.
+ * @memberOf measurer
+ * @private
+ */
 class Sphere {
+    /**
+     * @param  {Number} radius Sphere's radius
+     */
     constructor(radius) {
         this.radius = radius;
     }
@@ -75,8 +83,9 @@ class Sphere {
  * @protected
  * @memberOf measurer
  * @name WGS84Sphere
+ * @mixes measurer.Common
  */
-export const WGS84Sphere = extend({
+export const WGS84Sphere = extend(/** @lends measurer.WGS84Sphere */{
     'measure': 'EPSG:4326',
     sphere: new Sphere(6378137),
     /**
@@ -115,8 +124,9 @@ export const WGS84Sphere = extend({
  * @protected
  * @memberOf measurer
  * @name BaiduSphere
+ * @mixes measurer.Common
  */
-export const BaiduSphere = extend({
+export const BaiduSphere = extend(/** @lends measurer.BaiduSphere */{
     'measure': 'BAIDU',
     sphere: new Sphere(6370996.81),
     /**

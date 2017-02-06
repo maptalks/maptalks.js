@@ -1,15 +1,23 @@
 import CanvasLayerRenderer from 'renderer/layer/canvaslayer/CanvasLayerRenderer';
 import Layer from './Layer';
 
+/**
+ * @property {Object} options                  - configuration options
+ * @property {Boolean} [options.doubleBuffer=false]    - layer is rendered with doubleBuffer
+ * @property {Boolean} [options.animation=false]       - if the layer is a animated layer
+ * @property {Boolean} [fps=1000 / 16]                 - animation fps
+ * @memberOf CanvasLayer
+ * @instance
+ */
 const options = {
     'doubleBuffer'  : false,
     'animation'     : false,
-    'fps'           : 70
+    'fps'           : 1000 / 16
 };
 
 /**
  * CanvasLayer provides some interface methods for canvas context operations. <br>
- * You can use it directly, but can't ser/dser a CanvasLayer with json in this way. <br>
+ * You can use it directly, but can't serialize/deserialize a CanvasLayer with JSON in this way. <br>
  * It is more recommended to extend it with a subclass and implement canvas paintings inside the subclass.
  * @classdesc
  * A layer with a HTML5 2D canvas context.
@@ -26,13 +34,12 @@ const options = {
  *      context.fillRect(0, 0, w, h);
  *  };
  *  layer.addTo(map);
- * @class
  * @category layer
- * @extends {Layer}
+ * @extends Layer
  * @param {String|Number} id - layer's id
  * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
  */
-export default class CanvasLayer extends Layer {
+class CanvasLayer extends Layer {
 
     /**
      * An optional interface function called only once before the first draw, useful for preparing your canvas operations.
@@ -141,3 +148,5 @@ export default class CanvasLayer extends Layer {
 CanvasLayer.mergeOptions(options);
 
 CanvasLayer.registerRenderer('canvas', CanvasLayerRenderer);
+
+export default CanvasLayer;

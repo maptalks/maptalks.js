@@ -3,18 +3,23 @@ import { extend } from 'core/util';
 /**
  * @classdesc
  * A class internally used by tile layer helps to descibe tile system used by different tile services.<br>
- * Similar with [transformation]{@link Transformation}, it contains 4 numbers: <br>
- * sx : the order of X-axis tile index, 1 means right is larger and -1 means the reverse, left is larger;<br>
- * sy : the order of Y-axis tile index, 1 means top is larger and -1 means the reverse, bottom is larger;<br>
- * ox : x of the origin point of the world's projected coordinate system <br>
- * oy : y of the origin point of the world's projected coordinate system <br>
- * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}
+ *
  * @class
- * @category geo
+ * @category layer
+ * @layer
  * @example
  * var ts = new TileSystem([1, -1, -20037508.34, 20037508.34]);
  */
-export default class TileSystem {
+class TileSystem {
+
+    /**
+     * Similar with [transformation]{@link Transformation}, it contains 4 numbers: <br>
+     * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}
+     * @param  {Number} sx the order of X-axis tile index, 1 means right is larger and -1 means the reverse, left is larger;
+     * @param  {Number} sy the order of Y-axis tile index, 1 means top is larger and -1 means the reverse, bottom is larger;
+     * @param  {Number} ox x of the origin point of the world's projected coordinate system
+     * @param  {Number} oy y of the origin point of the world's projected coordinate system
+     */
     constructor(sx, sy, ox, oy) {
         if (Array.isArray(sx)) {
             this.scale = {
@@ -39,10 +44,6 @@ export default class TileSystem {
 
     /**
      * Get the default tile system's code for the projection.
-     * @function
-     * @static
-     * @memberOf TileSystem
-     * @name  getDefault
      * @param  {Object} projection      - a projection object
      * @return {String} tile system code
      */
@@ -92,3 +93,5 @@ extend(TileSystem, /** @lends TileSystem */ {
      */
     'baidu': new TileSystem([1, 1, 0, 0])
 });
+
+export default TileSystem;

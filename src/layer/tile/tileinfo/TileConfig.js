@@ -5,17 +5,18 @@ import Transformation from 'geo/transformation/Transformation';
 import TileSystem from './TileSystem';
 
 /**
- * Tile config for tile layers, a utilities class for tile layers to render tiles
+ * Tile config for tile layers, an utilities class for tile layers to render tiles
  * @class
  * @category layer
- * @extends {Class}
- * @protected
- * @param {TileSystem} tileSystem  - tileSystem
- * @param {Extent} fullExtent      - fullExtent of the tile layer
- * @param {Size} tileSize          - tile size
+ * @private
  */
-export default class TileConfig {
+class TileConfig {
 
+    /**
+     * @param {TileSystem} tileSystem  - tileSystem
+     * @param {Extent} fullExtent      - fullExtent of the tile layer
+     * @param {Size} tileSize          - tile size
+     */
     constructor(tileSystem, fullExtent, tileSize) {
         this.tileSize = tileSize;
         this.fullExtent = fullExtent;
@@ -161,3 +162,5 @@ export default class TileConfig {
     }
 
 }
+
+export default TileConfig;

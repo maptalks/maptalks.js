@@ -7,11 +7,8 @@ import Geometry from './Geometry';
 /**
  * @classdesc
  * Represents a GeometryCollection.
- * @class
  * @category geometry
  * @extends Geometry
- * @param {Geometry[]} geometries - GeometryCollection's geometries
- * @param {Object} [options=null] - options defined in [nGeometryCollection]{@link GeometryCollection#options}
  * @example
  * var marker = new Marker([0, 0]),
  *     line = new LineString([[0, 0], [0, 1]]),
@@ -19,8 +16,12 @@ import Geometry from './Geometry';
  * var collection = new GeometryCollection([marker, line, polygon])
  *     .addTo(layer);
  */
-export default class GeometryCollection extends Geometry {
+class GeometryCollection extends Geometry {
 
+    /**
+     * @param {Geometry[]} geometries - GeometryCollection's geometries
+     * @param {Object} [options=null] - options defined in [nGeometryCollection]{@link GeometryCollection#options}
+     */
     constructor(geometries, opts) {
         super(opts);
         this.type = 'GeometryCollection';
@@ -437,7 +438,8 @@ export default class GeometryCollection extends Geometry {
         return resources;
     }
 
-    //----------覆盖Geometry中的编辑相关方法-----------------
+    //----------Overrides editor methods in Geometry-----------------
+
     startEdit(opts) {
         if (this.isEmpty()) {
             return this;
@@ -491,3 +493,5 @@ export default class GeometryCollection extends Geometry {
 }
 
 GeometryCollection.registerJSONType('GeometryCollection');
+
+export default GeometryCollection;

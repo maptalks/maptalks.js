@@ -4,11 +4,8 @@ import Marker from './Marker';
 /**
  * @classdesc
  * Represents a Geometry type of MultiPoint.
- * @class
  * @category geometry
  * @extends MultiGeometry
- * @param {Number[][]|Coordinate[]|Marker[]} data - construct data, coordinates or a array of markers
- * @param {Object} [options=null] - options defined in [nMultiPoint]{@link MultiPoint#options}
  * @example
  * var multiPoint = new MultiPoint(
  *     [
@@ -18,11 +15,17 @@ import Marker from './Marker';
  *     ]
  * ).addTo(layer);
  */
-export default class MultiPoint extends MultiGeometry {
+class MultiPoint extends MultiGeometry {
 
+    /**
+     * @param {Number[][]|Coordinate[]|Marker[]} data - construct data, coordinates or an array of markers
+     * @param {Object} [options=null] - options defined in [nMultiPoint]{@link MultiPoint#options}
+     */
     constructor(data, opts) {
         super(Marker, 'MultiPoint', data, opts);
     }
 }
 
 MultiPoint.registerJSONType('MultiPoint');
+
+export default MultiPoint;

@@ -9,12 +9,14 @@ import { isNil, isArrayHasData, round } from 'core/util';
  * var point = new Point([1000,1000]);
  * @example
  * var point = new Point({x:1000, y:1000});
- * @class
  * @category basic types
- * @param {Number} x - x value
- * @param {Number} y - y value
  */
-export default class Point {
+class Point {
+
+    /**
+     * @param {Number} x - x value
+     * @param {Number} y - y value
+     */
     constructor(x, y) {
         if (!isNil(x) && !isNil(y)) {
             /**
@@ -26,7 +28,6 @@ export default class Point {
              */
             this.y = y;
         } else if (!isNil(x.x) && !isNil(x.y)) {
-            //对象
             this.x = x.x;
             this.y = x.y;
         } else if (isArrayHasData(x)) {
@@ -38,10 +39,15 @@ export default class Point {
         }
     }
 
+    /**
+     * Return abs value of the point
+     * @return {Point} abs point
+     */
     abs() {
         return new Point(Math.abs(this.x), Math.abs(this.y));
     }
 
+    //destructive abs
     _abs() {
         this.x = Math.abs(this.x);
         this.y = Math.abs(this.y);
@@ -147,7 +153,7 @@ export default class Point {
         return new Point(nx, ny);
     }
 
-    //破坏性方法
+    //destructive multi
     _multi(n) {
         this.x *= n;
         this.y *= n;
@@ -246,3 +252,5 @@ export default class Point {
         return this;
     }
 }
+
+export default Point;

@@ -4,16 +4,18 @@ import Canvas from 'core/Canvas';
 /**
  * @property {Object} options
  * @property {Number} [options.arcDegree=90]           - circle arc's degree.
+ * @memberOf ArcCurve
+ * @instance
  */
 const options = {
     'arcDegree': 90
 };
 
 /**
- * @classdesc Circle Arc Curve
- * @class
+ * @classdesc
+ * Circle Arc Curve
  * @category geometry
- * @extends {Curve}
+ * @extends Curve
  * @param {Coordinate[]|Number[][]} coordinates - coordinates of the curve
  * @param {Object} [options=null]   - construct options defined in [ArcCurve]{@link ArcCurve#options}
  * @example
@@ -31,7 +33,9 @@ const options = {
  *     }
  * ).addTo(layer);
  */
-export default class ArcCurve extends Curve {
+class ArcCurve extends Curve {
+
+
 
     _toJSON(options) {
         return {
@@ -59,3 +63,5 @@ export default class ArcCurve extends Curve {
 ArcCurve.registerJSONType('ArcCurve');
 
 ArcCurve.mergeOptions(options);
+
+export default ArcCurve;

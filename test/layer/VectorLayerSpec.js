@@ -387,7 +387,7 @@ describe('#VectorLayer', function () {
             }, [1], [symbol]);
         });
 
-        it('setStyle with a array of styles', function () {
+        it('setStyle with an array of styles', function () {
             var symbol = {
                 'markerFile' : 'http://www.foo.com/foo.png'
             };

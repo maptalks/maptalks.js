@@ -4,7 +4,8 @@ import Label from 'geometry/Label';
 import { UIMarker } from 'ui';
 
 /**
- * @mixin TextMarker.Edit
+ * Mixin methods for text editing.
+ * @mixin TextEditable
  */
 const TextEditable = {
     /**
@@ -74,7 +75,7 @@ const TextEditable = {
     },
 
     /**
-     * Get the text editor which is a [ui.UIMarker]{@link ui.UIMarker}
+     * Get the text editor which is an [ui.UIMarker]{@link ui.UIMarker}
      * @return {ui.UIMarker} text editor
      */
     getTextEditor() {

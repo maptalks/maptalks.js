@@ -2,7 +2,7 @@ import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import { extend, isNil, isNumber, isArrayHasData, indexOfArray, removeFromArray, UID } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
-import Eventable from 'core/Event';
+import Eventable from 'core/Eventable';
 import Point from 'geo/Point';
 import { Marker, TextMarker, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
@@ -12,16 +12,18 @@ const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
 
 /**
  * Geometry editor used internally for geometry editing.
- * @class
  * @category geometry
  * @protected
  * @extends Class
  * @mixes Eventable
- * @param {_shadow} geometry 待编辑图形
- * @param {Object} opts 属性
  */
-export default class GeometryEditor extends Eventable(Class) {
+class GeometryEditor extends Eventable(Class) {
 
+    /**
+     * @param {Geometry} geometry geometry to edit
+     * @param {Object} [opts=null] options
+     * @param {Object} [opts.symbol=null] symbol of being edited.
+     */
     constructor(geometry, opts) {
         super(opts);
         this._geometry = geometry;
@@ -30,17 +32,24 @@ export default class GeometryEditor extends Eventable(Class) {
         }
     }
 
+    /**
+     * Get map
+     * @return {Map} map
+     */
     getMap() {
         return this._geometry.getMap();
     }
 
+    /**
+     * Prepare to edit
+     */
     prepare() {
         var map = this.getMap();
         if (!map) {
             return;
         }
         /**
-         * 保存原有的symbol
+         * reserve the original symbol
          */
         if (this.options['symbol']) {
             this._originalSymbol = this._geometry.getSymbol();
@@ -61,7 +70,7 @@ export default class GeometryEditor extends Eventable(Class) {
     }
 
     /**
-     * 开始编辑
+     * Start to edit
      */
     start() {
         if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) {
@@ -122,8 +131,7 @@ export default class GeometryEditor extends Eventable(Class) {
     }
 
     /**
-     * 结束编辑
-     * @return {*} [description]
+     * Stop editing
      */
     stop() {
         this._switchGeometryEvents('off');
@@ -157,6 +165,10 @@ export default class GeometryEditor extends Eventable(Class) {
         this.editing = false;
     }
 
+    /**
+     * Whether the editor is editing
+     * @return {Boolean}
+     */
     isEditing() {
         if (isNil(this.editing)) {
             return false;
@@ -914,3 +926,5 @@ export default class GeometryEditor extends Eventable(Class) {
     }
 
 }
+
+export default GeometryEditor;

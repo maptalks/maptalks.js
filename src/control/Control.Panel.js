@@ -11,6 +11,8 @@ import Control from './Control';
  * @property {Boolean} [options.custom=false]              - whether the panel's content is customized .
  * @property {String|HTMLElement} options.content          - panel's content, can be a dom element or a string.
  * @property {Boolean} [options.closeButton=true]          - whether to display the close button on the panel.
+ * @memberOf control.Panel
+ * @instance
  */
 const options = {
     'position': 'top-right',
@@ -25,12 +27,9 @@ const options = {
 /**
  * @classdesc
  * Class for panel controls.
- * @class
  * @category control
- * @extends Control
+ * @extends control.Control
  * @memberOf control
- * @name Panel
- * @param {Object} [options=null] - options defined in [Panel]{@link Panel#options}
  * @example
  * var panel = new Panel({
  *     position : {'bottom': '0', 'right': '0'},
@@ -40,8 +39,13 @@ const options = {
  *     closeButton : true
  * }).addTo(map);
  */
-export default class Panel extends Control {
+class Panel extends Control {
 
+    /**
+     * method to build DOM of the control
+     * @param  {Map} map map to build on
+     * @return {HTMLDOMElement}
+     */
     buildOn() {
         var dom;
         if (this.options['custom']) {
@@ -84,7 +88,7 @@ export default class Panel extends Control {
 
     /**
      * update control container
-     * @return {Panel} this
+     * @return {control.Panel} this
      */
     update() {
         if (this.draggable) {
@@ -97,7 +101,7 @@ export default class Panel extends Control {
     /**
      * Set the content of the Panel.
      * @param {String|HTMLElement} content - content of the infowindow.
-     * return {Panel} this
+     * return {control.Panel} this
      * @fires Panel#contentchange
      */
     setContent(content) {
@@ -109,7 +113,7 @@ export default class Panel extends Control {
          * @event Panel#contentchange
          * @type {Object}
          * @property {String} type - contentchange
-         * @property {Panel} target - Panel
+         * @property {control.Panel} target - Panel
          * @property {String|HTMLElement} old      - old content
          * @property {String|HTMLElement} new      - new content
          */
@@ -211,3 +215,5 @@ export default class Panel extends Control {
 }
 
 Panel.mergeOptions(options);
+
+export default Panel;

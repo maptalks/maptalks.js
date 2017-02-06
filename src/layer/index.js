@@ -1,6 +1,6 @@
 import Layer from './Layer';
 import TileLayer from './tile/TileLayer';
-import CanvasTileLayer from './tile/CanvasTileLayer';
+// import CanvasTileLayer from './tile/CanvasTileLayer';
 import OverlayLayer from './OverlayLayer';
 import VectorLayer from './VectorLayer';
 import GeoJSONLayer from './GeoJSONLayer';
@@ -10,7 +10,7 @@ import ParticleLayer from './ParticleLayer';
 export {
     Layer,
     TileLayer,
-    CanvasTileLayer,
+    // CanvasTileLayer,
     OverlayLayer,
     VectorLayer,
     GeoJSONLayer,
