@@ -405,6 +405,22 @@ maptalks.Util = {
 
     },
 
+    /**
+     * Polyfill for Math.sign
+     * @param  {Number} x
+     * @return {Number}
+     */
+    sign: function (x) {
+        if (Math.sign) {
+            return Math.sign(x);
+        }
+        x = +x; // convert to a number
+        if (x === 0 || isNaN(x)) {
+            return Number(x);
+        }
+        return x > 0 ? 1 : -1;
+    },
+
     /*
      * Whether the object is a coordinate
      * @param  {Object} obj     - object

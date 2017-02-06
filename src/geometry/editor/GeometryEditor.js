@@ -399,12 +399,12 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                             me._refresh();
                         }
                     });
-                    if (me.options['fixAspectRatio']) {
+                    /*if (me.options['fixAspectRatio']) {
                         // hide handles in the corners if AspectRatio is true
                         if (i === 0 || i === 2 || i === 5 || i === 7) {
                             handle.hide();
                         }
-                    }
+                    }*/
                     handle.setId(i);
                     anchorIndexes[i] = resizeHandles.length;
                     resizeHandles.push(handle);
@@ -596,15 +596,16 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         var resizeHandles = this._createResizeHandles(null, function (mouseViewPoint, i) {
             //ratio of width and height
             var r = isRect ? 1 : 2;
-            var wh, w, h;
+            var pointSub, w, h;
             var targetPoint = mouseViewPoint;
             var ability = resizeAbilities[i];
             if (isRect) {
                 var mirror = resizeHandles[7 - i];
                 var mirrorViewPoint = map.coordinateToViewPoint(mirror.getCoordinates());
-                wh = targetPoint.substract(mirrorViewPoint)._abs();
-                w = map.pixelToDistance(wh.x, 0);
-                h = map.pixelToDistance(0, wh.y);
+                pointSub = targetPoint.substract(mirrorViewPoint);
+                var absSub = pointSub.abs();
+                w = map.pixelToDistance(absSub.x, 0);
+                h = map.pixelToDistance(0, absSub.y);
                 var size = geometryToEdit.getSize();
                 if (ability === 0) {
                     // changing width
@@ -614,8 +615,8 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                     // Rectangle's northwest's y is (y - height / 2)
                     if (aspectRatio) {
                         // update rectangle's height with aspect ratio
-                        wh.y = wh.x / aspectRatio;
-                        size.height = wh.y;
+                        absSub.y = absSub.x / aspectRatio;
+                        size.height = Math.abs(absSub.y);
                         h = w / aspectRatio;
                     }
                     targetPoint.y = mirrorViewPoint.y - size.height / 2;
@@ -627,11 +628,20 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                     // Rectangle's northwest's x is (x - width / 2)
                     if (aspectRatio) {
                         // update rectangle's width with aspect ratio
-                        wh.x = wh.y * aspectRatio;
-                        size.width = wh.x;
+                        absSub.x = absSub.y * aspectRatio;
+                        size.width = Math.abs(absSub.x);
                         w = h * aspectRatio;
                     }
                     targetPoint.x = mirrorViewPoint.x - size.width / 2;
+                } else if (aspectRatio) {
+                    // corner handles, relocate the target point according to aspect ratio.
+                    if (w > h * aspectRatio) {
+                        h = w / aspectRatio;
+                        targetPoint.y = mirrorViewPoint.y + absSub.x * maptalks.Util.sign(pointSub.y) / aspectRatio;
+                    } else {
+                        w = h * aspectRatio;
+                        targetPoint.x = mirrorViewPoint.x + absSub.y  * maptalks.Util.sign(pointSub.x) * aspectRatio;
+                    }
                 }
                 //change rectangle's coordinates
                 var newCoordinates = map.viewPointToCoordinate(new maptalks.Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
@@ -640,9 +650,9 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
 
             } else {
                 var viewCenter = map.coordinateToViewPoint(geometryToEdit.getCenter());
-                wh = viewCenter.substract(targetPoint)._abs();
-                w = map.pixelToDistance(wh.x, 0);
-                h = map.pixelToDistance(0, wh.y);
+                pointSub = viewCenter.substract(targetPoint)._abs();
+                w = map.pixelToDistance(pointSub.x, 0);
+                h = map.pixelToDistance(0, pointSub.y);
                 if (aspectRatio) {
                     w = Math.max(w, h * aspectRatio);
                     h = w / aspectRatio;
