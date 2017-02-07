@@ -49,7 +49,7 @@ class DragHandler extends Handler {
 
     onMouseDown(event) {
         if (isNumber(event.button) && event.button === 2) {
-            //不响应右键事件
+            //ignore right mouse down
             return;
         }
         if (this.options && this.options['cancelOn'] && this.options['cancelOn'](event) === true) {
@@ -88,22 +88,12 @@ class DragHandler extends Handler {
             return;
         }
         if (!this.moved) {
-            /**
-             * 触发dragstart事件
-             * @event dragstart
-             * @return {Object} mousePos: {'left': 0px, 'top': 0px}
-             */
             this.fire('dragstart', {
                 'domEvent': event,
                 'mousePos': this.startPos.copy()
             });
             this.moved = true;
         } else {
-            /**
-             * 触发dragging事件
-             * @event dragging
-             * @return {Object} mousePos: {'left': 0px, 'top': 0px}
-             */
             this.fire('dragging', {
                 'domEvent': event,
                 'mousePos': new Point(actual.clientX, actual.clientY)
@@ -130,16 +120,11 @@ class DragHandler extends Handler {
             param['mousePos'] = new Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
         }
         if (this.moved/* && this.moving*/) {
-            /**
-             * 触发dragend事件
-             * @event dragend
-             * @return {Object} mousePos: {'left': 0px, 'top': 0px}
-             */
             this.fire('dragend', param);
         }
 
         this.fire('mouseup', param);
     }
-};
+}
 
 export default DragHandler;
