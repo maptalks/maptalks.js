@@ -107,22 +107,21 @@ const options = {
  *
  * @mixes Eventable
  * @mixes Handlerable
- * @mixes Menuable
+ * @mixes ui.Menuable
  * @mixes Renderable
  *
  * @example
- * var map = new Map("map",{
-        center:     [180,0],
-        zoom:  4,
-        baseLayer : new TileLayer("base",{
-            urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            subdomains:['a','b','c']
-        }),
-        layers : [
-            new VectorLayer('v')
-            .addGeometry(new Marker([180, 0]))
-        ]
-    });
+ * var map = new maptalks.Map("map",{
+ *      center:     [180,0],
+ *      zoom:  4,
+ *      baseLayer : new maptalks.TileLayer("base",{
+ *          urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+ *          subdomains:['a','b','c']
+ *      }),
+ *      layers : [
+ *          new maptalks.VectorLayer('v', [new maptalks.Marker([180, 0]])
+ *      ]
+ * });
  */
 class Map extends Handlerable(Eventable(Renderable(Class))) {
 

@@ -4,7 +4,7 @@ import Layer from './Layer';
 /**
  * @property {Object} options                  - configuration options
  * @property {Boolean} [options.doubleBuffer=false]    - layer is rendered with doubleBuffer
- * @property {Boolean} [options.animation=false]       - if the layer is a animated layer
+ * @property {Boolean} [options.animation=false]       - if the layer is an animated layer
  * @property {Boolean} [fps=1000 / 16]                 - animation fps
  * @memberOf CanvasLayer
  * @instance
@@ -16,11 +16,10 @@ const options = {
 };
 
 /**
+ * A layer with a HTML5 2D canvas context.<br>
  * CanvasLayer provides some interface methods for canvas context operations. <br>
  * You can use it directly, but can't serialize/deserialize a CanvasLayer with JSON in this way. <br>
  * It is more recommended to extend it with a subclass and implement canvas paintings inside the subclass.
- * @classdesc
- * A layer with a HTML5 2D canvas context.
  * @example
  *  var layer = new CanvasLayer('canvas');
  *

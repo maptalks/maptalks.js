@@ -232,6 +232,7 @@ class GeometryEditor extends Eventable(Class) {
 
     /**
      * create rectangle outline of the geometry
+     * @private
      */
     _createOrRefreshOutline() {
         var geometry = this._geometry,
@@ -361,6 +362,7 @@ class GeometryEditor extends Eventable(Class) {
      * create resize handles for geometry that can resize.
      * @param {Array} blackList handle indexes that doesn't display, to prevent change a geometry's coordinates
      * @param {fn} onHandleMove callback
+     * @private
      */
     _createResizeHandles(blackList, onHandleMove) {
         //cursor styles.
@@ -446,7 +448,8 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
-     * 标注和自定义标注编辑器
+     * Create marker editor
+     * @private
      */
     createMarkerEditor() {
         const marker = this._shadow,
@@ -576,8 +579,8 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
-     * 圆形编辑器
-     * @return {*} [description]
+     * Create circle editor
+     * @private
      */
     createCircleEditor() {
         var shadow = this._shadow,
@@ -601,7 +604,7 @@ class GeometryEditor extends Eventable(Class) {
 
     /**
      * editor of ellipse or rectangle
-     * @return {*} [description]
+     * @private
      */
     createEllipseOrRectEditor() {
         //defines what can be resized by the handle
@@ -698,7 +701,7 @@ class GeometryEditor extends Eventable(Class) {
 
     /**
      * Editor for polygon
-     * @return {*} [description]
+     * @private
      */
     createPolygonEditor() {
 

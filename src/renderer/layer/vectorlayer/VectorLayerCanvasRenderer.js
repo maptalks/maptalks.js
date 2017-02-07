@@ -6,14 +6,13 @@ import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 /**
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for VectorLayers
- * @class
  * @protected
- * @memberOf renderer.vectorlayer
- * @name Canvas
- * @extends {renderer.overlaylayer.Canvas}
- * @param {VectorLayer} layer - layer of the renderer
+ * @memberOf renderer
+ * @name VectorLayerCanvasRenderer
+ * @extends renderer.OverlaylayerCanvasRenderer
+ * @param {VectorLayer} layer - layer to render
  */
-export default class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
+class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     checkResources() {
         var me = this;
@@ -178,3 +177,5 @@ export default class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 }
 
 VectorLayer.registerRenderer('canvas', VectorLayerRenderer);
+
+export default VectorLayerRenderer;

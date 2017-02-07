@@ -3,7 +3,8 @@ dist/
 .idea/
 *.iml
 .tern-port
-doc/
+doc/**/*
+!doc/files.js
 
 ### yarn log
 yarn*.log

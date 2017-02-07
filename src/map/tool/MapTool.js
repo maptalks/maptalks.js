@@ -12,13 +12,12 @@ import Eventable from 'core/Eventable';
  * 3. getEvents: required, provide an event map to register event listeners on the map.
  * 4. onDisable: optional, called when the map tool is disabled, used to cleanup such as unregistering event listeners, enable map's original handlers and remove temporary layers.
  * </pre>
- * @class
  * @abstract
  * @category maptool
  * @extends Class
- * @mixins Eventable
+ * @mixes Eventable
  */
-export default class MapTool extends Eventable(Class) {
+class MapTool extends Eventable(Class) {
 
     /**
      * Adds the map tool to a map.
@@ -145,3 +144,5 @@ export default class MapTool extends Eventable(Class) {
         this.fire(eventName, param);
     }
 }
+
+export default MapTool;

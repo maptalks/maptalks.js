@@ -2,9 +2,7 @@ import Eventable from 'core/Eventable';
 
 /**
  * Base class for all the interaction handlers
- * @class
  * @category handler
- * @mixins Eventable
  * @abstract
  * @protected
  */

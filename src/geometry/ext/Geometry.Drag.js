@@ -16,8 +16,8 @@ const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 /**
  * Drag handler for geometries.
  * @category handler
- * @protected
  * @extends Handler
+ * @ignore
  */
 class GeometryDragHandler extends Handler  {
 

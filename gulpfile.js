@@ -157,7 +157,7 @@ gulp.task('reload', ['scripts'], () => {
 });
 
 gulp.task('doc', () => {
-    var sources = ['src/core', 'src/geo', /*'src/control', */'src/layer', 'src/geometry', 'src/map', ];
+    var sources = require('./doc/files.js');
     del([
         'doc/api/**/*'
     ]);

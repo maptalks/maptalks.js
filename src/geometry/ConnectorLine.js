@@ -7,8 +7,8 @@ import ArcCurve from './ArcCurve';
  * @mixin Connectable
  * @private
  */
-const Connectable = function (Base) {
-    return class extends Base {
+const Connectable = Base =>
+    class extends Base {
 
         static _hasConnectors(geometry) {
             return (!isNil(geometry.__connectors) && geometry.__connectors.length > 0);
@@ -172,7 +172,6 @@ const Connectable = function (Base) {
             }
         }
     };
-};
 
 /**
  * @property {Object} options - ConnectorLine's options

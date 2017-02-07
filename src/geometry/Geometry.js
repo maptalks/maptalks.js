@@ -58,7 +58,7 @@ const options = {
  * @mixes Eventable
  * @mixes Handlerable
  * @mixes JSONAble
- * @mixes Menuable
+ * @mixes ui.Menuable
  */
 class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 

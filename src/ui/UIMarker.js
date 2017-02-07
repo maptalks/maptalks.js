@@ -13,6 +13,8 @@ import UIComponent from './UI';
  * @property {Boolean} [options.draggable=false]  - if the marker can be dragged.
  * @property {Number}  [options.single=false]     - if the marker is a global single one.
  * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
+ * @memberOf ui.UIMarker
+ * @instance
  */
 const options = {
     'draggable': false,
@@ -23,7 +25,7 @@ const options = {
 const domEvents =
     /**
      * mousedown event
-     * @event UIMarker#mousedown
+     * @event ui.UIMarker#mousedown
      * @type {Object}
      * @property {String} type                    - mousedown
      * @property {UIMarker} target    - the uimarker fires event
@@ -35,7 +37,7 @@ const domEvents =
     'mousedown ' +
     /**
      * mouseup event
-     * @event UIMarker#mouseup
+     * @event ui.UIMarker#mouseup
      * @type {Object}
      * @property {String} type                    - mouseup
      * @property {UIMarker} target    - the uimarker fires event
@@ -47,7 +49,7 @@ const domEvents =
     'mouseup ' +
     /**
      * mouseover event
-     * @event UIMarker#mouseover
+     * @event ui.UIMarker#mouseover
      * @type {Object}
      * @property {String} type                    - mouseover
      * @property {UIMarker} target    - the uimarker fires event
@@ -59,7 +61,7 @@ const domEvents =
     'mouseover ' +
     /**
      * mouseout event
-     * @event UIMarker#mouseout
+     * @event ui.UIMarker#mouseout
      * @type {Object}
      * @property {String} type                    - mouseout
      * @property {UIMarker} target    - the uimarker fires event
@@ -71,7 +73,7 @@ const domEvents =
     'mouseout ' +
     /**
      * mousemove event
-     * @event UIMarker#mousemove
+     * @event ui.UIMarker#mousemove
      * @type {Object}
      * @property {String} type                    - mousemove
      * @property {UIMarker} target    - the uimarker fires event
@@ -83,7 +85,7 @@ const domEvents =
     'mousemove ' +
     /**
      * click event
-     * @event UIMarker#click
+     * @event ui.UIMarker#click
      * @type {Object}
      * @property {String} type                    - click
      * @property {UIMarker} target    - the uimarker fires event
@@ -95,7 +97,7 @@ const domEvents =
     'click ' +
     /**
      * dblclick event
-     * @event UIMarker#dblclick
+     * @event ui.UIMarker#dblclick
      * @type {Object}
      * @property {String} type                    - dblclick
      * @property {UIMarker} target    - the uimarker fires event
@@ -107,7 +109,7 @@ const domEvents =
     'dblclick ' +
     /**
      * contextmenu event
-     * @event UIMarker#contextmenu
+     * @event ui.UIMarker#contextmenu
      * @type {Object}
      * @property {String} type                    - contextmenu
      * @property {UIMarker} target    - the uimarker fires event
@@ -119,7 +121,7 @@ const domEvents =
     'contextmenu ' +
     /**
      * keypress event
-     * @event UIMarker#keypress
+     * @event ui.UIMarker#keypress
      * @type {Object}
      * @property {String} type                    - keypress
      * @property {UIMarker} target    - the uimarker fires event
@@ -131,7 +133,7 @@ const domEvents =
     'keypress ' +
     /**
      * touchstart event
-     * @event UIMarker#touchstart
+     * @event ui.UIMarker#touchstart
      * @type {Object}
      * @property {String} type                    - touchstart
      * @property {UIMarker} target    - the uimarker fires event
@@ -143,7 +145,7 @@ const domEvents =
     'touchstart ' +
     /**
      * touchmove event
-     * @event UIMarker#touchmove
+     * @event ui.UIMarker#touchmove
      * @type {Object}
      * @property {String} type                    - touchmove
      * @property {UIMarker} target    - the uimarker fires event
@@ -155,7 +157,7 @@ const domEvents =
     'touchmove ' +
     /**
      * touchend event
-     * @event UIMarker#touchend
+     * @event ui.UIMarker#touchend
      * @type {Object}
      * @property {String} type                    - touchend
      * @property {UIMarker} target    - the uimarker fires event
@@ -167,29 +169,31 @@ const domEvents =
     'touchend';
 
 /**
- * As it's renderered by HTMLElement such as a DIV, it: <br>
- * 1. always on the top of all the map layers <br>
- * 2. can't be snapped as it's not drawn on the canvas. <br>
  *
  * @classdesc
  * Class for UI Marker, a html based marker positioned by geographic coordinate. <br>
  *
- * @class
  * @category ui
- * @extends UIComponent
- * @param {Object} options - options defined in [UIMarker]{@link UIMarker#options}
+ * @extends ui.UIComponent
+ * @mixes Handlerable
  * @memberOf ui
- * @name UIMarker
  * @example
- * var dom = document.createElement('div');
+ * const dom = document.createElement('div');
  * dom.innerHTML = 'hello ui marker';
- * var marker = new UIMarker([0, 0], {
+ * const marker = new maptalks.UIMarker([0, 0], {
  *      draggable : true,
  *      content : dom
  *  }).addTo(map);
  */
-export default class UIMarker extends Handlerable(UIComponent) {
+class UIMarker extends Handlerable(UIComponent) {
 
+    /**
+     * As it's renderered by HTMLElement such as a DIV, it: <br>
+     * 1. always on the top of all the map layers <br>
+     * 2. can't be snapped as it's not drawn on the canvas. <br>
+     * @param  {Coordinate} coordinate - UIMarker's coordinates
+     * @param {Object} options - options defined in [UIMarker]{@link UIMarker#options}
+     */
     constructor(coordinate, options) {
         super(options);
         this._markerCoord = new Coordinate(coordinate);
@@ -211,7 +215,7 @@ export default class UIMarker extends Handlerable(UIComponent) {
         /**
          * positionchange event.
          *
-         * @event UIMarker#positionchange
+         * @event ui.UIMarker#positionchange
          * @type {Object}
          * @property {String} type - positionchange
          * @property {UIMarker} target - ui marker
@@ -243,7 +247,7 @@ export default class UIMarker extends Handlerable(UIComponent) {
         /**
          * contentchange event.
          *
-         * @event UIMarker#contentchange
+         * @event ui.UIMarker#contentchange
          * @type {Object}
          * @property {String} type - contentchange
          * @property {UIMarker} target - ui marker
@@ -351,13 +355,6 @@ UIMarker.mergeOptions(options);
 
 const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
-/**
- * Drag handler for UIMarker.
- * @class
- * @category handler
- * @protected
- * @extends {Handler}
- */
 class UIMarkerDragHandler extends Handler {
 
     constructor(target) {
@@ -388,7 +385,7 @@ class UIMarkerDragHandler extends Handler {
         this._dragHandler.onMouseDown(param['domEvent']);
         /**
          * drag start event
-         * @event UIMarker#dragstart
+         * @event ui.UIMarker#dragstart
          * @type {Object}
          * @property {String} type                    - dragstart
          * @property {UIMarker} target    - the uimarker fires event
@@ -450,7 +447,7 @@ class UIMarkerDragHandler extends Handler {
 
         /**
          * dragging event
-         * @event UIMarker#dragging
+         * @event ui.UIMarker#dragging
          * @type {Object}
          * @property {String} type                    - dragging
          * @property {UIMarker} target    - the uimarker fires event
@@ -479,7 +476,7 @@ class UIMarkerDragHandler extends Handler {
         var eventParam = map._parseEvent(param['domEvent']);
         /**
          * dragend event
-         * @event UIMarker#dragend
+         * @event ui.UIMarker#dragend
          * @type {Object}
          * @property {String} type                    - dragend
          * @property {UIMarker} target    - the uimarker fires event
@@ -501,3 +498,5 @@ class UIMarkerDragHandler extends Handler {
 }
 
 UIMarker.addInitHook('addHandler', 'draggable', UIMarkerDragHandler);
+
+export default UIMarker;

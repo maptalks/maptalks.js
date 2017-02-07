@@ -1,3 +1,5 @@
+/** @namespace renderer */
+
 export { ResourceCache } from './layer/CanvasRenderer';
 export { default as CanvasRenderer } from './layer/CanvasRenderer';
 

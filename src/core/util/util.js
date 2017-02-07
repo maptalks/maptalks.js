@@ -289,6 +289,7 @@ export function round(num) {
  * Polyfill for Math.sign
  * @param  {Number} x
  * @return {Number}
+ * @memberOf Util
  */
 export function sign(x) {
     if (Math.sign) {

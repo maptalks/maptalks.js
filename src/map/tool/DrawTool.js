@@ -43,7 +43,6 @@ const registeredMode = {};
  * A map tool to help draw geometries.
  * @category maptool
  * @extends MapTool
- * @mixins Eventable
  * @example
  * var drawTool = new DrawTool({
  *     mode : 'Polygon',

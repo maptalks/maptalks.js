@@ -1,18 +1,16 @@
 /**
  * Common methods for classes can be rendered, e.g. Map, Layers
- * @mixin
+ * @mixin Renderable
  * @protected
  */
-// buble.js doesn't support arrow functions:
-// export default Base => class extends Base {..}
-export default function (Base) {
-    return class extends Base {
+export default Base =>
+    class extends Base {
         /**
          * Register a renderer class with the given name.
          * @param  {String} name  - renderer's register key
          * @param  {Function} clazz - renderer's class, a function (not necessarily a [Class]{@link Class}).
-         * @static
          * @return {*} this
+         * @function Renderable.registerRenderer
          */
         static registerRenderer(name, clazz) {
             const proto = this.prototype;
@@ -28,7 +26,7 @@ export default function (Base) {
          * Get the registered renderer class by the given name
          * @param  {String} name  - renderer's register key
          * @return {Function} renderer's class
-         * @static
+         * @function Renderable.getRendererClass
          */
         static getRendererClass(name) {
             const proto = this.prototype;
@@ -38,5 +36,3 @@ export default function (Base) {
             return proto._rendererClasses[name.toLowerCase()];
         }
     };
-}
-

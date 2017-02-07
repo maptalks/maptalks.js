@@ -68,25 +68,34 @@ export class ResourceCache {
 
 /**
  * @classdesc
- * Base Class for all the renderer based on HTML5 Canvas2D
+ * Base Class to render layer on HTMLCanvasElement
  * @abstract
- * @class
  * @protected
  * @memberOf renderer
- * @name Canvas
- * @extends {Class}
+ * @extends Class
  */
-export default class CanvasRenderer extends Class {
+class CanvasRenderer extends Class {
 
+    /**
+     * @param  {Layer} layer the layer to render
+     */
     constructor(layer) {
         super();
         this.layer = layer;
     }
 
+    /**
+     * Whether it's a renderer based on Canvas
+     * @return {Boolean}
+     */
     isCanvasRender() {
         return true;
     }
 
+    /**
+     * Render the layer
+     * @param  {Boolean} isCheckRes whether to check and load external resources in the layer
+     */
     render(isCheckRes) {
         this.prepareRender();
         if (!this.getMap()) {
@@ -126,6 +135,9 @@ export default class CanvasRenderer extends Class {
         }
     }
 
+    /**
+     * Remove the renderer, will be called when layer is removed
+     */
     remove() {
         this._clearTimeout();
         if (this.onRemove) {
@@ -141,6 +153,10 @@ export default class CanvasRenderer extends Class {
         delete this.layer;
     }
 
+    /**
+     * Get map
+     * @return {Map}
+     */
     getMap() {
         if (!this.layer) {
             return null;
@@ -148,6 +164,10 @@ export default class CanvasRenderer extends Class {
         return this.layer.getMap();
     }
 
+    /**
+     * Get renderer's Canvas image object
+     * @return {HTMLCanvasElement}
+     */
     getCanvasImage() {
         if (this._renderZoom !== this.getMap().getZoom() || !this.canvas) {
             return null;
@@ -171,6 +191,10 @@ export default class CanvasRenderer extends Class {
         };
     }
 
+    /**
+     * Check if the renderer is loaded
+     * @return {Boolean}
+     */
     isLoaded() {
         if (this._loaded) {
             return true;
@@ -178,7 +202,9 @@ export default class CanvasRenderer extends Class {
         return false;
     }
 
-
+    /**
+     * Show the layer
+     */
     show() {
         var mask = this.layer.getMask();
         if (mask) {
@@ -187,7 +213,9 @@ export default class CanvasRenderer extends Class {
         this.render(true);
     }
 
-
+    /**
+     * Hide the layer
+     */
     hide() {
         this.clearCanvas();
         this.requestMapToRender();
@@ -197,7 +225,11 @@ export default class CanvasRenderer extends Class {
         this.requestMapToRender();
     }
 
-
+    /**
+     * Detect if there is anything painted on the given point
+     * @param  {Point} point a 2d point on current zoom
+     * @return {Boolean}
+     */
     hitDetect(point) {
         if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
             return false;
@@ -234,6 +266,7 @@ export default class CanvasRenderer extends Class {
      * @param  {String[]} resourceUrls    - Array of urls to load
      * @param  {Function} onComplete          - callback after loading complete
      * @param  {Object} context         - callback's context
+     * @returns {Promise[]}
      */
     loadResources(resourceUrls) {
         var resources = this.resources,
@@ -256,14 +289,20 @@ export default class CanvasRenderer extends Class {
         return Promise.all(promises);
     }
 
+    /**
+     * Prepare rendering,
+     */
     prepareRender() {
-        var map = this.getMap();
+        const map = this.getMap();
         this._renderZoom = map.getZoom();
         this._extent2D = map._get2DExtent();
         this._northWest = map._containerPointToPoint(new Point(0, 0));
         this._loaded = false;
     }
 
+    /**
+     * Create renderer's Canvas
+     */
     createCanvas() {
         if (this.canvas) {
             return;
@@ -285,6 +324,10 @@ export default class CanvasRenderer extends Class {
         }
     }
 
+    /**
+     * Resize the canvas
+     * @param  {Size} canvasSize the size resizing to
+     */
     resizeCanvas(canvasSize) {
         if (!this.canvas) {
             return;
@@ -309,6 +352,9 @@ export default class CanvasRenderer extends Class {
         }
     }
 
+    /**
+     * Clear the canvas to blank
+     */
     clearCanvas() {
         if (!this.canvas) {
             return;
@@ -316,6 +362,12 @@ export default class CanvasRenderer extends Class {
         Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
     }
 
+    /**
+     * Prepare the canvas for rendering. <br>
+     * 1. Clear the canvas to blank. <br>
+     * 2. Clip the canvas by mask if there is any and return the mask's extent
+     * @return {PointExtent} mask's extent of current zoom's 2d point.
+     */
     prepareCanvas() {
         if (this._clipped) {
             this.context.restore();
@@ -359,10 +411,18 @@ export default class CanvasRenderer extends Class {
         return maskExtent2D;
     }
 
+    /**
+     * Get renderer's extent of 2d points in current zoom
+     * @return {PointExtent} 2d extent
+     */
     get2DExtent() {
         return this._extent2D;
     }
 
+    /**
+     * Request map to render, to redraw all layer's canvas on map's canvas.<br>
+     * This should be called once any canvas layer is updated
+     */
     requestMapToRender() {
         if (this.getMap() && !this._suppressMapRender) {
             if (this.context) {
@@ -383,6 +443,9 @@ export default class CanvasRenderer extends Class {
         }
     }
 
+    /**
+     * Ask the layer to fire the layerload event
+     */
     fireLoadedEvent() {
         this._loaded = true;
         if (this.layer && !this._suppressMapRender) {
@@ -398,11 +461,18 @@ export default class CanvasRenderer extends Class {
         }
     }
 
+    /**
+     * requestMapToRender and fireLoadedEvent
+     */
     completeRender() {
         this.requestMapToRender();
         this.fireLoadedEvent();
     }
 
+    /**
+     * Get painter context for painters
+     * @return {Object[]} the Canvas2dContext and the resources
+     */
     getPaintContext() {
         if (!this.context) {
             return null;
@@ -410,6 +480,10 @@ export default class CanvasRenderer extends Class {
         return [this.context, this.resources];
     }
 
+    /**
+     * Get renderer's events registered on the map
+     * @return {Object} events
+     */
     getEvents() {
         return {
             '_zoomstart' : this.onZoomStart,
@@ -422,10 +496,20 @@ export default class CanvasRenderer extends Class {
         };
     }
 
+    /**
+     * Should update the layer when zooming? <br>
+     * If enabled, renderer's drawOnZooming will be called when map is zooming. <br>
+     * Can be disabled to improve performance if not necessary.
+     * @return {Boolean}
+     */
     isUpdateWhenZooming() {
         return false;
     }
 
+    /**
+     * onZooming
+     * @param  {Object} param event parameters
+     */
     onZooming(param) {
         var map = this.getMap();
         if (!map || !this.layer.isVisible()) {
@@ -445,29 +529,53 @@ export default class CanvasRenderer extends Class {
         this._suppressMapRender = false;
     }
 
+    /**
+     * onZoomStart
+     * @param  {Object} param event parameters
+     */
     onZoomStart() {
         delete this._transform;
     }
 
+    /**
+    * onZoomEnd
+    * @param  {Object} param event parameters
+    */
     onZoomEnd() {
         delete this._transform;
         this._drawOnEvent();
     }
 
+    /**
+    * onMoveStart
+    * @param  {Object} param event parameters
+    */
     onMoveStart() {
 
     }
 
+    /**
+    * onMoving
+    * @param  {Object} param event parameters
+    */
     onMoving() {
         if (this.getMap()._pitch) {
             this._drawOnEvent();
         }
     }
 
+    /**
+    * onMoveEnd
+    * @param  {Object} param event parameters
+    */
     onMoveEnd() {
         this._drawOnEvent();
     }
 
+    /**
+    * onResize
+    * @param  {Object} param event parameters
+    */
     onResize() {
         delete this._extent2D;
         this.resizeCanvas();
@@ -575,3 +683,5 @@ export default class CanvasRenderer extends Class {
         }
     }
 }
+
+export default CanvasRenderer;

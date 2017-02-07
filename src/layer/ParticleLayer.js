@@ -3,7 +3,7 @@ import CanvasLayer from './CanvasLayer';
 
 /**
  * @property {Object} options                  - configuration options
- * @property {Boolean} [options.animation=false]       - if the layer is a animated layer
+ * @property {Boolean} [options.animation=true]       - if the layer is an animated layer
  * @memberOf ParticleLayer
  * @instance
  */

@@ -3,8 +3,8 @@ import { indexOfArray } from 'core/util';
 /**
  * A mixin, to enable a class with [interaction handlers]{@link Handler}
  * @protected
- * @mixin
- * @name Handlerable
+ * @category handler
+ * @mixin Handlerable
  */
 export default function (Base) {
     return class extends Base {
@@ -14,6 +14,7 @@ export default function (Base) {
          * @param {Handler}           - handler class
          * @return {*} this
          * @protected
+         * @function Handerable.addHandler
          */
         addHandler(name, handlerClass) {
             if (!handlerClass) {
@@ -43,6 +44,7 @@ export default function (Base) {
          * @param {String} name       - name of the handler
          * @return {*} this
          * @protected
+         * @function Handerable.removeHandler
          */
         removeHandler(name) {
             if (!name) {

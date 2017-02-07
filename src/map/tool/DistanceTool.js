@@ -57,7 +57,6 @@ const options = {
  * A map tool to help measure distance on the map
  * @category maptool
  * @extends DrawTool
- * @mixins Eventable
  * @example
  * var distanceTool = new DistanceTool({
  *     'once' : true,
@@ -77,7 +76,7 @@ const options = {
  *  }).addTo(map);
  *
  */
-export default class DistanceTool extends DrawTool {
+class DistanceTool extends DrawTool {
 
     /**
      * @param {options} [options=null] - construct options
@@ -288,3 +287,5 @@ export default class DistanceTool extends DrawTool {
 }
 
 DistanceTool.mergeOptions(options);
+
+export default DistanceTool;
