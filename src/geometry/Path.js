@@ -2,7 +2,7 @@ import { isNil, isNumber, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Geometry from './Geometry';
-import * as Measurer from 'geo/measurer';
+import { Measurer } from 'geo/measurer';
 import simplify from 'simplify-js';
 
 /**
