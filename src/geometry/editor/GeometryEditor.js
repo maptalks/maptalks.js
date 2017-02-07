@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { extend, isNil, isNumber, isArrayHasData, indexOfArray, removeFromArray, UID } from 'core/util';
+import { extend, isNil, isNumber, sign, isArrayHasData, indexOfArray, removeFromArray, UID } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
@@ -151,8 +151,8 @@ class GeometryEditor extends Eventable(Class) {
 
         this._editStageLayer.remove();
         if (isArrayHasData(this._eventListeners)) {
-            for (var i = this._eventListeners.length - 1; i >= 0; i--) {
-                var listener = this._eventListeners[i];
+            for (let i = this._eventListeners.length - 1; i >= 0; i--) {
+                let listener = this._eventListeners[i];
                 listener[0].off(listener[1], listener[2], this);
             }
             this._eventListeners = [];
@@ -394,16 +394,15 @@ class GeometryEditor extends Eventable(Class) {
         }
         var resizeHandles = [];
         var anchorIndexes = {};
-        var me = this,
-            map = this.getMap();
-        var fnLocateHandles = function () {
+        var map = this.getMap();
+        var fnLocateHandles = () => {
             var pExt = geometry._getPainter().get2DExtent(),
                 anchors = getResizeAnchors(pExt);
-            for (var i = 0; i < anchors.length; i++) {
+            for (let i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist
                 if (isArrayHasData(blackList)) {
-                    var isBlack = false;
-                    for (var ii = blackList.length - 1; ii >= 0; ii--) {
+                    let isBlack = false;
+                    for (let ii = blackList.length - 1; ii >= 0; ii--) {
                         if (blackList[ii] === i) {
                             isBlack = true;
                             break;
@@ -413,10 +412,10 @@ class GeometryEditor extends Eventable(Class) {
                         continue;
                     }
                 }
-                var anchor = anchors[i],
+                let anchor = anchors[i],
                     coordinate = map.pointToCoordinate(anchor);
-                if (resizeHandles.length < anchors.length - blackList.length) {
-                    var handle = me.createHandle(coordinate, {
+                if (resizeHandles.length < (anchors.length - blackList.length)) {
+                    let handle = this.createHandle(coordinate, {
                         'markerType': 'square',
                         'dxdy': new Point(0, 0),
                         'cursor': cursors[i],
@@ -426,8 +425,8 @@ class GeometryEditor extends Eventable(Class) {
                                 onHandleMove(handleViewPoint, _index);
                             };
                         })(i),
-                        onUp: function () {
-                            me._refresh();
+                        onUp: () => {
+                            this._refresh();
                         }
                     });
                     handle.setId(i);
@@ -450,15 +449,14 @@ class GeometryEditor extends Eventable(Class) {
      * 标注和自定义标注编辑器
      */
     createMarkerEditor() {
-        var me = this;
-        var marker = this._shadow,
+        const marker = this._shadow,
             geometryToEdit = this._geometry,
-            map = this.getMap(),
-            resizeHandles;
+            map = this.getMap();
+        var resizeHandles;
 
         function onZoomStart() {
             if (isArrayHasData(resizeHandles)) {
-                for (var i = resizeHandles.length - 1; i >= 0; i--) {
+                for (let i = resizeHandles.length - 1; i >= 0; i--) {
                     resizeHandles[i].hide();
                 }
             }
@@ -470,7 +468,7 @@ class GeometryEditor extends Eventable(Class) {
         function onZoomEnd() {
             this._refresh();
             if (isArrayHasData(resizeHandles)) {
-                for (var i = resizeHandles.length - 1; i >= 0; i--) {
+                for (let i = resizeHandles.length - 1; i >= 0; i--) {
                     resizeHandles[i].show();
                 }
             }
@@ -515,6 +513,12 @@ class GeometryEditor extends Eventable(Class) {
             2, 1, 2
         ];
 
+        var aspectRatio;
+        if (this.options['fixAspectRatio']) {
+            var size = marker.getSize();
+            aspectRatio = size.width / size.height;
+        }
+
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
             if (blackList && indexOfArray(i, blackList) >= 0) {
                 //need to change marker's coordinates
@@ -535,12 +539,6 @@ class GeometryEditor extends Eventable(Class) {
             var wh = handleViewPoint.substract(viewCenter);
             if (blackList && handleViewPoint.y > viewCenter.y) {
                 wh.y = 0;
-            }
-
-            var aspectRatio;
-            if (me.options['fixAspectRatio']) {
-                var size = marker.getSize();
-                aspectRatio = size.width / size.height;
             }
 
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
@@ -585,7 +583,7 @@ class GeometryEditor extends Eventable(Class) {
         var shadow = this._shadow,
             circle = this._geometry;
         var map = this.getMap();
-        this._createResizeHandles(null, function (handleViewPoint) {
+        this._createResizeHandles(null, handleViewPoint => {
             var viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
             var wh = handleViewPoint.substract(viewCenter);
             var w = Math.abs(wh.x),
@@ -606,78 +604,87 @@ class GeometryEditor extends Eventable(Class) {
      * @return {*} [description]
      */
     createEllipseOrRectEditor() {
-        var me = this;
         //defines what can be resized by the handle
         //0: resize width; 1: resize height; 2: resize both width and height.
-        var resizeAbilities = [
+        const resizeAbilities = [
             2, 1, 2,
             0, 0,
             2, 1, 2
         ];
-        var shadow = this._shadow,
+        const shadow = this._shadow,
             geometryToEdit = this._geometry;
-        var map = this.getMap();
-        var isRect = this._geometry instanceof Rectangle;
-        var resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
+        const map = this.getMap();
+        const isRect = this._geometry instanceof Rectangle;
+        var aspectRatio;
+        if (this.options['fixAspectRatio']) {
+            aspectRatio = geometryToEdit.getWidth() / geometryToEdit.getHeight();
+        }
+        const resizeHandles = this._createResizeHandles(null, (mouseViewPoint, i) => {
             //ratio of width and height
-            var r;
-            var wh, w, h;
-            var aspectRatio;
-            if (me.options['fixAspectRatio']) {
-                aspectRatio = geometryToEdit.getWidth() / geometryToEdit.getHeight();
-            }
+            const r = isRect ? 1 : 2;
+            var pointSub, w, h;
+            const targetPoint = mouseViewPoint;
+            const ability = resizeAbilities[i];
             if (isRect) {
-                var anchorHandle = resizeHandles[7 - i];
-                var anchorViewPoint = map.coordinateToViewPoint(anchorHandle.getCoordinates());
-                var currentSize = geometryToEdit.getSize();
-                if (aspectRatio) {
-                    wh = handleViewPoint.substract(anchorViewPoint);
-
-                    var awh = wh.abs();
-                    if (wh.x !== 0 && wh.y !== 0) {
-                        w = Math.max(awh.x, awh.y * aspectRatio);
+                const mirror = resizeHandles[7 - i];
+                const mirrorViewPoint = map.coordinateToViewPoint(mirror.getCoordinates());
+                pointSub = targetPoint.substract(mirrorViewPoint);
+                const absSub = pointSub.abs();
+                w = map.pixelToDistance(absSub.x, 0);
+                h = map.pixelToDistance(0, absSub.y);
+                const size = geometryToEdit.getSize();
+                if (ability === 0) {
+                    // changing width
+                    // -  -  -
+                    // 0     0
+                    // -  -  -
+                    // Rectangle's northwest's y is (y - height / 2)
+                    if (aspectRatio) {
+                        // update rectangle's height with aspect ratio
+                        absSub.y = absSub.x / aspectRatio;
+                        size.height = Math.abs(absSub.y);
                         h = w / aspectRatio;
-                    } else if (wh.x === 0) {
-                        h = awh.y;
+                    }
+                    targetPoint.y = mirrorViewPoint.y - size.height / 2;
+                } else if (ability === 1) {
+                    // changing height
+                    // -  1  -
+                    // |     |
+                    // -  1  -
+                    // Rectangle's northwest's x is (x - width / 2)
+                    if (aspectRatio) {
+                        // update rectangle's width with aspect ratio
+                        absSub.x = absSub.y * aspectRatio;
+                        size.width = Math.abs(absSub.x);
                         w = h * aspectRatio;
-                    } else if (wh.y === 0) {
-                        w = awh.x;
+                    }
+                    targetPoint.x = mirrorViewPoint.x - size.width / 2;
+                } else if (aspectRatio) {
+                    // corner handles, relocate the target point according to aspect ratio.
+                    if (w > h * aspectRatio) {
                         h = w / aspectRatio;
-                    }
-                    handleViewPoint.x = anchorViewPoint.x + (wh.x === 0 ? -currentSize.width / 2 : wh.x / awh.x * w);
-                    handleViewPoint.y = anchorViewPoint.y + (wh.y === 0 ? -currentSize.height / 2 : wh.y / awh.y * h);
-                    wh = new Point(w, h);
-                } else {
-                    wh = handleViewPoint.substract(anchorViewPoint)._abs();
-                    if (wh.x === 0) {
-                        handleViewPoint.x = anchorViewPoint.x - currentSize.width / 2;
-                    }
-                    if (wh.y === 0) {
-                        handleViewPoint.y = anchorViewPoint.y - currentSize.height / 2;
+                        targetPoint.y = mirrorViewPoint.y + absSub.x * sign(pointSub.y) / aspectRatio;
+                    } else {
+                        w = h * aspectRatio;
+                        targetPoint.x = mirrorViewPoint.x + absSub.y  * sign(pointSub.x) * aspectRatio;
                     }
                 }
                 //change rectangle's coordinates
-                var newCoordinates = map.viewPointToCoordinate(new Point(Math.min(handleViewPoint.x, anchorViewPoint.x), Math.min(handleViewPoint.y, anchorViewPoint.y)));
+                var newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
                 shadow.setCoordinates(newCoordinates);
                 geometryToEdit.setCoordinates(newCoordinates);
-                r = 1;
+
             } else {
-                r = 2;
                 var viewCenter = map.coordinateToViewPoint(geometryToEdit.getCenter());
+                pointSub = viewCenter.substract(targetPoint)._abs();
+                w = map.pixelToDistance(pointSub.x, 0);
+                h = map.pixelToDistance(0, pointSub.y);
                 if (aspectRatio) {
-                    wh = viewCenter.substract(handleViewPoint)._abs();
-                    w = Math.max(wh.x, wh.y * aspectRatio);
+                    w = Math.max(w, h * aspectRatio);
                     h = w / aspectRatio;
-                    wh.x = w;
-                    wh.y = h;
-                } else {
-                    wh = viewCenter.substract(handleViewPoint)._abs();
                 }
             }
 
-            var ability = resizeAbilities[i];
-            w = map.pixelToDistance(wh.x, 0);
-            h = map.pixelToDistance(0, wh.y);
             if (aspectRatio || ability === 0 || ability === 2) {
                 shadow.setWidth(w * r);
                 geometryToEdit.setWidth(w * r);
@@ -686,12 +693,11 @@ class GeometryEditor extends Eventable(Class) {
                 shadow.setHeight(h * r);
                 geometryToEdit.setHeight(h * r);
             }
-            // me._updateAndFireEvent('shapechange');
         });
     }
 
     /**
-     * 多边形和多折线的编辑器
+     * Editor for polygon
      * @return {*} [description]
      */
     createPolygonEditor() {
@@ -722,11 +728,10 @@ class GeometryEditor extends Eventable(Class) {
 
         function onVertexAddOrRemove() {
             //restore index property of each handles.
-            var i;
-            for (i = vertexHandles.length - 1; i >= 0; i--) {
+            for (let i = vertexHandles.length - 1; i >= 0; i--) {
                 vertexHandles[i][propertyOfVertexIndex] = i;
             }
-            for (i = newVertexHandles.length - 1; i >= 0; i--) {
+            for (let i = newVertexHandles.length - 1; i >= 0; i--) {
                 newVertexHandles[i][propertyOfVertexIndex] = i;
             }
         }
@@ -871,7 +876,7 @@ class GeometryEditor extends Eventable(Class) {
             return handle;
         }
         var vertexCoordinates = getVertexCoordinates();
-        for (var i = 0, len = vertexCoordinates.length; i < len; i++) {
+        for (let i = 0, len = vertexCoordinates.length; i < len; i++) {
             vertexHandles.push(createVertexHandle.call(this, i));
             if (i < len - 1) {
                 newVertexHandles.push(createNewVertexHandle.call(this, i));
@@ -881,12 +886,11 @@ class GeometryEditor extends Eventable(Class) {
             //1 more vertex handle for polygon
             newVertexHandles.push(createNewVertexHandle.call(this, vertexCoordinates.length - 1));
         }
-        this._addRefreshHook(function () {
-            var i;
-            for (i = newVertexHandles.length - 1; i >= 0; i--) {
+        this._addRefreshHook(() => {
+            for (let i = newVertexHandles.length - 1; i >= 0; i--) {
                 newVertexHandles[i][propertyOfVertexRefreshFn]();
             }
-            for (i = vertexHandles.length - 1; i >= 0; i--) {
+            for (let i = vertexHandles.length - 1; i >= 0; i--) {
                 vertexHandles[i][propertyOfVertexRefreshFn]();
             }
         });
@@ -894,7 +898,7 @@ class GeometryEditor extends Eventable(Class) {
 
     _refresh() {
         if (this._refreshHooks) {
-            for (var i = this._refreshHooks.length - 1; i >= 0; i--) {
+            for (let i = this._refreshHooks.length - 1; i >= 0; i--) {
                 this._refreshHooks[i].call(this);
             }
         }
