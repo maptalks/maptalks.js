@@ -16,6 +16,7 @@ maptalks.Geometry.Poly = {
         if (!maptalks.Util.isArrayHasData(prjCoords)) {
             return result;
         }
+        delete this._simplified;
         var map = this.getMap(),
             fullExtent = map.getFullExtent(),
             projection = this._getProjection();
@@ -25,7 +26,9 @@ maptalks.Geometry.Poly = {
             tolerance = 2 * map._getResolution(),
             isMulti = maptalks.Util.isArray(prjCoords[0]);
         if (isSimplify && !isMulti) {
+            var count = prjCoords.length;
             prjCoords = maptalks.Simplify.simplify(prjCoords, tolerance, false);
+            this._simplified = prjCoords.length < count;
         }
         if (maptalks.Util.isNil(zoom)) {
             zoom = map.getZoom();
