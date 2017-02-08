@@ -10,3 +10,5 @@ export const GEOMETRY_COLLECTION_TYPES = [
     'MultiPolygon',
     'GeometryCollection'
 ];
+
+export const GEOJSON_TYPES = ['FeatureCollection', 'Feature', 'Point', 'LineString', 'Polygon'].concat(GEOMETRY_COLLECTION_TYPES);

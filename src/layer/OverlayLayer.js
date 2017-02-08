@@ -1,8 +1,10 @@
+import { GEOJSON_TYPES } from 'core/Constants';
 import { isNil, isArrayHasData, UID } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import { Geometry, GeometryCollection, LineString } from 'geometry';
 import Layer from './Layer';
+import GeoJSON from 'geometry/GeoJSON';
 
 /**
  * @classdesc
@@ -15,7 +17,7 @@ import Layer from './Layer';
 class OverlayLayer extends Layer {
 
     constructor(id, geometries, options) {
-        if (geometries && (!(geometries instanceof Geometry) && !(Array.isArray(geometries)))) {
+        if (geometries && (!(geometries instanceof Geometry) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
             options = geometries;
             geometries = null;
         }
@@ -159,7 +161,9 @@ class OverlayLayer extends Layer {
         if (!geometries) {
             return this;
         }
-        if (!Array.isArray(geometries)) {
+        if (geometries.type === 'FeatureCollection') {
+            return this.addGeometry(GeoJSON.toGeometry(geometries), fitView);
+        } else if (!Array.isArray(geometries)) {
             var count = arguments.length;
             var last = arguments[count - 1];
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);

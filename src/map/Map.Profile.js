@@ -60,8 +60,7 @@ Geometry.fromJSON = function (json) {
             geometry.setId(json['feature']['id']);
         }
     } else {
-        var feature = json['feature'];
-        geometry = GeoJSON.toGeometry(feature);
+        geometry = GeoJSON.toGeometry(json['feature']);
         if (json['options']) {
             geometry.config(json['options']);
         }
@@ -84,15 +83,7 @@ Layer.fromJSON = function (layerJSON) {
     if (!layerJSON) {
         return null;
     }
-    // TODO: layerTypes register
     var layerType = layerJSON['type'];
-    if (layerType === 'vector') {
-        layerType = layerJSON['type'] = 'VectorLayer';
-    } else if (layerType === 'dynamic') {
-        layerType = layerJSON['type'] = 'DynamicLayer';
-    } else if (layerType === 'tile') {
-        layerType = layerJSON['type'] = 'TileLayer';
-    }
     var clazz = Layer.getClass(layerType);
     if (!clazz || !clazz.fromJSON) {
         throw new Error('unsupported layer type:' + layerType);

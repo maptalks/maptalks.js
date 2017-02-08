@@ -121,7 +121,7 @@ class TextMarker extends Marker {
         if (needRepaint) {
             this._refresh();
         }
-        return Marker.prototype.onConfig.apply(this, arguments);
+        return super.onConfig(conf);
     }
 
     _getBoxSize(symbol) {

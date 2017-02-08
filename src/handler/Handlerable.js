@@ -1,5 +1,3 @@
-import { indexOfArray } from 'core/util';
-
 /**
  * A mixin, to enable a class with [interaction handlers]{@link Handler}
  * @protected
@@ -53,7 +51,7 @@ export default function (Base) {
             var handler = this[name];
             if (handler) {
                 //handler registered
-                var hit = indexOfArray(handler, this._handlers);
+                var hit = this._handlers.indexOf(handler);
                 if (hit >= 0) {
                     this._handlers.splice(hit, 1);
                 }

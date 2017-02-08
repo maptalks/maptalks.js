@@ -255,18 +255,6 @@ export function mapArrayRecursively(arr, fn, context) {
     return result;
 }
 
-export function indexOfArray(obj, arr) {
-    if (!isArrayHasData(arr)) {
-        return -1;
-    }
-    for (var i = 0, l = arr.length; i < l; i++) {
-        if (arr[i] === obj) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 export function getValueOrDefault(v, d) {
     return v === undefined ? d : v;
 }

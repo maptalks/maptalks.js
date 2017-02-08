@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { extend, isNil, isNumber, sign, isArrayHasData, indexOfArray, removeFromArray, UID } from 'core/util';
+import { extend, isNil, isNumber, sign, isArrayHasData, removeFromArray, UID } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
@@ -402,14 +402,8 @@ class GeometryEditor extends Eventable(Class) {
                 anchors = getResizeAnchors(pExt);
             for (let i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist
-                if (isArrayHasData(blackList)) {
-                    let isBlack = false;
-                    for (let ii = blackList.length - 1; ii >= 0; ii--) {
-                        if (blackList[ii] === i) {
-                            isBlack = true;
-                            break;
-                        }
-                    }
+                if (Array.isArray(blackList)) {
+                    let isBlack = blackList.some(ele => ele === i);
                     if (isBlack) {
                         continue;
                     }
@@ -458,7 +452,7 @@ class GeometryEditor extends Eventable(Class) {
         var resizeHandles;
 
         function onZoomStart() {
-            if (isArrayHasData(resizeHandles)) {
+            if (Array.isArray(resizeHandles)) {
                 for (let i = resizeHandles.length - 1; i >= 0; i--) {
                     resizeHandles[i].hide();
                 }
@@ -470,7 +464,7 @@ class GeometryEditor extends Eventable(Class) {
 
         function onZoomEnd() {
             this._refresh();
-            if (isArrayHasData(resizeHandles)) {
+            if (Array.isArray(resizeHandles)) {
                 for (let i = resizeHandles.length - 1; i >= 0; i--) {
                     resizeHandles[i].show();
                 }
@@ -523,7 +517,7 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
-            if (blackList && indexOfArray(i, blackList) >= 0) {
+            if (blackList && blackList.indexOf(i) >= 0) {
                 //need to change marker's coordinates
                 var newCoordinates = map.viewPointToCoordinate(handleViewPoint.substract(dxdy));
                 var coordinates = marker.getCoordinates();

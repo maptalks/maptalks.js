@@ -8,7 +8,6 @@ import {
     isFunction,
     isNumber,
     round,
-    indexOfArray,
     executeWhen
 } from 'core/util';
 import Class from 'core/Class';
@@ -1453,7 +1452,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!layer || !layerList) {
             return;
         }
-        var index = indexOfArray(layer, layerList);
+        var index = layerList.indexOf(layer);
         if (index > -1) {
             layerList.splice(index, 1);
 
