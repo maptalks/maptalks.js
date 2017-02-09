@@ -185,6 +185,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             Canvas2D.rectangle(this.context, p, tileSize, 1, 0);
             var xyz = tileImage[this.propertyOfTileId].split('__');
             Canvas2D.fillText(this.context, 'x:' + xyz[1] + ',y:' + xyz[0] + ',z:' + xyz[2], p.add(10, 20), 'rgb(0,0,0)');
+            Canvas2D.drawCross(this.context, p.add(tileSize['width'] / 2, tileSize['height'] / 2), 2, '#000');
             this.context.restore();
         }
         tileImage = null;

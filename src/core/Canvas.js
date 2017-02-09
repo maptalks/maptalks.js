@@ -667,6 +667,17 @@ const Canvas = {
             ctrlPts.push(points[i].x, points[i].y, xc, yc);
         }
         return ctrlPts;
+    },
+
+    drawCross(ctx, p, lineWidth, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.moveTo(p.x - 5, p.y);
+        ctx.lineTo(p.x + 5, p.y);
+        ctx.moveTo(p.x, p.y - 5);
+        ctx.lineTo(p.x, p.y + 5);
+        ctx.stroke();
     }
 };
 

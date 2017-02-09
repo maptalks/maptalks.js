@@ -25,8 +25,6 @@ const options = {
     'urlTemplate': null,
     'subdomains': null,
 
-    'gradualLoading': true,
-
     'repeatWorld': true,
 
     'renderWhenPanning': false,
@@ -201,17 +199,13 @@ class TileLayer extends Layer {
             zoom = map.getZoom(),
             res = map._getResolution();
 
-        var mapW = map.width,
-            mapH = map.height,
-            containerCenter = new Point(mapW / 2, mapH / 2),
+        var containerCenter = new Point(map.width / 2, map.height / 2),
             containerExtent = map.getContainerExtent();
 
         //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
-        var centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res),
-            //计算中心瓦片的top和left偏移值
-            centerPoint = new Point(mapW / 2 - centerTile['offsetLeft'],
-                mapH / 2 - centerTile['offsetTop']);
-        var center2D = map._containerPointToPoint(centerPoint);
+        var centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
+
+        var center2D = map._prjToPoint(map._getPrjCenter())._substract(centerTile['offsetLeft'], centerTile['offsetTop']);
 
         var keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
         //中心瓦片上下左右的瓦片数

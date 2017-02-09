@@ -22,7 +22,7 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
      */
     code: 'EPSG:3857',
     rad: Math.PI / 180,
-    metersPerDegree: 2.003750834E7 / 180,
+    metersPerDegree: 6378137 * Math.PI / 180,
     maxLatitude: 85.0511287798,
 
     project: function (lnglat) {

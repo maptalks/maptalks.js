@@ -1,5 +1,10 @@
 import TileLayer from './TileLayer';
 
+const options = {
+    'renderer'  : 'canvas',
+    'baseLayerRenderer' : 'canvas'
+};
+
 /**
  * @classdesc
  * @ignore
@@ -53,5 +58,7 @@ class CanvasTileLayer extends TileLayer {
 }
 
 CanvasTileLayer.registerJSONType('CanvasTileLayer');
+
+CanvasTileLayer.mergeOptions(options);
 
 export default CanvasTileLayer;

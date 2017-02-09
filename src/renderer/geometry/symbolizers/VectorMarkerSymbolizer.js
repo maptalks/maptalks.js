@@ -134,7 +134,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     _getAnchor() {
         var markerType = this.style['markerType'].toLowerCase(),
-            lineWidth = this.strokeAndFill['lineWidth'] ? this.strokeAndFill['lineWidth'] : 0,
+            lineWidth = /*this.strokeAndFill['lineWidth'] ? this.strokeAndFill['lineWidth'] :*/ 0,
             shadow = this.geometry.options['shadowBlur'],
             w = this.style['markerWidth'],
             h = this.style['markerHeight'];
