@@ -111,7 +111,7 @@ class UIComponent extends Eventable(Class) {
 
     /**
      * Show the UI Component, if it is a global single one, it will close previous one.
-     * @param {Coordinate} coordinate - coordinate to show
+     * @param {Coordinate} [coordinate=null] - coordinate to show, default is owner's center
      * @return {ui.UIComponent} this
      * @fires ui.UIComponent#showstart
      * @fires ui.UIComponent#showend
@@ -121,13 +121,7 @@ class UIComponent extends Eventable(Class) {
         if (!map) {
             return this;
         }
-        if (!coordinate) {
-            if (this._coordinate) {
-                coordinate = this._coordinate;
-            } else {
-                throw new Error('UI\'s show coordinate is invalid');
-            }
-        }
+        coordinate = coordinate || this._coordinate || this._owner.getCenter();
         /**
          * showstart event.
          *
