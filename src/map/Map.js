@@ -1251,14 +1251,26 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Computes the coordinate from the given coordinate with xdist on axis x and ydist on axis y.
+     * Computes the coordinate from the given meter distance.
      * @param  {Coordinate} coordinate - source coordinate
-     * @param  {Number} dx           - distance on X axis from the source coordinate
-     * @param  {Number} dy           - distance on Y axis from the source coordinate
+     * @param  {Number} dx           - meter distance on X axis
+     * @param  {Number} dy           - meter distance on Y axis
      * @return {Coordinate} Result coordinate
      */
     locate(coordinate, dx, dy) {
         return this.getProjection().locate(new Coordinate(coordinate), dx, dy);
+    }
+
+    /**
+     * Computes the coordinate from the given pixel distance.
+     * @param  {Coordinate} coordinate - source coordinate
+     * @param  {Number} px           - pixel distance on X axis
+     * @param  {Number} py           - pixel distance on Y axis
+     * @return {Coordinate} Result coordinate
+     */
+    locateByPoint(coordinate, px, py) {
+        const point = this.coordinateToPoint(coordinate);
+        return this.pointToCoordinate(point._add(px, py));
     }
 
     /**
