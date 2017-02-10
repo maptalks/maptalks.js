@@ -94,11 +94,11 @@ class Marker extends CenterMixin(Geometry) {
         return 0;
     }
 
-    _getSprite(resources) {
+    _getSprite(resources, map) {
         if (this._getPainter()) {
-            return this._getPainter().getSprite(resources);
+            return this._getPainter().getSprite(resources, map);
         }
-        return new Painter(this).getSprite(resources);
+        return new Painter(this).getSprite(resources, map);
     }
 }
 
