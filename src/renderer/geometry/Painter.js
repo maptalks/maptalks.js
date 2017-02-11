@@ -169,7 +169,7 @@ export default class Painter extends Class {
         this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
     }
 
-    getSprite(resources, map) {
+    getSprite(resources, canvasClass) {
         if (this.geometry.type !== 'Point') {
             return null;
         }
@@ -181,8 +181,8 @@ export default class Painter extends Class {
                 extent._combine(markerExtent);
             });
             const origin = extent.getMin().multi(-1);
-            map = map || this.getMap();
-            const canvas = Canvas.createCanvas(extent.getWidth(), extent.getHeight(), map ? map.CanvasClass : null);
+            const clazz = canvasClass || (this.getMap() ? this.getMap().CanvasClass : null);
+            const canvas = Canvas.createCanvas(extent.getWidth(), extent.getHeight(), clazz);
             var bak;
             if (this._renderPoints) {
                 bak = this._renderPoints;
