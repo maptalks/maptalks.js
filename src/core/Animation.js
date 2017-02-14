@@ -99,12 +99,12 @@ class Player {
      * Create an animation player
      * @param {Function} animation - animation [framing]{@link framing} function
      * @param {Object} options     - animation options
-     * @param {Function} step  - callback function for animation steps
+     * @param {Function} onFrame  - callback function for animation steps
      */
-    constructor(animation, options, step) {
+    constructor(animation, options, onFrame) {
         this._animation = animation;
         this._options = options;
-        this._stepFn = step;
+        this._onFrame = onFrame;
         this.playState = 'idle';
         this.ready = true;
         this.finished = false;
@@ -319,6 +319,8 @@ const Animation = {
             }
             state['startStyles'] = startStyles;
             state['destStyles'] = destStyles;
+            state['progress'] = elapsed;
+            state['remainingMs'] = duration - elapsed;
             return new Frame(state, d);
         };
 
@@ -459,7 +461,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         //elapsed, duration
         const frame = this._animation(elapsed, this.duration);
         this.playState = frame.state['playState'];
-        const step = this._stepFn;
+        const onFrame = this._onFrame;
         if (this.playState === 'idle') {
             setTimeout(this._run.bind(this), this.startTime - t);
         } else if (this.playState === 'running') {
@@ -468,17 +470,17 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
                     return;
                 }
                 this.currentTime = elapsed;
-                if (step) {
-                    step(frame);
+                if (onFrame) {
+                    onFrame(frame);
                 }
                 this._run();
             });
         } else if (this.playState === 'finished') {
             this.finished = true;
             //finished
-            if (step) {
+            if (onFrame) {
                 requestAnimFrame(function () {
-                    step(frame);
+                    onFrame(frame);
                 });
             }
         }

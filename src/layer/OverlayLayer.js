@@ -122,8 +122,8 @@ class OverlayLayer extends Layer {
      * @return {OverlayLayer} this
      */
     forEach(fn, context) {
-        var copyOnWrite = this._geoList.slice(0);
-        for (var i = 0, l = copyOnWrite.length; i < l; i++) {
+        const copyOnWrite = this._geoList.slice(0);
+        for (let i = 0, l = copyOnWrite.length; i < l; i++) {
             if (!context) {
                 fn(copyOnWrite[i], i);
             } else {

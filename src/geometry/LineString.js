@@ -90,7 +90,7 @@ class LineString extends Path {
         var player = Animation.animate({
             't': duration
         }, {
-            'speed': duration,
+            'duration': duration,
             'easing': easing
         }, frame => {
             if (!this.getMap()) {

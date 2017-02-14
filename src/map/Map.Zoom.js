@@ -45,7 +45,7 @@ Map.include(/** @lends Map.prototype */{
             },
             {
                 'easing' : 'out',
-                'speed'  : duration
+                'duration'  : duration
             },
             frame => {
                 if (frame.state.playState === 'finished') {
