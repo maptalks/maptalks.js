@@ -15,6 +15,8 @@ import DrawTool from './DrawTool';
  * @property {Object}  options.symbol           - symbol of the line
  * @property {Object}  options.vertexSymbol     - symbol of the vertice
  * @property {Object}  options.labelOptions     - construct options of the vertice labels.
+ * @memberOf DistanceTool
+ * @instance
  */
 const options = {
     'mode': 'LineString',
@@ -52,19 +54,9 @@ const options = {
 
 
 /**
- * @classdesc
  * A map tool to help measure distance on the map
- * @class
  * @category maptool
  * @extends DrawTool
- * @mixins Eventable
- * @param {options} [options=null] - construct options
- * @param {String} [options.language=zh-CN]         - language of the distance tool, zh-CN or en-US
- * @param {Boolean} [options.metric=true]           - display result in metric system
- * @param {Boolean} [options.imperial=false]        - display result in imperial system.
- * @param {Object}  [options.symbol=null]           - symbol of the line
- * @param {Object}  [options.vertexSymbol=null]     - symbol of the vertice
- * @param {Object}  [options.labelOptions=null]     - construct options of the vertice labels.
  * @example
  * var distanceTool = new DistanceTool({
  *     'once' : true,
@@ -84,8 +76,17 @@ const options = {
  *  }).addTo(map);
  *
  */
-export default class DistanceTool extends DrawTool {
+class DistanceTool extends DrawTool {
 
+    /**
+     * @param {options} [options=null] - construct options
+     * @param {String} [options.language=zh-CN]         - language of the distance tool, zh-CN or en-US
+     * @param {Boolean} [options.metric=true]           - display result in metric system
+     * @param {Boolean} [options.imperial=false]        - display result in imperial system.
+     * @param {Object}  [options.symbol=null]           - symbol of the line
+     * @param {Object}  [options.vertexSymbol=null]     - symbol of the vertice
+     * @param {Object}  [options.labelOptions=null]     - construct options of the vertice labels.
+     */
     constructor(options) {
         super(options);
         this.on('enable', this._afterEnable, this)
@@ -286,3 +287,5 @@ export default class DistanceTool extends DrawTool {
 }
 
 DistanceTool.mergeOptions(options);
+
+export default DistanceTool;

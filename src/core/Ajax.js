@@ -65,7 +65,30 @@ if (isNode) {
         }
     };
 } else {
+    /**
+     * @classdesc
+     * Ajax Utilities in both Browser and Node. It is static and should not be initiated.
+     * @class
+     * @static
+     * @category core
+     */
     Ajax = {
+        /**
+         * Fetch remote resource by HTTP "GET" method
+         * @param  {String}   url - resource url
+         * @param  {Function} cb  - callback function when completed
+         * @return {Ajax}  Ajax
+         * @example
+         * maptalks.Ajax.get(
+         *     'url/to/resource',
+         *     (err, data) => {
+         *         if (err) {
+         *             throw new Error(err);
+         *         }
+         *         // do things with data
+         *     }
+         * );
+         */
         get: function (url, cb) {
             var client = this._getClient(cb);
             client.open('GET', url, true);
@@ -73,6 +96,31 @@ if (isNode) {
             return this;
         },
 
+        /**
+         * Fetch remote resource by HTTP "POST" method
+         * @param  {Object}   options - post options
+         * @param  {String}   options.url - url
+         * @param  {Object}   options.headers - HTTP headers
+         * @param  {String|Object} postData - data post to server
+         * @param  {Function} cb  - callback function when completed
+         * @return {Ajax}  Ajax
+         * @example
+         * maptalks.Ajax.post(
+         *     {
+         *         'url' : 'url/to/post'
+         *     },
+         *     {
+         *         'param0' : 'val0',
+         *         'param1' : 1
+         *     },
+         *     (err, data) => {
+         *         if (err) {
+         *             throw new Error(err);
+         *         }
+         *         // do things with data
+         *     }
+         * );
+         */
         post: function (options, postData, cb) {
             var client = this._getClient(cb);
             client.open('POST', options.url, true);
@@ -144,20 +192,20 @@ if (isNode) {
 }
 
 /**
- * Load a resource
- * @param {String} url          - resource url
- * @param {Function} callback   - callback function when completed.
- * @static
- */
-Ajax.getResource = function (url, cb) {
-    return this.get(url, cb);
-};
-
-
-/**
- * Load a json.
+ * Fetch resource as a JSON Object.
  * @param {String} url          - json's url
  * @param {Function} callback   - callback function when completed.
+ * @example
+ * maptalks.Ajax.getJSON(
+ *     'url/to/resource.json',
+ *     (err, json) => {
+ *         if (err) {
+ *             throw new Error(err);
+ *         }
+ *         // json is a JSON Object
+ *         console.log(json.foo);
+ *     }
+ * );
  * @static
  */
 Ajax.getJSON = function (url, cb) {
@@ -165,7 +213,7 @@ Ajax.getJSON = function (url, cb) {
         var data = resp ? parseJSON(resp) : null;
         cb(err, data);
     };
-    return Ajax.getResource(url, callback);
+    return Ajax.get(url, callback);
 };
 
 export default Ajax;

@@ -32,7 +32,7 @@ export default class MapRenderer extends Class {
                 'distance': distance
             }, {
                 'easing': 'out',
-                'speed': duration
+                'duration': duration
             }, function (frame) {
                 if (!map._enablePanAnimation) {
                     player.finish();

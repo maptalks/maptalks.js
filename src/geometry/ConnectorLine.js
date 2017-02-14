@@ -4,12 +4,11 @@ import ArcCurve from './ArcCurve';
 
 /**
  * Mixin of connector line methods.
- * @mixin
- * @name Connectable
+ * @mixin Connectable
  * @private
  */
-const Connectable = function (Base) {
-    return class extends Base {
+const Connectable = Base =>
+    class extends Base {
 
         static _hasConnectors(geometry) {
             return (!isNil(geometry.__connectors) && geometry.__connectors.length > 0);
@@ -22,6 +21,7 @@ const Connectable = function (Base) {
         /**
          * Gets the source of the connector line.
          * @return {Geometry|control.Control|UIComponent}
+         * @function Connectable.getConnectSource
          */
         getConnectSource() {
             return this._connSource;
@@ -31,6 +31,7 @@ const Connectable = function (Base) {
          * Sets the source to the connector line.
          * @param {Geometry|control.Control|UIComponent} src
          * @return {ConnectorLine} this
+         * @function Connectable.setConnectSource
          */
         setConnectSource(src) {
             var target = this._connTarget;
@@ -45,6 +46,7 @@ const Connectable = function (Base) {
         /**
          * Gets the target of the connector line.
          * @return {Geometry|control.Control|UIComponent}
+         * @function Connectable.getConnectTarget
          */
         getConnectTarget() {
             return this._connTarget;
@@ -54,6 +56,7 @@ const Connectable = function (Base) {
          * Sets the target to the connector line.
          * @param {Geometry|control.Control|UIComponent} target
          * @return {ConnectorLine} this
+         * @function Connectable.setConnectTarget
          */
         setConnectTarget(target) {
             var src = this._connSource;
@@ -169,17 +172,28 @@ const Connectable = function (Base) {
             }
         }
     };
+
+/**
+ * @property {Object} options - ConnectorLine's options
+ * @property {String} [options.showOn=always]  - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
+ * @memberOf ConnectorLine
+ * @instance
+ */
+/**
+ * @property {Object} options - ConnectorLine's options
+ * @property {String} [options.showOn=always]  - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
+ * @memberOf ArcConnectorLine
+ * @instance
+ */
+const options = {
+    showOn: 'always'
 };
 
 /**
  * A straight connector line geometry can connect geometries or ui components with each other. <br>
  *
- * @class
  * @category geometry
  * @extends LineString
- * @param {Geometry|control.Control|UIComponent} src     - source to connect
- * @param {Geometry|control.Control|UIComponent} target  - target to connect
- * @param {Object} [options=null]                   - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
  * @example
  * var src = new Marker([0,0]).addTo(layer),
  *     dst = new Marker([1,0]).addTo(layer),
@@ -194,7 +208,12 @@ const Connectable = function (Base) {
  *     }).addTo(layer);
  * @mixes connectorLineMixin
  */
-export class ConnectorLine extends Connectable(LineString) {
+class ConnectorLine extends Connectable(LineString) {
+    /**
+     * @param {Geometry|control.Control|UIComponent} src     - source to connect
+     * @param {Geometry|control.Control|UIComponent} target  - target to connect
+     * @param {Object} [options=null]  - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
+     */
     constructor(src, target, options) {
         super(null, options);
         if (arguments.length === 1) {
@@ -208,14 +227,6 @@ export class ConnectorLine extends Connectable(LineString) {
     }
 }
 
-/**
- * @property {Object} options - ConnectorLine's options
- * @property {String} [options.showOn=always]          - when to show the connector line, possible values: 'moving', 'click', 'mouseover', 'always'
- */
-const options = {
-    showOn: 'always'
-};
-
 ConnectorLine.mergeOptions(options);
 
 ConnectorLine.registerJSONType('ConnectorLine');
@@ -223,12 +234,8 @@ ConnectorLine.registerJSONType('ConnectorLine');
 /**
  * An arc curve connector line geometry can connect geometries or ui components with each other. <br>
  *
- * @class
  * @category geometry
  * @extends ArcCurve
- * @param {Geometry|control.Control|UIComponent} src     - source to connect
- * @param {Geometry|control.Control|UIComponent} target  - target to connect
- * @param {Object} [options=null]                   - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
  * @example
  * var src = new Marker([0,0]).addTo(layer),
  *     dst = new Marker([1,0]).addTo(layer),
@@ -244,7 +251,12 @@ ConnectorLine.registerJSONType('ConnectorLine');
  *     }).addTo(layer);
  * @mixes connectorLineMixin
  */
-export class ArcConnectorLine extends Connectable(ArcCurve) {
+class ArcConnectorLine extends Connectable(ArcCurve) {
+    /**
+     * @param {Geometry|control.Control|UIComponent} src     - source to connect
+     * @param {Geometry|control.Control|UIComponent} target  - target to connect
+     * @param {Object} [options=null]  - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
+     */
     constructor(src, target, options) {
         super(null, options);
         if (arguments.length === 1) {
@@ -261,3 +273,5 @@ export class ArcConnectorLine extends Connectable(ArcCurve) {
 ArcConnectorLine.mergeOptions(options);
 
 ArcConnectorLine.registerJSONType('ArcConnectorLine');
+
+export { ConnectorLine, ArcConnectorLine };

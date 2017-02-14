@@ -1,6 +1,6 @@
 import { GEOMETRY_COLLECTION_TYPES } from 'core/Constants';
 import Class from 'core/Class';
-import Eventable from 'core/Event';
+import Eventable from 'core/Eventable';
 import JSONAble from 'core/JSONAble';
 import Handlerable from 'handler/Handlerable';
 import {
@@ -17,7 +17,7 @@ import { convertResourceUrl, getExternalResources } from 'core/util/resource';
 import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import * as Measurer from 'geo/measurer';
+import { Measurer } from 'geo/measurer';
 import Painter from 'renderer/geometry/Painter';
 import CollectionPainter from 'renderer/geometry/CollectionPainter';
 import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
@@ -34,6 +34,8 @@ import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
  * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
  * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
  * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
+ * @memberOf Geometry
+ * @instance
  */
 const options = {
     'id': null,
@@ -46,20 +48,19 @@ const options = {
 };
 
 /**
- * @classdesc
- * Base class for all the geometries, it is not intended to be instantiated but extended. <br/>
+ * Base class for all the geometries. <br/>
  * It defines common methods that all the geometry classes share. <br>
- * It is abstract and not intended to be instantiated.
+ * It is abstract and not intended to be instantiated but extended.
  *
- * @class
  * @category geometry
  * @abstract
  * @extends Class
  * @mixes Eventable
  * @mixes Handlerable
- * @mixes ui.Menu.Mixin
+ * @mixes JSONAble
+ * @mixes ui.Menuable
  */
-export default class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
+class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     constructor(options) {
         var opts = extend({}, options);
@@ -1130,3 +1131,5 @@ export default class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 }
 
 Geometry.mergeOptions(options);
+
+export default Geometry;

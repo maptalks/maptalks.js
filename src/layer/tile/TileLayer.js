@@ -17,13 +17,13 @@ import Layer from '../Layer';
  * @property {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
  * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
  * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+ * @memberOf TileLayer
+ * @instance
  */
 const options = {
     'errorTileUrl': null,
     'urlTemplate': null,
     'subdomains': null,
-
-    'gradualLoading': true,
 
     'repeatWorld': true,
 
@@ -60,7 +60,6 @@ const options = {
 /**
  * @classdesc
  * A layer used to display tiled map services, such as [google maps]{@link http://maps.google.com}, [open street maps]{@link http://www.osm.org}
- * @class
  * @category layer
  * @extends Layer
  * @param {String|Number} id - tile layer's id
@@ -71,7 +70,7 @@ const options = {
         subdomains:['a','b','c']
     })
  */
-export default class TileLayer extends Layer {
+class TileLayer extends Layer {
 
     /**
      * Reproduce a TileLayer from layer's profile JSON.
@@ -126,7 +125,7 @@ export default class TileLayer extends Layer {
      */
     toJSON() {
         var profile = {
-            'type': 'TileLayer',
+            'type': this.getJSONType(),
             'id': this.getId(),
             'options': this.config()
         };
@@ -200,17 +199,13 @@ export default class TileLayer extends Layer {
             zoom = map.getZoom(),
             res = map._getResolution();
 
-        var mapW = map.width,
-            mapH = map.height,
-            containerCenter = new Point(mapW / 2, mapH / 2),
+        var containerCenter = new Point(map.width / 2, map.height / 2),
             containerExtent = map.getContainerExtent();
 
         //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
-        var centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res),
-            //计算中心瓦片的top和left偏移值
-            centerPoint = new Point(mapW / 2 - centerTile['offsetLeft'],
-                mapH / 2 - centerTile['offsetTop']);
-        var center2D = map._containerPointToPoint(centerPoint);
+        var centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
+
+        var center2D = map._prjToPoint(map._getPrjCenter())._substract(centerTile['offsetLeft'], centerTile['offsetTop']);
 
         var keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
         //中心瓦片上下左右的瓦片数
@@ -296,3 +291,5 @@ export default class TileLayer extends Layer {
 TileLayer.registerJSONType('TileLayer');
 
 TileLayer.mergeOptions(options);
+
+export default TileLayer;

@@ -4,13 +4,12 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 /**
  * @classdesc
  * A parent renderer class for OverlayLayer to inherit by OverlayLayer's subclasses.
- * @class
  * @protected
- * @memberOf renderer.overlaylayer
- * @name Canvas
- * @extends {renderer.Canvas}
+ * @memberOf renderer
+ * @name OverlayLayerCanvasRenderer
+ * @extends renderer.CanvasRenderer
  */
-export default class OverlayLayerRenderer extends CanvasRenderer {
+class OverlayLayerRenderer extends CanvasRenderer {
 
     // geometries can be: true | [geometries] | null
     // true: check layer's all geometries if the checking is the first time.
@@ -91,3 +90,5 @@ export default class OverlayLayerRenderer extends CanvasRenderer {
         this.render();
     }
 }
+
+export default OverlayLayerRenderer;

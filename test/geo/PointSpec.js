@@ -1,7 +1,7 @@
 describe('#Point', function () {
 
     describe('has various constructors', function () {
-        it('can be created by a array', function () {
+        it('can be created by an array', function () {
             var c = new maptalks.Point([0, 0]);
             expect(c.x).to.be.eql(0);
             expect(c.y).to.be.eql(0);

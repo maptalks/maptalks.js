@@ -79,6 +79,23 @@ describe('#Geometry.InfoWindow', function () {
             layer.addGeometry(geometries);
         });
 
+        it('showed at the center of geometry in default', function () {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : null
+            };
+            var infoWindow = new maptalks.ui.InfoWindow(options);
+            var geo = new maptalks.Marker(map.getCenter());
+            layer.addGeometry(geo);
+
+            infoWindow.addTo(geo);
+            infoWindow.show();
+            var dom = infoWindow.getDOM();
+            expect(parseInt(dom.style.left)).to.be.eql(246);
+            expect(parseInt(dom.style.top)).to.be.eql(169);
+        });
+
         it('set and open/close and remove a infowindow', function () {
             var options = {
                 title: 'title',

@@ -1,18 +1,25 @@
 import CanvasLayerRenderer from 'renderer/layer/canvaslayer/CanvasLayerRenderer';
 import Layer from './Layer';
 
+/**
+ * @property {Object} options                  - configuration options
+ * @property {Boolean} [options.doubleBuffer=false]    - layer is rendered with doubleBuffer
+ * @property {Boolean} [options.animation=false]       - if the layer is an animated layer
+ * @property {Boolean} [fps=1000 / 16]                 - animation fps
+ * @memberOf CanvasLayer
+ * @instance
+ */
 const options = {
     'doubleBuffer'  : false,
     'animation'     : false,
-    'fps'           : 70
+    'fps'           : 1000 / 16
 };
 
 /**
+ * A layer with a HTML5 2D canvas context.<br>
  * CanvasLayer provides some interface methods for canvas context operations. <br>
- * You can use it directly, but can't ser/dser a CanvasLayer with json in this way. <br>
+ * You can use it directly, but can't serialize/deserialize a CanvasLayer with JSON in this way. <br>
  * It is more recommended to extend it with a subclass and implement canvas paintings inside the subclass.
- * @classdesc
- * A layer with a HTML5 2D canvas context.
  * @example
  *  var layer = new CanvasLayer('canvas');
  *
@@ -26,13 +33,12 @@ const options = {
  *      context.fillRect(0, 0, w, h);
  *  };
  *  layer.addTo(map);
- * @class
  * @category layer
- * @extends {Layer}
+ * @extends Layer
  * @param {String|Number} id - layer's id
  * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
  */
-export default class CanvasLayer extends Layer {
+class CanvasLayer extends Layer {
 
     /**
      * An optional interface function called only once before the first draw, useful for preparing your canvas operations.
@@ -48,6 +54,21 @@ export default class CanvasLayer extends Layer {
      */
     draw() {}
 
+    /**
+     * Redraw the layer
+     * @return {CanvasLayer} this
+     */
+    redraw() {
+        if (this._getRenderer()) {
+            this._getRenderer().draw();
+        }
+        return this;
+    }
+
+    /**
+     * Start animation
+     * @return {CanvasLayer} this
+     */
     play() {
         if (this._getRenderer()) {
             this._getRenderer().startAnim();
@@ -55,6 +76,10 @@ export default class CanvasLayer extends Layer {
         return this;
     }
 
+    /**
+     * Pause the animation
+     * @return {CanvasLayer} this
+     */
     pause() {
         if (this._getRenderer()) {
             this._getRenderer().pauseAnim();
@@ -62,6 +87,10 @@ export default class CanvasLayer extends Layer {
         return this;
     }
 
+    /**
+     * If the animation is playing
+     * @return {Boolean}
+     */
     isPlaying() {
         if (this._getRenderer()) {
             return this._getRenderer().isPlaying();
@@ -69,6 +98,10 @@ export default class CanvasLayer extends Layer {
         return false;
     }
 
+    /**
+     * Clear layer's canvas
+     * @return {CanvasLayer} this
+     */
     clearCanvas() {
         if (this._getRenderer()) {
             this._getRenderer().clearCanvas();
@@ -98,6 +131,10 @@ export default class CanvasLayer extends Layer {
         return this;
     }
 
+    /**
+     * Callback function when layer's canvas is created. <br>
+     * Override it to do anything needed.
+     */
     onCanvasCreate() {
         return this;
     }
@@ -132,8 +169,14 @@ export default class CanvasLayer extends Layer {
      */
     onResize() {}
 
-    doubleBuffer(ctx) {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    /**
+     * The callback function to double buffer. <br>
+     * In default, it just draws and return, and you can override it if you need to process the canvas image before drawn.
+     * @param  {CanvasRenderingContext2D} bufferContext CanvasRenderingContext2D of double buffer of the layer canvas.
+     * @param  {CanvasRenderingContext2D} context CanvasRenderingContext2D of the layer canvas.
+     */
+    doubleBuffer(bufferContext/*, context*/) {
+        bufferContext.clearRect(0, 0, bufferContext.canvas.width, bufferContext.canvas.height);
         return this;
     }
 }
@@ -141,3 +184,5 @@ export default class CanvasLayer extends Layer {
 CanvasLayer.mergeOptions(options);
 
 CanvasLayer.registerRenderer('canvas', CanvasLayerRenderer);
+
+export default CanvasLayer;

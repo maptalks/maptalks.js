@@ -2,13 +2,15 @@ import { isNil, isNumber, isArrayHasData } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Geometry from './Geometry';
-import * as Measurer from 'geo/measurer';
+import { Measurer } from 'geo/measurer';
 import simplify from 'simplify-js';
 
 /**
- * @property {Object} options - Vector's options
+ * @property {Object} options - configuration options
  * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
- * @property {Object} options.symbol - Vector's default symbol
+ * @property {Object} options.symbol - Path's default symbol
+ * @memberOf Path
+ * @instance
  */
 const options = {
     'antiMeridian': 'continuous',
@@ -25,10 +27,11 @@ const options = {
 
 /**
  * An abstract class Path containing common methods for Path geometry classes, e.g. LineString, Polygon
- *
+ * @abstract
+ * @category geometry
  * @extends Geometry
  */
-export default class Path extends Geometry {
+class Path extends Geometry {
 
     /**
      * Transform projected coordinates to view points
@@ -43,25 +46,27 @@ export default class Path extends Geometry {
         if (!isArrayHasData(prjCoords)) {
             return result;
         }
-        var map = this.getMap(),
+        const map = this.getMap(),
             fullExtent = map.getFullExtent(),
             projection = this._getProjection();
-        var anti = this.options['antiMeridian'] && Measurer.isSphere(projection),
+        const anti = this.options['antiMeridian'] && Measurer.isSphere(projection),
             isClip = map.options['clipFullExtent'],
             isSimplify = !disableSimplify && this.getLayer() && this.getLayer().options['enableSimplify'],
             tolerance = 2 * map._getResolution(),
             isMulti = Array.isArray(prjCoords[0]);
+        delete this._simplified;
         if (isSimplify && !isMulti) {
+            const count = prjCoords.length;
             prjCoords = simplify(prjCoords, tolerance, false);
+            this._simplified = prjCoords.length < count;
         }
         if (isNil(zoom)) {
             zoom = map.getZoom();
         }
-        var i, len, p, pre, current, dx, dy, my,
-            part1 = [],
-            part2 = [],
-            part = part1;
-        for (i = 0, len = prjCoords.length; i < len; i++) {
+        var p, pre, current, dx, dy, my,
+            // for anit-meridian splits
+            part1 = [], part2 = [], part = part1;
+        for (let i = 0, len = prjCoords.length; i < len; i++) {
             p = prjCoords[i];
             if (isMulti) {
                 part.push(this._getPath2DPoints(p, disableSimplify, zoom));
@@ -260,3 +265,5 @@ export default class Path extends Geometry {
 }
 
 Path.mergeOptions(options);
+
+export default Path;

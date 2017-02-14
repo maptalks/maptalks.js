@@ -4,11 +4,8 @@ import LineString from './LineString';
 /**
  * @classdesc
  * Represents a Geometry type of MultiLineString
- * @class
  * @category geometry
  * @extends MultiGeometry
- * @param {Number[][][]|Coordinate[][]|LineString[]} data - construct data, coordinates or a array of linestrings
- * @param {Object} [options=null]           - options defined in [MultiLineString]{@link MultiLineString#options}
  * @example
  * var multiLineString = new MultiLineString(
  *      [
@@ -35,11 +32,17 @@ import LineString from './LineString';
  *      }
  * ).addTo(layer);
  */
-export default class MultiLineString extends MultiGeometry {
+class MultiLineString extends MultiGeometry {
 
+    /**
+     * @param {Number[][][]|Coordinate[][]|LineString[]} data - construct data, coordinates or an array of linestrings
+     * @param {Object} [options=null]           - options defined in [MultiLineString]{@link MultiLineString#options}
+     */
     constructor(data, options) {
         super(LineString, 'MultiLineString', data, options);
     }
 }
 
 MultiLineString.registerJSONType('MultiLineString');
+
+export default MultiLineString;

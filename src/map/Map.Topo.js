@@ -59,10 +59,10 @@ Map.include(/** @lends Map.prototype */ {
      * @example
      * map.identify({
      *      coordinate: [0, 0],
-     *      layers: [layer],
-     *      success: function(geos){
-     *          console.log(geos);
-     *      }
+     *      layers: [layer]
+     *  },
+     *  geos => {
+     *      console.log(geos);
      *  });
      */
     identify: function (opts, callback) {

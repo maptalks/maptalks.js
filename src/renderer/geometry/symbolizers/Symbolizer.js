@@ -1,4 +1,4 @@
-import { isString, indexOfArray } from 'core/util';
+import { isString } from 'core/util';
 
 /**
  * @classdesc
@@ -36,7 +36,7 @@ export default class Symbolizer {
         if (!prop || !isString(prop)) {
             return false;
         }
-        if (indexOfArray(prop, Symbolizer.colorProperties) >= 0) {
+        if (Symbolizer.colorProperties.indexOf(prop) >= 0) {
             return true;
         }
         return false;

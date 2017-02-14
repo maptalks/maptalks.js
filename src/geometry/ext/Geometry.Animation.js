@@ -10,7 +10,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      *
      * @param  {Object}   styles          - styles to animate
      * @param  {Object}   [options=null]  - animation options
-     * @param  {Object}   [options.speed=1000]      - duration
+     * @param  {Object}   [options.duration=1000]      - duration
      * @param  {Object}   [options.startTime=null]  - time to start animation in ms
      * @param  {Object}   [options.easing=linear]   - animation easing: in, out, inAndOut, linear, upAndDown
      * @param  {Function} [step=null]               - step function when animating
@@ -21,7 +21,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      *         'markerHeight': 82
      *      }
      * }, {
-     *     'speed': 2000
+     *     'duration': 2000
      * }, function (frame) {
      *     console.log(frame);
      * });

@@ -1,4 +1,5 @@
-import { isArrayHasData, stringLength } from 'core/util';
+import { isArrayHasData } from 'core/util';
+import { stringLength } from 'core/util/strings';
 import { on, createEl, addClass, stopPropagation, measureDom, isHTML } from 'core/util/dom';
 import Control from './Control';
 
@@ -7,6 +8,8 @@ import Control from './Control';
  * @property {String|Object}   [options.position="top-right"]          - position of the toolbar control.
  * @property {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
  * @property {Object[]} options.items                                  - items on the toolbar
+ * @memberOf control.Toolbar
+ * @instance
  */
 const options = {
     'height': 28,
@@ -20,12 +23,9 @@ const options = {
 /**
  * @classdesc
  * A toolbar control of the map.
- * @class
  * @category control
- * @extends Control
+ * @extends control.Control
  * @memberOf control
- * @name Toolbar
- * @param {Object} [options=null] - options defined in [Toolbar]{@link Toolbar#options}
  * @example
  * var toolbar = new Toolbar({
  *     position : 'top-right',
@@ -45,8 +45,12 @@ const options = {
  *      ]
  * }).addTo(map);
  */
-export default class Toolbar extends Control {
-
+class Toolbar extends Control {
+    /**
+     * method to build DOM of the control
+     * @param  {Map} map map to build on
+     * @return {HTMLDOMElement}
+     */
     buildOn(map) {
         this._map = map;
         const dom = createEl('div');
@@ -157,3 +161,5 @@ export default class Toolbar extends Control {
 }
 
 Toolbar.mergeOptions(options);
+
+export default Toolbar;

@@ -9,6 +9,8 @@ import UIComponent from './UI';
  * @property {Number}  [options.width=160]      - default width
  * @property {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized menu, customized html codes or a HTMLElement is set to items.
  * @property {Object[]|String|HTMLElement}  options.items   - html code or a html element is options.custom is true. Or a menu items array, containing: item objects, "-" as a splitor line
+ * @memberOf ui.Menu
+ * @instance
  */
 const defaultOptions = {
     'animation': null,
@@ -22,24 +24,27 @@ const defaultOptions = {
 };
 
 /**
- * Menu items is set to options.items or by setItems method. <br>
- * <br>
- * Normally items is a object array, containing: <br>
- * 1. item object: {'item': 'This is a menu text', 'click': function() {alert('oops! You clicked!');)}} <br>
- * 2. minus string "-", which will draw a splitor line on the menu. <br>
- * <br>
- * If options.custom is set to true, the menu is considered as a customized one. Then items is the customized html codes or HTMLElement. <br>
- *
  * @classdesc
  * Class for context menu, useful for interactions with right clicks on the map.
- * @class
  * @category ui
  * @extends ui.UIComponent
- * @param {Object} options - options defined in [ui.Menu]{@link ui.Menu#options}
  * @memberOf ui
- * @name Menu
  */
-export default class Menu extends UIComponent {
+class Menu extends UIComponent {
+
+    /**
+     * Menu items is set to options.items or by setItems method. <br>
+     * <br>
+     * Normally items is a object array, containing: <br>
+     * 1. item object: {'item': 'This is a menu text', 'click': function() {alert('oops! You clicked!');)}} <br>
+     * 2. minus string "-", which will draw a splitor line on the menu. <br>
+     * <br>
+     * If options.custom is set to true, the menu is considered as a customized one. Then items is the customized html codes or HTMLElement. <br>
+     * @param {Object} options - options defined in [ui.Menu]{@link ui.Menu#options}
+     */
+    constructor(options) {
+        super(options);
+    }
 
     // TODO: obtain class in super
     _getClassName() {
@@ -195,3 +200,5 @@ export default class Menu extends UIComponent {
 }
 
 Menu.mergeOptions(defaultOptions);
+
+export default Menu;

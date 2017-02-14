@@ -169,27 +169,28 @@ export default class Painter extends Class {
         this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
     }
 
-    getSprite(resources) {
+    getSprite(resources, canvasClass) {
         if (this.geometry.type !== 'Point') {
             return null;
         }
         this._genSprite = true;
         if (!this._sprite && this.symbolizers.length > 0) {
-            var extent = new PointExtent();
+            const extent = new PointExtent();
             this.symbolizers.forEach(function (s) {
                 var markerExtent = s.getMarkerExtent(resources);
                 extent._combine(markerExtent);
             });
-            var origin = extent.getMin().multi(-1);
-            var canvas = Canvas.createCanvas(extent.getWidth(), extent.getHeight(), this.getMap() ? this.getMap().CanvasClass : null);
+            const origin = extent.getMin().multi(-1);
+            const clazz = canvasClass || (this.getMap() ? this.getMap().CanvasClass : null);
+            const canvas = Canvas.createCanvas(extent.getWidth(), extent.getHeight(), clazz);
             var bak;
             if (this._renderPoints) {
                 bak = this._renderPoints;
             }
-            var contexts = [canvas.getContext('2d'), resources];
+            const contexts = [canvas.getContext('2d'), resources];
             this._prepareShadow(canvas.getContext('2d'));
-            for (var i = this.symbolizers.length - 1; i >= 0; i--) {
-                var dxdy = this.symbolizers[i].getDxDy();
+            for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+                let dxdy = this.symbolizers[i].getDxDy();
                 this._renderPoints = {
                     'point': [
                         [origin.add(dxdy)]
@@ -330,6 +331,10 @@ export default class Painter extends Class {
     }
 
     removeZoomCache() {
+        if (this.geometry._simplified) {
+            // remove cached points if the geometry is simplified on the zoom.
+            delete this._paintParams;
+        }
         delete this._extent2D;
     }
 }

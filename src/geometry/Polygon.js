@@ -6,13 +6,9 @@ import Path from './Path';
 
 /**
  * @classdesc
- *     Geometry class for polygon type
- * @class
+ * Geometry class for polygon type
  * @category geometry
- * @extends Vector
- * @mixins Geometry.Poly
- * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
- * @param {Object} [options=null] - construct options defined in [Polygon]{@link Polygon#options}
+ * @extends Path
  * @example
  * var polygon = new Polygon(
  *      [
@@ -27,8 +23,12 @@ import Path from './Path';
  *      ]
  *  ).addTo(layer);
  */
-export default class Polygon extends Path {
+class Polygon extends Path {
 
+    /**
+     * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
+     * @param {Object} [options=null] - construct options defined in [Polygon]{@link Polygon#options}
+     */
     constructor(coordinates, opts) {
         super(opts);
         this.type = 'Polygon';
@@ -146,8 +146,9 @@ export default class Polygon extends Path {
     }
 
     /**
-     * 检查ring是否合法, 并返回ring是否闭合
-     * @param  {*} ring [description]
+     * Check if ring is valid
+     * @param  {*} ring ring to check
+     * @return {Boolean} is ring a closed one
      * @private
      */
     _checkRing(ring) {
@@ -164,7 +165,7 @@ export default class Polygon extends Path {
     }
 
     /**
-     * 如果最后一个端点与第一个端点相同, 则去掉最后一个端点
+     * If the first coordinate is equal with the last one, then remove the last coordinates.
      * @private
      */
     _trimRing(ring) {
@@ -177,7 +178,7 @@ export default class Polygon extends Path {
     }
 
     /**
-     * 如果最后一个端点与第一个端点不同, 则在最后增加与第一个端点相同的点
+     * If the first coordinate is different with the last one, then copy the first coordinates and add to the ring.
      * @private
      */
     _closeRing(ring) {
@@ -270,3 +271,5 @@ export default class Polygon extends Path {
 }
 
 Polygon.registerJSONType('Polygon');
+
+export default Polygon;

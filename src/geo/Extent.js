@@ -6,12 +6,7 @@ import Size from './Size';
 /**
  * Represent a bounding box on the map, a rectangular geographical area with minimum and maximum coordinates. <br>
  * There are serveral ways to create a extent:
- * @class
  * @category basic types
- * @param {Number} x1   - x of coordinate 1
- * @param {Number} y1   - y of coordinate 1
- * @param {Number} x2   - x of coordinate 2
- * @param {Number} y2   - y of coordinate 2
  * @example
  * //with 4 numbers
  * var extent = new Extent(100, 10, 120, 20);
@@ -26,7 +21,14 @@ import Size from './Size';
  * //with another extent
  * var extent2 = new Extent(extent1);
  */
-export default class Extent {
+class Extent {
+
+    /**
+     * @param {Number} x1   - x of coordinate 1
+     * @param {Number} y1   - y of coordinate 1
+     * @param {Number} x2   - x of coordinate 2
+     * @param {Number} y2   - y of coordinate 2
+     */
     constructor(p1, p2, p3, p4) {
         this._clazz = Coordinate;
         this._initialize(p1, p2, p3, p4);
@@ -388,3 +390,5 @@ export default class Extent {
         return new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
     }
 }
+
+export default Extent;

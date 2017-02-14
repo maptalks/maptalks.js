@@ -1,6 +1,6 @@
 import { extend, isNil, isString } from 'core/util';
 import { createEl, addStyle, setStyle, removeDomNode } from 'core/util/dom';
-import Eventable from 'core/Event';
+import Eventable from 'core/Eventable';
 import Class from 'core/Class';
 import Point from 'geo/Point';
 import Map from 'map/Map';
@@ -8,17 +8,17 @@ import Map from 'map/Map';
 /**
  * Base class for all the map controls, you can extend it to build your own customized Control.
  * It is abstract and not intended to be instantiated.
- * @class
  * @category control
+ * @memberOf control
  * @abstract
  * @extends Class
- * @memberOf control
- * @name  Control
- *
  * @mixes Eventable
  */
-export default class Control extends Eventable(Class) {
+class Control extends Eventable(Class) {
 
+    /**
+     * @param  {Object} [options=null] configuration options
+     */
     constructor(options) {
         if (options && options['position'] && !isString(options['position'])) {
             options['position'] = extend({}, options['position']);
@@ -289,3 +289,5 @@ Map.include(/** @lends Map.prototype */ {
     }
 
 });
+
+export default Control;

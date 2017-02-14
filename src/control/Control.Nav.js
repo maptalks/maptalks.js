@@ -2,23 +2,11 @@ import Map from 'map/Map';
 import Control from './Control';
 
 
-/**
- * @property {Object} options - options
- * @property {Object} [options.position='top-left'}] - position of the control
- */
 const options = {
     'position': 'top-left'
 };
 
-/**
- * @classdesc
- * A control for map navigation.
- * @class
- * @category control
- * @extends Control
- * @memberOf control
- * @name Nav
- */
+
 export default class Nav extends Control {
 
     buildOn() {

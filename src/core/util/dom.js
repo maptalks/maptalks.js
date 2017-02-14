@@ -3,7 +3,7 @@
  * Learned a lot from Leaflet.DomUtil
  * @class
  * @category core
- * @protected
+ * @name DomUtil
  */
 
 import Browser from 'core/Browser';
@@ -24,6 +24,8 @@ const first = (props) => {
  * it returns false. Useful for vendor-prefixed styles like `transform`.
  * @param  {String[]} props
  * @return {Boolean}
+ * @memberOf DomUtil
+ * @private
  */
 const testProp = isNode ? first : (props) => {
 
@@ -79,6 +81,7 @@ export const CSSFILTER = testProp(
  * Create a html element.
  * @param {String} tagName
  * @returns {HTMLElement}
+ * @memberOf DomUtil
  */
 export function createEl(tagName, className) {
     var el = document.createElement(tagName);
@@ -94,6 +97,7 @@ export function createEl(tagName, className) {
  * @param {String} style - css styles
  * @param {HTMLElement} container
  * @return {HTMLElement}
+ * @memberOf DomUtil
  */
 export function createElOn(tagName, style, container) {
     var el = createEl(tagName);
@@ -109,10 +113,11 @@ export function createElOn(tagName, style, container) {
 /**
  * Removes a html element.
  * @param {HTMLElement} node
+ * @memberOf DomUtil
  */
 export function removeDomNode(node) {
     if (!node) {
-        return;
+        return this;
     }
     if (Browser.ielt9 || Browser.ie9) {
         //fix memory leak in IE9-
@@ -124,6 +129,7 @@ export function removeDomNode(node) {
     } else if (node.parentNode) {
         node.parentNode.removeChild(node);
     }
+    return this;
 }
 
 /**
@@ -132,10 +138,11 @@ export function removeDomNode(node) {
  * @param {String} typeArr      - event types, seperated by space
  * @param {Function} handler    - listener function
  * @param {Object} context      - function context
+ * @memberOf DomUtil
  */
 export function addDomEvent(obj, typeArr, handler, context) {
     if (!obj || !typeArr || !handler) {
-        return;
+        return this;
     }
     var eventHandler = function (e) {
         if (!e) {
@@ -173,6 +180,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
             obj.attachEvent('on' + type, eventHandler);
         }
     }
+    return this;
 }
 
 /**
@@ -180,6 +188,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
  * @param {HTMLElement} obj         - dom element
  * @param {String} typeArr          - event types, separated by space
  * @param {Function} handler        - listening function
+ * @memberOf DomUtil
  */
 export function removeDomEvent(obj, typeArr, handler) {
     function doRemove(type, callback) {
@@ -194,7 +203,7 @@ export function removeDomEvent(obj, typeArr, handler) {
         }
     }
     if (!obj || !typeArr) {
-        return;
+        return this;
     }
     var types = typeArr.split(' ');
     for (var i = types.length - 1; i >= 0; i--) {
@@ -209,17 +218,17 @@ export function removeDomEvent(obj, typeArr, handler) {
                 doRemove(handlers[j].callback);
             }
             delete obj['Z__' + type];
-            return;
+            return this;
         }
         var hit = listensDomEvent(obj, type, handler);
         if (hit < 0) {
-            return;
+            return this;
         }
         var hitHandler = obj['Z__' + type][hit];
         doRemove(type, hitHandler.callback);
         obj['Z__' + type].splice(hit, 1);
     }
-    return;
+    return this;
 }
 
 /**
@@ -228,6 +237,7 @@ export function removeDomEvent(obj, typeArr, handler) {
  * @param {String} typeArr      - event
  * @param {Function} handler    - the listening function
  * @return {Number} - the handler's index in the listener chain, returns -1 if not.
+ * @memberOf DomUtil
  */
 export function listensDomEvent(obj, type, handler) {
     if (!obj || !obj['Z__' + type] || !handler) {
@@ -246,6 +256,7 @@ export function listensDomEvent(obj, type, handler) {
  * Prevent default behavior of the browser. <br/>
  * preventDefault Cancels the event if it is cancelable, without stopping further propagation of the event.
  * @param {Event} event - browser event
+ * @memberOf DomUtil
  */
 export function preventDefault(event) {
     if (event.preventDefault) {
@@ -253,11 +264,13 @@ export function preventDefault(event) {
     } else {
         event.returnValue = false;
     }
+    return this;
 }
 
 /**
  * Stop browser event propagation
  * @param  {Event} e - browser event.
+ * @memberOf DomUtil
  */
 export function stopPropagation(e) {
     if (e.stopPropagation) {
@@ -284,6 +297,7 @@ export function preventSelection(dom) {
  * @param  {HTMLElement} dom - HTMLElement
  * @param  {Point} [offset=null] - position to set.
  * @return {Point} - dom element's current position if offset is null.
+ * @memberOf DomUtil
  */
 export function offsetDom(dom, offset) {
     if (!dom) {
@@ -303,6 +317,7 @@ export function offsetDom(dom, offset) {
  * 获取dom对象在页面上的屏幕坐标
  * @param  {HTMLElement} obj Dom对象
  * @return {Object}     屏幕坐标
+ * @memberOf DomUtil
  */
 export function getPagePosition(obj) {
     var docEl = document.documentElement;
@@ -314,6 +329,7 @@ export function getPagePosition(obj) {
  * 获取鼠标在容器上相对容器左上角的坐标值
  * @param {Event} ev  触发的事件
  * @return {Point} left:鼠标在页面上的横向位置, top:鼠标在页面上的纵向位置
+ * @memberOf DomUtil
  */
 export function getEventContainerPoint(ev, dom) {
     if (!ev) {
@@ -330,6 +346,7 @@ export function getEventContainerPoint(ev, dom) {
  * 为dom设置样式
  * @param {HTMLElement} dom dom节点
  * @param {String} strCss 样式字符串
+ * @memberOf DomUtil
  */
 export function setStyle(dom, strCss) {
     function endsWith(str, suffix) {
@@ -342,14 +359,17 @@ export function setStyle(dom, strCss) {
         cssText += ';';
     }
     dom.style.cssText = cssText + strCss;
+    return this;
 }
 
 /**
  * 清空dom样式
  * @param {HTMLElement} dom dom节点
+ * @memberOf DomUtil
  */
 export function removeStyle(dom) {
     dom.style.cssText = '';
+    return this;
 }
 
 /**
@@ -357,6 +377,7 @@ export function removeStyle(dom) {
  * @param {HTMLElement} dom dom节点
  * @param {String} attr 样式标签
  * @param {String} value 样式值
+ * @memberOf DomUtil
  */
 export function addStyle(dom, attr, value) {
     var css = dom.style.cssText;
@@ -364,12 +385,14 @@ export function addStyle(dom, attr, value) {
         var newStyle = attr + ':' + value + ';';
         dom.style.cssText = css + newStyle;
     }
+    return this;
 }
 
 /**
  * 判断元素是否包含class
  * @param {HTMLElement} el html元素
  * @param {String} name class名称
+ * @memberOf DomUtil
  */
 export function hasClass(el, name) {
     if (el.classList !== undefined) {
@@ -383,6 +406,7 @@ export function hasClass(el, name) {
  * 为dom添加class
  * @param {HTMLElement} el html元素
  * @param {String} name class名称
+ * @memberOf DomUtil
  */
 export function addClass(el, name) {
     if (el.classList !== undefined) {
@@ -394,12 +418,14 @@ export function addClass(el, name) {
         var className = getClass(el);
         setClass(el, (className ? className + ' ' : '') + name);
     }
+    return this;
 }
 
 /**
  * 移除dom class
  * @param {HTMLElement} el html元素
  * @param {String} name class名称
+ * @memberOf DomUtil
  */
 export function removeClass(el, name) {
     if (el.classList !== undefined) {
@@ -407,12 +433,14 @@ export function removeClass(el, name) {
     } else {
         setClass(el, trim((' ' + getClass(el) + ' ').replace(' ' + name + ' ', ' ')));
     }
+    return this;
 }
 
 /**
  * 设置dom class
  * @param {HTMLElement} el html元素
  * @param {String} name class名称
+ * @memberOf DomUtil
  */
 export function setClass(el, name) {
     if (isNil(el.className.baseVal)) {
@@ -420,12 +448,14 @@ export function setClass(el, name) {
     } else {
         el.className.baseVal = name;
     }
+    return this;
 }
 
 /**
  * 获取dom class
  * @param {String} name class名称
  * @retrun {String} class字符串
+ * @memberOf DomUtil
  */
 export function getClass(el) {
     return isNil(el.className.baseVal) ? el.className : el.className.baseVal;
@@ -442,6 +472,7 @@ export function setOpacity(el, value) {
     } else if ('filter' in el.style) {
         _setOpacityIE(el, value);
     }
+    return this;
 }
 
 function _setOpacityIE(el, value) {
@@ -473,6 +504,7 @@ function _setOpacityIE(el, value) {
  * Copy the source canvas
  * @param  {Element|Canvas} src - source canvas
  * @return {Element|Canvas}     target canvas
+ * @memberOf DomUtil
  */
 export function copyCanvas(src) {
     if (isNode) {
@@ -489,6 +521,7 @@ export function copyCanvas(src) {
  * Resets the 3D CSS transform of `el` so it is translated by `offset` pixels
  * @param {HTMLElement} el
  * @param {Point} offset
+ * @memberOf DomUtil
  */
 export function setTransform(el, offset) {
     var pos = offset || new Point(0, 0);
@@ -542,6 +575,7 @@ export function _getDomRuler(tag) {
  * @static
  * @function
  * @return {DomUtil}
+ * @memberOf DomUtil
  */
 export const on = addDomEvent;
 
@@ -553,5 +587,6 @@ export const on = addDomEvent;
  * @static
  * @function
  * @return {DomUtil}
+ * @memberOf DomUtil
  */
 export const off = removeDomEvent;

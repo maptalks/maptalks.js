@@ -1,26 +1,28 @@
+import { GEOJSON_TYPES } from 'core/Constants';
 import { isNil, isArrayHasData, UID } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import { Geometry, GeometryCollection, LineString } from 'geometry';
 import Layer from './Layer';
+import GeoJSON from 'geometry/GeoJSON';
 
 /**
  * @classdesc
  * Base class of all the layers that can add/remove geometries. <br>
  * It is abstract and not intended to be instantiated.
- * @class
  * @category layer
  * @abstract
- * @extends {Layer}
+ * @extends Layer
  */
-export default class OverlayLayer extends Layer {
+class OverlayLayer extends Layer {
 
     constructor(id, geometries, options) {
-        if (geometries && (!(geometries instanceof Geometry) && !(Array.isArray(geometries)))) {
+        if (geometries && (!(geometries instanceof Geometry) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
             options = geometries;
             geometries = null;
         }
         super(id, options);
+        this._initCache();
         if (geometries) {
             this.addGeometry(geometries);
         }
@@ -120,8 +122,8 @@ export default class OverlayLayer extends Layer {
      * @return {OverlayLayer} this
      */
     forEach(fn, context) {
-        var copyOnWrite = this._geoList.slice(0);
-        for (var i = 0, l = copyOnWrite.length; i < l; i++) {
+        const copyOnWrite = this._geoList.slice(0);
+        for (let i = 0, l = copyOnWrite.length; i < l; i++) {
             if (!context) {
                 fn(copyOnWrite[i], i);
             } else {
@@ -159,7 +161,9 @@ export default class OverlayLayer extends Layer {
         if (!geometries) {
             return this;
         }
-        if (!Array.isArray(geometries)) {
+        if (geometries.type === 'FeatureCollection') {
+            return this.addGeometry(GeoJSON.toGeometry(geometries), fitView);
+        } else if (!Array.isArray(geometries)) {
             var count = arguments.length;
             var last = arguments[count - 1];
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
@@ -514,6 +518,4 @@ export default class OverlayLayer extends Layer {
     }
 }
 
-OverlayLayer.addInitHook(function () {
-    this._initCache();
-});
+export default OverlayLayer;

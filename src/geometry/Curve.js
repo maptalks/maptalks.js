@@ -2,12 +2,14 @@ import LineString from './LineString';
 import Canvas2d from 'core/Canvas';
 
 /**
- * @classdesc Curve style LineString, an abstract parent class for all the curves.
- * @class
+ * Curve style LineString, an abstract parent class for all the curves.
  * @category geometry
- * @extends {LineString}
+ * @abstract
+ * @extends LineString
+ * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string
+ * @param {Object} [options=null] - construct options defined in [LineString]{@link LineString#options}
  */
-export default class Curve extends LineString {
+class Curve extends LineString {
 
     _arc(ctx, points, lineOpacity) {
         var degree = this.options['arcDegree'] * Math.PI / 180;
@@ -69,3 +71,5 @@ export default class Curve extends LineString {
         }
     }
 }
+
+export default Curve;

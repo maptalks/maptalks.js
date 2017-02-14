@@ -4,13 +4,13 @@ describe('Util', function () {
     describe('replace variable', function () {
         it('replace variables with value', function () {
             var str = '{foo} is not {foo2}.';
-            var r = maptalks.Util.replaceVariable(str, { foo : 'apple', foo2 : 'pear' });
+            var r = maptalks.StringUtil.replaceVariable(str, { foo : 'apple', foo2 : 'pear' });
             expect(r).to.eql('apple is not pear.');
         });
 
         it('input null', function () {
             var str = '{foo} is not {foo2}.';
-            var r = maptalks.Util.replaceVariable(str, null);
+            var r = maptalks.StringUtil.replaceVariable(str, null);
             expect(r).to.eql(str);
         });
     });

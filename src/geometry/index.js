@@ -21,7 +21,7 @@ import Label from './Label';
 import { ConnectorLine, ArcConnectorLine } from './ConnectorLine';
 
 import 'geometry/editor/GeometryEditor';
-import 'geometry/editor/TextMarkerEditor';
+import 'geometry/editor/TextEditable';
 
 import 'geometry/ext/Geometry.Animation';
 import 'geometry/ext/Geometry.Drag';

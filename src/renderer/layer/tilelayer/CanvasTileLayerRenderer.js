@@ -1,5 +1,4 @@
 import Browser from 'core/Browser';
-import PointExtent from 'geo/PointExtent';
 import CanvasTileLayer from 'layer/tile/CanvasTileLayer';
 import Canvas2D from 'core/Canvas';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
@@ -13,13 +12,13 @@ export default class CanvasTileLayerRenderer extends TileLayerCanvasRenderer {
         var tileCanvas = Canvas2D.createCanvas(tileSize['width'] * r, tileSize['height'] * r, canvasClass);
         tileCanvas['layer'] = this.layer;
         tileCanvas[this.propertyOfTileId] = tileId;
-        tileCanvas[this.propertyOfPointOnTile] = tile['viewPoint'];
+        tileCanvas[this.propertyOfPointOnTile] = tile['point'];
         tileCanvas[this.propertyOfTileZoom] = tile['zoom'];
         this.layer.drawTile(tileCanvas, {
             'url': tile['url'],
-            'viewPoint': tile['viewPoint'],
-            'zoom': tile['zoom'],
-            'extent': map._pointToExtent(new PointExtent(tile['2dPoint'], tile['2dPoint'].add(tileSize.toPoint())))
+            'point': tile['point'],
+            'center' : map.pointToCoordinate(tile['point'].add(tileSize['width'] / 2, tileSize['height'] / 2)),
+            'zoom': tile['zoom']
         }, function (error) {
             if (error) {
                 onTileError.call(tileCanvas);

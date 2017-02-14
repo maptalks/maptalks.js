@@ -1,28 +1,32 @@
 
 const registeredTypes = {};
+
 /**
- * This provides methods used for event handling. It's a mixin and not meant to be used directly.
- * @mixin
- * @memberOf maptalks
- * @name JSONAble
+ * A helper mixin for JSON serialization.
+ * @mixin JSONAble
  */
-export default function (Base) {
-    return class extends Base {
+export default Base =>
+    class extends Base {
         /**
+         * It is a static method. <br>
          * Register layer for JSON serialization and assign a JSON type.
          * @param  {String} type - JSON type
+         * @function JSONAble.registerJSONType
          */
         static registerJSONType(type) {
             if (!type) {
-                return;
+                return this;
             }
             registeredTypes[type] = this;
+            return this;
         }
 
         /**
-         * Get geometry class of input JSON type
+         * It is a static method. <br>
+         * Get class of input JSON type
          * @param  {String} type - JSON type
-         * @return {class}      Geometry Class
+         * @return {Class}      Class
+         * @function JSONAble.getClass
          */
         static getClass(type) {
             if (!type) {
@@ -34,6 +38,7 @@ export default function (Base) {
         /**
          * Get object's JSON Type
          * @return {String}
+         * @function JSONAble.getJSONType
          */
         getJSONType() {
             if (this._jsonType === undefined) {
@@ -51,4 +56,3 @@ export default function (Base) {
             return this._jsonType;
         }
     };
-}

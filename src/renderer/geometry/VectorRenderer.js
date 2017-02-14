@@ -7,8 +7,6 @@ import Rectangle from 'geometry/Rectangle';
 import LineString from 'geometry/LineString';
 import Polygon from 'geometry/Polygon';
 
-// 如果不支持canvas, 则不载入canvas的绘制逻辑
-
 const ellipseReources = {
     _getPaintParams() {
         const map = this.getMap();

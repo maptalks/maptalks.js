@@ -1,3 +1,5 @@
+/** @namespace control */
+
 import Control from './Control';
 import Attribution from './Control.Attribution';
 // import './Control.Nav';

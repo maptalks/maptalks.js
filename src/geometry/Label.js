@@ -1,4 +1,4 @@
-import { getAlignPoint } from 'core/util';
+import { getAlignPoint } from 'core/util/strings';
 import Size from 'geo/Size';
 import TextMarker from './TextMarker';
 
@@ -10,6 +10,8 @@ import TextMarker from './TextMarker';
  * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
  * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
  * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
+ * @memberOf Label
+ * @instance
  */
 const options = {
     'boxAutoSize': true,
@@ -26,10 +28,9 @@ const options = {
  * @classdesc
  * Represents point type geometry for text labels.<br>
  * A label is used to draw text (with a box background if specified) on a particular coordinate.
- * @class
  * @category geometry
  * @extends TextMarker
- * @mixes TextMarker.Editor
+ * @mixes TextEditable
  * @param {String} content                          - Label's text content
  * @param {Coordinate} coordinates         - center
  * @param {Object} [options=null]                   - construct options defined in [Label]{@link Label#options}
@@ -37,7 +38,7 @@ const options = {
  * var label = new Label('This is a label',[100,0])
  *     .addTo(layer);
  */
-export default class Label extends TextMarker {
+class Label extends TextMarker {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -101,3 +102,5 @@ export default class Label extends TextMarker {
 Label.mergeOptions(options);
 
 Label.registerJSONType('Label');
+
+export default Label;

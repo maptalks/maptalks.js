@@ -14,6 +14,7 @@ var types = ['Unknown', 'Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLi
  *
  * @param {Array} filter mapbox gl filter
  * @returns {Function} filter-evaluating function
+ * @memberOf MapboxUtil
  */
 export function createFilter(filter) {
     return new Function('f', 'var p = (f && f.properties || {}); return ' + compile(filter));
@@ -81,6 +82,12 @@ function compare(a, b) {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 
+/**
+ * Get feature object from a geometry for filter functions.
+ * @param  {Geometry} geometry geometry
+ * @return {Object}          feature for filter functions
+ * @memberOf MapboxUtil
+ */
 export function getFilterFeature(geometry) {
     var json = geometry._toJSON(),
         g = json['feature'];
@@ -101,6 +108,7 @@ export function getFilterFeature(geometry) {
  * </pre>
  * @param  {Object|Object[]} styles - style to compile
  * @return {Object[]}       compiled styles
+ * @memberOf MapboxUtil
  */
 export function compileStyle(styles) {
     if (!Array.isArray(styles)) {

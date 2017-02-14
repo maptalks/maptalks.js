@@ -13,6 +13,8 @@ import UIComponent from './UI';
  * @property {Boolean} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
  * @property {String}  [options.title=null]    - title of the infowindow.
  * @property {String|HTMLElement}  options.content - content of the infowindow.
+ * @memberOf ui.InfoWindow
+ * @instance
  */
 const options = {
     'autoPan': true,
@@ -26,14 +28,12 @@ const options = {
 /**
  * @classdesc
  * Class for info window, a popup on the map to display any useful infomation you wanted.
- * @class
  * @category ui
- * @extends UIComponent
+ * @extends ui.UIComponent
  * @param {Object} options - options defined in [InfoWindow]{@link InfoWindow#options}
  * @memberOf ui
- * @name InfoWindow
  */
-export default class InfoWindow extends UIComponent {
+class InfoWindow extends UIComponent {
 
     // TODO: obtain class in super
     _getClassName() {
@@ -205,3 +205,5 @@ export default class InfoWindow extends UIComponent {
 }
 
 InfoWindow.mergeOptions(options);
+
+export default InfoWindow;

@@ -9,9 +9,11 @@ import OverlayLayer from './OverlayLayer';
  * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
  * @property {Boolean} options.enableSimplify=true   - whether to simplify geometries before rendering.
  * @property {String}  options.cursor=default        - the cursor style of the layer
- * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events
- * @property {Boolean} options.defaultIconSize=[20, 20] - default size of a marker's icon
+ * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events, disable it to improve performance.
+ * @property {Boolean} options.defaultIconSize=[20,20] - default size of a marker's icon
  * @property {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.
+ * @memberOf VectorLayer
+ * @instance
  */
 const options = {
     'debug': false,
@@ -26,20 +28,24 @@ const options = {
 /**
  * @classdesc
  * A layer for managing and rendering geometries.
- * @class
  * @category layer
- * @extends {OverlayLayer}
- * @param {String|Number} id - layer's id
- * @param {Geometry|Geometry[]} [geometries=null] - geometries to add
- * @param {Object}  [options=null]          - construct options
- * @param {Object}  [options.style=null]    - vectorlayer's style
- * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}
+ * @extends OverlayLayer
  */
-export default class VectorLayer extends OverlayLayer {
+class VectorLayer extends OverlayLayer {
 
+    /**
+     * @param {String|Number} id - layer's id
+     * @param {Geometry|Geometry[]} [geometries=null] - geometries to add
+     * @param {Object}  [options=null]          - construct options
+     * @param {Object}  [options.style=null]    - vectorlayer's style
+     * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}
+     */
     constructor(id, geometries, options) {
-        const opts = extend({}, options);
+        var opts = options || geometries || {};
         const style = opts['style'];
+        if (style) {
+            opts = extend({}, opts);
+        }
         delete opts['style'];
         super(id, geometries, opts);
         if (style) {
@@ -59,8 +65,8 @@ export default class VectorLayer extends OverlayLayer {
     }
 
     /**
-     * Sets style to the layer, styling the geometries satisfying the condition with style's symbol
-     *
+     * Sets style to the layer, styling the geometries satisfying the condition with style's symbol. <br>
+     * Based on filter type in [mapbox-gl-js's style specification]{https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter}.
      * @param {Object|Object[]} style - layer's style
      * @returns {VectorLayer} this
      * @fires VectorLayer#setstyle
@@ -221,3 +227,5 @@ export default class VectorLayer extends OverlayLayer {
 VectorLayer.mergeOptions(options);
 
 VectorLayer.registerJSONType('VectorLayer');
+
+export default VectorLayer;

@@ -1,10 +1,10 @@
 {
     "tags": {
         "allowUnknownTags": true,
-        "dictionaries": ["jsdoc","closure"]
+        "dictionaries": ["jsdoc"]
     },
     "templates" : {
-        "github" : "https://github.com/MapTalks/maptalks.js/blob/master/src/",
+        "github" : "https://github.com/maptalks/maptalks.js/tree/master/src/",
         "categories" : "map, layer, geometry, basic types ,maptool, ui, control",
         "default" : {
             "useLongnameInNav" : true
@@ -16,6 +16,6 @@
         "template": "../maptalks-jsdoc/",
         "encoding": "utf8",
         "destination": "./doc/api/",
-        "access"  : "public, undefined"
+        "access"  : "protected, undefined"
     }
 }

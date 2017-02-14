@@ -8,6 +8,8 @@ import Control from './Control';
  * @property {Number} [options.maxWidth=100]               - max width of the scale control.
  * @property {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
  * @property {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
+ * @instance
+ * @memberOf control.Scale
  */
 const options = {
     'position': 'bottom-left',
@@ -19,12 +21,9 @@ const options = {
 /**
  * @classdesc
  * Based on the implementation in Leaflet, a simple scale control that shows the scale of the current center of screen in metric (m/km) and imperial (mi/ft) systems.
- * @class
  * @category control
- * @extends Control
+ * @extends control.Control
  * @memberOf control
- * @name Scale
- * @param {Object} [options=null] - options defined in [Scale]{@link Scale#options}
  * @example
  * var scale = new Scale({
  *     position : 'bottom-left',
@@ -33,8 +32,13 @@ const options = {
  *     imperial : true
  * }).addTo(map);
  */
-export default class Scale extends Control {
+class Scale extends Control {
 
+    /**
+     * method to build DOM of the control
+     * @param  {Map} map map to build on
+     * @return {HTMLDOMElement}
+     */
     buildOn(map) {
         this._map = map;
         this._scaleContainer = createEl('div');
@@ -129,3 +133,5 @@ Map.addOnLoadHook(function () {
         this.addControl(this.scaleControl);
     }
 });
+
+export default Scale;

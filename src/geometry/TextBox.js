@@ -8,6 +8,8 @@ import TextMarker from './TextMarker';
  * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the box.
  * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
  * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the text to the border of the box.
+ * @memberOf TextBox
+ * @instance
  */
 const options = {
     'boxAutoSize': false,
@@ -23,10 +25,9 @@ const options = {
  * @classdesc
  * Represents point type geometry for text boxes.<br>
  * A TextBox is used to draw a box with text inside on a particular coordinate.
- * @class
  * @category geometry
  * @extends TextMarker
- * @mixes TextMarker.Editor
+ * @mixes TextEditable
  * @param {String} content                          - TextBox's text content
  * @param {Coordinate} coordinates         - center
  * @param {Object} [options=null]                   - construct options defined in [TextBox]{@link TextBox#options}
@@ -34,7 +35,7 @@ const options = {
  * var textBox = new TextBox('This is a textBox',[100,0])
  *     .addTo(layer);
  */
-export default class TextBox extends TextMarker {
+class TextBox extends TextMarker {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -117,3 +118,5 @@ export default class TextBox extends TextMarker {
 TextBox.mergeOptions(options);
 
 TextBox.registerJSONType('TextBox');
+
+export default TextBox;

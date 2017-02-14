@@ -2,7 +2,6 @@ import {
     isNil,
     isString,
     parseJSON,
-    indexOfArray,
     isArrayHasData
 } from 'core/util';
 import Marker from './Marker';
@@ -12,10 +11,6 @@ import MultiPoint from './MultiPoint';
 import MultiLineString from './MultiLineString';
 import MultiPolygon from './MultiPolygon';
 import GeometryCollection from './GeometryCollection';
-import Sector from './Sector';
-import Circle from './Circle';
-import Ellipse from './Ellipse';
-import Rectangle from './Rectangle';
 
 const types = {
     'Marker': Marker,
@@ -27,18 +22,16 @@ const types = {
 };
 
 /**
- * @classdesc
  * GeoJSON utilities
  * @class
  * @category geometry
- *  @memberOf maptalks
  * @name GeoJSON
  */
-export default {
+const GeoJSON = {
 
     /**
-     * Convert one or more GeoJSON objects to a geometry
-     * @param  {String|Object|Object[]} json - json objects or json string
+     * Convert one or more GeoJSON objects to geometry
+     * @param  {String|Object|Object[]} geoJSON - GeoJSON objects or GeoJSON string
      * @return {Geometry|Geometry[]} a geometry array when input is a FeatureCollection
      * @example
      * var collection = {
@@ -75,7 +68,7 @@ export default {
      *          }
      *      ]
      *  }
-     *  // a geometry array.
+     *  // A geometry array.
      *  var geometries = GeoJSON.toGeometry(collection);
      */
     toGeometry: function (geoJSON) {
@@ -110,7 +103,6 @@ export default {
         if (!json || isNil(json['type'])) {
             return null;
         }
-        var options = {};
 
         var type = json['type'];
         if (type === 'Feature') {
@@ -130,9 +122,9 @@ export default {
             //返回geometry数组
             var result = this.toGeometry(features);
             return result;
-        } else if (indexOfArray(type, ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon']) >= 0) {
+        } else if (['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon'].indexOf(type) >= 0) {
             var clazz = (type === 'Point' ? 'Marker' : type);
-            return new types[clazz](json['coordinates'], options);
+            return new types[clazz](json['coordinates']);
         } else if (type === 'GeometryCollection') {
             var geometries = json['geometries'];
             if (!isArrayHasData(geometries)) {
@@ -143,17 +135,10 @@ export default {
             for (var i = 0; i < size; i++) {
                 mGeos.push(this._convert(geometries[i]));
             }
-            return new GeometryCollection(mGeos, options);
-        } else if (type === 'Circle') {
-            return new Circle(json['coordinates'], json['radius'], options);
-        } else if (type === 'Ellipse') {
-            return new Ellipse(json['coordinates'], json['width'], json['height']);
-        } else if (type === 'Rectangle') {
-            return new Rectangle(json['coordinates'], json['width'], json['height'], options);
-        } else if (type === 'Sector') {
-            return new Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], options);
+            return new GeometryCollection(mGeos);
         }
         return null;
     }
 };
 
+export default GeoJSON;

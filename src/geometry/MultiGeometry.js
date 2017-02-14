@@ -4,10 +4,18 @@ import Coordinate from 'geo/Coordinate';
 
 /**
  * The parent class for MultiPoint, MultiLineString and MultiPolygon
- * @class
+ * @category geometry
+ * @abstract
  * @extends {GeometryCollection}
  */
-export default class MultiGeometry extends GeometryCollection {
+class MultiGeometry extends GeometryCollection {
+
+    /**
+     * @param  {Class} geoType      Type of the geometry
+     * @param  {String} type        type in String, e.g. "MultiPoint", "MultiLineString"
+     * @param  {Geometry[]} data    data
+     * @param  {Object} [options=null] configuration options
+     */
     constructor(geoType, type, data, options) {
         super(null, options);
         this.GeometryType = geoType;
@@ -82,3 +90,5 @@ export default class MultiGeometry extends GeometryCollection {
         };
     }
 }
+
+export default MultiGeometry;

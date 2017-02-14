@@ -8,13 +8,12 @@ import {
     isCssUrl,
     extractCssUrl,
     round,
-    getAlignPoint,
     computeDegree
 } from 'core/util';
 import { isGradient } from 'core/util/style';
 import { createEl } from 'core/util/dom';
 import Browser from 'core/Browser';
-import { getFont } from 'core/util/text';
+import { getFont, getAlignPoint } from 'core/util/strings';
 
 const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
@@ -668,6 +667,17 @@ const Canvas = {
             ctrlPts.push(points[i].x, points[i].y, xc, yc);
         }
         return ctrlPts;
+    },
+
+    drawCross(ctx, p, lineWidth, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.moveTo(p.x - 5, p.y);
+        ctx.lineTo(p.x + 5, p.y);
+        ctx.moveTo(p.x, p.y - 5);
+        ctx.lineTo(p.x, p.y + 5);
+        ctx.stroke();
     }
 };
 

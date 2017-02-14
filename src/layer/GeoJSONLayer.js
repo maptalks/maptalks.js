@@ -5,22 +5,16 @@ import VectorLayer from './VectorLayer';
 /**
  * @classdesc
  * A sub class of VectorLayer supports GeoJSON.
- * @class
  * @category layer
- * @extends {VectorLayer}
- * @param {String|Number} id        - layer's id
- * @param {Object}        json      - GeoJSON objects
- * @param {Object} [options=null]   - construct options defined in [GeoJSONLayer]{@link GeoJSONLayer#options}
+ * @extends VectorLayer
  */
-export default class GeoJSONLayer extends VectorLayer {
+class GeoJSONLayer extends VectorLayer {
 
     /**
      * Reproduce a GeoJSONLayer from layer's profile JSON.
      * @param  {Object} layerJSON - layer's profile JSON
      * @return {GeoJSONLayer}
-     * @static
      * @private
-     * @function
      */
     static fromJSON(profile) {
         if (!profile || profile['type'] !== 'GeoJSONLayer') {
@@ -33,6 +27,11 @@ export default class GeoJSONLayer extends VectorLayer {
         return layer;
     }
 
+    /**
+     * @param {String|Number} id        - layer's id
+     * @param {Object}        json      - GeoJSON objects
+     * @param {Object} [options=null]   - construct options defined in [GeoJSONLayer]{@link GeoJSONLayer#options}
+     */
     constructor(id, json, options) {
         if (json && !Array.isArray(json)) {
             if (!json['type']) {
@@ -93,3 +92,5 @@ export default class GeoJSONLayer extends VectorLayer {
 }
 
 GeoJSONLayer.registerJSONType('GeoJSONLayer');
+
+export default GeoJSONLayer;

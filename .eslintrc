@@ -9,7 +9,6 @@
   },
   "extends": "maptalks",
   "globals": {
-    "THREE": true
   },
   "rules": {
     "global-require": 0

@@ -16,9 +16,7 @@ const defaultOptions = {
 
 /**
  * Mixin of the context menu methods.
- * @mixin
- * @memberOf ui
- * @name Menu.Mixin
+ * @mixin ui.Menuable
  */
 const Menuable = {
     /**
@@ -36,7 +34,8 @@ const Menuable = {
      *     {'item': 'Edit', 'click': function() {alert('Edit Clicked!')}},
      *     {'item': 'About', 'click': function() {alert('About Clicked!')}}
      *    ]
-     *});
+     * });
+     * @function ui.Menuable.setMenu
      */
     setMenu(options) {
         this._menuOptions = options;
@@ -53,6 +52,7 @@ const Menuable = {
      * Open the context menu, default on the center of the geometry or map.
      * @param {Coordinate} [coordinate=null] - coordinate to open the context menu
      * @return {*} this
+     * @function ui.Menuable.openMenu
      */
     openMenu(coordinate) {
         var map = (this instanceof Map) ? this : this.getMap();
@@ -74,6 +74,7 @@ const Menuable = {
      * Set menu items to the context menu
      * @param {Object[]} items - menu items
      * @return {*} this
+     * @function ui.Menuable.setMenuItems
      */
     setMenuItems(items) {
         if (!this._menuOptions) {
@@ -90,6 +91,7 @@ const Menuable = {
     /**
      * Get the context menu items
      * @return {Object[]}
+     * @function ui.Menuable.getMenuItems
      */
     getMenuItems() {
         if (this._menu) {
@@ -103,6 +105,7 @@ const Menuable = {
     /**
      * Close the contexnt menu
      * @return {*} this
+     * @function ui.Menuable.closeMenu
      */
     closeMenu() {
         if (this._menu) {
@@ -114,6 +117,7 @@ const Menuable = {
     /**
      * Remove the context menu
      * @return {*} this
+     * @function ui.Menuable.removeMenu
      */
     removeMenu() {
         this.off('contextmenu', this._defaultOpenMenu, this);
@@ -139,8 +143,8 @@ const Menuable = {
     },
 
     /**
-     * 应用没有注册contextmenu事件时, 默认在contextmenu事件时打开右键菜单
-     * 如果注册过contextmenu事件, 则不做任何操作
+     * If contextmenu is not listened, open the menu in default.<br>
+     * Otherwise, do nothing here.
      * @param  {Object} param - event parameter
      * @return {Boolean} true | false to stop event propagation
      * @private

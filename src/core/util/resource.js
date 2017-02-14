@@ -5,6 +5,13 @@ import { isURL, extractCssUrl } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from 'core/mapbox';
 import { Symbolizer } from 'renderer/geometry/symbolizers';
 
+
+/**
+ * Translate symbol properties to SVG properties
+ * @param  {Object} s - object with symbol properties
+ * @return {Object}   object with SVG properties
+ * @memberOf Util
+ */
 export function translateToSVGStyles(s) {
     var result = {
         'stroke': {
@@ -32,6 +39,12 @@ export function translateToSVGStyles(s) {
     return result;
 }
 
+/**
+ * Get SVG Base64 String from a marker symbol with (markerType : path)
+ * @param  {Object} symbol - symbol with markerType of path
+ * @return {String}        SVG Base64 String
+ * @memberOf Util
+ */
 export function getMarkerPathBase64(symbol) {
     if (!symbol['markerPath']) {
         return null;
@@ -107,6 +120,7 @@ export function getMarkerPathBase64(symbol) {
  * @param  {Object} symbol      - symbol
  * @param  {Boolean} toAbsolute - whether convert url to aboslute
  * @return {String[]}           - resource urls
+ * @memberOf Util
  */
 export function getExternalResources(symbol, toAbsolute) {
     if (!symbol) {
@@ -170,6 +184,7 @@ export function getExternalResources(symbol, toAbsolute) {
  * Convert symbol's resources' urls from relative path to an absolute path.
  * @param  {Object} symbol
  * @private
+ * @memberOf Util
  */
 export function convertResourceUrl(symbol) {
     if (!symbol) {

@@ -7,6 +7,8 @@ import Polygon from './Polygon';
 /**
  * @property {Object} options -
  * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the sector to a polygon.
+ * @memberOf Sector
+ * @instance
  */
 const options = {
     'numberOfShellPoints': 60
@@ -14,23 +16,16 @@ const options = {
 
 /**
  * @classdesc
- * Represents a sector Geometry, a child class of [Polygon]{@link Polygon}. <br>
- *     It means it shares all the methods defined in [Polygon]{@link Polygon} besides some overrided ones.
- * @class
+ * Represents a sector Geometry.
  * @category geometry
  * @extends Polygon
- * @mixes Geometry.Center
- * @param {Coordinate} center - center of the sector
- * @param {Number} radius           - radius of the sector
- * @param {Number} startAngle       - start angle of the sector
- * @param {Number} endAngle         - end angle of the sector
- * @param {Object} [options=null]   - construct options defined in [Sector]{@link Sector#options}
+ * @mixes CenterMixin
  * @example
  * var sector = new Sector([100, 0], 1000, 30, 120, {
  *     id : 'sector0'
  * });
  */
-export default class Sector extends CenterMixin(Polygon) {
+class Sector extends CenterMixin(Polygon) {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -39,6 +34,13 @@ export default class Sector extends CenterMixin(Polygon) {
         return sector;
     }
 
+    /**
+     * @param {Coordinate} center - center of the sector
+     * @param {Number} radius           - radius of the sector
+     * @param {Number} startAngle       - start angle of the sector
+     * @param {Number} endAngle         - end angle of the sector
+     * @param {Object} [options=null]   - construct options defined in [Sector]{@link Sector#options}
+     */
     constructor(coordinates, radius, startAngle, endAngle, opts) {
         super(null, opts);
         if (coordinates) {
@@ -221,3 +223,5 @@ export default class Sector extends CenterMixin(Polygon) {
 Sector.mergeOptions(options);
 
 Sector.registerJSONType('Sector');
+
+export default Sector;

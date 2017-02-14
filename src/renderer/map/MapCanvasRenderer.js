@@ -309,14 +309,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             if (isFunction(cross)) {
                 cross(ctx, p);
             } else {
-                ctx.strokeStyle = '#ff0000';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(p.x - 5, p.y);
-                ctx.lineTo(p.x + 5, p.y);
-                ctx.moveTo(p.x, p.y - 5);
-                ctx.lineTo(p.x, p.y + 5);
-                ctx.stroke();
+                Canvas2D.drawCross(this.context, p, 2, '#f00');
             }
         }
     }
@@ -422,14 +415,14 @@ export default class MapCanvasRenderer extends MapRenderer {
                     if (map._isBusy() || map._moving || !map.options['hitDetect']) {
                         return;
                     }
-                    var vp = param['point2d'];
-                    var layers = map._getLayers();
+                    const point = param['point2d'];
+                    const layers = map._getLayers();
                     var hit = false,
                         cursor;
-                    for (var i = layers.length - 1; i >= 0; i--) {
-                        var layer = layers[i];
+                    for (let i = layers.length - 1; i >= 0; i--) {
+                        let layer = layers[i];
                         if (layer._getRenderer() && layer._getRenderer().hitDetect) {
-                            if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(vp)) {
+                            if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(point)) {
                                 cursor = layer.options['cursor'];
                                 hit = true;
                                 break;

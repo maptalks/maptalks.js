@@ -1,31 +1,37 @@
 import { now } from 'core/util';
 import CanvasLayer from './CanvasLayer';
 
+/**
+ * @property {Object} options                  - configuration options
+ * @property {Boolean} [options.animation=true]       - if the layer is an animated layer
+ * @memberOf ParticleLayer
+ * @instance
+ */
 const options = {
-    'animation': true,
-    'fps': 70
+    'animation': true
 };
 
 /**
- * ParticleLayer provides some interface methods to render particles. <br>
- * You can use it directly, but can't ser/dser a ParticleLayer with json in this way. <br>
- * It is more recommended to extend it with a subclass.
  * @classdesc
- * A layer to draw particles.
+ * A layer to draw particles. <br>
+ * ParticleLayer provides some interface methods to render particles. <br>
+ * You can use it directly, but can't serialize/dserialize a ParticleLayer with JSON in this way. <br>
+ * It is more recommended to extend it with a subclass.
  * @example
- *  var layer = new ParticleLayer('particle');
+ * import { ParticleLayer } from 'maptalks';
+ * var layer = new ParticleLayer('particle');
  *
- *  layer.getParticles = function (t) {
- *      return particles[t];
- *  };
- *  layer.addTo(map);
- * @class
+ * layer.getParticles = function (t) {
+ *     return particles[t];
+ * };
+ * layer.addTo(map);
  * @category layer
- * @extends {Layer}
- * @param {String|Number} id - layer's id
- * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
+ * @extends CanvasLayer
+ * @param {String} id - layer's id
+ * @param {Object} [options=null] - options defined in [options]{@link ParticleLayer#options}
  */
-export default class ParticleLayer extends CanvasLayer {
+class ParticleLayer extends CanvasLayer {
+
     /**
      * Interface method to get particles's position at time t.
      * @param  {Number} t - current time in milliseconds
@@ -64,3 +70,5 @@ export default class ParticleLayer extends CanvasLayer {
 }
 
 ParticleLayer.mergeOptions(options);
+
+export default ParticleLayer;

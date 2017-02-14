@@ -1,6 +1,7 @@
 const minimist = require('minimist'),
     path = require('path'),
     gulp = require('gulp'),
+    del = require('del'),
     commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
@@ -156,6 +157,30 @@ gulp.task('reload', ['scripts'], () => {
 });
 
 gulp.task('doc', () => {
+    var sources = require('./doc/files.js');
+    del([
+        'doc/api/**/*'
+    ]);
+    var conf = require('./jsdoc.json');
+    var cmd = 'jsdoc';
+    var args = ['-c', 'jsdoc.json'].concat(['API.md']).concat(sources);
+    var exec = require('child_process').exec;
+    exec([cmd].concat(args).join(' '), (error, stdout, stderr) => {
+        if (error) {
+            console.error('JSDoc returned with error: ' + stderr ? stderr : '');
+            return;
+        }
+        if (stderr) {
+            console.error(stderr);
+        }
+        if (stdout) { console.log(stdout); }
+        console.log('Documented ' + sources.length + ' files in:');
+        console.log(conf.opts.destination);
+    });
+});
+
+gulp.task('editdoc', ['doc'], () => {
+    gulp.watch(['src/**/*.js'], ['doc']);
 });
 
 gulp.task('default', ['connect']);

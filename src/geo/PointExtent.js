@@ -5,13 +5,8 @@ import Size from './Size';
 /**
  * Represent a bounding box on 2d surface , a rectangular area with minimum and maximum points. <br>
  * There are serveral ways to create a PointExtent:
- * @class
  * @category basic types
- * @param {Number} x1   - x of point 1
- * @param {Number} y1   - y of point 1
- * @param {Number} x2   - x of point 2
- * @param {Number} y2   - y of point 2
- * @extends {Extent}
+ * @extends Extent
  * @example
  * //with 4 numbers
  * var extent = new PointExtent(100, 10, 120, 20);
@@ -26,7 +21,14 @@ import Size from './Size';
  * //with another extent
  * var extent2 = new PointExtent(extent1);
  */
-export default class PointExtent extends Extent {
+class PointExtent extends Extent {
+
+    /**
+     * @param {Number} x1   - x of point 1
+     * @param {Number} y1   - y of point 1
+     * @param {Number} x2   - x of point 2
+     * @param {Number} y2   - y of point 2
+     */
     constructor(p1, p2, p3, p4) {
         super(p1, p2, p3, p4);
         this._clazz = Point;
@@ -40,3 +42,5 @@ export default class PointExtent extends Extent {
         return new Size(this.getWidth(), this.getHeight());
     }
 }
+
+export default PointExtent;
