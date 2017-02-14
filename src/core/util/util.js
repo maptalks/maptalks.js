@@ -313,7 +313,7 @@ export function isURL(url) {
         return false;
     }
     var head = url.slice(0, 6);
-    if (head === 'http:/' || head === 'https:') {
+    if (head === 'http:/' || head === 'https:' || head === 'file:/') {
         return true;
     }
     return false;
