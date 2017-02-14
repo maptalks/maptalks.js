@@ -54,6 +54,21 @@ class CanvasLayer extends Layer {
      */
     draw() {}
 
+    /**
+     * Redraw the layer
+     * @return {CanvasLayer} this
+     */
+    redraw() {
+        if (this._getRenderer()) {
+            this._getRenderer().draw();
+        }
+        return this;
+    }
+
+    /**
+     * Start animation
+     * @return {CanvasLayer} this
+     */
     play() {
         if (this._getRenderer()) {
             this._getRenderer().startAnim();
@@ -61,6 +76,10 @@ class CanvasLayer extends Layer {
         return this;
     }
 
+    /**
+     * Pause the animation
+     * @return {CanvasLayer} this
+     */
     pause() {
         if (this._getRenderer()) {
             this._getRenderer().pauseAnim();
@@ -68,6 +87,10 @@ class CanvasLayer extends Layer {
         return this;
     }
 
+    /**
+     * If the animation is playing
+     * @return {Boolean}
+     */
     isPlaying() {
         if (this._getRenderer()) {
             return this._getRenderer().isPlaying();
@@ -75,6 +98,10 @@ class CanvasLayer extends Layer {
         return false;
     }
 
+    /**
+     * Clear layer's canvas
+     * @return {CanvasLayer} this
+     */
     clearCanvas() {
         if (this._getRenderer()) {
             this._getRenderer().clearCanvas();
@@ -104,6 +131,10 @@ class CanvasLayer extends Layer {
         return this;
     }
 
+    /**
+     * Callback function when layer's canvas is created. <br>
+     * Override it to do anything needed.
+     */
     onCanvasCreate() {
         return this;
     }
@@ -138,8 +169,14 @@ class CanvasLayer extends Layer {
      */
     onResize() {}
 
-    doubleBuffer(ctx) {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    /**
+     * The callback function to double buffer. <br>
+     * In default, it just draws and return, and you can override it if you need to process the canvas image before drawn.
+     * @param  {CanvasRenderingContext2D} bufferContext CanvasRenderingContext2D of double buffer of the layer canvas.
+     * @param  {CanvasRenderingContext2D} context CanvasRenderingContext2D of the layer canvas.
+     */
+    doubleBuffer(bufferContext/*, context*/) {
+        bufferContext.clearRect(0, 0, bufferContext.canvas.width, bufferContext.canvas.height);
         return this;
     }
 }
