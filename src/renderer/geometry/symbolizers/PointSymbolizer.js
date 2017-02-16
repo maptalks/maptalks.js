@@ -3,6 +3,9 @@ import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
+// for point precise
+const delta = 1E-6;
+
 /**
  * @classdesc
  * Base symbolizer class for all the point type symbol styles.
@@ -57,7 +60,7 @@ export default class PointSymbolizer extends CanvasSymbolizer {
         var dxdy = this.getDxDy(),
             layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest);
         var containerPoints = mapArrayRecursively(points, point =>
-            map._pointToContainerPoint(point, maxZoom)._add(dxdy)._substract(layerPoint)
+            map._pointToContainerPoint(point, maxZoom)._add(dxdy)._substract(layerPoint)._substract(delta, delta)._round()
         );
         return containerPoints;
     }
