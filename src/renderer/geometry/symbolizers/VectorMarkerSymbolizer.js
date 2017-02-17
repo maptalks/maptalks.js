@@ -5,7 +5,7 @@ import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
-const padding = [2, 2];
+const padding = [4, 4];
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
@@ -133,20 +133,20 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _getAnchor() {
-        var markerType = this.style['markerType'].toLowerCase(),
-            lineWidth = /*this.strokeAndFill['lineWidth'] ? this.strokeAndFill['lineWidth'] :*/ 0,
+        const markerType = this.style['markerType'].toLowerCase(),
+            lineWidth = this.strokeAndFill['lineWidth'] ? this.strokeAndFill['lineWidth'] : 0,
             shadow = this.geometry.options['shadowBlur'],
             w = this.style['markerWidth'],
             h = this.style['markerHeight'];
         if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
-            return new Point(w / 2 + lineWidth / 2 + shadow + padding[0] / 2, h + lineWidth / 2 + shadow + padding[1]);
+            return new Point((w + lineWidth + padding[0]) / 2 + shadow, h + lineWidth / 2 + shadow + padding[1]);
         } else {
-            return new Point(w / 2 + lineWidth / 2 + shadow + padding[0] / 2, h / 2 + lineWidth / 2 + shadow + padding[1] / 2);
+            return new Point((w + lineWidth + padding[0]) / 2 + shadow, h / 2 + lineWidth / 2 + shadow + padding[1] / 2);
         }
     }
 
     _getGraidentExtent(points) {
-        var e = new PointExtent(),
+        const e = new PointExtent(),
             m = this.getMarkerExtent();
         if (Array.isArray(points)) {
             for (var i = points.length - 1; i >= 0; i--) {

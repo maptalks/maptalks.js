@@ -51,7 +51,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return;
         }
 
-        this._drawGeos();
+        const maskExtent2D = this.prepareCanvas();
+
+        this._drawGeos(maskExtent2D);
 
         this.completeRender();
     }
@@ -83,22 +85,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return (this._hasPointSymbolizer && count > 0 && count <= map.options['pointThresholdOfZoomAnimation']);
     }
 
-    _drawGeos() {
-        var map = this.getMap();
-        if (!map) {
-            return;
-        }
-        var layer = this.layer;
-        if (layer.isEmpty()) {
-            this.fireLoadedEvent();
-            return;
-        }
-        if (!layer.isVisible()) {
-            this.fireLoadedEvent();
-            return;
-        }
-
-        var maskExtent2D = this.prepareCanvas();
+    _drawGeos(maskExtent2D) {
         var extent2D = this._extent2D;
         if (maskExtent2D) {
             if (!maskExtent2D.intersects(extent2D)) {
