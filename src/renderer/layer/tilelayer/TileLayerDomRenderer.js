@@ -38,6 +38,9 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     getMap() {
+        if (!this.layer) {
+            return null;
+        }
         return this.layer.getMap();
     }
 
