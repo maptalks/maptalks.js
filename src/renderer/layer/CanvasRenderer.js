@@ -169,10 +169,10 @@ class CanvasRenderer extends Class {
      * @return {HTMLCanvasElement}
      */
     getCanvasImage() {
-        if (this._renderZoom !== this.getMap().getZoom() || !this.canvas) {
+        if (this._renderZoom !== this.getMap().getZoom() || !this.canvas || !this._extent2D) {
             return null;
         }
-        if ((this.layer.isEmpty && this.layer.isEmpty()) || !this._extent2D) {
+        if (this.layer.isEmpty && this.layer.isEmpty()) {
             return null;
         }
         if (this.isBlank && this.isBlank()) {
