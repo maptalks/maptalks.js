@@ -266,6 +266,16 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (layer.options['dx'] || layer.options['dy']) {
             point._add(layer.options['dx'], layer.options['dy']);
         }
+        if (layer.options['debugOutline']) {
+            this.context.strokeStyle = '#0f0';
+            this.context.fillStyle = '#0f0';
+            this.context.lineWidth = 10;
+            Canvas2D.rectangle(ctx, point, layerImage.size, 1, 0);
+            ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width + ',' + canvasImage.height].join(' '),
+                point.x + 18, point.y + 18);
+        }
+        // console.log(layer.getId(), point);
+
         ctx.drawImage(canvasImage, point.x, point.y);
         if (layerImage['transform']) {
             ctx.restore();
@@ -361,12 +371,12 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _checkSize() {
         cancelAnimFrame(this._resizeFrame);
-        if (this.map._zooming || this.map._moving || this.map._panAnimating) {
+        if (this.map.isZooming() || this.map.isMoving() || this.map._panAnimating) {
             return;
         }
         this._resizeFrame = requestAnimFrame(
             () => {
-                if (this.map._moving || this.map._isBusy()) {
+                if (this.map.isMoving() || this.map.isZooming()) {
                     return;
                 }
                 this.map.checkSize();
@@ -405,14 +415,14 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
         if (!Browser.mobile && Browser.canvas) {
             this._onMapMouseMove = function (param) {
-                if (map._isBusy() || map._moving || !map.options['hitDetect']) {
+                if (map.isZooming() || map.isMoving() || !map.options['hitDetect']) {
                     return;
                 }
                 if (this._hitDetectFrame) {
                     cancelAnimFrame(this._hitDetectFrame);
                 }
                 this._hitDetectFrame = requestAnimFrame(function () {
-                    if (map._isBusy() || map._moving || !map.options['hitDetect']) {
+                    if (map.isZooming() || map.isMoving() || !map.options['hitDetect']) {
                         return;
                     }
                     const point = param['point2d'];

@@ -33,7 +33,7 @@ class MapGeometryEventsHandler extends Handler {
             }
             return false;
         });
-        if (map._isBusy() || map._moving || !vectorLayers || vectorLayers.length === 0) {
+        if (map.isZooming() || map.isMoving() || !vectorLayers || vectorLayers.length === 0) {
             return;
         }
         var eventType = domEvent.type;

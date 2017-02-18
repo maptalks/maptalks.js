@@ -651,6 +651,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Whether the map is zooming
+     * @return {Boolean}
+     */
+    isZooming() {
+        return !!this._zooming;
+    }
+
+    /**
      * Sets the center and zoom at the same time.
      * @param {Coordinate} center
      * @param {Number} zoom
@@ -1310,6 +1318,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Whether the map is moving
+     * @return {Boolean}
+     */
+    isMoving() {
+        return !!this._moving;
+    }
+
+    /**
      * The callback function when move started
      * @private
      * @fires Map#movestart
@@ -1373,16 +1389,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     //-----------------------------------------------------------
-
-    /**
-     * whether map is busy
-     * @private
-     * @return {Boolean}
-     */
-    _isBusy() {
-        return this._zooming/* || this._moving*/;
-    }
-
     /**
      * try to change cursor when map is not setCursored
      * @private

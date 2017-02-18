@@ -17,7 +17,7 @@ class MapScrollWheelZoomHandler extends Handler {
         var container = map._containerDOM;
         preventDefault(evt);
         stopPropagation(evt);
-        if (map._zooming) { return false; }
+        if (map.isZooming()) { return false; }
         var levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             levelValue *= -1;

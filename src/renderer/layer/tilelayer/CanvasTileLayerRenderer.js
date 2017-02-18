@@ -13,12 +13,14 @@ export default class CanvasTileLayerRenderer extends TileLayerCanvasRenderer {
         tileCanvas['layer'] = this.layer;
         tileCanvas[this.propertyOfTileId] = tileId;
         tileCanvas[this.propertyOfPointOnTile] = tile['point'];
-        tileCanvas[this.propertyOfTileZoom] = tile['zoom'];
+        tileCanvas[this.propertyOfTileZoom] = tile['z'];
         this.layer.drawTile(tileCanvas, {
             'url': tile['url'],
             'point': tile['point'],
             'center' : map.pointToCoordinate(tile['point'].add(tileSize['width'] / 2, tileSize['height'] / 2)),
-            'zoom': tile['zoom']
+            'z': tile['z'],
+            'x' : tile['x'],
+            'y' : tile['y']
         }, function (error) {
             if (error) {
                 onTileError.call(tileCanvas);

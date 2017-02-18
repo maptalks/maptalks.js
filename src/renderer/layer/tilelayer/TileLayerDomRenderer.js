@@ -264,7 +264,7 @@ export default class TileLayerDomRenderer extends Class {
 
     _pruneTiles(pruneLevels) {
         var map = this.getMap();
-        if (!map || map._moving) {
+        if (!map || map.isMoving()) {
             return;
         }
 
@@ -277,14 +277,14 @@ export default class TileLayerDomRenderer extends Class {
         }
 
         for (key in this._tiles) {
-            if (this._tiles[key].zoom === zoom && !this._tiles[key].current) {
+            if (this._tiles[key]['z'] === zoom && !this._tiles[key].current) {
                 this._removeTile(key);
             }
         }
 
         if (pruneLevels) {
             for (key in this._tiles) {
-                if (this._tiles[key].zoom !== zoom) {
+                if (this._tiles[key]['z'] !== zoom) {
                     this._removeTile(key);
                 }
             }
@@ -325,7 +325,7 @@ export default class TileLayerDomRenderer extends Class {
 
     _removeTilesAtZoom(zoom) {
         for (var key in this._tiles) {
-            if (+this._tiles[key]['zoom'] !== +zoom) {
+            if (+this._tiles[key]['z'] !== +zoom) {
                 continue;
             }
             this._removeTile(key);
