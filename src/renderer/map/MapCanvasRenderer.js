@@ -271,7 +271,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             this.context.fillStyle = '#0f0';
             this.context.lineWidth = 10;
             Canvas2D.rectangle(ctx, point, layerImage.size, 1, 0);
-            ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width +',' + canvasImage.height].join(' '),
+            ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width + ',' + canvasImage.height].join(' '),
                 point.x + 18, point.y + 18);
         }
         // console.log(layer.getId(), point);

@@ -10,12 +10,17 @@ import Renderable from 'renderer/Renderable';
  * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
  * @property {Boolean} [options.visible=true] - whether to display the layer.
  * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
- * @property {String}  [options.renderer=canvas] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ * @property {String}  [options.renderer=canvas] - renderer type, "canvas" in default.
+ * @property {Boolean}  [options.drawImmediate=false] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) <br>
+ *                                                    In default, for performance reason, layer will be drawn in a frame requested by RAF(RequestAnimationFrame).<br>
+ *                                                    Set drawImmediate to true to draw immediately.<br>
+ *                                                    This is necessary when layer's drawing is wrapped with another frame requested by RAF.
+ * @property {String}   [options.globalCompositeOperation=null] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.
+ * @property {Boolean}  [options.debugOutline=false]  - (Only for layer rendered with 2d canvas) An outline with debug information will be drawn with layer.
  * @memberOf Layer
  * @instance
  */
 var options = {
-    //最大最小可视范围, null表示不受限制
     'minZoom': null,
     'maxZoom': null,
     //图层是否可见
@@ -26,7 +31,8 @@ var options = {
     'globalCompositeOperation': null,
     'renderer': 'canvas',
     'dx': 0,
-    'dy': 0
+    'dy': 0,
+    'debugOutline' : false
 };
 
 /**
