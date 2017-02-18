@@ -271,7 +271,7 @@ describe('#Map', function () {
             });
             map.setZoom(6);
             map.setZoom(13);
-            expect(map.isZooming());
+            expect(map.isZooming()).to.be.ok();
             expect(map.getZoom()).to.be.eql(cur);
         });
 
