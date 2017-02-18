@@ -156,7 +156,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         tileImage.height = tileSize['height'];
         tileImage[this.propertyOfTileId] = tileId;
         tileImage[this.propertyOfPointOnTile] = tile['point'];
-        tileImage[this.propertyOfTileZoom] = tile['zoom'];
+        tileImage[this.propertyOfTileZoom] = tile['z'];
         tileImage.onload = onTileLoad;
         tileImage.onabort = onTileError;
         tileImage.onerror = onTileError;

@@ -98,6 +98,14 @@ class TileLayer extends Layer {
     }
 
     /**
+     * Get tile descriptors
+     * @return {Object[]} tile descriptors
+     */
+    getTiles() {
+        return this._getTiles();
+    }
+
+    /**
      * Clear the layer
      * @return {TileLayer} this
      */
@@ -227,7 +235,9 @@ class TileLayer extends Layer {
                         'url': tileUrl,
                         'point': new Point(center2D.x + tileSize['width'] * i, center2D.y + tileSize['height'] * j),
                         'id': tileId,
-                        'zoom': zoom
+                        'z': zoom,
+                        'x' : tileIndex['x'],
+                        'y' : tileIndex['y']
                     };
                 tiles.push(tileDesc);
                 fullExtent._combine(new PointExtent(
