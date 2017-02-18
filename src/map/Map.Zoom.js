@@ -5,8 +5,9 @@ import Point from 'geo/Point';
 import Map from './Map';
 
 Map.include(/** @lends Map.prototype */{
+
     _zoom(nextZoom, origin, startScale) {
-        if (!this.options['zoomable'] || this._zooming) { return; }
+        if (!this.options['zoomable'] || this.isZooming()) { return; }
         nextZoom = this._checkZoom(nextZoom);
         this.onZoomStart(nextZoom);
         this._frameZoom = this.getZoom();
@@ -18,7 +19,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _zoomAnimation(nextZoom, origin, startScale) {
-        if (!this.options['zoomable'] || this._zooming) { return; }
+        if (!this.options['zoomable'] || this.isZooming()) { return; }
 
         nextZoom = this._checkZoom(nextZoom);
         if (this.getZoom() === nextZoom) {

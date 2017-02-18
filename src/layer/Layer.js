@@ -302,7 +302,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         mask._bindLayer(this);
         this._mask = mask;
-        if (!this.getMap() || this.getMap()._isBusy()) {
+        if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
         if (this._getRenderer()) {
@@ -317,7 +317,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     removeMask() {
         delete this._mask;
-        if (!this.getMap() || this.getMap()._isBusy()) {
+        if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
         if (this._getRenderer()) {

@@ -29,7 +29,7 @@ export default class DebugSymbolizer extends PointSymbolizer {
             return;
         }
         var map = this.getMap();
-        if (!map || map._zooming) {
+        if (!map || map.isZooming()) {
             return;
         }
         Canvas.prepareCanvas(ctx, styles);

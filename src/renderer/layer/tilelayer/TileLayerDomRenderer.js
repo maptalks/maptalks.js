@@ -264,7 +264,7 @@ export default class TileLayerDomRenderer extends Class {
 
     _pruneTiles(pruneLevels) {
         var map = this.getMap();
-        if (!map || map._moving) {
+        if (!map || map.isMoving()) {
             return;
         }
 

@@ -12,6 +12,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     }
 
     draw() {
+        this.prepareCanvas();
         if (!this._predrawed) {
             this._drawContext = this.layer.prepareToDraw(this.context);
             if (!this._drawContext) {
@@ -22,7 +23,6 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
             }
             this._predrawed = true;
         }
-        this.prepareCanvas();
         this._drawLayer();
     }
 
@@ -35,9 +35,11 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
                 this.buffer.height = canvas.height;
             }
             const bufferContext = this.buffer.getContext('2d');
-            this.layer.doubleBuffer(bufferContext, this.context);
-            bufferContext.drawImage(canvas, 0, 0);
-            canvasImg.image = this.buffer;
+            const prevent = this.layer.doubleBuffer(bufferContext, this.context);
+            if (prevent === undefined || prevent) {
+                bufferContext.drawImage(canvas, 0, 0);
+                canvasImg.image = this.buffer;
+            }
         }
         return canvasImg;
     }

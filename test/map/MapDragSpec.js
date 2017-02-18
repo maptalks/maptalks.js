@@ -28,6 +28,7 @@ describe('#MapDrag', function () {
                 'clientX':point.x + i,
                 'clientY':point.y + i
             });
+            expect(map.isMoving()).to.be.ok();
         }
         happen.mouseup(document);
         maptalks.Util.requestAnimFrame = requestAnimFn;

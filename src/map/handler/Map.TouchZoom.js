@@ -15,7 +15,7 @@ class MapTouchZoomHandler extends Handler {
 
     _onTouchStart(event) {
         var map = this.target;
-        if (!event.touches || event.touches.length !== 2 || map._zooming) {
+        if (!event.touches || event.touches.length !== 2 || map.isZooming()) {
             return;
         }
         var container = map._containerDOM;
@@ -45,7 +45,7 @@ class MapTouchZoomHandler extends Handler {
 
     _onTouchMove(event) {
         var map = this.target;
-        if (!event.touches || event.touches.length !== 2 || !map._zooming) {
+        if (!event.touches || event.touches.length !== 2 || !map.isZooming()) {
             return;
         }
         var container = map._containerDOM,

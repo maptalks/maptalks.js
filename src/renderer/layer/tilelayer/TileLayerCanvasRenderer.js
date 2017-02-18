@@ -255,7 +255,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
      */
     requestMapToRender() {
         if (isNode) {
-            if (this.getMap() && !this.getMap()._isBusy()) {
+            if (this.getMap() && !this.getMap().isZooming()) {
                 this._mapRender.render();
             }
             return;
@@ -264,7 +264,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             cancelAnimFrame(this._mapRenderRequest);
         }
         this._mapRenderRequest = requestAnimFrame(() => {
-            if (this.getMap() && !this.getMap()._isBusy()) {
+            if (this.getMap() && !this.getMap().isZooming()) {
                 this._mapRender.render();
             }
         });
