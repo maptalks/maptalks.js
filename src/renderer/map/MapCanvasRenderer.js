@@ -263,9 +263,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                 canvasImage = context;
             }
         }
-        if (layer.options['dx'] || layer.options['dy']) {
-            point._add(layer.options['dx'], layer.options['dy']);
-        }
+
         if (layer.options['debugOutline']) {
             this.context.strokeStyle = '#0f0';
             this.context.fillStyle = '#0f0';

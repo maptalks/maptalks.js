@@ -30,8 +30,6 @@ var options = {
     // context.globalCompositeOperation, 'source-in' in default
     'globalCompositeOperation': null,
     'renderer': 'canvas',
-    'dx': 0,
-    'dy': 0,
     'debugOutline' : false
 };
 

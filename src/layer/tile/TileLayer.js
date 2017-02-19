@@ -165,10 +165,15 @@ class TileLayer extends Layer {
      * @private
      */
     _initTileConfig() {
-        var map = this.getMap();
+        const map = this.getMap();
         this._defaultTileConfig = new TileConfig(TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
         if (this.options['tileSystem']) {
             this._tileConfig = new TileConfig(this.options['tileSystem'], map.getFullExtent(), this.getTileSize());
+        }
+        //inherit baselayer's tileconfig
+        if (map && map.getBaseLayer() && map.getBaseLayer() !== this && map.getBaseLayer()._getTileConfig) {
+            const base = map.getBaseLayer()._getTileConfig();
+            this._tileConfig = new TileConfig(base.tileSystem, base.fullExtent, this.getTileSize());
         }
     }
 
@@ -176,16 +181,7 @@ class TileLayer extends Layer {
         if (!this._defaultTileConfig) {
             this._initTileConfig();
         }
-        var tileConfig = this._tileConfig;
-        if (tileConfig) {
-            return tileConfig;
-        }
-        var map = this.getMap();
-        //inherit baselayer's tileconfig
-        if (map && map.getBaseLayer() && map.getBaseLayer()._getTileConfig) {
-            return map.getBaseLayer()._getTileConfig();
-        }
-        return this._defaultTileConfig;
+        return this._tileConfig || this._defaultTileConfig;
     }
 
     _getTiles() {

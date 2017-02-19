@@ -55,10 +55,12 @@ export default class TileLayerRenderer extends CanvasRenderer {
             tileCache = this._tileCache,
             tileSize = layer.getTileSize();
 
+        // this._extent2D = tileGrid['fullExtent'];
+        // this._northWest = tileGrid['northWest'];
         if (!this.canvas) {
             this.createCanvas();
         }
-        this.resizeCanvas(tileGrid['fullExtent'].getSize());
+        // this.resizeCanvas(tileGrid['fullExtent'].getSize());
         var mask2DExtent = this.prepareCanvas();
         if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
             this.completeRender();
@@ -172,20 +174,22 @@ export default class TileLayerRenderer extends CanvasRenderer {
             return;
         }
         var tileSize = this.layer.getTileSize();
-        Canvas2D.image(this.context, tileImage,
+        const ctx = this.context;
+        Canvas2D.image(ctx, tileImage,
             Math.floor(point.x - this._northWest.x), Math.floor(point.y - this._northWest.y),
             tileSize['width'], tileSize['height']);
         if (this.layer.options['debug']) {
             var p = point.substract(this._northWest);
-            this.context.save();
-            this.context.strokeStyle = 'rgb(0,0,0)';
-            this.context.fillStyle = 'rgb(0,0,0)';
-            this.context.strokeWidth = 10;
-            this.context.font = '15px monospace';
-            Canvas2D.rectangle(this.context, p, tileSize, 1, 0);
+            ctx.save();
+            const color = '#0f0';
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.strokeWidth = 10;
+            ctx.font = '15px monospace';
+            Canvas2D.rectangle(ctx, p, tileSize, 1, 0);
             var xyz = tileImage[this.propertyOfTileId].split('__');
-            Canvas2D.fillText(this.context, 'x:' + xyz[1] + ',y:' + xyz[0] + ',z:' + xyz[2], p.add(10, 20), 'rgb(0,0,0)');
-            Canvas2D.drawCross(this.context, p.add(tileSize['width'] / 2, tileSize['height'] / 2), 2, '#000');
+            Canvas2D.fillText(ctx, 'x:' + xyz[1] + ', y:' + xyz[0] + ', z:' + xyz[2], p.add(10, 20), color);
+            Canvas2D.drawCross(ctx, p.add(tileSize['width'] / 2, tileSize['height'] / 2), 2, color);
             this.context.restore();
         }
         tileImage = null;
