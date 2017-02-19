@@ -5,8 +5,6 @@ import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
-const padding = [4, 4];
-
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     static test(symbol) {
@@ -23,6 +21,11 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         super(symbol, geometry, painter);
         this.style = this._defineStyle(this.translate());
         this.strokeAndFill = this._defineStyle(VectorMarkerSymbolizer.translateLineAndFill(this.style));
+        if ((this.style['markerWidth'] + this.strokeAndFill['lineWidth']) % 2 === 0) {
+            this.padding = [4, 4];
+        } else {
+            this.padding = [3, 3];
+        }
     }
 
     symbolize(ctx, resources) {
@@ -69,10 +72,10 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     _drawMarkersWithCache(ctx, cookedPoints, resources) {
         var stamp = this._stampSymbol(),
-            lineWidth = this.strokeAndFill['lineWidth'] ? this.strokeAndFill['lineWidth'] : 0,
+            lineWidth = this.strokeAndFill['lineWidth'],
             shadow = this.geometry.options['shadowBlur'],
-            w = this.style['markerWidth'] + lineWidth + 2 * shadow + padding[0],
-            h = this.style['markerHeight'] + lineWidth + 2 * shadow + padding[1];
+            w = this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0],
+            h = this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1];
         var image = resources.getImage(stamp);
         if (!image) {
             image = this._createMarkerImage(ctx, resources);
@@ -95,10 +98,10 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     _createMarkerImage(ctx, resources) {
         var canvasClass = ctx.canvas.constructor,
-            lineWidth = this.strokeAndFill['lineWidth'] ? this.strokeAndFill['lineWidth'] : 0,
+            lineWidth = this.strokeAndFill['lineWidth'],
             shadow = this.geometry.options['shadowBlur'],
-            w = this.style['markerWidth'] + lineWidth + 2 * shadow + padding[0],
-            h = this.style['markerHeight'] + lineWidth + 2 * shadow + padding[1],
+            w = this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0],
+            h = this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1],
             canvas = Canvas.createCanvas(w, h, canvasClass),
             point = this._getAnchor();
         var context = canvas.getContext('2d');
@@ -134,14 +137,14 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     _getAnchor() {
         const markerType = this.style['markerType'].toLowerCase(),
-            lineWidth = this.strokeAndFill['lineWidth'] ? this.strokeAndFill['lineWidth'] : 0,
+            lineWidth = this.strokeAndFill['lineWidth'],
             shadow = this.geometry.options['shadowBlur'],
             w = this.style['markerWidth'],
             h = this.style['markerHeight'];
         if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
-            return new Point((w + lineWidth + padding[0]) / 2 + shadow, h + lineWidth / 2 + shadow + padding[1]);
+            return new Point((w + lineWidth + this.padding[0]) / 2 + shadow, h + lineWidth / 2 + shadow + this.padding[1]);
         } else {
-            return new Point((w + lineWidth + padding[0]) / 2 + shadow, h / 2 + lineWidth / 2 + shadow + padding[1] / 2);
+            return new Point((w + lineWidth + this.padding[0]) / 2 + shadow, h / 2 + lineWidth / 2 + shadow + this.padding[1] / 2);
         }
     }
 
