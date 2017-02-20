@@ -20,6 +20,7 @@ import Geometry from 'geometry/Geometry';
  * @property {Number}  [options.dx=0]     - pixel offset on x axis
  * @property {Number}  [options.dy=0]     - pixel offset on y axis
  * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened UI.
+ * @property {Boolean} [options.autoPanDuration=600]    - duration for auto panning animation.
  * @property {Boolean} [options.single=true]    - whether the UI is a global single one, only one UI will be shown at the same time if set to true.
  * @property {Boolean} [options.animation=null]         - fade | scale | fade,scale, add animation effect when showing and hiding.
  * @property {Number}  [options.animationDuration=300]  - animation duration, in milliseconds.
@@ -32,6 +33,7 @@ const options = {
     'dx': 0,
     'dy': 0,
     'autoPan': false,
+    'autoPanDuration' : 600,
     'single': true,
     'animation': 'scale',
     'animationOnHide': true,
@@ -388,7 +390,7 @@ class UIComponent extends Eventable(Class) {
             top = (mapHeight - containerPoint.y - clientHeight) - 30;
         }
         if (top !== 0 || left !== 0) {
-            map._panAnimation(new Point(left, top), 600);
+            map._panAnimation(new Point(left, top), this.options['autoPanDuration']);
         }
     }
 

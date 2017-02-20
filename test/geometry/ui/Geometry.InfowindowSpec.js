@@ -224,7 +224,8 @@ describe('#Geometry.InfoWindow', function () {
                 content: 'content',
                 animation : 'fade,scale',
                 animationOnHide : true,
-                animationDuration : 50
+                animationDuration : 50,
+                autoPan : false
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());
@@ -251,6 +252,97 @@ describe('#Geometry.InfoWindow', function () {
                     done();
                 }, options.animationDuration + 2);
             }, options.animationDuration + 2);
+        });
+
+        it('autoPan', function (done) {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : false,
+                autoPan : true,
+                autoPanDuration : 100,
+            };
+            var infoWindow = new maptalks.ui.InfoWindow(options);
+            var center = map.getCenter();
+            var geo = new maptalks.Marker(map.getExtent().getMin());
+            layer.addGeometry(geo);
+
+            infoWindow.addTo(geo);
+            infoWindow.show();
+
+            setTimeout(function () {
+                expect(center.toArray()).not.to.be.eql(map.getCenter().toArray());
+                done();
+            }, infoWindow.options['autoPanDuration'] + 1);
+        });
+
+        it('disable autoPan', function (done) {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : false,
+                autoPan : false,
+                autoPanDuration : 100,
+            };
+            var infoWindow = new maptalks.ui.InfoWindow(options);
+            var center = map.getCenter();
+            var geo = new maptalks.Marker(map.getExtent().getMin());
+            layer.addGeometry(geo);
+
+            infoWindow.addTo(geo);
+            infoWindow.show();
+
+            setTimeout(function () {
+                expect(center.toArray()).to.be.eql(map.getCenter().toArray());
+                done();
+            }, infoWindow.options['autoPanDuration'] + 1);
+        });
+
+        it('single mode', function () {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : false,
+                autoPan : false,
+                autoPanDuration : 100,
+            };
+            var infoWindow = new maptalks.ui.InfoWindow(options);
+            var center = map.getCenter();
+            var geo = new maptalks.Marker(map.getExtent().getMin());
+
+            var infoWindow2 = new maptalks.ui.InfoWindow(options);
+            var geo2 = new maptalks.Marker(map.getExtent().getMin());
+
+            layer.addGeometry(geo, geo2);
+
+            infoWindow.addTo(geo).show();
+            infoWindow2.addTo(geo2).show();
+
+            expect(map._panels['ui'].children.length).to.be.eql(1);
+        });
+
+        it('disable single mode', function () {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : false,
+                autoPan : false,
+                autoPanDuration : 100,
+                single : false
+            };
+            var infoWindow = new maptalks.ui.InfoWindow(options);
+            var center = map.getCenter();
+            var geo = new maptalks.Marker(map.getExtent().getMin());
+
+            var infoWindow2 = new maptalks.ui.InfoWindow(options);
+            var geo2 = new maptalks.Marker(map.getExtent().getMin());
+
+            layer.addGeometry(geo, geo2);
+
+            infoWindow.addTo(geo).show();
+            infoWindow2.addTo(geo2).show();
+
+            expect(map._panels['ui'].children.length).to.be.eql(2);
         });
     });
 
