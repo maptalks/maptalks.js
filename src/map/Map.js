@@ -367,6 +367,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Reset map's cursor style.
+     * @return {Map} this
+     * @example
+     * map.resetCursor();
+     */
+    resetCursor() {
+        return this.setCursor(null);
+    }
+
+    /**
      * Get center of the map.
      * @return {Coordinate}
      */
