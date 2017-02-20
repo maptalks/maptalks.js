@@ -223,25 +223,31 @@ describe('#Geometry.InfoWindow', function () {
                 title: 'title',
                 content: 'content',
                 animation : 'fade,scale',
-                animationDuration : 100
+                animationDuration : 50
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());
             layer.addGeometry(geo);
 
             infoWindow.addTo(geo);
-            infoWindow.show(geo.getCenter());
-            expect(infoWindow.getDOM().style.opacity).to.be.eql(1);
-            expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
+            infoWindow.show();
+            expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
+            expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
 
-            infoWindow.hide();
-            //hide animations
             setTimeout(function () {
-                expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
-                expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
-                expect(infoWindow.isVisible()).not.to.be.ok();
-                done();
-            }, options.animationDuration + 1);
+                //show animations
+                expect(infoWindow.getDOM().style.opacity).to.be.eql(1);
+                expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
+                expect(infoWindow.isVisible()).to.be.ok();
+                infoWindow.hide();
+                setTimeout(function () {
+                    //hide animations
+                    expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
+                    expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
+                    expect(infoWindow.isVisible()).not.to.be.ok();
+                    done();
+                }, options.animationDuration + 2);
+            }, options.animationDuration + 2);
         });
     });
 
