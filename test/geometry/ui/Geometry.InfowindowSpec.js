@@ -240,6 +240,8 @@ describe('#Geometry.InfoWindow', function () {
                 expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
                 expect(infoWindow.isVisible()).to.be.ok();
                 infoWindow.hide();
+                expect(infoWindow.getDOM().style.opacity).to.be.eql(1);
+                expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
                 setTimeout(function () {
                     //hide animations
                     expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
