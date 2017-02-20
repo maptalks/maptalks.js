@@ -207,11 +207,7 @@ class UIComponent extends Eventable(Class) {
                     dom.style[TRANSFORM] = 'scale(1)';
                 }
             };
-            if (this.options['animationDelay']) {
-                setTimeout(animFn, this.options['animationDelay']);
-            } else {
-                animFn();
-            }
+            setTimeout(animFn, this.options['animationDelay'] || 1);
         }
 
         this.fire('showend');
@@ -353,7 +349,7 @@ class UIComponent extends Eventable(Class) {
         }
         if (anim.scale) {
             transition = transition ? transition + ',' : '';
-            transition += 'transform ' + this.options['animationDuration'] + 'ms';
+            transition += TRANSFORM + ' ' + this.options['animationDuration'] + 'ms';
         }
         anim.transition = transition;
         anim.anim = (transition !== null);
