@@ -84,8 +84,7 @@ describe('#Map', function () {
         it('coordinateToContainerPoint', function () {
             var point = map.coordinateToContainerPoint({ x: 1, y: 1 });
 
-            expect(point).to.be.a(maptalks.Point);
-        });
+            expect(point).to.be.a(maptalks.Point);        });
 
         it('containerPointToCoordinate', function () {
             var coord = map.containerPointToCoordinate(new maptalks.Point(0, 0));
@@ -607,5 +606,17 @@ describe('#Map', function () {
         map.addLayer([tilelayer, layer]);
 
 
+    });
+
+    it('set Cursor Style', function () {
+        map.setCursor('move');
+        expect(map.getMainPanel().style.cursor).to.be.eql('move');
+    });
+
+    it('reset cursor', function () {
+        map.setCursor('move');
+        map.resetCursor();
+
+        expect(map.getMainPanel().style.cursor).to.be.eql('default');
     });
 });
