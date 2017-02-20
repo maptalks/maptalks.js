@@ -190,7 +190,8 @@ export default class MapCanvasRenderer extends MapRenderer {
         const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;', true);
         const front = createContainer('front', 'maptalks-front', 'position:absolute;top:0px;left:0px;will-change:transform;', true);
         const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
-        const ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;', true);
+        // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
+        const ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;z-index:10000;', true);
         const back = createContainer('back', 'maptalks-back', 'position:absolute;left:0px;top:0px;will-change:transform;');
         const backLayer = createContainer('backLayer', 'maptalks-back-layer', 'position:absolute;left:0px;top:0px;');
         const canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
@@ -201,8 +202,8 @@ export default class MapCanvasRenderer extends MapRenderer {
         mapAllLayers.appendChild(back);
         mapAllLayers.appendChild(canvasContainer);
         front.appendChild(frontLayer);
-        front.appendChild(ui);
         mapAllLayers.appendChild(front);
+        front.appendChild(ui);
 
         mapWrapper.appendChild(mapAllLayers);
         mapWrapper.appendChild(control);
