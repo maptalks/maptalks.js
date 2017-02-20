@@ -84,7 +84,8 @@ describe('#Map', function () {
         it('coordinateToContainerPoint', function () {
             var point = map.coordinateToContainerPoint({ x: 1, y: 1 });
 
-            expect(point).to.be.a(maptalks.Point);        });
+            expect(point).to.be.a(maptalks.Point);
+        });
 
         it('containerPointToCoordinate', function () {
             var coord = map.containerPointToCoordinate(new maptalks.Point(0, 0));
