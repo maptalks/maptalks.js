@@ -223,6 +223,7 @@ describe('#Geometry.InfoWindow', function () {
                 title: 'title',
                 content: 'content',
                 animation : 'fade,scale',
+                animationOnHide : true,
                 animationDuration : 50
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
@@ -240,10 +241,10 @@ describe('#Geometry.InfoWindow', function () {
                 expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
                 expect(infoWindow.isVisible()).to.be.ok();
                 infoWindow.hide();
-                expect(infoWindow.getDOM().style.opacity).to.be.eql(1);
-                expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
+                expect(infoWindow.getDOM().style.display).to.be.eql('');
                 setTimeout(function () {
                     //hide animations
+                    expect(infoWindow.getDOM().style.display).to.be.eql('none');
                     expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
                     expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
                     expect(infoWindow.isVisible()).not.to.be.ok();
