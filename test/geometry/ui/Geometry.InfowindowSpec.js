@@ -307,7 +307,6 @@ describe('#Geometry.InfoWindow', function () {
                 autoPanDuration : 100,
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
-            var center = map.getCenter();
             var geo = new maptalks.Marker(map.getExtent().getMin());
 
             var infoWindow2 = new maptalks.ui.InfoWindow(options);
@@ -331,7 +330,6 @@ describe('#Geometry.InfoWindow', function () {
                 single : false
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
-            var center = map.getCenter();
             var geo = new maptalks.Marker(map.getExtent().getMin());
 
             var infoWindow2 = new maptalks.ui.InfoWindow(options);
