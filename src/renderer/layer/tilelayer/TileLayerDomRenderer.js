@@ -81,27 +81,26 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     render() {
-        var layer = this.layer;
+        const layer = this.layer;
         if (!this._container) {
             this._createLayerContainer();
         }
-        var tileGrid = layer._getTiles();
+        const tileGrid = layer._getTiles();
         if (!tileGrid) {
             return;
         }
         this._currentTileZoom = this.getMap().getZoom();
-        var tiles = tileGrid['tiles'],
+        const tiles = tileGrid['tiles'],
             queue = [];
-
 
         if (this._tiles) {
             for (var p in this._tiles) {
                 this._tiles[p].current = false;
             }
         }
-        var i, l;
+
         var tile;
-        for (i = tiles.length - 1; i >= 0; i--) {
+        for (let i = tiles.length - 1; i >= 0; i--) {
             tile = tiles[i];
             if (this._tiles[tile['id']]) {
                 //tile is already added
@@ -111,11 +110,11 @@ export default class TileLayerDomRenderer extends Class {
             tile.current = true;
             queue.push(tile);
         }
-        var container = this._getTileContainer();
+        const container = this._getTileContainer();
         removeTransform(container);
         if (queue.length > 0) {
-            var fragment = document.createDocumentFragment();
-            for (i = 0, l = queue.length; i < l; i++) {
+            const fragment = document.createDocumentFragment();
+            for (let i = 0, l = queue.length; i < l; i++) {
                 fragment.appendChild(this._loadTile(queue[i]));
             }
             container.appendChild(fragment);
