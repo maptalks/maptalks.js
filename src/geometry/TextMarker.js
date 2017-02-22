@@ -49,7 +49,6 @@ class TextMarker extends Marker {
     constructor(content, coordinates, options) {
         super(coordinates, options);
         this._content = content;
-        this._registerEvents();
         this._refresh();
     }
 
@@ -161,12 +160,9 @@ class TextMarker extends Marker {
         return s;
     }
 
-    _registerEvents() {
-        this.on('shapechange', this._refresh, this);
-    }
-
-    onRemove() {
-        this.off('shapechange', this._refresh, this);
+    onShapeChanged() {
+        this._refresh();
+        super.onShapeChanged();
     }
 }
 
