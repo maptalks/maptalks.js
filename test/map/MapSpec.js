@@ -394,11 +394,32 @@ describe('#Map', function () {
         });
 
         it('fire resize when dom\'s size is changed', function (done) {
+            var center = map.getCenter();
             map.on('resize', function (param) {
                 expect(param).to.be.ok();
+                //center moved
+                expect(map.getCenter().toArray()).not.to.be.eql(center.toArray());
                 done();
             });
             container.style.width = '10px';
+        });
+
+        it('fire resize when container is hided and shown', function (done) {
+            this.timeout(map._getRenderer()._checkSizeInterval * 3);
+            var center = map.getCenter();
+            map.once('resize', function (param) {
+                expect(param).to.be.ok();
+                //center remains
+                expect(map.getCenter().toArray()).to.be.eql(center.toArray());
+                map.once('resize', function (param) {
+                    expect(param).to.be.ok();
+                    //center remains
+                    expect(map.getCenter().toArray()).to.be.eql(center.toArray());
+                    done();
+                });
+                container.style.display = '';
+            });
+            container.style.display = 'none';
         });
 
         it('event properties', function (done) {

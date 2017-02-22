@@ -384,24 +384,25 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     _registerEvents() {
-        var map = this.map;
-        map.on('_baselayerchangestart', function () {
+        const map = this.map;
+        map.on('_baselayerchangestart', () => {
             delete this._canvasBg;
-        }, this);
-        map.on('_baselayerload', function () {
-            var baseLayer = map.getBaseLayer();
+        });
+        map.on('_baselayerload', () => {
+            const baseLayer = map.getBaseLayer();
             if (!map.options['zoomBackground'] || baseLayer.getMask()) {
                 delete this._canvasBg;
             }
-        }, this);
-        map.on('_resize', function () {
+        });
+        map.on('_resize', () => {
             delete this._canvasBg;
-        }, this);
-        map.on('_zoomstart', function () {
+        });
+        map.on('_zoomstart', () => {
             delete this._canvasBg;
             // this.clearCanvas();
-        }, this);
+        });
         if (map.options['checkSize'] && !isNode && (typeof window !== 'undefined')) {
+            this._checkSizeInterval = 1000;
             // on(window, 'resize', this._checkSize, this);
             this._resizeInterval = setInterval(() => {
                 if (!map._containerDOM.parentNode) {
@@ -410,7 +411,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                 } else {
                     this._checkSize();
                 }
-            }, 1000);
+            }, this._checkSizeInterval);
         }
         if (!Browser.mobile && Browser.canvas) {
             this._onMapMouseMove = function (param) {
@@ -420,7 +421,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                 if (this._hitDetectFrame) {
                     cancelAnimFrame(this._hitDetectFrame);
                 }
-                this._hitDetectFrame = requestAnimFrame(function () {
+                this._hitDetectFrame = requestAnimFrame(() => {
                     if (map.isZooming() || map.isMoving() || !map.options['hitDetect']) {
                         return;
                     }
@@ -448,11 +449,11 @@ export default class MapCanvasRenderer extends MapRenderer {
             };
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-        map.on('_moving _moveend', function () {
+        map.on('_moving _moveend', () => {
             if (!map._pitch) {
                 this.render();
             }
-        }, this);
+        });
     }
 }
 
