@@ -78,6 +78,13 @@ class LineString extends Path {
         return this._coordinates;
     }
 
+    /**
+     * Show the linestring with animation
+     * @param  {Object} [options=null] animation options
+     * @param  {Number} [options.duration=1000] duration
+     * @param  {String} [options.easing=out] animation easing
+     * @return {LineString}         this
+     */
     animateShow(options) {
         if (!options) {
             options = {};
