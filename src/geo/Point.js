@@ -136,6 +136,10 @@ class Point {
         return this;
     }
 
+    _sub(x, y) {
+        return this._substract(x, y);
+    }
+
     /**
      * Returns the result of subtraction of another point.
      * @param {Point} point - point to substract
@@ -151,6 +155,15 @@ class Point {
             ny = this.y - y;
         }
         return new Point(nx, ny);
+    }
+
+    /**
+     * alias for substract
+     * @param {Point} point - point to substract
+     * @return {Point} result
+     */
+    sub(x, y) {
+        return this.substract(x, y);
     }
 
     //destructive multi
