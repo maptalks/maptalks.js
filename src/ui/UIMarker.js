@@ -48,6 +48,18 @@ const domEvents =
      */
     'mouseup ' +
     /**
+     * mouseenter event
+     * @event ui.UIMarker#mouseenter
+     * @type {Object}
+     * @property {String} type                    - mouseenter
+     * @property {UIMarker} target    - the uimarker fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseenter ' +
+    /**
      * mouseover event
      * @event ui.UIMarker#mouseover
      * @type {Object}

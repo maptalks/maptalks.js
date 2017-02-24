@@ -64,7 +64,7 @@ describe('#MapDrag', function () {
             expect(map.getCenter().toArray()).not.to.be.eql(center2.toArray());
             done();
         });
-        dragMap(30);
+        dragMap(100);
         center2 = map.getCenter();
     });
 

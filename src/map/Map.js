@@ -1196,19 +1196,22 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @fires Map#resize
      */
     checkSize() {
-        var justStart = ((now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
+        const justStart = ((now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
 
-        var watched = this._getContainerDomSize(),
+        const watched = this._getContainerDomSize(),
             oldHeight = this.height,
             oldWidth = this.width;
         if (watched['width'] === oldWidth && watched['height'] === oldHeight) {
             return this;
         }
-        var center = this.getCenter();
+        const center = this.getCenter();
         this._updateMapSize(watched);
-        var resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
+        let resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
         this._offsetCenterByPixel(resizeOffset);
-        if (justStart) {
+
+        const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
+
+        if (justStart || hided) {
             this._eventSuppressed = true;
             this.setCenter(center);
             this._eventSuppressed = false;

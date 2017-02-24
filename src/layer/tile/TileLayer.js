@@ -186,7 +186,7 @@ class TileLayer extends Layer {
 
     _getTiles() {
         // rendWhenReady = false;
-        var map = this.getMap();
+        const map = this.getMap();
         if (!map) {
             return null;
         }
@@ -194,37 +194,40 @@ class TileLayer extends Layer {
             return null;
         }
 
-        var tileConfig = this._getTileConfig();
+        const tileConfig = this._getTileConfig();
         if (!tileConfig) {
             return null;
         }
 
-        var tileSize = this.getTileSize(),
+        const tileSize = this.getTileSize(),
             zoom = map.getZoom(),
             res = map._getResolution();
 
-        var containerCenter = new Point(map.width / 2, map.height / 2),
+        const containerCenter = new Point(map.width / 2, map.height / 2),
             containerExtent = map.getContainerExtent();
+        if (containerExtent.getWidth() === 0 || containerExtent.getHeight() === 0) {
+            return {
+                'tiles' : []
+            };
+        }
 
         //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
-        var centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
+        const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
 
-        var center2D = map._prjToPoint(map._getPrjCenter())._substract(centerTile['offsetLeft'], centerTile['offsetTop']);
+        const center2D = map._prjToPoint(map._getPrjCenter())._substract(centerTile['offsetLeft'], centerTile['offsetTop']);
 
-        var keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
+        const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
         //中心瓦片上下左右的瓦片数
-        var top = Math.ceil(Math.abs(containerCenter.y - containerExtent['ymin'] - centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
+        const top = Math.ceil(Math.abs(containerCenter.y - containerExtent['ymin'] - centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
             left = Math.ceil(Math.abs(containerCenter.x - containerExtent['xmin'] - centerTile['offsetLeft']) / tileSize['width']) + keepBuffer,
             bottom = Math.ceil(Math.abs(containerExtent['ymax'] - containerCenter.y + centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
             right = Math.ceil(Math.abs(containerExtent['xmax'] - containerCenter.x + centerTile['offsetLeft']) / tileSize['width']) + keepBuffer;
 
-        var tiles = [],
-            fullExtent = new PointExtent(),
-            northWest = new Point(center2D.x - left * tileSize['width'], center2D.y - top * tileSize['height']);
+        const tiles = [];
 
-        for (var i = -(left); i < right; i++) {
-            for (var j = -(top); j < bottom; j++) {
-                var tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
+        for (let i = -(left); i < right; i++) {
+            for (let j = -(top); j < bottom; j++) {
+                let tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
                     tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
                     tileId = [tileIndex['y'], tileIndex['x'], zoom].join('__'),
                     tileDesc = {
@@ -236,10 +239,6 @@ class TileLayer extends Layer {
                         'y' : tileIndex['y']
                     };
                 tiles.push(tileDesc);
-                fullExtent._combine(new PointExtent(
-                    tileDesc['point'],
-                    tileDesc['point'].add(tileSize['width'], tileSize['height'])
-                ));
             }
         }
 
@@ -248,9 +247,7 @@ class TileLayer extends Layer {
             return (b['point'].distanceTo(center2D) - a['point'].distanceTo(center2D));
         });
         return {
-            'tiles': tiles,
-            'fullExtent': fullExtent,
-            'northWest': northWest
+            'tiles': tiles
         };
     }
 
