@@ -130,8 +130,8 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _zoomTo(nextZoom, origin, startScale) {
-        var zScale = this._getResolution(this._frameZoom) / this._getResolution(nextZoom);
-        var zoomOffset = this._getZoomCenterOffset(nextZoom, origin, startScale, zScale);
+        const zScale = this._getResolution(this._frameZoom) / this._getResolution(nextZoom);
+        const zoomOffset = this._getZoomCenterOffset(nextZoom, origin, startScale, zScale);
         this._zoomLevel = nextZoom;
         if (zoomOffset && (zoomOffset.x !== 0 || zoomOffset.y !== 0)) {
             this._offsetCenterByPixel(zoomOffset._multi(-1));

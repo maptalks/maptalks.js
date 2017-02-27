@@ -987,12 +987,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
-    _removeZoomCache() {
-        if (this._painter) {
-            this._painter.removeZoomCache();
-        }
-    }
-
     onHide() {
         this.closeMenu();
         this.closeInfoWindow();

@@ -96,14 +96,20 @@ export default class Painter extends Class {
      * @return {Object[]} resources to render vector
      */
     getPaintParams(dx, dy) {
-        if (!this._paintParams) {
+        const map = this.getMap();
+        const zoom = map.getZoom();
+        // remove cached points if the geometry is simplified on the zoom.
+        if (!this._paintParams || (this._paintParams._zoom !== undefined && this._paintParams._zoom !== zoom)) {
             //render resources geometry returned are based on 2d points.
             this._paintParams = this.geometry._getPaintParams();
+            if (this.geometry._simplified) {
+                this._paintParams._zoom = zoom;
+            }
         }
         if (!this._paintParams) {
             return null;
         }
-        const map = this.getMap();
+
         const maxZoom = map.getMaxZoom();
         const zoomScale = map.getScale();
         const layerNorthWest = this.geometry.getLayer()._getRenderer()._northWest;
@@ -239,14 +245,17 @@ export default class Painter extends Class {
 
     //需要实现的接口方法
     get2DExtent(resources) {
-        if (!this._extent2D) {
+        const zoom = this.getMap().getZoom();
+        if (!this._extent2D || this._extent2D._zoom !== zoom) {
+            delete this._extent2D;
             if (this.symbolizers) {
-                var _extent2D = new PointExtent();
+                var extent = new PointExtent();
                 var len = this.symbolizers.length - 1;
                 for (var i = len; i >= 0; i--) {
-                    _extent2D._combine(this.symbolizers[i].get2DExtent(resources));
+                    extent._combine(this.symbolizers[i].get2DExtent(resources));
                 }
-                this._extent2D = _extent2D;
+                extent._zoom = zoom;
+                this._extent2D = extent;
             }
         }
         return this._extent2D;
@@ -327,14 +336,6 @@ export default class Painter extends Class {
         delete this._renderPoints;
         delete this._paintParams;
         delete this._sprite;
-        this.removeZoomCache();
-    }
-
-    removeZoomCache() {
-        if (this.geometry._simplified) {
-            // remove cached points if the geometry is simplified on the zoom.
-            delete this._paintParams;
-        }
         delete this._extent2D;
     }
 }

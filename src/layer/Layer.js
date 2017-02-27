@@ -339,19 +339,12 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return true;
     }
 
-    _refreshMask() {
-        if (this._mask) {
-            this._mask._removeZoomCache();
-        }
-    }
-
     _bindMap(map, zIndex) {
         if (!map) {
             return;
         }
         this.map = map;
         this.setZIndex(zIndex);
-        this._registerEvents();
         this._switchEvents('on', this);
 
         this.fire('add');
@@ -377,7 +370,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this.onRemove();
         }
         this._switchEvents('off', this);
-        this._removeEvents();
         if (this._renderer) {
             this._switchEvents('off', this._renderer);
             this._renderer.remove();
@@ -391,14 +383,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (emitter && emitter.getEvents) {
             this.getMap()[to](emitter.getEvents(), emitter);
         }
-    }
-
-    _registerEvents() {
-        this.getMap().on('_zoomend', this._refreshMask, this);
-    }
-
-    _removeEvents() {
-        this.getMap().off('_zoomend', this._refreshMask, this);
     }
 
     _getRenderer() {
