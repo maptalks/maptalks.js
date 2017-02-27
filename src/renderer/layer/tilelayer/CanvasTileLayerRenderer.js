@@ -2,6 +2,7 @@ import Browser from 'core/Browser';
 import CanvasTileLayer from 'layer/tile/CanvasTileLayer';
 import Canvas2D from 'core/Canvas';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
+import Extent from 'geo/Extent';
 
 export default class CanvasTileLayerRenderer extends TileLayerCanvasRenderer {
     _loadTile(tileId, tile, onTileLoad, onTileError) {
@@ -14,10 +15,12 @@ export default class CanvasTileLayerRenderer extends TileLayerCanvasRenderer {
         tileCanvas[this.propertyOfTileId] = tileId;
         tileCanvas[this.propertyOfPointOnTile] = tile['point'];
         tileCanvas[this.propertyOfTileZoom] = tile['z'];
+        const extent = new Extent(map.pointToCoordinate(tile['point']), map.pointToCoordinate(tile['point'].add(tileSize.toPoint())));
         this.layer.drawTile(tileCanvas, {
             'url': tile['url'],
             'point': tile['point'],
             'center' : map.pointToCoordinate(tile['point'].add(tileSize['width'] / 2, tileSize['height'] / 2)),
+            'extent' : extent,
             'z': tile['z'],
             'x' : tile['x'],
             'y' : tile['y']
