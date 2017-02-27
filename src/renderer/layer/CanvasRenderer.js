@@ -206,10 +206,6 @@ class CanvasRenderer extends Class {
      * Show the layer
      */
     show() {
-        var mask = this.layer.getMask();
-        if (mask) {
-            mask._removeZoomCache();
-        }
         this.render(true);
     }
 

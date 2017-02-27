@@ -101,10 +101,4 @@ export default class CollectionPainter extends Class {
         return result;
     }
 
-    removeZoomCache() {
-        var args = arguments;
-        this._eachPainter(function (painter) {
-            painter.removeZoomCache.apply(painter, args);
-        });
-    }
 }

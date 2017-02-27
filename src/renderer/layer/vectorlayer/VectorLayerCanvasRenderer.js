@@ -129,23 +129,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.layer.forEach(fn, context);
     }
 
-    onZooming() {
-        var map = this.getMap();
-        if (this.layer.isVisible() && (map.getPitch() || this.isUpdateWhenZooming())) {
-            this._geosToDraw.forEach(function (geo) {
-                geo._removeZoomCache();
-            });
-        }
-        CanvasRenderer.prototype.onZooming.apply(this, arguments);
-    }
 
     onZoomEnd() {
         delete this._extent2D;
-        if (this.layer.isVisible()) {
-            this.layer.forEach(function (geo) {
-                geo._removeZoomCache();
-            });
-        }
         CanvasRenderer.prototype.onZoomEnd.apply(this, arguments);
     }
 
