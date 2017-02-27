@@ -350,15 +350,4 @@ function registerGeometryCommonTest(geometry, _context) {
             expect(measurer).to.be(maptalks.measurer.BaiduSphere);
         });
     });
-    var spy;
-    context(type + ':map events listeners', function () {
-        it('removeZoomCache', function () {
-            var map = _context.map;
-            map.config('zoomAnimation', false);
-            setupGeometry();
-            spy = sinon.spy(geometry, '_removeZoomCache');
-            map.zoomOut();
-            expect(spy.called).to.be.ok();
-        });
-    });
 }
