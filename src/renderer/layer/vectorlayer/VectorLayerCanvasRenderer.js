@@ -131,7 +131,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     onZooming() {
         var map = this.getMap();
-        if (this.layer.isVisible() && (map._pitch || this.isUpdateWhenZooming())) {
+        if (this.layer.isVisible() && (map.getPitch() || this.isUpdateWhenZooming())) {
             this._geosToDraw.forEach(function (geo) {
                 geo._removeZoomCache();
             });

@@ -22,7 +22,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         super();
         this.map = map;
         //container is a <canvas> element
-        this._isCanvasContainer = !!map._containerDOM.getContext;
+        this._containerIsCanvas = !!map._containerDOM.getContext;
         this._registerEvents();
     }
 
@@ -84,7 +84,7 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     updateMapSize(mSize) {
-        if (!mSize || this._isCanvasContainer) {
+        if (!mSize || this._containerIsCanvas) {
             return;
         }
         var width = mSize['width'] + 'px',
@@ -96,7 +96,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         panels.front.style.height = panels.frontLayer.style.height = height;
         panels.back.style.width = panels.backLayer.style.width = width;
         panels.back.style.height = panels.backLayer.style.height = height;
-        panels.front.style.perspective = panels.back.style.perspective = height;
+        // panels.front.style.perspective = panels.back.style.perspective = height;
         this._updateCanvasSize();
     }
 
@@ -104,7 +104,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!this.map) {
             return null;
         }
-        if (this._isCanvasContainer) {
+        if (this._containerIsCanvas) {
             return this.map._containerDOM;
         }
         if (this.map._panels) {
@@ -178,7 +178,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
         const containerDOM = this.map._containerDOM;
 
-        if (this._isCanvasContainer) {
+        if (this._containerIsCanvas) {
             //container is a <canvas> element.
             return;
         }
@@ -335,7 +335,7 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     _updateCanvasSize() {
-        if (!this.canvas || this._isCanvasContainer) {
+        if (!this.canvas || this._containerIsCanvas) {
             return false;
         }
         var map = this.map;
@@ -358,7 +358,7 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     createCanvas() {
-        if (this._isCanvasContainer) {
+        if (this._containerIsCanvas) {
             this.canvas = this.map._containerDOM;
         } else {
             this.canvas = createEl('canvas');
@@ -450,7 +450,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             map.on('_mousemove', this._onMapMouseMove, this);
         }
         map.on('_moving _moveend', () => {
-            if (!map._pitch) {
+            if (!map.getPitch()) {
                 this.render();
             }
         });

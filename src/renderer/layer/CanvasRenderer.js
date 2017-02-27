@@ -511,18 +511,19 @@ class CanvasRenderer extends Class {
      * @param  {Object} param event parameters
      */
     onZooming(param) {
-        var map = this.getMap();
+        const map = this.getMap();
         if (!map || !this.layer.isVisible()) {
             return;
         }
+        const pitch = map.getPitch();
         this._suppressMapRender = true;
         this.prepareRender();
         if (this.drawOnZooming && this.isUpdateWhenZooming()) {
             this.prepareCanvas();
             this.drawOnZooming(param);
-        } else if (!map._pitch) {
+        } else if (!pitch) {
             this._transform = param['matrix']['container'];
-        } else if (map._pitch) {
+        } else if (pitch) {
             // leave the layer to blank when map is pitching
             this.prepareCanvas();
         }
@@ -559,7 +560,7 @@ class CanvasRenderer extends Class {
     * @param  {Object} param event parameters
     */
     onMoving() {
-        if (this.getMap()._pitch) {
+        if (this.getMap().getPitch()) {
             this._drawOnEvent();
         }
     }
