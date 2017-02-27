@@ -1,5 +1,4 @@
 import {
-    isNumber,
     throttle,
     requestAnimFrame
 } from 'core/util';
@@ -10,6 +9,7 @@ import {
     removeTransform,
     removeDomNode,
     setOpacity,
+    TRANSFORM,
     TRANSITION,
     CSSFILTER
 } from 'core/util/dom';
@@ -82,6 +82,7 @@ export default class TileLayerDomRenderer extends Class {
 
     render() {
         const layer = this.layer;
+        const map = this.getMap();
         if (!this._container) {
             this._createLayerContainer();
         }
@@ -89,6 +90,12 @@ export default class TileLayerDomRenderer extends Class {
         if (!tileGrid) {
             return;
         }
+
+        const pitch = this.getMap().getPitch();
+
+        // disable throttle of onMapMoving if map pitches.
+        this.onMapMoving.time = pitch ? 0 : layer.options['updateInterval'];
+
         this._currentTileZoom = this.getMap().getZoom();
         const tiles = tileGrid['tiles'],
             queue = [];
@@ -99,19 +106,42 @@ export default class TileLayerDomRenderer extends Class {
             }
         }
 
-        var tile;
+        var cachedTile;
         for (let i = tiles.length - 1; i >= 0; i--) {
-            tile = tiles[i];
-            if (this._tiles[tile['id']]) {
+            cachedTile = this._tiles[tiles[i]['id']];
+            if (cachedTile) {
                 //tile is already added
-                this._tiles[tile['id']].current = true;
+                cachedTile.current = true;
+                if (pitch) {
+                    cachedTile['el'].style[TRANSFORM] = 'translate3d(' + tiles[i]['viewPoint'].x + 'px, ' + tiles[i]['viewPoint'].y + 'px, 0px)';
+                }
                 continue;
             }
-            tile.current = true;
-            queue.push(tile);
+            tiles[i].current = true;
+            queue.push(tiles[i]);
         }
         const container = this._getTileContainer();
-        removeTransform(container);
+        if (!map.layerMatrix) {
+            removeTransform(container);
+            if (this._containerWidth || this._containerHeight) {
+                container.style.width = null;
+                container.style.height = null;
+                delete this._containerWidth;
+                delete this._containerHeight;
+            }
+        } else {
+            const matrix = map.layerMatrix.join();
+            const size = map.getSize();
+            if (this._containerWidth !== size['width'] || this._containerHeight !== size['height']) {
+                container.style.width = size['width'] + 'px';
+                container.style.height = size['height'] + 'px';
+                this._containerWidth = size['width'];
+                this._containerHeight = size['height'];
+            }
+            const offset = map.offsetPlatform();
+            container.style[TRANSFORM] = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + matrix + ')';
+        }
+
         if (queue.length > 0) {
             const fragment = document.createDocumentFragment();
             for (let i = 0, l = queue.length; i < l; i++) {
@@ -137,7 +167,6 @@ export default class TileLayerDomRenderer extends Class {
     _createTile(tile, done) {
         var tileSize = this.layer.getTileSize();
         var tileImage = createEl('img');
-
         tile['el'] = tileImage;
 
         on(tileImage, 'load', this._tileOnLoad.bind(this, done, tile));
@@ -148,9 +177,12 @@ export default class TileLayerDomRenderer extends Class {
         }
 
         tileImage.style.position = 'absolute';
-        var viewPoint = this.getMap()._pointToViewPoint(tile['point']);
-        tileImage.style.left = Math.floor(viewPoint.x) + 'px';
-        tileImage.style.top = Math.floor(viewPoint.y) + 'px';
+        if (Browser.any3d) {
+            tileImage.style[TRANSFORM] = 'translate3d(' + tile['viewPoint'].x + 'px, ' + tile['viewPoint'].y + 'px, 0px)';
+        } else {
+            tileImage.style.left = tile['viewPoint'].x + 'px';
+            tileImage.style.top = tile['viewPoint'].y + 'px';
+        }
 
         tileImage.alt = '';
         tileImage.width = tileSize['width'];
@@ -377,7 +409,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     getEvents() {
-        var events = {
+        const events = {
             '_zoomstart'    : this.onZoomStart,
             '_touchzoomstart' : this._onTouchZoomStart,
             '_zooming'      : this.onZooming,
@@ -385,28 +417,23 @@ export default class TileLayerDomRenderer extends Class {
             '_moveend _resize' : this.render,
             '_movestart'    : this.onMoveStart
         };
-        if (!this._onMapMoving && this.layer.options['renderWhenPanning']) {
-            var interval = this.layer.options['updateInterval'];
-            if (isNumber(interval) && interval >= 0) {
-                if (interval > 0) {
-                    this._onMapMoving = throttle(function () {
-                        this.render();
-                    }, interval, this);
-                } else {
-                    this._onMapMoving = function () {
-                        this.render();
-                    };
-                }
-            }
+        if (!this.onMapMoving) {
+            const interval = this.layer.options['updateInterval'];
+            this.onMapMoving = throttle(this._onMapMoving, interval, this);
         }
-        if (this._onMapMoving) {
-            events['_moving'] = this._onMapMoving;
-        }
+        events['_moving'] = this.onMapMoving;
         return events;
     }
 
     _canTransform() {
         return Browser.any3d || Browser.ie9;
+    }
+
+    _onMapMoving() {
+        if (!this.getMap().getPitch() && !this.layer.options['renderWhenPanning']) {
+            return;
+        }
+        this.render();
     }
 
     onMoveStart() {

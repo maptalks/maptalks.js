@@ -1401,6 +1401,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
+    getPitch() {
+        return 0;
+    }
+
     //-----------------------------------------------------------
     /**
      * try to change cursor when map is not setCursored

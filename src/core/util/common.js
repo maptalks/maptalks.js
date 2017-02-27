@@ -54,17 +54,19 @@ export function throttle(fn, time, context) {
     };
 
     wrapperFn = function () {
-        if (lock) {
+        if (lock && wrapperFn.time > 0) {
             // called too soon, queue to call later
             args = arguments;
 
         } else {
             // call and lock until later
             fn.apply(context, arguments);
-            setTimeout(later, time);
+            setTimeout(later, wrapperFn.time);
             lock = true;
         }
     };
+
+    wrapperFn.time = time;
 
     return wrapperFn;
 }

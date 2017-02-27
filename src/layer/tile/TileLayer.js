@@ -143,7 +143,7 @@ class TileLayer extends Layer {
         var renderer = this.options['renderer'];
         if (this.getMap().getBaseLayer() === this) {
             renderer = this.options['baseLayerRenderer'];
-            if (this.getMap()._getRenderer()._isCanvasContainer) {
+            if (this.getMap()._getRenderer()._containerIsCanvas) {
                 renderer = 'canvas';
             }
         }
@@ -199,28 +199,34 @@ class TileLayer extends Layer {
         }
 
         const tileSize = this.getTileSize(),
+            tileW = tileSize['width'],
+            tileH = tileSize['height'],
             zoom = map.getZoom(),
             res = map._getResolution();
 
+        const extent2d = map._get2DExtent();
         const containerCenter = new Point(map.width / 2, map.height / 2),
-            containerExtent = map.getContainerExtent();
-        if (containerExtent.getWidth() === 0 || containerExtent.getHeight() === 0) {
+            center2d = map._containerPointToPoint(containerCenter);
+        if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
             return {
                 'tiles' : []
             };
         }
 
-        //中心瓦片信息,包括瓦片编号,和中心点在瓦片上相对左上角的位置
+        const pitch = map.getPitch();
+
+        //Get description of center tile including left and top offset
         const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
 
         const center2D = map._prjToPoint(map._getPrjCenter())._substract(centerTile['offsetLeft'], centerTile['offsetTop']);
+        const centerViewPoint = pitch ? containerCenter._substract(centerTile['offsetLeft'], centerTile['offsetTop']) : map._pointToViewPoint(center2D);
 
         const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
-        //中心瓦片上下左右的瓦片数
-        const top = Math.ceil(Math.abs(containerCenter.y - containerExtent['ymin'] - centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
-            left = Math.ceil(Math.abs(containerCenter.x - containerExtent['xmin'] - centerTile['offsetLeft']) / tileSize['width']) + keepBuffer,
-            bottom = Math.ceil(Math.abs(containerExtent['ymax'] - containerCenter.y + centerTile['offsetTop']) / tileSize['height']) + keepBuffer,
-            right = Math.ceil(Math.abs(containerExtent['xmax'] - containerCenter.x + centerTile['offsetLeft']) / tileSize['width']) + keepBuffer;
+        //Number of tiles around the center tile
+        const top = Math.ceil(Math.abs(center2d.y - extent2d['ymin'] - centerTile['offsetTop']) / tileH) + keepBuffer,
+            left = Math.ceil(Math.abs(center2d.x - extent2d['xmin'] - centerTile['offsetLeft']) / tileW) + keepBuffer,
+            bottom = Math.ceil(Math.abs(extent2d['ymax'] - center2d.y + centerTile['offsetTop']) / tileH) + keepBuffer,
+            right = Math.ceil(Math.abs(extent2d['xmax'] - center2d.x + centerTile['offsetLeft']) / tileW) + keepBuffer;
 
         const tiles = [];
 
@@ -231,7 +237,8 @@ class TileLayer extends Layer {
                     tileId = [tileIndex['y'], tileIndex['x'], zoom].join('__'),
                     tileDesc = {
                         'url': tileUrl,
-                        'point': new Point(center2D.x + tileSize['width'] * i, center2D.y + tileSize['height'] * j),
+                        'point': new Point(center2D.x + tileW * i, center2D.y + tileH * j),
+                        'viewPoint' : new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j)._sub(1E-6, 1E-6)._round(),
                         'id': tileId,
                         'z': zoom,
                         'x' : tileIndex['x'],

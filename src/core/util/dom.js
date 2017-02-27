@@ -534,7 +534,7 @@ export function setTransform(el, offset) {
 }
 
 export function setTransformMatrix(el, m) {
-    el.style[TRANSFORM] = 'matrix(' + m.join() + ')';
+    el.style[TRANSFORM] = 'matrix(' + (isString(m) ? m : m.join()) + ')';
     return this;
 }
 
