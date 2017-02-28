@@ -141,12 +141,13 @@ describe('#GeometryEdit', function () {
         });
 
         it('resize a ellipse with fix aspect ratio',function() {
-            var ellipse = new maptalks.Ellipse(map.getCenter(), 1000, 500).addTo(layer);
+            var ellipse = new maptalks.Ellipse(map.getCenter(), 100, 50).addTo(layer);
             ellipse.startEdit({'fixAspectRatio' : true});
+            var ratio = ellipse.getWidth() / ellipse.getHeight();
             var size = ellipse.getSize();
-            dragGeometry(ellipse, new maptalks.Point(size.width/2, size.height/2));
-            expect(ellipse.getWidth()).to.be.approx(1040.55972);
-            expect(ellipse.getHeight()).to.be.approx(520.2339);
+            dragGeometry(ellipse, new maptalks.Point(size.width / 2, 0));
+            expect(ellipse.getWidth()).to.be.approx(120.24692);
+            expect(ellipse.getHeight()).to.be.approx(120.24692 / ratio);
         });
 
         it('resize a rectangle',function() {
@@ -159,12 +160,13 @@ describe('#GeometryEdit', function () {
         });
 
         it('resize a rectangle with fix aspect ratio',function() {
-            var rect = new maptalks.Rectangle(map.getCenter(), 1000, 500).addTo(layer);
+            var rect = new maptalks.Rectangle(map.getCenter(), 100, 50).addTo(layer);
             rect.startEdit({'fixAspectRatio' : true});
+            var ratio = rect.getWidth() / rect.getHeight();
             var size = rect.getSize();
-            dragGeometry(rect, new maptalks.Point(size.width/2, size.height/2));
-            expect(rect.getWidth()).to.be.approx(1022.39959);
-            expect(rect.getHeight()).to.be.approx(511.11058);
+            dragGeometry(rect, new maptalks.Point(size.width / 2, 0));
+            expect(rect.getWidth()).to.be.approx(111.13518);
+            expect(rect.getHeight()).to.be.approx(111.13518 / ratio);
         });
 
         it('change a polygon vertex',function() {

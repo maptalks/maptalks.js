@@ -361,6 +361,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
         if (!blackList) {
             blackList = [];
         }
+
         var resizeHandles = [];
         var anchorIndexes = {};
         var me = this, map = this.getMap();
@@ -383,7 +384,7 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                 }
                 var anchor = anchors[i],
                     coordinate = map.pointToCoordinate(anchor);
-                if (resizeHandles.length < anchors.length - blackList.length) {
+                if (resizeHandles.length < (anchors.length - blackList.length)) {
                     var handle = me.createHandle(coordinate, {
                         'markerType' : 'square',
                         'dxdy'       : new maptalks.Point(0, 0),
@@ -398,6 +399,12 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
                             me._refresh();
                         }
                     });
+                    /*if (me.options['fixAspectRatio']) {
+                        // hide handles in the corners if AspectRatio is true
+                        if (i === 0 || i === 2 || i === 5 || i === 7) {
+                            handle.hide();
+                        }
+                    }*/
                     handle.setId(i);
                     anchorIndexes[i] = resizeHandles.length;
                     resizeHandles.push(handle);
@@ -418,7 +425,6 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
      * 标注和自定义标注编辑器
      */
     createMarkerEditor:function () {
-        var me = this;
         var marker = this._shadow,
             geometryToEdit = this._geometry,
             map = this.getMap(),
@@ -481,6 +487,12 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             2, 1, 2
         ];
 
+        var aspectRatio;
+        if (this.options['fixAspectRatio']) {
+            var size = marker.getSize();
+            aspectRatio = size.width / size.height;
+        }
+
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
             if (blackList && maptalks.Util.indexOfArray(i, blackList) >= 0) {
                 //need to change marker's coordinates
@@ -502,13 +514,6 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             if (blackList && handleViewPoint.y > viewCenter.y) {
                 wh.y = 0;
             }
-
-            var aspectRatio;
-            if (me.options['fixAspectRatio']) {
-                var size = marker.getSize();
-                aspectRatio = size.width / size.height;
-            }
-
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
             var r = blackList ? 1 : 2;
             var width = Math.abs(wh.x) * 2,
@@ -572,7 +577,6 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
      * @return {*} [description]
      */
     createEllipseOrRectEditor:function () {
-        var me = this;
         //defines what can be resized by the handle
         //0: resize width; 1: resize height; 2: resize both width and height.
         var resizeAbilities = [
@@ -580,70 +584,81 @@ maptalks.Geometry.Editor = maptalks.Class.extend(/** @lends maptalks.Geometry.Ed
             0,    0,
             2, 1, 2
         ];
+
         var shadow = this._shadow,
             geometryToEdit = this._geometry;
         var map = this.getMap();
         var isRect = this._geometry instanceof maptalks.Rectangle;
-        var resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
+        var aspectRatio;
+        if (this.options['fixAspectRatio']) {
+            aspectRatio = geometryToEdit.getWidth() / geometryToEdit.getHeight();
+        }
+        var resizeHandles = this._createResizeHandles(null, function (mouseViewPoint, i) {
             //ratio of width and height
-            var r;
-            var wh, w, h;
-            var aspectRatio;
-            if (me.options['fixAspectRatio']) {
-                aspectRatio = geometryToEdit.getWidth() / geometryToEdit.getHeight();
-            }
+            var r = isRect ? 1 : 2;
+            var pointSub, w, h;
+            var targetPoint = mouseViewPoint;
+            var ability = resizeAbilities[i];
             if (isRect) {
-                var anchorHandle = resizeHandles[7 - i];
-                var anchorViewPoint = map.coordinateToViewPoint(anchorHandle.getCoordinates());
-                var currentSize = geometryToEdit.getSize();
-                if (aspectRatio) {
-                    wh = handleViewPoint.substract(anchorViewPoint);
-
-                    var awh = wh.abs();
-                    if (wh.x !== 0 && wh.y !== 0) {
-                        w = Math.max(awh.x, awh.y * aspectRatio);
+                var mirror = resizeHandles[7 - i];
+                var mirrorViewPoint = map.coordinateToViewPoint(mirror.getCoordinates());
+                pointSub = targetPoint.substract(mirrorViewPoint);
+                var absSub = pointSub.abs();
+                w = map.pixelToDistance(absSub.x, 0);
+                h = map.pixelToDistance(0, absSub.y);
+                var size = geometryToEdit.getSize();
+                if (ability === 0) {
+                    // changing width
+                    // -  -  -
+                    // 0     0
+                    // -  -  -
+                    // Rectangle's northwest's y is (y - height / 2)
+                    if (aspectRatio) {
+                        // update rectangle's height with aspect ratio
+                        absSub.y = absSub.x / aspectRatio;
+                        size.height = Math.abs(absSub.y);
                         h = w / aspectRatio;
-                    } else if (wh.x === 0) {
-                        h = awh.y;
+                    }
+                    targetPoint.y = mirrorViewPoint.y - size.height / 2;
+                } else if (ability === 1) {
+                    // changing height
+                    // -  1  -
+                    // |     |
+                    // -  1  -
+                    // Rectangle's northwest's x is (x - width / 2)
+                    if (aspectRatio) {
+                        // update rectangle's width with aspect ratio
+                        absSub.x = absSub.y * aspectRatio;
+                        size.width = Math.abs(absSub.x);
                         w = h * aspectRatio;
-                    } else if (wh.y === 0) {
-                        w = awh.x;
+                    }
+                    targetPoint.x = mirrorViewPoint.x - size.width / 2;
+                } else if (aspectRatio) {
+                    // corner handles, relocate the target point according to aspect ratio.
+                    if (w > h * aspectRatio) {
                         h = w / aspectRatio;
-                    }
-                    handleViewPoint.x = anchorViewPoint.x + (wh.x === 0 ? -currentSize.width / 2 : wh.x / awh.x * w);
-                    handleViewPoint.y = anchorViewPoint.y + (wh.y === 0 ? -currentSize.height / 2 : wh.y / awh.y * h);
-                    wh = new maptalks.Point(w, h);
-                } else {
-                    wh = handleViewPoint.substract(anchorViewPoint)._abs();
-                    if (wh.x === 0) {
-                        handleViewPoint.x = anchorViewPoint.x - currentSize.width / 2;
-                    }
-                    if (wh.y === 0) {
-                        handleViewPoint.y = anchorViewPoint.y - currentSize.height / 2;
+                        targetPoint.y = mirrorViewPoint.y + absSub.x * maptalks.Util.sign(pointSub.y) / aspectRatio;
+                    } else {
+                        w = h * aspectRatio;
+                        targetPoint.x = mirrorViewPoint.x + absSub.y  * maptalks.Util.sign(pointSub.x) * aspectRatio;
                     }
                 }
                 //change rectangle's coordinates
-                var newCoordinates = map.viewPointToCoordinate(new maptalks.Point(Math.min(handleViewPoint.x, anchorViewPoint.x), Math.min(handleViewPoint.y, anchorViewPoint.y)));
+                var newCoordinates = map.viewPointToCoordinate(new maptalks.Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
                 shadow.setCoordinates(newCoordinates);
                 geometryToEdit.setCoordinates(newCoordinates);
-                r = 1;
+
             } else {
-                r = 2;
                 var viewCenter = map.coordinateToViewPoint(geometryToEdit.getCenter());
+                pointSub = viewCenter.substract(targetPoint)._abs();
+                w = map.pixelToDistance(pointSub.x, 0);
+                h = map.pixelToDistance(0, pointSub.y);
                 if (aspectRatio) {
-                    wh = viewCenter.substract(handleViewPoint)._abs();
-                    w = Math.max(wh.x, wh.y * aspectRatio);
+                    w = Math.max(w, h * aspectRatio);
                     h = w / aspectRatio;
-                    wh.x = w;
-                    wh.y = h;
-                } else {
-                    wh = viewCenter.substract(handleViewPoint)._abs();
                 }
             }
 
-            var ability = resizeAbilities[i];
-            w = map.pixelToDistance(wh.x, 0);
-            h = map.pixelToDistance(0, wh.y);
             if (aspectRatio || ability === 0 || ability === 2) {
                 shadow.setWidth(w * r);
                 geometryToEdit.setWidth(w * r);
