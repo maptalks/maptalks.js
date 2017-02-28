@@ -123,10 +123,17 @@
                     try {
                         client = new XDomainRequest();
                     } catch (e) {}
+                } else {
+                    try {
+                        client = new XMLHttpRequest();
+                    } catch (e) {
+                        try { client = new ActiveXObject('Msxml2.XMLHTTP'); } catch (e) {
+                            try { client = new ActiveXObject('Microsoft.XMLHTTP'); } catch (e) {}
+                        }
+                    }
+
                 }
-                try { client = new XMLHttpRequest(); } catch (e) {}
-                try { client = new ActiveXObject('Msxml2.XMLHTTP'); } catch (e) {}
-                try { client = new ActiveXObject('Microsoft.XMLHTTP'); } catch (e) {}
+
 
                 if (this._isIE8() || client.withCredentials !== undefined) {
                     //Cross Domain request in IE 8
