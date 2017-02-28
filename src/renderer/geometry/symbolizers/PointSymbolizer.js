@@ -3,9 +3,6 @@ import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
-// for point precise
-const delta = 1E-6;
-
 /**
  * @classdesc
  * Base symbolizer class for all the point type symbol styles.
