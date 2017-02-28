@@ -210,15 +210,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
     setProperties:function (properties) {
         var old = this.properties;
         this.properties = maptalks.Util.isObject(properties) ? maptalks.Util.extend({}, properties) : properties;
-        /**
-         * filter string props
-         */
-        for (var prop in this.properties) {
-            var val = this.properties[prop];
-            if (maptalks.Util.isString(val)) {
-                this.properties[prop] = maptalks.StringUtil.filterContent(val);
-            }
-        }
+
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
