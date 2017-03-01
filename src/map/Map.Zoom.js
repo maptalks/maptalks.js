@@ -8,6 +8,9 @@ Map.include(/** @lends Map.prototype */{
 
     _zoom(nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
+        if (this.getPitch()) {
+            origin = null;
+        }
         nextZoom = this._checkZoom(nextZoom);
         this.onZoomStart(nextZoom);
         this._frameZoom = this.getZoom();
@@ -27,7 +30,7 @@ Map.include(/** @lends Map.prototype */{
         }
 
         this.onZoomStart(nextZoom);
-        if (!origin) {
+        if (!origin || this.getPitch()) {
             origin = new Point(this.width / 2, this.height / 2);
         }
         this._startZoomAnimation(nextZoom, origin, startScale);
@@ -86,9 +89,9 @@ Map.include(/** @lends Map.prototype */{
         var res = this.getResolution(nextZoom);
         var fromRes = this.getResolution(this._startZoomVal);
         var scale = fromRes / res / startScale;
-        var pos = this.offsetPlatform();
+        var offset = this.offsetPlatform();
         var matrix = {
-            'view' : [scale, 0, 0, scale, (origin.x - pos.x) *  (1 - scale), (origin.y - pos.y) *  (1 - scale)]
+            'view' : [scale, 0, 0, scale, (origin.x - offset.x) *  (1 - scale), (origin.y - offset.y) *  (1 - scale)]
         };
         if (Browser.retina) {
             origin = origin.multi(2);
