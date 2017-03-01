@@ -111,7 +111,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
 
             'textWrapWidth': getValueOrDefault(s['textWrapWidth'], null),
             'textWrapBefore': getValueOrDefault(s['textWrapBefore'], false),
-            'textWrapCharacter': getValueOrDefault(s['textWrapCharacter'], null),
+            'textWrapCharacter': getValueOrDefault(s['textWrapCharacter'], '\n'),
             'textLineSpacing': getValueOrDefault(s['textLineSpacing'], 0),
 
             'textDx': getValueOrDefault(s['textDx'], 0),
