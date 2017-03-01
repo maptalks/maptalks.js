@@ -45,7 +45,7 @@ export function translateToSVGStyles(s) {
  * @return {String}        SVG Base64 String
  * @memberOf Util
  */
-export function getMarkerPathBase64(symbol) {
+export function getMarkerPathBase64(symbol, width, height) {
     if (!symbol['markerPath']) {
         return null;
     }
@@ -98,6 +98,12 @@ export function getMarkerPathBase64(symbol) {
         svg.push('viewBox="0 0 ' + symbol['markerPathWidth'] + ' ' + symbol['markerPathHeight'] + '"');
     }
     svg.push('preserveAspectRatio="none"');
+    if (width) {
+        svg.push('width="' + width + '"');
+    }
+    if (height) {
+        svg.push('height="' + height + '"');
+    }
     svg.push('><defs></defs>');
 
     for (i = 0; i < pathesToRender.length; i++) {
