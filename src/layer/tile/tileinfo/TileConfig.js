@@ -111,6 +111,8 @@ class TileConfig {
         var tileSystem = this.tileSystem;
         var x = (tileX + tileSystem['scale']['x'] * offsetX);
         var y = (tileY - tileSystem['scale']['y'] * offsetY);
+        var idx = x;
+        var idy = y;
         //连续世界瓦片计算
         if (isRepeatWorld) {
             var ext = this._getTileFullIndex(res);
@@ -134,7 +136,9 @@ class TileConfig {
         }
         return {
             'x': x,
-            'y': y
+            'y': y,
+            'idx' : idx,
+            'idy' : idy
         };
     }
 

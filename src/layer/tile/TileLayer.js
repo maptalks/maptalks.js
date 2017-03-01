@@ -232,13 +232,15 @@ class TileLayer extends Layer {
 
         for (let i = -(left); i < right; i++) {
             for (let j = -(top); j < bottom; j++) {
+                let p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
+                let vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j)._round();
                 let tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
                     tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
-                    tileId = [tileIndex['y'], tileIndex['x'], zoom].join('__'),
+                    tileId = [tileIndex['idy'], tileIndex['idx'], zoom].join('__'),
                     tileDesc = {
                         'url': tileUrl,
-                        'point': new Point(center2D.x + tileW * i, center2D.y + tileH * j),
-                        'viewPoint' : new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j)._sub(1E-6, 1E-6)._round(),
+                        'point': p,
+                        'viewPoint' : vp,
                         'id': tileId,
                         'z': zoom,
                         'x' : tileIndex['x'],
