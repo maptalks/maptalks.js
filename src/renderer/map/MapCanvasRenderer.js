@@ -96,7 +96,6 @@ export default class MapCanvasRenderer extends MapRenderer {
         panels.front.style.height = panels.frontLayer.style.height = height;
         panels.back.style.width = panels.backLayer.style.width = width;
         panels.back.style.height = panels.backLayer.style.height = height;
-        // panels.front.style.perspective = panels.back.style.perspective = height;
         this._updateCanvasSize();
     }
 

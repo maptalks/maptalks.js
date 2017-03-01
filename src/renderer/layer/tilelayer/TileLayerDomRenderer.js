@@ -123,20 +123,16 @@ export default class TileLayerDomRenderer extends Class {
         const container = this._getTileContainer();
         if (!map.layerMatrix) {
             removeTransform(container);
-            if (this._containerWidth || this._containerHeight) {
+            if (container.style.width || container.style.height) {
                 container.style.width = null;
                 container.style.height = null;
-                delete this._containerWidth;
-                delete this._containerHeight;
             }
         } else {
             const matrix = map.layerMatrix.join();
             const size = map.getSize();
-            if (this._containerWidth !== size['width'] || this._containerHeight !== size['height']) {
+            if (parseInt(container.style.width) !== size['width'] || parseInt(container.style.height) !== size['height']) {
                 container.style.width = size['width'] + 'px';
                 container.style.height = size['height'] + 'px';
-                this._containerWidth = size['width'];
-                this._containerHeight = size['height'];
             }
             const offset = map.offsetPlatform();
             container.style[TRANSFORM] = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + matrix + ')';
@@ -152,10 +148,21 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     onZooming(param) {
-        var zoom = Math.floor(param['from']);
-
+        const map = this.getMap();
+        const zoom = Math.floor(param['from']);
         if (this._levelContainers && this._levelContainers[zoom]) {
-            setTransformMatrix(this._levelContainers[zoom], param.matrix['view']);
+            var matrix = param.matrix['view'];
+            const pitch = map.getPitch();
+            if (pitch) {
+                matrix = matrix.slice(0);
+                matrix[4] = matrix[5] = 0;
+                const offset = map.offsetPlatform();
+                const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + map.layerMatrix.join() + ') matrix(' + matrix.join() + ')';
+                this._levelContainers[zoom].style[TRANSFORM] = transform;
+            } else {
+                setTransformMatrix(this._levelContainers[zoom], matrix);
+            }
+
         }
     }
 
