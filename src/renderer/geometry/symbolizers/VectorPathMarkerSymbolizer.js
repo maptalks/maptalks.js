@@ -1,4 +1,5 @@
 import { isNil } from 'core/util';
+import Browser from 'core/Browser';
 import { getMarkerPathBase64 } from 'core/util/resource';
 import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
 
@@ -17,7 +18,6 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
     constructor(symbol, geometry, painter) {
         super(symbol, geometry, painter);
         this.style = this._defineStyle(this.translate());
-        this._url = [getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
         //IE must have a valid width and height to draw a svg image
         //otherwise, error will be thrown
         if (isNil(this.style['markerWidth'])) {
@@ -25,6 +25,12 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
         }
         if (isNil(this.style['markerHeight'])) {
             this.style['markerHeight'] = 80;
+        }
+        if (Browser.gecko) {
+            // Firefox requires valid width and height attributes in SVG's root element.
+            this._url = [getMarkerPathBase64(symbol, this.style['markerWidth'], this.style['markerHeight']), this.style['markerWidth'], this.style['markerHeight']];
+        } else {
+            this._url = [getMarkerPathBase64(symbol), symbol['markerWidth'], symbol['markerHeight']];
         }
     }
 
