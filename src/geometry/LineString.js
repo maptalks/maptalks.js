@@ -1,4 +1,4 @@
-import { isNil } from 'core/util';
+import { isNil, isFunction } from 'core/util';
 import { Animation } from 'core/Animation';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
@@ -83,18 +83,20 @@ class LineString extends Path {
      * @param  {Object} [options=null] animation options
      * @param  {Number} [options.duration=1000] duration
      * @param  {String} [options.easing=out] animation easing
+     * @param  {Function} [cb=null] callback function in animation
      * @return {LineString}         this
      */
-    animateShow(options) {
-        if (!options) {
+    animateShow(options = {}, cb) {
+        if (isFunction(options)) {
             options = {};
+            cb = options;
         }
-        var coordinates = this.getCoordinates();
-        var duration = options['duration'] || 1000;
-        var length = this.getLength();
-        var easing = options['easing'] || 'out';
+        const coordinates = this.getCoordinates();
+        const duration = options['duration'] || 1000;
+        const length = this.getLength();
+        const easing = options['easing'] || 'out';
         this.setCoordinates([]);
-        var player = Animation.animate({
+        const player = Animation.animate({
             't': duration
         }, {
             'duration': duration,
@@ -103,9 +105,15 @@ class LineString extends Path {
             if (!this.getMap()) {
                 player.finish();
                 this.setCoordinates(coordinates);
+                if (cb) {
+                    cb(frame);
+                }
                 return;
             }
             this._drawAnimFrame(frame.styles.t, duration, length, coordinates);
+            if (cb) {
+                cb(frame);
+            }
         });
         player.play();
         return this;
