@@ -172,7 +172,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
         });
         if ('addEventListener' in obj) {
             //滚轮事件的特殊处理
-            if (type === 'mousewheel' && document['mozHidden'] !== undefined) {
+            if (type === 'mousewheel' && Browser.gecko) {
                 type = 'DOMMouseScroll';
             }
             obj.addEventListener(type, eventHandler, false);
@@ -194,7 +194,7 @@ export function removeDomEvent(obj, typeArr, handler) {
     function doRemove(type, callback) {
         if ('removeEventListener' in obj) {
             //mouse wheel in firefox
-            if (type === 'mousewheel' && document['mozHidden'] !== undefined) {
+            if (type === 'mousewheel' && Browser.gecko) {
                 type = 'DOMMouseScroll';
             }
             obj.removeEventListener(type, callback, false);
