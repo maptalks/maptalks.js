@@ -267,12 +267,23 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * 2. zoom levels and resolutions. <br>
      * 3. full extent.<br>
      * There are some [predefined views]{@link http://www.foo.com}, and surely you can [define a custom one.]{@link http://www.foo.com}.<br>
-     * View can also be set by map.config('view', view);
+     * View can also be updated by map.config('view', view);
      * @param {View} view - view settings
      * @returns {Map} this
      * @fires Map#viewchange
      * @example
      *  map.setView({
+            projection:'EPSG:4326',
+            resolutions: (function() {
+                var resolutions = [];
+                for (var i=0; i < 19; i++) {
+                    resolutions[i] = 180/(Math.pow(2, i)*128);
+                }
+                return resolutions;
+            })()
+     *  });
+       @example
+     *  map.config('view', {
             projection:'EPSG:4326',
             resolutions: (function() {
                 var resolutions = [];

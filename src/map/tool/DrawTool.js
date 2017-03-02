@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { isArrayHasData } from 'core/util';
+import { isNil, isArrayHasData } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import { getExternalResources } from 'core/util/resource';
 import { stopPropagation } from 'core/util/dom';
@@ -168,12 +168,10 @@ class DrawTool extends MapTool {
 
     onEnable() {
         var map = this.getMap();
-        this._mapDraggable = map.options['draggable'];
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
         this._autoBorderPanning = map.options['autoBorderPanning'];
         map.config({
             'autoBorderPanning': true,
-            'draggable': false,
             'doubleClickZoom': false
         });
         this._drawToolLayer = this._getDrawLayer();
@@ -190,9 +188,11 @@ class DrawTool extends MapTool {
         var map = this.getMap();
         map.config({
             'autoBorderPanning': this._autoBorderPanning,
-            'draggable': this._mapDraggable,
             'doubleClickZoom': this._mapDoubleClickZoom
         });
+        if (!isNil(this._mapDraggable)) {
+            map.config('draggable', this._mapDraggable);
+        }
         delete this._autoBorderPanning;
         delete this._mapDraggable;
         delete this._mapDoubleClickZoom;
@@ -237,6 +237,11 @@ class DrawTool extends MapTool {
                 'click': this._clickForPoint
             };
         } else if (action === 'drag') {
+            const map = this.getMap();
+            this._mapDraggable = map.options['draggable'];
+            map.config({
+                'draggable' : false
+            });
             return {
                 'mousedown': this._mousedownToDraw
             };
@@ -470,9 +475,11 @@ class DrawTool extends MapTool {
      * @private
      */
     _getMouseContainerPoint(event) {
-        stopPropagation(event['domEvent']);
-        var result = event['containerPoint'];
-        return result;
+        const action = this._getRegisterMode()['action'];
+        if (action === 'drag') {
+            stopPropagation(event['domEvent']);
+        }
+        return event['containerPoint'];
     }
 
     _isValidContainerPoint(containerPoint) {
