@@ -167,13 +167,20 @@ class DrawTool extends MapTool {
     }
 
     onEnable() {
-        var map = this.getMap();
+        const map = this.getMap();
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
         this._autoBorderPanning = map.options['autoBorderPanning'];
         map.config({
             'autoBorderPanning': true,
             'doubleClickZoom': false
         });
+        const action = this._getRegisterMode()['action'];
+        if (action === 'drag') {
+            this._mapDraggable = map.options['draggable'];
+            map.config({
+                'draggable' : false
+            });
+        }
         this._drawToolLayer = this._getDrawLayer();
         this._clearStage();
         this._loadResources();
@@ -237,11 +244,6 @@ class DrawTool extends MapTool {
                 'click': this._clickForPoint
             };
         } else if (action === 'drag') {
-            const map = this.getMap();
-            this._mapDraggable = map.options['draggable'];
-            map.config({
-                'draggable' : false
-            });
             return {
                 'mousedown': this._mousedownToDraw
             };
