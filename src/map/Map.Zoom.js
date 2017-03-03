@@ -137,7 +137,6 @@ Map.include(/** @lends Map.prototype */{
         if (zoomOffset && (zoomOffset.x !== 0 || zoomOffset.y !== 0)) {
             this._offsetCenterByPixel(zoomOffset._multi(-1));
         }
-        this._calcMatrices();
     },
 
     _checkZoom(nextZoom) {
