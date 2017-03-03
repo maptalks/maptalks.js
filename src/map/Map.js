@@ -1374,7 +1374,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     onMoving(param) {
-        this._calcMatrices();
         /**
          * moving event
          * @event Map#moving
@@ -1391,7 +1390,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     onMoveEnd(param) {
         this._moving = false;
-        this._calcMatrices();
         this._trySetCursor('default');
         /**
          * moveend event
@@ -1676,6 +1674,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.width = mSize['width'];
         this.height = mSize['height'];
         this._getRenderer().updateMapSize(mSize);
+        this._calcMatrices();
         return this;
     }
 
@@ -1690,6 +1689,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     _setPrjCenter(pcenter) {
         this._prjCenter = pcenter;
+        this._calcMatrices();
     }
 
     _verifyExtent(center) {
