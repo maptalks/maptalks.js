@@ -139,6 +139,86 @@ class TileLayer extends Layer {
         return profile;
     }
 
+    _getTiles() {
+        // rendWhenReady = false;
+        const map = this.getMap();
+        if (!map) {
+            return null;
+        }
+        if (!this.isVisible()) {
+            return null;
+        }
+
+        const tileConfig = this._getTileConfig();
+        if (!tileConfig) {
+            return null;
+        }
+
+        const tileSize = this.getTileSize(),
+            tileW = tileSize['width'],
+            tileH = tileSize['height'],
+            zoom = map.getZoom(),
+            res = map._getResolution();
+
+        const extent2d = map._get2DExtent();
+        const containerCenter = new Point(map.width / 2, map.height / 2),
+            center2d = map._containerPointToPoint(containerCenter);
+        if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
+            return {
+                'tiles' : []
+            };
+        }
+
+        const pitch = map.getPitch();
+
+        //Get description of center tile including left and top offset
+        const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
+        const offset = centerTile['offset'];
+        const center2D = map._prjToPoint(map._getPrjCenter())._substract(offset.x, offset.y);
+        const centerViewPoint = pitch ? containerCenter._substract(offset.x, offset.y) : map._pointToViewPoint(center2D);
+
+        const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
+        //Number of tiles around the center tile
+        const top = Math.ceil(Math.abs(center2d.y - extent2d['ymin'] - offset.y) / tileH) + keepBuffer,
+            left = Math.ceil(Math.abs(center2d.x - extent2d['xmin'] - offset.x) / tileW) + keepBuffer,
+            bottom = Math.ceil(Math.abs(extent2d['ymax'] - center2d.y + offset.y) / tileH) + keepBuffer,
+            right = Math.ceil(Math.abs(extent2d['xmax'] - center2d.x + offset.x) / tileW) + keepBuffer;
+
+        const tiles = [];
+        var centerTileId;
+        for (let i = -(left); i < right; i++) {
+            for (let j = -(top); j < bottom; j++) {
+                let p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
+                let vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j)._round();
+                let tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
+                    tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
+                    tileId = [tileIndex['idy'], tileIndex['idx'], zoom].join('__'),
+                    tileDesc = {
+                        'url': tileUrl,
+                        'point': p,
+                        'viewPoint' : vp,
+                        'id': tileId,
+                        'z': zoom,
+                        'x' : tileIndex['x'],
+                        'y' : tileIndex['y']
+                    };
+                tiles.push(tileDesc);
+                if (i === 0 && j === 0) {
+                    centerTileId = tileId;
+                }
+            }
+        }
+
+        //sort tiles according to tile's distance to center
+        tiles.sort(function (a, b) {
+            return (b['point'].distanceTo(center2D) - a['point'].distanceTo(center2D));
+        });
+        return {
+            'center' : centerTileId,
+            'tiles': tiles
+        };
+    }
+
     _initRenderer() {
         var renderer = this.options['renderer'];
         if (this.getMap().getBaseLayer() === this) {
@@ -181,82 +261,6 @@ class TileLayer extends Layer {
             this._initTileConfig();
         }
         return this._tileConfig || this._defaultTileConfig;
-    }
-
-    _getTiles() {
-        // rendWhenReady = false;
-        const map = this.getMap();
-        if (!map) {
-            return null;
-        }
-        if (!this.isVisible()) {
-            return null;
-        }
-
-        const tileConfig = this._getTileConfig();
-        if (!tileConfig) {
-            return null;
-        }
-
-        const tileSize = this.getTileSize(),
-            tileW = tileSize['width'],
-            tileH = tileSize['height'],
-            zoom = map.getZoom(),
-            res = map._getResolution();
-
-        const extent2d = map._get2DExtent();
-        const containerCenter = new Point(map.width / 2, map.height / 2),
-            center2d = map._containerPointToPoint(containerCenter);
-        if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
-            return {
-                'tiles' : []
-            };
-        }
-
-        const pitch = map.getPitch();
-
-        //Get description of center tile including left and top offset
-        const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
-
-        const center2D = map._prjToPoint(map._getPrjCenter())._substract(centerTile['offsetLeft'], centerTile['offsetTop']);
-        const centerViewPoint = pitch ? containerCenter._substract(centerTile['offsetLeft'], centerTile['offsetTop']) : map._pointToViewPoint(center2D);
-
-        const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
-        //Number of tiles around the center tile
-        const top = Math.ceil(Math.abs(center2d.y - extent2d['ymin'] - centerTile['offsetTop']) / tileH) + keepBuffer,
-            left = Math.ceil(Math.abs(center2d.x - extent2d['xmin'] - centerTile['offsetLeft']) / tileW) + keepBuffer,
-            bottom = Math.ceil(Math.abs(extent2d['ymax'] - center2d.y + centerTile['offsetTop']) / tileH) + keepBuffer,
-            right = Math.ceil(Math.abs(extent2d['xmax'] - center2d.x + centerTile['offsetLeft']) / tileW) + keepBuffer;
-
-        const tiles = [];
-
-        for (let i = -(left); i < right; i++) {
-            for (let j = -(top); j < bottom; j++) {
-                let p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
-                let vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j)._round();
-                let tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
-                    tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
-                    tileId = [tileIndex['idy'], tileIndex['idx'], zoom].join('__'),
-                    tileDesc = {
-                        'url': tileUrl,
-                        'point': p,
-                        'viewPoint' : vp,
-                        'id': tileId,
-                        'z': zoom,
-                        'x' : tileIndex['x'],
-                        'y' : tileIndex['y']
-                    };
-                tiles.push(tileDesc);
-            }
-        }
-
-        //sort tiles according to tile's distance to center
-        tiles.sort(function (a, b) {
-            return (b['point'].distanceTo(center2D) - a['point'].distanceTo(center2D));
-        });
-        return {
-            'tiles': tiles
-        };
     }
 
     _getTileUrl(x, y, z) {

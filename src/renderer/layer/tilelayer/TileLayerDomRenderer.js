@@ -16,6 +16,7 @@ import {
 } from 'core/util/dom';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
+import Point from 'geo/Point';
 import TileLayer from 'layer/tile/TileLayer';
 
 /**
@@ -48,13 +49,13 @@ export default class TileLayerDomRenderer extends Class {
     show() {
         if (this._container) {
             this.render();
-            this._container.style.display = '';
+            this._show();
         }
     }
 
     hide() {
         if (this._container) {
-            this._container.style.display = 'none';
+            this._hide();
             this.clear();
         }
     }
@@ -107,6 +108,20 @@ export default class TileLayerDomRenderer extends Class {
             }
         }
 
+        if (this._preCenterId) {
+            // caculate tile container's offset if map is pitching
+            let preCenterTilePos = this._tiles[this._preCenterId]['viewPoint'];
+            let current;
+            for (let i = tiles.length - 1; i >= 0; i--) {
+                if (tiles[i]['id'] === this._preCenterId) {
+                    current = tiles[i]['viewPoint'];
+                    break;
+                }
+            }
+            const offset = current.sub(preCenterTilePos);
+            this._cameraOffset._add(offset);
+        }
+
         var cachedTile;
         for (let i = tiles.length - 1; i >= 0; i--) {
             cachedTile = this._tiles[tiles[i]['id']];
@@ -114,29 +129,38 @@ export default class TileLayerDomRenderer extends Class {
                 //tile is already added
                 cachedTile.current = true;
                 if (pitch) {
-                    cachedTile['el'].style[TRANSFORM] = 'translate3d(' + tiles[i]['viewPoint'].x + 'px, ' + tiles[i]['viewPoint'].y + 'px, 0px)';
+                    cachedTile['viewPoint'] = tiles[i]['viewPoint'];
                 }
                 continue;
             }
             tiles[i].current = true;
+            if (this._cameraOffset) {
+                tiles[i]['viewPoint']._sub(this._cameraOffset);
+            }
             queue.push(tiles[i]);
         }
         const container = this._getTileContainer();
-        if (!map.layerMatrix) {
+        const cameraMat = map.getCameraMatrix();
+        if (!cameraMat) {
             removeTransform(container);
             if (container.style.width || container.style.height) {
                 container.style.width = null;
                 container.style.height = null;
             }
         } else {
-            const matrix = join(map.layerMatrix);
+            if (!this._cameraOffset) {
+                this._cameraOffset = new Point(0, 0);
+            }
+            this._preCenterId = tileGrid['center'];
+            const matrix = join(cameraMat);
             const size = map.getSize();
             if (parseInt(container.style.width) !== size['width'] || parseInt(container.style.height) !== size['height']) {
                 container.style.width = size['width'] + 'px';
                 container.style.height = size['height'] + 'px';
             }
-            const offset = map.offsetPlatform();
-            container.style[TRANSFORM] = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + matrix + ')';
+            container.childNodes[0].style[TRANSFORM] = 'translate3d(' + this._cameraOffset.x + 'px, ' + this._cameraOffset.y + 'px, 0px)';
+            const mapOffset = map.offsetPlatform();
+            container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
         }
 
         if (queue.length > 0) {
@@ -144,7 +168,7 @@ export default class TileLayerDomRenderer extends Class {
             for (let i = 0, l = queue.length; i < l; i++) {
                 fragment.appendChild(this._loadTile(queue[i]));
             }
-            container.appendChild(fragment);
+            this._appendTileFragment(container, fragment);
         }
     }
 
@@ -158,7 +182,7 @@ export default class TileLayerDomRenderer extends Class {
                 matrix = matrix.slice(0);
                 matrix[4] = matrix[5] = 0;
                 const offset = map.offsetPlatform();
-                const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(map.layerMatrix) + ') matrix(' + matrix.join() + ')';
+                const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(map.getCameraMatrix()) + ') matrix(' + matrix.join() + ')';
                 this._levelContainers[zoom].style[TRANSFORM] = transform;
             } else {
                 setTransformMatrix(this._levelContainers[zoom], matrix);
@@ -383,12 +407,23 @@ export default class TileLayerDomRenderer extends Class {
         }
         var zoom = this.getMap().getZoom();
         if (!this._levelContainers[zoom]) {
-            var container = this._levelContainers[zoom] = createEl('div', 'maptalks-tilelayer-level');
+            const container = this._levelContainers[zoom] = createEl('div', 'maptalks-tilelayer-level');
             container.style.cssText = 'position:absolute;left:0px;top:0px;';
             container.style.willChange = 'transform';
+
+            const tileContainer =  createEl('div');
+            tileContainer.style.cssText = 'position:absolute;left:0px;top:0px;';
+            container.appendChild(tileContainer);
+
             this._container.appendChild(container);
         }
         return this._levelContainers[zoom];
+    }
+
+    _appendTileFragment(container, fragment) {
+        if (container.childNodes[0]) {
+            container.childNodes[0].appendChild(fragment);
+        }
     }
 
     _createLayerContainer() {
@@ -437,6 +472,14 @@ export default class TileLayerDomRenderer extends Class {
         return Browser.any3d || Browser.ie9;
     }
 
+    _show() {
+        this._container.style.display = '';
+    }
+
+    _hide() {
+        this._container.style.display = 'none';
+    }
+
     _onMapMoving() {
         if (!this.getMap().getPitch() && !this.layer.options['renderWhenPanning']) {
             return;
@@ -456,8 +499,8 @@ export default class TileLayerDomRenderer extends Class {
         this._fadeAnimated = !Browser.mobile && true;
         this._pruneTiles(true);
         this._zoomStartPos = this.getMap().offsetPlatform();
-        if (!this._canTransform() && this._container) {
-            this._container.style.display = 'none';
+        if (!this._canTransform()) {
+            this._hide();
         }
     }
 
@@ -465,6 +508,8 @@ export default class TileLayerDomRenderer extends Class {
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }
+        delete this._preCenterId;
+        delete this._cameraOffset;
         this.render();
         if (this._levelContainers) {
             if (this._canTransform()) {
@@ -476,7 +521,7 @@ export default class TileLayerDomRenderer extends Class {
                 if (this._levelContainers[param.from]) {
                     this._levelContainers[param.from].style.display = 'none';
                 }
-                this._container.style.display = '';
+                this._show();
             }
         }
     }
