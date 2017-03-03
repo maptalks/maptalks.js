@@ -3,6 +3,7 @@ import {
     throttle,
     requestAnimFrame
 } from 'core/util';
+import * as mat4 from 'core/util/mat4';
 import {
     on,
     createEl,
@@ -82,7 +83,7 @@ export default class TileLayerDomRenderer extends Class {
         return false;
     }
 
-    render() {
+    render(updateTiles = true) {
         const layer = this.layer;
         const map = this.getMap();
         if (!this._container) {
@@ -149,6 +150,7 @@ export default class TileLayerDomRenderer extends Class {
             }
         } else {
             if (!this._cameraOffset) {
+                // the offset of tile container due to map's pitch
                 this._cameraOffset = new Point(0, 0);
             }
             this._preCenterId = tileGrid['center'];
@@ -162,14 +164,16 @@ export default class TileLayerDomRenderer extends Class {
             const mapOffset = map.offsetPlatform();
             container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
         }
-
-        if (queue.length > 0) {
-            const fragment = document.createDocumentFragment();
-            for (let i = 0, l = queue.length; i < l; i++) {
-                fragment.appendChild(this._loadTile(queue[i]));
+        if (updateTiles) {
+            if (queue.length > 0) {
+                const fragment = document.createDocumentFragment();
+                for (let i = 0, l = queue.length; i < l; i++) {
+                    fragment.appendChild(this._loadTile(queue[i]));
+                }
+                this._appendTileFragment(container, fragment);
             }
-            this._appendTileFragment(container, fragment);
         }
+
     }
 
     onZooming(param) {
@@ -179,10 +183,27 @@ export default class TileLayerDomRenderer extends Class {
             var matrix = param.matrix['view'];
             const pitch = map.getPitch();
             if (pitch) {
+               /*
+                // fixed scale from center
                 matrix = matrix.slice(0);
                 matrix[4] = matrix[5] = 0;
                 const offset = map.offsetPlatform();
                 const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(map.getCameraMatrix()) + ') matrix(' + matrix.join() + ')';
+                */
+                const scale = matrix[0];
+                const size = map.getSize();
+                const origin = param['origin'];
+                const m = mat4.create();
+                const matOffset = [
+                    (origin.x - size['width'] / 2)  * (1 - scale),
+                    //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
+                    (origin.y - size['height'] / 2) * (1 - scale) / Math.cos(pitch * Math.PI / 180),
+                    0
+                ];
+                mat4.translate(m, map.getCameraMatrix(), matOffset);
+                mat4.scale(m, m, [scale, scale, 1]);
+                const offset = map.offsetPlatform();
+                const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(m) + ')';
                 this._levelContainers[zoom].style[TRANSFORM] = transform;
             } else {
                 setTransformMatrix(this._levelContainers[zoom], matrix);
@@ -413,6 +434,7 @@ export default class TileLayerDomRenderer extends Class {
 
             const tileContainer =  createEl('div');
             tileContainer.style.cssText = 'position:absolute;left:0px;top:0px;';
+            tileContainer.style.willChange = 'transform';
             container.appendChild(tileContainer);
 
             this._container.appendChild(container);

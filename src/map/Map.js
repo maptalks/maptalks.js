@@ -1857,12 +1857,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return new Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
     }*/
 
-    _viewPointToPoint(viewPoint) {
-        return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint));
+    _viewPointToPoint(viewPoint, zoom) {
+        return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint), zoom);
     }
 
-    _pointToViewPoint(point) {
-        return this._prjToViewPoint(this._pointToPrj(point));
+    _pointToViewPoint(point, zoom) {
+        return this._prjToViewPoint(this._pointToPrj(point, zoom));
     }
 
     /* eslint no-extend-native: 0 */

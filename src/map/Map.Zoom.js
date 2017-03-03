@@ -8,9 +8,6 @@ Map.include(/** @lends Map.prototype */{
 
     _zoom(nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
-        if (this.getPitch()) {
-            origin = null;
-        }
         nextZoom = this._checkZoom(nextZoom);
         this.onZoomStart(nextZoom);
         this._frameZoom = this.getZoom();
@@ -30,7 +27,7 @@ Map.include(/** @lends Map.prototype */{
         }
 
         this.onZoomStart(nextZoom);
-        if (!origin || this.getPitch()) {
+        if (!origin) {
             origin = new Point(this.width / 2, this.height / 2);
         }
         this._startZoomAnimation(nextZoom, origin, startScale);
@@ -85,7 +82,7 @@ Map.include(/** @lends Map.prototype */{
         if (isNil(startScale)) {
             startScale = 1;
         }
-        var zoomOffset = this._zoomTo(nextZoom, origin, startScale);
+        this._zoomTo(nextZoom, origin, startScale);
         var res = this.getResolution(nextZoom);
         var fromRes = this.getResolution(this._startZoomVal);
         var scale = fromRes / res / startScale;
@@ -106,7 +103,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zooming', { 'from' : this._startZoomVal, 'to': nextZoom, 'origin' : zoomOffset, 'matrix' : matrix });
+        this._fireEvent('zooming', { 'from' : this._startZoomVal, 'to': nextZoom, 'origin' : origin, 'matrix' : matrix });
         this._frameZoom = nextZoom;
         var renderer = this._getRenderer();
         if (renderer) {
@@ -141,7 +138,6 @@ Map.include(/** @lends Map.prototype */{
             this._offsetCenterByPixel(zoomOffset._multi(-1));
         }
         this._calcMatrices();
-        return zoomOffset;
     },
 
     _checkZoom(nextZoom) {
