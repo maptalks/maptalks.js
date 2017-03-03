@@ -13,6 +13,7 @@ import './Map.Pan';
 import './Map.Profile';
 import './Map.Topo';
 import './Map.Zoom';
+import './Map.Camera';
 
 export { Map };
 
