@@ -1,4 +1,5 @@
 import {
+    join,
     throttle,
     requestAnimFrame
 } from 'core/util';
@@ -128,7 +129,7 @@ export default class TileLayerDomRenderer extends Class {
                 container.style.height = null;
             }
         } else {
-            const matrix = map.layerMatrix.join();
+            const matrix = join(map.layerMatrix);
             const size = map.getSize();
             if (parseInt(container.style.width) !== size['width'] || parseInt(container.style.height) !== size['height']) {
                 container.style.width = size['width'] + 'px';
@@ -157,7 +158,7 @@ export default class TileLayerDomRenderer extends Class {
                 matrix = matrix.slice(0);
                 matrix[4] = matrix[5] = 0;
                 const offset = map.offsetPlatform();
-                const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + map.layerMatrix.join() + ') matrix(' + matrix.join() + ')';
+                const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(map.layerMatrix) + ') matrix(' + matrix.join() + ')';
                 this._levelContainers[zoom].style[TRANSFORM] = transform;
             } else {
                 setTransformMatrix(this._levelContainers[zoom], matrix);

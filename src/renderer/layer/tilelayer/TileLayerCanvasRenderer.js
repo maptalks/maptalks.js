@@ -33,12 +33,14 @@ export default class TileLayerRenderer extends CanvasRenderer {
         this._tileQueue = {};
     }
 
-    clear() {
-        this.clearCanvas();
-        this.requestMapToRender();
-    }
-
     draw() {
+        if (this.getMap().getPitch()) {
+            if (console) {
+                console.warn('TileLayer with canvas renderer can\'t be pitched, use dom renderer (\'renderer\' : \'dom\') instead.');
+            }
+            this.clear();
+            return;
+        }
         var layer = this.layer;
         var tileGrid = layer._getTiles();
         if (!tileGrid) {
