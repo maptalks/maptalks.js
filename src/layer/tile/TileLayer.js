@@ -1,4 +1,4 @@
-import { isNode, isArrayHasData, isFunction } from 'core/util';
+import { isNode, isArrayHasData, isFunction, isNil, isInteger } from 'core/util';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
@@ -156,13 +156,16 @@ class TileLayer extends Layer {
 
         const tileSize = this.getTileSize(),
             tileW = tileSize['width'],
-            tileH = tileSize['height'],
-            zoom = map.getZoom(),
-            res = map._getResolution();
+            tileH = tileSize['height'];
+        var zoom = map.getZoom();
+        if (!isInteger(zoom) && !isNil(map._frameZoom)) {
+            zoom = (zoom > map._frameZoom ? Math.floor(zoom) : Math.ceil(zoom));
+        }
+        const res = map._getResolution(zoom);
 
         const extent2d = map._get2DExtent();
         const containerCenter = new Point(map.width / 2, map.height / 2),
-            center2d = map._containerPointToPoint(containerCenter);
+            center2d = map._containerPointToPoint(containerCenter, zoom);
         if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
             return {
                 'tiles' : []
@@ -174,8 +177,8 @@ class TileLayer extends Layer {
         //Get description of center tile including left and top offset
         const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
         const offset = centerTile['offset'];
-        const center2D = map._prjToPoint(map._getPrjCenter())._substract(offset.x, offset.y);
-        const centerViewPoint = pitch ? containerCenter._substract(offset.x, offset.y) : map._pointToViewPoint(center2D);
+        const center2D = map._prjToPoint(map._getPrjCenter(), zoom)._substract(offset.x, offset.y);
+        const centerViewPoint = pitch ? containerCenter._substract(offset.x, offset.y) : map._pointToViewPoint(center2D, zoom);
 
         const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
         //Number of tiles around the center tile

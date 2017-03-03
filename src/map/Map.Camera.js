@@ -135,7 +135,7 @@ Map.include(/** @lends Map.prototype */{
         const centerPoint = this._prjToPoint(this._prjCenter);
         const x = centerPoint.x, y = centerPoint.y;
 
-        const altitude = 1.5;
+        const altitude = this._altitude = 1.5;
          // Find the distance from the center point to the center top in altitude units using law of sines.
         const halfFov = Math.atan(0.5 / altitude);
         const topHalfSurfaceDistance = Math.sin(halfFov) * altitude / Math.sin(Math.PI / 2 - this._pitch - halfFov);
