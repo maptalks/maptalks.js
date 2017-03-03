@@ -1374,6 +1374,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     onMoving(param) {
+        this._calcMatrices();
         /**
          * moving event
          * @event Map#moving
@@ -1390,6 +1391,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     onMoveEnd(param) {
         this._moving = false;
+        this._calcMatrices();
         this._trySetCursor('default');
         /**
          * moveend event
@@ -1414,6 +1416,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     getPitch() {
         return 0;
+    }
+
+    _calcMatrices() {
     }
 
     //-----------------------------------------------------------
@@ -1836,7 +1841,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return containerPoint._substract(platformOffset);
     }
 
-    _pointToContainerPoint(point, zoom) {
+    /*_pointToContainerPoint(point, zoom) {
         point = this._pointToPoint(point, zoom);
         var centerPoint = this._prjToPoint(this._getPrjCenter());
         return new Point(
@@ -1850,7 +1855,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             scale = (!isNil(zoom) ? this._getResolution() / this._getResolution(zoom) : 1);
 
         return new Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
-    }
+    }*/
 
     _viewPointToPoint(viewPoint) {
         return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint));

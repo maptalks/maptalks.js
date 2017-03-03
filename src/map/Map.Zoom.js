@@ -136,9 +136,11 @@ Map.include(/** @lends Map.prototype */{
         const zScale = this._getResolution(this._frameZoom) / this._getResolution(nextZoom);
         const zoomOffset = this._getZoomCenterOffset(nextZoom, origin, startScale, zScale);
         this._zoomLevel = nextZoom;
+        this._calcMatrices();
         if (zoomOffset && (zoomOffset.x !== 0 || zoomOffset.y !== 0)) {
             this._offsetCenterByPixel(zoomOffset._multi(-1));
         }
+        this._calcMatrices();
         return zoomOffset;
     },
 

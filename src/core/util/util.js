@@ -291,6 +291,45 @@ export function sign(x) {
 }
 
 /*
+ * Interpolate between two number.
+ *
+ * @param {Number} from
+ * @param {Number} to
+ * @param {Number} t interpolation factor between 0 and 1
+ * @returns {Number} interpolated color
+ */
+export function interpolate(a, b, t) {
+    return (a * (1 - t)) + (b * t);
+}
+
+/*
+ * constrain n to the given range, excluding the minimum, via modular arithmetic
+ * @param {Number} n value
+ * @param {Number} min the minimum value to be returned, exclusive
+ * @param {Number} max the maximum value to be returned, inclusive
+ * @returns {Number} constrained number
+ * @private
+ */
+export function wrap(n, min, max) {
+    var d = max - min;
+    var w = ((n - min) % d + d) % d + min;
+    return (w === min) ? max : w;
+}
+
+/**
+ * constrain n to the given range via min + max
+ *
+ * @param {Number} n value
+ * @param {Number} min the minimum value to be returned
+ * @param {Number} max the maximum value to be returned
+ * @returns {Number} the clamped value
+ * @private
+ */
+export function clamp(n, min, max) {
+    return Math.min(max, Math.max(min, n));
+}
+
+/*
  * Is object an array and not empty.
  * @param {Object} obj
  * @return {Boolean} true|false

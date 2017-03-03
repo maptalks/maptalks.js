@@ -148,3 +148,17 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
 export function hasOwn(obj, key) {
     return hasOwnProperty.call(obj, key);
 }
+
+/**
+ * Join an array, standard or a typed one.
+ * @param  {Object[]} arr       array to join
+ * @param  {String} seperator  seperator
+ * @return {String}           result string
+ */
+export function join(arr, seperator) {
+    if (arr.join) {
+        return arr.join(seperator);
+    } else {
+        return Array.prototype.join.call(arr, seperator);
+    }
+}
