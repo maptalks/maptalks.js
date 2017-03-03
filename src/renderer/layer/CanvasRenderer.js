@@ -202,6 +202,11 @@ class CanvasRenderer extends Class {
         return false;
     }
 
+    clear() {
+        this.clearCanvas();
+        this.requestMapToRender();
+    }
+
     /**
      * Show the layer
      */
@@ -213,8 +218,7 @@ class CanvasRenderer extends Class {
      * Hide the layer
      */
     hide() {
-        this.clearCanvas();
-        this.requestMapToRender();
+        this.clear();
     }
 
     setZIndex() {
