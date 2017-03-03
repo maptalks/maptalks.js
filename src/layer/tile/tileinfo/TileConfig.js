@@ -1,4 +1,5 @@
 import { isString } from 'core/util';
+import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Transformation from 'geo/transformation/Transformation';
@@ -93,8 +94,7 @@ class TileConfig {
         return {
             'x': tileIndex['x'],
             'y': tileIndex['y'],
-            'offsetLeft': offsetLeft,
-            'offsetTop': offsetTop
+            'offset': new Point(offsetLeft, offsetTop)
         };
     }
 
