@@ -80,9 +80,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     isUpdateWhenZooming() {
-        var map = this.getMap();
-        var count = map._getRenderer()._getCountOfGeosToDraw();
-        return (this._hasPointSymbolizer && count > 0 && count <= map.options['pointThresholdOfZoomAnimation']);
+        const map = this.getMap();
+        const count = map._getRenderer()._getCountOfGeosToDraw();
+        return ((this._hasPointSymbolizer || map.getPitch()) && count > 0 && count <= map.options['pointThresholdOfZoomAnimation']);
     }
 
     _drawGeos(maskExtent2D) {

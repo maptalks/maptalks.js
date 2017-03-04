@@ -66,6 +66,7 @@ const options = {
 
     'clipFullExtent': false,
 
+    'zoomInCenter' : false,
     'zoomAnimation': (function () {
         return !isNode;
     })(),
@@ -1248,17 +1249,17 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
      */
     distanceToPixel(xDist, yDist, zoom) {
-        var projection = this.getProjection();
+        const projection = this.getProjection();
         if (!projection) {
             return null;
         }
-        var center = this.getCenter(),
-            target = projection.locate(center, xDist, yDist),
-            res = this._getResolution(zoom);
-
-        var width = !xDist ? 0 : (projection.project(new Coordinate(target.x, center.y)).x - projection.project(center).x) / res;
-        var height = !yDist ? 0 : (projection.project(new Coordinate(center.x, target.y)).y - projection.project(center).y) / res;
-        return new Size(Math.abs(width), Math.abs(height));
+        const scale = this.getScale();
+        const center = this.getCenter(),
+            target = projection.locate(center, xDist, yDist);
+        const p0 = this.coordinateToContainerPoint(center, zoom),
+            p1 = this.coordinateToContainerPoint(target, zoom);
+        p1._sub(p0)._multi(scale)._abs();
+        return new Size(p1.x, p1.y);
     }
 
     /**
@@ -1269,11 +1270,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Number}  distance - Geographical distance
      */
     pixelToDistance(width, height, zoom) {
-        var projection = this.getProjection();
+        const projection = this.getProjection();
         if (!projection) {
             return null;
         }
-        //����ǰˢ��scales
+        // const center = this.getCenter();
+        // const target = this.containerPointToCoordinate(new Point(this.width / 2 + width, this.height / 2 + height));
         var center = this.getCenter(),
             pcenter = this._getPrjCenter(),
             res = this._getResolution(zoom);
@@ -1412,13 +1414,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
-    getPitch() {
-        return 0;
-    }
-
-    _calcMatrices() {
-    }
-
     //-----------------------------------------------------------
     /**
      * try to change cursor when map is not setCursored
@@ -1547,6 +1542,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._registerDomEvents();
         this._loadAllLayers();
         this._getRenderer().onLoad();
+        if (this.options['pitch']) {
+            this.setPitch(this.options['pitch']);
+            delete this.options['pitch'];
+        }
         this._loaded = true;
         this._callOnLoadHooks();
         this._initTime = now();
@@ -1783,11 +1782,18 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this._view.getTransformation().untransform(point, this._getResolution(zoom));
     }
 
+    /**
+     * Convert point at zoom to point at current zoom
+     * @param  {Point} point point
+     * @param  {Number} zoom point's zoom
+     * @return {Point} point at current zoom
+     * @private
+     */
     _pointToPoint(point, zoom) {
         if (!isNil(zoom)) {
-            return point.multi(this._getResolution(zoom) / this._getResolution(this.getZoom()));
+            return point.multi(this._getResolution(zoom) / this._getResolution());
         }
-        return point;
+        return point.copy();
     }
 
     /**
@@ -1840,22 +1846,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         var platformOffset = this.offsetPlatform();
         return containerPoint._substract(platformOffset);
     }
-
-    /*_pointToContainerPoint(point, zoom) {
-        point = this._pointToPoint(point, zoom);
-        var centerPoint = this._prjToPoint(this._getPrjCenter());
-        return new Point(
-            this.width / 2 + point.x - centerPoint.x,
-            this.height / 2 + point.y - centerPoint.y
-        );
-    }
-
-    _containerPointToPoint(containerPoint, zoom) {
-        var centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
-            scale = (!isNil(zoom) ? this._getResolution() / this._getResolution(zoom) : 1);
-
-        return new Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
-    }*/
 
     _viewPointToPoint(viewPoint, zoom) {
         return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint), zoom);

@@ -1,6 +1,5 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
-import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Extent from 'geo/Extent';
 import Polygon from './Polygon';
@@ -173,21 +172,17 @@ class Rectangle extends Polygon {
     }
 
     _containsPoint(point, tolerance) {
-        var map = this.getMap(),
-            t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+        const map = this.getMap();
+        if (map.getCameraMatrix()) {
+            return super._containsPoint(point, tolerance);
+        }
+        var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             sp = map.coordinateToPoint(this._coordinates),
             pxSize = map.distanceToPixel(this._width, this._height);
-
-        var pxMin = new Point(sp.x, sp.y),
-            pxMax = new Point(sp.x + pxSize.width, sp.y + pxSize.height),
-            pxExtent = new PointExtent(pxMin.x - t, pxMin.y - t,
-                pxMax.x + t, pxMax.y + t);
-
-        point = new Point(point.x, point.y);
-
+        var pxExtent = new PointExtent(sp.x - t, sp.y - t,
+                sp.x + pxSize.width + t, sp.y + pxSize.height + t);
         return pxExtent.contains(point);
     }
-
     _computeExtent(measurer) {
         if (!measurer || !this._coordinates || isNil(this._width) || isNil(this._height)) {
             return null;
