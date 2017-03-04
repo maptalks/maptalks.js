@@ -234,15 +234,14 @@ class CanvasRenderer extends Class {
         if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
             return false;
         }
-        var extent2D = this.getMap()._get2DExtent();
-        var size = extent2D.getSize();
-        var leftTop = extent2D.getMin();
-        var detectPoint = point.substract(leftTop);
+        const map = this.getMap();
+        const size = map.getSize();
+        const detectPoint = map._pointToContainerPoint(point);
         if (detectPoint.x < 0 || detectPoint.x > size['width'] || detectPoint.y < 0 || detectPoint.y > size['height']) {
             return false;
         }
         try {
-            var imgData = this.context.getImageData(detectPoint.x, detectPoint.y, 1, 1).data;
+            const imgData = this.context.getImageData(detectPoint.x, detectPoint.y, 1, 1).data;
             if (imgData[3] > 0) {
                 return true;
             }
