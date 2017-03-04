@@ -1,4 +1,4 @@
-import { isNil, isInteger } from 'core/util';
+import { isNil } from 'core/util';
 import Browser from 'core/Browser';
 import { Animation } from 'core/Animation';
 import Point from 'geo/Point';
@@ -8,14 +8,13 @@ Map.include(/** @lends Map.prototype */{
 
     _zoom(nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
+        if (this.options['zoomInCenter']) {
+            origin = null;
+        }
         nextZoom = this._checkZoom(nextZoom);
         this.onZoomStart(nextZoom);
         this._frameZoom = this.getZoom();
         this.onZoomEnd(nextZoom, origin, startScale);
-    },
-
-    _isSeamlessZoom() {
-        return !isInteger(this._zoomLevel);
     },
 
     _zoomAnimation(nextZoom, origin, startScale) {
@@ -27,7 +26,7 @@ Map.include(/** @lends Map.prototype */{
         }
 
         this.onZoomStart(nextZoom);
-        if (!origin) {
+        if (!origin || this.options['zoomInCenter']) {
             origin = new Point(this.width / 2, this.height / 2);
         }
         this._startZoomAnimation(nextZoom, origin, startScale);

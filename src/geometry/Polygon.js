@@ -253,8 +253,10 @@ class Polygon extends Path {
             return false;
         }
 
-        // screen points
-        const points = this._getPath2DPoints(this._getPrjCoordinates()),
+        const projection = this.getMap().getProjection();
+        const shell = this.getShell().map(c => projection.project(c));
+
+        const points = this._getPath2DPoints(shell),
             isSplitted = Array.isArray(points[0]);
         if (isSplitted) {
             for (var i = 0; i < points.length; i++) {

@@ -76,17 +76,17 @@ class Circle extends CenterMixin(Polygon) {
      * @return {Coordinate[]} - shell coordinates
      */
     getShell() {
-        var measurer = this._getMeasurer(),
+        const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
             radius = this.getRadius();
         var shell = [],
             rad, dx, dy;
-        for (var i = 0; i < numberOfPoints; i++) {
+        for (let i = 0; i < numberOfPoints; i++) {
             rad = (360 * i / numberOfPoints) * Math.PI / 180;
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
-            var vertex = measurer.locate(center, dx, dy);
+            let vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
         return shell;
@@ -101,6 +101,9 @@ class Circle extends CenterMixin(Polygon) {
     }
 
     _containsPoint(point, tolerance) {
+        if (this.getMap().getPitch()) {
+            return super._containsPoint(point, tolerance);
+        }
         var center = this._getCenter2DPoint(),
             size = this.getSize(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;

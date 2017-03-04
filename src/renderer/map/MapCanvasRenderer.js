@@ -142,13 +142,14 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     _getCountOfGeosToDraw() {
-        var layers = this._getAllLayerToRender(),
-            geos, renderer,
+        const map = this.map;
+        const layers = this._getAllLayerToRender();
+        var geos, renderer,
             total = 0;
         for (var i = layers.length - 1; i >= 0; i--) {
             renderer = layers[i]._getRenderer();
             if ((layers[i] instanceof OverlayLayer) &&
-                layers[i].isVisible() && !layers[i].isEmpty() && renderer._hasPointSymbolizer) {
+                layers[i].isVisible() && !layers[i].isEmpty() && (renderer._hasPointSymbolizer || map.getPitch())) {
                 geos = renderer._geosToDraw;
                 if (geos) {
                     total += renderer._geosToDraw.length;

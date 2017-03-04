@@ -34,6 +34,10 @@ export default class Painter extends Class {
         return this.geometry.getMap();
     }
 
+    getLayer() {
+        return this.geometry.getLayer();
+    }
+
     /**
      * 构造symbolizers
      * @return {*} [description]
@@ -99,7 +103,10 @@ export default class Painter extends Class {
         const map = this.getMap();
         const zoom = map.getZoom();
         // remove cached points if the geometry is simplified on the zoom.
-        if (!this._paintParams || (this._paintParams._zoom !== undefined && this._paintParams._zoom !== zoom)) {
+        if (!this._paintParams ||
+            (this._paintParams._zoom !== undefined && this._paintParams._zoom !== zoom) ||
+            (map.getPitch() && this.geometry._redrawWhenPitch)
+            ) {
             //render resources geometry returned are based on 2d points.
             this._paintParams = this.geometry._getPaintParams();
             if (this.geometry._simplified) {
@@ -112,7 +119,7 @@ export default class Painter extends Class {
 
         const maxZoom = map.getMaxZoom();
         const zoomScale = map.getScale();
-        const layerNorthWest = this.geometry.getLayer()._getRenderer()._northWest;
+        const layerNorthWest = this.getLayer()._getRenderer()._northWest;
         const layerPoint = map._pointToContainerPoint(layerNorthWest),
             paintParams = this._paintParams,
             tPaintParams = [], // transformed params
@@ -158,7 +165,7 @@ export default class Painter extends Class {
      * 绘制图形
      */
     paint() {
-        var contexts = this.geometry.getLayer()._getRenderer().getPaintContext();
+        var contexts = this.getLayer()._getRenderer().getPaintContext();
         if (!contexts || !this.symbolizers) {
             return;
         }
@@ -245,13 +252,13 @@ export default class Painter extends Class {
 
     //需要实现的接口方法
     get2DExtent(resources) {
+        resources = resources || this.getLayer()._getRenderer().resources;
         const zoom = this.getMap().getZoom();
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             delete this._extent2D;
             if (this.symbolizers) {
-                var extent = new PointExtent();
-                var len = this.symbolizers.length - 1;
-                for (var i = len; i >= 0; i--) {
+                const extent = new PointExtent();
+                for (let i = this.symbolizers.length - 1; i >= 0; i--) {
                     extent._combine(this.symbolizers[i].get2DExtent(resources));
                 }
                 extent._zoom = zoom;
@@ -262,10 +269,17 @@ export default class Painter extends Class {
     }
 
     getContainerExtent() {
-        var map = this.getMap(),
-            extent2D = this.get2DExtent(this.resources);
-        var containerExtent = new PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
-        return containerExtent;
+        const map = this.getMap(),
+            extent2D = this.get2DExtent();
+        if (map.getCameraMatrix()) {
+            const extent = new PointExtent();
+            extent2D.toArray().forEach(c => {
+                extent._combine(map._pointToContainerPoint(c));
+            });
+            return extent;
+        } else {
+            return new PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
+        }
     }
 
     setZIndex(change) {
@@ -276,7 +290,7 @@ export default class Painter extends Class {
 
     show() {
         if (!this._painted) {
-            var layer = this.geometry.getLayer();
+            var layer = this.getLayer();
             if (!layer.isCanvasRender()) {
                 this.paint();
             }
@@ -308,7 +322,7 @@ export default class Painter extends Class {
         // if (!this.getMap()) {
         //     return;
         // }
-        // var layer = this.geometry.getLayer();
+        // var layer = this.getLayer();
         // if (this.geometry.isVisible() && layer.addGeometry) {
         //     if (!layer.isCanvasRender()) {
         //         this.paint();

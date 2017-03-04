@@ -12,28 +12,32 @@ import { clamp, interpolate } from 'core/util';
 
 Map.include(/** @lends Map.prototype */{
 
-    /*getBearing() {
-        if (!this._angle) {
-            return 0;
-        }
-        return -this._angle / Math.PI * 180;
-    },
+    // getBearing() {
+    //     if (!this._angle) {
+    //         return 0;
+    //     }
+    //     return -this._angle / Math.PI * 180;
+    // },
 
-    setBearing(bearing) {
-        var b = -wrap(bearing, -180, 180) * Math.PI / 180;
-        if (this._angle === b) return this;
-        const from = this.getBearing();
-        this._unmodified = false;
-        this._angle = b;
-        this._calcMatrices();
+    // setBearing(bearing) {
+    //     var b = -wrap(bearing, -180, 180) * Math.PI / 180;
+    //     if (this._angle === b) return this;
+    //     const from = this.getBearing();
+    //     this._angle = b;
+    //     this._calcMatrices();
+    //     this._renderLayers();
+    //     *
+    //       * rotate event
+    //       * @event Map#rotate
+    //       * @type {Object}
+    //       * @property {String} type                    - rotate
+    //       * @property {Map} target                     - the map fires event
+    //       * @property {Number} from                    - bearing rotate from
+    //       * @property {Number} to                      - bearing rotate to
 
-        // 2x2 matrix for rotating points
-        this.rotationMatrix = mat2.create();
-        mat2.rotate(this.rotationMatrix, this.rotationMatrix, this._angle);
-        this._renderLayers();
-        this._fireEvent('rotate', { 'from' : from, 'to': b });
-        return this;
-    },*/
+    //     this._fireEvent('rotate', { 'from' : from, 'to': b });
+    //     return this;
+    // },
 
     getPitch() {
         if (!this._pitch) {
@@ -46,7 +50,6 @@ Map.include(/** @lends Map.prototype */{
         const p = clamp(pitch, 0, 60) / 180 * Math.PI;
         if (this._pitch === p) return this;
         const from = this.getPitch();
-        this._unmodified = false;
         this._pitch = p;
         this._calcMatrices();
         this._renderLayers();
@@ -56,8 +59,8 @@ Map.include(/** @lends Map.prototype */{
           * @type {Object}
           * @property {String} type                    - pitch
           * @property {Map} target                     - the map fires event
-          * @property {Number} from                    - bearing rotate from
-          * @property {Number} to                      - bearing rotate to
+          * @property {Number} from                    - pitch from
+          * @property {Number} to                      - pitch to
           */
         this._fireEvent('pitch', { 'from' : from, 'to': p });
         return this;
@@ -72,16 +75,10 @@ Map.include(/** @lends Map.prototype */{
         if (this._pixelMatrix) {
             var t = [point.x, point.y, 0, 1];
             mat4.transformMat4(t, t, this._pixelMatrix);
-
             return new Point(t[0] / t[3], t[1] / t[3]);
         } else {
             const centerPoint = this._prjToPoint(this._getPrjCenter());
-            const x = point.x - centerPoint.x,
-                y = point.y - centerPoint.y;
-            return new Point(
-                this.width / 2 + x,
-                this.height / 2 + y
-            );
+            return point._sub(centerPoint)._add(this.width / 2, this.height / 2);
         }
     },
 
@@ -109,13 +106,14 @@ Map.include(/** @lends Map.prototype */{
 
             const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
-            return new Point(interpolate(x0, x1, t), interpolate(y0, y1, t));
+            const cp = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t));
+            return (zoom === undefined ? cp : this._pointToPoint(cp, zoom));
         }
         const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
         const x = scale * (p.x - this.width / 2),
             y = scale * (p.y - this.height / 2);
-        return centerPoint.add(x, y);
+        return centerPoint._add(x, y);
     },
 
     _calcMatrices() {

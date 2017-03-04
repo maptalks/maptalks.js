@@ -7,7 +7,9 @@ import Rectangle from 'geometry/Rectangle';
 import LineString from 'geometry/LineString';
 import Polygon from 'geometry/Polygon';
 
-const ellipseReources = {
+const el = {
+    _redrawWhenPitch : true,
+
     _getPaintParams() {
         const map = this.getMap();
         const pcenter = this._getPrjCoordinates();
@@ -19,21 +21,25 @@ const ellipseReources = {
     _paintOn: Canvas.ellipse
 };
 
-Ellipse.include(ellipseReources);
+Ellipse.include(el);
 
-Circle.include(ellipseReources);
+Circle.include(el);
 //----------------------------------------------------
 Rectangle.include({
     _getPaintParams() {
         const map = this.getMap();
-        const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
-        const size = this._getRenderSize();
-        return [pt, size];
+        const maxZoom = map.getMaxZoom();
+        const projection = this.getMap().getProjection();
+        const shell = this.getShell().map(c => projection.project(c));
+        const points = this._getPath2DPoints(shell, false, maxZoom);
+        return [points];
     },
-    _paintOn: Canvas.rectangle
+    _paintOn: Canvas.polygon
 });
 //----------------------------------------------------
 Sector.include({
+    _redrawWhenPitch : true,
+
     _getPaintParams() {
         const map = this.getMap();
         const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());

@@ -143,6 +143,9 @@ class Sector extends CenterMixin(Polygon) {
     }
 
     _containsPoint(point, tolerance) {
+        if (this.getMap().getCameraMatrix()) {
+            return super._containsPoint(point, tolerance);
+        }
         var center = this._getCenter2DPoint(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
