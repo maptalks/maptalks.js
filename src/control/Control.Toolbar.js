@@ -156,7 +156,7 @@ class Toolbar extends Control {
     }
 
     _getItems() {
-        return this.options['items'];
+        return this.options['items'] || [];
     }
 }
 

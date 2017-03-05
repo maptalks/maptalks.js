@@ -138,7 +138,7 @@ export default class View {
     }
 
     getResolutions() {
-        return this._resolutions;
+        return this._resolutions || [];
     }
 
     getResolution(zoom) {

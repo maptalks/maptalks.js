@@ -72,10 +72,7 @@ class LineString extends Path {
      * @return {Coordinate[]|Number[][]} coordinates
      */
     getCoordinates() {
-        if (!this._coordinates) {
-            return [];
-        }
-        return this._coordinates;
+        return this._coordinates || [];
     }
 
     /**
