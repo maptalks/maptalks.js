@@ -56,7 +56,7 @@ class GeometryCollection extends Geometry {
      * @return {Geometry[]} geometries
      */
     getGeometries() {
-        return this._geometries;
+        return this._geometries || [];
     }
 
     /**
