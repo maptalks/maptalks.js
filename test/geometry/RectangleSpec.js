@@ -176,7 +176,7 @@ describe('#Rectangle', function () {
         it('but doesn\'t have holes', function () {
             var vector = new maptalks.Rectangle(center, 1, 1);
             var holes = vector.getHoles();
-            expect(holes).to.not.be.ok();
+            expect(holes).to.be.empty();
         });
 
         it('toGeoJSON exported an polygon', function () {

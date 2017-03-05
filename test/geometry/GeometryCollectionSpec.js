@@ -192,7 +192,7 @@ describe('#GeometryCollection', function () {
             selection = collection.filter(function (geometry) {
                 return geometry.getType() !== 'Point';
             });
-            expect(selection).not.to.be.ok();
+            expect(selection.getGeometries()).to.be.empty();
         });
 
         it('filter with feature-filter', function () {
