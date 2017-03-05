@@ -82,7 +82,7 @@ class Menu extends UIComponent {
      * @return {Object[]|String|HTMLElement} - items of the menu
      */
     getItems() {
-        return this.options['items'];
+        return this.options['items'] || [];
     }
 
     /**

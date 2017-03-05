@@ -74,7 +74,7 @@ class OverlayLayer extends Layer {
      * @return {Geometry} first geometry
      */
     getFirstGeometry() {
-        if (this._geoList.length === 0) {
+        if (!this._geoList.length) {
             return null;
         }
         return this._geoList[0];
@@ -148,7 +148,7 @@ class OverlayLayer extends Layer {
      * @return {Boolean}
      */
     isEmpty() {
-        return this._geoList.length === 0;
+        return !this._geoList.length;
     }
 
     /**

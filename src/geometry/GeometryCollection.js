@@ -35,15 +35,13 @@ class GeometryCollection extends Geometry {
      * @fires GeometryCollection#shapechange
      */
     setGeometries(_geometries) {
-        var geometries = this._checkGeometries(_geometries);
+        const geometries = this._checkGeometries(_geometries || []);
         //Set the collection as child geometries' parent.
-        if (Array.isArray(geometries)) {
-            for (var i = geometries.length - 1; i >= 0; i--) {
-                geometries[i]._initOptions(this.config());
-                geometries[i]._setParent(this);
-                geometries[i]._setEventParent(this);
-                geometries[i].setSymbol(this.getSymbol());
-            }
+        for (let i = geometries.length - 1; i >= 0; i--) {
+            geometries[i]._initOptions(this.config());
+            geometries[i]._setParent(this);
+            geometries[i]._setEventParent(this);
+            geometries[i].setSymbol(this.getSymbol());
         }
         this._geometries = geometries;
         if (this.getLayer()) {
@@ -58,9 +56,6 @@ class GeometryCollection extends Geometry {
      * @return {Geometry[]} geometries
      */
     getGeometries() {
-        if (!this._geometries) {
-            return [];
-        }
         return this._geometries;
     }
 
@@ -93,7 +88,7 @@ class GeometryCollection extends Geometry {
      */
     filter(fn, context) {
         if (!fn) {
-            return null;
+            return new GeometryCollection();
         }
         const selected = [];
         const isFn = isFunction(fn);
@@ -106,7 +101,7 @@ class GeometryCollection extends Geometry {
             }
         }, this);
 
-        return selected.length > 0 ? new GeometryCollection(selected) : null;
+        return new GeometryCollection(selected);
     }
 
     /**
@@ -234,22 +229,25 @@ class GeometryCollection extends Geometry {
      * @private
      */
     _checkGeometries(geometries) {
-        var invalidGeoError = 'The geometry added to collection is invalid.';
+        const invalidGeoError = 'The geometry added to collection is invalid.';
         if (geometries && !Array.isArray(geometries)) {
             if (geometries instanceof Geometry) {
                 return [geometries];
             } else {
                 throw new Error(invalidGeoError);
             }
-        } else if (Array.isArray(geometries)) {
-            for (var i = 0, len = geometries.length; i < len; i++) {
-                if (!(geometries[i] instanceof Geometry)) {
+        } else {
+            for (let i = 0, l = geometries.length; i < l; i++) {
+                if (!this._checkGeo(geometries[i])) {
                     throw new Error(invalidGeoError + ' Index: ' + i);
                 }
             }
             return geometries;
         }
-        return null;
+    }
+
+    _checkGeo(geo) {
+        return (geo instanceof Geometry);
     }
 
     _updateCache() {
@@ -411,7 +409,7 @@ class GeometryCollection extends Geometry {
 
     _getExternalResources() {
         if (this.isEmpty()) {
-            return null;
+            return [];
         }
         var i, l, ii, ll;
         var geometries = this.getGeometries(),
@@ -424,9 +422,6 @@ class GeometryCollection extends Geometry {
             }
             symbol = geometries[i]._getInternalSymbol();
             res = getExternalResources(symbol);
-            if (!res) {
-                continue;
-            }
             for (ii = 0, ll = res.length; ii < ll; ii++) {
                 key = res[ii].join();
                 if (!cache[key]) {

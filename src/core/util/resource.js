@@ -130,7 +130,7 @@ export function getMarkerPathBase64(symbol, width, height) {
  */
 export function getExternalResources(symbol, toAbsolute) {
     if (!symbol) {
-        return null;
+        return [];
     }
     var symbols = symbol;
     if (!Array.isArray(symbol)) {

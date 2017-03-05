@@ -98,7 +98,7 @@ class Polygon extends Path {
      * @returns {Coordinate[]}
      */
     getShell() {
-        return this._coordinates;
+        return this._coordinates || [];
     }
 
 
@@ -107,10 +107,7 @@ class Polygon extends Path {
      * @returns {Coordinate[][]}
      */
     getHoles() {
-        if (this.hasHoles()) {
-            return this._holes;
-        }
-        return null;
+        return this._holes || [];
     }
 
     /**
@@ -119,12 +116,7 @@ class Polygon extends Path {
      * @returns {Boolean}
      */
     hasHoles() {
-        if (isArrayHasData(this._holes)) {
-            if (isArrayHasData(this._holes[0])) {
-                return true;
-            }
-        }
-        return false;
+        return this.getHoles().length > 0;
     }
 
     _projectRings() {

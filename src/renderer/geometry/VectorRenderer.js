@@ -101,7 +101,7 @@ LineString.include({
     _getArrows(points, lineWidth, tolerance) {
         const arrowStyle = this._getArrowStyle();
         if (!arrowStyle || points.length < 2) {
-            return null;
+            return [];
         }
         const isSplitted = points.length > 0 && Array.isArray(points[0]);
         const segments = isSplitted ? points : [points];
@@ -119,7 +119,7 @@ LineString.include({
                 }
             }
         }
-        return arrows.length > 0 ? arrows : null;
+        return arrows;
     },
 
     _paintArrow(ctx, points, lineOpacity) {
@@ -128,18 +128,16 @@ LineString.include({
             lineWidth = 3;
         }
         const arrows = this._getArrows(points, lineWidth);
-        if (!arrows) {
+        if (!arrows.length) {
             return;
         }
-        if (arrows) {
-            if (ctx.setLineDash) {
-                //remove line dash effect if any
-                ctx.setLineDash([]);
-            }
-            for (let i = arrows.length - 1; i >= 0; i--) {
-                ctx.fillStyle = ctx.strokeStyle;
-                Canvas.polygon(ctx, arrows[i], lineOpacity, lineOpacity);
-            }
+        if (ctx.setLineDash) {
+            //remove line dash effect if any
+            ctx.setLineDash([]);
+        }
+        for (let i = arrows.length - 1; i >= 0; i--) {
+            ctx.fillStyle = ctx.strokeStyle;
+            Canvas.polygon(ctx, arrows[i], lineOpacity, lineOpacity);
         }
     }
 });

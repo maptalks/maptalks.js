@@ -24,7 +24,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         if (!this._resourceChecked && !Array.isArray(geometries)) {
             geometries = this.layer._geoList;
         }
-        if (!geometries || !isArrayHasData(geometries)) {
+        if (!isArrayHasData(geometries)) {
             return [];
         }
         var me = this,
@@ -33,21 +33,21 @@ class OverlayLayerRenderer extends CanvasRenderer {
 
         function checkGeo(geo) {
             res = geo._getExternalResources();
-            if (!isArrayHasData(res)) {
+            if (!res.length) {
                 return;
             }
             if (!me.resources) {
                 resources = resources.concat(res);
             } else {
-                for (var ii = 0; ii < res.length; ii++) {
-                    if (!me.resources.isResourceLoaded(res[ii])) {
-                        resources.push(res[ii]);
+                for (let i = 0; i < res.length; i++) {
+                    if (!me.resources.isResourceLoaded(res[i])) {
+                        resources.push(res[i]);
                     }
                 }
             }
         }
 
-        for (var i = geometries.length - 1; i >= 0; i--) {
+        for (let i = geometries.length - 1; i >= 0; i--) {
             checkGeo(geometries[i]);
         }
         this._resourceChecked = true;

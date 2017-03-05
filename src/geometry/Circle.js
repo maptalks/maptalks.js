@@ -94,17 +94,22 @@ class Circle extends CenterMixin(Polygon) {
 
     /**
      * Circle won't have any holes, always returns null
-     * @return {null}
+     * @return {[]} an empty array
      */
     getHoles() {
-        return null;
+        return [];
     }
 
     _containsPoint(point, tolerance) {
-        if (this.getMap().getPitch()) {
+        const map = this.getMap();
+        const coord = map.pointToCoordinate(point);
+        if (map.computeLength(this.getCenter(), coord) <= this.getRadius()) {
+            return true;
+        }
+        if (map.getPitch()) {
             return super._containsPoint(point, tolerance);
         }
-        var center = this._getCenter2DPoint(),
+        const center = this._getCenter2DPoint(),
             size = this.getSize(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;
         return center.distanceTo(point) <= size.width / 2 + t;

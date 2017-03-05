@@ -33,7 +33,7 @@ class MapGeometryEventsHandler extends Handler {
             }
             return false;
         });
-        if (map.isZooming() || map.isMoving() || !vectorLayers || vectorLayers.length === 0) {
+        if (map.isZooming() || map.isMoving() || !vectorLayers || !vectorLayers.length) {
             return;
         }
         var eventType = domEvent.type;
@@ -52,7 +52,7 @@ class MapGeometryEventsHandler extends Handler {
                 layers.push(vectorLayers[i]);
             }
         }
-        if (layers.length === 0) {
+        if (!layers.length) {
             return;
         }
 
@@ -148,7 +148,7 @@ class MapGeometryEventsHandler extends Handler {
                 }
 
             } else {
-                if (!geometries || geometries.length === 0) { return; }
+                if (!geometries || !geometries.length) { return; }
                 for (let i = geometries.length - 1; i >= 0; i--) {
                     if (!(geometries[i] instanceof Geometry)) {
                         continue;

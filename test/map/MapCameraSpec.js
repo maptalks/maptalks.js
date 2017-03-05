@@ -16,6 +16,8 @@ describe('#Map.Camera', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
+        // bring some offset to map, let view point is different from container point.
+        map.setCenter(center._add(0.1, 0.1));
         layer = new maptalks.VectorLayer('v').addTo(map);
     });
 

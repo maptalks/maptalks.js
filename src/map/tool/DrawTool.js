@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { isNil, isArrayHasData } from 'core/util';
+import { isNil } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import { getExternalResources } from 'core/util/resource';
 import { stopPropagation } from 'core/util/dom';
@@ -212,7 +212,7 @@ class DrawTool extends MapTool {
     _loadResources() {
         var symbol = this.getSymbol();
         var resources = getExternalResources(symbol);
-        if (isArrayHasData(resources)) {
+        if (resources.length > 0) {
             //load external resources at first
             this._drawToolLayer._getRenderer().loadResources(resources);
         }

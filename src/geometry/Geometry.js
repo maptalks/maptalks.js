@@ -9,7 +9,6 @@ import {
     isString,
     isNumber,
     isObject,
-    isArrayHasData,
     mapArrayRecursively
 } from 'core/util';
 import { extendSymbol } from 'core/util/style';
@@ -91,7 +90,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     getFirstCoordinate() {
         if (this.type === 'GeometryCollection') {
             var geometries = this.getGeometries();
-            if (!geometries || !isArrayHasData(geometries)) {
+            if (!geometries.length) {
                 return null;
             }
             return geometries[0].getFirstCoordinate();
@@ -100,11 +99,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!Array.isArray(coordinates)) {
             return coordinates;
         }
-        var first = coordinates;
         do {
-            first = first[0];
-        } while (Array.isArray(first));
-        return first;
+            coordinates = coordinates[0];
+        } while (Array.isArray(coordinates) && coordinates.length > 0);
+        return coordinates;
     }
 
     /**
@@ -115,7 +113,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     getLastCoordinate() {
         if (this.type === 'GeometryCollection') {
             var geometries = this.getGeometries();
-            if (!geometries || !isArrayHasData(geometries)) {
+            if (!geometries.length) {
                 return null;
             }
             return geometries[geometries.length - 1].getLastCoordinate();
@@ -124,11 +122,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!Array.isArray(coordinates)) {
             return coordinates;
         }
-        var last = coordinates;
         do {
-            last = last[last.length - 1];
-        } while (Array.isArray(last));
-        return last;
+            coordinates = coordinates[coordinates.length - 1];
+        } while (Array.isArray(coordinates) && coordinates.length > 0);
+        return coordinates;
     }
 
     /**
@@ -437,10 +434,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return true;
         }
         if (Array.isArray(symbol)) {
-            if (symbol.length === 0) {
+            if (!symbol.length) {
                 return true;
             }
-            for (var i = 0, len = symbol.length; i < len; i++) {
+            for (let i = 0, l = symbol.length; i < l; i++) {
                 if (isNil(symbol[i]['opacity']) || symbol[i]['opacity'] > 0) {
                     return true;
                 }
@@ -942,7 +939,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _getProjection() {
-        var map = this.getMap();
+        const map = this.getMap();
         if (map && map.getProjection()) {
             return map.getProjection();
         }
@@ -951,10 +948,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     //获取geometry样式中依赖的外部图片资源
     _getExternalResources() {
-        var geometry = this;
-        var symbol = geometry._getInternalSymbol();
-        var resources = getExternalResources(symbol);
-        return resources;
+        const symbol = this._getInternalSymbol();
+        return getExternalResources(symbol);
     }
 
     _getPainter() {

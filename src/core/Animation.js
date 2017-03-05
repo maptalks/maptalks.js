@@ -157,7 +157,7 @@ const Animation = {
                     dest.push(styles[2]);
                 }
             }
-            if (start.length === 0) {
+            if (!start.length) {
                 return null;
             } else {
                 return [start, d, dest];
