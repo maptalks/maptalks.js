@@ -443,7 +443,7 @@ describe('#OverlayLayer', function () {
             selection = layer.filter(function (geometry) {
                 return geometry.getType() !== 'Point';
             });
-            expect(selection).not.to.be.ok();
+            expect(selection.getGeometries()).to.be.empty();
         });
 
         it('filter by feature-filter', function () {
@@ -468,7 +468,7 @@ describe('#OverlayLayer', function () {
             selection = layer.filter(function (geometry) {
                 return geometry.getType() !== 'Point';
             });
-            expect(selection).not.to.be.ok();
+            expect(selection.getGeometries()).to.be.empty();
         });
     });
 

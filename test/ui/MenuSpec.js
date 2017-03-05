@@ -228,7 +228,7 @@ function runTests(target, _context) {
                 width: 250
             });
             target.removeMenu();
-            expect(target.getMenuItems()).not.to.be.ok();
+            expect(target.getMenuItems()).to.be.empty();
         });
 
         it('custom menu', function () {
