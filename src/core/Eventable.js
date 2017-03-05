@@ -165,7 +165,7 @@ const Eventable = Base =>
                 return 0;
             }
             var handlerChain = this._eventMap[eventType.toLowerCase()];
-            if (!handlerChain || handlerChain.length === 0) {
+            if (!handlerChain || !handlerChain.length) {
                 return 0;
             }
             var count = 0;

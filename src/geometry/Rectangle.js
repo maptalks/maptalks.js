@@ -130,10 +130,10 @@ class Rectangle extends Polygon {
 
     /**
      * Rectangle won't have any holes, always returns null
-     * @return {null}
+     * @return {[]} an empty array
      */
     getHoles() {
-        return null;
+        return [];
     }
 
     _getPrjCoordinates() {

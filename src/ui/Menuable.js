@@ -99,7 +99,7 @@ const Menuable = {
         } else if (this._menuOptions) {
             return this._menuOptions['items'];
         }
-        return null;
+        return [];
     },
 
     /**

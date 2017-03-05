@@ -1,4 +1,3 @@
-import { isArrayHasData } from 'core/util';
 import GeometryCollection from './GeometryCollection';
 import Coordinate from 'geo/Coordinate';
 
@@ -28,12 +27,9 @@ class MultiGeometry extends GeometryCollection {
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
      */
     getCoordinates() {
-        var coordinates = [];
-        var geometries = this.getGeometries();
-        if (!Array.isArray(geometries)) {
-            return null;
-        }
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        const coordinates = [];
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
             coordinates.push(geometries[i].getCoordinates());
         }
         return coordinates;
@@ -46,21 +42,19 @@ class MultiGeometry extends GeometryCollection {
      * @fires maptalk.Geometry#shapechange
      */
     setCoordinates(coordinates) {
-        if (isArrayHasData(coordinates)) {
-            var geometries = [];
-            for (var i = 0, len = coordinates.length; i < len; i++) {
-                var p = new this.GeometryType(coordinates[i], this.config());
-                geometries.push(p);
-            }
-            this.setGeometries(geometries);
-        } else {
-            this.setGeometries([]);
+        coordinates = coordinates || [];
+        const geometries = [];
+        for (let i = 0, l = coordinates.length; i < l; i++) {
+            let g = new this.GeometryType(coordinates[i], this.config());
+            geometries.push(g);
         }
+        this.setGeometries(geometries);
         return this;
     }
 
     _initData(data) {
-        if (isArrayHasData(data)) {
+        data = data || [];
+        if (data.length) {
             if (data[0] instanceof this.GeometryType) {
                 this.setGeometries(data);
             } else {
@@ -69,15 +63,8 @@ class MultiGeometry extends GeometryCollection {
         }
     }
 
-    _checkGeometries(geometries) {
-        if (Array.isArray(geometries)) {
-            for (var i = 0, len = geometries.length; i < len; i++) {
-                if (geometries[i] && !(geometries[i] instanceof this.GeometryType)) {
-                    throw new Error('Geometry is not valid for collection, index:' + i);
-                }
-            }
-        }
-        return geometries;
+    _checkGeo(geo) {
+        return (geo instanceof this.GeometryType);
     }
 
     //override _exportGeoJSONGeometry in GeometryCollection

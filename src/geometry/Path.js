@@ -161,7 +161,7 @@ class Path extends Geometry {
         if (projection) {
             return projection.projectCoords(points);
         }
-        return null;
+        return [];
     }
 
     _unprojectCoords(prjPoints) {
@@ -169,7 +169,7 @@ class Path extends Geometry {
         if (projection) {
             return projection.unprojectCoords(prjPoints);
         }
-        return null;
+        return [];
     }
 
     _computeCenter() {

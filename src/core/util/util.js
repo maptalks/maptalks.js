@@ -224,21 +224,19 @@ export function executeWhen(fn, when) {
 }
 
 export function removeFromArray(obj, array) {
-    for (var i = array.length - 1; i >= 0; i--) {
-        if (array[i] === obj) {
-            return array.splice(i, 1);
-        }
+    const i = array.indexOf(obj);
+    if (i > -1) {
+        array.splice(obj);
     }
-    return null;
 }
 
 export function mapArrayRecursively(arr, fn, context) {
     if (!Array.isArray(arr)) {
-        return null;
+        return context ? fn.call(context, arr) : fn(arr);
     }
-    var result = [],
-        p, pp;
-    for (var i = 0, len = arr.length; i < len; i++) {
+    const result = [];
+    var p, pp;
+    for (let i = 0, len = arr.length; i < len; i++) {
         p = arr[i];
         if (isNil(p)) {
             result.push(null);

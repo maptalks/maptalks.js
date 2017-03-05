@@ -174,7 +174,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     bringToFront() {
         var layers = this._getLayerList();
-        if (!layers) {
+        if (!layers.length) {
             return this;
         }
         var topLayer = layers[layers.length - 1];
@@ -192,7 +192,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     bringToBack() {
         var layers = this._getLayerList();
-        if (!layers) {
+        if (!layers.length) {
             return this;
         }
         var bottomLayer = layers[0];
@@ -391,7 +391,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _getLayerList() {
         if (!this.map) {
-            return null;
+            return [];
         }
         return this.map._layers;
     }

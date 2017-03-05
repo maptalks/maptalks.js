@@ -136,10 +136,10 @@ class Sector extends CenterMixin(Polygon) {
 
     /**
      * Sector won't have any holes, always returns null
-     * @return {null}
+     * @return {[]} an empty array
      */
     getHoles() {
-        return null;
+        return [];
     }
 
     _containsPoint(point, tolerance) {

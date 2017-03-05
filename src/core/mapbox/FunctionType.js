@@ -237,7 +237,7 @@ export function loadFunctionTypes(obj, argFn) {
  */
 export function getFunctionTypeResources(t) {
     if (!t || !t.stops) {
-        return null;
+        return [];
     }
     const res = [];
     for (let i = 0, l = t.stops.length; i < l; i++) {

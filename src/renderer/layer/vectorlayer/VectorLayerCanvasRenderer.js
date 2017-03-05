@@ -15,20 +15,17 @@ import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     checkResources() {
-        var me = this;
-        var resources = OverlayLayerCanvasRenderer.prototype.checkResources.apply(this, arguments);
+        const resources = super.checkResources.apply(this, arguments);
         var style = this.layer.getStyle();
         if (style) {
             if (!Array.isArray(style)) {
                 style = [style];
             }
-            style.forEach(function (s) {
-                var res = getExternalResources(s['symbol'], true);
-                if (res) {
-                    for (var ii = 0; ii < res.length; ii++) {
-                        if (!me.resources.isResourceLoaded(res[ii])) {
-                            resources.push(res[ii]);
-                        }
+            style.forEach(s => {
+                const res = getExternalResources(s['symbol'], true);
+                for (let i = 0, l = res.length; i < l; i++) {
+                    if (!this.resources.isResourceLoaded(res[i])) {
+                        resources.push(res[i]);
                     }
                 }
             });

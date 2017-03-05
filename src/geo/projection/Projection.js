@@ -29,6 +29,9 @@ export default /** @lends projection.Common */ {
      * @function projection.Common.projectCoords
      */
     projectCoords(coordinates) {
+        if (!coordinates) {
+            return [];
+        }
         return mapArrayRecursively(coordinates, this.project, this);
     },
 
@@ -39,6 +42,9 @@ export default /** @lends projection.Common */ {
      * @function projection.Common.unprojectCoords
      */
     unprojectCoords(projCoords) {
+        if (!projCoords) {
+            return [];
+        }
         return mapArrayRecursively(projCoords, this.unproject, this);
     }
 };

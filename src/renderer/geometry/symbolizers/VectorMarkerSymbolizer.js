@@ -365,7 +365,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             v3 = new Point(left, top);
             return [v0, v1, v2, v3];
         }
-        return null;
+        return [];
     }
 }
 

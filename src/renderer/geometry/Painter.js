@@ -63,7 +63,7 @@ export default class Painter extends Class {
                 }
             }
         }
-        if (symbolizers.length === 0) {
+        if (!symbolizers.length) {
             if (console) {
                 console.warn('invalid symbol for geometry(' + (this.geometry ? this.geometry.getType() + (this.geometry.getId() ? ':' + this.geometry.getId() : '') : '') + ') to draw : ' + JSON.stringify(geoSymbol));
             }
