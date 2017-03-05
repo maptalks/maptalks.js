@@ -148,7 +148,7 @@ describe('#Ellipse', function () {
         it('but doesn\'t have holes', function () {
             var vector = new maptalks.Ellipse(center, 100, 50);
             var holes = vector.getHoles();
-            expect(holes).to.not.be.ok();
+            expect(holes).to.be.empty();
         });
 
         it('toGeoJSON exported an polygon', function () {

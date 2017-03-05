@@ -350,7 +350,7 @@ describe('#OverlayLayer', function () {
 
         it('selectAll', function () {
             var layer = new maptalks.VectorLayer('id');
-            expect(layer.filter(function () { return true; })).not.to.be.ok();
+            expect(layer.filter(function () { return true; }).getGeometries()).to.be.empty();
             var points = [
                 new maptalks.Marker([0, 0], {
                     properties : {
