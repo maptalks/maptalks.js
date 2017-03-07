@@ -116,22 +116,23 @@ class Sector extends CenterMixin(Polygon) {
      * @return {Coordinate[]} - shell coordinates
      */
     getShell() {
-        var measurer = this._getMeasurer(),
+        const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
             radius = this.getRadius(),
-            shell = [],
-            angle = this.getEndAngle() - this.getStartAngle();
+            shell = [center.copy()],
+            startAngle = this.getStartAngle(),
+            angle = this.getEndAngle() - startAngle;
         var rad, dx, dy;
-        for (var i = 0; i < numberOfPoints; i++) {
-            rad = (angle * i / (numberOfPoints - 1) + this.getStartAngle()) * Math.PI / 180;
+        for (let i = 0; i < numberOfPoints; i++) {
+            rad = (angle * i / (numberOfPoints - 2) + startAngle) * Math.PI / 180;
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
-            var vertex = measurer.locate(center, dx, dy);
+            let vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
+        shell.push(center.copy());
         return shell;
-
     }
 
     /**

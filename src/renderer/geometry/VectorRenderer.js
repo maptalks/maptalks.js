@@ -12,13 +12,25 @@ const el = {
 
     _getPaintParams() {
         const map = this.getMap();
+        if (map.getPitch()) {
+            // when map is tilting, draw the vertexes as a polygon
+            return Polygon.prototype._getPaintParams.call(this, true);
+        }
+        //TODO rotating ellipse
         const pcenter = this._getPrjCoordinates();
         const pt = map._prjToPoint(pcenter, map.getMaxZoom());
         const size = this._getRenderSize();
         return [pt, size['width'], size['height']];
     },
 
-    _paintOn: Canvas.ellipse
+    _paintOn: function () {
+        const map = this.getMap();
+        if (map.getPitch()) {
+            return Canvas.polygon.apply(Canvas, arguments);
+        } else {
+            return Canvas.ellipse.apply(Canvas, arguments);
+        }
+    }
 };
 
 Ellipse.include(el);
@@ -29,8 +41,7 @@ Rectangle.include({
     _getPaintParams() {
         const map = this.getMap();
         const maxZoom = map.getMaxZoom();
-        const projection = this.getMap().getProjection();
-        const shell = this.getShell().map(c => projection.project(c));
+        const shell = this._getPrjShell();
         const points = this._getPath2DPoints(shell, false, maxZoom);
         return [points];
     },
@@ -42,13 +53,25 @@ Sector.include({
 
     _getPaintParams() {
         const map = this.getMap();
+        if (map.getPitch()) {
+            return Polygon.prototype._getPaintParams.call(this, true);
+        }
+        //TODO rotating sector
         const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
         const size = this._getRenderSize();
         return [pt, size['width'],
             [this.getStartAngle(), this.getEndAngle()]
         ];
     },
-    _paintOn: Canvas.sector
+
+    _paintOn: function () {
+        const map = this.getMap();
+        if (map.getPitch()) {
+            return Canvas.polygon.apply(Canvas, arguments);
+        } else {
+            return Canvas.sector.apply(Canvas, arguments);
+        }
+    }
 
 });
 //----------------------------------------------------
@@ -143,10 +166,10 @@ LineString.include({
 });
 
 Polygon.include({
-    _getPaintParams() {
+    _getPaintParams(disableSimplify) {
         const maxZoom = this.getMap().getMaxZoom();
-        const prjVertexes = this._getPrjCoordinates();
-        var points = this._getPath2DPoints(prjVertexes, false, maxZoom);
+        const prjVertexes = this._getPrjShell();
+        var points = this._getPath2DPoints(prjVertexes, disableSimplify, maxZoom);
         //splitted by anti-meridian
         const isSplitted = points.length > 0 && Array.isArray(points[0]);
         if (isSplitted) {
@@ -159,7 +182,7 @@ Polygon.include({
         const holePoints = [];
         if (isArrayHasData(prjHoles)) {
             for (let i = 0; i < prjHoles.length; i++) {
-                let hole = this._getPath2DPoints(prjHoles[i], false, maxZoom);
+                let hole = this._getPath2DPoints(prjHoles[i], disableSimplify, maxZoom);
                 if (isSplitted) {
                     if (Array.isArray(hole)) {
                         points[0].push(hole[0]);
@@ -173,7 +196,11 @@ Polygon.include({
 
             }
         }
-        return [isSplitted ? points : [points].concat(holePoints)];
+        if (!isSplitted) {
+            points = [points];
+            points.push.apply(points, holePoints);
+        }
+        return [points];
     },
     _paintOn: Canvas.polygon
 });

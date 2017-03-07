@@ -3,6 +3,7 @@ import Coordinate from 'geo/Coordinate';
 import { pointInsidePolygon, distanceToSegment } from 'core/util/path';
 import Path from './Path';
 
+const JSON_TYPE = 'Polygon';
 
 /**
  * @classdesc
@@ -182,10 +183,19 @@ class Polygon extends Path {
         }
     }
 
+    _getPrjShell() {
+        if (this.getJSONType() === JSON_TYPE) {
+            return this._getPrjCoordinates();
+        }
+        if (!this._prjShell) {
+            this._prjShell = this._projectCoords(this.getShell());
+        }
+        return this._prjShell;
+    }
 
     _getPrjHoles() {
         if (!this._prjHoles) {
-            this._prjHoles = this._projectCoords(this._holes);
+            this._prjHoles = this._projectCoords(this.getHoles());
         }
         return this._prjHoles;
     }
@@ -262,8 +272,13 @@ class Polygon extends Path {
         }
 
     }
+
+    _clearCache() {
+        delete this._prjShell;
+        return super._clearCache();
+    }
 }
 
-Polygon.registerJSONType('Polygon');
+Polygon.registerJSONType(JSON_TYPE);
 
 export default Polygon;
