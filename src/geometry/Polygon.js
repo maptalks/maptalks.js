@@ -175,7 +175,8 @@ class Polygon extends Path {
     _closeRing(ring) {
         var isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && !isClose) {
-            return ring.concat(ring[0].copy());
+            ring.push(ring[0].copy());
+            return ring;
         } else {
             return ring;
         }

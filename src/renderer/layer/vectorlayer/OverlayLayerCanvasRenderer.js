@@ -29,15 +29,14 @@ class OverlayLayerRenderer extends CanvasRenderer {
         }
         var me = this,
             resources = [];
-        var res;
 
         function checkGeo(geo) {
-            res = geo._getExternalResources();
+            var res = geo._getExternalResources();
             if (!res.length) {
                 return;
             }
             if (!me.resources) {
-                resources = resources.concat(res);
+                resources.push.apply(resources, res);
             } else {
                 for (let i = 0; i < res.length; i++) {
                     if (!me.resources.isResourceLoaded(res[i])) {
