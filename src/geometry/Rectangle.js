@@ -156,7 +156,7 @@ class Rectangle extends Polygon {
 
     //update cached variables if geometry is updated.
     _updateCache() {
-        delete this._extent;
+        this._clearCache();
         var projection = this._getProjection();
         if (this._pnw && projection) {
             this._coordinates = projection.unproject(this._pnw);
