@@ -251,7 +251,7 @@ class GeometryCollection extends Geometry {
     }
 
     _updateCache() {
-        delete this._extent;
+        this._clearCache();
         if (this.isEmpty()) {
             return;
         }

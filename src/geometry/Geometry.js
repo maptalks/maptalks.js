@@ -976,6 +976,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
+    _clearCache() {
+        delete this._extent;
+    }
+
     _repaint() {
         if (this._painter) {
             this._painter.repaint();
@@ -988,7 +992,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     onShapeChanged() {
-        this._extent = null;
+        this._clearCache();
         this._repaint();
         /**
          * shapechange event.
@@ -1002,7 +1006,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     onPositionChanged() {
-        this._extent = null;
+        this._clearCache();
         this._repaint();
         /**
          * positionchange event.

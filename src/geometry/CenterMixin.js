@@ -73,7 +73,7 @@ export default function (Base) {
 
         //update cached variables if geometry is updated.
         _updateCache() {
-            delete this._extent;
+            this._clearCache();
             const projection = this._getProjection();
             if (this._pcenter && projection) {
                 this._coordinates = projection.unproject(this._pcenter);

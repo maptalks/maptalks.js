@@ -136,7 +136,7 @@ class Path extends Geometry {
 
     //update cached variables if geometry is updated.
     _updateCache() {
-        delete this._extent;
+        this._clearCache();
         var projection = this._getProjection();
         if (!projection) {
             return;
