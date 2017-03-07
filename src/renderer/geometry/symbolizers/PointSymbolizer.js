@@ -1,4 +1,4 @@
-import { mapArrayRecursively, isNil } from 'core/util';
+import { computeDegree, mapArrayRecursively, isNil } from 'core/util';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
@@ -71,7 +71,14 @@ export default class PointSymbolizer extends CanvasSymbolizer {
         if (!r) {
             r = 0;
         }
-        return rotations[i] + r;
+        const map = this.getMap();
+        var p0 = rotations[i][0], p1 = rotations[i][1];
+        if (map.getCameraMatrix()) {
+            const maxZoom = map.getMaxZoom();
+            p0 = map._pointToContainerPoint(rotations[i][0], maxZoom);
+            p1 = map._pointToContainerPoint(rotations[i][1], maxZoom);
+        }
+        return r + computeDegree(p0, p1);
     }
 
     _rotate(ctx, origin, rotation) {

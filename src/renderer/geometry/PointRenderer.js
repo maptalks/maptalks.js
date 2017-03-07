@@ -1,4 +1,3 @@
-import { computeDegree } from 'core/util';
 import Marker from 'geometry/Marker';
 import Ellipse from 'geometry/Ellipse';
 import Circle from 'geometry/Circle';
@@ -73,8 +72,8 @@ Rectangle.include({
 //----------------------------------------------------
 const PolyRenderer = {
     _getRenderPoints(placement) {
-        var map = this.getMap();
-        var maxZoom = map.getMaxZoom();
+        const map = this.getMap();
+        const maxZoom = map.getMaxZoom();
         var points, rotations = null;
         if (placement === 'vertex') {
             points = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom);
@@ -85,40 +84,39 @@ const PolyRenderer = {
         } else if (placement === 'line') {
             points = [];
             rotations = [];
-            var vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom),
+            let vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom),
                 isSplitted =  vertice.length > 0 && Array.isArray(vertice[0]);
-            var i, len;
             if (isSplitted) {
                 //anti-meridian splitted
-                var ring, ii, ilen;
-                for (i = 1, len = vertice.length; i < len; i++) {
+                let ring;
+                for (let i = 1, l = vertice.length; i < l; i++) {
                     ring = vertice[i];
                     if (this instanceof Polygon && ring.length > 0 && !ring[0].equals(ring[ring.length - 1])) {
                         ring.push(ring[0]);
                     }
-                    for (ii = 1, ilen = ring.length; ii < ilen; ii++) {
+                    for (let ii = 1, ll = ring.length; ii < ll; ii++) {
                         points.push(ring[ii].add(ring[ii - 1])._multi(0.5));
-                        rotations.push(computeDegree(ring[ii - 1], ring[ii]));
+                        rotations.push([ring[ii - 1], ring[ii]]);
                     }
                 }
             } else {
                 if (this instanceof Polygon && vertice.length > 0 && !vertice[0].equals(vertice[vertice.length - 1])) {
                     vertice.push(vertice[0]);
                 }
-                for (i = 1, len = vertice.length; i < len; i++) {
+                for (let i = 1, l = vertice.length; i < l; i++) {
                     points.push(vertice[i].add(vertice[i - 1])._multi(0.5));
-                    rotations.push(computeDegree(vertice[i - 1], vertice[i]));
+                    rotations.push([vertice[i - 1], vertice[i]]);
                 }
             }
 
         } else if (placement === 'vertex-first') {
-            var first = this._getPrjCoordinates()[0];
+            let first = this._getPrjCoordinates()[0];
             points = [map._prjToPoint(first, maxZoom)];
         } else if (placement === 'vertex-last') {
-            var last = this._getPrjCoordinates()[this._getPrjCoordinates().length - 1];
+            let last = this._getPrjCoordinates()[this._getPrjCoordinates().length - 1];
             points = [map._prjToPoint(last, maxZoom)];
         } else {
-            var pcenter = this._getProjection().project(this.getCenter());
+            let pcenter = this._getProjection().project(this.getCenter());
             points = [map._prjToPoint(pcenter, maxZoom)];
         }
         return [points, rotations];
