@@ -70,6 +70,13 @@ Map.include(/** @lends Map.prototype */{
         return this._cameraMatrix;
     },
 
+    /**
+     * Convert 2d point at target zoom to containerPoint at current zoom
+     * @param  {Point} point 2d point at target zoom
+     * @param  {Number} zoom  target zoom, current zoom in default
+     * @return {Point}       containerPoint at current zoom
+     * @private
+     */
     _pointToContainerPoint(point, zoom) {
         point = this._pointToPoint(point, zoom);
         if (this._pixelMatrix) {
@@ -82,6 +89,13 @@ Map.include(/** @lends Map.prototype */{
         }
     },
 
+    /**
+     * Convert containerPoint at current zoom to 2d point at target zoom
+     * @param  {Point} p    container point at current zoom
+     * @param  {Number} zoom target zoom, current zoom in default
+     * @return {Point}      2d point at target zoom
+     * @private
+     */
     _containerPointToPoint(p, zoom) {
         if (this._pixelMatrixInverse) {
             const targetZ = 0;
