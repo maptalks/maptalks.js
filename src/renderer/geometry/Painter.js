@@ -102,21 +102,24 @@ export default class Painter extends Class {
     getPaintParams(dx, dy) {
         const map = this.getMap();
         const zoom = map.getZoom();
+        const pitched = map.getPitch() > 0;
+        var params = this._paintParams;
         // remove cached points if the geometry is simplified on the zoom.
-        if (!this._paintParams ||
-            (this._paintParams._zoom !== undefined && this._paintParams._zoom !== zoom) ||
-            (map.getPitch() && this.geometry._redrawWhenPitch)
+        if (!params ||
+            (params._zoom !== undefined && params._zoom !== zoom) ||
+            (this._pitched !== pitched && this.geometry._redrawWhenPitch)
             ) {
             //render resources geometry returned are based on 2d points.
-            this._paintParams = this.geometry._getPaintParams();
+            params = this.geometry._getPaintParams();
             if (this.geometry._simplified) {
-                this._paintParams._zoom = zoom;
+                params._zoom = zoom;
             }
+            this._paintParams = params;
         }
-        if (!this._paintParams) {
+        if (!params) {
             return null;
         }
-
+        this._pitched = pitched;
         const maxZoom = map.getMaxZoom();
         const zoomScale = map.getScale();
         const layerNorthWest = this.getLayer()._getRenderer()._northWest;
