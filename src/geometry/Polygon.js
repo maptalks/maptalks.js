@@ -83,14 +83,12 @@ class Polygon extends Path {
         if (!this._coordinates) {
             return [];
         }
-        if (isArrayHasData(this._holes)) {
-            var holes = [];
-            for (var i = 0; i < this._holes.length; i++) {
-                holes.push(this._closeRing(this._holes[i]));
-            }
-            return [this._closeRing(this._coordinates)].concat(holes);
+        const holes = this.getHoles();
+        const rings = [this._closeRing(this._coordinates)];
+        for (let i = 0, l = holes.length; i < l; i++) {
+            rings.push(this._closeRing(holes[i]));
         }
-        return [this._closeRing(this._coordinates)];
+        return rings;
     }
 
     /**
@@ -177,7 +175,7 @@ class Polygon extends Path {
     _closeRing(ring) {
         var isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && !isClose) {
-            return ring.concat([new Coordinate(ring[0].x, ring[0].y)]);
+            return ring.concat(ring[0].copy());
         } else {
             return ring;
         }
