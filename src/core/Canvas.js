@@ -512,15 +512,15 @@ const Canvas = {
 
     },
 
-    _ring(ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern) {
-        var isPatternLine = (ignoreStrokePattern === true ? false : Canvas._isPattern(ctx.strokeStyle));
-        if (isPatternLine && !ring[0].equals(ring[ring.length - 1])) {
+    _ring(ctx, ring, lineDashArray, lineOpacity, ignorePattern) {
+        const isPattern = Canvas._isPattern(ctx.strokeStyle);
+        if (!ignorePattern && isPattern && !ring[0].equals(ring[ring.length - 1])) {
             ring = ring.concat([ring[0]]);
         }
         ctx.beginPath();
         ctx.moveTo(ring[0].x, ring[0].y);
-        Canvas._path(ctx, ring, lineDashArray, lineOpacity, ignoreStrokePattern);
-        if (!isPatternLine) {
+        Canvas._path(ctx, ring, lineDashArray, lineOpacity, ignorePattern);
+        if (!isPattern) {
             ctx.closePath();
         }
     },
@@ -569,7 +569,8 @@ const Canvas = {
         ctx.beginPath();
         var start = points[0];
         ctx.moveTo(start.x, start.y);
-        Canvas._bezierCurveTo.apply(Canvas, [ctx].concat(points.splice(1)));
+        const args = [ctx];
+        Canvas._bezierCurveTo.apply(Canvas, args.push.apply(args, points.splice(1)));
         Canvas.fillCanvas(ctx, fillOpacity);
         Canvas._stroke(ctx, lineOpacity);
     },

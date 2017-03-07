@@ -80,7 +80,7 @@ const GeoJSON = {
             for (var i = 0, len = geoJSON.length; i < len; i++) {
                 var geo = this._convert(geoJSON[i]);
                 if (Array.isArray(geo)) {
-                    resultGeos = resultGeos.concat(geo);
+                    resultGeos.push.apply(resultGeos, geo);
                 } else {
                     resultGeos.push(geo);
                 }

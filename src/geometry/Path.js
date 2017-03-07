@@ -194,13 +194,13 @@ class Path extends Geometry {
     }
 
     _computeExtent() {
-        var ring = this._coordinates;
-        if (!isArrayHasData(ring)) {
+        var shell = this._coordinates;
+        if (!isArrayHasData(shell)) {
             return null;
         }
-        var rings = [ring];
+        var rings = [shell];
         if (this.hasHoles && this.hasHoles()) {
-            rings = rings.concat(this.getHoles());
+            rings.push.apply(rings, this.getHoles());
         }
         return this._computeCoordsExtent(rings);
     }
