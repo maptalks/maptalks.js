@@ -570,7 +570,8 @@ const Canvas = {
         var start = points[0];
         ctx.moveTo(start.x, start.y);
         const args = [ctx];
-        Canvas._bezierCurveTo.apply(Canvas, args.push.apply(args, points.splice(1)));
+        args.push.apply(args, points.splice(1));
+        Canvas._bezierCurveTo.apply(Canvas, args);
         Canvas.fillCanvas(ctx, fillOpacity);
         Canvas._stroke(ctx, lineOpacity);
     },
