@@ -8,11 +8,9 @@ Map.include(/** @lends Map.prototype */{
 
     _zoom(nextZoom, origin, startScale) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
-        if (this.options['zoomInCenter']) {
-            origin = null;
-        }
+        origin = this._checkZoomOrigin(origin);
         nextZoom = this._checkZoom(nextZoom);
-        this.onZoomStart(nextZoom);
+        this.onZoomStart(nextZoom, origin);
         this._frameZoom = this.getZoom();
         this.onZoomEnd(nextZoom, origin, startScale);
     },
@@ -24,12 +22,16 @@ Map.include(/** @lends Map.prototype */{
         if (this.getZoom() === nextZoom) {
             return;
         }
+        origin = this._checkZoomOrigin(origin);
+        this.onZoomStart(nextZoom, origin);
+        this._startZoomAnimation(nextZoom, origin, startScale);
+    },
 
-        this.onZoomStart(nextZoom);
-        if (!origin || this.options['zoomInCenter']) {
+    _checkZoomOrigin(origin) {
+        if (!origin || this.options['zoomInCenter'] || this.getPitch()) {
             origin = new Point(this.width / 2, this.height / 2);
         }
-        this._startZoomAnimation(nextZoom, origin, startScale);
+        return origin;
     },
 
     _startZoomAnimation(nextZoom, origin, startScale) {
@@ -57,10 +59,11 @@ Map.include(/** @lends Map.prototype */{
         ).play();
     },
 
-    onZoomStart(nextZoom) {
+    onZoomStart(nextZoom, origin) {
         this._zooming = true;
         this._enablePanAnimation = false;
         this._startZoomVal = this.getZoom();
+        this._startZoomOrig = this._containerPointToPrj(origin);
         /**
           * zoomstart event
           * @event Map#zoomstart
@@ -74,19 +77,19 @@ Map.include(/** @lends Map.prototype */{
     },
 
     onZooming(nextZoom, origin, startScale) {
-        var frameZoom = this._frameZoom;
+        const frameZoom = this._frameZoom;
         if (frameZoom === nextZoom) {
             return;
         }
         if (isNil(startScale)) {
             startScale = 1;
         }
-        this._zoomTo(nextZoom, origin, startScale);
-        var res = this.getResolution(nextZoom);
-        var fromRes = this.getResolution(this._startZoomVal);
-        var scale = fromRes / res / startScale;
-        var offset = this.offsetPlatform();
-        var matrix = {
+        this._zoomTo(nextZoom, origin);
+        const res = this.getResolution(nextZoom);
+        const fromRes = this.getResolution(this._startZoomVal);
+        const scale = fromRes / res / startScale;
+        const offset = this.offsetPlatform();
+        const matrix = {
             'view' : [scale, 0, 0, scale, (origin.x - offset.x) *  (1 - scale), (origin.y - offset.y) *  (1 - scale)]
         };
         if (Browser.retina) {
@@ -104,10 +107,7 @@ Map.include(/** @lends Map.prototype */{
           */
         this._fireEvent('zooming', { 'from' : this._startZoomVal, 'to': nextZoom, 'origin' : origin, 'matrix' : matrix });
         this._frameZoom = nextZoom;
-        var renderer = this._getRenderer();
-        if (renderer) {
-            renderer.render();
-        }
+        this._getRenderer().render();
     },
 
     onZoomEnd(nextZoom, origin) {
@@ -128,11 +128,10 @@ Map.include(/** @lends Map.prototype */{
         this._fireEvent('zoomend', { 'from' : startZoomVal, 'to': nextZoom });
     },
 
-    _zoomTo(nextZoom, origin, startScale) {
-        const zScale = this._getResolution(this._frameZoom) / this._getResolution(nextZoom);
-        const zoomOffset = this._getZoomCenterOffset(nextZoom, origin, startScale, zScale);
+    _zoomTo(nextZoom, origin) {
         this._zoomLevel = nextZoom;
         this._calcMatrices();
+        const zoomOffset = this._getZoomCenterOffset(origin);
         if (zoomOffset && (zoomOffset.x !== 0 || zoomOffset.y !== 0)) {
             this._offsetCenterByPixel(zoomOffset._multi(-1));
         }
@@ -150,27 +149,13 @@ Map.include(/** @lends Map.prototype */{
         return nextZoom;
     },
 
-    _getZoomCenterOffset(nextZoom, origin, startScale, zScale) {
+    _getZoomCenterOffset(origin) {
         if (!origin) {
             return null;
         }
-        if (isNil(startScale)) {
-            startScale = 1;
-        }
-        var zoomOffset = new Point(
-            (origin.x - this.width / 2) * (zScale - startScale),
-            (origin.y - this.height / 2) * (zScale - startScale)
-        );
-
-        var newCenter = this.containerPointToCoordinate(zoomOffset.add(this.width / 2, this.height / 2));
-        if (!this._verifyExtent(newCenter)) {
-            return new Point(0, 0);
-        }
-
-        return zoomOffset;
-    },
-
-    _getZoomMillisecs() {
-        return 600;
+        // get pixel offset of map's center
+        // to keep coordinate at origin(container point) unchanged
+        const po = this._prjToContainerPoint(this._startZoomOrig);
+        return po._sub(origin);
     }
 });

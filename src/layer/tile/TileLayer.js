@@ -172,13 +172,11 @@ class TileLayer extends Layer {
             };
         }
 
-        const pitch = map.getPitch();
-
         //Get description of center tile including left and top offset
         const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
         const offset = centerTile['offset'];
-        const center2D = map._prjToPoint(map._getPrjCenter(), zoom)._substract(offset.x, offset.y);
-        const centerViewPoint = pitch ? containerCenter._substract(offset.x, offset.y) : map._pointToViewPoint(center2D, zoom);
+        const center2D = map._prjToPoint(map._getPrjCenter(), zoom)._sub(offset.x, offset.y);
+        const centerViewPoint = map._containerPointToViewPoint(containerCenter._sub(offset.x, offset.y));
 
         const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
         //Number of tiles around the center tile
