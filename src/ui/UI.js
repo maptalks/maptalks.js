@@ -1,4 +1,4 @@
-import { extend } from 'core/util';
+import { extend, round } from 'core/util';
 import { trim } from 'core/util/strings';
 import {
     on,
@@ -164,8 +164,8 @@ class UIComponent extends Eventable(Class) {
         var point = this.getPosition();
 
         dom.style.position = 'absolute';
-        dom.style.left = point.x + 'px';
-        dom.style.top = point.y + 'px';
+        dom.style.left = round(point.x) + 'px';
+        dom.style.top = round(point.y) + 'px';
 
         dom.style[TRANSITION] = null;
 

@@ -83,19 +83,15 @@ export default class MapCanvasRenderer extends MapRenderer {
         });
     }
 
-    updateMapSize(mSize) {
-        if (!mSize || this._containerIsCanvas) {
+    updateMapSize(size) {
+        if (!size || this._containerIsCanvas) {
             return;
         }
-        var width = mSize['width'] + 'px',
-            height = mSize['height'] + 'px';
-        var panels = this.map._panels;
+        const width = size['width'] + 'px',
+            height = size['height'] + 'px';
+        const panels = this.map._panels;
         panels.mapWrapper.style.width = width;
         panels.mapWrapper.style.height = height;
-        panels.front.style.width = panels.frontLayer.style.width = width;
-        panels.front.style.height = panels.frontLayer.style.height = height;
-        panels.back.style.width = panels.backLayer.style.width = width;
-        panels.back.style.height = panels.backLayer.style.height = height;
         this._updateCanvasSize();
     }
 
@@ -187,13 +183,13 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         const control = createContainer('control', 'maptalks-control', null, true);
         const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
-        const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;', true);
-        const front = createContainer('front', 'maptalks-front', 'position:absolute;top:0px;left:0px;will-change:transform;', true);
-        const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;left:0px;top:0px;');
+        const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;top:0px;left:0px;padding:0px;margin:0px;', true);
+        const front = createContainer('front', 'maptalks-front', 'position:absolute;will-change:transform;', true);
+        const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;');
         // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
-        const ui = createContainer('ui', 'maptalks-ui', 'position:absolute;top:0px;left:0px;border:none;z-index:10000;', true);
-        const back = createContainer('back', 'maptalks-back', 'position:absolute;left:0px;top:0px;will-change:transform;');
-        const backLayer = createContainer('backLayer', 'maptalks-back-layer', 'position:absolute;left:0px;top:0px;');
+        const ui = createContainer('ui', 'maptalks-ui', 'position:absolute;border:none;z-index:10000;', true);
+        const back = createContainer('back', 'maptalks-back', 'position:absolute;will-change:transform;');
+        const backLayer = createContainer('backLayer', 'maptalks-back-layer', 'position:absolute;');
         const canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
 
         containerDOM.appendChild(mapWrapper);

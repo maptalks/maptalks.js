@@ -1844,7 +1844,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return null;
         }
         var platformOffset = this.offsetPlatform();
-        return containerPoint._substract(platformOffset);
+        return containerPoint._sub(platformOffset);
     }
 
     _viewPointToPoint(viewPoint, zoom) {
