@@ -362,8 +362,10 @@ class OverlayLayer extends Layer {
         const geometries = this._geoList,
             filter = options ? options.filter : null,
             hits = [];
-        var extent2d;
-        const point = this.getMap().coordinateToPoint(coordinate);
+        var extent;
+        const map = this.getMap();
+        const point = map.coordinateToPoint(coordinate);
+        const cp = map._pointToContainerPoint(point);
         for (let i = geometries.length - 1; i >= 0; i--) {
             let geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter()) {
@@ -371,8 +373,8 @@ class OverlayLayer extends Layer {
             }
             if (!(geo instanceof LineString) || !geo._getArrowStyle()) {
                 // Except for LineString with arrows
-                extent2d = geo._getPainter().get2DExtent();
-                if (!extent2d || !extent2d.contains(point)) {
+                extent = geo._getPainter().getContainerExtent();
+                if (!extent || !extent.contains(cp)) {
                     continue;
                 }
             }

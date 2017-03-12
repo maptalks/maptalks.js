@@ -74,8 +74,8 @@ class Marker extends CenterMixin(Geometry) {
     }
 
     _containsPoint(point) {
-        const pxExtent = this._getPainter().get2DExtent();
-        return pxExtent.contains(point);
+        const extent = this._getPainter().getContainerExtent();
+        return extent.contains(this.getMap()._pointToContainerPoint(point));
     }
 
     _computeExtent() {
