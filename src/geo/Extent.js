@@ -130,6 +130,15 @@ class Extent {
     }
 
     /**
+     * Alias for substract
+     * @param {Coordinate|Point} p - point or coordinate to substract
+     * @returns {Extent} a new extent
+     */
+    sub(p) {
+        return this.substract(p);
+    }
+
+    /**
      * Round the extent
      * @return {Extent} rounded extent
      */

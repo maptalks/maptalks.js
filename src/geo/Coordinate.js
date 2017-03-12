@@ -134,6 +134,10 @@ class Coordinate {
         return this;
     }
 
+    _sub(x, y) {
+        return this._substract(x, y);
+    }
+
     /**
      * Returns the result of subtraction of another coordinate.
      * @param {Coordinate} coordinate - coordinate to substract
@@ -149,6 +153,15 @@ class Coordinate {
             ny = this.y - y;
         }
         return new Coordinate(nx, ny);
+    }
+
+    /**
+     * Alias for substract
+     * @param {Coordinate} coordinate - coordinate to substract
+     * @return {Coordinate} result
+     */
+    sub(x, y) {
+        return this.substract(x, y);
     }
 
     /**
