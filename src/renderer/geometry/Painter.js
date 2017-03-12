@@ -103,11 +103,13 @@ export default class Painter extends Class {
         const map = this.getMap();
         const zoom = map.getZoom();
         const pitched = map.getPitch() > 0;
+        const rotated = map.getBearing() > 0;
         var params = this._paintParams;
         // remove cached points if the geometry is simplified on the zoom.
         if (!params ||
             (params._zoom !== undefined && params._zoom !== zoom) ||
-            (this._pitched !== pitched && this.geometry._redrawWhenPitch)
+            (this._pitched !== pitched && this.geometry._redrawWhenPitch()) ||
+            (this._rotated !== rotated && this.geometry._redrawWhenRotate())
             ) {
             //render resources geometry returned are based on 2d points.
             params = this.geometry._getPaintParams();
@@ -120,6 +122,7 @@ export default class Painter extends Class {
             return null;
         }
         this._pitched = pitched;
+        this._rotated = rotated;
         const maxZoom = map.getMaxZoom();
         const zoomScale = map.getScale();
         const layerNorthWest = this.getLayer()._getRenderer()._northWest;
