@@ -1,7 +1,8 @@
 import Map from './Map';
 import Point from 'geo/Point';
 import * as mat4 from 'core/util/mat4';
-import { clamp, interpolate } from 'core/util';
+import { clamp, interpolate, wrap } from 'core/util';
+import Browser from 'core/Browser';
 
 /*!
  * based on snippets from mapbox-gl-js
@@ -12,32 +13,35 @@ import { clamp, interpolate } from 'core/util';
 
 Map.include(/** @lends Map.prototype */{
 
-    // getBearing() {
-    //     if (!this._angle) {
-    //         return 0;
-    //     }
-    //     return -this._angle / Math.PI * 180;
-    // },
+    getBearing() {
+        if (!this._angle) {
+            return 0;
+        }
+        return -this._angle / Math.PI * 180;
+    },
 
-    // setBearing(bearing) {
-    //     var b = -wrap(bearing, -180, 180) * Math.PI / 180;
-    //     if (this._angle === b) return this;
-    //     const from = this.getBearing();
-    //     this._angle = b;
-    //     this._calcMatrices();
-    //     this._renderLayers();
-    //     *
-    //       * rotate event
-    //       * @event Map#rotate
-    //       * @type {Object}
-    //       * @property {String} type                    - rotate
-    //       * @property {Map} target                     - the map fires event
-    //       * @property {Number} from                    - bearing rotate from
-    //       * @property {Number} to                      - bearing rotate to
-
-    //     this._fireEvent('rotate', { 'from' : from, 'to': b });
-    //     return this;
-    // },
+    setBearing(bearing) {
+        if (Browser.ie9) {
+            throw new Error('map can\'t rotate in IE9.');
+        }
+        var b = -wrap(bearing, -180, 180) * Math.PI / 180;
+        if (this._angle === b) return this;
+        const from = this.getBearing();
+        this._angle = b;
+        this._calcMatrices();
+        this._renderLayers();
+        /*
+          * rotate event
+          * @event Map#rotate
+          * @type {Object}
+          * @property {String} type                    - rotate
+          * @property {Map} target                     - the map fires event
+          * @property {Number} from                    - bearing rotate from
+          * @property {Number} to                      - bearing rotate to
+        */
+        this._fireEvent('rotate', { 'from' : from, 'to': b });
+        return this;
+    },
 
     getPitch() {
         if (!this._pitch) {
@@ -47,6 +51,9 @@ Map.include(/** @lends Map.prototype */{
     },
 
     setPitch(pitch) {
+        if (Browser.ie9) {
+            throw new Error('map can\'t tilt in IE9.');
+        }
         const p = clamp(pitch, 0, 60) / 180 * Math.PI;
         if (this._pitch === p) return this;
         const from = this.getPitch();
@@ -67,7 +74,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     getCameraMatrix() {
-        return this._cameraMatrix;
+        return this._cameraMatrix || null;
     },
 
     /**
