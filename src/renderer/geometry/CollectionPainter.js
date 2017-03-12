@@ -15,9 +15,9 @@ export default class CollectionPainter extends Class {
     }
 
     _eachPainter(fn) {
-        var geometries = this.geometry.getGeometries();
+        const geometries = this.geometry.getGeometries();
         var painter;
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        for (let i = 0, len = geometries.length; i < len; i++) {
             painter = geometries[i]._getPainter();
             if (!painter) {
                 continue;
@@ -34,64 +34,72 @@ export default class CollectionPainter extends Class {
         if (!this.geometry) {
             return;
         }
-        this._eachPainter(function (painter) {
+        this._eachPainter(painter => {
             painter.paint();
         });
     }
 
     get2DExtent(resources) {
         var extent = new PointExtent();
-        this._eachPainter(function (painter) {
+        this._eachPainter(painter => {
             extent = extent.combine(painter.get2DExtent(resources));
         });
         return extent;
     }
 
+    getContainerExtent() {
+        var extent = new PointExtent();
+        this._eachPainter(painter => {
+            extent = extent.combine(painter.getContainerExtent());
+        });
+        return extent;
+    }
+
     remove() {
-        var args = arguments;
-        this._eachPainter(function (painter) {
+        const args = arguments;
+        this._eachPainter(painter => {
             painter.remove.apply(painter, args);
         });
     }
 
     setZIndex() {
-        var args = arguments;
-        this._eachPainter(function (painter) {
+        const args = arguments;
+        this._eachPainter(painter => {
             painter.setZIndex.apply(painter, args);
         });
     }
 
     show() {
-        var args = arguments;
-        this._eachPainter(function (painter) {
+        const args = arguments;
+        this._eachPainter(painter => {
             painter.show.apply(painter, args);
         });
     }
 
     hide() {
-        var args = arguments;
-        this._eachPainter(function (painter) {
+        const args = arguments;
+        this._eachPainter(painter => {
             painter.hide.apply(painter, args);
         });
     }
 
     repaint() {
-        var args = arguments;
-        this._eachPainter(function (painter) {
+        const args = arguments;
+        this._eachPainter(painter => {
             painter.repaint.apply(painter, args);
         });
     }
 
     refreshSymbol() {
-        var args = arguments;
-        this._eachPainter(function (painter) {
+        const args = arguments;
+        this._eachPainter(painter => {
             painter.refreshSymbol.apply(painter, args);
         });
     }
 
     hasPointSymbolizer() {
         var result = false;
-        this._eachPainter(function (painter) {
+        this._eachPainter(painter => {
             if (painter.hasPointSymbolizer()) {
                 result = true;
                 return false;

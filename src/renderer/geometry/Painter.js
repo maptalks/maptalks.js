@@ -275,6 +275,7 @@ export default class Painter extends Class {
         const map = this.getMap(),
             extent2D = this.get2DExtent();
         if (map.getCameraMatrix()) {
+            //FIXME Marker的计算不应调用pointToContainerPoint, 应该用markerExtent + point的方式
             const extent = new PointExtent();
             extent2D.toArray().forEach(c => {
                 extent._combine(map._pointToContainerPoint(c));
