@@ -1,5 +1,6 @@
-import { isArrayHasData } from 'core/util';
+import Size from 'geo/Size';
 import Canvas from 'core/Canvas';
+import Geometry from 'geometry/Geometry';
 import Ellipse from 'geometry/Ellipse';
 import Circle from 'geometry/Circle';
 import Sector from 'geometry/Sector';
@@ -7,16 +8,30 @@ import Rectangle from 'geometry/Rectangle';
 import LineString from 'geometry/LineString';
 import Polygon from 'geometry/Polygon';
 
+Geometry.include({
+    _redrawWhenPitch : () => false,
+
+    _redrawWhenRotate: () => false
+});
+
 const el = {
-    _redrawWhenPitch : true,
+    _redrawWhenPitch : () => true,
+
+    _redrawWhenRotate: function () {
+        return this instanceof Ellipse;
+    },
+
+    _paintAsPolygon: function () {
+        const map = this.getMap();
+        // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
+        return map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
+    },
 
     _getPaintParams() {
         const map = this.getMap();
-        if (map.getPitch()) {
-            // when map is tilting, draw the vertexes as a polygon
+        if (this._paintAsPolygon()) {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
-        //TODO rotating ellipse
         const pcenter = this._getPrjCoordinates();
         const pt = map._prjToPoint(pcenter, map.getMaxZoom());
         const size = this._getRenderSize();
@@ -24,8 +39,7 @@ const el = {
     },
 
     _paintOn: function () {
-        const map = this.getMap();
-        if (map.getPitch()) {
+        if (this._paintAsPolygon()) {
             return Canvas.polygon.apply(Canvas, arguments);
         } else {
             return Canvas.ellipse.apply(Canvas, arguments);
@@ -33,9 +47,27 @@ const el = {
     }
 };
 
-Ellipse.include(el);
+Ellipse.include(el, {
+    _getRenderSize() {
+        const w = this.getWidth(),
+            h = this.getHeight();
+        const map = this.getMap();
+        return map.distanceToPixel(w / 2, h / 2, map.getMaxZoom());
+    }
+});
 
-Circle.include(el);
+Circle.include(el, {
+    _getRenderSize() {
+        const map = this.getMap(),
+            scale = map.getScale(),
+            center = this.getCenter(),
+            radius = this.getRadius(),
+            target = map.locate(center, radius, 0);
+        var w = map.coordinateToContainerPoint(center).distanceTo(map.coordinateToContainerPoint(target));
+        w *= scale;
+        return new Size(w, w);
+    }
+});
 //----------------------------------------------------
 Rectangle.include({
     _getPaintParams() {
@@ -45,11 +77,18 @@ Rectangle.include({
         const points = this._getPath2DPoints(shell, false, maxZoom);
         return [points];
     },
+
     _paintOn: Canvas.polygon
 });
 //----------------------------------------------------
 Sector.include({
-    _redrawWhenPitch : true,
+    _redrawWhenPitch : () => true,
+
+    _getRenderSize() {
+        var radius = this.getRadius();
+        var map = this.getMap();
+        return map.distanceToPixel(radius, radius, map.getMaxZoom());
+    },
 
     _getPaintParams() {
         const map = this.getMap();
@@ -69,7 +108,14 @@ Sector.include({
         if (map.getPitch()) {
             return Canvas.polygon.apply(Canvas, arguments);
         } else {
-            return Canvas.sector.apply(Canvas, arguments);
+            const r = this.getMap().getBearing();
+            const args = arguments;
+            if (r) {
+                args[3] = args[3].slice(0);
+                args[3][0] += r;
+                args[3][1] += r;
+            }
+            return Canvas.sector.apply(Canvas, args);
         }
     }
 
@@ -180,7 +226,7 @@ Polygon.include({
         }
         const prjHoles = this._getPrjHoles();
         const holePoints = [];
-        if (isArrayHasData(prjHoles)) {
+        if (prjHoles && prjHoles.length > 0) {
             for (let i = 0; i < prjHoles.length; i++) {
                 let hole = this._getPath2DPoints(prjHoles[i], disableSimplify, maxZoom);
                 if (isSplitted) {

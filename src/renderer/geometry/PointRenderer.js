@@ -18,30 +18,11 @@ const CenterPointRenderer = {
  */
 Marker.include(CenterPointRenderer);
 
-Ellipse.include(CenterPointRenderer, {
-    _getRenderSize() {
-        var w = this.getWidth(),
-            h = this.getHeight();
-        var map = this.getMap();
-        return map.distanceToPixel(w / 2, h / 2, map.getMaxZoom());
-    }
-});
+Ellipse.include(CenterPointRenderer);
 
-Circle.include(CenterPointRenderer, {
-    _getRenderSize() {
-        var radius = this.getRadius();
-        var map = this.getMap();
-        return map.distanceToPixel(radius, radius, map.getMaxZoom());
-    }
-});
+Circle.include(CenterPointRenderer);
 //----------------------------------------------------
-Sector.include(CenterPointRenderer, {
-    _getRenderSize() {
-        var radius = this.getRadius();
-        var map = this.getMap();
-        return map.distanceToPixel(radius, radius, map.getMaxZoom());
-    }
-});
+Sector.include(CenterPointRenderer);
 //----------------------------------------------------
 Rectangle.include({
     _getRenderPoints(placement) {
@@ -59,13 +40,6 @@ Rectangle.include({
                 [c], null
             ];
         }
-    },
-
-    _getRenderSize() {
-        var w = this.getWidth(),
-            h = this.getHeight();
-        var map = this.getMap();
-        return map.distanceToPixel(w, h, map.getMaxZoom());
     }
 });
 
