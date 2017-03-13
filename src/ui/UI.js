@@ -483,9 +483,8 @@ class UIComponent extends Eventable(Class) {
 
     _getDefaultEvents() {
         return {
-            'zooming': this.onZooming,
-            'moving': this.onMoving,
-            'zoomend': this.onZoomEnd
+            'zooming zoomend rotate pitch': this.onEvent,
+            'moving': this.onMoving
         };
     }
 
@@ -504,19 +503,13 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    onZooming() {
-        if (this.isVisible()) {
-            this._updatePosition();
-        }
-    }
-
     onMoving() {
         if (this.isVisible() && this.getMap().getCameraMatrix()) {
             this._updatePosition();
         }
     }
 
-    onZoomEnd() {
+    onEvent() {
         if (this.isVisible()) {
             this._updatePosition();
         }
