@@ -539,7 +539,7 @@ export function setTransformMatrix(el, m) {
 }
 
 export function removeTransform(el) {
-    el.style[TRANSFORM] = null;
+    el.style[TRANSFORM] = '';
     return this;
 }
 
