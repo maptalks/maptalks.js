@@ -1,4 +1,4 @@
-import { extend, round } from 'core/util';
+import { extend } from 'core/util';
 import { trim } from 'core/util/strings';
 import {
     on,
@@ -8,6 +8,7 @@ import {
     TRANSFORMORIGIN,
     TRANSITION
 } from 'core/util/dom';
+import Browser from 'core/Browser';
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
 import Point from 'geo/Point';
@@ -24,7 +25,6 @@ import Geometry from 'geometry/Geometry';
  * @property {Boolean} [options.single=true]    - whether the UI is a global single one, only one UI will be shown at the same time if set to true.
  * @property {Boolean} [options.animation=null]         - fade | scale | fade,scale, add animation effect when showing and hiding.
  * @property {Number}  [options.animationDuration=300]  - animation duration, in milliseconds.
- * @property {Number}  [options.animationDelay=0]       - time delay for animation, in milliseconds.
  * @memberOf ui.UIComponent
  * @instance
  */
@@ -37,8 +37,7 @@ const options = {
     'single': true,
     'animation': 'scale',
     'animationOnHide': true,
-    'animationDuration': 500,
-    'animationDelay': 0
+    'animationDuration': 500
 };
 
 /**
@@ -161,11 +160,7 @@ class UIComponent extends Eventable(Class) {
             map[this._uiDomKey()] = dom;
         }
 
-        var point = this.getPosition();
-
-        dom.style.position = 'absolute';
-        dom.style.left = round(point.x) + 'px';
-        dom.style.top = round(point.y) + 'px';
+        this._updatePosition();
 
         dom.style[TRANSITION] = null;
 
@@ -182,7 +177,7 @@ class UIComponent extends Eventable(Class) {
                 var origin = this.getTransformOrigin();
                 dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
             }
-            dom.style[TRANSFORM] = 'scale(0)';
+            dom.style[TRANSFORM] = this._getTranslate(this._pos) + ' scale(0)';
         }
 
         dom.style.display = '';
@@ -196,20 +191,21 @@ class UIComponent extends Eventable(Class) {
             this._autoPan();
         }
 
-        var transition = anim.transition;
+        const transition = anim.transition;
         if (transition) {
-            var animFn = function () {
-                if (transition) {
-                    dom.style[TRANSITION] = transition;
-                }
-                if (anim.fade) {
-                    dom.style.opacity = 1;
-                }
-                if (anim.scale) {
-                    dom.style[TRANSFORM] = 'scale(1)';
-                }
-            };
-            setTimeout(animFn, this.options['animationDelay'] || 1);
+            /* eslint-disable no-unused-expression */
+            // trigger transition
+            dom.offsetHeight;
+            /* eslint-enable no-unused-expression */
+            if (transition) {
+                dom.style[TRANSITION] = transition;
+            }
+            if (anim.fade) {
+                dom.style.opacity = 1;
+            }
+            if (anim.scale) {
+                dom.style[TRANSFORM] = this._getTranslate(this._pos) + ' scale(1)';
+            }
         }
 
         this.fire('showend');
@@ -231,19 +227,22 @@ class UIComponent extends Eventable(Class) {
         if (!this.options['animationOnHide']) {
             anim.anim = false;
         }
+        if (!anim.anim) {
+            dom.style.display = 'none';
+        } else {
+            /* eslint-disable no-unused-expression */
+            dom.offsetHeight;
+            /* eslint-enable no-unused-expression */
+            dom.style[TRANSITION] = anim.transition;
+            setTimeout(() => {
+                dom.style.display = 'none';
+            }, this.options['animationDuration']);
+        }
         if (anim.fade) {
             dom.style.opacity = 0;
         }
         if (anim.scale) {
-            dom.style[TRANSFORM] = 'scale(0)';
-        }
-
-        if (!anim.anim) {
-            dom.style.display = 'none';
-        } else {
-            setTimeout(() => {
-                dom.style.display = 'none';
-            }, this.options['animationDuration']);
+            dom.style[TRANSFORM] = this._getTranslate(this._pos) + ' scale(0)';
         }
 
         /**
@@ -263,7 +262,7 @@ class UIComponent extends Eventable(Class) {
      * @returns {Boolean} true|false
      */
     isVisible() {
-        return this.getDOM() && this.getDOM().style.display !== 'none';
+        return this.getMap() && this.getDOM() && this.getDOM().style.display !== 'none';
     }
 
     /**
@@ -337,8 +336,8 @@ class UIComponent extends Eventable(Class) {
             'scale': false
         };
         var animations = this.options['animation'] ? this.options['animation'].split(',') : [];
-        for (var i = 0; i < animations.length; i++) {
-            var trimed = trim(animations[i]);
+        for (let i = 0; i < animations.length; i++) {
+            let trimed = trim(animations[i]);
             if (trimed === 'fade') {
                 anim.fade = true;
             } else if (trimed === 'scale') {
@@ -364,12 +363,12 @@ class UIComponent extends Eventable(Class) {
     }
 
     _autoPan() {
-        var map = this.getMap(),
+        const map = this.getMap(),
             dom = this.getDOM();
         if (map.isMoving() || map._panAnimating) {
             return;
         }
-        var point = new Point(parseInt(dom.style.left), parseInt(dom.style.top));
+        var point = this._pos;
         var mapSize = map.getSize(),
             mapWidth = mapSize['width'],
             mapHeight = mapSize['height'];
@@ -409,6 +408,8 @@ class UIComponent extends Eventable(Class) {
         container.appendChild(dom);
         this._size = new Size(dom.clientWidth, dom.clientHeight);
         dom.style.display = 'none';
+        dom.style.left = '0px';
+        dom.style.top = '0px';
         return this._size;
     }
 
@@ -453,19 +454,6 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getClassName() {
-        /*
-        for (var p in ui) {
-            if (ui.hasOwnProperty(p)) {
-                if (p === 'UIComponent') {
-                    continue;
-                }
-                if (this instanceof (ui[p])) {
-                    return p;
-                }
-            }
-        }
-        return null;
-        */
         return 'UIComponent';
     }
 
@@ -496,6 +484,7 @@ class UIComponent extends Eventable(Class) {
     _getDefaultEvents() {
         return {
             'zooming': this.onZooming,
+            'moving': this.onMoving,
             'zoomend': this.onZoomEnd
         };
     }
@@ -510,36 +499,46 @@ class UIComponent extends Eventable(Class) {
     }
 
     onGeometryPositionChange(param) {
-        if (this._owner && this.getDOM() && this.isVisible()) {
+        if (this._owner && this.isVisible()) {
             this.show(param['target'].getCenter());
         }
     }
 
     onZooming() {
-        if (!this.isVisible() || !this.getDOM() || !this.getMap()) {
-            return;
+        if (this.isVisible()) {
+            this._updatePosition();
         }
-        var dom = this.getDOM(),
-            point = this.getMap().coordinateToViewPoint(this._coordinate);
-        var p = point._add(this.options['dx'], this.options['dy']);
-        if (this.getOffset) {
-            var o = this.getOffset();
-            if (o) {
-                p._add(o);
-            }
+    }
+
+    onMoving() {
+        if (this.isVisible() && this.getMap().getCameraMatrix()) {
+            this._updatePosition();
         }
-        dom.style.left = p.x + 'px';
-        dom.style.top = p.y + 'px';
     }
 
     onZoomEnd() {
-        if (!this.isVisible() || !this.getDOM() || !this.getMap()) {
-            return;
+        if (this.isVisible()) {
+            this._updatePosition();
         }
+    }
+
+    _updatePosition() {
         var dom = this.getDOM(),
             p = this.getPosition();
-        dom.style.left = p.x + 'px';
-        dom.style.top = p.y + 'px';
+        this._pos = p._round();
+        dom.style[TRANSITION] = null;
+        dom.style[TRANSFORM] = this._getTranslate(p);
+    }
+
+    _getTranslate(p) {
+        if (!p) {
+            return '';
+        }
+        if (Browser.any3d) {
+            return 'translate3d(' + p.x + 'px,' + p.y + 'px, 0px)';
+        } else {
+            return 'translate(' + p.x + 'px,' + p.y + 'px)';
+        }
     }
 }
 
