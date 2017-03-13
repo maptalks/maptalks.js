@@ -1,7 +1,7 @@
 import { isNode } from './env';
 import Browser from '../Browser';
 import { extend, isNil, isNumber, isString } from './common';
-import { isURL, extractCssUrl } from './util';
+import { isURL, extractCssUrl, btoa } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from 'core/mapbox';
 import { Symbolizer } from 'renderer/geometry/symbolizers';
 
