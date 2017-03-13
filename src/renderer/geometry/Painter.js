@@ -15,6 +15,18 @@ const registerSymbolizers = [
     Symbolizers.TextMarkerSymbolizer
 ];
 
+
+function convertExtent(extent, fn) {
+    if (!extent) {
+        return null;
+    }
+    const e = new PointExtent();
+    extent.toArray().forEach(c => {
+        e._combine(fn(c));
+    });
+    return e;
+}
+
 /**
  * @classdesc
  * Painter class for all geometry types except the collection types.
@@ -51,9 +63,9 @@ export default class Painter extends Class {
             symbols = [geoSymbol];
         }
         var symbol, symbolizer;
-        for (var ii = symbols.length - 1; ii >= 0; ii--) {
+        for (let ii = symbols.length - 1; ii >= 0; ii--) {
             symbol = symbols[ii];
-            for (var i = regSymbolizers.length - 1; i >= 0; i--) {
+            for (let i = regSymbolizers.length - 1; i >= 0; i--) {
                 if (regSymbolizers[i].test(symbol, this.geometry)) {
                     symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
                     symbolizers.push(symbolizer);
@@ -142,14 +154,13 @@ export default class Painter extends Class {
                 return p;
             });
         } else if (points instanceof Point) {
-            // containerPoints = points.substract(layerPoint);
             containerPoints = map._pointToContainerPoint(points, maxZoom)._substract(layerPoint);
             if (dx || dy) {
                 containerPoints._add(dx, dy);
             }
         }
         tPaintParams.push(containerPoints);
-        for (var i = 1, len = paintParams.length; i < len; i++) {
+        for (let i = 1, len = paintParams.length; i < len; i++) {
             if (isNumber(paintParams[i]) || (paintParams[i] instanceof Size)) {
                 if (isNumber(paintParams[i])) {
                     tPaintParams.push(paintParams[i] / zoomScale);
@@ -167,20 +178,13 @@ export default class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
-    /**
-     * 绘制图形
-     */
     paint() {
-        var contexts = this.getLayer()._getRenderer().getPaintContext();
-        if (!contexts || !this.symbolizers) {
+        if (!this.symbolizers) {
             return;
         }
-
-        this.symbolize(contexts);
-    }
-
-    symbolize(contexts) {
-        this._prepareShadow(contexts[0]);
+        const renderer = this.getLayer()._getRenderer();
+        const contexts = [renderer.context, renderer.resources];
+        this._prepareShadow(renderer.context);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
@@ -256,37 +260,35 @@ export default class Painter extends Class {
         }
     }
 
-    //需要实现的接口方法
     get2DExtent(resources) {
+        const map = this.getMap();
         resources = resources || this.getLayer()._getRenderer().resources;
-        const zoom = this.getMap().getZoom();
+        const zoom = map.getZoom();
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             delete this._extent2D;
+            delete this._markerExtent;
             if (this.symbolizers) {
-                const extent = new PointExtent();
+                const extent = this._extent2D = new PointExtent();
+                const markerExt = this._markerExtent = new PointExtent();
+                var symbolizer;
                 for (let i = this.symbolizers.length - 1; i >= 0; i--) {
-                    extent._combine(this.symbolizers[i].get2DExtent(resources));
+                    symbolizer = this.symbolizers[i];
+                    extent._combine(symbolizer.get2DExtent());
+                    if (symbolizer.getMarkerExtent) {
+                        markerExt._combine(symbolizer.getMarkerExtent(resources));
+                    }
                 }
                 extent._zoom = zoom;
-                this._extent2D = extent;
             }
         }
-        return this._extent2D;
+        return this._extent2D.add(this._markerExtent);
     }
 
     getContainerExtent() {
-        const map = this.getMap(),
-            extent2D = this.get2DExtent();
-        if (map.getCameraMatrix()) {
-            //FIXME Marker的计算不应调用pointToContainerPoint, 应该用markerExtent + point的方式
-            const extent = new PointExtent();
-            extent2D.toArray().forEach(c => {
-                extent._combine(map._pointToContainerPoint(c));
-            });
-            return extent;
-        } else {
-            return new PointExtent(map._pointToContainerPoint(extent2D.getMin()), map._pointToContainerPoint(extent2D.getMax()));
+        if (!this._extent2D || this._extent2D._zoom !== this.getMap().getZoom()) {
+            this.get2DExtent();
         }
+        return convertExtent(this._extent2D, c => this.getMap()._pointToContainerPoint(c)).add(this._markerExtent);
     }
 
     setZIndex(change) {
@@ -320,21 +322,12 @@ export default class Painter extends Class {
     }
 
     /**
-     * symbol发生变化后, 刷新symbol
+     * refresh symbolizers when symbol changed
      */
     refreshSymbol() {
         this.removeCache();
         this._removeSymbolizers();
         this.symbolizers = this._createSymbolizers();
-        // if (!this.getMap()) {
-        //     return;
-        // }
-        // var layer = this.getLayer();
-        // if (this.geometry.isVisible() && layer.addGeometry) {
-        //     if (!layer.isCanvasRender()) {
-        //         this.paint();
-        //     }
-        // }
     }
 
     remove() {
@@ -358,5 +351,6 @@ export default class Painter extends Class {
         delete this._paintParams;
         delete this._sprite;
         delete this._extent2D;
+        delete this._markerExtent;
     }
 }
