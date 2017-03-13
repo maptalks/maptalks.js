@@ -193,10 +193,10 @@ class UIComponent extends Eventable(Class) {
 
         const transition = anim.transition;
         if (transition) {
-            /* eslint-disable no-unused-expression */
+            /* eslint-disable no-unused-expressions */
             // trigger transition
             dom.offsetHeight;
-            /* eslint-enable no-unused-expression */
+            /* eslint-enable no-unused-expressions */
             if (transition) {
                 dom.style[TRANSITION] = transition;
             }
@@ -230,9 +230,9 @@ class UIComponent extends Eventable(Class) {
         if (!anim.anim) {
             dom.style.display = 'none';
         } else {
-            /* eslint-disable no-unused-expression */
+            /* eslint-disable no-unused-expressions */
             dom.offsetHeight;
-            /* eslint-enable no-unused-expression */
+            /* eslint-enable no-unused-expressions */
             dom.style[TRANSITION] = anim.transition;
             setTimeout(() => {
                 dom.style.display = 'none';
