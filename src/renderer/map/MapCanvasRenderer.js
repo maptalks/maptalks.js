@@ -181,15 +181,17 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         containerDOM.innerHTML = '';
 
+        const POSITION0 = 'position:absolute;top:0px;left:0px;';
+
         const control = createContainer('control', 'maptalks-control', null, true);
         const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
-        const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', 'position:absolute;top:0px;left:0px;padding:0px;margin:0px;', true);
-        const front = createContainer('front', 'maptalks-front', 'position:absolute;will-change:transform;', true);
-        const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', 'position:absolute;');
+        const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;', true);
+        const front = createContainer('front', 'maptalks-front', POSITION0 + 'will-change:transform;', true);
+        const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0);
         // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
-        const ui = createContainer('ui', 'maptalks-ui', 'position:absolute;border:none;z-index:10000;', true);
-        const back = createContainer('back', 'maptalks-back', 'position:absolute;will-change:transform;');
-        const backLayer = createContainer('backLayer', 'maptalks-back-layer', 'position:absolute;');
+        const ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:10000;', true);
+        const back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;');
+        const backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0);
         const canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
 
         containerDOM.appendChild(mapWrapper);

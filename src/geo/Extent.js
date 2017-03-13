@@ -96,10 +96,22 @@ class Extent {
     }
 
     _add(p) {
-        this['xmin'] += p.x;
-        this['ymin'] += p.y;
-        this['xmax'] += p.x;
-        this['ymax'] += p.y;
+        if (!isNil(p.x)) {
+            this['xmin'] += p.x;
+            this['ymin'] += p.y;
+            this['xmax'] += p.x;
+            this['ymax'] += p.y;
+        } else if (!isNil(p.xmin)) {
+            this['xmin'] += p.xmin;
+            this['ymin'] += p.ymin;
+            this['xmax'] += p.xmax;
+            this['ymax'] += p.ymax;
+        } else if (!isNil(p[0])) {
+            this['xmin'] += p[0];
+            this['ymin'] += p[1];
+            this['xmax'] += p[0];
+            this['ymax'] += p[1];
+        }
         return this;
     }
 
@@ -109,14 +121,27 @@ class Extent {
      * @returns {Extent} a new extent
      */
     add(p) {
-        return new this.constructor(this['xmin'] + p.x, this['ymin'] + p.y, this['xmax'] + p.x, this['ymax'] + p.y);
+        const e = new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
+        return e._add(p);
     }
 
     _substract(p) {
-        this['xmin'] -= p.x;
-        this['ymin'] -= p.y;
-        this['xmax'] -= p.x;
-        this['ymax'] -= p.y;
+        if (!isNil(p.x)) {
+            this['xmin'] -= p.x;
+            this['ymin'] -= p.y;
+            this['xmax'] -= p.x;
+            this['ymax'] -= p.y;
+        } else if (!isNil(p.xmin)) {
+            this['xmin'] -= p.xmin;
+            this['ymin'] -= p.ymin;
+            this['xmax'] -= p.xmax;
+            this['ymax'] -= p.ymax;
+        } else if (!isNil(p[0])) {
+            this['xmin'] -= p[0];
+            this['ymin'] -= p[1];
+            this['xmax'] -= p[0];
+            this['ymax'] -= p[1];
+        }
         return this;
     }
 
@@ -126,7 +151,8 @@ class Extent {
      * @returns {Extent} a new extent
      */
     substract(p) {
-        return new this.constructor(this['xmin'] - p.x, this['ymin'] - p.y, this['xmax'] - p.x, this['ymax'] - p.y);
+        const e = new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
+        return e._sub(p);
     }
 
     /**
@@ -136,6 +162,10 @@ class Extent {
      */
     sub(p) {
         return this.substract(p);
+    }
+
+    _sub(p) {
+        return this._substract(p);
     }
 
     /**

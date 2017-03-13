@@ -338,11 +338,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Size}
      */
     getSize() {
-        var map = this.getMap();
+        const map = this.getMap();
         if (!map) {
             return null;
         }
-        var pxExtent = this._getPainter().get2DExtent();
+        const pxExtent = this._getPainter().getContainerExtent();
         return pxExtent.getSize();
     }
 

@@ -468,16 +468,6 @@ class CanvasRenderer extends Class {
         this.fireLoadedEvent();
     }
 
-    /**
-     * Get painter context for painters
-     * @return {Object[]} the Canvas2dContext and the resources
-     */
-    getPaintContext() {
-        if (!this.context) {
-            return null;
-        }
-        return [this.context, this.resources];
-    }
 
     /**
      * Get renderer's events registered on the map

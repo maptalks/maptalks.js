@@ -22,19 +22,14 @@ export default class PointSymbolizer extends CanvasSymbolizer {
         this.painter = painter;
     }
 
-    get2DExtent(resources) {
+    get2DExtent() {
         const map = this.getMap();
         const maxZoom = map.getMaxZoom();
-        const extent = new PointExtent(),
-            m = this.getMarkerExtent(resources);
+        const extent = new PointExtent();
         const renderPoints = this._getRenderPoints()[0];
         for (let i = renderPoints.length - 1; i >= 0; i--) {
             extent._combine(map._pointToPoint(renderPoints[i], maxZoom));
         }
-        extent['xmin'] += m['xmin'];
-        extent['ymin'] += m['ymin'];
-        extent['xmax'] += m['xmax'];
-        extent['ymax'] += m['ymax'];
         return extent;
     }
 
