@@ -28,7 +28,7 @@ Rectangle.include({
     _getRenderPoints(placement) {
         const map = this.getMap();
         if (placement === 'vertex') {
-            const shell = this.getShell();
+            const shell = this._trimRing(this.getShell());
             const points = [];
             for (let i = 0, len = shell.length; i < len; i++) {
                 points.push(this.getMap().coordinateToPoint(shell[i]), map.getMaxZoom());

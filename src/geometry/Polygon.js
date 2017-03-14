@@ -84,9 +84,9 @@ class Polygon extends Path {
             return [];
         }
         const holes = this.getHoles();
-        const rings = [this._closeRing(this._coordinates)];
+        const rings = [this._copyAndCloseRing(this._coordinates)];
         for (let i = 0, l = holes.length; i < l; i++) {
-            rings.push(this._closeRing(holes[i]));
+            rings.push(this._copyAndCloseRing(holes[i]));
         }
         return rings;
     }
@@ -162,17 +162,17 @@ class Polygon extends Path {
     _trimRing(ring) {
         var isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && isClose) {
-            return ring.slice(0, ring.length - 1);
-        } else {
-            return ring;
+            ring.splice(ring.length - 1, 1);
         }
+        return ring;
     }
 
     /**
      * If the first coordinate is different with the last one, then copy the first coordinates and add to the ring.
      * @private
      */
-    _closeRing(ring) {
+    _copyAndCloseRing(ring) {
+        ring = ring.slice(0);
         var isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && !isClose) {
             ring.push(ring[0].copy());
