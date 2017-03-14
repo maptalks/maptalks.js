@@ -177,7 +177,7 @@ class UIComponent extends Eventable(Class) {
                 var origin = this.getTransformOrigin();
                 dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
             }
-            dom.style[TRANSFORM] = this._getTranslate(this._pos) + ' scale(0)';
+            dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
         }
 
         dom.style.display = '';
@@ -204,7 +204,7 @@ class UIComponent extends Eventable(Class) {
                 dom.style.opacity = 1;
             }
             if (anim.scale) {
-                dom.style[TRANSFORM] = this._getTranslate(this._pos) + ' scale(1)';
+                dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(1)';
             }
         }
 
@@ -242,7 +242,7 @@ class UIComponent extends Eventable(Class) {
             dom.style.opacity = 0;
         }
         if (anim.scale) {
-            dom.style[TRANSFORM] = this._getTranslate(this._pos) + ' scale(0)';
+            dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
         }
 
         /**
@@ -320,9 +320,9 @@ class UIComponent extends Eventable(Class) {
         if (!this.getMap()) {
             return null;
         }
-        var p = this._getViewPoint();
+        var p = this._getViewPoint()._round();
         if (this.getOffset) {
-            var o = this.getOffset();
+            var o = this.getOffset()._round();
             if (o) {
                 p._add(o);
             }
@@ -518,23 +518,23 @@ class UIComponent extends Eventable(Class) {
     _updatePosition() {
         var dom = this.getDOM(),
             p = this.getPosition();
-        this._pos = p._round();
+        this._pos = p;
         dom.style[TRANSITION] = null;
-        dom.style[TRANSFORM] = this._getTranslate(p);
-    }
-
-    _getTranslate(p) {
-        if (!p) {
-            return '';
-        }
-        if (Browser.any3d) {
-            return 'translate3d(' + p.x + 'px,' + p.y + 'px, 0px)';
-        } else {
-            return 'translate(' + p.x + 'px,' + p.y + 'px)';
-        }
+        dom.style[TRANSFORM] = toCSSTranslate(p);
     }
 }
 
 UIComponent.mergeOptions(options);
+
+function toCSSTranslate(p) {
+    if (!p) {
+        return '';
+    }
+    if (Browser.any3d) {
+        return 'translate3d(' + p.x + 'px,' + p.y + 'px, 0px)';
+    } else {
+        return 'translate(' + p.x + 'px,' + p.y + 'px)';
+    }
+}
 
 export default UIComponent;

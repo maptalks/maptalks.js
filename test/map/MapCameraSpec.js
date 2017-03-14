@@ -25,6 +25,11 @@ describe('#Map.Camera', function () {
         REMOVE_CONTAINER(container);
     });
 
+    describe('get marker\' size when pitching', function () {
+        it('image marker', function () {
+
+        });
+    });
 
     describe('containsPoint when pitching', function () {
 
