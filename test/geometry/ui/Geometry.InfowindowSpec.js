@@ -97,6 +97,7 @@ describe('#Geometry.InfoWindow', function () {
 
             var dom = infoWindow.getDOM();
             var offset = infoWindow.getOffset();
+            expect(!offset._isNaN()).to.be.ok();
             var p = infoWindow.getPosition();
             expect(p.toArray()).to.be.eql([c.x + offset.x, c.y + offset.y]);
             var t;
@@ -247,7 +248,6 @@ describe('#Geometry.InfoWindow', function () {
             infoWindow.show();
 
             var p = infoWindow.getPosition();
-            console.log(p);
             // expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
             // expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
 
