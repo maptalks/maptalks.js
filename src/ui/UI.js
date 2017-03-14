@@ -12,6 +12,7 @@ import Browser from 'core/Browser';
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
 import Point from 'geo/Point';
+import Coordinate from 'geo/Coordinate';
 import Size from 'geo/Size';
 import Geometry from 'geometry/Geometry';
 
@@ -122,7 +123,10 @@ class UIComponent extends Eventable(Class) {
         if (!map) {
             return this;
         }
-        coordinate = coordinate || this._coordinate || this._owner.getCenter();
+        coordinate = new Coordinate(coordinate) || this._coordinate || this._owner.getCenter();
+        if (this.isVisible() && coordinate.equals(this._coordinate)) {
+            return this;
+        }
         /**
          * showstart event.
          *
