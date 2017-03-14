@@ -123,12 +123,9 @@ export default class TileLayerDomRenderer extends Class {
         const tiles = tileGrid['tiles'],
             queue = [];
         const mat = this.getMap().getCameraMatrix();
-        if (this._tiles) {
-            for (var p in this._tiles) {
-                this._tiles[p].current = false;
-            }
-        }
-        if (!this._camOffset || !mat) {
+
+        const preCamOffset = this._camOffset;
+        if (!this._camOffset || (!mat && !this._camOffset.isZero())) {
             // offset of tile container due to camera matrix
             this._camOffset = new Point(0, 0);
         }
@@ -143,8 +140,25 @@ export default class TileLayerDomRenderer extends Class {
                     break;
                 }
             }
-            const offset = current.sub(preCenterTilePos);
-            this._camOffset._add(offset);
+            if (current) {
+                const offset = current.sub(preCenterTilePos);
+                this._camOffset._add(offset);
+            }
+        }
+
+        if (this._tiles) {
+            // when camera is canceled, all current tiles needs to be repositioned (adding pre camera offset)
+            const repos = !mat && preCamOffset && !preCamOffset.isZero();
+            for (let p in this._tiles) {
+                let t = this._tiles[p];
+                this._tiles[p].current = false;
+                if (repos) {
+                    let pos = t['pos'];
+                    pos._add(preCamOffset);
+                    t['el'].style[TRANSFORM] = 'translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)';
+                    t['viewPoint'] = pos;
+                }
+            }
         }
 
         var cachedTile;
@@ -282,6 +296,7 @@ export default class TileLayerDomRenderer extends Class {
         const tileImage = createEl('img');
         tile['el'] = tileImage;
         tile['size'] = tileSize;
+        tile['pos'] = tile['viewPoint'];
 
         on(tileImage, 'load', this._tileOnLoad.bind(this, done, tile));
         on(tileImage, 'error', this._tileOnError.bind(this, done, tile));

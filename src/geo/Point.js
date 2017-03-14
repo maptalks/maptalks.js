@@ -264,6 +264,10 @@ class Point {
         this.x = -y;
         return this;
     }
+
+    isZero() {
+        return this.x === 0 && this.y === 0;
+    }
 }
 
 export default Point;
