@@ -31,6 +31,20 @@ describe('#Map.Camera', function () {
         REMOVE_CONTAINER(container);
     });
 
+    describe('TileLayer\'s dom rendering', function () {
+        it('render after composite operations', function () {
+            map.setBearing(60);
+            map.setCenter(map.getCenter().add(0.001, 0.001));
+            map.setPitch(40);
+            map.setCenter(map.getCenter().add(0.001, 0.002));
+            map.setBearing(0);
+            map.setPitch(0);
+            const tiles = map.getBaseLayer()._getRenderer()._tiles;
+            const pos = tiles['53162__108844__17'].pos;
+            expect(pos.toArray()).to.be.eql([9373, -11414]);
+        });
+    });
+
     describe('events', function () {
         it('should fire pitch event', function (done) {
             map.on('pitch', function () {
@@ -174,7 +188,7 @@ describe('#Map.Camera', function () {
             var s = new maptalks.Point(20, 30);
             expect(marker.getSize().toPoint()).to.be.eql(s);
             map.setPitch(60);
-            expect(marker.getSize().toPoint()).to.be.eql(s);
+            expect(marker.getSize().toPoint()).to.be.closeTo(s);
             map.setBearing(40);
             expect(marker.getSize().toPoint()).to.be.closeTo(s);
         });
@@ -200,7 +214,7 @@ describe('#Map.Camera', function () {
             var s = new maptalks.Point(24, 34);
             expect(marker.getSize().toPoint()).to.be.eql(s);
             map.setPitch(60);
-            expect(marker.getSize().toPoint()).to.be.eql(s);
+            expect(marker.getSize().toPoint()).to.be.closeTo(s);
             map.setBearing(40);
             expect(marker.getSize().toPoint()).to.be.closeTo(s);
         });
