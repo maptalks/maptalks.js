@@ -16,6 +16,7 @@ describe('Geometry.Events', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

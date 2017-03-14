@@ -16,10 +16,12 @@ describe('#MapScrollZoomSpec', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
+        map.config('zoomAnimationDuration', 10);
         delay = map.options['zoomAnimationDuration'];
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

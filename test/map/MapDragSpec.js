@@ -43,6 +43,7 @@ describe('#MapDrag', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

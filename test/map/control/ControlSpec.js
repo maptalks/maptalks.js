@@ -23,6 +23,7 @@ describe('Control Common Tests', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

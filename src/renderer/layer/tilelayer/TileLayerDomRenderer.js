@@ -562,7 +562,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _onMapMoving() {
-        if (!this.getMap().getPitch() && !this.layer.options['renderWhenPanning']) {
+        if (!this.getMap() || !this.getMap().getPitch() && !this.layer.options['renderWhenPanning']) {
             return;
         }
         this.render();

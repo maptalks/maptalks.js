@@ -465,9 +465,11 @@ class UIComponent extends Eventable(Class) {
         var p;
         if (events) {
             var map = this.getMap();
-            for (p in events) {
-                if (events.hasOwnProperty(p)) {
-                    map[to](p, events[p], this);
+            if (map) {
+                for (p in events) {
+                    if (events.hasOwnProperty(p)) {
+                        map[to](p, events[p], this);
+                    }
                 }
             }
         }

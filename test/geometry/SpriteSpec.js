@@ -192,6 +192,8 @@ describe('#Sprite', function () {
         });
         var sprite = marker._getSprite().canvas;
         expect(sprite).to.be.ok();
-        expect(sprite.getContext('2d').getImageData(10, 10, 1, 1).data[3]).to.be.above(0);
+        expect(sprite.width).to.be.eql(109);
+        expect(sprite.height).to.be.eql(26);
+        expect(sprite.getContext('2d').getImageData(10, 12, 1, 1).data[3]).to.be.above(0);
     });
 });

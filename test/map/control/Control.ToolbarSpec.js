@@ -11,6 +11,7 @@ describe('Control.Toolbar', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

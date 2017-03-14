@@ -20,7 +20,7 @@ describe('#Geometry', function () {
     });
 
     afterEach(function () {
-        map.removeLayer(layer);
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 
@@ -46,6 +46,14 @@ describe('#Geometry', function () {
             expect(marker.getProperties()).to.be.eql(properties);
             expect(marker.getSymbol()).to.be.eql(symbol);
             expect(marker.getId()).to.be.eql(id);
+        });
+    });
+
+
+    it('flash', function (done) {
+        var geometry = new maptalks.Marker(map.getCenter()).addTo(layer);
+        geometry.flash(100, 4, function () {
+            done();
         });
     });
 
@@ -106,12 +114,6 @@ function registerGeometryCommonTest(geometry, _context) {
         it('Type', function () {
             var type = geometry.getType();
             expect(type).to.not.be.empty();
-        });
-
-        it('flash', function (done) {
-            geometry.flash(100, 4, function () {
-                done();
-            });
         });
 
         it('Properties', function () {

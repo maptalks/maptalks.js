@@ -183,6 +183,9 @@ export default class Painter extends Class {
             return;
         }
         const renderer = this.getLayer()._getRenderer();
+        if (!renderer || !renderer.context) {
+            return;
+        }
         const contexts = [renderer.context, renderer.resources];
         this._prepareShadow(renderer.context);
         for (var i = this.symbolizers.length - 1; i >= 0; i--) {
@@ -199,7 +202,7 @@ export default class Painter extends Class {
         this._genSprite = true;
         if (!this._sprite && this.symbolizers.length > 0) {
             const extent = new PointExtent();
-            this.symbolizers.forEach(function (s) {
+            this.symbolizers.forEach(s => {
                 var markerExtent = s.getMarkerExtent(resources);
                 extent._combine(markerExtent);
             });

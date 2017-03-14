@@ -5,17 +5,15 @@ describe('SymbolSpec', function () {
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
-    var layer;
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
-        layer = new maptalks.VectorLayer('id').addTo(map);
     });
 
     afterEach(function () {
-        map.removeLayer(layer);
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

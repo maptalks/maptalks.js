@@ -44,6 +44,7 @@ describe('#DistanceTool and AreaTool', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
     describe('test distanceTool', function () {

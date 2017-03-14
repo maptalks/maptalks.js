@@ -14,7 +14,7 @@ describe('#LineString', function () {
     });
 
     afterEach(function () {
-        map.removeLayer(layer);
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 
@@ -102,7 +102,7 @@ describe('#LineString', function () {
     });
 
     describe('getCenter', function () {
-        it('should返回笛卡尔坐标系上的点集合的中心点', function () {
+        it('should return center', function () {
             var polyline = new maptalks.LineString([
                 { x: 0, y: 0 },
                 { x: 0, y: 10 },

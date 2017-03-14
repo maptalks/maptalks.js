@@ -27,6 +27,7 @@ describe('Control.Overview', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

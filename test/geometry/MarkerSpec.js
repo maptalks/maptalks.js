@@ -15,8 +15,7 @@ describe('#Marker', function () {
     });
 
     afterEach(function () {
-        map.removeLayer('v');
-        layer = null;
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

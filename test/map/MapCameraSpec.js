@@ -22,6 +22,7 @@ describe('#Map.Camera', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

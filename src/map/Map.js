@@ -1323,7 +1323,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this._panels;
     }
 
+    /**
+     * Remove the map
+     * @return {Map} this
+     */
     remove() {
+        if (this.isRemoved()) {
+            return this;
+        }
         this._registerDomEvents(true);
         this._clearHandlers();
         this.removeBaseLayer();
@@ -1335,12 +1342,20 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._getRenderer().remove();
         }
         this._clearAllListeners();
-        if (this._containerDOM && this._containerDOM.innerHTML) {
+        if (this._containerDOM.innerHTML) {
             this._containerDOM.innerHTML = '';
         }
         delete this._panels;
         delete this._containerDOM;
         return this;
+    }
+
+    /**
+     * whether the map is removed
+     * @return {Boolean}
+     */
+    isRemoved() {
+        return !this._containerDOM;
     }
 
     /**

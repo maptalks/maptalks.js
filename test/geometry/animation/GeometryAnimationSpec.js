@@ -1,5 +1,8 @@
 
 describe('#GeometryAnimation', function () {
+    // animation duration for
+    var animSpeed = 16 * 4;
+
     describe('geometry can animate', function () {
         it('all kinds of geometry', function (done) {
             var expected = GEN_GEOMETRIES_OF_ALL_TYPES();
@@ -25,7 +28,7 @@ describe('#GeometryAnimation', function () {
             for (i = 0; i < geometries.length; i++) {
                 var player = geometries[i].animate({
                     translate:new maptalks.Coordinate(0.01, 0.01)
-                }, { speed : 500 }, cmp);
+                }, { duration : animSpeed }, cmp);
                 expect(player).to.be.ok();
             }
 
@@ -58,7 +61,7 @@ describe('#GeometryAnimation', function () {
                 }
             },
                 {
-                    speed: 500
+                    duration : animSpeed
                 },
             step);
         });
@@ -101,6 +104,8 @@ describe('#GeometryAnimation', function () {
                         'markerHeight' : 130
                     }
                 ]
+            }, {
+                duration : animSpeed
             }, step);
         });
 
@@ -124,6 +129,8 @@ describe('#GeometryAnimation', function () {
                             'markerHeight' : 130
                         }
                     ]
+                }, {
+                    duration : animSpeed
                 });
             }).to.throwException();
 
@@ -148,11 +155,10 @@ describe('#GeometryAnimation', function () {
                         'markerWidth' : 10,
                         'markerHeight' : 10
                     }
-                },
-                    {
-                        speed: 500,
-                        easing : 'in'
-                    });
+                }, {
+                    duration : animSpeed,
+                    easing : 'in'
+                });
             }).to.throwException();
         });
 
@@ -167,6 +173,8 @@ describe('#GeometryAnimation', function () {
             }
             circle.animate({
                 radius:1000
+            }, {
+                duration : animSpeed
             }, step);
         });
     });
@@ -192,7 +200,7 @@ describe('#GeometryAnimation', function () {
         });
 
         afterEach(function () {
-            map.removeLayer(layer);
+            map.remove();
             REMOVE_CONTAINER(container);
         });
 
@@ -212,6 +220,7 @@ describe('#GeometryAnimation', function () {
             marker.animate({
                 translate:[0.1, 0.1]
             }, {
+                duration : animSpeed,
                 focus:true
             }, step);
         });
@@ -235,6 +244,7 @@ describe('#GeometryAnimation', function () {
             marker.animate({
                 translate:[0.1, 0.1]
             }, {
+                duration : animSpeed,
                 focus:true
             });
         });

@@ -1,4 +1,3 @@
-// var CommonSpec = require('./CommonSpec');
 
 describe('#Label', function () {
 
@@ -15,7 +14,7 @@ describe('#Label', function () {
     });
 
     afterEach(function () {
-        map.removeLayer(layer);
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 
@@ -189,7 +188,7 @@ describe('#Label', function () {
             map.addLayer(layer);
             layer.addGeometry(vector);
             var size = vector.getSize();
-            expect(layer).to.be.painted(0, 6);
+            expect(layer).to.be.painted(0, 7);
             expect(layer).to.be.painted(0, Math.floor(size.height / 2));
             expect(layer).not.to.be.painted(0, -5);
         });
