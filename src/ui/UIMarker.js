@@ -291,7 +291,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @fires UIMarker#showend
      */
     show() {
-        return UIComponent.prototype.show.call(this, this._markerCoord);
+        return super.show(this._markerCoord);
     }
 
     /**

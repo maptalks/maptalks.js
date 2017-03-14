@@ -53,7 +53,7 @@ class InfoWindow extends UIComponent {
             }
             owner._infoWindow = this;
         }
-        return UIComponent.prototype.addTo.apply(this, arguments);
+        return super.addTo(owner);
     }
 
     /**
@@ -173,7 +173,7 @@ class InfoWindow extends UIComponent {
         var size = this.getSize();
         var o = new Point(-size['width'] / 2, -size['height']);
         if (!this.options['custom']) {
-            o._substract(4, 12);
+            o._sub(4, 12);
         }
         if (this.getOwner() instanceof Marker) {
             var markerSize = this.getOwner().getSize();
@@ -184,14 +184,14 @@ class InfoWindow extends UIComponent {
         return o;
     }
 
-    show() {
+    show(coordinate) {
         if (!this.getMap()) {
             return this;
         }
         if (!this.getMap().options['enableInfoWindow']) {
             return this;
         }
-        return UIComponent.prototype.show.apply(this, arguments);
+        return super.show(coordinate);
     }
 
     _getWindowWidth() {
