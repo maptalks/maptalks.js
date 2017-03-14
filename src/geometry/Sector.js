@@ -118,7 +118,7 @@ class Sector extends CenterMixin(Polygon) {
     getShell() {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
-            numberOfPoints = this.options['numberOfShellPoints'],
+            numberOfPoints = this.options['numberOfShellPoints'] - 2,
             radius = this.getRadius(),
             shell = [center.copy()],
             startAngle = this.getStartAngle(),

@@ -62,6 +62,7 @@ describe('#GeometryEdit', function () {
                 var newCenter = geo.getCenter();
                 dragGeometry(geo, new maptalks.Point(500, 20));
                 expect(geo.getCenter()).to.closeTo(newCenter);
+                geo.endEdit();
             }
         });
     });
@@ -87,6 +88,7 @@ describe('#GeometryEdit', function () {
             label.startEdit();
             //label can't be edited.
             expect(label.isEditing()).not.to.be.ok();
+            label.endEdit();
         });
 
         it('resize a vector marker', function () {
@@ -103,6 +105,7 @@ describe('#GeometryEdit', function () {
             var symbol = marker.getSymbol();
             expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(20);
+            marker.endEdit();
         });
 
         it('resize a vector marker with fix aspect ratio', function () {
@@ -119,6 +122,7 @@ describe('#GeometryEdit', function () {
             var symbol = marker.getSymbol();
             expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(39);
+            marker.endEdit();
         });
 
         it('resize a circle', function () {
@@ -128,6 +132,7 @@ describe('#GeometryEdit', function () {
             dragGeometry(circle, new maptalks.Point(size.width / 2, 0));
             var r = circle.getRadius();
             expect(r).to.be.eql(1010.22151);
+            circle.endEdit();
         });
 
         it('resize a ellipse', function () {
@@ -137,6 +142,7 @@ describe('#GeometryEdit', function () {
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, size.height / 2));
             expect(ellipse.getWidth()).to.be.approx(1020.27122);
             expect(ellipse.getHeight()).to.be.approx(520.2339);
+            ellipse.endEdit();
         });
 
         it('resize a ellipse with fix aspect ratio', function () {
@@ -147,6 +153,7 @@ describe('#GeometryEdit', function () {
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, 0));
             expect(ellipse.getWidth()).to.be.approx(120.24692);
             expect(ellipse.getHeight()).to.be.approx(120.24692 / ratio);
+            ellipse.endEdit();
         });
 
         it('resize a rectangle', function () {
@@ -156,6 +163,7 @@ describe('#GeometryEdit', function () {
             dragGeometry(rect, new maptalks.Point(size.width / 2, size.height / 2));
             expect(rect.getWidth()).to.be.approx(1011.0866);
             expect(rect.getHeight()).to.be.approx(511.11058);
+            rect.endEdit();
         });
 
         it('resize a rectangle with fix aspect ratio', function () {
@@ -166,6 +174,7 @@ describe('#GeometryEdit', function () {
             dragGeometry(rect, new maptalks.Point(size.width / 2, 0));
             expect(rect.getWidth()).to.be.approx(111.13518);
             expect(rect.getHeight()).to.be.approx(111.13518 / ratio);
+            rect.endEdit();
         });
 
         it('change a polygon vertex', function () {
@@ -178,6 +187,7 @@ describe('#GeometryEdit', function () {
             expect(polygon.toGeoJSON()).not.to.be.eqlGeoJSON(o);
             var expected = { 'type':'Feature', 'geometry':{ 'type':'Polygon', 'coordinates':[[[118.84682500000001, 32.046534], [118.85742312186674, 32.046534], [118.85751916135895, 32.041960573990714], [118.84682500000001, 32.04204242358055], [118.84682500000001, 32.046534]]] }, 'properties':null };
             expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
+            polygon.endEdit();
         });
 
         it('update symbol when editing', function (done) {
@@ -192,6 +202,7 @@ describe('#GeometryEdit', function () {
                 expect(editStage).to.be.painted(0, 20, [255, 0, 0]);
                 editStage.once('layerload', function () {
                     expect(editStage).to.be.painted(0, 20, [255, 255, 0]);
+                    circle.endEdit();
                     done();
                 });
                 circle.updateSymbol({
