@@ -161,6 +161,7 @@ function runTests(target, _context) {
 
         it('setMenu and open with animation', function (done) {
             prepareGeometry();
+            var map = target.getMap();
             target.setMenu({
                 items: items,
                 animation : 'scale',
@@ -168,12 +169,19 @@ function runTests(target, _context) {
                 animationOnHide   : true,
                 width: 250
             });
+            var p = target.getMap().coordinateToViewPoint(target.getCenter())._round();
+
             target.openMenu();
+            // menu's offset is moved when it is outside map
+            if (!map.getExtent().contains(target.getCenter())) {
+                p._sub(target._menu.getSize().toPoint());
+            }
+
             expect(target._menu.getDOM().style.display).to.be.eql('');
-            expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
+            expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(1)');
             setTimeout(function () {
                 assertItems();
-                expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(1)');
+                expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(1)');
                 target.closeMenu();
                 expect(target._menu.getDOM().style.display).to.be.eql('');
                 setTimeout(function () {
