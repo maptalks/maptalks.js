@@ -12,7 +12,6 @@ import Browser from 'core/Browser';
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
 import Point from 'geo/Point';
-import Coordinate from 'geo/Coordinate';
 import Size from 'geo/Size';
 import Geometry from 'geometry/Geometry';
 
@@ -119,14 +118,14 @@ class UIComponent extends Eventable(Class) {
      * @fires ui.UIComponent#showend
      */
     show(coordinate) {
-        var map = this.getMap();
+        const map = this.getMap();
         if (!map) {
             return this;
         }
-        coordinate = (coordinate ? new Coordinate(coordinate) : null) || this._coordinate || this._owner.getCenter();
-        if (this.isVisible() && coordinate.equals(this._coordinate)) {
-            return this;
-        }
+        coordinate = coordinate || this._coordinate || this._owner.getCenter();
+
+        const visible = this.isVisible();
+
         /**
          * showstart event.
          *
@@ -136,14 +135,14 @@ class UIComponent extends Eventable(Class) {
          * @property {ui.UIComponent} target - UIComponent
          */
         this.fire('showstart');
-        var container = this._getUIContainer();
+        const container = this._getUIContainer();
         if (!this.__uiDOM) {
             // first time
             this._switchEvents('on');
         }
         this._coordinate = coordinate;
         this._removePrevDOM();
-        var dom = this.__uiDOM = this.buildOn(map);
+        const dom = this.__uiDOM = this.buildOn(map);
 
         if (!dom) {
             /**
@@ -171,17 +170,23 @@ class UIComponent extends Eventable(Class) {
         container.appendChild(dom);
 
 
-        var anim = this._getAnimation();
+        const anim = this._getAnimation();
 
-        if (anim.fade) {
-            dom.style.opacity = 0;
+        if (visible) {
+            anim.ok = false;
         }
-        if (anim.scale) {
-            if (this.getTransformOrigin) {
-                var origin = this.getTransformOrigin();
-                dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
+
+        if (anim.ok) {
+            if (anim.fade) {
+                dom.style.opacity = 0;
             }
-            dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
+            if (anim.scale) {
+                if (this.getTransformOrigin) {
+                    var origin = this.getTransformOrigin();
+                    dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
+                }
+                dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
+            }
         }
 
         dom.style.display = '';
@@ -196,7 +201,7 @@ class UIComponent extends Eventable(Class) {
         }
 
         const transition = anim.transition;
-        if (transition) {
+        if (anim.ok && transition) {
             /* eslint-disable no-unused-expressions */
             // trigger transition
             dom.offsetHeight;
@@ -229,9 +234,9 @@ class UIComponent extends Eventable(Class) {
         var anim = this._getAnimation(),
             dom = this.getDOM();
         if (!this.options['animationOnHide']) {
-            anim.anim = false;
+            anim.ok = false;
         }
-        if (!anim.anim) {
+        if (!anim.ok) {
             dom.style.display = 'none';
         } else {
             /* eslint-disable no-unused-expressions */
@@ -357,7 +362,7 @@ class UIComponent extends Eventable(Class) {
             transition += TRANSFORM + ' ' + this.options['animationDuration'] + 'ms';
         }
         anim.transition = transition;
-        anim.anim = (transition !== null);
+        anim.ok = (transition !== null);
         return anim;
     }
 
