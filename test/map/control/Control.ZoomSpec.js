@@ -18,6 +18,7 @@ describe('Control.Zoom', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

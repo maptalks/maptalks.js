@@ -381,6 +381,23 @@ export default class MapCanvasRenderer extends MapRenderer {
         );
     }
 
+    _checkSizeLoop() {
+        if (!this.map || this.map.isRemoved()) {
+            //is deleted
+            clearInterval(this._resizeInterval);
+        } else {
+            this._checkSize();
+        }
+    }
+
+    _setCheckSizeInterval(interval) {
+        clearInterval(this._resizeInterval);
+        this._checkSizeInterval = interval;
+        this._resizeInterval = setInterval(() => {
+            this._checkSizeLoop();
+        }, this._checkSizeInterval);
+    }
+
     _registerEvents() {
         const map = this.map;
         map.on('_baselayerchangestart', () => {
@@ -400,16 +417,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             // this.clearCanvas();
         });
         if (map.options['checkSize'] && !isNode && (typeof window !== 'undefined')) {
-            this._checkSizeInterval = 1000;
-            // on(window, 'resize', this._checkSize, this);
-            this._resizeInterval = setInterval(() => {
-                if (!map._containerDOM.parentNode) {
-                    //is deleted
-                    clearInterval(this._resizeInterval);
-                } else {
-                    this._checkSize();
-                }
-            }, this._checkSizeInterval);
+            this._setCheckSizeInterval(1000);
         }
         if (!Browser.mobile && Browser.canvas) {
             this._onMapMouseMove = function (param) {

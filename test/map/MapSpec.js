@@ -17,6 +17,8 @@ describe('#Map', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
+        map.config('zoomAnimationDuration', 10);
+        map._getRenderer()._setCheckSizeInterval(10);
         tile = new maptalks.TileLayer('tile', {
             urlTemplate:'/resources/tile.png',
             subdomains: [1, 2, 3],
@@ -26,6 +28,7 @@ describe('#Map', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 
@@ -95,18 +98,18 @@ describe('#Map', function () {
     });
 
     describe('#getCenter', function () {
-        it('getCenter返回结果与初始化时指定center相等(Load之前)', function () {
+        it('center is closeTo the center given in option', function () {
 
             expect(map.getCenter()).to.closeTo(center);
         });
 
-        it('getCenter返回结果与初始化时指定center相等(Load之后)', function () {
+        it('center remains same after setBaseLayer', function () {
             map.setBaseLayer(tile);
 
             expect(map.getCenter()).to.closeTo(center);
         });
 
-        it('getCenter返回结果与初始化时指定center相等(setZoom之后)', function () {
+        it('center remains same after setZoom', function () {
             map.setBaseLayer(tile);
             map.setZoom(13);
 
@@ -133,14 +136,14 @@ describe('#Map', function () {
             expect(map.getZoom()).to.be.eql(nz);
         });
 
-        it('setCenter后, getCenter返回结果与指定center近似相等(Load之前)', function () {
-            var nc = new maptalks.Coordinate(119, 32);
+        it('center is changed after setCenter', function () {
+            var nc = new maptalks.Coordinate(119, 32).copy();
             map.setCenter(nc);
 
             expect(map.getCenter()).to.closeTo(nc);
         });
 
-        it('setCenter后, getCenter返回结果与指定center相等(Load之后)', function () {
+        it('center is changed after setCenter after setBaseLayer', function () {
             map.setBaseLayer(tile);
 
             var nc = new maptalks.Coordinate(122, 32);
@@ -149,7 +152,7 @@ describe('#Map', function () {
             expect(map.getCenter()).to.closeTo(nc);
         });
 
-        it('setCenter设定中心点为当前地图中心点, 应该触发movestart', function () {
+        it('setCenter will trigger movestart event with the same center', function () {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
@@ -159,7 +162,7 @@ describe('#Map', function () {
             expect(spy.called).to.be.ok();
         });
 
-        it('setCenter设定中心点为当前地图中心点, 应该触发moveend', function () {
+        it('setCenter will trigger moveend event with the same center', function () {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
@@ -169,7 +172,7 @@ describe('#Map', function () {
             expect(spy.called).to.be.ok();
         });
 
-        it('setCenter设定中心点不同于当前地图中心点, 应该触发movestart', function () {
+        it('setCenter will trigger movestart event with a different center', function () {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
@@ -180,7 +183,7 @@ describe('#Map', function () {
             expect(spy.called).to.be.ok();
         });
 
-        it('setCenter设定中心点不同于当前地图中心点, 应该触发moveend', function () {
+        it('setCenter will trigger moveend event with a different center', function () {
             map.setBaseLayer(tile);
 
             var spy = sinon.spy();
@@ -295,7 +298,7 @@ describe('#Map', function () {
     });
 
     describe('#addLayer', function () {
-        it('图层加入地图时触发add事件', function () {
+        it('addLayer will trigger add event on layer', function () {
             var spy = sinon.spy();
             var layer = new maptalks.VectorLayer('id');
             layer.on('add', spy);
@@ -308,7 +311,7 @@ describe('#Map', function () {
             expect(spy2.called).to.be.ok();
         });
 
-        it('图层加入已载入地图时立即触发loaded事件', function (done) {
+        it('layer will trigger layerload event', function (done) {
             map.setBaseLayer(tile);
 
             var layer = new maptalks.VectorLayer('id');
@@ -318,7 +321,7 @@ describe('#Map', function () {
             map.addLayer(layer);
         });
 
-        it('当地图载入完成时, 如果加入的图层已被删除, 不触发loaded事件', function (done) {
+        it('layerload event will not be fired when removed immediately', function (done) {
             var layer = new maptalks.VectorLayer('id');
             layer.on('remove', function () {
                 done();
@@ -328,7 +331,7 @@ describe('#Map', function () {
             map.setBaseLayer(tile);
         });
 
-        it('当地图载入完成时触发已加入图层的loaded事件', function (done) {
+        it('layerload triggered after setBaseLayer', function (done) {
             var layer = new maptalks.VectorLayer('id');
             layer.on('layerload', function () {
                 done();
@@ -339,15 +342,15 @@ describe('#Map', function () {
     });
 
     describe('#removeLayer', function () {
-        it('删除图层后getLayer返回null(地图未载入)', function () {
+        it('map.getLayer returns null if layer is removed', function () {
             var layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             map.removeLayer(layer);
 
-            expect(map.getLayer(layer)).to.equal(null);
+            expect(map.getLayer('id')).to.equal(null);
         });
 
-        it('删除图层后getLayer返回null(地图已载入)', function () {
+        it('map.getLayer returns null if layer is removed', function () {
             map.setBaseLayer(tile);
 
             var layer = new maptalks.VectorLayer('id');
@@ -357,14 +360,14 @@ describe('#Map', function () {
             expect(map.getLayer(layer)).to.equal(null);
         });
 
-        it('删除图层时触发图层的removed事件', function () {
-            // var spy = sinon.spy();
-            // var layer = new maptalks.VectorLayer('id');
-            // layer.on('removed', spy);
-            // map.addLayer(layer);
-            // map.removeLayer(layer);
+        it('layer fire remove event when it is removed', function () {
+            var spy = sinon.spy();
+            var layer = new maptalks.VectorLayer('id');
+            layer.on('remove', spy);
+            map.addLayer(layer);
+            map.removeLayer(layer);
 
-            // expect(spy.called).to.be.ok();
+            expect(spy.called).to.be.ok();
         });
     });
 
@@ -405,7 +408,8 @@ describe('#Map', function () {
         });
 
         it('fire resize when container is hided and shown', function (done) {
-            this.timeout(map._getRenderer()._checkSizeInterval * 3);
+            map._getRenderer()._checkSizeInterval = 10;
+            // this.timeout(map._getRenderer()._checkSizeInterval * 3);
             var center = map.getCenter();
             map.once('resize', function (param) {
                 expect(param).to.be.ok();

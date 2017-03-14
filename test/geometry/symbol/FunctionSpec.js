@@ -14,7 +14,7 @@ describe('FunctionTypeSpec', function () {
     });
 
     afterEach(function () {
-        map.removeLayer(layer);
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

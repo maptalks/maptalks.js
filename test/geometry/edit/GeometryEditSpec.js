@@ -34,7 +34,8 @@ describe('#GeometryEdit', function () {
     });
 
     afterEach(function () {
-        // map.remove();
+        map.remove();
+        REMOVE_CONTAINER(container);
     });
 
     describe('edit all kinds of geometries', function () {

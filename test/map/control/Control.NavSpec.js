@@ -24,6 +24,7 @@
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container)
     });
 

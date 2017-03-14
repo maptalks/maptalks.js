@@ -76,6 +76,7 @@ describe('#DrawTool', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
     describe('draw geometries', function () {

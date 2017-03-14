@@ -35,25 +35,29 @@ Geometry.include(/** @lends Geometry.prototype */ {
             step = options;
             options = null;
         }
-        var map = this.getMap(),
+        const map = this.getMap(),
             projection = this._getProjection(),
             symbol = this._getInternalSymbol(),
-            stylesToAnimate = this._prepareAnimationStyles(styles),
-            preTranslate, isFocusing;
+            stylesToAnimate = this._prepareAnimationStyles(styles);
+        var preTranslate, isFocusing;
 
         if (options) {
             isFocusing = options['focus'];
         }
         delete this._animationStarted;
 
-        var player = Animation.animate(stylesToAnimate, options, frame => {
-            if (!this._animationStarted && isFocusing) {
+        const player = Animation.animate(stylesToAnimate, options, frame => {
+            if (map && map.isRemoved()) {
+                player.finish();
+                return;
+            }
+            if (map && !this._animationStarted && isFocusing) {
                 map.onMoveStart();
             }
-            var styles = frame.styles;
-            for (var p in styles) {
+            const styles = frame.styles;
+            for (let p in styles) {
                 if (p !== 'symbol' && p !== 'translate' && styles.hasOwnProperty(p)) {
-                    var fnName = 'set' + p[0].toUpperCase() + p.slice(1);
+                    let fnName = 'set' + p[0].toUpperCase() + p.slice(1);
                     this[fnName](styles[p]);
                 }
             }
@@ -70,7 +74,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             if (dSymbol) {
                 this.setSymbol(extendSymbol(symbol, dSymbol));
             }
-            if (isFocusing) {
+            if (map && isFocusing) {
                 var pcenter = projection.project(this.getCenter());
                 map._setPrjCenterAndMove(pcenter);
                 if (player.playState !== 'running') {

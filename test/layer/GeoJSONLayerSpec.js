@@ -110,6 +110,7 @@ describe('#GeoJSONLayer', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

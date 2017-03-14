@@ -1,5 +1,3 @@
-// var CommonSpec = require('./CommonSpec');
-
 describe('#ConnectorLineSpec', function () {
 
     var container;
@@ -14,7 +12,7 @@ describe('#ConnectorLineSpec', function () {
     });
 
     afterEach(function () {
-        map.removeLayer(layer);
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

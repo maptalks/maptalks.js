@@ -13,7 +13,7 @@ describe('#TextBox', function () {
     });
 
     afterEach(function () {
-        map.removeLayer(layer);
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 
@@ -159,8 +159,8 @@ describe('#TextBox', function () {
             layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(layer).to.be.painted(0, -50 / 2 + 6);
-            expect(layer).not.to.be.painted(0, 50 / 2 - 6);
+            expect(layer).to.be.painted(0, -50 / 2 + 7);
+            expect(layer).not.to.be.painted(0, 50 / 2 - 7);
         });
 
         it('bottom', function () {

@@ -17,6 +17,7 @@ describe('Control.Attribution', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
 

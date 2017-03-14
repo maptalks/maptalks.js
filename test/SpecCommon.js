@@ -68,9 +68,9 @@ function GEN_GEOMETRIES_OF_ALL_TYPES() {
 }
 
 /**
- * 共同的地图初始化方法
- * @param  {Coordinate} center 中心点坐标
- * @return {Object}        初始化后的容器坐标
+ * Common map creation
+ * @param  {Coordinate} center
+ * @return {Object}
  */
 function COMMON_CREATE_MAP(center, baseLayer) {
     var container = document.createElement('div');
@@ -252,15 +252,13 @@ var COMMON_SYMBOL_TESTOR = {
 };
 
 /**
- * geometry事件测试类
- * testCanvasEvents测试Canvas类图层上的事件响应
+ * Tester for geometry events
  * @type {Object}
  */
 var COMMON_GEOEVENTS_TESTOR = function () {
 };
 
 COMMON_GEOEVENTS_TESTOR.prototype = {
-    //happen 支持的事件种类
     eventsToTest : 'click mousedown mouseup dblclick', //mousemove
 
     testCanvasEvents:function (vector, map, testPoint) {

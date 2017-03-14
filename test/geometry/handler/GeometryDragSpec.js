@@ -57,6 +57,7 @@ describe('#GeometryDrag', function () {
     });
 
     afterEach(function () {
+        map.remove();
         REMOVE_CONTAINER(container);
     });
     describe('drag geometries', function () {

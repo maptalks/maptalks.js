@@ -122,11 +122,6 @@ describe('GeoJSON', function () {
 
     describe('parse GeoJSON Objects', function () {
         var geometries = maptalks.GeoJSON.toGeometry(geoJSONs);
-        beforeEach(function () {
-        });
-
-        afterEach(function () {
-        });
 
         it('parse GeoJSON Objects', function () {
             expect(geometries).to.have.length(geoJSONs.length);

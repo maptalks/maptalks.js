@@ -28,12 +28,16 @@ export default class MapRenderer extends Class {
             map._enablePanAnimation = true;
             map._panAnimating = true;
             var preDist = null;
-            var player = Animation.animate({
+            const player = Animation.animate({
                 'distance': distance
             }, {
                 'easing': 'out',
                 'duration': duration
             }, function (frame) {
+                if (map.isRemoved()) {
+                    player.finish();
+                    return;
+                }
                 if (!map._enablePanAnimation) {
                     player.finish();
                     map._panAnimating = false;
@@ -81,6 +85,9 @@ export default class MapRenderer extends Class {
     }
 
     resetContainer() {
+        if (!this.map) {
+            return;
+        }
         this.map._resetMapViewPoint();
         if (this.map._panels.front) {
             var pos = new Point(0, 0);
