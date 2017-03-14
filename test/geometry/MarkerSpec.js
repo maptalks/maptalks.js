@@ -94,6 +94,7 @@ describe('#Marker', function () {
 
             expect(function () {
                 layer.addGeometry(marker);
+                expect(marker.getSize().toArray()).to.be.eql([30, 22]);
             }).to.not.throwException();
         });
 

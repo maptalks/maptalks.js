@@ -1253,7 +1253,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!projection) {
             return null;
         }
-        const scale = this.getScale();
+        const scale = this.getScale(zoom) / this.getScale();
         const center = this.getCenter(),
             target = projection.locate(center, xDist, yDist);
         const p0 = this.coordinateToContainerPoint(center, zoom),
@@ -1269,19 +1269,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} height - pixel height
      * @return {Number}  distance - Geographical distance
      */
-    pixelToDistance(width, height, zoom) {
+    pixelToDistance(width, height) {
         const projection = this.getProjection();
         if (!projection) {
             return null;
         }
-        // const center = this.getCenter();
-        // const target = this.containerPointToCoordinate(new Point(this.width / 2 + width, this.height / 2 + height));
-        var center = this.getCenter(),
-            pcenter = this._getPrjCenter(),
-            res = this._getResolution(zoom);
-        var pTarget = new Coordinate(pcenter.x + width * res, pcenter.y + height * res);
-        var target = projection.unproject(pTarget);
-        return projection.measureLength(target, center);
+        const fullExt = this.getFullExtent();
+        const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
+        const target = new Point(this.width / 2 + width, this.height / 2 + d * height);
+        const coord = this.containerPointToCoordinate(target);
+        return projection.measureLength(this.getCenter(), coord);
     }
 
     /**
@@ -1560,6 +1557,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this.options['pitch']) {
             this.setPitch(this.options['pitch']);
             delete this.options['pitch'];
+        }
+        if (this.options['bearing']) {
+            this.setBearing(this.options['bearing']);
+            delete this.options['bearing'];
         }
         this._loaded = true;
         this._callOnLoadHooks();
