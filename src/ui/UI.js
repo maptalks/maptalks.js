@@ -123,7 +123,7 @@ class UIComponent extends Eventable(Class) {
         if (!map) {
             return this;
         }
-        coordinate = new Coordinate(coordinate) || this._coordinate || this._owner.getCenter();
+        coordinate = (coordinate ? new Coordinate(coordinate) : null) || this._coordinate || this._owner.getCenter();
         if (this.isVisible() && coordinate.equals(this._coordinate)) {
             return this;
         }
