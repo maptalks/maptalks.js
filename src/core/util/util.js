@@ -96,9 +96,6 @@ export function isSVG(url) {
 
 export const noop = function () {};
 
-// TODO: convertSVG???
-export var convertSVG = noop;
-
 var _loadRemoteImage = noop;
 var _loadLocalImage = noop;
 
@@ -180,8 +177,8 @@ export function loadImage(img, imgDesc) {
         w = imgDesc[1],
         h = imgDesc[2];
     try {
-        if (isSVG(url) && convertSVG) {
-            convertSVG(url, w, h, onLoadComplete);
+        if (isSVG(url) && loadImage.svg) {
+            loadImage.svg(url, w, h, onLoadComplete);
         } else if (isURL(url)) {
             // canvas-node的Image对象
             _loadRemoteImage(img, url, onLoadComplete);
