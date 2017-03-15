@@ -40,13 +40,17 @@ export function splitWords(chr) {
  * @memberOf StringUtil
  */
 export function stringLength(text, font) {
-    var ruler = _getDomRuler('span');
-    ruler.style.font = font;
-    ruler.innerHTML = text;
-    var result = new Size(ruler.clientWidth, ruler.clientHeight);
-    //if not removed, the canvas container on chrome will turn to unexpected blue background.
-    //Reason is unknown.
-    removeDomNode(ruler);
+    if (stringLength.env) {
+        return stringLength.env(text, font);
+    } else {
+        var ruler = _getDomRuler('span');
+        ruler.style.font = font;
+        ruler.innerHTML = text;
+        var result = new Size(ruler.clientWidth, ruler.clientHeight);
+        //if not removed, the canvas container on chrome will turn to unexpected blue background.
+        //Reason is unknown.
+        removeDomNode(ruler);
+    }
     return result;
 }
 
