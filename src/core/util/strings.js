@@ -22,6 +22,21 @@ export function trim(str) {
     return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
 }
 
+const specialPattern = /[\b\t\r\v\f]/igm;
+
+/**
+ * Escape special characters from string.
+ * Including: \b \t \r \v \f
+ * @param  {String} str string to escape
+ * @return {String}
+ */
+export function escapeSpecialChars(str) {
+    if (!isString(str)) {
+        return str;
+    }
+    return str.replace(specialPattern, '');
+}
+
 /**
  * Split string by specified char
  * @param {String} chr - char to split

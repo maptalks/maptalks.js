@@ -1,4 +1,5 @@
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
+import { escapeSpecialChars } from 'core/util/strings';
 import TextBox from 'geometry/TextBox';
 import Label from 'geometry/Label';
 import { UIMarker } from 'ui';
@@ -41,7 +42,7 @@ const TextEditable = {
     endEditText() {
         if (this._textEditor) {
             var content = this._textEditor.innerText;
-            content = this._filterContent(content);
+            content = escapeSpecialChars(content);
             this.setContent(content);
             this.show();
             off(this._textEditor, 'mousedown dblclick', stopPropagation);
@@ -173,14 +174,6 @@ const TextEditable = {
             range.collapse(false);
             range.select();
         }
-    },
-
-    _filterContent(content) {
-        var pattern = /\\[v f t b]{1}/gi;
-        var enterPattern = /[\r\n]+$/gi;
-        var result = content.replace(pattern, '');
-        result = result.replace(enterPattern, '');
-        return result;
     }
 };
 
