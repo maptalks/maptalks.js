@@ -67,9 +67,9 @@ class DragHandler extends Handler {
         this.moved = false;
         var actual = event.touches ? event.touches[0] : event;
         this.startPos = new Point(actual.clientX, actual.clientY);
-        //2015-10-26 fuzhen 改为document, 解决鼠标移出地图容器后的不可控现象
         on(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
         on(document, END_EVENTS[event.type], this.onMouseUp, this);
+        on(this.dom, 'mouseleave', this.onMouseUp, this);
         this.fire('mousedown', {
             'domEvent': event,
             'mousePos': new Point(actual.clientX, actual.clientY)
@@ -108,6 +108,7 @@ class DragHandler extends Handler {
             off(document, MOVE_EVENTS[i], this.onMouseMove, this);
             off(document, END_EVENTS[i], this.onMouseUp, this);
         }
+        off(this.dom, 'mouseleave', this.onMouseUp, this);
         if (dom['releaseCapture']) {
             dom['releaseCapture']();
         } else if (window.captureEvents) {

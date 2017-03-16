@@ -33,6 +33,8 @@ const options = {
         'polygonFill': '#fff',
         'polygonOpacity': 0.3
     },
+    'autoBorderPanning' : true,
+    'doubleClickZoom' : false,
     'mode': null,
     'once': false
 };
@@ -168,11 +170,11 @@ class DrawTool extends MapTool {
 
     onEnable() {
         const map = this.getMap();
-        this._mapDoubleClickZoom = map.options['doubleClickZoom'];
         this._autoBorderPanning = map.options['autoBorderPanning'];
+        this._mapDoubleClickZoom = map.options['doubleClickZoom'];
         map.config({
-            'autoBorderPanning': true,
-            'doubleClickZoom': false
+            'autoBorderPanning': this.options['autoBorderPanning'],
+            'doubleClickZoom': this.options['doubleClickZoom']
         });
         const action = this._getRegisterMode()['action'];
         if (action === 'drag') {
