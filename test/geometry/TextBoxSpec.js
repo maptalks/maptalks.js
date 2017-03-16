@@ -203,7 +203,23 @@ describe('#TextBox', function () {
     });
 
     it('edit with special characters', function () {
-        var vector = new maptalks.TextBox('textbox\r\n', center);
+        var vector = new maptalks.TextBox('\b\t\v\ftextbox', center);
+        layer = new maptalks.VectorLayer('id');
+        map.addLayer(layer);
+        layer.addGeometry(vector);
+        vector.on('edittextstart', function () {
+            expect(vector.isEditingText()).to.be.ok();
+        });
+        vector.on('edittextend', function () {
+            expect(vector.isEditingText()).not.to.be.ok();
+        });
+        vector.startEditText();
+        vector.endEditText();
+        expect(vector.getContent()).to.be.eql('textbox');
+    });
+
+    it('edit with "Enter" characters', function () {
+        var vector = new maptalks.TextBox('textbox\r', center);
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
@@ -211,6 +227,8 @@ describe('#TextBox', function () {
         expect(vector.isEditingText()).to.be.ok();
         vector.endEditText();
         expect(vector.isEditingText()).not.to.be.ok();
-        expect(vector.getContent()).to.be.eql('textbox');
+        expect(vector.getContent()).to.be.eql('textbox\n');
     });
+
+
 });
