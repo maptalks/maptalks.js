@@ -86,7 +86,7 @@ export default class View {
         if (!projection || isString(projection)) {
             throw new Error('must provide a valid projection in map\'s view.');
         }
-        projection = extend({}, projection);
+        projection = extend({}, projections.Common, projection);
         if (!projection.measureLength) {
             extend(projection, Measurer.DEFAULT);
         }
