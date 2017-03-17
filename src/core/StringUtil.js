@@ -181,6 +181,9 @@ maptalks.StringUtil = {
      * '\b\t\r\v\f';
      */
     filterContent: function (content) {
+        if (!maptalks.Util.isString(content)) {
+            return content;
+        }
         var pattern = /[\b\t\r\v\f]/igm;
         return content.replace(pattern, '');
     }
