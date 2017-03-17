@@ -28,6 +28,8 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         this.style = this._defineStyle(this.translate());
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
         var textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
+        // the key to cache text descriptor
+        this._cacheKey = genCacheKey(textContent, this.style);
         this._descText(textContent);
     }
 
@@ -139,37 +141,37 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     _descText(textContent) {
-        this.textDesc = this._loadFromCache(textContent, this.style);
+        this.textDesc = this._loadFromCache();
         if (!this.textDesc) {
             this.textDesc = splitTextToRow(textContent, this.style);
-            this._storeToCache(textContent, this.style, this.textDesc);
+            this._storeToCache(this.textDesc);
         }
     }
 
-    _storeToCache(textContent, style, textDesc) {
+    _storeToCache(textDesc) {
         if (isNode) {
             return;
         }
         if (!this.geometry['___text_symbol_cache']) {
             this.geometry['___text_symbol_cache'] = {};
         }
-        this.geometry['___text_symbol_cache'][this._genCacheKey(style)] = textDesc;
+        this.geometry['___text_symbol_cache'][this._cacheKey] = textDesc;
     }
 
-    _loadFromCache(textContent, style) {
+    _loadFromCache() {
         if (!this.geometry['___text_symbol_cache']) {
             return null;
         }
-        return this.geometry['___text_symbol_cache'][this._genCacheKey(textContent, style)];
+        return this.geometry['___text_symbol_cache'][this._cacheKey];
     }
+}
 
-    _genCacheKey(textContent, style) {
-        var key = [textContent];
-        for (var p in style) {
-            if (style.hasOwnProperty(p) && p.length > 4 && p.substring(0, 4) === 'text') {
-                key.push(p + '=' + style[p]);
-            }
+function genCacheKey(textContent, style) {
+    const key = [textContent];
+    for (let p in style) {
+        if (style.hasOwnProperty(p) && p.length > 4 && p.substring(0, 4) === 'text') {
+            key.push(p + '=' + style[p]);
         }
-        return key.join('-');
     }
+    return key.join('-');
 }
