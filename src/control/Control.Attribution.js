@@ -1,4 +1,5 @@
 import { createEl } from '../core/util/dom';
+import { isString } from 'core/util';
 import Control from './Control';
 import Map from '../map/Map';
 
@@ -49,19 +50,24 @@ class Attribution extends Control {
         if (!this.getMap()) {
             return;
         }
-        this._attributionContainer.innerHTML = this.options['content'];
+        var content = this.options['content'];
+        if (isString(content) && content.charAt(0) !== '<') {
+            content = '<span style="padding:0px 4px">' + content + '</span>';
+        }
+        this._attributionContainer.innerHTML = content;
     }
 }
 
 Attribution.mergeOptions(options);
 
 Map.mergeOptions({
-    'attributionControl': false
+    'attribution': false
 });
 
 Map.addOnLoadHook(function () {
-    if (this.options['attributionControl']) {
-        this.attributionControl = new Attribution(this.options['attributionControl']);
+    const a = this.options['attribution'] || this.options['attributionControl'];
+    if (a) {
+        this.attributionControl = new Attribution(a);
         this.addControl(this.attributionControl);
     }
 });
