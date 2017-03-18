@@ -80,8 +80,8 @@ class Circle extends CenterMixin(Polygon) {
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
             radius = this.getRadius();
-        var shell = [],
-            rad, dx, dy;
+        const shell = [];
+        var rad, dx, dy;
         for (let i = 0; i < numberOfPoints; i++) {
             rad = (360 * i / numberOfPoints) * Math.PI / 180;
             dx = radius * Math.cos(rad);
@@ -120,9 +120,9 @@ class Circle extends CenterMixin(Polygon) {
             return null;
         }
 
-        var radius = this._radius;
-        var p1 = measurer.locate(this._coordinates, radius, radius);
-        var p2 = measurer.locate(this._coordinates, -radius, -radius);
+        const radius = this._radius;
+        const p1 = measurer.locate(this._coordinates, radius, radius);
+        const p2 = measurer.locate(this._coordinates, -radius, -radius);
         return new Extent(p1, p2);
     }
 

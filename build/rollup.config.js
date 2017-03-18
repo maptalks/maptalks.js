@@ -35,15 +35,15 @@ module.exports = {
         config.banner = banner;
         const watcher = watch(rollup, config);
         watcher.on('event', e => {
-            // if (e.code === 'BUILD_START') {
-            //     console.time('ROLLUP_BUILD');
-            // } else if (e.code === 'BUILD_END') {
-            //     console.timeEnd('ROLLUP_BUILD');
-            // }
-            if (e.code === 'BUILD_END') {
+            if (e.code === 'BUILD_START') {
+                console.time('ROLLUP');
+            } else if (e.code === 'BUILD_END') {
+                console.timeEnd('ROLLUP');
                 if (cb) {
                     cb();
                 }
+            } else if (e.code === 'ERROR') {
+                console.error(e);
             }
         });
     },

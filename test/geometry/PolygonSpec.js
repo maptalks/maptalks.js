@@ -130,7 +130,7 @@ describe('#Polygon', function () {
         expect(polygon.hasHoles()).to.be.ok();
     });
 
-    describe('constructor', function () {
+    describe('creation', function () {
 
         it('normal constructor', function () {
             var points = [

@@ -57,7 +57,7 @@ class Label extends TextMarker {
     }
 
     _refresh() {
-        var symbol = this.getSymbol() || this._getDefaultTextSymbol();
+        const symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
         if (this.options['box']) {
             var sizes = this._getBoxSize(symbol),

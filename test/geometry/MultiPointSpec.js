@@ -45,7 +45,7 @@ describe('#MultiPoint', function () {
         expect(size.height).to.be.above(0);
     });
 
-    describe('constructor', function () {
+    describe('creation', function () {
 
         it('normal constructor', function () {
             var points = [[100.0, 0.0], [101.0, 1.0]];

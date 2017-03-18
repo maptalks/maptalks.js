@@ -83,7 +83,7 @@ describe('#LineString', function () {
     });
 
 
-    describe('constructor', function () {
+    describe('creation', function () {
 
         it('normal constructor', function () {
             var points = [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]];

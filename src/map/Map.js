@@ -218,7 +218,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     static addOnLoadHook(fn) { // (Function) || (String, args...)
         const args = Array.prototype.slice.call(arguments, 1);
-        var onload = typeof fn === 'function' ? fn : function () {
+        const onload = typeof fn === 'function' ? fn : function () {
             this[fn].apply(this, args);
         };
         this.prototype._onLoadHooks = this.prototype._onLoadHooks || [];
@@ -243,7 +243,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * var isCanvas = map.isCanvasRender();
      */
     isCanvasRender() {
-        var renderer = this._getRenderer();
+        const renderer = this._getRenderer();
         if (renderer) {
             return renderer.isCanvasRender();
         }
@@ -296,7 +296,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         });
      */
     setView(view) {
-        var oldView = this.options['view'];
+        const oldView = this.options['view'];
         if (oldView && !view) {
             return this;
         }
@@ -304,7 +304,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.options['view'] = view;
         this._view = new View(view);
         if (this.options['view'] && isFunction(this.options['view']['projection'])) {
-            var projection = this._view.getProjection();
+            const projection = this._view.getProjection();
             //save projection code for map profiling (toJSON/fromJSON)
             this.options['view']['projection'] = projection['code'];
         }
