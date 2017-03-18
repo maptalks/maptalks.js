@@ -79,7 +79,7 @@ gulp.task('watch', ['styles', 'images'], () => {
  */
 gulp.task('test', function (done) {
     var karmaConfig = {
-        configFile: path.join(__dirname, 'build/karma.unit.config.js')
+        configFile: path.join(__dirname, 'build/karma.test.config.js')
     };
     if (browsers.length > 0) {
         karmaConfig.browsers = browsers;
@@ -102,7 +102,7 @@ gulp.task('test', function (done) {
  */
 gulp.task('tdd', function (done) {
     var karmaConfig = {
-        configFile: path.join(__dirname, 'build/karma.dev.config.js')
+        configFile: path.join(__dirname, 'build/karma.tdd.config.js')
     };
     if (browsers.length > 0) {
         karmaConfig.browsers = browsers;
