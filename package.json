@@ -53,6 +53,7 @@
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
     "rollup-plugin-alias": "github:wsw0108/rollup-plugin-alias",
+    "rollup-watch": "^3.2.2",
     "sinon": "^1.14.1"
   },
   "dependencies": {

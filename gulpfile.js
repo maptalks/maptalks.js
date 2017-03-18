@@ -2,18 +2,15 @@ const minimist = require('minimist'),
     path = require('path'),
     gulp = require('gulp'),
     del = require('del'),
-    commonjs = require('rollup-plugin-commonjs'),
-    nodeResolve = require('rollup-plugin-node-resolve'),
-    localResolve = require('rollup-plugin-local-resolve'),
-    babel = require('rollup-plugin-babel'),
-    alias = require('rollup-plugin-alias'),
     concat = require('gulp-concat'),
     cssnano = require('gulp-cssnano'),
-    connect = require('gulp-connect');
+    connect = require('gulp-connect'),
+    rollupCfg = require('./build/rollup.config'),
+    BundleHelper = require('maptalks-build-helpers').BundleHelper,
+    Server = require('karma').Server;
 
-const BundleHelper = require('maptalks-build-helpers').BundleHelper;
+const rollupWatch = rollupCfg.watch;
 const bundler = new BundleHelper(require('./package.json'));
-const Server = require('karma').Server;
 
 const knownOptions = {
     string: ['browsers', 'pattern'],
@@ -46,23 +43,7 @@ options.browsers.split(',').forEach(name => {
 });
 
 gulp.task('scripts', () => {
-    return bundler.bundle('src/maptalks.js', {
-        plugins: [
-            alias(require('./build/alias')),
-            localResolve(),
-            nodeResolve({
-                jsnext: true,
-                main: true,
-                browser: true
-            }),
-            //convert zousan to es6 modules
-            commonjs(),
-            babel({
-                plugins : ['transform-proto-to-assign']
-            })
-        ],
-        'sourceMap': false
-    });
+    return bundler.bundle('src/maptalks.js', rollupCfg.config);
 });
 
 var stylesPattern = './assets/css/**/*.css';
@@ -85,8 +66,11 @@ gulp.task('minify', ['build'], () => {
     bundler.minify();
 });
 
-gulp.task('watch', ['build'], () => {
-    gulp.watch(['src/**/*.js', './gulpfile.js'], ['reload']); // watch the same files in our scripts task
+gulp.task('watch', ['styles', 'images'], () => {
+    rollupWatch(() => {
+        gulp.src('./dist/*.js')
+            .pipe(connect.reload());
+    });
     gulp.watch(stylesPattern, ['styles']);
 });
 
@@ -113,8 +97,6 @@ gulp.task('test', function (done) {
     new Server(karmaConfig, done).start();
 });
 
-var karmaServer;
-
 /**
  * Watch for file changes and re-run tests on each change
  */
@@ -132,15 +114,14 @@ gulp.task('tdd', function (done) {
             }
         };
     }
-    karmaServer = new Server(karmaConfig, done);
-    gulp.watch(['src/**/*.js'], ['karma.refreshFiles()']);
-    karmaServer.start();
-});
-
-gulp.task('karma.refreshFiles()', () => {
-    if (karmaServer) {
-        karmaServer.refreshFiles();
-    }
+    var karmaServer = new Server(karmaConfig, done);
+    var started = false;
+    rollupWatch(() => {
+        if (!started) {
+            karmaServer.start();
+            started = true;
+        }
+    });
 });
 
 gulp.task('connect', ['watch'], () => {
