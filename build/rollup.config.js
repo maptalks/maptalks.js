@@ -25,7 +25,6 @@ const config = {
 
 module.exports = {
     watch(cb) {
-        var rTimeout;
         const pkg = require('../package.json');
         const year = new Date().getFullYear();
         var banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${year} maptalks.org\n */`;
@@ -36,15 +35,15 @@ module.exports = {
         config.banner = banner;
         const watcher = watch(rollup, config);
         watcher.on('event', e => {
-            console.log('[ROLLUP]', e.code);
-            if (e.code === 'BUILD_START') {
-                console.time('ROLLUP');
-            } else if (e.code === 'BUILD_END') {
-                clearTimeout(rTimeout);
-                rTimeout = setTimeout(() => {
-                    console.timeEnd('ROLLUP');
+            // if (e.code === 'BUILD_START') {
+            //     console.time('ROLLUP_BUILD');
+            // } else if (e.code === 'BUILD_END') {
+            //     console.timeEnd('ROLLUP_BUILD');
+            // }
+            if (e.code === 'BUILD_END') {
+                if (cb) {
                     cb();
-                }, 500);
+                }
             }
         });
     },

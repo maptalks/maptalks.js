@@ -27,7 +27,17 @@ describe('Control.Attribution', function () {
         });
         map.addControl(control);
 
-        expect(control._attributionContainer.innerHTML).to.eql('content');
+        expect(control._attributionContainer.innerHTML).to.eql('<span style="padding:0px 4px">content</span>');
+    });
+
+    it('setContent in HTML', function () {
+        var control = new maptalks.control.Attribution({
+            content: 'content'
+        });
+        map.addControl(control);
+        control.setContent('<div>new content</div>');
+
+        expect(control._attributionContainer.innerHTML).to.eql('<div>new content</div>');
     });
 
     it('setContent correctly', function () {
@@ -37,7 +47,7 @@ describe('Control.Attribution', function () {
         map.addControl(control);
         control.setContent('new content');
 
-        expect(control._attributionContainer.innerHTML).to.eql('new content');
+        expect(control._attributionContainer.innerHTML).to.eql('<span style="padding:0px 4px">new content</span>');
     });
 
 });

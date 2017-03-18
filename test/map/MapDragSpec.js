@@ -40,21 +40,12 @@ describe('#MapDrag', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
+        map.config('zoomAnimation', false);
     });
 
     afterEach(function () {
         map.remove();
         REMOVE_CONTAINER(container);
-    });
-
-    it('can be dragged', function () {
-        map.options['panAnimation'] = false;
-        var center2;
-        map.setZoom(7);
-        dragMap();
-        center2 = map.getCenter();
-        expect(center2.toArray()).not.to.be.eql(center.toArray());
-        expect(map.isMoving()).not.to.be.ok();
     });
 
     it('drag and pan animation', function (done) {
@@ -78,4 +69,13 @@ describe('#MapDrag', function () {
         }, 20);
     });
 
+    it('can be dragged', function () {
+        map.options['panAnimation'] = false;
+        var center2;
+        map.setZoom(7);
+        dragMap();
+        center2 = map.getCenter();
+        expect(center2.toArray()).not.to.be.eql(center.toArray());
+        expect(map.isMoving()).not.to.be.ok();
+    });
 });
