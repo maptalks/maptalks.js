@@ -194,12 +194,19 @@ class GeometryCollection extends Geometry {
         var s = super.getSymbol();
         if (!s) {
             const symbols = [];
+            var is = false;
             this.forEach(g => {
+                const symbol = g.getSymbol();
+                if (symbol && !is) {
+                    is = true;
+                }
                 symbols.push(g.getSymbol());
             });
-            s =  {
-                'children' : symbols
-            };
+            if (is) {
+                s =  {
+                    'children' : symbols
+                };
+            }
         }
         return s;
     }
