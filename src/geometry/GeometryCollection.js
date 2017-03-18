@@ -36,12 +36,16 @@ class GeometryCollection extends Geometry {
      */
     setGeometries(_geometries) {
         const geometries = this._checkGeometries(_geometries || []);
+        const symbol = this._getSymbol();
+        const options = this.config();
         //Set the collection as child geometries' parent.
         for (let i = geometries.length - 1; i >= 0; i--) {
-            geometries[i]._initOptions(this.config());
+            geometries[i]._initOptions(options);
             geometries[i]._setParent(this);
             geometries[i]._setEventParent(this);
-            geometries[i].setSymbol(this.getSymbol());
+            if (symbol) {
+                geometries[i].setSymbol(symbol);
+            }
         }
         this._geometries = geometries;
         if (this.getLayer()) {
@@ -66,8 +70,8 @@ class GeometryCollection extends Geometry {
      * @return {GeometryCollection} this
      */
     forEach(fn, context) {
-        var geometries = this.getGeometries();
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -95,7 +99,7 @@ class GeometryCollection extends Geometry {
         const filter = isFn ? fn : createFilter(fn);
 
         this.forEach(geometry => {
-            var g = isFn ? geometry : getFilterFeature(geometry);
+            const g = isFn ? geometry : getFilterFeature(geometry);
             if (context ? filter.call(context, g) : filter(g)) {
                 selected.push(geometry);
             }
@@ -172,16 +176,6 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
-    setSymbol(symbol) {
-        symbol = this._prepareSymbol(symbol);
-        this._symbol = symbol;
-        this.forEach(function (geometry) {
-            geometry.setSymbol(symbol);
-        });
-        this.onSymbolChanged();
-        return this;
-    }
-
     updateSymbol(symbol) {
         this.forEach(function (geometry) {
             geometry.updateSymbol(symbol);
@@ -194,6 +188,37 @@ class GeometryCollection extends Geometry {
         this.forEach(function (geometry) {
             geometry.config(config);
         });
+    }
+
+    getSymbol() {
+        var s = super.getSymbol();
+        if (!s) {
+            const symbols = [];
+            this.forEach(g => {
+                symbols.push(g.getSymbol());
+            });
+            s =  {
+                'children' : symbols
+            };
+        }
+        return s;
+    }
+
+    setSymbol(s) {
+        if (s && s['children']) {
+            this._symbol = null;
+            this.forEach((g, i) => {
+                g.setSymbol(s['children'][i]);
+            });
+        } else {
+            const symbol = this._prepareSymbol(s);
+            this._symbol = symbol;
+            this.forEach(g => {
+                g.setSymbol(symbol);
+            });
+        }
+        this.onSymbolChanged();
+        return this;
     }
 
     _setExternSymbol(symbol) {
@@ -212,12 +237,12 @@ class GeometryCollection extends Geometry {
      * @private
      */
     _bindLayer() {
-        Geometry.prototype._bindLayer.apply(this, arguments);
+        super._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
     }
 
     _bindGeometriesToLayer() {
-        var layer = this.getLayer();
+        const layer = this.getLayer();
         this.forEach(function (geometry) {
             geometry._bindLayer(layer);
         });
@@ -279,12 +304,12 @@ class GeometryCollection extends Geometry {
         var sumX = 0,
             sumY = 0,
             counter = 0;
-        var geometries = this.getGeometries();
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
-            var center = geometries[i]._computeCenter(projection);
+            let center = geometries[i]._computeCenter(projection);
             if (center) {
                 sumX += center.x;
                 sumY += center.y;
@@ -301,9 +326,8 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return false;
         }
-        var i, len;
-        var geometries = this.getGeometries();
-        for (i = 0, len = geometries.length; i < len; i++) {
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
             if (geometries[i]._containsPoint(point, t)) {
                 return true;
             }
@@ -316,13 +340,13 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return null;
         }
-        var geometries = this.getGeometries();
+        const geometries = this.getGeometries();
         var result = null;
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
-            var geoExtent = geometries[i]._computeExtent(projection);
+            let geoExtent = geometries[i]._computeExtent(projection);
             if (geoExtent) {
                 result = geoExtent.combine(result);
             }
@@ -334,9 +358,9 @@ class GeometryCollection extends Geometry {
         if (!projection || this.isEmpty()) {
             return 0;
         }
-        var geometries = this.getGeometries();
+        const geometries = this.getGeometries();
         var result = 0;
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -349,9 +373,9 @@ class GeometryCollection extends Geometry {
         if (!projection || this.isEmpty()) {
             return 0;
         }
-        var geometries = this.getGeometries();
+        const geometries = this.getGeometries();
         var result = 0;
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -361,19 +385,19 @@ class GeometryCollection extends Geometry {
     }
 
     _exportGeoJSONGeometry() {
-        var geoJSON = [];
+        const children = [];
         if (!this.isEmpty()) {
-            var geometries = this.getGeometries();
-            for (var i = 0, len = geometries.length; i < len; i++) {
+            const geometries = this.getGeometries();
+            for (let i = 0, l = geometries.length; i < l; i++) {
                 if (!geometries[i]) {
                     continue;
                 }
-                geoJSON.push(geometries[i]._exportGeoJSONGeometry());
+                children.push(geometries[i]._exportGeoJSONGeometry());
             }
         }
         return {
             'type': 'GeometryCollection',
-            'geometries': geoJSON
+            'geometries': children
         };
     }
 
@@ -381,8 +405,8 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return;
         }
-        var geometries = this.getGeometries();
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
@@ -397,8 +421,8 @@ class GeometryCollection extends Geometry {
      * @return {Coordinate[]}
      */
     _getConnectPoints() {
-        var extent = this.getExtent();
-        var anchors = [
+        const extent = this.getExtent();
+        const anchors = [
             new Coordinate(extent.xmin, extent.ymax),
             new Coordinate(extent.xmax, extent.ymin),
             new Coordinate(extent.xmin, extent.ymin),
@@ -411,18 +435,17 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return [];
         }
-        var i, l, ii, ll;
         var geometries = this.getGeometries(),
             resources = [],
             symbol, res, cache = {},
             key;
-        for (i = 0, l = geometries.length; i < l; i++) {
+        for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
             symbol = geometries[i]._getInternalSymbol();
             res = getExternalResources(symbol);
-            for (ii = 0, ll = res.length; ii < ll; ii++) {
+            for (let ii = 0, ll = res.length; ii < ll; ii++) {
                 key = res[ii].join();
                 if (!cache[key]) {
                     resources.push(res[ii]);
@@ -448,8 +471,8 @@ class GeometryCollection extends Geometry {
         }
         this._draggbleBeforeEdit = this.options['draggable'];
         this.config('draggable', false);
-        var geometries = this.getGeometries();
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
             geometries[i].startEdit(opts);
         }
         this._editing = true;
@@ -464,8 +487,8 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return this;
         }
-        var geometries = this.getGeometries();
-        for (var i = 0, len = geometries.length; i < len; i++) {
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
             geometries[i].endEdit();
         }
         if (this._originalSymbol) {

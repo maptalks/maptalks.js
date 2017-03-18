@@ -81,7 +81,7 @@ describe('#GeometryCollection', function () {
         expect(resources).to.have.length(1);
     });
 
-    describe('constructor', function () {
+    describe('creation', function () {
 
         it('normal constructor', function () {
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
@@ -95,6 +95,106 @@ describe('#GeometryCollection', function () {
             expect(collection.isEmpty()).to.be.ok();
         });
 
+    });
+
+    describe('symbol', function () {
+        it('children\'s symbols should stay unchanged', function () {
+            var points = genPoints();
+            points.forEach(function (p, index) {
+                p.setSymbol({
+                    'markerType' : 'ellipse',
+                    'markerWidth' : index,
+                    'markerHeight' : index
+                });
+            });
+
+            var collection = new maptalks.GeometryCollection(points);
+            collection.forEach(function (f, index) {
+                expect(f.getSymbol()).to.be.eql({
+                    'markerType' : 'ellipse',
+                    'markerWidth' : index,
+                    'markerHeight' : index
+                });
+            });
+        });
+
+        it('children\'s symbols should be restored from JSON', function () {
+            var points = genPoints();
+            points.forEach(function (p, index) {
+                p.setSymbol({
+                    'markerType' : 'ellipse',
+                    'markerWidth' : index,
+                    'markerHeight' : index
+                });
+            });
+
+            var c1 = new maptalks.GeometryCollection(points);
+
+            var json = c1.toJSON();
+
+            var c2 = maptalks.Geometry.fromJSON(json);
+
+            c2.forEach(function (f, index) {
+                expect(f.getSymbol()).to.be.eql({
+                    'markerType' : 'ellipse',
+                    'markerWidth' : index,
+                    'markerHeight' : index
+                });
+            });
+        });
+
+        it('setSymbol should update children\'s symbols', function () {
+            var points = genPoints();
+            points.forEach(function (p, index) {
+                p.setSymbol({
+                    'markerType' : 'ellipse',
+                    'markerWidth' : index,
+                    'markerHeight' : index
+                });
+            });
+
+            var c = new maptalks.GeometryCollection(points);
+
+            var symbol = {
+                'markerType' : 'square',
+                'markerWidth' : 10,
+                'markerHeight' : 10
+            };
+            c.setSymbol(symbol);
+
+            c.forEach(function (f) {
+                expect(f.getSymbol()).to.be.eql(symbol);
+            });
+        });
+
+        it('setSymbol with children should update children\'s symbols respectively', function () {
+            var points = genPoints();
+            var c = new maptalks.GeometryCollection(points);
+
+            var symbols = [];
+            points.forEach(function (p, index) {
+                symbols.push({
+                    'markerType' : 'ellipse',
+                    'markerWidth' : index,
+                    'markerHeight' : index
+                });
+            });
+
+            var symbol = {
+                'children' : symbols
+            };
+            c.setSymbol(symbol);
+
+            expect(c.getSymbol()).to.be.eql(symbol);
+
+            c.forEach(function (f, index) {
+                expect(f.getSymbol()).to.be.eql({
+                    'markerType' : 'ellipse',
+                    'markerWidth' : index,
+                    'markerHeight' : index
+                });
+            });
+        });
     });
 
     describe('collection add to layer', function () {
