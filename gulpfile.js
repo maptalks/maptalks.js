@@ -114,10 +114,10 @@ gulp.task('tdd', function (done) {
             }
         };
     }
-    var karmaServer = new Server(karmaConfig, done);
     var started = false;
     rollupWatch(() => {
         if (!started) {
+            var karmaServer = new Server(karmaConfig, done);
             karmaServer.start();
             started = true;
         }
