@@ -1,9 +1,11 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
+import { isNil, isNumber, isArrayHasData, getValueOrDefault, round } from 'core/util';
 import { isGradient, getGradientStamp } from 'core/util/style';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
+
+const padding = [2, 2];
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
@@ -21,11 +23,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         super(symbol, geometry, painter);
         this.style = this._defineStyle(this.translate());
         this.strokeAndFill = this._defineStyle(VectorMarkerSymbolizer.translateLineAndFill(this.style));
-        if ((this.style['markerWidth'] + this.strokeAndFill['lineWidth']) % 2 === 0) {
-            this.padding = [4, 4];
-        } else {
-            this.padding = [3, 3];
-        }
     }
 
     symbolize(ctx, resources) {
@@ -71,25 +68,22 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _drawMarkersWithCache(ctx, cookedPoints, resources) {
-        var stamp = this._stampSymbol(),
-            lineWidth = this.strokeAndFill['lineWidth'],
-            shadow = this.geometry.options['shadowBlur'],
-            w = this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0],
-            h = this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1];
+        const stamp = this._stampSymbol();
         var image = resources.getImage(stamp);
         if (!image) {
             image = this._createMarkerImage(ctx, resources);
-            resources.addResource([stamp, w, h], image);
+            resources.addResource([stamp, image.width, image.height], image);
         }
         var point, origin,
-            anchor = this._getAnchor();
+            anchor = this._getAnchor(image.width, image.height);
         for (var i = cookedPoints.length - 1; i >= 0; i--) {
-            point = cookedPoints[i].substract(anchor);
+            point = cookedPoints[i].sub(anchor);
             origin = this._rotate(ctx, point, this._getRotationAt(i));
             if (origin) {
                 point = origin;
             }
-            Canvas.image(ctx, image, point.x, point.y, w, h);
+
+            Canvas.image(ctx, image, point.x, point.y);
             if (origin) {
                 ctx.restore();
             }
@@ -100,19 +94,16 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         var canvasClass = ctx.canvas.constructor,
             lineWidth = this.strokeAndFill['lineWidth'],
             shadow = this.geometry.options['shadowBlur'],
-            w = this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0],
-            h = this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1],
+            w = round(this.style['markerWidth'] + lineWidth + 2 * shadow + padding[0] * 2),
+            h = round(this.style['markerHeight'] + lineWidth + 2 * shadow + padding[1] * 2),
             canvas = Canvas.createCanvas(w, h, canvasClass),
-            point = this._getAnchor();
+            point = this._getAnchor(w, h);
         var context = canvas.getContext('2d');
         var gradient = isGradient(this.strokeAndFill['lineColor']) || isGradient(this.strokeAndFill['polygonFill']);
         if (!gradient) {
             Canvas.prepareCanvas(context, this.strokeAndFill, resources);
         }
         this._drawVectorMarker(context, point, resources);
-        // context.strokeStyle = '#f00';
-        // context.strokeWidth = 10;
-        // context.strokeRect(0, 0, w, h);
         return canvas;
     }
 
@@ -135,16 +126,12 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return this._stamp;
     }
 
-    _getAnchor() {
-        const markerType = this.style['markerType'].toLowerCase(),
-            lineWidth = this.strokeAndFill['lineWidth'],
-            shadow = this.geometry.options['shadowBlur'],
-            w = this.style['markerWidth'],
-            h = this.style['markerHeight'];
+    _getAnchor(w, h) {
+        const markerType = this.style['markerType'].toLowerCase();
         if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
-            return new Point((w + lineWidth + this.padding[0]) / 2 + shadow, h + lineWidth / 2 + shadow + this.padding[1]);
+            return new Point(w / 2, h - padding[1]);
         } else {
-            return new Point((w + lineWidth + this.padding[0]) / 2 + shadow, h / 2 + lineWidth / 2 + shadow + this.padding[1] / 2);
+            return new Point(w / 2, h / 2);
         }
     }
 
