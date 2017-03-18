@@ -5,67 +5,6 @@ import Promise from 'core/Promise';
 import Canvas2D from 'core/Canvas';
 import Point from 'geo/Point';
 
-export class ResourceCache {
-    constructor() {
-        this.resources = {};
-        this._errors = {};
-    }
-
-    addResource(url, img) {
-        this.resources[url[0]] = {
-            image: img,
-            width: +url[1],
-            height: +url[2]
-        };
-    }
-
-    isResourceLoaded(url, checkSVG) {
-        if (!url) {
-            return false;
-        }
-        if (this._errors[this._getImgUrl(url)]) {
-            return true;
-        }
-        var img = this.resources[this._getImgUrl(url)];
-        if (!img) {
-            return false;
-        }
-        if (checkSVG && isSVG(url[0]) && (+url[1] > img.width || +url[2] > img.height)) {
-            return false;
-        }
-        return true;
-    }
-
-    getImage(url) {
-        if (!this.isResourceLoaded(url) || this._errors[this._getImgUrl(url)]) {
-            return null;
-        }
-        return this.resources[this._getImgUrl(url)].image;
-    }
-
-    markErrorResource(url) {
-        this._errors[this._getImgUrl(url)] = 1;
-    }
-
-    merge(res) {
-        if (!res) {
-            return this;
-        }
-        for (var p in res.resources) {
-            var img = res.resources[p];
-            this.addResource([p, img.width, img.height], img.image);
-        }
-        return this;
-    }
-
-    _getImgUrl(url) {
-        if (!Array.isArray(url)) {
-            return url;
-        }
-        return url[0];
-    }
-}
-
 /**
  * @classdesc
  * Base Class to render layer on HTMLCanvasElement
@@ -106,7 +45,9 @@ class CanvasRenderer extends Class {
             return;
         }
         if (!this.resources) {
+            /* eslint-disable no-use-before-define */
             this.resources = new ResourceCache();
+            /* eslint-enable no-use-before-define */
         }
         if (this.checkResources && isCheckRes) {
             var me = this,
@@ -308,14 +249,14 @@ class CanvasRenderer extends Class {
         }
         var map = this.getMap();
         var size = map.getSize();
-        var r = Browser.retina ? 2 : 1;
+        var r = Browser.retina ? Browser.pixelRatio : 1;
         this.canvas = Canvas2D.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
         }
         if (Browser.retina) {
-            this.context.scale(2, 2);
+            this.context.scale(r, r);
         }
         Canvas2D.setDefaultCanvasSetting(this.context);
         if (this.onCanvasCreate) {
@@ -338,7 +279,7 @@ class CanvasRenderer extends Class {
         } else {
             size = canvasSize;
         }
-        var r = Browser.retina ? 2 : 1;
+        var r = Browser.retina ? Browser.pixelRatio : 1;
         //only make canvas bigger, never smaller
         if (this.canvas.width >= r * size['width'] && this.canvas.height >= r * size['height']) {
             return;
@@ -347,7 +288,7 @@ class CanvasRenderer extends Class {
         this.canvas.height = r * size['height'];
         this.canvas.width = r * size['width'];
         if (Browser.retina) {
-            this.context.scale(2, 2);
+            this.context.scale(r, r);
         }
     }
 
@@ -675,3 +616,66 @@ class CanvasRenderer extends Class {
 }
 
 export default CanvasRenderer;
+
+export class ResourceCache {
+    constructor() {
+        this.resources = {};
+        this._errors = {};
+    }
+
+    addResource(url, img) {
+        this.resources[url[0]] = {
+            image: img,
+            width: +url[1],
+            height: +url[2]
+        };
+    }
+
+    isResourceLoaded(url, checkSVG) {
+        if (!url) {
+            return false;
+        }
+        var imgUrl = this._getImgUrl(url);
+        if (this._errors[imgUrl]) {
+            return true;
+        }
+        var img = this.resources[imgUrl];
+        if (!img) {
+            return false;
+        }
+        if (checkSVG && isSVG(url[0]) && (+url[1] > img.width || +url[2] > img.height)) {
+            return false;
+        }
+        return true;
+    }
+
+    getImage(url) {
+        var imgUrl = this._getImgUrl(url);
+        if (!this.isResourceLoaded(url) || this._errors[imgUrl]) {
+            return null;
+        }
+        return this.resources[imgUrl].image;
+    }
+
+    markErrorResource(url) {
+        this._errors[this._getImgUrl(url)] = 1;
+    }
+
+    merge(res) {
+        if (!res) {
+            return this;
+        }
+        for (var p in res.resources) {
+            var img = res.resources[p];
+            this.addResource([p, img.width, img.height], img.image);
+        }
+        return this;
+    }
+
+    _getImgUrl(url) {
+        if (!Array.isArray(url)) {
+            return url;
+        }
+        return url[0];
+    }
+}
