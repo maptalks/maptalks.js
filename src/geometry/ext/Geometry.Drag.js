@@ -137,7 +137,7 @@ class GeometryDragHandler extends Handler  {
 
     _onTargetUpdated() {
         if (this._shadow) {
-            this._shadow.setSymbol(this.target.getSymbol());
+            this._shadow.setSymbol(this.target._getSymbol());
         }
     }
 

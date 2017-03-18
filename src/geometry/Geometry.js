@@ -252,7 +252,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Object} geometry's symbol
      */
     getSymbol() {
-        var s = this._symbol;
+        const s = this._symbol;
         if (s) {
             if (!Array.isArray(s)) {
                 return extend({}, s);
@@ -299,7 +299,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!props) {
             return this;
         }
-        var s = this.getSymbol();
+        var s = this._getSymbol();
         if (s) {
             s = extendSymbol(s, props);
         } else {
@@ -836,6 +836,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
         }
         return s;
+    }
+
+    _getSymbol() {
+        return this._symbol;
     }
 
     /**

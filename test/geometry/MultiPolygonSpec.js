@@ -115,7 +115,7 @@ describe('#MultiPolygon', function () {
         expect(mp.getCoordinates()).to.eql(coords);
     });
 
-    describe('constructor', function () {
+    describe('creation', function () {
 
         it('normal constructor', function () {
             var points = [
