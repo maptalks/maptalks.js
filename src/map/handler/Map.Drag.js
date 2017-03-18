@@ -33,6 +33,9 @@ class MapDragHandler extends Handler {
     }
 
     _cancelOn(domEvent) {
+        if (this.target.isZooming()) {
+            return true;
+        }
         if (this._ignore(domEvent)) {
             return true;
         }
