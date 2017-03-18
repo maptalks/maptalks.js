@@ -1,12 +1,9 @@
-const config = require('./rollup.config').config;
-config.moduleName = 'maptalks';
-config.format = 'umd';
 
-module.exports = {
+const base = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
     basePath: '..',
     files: [
-        'src/maptalks.js',
+        'dist/maptalks.js',
         'test/core/ClassSpec.js',
         'test/**/*.js',
         {
@@ -27,10 +24,8 @@ module.exports = {
         '/resources/': '/base/test/resources/'
     },
     preprocessors: {
-        'test/core/ClassSpec.js': ['babel'],
-        'src/maptalks.js': ['rollup']
+        'test/core/ClassSpec.js': ['babel']
     },
-    rollupPreprocessor: config,
     customLaunchers: {
         IE10: {
             base: 'IE',
@@ -41,4 +36,12 @@ module.exports = {
             'x-ua-compatible': 'IE=EmulateIE9'
         }
     }
+};
+
+
+module.exports = function (config) {
+    config.set(Object.assign(base, {
+        browsers: ['Chrome'],
+        reporters: ['mocha']
+    }));
 };
