@@ -176,7 +176,7 @@ class TileLayer extends Layer {
         const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
         const offset = centerTile['offset'];
         const center2D = map._prjToPoint(map._getPrjCenter(), zoom)._sub(offset.x, offset.y);
-        const centerViewPoint = map._containerPointToViewPoint(containerCenter._sub(offset.x, offset.y));
+        const centerViewPoint = map._containerPointToViewPoint(containerCenter._sub(offset.x, offset.y))._round();
 
         const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
         //Number of tiles around the center tile
@@ -190,7 +190,7 @@ class TileLayer extends Layer {
         for (let i = -(left); i < right; i++) {
             for (let j = -(top); j < bottom; j++) {
                 let p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
-                let vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j)._round();
+                let vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j);
                 let tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
                     tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
                     tileId = [tileIndex['idy'], tileIndex['idx'], zoom].join('__'),

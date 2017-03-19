@@ -519,15 +519,15 @@ class CanvasRenderer extends Class {
             this.completeRender();
             return;
         }
-        var me = this, args = arguments;
+        const args = arguments;
         if (this.layer.options['drawImmediate']) {
             this._painted = true;
             this.draw.apply(this, args);
         } else {
-            this._currentFrameId = requestAnimFrame(function () {
-                if (me.layer) {
-                    me._painted = true;
-                    me.draw.apply(me, args);
+            this._currentFrameId = requestAnimFrame(() => {
+                if (this.getMap()) {
+                    this._painted = true;
+                    this.draw.apply(this, args);
                 }
             });
         }

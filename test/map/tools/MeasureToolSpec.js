@@ -6,17 +6,19 @@ describe('#DistanceTool and AreaTool', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    function measure() {
+    function measure(tool) {
         var center = map.getCenter();
 
         var domPosition = maptalks.DomUtil.getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
+        var measure = 0;
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
         });
-        for (var i = 0; i < 10; i++) {
+        var i;
+        for (i = 1; i < 10; i++) {
             happen.mousemove(eventContainer, {
                 'clientX':point.x + i,
                 'clientY':point.y + i
@@ -26,20 +28,41 @@ describe('#DistanceTool and AreaTool', function () {
             'clientX':point.x + 10,
             'clientY':point.y
         });
+
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y + 10
         });
+
+        if (tool.isEnabled()) {
+            expect(tool.getLastMeasure()).to.be.above(measure);
+            measure = tool.getLastMeasure();
+        }
+        for (i = 1; i < 5; i++) {
+            happen.mousemove(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y + i
+            });
+            if (tool.isEnabled()) {
+                expect(tool.getLastMeasure()).to.be.above(0);
+            }
+        }
         happen.dblclick(eventContainer, {
             'clientX':point.x - 1,
             'clientY':point.y + 5
         });
+        if (tool.isEnabled()) {
+            expect(tool.getLastMeasure()).to.be.above(measure);
+            measure = tool.getLastMeasure();
+        }
     }
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
+        map.config('zoomAnimation', false);
+        map.setZoom(5);
         eventContainer = map._panels.canvasContainer;
     });
 
@@ -56,7 +79,7 @@ describe('#DistanceTool and AreaTool', function () {
                 imperial:true
             }).addTo(map);
             expect(distanceTool.getLastMeasure()).to.be.eql(0);
-            measure();
+            measure(distanceTool);
             expect(distanceTool.getLastMeasure()).to.be.above(0);
         });
 
@@ -65,7 +88,7 @@ describe('#DistanceTool and AreaTool', function () {
                 metric : true,
                 imperial:true
             }).addTo(map);
-            measure();
+            measure(distanceTool);
             var measureLayers = distanceTool.getMeasureLayers();
             expect(measureLayers).to.have.length(2);
             var result = distanceTool.getLastMeasure();
@@ -77,7 +100,7 @@ describe('#DistanceTool and AreaTool', function () {
                 metric : true,
                 imperial:true
             }).addTo(map);
-            measure();
+            measure(distanceTool);
             distanceTool.clear();
             var measureLayers = distanceTool.getMeasureLayers();
             expect(measureLayers).to.have.length(0);
@@ -88,11 +111,11 @@ describe('#DistanceTool and AreaTool', function () {
         it('enable/disable', function () {
             var tool = new maptalks.DistanceTool().addTo(map).disable();
             tool.disable();
-            measure();
+            measure(tool);
             var result = tool.getLastMeasure();
             expect(result).to.be(0);
             tool.enable();
-            measure();
+            measure(tool);
             result = tool.getLastMeasure();
             expect(result).to.be.above(0);
         });
@@ -107,7 +130,7 @@ describe('#DistanceTool and AreaTool', function () {
             });
             areaTool.addTo(map);
             expect(areaTool.getLastMeasure()).to.be.eql(0);
-            measure();
+            measure(areaTool);
             expect(areaTool.getLastMeasure()).to.be.above(0);
         });
 
@@ -116,7 +139,7 @@ describe('#DistanceTool and AreaTool', function () {
                 metric : true,
                 imperial:true
             }).addTo(map);
-            measure();
+            measure(areaTool);
             var measureLayers = areaTool.getMeasureLayers();
             expect(measureLayers).to.have.length(2);
             var result = areaTool.getLastMeasure();
@@ -128,7 +151,7 @@ describe('#DistanceTool and AreaTool', function () {
                 metric : true,
                 imperial:true
             }).addTo(map);
-            measure();
+            measure(areaTool);
             areaTool.clear();
             var measureLayers = areaTool.getMeasureLayers();
             expect(measureLayers).to.have.length(0);
@@ -138,11 +161,11 @@ describe('#DistanceTool and AreaTool', function () {
 
         it('enable/disable', function () {
             var tool = new maptalks.AreaTool().addTo(map).disable();
-            measure();
+            measure(tool);
             var result = tool.getLastMeasure();
             expect(result).to.be(0);
             tool.enable();
-            measure();
+            measure(tool);
             result = tool.getLastMeasure();
             expect(result).to.be.above(0);
         });

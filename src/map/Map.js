@@ -1253,7 +1253,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!projection) {
             return null;
         }
-        const scale = this.getScale(zoom) / this.getScale();
+        const scale = this.getScale() / this.getScale(zoom);
         const center = this.getCenter(),
             target = projection.locate(center, xDist, yDist);
         const p0 = this.coordinateToContainerPoint(center, zoom),
@@ -1640,10 +1640,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             minZoom = this.getMinZoom();
         var viewMaxZoom = this._view.getMaxZoom(),
             viewMinZoom = this._view.getMinZoom();
-        if (!maxZoom || maxZoom === -1 || maxZoom > viewMaxZoom) {
+        if (isNil(maxZoom) || maxZoom === -1 || maxZoom > viewMaxZoom) {
             this.setMaxZoom(viewMaxZoom);
         }
-        if (!minZoom || minZoom === -1 || minZoom < viewMinZoom) {
+        if (isNil(minZoom) || minZoom === -1 || minZoom < viewMinZoom) {
             this.setMinZoom(viewMinZoom);
         }
         maxZoom = this.getMaxZoom();
@@ -1651,7 +1651,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (maxZoom < minZoom) {
             this.setMaxZoom(minZoom);
         }
-        if (!this._zoomLevel || this._zoomLevel > maxZoom) {
+        if (isNil(this._zoomLevel) || this._zoomLevel > maxZoom) {
             this._zoomLevel = maxZoom;
         }
         if (this._zoomLevel < minZoom) {

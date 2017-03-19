@@ -533,11 +533,20 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#positionchange
      * @fires Geometry#shapechange
      */
-    translate(offset) {
-        if (!offset) {
+    /**
+     * Translate or move the geometry by the given offset.
+     *
+     * @param  {Number} x - x offset
+     * @param  {Number} y - y offset
+     * @return {Geometry} this
+     * @fires Geometry#positionchange
+     * @fires Geometry#shapechange
+     */
+    translate(x, y) {
+        if (isNil(x)) {
             return this;
         }
-        offset = new Coordinate(offset);
+        const offset = new Coordinate(x, y);
         if (offset.x === 0 && offset.y === 0) {
             return this;
         }

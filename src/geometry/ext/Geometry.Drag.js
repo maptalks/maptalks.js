@@ -112,16 +112,16 @@ class GeometryDragHandler extends Handler  {
         if (ConnectorLine._hasConnectors(target)) {
             var connectors = ConnectorLine._getConnectors(target);
 
-            for (var i = 0; i < connectors.length; i++) {
-                var targetConn = connectors[i];
-                var connOptions = targetConn.config(),
+            for (let i = 0, l = connectors.length; i < l; i++) {
+                let targetConn = connectors[i];
+                let connOptions = targetConn.config(),
                     connSymbol = targetConn._getInternalSymbol();
                 connOptions['symbol'] = lowerSymbolOpacity(connSymbol, 0.5);
-                var conn;
+                let conn;
                 if (targetConn.getConnectSource() === target) {
-                    conn = new ConnectorLine(shadow, targetConn.getConnectTarget(), connOptions);
+                    conn = new targetConn.constructor(shadow, targetConn.getConnectTarget(), connOptions);
                 } else {
-                    conn = new ConnectorLine(targetConn.getConnectSource(), shadow, connOptions);
+                    conn = new targetConn.constructor(targetConn.getConnectSource(), shadow, connOptions);
                 }
                 shadowConnectors.push(conn);
                 if (targetConn.getLayer() && targetConn.getLayer()._getRenderer()) {

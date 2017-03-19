@@ -72,7 +72,15 @@ describe('#Map', function () {
             expect(zoom).to.be.eql(17);
         });
 
-
+        it('getZoom2', function () {
+            map.remove();
+            var option = {
+                zoom: 0,
+                center: center
+            };
+            map = new maptalks.Map(container, option);
+            expect(map.getZoom()).to.be.eql(0);
+        });
 
         it('isLoaded', function () {
             expect(map.isLoaded()).to.be.ok();

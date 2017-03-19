@@ -120,9 +120,10 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return this;
         }
+        const args = arguments;
         this.forEach(function (geometry) {
             if (geometry && geometry.translate) {
-                geometry.translate(offset);
+                geometry.translate.apply(geometry, args);
             }
         });
         return this;
