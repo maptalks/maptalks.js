@@ -5,8 +5,6 @@ import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
-const padding = [2, 2];
-
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     static test(symbol) {
@@ -23,6 +21,12 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         super(symbol, geometry, painter);
         this.style = this._defineStyle(this.translate());
         this.strokeAndFill = this._defineStyle(VectorMarkerSymbolizer.translateLineAndFill(this.style));
+        const lineWidth = this.strokeAndFill['lineWidth'];
+        if (lineWidth % 2 === 0) {
+            this.padding = [2, 2];
+        } else {
+            this.padding = [3, 3];
+        }
     }
 
     symbolize(ctx, resources) {
@@ -94,8 +98,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         var canvasClass = ctx.canvas.constructor,
             lineWidth = this.strokeAndFill['lineWidth'],
             shadow = this.geometry.options['shadowBlur'],
-            w = round(this.style['markerWidth'] + lineWidth + 2 * shadow + padding[0] * 2),
-            h = round(this.style['markerHeight'] + lineWidth + 2 * shadow + padding[1] * 2),
+            w = round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0] * 2),
+            h = round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1] * 2),
             canvas = Canvas.createCanvas(w, h, canvasClass),
             point = this._getAnchor(w, h);
         var context = canvas.getContext('2d');
@@ -127,9 +131,11 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _getAnchor(w, h) {
+        const lineWidth = this.strokeAndFill['lineWidth'],
+            shadow = this.geometry.options['shadowBlur'];
         const markerType = this.style['markerType'].toLowerCase();
         if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
-            return new Point(w / 2, h - padding[1]);
+            return new Point(w / 2, h - this.padding[1] - lineWidth / 2 - shadow);
         } else {
             return new Point(w / 2, h / 2);
         }

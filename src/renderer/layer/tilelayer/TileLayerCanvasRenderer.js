@@ -108,19 +108,18 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     _scheduleLoadTileQueue() {
-
         if (this._loadQueueTimeout) {
             cancelAnimFrame(this._loadQueueTimeout);
         }
-
         this._loadQueueTimeout = requestAnimFrame(() => {
-            this._loadTileQueue();
+            if (this.getMap()) {
+                this._loadTileQueue();
+            }
         });
     }
 
     _loadTileQueue() {
         var me = this;
-
         function onTileLoad() {
             if (!isNode) {
                 if (me._tileCache) {
@@ -135,7 +134,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             me._clearTileRectAndRequest(this);
         }
         var tileId, tile;
-        for (var p in this._tileQueue) {
+        for (let p in this._tileQueue) {
             if (this._tileQueue.hasOwnProperty(p)) {
                 tileId = p.split('@')[0];
                 tile = this._tileQueue[p];
@@ -145,10 +144,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
                 } else {
                     this._drawTileAndRequest(this._tileCache[tileId]);
                 }
-
             }
         }
-
     }
 
 

@@ -101,6 +101,9 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     }
 
     _drawLayer() {
+        if (!this.getMap()) {
+            return;
+        }
         const args = [this.context];
         args.push.apply(args, this._drawContext);
         this.layer.draw.apply(this.layer, args);

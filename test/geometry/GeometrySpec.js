@@ -231,27 +231,12 @@ function registerGeometryCommonTest(geometry, _context) {
         });
     });
 
-    // context(type+':has crs',function() {
-    //     it ('can read crs from json',function() {
-    //         var json = geometry.toGeoJSON();
-    //         json.crs = {
-    //             "type" : "cnCoordinateType",
-    //             "properties" : {
-    //                 "name" : "gcj02"
-    //             }
-    //         };
-    //         var parsed = maptalks.GeoJSON.toGeometry(json);
-
-    //         expect(parsed.getCRS()).to.eql(json.crs);
-    //     });
-
-    //     it ('has crs',function() {
-    //         var coordinateType = maptalks.CRS.GCJ02;
-    //         var json = geometry.setCRS(coordinateType).toGeoJSON();
-    //         expect(json['crs']).to.be.ok();
-    //         expect(json['crs']).to.eql({"type":"cnCoordinateType","properties":{"name":"gcj02"}});
-    //     });
-    // });
+    it(type + ':translate', function () {
+        var coord = maptalks.Coordinate.toNumberArrays(geometry.getCoordinates());
+        geometry.translate(-1, -1);
+        var coord2 = maptalks.Coordinate.toNumberArrays(geometry.getCoordinates());
+        expect(coord).not.to.be.eql(coord2);
+    });
 
     context(type + ':remove', function () {
         it('remove from layer', function () {

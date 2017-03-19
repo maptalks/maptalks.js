@@ -107,6 +107,10 @@ const Connectable = Base =>
             }
         }
 
+        onAdd() {
+            this._updateCoordinates();
+        }
+
         onRemove() {
             if (this._connSource) {
                 if (this._connSource.__connectors) {

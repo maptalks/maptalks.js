@@ -33,8 +33,8 @@ const options = {
         'markerFill': '#fff', //"#d0d2d6",
         'markerLineColor': '#000',
         'markerLineWidth': 3,
-        'markerWidth': 10,
-        'markerHeight': 10
+        'markerWidth': 11,
+        'markerHeight': 11
     },
     'labelOptions': {
         'symbol': {
@@ -204,9 +204,9 @@ class DistanceTool extends DrawTool {
     }
 
     _msOnMouseMove(param) {
-        var ms = this._measure(param['geometry'].getCoordinates().concat([param['coordinate']]));
+        const ms = this._measure(this._msGetCoordsToMeasure(param));
         if (!this._tailMarker) {
-            var symbol = extendSymbol(this.options['vertexSymbol']);
+            const symbol = extendSymbol(this.options['vertexSymbol']);
             symbol['markerWidth'] /= 2;
             symbol['markerHeight'] /= 2;
             this._tailMarker = new Marker(param['coordinate'], {
@@ -218,7 +218,10 @@ class DistanceTool extends DrawTool {
         this._tailMarker.setCoordinates(param['coordinate']);
         this._tailLabel.setContent(ms);
         this._tailLabel.setCoordinates(param['coordinate']);
+    }
 
+    _msGetCoordsToMeasure(param) {
+        return param['geometry'].getCoordinates().concat([param['coordinate']]);
     }
 
     _msOnDrawVertex(param) {

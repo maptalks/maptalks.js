@@ -219,6 +219,9 @@ class OverlayLayer extends Layer {
                 this.onAddGeometry(geo);
             }
             geo._bindLayer(this);
+            if (geo.onAdd) {
+                geo.onAdd();
+            }
             /**
              * add event.
              *

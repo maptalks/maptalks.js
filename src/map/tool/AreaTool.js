@@ -66,7 +66,7 @@ class AreaTool extends DistanceTool {
     }
 
     _measure(toMeasure) {
-        var map = this.getMap();
+        const map = this.getMap();
         var area;
         if (toMeasure instanceof Geometry) {
             area = map.computeGeometryArea(toMeasure);
@@ -89,17 +89,21 @@ class AreaTool extends DistanceTool {
             if (content.length > 0) {
                 content += '\n';
             }
-            var sqmi = 5280 * 5280;
+            const sqmi = 5280 * 5280;
             content += area < sqmi ? area.toFixed(0) + units[2] : (area / sqmi).toFixed(2) + units[3];
         }
         return content;
     }
 
+    _msGetCoordsToMeasure(param) {
+        return param['geometry'].getShell().concat([param['coordinate']]);
+    }
+
     _msOnDrawVertex(param) {
-        var vertexMarker = new Marker(param['coordinate'], {
+        const vertexMarker = new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
-
+        this._measure(param['geometry']);
         this._lastVertex = vertexMarker;
     }
 
