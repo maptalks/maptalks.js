@@ -5,11 +5,14 @@ import {
     isArrayHasData,
     getValueOrDefault
 } from 'core/util';
+import { hasFunctionDefinition } from 'core/mapbox';
 import { splitTextToRow, getAlignPoint, replaceVariable } from 'core/util/strings';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
+
+const CACHE_KEY = '___text_symbol_cache';
 
 export default class TextMarkerSymbolizer extends PointSymbolizer {
 
@@ -25,11 +28,14 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
 
     constructor(symbol, geometry, painter) {
         super(symbol, geometry, painter);
+        this._dynamic = hasFunctionDefinition(symbol);
         this.style = this._defineStyle(this.translate());
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
         var textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
-        // the key to cache text descriptor
-        this._cacheKey = genCacheKey(textContent, this.style);
+        if (!this._dynamic) {
+            // the key to cache text descriptor
+            this._cacheKey = genCacheKey(textContent, this.style);
+        }
         this._descText(textContent);
     }
 
@@ -141,6 +147,10 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     _descText(textContent) {
+        if (this._dynamic) {
+            this.textDesc = splitTextToRow(textContent, this.style);
+            return;
+        }
         this.textDesc = this._loadFromCache();
         if (!this.textDesc) {
             this.textDesc = splitTextToRow(textContent, this.style);
@@ -152,17 +162,17 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         if (isNode) {
             return;
         }
-        if (!this.geometry['___text_symbol_cache']) {
-            this.geometry['___text_symbol_cache'] = {};
+        if (!this.geometry[CACHE_KEY]) {
+            this.geometry[CACHE_KEY] = {};
         }
-        this.geometry['___text_symbol_cache'][this._cacheKey] = textDesc;
+        this.geometry[CACHE_KEY][this._cacheKey] = textDesc;
     }
 
     _loadFromCache() {
-        if (!this.geometry['___text_symbol_cache']) {
+        if (!this.geometry[CACHE_KEY]) {
             return null;
         }
-        return this.geometry['___text_symbol_cache'][this._cacheKey];
+        return this.geometry[CACHE_KEY][this._cacheKey];
     }
 }
 

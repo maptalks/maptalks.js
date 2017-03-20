@@ -156,6 +156,20 @@ export function isFunctionDefinition(obj) {
     return obj && typeof obj === 'object' && obj.stops;
 }
 
+/**
+ * Check if obj's properties has function definition
+ * @param  {Object}  obj object to check
+ * @return {Boolean}
+ * @memberOf MapboxUtil
+ */
+export function hasFunctionDefinition(obj) {
+    for (let p in obj) {
+        if (isFunctionDefinition(obj[p])) {
+            return true;
+        }
+    }
+    return false;
+}
 
 export function interpolated(parameters) {
     return createFunction(parameters, 'exponential');

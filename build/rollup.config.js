@@ -36,9 +36,10 @@ module.exports = {
         const watcher = watch(rollup, config);
         watcher.on('event', e => {
             if (e.code === 'BUILD_START') {
-                console.time('ROLLUP');
+                console.log('[ROLLUP] Starting...');
+                console.time('[ROLLUP]');
             } else if (e.code === 'BUILD_END') {
-                console.timeEnd('ROLLUP');
+                console.timeEnd('[ROLLUP]');
                 if (cb) {
                     cb();
                 }
