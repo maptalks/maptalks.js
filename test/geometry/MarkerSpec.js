@@ -181,6 +181,30 @@ describe('#Marker', function () {
             map.addLayer(layer);
         });
 
+        it('change marker file by updateSymbol', function (done) {
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    'markerFile' : 'images/control/2.png',
+                    'markerWidth' : 10,
+                    'markerHeight' : 10
+                }
+            });
+            var layer = new maptalks.VectorLayer('vector', [marker]);
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, -5, [41, 120, 119]);
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, -5, [201, 202, 202]);
+                    done();
+                });
+                marker.updateSymbol({
+                    'markerFile' : 'images/control/1.png',
+                    'markerWidth' : 10,
+                    'markerHeight' : 10
+                });
+            });
+            layer.addTo(map);
+        });
+
     });
 
     describe('events', function () {
@@ -233,6 +257,41 @@ describe('#Marker', function () {
             done();
         });
         map.addLayer(layer);
+    });
+
+    describe('function type symbols', function () {
+        it('vector marker\'s size changes with zoom', function () {
+            map.config('zoomAnimation', false);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    markerType : 'ellipse',
+                    markerWidth : { stops: [[7, 8], [14, 20]] },
+                    markerHeight : { stops: [[7, 8], [14, 20]] }
+                }
+            });
+            var layer = new maptalks.VectorLayer('id', [marker], { 'drawImmediate' : true }).addTo(map);
+            expect(layer).to.be.painted(10, 0);
+            map.setZoom(7);
+            expect(layer).not.to.be.painted(10, 0);
+            expect(layer).not.to.be.painted(5, 0);
+            expect(layer).to.be.painted(4, 0);
+        });
+
+        it('text marker\'s size changes with zoom', function () {
+            map.config('zoomAnimation', false);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    textName : '■■■■■■■■■',
+                    textSize : { stops: [[7, 8], [14, 20]] },
+                    textFill : '#fff'
+                }
+            });
+            var layer = new maptalks.VectorLayer('id', [marker], { 'drawImmediate' : true }).addTo(map);
+            expect(layer).to.be.painted(53, 0);
+            map.setZoom(7);
+            expect(layer).not.to.be.painted(53, 0);
+            expect(layer).to.be.painted(32, 0);
+        });
     });
 
 });
