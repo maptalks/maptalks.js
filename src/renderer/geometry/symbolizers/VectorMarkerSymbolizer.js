@@ -1,5 +1,6 @@
 import { isNil, isNumber, isArrayHasData, getValueOrDefault, round } from 'core/util';
 import { isGradient, getGradientStamp } from 'core/util/style';
+import { hasFunctionDefinition } from 'core/mapbox';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
@@ -19,6 +20,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     constructor(symbol, geometry, painter) {
         super(symbol, geometry, painter);
+        this._dynamic = hasFunctionDefinition(symbol);
         this.style = this._defineStyle(this.translate());
         this.strokeAndFill = this._defineStyle(VectorMarkerSymbolizer.translateLineAndFill(this.style));
         const lineWidth = this.strokeAndFill['lineWidth'];
@@ -40,7 +42,9 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             return;
         }
         this._prepareContext(ctx);
-        if (this.getPainter().isSpriting() || this.geometry.getLayer().getMask() === this.geometry ||
+        if (this.getPainter().isSpriting() ||
+            this.geometry.getLayer().getMask() === this.geometry ||
+            this._dynamic ||
             this.geometry.getLayer().options['cacheVectorOnCanvas'] === false) {
             this._drawMarkers(ctx, cookedPoints, resources);
         } else {
