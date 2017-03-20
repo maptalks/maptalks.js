@@ -41,13 +41,9 @@ class VectorLayer extends OverlayLayer {
      * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}
      */
     constructor(id, geometries, options) {
-        var opts = options || geometries || {};
-        const style = opts['style'];
-        if (style) {
-            opts = extend({}, opts);
-        }
-        delete opts['style'];
-        super(id, geometries, opts);
+        super(id, geometries, options);
+        const style = this.options['style'];
+        delete this.options['style'];
         if (style) {
             this.setStyle(style);
         }

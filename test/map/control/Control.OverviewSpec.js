@@ -14,7 +14,6 @@ describe('Control.Overview', function () {
             zoomAnimationDuration : 50,
             center: center,
             overviewControl : {
-                'loadDelay' : 1
             }
         };
         map = new maptalks.Map(container, option);

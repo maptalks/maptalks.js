@@ -23,7 +23,6 @@ import Renderable from 'renderer/Renderable';
 var options = {
     'minZoom': null,
     'maxZoom': null,
-    //图层是否可见
     'visible': true,
     'opacity': 1,
     'drawImmediate': false,
