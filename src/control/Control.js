@@ -45,6 +45,9 @@ class Control extends Eventable(Class) {
         // on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', stopPropagation)
         this.update();
         controlContainer.appendChild(this.__ctrlContainer);
+        if (this.onAdd) {
+            this.onAdd();
+        }
         /**
          * add event.
          *

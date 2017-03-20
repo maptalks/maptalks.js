@@ -16,7 +16,6 @@ import Control from './Control';
  * @instance
  */
 const options = {
-    'loadDelay' : 1600,
     'level': 4,
     'position': 'bottom-right',
     'size': {
@@ -47,22 +46,14 @@ class Overview extends Control {
      * @param  {Map} map map to build on
      * @return {HTMLDOMElement}
      */
-    buildOn(map) {
+    buildOn() {
         var container = createEl('div');
-        container.style.cssText = 'border:1px solid #000;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
-        if (map.isLoaded()) {
-            this._initOverview();
-        } else {
-            map.on('load', this._initOverview, this);
-        }
+        container.style.cssText = 'background:#fff;border:1px solid #b4b3b3;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
         return container;
     }
 
-    _initOverview() {
-        var me = this;
-        setTimeout(function () {
-            me._createOverview();
-        }, this.options['loadDelay']);
+    onAdd() {
+        this._createOverview();
     }
 
     _createOverview(container) {
@@ -77,7 +68,8 @@ class Overview extends Control {
             'checkSize': false,
             'doubleClickZoom': false,
             'touchZoom': false,
-            'control': false
+            'control': false,
+            'draggable' : false
         });
         this._overview = new Map(dom, options);
         this._updateBaseLayer();
@@ -95,7 +87,7 @@ class Overview extends Control {
             .on('dragend', this._onDragEnd, this);
         map.on('resize moveend zoomend', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this);
-        new VectorLayer('v').addGeometry(this._perspective).addTo(this._overview);
+        new VectorLayer('v', [this._perspective]).addTo(this._overview);
         this.fire('load');
     }
 
