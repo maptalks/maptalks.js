@@ -209,6 +209,15 @@ class Coordinate {
     }
 
     /**
+     * Formats coordinate number using fixed-point notation.
+     * @param  {Number} n The number of digits to appear after the decimal point
+     * @return {Coordinate}   fixed coordinate
+     */
+    toFixed(n) {
+        return new Coordinate(this.x.toFixed(n), this.y.toFixed(n));
+    }
+
+    /**
      * Convert the coordinate to a json object {x : .., y : ..}
      * @return {Object} json
      */
