@@ -29,21 +29,21 @@
 .maptalks-toolbar-horizonal li .maptalks-dropMenu em.maptalks-ico { display: block; width: 5px; height: 6px; background: url(images/control/4.png) no-repeat; position: absolute; top: -4px; left: 12px;}
 .maptalks-toolbar-horizonal .maptalks-dropMenu li:hover { background: #0e595e;}
 
-.maptalks-menu { background: #fff; padding: 1px; width: 172px; border: 1px solid #b4b3b3; box-shadow: 3px 5px 10px #dbdada;}
+.maptalks-menu { background: #fff; padding: 1px; width: 172px; border: 1px solid #b4b3b3; /*box-shadow: 3px 5px 10px #dbdada;*/}
 .maptalks-menu em.maptalks-ico { display: block; width: 17px; height: 10px; background: url(images/control/5.png) no-repeat; position: absolute; top: -10px; left: 8px;}
 .maptalks-menu .maptalks-menu-items { color: #5a5756; margin: 0; padding: 0; font-size: 12px;}
 .maptalks-menu .maptalks-menu-items li { list-style: none; height: 30px; line-height: 30px; text-indent: 16px;}
 .maptalks-menu .maptalks-menu-items li:hover {background: #007fbe; color: #fff;cursor:pointer;}
 .maptalks-menu .maptalks-menu-items li.maptalks-menu-splitter { list-style: none; height: 2px; background: #ddd;}
 
-.maptalks-msgBox { background: #fff; border: 1px solid #b4b3b3; border-radius: 3px; box-shadow: 3px 5px 5px #dbdada;}
+.maptalks-msgBox { background: #fff; border: 1px solid #b4b3b3; border-radius: 3px; /*box-shadow: 3px 5px 5px #dbdada;*/}
 .maptalks-msgBox em.maptalks-ico { display: block; width: 17px; height: 10px; background: url(images/control/5_1.png) no-repeat; position: absolute; left: 50%; margin-left: -5px; bottom: -10px;}
 .maptalks-msgBox h2 { display: block; height: 30px; line-height: 30px; font-weight: bold; font-size: 14px; padding: 0 10px;  margin: 0;}
 .maptalks-msgBox a.maptalks-close { display: block; width: 13px; height: 13px; background: url(images/control/infownd-close.png) no-repeat; position: absolute; top: 8px; right: 10px;}
 .maptalks-msgBox a.maptalks-close:hover { background: url(images/control/infownd-close-hover.png) no-repeat;}
 .maptalks-msgBox .maptalks-msgContent { font-size: 12px;padding: 10px; min-width: 200px;}
 
-.maptalks-panel { background: #fff; border: 1px solid #b4b3b3; border-radius: 3px; box-shadow: 3px 5px 5px #dbdada;}
+.maptalks-panel { background: #fff; border: 1px solid #b4b3b3; border-radius: 3px; /*box-shadow: 3px 5px 5px #dbdada;*/}
 .maptalks-panel .maptalks-panel-content { padding: 10px; min-width: 200px; min-height: 60px;}
 .maptalks-panel a.maptalks-close { display: block; width: 6px; height: 7px; background: url(images/control/close-2.png) no-repeat; position: absolute; top: 10px; right: 10px;}
 .maptalks-panel a.maptalks-close:hover { opacity: 0.5;}
