@@ -184,22 +184,19 @@ describe('#Marker', function () {
         it('change marker file by updateSymbol', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
-                    'markerFile' : 'images/control/2.png',
-                    'markerWidth' : 10,
-                    'markerHeight' : 10
+                    'markerFile' : 'images/control/3.png'
                 }
             });
             var layer = new maptalks.VectorLayer('vector', [marker]);
             layer.once('layerload', function () {
-                expect(layer).to.be.painted(0, -5, [41, 120, 119]);
+                expect(layer).to.be.painted(5, -1);
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(0, -5, [201, 202, 202]);
+                    expect(layer).not.to.be.painted(5, -1);
+                    expect(layer).to.be.painted(3, -1);
                     done();
                 });
                 marker.updateSymbol({
-                    'markerFile' : 'images/control/1.png',
-                    'markerWidth' : 10,
-                    'markerHeight' : 10
+                    'markerFile' : 'images/control/4.png'
                 });
             });
             layer.addTo(map);
