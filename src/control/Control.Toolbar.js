@@ -130,20 +130,17 @@ class Toolbar extends Control {
             };
         }
         const menuDom = createEl('div', 'maptalks-dropMenu');
-        menuDom.style.display = 'none';
         menuDom.appendChild(createEl('em', 'maptalks-ico'));
         const menuUL = createEl('ul');
-        menuDom.appendChild(menuUL);
         const children = this._getItems()[index]['children'];
-        var liWidth = 0,
-            i, len;
-        for (i = 0, len = children.length; i < len; i++) {
+        var liWidth = 0;
+        for (let i = 0, l = children.length; i < l; i++) {
             let size = stringLength(children[i]['item'], '12px');
             if (size.width > liWidth) {
                 liWidth = size.width;
             }
         }
-        for (i = 0, len = children.length; i < len; i++) {
+        for (let i = 0, l = children.length; i < l; i++) {
             let child = children[i];
             let li = createEl('li');
             li.innerHTML = '<a href="javascript:;">' + child['item'] + '</a>';
@@ -152,6 +149,12 @@ class Toolbar extends Control {
             on(li.childNodes[0], 'click', (onButtonClick)(child['click'], index, i));
             menuUL.appendChild(li);
         }
+        if (this.options['vertical']) {
+            const width = liWidth < 95 ? 95 : liWidth;
+            menuDom.style.left = -(width + 8 * 2 + 1) + 'px'; // 8: padding in .maptalks-toolbar-vertical li
+        }
+        menuDom.appendChild(menuUL);
+        menuDom.style.display = 'none';
         return menuDom;
     }
 
