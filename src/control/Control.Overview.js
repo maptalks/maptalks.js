@@ -22,8 +22,11 @@ const options = {
         'width': 300,
         'height': 200
     },
-    'style': {
-        'color': '#1bbc9b'
+    'symbol': {
+        'lineWidth': 3,
+        'lineColor': '#1bbc9b',
+        'polygonFill': '#1bbc9b',
+        'polygonOpacity': 0.4,
     }
 };
 
@@ -64,6 +67,7 @@ class Overview extends Control {
         extend(options, {
             'center': map.getCenter(),
             'zoom': this._getOverviewZoom(),
+            'zoomAnimationDuration'  : 150,
             'scrollWheelZoom': false,
             'checkSize': false,
             'doubleClickZoom': false,
@@ -76,12 +80,7 @@ class Overview extends Control {
         this._perspective = new Polygon(extent.toArray(), {
             'draggable': true,
             'cursor': 'move',
-            'symbol': {
-                'lineWidth': 3,
-                'lineColor': this.options['style']['color'],
-                'polygonFill': this.options['style']['color'],
-                'polygonOpacity': 0.4,
-            }
+            'symbol': this.options['symbol']
         })
             .on('dragstart', this._onDragStart, this)
             .on('dragend', this._onDragEnd, this);
@@ -92,25 +91,25 @@ class Overview extends Control {
     }
 
     onRemove() {
-        this.getMap().off('load', this._initOverview, this)
+        this.getMap()
+            .off('load', this._initOverview, this)
             .off('resize moveend zoomend', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this);
     }
 
     _getOverviewZoom() {
-        var map = this.getMap(),
+        const map = this.getMap(),
             zoom = map.getZoom(),
             minZoom = map.getMinZoom(),
             level = this.options['level'];
-        var i;
         if (level > 0) {
-            for (i = level; i > 0; i--) {
+            for (let i = level; i > 0; i--) {
                 if (zoom - i >= minZoom) {
                     return zoom - i;
                 }
             }
         } else {
-            for (i = level; i < 0; i++) {
+            for (let i = level; i < 0; i++) {
                 if (zoom - i >= minZoom) {
                     return zoom - i;
                 }
