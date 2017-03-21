@@ -184,19 +184,19 @@ describe('#Marker', function () {
         it('change marker file by updateSymbol', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
-                    'markerFile' : 'images/control/3.png'
+                    'markerFile' : 'resources/tile.png'
                 }
             });
             var layer = new maptalks.VectorLayer('vector', [marker]);
             layer.once('layerload', function () {
-                expect(layer).to.be.painted(5, -1);
+                expect(layer).to.be.painted(100, -1);
                 layer.once('layerload', function () {
-                    expect(layer).not.to.be.painted(5, -1);
-                    expect(layer).to.be.painted(3, -1);
+                    expect(layer).not.to.be.painted(7, -1);
+                    expect(layer).to.be.painted(5, -1);
                     done();
                 });
                 marker.updateSymbol({
-                    'markerFile' : 'images/control/4.png'
+                    'markerFile' : 'resources/pattern.png'
                 });
             });
             layer.addTo(map);
