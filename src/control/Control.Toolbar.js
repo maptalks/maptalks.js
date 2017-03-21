@@ -7,6 +7,7 @@ import Control from './Control';
  * @property {Object}   options - options
  * @property {String|Object}   [options.position="top-right"]          - position of the toolbar control.
  * @property {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
+ * @property {Boolean}  [options.reverseMenu=false]                    - Whether to reverse direction of drop menu.
  * @property {Object[]} options.items                                  - items on the toolbar
  * @memberOf control.Toolbar
  * @instance
@@ -15,6 +16,7 @@ const options = {
     'height': 28,
     'vertical': false,
     'position': 'top-right',
+    'reverseMenu' : false,
     'items': {
         //default buttons
     }
@@ -151,7 +153,15 @@ class Toolbar extends Control {
         }
         if (this.options['vertical']) {
             const width = liWidth < 95 ? 95 : liWidth;
-            menuDom.style.left = -(width + 8 * 2 + 1) + 'px'; // 8: padding in .maptalks-toolbar-vertical li
+            if (this.options['reverseMenu']) {
+                menuDom.style.right = -(width + 10 * 2) + 'px';
+            } else {
+                menuDom.style.left = -(width + 10 * 2) + 'px'; // 10: padding in .maptalks-toolbar-vertical li
+            }
+        } else if (this.options['reverseMenu']) {
+            menuDom.style.bottom = '28px';
+        } else {
+            menuDom.style.top = '28px';
         }
         menuDom.appendChild(menuUL);
         menuDom.style.display = 'none';
