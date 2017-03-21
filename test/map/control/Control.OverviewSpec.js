@@ -13,8 +13,7 @@ describe('Control.Overview', function () {
             zoom: 17,
             zoomAnimationDuration : 50,
             center: center,
-            overviewControl : {
-            }
+            overviewControl : true
         };
         map = new maptalks.Map(container, option);
         tile = new maptalks.TileLayer('tile', {
@@ -43,31 +42,32 @@ describe('Control.Overview', function () {
     });
 
     it('baseLayer', function (done) {
-        var overview = map.overviewControl;
+        var overview = new maptalks.control.Overview();
         overview.on('load', function () {
             expect(overview._overview.getBaseLayer()).to.be.ok();
             done();
         });
         map.setBaseLayer(tile);
-
+        overview.addTo(map);
     });
 
     it('remove', function (done) {
-        var overview = map.overviewControl;
-
+        var overview = new maptalks.control.Overview();
         overview.on('load', function () {
-            expect(map.listens('zoomend')).to.be(1);
-            expect(map.listens('moveend')).to.be(1);
+            expect(map.listens('zoomend')).to.be(2);
+            expect(map.listens('moveend')).to.be(2);
             overview.remove();
-            expect(map.listens('moveend')).to.be(0);
-            expect(map.listens('zoomend')).to.be(0);
+            expect(map.listens('moveend')).to.be(1);
+            expect(map.listens('zoomend')).to.be(1);
             done();
         });
+        overview.addTo(map);
         map.setBaseLayer(tile);
+
     });
 
     it('move', function (done) {
-        var overview = map.overviewControl;
+        var overview = new maptalks.control.Overview();
         overview.on('load', function () {
             map.on('moveend', function () {
                 expect(overview._overview.getCenter().toArray()).to.be.eql([0, 0]);
@@ -75,12 +75,11 @@ describe('Control.Overview', function () {
             });
             map.setCenter([0, 0]);
         });
-
+        overview.addTo(map);
     });
 
     it('zoom', function (done) {
-        var overview = map.overviewControl;
-
+        var overview = new maptalks.control.Overview();
         overview.on('load', function () {
             var zoom = overview._overview.getZoom();
             overview._overview.on('zoomend', function () {
@@ -89,6 +88,6 @@ describe('Control.Overview', function () {
             });
             map.zoomIn();
         });
-
+        overview.addTo(map);
     });
 });
