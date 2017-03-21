@@ -12,21 +12,24 @@
 
 .maptalks-toolbar-vertical { /*border: 1px solid #3b3e44;*/margin: 0;}
 .maptalks-toolbar-vertical ul ,.maptalks-toolbar-horizonal ul {margin: 0;padding: 0;}
-.maptalks-toolbar-vertical li { text-align:center;list-style: none; line-height:28px;color:#fff; background: #34495e; min-width: 10px; min-height: 28px; border-bottom: 1px solid #425568; position: relative; padding:0px 8px 0px 8px;}
+.maptalks-toolbar-vertical ul li+li { border-top: 1px solid #425568; }
+.maptalks-toolbar-vertical li { text-align:center;list-style: none; line-height:28px;color:#fff; background: #34495e; min-width: 10px; min-height: 28px; /*border-bottom: 1px solid #425568;*/ position: relative; padding:0px 10px;}
 .maptalks-toolbar-vertical li:hover { background: #1bbc9b;}
-.maptalks-toolbar-vertical li .maptalks-dropMenu { padding: 0; position: absolute; left: 0px; top: 0px; border: 1px solid #3e4f61; border-right: none; border-top: none;}
+.maptalks-toolbar-vertical li .maptalks-dropMenu { padding: 0; position: absolute; top: 0px; /*border: 1px solid #3e4f61; border-right: none; border-top: none;*/}
 .maptalks-toolbar-vertical li .maptalks-dropMenu li { list-style: none; min-width: 95px; background: #223140; height: 27px;}
 .maptalks-toolbar-vertical li .maptalks-dropMenu li a { color: #fff; display: block; line-height: 27px; background: url(images/control/ico-dot.png) no-repeat 14px 10px; text-indent: 33px;  text-decoration: none; font-size: 12px;}
-.maptalks-toolbar-vertical li .maptalks-dropMenu em.maptalks-ico { display: block; width: 5px; height: 6px; background: url(images/control/4_1.png) no-repeat; position: absolute; top: 12px; right: -4px;}
+.maptalks-toolbar-vertical li .maptalks-dropMenu em.maptalks-ico { display: block; width: 5px; height: 6px; /*background: url(images/control/4_1.png) no-repeat;*/ position: absolute; top: 12px; right: -4px;}
 .maptalks-toolbar-vertical li .maptalks-dropMenu li.maptalks-on ,.maptalks-toolbar-vertical li .maptalks-dropMenu li:hover  { background: #0e595e;}
 
 .maptalks-toolbar-horizonal { /*border: 1px solid #3b3e44;*/margin: 0;}
-.maptalks-toolbar-horizonal li { text-align:left;line-height:28px;color:#fff;padding: 0px 8px 0px 8px;list-style: none; min-width: 28px; min-height: 28px; float: left; background: #34495e; border-right: 1px solid #425568; position: relative; }
+.maptalks-toolbar-horizonal li { text-align:left;line-height:28px;color:#fff;padding: 0px 10px;list-style: none; min-width: 28px; min-height: 28px; float: left; background: #34495e; /*border-right: 1px solid #425568;*/ position: relative; }
+.maptalks-toolbar-horizonal ul li+li { border-left: 1px solid #425568; }
 .maptalks-toolbar-horizonal li:hover { background: #1bbc9b; /*border-right:1px solid #1bbc9b;*/ }
-.maptalks-toolbar-horizonal li .maptalks-dropMenu { display:block;position: absolute; left: -1px; top: 27px; border: 1px solid #3e4f61;  border-top: none;}
+.maptalks-toolbar-horizonal li .maptalks-dropMenu { display:block;position: absolute; left: -1px; /*border: 1px solid #3e4f61;  border-top: none;*/}
 .maptalks-toolbar-horizonal li .maptalks-dropMenu li { list-style: none; min-width: 95px; background: #223140; height: 27px;}
+.maptalks-toolbar-horizonal li .maptalks-dropMenu li+li { border-left: none; border-top: 1px solid #425568 }
 .maptalks-toolbar-horizonal li .maptalks-dropMenu li a { color: #fff; display: block; line-height: 27px; background: url(images/control/ico-dot.png) no-repeat 5px 10px; text-indent: 20px; text-decoration: none; font-size: 12px;}
-.maptalks-toolbar-horizonal li .maptalks-dropMenu em.maptalks-ico { display: block; width: 5px; height: 6px; background: url(images/control/4.png) no-repeat; position: absolute; top: -4px; left: 12px;}
+.maptalks-toolbar-horizonal li .maptalks-dropMenu em.maptalks-ico { display: block; width: 5px; height: 6px; /*background: url(images/control/4.png) no-repeat; */position: absolute; top: -4px; left: 12px;}
 .maptalks-toolbar-horizonal .maptalks-dropMenu li:hover { background: #0e595e;}
 
 .maptalks-menu { background: #fff; padding: 1px; width: 172px; border: 1px solid #b4b3b3; /*box-shadow: 3px 5px 10px #dbdada;*/}
