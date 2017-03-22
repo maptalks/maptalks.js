@@ -76,43 +76,116 @@ class LineString extends Path {
     }
 
     /**
-     * Show the linestring with animation
-     * @param  {Object} [options=null] animation options
-     * @param  {Number} [options.duration=1000] duration
-     * @param  {String} [options.easing=out] animation easing
-     * @param  {Function} [cb=null] callback function in animation
-     * @return {LineString}         this
-     */
-    animateShow(options = {}, cb) {
+   * Show the linestring with animation
+   * @param  {Object} [options=null] animation options
+   * @param  {Number} [options.duration=1000] duration
+   * @param  {String} [options.easing=out] animation easing
+   * @return {LineString}         this
+   */
+    animateShow() {
+
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var cb = arguments[1];
+
         if (isFunction(options)) {
             options = {};
             cb = options;
         }
-        const coordinates = this.getCoordinates();
-        const duration = options['duration'] || 1000;
-        const length = this.getLength();
-        const easing = options['easing'] || 'out';
+        this.totalCoordinates = this.getCoordinates();
+        var duration = options['duration'] || 1000;
+        this.unitTime = options['unitTime'] || 1;
+        this.duration = duration / this.unitTime;
+        this.totalLength = this.getLength();
+        this.aniCallback = cb;
+        var easing = options['easing'] || 'out';
         this.setCoordinates([]);
-        const player = Animation.animate({
-            't': duration
+        this.played = 0;
+        var player = Animation.animate({
+            't': [0,1]
         }, {
-            'duration': duration,
+            'duration': this.duration,
             'easing': easing
-        }, frame => {
-            if (!this.getMap()) {
-                player.finish();
-                this.setCoordinates(coordinates);
-                if (cb) {
-                    cb(frame);
-                }
-                return;
-            }
-            this._drawAnimFrame(frame.styles.t, duration, length, coordinates);
-            if (cb) {
-                cb(frame);
-            }
+        }, frame=>{
+            this._step(frame);
         });
-        player.play();
+        this.player = player;
+        return this;
+    }
+    _step = function _step(frame) {
+        this.played = this.duration * frame.styles.t;
+        if (!this.getMap()) {
+            this.player.finish();
+            this.setCoordinates(coordinates);
+            if (this.aniCallback) {
+                this.aniCallback(frame, coordinates[coordinates.length - 1], length - 1);
+            }
+            return;
+        }
+        var length = this.totalLength;
+        var coordinates = this.totalCoordinates;
+        var animCoords = this._drawAnimFrame(frame.styles.t, this.duration, length, coordinates);
+        var currentCoordinate = (!!animCoords) ? animCoords[animCoords.length - 1] : coordinates[0];
+        if (this.aniCallback) {
+            this.aniCallback(frame, currentCoordinate, this._animIdx);
+        }
+    }
+
+    setSpeed(t) {
+        this.unitTime = this.unitTime * t;
+        this._resetPlayer();
+    }
+
+    _resetPlayer() {
+        var playing = this.player && this.player.playState === 'running';
+        if (playing) {
+            this.player.finish();
+        }
+        this._createPlayer();
+        if (playing) {
+            this.player.play();
+        }
+    }
+
+    _createPlayer() {
+        var duration = (this.duration - this.played) / this.unitTime;
+        this.player = maptalks.animation.Animation.animate({ 't': [this.played / this.duration, 1] },
+            { 'speed': duration, 'easing': 'linear' },
+           function (frame) {
+               this._step(frame);
+           }.bind(this));
+    }
+
+    cancel() {
+        if (this.player) {
+            this.player.cancel();
+            this.played = 0;
+            if (this._animIdx>0)
+                this._animIdx = 0;
+            if (this._animLenSoFar > 0)
+                this._animLenSoFar = 0;
+            this._createPlayer();
+            this._step({ 'styles': { 't': 0 } });
+            this.fire('playcancel');
+            return this;
+        }
+    }
+
+    play() {
+        this.player.play();
+        this.fire('playstart');
+        return this;
+    }
+
+    pause() {
+        this.player.pause();
+        this.fire('playpause');
+        return this;
+    }
+
+    finish() {
+        this.player.finish();
+        this._step({ 'styles': { 't': 1 } });
+        this.fire('playfinish');
         return this;
     }
 
@@ -122,7 +195,7 @@ class LineString extends Path {
             return;
         }
         var map = this.getMap();
-        var targetLength = t / duration * length;
+        var targetLength = t * length;
         if (!this._animIdx) {
             this._animIdx = 0;
             this._animLenSoFar = 0;
@@ -140,8 +213,11 @@ class LineString extends Path {
         this._animIdx = i;
         if (this._animIdx >= l - 1) {
             this.setCoordinates(coordinates);
-            return;
+            this.unitTime = 1;
+            this.fire('playfinish');
+            return coordinates;
         }
+        this.fire('playing');
         var idx = this._animIdx;
         var p1 = coordinates[idx],
             p2 = coordinates[idx + 1],
@@ -154,6 +230,8 @@ class LineString extends Path {
         animCoords.push(targetCoord);
 
         this.setCoordinates(animCoords);
+
+        return animCoords;
     }
 
     _computeGeodesicLength(measurer) {
