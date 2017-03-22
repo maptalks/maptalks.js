@@ -101,7 +101,7 @@ class LineString extends Path {
         this.setCoordinates([]);
         this.played = 0;
         var player = Animation.animate({
-            't': [0,1]
+            't': [0, 1]
         }, {
             'duration': this.duration,
             'easing': easing
@@ -113,6 +113,8 @@ class LineString extends Path {
     }
     _step(frame) {
         this.played = this.duration * frame.styles.t;
+        var length = this.totalLength;
+        var coordinates = this.totalCoordinates;
         if (!this.getMap()) {
             this.player.finish();
             this.setCoordinates(coordinates);
@@ -121,10 +123,8 @@ class LineString extends Path {
             }
             return;
         }
-        var length = this.totalLength;
-        var coordinates = this.totalCoordinates;
         var animCoords = this._drawAnimFrame(frame.styles.t, this.duration, length, coordinates);
-        var currentCoordinate = (!!animCoords) ? animCoords[animCoords.length - 1] : coordinates[0];
+        var currentCoordinate = (animCoords) ? animCoords[animCoords.length - 1] : coordinates[0];
         if (this.aniCallback) {
             this.aniCallback(frame, currentCoordinate, this._animIdx);
         }
@@ -159,15 +159,16 @@ class LineString extends Path {
         if (this.player) {
             this.player.cancel();
             this.played = 0;
-            if (this._animIdx>0)
+            if (this._animIdx > 0)
                 this._animIdx = 0;
             if (this._animLenSoFar > 0)
                 this._animLenSoFar = 0;
             this._createPlayer();
-            this._step({ 'styles': { 't': 0 } });
+            this._step({ 'styles': { 't': 0 }});
             this.fire('playcancel');
             return this;
         }
+        return null;
     }
 
     play() {
@@ -184,7 +185,7 @@ class LineString extends Path {
 
     finish() {
         this.player.finish();
-        this._step({ 'styles': { 't': 1 } });
+        this._step({ 'styles': { 't': 1 }});
         this.fire('playfinish');
         return this;
     }
@@ -192,7 +193,7 @@ class LineString extends Path {
     _drawAnimFrame(t, duration, length, coordinates) {
         if (t === 0) {
             this.setCoordinates([]);
-            return;
+            return null;
         }
         var map = this.getMap();
         var targetLength = t * length;
