@@ -111,7 +111,7 @@ class LineString extends Path {
         this.player = player;
         return this;
     }
-    _step = function _step(frame) {
+    _step(frame) {
         this.played = this.duration * frame.styles.t;
         if (!this.getMap()) {
             this.player.finish();
