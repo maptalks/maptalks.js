@@ -172,9 +172,14 @@ class LineString extends Path {
     }
 
     play() {
-        this.player.play();
-        this.fire('playstart');
-        return this;
+        if (!this.player) {
+            this.player.play();
+            this.fire('playstart');
+            return this;
+        } else {
+            console.log('You should call animateShow method to play it!');
+            return this;
+        }
     }
 
     pause() {
