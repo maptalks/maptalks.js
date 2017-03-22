@@ -115,7 +115,7 @@ class LineString extends Path {
         player.play();
         return this;
     }
-
+    //
     _drawAnimFrame(t, duration, length, coordinates) {
         if (t === 0) {
             this.setCoordinates([]);
