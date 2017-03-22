@@ -188,7 +188,7 @@ class LineString extends Path {
         this.fire('playfinish');
         return this;
     }
-    //
+
     _drawAnimFrame(t, duration, length, coordinates) {
         if (t === 0) {
             this.setCoordinates([]);
