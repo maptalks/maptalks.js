@@ -841,7 +841,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         if (baseLayer instanceof TileLayer) {
             baseLayer.config({
-                'renderWhenPanning': true
+                'renderOnMoving': true
             });
             if (!baseLayer.options['tileSystem']) {
                 baseLayer.config('tileSystem', TileSystem.getDefault(this.getProjection()));
