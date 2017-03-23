@@ -33,7 +33,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         this._tileQueue = {};
     }
 
-    draw(param) {
+    draw() {
         if (this.getMap().getPitch()) {
             if (console) {
                 console.warn('TileLayer with canvas renderer can\'t be pitched, use dom renderer (\'renderer\' : \'dom\') instead.');
@@ -64,7 +64,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
         // this.resizeCanvas(tileGrid['fullExtent'].getSize());
         var mask2DExtent = this.prepareCanvas();
-        if (mask2DExtent && !mask2DExtent.intersects(param.extent)) {
+        if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
             this.completeRender();
             return;
         }

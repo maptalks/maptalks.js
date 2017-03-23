@@ -5,6 +5,14 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 
 export default class CanvasLayerRenderer extends CanvasRenderer {
 
+    getPrepareParams() {
+        return [];
+    }
+
+    getDrawParams() {
+        return [];
+    }
+
     onCanvasCreate() {
         if (this.canvas && this.layer.options['doubleBuffer']) {
             this.buffer = Canvas.createCanvas(this.canvas.width, this.canvas.height, this.getMap().CanvasClass);
@@ -14,7 +22,8 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     draw() {
         this.prepareCanvas();
         if (!this._predrawed) {
-            this._drawContext = this.layer.prepareToDraw(this.context);
+            const params = ensureParams(this.getPrepareParams());
+            this._drawContext = this.layer.prepareToDraw.apply(this.layer, [this.context].concat(params));
             if (!this._drawContext) {
                 this._drawContext = [];
             }
@@ -124,6 +133,8 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
             return;
         }
         const args = [this.context, view];
+        const params = ensureParams(this.getDrawParams());
+        args.push.apply(args, params);
         args.push.apply(args, this._drawContext);
         this.layer.draw.apply(this.layer, args);
         this.completeRender();
@@ -164,4 +175,14 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
             }, 1000 / fps);
         }
     }
+}
+
+function ensureParams(params) {
+    if (!params) {
+        params = [];
+    }
+    if (!Array.isArray(params)) {
+        params = [params];
+    }
+    return params;
 }
