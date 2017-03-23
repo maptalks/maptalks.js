@@ -20,6 +20,9 @@ function convertExtent(extent, fn) {
     if (!extent) {
         return null;
     }
+    if (!extent.isValid()) {
+        return null;
+    }
     const e = new PointExtent();
     extent.toArray().forEach(c => {
         e._combine(fn(c));
@@ -291,7 +294,11 @@ export default class Painter extends Class {
         if (!this._extent2D || this._extent2D._zoom !== this.getMap().getZoom()) {
             this.get2DExtent();
         }
-        return convertExtent(this._extent2D, c => this.getMap()._pointToContainerPoint(c)).add(this._markerExtent);
+        const extent = convertExtent(this._extent2D, c => this.getMap()._pointToContainerPoint(c));
+        if (extent) {
+            extent._add(this._markerExtent);
+        }
+        return extent;
     }
 
     setZIndex(change) {
