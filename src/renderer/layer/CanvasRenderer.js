@@ -316,9 +316,9 @@ class CanvasRenderer extends Class {
         } else {
             this.clearCanvas();
         }
+        delete this._maskExtent;
         var mask = this.layer.getMask();
         if (!mask) {
-            this._maskExtent = null;
             this.layer.fire('renderstart', {
                 'context': this.context
             });
@@ -552,12 +552,12 @@ class CanvasRenderer extends Class {
         }
         if (this.layer.options['drawImmediate']) {
             this._painted = true;
-            this.draw(this.getViewExtent());
+            this.draw();
         } else {
             this._currentFrameId = requestAnimFrame(() => {
                 if (this.getMap()) {
                     this._painted = true;
-                    this.draw(this.getViewExtent());
+                    this.draw();
                 }
             });
         }
