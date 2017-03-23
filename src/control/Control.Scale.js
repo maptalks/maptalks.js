@@ -20,7 +20,7 @@ const options = {
 
 /**
  * @classdesc
- * Based on the implementation in Leaflet, a simple scale control that shows the scale of the current center of screen in metric (m/km) and imperial (mi/ft) systems.
+ * Based on scale control of Leaflet, a simple scale control that shows the scale of the current center of screen in metric (m/km) and imperial (mi/ft) systems.
  * @category control
  * @extends control.Control
  * @memberOf control

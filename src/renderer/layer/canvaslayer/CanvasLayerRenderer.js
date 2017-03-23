@@ -73,6 +73,20 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         return super.remove();
     }
 
+    isRenderOnZooming() {
+        if (this.layer.options['renderOnZooming']) {
+            return true;
+        }
+        return super.isRenderOnZooming();
+    }
+
+    isRenderOnMoving() {
+        if (this.layer.options['renderOnMoving']) {
+            return true;
+        }
+        return super.isRenderOnMoving();
+    }
+
     onZoomStart(param) {
         this.pause();
         this.layer.onZoomStart(param);

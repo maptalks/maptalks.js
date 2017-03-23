@@ -427,13 +427,23 @@ class CanvasRenderer extends Class {
     }
 
     /**
-     * Should update the layer when zooming? <br>
+     * Should render the layer when zooming? default is false.<br>
      * If enabled, renderer's drawOnZooming will be called when map is zooming. <br>
      * Can be disabled to improve performance if not necessary.
      * @return {Boolean}
      */
-    isUpdateWhenZooming() {
+    isRenderOnZooming() {
         return false;
+    }
+
+    /**
+     * Should render the layer when moving? default is false.<br>
+     * If enabled, draw will be called when map is moving. <br>
+     * Can be disabled to improve performance if not necessary.
+     * @return {Boolean}
+     */
+    isRenderOnMoving() {
+        return !!this.getMap().getPitch();
     }
 
     /**
@@ -448,9 +458,13 @@ class CanvasRenderer extends Class {
         const pitch = map.getPitch();
         this._suppressMapRender = true;
         this.prepareRender();
-        if (this.drawOnZooming && this.isUpdateWhenZooming()) {
+        if (this.isRenderOnZooming()) {
             this.prepareCanvas();
-            this.drawOnZooming(param);
+            if (this.drawOnZooming) {
+                this.drawOnZooming(param);
+            } else {
+                this._drawOnEvent(param);
+            }
         } else if (!pitch) {
             this._transform = param['matrix']['container'];
         } else if (pitch) {
@@ -490,7 +504,7 @@ class CanvasRenderer extends Class {
     * @param  {Object} param event parameters
     */
     onMoving() {
-        if (this.getMap().getPitch()) {
+        if (this.isRenderOnMoving()) {
             this._drawOnEvent();
         }
     }
