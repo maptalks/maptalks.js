@@ -1,3 +1,5 @@
+// Contains code from glmatrix.js
+
 const ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
 
 export function transformMat4(out, a, m) {

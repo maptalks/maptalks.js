@@ -48,21 +48,21 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return;
         }
 
-        const maskExtent2D = this.prepareCanvas();
+        this.prepareCanvas();
 
-        this._drawGeos(maskExtent2D);
+        this._drawGeos();
 
         this.completeRender();
     }
 
     drawOnZooming() {
-        for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
+        for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             this._geosToDraw[i]._paint();
         }
     }
 
     isBlank() {
-        return this._isBlank;
+        return !this._geosToDraw || this._geosToDraw.length === 0;
     }
 
     /**
@@ -82,14 +82,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return ((this._hasPointSymbolizer || map.getPitch()) && count > 0 && count <= map.options['pointThresholdOfZoomAnimation']);
     }
 
-    _drawGeos(maskExtent2D) {
+    _drawGeos() {
         var extent2D = this._extent2D;
-        if (maskExtent2D) {
-            if (!maskExtent2D.intersects(extent2D)) {
+        if (this._maskExtent) {
+            if (!this._maskExtent.intersects(extent2D)) {
                 this.fireLoadedEvent();
                 return;
             }
-            extent2D = extent2D.intersection(maskExtent2D);
+            extent2D = extent2D.intersection(this._maskExtent);
         }
         this._prepareToDraw();
         this._displayExtent = extent2D;
@@ -100,7 +100,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _prepareToDraw() {
-        this._isBlank = true;
         this._hasPointSymbolizer = false;
         this._geosToDraw = [];
     }

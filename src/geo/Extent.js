@@ -428,6 +428,22 @@ class Extent {
     copy() {
         return new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
     }
+
+    /**
+     * Convert to a new extent
+     * @param  {Function} fn convert function on each point
+     * @return {Extent}
+     */
+    convertTo(fn) {
+        if (!this.isValid()) {
+            return null;
+        }
+        const e = new this.constructor();
+        this.toArray().forEach(c => {
+            e._combine(fn(c));
+        });
+        return e;
+    }
 }
 
 export default Extent;

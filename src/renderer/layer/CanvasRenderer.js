@@ -35,7 +35,7 @@ class CanvasRenderer extends Class {
      * Render the layer
      * @param  {Boolean} isCheckRes whether to check and load external resources in the layer
      */
-    render(isCheckRes) {
+    render() {
         this.prepareRender();
         if (!this.getMap()) {
             return;
@@ -49,30 +49,28 @@ class CanvasRenderer extends Class {
             this.resources = new ResourceCache();
             /* eslint-enable no-use-before-define */
         }
-        if (this.checkResources && isCheckRes) {
-            var me = this,
-                args = arguments;
-            var resources = this.checkResources.apply(this, args);
-            if (isArrayHasData(resources)) {
-                this.loadResources(resources).then(function () {
-                    if (me.layer) {
+        if (this.checkResources) {
+            const resources = this.checkResources();
+            if (resources.length > 0) {
+                this.loadResources(resources).then(() => {
+                    if (this.layer) {
                         /**
                          * resourceload event, fired when external resources of the layer complete loading.
                          *
                          * @event Layer#resourceload
                          * @type {Object}
-                         * @property {String} type              - resourceload
+                         * @property {String} type     - resourceload
                          * @property {Layer} target    - layer
                          */
-                        me.layer.fire('resourceload');
-                        me._tryToDraw.apply(me, args);
+                        this.layer.fire('resourceload');
+                        this._tryToDraw();
                     }
                 });
             } else {
-                this._tryToDraw.apply(this, args);
+                this._tryToDraw(this);
             }
         } else {
-            this._tryToDraw.apply(this, arguments);
+            this._tryToDraw(this);
         }
     }
 
@@ -152,7 +150,7 @@ class CanvasRenderer extends Class {
      * Show the layer
      */
     show() {
-        this.render(true);
+        this.render();
     }
 
     /**
@@ -320,12 +318,13 @@ class CanvasRenderer extends Class {
         }
         var mask = this.layer.getMask();
         if (!mask) {
+            this._maskExtent = null;
             this.layer.fire('renderstart', {
                 'context': this.context
             });
             return null;
         }
-        var maskExtent2D = mask._getPainter().get2DExtent();
+        var maskExtent2D = this._maskExtent = mask._getPainter().get2DExtent();
         if (!maskExtent2D.intersects(this._extent2D)) {
             this.layer.fire('renderstart', {
                 'context': this.context
@@ -351,12 +350,17 @@ class CanvasRenderer extends Class {
         return maskExtent2D;
     }
 
-    /**
-     * Get renderer's extent of 2d points in current zoom
-     * @return {PointExtent} 2d extent
+     /**
+     * Get renderer's current view extent in 2d point
+     * @return {Object} view.extent, view.maskExtent, view.zoom, view.northWest
      */
-    get2DExtent() {
-        return this._extent2D;
+    getViewExtent() {
+        return {
+            'extent' : this._extent2D,
+            'maskExtent' : this._maskExtent,
+            'zoom' : this._renderZoom,
+            'northWest' : this._northWest
+        };
     }
 
     /**
@@ -422,7 +426,9 @@ class CanvasRenderer extends Class {
             '_resize'  : this.onResize,
             '_movestart' : this.onMoveStart,
             '_moving' : this.onMoving,
-            '_moveend' : this.onMoveEnd
+            '_moveend' : this.onMoveEnd,
+            '_pitch' : this.onPitch,
+            '_rotate' : this.onRotate
         };
     }
 
@@ -527,21 +533,31 @@ class CanvasRenderer extends Class {
         this._drawOnEvent();
     }
 
+    onPitch() {
+
+    }
+
+    onRotate() {
+
+    }
+
     _tryToDraw() {
         this._clearTimeout();
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
             this.completeRender();
             return;
         }
-        const args = arguments;
+        if (!this._painted && this.onAdd) {
+            this.onAdd();
+        }
         if (this.layer.options['drawImmediate']) {
             this._painted = true;
-            this.draw.apply(this, args);
+            this.draw(this.getViewExtent());
         } else {
             this._currentFrameId = requestAnimFrame(() => {
                 if (this.getMap()) {
                     this._painted = true;
-                    this.draw.apply(this, args);
+                    this.draw(this.getViewExtent());
                 }
             });
         }
@@ -610,7 +626,7 @@ class CanvasRenderer extends Class {
 
     _drawOnEvent() {
         if (!this._painted) {
-            this.render(true);
+            this.render();
         } else {
             //prepareRender is called in render not in draw.
             //Thus prepareRender needs to be called here
@@ -623,7 +639,6 @@ class CanvasRenderer extends Class {
 
     _clearTimeout() {
         if (this._currentFrameId) {
-            //clearTimeout(this._currentFrameId);
             cancelAnimFrame(this._currentFrameId);
         }
     }

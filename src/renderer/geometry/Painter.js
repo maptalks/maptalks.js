@@ -16,20 +16,6 @@ const registerSymbolizers = [
 ];
 
 
-function convertExtent(extent, fn) {
-    if (!extent) {
-        return null;
-    }
-    if (!extent.isValid()) {
-        return null;
-    }
-    const e = new PointExtent();
-    extent.toArray().forEach(c => {
-        e._combine(fn(c));
-    });
-    return e;
-}
-
 /**
  * @classdesc
  * Painter class for all geometry types except the collection types.
@@ -294,7 +280,7 @@ export default class Painter extends Class {
         if (!this._extent2D || this._extent2D._zoom !== this.getMap().getZoom()) {
             this.get2DExtent();
         }
-        const extent = convertExtent(this._extent2D, c => this.getMap()._pointToContainerPoint(c));
+        const extent = this._extent2D.convertTo(c => this.getMap()._pointToContainerPoint(c));
         if (extent) {
             extent._add(this._markerExtent);
         }

@@ -118,7 +118,12 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         if (!this.getMap()) {
             return;
         }
-        const args = [this.context];
+        const view = this.getViewExtent();
+        if (view['maskExtent'] && !view['extent'].intersects(view['maskExtent'])) {
+            this.completeRender();
+            return;
+        }
+        const args = [this.context, view];
         args.push.apply(args, this._drawContext);
         this.layer.draw.apply(this.layer, args);
         this.completeRender();
