@@ -31,7 +31,10 @@ describe('#CanvasLayer', function () {
             return [size.width, size.height];
         };
 
-        layer.draw = function (context, w, h) {
+        layer.draw = function (context, view, w, h) {
+            expect(view.extent.isValid()).to.be.ok();
+            expect(view.northWest).to.be.ok();
+            expect(view.zoom).to.be.eql(map.getZoom());
             expect(w).to.be.eql(size.width);
             expect(h).to.be.eql(size.height);
             context.fillStyle = '#f00';

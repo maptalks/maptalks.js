@@ -34,6 +34,9 @@ export default class MapCanvasRenderer extends MapRenderer {
      * Renders the layers
      */
     render() {
+        if (!this.map) {
+            return;
+        }
         /**
          * renderstart event, an event fired when map starts to render.
          * @event Map#renderstart
@@ -368,12 +371,12 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _checkSize() {
         cancelAnimFrame(this._resizeFrame);
-        if (this.map.isZooming() || this.map.isMoving() || this.map._panAnimating) {
+        if (!this.map || this.map.isZooming() || this.map.isMoving() || this.map._panAnimating) {
             return;
         }
         this._resizeFrame = requestAnimFrame(
             () => {
-                if (this.map.isMoving() || this.map.isZooming()) {
+                if (!this.map || this.map.isMoving() || this.map.isZooming()) {
                     return;
                 }
                 this.map.checkSize();

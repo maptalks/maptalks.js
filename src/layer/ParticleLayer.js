@@ -39,13 +39,17 @@ class ParticleLayer extends CanvasLayer {
     getParticles() {
     }
 
-    draw(context) {
-        var map = this.getMap(),
-            extent = map.getContainerExtent();
+    draw(context, view) {
         var points = this.getParticles(now());
         if (!points) {
             return;
         }
+        var map = this.getMap(),
+            extent = view.extent;
+        if (view.maskExtent) {
+            extent = view.extent.intersection(view.maskExtent);
+        }
+        extent = extent.converTo(c => map._pointToContainerPoint(c));
         var pos;
         for (var i = 0, l = points.length; i < l; i++) {
             pos = points[i].point;

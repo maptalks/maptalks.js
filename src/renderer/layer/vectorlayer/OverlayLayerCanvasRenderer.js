@@ -20,8 +20,9 @@ class OverlayLayerRenderer extends CanvasRenderer {
     // 1. if geometries' symbols with external resources change frequently,
     // resources of old symbols will still be stored.
     // 2. removed geometries' resources won't be removed.
-    checkResources(geometries) {
-        if (!this._resourceChecked && !Array.isArray(geometries)) {
+    checkResources() {
+        var geometries = this._geosToCheck;
+        if (!this._resourceChecked && !geometries) {
             geometries = this.layer._geoList;
         }
         if (!isArrayHasData(geometries)) {
@@ -50,11 +51,29 @@ class OverlayLayerRenderer extends CanvasRenderer {
             checkGeo(geometries[i]);
         }
         this._resourceChecked = true;
+        delete this._geosToCheck;
         return resources;
     }
 
+    _addGeoToCheckRes(res) {
+        if (!res) {
+            return;
+        }
+        if (!this._geosToCheck) {
+            this._geosToCheck = [];
+        }
+        this._geosToCheck.push.apply(this._geosToCheck, res);
+    }
+
     onGeometryAdd(geometries) {
-        this.render(geometries);
+        if (geometries) {
+            if (!Array.isArray(geometries)) {
+                geometries = [geometries];
+            }
+            this._addGeoToCheckRes(geometries);
+        }
+
+        this.render();
     }
 
     onGeometryRemove() {
@@ -62,7 +81,8 @@ class OverlayLayerRenderer extends CanvasRenderer {
     }
 
     onGeometrySymbolChange(e) {
-        this.render([e.target]);
+        this._addGeoToCheckRes([e.target]);
+        this.render();
     }
 
     onGeometryShapeChange() {
