@@ -11,7 +11,7 @@ import Control from './Control';
  * @property {Object} [options.position='bottom-right'] - position of the control
  * @property {Number} [options.level=4]  - the zoom level of the overview
  * @property {Object} [options.size={"width":300, "height":200}  - size of the Control
- * @property {Object} [options.style={"color":"#1bbc9b"}] - style of the control, color is the overview rectangle's color
+ * @property {Object} [options.symbol={}] - symbol of the overview rectangle
  * @memberOf control.Overview
  * @instance
  */
