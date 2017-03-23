@@ -578,7 +578,6 @@ describe('#Map', function () {
         it('identify', function (done) {
             var layer = new maptalks.VectorLayer('id');
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
-            //var point = map.coordinateToContainerPoint(center);
             layer.addGeometry(geometries, true);
             map.addLayer(layer);
 
@@ -594,7 +593,6 @@ describe('#Map', function () {
         it('identify on invisible layers', function (done) {
             var layer = new maptalks.VectorLayer('id');
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
-            //var point = map.coordinateToContainerPoint(center);
             layer.addGeometry(geometries, true);
             layer.hide();
             map.addLayer(layer);
@@ -608,6 +606,20 @@ describe('#Map', function () {
             });
         });
 
+        it('identify on empty line', function (done) {
+            var layer = new maptalks.VectorLayer('id');
+            var line = new maptalks.LineString([]);
+            layer.addGeometry(line);
+            map.addLayer(layer);
+
+            map.identify({
+                coordinate: center,
+                layers: [layer]
+            }, function (geos) {
+                expect(geos.length).to.be.eql(0);
+                done();
+            });
+        });
     });
 
     it('toDataURL', function () {
