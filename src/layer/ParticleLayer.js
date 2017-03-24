@@ -49,7 +49,7 @@ class ParticleLayer extends CanvasLayer {
         if (view.maskExtent) {
             extent = view.extent.intersection(view.maskExtent);
         }
-        extent = extent.converTo(c => map._pointToContainerPoint(c));
+        extent = extent.convertTo(c => map._pointToContainerPoint(c));
         var pos;
         for (var i = 0, l = points.length; i < l; i++) {
             pos = points[i].point;
