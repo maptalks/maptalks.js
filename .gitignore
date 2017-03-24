@@ -1,5 +1,4 @@
 .tmp/
-dist/
 .idea/
 *.iml
 .tern-port
