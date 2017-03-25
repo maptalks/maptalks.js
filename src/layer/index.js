@@ -6,6 +6,8 @@ import VectorLayer from './VectorLayer';
 import GeoJSONLayer from './GeoJSONLayer';
 import CanvasLayer from './CanvasLayer';
 import ParticleLayer from './ParticleLayer';
+import TileSystem from './tile/tileinfo/TileSystem';
+import TileConfig from './tile/tileinfo/TileConfig';
 
 export {
     Layer,
@@ -15,5 +17,7 @@ export {
     VectorLayer,
     GeoJSONLayer,
     CanvasLayer,
-    ParticleLayer
+    ParticleLayer,
+    TileSystem,
+    TileConfig
 };
