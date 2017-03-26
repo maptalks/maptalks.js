@@ -1813,6 +1813,20 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Convert point at current zoom to point at target zoom
+     * @param  {Point} point point
+     * @param  {Number} zoom target zoom
+     * @return {Point} point at current zoom
+     * @private
+     */
+    _pointToPointAtZoom(point, zoom) {
+        if (!isNil(zoom)) {
+            return point.multi(this._getResolution() / this._getResolution(zoom));
+        }
+        return point.copy();
+    }
+
+    /**
      * transform container point to geographical projected coordinate
      *
      * @param  {Point} containerPoint
