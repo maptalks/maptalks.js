@@ -150,6 +150,15 @@ describe('#Map.Camera', function () {
             c2 = map.containerPointToCoordinate(cp);
             expect(c2).to.be.closeTo(center);
         });
+
+        it('containerPoint and point', function () {
+            map.setPitch(30);
+            var point = map._containerPointToPoint({ x: 0, y: 0 });
+            var pointMax = map._containerPointToPoint({ x: 0, y: 0 }, map.getMaxZoom());
+            var scale = map.getScale();
+            expect(pointMax.x).to.be.eql(point.x * scale);
+            expect(pointMax.y).to.be.eql(point.y * scale);
+        });
     });
 
     describe('polygon\' size when pitching or rotating', function () {
