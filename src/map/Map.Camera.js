@@ -73,6 +73,10 @@ Map.include(/** @lends Map.prototype */{
         return this;
     },
 
+    getAltitude() {
+        return this._altitude || 1.5;
+    },
+
     getCameraMatrix() {
         return this._cameraMatrix || null;
     },
@@ -128,7 +132,7 @@ Map.include(/** @lends Map.prototype */{
             const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
             const cp = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t));
-            return (zoom === undefined ? cp : this._pointToPoint(cp, zoom));
+            return (zoom === undefined ? cp : this._pointToPointAtZoom(cp, zoom));
         }
         const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
@@ -196,6 +200,13 @@ Map.include(/** @lends Map.prototype */{
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
         this._cameraMatrix = mat4.multiply(m, m, m2);
+
+        var m3 = mat4.create();
+        mat4.scale(m3, m3, [1, -1, 1]);
+        mat4.rotateX(m3, m3, this._pitch);
+        mat4.rotateZ(m3, m3, this._angle);
+        mat4.scale(m3, m3, [1, -1, 1]);
+        this._threeMatrix = m3;
     },
 
     _clearMatrices() {
