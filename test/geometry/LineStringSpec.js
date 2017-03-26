@@ -228,14 +228,13 @@ describe('#LineString', function () {
                     'duration' : 100,
                     'easing' : 'out'
                 });
-                // polyline.show();
+                //polyline.show();
                 setTimeout(function () {
                     expect(layer).to.be.painted(0, 0);
                     done();
                 }, 80);
             });
             layer.addGeometry(polyline).addTo(map);
-
         });
     });
 
