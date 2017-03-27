@@ -4,6 +4,9 @@ import * as mat4 from 'core/util/mat4';
 import { clamp, interpolate, wrap } from 'core/util';
 import Browser from 'core/Browser';
 
+const RADIAN = Math.PI / 180;
+const DEFAULT_FOV = 0.6435011087932844;
+
 /*!
  * based on snippets from mapbox-gl-js
  * https://github.com/mapbox/mapbox-gl-js
@@ -13,18 +16,45 @@ import Browser from 'core/Browser';
 
 Map.include(/** @lends Map.prototype */{
 
+    getFov() {
+        if (!this._fov) {
+            this._fov = DEFAULT_FOV;
+        }
+        return this._fov / RADIAN;
+    },
+
+    setFov(fov) {
+        fov = Math.max(0.01, Math.min(60, fov));
+        if (this._fov === fov) return this;
+        var from = this.getFov();
+        this._fov = fov / RADIAN;
+        this._calcMatrices();
+        this._renderLayers();
+        /*
+          * fovchange event
+          * @event Map#fovchange
+          * @type {Object}
+          * @property {String} type                    - fovchange
+          * @property {Map} target                     - the map fires event
+          * @property {Number} from                    - fovchange from
+          * @property {Number} to                      - fovchange to
+        */
+        this._fireEvent('fovchange', { 'from' : from, 'to': this.getFov() });
+        return this;
+    },
+
     getBearing() {
         if (!this._angle) {
             return 0;
         }
-        return -this._angle / Math.PI * 180;
+        return -this._angle / RADIAN;
     },
 
     setBearing(bearing) {
         if (Browser.ie9) {
             throw new Error('map can\'t rotate in IE9.');
         }
-        var b = -wrap(bearing, -180, 180) * Math.PI / 180;
+        var b = -wrap(bearing, -180, 180) * RADIAN;
         if (this._angle === b) return this;
         const from = this.getBearing();
         this._angle = b;
@@ -54,7 +84,7 @@ Map.include(/** @lends Map.prototype */{
         if (Browser.ie9) {
             throw new Error('map can\'t tilt in IE9.');
         }
-        const p = clamp(pitch, 0, 60) / 180 * Math.PI;
+        const p = clamp(pitch, 0, 60) * RADIAN;
         if (this._pitch === p) return this;
         const from = this.getPitch();
         this._pitch = p;
@@ -73,12 +103,8 @@ Map.include(/** @lends Map.prototype */{
         return this;
     },
 
-    getAltitude() {
-        return this._altitude || 1.5;
-    },
-
     getCameraMatrix() {
-        return this._cameraMatrix || null;
+        return this.cameraMatrix || null;
     },
 
     /**
@@ -90,9 +116,9 @@ Map.include(/** @lends Map.prototype */{
      */
     _pointToContainerPoint(point, zoom) {
         point = this._pointToPoint(point, zoom);
-        if (this._pixelMatrix) {
+        if (this.pixelMatrix) {
             var t = [point.x, point.y, 0, 1];
-            mat4.transformMat4(t, t, this._pixelMatrix);
+            mat4.transformMat4(t, t, this.pixelMatrix);
             return new Point(t[0] / t[3], t[1] / t[3]);
         } else {
             const centerPoint = this._prjToPoint(this._getPrjCenter());
@@ -108,17 +134,17 @@ Map.include(/** @lends Map.prototype */{
      * @private
      */
     _containerPointToPoint(p, zoom) {
-        if (this._pixelMatrixInverse) {
+        if (this.pixelMatrixInverse) {
             const targetZ = 0;
             // since we don't know the correct projected z value for the point,
             // unproject two points to get a line and then find the point on that
             // line with z=0
 
-            var coord0 = [p.x, p.y, 0, 1];
-            var coord1 = [p.x, p.y, 1, 1];
+            const coord0 = [p.x, p.y, 0, 1];
+            const coord1 = [p.x, p.y, 1, 1];
 
-            mat4.transformMat4(coord0, coord0, this._pixelMatrixInverse);
-            mat4.transformMat4(coord1, coord1, this._pixelMatrixInverse);
+            mat4.transformMat4(coord0, coord0, this.pixelMatrixInverse);
+            mat4.transformMat4(coord1, coord1, this.pixelMatrixInverse);
 
             const w0 = coord0[3];
             const w1 = coord1[3];
@@ -143,6 +169,9 @@ Map.include(/** @lends Map.prototype */{
 
     _calcMatrices() {
         if (!this.height) return;
+        if (!this._fov) {
+            this._fov = DEFAULT_FOV;
+        }
         if (!this._pitch) {
             this._pitch = 0;
         }
@@ -158,62 +187,65 @@ Map.include(/** @lends Map.prototype */{
         const centerPoint = this._prjToPoint(this._prjCenter);
         const x = centerPoint.x, y = centerPoint.y;
 
-        const altitude = this._altitude = 1.5;
-         // Find the distance from the center point to the center top in altitude units using law of sines.
-        const halfFov = Math.atan(0.5 / altitude);
-        const topHalfSurfaceDistance = Math.sin(halfFov) * altitude / Math.sin(Math.PI / 2 - this._pitch - halfFov);
+        this.cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
 
-        // Calculate z value of the farthest fragment that should be rendered.
-        const farZ = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + altitude;
+        // Find the distance from the center point [width/2, height/2] to the
+        // center top point [width/2, 0] in Z units, using the law of sines.
+        // 1 Z unit is equivalent to 1 horizontal px at the center of the map
+        // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
+        const halfFov = this._fov / 2;
+        const groundAngle = Math.PI / 2 + this._pitch;
+        const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
+
+        // Calculate z distance of the farthest fragment that should be rendered.
+        const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
+        // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
+        const farZ = furthestDistance * 1.01;
 
         // matrix for conversion from location to GL coordinates (-1 .. 1)
         var m = new Float64Array(16);
-        mat4.perspective(m, 2 * Math.atan((this.height / 2) / altitude), this.width / this.height, 0.1, farZ);
-        mat4.translate(m, m, [0, 0, -altitude]);
+        mat4.perspective(m, this._fov, this.width / this.height, 1, farZ);
 
-        // After the rotateX, z values are in pixel units. Convert them to
-        // altitude units. 1 altitude unit = the screen height.
-        mat4.scale(m, m, [1, -1, 1 / this.height]);
-
+        mat4.scale(m, m, [1, -1, 1]);
+        mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
         mat4.rotateX(m, m, this._pitch);
         mat4.rotateZ(m, m, this._angle);
 
+        //matrix for TileLayerDomRenderer
         var m2 = mat4.copy(new Float64Array(16), m);
 
         mat4.translate(m, m, [-x, -y, 0]);
 
-        this._projMatrix = m;
+        // scale vertically to meters per pixel (inverse of ground resolution):
+        // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
+        // but for maptalks.js, scaling on Z axis is unnecessary
+        // const verticalScale = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
+        // mat4.scale(m, m, [1, 1, verticalScale, 1]);
+
+        this.projMatrix = m;
 
         // matrix for conversion from location to screen coordinates
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
         mat4.translate(m, m, [1, -1, 0]);
-        this._pixelMatrix = mat4.multiply(new Float64Array(16), m, this._projMatrix);
+        this.pixelMatrix = mat4.multiply(new Float64Array(16), m, this.projMatrix);
 
         // inverse matrix for conversion from screen coordinaes to location
-        m = mat4.invert(new Float64Array(16), this._pixelMatrix);
+        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error('failed to invert matrix');
-        this._pixelMatrixInverse = m;
+        this.pixelMatrixInverse = m;
 
-
-        // matrix for layer's css3 matrix3d transform
+        // matrix for TileLayerDomRenderer's css3 matrix3d transform
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
-        this._cameraMatrix = mat4.multiply(m, m, m2);
-
-        var m3 = mat4.create();
-        mat4.scale(m3, m3, [1, -1, 1]);
-        mat4.rotateX(m3, m3, this._pitch);
-        mat4.rotateZ(m3, m3, this._angle);
-        mat4.scale(m3, m3, [1, -1, 1]);
-        this._threeMatrix = m3;
+        this.cameraMatrix = mat4.multiply(m, m, m2);
     },
 
     _clearMatrices() {
-        delete this._projMatrix;
-        delete this._pixelMatrix;
-        delete this._pixelMatrixInverse;
-        delete this._cameraMatrix;
+        delete this.projMatrix;
+        delete this.pixelMatrix;
+        delete this.pixelMatrixInverse;
+        delete this.cameraMatrix;
     },
 
     _renderLayers() {
