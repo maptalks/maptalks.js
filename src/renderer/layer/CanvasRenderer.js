@@ -275,7 +275,7 @@ class CanvasRenderer extends Class {
                 url;
             for (var i = resourceUrls.length - 1; i >= 0; i--) {
                 url = resourceUrls[i];
-                if (!url || cache[url.join('-')]) {
+                if (!url || !url.length || cache[url.join('-')]) {
                     continue;
                 }
                 cache[url.join('-')] = 1;
