@@ -177,14 +177,6 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
-    updateSymbol(symbol) {
-        this.forEach(function (geometry) {
-            geometry.updateSymbol(symbol);
-        });
-        this.onSymbolChanged();
-        return this;
-    }
-
     onConfig(config) {
         this.forEach(function (geometry) {
             geometry.config(config);

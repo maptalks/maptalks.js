@@ -195,6 +195,33 @@ describe('#GeometryCollection', function () {
                 });
             });
         });
+
+        it('updateSymbol', function () {
+            var points = genPoints();
+            var c = new maptalks.GeometryCollection(points);
+            c.setSymbol({
+                'markerType' : 'ellipse',
+                'markerWidth' : 20,
+                'markerHeight' : 20
+            });
+
+            c.updateSymbol({
+                'opacity' : 1
+            });
+
+            var expected = {
+                'markerType' : 'ellipse',
+                'markerWidth' : 20,
+                'markerHeight' : 20,
+                'opacity' : 1
+            };
+
+            expect(c.getSymbol()).to.be.eql(expected);
+
+            c.forEach(function (f) {
+                expect(f.getSymbol()).to.be.eql(expected);
+            });
+        });
     });
 
     describe('collection add to layer', function () {
