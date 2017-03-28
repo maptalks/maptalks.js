@@ -113,7 +113,7 @@ class LineString extends Path {
             }
         });
         player.play();
-        return this;
+        return player;
     }
 
     _drawAnimFrame(t, duration, length, coordinates) {
