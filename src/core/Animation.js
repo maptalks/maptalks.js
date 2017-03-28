@@ -463,7 +463,9 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         this.playState = frame.state['playState'];
         const onFrame = this._onFrame;
         if (this.playState === 'idle') {
-            setTimeout(this._run.bind(this), this.startTime - t);
+            if (this.startTime > t) {
+                setTimeout(this._run.bind(this), this.startTime - t);
+            }
         } else if (this.playState === 'running') {
             this._animeFrameId = Animation._requestAnimFrame(() => {
                 if (this.playState !== 'running') {
