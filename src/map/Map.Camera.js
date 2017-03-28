@@ -27,7 +27,7 @@ Map.include(/** @lends Map.prototype */{
         fov = Math.max(0.01, Math.min(60, fov));
         if (this._fov === fov) return this;
         var from = this.getFov();
-        this._fov = fov / RADIAN;
+        this._fov = fov * RADIAN;
         this._calcMatrices();
         this._renderLayers();
         /*

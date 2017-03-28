@@ -31,6 +31,20 @@ describe('#Map.Camera', function () {
         REMOVE_CONTAINER(container);
     });
 
+    it('getter and setter', function () {
+        map.setBearing(60);
+        map.setPitch(40);
+        expect(map.getBearing()).to.be.approx(60);
+        expect(map.getPitch()).to.be.eql(40);
+
+        expect(map.getFov()).to.be.above(0);
+        map.setFov(60);
+        expect(map.getFov()).to.be.approx(60);
+        // max fov is 60
+        map.setFov(90);
+        expect(map.getFov()).to.be.approx(60);
+    });
+
     describe('TileLayer\'s dom rendering', function () {
         it('render after composite operations', function () {
             map.setBearing(60);
@@ -41,7 +55,7 @@ describe('#Map.Camera', function () {
             map.setPitch(0);
             const tiles = map.getBaseLayer()._getRenderer()._tiles;
             const pos = tiles['53162__108844__17'].pos;
-            expect(pos.toArray()).to.be.eql([9373, -11414]);
+            expect(pos.toArray()).to.be.eql([52, -412]);
         });
     });
 
@@ -58,6 +72,13 @@ describe('#Map.Camera', function () {
                 done();
             });
             map.setBearing(10);
+        });
+
+        it('should fire fovchange event', function (done) {
+            map.on('fovchange', function () {
+                done();
+            });
+            map.setFov(90);
         });
     });
 
