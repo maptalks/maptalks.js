@@ -233,13 +233,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return this;
     }
 
-    isLoaded() {
-        if (!this._renderer) {
-            return false;
-        }
-        return this._renderer.isLoaded();
-    }
-
     /**
      * Whether the layer is visible now.
      * @return {Boolean}
