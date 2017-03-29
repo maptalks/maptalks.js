@@ -130,17 +130,6 @@ class CanvasRenderer extends Class {
         };
     }
 
-    /**
-     * Check if the renderer is loaded
-     * @return {Boolean}
-     */
-    isLoaded() {
-        if (this._loaded) {
-            return true;
-        }
-        return false;
-    }
-
     clear() {
         this.clearCanvas();
         this.requestMapToRender();
@@ -235,7 +224,6 @@ class CanvasRenderer extends Class {
         this._renderZoom = map.getZoom();
         this._extent2D = map._get2DExtent();
         this._northWest = map._containerPointToPoint(new Point(0, 0));
-        this._loaded = false;
     }
 
     /**
@@ -391,7 +379,6 @@ class CanvasRenderer extends Class {
      * Ask the layer to fire the layerload event
      */
     fireLoadedEvent() {
-        this._loaded = true;
         if (this.layer && !this._suppressMapRender) {
             /**
              * layerload event, fired when layer is loaded.
