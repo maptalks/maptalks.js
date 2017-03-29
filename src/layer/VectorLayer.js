@@ -18,7 +18,6 @@ import OverlayLayer from './OverlayLayer';
 const options = {
     'debug': false,
     'enableSimplify': true,
-    'cursor': 'pointer',
     'geometryEvents': true,
     'defaultIconSize': [20, 20],
     'cacheVectorOnCanvas': true,
