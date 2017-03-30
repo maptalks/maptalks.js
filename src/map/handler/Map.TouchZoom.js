@@ -87,7 +87,7 @@ class MapTouchZoomHandler extends Handler {
         if (zoom !== map.getZoom()) {
             map._zoomAnimation(zoom, this._Origin, this._scale);
         } else {
-            map.onZoomEnd(zoom);
+            map.onZoomEnd(zoom, this._Origin);
         }
         /**
          * touchzoomend event
