@@ -3,6 +3,7 @@ import Browser from 'core/Browser';
 import { Animation } from 'core/Animation';
 import Point from 'geo/Point';
 import Map from './Map';
+import TileLayer from 'layer/tile/TileLayer';
 
 Map.include(/** @lends Map.prototype */{
 
@@ -28,7 +29,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _checkZoomOrigin(origin) {
-        if (!origin || this.options['zoomInCenter'] || this.getPitch()) {
+        if (!origin || this.options['zoomInCenter'] || (this.getPitch() && (this.getBaseLayer() instanceof TileLayer))) {
             origin = new Point(this.width / 2, this.height / 2);
         }
         return origin;
@@ -67,7 +68,7 @@ Map.include(/** @lends Map.prototype */{
         this._zooming = true;
         this._enablePanAnimation = false;
         this._startZoomVal = this.getZoom();
-        this._startZoomOrig = this._containerPointToPrj(origin);
+        this._startZoomCoord = this.containerPointToCoordinate(origin);
         /**
           * zoomstart event
           * @event Map#zoomstart
@@ -135,10 +136,7 @@ Map.include(/** @lends Map.prototype */{
     _zoomTo(nextZoom, origin) {
         this._zoomLevel = nextZoom;
         this._calcMatrices();
-        const zoomOffset = this._getZoomCenterOffset(origin);
-        if (zoomOffset && (zoomOffset.x !== 0 || zoomOffset.y !== 0)) {
-            this._offsetCenterByPixel(zoomOffset._multi(-1));
-        }
+        this.setCoordinateAtContainerPoint(this._startZoomCoord, origin);
     },
 
     _checkZoom(nextZoom) {
@@ -151,15 +149,5 @@ Map.include(/** @lends Map.prototype */{
             nextZoom = maxZoom;
         }
         return nextZoom;
-    },
-
-    _getZoomCenterOffset(origin) {
-        if (!origin) {
-            return null;
-        }
-        // get pixel offset of map's center
-        // to keep coordinate at origin(container point) unchanged
-        const po = this._prjToContainerPoint(this._startZoomOrig);
-        return po._sub(origin);
     }
 });
