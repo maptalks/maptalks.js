@@ -235,7 +235,7 @@ class CanvasRenderer extends Class {
         }
         var map = this.getMap();
         var size = map.getSize();
-        var r = Browser.retina ? Browser.pixelRatio : 1;
+        var r = Browser.retina ? 2 : 1;
         this.canvas = Canvas2D.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
@@ -265,7 +265,7 @@ class CanvasRenderer extends Class {
         } else {
             size = canvasSize;
         }
-        var r = Browser.retina ? Browser.pixelRatio : 1;
+        var r = Browser.retina ? 2 : 1;
         //only make canvas bigger, never smaller
         if (this.canvas.width >= r * size['width'] && this.canvas.height >= r * size['height']) {
             return;

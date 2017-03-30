@@ -7,13 +7,13 @@ import TileLayer from 'layer/tile/TileLayer';
 
 Map.include(/** @lends Map.prototype */{
 
-    _zoom(nextZoom, origin, startScale) {
+    _zoom(nextZoom, origin) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
         origin = this._checkZoomOrigin(origin);
         nextZoom = this._checkZoom(nextZoom);
         this.onZoomStart(nextZoom, origin);
         this._frameZoom = this.getZoom();
-        this.onZoomEnd(nextZoom, origin, startScale);
+        this.onZoomEnd(nextZoom, origin);
     },
 
     _zoomAnimation(nextZoom, origin, startScale) {
@@ -39,8 +39,8 @@ Map.include(/** @lends Map.prototype */{
         if (isNil(startScale)) {
             startScale = 1;
         }
-        var endScale = this._getResolution(this._startZoomVal) / this._getResolution(nextZoom);
-        var duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
+        const endScale = this._getResolution(this._startZoomVal) / this._getResolution(nextZoom);
+        const duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
         this._frameZoom = this._startZoomVal;
         const player = Animation.animate(
             {
@@ -136,7 +136,9 @@ Map.include(/** @lends Map.prototype */{
     _zoomTo(nextZoom, origin) {
         this._zoomLevel = nextZoom;
         this._calcMatrices();
-        this.setCoordinateAtContainerPoint(this._startZoomCoord, origin);
+        if (origin) {
+            this.setCoordinateAtContainerPoint(this._startZoomCoord, origin);
+        }
     },
 
     _checkZoom(nextZoom) {

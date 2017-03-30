@@ -426,6 +426,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     setCoordinateAtContainerPoint(coordinate, point) {
+        if (point.x === this.width / 2 && point.y === this.height / 2) {
+            return this;
+        }
         const t = this._containerPointToPoint(point)._sub(this._prjToPoint(this._getPrjCenter()));
         const pcenter = this._pointToPrj(this.coordinateToPoint(coordinate).sub(t));
         this._setPrjCenter(pcenter);
