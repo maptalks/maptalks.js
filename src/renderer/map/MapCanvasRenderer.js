@@ -189,20 +189,24 @@ export default class MapCanvasRenderer extends MapRenderer {
         const control = createContainer('control', 'maptalks-control', null, true);
         const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
         const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;', true);
+        const frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0, true);
         const front = createContainer('front', 'maptalks-front', POSITION0 + 'will-change:transform;', true);
         const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0);
         // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
         const ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:10000;', true);
+        const backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0, true);
         const back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;');
         const backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0);
         const canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
 
         containerDOM.appendChild(mapWrapper);
 
+        mapAllLayers.appendChild(backStatic);
         back.appendChild(backLayer);
         mapAllLayers.appendChild(back);
         mapAllLayers.appendChild(canvasContainer);
         front.appendChild(frontLayer);
+        mapAllLayers.appendChild(frontStatic);
         mapAllLayers.appendChild(front);
         front.appendChild(ui);
 
@@ -442,7 +446,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                         let layer = layers[i];
                         if (layer._getRenderer() && layer._getRenderer().hitDetect) {
                             if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(point)) {
-                                cursor = layer.options['cursor'];
+                                cursor = layer.options['cursor'] || 'pointer';
                                 hit = true;
                                 break;
                             }
