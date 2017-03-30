@@ -425,6 +425,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    setCoordinateAtContainerPoint(coordinate, point) {
+        const t = this._containerPointToPoint(point)._sub(this._prjToPoint(this._getPrjCenter()));
+        const pcenter = this._pointToPrj(this.coordinateToPoint(coordinate).sub(t));
+        this._setPrjCenter(pcenter);
+        return this;
+    }
+
     /**
      * Get map's size (width and height) in pixel.
      * @return {Size}
@@ -1176,7 +1183,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Point}
      */
     containerPointToViewPoint(containerPoint) {
-        return containerPoint.substract(this.offsetPlatform());
+        return containerPoint.sub(this.offsetPlatform());
     }
 
     /**
