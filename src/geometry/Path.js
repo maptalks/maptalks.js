@@ -115,7 +115,7 @@ class Path extends Geometry {
 
     _anti(c, dx) {
         if (dx > 0) {
-            return c.substract(180 * 2, 0);
+            return c.sub(180 * 2, 0);
         } else {
             return c.add(180 * 2, 0);
         }

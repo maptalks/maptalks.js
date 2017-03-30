@@ -135,8 +135,8 @@ LineString.include({
             height = lineWidth * arrowStyle[1] + tolerance,
             hw = width / 2 + tolerance;
 
-        const normal = point.substract(prePoint)._unit();
-        const p1 = point.substract(normal.multi(height));
+        const normal = point.sub(prePoint)._unit();
+        const p1 = point.sub(normal.multi(height));
         normal._perp();
         const p0 = p1.add(normal.multi(hw));
         normal._multi(-1);

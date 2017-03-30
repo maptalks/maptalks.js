@@ -452,7 +452,7 @@ class UIMarkerDragHandler extends Handler {
         if (!this._lastPos) {
             this._lastPos = currentPos;
         }
-        var dragOffset = currentPos.substract(this._lastPos);
+        var dragOffset = currentPos.sub(this._lastPos);
         this._lastPos = currentPos;
         this.target.setCoordinates(this.target.getCoordinates().add(dragOffset));
         eventParam['dragOffset'] = dragOffset;

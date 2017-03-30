@@ -19,7 +19,7 @@ Map.include(/** @lends Map.prototype */ {
         coordinate = new Coordinate(coordinate);
         var dest = this.coordinateToContainerPoint(coordinate),
             current = this.coordinateToContainerPoint(this.getCenter());
-        return this._panBy(dest.substract(current), options, function () {
+        return this._panBy(dest.sub(current), options, function () {
             var c = map.getProjection().project(coordinate);
             map._setPrjCenterAndMove(c);
         });

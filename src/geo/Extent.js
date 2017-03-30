@@ -125,7 +125,7 @@ class Extent {
         return e._add(p);
     }
 
-    _substract(p) {
+    _sub(p) {
         if (!isNil(p.x)) {
             this['xmin'] -= p.x;
             this['ymin'] -= p.y;
@@ -145,28 +145,29 @@ class Extent {
         return this;
     }
 
+    _substract(p) {
+        return this._sub(p);
+    }
+
     /**
      * Substract the extent with a coordinate or a point.
      * @param {Coordinate|Point} p - point or coordinate to substract
      * @returns {Extent} a new extent
      */
-    substract(p) {
+    sub(p) {
         const e = new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
         return e._sub(p);
     }
 
     /**
-     * Alias for substract
+     * Alias for sub
      * @param {Coordinate|Point} p - point or coordinate to substract
      * @returns {Extent} a new extent
      */
-    sub(p) {
-        return this.substract(p);
+    substract(p) {
+        return this.sub(p);
     }
 
-    _sub(p) {
-        return this._substract(p);
-    }
 
     /**
      * Round the extent
