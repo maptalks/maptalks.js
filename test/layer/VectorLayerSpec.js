@@ -27,7 +27,6 @@ describe('#VectorLayer', function () {
         it('create', function () {
             var layer = new maptalks.VectorLayer('v');
             expect(layer.getCount()).to.be.eql(0);
-            expect(layer.options['cursor']).to.be.eql('pointer');
         });
 
         it('create with geometries', function () {
