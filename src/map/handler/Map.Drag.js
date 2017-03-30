@@ -84,7 +84,7 @@ class MapDragHandler extends Handler {
         var nextLeft = (this.startLeft + mx - this.startX);
         var nextTop = (this.startTop + my - this.startY);
         var mapPos = map.offsetPlatform();
-        var offset = new Point(nextLeft, nextTop)._substract(mapPos);
+        var offset = new Point(nextLeft, nextTop)._sub(mapPos);
         map.offsetPlatform(offset);
         map._offsetCenterByPixel(offset);
         map.onMoving(param);

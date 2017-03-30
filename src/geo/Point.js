@@ -125,7 +125,7 @@ class Point {
         return new Point(nx, ny);
     }
 
-    _substract(x, y) {
+    _sub(x, y) {
         if (x instanceof Point) {
             this.x -= x.x;
             this.y -= x.y;
@@ -136,8 +136,8 @@ class Point {
         return this;
     }
 
-    _sub(x, y) {
-        return this._substract(x, y);
+    _substract(x, y) {
+        return this._sub(x, y);
     }
 
     /**
@@ -145,7 +145,7 @@ class Point {
      * @param {Point} point - point to substract
      * @return {Point} result
      */
-    substract(x, y) {
+    sub(x, y) {
         var nx, ny;
         if (x instanceof Point) {
             nx = this.x - x.x;
@@ -158,12 +158,12 @@ class Point {
     }
 
     /**
-     * alias for substract
+     * alias for sub
      * @param {Point} point - point to substract
      * @return {Point} result
      */
-    sub(x, y) {
-        return this.substract(x, y);
+    substract(x, y) {
+        return this.sub(x, y);
     }
 
     //destructive multi

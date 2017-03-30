@@ -83,7 +83,7 @@ class DragHandler extends Handler {
         var actual = event.touches ? event.touches[0] : event;
 
         var newPos = new Point(actual.clientX, actual.clientY),
-            offset = newPos.substract(this.startPos);
+            offset = newPos.sub(this.startPos);
         if (!offset.x && !offset.y) {
             return;
         }

@@ -136,14 +136,14 @@ export default class Painter extends Class {
         //convert view points to container points needed by canvas
         if (Array.isArray(points)) {
             containerPoints = mapArrayRecursively(points, point => {
-                const p = map._pointToContainerPoint(point, maxZoom)._substract(layerPoint);
+                const p = map._pointToContainerPoint(point, maxZoom)._sub(layerPoint);
                 if (dx || dy) {
                     p._add(dx, dy);
                 }
                 return p;
             });
         } else if (points instanceof Point) {
-            containerPoints = map._pointToContainerPoint(points, maxZoom)._substract(layerPoint);
+            containerPoints = map._pointToContainerPoint(points, maxZoom)._sub(layerPoint);
             if (dx || dy) {
                 containerPoints._add(dx, dy);
             }

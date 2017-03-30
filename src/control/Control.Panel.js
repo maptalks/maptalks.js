@@ -155,7 +155,7 @@ class Panel extends Control {
 
     _onDragging(param) {
         const pos = param['mousePos'];
-        const offset = pos.substract(this._startPos);
+        const offset = pos.sub(this._startPos);
 
         const startPosition = this._startPosition;
         const position = this.getPosition();

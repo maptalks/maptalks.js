@@ -50,7 +50,7 @@ export default class MapRenderer extends Class {
                     if (!preDist) {
                         preDist = dist;
                     }
-                    var offset = dist.substract(preDist);
+                    var offset = dist.sub(preDist);
                     map.offsetPlatform(offset);
                     map._offsetCenterByPixel(offset);
                     preDist = dist;

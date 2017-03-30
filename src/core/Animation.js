@@ -200,7 +200,7 @@ const Animation = {
                     //a Coordinate or a Point to be eql with each other
                     return null;
                 }
-                return [v1, v2.substract(v1), v2];
+                return [v1, v2.sub(v1), v2];
             } else {
                 return [v1, 0, v2];
             }

@@ -123,7 +123,7 @@ class Coordinate {
     }
 
     //destructive substract
-    _substract(x, y) {
+    _sub(x, y) {
         if (x instanceof Coordinate) {
             this.x -= x.x;
             this.y -= x.y;
@@ -134,8 +134,8 @@ class Coordinate {
         return this;
     }
 
-    _sub(x, y) {
-        return this._substract(x, y);
+    _substract(x, y) {
+        return this._sub(x, y);
     }
 
     /**
@@ -143,7 +143,7 @@ class Coordinate {
      * @param {Coordinate} coordinate - coordinate to substract
      * @return {Coordinate} result
      */
-    substract(x, y) {
+    sub(x, y) {
         var nx, ny;
         if (x instanceof Coordinate) {
             nx = this.x - x.x;
@@ -156,12 +156,12 @@ class Coordinate {
     }
 
     /**
-     * Alias for substract
+     * Alias for sub
      * @param {Coordinate} coordinate - coordinate to substract
      * @return {Coordinate} result
      */
-    sub(x, y) {
-        return this.substract(x, y);
+    substract(x, y) {
+        return this.sub(x, y);
     }
 
     /**

@@ -65,7 +65,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             if (translate) {
                 var toTranslate = translate;
                 if (preTranslate) {
-                    toTranslate = translate.substract(preTranslate);
+                    toTranslate = translate.sub(preTranslate);
                 }
                 preTranslate = translate;
                 this.translate(toTranslate);

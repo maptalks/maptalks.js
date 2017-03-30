@@ -178,7 +178,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             Math.floor(point.x - this._northWest.x), Math.floor(point.y - this._northWest.y),
             tileSize['width'], tileSize['height']);
         if (this.layer.options['debug']) {
-            var p = point.substract(this._northWest);
+            var p = point.sub(this._northWest);
             ctx.save();
             const color = '#0f0';
             ctx.strokeStyle = color;

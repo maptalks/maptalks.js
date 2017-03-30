@@ -187,7 +187,7 @@ class GeometryDragHandler extends Handler  {
         if (!this._lastPos) {
             this._lastPos = currentPos;
         }
-        var dragOffset = currentPos.substract(this._lastPos);
+        var dragOffset = currentPos.sub(this._lastPos);
         if (axis === 'x') {
             dragOffset.y = 0;
         } else if (axis === 'y') {

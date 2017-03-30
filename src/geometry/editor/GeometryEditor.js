@@ -519,7 +519,7 @@ class GeometryEditor extends Eventable(Class) {
         resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
             if (blackList && blackList.indexOf(i) >= 0) {
                 //need to change marker's coordinates
-                var newCoordinates = map.viewPointToCoordinate(handleViewPoint.substract(dxdy));
+                var newCoordinates = map.viewPointToCoordinate(handleViewPoint.sub(dxdy));
                 var coordinates = marker.getCoordinates();
                 newCoordinates.x = coordinates.x;
                 marker.setCoordinates(newCoordinates);
@@ -533,7 +533,7 @@ class GeometryEditor extends Eventable(Class) {
             //caculate width and height
             var viewCenter = map._pointToViewPoint(marker._getCenter2DPoint()).add(dxdy),
                 symbol = marker._getInternalSymbol();
-            var wh = handleViewPoint.substract(viewCenter);
+            var wh = handleViewPoint.sub(viewCenter);
             if (blackList && handleViewPoint.y > viewCenter.y) {
                 wh.y = 0;
             }
@@ -582,7 +582,7 @@ class GeometryEditor extends Eventable(Class) {
         var map = this.getMap();
         this._createResizeHandles(null, handleViewPoint => {
             var viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
-            var wh = handleViewPoint.substract(viewCenter);
+            var wh = handleViewPoint.sub(viewCenter);
             var w = Math.abs(wh.x),
                 h = Math.abs(wh.y);
             var r;
@@ -625,7 +625,7 @@ class GeometryEditor extends Eventable(Class) {
             if (isRect) {
                 const mirror = resizeHandles[7 - i];
                 const mirrorViewPoint = map.coordinateToViewPoint(mirror.getCoordinates());
-                pointSub = targetPoint.substract(mirrorViewPoint);
+                pointSub = targetPoint.sub(mirrorViewPoint);
                 const absSub = pointSub.abs();
                 w = map.pixelToDistance(absSub.x, 0);
                 h = map.pixelToDistance(0, absSub.y);
@@ -673,7 +673,7 @@ class GeometryEditor extends Eventable(Class) {
 
             } else {
                 var viewCenter = map.coordinateToViewPoint(geometryToEdit.getCenter());
-                pointSub = viewCenter.substract(targetPoint)._abs();
+                pointSub = viewCenter.sub(targetPoint)._abs();
                 w = map.pixelToDistance(pointSub.x, 0);
                 h = map.pixelToDistance(0, pointSub.y);
                 if (aspectRatio) {
