@@ -122,6 +122,53 @@ describe('Geometry.Events', function () {
         expect(spy.called).to.be.ok();
     });
 
+    it('prevent click longer than 300ms', function (done) {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        circle.on('click', spy);
+
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
+        setTimeout(function () {
+            happen.click(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+            expect(spy.called).not.to.be.ok();
+            done();
+        }, 301);
+    });
+
+    it('fire an additional click event after touch', function () {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        circle.on('click', spy);
+
+        happen.once(eventContainer, {
+            'type' : 'touchstart',
+            'touches' : [{
+                'clientX':point.x,
+                'clientY':point.y
+            }]
+        });
+        happen.once(eventContainer, {
+            'type' : 'touchend',
+            'touches' : [{
+                'clientX':point.x,
+                'clientY':point.y
+            }]
+        });
+        expect(spy.called).to.be.ok();
+    });
+
     it('listen click once', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);

@@ -9,7 +9,7 @@ import Map from './Map';
 
 Map.include(/** @lends Map.prototype */ {
     _registerDomEvents: function (remove) {
-        var events =
+        const events =
             /**
              * mousedown event
              * @event Map#mousedown
@@ -155,7 +155,7 @@ Map.include(/** @lends Map.prototype */ {
              */
             'touchend ';
         //phantomjs will crash when registering events on canvasContainer
-        var dom = this._panels.mapWrapper || this._containerDOM;
+        const dom = this._panels.mapWrapper || this._containerDOM;
         if (remove) {
             removeDomEvent(dom, events, this._handleDOMEvent, this);
         } else {
@@ -179,16 +179,26 @@ Map.include(/** @lends Map.prototype */ {
         if (this._ignoreEvent(e)) {
             return;
         }
+        var oneMoreEvent = null;
         // ignore click lasted for more than 300ms.
-        if (type === 'mousedown') {
+        if (type === 'mousedown' || (type === 'touchstart' && e.touches.length === 1)) {
             this._mouseDownTime = now();
-        } else if (type === 'click' && this._mouseDownTime) {
+        } else if ((type === 'click' || type === 'touchend') && this._mouseDownTime) {
+            const downTime = this._mouseDownTime;
+            delete this._mouseDownTime;
             var time = now();
-            if (time - this._mouseDownTime > 300) {
-                return;
+            if (time - downTime > 300) {
+                if (type === 'click') {
+                    return;
+                }
+            } else if (type === 'touchend') {
+                oneMoreEvent = 'click';
             }
         }
         this._fireDOMEvent(this, e, type);
+        if (oneMoreEvent) {
+            this._fireDOMEvent(this, e, oneMoreEvent);
+        }
     },
 
     _ignoreEvent: function (domEvent) {
@@ -233,6 +243,9 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _fireDOMEvent: function (target, e, type) {
+        if (this.isRemoved()) {
+            return;
+        }
         var eventParam = this._parseEvent(e, type);
         this._fireEvent(type, eventParam);
     }

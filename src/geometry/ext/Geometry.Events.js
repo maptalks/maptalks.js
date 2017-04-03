@@ -7,16 +7,16 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param  {Event} event - dom event
      * @private
      */
-    _onEvent: function (event) {
+    _onEvent: function (event, type) {
         if (!this.getMap()) {
             return;
         }
-        var eventType = this._getEventTypeToFire(event);
+        const eventType = type || this._getEventTypeToFire(event);
         if (eventType === 'contextmenu' && this.listens('contextmenu')) {
             stopPropagation(event);
             preventDefault(event);
         }
-        var params = this._getEventParams(event);
+        const params = this._getEventParams(event);
         this._fireEvent(eventType, params);
     },
 
