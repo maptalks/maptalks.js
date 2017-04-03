@@ -2,7 +2,6 @@ import { now, isArrayHasData, requestAnimFrame, cancelAnimFrame } from 'core/uti
 import { on, off, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
 import Handler from 'handler/Handler';
 import Geometry from 'geometry/Geometry';
-import VectorLayer from 'layer/VectorLayer';
 import Map from '../Map';
 
 const EVENTS = 'mousedown mouseup mousemove click dblclick contextmenu touchstart touchmove touchend';
@@ -25,36 +24,35 @@ class MapGeometryEventsHandler extends Handler {
         }
     }
 
-    _identifyGeometryEvents(domEvent) {
-        var map = this.target;
-        var vectorLayers = map._getLayers(layer => {
-            if (layer instanceof VectorLayer) {
+    _identifyGeometryEvents(domEvent, type) {
+        const map = this.target;
+        const layers = map._getLayers(layer => {
+            if (layer.identify && layer.options['geometryEvents']) {
                 return true;
             }
             return false;
         });
-        if (map.isZooming() || map.isMoving() || !vectorLayers || !vectorLayers.length) {
+        if (map.isZooming() || map.isMoving() || !layers || !layers.length) {
             return;
         }
-        var eventType = domEvent.type;
+        var oneMoreEvent = null;
+        var eventType = type || domEvent.type;
         // ignore click lasted for more than 300ms.
-        if (eventType === 'mousedown') {
+        if (eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches.length === 1)) {
             this._mouseDownTime = now();
-        } else if (eventType === 'click' && this._mouseDownTime) {
+        } else if ((eventType === 'click' || eventType === 'touchend') && this._mouseDownTime) {
+            const downTime = this._mouseDownTime;
+            delete this._mouseDownTime;
             var time = now();
-            if (time - this._mouseDownTime > 300) {
-                return;
+            if (time - downTime > 300) {
+                if (eventType === 'click') {
+                    return;
+                }
+            } else if (eventType === 'touchend') {
+                oneMoreEvent = 'click';
             }
         }
-        var layers = [];
-        for (var i = 0; i < vectorLayers.length; i++) {
-            if (vectorLayers[i].options['geometryEvents']) {
-                layers.push(vectorLayers[i]);
-            }
-        }
-        if (!layers.length) {
-            return;
-        }
+
 
         var actual = domEvent.touches && domEvent.touches.length > 0 ?
             domEvent.touches[0] : domEvent.changedTouches && domEvent.changedTouches.length > 0 ?
@@ -80,7 +78,7 @@ class MapGeometryEventsHandler extends Handler {
                     if (!geometry.listens('mousemove') && !geometry.listens('mouseover')) {
                         return false;
                     }
-                } else if (!geometry.listens(eventToFire)) {
+                } else if (!geometry.listens(eventToFire) && !geometry.listens(oneMoreEvent)) {
                     return false;
                 }
 
@@ -154,6 +152,9 @@ class MapGeometryEventsHandler extends Handler {
                         continue;
                     }
                     propagation = geometries[i]._onEvent(domEvent);
+                    if (oneMoreEvent) {
+                        geometries[i]._onEvent(domEvent, oneMoreEvent);
+                    }
                     break;
                 }
             }
