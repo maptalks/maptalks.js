@@ -148,7 +148,9 @@ class InfoWindow extends UIComponent {
             if (this.options['title']) {
                 content += '<h2>' + this.options['title'] + '</h2>';
             }
-            content += '<a href="javascript:void(0);" onclick="this.parentNode.style.display=\'none\';return false;" ' +
+            const onClose = '"this.parentNode.style.display=\'none\';return false;"';
+            content += '<a href="javascript:void(0);" onclick=' + onClose +
+                ' ontouchend=' + onClose +
                 ' class="maptalks-close"></a><div class="maptalks-msgContent">' + this.options['content'] + '</div>';
             dom.innerHTML = content;
             return dom;
