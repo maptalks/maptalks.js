@@ -37,23 +37,25 @@ class TileConfig {
         this.tileSystem = tileSystem;
 
         //自动计算transformation
-        var a = fullExtent['right'] > fullExtent['left'] ? 1 : -1,
+        const a = fullExtent['right'] > fullExtent['left'] ? 1 : -1,
             b = fullExtent['top'] > fullExtent['bottom'] ? -1 : 1,
             c = tileSystem['origin']['x'],
             d = tileSystem['origin']['y'];
         this.transformation = new Transformation([a, b, c, d]);
-        //计算transform后的以像素为单位的原点
-        tileSystem['transOrigin'] = this.transformation.transform(tileSystem['origin'], 1);
     }
 
+    /**
+     * Get index of point's tile
+     * @param  {Point} point - transformed point, this.transformation.transform(pCoord)
+     * @param  {Number} res  - current resolution
+     * @return {Object}       tile index
+     */
     getTileIndex(point, res) {
-        var tileSystem = this.tileSystem,
+        const tileSystem = this.tileSystem,
             tileSize = this['tileSize'],
-            transOrigin = tileSystem['transOrigin'],
             delta = 1E-7;
-
-        var tileX = Math.floor(delta + (point.x - transOrigin.x) / (tileSize['width'] * res));
-        var tileY = -Math.floor(delta + (point.y - transOrigin.y) / (tileSize['height'] * res));
+        const tileX = Math.floor(delta + point.x / (tileSize['width'] * res));
+        const tileY = -Math.floor(delta + point.y / (tileSize['height'] * res));
 
         return {
             'x': tileSystem['scale']['x'] * tileX,
@@ -62,22 +64,22 @@ class TileConfig {
     }
 
     /**
-     * 根据中心点投影坐标, 计算中心点对应的瓦片和瓦片内偏移量
-     * @param  {*} pLonlat   [description]
-     * @param  {*} res [description]
-     * @return {*}           [description]
+     * Get tile index and offset from tile's northwest
+     * @param  {Coordinate} pCoord   - projected coordinate
+     * @param  {Number} res - current resolution
+     * @return {Object}   tile index and offset
      */
-    getCenterTile(pLonlat, res) {
-        var tileSystem = this.tileSystem,
+    getCenterTile(pCoord, res) {
+        const tileSystem = this.tileSystem,
             tileSize = this['tileSize'];
-        var point = this.transformation.transform(pLonlat, 1);
+        const point = this.transformation.transform(pCoord, 1);
         var tileIndex = this.getTileIndex(point, res);
 
-        var tileLeft = tileIndex['x'] * tileSize['width'];
-        var tileTop = tileIndex['y'] * tileSize['height'];
+        const tileLeft = tileIndex['x'] * tileSize['width'];
+        const tileTop = tileIndex['y'] * tileSize['height'];
 
-        var offsetLeft = point.x / res - tileSystem['scale']['x'] * tileLeft;
-        var offsetTop = point.y / res + tileSystem['scale']['y'] * tileTop;
+        const offsetLeft = point.x / res - tileSystem['scale']['x'] * tileLeft;
+        const offsetTop = point.y / res + tileSystem['scale']['y'] * tileTop;
 
         //如果x方向为左大右小
         if (tileSystem['scale']['x'] < 0) {
@@ -99,23 +101,23 @@ class TileConfig {
     }
 
     /**
-     * 根据给定的瓦片编号,和坐标编号偏移量,计算指定的瓦片编号
-     * @param  {*} tileY   [description]
-     * @param  {*} tileX   [description]
-     * @param  {*} offsetY [description]
-     * @param  {*} offsetX [description]
-     * @param  {*} zoomLevel [description]
-     * @return {*}         [description]
+     * Get neibor's tile index
+     * @param  {Number} tileY
+     * @param  {Number} tileX
+     * @param  {Number} offsetY
+     * @param  {Number} offsetX
+     * @param  {Number} zoomLevel
+     * @return {Object}  tile's neighbor index
      */
     getNeighorTileIndex(tileY, tileX, offsetY, offsetX, res, isRepeatWorld) {
-        var tileSystem = this.tileSystem;
+        const tileSystem = this.tileSystem;
         var x = (tileX + tileSystem['scale']['x'] * offsetX);
         var y = (tileY - tileSystem['scale']['y'] * offsetY);
-        var idx = x;
-        var idy = y;
-        //连续世界瓦片计算
+        const idx = x;
+        const idy = y;
         if (isRepeatWorld) {
-            var ext = this._getTileFullIndex(res);
+            //caculate tile index to request in url in repeated world.
+            const ext = this._getTileFullIndex(res);
             if (x < ext['xmin']) {
                 x = ext['xmax'] - (ext['xmin'] - x) % (ext['xmax'] - ext['xmin']);
                 if (x === ext['xmax']) {
@@ -135,33 +137,35 @@ class TileConfig {
             }
         }
         return {
+            // tile index to request in url
             'x': x,
             'y': y,
+            // real tile index
             'idx' : idx,
             'idy' : idy
         };
     }
 
     _getTileFullIndex(res) {
-        var ext = this.fullExtent;
-        var transformation = this.transformation;
-        var nwIndex = this.getTileIndex(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
-        var seIndex = this.getTileIndex(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
+        const ext = this.fullExtent;
+        const transformation = this.transformation;
+        const nwIndex = this.getTileIndex(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
+        const seIndex = this.getTileIndex(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
         return new Extent(nwIndex, seIndex);
     }
 
     /**
-     * 计算瓦片左下角的大地投影坐标
-     * @param  {*} tileY     [description]
-     * @param  {*} tileX     [description]
-     * @param  {*} res       [description]
-     * @return {*}           [description]
+     * Get tile's south west's projected coordinate
+     * @param  {Number} tileY
+     * @param  {Number} tileX
+     * @param  {Number} res
+     * @return {Object}
      */
     getTileProjectedSw(tileY, tileX, res) {
-        var tileSystem = this.tileSystem;
-        var tileSize = this['tileSize'];
-        var y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * (res * tileSize['height']);
-        var x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * res * tileSize['width'] + tileSystem['origin']['x'];
+        const tileSystem = this.tileSystem;
+        const tileSize = this['tileSize'];
+        const y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * (res * tileSize['height']);
+        const x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * res * tileSize['width'] + tileSystem['origin']['x'];
         return [x, y];
     }
 
