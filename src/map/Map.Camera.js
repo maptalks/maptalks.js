@@ -24,6 +24,9 @@ Map.include(/** @lends Map.prototype */{
     },
 
     setFov(fov) {
+        if (this.isZooming()) {
+            return this;
+        }
         fov = Math.max(0.01, Math.min(60, fov));
         if (this._fov === fov) return this;
         var from = this.getFov();
@@ -54,6 +57,9 @@ Map.include(/** @lends Map.prototype */{
         if (Browser.ie9) {
             throw new Error('map can\'t rotate in IE9.');
         }
+        if (this.isZooming()) {
+            return this;
+        }
         var b = -wrap(bearing, -180, 180) * RADIAN;
         if (this._angle === b) return this;
         const from = this.getBearing();
@@ -83,6 +89,9 @@ Map.include(/** @lends Map.prototype */{
     setPitch(pitch) {
         if (Browser.ie9) {
             throw new Error('map can\'t tilt in IE9.');
+        }
+        if (this.isZooming()) {
+            return this;
         }
         const p = clamp(pitch, 0, 60) * RADIAN;
         if (this._pitch === p) return this;
