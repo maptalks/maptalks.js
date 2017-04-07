@@ -331,6 +331,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return true;
     }
 
+    /**
+     * Whether the layer is loaded
+     * @return {Boolean}
+     */
+    isLoaded() {
+        return !!this._loaded;
+    }
+
     _bindMap(map, zIndex) {
         if (!map) {
             return;
@@ -358,6 +366,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     _doRemove() {
+        this._loaded = false;
         if (this.onRemove) {
             this.onRemove();
         }
@@ -390,5 +399,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 }
 
 Layer.mergeOptions(options);
+
+const fire = Layer.prototype.fire;
+
+Layer.prototype.fire = function (eventType) {
+    if (eventType === 'layerload') {
+        this._loaded = true;
+    }
+    return fire.apply(this, arguments);
+};
 
 export default Layer;
