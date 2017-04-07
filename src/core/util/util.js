@@ -102,10 +102,10 @@ export function isSVG(url) {
  */
 export function loadImage(img, imgDesc) {
     if (isNode && loadImage.node) {
-        return loadImage.node(img, imgDesc);
+        loadImage.node(img, imgDesc);
+        return;
     }
     img.src = imgDesc[0];
-    return;
 }
 
 var uid = 0;
