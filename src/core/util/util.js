@@ -65,8 +65,6 @@ var requestAnimFrame, cancelAnimFrame;
 })();
 export { requestAnimFrame, cancelAnimFrame };
 
-var uid = 0;
-
 /**
  * Merges options with the default options of the object.
  * @param {Object} obj      - object
@@ -94,47 +92,6 @@ export function isSVG(url) {
     return 0;
 }
 
-export const noop = function () {};
-
-var _loadRemoteImage = noop;
-var _loadLocalImage = noop;
-
-if (isNode) {
-    _loadRemoteImage = function (img, url, onComplete) {
-        // http
-        var request;
-        if (url.indexOf('https://') === 0) {
-            request = require('https').request;
-        } else {
-            request = require('http').request;
-        }
-        var urlObj = require('url').parse(url);
-        //mimic the browser to prevent server blocking.
-        urlObj.headers = {
-            'Accept': 'image/*,*/*;q=0.8',
-            'Accept-Encoding': 'gzip, deflate',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'Host': urlObj.host,
-            'Pragma': 'no-cache',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'
-        };
-        request(urlObj, function (res) {
-            var data = [];
-            res.on('data', function (chunk) {
-                data.push(chunk);
-            });
-            res.on('end', function () {
-                onComplete(null, Buffer.concat(data));
-            });
-        }).on('error', onComplete).end();
-    };
-
-    _loadLocalImage = function (img, url, onComplete) {
-        // local file
-        require('fs').readFile(url, onComplete);
-    };
-}
 /**
  * Load a image, can be a remote one or a local file. <br>
  * If in node, a SVG image will be converted to a png file by [svg2img]{@link https://github.com/FuZhenn/node-svg2img}<br>
@@ -144,51 +101,14 @@ if (isNode) {
  * @memberOf Util
  */
 export function loadImage(img, imgDesc) {
-    if (!isNode) {
-        img.src = imgDesc[0];
-        return;
+    if (isNode && loadImage.node) {
+        return loadImage.node(img, imgDesc);
     }
-
-    function onError(err) {
-        if (err) {
-            console.error(err);
-            console.error(err.stack);
-        }
-        var onerrorFn = img.onerror;
-        if (onerrorFn) {
-            onerrorFn.call(img);
-        }
-    }
-
-    function onLoadComplete(err, data) {
-        if (err) {
-            onError(err);
-            return;
-        }
-        var onloadFn = img.onload;
-        if (onloadFn) {
-            img.onload = function () {
-                onloadFn.call(img);
-            };
-        }
-        img.src = data;
-    }
-    var url = imgDesc[0],
-        w = imgDesc[1],
-        h = imgDesc[2];
-    try {
-        if (isSVG(url) && loadImage.svg) {
-            loadImage.svg(url, w, h, onLoadComplete);
-        } else if (isURL(url)) {
-            // canvas-node的Image对象
-            _loadRemoteImage(img, url, onLoadComplete);
-        } else {
-            _loadLocalImage(img, url, onLoadComplete);
-        }
-    } catch (error) {
-        onError(error);
-    }
+    img.src = imgDesc[0];
+    return;
 }
+
+var uid = 0;
 
 export function UID() {
     return uid++;
