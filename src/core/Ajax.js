@@ -62,7 +62,7 @@ const Ajax = {
      */
     post: function (options, postData, cb) {
         if (isNode && Ajax.post.node) {
-            return Ajax.post.node(url, postData, cb);
+            return Ajax.post.node(options, postData, cb);
         }
         var client = this._getClient(cb);
         client.open('POST', options.url, true);
