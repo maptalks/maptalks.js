@@ -883,8 +883,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         }
 
         if (this._animPlayer) {
-            this._animPlayer.finish();
-            return;
+            this._animPlayer.finish();            
         }
 
         //contextmenu
