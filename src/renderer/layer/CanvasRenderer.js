@@ -426,7 +426,7 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     isRenderOnZooming() {
-        return false;
+        return this.layer.options['renderOnZooming'];
     }
 
     /**
@@ -436,7 +436,7 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     isRenderOnMoving() {
-        return !!this.getMap().getPitch();
+        return this.layer.options['renderOnMoving'] || !!this.getMap().getPitch();
     }
 
     /**
@@ -449,6 +449,7 @@ class CanvasRenderer extends Class {
             return;
         }
         const pitch = map.getPitch();
+        // map.render() is called in map.onZooming, suppress map's render here
         this._suppressMapRender = true;
         this.prepareRender();
         if (this.isRenderOnZooming()) {
