@@ -165,34 +165,34 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _handleDOMEvent: function (e) {
-        var type = e.type;
-        if (type === 'click') {
-            var button = e.button;
-            if (button === 2) {
-                type = 'contextmenu';
-            }
+        let type = e.type;
+        if (this._ignoreEvent(e)) {
+            return;
         }
         // prevent default contextmenu
         if (type === 'contextmenu') {
             preventDefault(e);
         }
-        if (this._ignoreEvent(e)) {
-            return;
-        }
-        var oneMoreEvent = null;
+        let oneMoreEvent = null;
         // ignore click lasted for more than 300ms.
         if (type === 'mousedown' || (type === 'touchstart' && e.touches.length === 1)) {
             this._mouseDownTime = now();
-        } else if ((type === 'click' || type === 'touchend') && this._mouseDownTime) {
+        } else if ((type === 'click' || type === 'touchend' || type === 'contextmenu') && this._mouseDownTime) {
             const downTime = this._mouseDownTime;
             delete this._mouseDownTime;
-            var time = now();
+            const time = now();
             if (time - downTime > 300) {
-                if (type === 'click') {
+                if (type === 'click' || type === 'contextmenu') {
                     return;
                 }
             } else if (type === 'touchend') {
                 oneMoreEvent = 'click';
+            }
+        }
+        if (type === 'click') {
+            const button = e.button;
+            if (button === 2) {
+                type = 'contextmenu';
             }
         }
         this._fireDOMEvent(this, e, type);
@@ -206,7 +206,7 @@ Map.include(/** @lends Map.prototype */ {
         if (!domEvent || !this._panels.control) {
             return false;
         }
-        var target = domEvent.srcElement || domEvent.target;
+        let target = domEvent.srcElement || domEvent.target;
         if (target) {
             while (target && target !== this._containerDOM) {
                 if (target.className && target.className.indexOf &&
@@ -224,15 +224,15 @@ Map.include(/** @lends Map.prototype */ {
         if (!e) {
             return null;
         }
-        var eventParam = {
+        const eventParam = {
             'domEvent': e
         };
         if (type !== 'keypress') {
-            var actual = e.touches && e.touches.length > 0 ?
+            const actual = e.touches && e.touches.length > 0 ?
                 e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
                 e.changedTouches[0] : e;
             if (actual) {
-                var containerPoint = getEventContainerPoint(actual, this._containerDOM);
+                const containerPoint = getEventContainerPoint(actual, this._containerDOM);
                 eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
                 eventParam['containerPoint'] = containerPoint;
                 eventParam['viewPoint'] = this.containerPointToViewPoint(containerPoint);
@@ -246,7 +246,7 @@ Map.include(/** @lends Map.prototype */ {
         if (this.isRemoved()) {
             return;
         }
-        var eventParam = this._parseEvent(e, type);
+        const eventParam = this._parseEvent(e, type);
         this._fireEvent(type, eventParam);
     }
 });

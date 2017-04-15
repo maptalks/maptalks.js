@@ -7,13 +7,14 @@ import Map from '../Map';
 
 class MapDragHandler extends Handler {
     addHooks() {
-        var map = this.target;
+        const map = this.target;
         if (!map) {
             return;
         }
-        var dom = map._panels.mapWrapper || map._containerDOM;
+        const dom = map._panels.mapWrapper || map._containerDOM;
         this._dragHandler = new DragHandler(dom, {
-            'cancelOn': this._cancelOn.bind(this)
+            'cancelOn': this._cancelOn.bind(this),
+            'rightclick' : true
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)
@@ -52,8 +53,15 @@ class MapDragHandler extends Handler {
         return this.target._ignoreEvent(param);
     }
 
-
     _onMouseDown(param) {
+        delete this._mode;
+        if (param.domEvent.button === 2 || param.domEvent.ctrlKey) {
+            if (this.target.options['dragRotate'] || this.target.options['dragPitch']) {
+                this._mode = 'rotatePitch';
+            }
+        } else if (this.target.options['dragPan']) {
+            this._mode = 'move';
+        }
         if (this.target._panAnimating) {
             this.target._enablePanAnimation = false;
         }
@@ -61,66 +69,130 @@ class MapDragHandler extends Handler {
     }
 
     _onDragStart(param) {
-        var map = this.target;
+        if (this._mode === 'move') {
+            this._moveStart(param);
+        } else if (this._mode === 'rotatePitch') {
+            this._rotateStart(param);
+        }
+    }
+
+    _onDragging(param) {
+        if (this._mode === 'move') {
+            this._moving(param);
+        } else if (this._mode === 'rotatePitch') {
+            this._rotating(param);
+        }
+    }
+
+    _onDragEnd(param) {
+        if (this._mode === 'move') {
+            this._moveEnd(param);
+        } else if (this._mode === 'rotatePitch') {
+            this._rotateEnd(param);
+        }
+    }
+
+    _start(param) {
+        const map = this.target;
         this.startDragTime = now();
-        var domOffset = map.offsetPlatform();
+        const domOffset = map.offsetPlatform();
         this.startLeft = domOffset.x;
         this.startTop = domOffset.y;
         this.preX = param['mousePos'].x;
         this.preY = param['mousePos'].y;
         this.startX = this.preX;
         this.startY = this.preY;
-        map.onMoveStart(param);
     }
 
-    _onDragging(param) {
-        //preventDefault(param['domEvent']);
+    _moveStart(param) {
+        this._start(param);
+        this.target.onMoveStart(param);
+    }
+
+    _moving(param) {
         if (this.startLeft === undefined) {
             return;
         }
-        var map = this.target;
-        var mx = param['mousePos'].x,
+        const map = this.target;
+        const mx = param['mousePos'].x,
             my = param['mousePos'].y;
-        var nextLeft = (this.startLeft + mx - this.startX);
-        var nextTop = (this.startTop + my - this.startY);
-        var mapPos = map.offsetPlatform();
-        var offset = new Point(nextLeft, nextTop)._sub(mapPos);
+        const nextLeft = (this.startLeft + mx - this.startX);
+        const nextTop = (this.startTop + my - this.startY);
+        const mapPos = map.offsetPlatform();
+        const offset = new Point(nextLeft, nextTop)._sub(mapPos);
         map.offsetPlatform(offset);
         map._offsetCenterByPixel(offset);
         map.onMoving(param);
     }
 
-    _onDragEnd(param) {
-        //preventDefault(param['domEvent']);
+    _moveEnd(param) {
         if (this.startLeft === undefined) {
             return;
         }
-        var map = this.target;
-        var t = now() - this.startDragTime;
-        var domOffset = map.offsetPlatform();
-        var xSpan = domOffset.x - this.startLeft;
-        var ySpan = domOffset.y - this.startTop;
+        const map = this.target;
+        let t = now() - this.startDragTime;
+        const domOffset = map.offsetPlatform();
+        const xSpan = domOffset.x - this.startLeft;
+        const ySpan = domOffset.y - this.startTop;
 
-        delete this.startLeft;
-        delete this.startTop;
-        delete this.preX;
-        delete this.preY;
-        delete this.startX;
-        delete this.startY;
+        this._clear();
 
         if (t < 280 && Math.abs(ySpan) + Math.abs(xSpan) > 5) {
-            // var distance = new Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t))._multi(0.5);
-            var distance = new Point(xSpan, ySpan);
+            // const distance = new Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t))._multi(0.5);
+            const distance = new Point(xSpan, ySpan);
             t = 5 * t * (Math.abs(distance.x) + Math.abs(distance.y)) / 500;
             map._panAnimation(distance, t);
         } else {
             map.onMoveEnd(param);
         }
     }
+
+    _rotateStart(param) {
+        this._start(param);
+        delete this._rotateMode;
+    }
+
+    _rotating(param) {
+        const map = this.target;
+        const mx = param['mousePos'].x,
+            my = param['mousePos'].y;
+        if (!this._rotateMode) {
+            const dx = Math.abs(mx - this.startX),
+                dy = Math.abs(my - this.startY);
+            if (dx > dy) {
+                this._rotateMode = 'rotate';
+            } else if (dx < dy) {
+                this._rotateMode = 'pitch';
+            }
+        }
+        if (this._rotateMode === 'rotate' && map.options['dragRotate']) {
+            map.setBearing(map.getBearing() + (mx > this.preX ? 1 : -1));
+        } else if (this._rotateMode === 'pitch' && map.options['dragPitch']) {
+            map.setPitch(map.getPitch() + (my > this.preY ? -1 : 1));
+        }
+        this.preX = mx;
+        this.preY = my;
+    }
+
+    _rotateEnd() {
+        this._clear();
+    }
+
+    _clear() {
+        delete this.startLeft;
+        delete this.startTop;
+        delete this.preX;
+        delete this.preY;
+        delete this.startX;
+        delete this.startY;
+    }
 }
 
 Map.mergeOptions({
-    'draggable': true
+    'draggable': true,
+    'dragPan' : true,
+    'dragRotate' : true,
+    'dragPitch' : true
 });
 
 Map.addOnLoadHook('addHandler', 'draggable', MapDragHandler);
