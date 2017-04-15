@@ -131,7 +131,7 @@ class Ellipse extends CenterMixin(Polygon) {
 
     _containsPoint(point, tolerance) {
         const map = this.getMap();
-        if (map.getCameraMatrix()) {
+        if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
         }
         const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,

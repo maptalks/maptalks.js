@@ -99,9 +99,9 @@ export default class TileLayerDomRenderer extends Class {
 
         const queue = this._getTileQueue(tileGrid);
 
-        const camMat = this.getMap().getCameraMatrix();
+        const cssMat = this.getMap().domCssMatrix;
         // disable throttle of onMapMoving if map tilts or rotates.
-        this.onMapMoving.time = camMat ? 0 : layer.options['updateInterval'];
+        this.onMapMoving.time = cssMat ? 0 : layer.options['updateInterval'];
 
 
         this._currentTileZoom = this.getMap().getZoom();
@@ -122,7 +122,7 @@ export default class TileLayerDomRenderer extends Class {
     _getTileQueue(tileGrid) {
         const tiles = tileGrid['tiles'],
             queue = [];
-        const mat = this.getMap().getCameraMatrix();
+        const mat = this.getMap().domCssMatrix;
 
         const preCamOffset = this._camOffset;
         if (!this._camOffset || (!mat && !this._camOffset.isZero())) {
@@ -184,9 +184,9 @@ export default class TileLayerDomRenderer extends Class {
 
     _prepareTileContainer() {
         const map = this.getMap();
-        const camMat = map.getCameraMatrix();
+        const mat = map.domCssMatrix;
         const container = this._getTileContainer();
-        if (!camMat) {
+        if (!mat) {
             removeTransform(container);
             if (container.style.width || container.style.height) {
                 container.style.width = null;
@@ -199,7 +199,7 @@ export default class TileLayerDomRenderer extends Class {
                 container.style.width = size['width'] + 'px';
                 container.style.height = size['height'] + 'px';
             }
-            const matrix = join(camMat);
+            const matrix = join(mat);
             const mapOffset = map.offsetPlatform();
             container.childNodes[0].style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x) + 'px, ' + (this._camOffset.y + mapOffset.y) + 'px, 0px)';
             container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
@@ -211,7 +211,7 @@ export default class TileLayerDomRenderer extends Class {
         const zoom = Math.floor(param['from']);
         if (this._levelContainers && this._levelContainers[zoom]) {
             const matrix = param.matrix['view'];
-            if (map.getCameraMatrix()) {
+            if (map.domCssMatrix) {
                 const pitch = map.getPitch();
                 const scale = matrix[0];
                 const size = map.getSize();
@@ -226,12 +226,12 @@ export default class TileLayerDomRenderer extends Class {
 
                 // rotation is right
                 mat4.translate(m, m, matOffset);
-                mat4.multiply(m, m, map.getCameraMatrix());
+                mat4.multiply(m, m, map.domCssMatrix);
                 mat4.scale(m, m, [scale, scale, 1]);
 
                 // mat4.translate(m, m, matOffset);
                 // mat4.scale(m, m, [scale, scale, 1]);
-                // mat4.multiply(m, m, map.getCameraMatrix());
+                // mat4.multiply(m, m, map.domCssMatrix);
 
                 const offset = map.offsetPlatform();
                 const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(m) + ')';
@@ -252,7 +252,7 @@ export default class TileLayerDomRenderer extends Class {
         // https://bugs.chromium.org/p/chromium/issues/detail?id=600120
         // related issue by Leaflet:
         // https://github.com/Leaflet/Leaflet/issues/3575
-        if (Browser.webkit && (map.getCameraMatrix() || map.isZooming())) {
+        if (Browser.webkit && (map.isTransforming() || map.isZooming())) {
             tileSize[0]++;
             tileSize[1]++;
         }

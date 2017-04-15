@@ -178,7 +178,7 @@ class TileLayer extends Layer {
         const center2D = map._prjToPoint(map._getPrjCenter(), zoom)._sub(offset.x, offset.y);
         const centerViewPoint = map._containerPointToViewPoint(containerCenter._sub(offset.x, offset.y))._round();
 
-        const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.getCameraMatrix() ? 0 : map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
+        const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.isTransforming() ? 0 : map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
 
         //Number of tiles around the center tile
         const top = Math.ceil(Math.abs(center2d.y - extent2d['ymin'] - offset.y) / tileH) + keepBuffer,

@@ -15,7 +15,10 @@ const DEFAULT_FOV = 0.6435011087932844;
  */
 
 Map.include(/** @lends Map.prototype */{
-
+    /**
+     * Get map's fov (field of view);
+     * @return {Number} fov in degree
+     */
     getFov() {
         if (!this._fov) {
             this._fov = DEFAULT_FOV;
@@ -23,6 +26,11 @@ Map.include(/** @lends Map.prototype */{
         return this._fov / RADIAN;
     },
 
+    /**
+     * Set a new fov to map
+     * @param {Number} fov new fov in degree
+     * @return {Map} this
+     */
     setFov(fov) {
         if (this.isZooming()) {
             return this;
@@ -46,6 +54,10 @@ Map.include(/** @lends Map.prototype */{
         return this;
     },
 
+    /**
+     * Get map's bearing
+     * @return {Number} bearing in degree
+     */
     getBearing() {
         if (!this._angle) {
             return 0;
@@ -53,6 +65,11 @@ Map.include(/** @lends Map.prototype */{
         return -this._angle / RADIAN;
     },
 
+    /**
+     * Set a new bearing to map
+     * @param {Number} bearing new bearing in degree
+     * @return {Map} this
+     */
     setBearing(bearing) {
         if (Browser.ie9) {
             throw new Error('map can\'t rotate in IE9.');
@@ -79,6 +96,10 @@ Map.include(/** @lends Map.prototype */{
         return this;
     },
 
+    /**
+     * Get map's pitch
+     * @return {Number} pitch in degree
+     */
     getPitch() {
         if (!this._pitch) {
             return 0;
@@ -86,6 +107,11 @@ Map.include(/** @lends Map.prototype */{
         return this._pitch / Math.PI * 180;
     },
 
+    /**
+     * Set a new pitch to map
+     * @param {Number} pitch new pitch in degree
+     * @return {Map} this
+     */
     setPitch(pitch) {
         if (Browser.ie9) {
             throw new Error('map can\'t tilt in IE9.');
@@ -112,8 +138,13 @@ Map.include(/** @lends Map.prototype */{
         return this;
     },
 
-    getCameraMatrix() {
-        return this.cameraMatrix || null;
+    /**
+     * Whether the map is rotating or tilting.
+     * @return {Boolean}
+     * @private
+     */
+    isTransforming() {
+        return !!this.projMatrix;
     },
 
     /**
@@ -247,14 +278,14 @@ Map.include(/** @lends Map.prototype */{
         // matrix for TileLayerDomRenderer's css3 matrix3d transform
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
-        this.cameraMatrix = mat4.multiply(m, m, m2);
+        this.domCssMatrix = mat4.multiply(m, m, m2);
     },
 
     _clearMatrices() {
         delete this.projMatrix;
         delete this.pixelMatrix;
         delete this.pixelMatrixInverse;
-        delete this.cameraMatrix;
+        delete this.domCssMatrix;
     },
 
     _renderLayers() {
