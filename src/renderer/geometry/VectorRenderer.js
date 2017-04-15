@@ -18,7 +18,7 @@ const el = {
     _redrawWhenPitch : () => true,
 
     _redrawWhenRotate: function () {
-        return this instanceof Ellipse;
+        return (this instanceof Ellipse) || (this instanceof Sector);
     },
 
     _paintAsPolygon: function () {
@@ -44,6 +44,17 @@ const el = {
         } else {
             return Canvas.ellipse.apply(Canvas, arguments);
         }
+    },
+
+    _getRenderSize() {
+        const map = this.getMap(),
+            scale = map.getScale(),
+            center = this.getCenter(),
+            radius = this.getRadius(),
+            target = map.locate(center, radius, 0);
+        let w = map.coordinateToContainerPoint(center).distanceTo(map.coordinateToContainerPoint(target));
+        w *= scale;
+        return new Size(w, w);
     }
 };
 
@@ -56,18 +67,7 @@ Ellipse.include(el, {
     }
 });
 
-Circle.include(el, {
-    _getRenderSize() {
-        const map = this.getMap(),
-            scale = map.getScale(),
-            center = this.getCenter(),
-            radius = this.getRadius(),
-            target = map.locate(center, radius, 0);
-        let w = map.coordinateToContainerPoint(center).distanceTo(map.coordinateToContainerPoint(target));
-        w *= scale;
-        return new Size(w, w);
-    }
-});
+Circle.include(el);
 //----------------------------------------------------
 Rectangle.include({
     _getPaintParams() {
@@ -81,21 +81,14 @@ Rectangle.include({
     _paintOn: Canvas.polygon
 });
 //----------------------------------------------------
-Sector.include({
+Sector.include(el, {
     _redrawWhenPitch : () => true,
-
-    _getRenderSize() {
-        const radius = this.getRadius();
-        const map = this.getMap();
-        return map.distanceToPixel(radius, radius, map.getMaxNativeZoom());
-    },
 
     _getPaintParams() {
         const map = this.getMap();
         if (map.getPitch()) {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
-        //TODO rotating sector
         const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxNativeZoom());
         const size = this._getRenderSize();
         return [pt, size['width'],

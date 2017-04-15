@@ -65,7 +65,8 @@ export default class Painter extends Class {
         }
         if (!symbolizers.length) {
             if (console) {
-                console.warn('invalid symbol for geometry(' + (this.geometry ? this.geometry.getType() + (this.geometry.getId() ? ':' + this.geometry.getId() : '') : '') + ') to draw : ' + JSON.stringify(geoSymbol));
+                const id = this.geometry.getId();
+                console.warn('invalid symbol for geometry(' + (this.geometry ? this.geometry.getType() + (id ? ':' + id : '') : '') + ') to draw : ' + JSON.stringify(geoSymbol));
             }
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
@@ -102,8 +103,8 @@ export default class Painter extends Class {
     getPaintParams(dx, dy) {
         const map = this.getMap();
         const zoom = map.getZoom();
-        const pitched = map.getPitch() > 0;
-        const rotated = map.getBearing() > 0;
+        const pitched = (map.getPitch() !== 0);
+        const rotated = (map.getBearing() !== 0);
         let params = this._paintParams;
         // remove cached points if the geometry is simplified on the zoom.
         if (!params ||

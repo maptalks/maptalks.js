@@ -39,10 +39,6 @@ export default class DebugSymbolizer extends PointSymbolizer {
         const outline = this.getPainter().getContainerExtent().toArray();
         Canvas.polygon(ctx, [outline], op, 0);
 
-        /*const nw = pixelExtent.getMin(),
-            size = pixelExtent.getSize();
-        Canvas.rectangle(ctx, nw, size, op, 0);*/
-
         //center cross and id if have any.
         const points = this._getRenderContainerPoints();
 
