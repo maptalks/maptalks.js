@@ -33,7 +33,7 @@ const el = {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const pcenter = this._getPrjCoordinates();
-        const pt = map._prjToPoint(pcenter, map.getMaxZoom());
+        const pt = map._prjToPoint(pcenter, map.getMaxNativeZoom());
         const size = this._getRenderSize();
         return [pt, size['width'], size['height']];
     },
@@ -52,7 +52,7 @@ Ellipse.include(el, {
         const w = this.getWidth(),
             h = this.getHeight();
         const map = this.getMap();
-        return map.distanceToPixel(w / 2, h / 2, map.getMaxZoom());
+        return map.distanceToPixel(w / 2, h / 2, map.getMaxNativeZoom());
     }
 });
 
@@ -72,7 +72,7 @@ Circle.include(el, {
 Rectangle.include({
     _getPaintParams() {
         const map = this.getMap();
-        const maxZoom = map.getMaxZoom();
+        const maxZoom = map.getMaxNativeZoom();
         const shell = this._getPrjShell();
         const points = this._getPath2DPoints(shell, false, maxZoom);
         return [points];
@@ -87,7 +87,7 @@ Sector.include({
     _getRenderSize() {
         var radius = this.getRadius();
         var map = this.getMap();
-        return map.distanceToPixel(radius, radius, map.getMaxZoom());
+        return map.distanceToPixel(radius, radius, map.getMaxNativeZoom());
     },
 
     _getPaintParams() {
@@ -96,7 +96,7 @@ Sector.include({
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         //TODO rotating sector
-        const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxZoom());
+        const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxNativeZoom());
         const size = this._getRenderSize();
         return [pt, size['width'],
             [this.getStartAngle(), this.getEndAngle()]
@@ -146,7 +146,7 @@ LineString.include({
 
     _getPaintParams() {
         const prjVertexes = this._getPrjCoordinates();
-        const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getMaxZoom());
+        const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getMaxNativeZoom());
         return [points];
     },
 
@@ -213,7 +213,7 @@ LineString.include({
 
 Polygon.include({
     _getPaintParams(disableSimplify) {
-        const maxZoom = this.getMap().getMaxZoom();
+        const maxZoom = this.getMap().getMaxNativeZoom();
         const prjVertexes = this._getPrjShell();
         var points = this._getPath2DPoints(prjVertexes, disableSimplify, maxZoom);
         //splitted by anti-meridian

@@ -24,7 +24,7 @@ export default class PointSymbolizer extends CanvasSymbolizer {
 
     get2DExtent() {
         const map = this.getMap();
-        const maxZoom = map.getMaxZoom();
+        const maxZoom = map.getMaxNativeZoom();
         const extent = new PointExtent();
         const renderPoints = this._getRenderPoints()[0];
         for (let i = renderPoints.length - 1; i >= 0; i--) {
@@ -48,7 +48,7 @@ export default class PointSymbolizer extends CanvasSymbolizer {
             return points;
         }
         var map = this.getMap();
-        var maxZoom = map.getMaxZoom();
+        var maxZoom = map.getMaxNativeZoom();
         var dxdy = this.getDxDy(),
             layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest);
         var containerPoints = mapArrayRecursively(points, point =>
@@ -69,7 +69,7 @@ export default class PointSymbolizer extends CanvasSymbolizer {
         const map = this.getMap();
         var p0 = rotations[i][0], p1 = rotations[i][1];
         if (map.getCameraMatrix()) {
-            const maxZoom = map.getMaxZoom();
+            const maxZoom = map.getMaxNativeZoom();
             p0 = map._pointToContainerPoint(rotations[i][0], maxZoom);
             p1 = map._pointToContainerPoint(rotations[i][1], maxZoom);
         }
