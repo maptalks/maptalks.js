@@ -125,7 +125,7 @@ class Sector extends CenterMixin(Polygon) {
             angle = this.getEndAngle() - startAngle;
         let rad, dx, dy;
         for (let i = 0; i < numberOfPoints; i++) {
-            rad = (angle * i / (numberOfPoints - 2) + startAngle) * Math.PI / 180;
+            rad = (angle * i / (numberOfPoints - 1) + startAngle) * Math.PI / 180;
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
             const vertex = measurer.locate(center, dx, dy);
