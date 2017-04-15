@@ -124,7 +124,7 @@ export default class Painter extends Class {
         }
         this._pitched = pitched;
         this._rotated = rotated;
-        const maxZoom = map.getMaxZoom();
+        const maxZoom = map.getMaxNativeZoom();
         const zoomScale = map.getScale();
         const layerNorthWest = this.getLayer()._getRenderer()._northWest;
         const layerPoint = map._pointToContainerPoint(layerNorthWest),
