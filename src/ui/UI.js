@@ -514,7 +514,7 @@ class UIComponent extends Eventable(Class) {
     }
 
     onMoving() {
-        if (this.isVisible() && this.getMap().getCameraMatrix()) {
+        if (this.isVisible() && this.getMap().isTransforming()) {
             this._updatePosition();
         }
     }

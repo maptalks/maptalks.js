@@ -68,7 +68,7 @@ export default class PointSymbolizer extends CanvasSymbolizer {
         }
         const map = this.getMap();
         let p0 = rotations[i][0], p1 = rotations[i][1];
-        if (map.getCameraMatrix()) {
+        if (map.isTransforming()) {
             const maxZoom = map.getMaxNativeZoom();
             p0 = map._pointToContainerPoint(rotations[i][0], maxZoom);
             p1 = map._pointToContainerPoint(rotations[i][1], maxZoom);
