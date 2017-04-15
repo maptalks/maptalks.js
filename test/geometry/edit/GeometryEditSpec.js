@@ -45,25 +45,28 @@ describe('#GeometryEdit', function () {
             expect(marker.isEditing()).not.to.be.ok();
         });
 
-        it('drag all kinds of geometries', function () {
-            this.timeout(8000);
+        describe('drag all kinds of geometries', function () {
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
-            layer.addGeometry(geometries);
+            function testDrag(geo) {
+                return function () {
+                    if (geo instanceof maptalks.GeometryCollection || geo instanceof maptalks.Sector) {
+                        //not fit for geometry collection's test.
+                        return;
+                    }
+                    layer.addGeometry(geo);
+                    geo.startEdit();
+                    var center = geo.getCenter();
+                    dragGeometry(geo);
+                    expect(geo.getCenter()).not.to.closeTo(center);
+                    //geo can only be dragged by center handle.
+                    var newCenter = geo.getCenter();
+                    dragGeometry(geo, new maptalks.Point(500, 20));
+                    expect(geo.getCenter()).to.closeTo(newCenter);
+                    geo.endEdit();
+                };
+            }
             for (var i = 0; i < geometries.length; i++) {
-                var geo = geometries[i];
-                if (geo instanceof maptalks.GeometryCollection || geo instanceof maptalks.Sector) {
-                    //not fit for geometry collection's test.
-                    continue;
-                }
-                geo.startEdit();
-                var center = geo.getCenter();
-                dragGeometry(geo);
-                expect(geo.getCenter()).not.to.closeTo(center);
-                //geo can only be dragged by center handle.
-                var newCenter = geo.getCenter();
-                dragGeometry(geo, new maptalks.Point(500, 20));
-                expect(geo.getCenter()).to.closeTo(newCenter);
-                geo.endEdit();
+                it('drag geometry ' + geometries[i].getType(), testDrag(geometries[i]));
             }
         });
     });

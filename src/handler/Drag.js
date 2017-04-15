@@ -29,7 +29,7 @@ class DragHandler extends Handler {
     constructor(dom, options) {
         super(null);
         this.dom = dom;
-        this.options = options;
+        this.options = options || {};
     }
 
     enable() {
@@ -52,7 +52,7 @@ class DragHandler extends Handler {
             //ignore right mouse down
             return;
         }
-        if (this.options && this.options['cancelOn'] && this.options['cancelOn'](event) === true) {
+        if (this.options['cancelOn'] && this.options['cancelOn'](event) === true) {
             return;
         }
         var dom = this.dom;
