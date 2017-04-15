@@ -25,7 +25,7 @@ describe('#MapDrag', function () {
                 'clientX':point.x + i,
                 'clientY':point.y + i
             });
-            if (map.options['draggable'] && i > 0) {
+            if (map.options['draggable'] && map.options['dragPan'] && i > 0) {
                 expect(map.isMoving()).to.be.ok();
             }
         }
@@ -69,6 +69,15 @@ describe('#MapDrag', function () {
         }, 20);
     });
 
+    it('disables dragging by dragPan', function (done) {
+        map.config('dragPan', false);
+        dragMap();
+        setTimeout(function () {
+            expect(map.getCenter().toArray()).to.be.closeTo(center.toArray());
+            done();
+        }, 20);
+    });
+
     it('can be dragged', function () {
         map.options['panAnimation'] = false;
         var center2;
@@ -77,5 +86,53 @@ describe('#MapDrag', function () {
         center2 = map.getCenter();
         expect(center2.toArray()).not.to.be.eql(center.toArray());
         expect(map.isMoving()).not.to.be.ok();
+    });
+
+    function dragToRotate(dx, dy) {
+        dx = dx || 0;
+        dy = dy || 0;
+        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var center = map.getCenter();
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+
+        happen.mousedown(map._panels.front, {
+            'clientX':point.x,
+            'clientY':point.y,
+            'button' : 2
+        });
+        for (var i = 0; i < 10; i++) {
+            happen.mousemove(document, {
+                'clientX':point.x + i * dx,
+                'clientY':point.y + i * dy,
+                'button' : 2
+            });
+        }
+        happen.mouseup(document);
+    }
+
+    it('drag to rotate', function () {
+        var bearing = map.getBearing();
+        dragToRotate(1);
+        expect(map.getBearing()).not.to.be.eql(bearing);
+    });
+
+    it('disable dragging to rotate', function () {
+        map.config('dragRotate', false);
+        var bearing = map.getBearing();
+        dragToRotate(1);
+        expect(map.getBearing()).to.be.eql(bearing);
+    });
+
+    it('drag to pitch', function () {
+        var pitch = map.getPitch();
+        dragToRotate(0, -1);
+        expect(map.getPitch()).not.to.be.eql(pitch);
+    });
+
+    it('disable dragging to pitch', function () {
+        map.config('dragPitch', false);
+        var pitch = map.getPitch();
+        dragToRotate(0, -1);
+        expect(map.getPitch()).to.be.eql(pitch);
     });
 });

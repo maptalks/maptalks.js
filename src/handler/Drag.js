@@ -48,7 +48,7 @@ class DragHandler extends Handler {
     }
 
     onMouseDown(event) {
-        if (isNumber(event.button) && event.button === 2) {
+        if (!this.options['rightclick'] && event.button === 2) {
             //ignore right mouse down
             return;
         }

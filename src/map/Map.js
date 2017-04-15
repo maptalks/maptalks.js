@@ -45,6 +45,9 @@ import View from './view/View';
  * @property {Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
  *
  * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
+ * @property {Boolean} [options.dragPan=true]                           - if true, map can be dragged to pan.
+ * @property {Boolean} [options.dragRotate=true]                        - default true. If true, map can be dragged to rotate by right click or ctrl + left click.
+ * @property {Boolean} [options.dragPitch=true]                         - default true. If true, map can be dragged to pitch by right click or ctrl + left click.
  * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
  * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
  * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
@@ -605,6 +608,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!isNil(this.options['maxZoom'])) {
             return this.options['maxZoom'];
         }
+        return this.getMaxNativeZoom();
+    }
+
+    /**
+     * Maximum zoom the map has
+     * @return {Number}
+     */
+    getMaxNativeZoom() {
         var view = this.getView();
         if (!view) {
             return null;
@@ -773,7 +784,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     getScale(zoom) {
         var z = (isNil(zoom) ? this.getZoom() : zoom);
-        var max = this._getResolution(this.getMaxZoom()),
+        var max = this._getResolution(this.getMaxNativeZoom()),
             res = this._getResolution(z);
         return res / max;
     }
@@ -1266,8 +1277,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const scale = this.getScale() / this.getScale(zoom);
         const center = this.getCenter(),
             target = projection.locate(center, xDist, yDist);
-        const p0 = this.coordinateToContainerPoint(center, zoom),
-            p1 = this.coordinateToContainerPoint(target, zoom);
+        const p0 = this.coordinateToContainerPoint(center),
+            p1 = this.coordinateToContainerPoint(target);
         p1._sub(p0)._multi(scale)._abs();
         return new Size(p1.x, p1.y);
     }
