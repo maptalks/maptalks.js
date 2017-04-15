@@ -27,7 +27,7 @@ export default function (Base) {
                 return this;
             }
 
-            var handler = this[name] = new handlerClass(this);
+            const handler = this[name] = new handlerClass(this);
 
             this._handlers.push(handler);
 
@@ -48,10 +48,10 @@ export default function (Base) {
             if (!name) {
                 return this;
             }
-            var handler = this[name];
+            const handler = this[name];
             if (handler) {
                 //handler registered
-                var hit = this._handlers.indexOf(handler);
+                const hit = this._handlers.indexOf(handler);
                 if (hit >= 0) {
                     this._handlers.splice(hit, 1);
                 }
@@ -62,7 +62,7 @@ export default function (Base) {
         }
 
         _clearHandlers() {
-            for (var i = 0, len = this._handlers.length; i < len; i++) {
+            for (let i = 0, len = this._handlers.length; i < len; i++) {
                 this._handlers[i].remove();
             }
             this._handlers = [];

@@ -29,9 +29,9 @@ const first = (props) => {
  */
 const testProp = isNode ? first : (props) => {
 
-    var style = document.documentElement.style;
+    const style = document.documentElement.style;
 
-    for (var i = 0; i < props.length; i++) {
+    for (let i = 0; i < props.length; i++) {
         if (props[i] in style) {
             return props[i];
         }
@@ -84,7 +84,7 @@ export const CSSFILTER = testProp(
  * @memberOf DomUtil
  */
 export function createEl(tagName, className) {
-    var el = document.createElement(tagName);
+    const el = document.createElement(tagName);
     if (className) {
         setClass(el, className);
     }
@@ -100,7 +100,7 @@ export function createEl(tagName, className) {
  * @memberOf DomUtil
  */
 export function createElOn(tagName, style, container) {
-    var el = createEl(tagName);
+    const el = createEl(tagName);
     if (style) {
         setStyle(el, style);
     }
@@ -122,7 +122,7 @@ export function removeDomNode(node) {
     if (Browser.ielt9 || Browser.ie9) {
         //fix memory leak in IE9-
         //http://com.hemiola.com/2009/11/23/memory-leaks-in-ie8/
-        var d = createEl('div');
+        let d = createEl('div');
         d.appendChild(node);
         d.innerHTML = '';
         d = null;
@@ -144,16 +144,16 @@ export function addDomEvent(obj, typeArr, handler, context) {
     if (!obj || !typeArr || !handler) {
         return this;
     }
-    var eventHandler = function (e) {
+    const eventHandler = function (e) {
         if (!e) {
             e = window.event;
         }
         handler.call(context || obj, e);
         return;
     };
-    var types = typeArr.split(' ');
-    for (var i = types.length - 1; i >= 0; i--) {
-        var type = types[i];
+    const types = typeArr.split(' ');
+    for (let i = types.length - 1; i >= 0; i--) {
+        let type = types[i];
         if (!type) {
             continue;
         }
@@ -162,7 +162,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
             obj['Z__' + type] = [];
 
         }
-        var hit = listensDomEvent(obj, type, handler);
+        const hit = listensDomEvent(obj, type, handler);
         if (hit >= 0) {
             removeDomEvent(obj, type, handler);
         }
@@ -205,26 +205,26 @@ export function removeDomEvent(obj, typeArr, handler) {
     if (!obj || !typeArr) {
         return this;
     }
-    var types = typeArr.split(' ');
-    for (var i = types.length - 1; i >= 0; i--) {
-        var type = types[i];
+    const types = typeArr.split(' ');
+    for (let i = types.length - 1; i >= 0; i--) {
+        const type = types[i];
         if (!type) {
             continue;
         }
         //remove all the listeners if handler is not given.
         if (!handler && obj['Z__' + type]) {
-            var handlers = obj['Z__' + type];
-            for (var j = 0, jlen = handlers.length; j < jlen; j++) {
+            const handlers = obj['Z__' + type];
+            for (let j = 0, jlen = handlers.length; j < jlen; j++) {
                 doRemove(handlers[j].callback);
             }
             delete obj['Z__' + type];
             return this;
         }
-        var hit = listensDomEvent(obj, type, handler);
+        const hit = listensDomEvent(obj, type, handler);
         if (hit < 0) {
             return this;
         }
-        var hitHandler = obj['Z__' + type][hit];
+        const hitHandler = obj['Z__' + type][hit];
         doRemove(type, hitHandler.callback);
         obj['Z__' + type].splice(hit, 1);
     }
@@ -243,8 +243,8 @@ export function listensDomEvent(obj, type, handler) {
     if (!obj || !obj['Z__' + type] || !handler) {
         return -1;
     }
-    var handlers = obj['Z__' + type];
-    for (var i = 0, len = handlers.length; i < len; i++) {
+    const handlers = obj['Z__' + type];
+    for (let i = 0, len = handlers.length; i < len; i++) {
         if (handlers[i].src === handler) {
             return i;
         }
@@ -320,8 +320,8 @@ export function offsetDom(dom, offset) {
  * @memberOf DomUtil
  */
 export function getPagePosition(obj) {
-    var docEl = document.documentElement;
-    var rect = obj.getBoundingClientRect();
+    const docEl = document.documentElement;
+    const rect = obj.getBoundingClientRect();
     return new Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
 }
 
@@ -335,7 +335,7 @@ export function getEventContainerPoint(ev, dom) {
     if (!ev) {
         ev = window.event;
     }
-    var rect = dom.getBoundingClientRect();
+    const rect = dom.getBoundingClientRect();
 
     return new Point(
         ev.clientX - rect.left - dom.clientLeft,
@@ -350,11 +350,11 @@ export function getEventContainerPoint(ev, dom) {
  */
 export function setStyle(dom, strCss) {
     function endsWith(str, suffix) {
-        var l = str.length - suffix.length;
+        const l = str.length - suffix.length;
         return l >= 0 && str.indexOf(suffix, l) === l;
     }
-    var style = dom.style,
-        cssText = style.cssText;
+    const style = dom.style;
+    let cssText = style.cssText;
     if (!endsWith(cssText, ';')) {
         cssText += ';';
     }
@@ -380,9 +380,9 @@ export function removeStyle(dom) {
  * @memberOf DomUtil
  */
 export function addStyle(dom, attr, value) {
-    var css = dom.style.cssText;
+    const css = dom.style.cssText;
     if (attr && value) {
-        var newStyle = attr + ':' + value + ';';
+        const newStyle = attr + ':' + value + ';';
         dom.style.cssText = css + newStyle;
     }
     return this;
@@ -398,7 +398,7 @@ export function hasClass(el, name) {
     if (el.classList !== undefined) {
         return el.classList.contains(name);
     }
-    var className = getClass(el);
+    const className = getClass(el);
     return className.length > 0 && new RegExp('(^|\\s)' + name + '(\\s|$)').test(className);
 }
 
@@ -410,12 +410,12 @@ export function hasClass(el, name) {
  */
 export function addClass(el, name) {
     if (el.classList !== undefined) {
-        var classes = splitWords(name);
-        for (var i = 0, len = classes.length; i < len; i++) {
+        const classes = splitWords(name);
+        for (let i = 0, len = classes.length; i < len; i++) {
             el.classList.add(classes[i]);
         }
     } else if (!hasClass(el, name)) {
-        var className = getClass(el);
+        const className = getClass(el);
         setClass(el, (className ? className + ' ' : '') + name);
     }
     return this;
@@ -476,8 +476,8 @@ export function setOpacity(el, value) {
 }
 
 function _setOpacityIE(el, value) {
-    var filter = false,
-        filterName = 'DXImageTransform.Microsoft.Alpha';
+    let filter = false;
+    const filterName = 'DXImageTransform.Microsoft.Alpha';
 
     // filters collection throws an error if we try to retrieve a filter that doesn't exist
     try {
@@ -510,7 +510,7 @@ export function copyCanvas(src) {
     if (isNode) {
         return null;
     }
-    var target = createEl('canvas');
+    const target = createEl('canvas');
     target.width = src.width;
     target.height = src.height;
     target.getContext('2d').drawImage(src, 0, 0);
@@ -524,7 +524,7 @@ export function copyCanvas(src) {
  * @memberOf DomUtil
  */
 export function setTransform(el, offset) {
-    var pos = offset || new Point(0, 0);
+    const pos = offset || new Point(0, 0);
     el.style[TRANSFORM] =
         (Browser.ie3d ?
             'translate(' + pos.x + 'px,' + pos.y + 'px)' :
@@ -548,19 +548,19 @@ export function isHTML(str) {
 }
 
 export function measureDom(parentTag, dom) {
-    var ruler = _getDomRuler(parentTag);
+    const ruler = _getDomRuler(parentTag);
     if (isString(dom)) {
         ruler.innerHTML = dom;
     } else {
         ruler.appendChild(dom);
     }
-    var result = new Size(ruler.clientWidth, ruler.clientHeight);
+    const result = new Size(ruler.clientWidth, ruler.clientHeight);
     removeDomNode(ruler);
     return result;
 }
 
 export function _getDomRuler(tag) {
-    var span = document.createElement(tag);
+    const span = document.createElement(tag);
     span.style.cssText = 'position:absolute;left:-10000px;top:-10000px;';
     document.body.appendChild(span);
     return span;

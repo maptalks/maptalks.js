@@ -50,7 +50,7 @@ class Overview extends Control {
      * @return {HTMLDOMElement}
      */
     buildOn() {
-        var container = createEl('div');
+        const container = createEl('div');
         container.style.cssText = 'background:#fff;border:1px solid #b4b3b3;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
         return container;
     }
@@ -60,10 +60,10 @@ class Overview extends Control {
     }
 
     _createOverview(container) {
-        var map = this.getMap(),
+        const map = this.getMap(),
             dom = container || this.getDOM(),
             extent = map.getExtent();
-        var options = map.config();
+        const options = map.config();
         extend(options, {
             'center': map.getCenter(),
             'zoom': this._getOverviewZoom(),
@@ -125,7 +125,7 @@ class Overview extends Control {
     }
 
     _onDragEnd() {
-        var center = this._perspective.getCenter();
+        const center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
         this.getMap().config('draggable', this._origDraggable);
@@ -137,7 +137,7 @@ class Overview extends Control {
     }
 
     _updateBaseLayer() {
-        var map = this.getMap();
+        const map = this.getMap();
         if (map.getBaseLayer()) {
             this._overview.setBaseLayer(Layer.fromJSON(map.getBaseLayer().toJSON()));
         } else {

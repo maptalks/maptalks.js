@@ -92,7 +92,7 @@ class TileLayer extends Layer {
      * @return {Size}
      */
     getTileSize() {
-        var size = this.options['tileSize'];
+        const size = this.options['tileSize'];
         return new Size(size['width'], size['height']);
     }
 
@@ -131,7 +131,7 @@ class TileLayer extends Layer {
      * @return {Object} layer's profile JSON
      */
     toJSON() {
-        var profile = {
+        const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
             'options': this.config()
@@ -157,7 +157,7 @@ class TileLayer extends Layer {
         const tileSize = this.getTileSize(),
             tileW = tileSize['width'],
             tileH = tileSize['height'];
-        var zoom = map.getZoom();
+        let zoom = map.getZoom();
         if (!isInteger(zoom) && !isNil(map._frameZoom)) {
             zoom = (zoom > map._frameZoom ? Math.floor(zoom) : Math.ceil(zoom));
         }
@@ -187,12 +187,12 @@ class TileLayer extends Layer {
             right = Math.ceil(Math.abs(extent2d['xmax'] - center2d.x + offset.x) / tileW) + keepBuffer;
 
         const tiles = [];
-        var centerTileId;
+        let centerTileId;
         for (let i = -(left); i < right; i++) {
             for (let j = -(top); j < bottom; j++) {
-                let p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
-                let vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j);
-                let tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
+                const p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
+                const vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j);
+                const tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
                     tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
                     tileId = [tileIndex['idy'], tileIndex['idx'], zoom].join('__'),
                     tileDesc = {
@@ -222,7 +222,7 @@ class TileLayer extends Layer {
     }
 
     _initRenderer() {
-        var renderer = this.options['renderer'];
+        let renderer = this.options['renderer'];
         if (this.getMap().getBaseLayer() === this) {
             renderer = this.options['baseLayerRenderer'];
             if (this.getMap()._getRenderer()._containerIsCanvas) {
@@ -232,7 +232,7 @@ class TileLayer extends Layer {
         if (!this.constructor.getRendererClass) {
             return;
         }
-        var clazz = this.constructor.getRendererClass(renderer);
+        const clazz = this.constructor.getRendererClass(renderer);
         if (!clazz) {
             return;
         }
@@ -269,13 +269,13 @@ class TileLayer extends Layer {
         if (!this.options['urlTemplate']) {
             return this.options['errorTileUrl'];
         }
-        var urlTemplate = this.options['urlTemplate'];
-        var domain = '';
+        const urlTemplate = this.options['urlTemplate'];
+        let domain = '';
         if (this.options['subdomains']) {
-            var subdomains = this.options['subdomains'];
+            const subdomains = this.options['subdomains'];
             if (isArrayHasData(subdomains)) {
-                var length = subdomains.length;
-                var s = (x + y) % length;
+                const length = subdomains.length;
+                let s = (x + y) % length;
                 if (s < 0) {
                     s = 0;
                 }
@@ -285,14 +285,14 @@ class TileLayer extends Layer {
         if (isFunction(urlTemplate)) {
             return urlTemplate(x, y, z, domain);
         }
-        var data = {
+        const data = {
             'x': x,
             'y': y,
             'z': z,
             's': domain
         };
         return urlTemplate.replace(/\{ *([\w_]+) *\}/g, function (str, key) {
-            var value = data[key];
+            let value = data[key];
 
             if (value === undefined) {
                 throw new Error('No value provided for variable ' + str);

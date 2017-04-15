@@ -34,7 +34,7 @@ const Connectable = Base =>
          * @function Connectable.setConnectSource
          */
         setConnectSource(src) {
-            var target = this._connTarget;
+            const target = this._connTarget;
             this.onRemove();
             this._connSource = src;
             this._connTarget = target;
@@ -59,7 +59,7 @@ const Connectable = Base =>
          * @function Connectable.setConnectTarget
          */
         setConnectTarget(target) {
-            var src = this._connSource;
+            const src = this._connSource;
             this.onRemove();
             this._connSource = src;
             this._connTarget = target;
@@ -69,7 +69,7 @@ const Connectable = Base =>
         }
 
         _updateCoordinates() {
-            var map = this.getMap();
+            let map = this.getMap();
             if (!map && this._connSource) {
                 map = this._connSource.getMap();
             }
@@ -82,16 +82,16 @@ const Connectable = Base =>
             if (!this._connSource || !this._connTarget) {
                 return;
             }
-            var srcPoints = this._connSource._getConnectPoints();
-            var targetPoints = this._connTarget._getConnectPoints();
-            var minDist = 0;
-            var oldCoordinates = this.getCoordinates();
-            var c1, c2;
-            for (var i = 0, len = srcPoints.length; i < len; i++) {
-                var p1 = srcPoints[i];
-                for (var j = 0, length = targetPoints.length; j < length; j++) {
-                    var p2 = targetPoints[j];
-                    var dist = map.computeLength(p1, p2);
+            const srcPoints = this._connSource._getConnectPoints();
+            const targetPoints = this._connTarget._getConnectPoints();
+            let minDist = 0;
+            const oldCoordinates = this.getCoordinates();
+            let c1, c2;
+            for (let i = 0, len = srcPoints.length; i < len; i++) {
+                const p1 = srcPoints[i];
+                for (let j = 0, length = targetPoints.length; j < length; j++) {
+                    const p2 = targetPoints[j];
+                    const dist = map.computeLength(p1, p2);
                     if (i === 0 && j === 0) {
                         c1 = p1;
                         c2 = p2;
@@ -160,7 +160,7 @@ const Connectable = Base =>
                 .on('remove', this.remove, this);
             this._connSource.on('show', this._showConnect, this).on('hide', this.hide, this);
             this._connTarget.on('show', this._showConnect, this).on('hide', this.hide, this);
-            var trigger = this.options['showOn'];
+            const trigger = this.options['showOn'];
             this.hide();
             if (trigger === 'moving') {
                 this._connSource.on('dragstart', this._showConnect, this).on('dragend', this.hide, this);

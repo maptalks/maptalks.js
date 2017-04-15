@@ -39,7 +39,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             projection = this._getProjection(),
             symbol = this._getInternalSymbol(),
             stylesToAnimate = this._prepareAnimationStyles(styles);
-        var preTranslate, isFocusing;
+        let preTranslate, isFocusing;
 
         if (options) {
             isFocusing = options['focus'];
@@ -55,27 +55,27 @@ Geometry.include(/** @lends Geometry.prototype */ {
                 map.onMoveStart();
             }
             const styles = frame.styles;
-            for (let p in styles) {
+            for (const p in styles) {
                 if (p !== 'symbol' && p !== 'translate' && styles.hasOwnProperty(p)) {
-                    let fnName = 'set' + p[0].toUpperCase() + p.slice(1);
+                    const fnName = 'set' + p[0].toUpperCase() + p.slice(1);
                     this[fnName](styles[p]);
                 }
             }
-            var translate = styles['translate'];
+            const translate = styles['translate'];
             if (translate) {
-                var toTranslate = translate;
+                let toTranslate = translate;
                 if (preTranslate) {
                     toTranslate = translate.sub(preTranslate);
                 }
                 preTranslate = translate;
                 this.translate(toTranslate);
             }
-            var dSymbol = styles['symbol'];
+            const dSymbol = styles['symbol'];
             if (dSymbol) {
                 this.setSymbol(extendSymbol(symbol, dSymbol));
             }
             if (map && isFocusing) {
-                var pcenter = projection.project(this.getCenter());
+                const pcenter = projection.project(this.getCenter());
                 map._setPrjCenterAndMove(pcenter);
                 if (player.playState !== 'running') {
                     map.onMoveEnd();
@@ -97,32 +97,31 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @private
      */
     _prepareAnimationStyles: function (styles) {
-        var symbol = this._getInternalSymbol();
-        var stylesToAnimate = {};
-        for (var p in styles) {
+        const symbol = this._getInternalSymbol();
+        const stylesToAnimate = {};
+        for (const p in styles) {
             if (styles.hasOwnProperty(p)) {
-                var v = styles[p],
-                    sp;
+                const v = styles[p];
                 if (p !== 'translate' && p !== 'symbol') {
                     //this.getRadius() / this.getWidth(), etc.
-                    var fnName = 'get' + p[0].toUpperCase() + p.substring(1);
-                    var current = this[fnName]();
+                    const fnName = 'get' + p[0].toUpperCase() + p.substring(1);
+                    const current = this[fnName]();
                     stylesToAnimate[p] = [current, v];
                 } else if (p === 'symbol') {
-                    var symbolToAnimate;
+                    let symbolToAnimate;
                     if (Array.isArray(styles['symbol'])) {
                         if (!Array.isArray(symbol)) {
                             throw new Error('geometry\'symbol isn\'t a composite symbol, while the symbol in styles is.');
                         }
                         symbolToAnimate = [];
-                        var symbolInStyles = styles['symbol'];
-                        for (var i = 0; i < symbolInStyles.length; i++) {
+                        const symbolInStyles = styles['symbol'];
+                        for (let i = 0; i < symbolInStyles.length; i++) {
                             if (!symbolInStyles[i]) {
                                 symbolToAnimate.push(null);
                                 continue;
                             }
-                            var a = {};
-                            for (sp in symbolInStyles[i]) {
+                            const a = {};
+                            for (const sp in symbolInStyles[i]) {
                                 if (symbolInStyles[i].hasOwnProperty(sp)) {
                                     a[sp] = [symbol[i][sp], symbolInStyles[i][sp]];
                                 }
@@ -134,7 +133,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
                             throw new Error('geometry\'symbol is a composite symbol, while the symbol in styles isn\'t.');
                         }
                         symbolToAnimate = {};
-                        for (sp in v) {
+                        for (const sp in v) {
                             if (v.hasOwnProperty(sp)) {
                                 symbolToAnimate[sp] = [symbol[sp], v[sp]];
                             }

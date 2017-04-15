@@ -5,7 +5,7 @@ let Browser;
 if (!isNode) {
     (function () {
 
-        var ua = navigator.userAgent.toLowerCase(),
+        const ua = navigator.userAgent.toLowerCase(),
             doc = document.documentElement,
 
             ie = 'ActiveXObject' in window,
@@ -26,7 +26,7 @@ if (!isNode) {
             opera12 = 'OTransition' in doc.style,
             any3d = (ie3d || webkit3d || gecko3d) && !opera12 && !phantomjs;
 
-        var touch = !phantomjs && (pointer || 'ontouchstart' in window ||
+        const touch = !phantomjs && (pointer || 'ontouchstart' in window ||
             (window.DocumentTouch && document instanceof window.DocumentTouch));
 
         Browser = {

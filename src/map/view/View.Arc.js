@@ -2,18 +2,17 @@ import { isString, parseJSON } from 'core/util';
 import Ajax from 'core/Ajax';
 
 function parse(arcConf) {
-    var tileInfo = arcConf['tileInfo'],
+    const tileInfo = arcConf['tileInfo'],
         tileSize = {
             'width': tileInfo['cols'],
             'height': tileInfo['rows']
         },
         resolutions = [],
         lods = tileInfo['lods'];
-    for (var i = 0, len = lods.length; i < len; i++) {
+    for (let i = 0, len = lods.length; i < len; i++) {
         resolutions.push(lods[i]['resolution']);
     }
-    var fullExtent = arcConf['fullExtent'],
-
+    const fullExtent = arcConf['fullExtent'],
         origin = tileInfo['origin'],
         tileSystem = [1, -1, origin['x'], origin['y']];
     delete fullExtent['spatialReference'];
@@ -38,7 +37,7 @@ export default function loadArcgis(url, cb, context) {
                 }
                 return;
             }
-            var view = parse(json);
+            const view = parse(json);
             if (context) {
                 cb.call(context, null, view);
             } else {
@@ -49,7 +48,7 @@ export default function loadArcgis(url, cb, context) {
         if (isString(url)) {
             url = parseJSON(url);
         }
-        var view = parse(url);
+        const view = parse(url);
         if (context) {
             cb.call(context, null, view);
         } else {

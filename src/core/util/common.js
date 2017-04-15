@@ -23,8 +23,8 @@ export function now() {
  */
 export function extend(dest) { // (Object[, Object, ...]) ->
     for (let i = 1; i < arguments.length; i++) {
-        let src = arguments[i];
-        for (let k in src) {
+        const src = arguments[i];
+        for (const k in src) {
             dest[k] = src[k];
         }
     }
@@ -42,18 +42,18 @@ export function extend(dest) { // (Object[, Object, ...]) ->
  * @memberOf Util
  */
 export function throttle(fn, time, context) {
-    var lock, args, wrapperFn, later;
+    let lock, args;
 
-    later = function () {
+    function later() {
         // reset lock and call if queued
         lock = false;
         if (args) {
             wrapperFn.apply(context, args);
             args = false;
         }
-    };
+    }
 
-    wrapperFn = function () {
+    function wrapperFn() {
         if (lock && wrapperFn.time > 0) {
             // called too soon, queue to call later
             args = arguments;
@@ -64,7 +64,7 @@ export function throttle(fn, time, context) {
             setTimeout(later, wrapperFn.time);
             lock = true;
         }
-    };
+    }
 
     wrapperFn.time = time;
 

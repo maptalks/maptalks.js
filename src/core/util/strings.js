@@ -58,15 +58,15 @@ export function stringLength(text, font) {
     if (stringLength.env) {
         return stringLength.env(text, font);
     } else {
-        var ruler = _getDomRuler('span');
+        const ruler = _getDomRuler('span');
         ruler.style.font = font;
         ruler.innerHTML = text;
-        var result = new Size(ruler.clientWidth, ruler.clientHeight);
+        const result = new Size(ruler.clientWidth, ruler.clientHeight);
         //if not removed, the canvas container on chrome will turn to unexpected blue background.
         //Reason is unknown.
         removeDomNode(ruler);
+        return result;
     }
-    return result;
 }
 
 /**
@@ -78,11 +78,11 @@ export function stringLength(text, font) {
  * @memberOf StringUtil
  */
 export function splitContent(content, textLength, wrapWidth) {
-    var rowNum = Math.ceil(textLength / wrapWidth);
-    var avgLen = textLength / content.length;
-    var approxLen = Math.floor(wrapWidth / avgLen);
-    var result = [];
-    for (var i = 0; i < rowNum; i++) {
+    const rowNum = Math.ceil(textLength / wrapWidth);
+    const avgLen = textLength / content.length;
+    const approxLen = Math.floor(wrapWidth / avgLen);
+    const result = [];
+    for (let i = 0; i < rowNum; i++) {
         if (i < rowNum - 1) {
             result.push(content.substring(i * approxLen, (i + 1) * approxLen));
         } else {
@@ -98,7 +98,7 @@ const contentExpRe = /\{([\w_]+)\}/g;
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
  * @example
  *     // will returns 'John is awesome'
- *     var actual = replaceVariable('{foo} is awesome', {'foo' : 'John'});
+ *     const actual = replaceVariable('{foo} is awesome', {'foo' : 'John'});
  * @param {String} str      - string to replace
  * @param {Object} props    - variable value properties
  * @return {String}
@@ -109,7 +109,7 @@ export function replaceVariable(str, props) {
         return str;
     }
     return str.replace(contentExpRe, function (str, key) {
-        var value = props[key];
+        const value = props[key];
         if (isNil(value)) {
             return str;
         }
@@ -126,9 +126,9 @@ export function replaceVariable(str, props) {
  * @memberOf StringUtil
  */
 export function getAlignPoint(size, horizontalAlignment, verticalAlignment) {
-    var width = size['width'],
+    const width = size['width'],
         height = size['height'];
-    var alignW, alignH;
+    let alignW, alignH;
     if (horizontalAlignment === 'left') {
         alignW = -width;
     } else if (horizontalAlignment === 'middle') {
@@ -171,25 +171,25 @@ export function getFont(style) {
  * @memberOf StringUtil
  */
 export function splitTextToRow(text, style) {
-    var font = getFont(style),
+    const font = getFont(style),
         lineSpacing = style['textLineSpacing'] || 0,
         rawTextSize = stringLength(text, font),
         textWidth = rawTextSize['width'],
         textHeight = rawTextSize['height'],
         wrapChar = style['textWrapCharacter'],
-        wrapWidth = style['textWrapWidth'],
         textRows = [];
+    let wrapWidth = style['textWrapWidth'];
     if (!wrapWidth || wrapWidth > textWidth) {
         wrapWidth = textWidth;
     }
     if (!isString(text)) {
         text += '';
     }
-    var actualWidth = 0,
+    let actualWidth = 0,
         size;
     if (wrapChar && text.indexOf(wrapChar) >= 0) {
-        var texts = text.split(wrapChar),
-            t, tSize, tWidth, contents, ii, ll;
+        const texts = text.split(wrapChar);
+        let t, tSize, tWidth, contents;
         for (let i = 0, l = texts.length; i < l; i++) {
             t = texts[i];
             //TODO stringLength is expensive, should be reduced here.
@@ -197,7 +197,7 @@ export function splitTextToRow(text, style) {
             tWidth = tSize['width'];
             if (tWidth > wrapWidth) {
                 contents = splitContent(t, tWidth, wrapWidth);
-                for (ii = 0, ll = contents.length; ii < ll; ii++) {
+                for (let ii = 0, ll = contents.length; ii < ll; ii++) {
                     size = stringLength(contents[ii], font);
                     if (size['width'] > actualWidth) {
                         actualWidth = size['width'];
@@ -218,7 +218,7 @@ export function splitTextToRow(text, style) {
             }
         }
     } else if (textWidth > wrapWidth) {
-        var splitted = splitContent(text, textWidth, wrapWidth);
+        const splitted = splitContent(text, textWidth, wrapWidth);
         for (let i = 0; i < splitted.length; i++) {
             size = stringLength(splitted[i], font);
             if (size['width'] > actualWidth) {
@@ -239,8 +239,8 @@ export function splitTextToRow(text, style) {
         });
     }
 
-    var rowNum = textRows.length;
-    var textSize = new Size(actualWidth, textHeight * rowNum + lineSpacing * (rowNum - 1));
+    const rowNum = textRows.length;
+    const textSize = new Size(actualWidth, textHeight * rowNum + lineSpacing * (rowNum - 1));
     return {
         'total': rowNum,
         'size': textSize,

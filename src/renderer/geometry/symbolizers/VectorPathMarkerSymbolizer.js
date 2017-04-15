@@ -42,7 +42,7 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
         if (resources && resources.isResourceLoaded(this._url)) {
             return resources.getImage(this._url);
         }
-        var image = new Image();
+        const image = new Image();
         image.src = this._url[0];
         if (resources) {
             resources.addResource(this._url, image);

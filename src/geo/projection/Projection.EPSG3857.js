@@ -26,12 +26,12 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
     maxLatitude: 85.0511287798,
 
     project: function (lnglat) {
-        var rad = this.rad,
+        const rad = this.rad,
             metersPerDegree = this.metersPerDegree,
             max = this.maxLatitude;
-        var lng = lnglat.x,
+        const lng = lnglat.x,
             lat = Math.max(Math.min(max, lnglat.y), -max);
-        var c;
+        let c;
         if (lat === 0) {
             c = 0;
         } else {
@@ -41,11 +41,11 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
     },
 
     unproject: function (pLnglat) {
-        var x = pLnglat.x,
+        const x = pLnglat.x,
             y = pLnglat.y;
-        var rad = this.rad,
+        const rad = this.rad,
             metersPerDegree = this.metersPerDegree;
-        var c;
+        let c;
         if (y === 0) {
             c = 0;
         } else {

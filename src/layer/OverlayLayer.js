@@ -53,9 +53,9 @@ class OverlayLayer extends Layer {
         if (!filter) {
             return this._geoList.slice(0);
         }
-        var result = [],
-            geometry, filtered;
-        for (var i = 0, l = this._geoList.length; i < l; i++) {
+        const result = [];
+        let geometry, filtered;
+        for (let i = 0, l = this._geoList.length; i < l; i++) {
             geometry = this._geoList[i];
             if (context) {
                 filtered = filter.call(context, geometry);
@@ -85,7 +85,7 @@ class OverlayLayer extends Layer {
      * @return {Geometry} last geometry
      */
     getLastGeometry() {
-        var len = this._geoList.length;
+        const len = this._geoList.length;
         if (len === 0) {
             return null;
         }
@@ -108,7 +108,7 @@ class OverlayLayer extends Layer {
         if (this.getCount() === 0) {
             return null;
         }
-        var extent = new Extent();
+        const extent = new Extent();
         this.forEach(g => {
             extent._combine(g.getExtent());
         });
@@ -164,8 +164,8 @@ class OverlayLayer extends Layer {
         if (geometries.type === 'FeatureCollection') {
             return this.addGeometry(GeoJSON.toGeometry(geometries), fitView);
         } else if (!Array.isArray(geometries)) {
-            var count = arguments.length;
-            var last = arguments[count - 1];
+            const count = arguments.length;
+            const last = arguments[count - 1];
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
             fitView = last;
             if (last instanceof Geometry) {
@@ -177,34 +177,33 @@ class OverlayLayer extends Layer {
             return this;
         }
         this._initCache();
-        var fitCounter = 0;
-        var centerSum = new Coordinate(0, 0);
-        var extent = null,
-            geo, geoId, internalId, geoCenter, geoExtent;
-        for (var i = 0, len = geometries.length; i < len; i++) {
-            geo = geometries[i];
+        let fitCounter = 0;
+        const centerSum = new Coordinate(0, 0);
+        let extent = null;
+        for (let i = 0, len = geometries.length; i < len; i++) {
+            let geo = geometries[i];
             if (!geo) {
                 throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
             }
             if (!(geo instanceof Geometry)) {
                 geo = Geometry.fromJSON(geo);
             }
-            geoId = geo.getId();
+            const geoId = geo.getId();
             if (!isNil(geoId)) {
                 if (!isNil(this._geoMap[geoId])) {
                     throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + geoId + ', at index:' + i);
                 }
                 this._geoMap[geoId] = geo;
             }
-            internalId = UID();
+            const internalId = UID();
             //内部全局唯一的id
             geo._setInternalId(internalId);
             this._geoList.push(geo);
 
 
             if (fitView === true) {
-                geoCenter = geo.getCenter();
-                geoExtent = geo.getExtent();
+                const geoCenter = geo.getCenter();
+                const geoExtent = geo.getExtent();
                 if (geoCenter && geoExtent) {
                     centerSum._add(geoCenter);
                     if (extent == null) {
@@ -236,12 +235,12 @@ class OverlayLayer extends Layer {
             });
         }
         this._sortGeometries();
-        var map = this.getMap();
+        const map = this.getMap();
         if (map) {
             this._getRenderer().onGeometryAdd(geometries);
             if (fitView && extent) {
-                var z = map.getFitZoom(extent);
-                var center = centerSum._multi(1 / fitCounter);
+                const z = map.getFitZoom(extent);
+                const center = centerSum._multi(1 / fitCounter);
                 map.setCenterAndZoom(center, z);
             }
         }
@@ -269,7 +268,7 @@ class OverlayLayer extends Layer {
         if (!Array.isArray(geometries)) {
             return this.removeGeometry([geometries]);
         }
-        for (var i = geometries.length - 1; i >= 0; i--) {
+        for (let i = geometries.length - 1; i >= 0; i--) {
             if (!(geometries[i] instanceof Geometry)) {
                 geometries[i] = this.getGeometryById(geometries[i]);
             }
@@ -301,7 +300,7 @@ class OverlayLayer extends Layer {
             geo.remove();
         });
         this._geoMap = {};
-        var old = this._geoList;
+        const old = this._geoList;
         this._geoList = [];
         if (this._getRenderer()) {
             this._getRenderer().onGeometryRemove(old);
@@ -330,15 +329,15 @@ class OverlayLayer extends Layer {
         if (this !== geometry.getLayer()) {
             return;
         }
-        var internalId = geometry._getInternalId();
+        const internalId = geometry._getInternalId();
         if (isNil(internalId)) {
             return;
         }
-        var geoId = geometry.getId();
+        const geoId = geometry.getId();
         if (!isNil(geoId)) {
             delete this._geoMap[geoId];
         }
-        var idx = this._findInList(geometry);
+        const idx = this._findInList(geometry);
         if (idx >= 0) {
             this._geoList.splice(idx, 1);
         }
@@ -348,7 +347,7 @@ class OverlayLayer extends Layer {
     }
 
     hide() {
-        for (var i = 0, l = this._geoList.length; i < l; i++) {
+        for (let i = 0, l = this._geoList.length; i < l; i++) {
             this._geoList[i].onHide();
         }
         return Layer.prototype.hide.call(this);
@@ -365,18 +364,17 @@ class OverlayLayer extends Layer {
         const geometries = this._geoList,
             filter = options ? options.filter : null,
             hits = [];
-        var extent;
         const map = this.getMap();
         const point = map.coordinateToPoint(coordinate);
         const cp = map._pointToContainerPoint(point);
         for (let i = geometries.length - 1; i >= 0; i--) {
-            let geo = geometries[i];
+            const geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter()) {
                 continue;
             }
             if (!(geo instanceof LineString) || !geo._getArrowStyle()) {
                 // Except for LineString with arrows
-                extent = geo._getPainter().getContainerExtent();
+                const extent = geo._getPainter().getContainerExtent();
                 if (!extent || !extent.contains(cp)) {
                     continue;
                 }
@@ -415,11 +413,11 @@ class OverlayLayer extends Layer {
 
     //binarySearch
     _findInList(geo) {
-        var len = this._geoList.length;
+        const len = this._geoList.length;
         if (len === 0) {
             return -1;
         }
-        var low = 0,
+        let low = 0,
             high = len - 1,
             middle;
         while (low <= high) {
@@ -439,7 +437,7 @@ class OverlayLayer extends Layer {
         if (!param || !param['target']) {
             return;
         }
-        var type = param['type'];
+        const type = param['type'];
         if (type === 'idchange') {
             this._onGeometryIdChange(param);
         } else if (type === 'zindexchange') {

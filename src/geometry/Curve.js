@@ -12,8 +12,8 @@ import Canvas2d from 'core/Canvas';
 class Curve extends LineString {
 
     _arc(ctx, points, lineOpacity) {
-        var degree = this.options['arcDegree'] * Math.PI / 180;
-        for (var i = 1, l = points.length; i < l; i++) {
+        const degree = this.options['arcDegree'] * Math.PI / 180;
+        for (let i = 1, l = points.length; i < l; i++) {
             Canvas2d._arcBetween(ctx, points[i - 1], points[i], degree);
             Canvas2d._stroke(ctx, lineOpacity);
         }
@@ -32,7 +32,7 @@ class Curve extends LineString {
             Canvas2d._path(ctx, points);
             return;
         }
-        var i, l;
+        let i, l;
         for (i = 1, l = points.length; i + 2 < l; i += 3) {
             ctx.bezierCurveTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y, points[i + 2].x, points[i + 2].y);
         }

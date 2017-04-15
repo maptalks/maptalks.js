@@ -21,18 +21,18 @@ class OverlayLayerRenderer extends CanvasRenderer {
     // resources of old symbols will still be stored.
     // 2. removed geometries' resources won't be removed.
     checkResources() {
-        var geometries = this._geosToCheck;
+        let geometries = this._geosToCheck;
         if (!this._resourceChecked && !geometries) {
             geometries = this.layer._geoList;
         }
         if (!isArrayHasData(geometries)) {
             return [];
         }
-        var me = this,
+        const me = this,
             resources = [];
 
         function checkGeo(geo) {
-            var res = geo._getExternalResources();
+            const res = geo._getExternalResources();
             if (!res.length) {
                 return;
             }

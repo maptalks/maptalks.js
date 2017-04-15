@@ -240,11 +240,11 @@ class Extent {
      * @return {Boolean}
      */
     intersects(ext2) {
-        var rxmin = Math.max(this['xmin'], ext2['xmin']);
-        var rymin = Math.max(this['ymin'], ext2['ymin']);
-        var rxmax = Math.min(this['xmax'], ext2['xmax']);
-        var rymax = Math.min(this['ymax'], ext2['ymax']);
-        var intersects = !((rxmin > rxmax) || (rymin > rymax));
+        const rxmin = Math.max(this['xmin'], ext2['xmin']);
+        const rymin = Math.max(this['ymin'], ext2['ymin']);
+        const rxmax = Math.min(this['xmax'], ext2['xmax']);
+        const rymax = Math.min(this['ymax'], ext2['ymax']);
+        const intersects = !((rxmin > rxmax) || (rymin > rymax));
         return intersects;
     }
 
@@ -285,7 +285,7 @@ class Extent {
                 'ymax': extent.y
             };
         }
-        var xmin = this['xmin'];
+        let xmin = this['xmin'];
         if (!isNumber(xmin)) {
             xmin = extent['xmin'];
         } else if (isNumber(extent['xmin'])) {
@@ -294,7 +294,7 @@ class Extent {
             }
         }
 
-        var xmax = this['xmax'];
+        let xmax = this['xmax'];
         if (!isNumber(xmax)) {
             xmax = extent['xmax'];
         } else if (isNumber(extent['xmax'])) {
@@ -303,7 +303,7 @@ class Extent {
             }
         }
 
-        var ymin = this['ymin'];
+        let ymin = this['ymin'];
         if (!isNumber(ymin)) {
             ymin = extent['ymin'];
         } else if (isNumber(extent['ymin'])) {
@@ -312,7 +312,7 @@ class Extent {
             }
         }
 
-        var ymax = this['ymax'];
+        let ymax = this['ymax'];
         if (!isNumber(ymax)) {
             ymax = extent['ymax'];
         } else if (isNumber(extent['ymax'])) {
@@ -327,7 +327,7 @@ class Extent {
         if (!extent) {
             return this;
         }
-        var ext = this.__combine(extent);
+        const ext = this.__combine(extent);
         this['xmin'] = ext[0];
         this['ymin'] = ext[1];
         this['xmax'] = ext[2];
@@ -344,7 +344,7 @@ class Extent {
         if (!extent) {
             return this;
         }
-        var ext = this.__combine(extent);
+        const ext = this.__combine(extent);
         return new this.constructor(ext[0], ext[1], ext[2], ext[3]);
     }
 
@@ -411,7 +411,7 @@ class Extent {
      * @return {Coordinate[]} coordinates array
      */
     toArray() {
-        var xmin = this['xmin'],
+        const xmin = this['xmin'],
             ymin = this['ymin'],
             xmax = this['xmax'],
             ymax = this['ymax'];

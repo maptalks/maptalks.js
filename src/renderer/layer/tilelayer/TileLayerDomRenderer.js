@@ -132,7 +132,7 @@ export default class TileLayerDomRenderer extends Class {
 
         if (this._preCenterId && mat) {
             // caculate tile container's offset if map is pitching
-            let preCenterTilePos = this._tiles[this._preCenterId]['viewPoint'];
+            const preCenterTilePos = this._tiles[this._preCenterId]['viewPoint'];
             let current;
             for (let i = tiles.length - 1; i >= 0; i--) {
                 if (tiles[i]['id'] === this._preCenterId) {
@@ -149,11 +149,11 @@ export default class TileLayerDomRenderer extends Class {
         if (this._tiles) {
             // when camera is canceled, all current tiles needs to be repositioned (adding pre camera offset)
             const repos = !mat && preCamOffset && !preCamOffset.isZero();
-            for (let p in this._tiles) {
-                let t = this._tiles[p];
+            for (const p in this._tiles) {
+                const t = this._tiles[p];
                 this._tiles[p].current = false;
                 if (repos) {
-                    let pos = t['pos'];
+                    const pos = t['pos'];
                     pos._add(preCamOffset);
                     t['el'].style[TRANSFORM] = 'translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)';
                     t['viewPoint'] = pos;
@@ -161,9 +161,8 @@ export default class TileLayerDomRenderer extends Class {
             }
         }
 
-        var cachedTile;
         for (let i = tiles.length - 1; i >= 0; i--) {
-            cachedTile = this._tiles[tiles[i]['id']];
+            const cachedTile = this._tiles[tiles[i]['id']];
             if (cachedTile) {
                 //tile is already added
                 cachedTile.current = true;
@@ -266,11 +265,11 @@ export default class TileLayerDomRenderer extends Class {
     _updateTileSize() {
         if (this._tiles) {
             const size = this._getTileSize();
-            for (let p in this._tiles) {
+            for (const p in this._tiles) {
                 if (this._tiles[p].current) {
                     if (size[0] !== this._tiles[p]['size'][0]) {
                         this._tiles[p]['size'] = size;
-                        let img = this._tiles[p]['el'];
+                        const img = this._tiles[p]['el'];
                         if (img) {
                             img.width = size[0];
                             img.height = size[1];
@@ -350,7 +349,7 @@ export default class TileLayerDomRenderer extends Class {
 
         tile.loaded = Date.now();
 
-        var map = this.getMap();
+        const map = this.getMap();
 
         if (this._fadeAnimated) {
             tile['el'].style[TRANSITION] = 'opacity 250ms';
@@ -381,7 +380,7 @@ export default class TileLayerDomRenderer extends Class {
                 if (this._pruneTimeout) {
                     clearTimeout(this._pruneTimeout);
                 }
-                var timeout = map ? map.options['zoomAnimationDuration'] : 250,
+                const timeout = map ? map.options['zoomAnimationDuration'] : 250,
                     pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
                 // to trigger a pruning.
@@ -403,7 +402,7 @@ export default class TileLayerDomRenderer extends Class {
         if (!this.layer) {
             return;
         }
-        var errorUrl = this.layer.options['errorTileUrl'];
+        const errorUrl = this.layer.options['errorTileUrl'];
         if (errorUrl) {
             tile['el'].src = errorUrl;
         } else {
@@ -413,7 +412,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _noTilesToLoad() {
-        for (var key in this._tiles) {
+        for (const key in this._tiles) {
             if (!this._tiles[key].loaded) {
                 return false;
             }
@@ -422,32 +421,31 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _pruneTiles(pruneLevels) {
-        var map = this.getMap();
+        const map = this.getMap();
         if (!map || map.isMoving()) {
             return;
         }
 
-        var key,
-            zoom = this._currentTileZoom;
+        const zoom = this._currentTileZoom;
 
         if (!this.layer.isVisible()) {
             this._removeAllTiles();
             return;
         }
 
-        for (key in this._tiles) {
+        for (const key in this._tiles) {
             if (this._tiles[key]['z'] === zoom && !this._tiles[key].current) {
                 this._removeTile(key);
             }
         }
 
         if (pruneLevels) {
-            for (key in this._tiles) {
+            for (const key in this._tiles) {
                 if (this._tiles[key]['z'] !== zoom) {
                     this._removeTile(key);
                 }
             }
-            for (var z in this._levelContainers) {
+            for (const z in this._levelContainers) {
                 if (+z !== zoom) {
                     removeDomNode(this._levelContainers[z]);
                     this._removeTilesAtZoom(z);
@@ -459,7 +457,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _removeTile(key) {
-        var tile = this._tiles[key];
+        const tile = this._tiles[key];
         if (!tile) {
             return;
         }
@@ -483,7 +481,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _removeTilesAtZoom(zoom) {
-        for (var key in this._tiles) {
+        for (const key in this._tiles) {
             if (+this._tiles[key]['z'] !== +zoom) {
                 continue;
             }
@@ -492,7 +490,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _removeAllTiles() {
-        for (var key in this._tiles) {
+        for (const key in this._tiles) {
             this._removeTile(key);
         }
     }
@@ -501,7 +499,7 @@ export default class TileLayerDomRenderer extends Class {
         if (!this._levelContainers) {
             this._levelContainers = {};
         }
-        var zoom = this.getMap().getZoom();
+        const zoom = this.getMap().getZoom();
         if (!this._levelContainers[zoom]) {
             const container = this._levelContainers[zoom] = createEl('div', 'maptalks-tilelayer-level');
             container.style.cssText = POSITION0;
@@ -523,12 +521,12 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _createLayerContainer() {
-        var container = this._container = createEl('div', 'maptalks-tilelayer');
+        const container = this._container = createEl('div', 'maptalks-tilelayer');
         container.style.cssText = POSITION0;
         if (this._zIndex) {
             container.style.zIndex = this._zIndex;
         }
-        var parentContainer = this.layer.options['container'] === 'front' ? this.getMap()._panels['frontLayer'] : this.getMap()._panels['backLayer'];
+        const parentContainer = this.layer.options['container'] === 'front' ? this.getMap()._panels['frontLayer'] : this.getMap()._panels['backLayer'];
         parentContainer.appendChild(container);
     }
 

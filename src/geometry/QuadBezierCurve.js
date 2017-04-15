@@ -48,7 +48,7 @@ class QuadBezierCurve extends Curve {
     }
 
     _getArrowPlacement() {
-        var placement = this.options['arrowPlacement'];
+        let placement = this.options['arrowPlacement'];
         // bezier curves doesn't support point arrows.
         if (placement === 'point') {
             placement = 'vertex-last';

@@ -1,3 +1,4 @@
+/*eslint-disable no-var*/
 maptalks.MassivePointLayer = maptalks.VectorLayer.extend(/** @lends maptalks.MassivePointLayer.prototype */{
 
     options: {
@@ -9,7 +10,7 @@ maptalks.MassivePointLayer = maptalks.VectorLayer.extend(/** @lends maptalks.Mas
         if (!maptalks.Util.isArray(points)) {
             points = [points];
         }
-        for (var i = 0, len = points.length; i <= len; i++) {
+        for (let i = 0, len = points.length; i <= len; i++) {
             if (!points[i]) {
                 continue;
             }
@@ -76,7 +77,7 @@ maptalks.MassivePointLayer.registerRenderer('canvas', maptalks.renderer.vectorla
             var grid = [],
                 min = extent.getMin(),
                 gx, gy;
-            for (var i = 0, len = points.length; i < len; i++) {
+            for (let i = 0, len = points.length; i < len; i++) {
                 gx = Math.floor((points[i].x - min.x) / t);
                 gy = Math.floor((points[i].y - min.y) / t);
                 if (!grid[gx]) {
@@ -100,7 +101,7 @@ maptalks.MassivePointLayer.registerRenderer('canvas', maptalks.renderer.vectorla
         if (!context) {
             context = this;
         }
-        for (var i = 0, len = this._simplified.length; i < len; i++) {
+        for (let i = 0, len = this._simplified.length; i < len; i++) {
             fn.call(context, this.layer._geoList[this._simplified[i]]);
         }
     },
@@ -116,3 +117,4 @@ maptalks.MassivePointLayer.registerRenderer('canvas', maptalks.renderer.vectorla
         maptalks.renderer.vectorlayer.Canvas.prototype.onZoomEnd.apply(this, arguments);
     }
 }));
+/*eslint-enable no-var*/

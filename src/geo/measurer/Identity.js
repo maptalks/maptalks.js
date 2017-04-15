@@ -43,10 +43,10 @@ export default extend(/** @lends measurer.Identity */{
         if (!Array.isArray(coordinates)) {
             return 0;
         }
-        var area = 0;
-        for (var i = 0, len = coordinates.length; i < len; i++) {
-            var c1 = coordinates[i];
-            var c2 = null;
+        let area = 0;
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            const c1 = coordinates[i];
+            let c2 = null;
             if (i === len - 1) {
                 c2 = coordinates[0];
             } else {

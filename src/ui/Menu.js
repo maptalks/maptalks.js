@@ -93,19 +93,19 @@ class Menu extends UIComponent {
     buildOn() {
         if (this.options['custom']) {
             if (isString(this.options['items'])) {
-                var container = createEl('div');
+                const container = createEl('div');
                 container.innerHTML = this.options['items'];
                 return container;
             } else {
                 return this.options['items'];
             }
         } else {
-            var dom = createEl('div');
+            const dom = createEl('div');
             addClass(dom, 'maptalks-menu');
             dom.style.width = this._getMenuWidth() + 'px';
-            /*var arrow = createEl('em');
+            /*const arrow = createEl('em');
             addClass(arrow, 'maptalks-ico');*/
-            var menuItems = this._createMenuItemDom();
+            const menuItems = this._createMenuItemDom();
             // dom.appendChild(arrow);
             dom.appendChild(menuItems);
             return dom;
@@ -121,10 +121,10 @@ class Menu extends UIComponent {
         if (!this.getMap()) {
             return null;
         }
-        var mapSize = this.getMap().getSize(),
+        const mapSize = this.getMap().getSize(),
             p = this.getMap().viewPointToContainerPoint(this._getViewPoint()),
             size = this.getSize();
-        var dx = 0,
+        let dx = 0,
             dy = 0;
         if (p.x + size['width'] > mapSize['width']) {
             dx = -size['width'];
@@ -146,34 +146,34 @@ class Menu extends UIComponent {
     }
 
     _createMenuItemDom() {
-        var me = this;
-        var map = this.getMap();
-        var ul = createEl('ul');
+        const me = this;
+        const map = this.getMap();
+        const ul = createEl('ul');
         addClass(ul, 'maptalks-menu-items');
-        var items = this.getItems();
+        const items = this.getItems();
 
         function onMenuClick(index) {
             return function (e) {
-                var param = map._parseEvent(e, 'click');
+                const param = map._parseEvent(e, 'click');
                 param['target'] = me;
                 param['owner'] = me._owner;
                 param['index'] = index;
-                var result = this._callback(param);
+                const result = this._callback(param);
                 if (result === false) {
                     return;
                 }
                 me.hide();
             };
         }
-        var item, itemDOM;
-        for (var i = 0, len = items.length; i < len; i++) {
+        let item, itemDOM;
+        for (let i = 0, len = items.length; i < len; i++) {
             item = items[i];
             if (item === '-' || item === '_') {
                 itemDOM = createEl('li');
                 addClass(itemDOM, 'maptalks-menu-splitter');
             } else {
                 itemDOM = createEl('li');
-                var itemTitle = item['item'];
+                let itemTitle = item['item'];
                 if (isFunction(itemTitle)) {
                     itemTitle = itemTitle({
                         'owner': this._owner,
@@ -190,11 +190,8 @@ class Menu extends UIComponent {
     }
 
     _getMenuWidth() {
-        var defaultWidth = 160;
-        var width = this.options['width'];
-        if (!width) {
-            width = defaultWidth;
-        }
+        const defaultWidth = 160;
+        const width = this.options['width'] || defaultWidth;
         return width;
     }
 }

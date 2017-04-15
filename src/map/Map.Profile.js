@@ -33,14 +33,13 @@ import GeoJSON from 'geometry/GeoJSON';
             "markerHeight": 20
         }
     };
-    var marker = Geometry.fromJSON(profile);
+    const marker = Geometry.fromJSON(profile);
  */
 Geometry.fromJSON = function (json) {
     if (Array.isArray(json)) {
-        var result = [],
-            c;
-        for (var i = 0, len = json.length; i < len; i++) {
-            c = Geometry.fromJSON(json[i]);
+        let result = [];
+        for (let i = 0, len = json.length; i < len; i++) {
+            const c = Geometry.fromJSON(json[i]);
             if (Array.isArray(json)) {
                 result = result.concat(c);
             } else {
@@ -53,7 +52,7 @@ Geometry.fromJSON = function (json) {
     if (json && !json['feature']) {
         return GeoJSON.toGeometry(json);
     }
-    var geometry;
+    let geometry;
     if (json['subType']) {
         geometry = Geometry.getClass(json['subType']).fromJSON(json);
         if (!isNil(json['feature']['id'])) {
@@ -83,8 +82,8 @@ Layer.fromJSON = function (layerJSON) {
     if (!layerJSON) {
         return null;
     }
-    var layerType = layerJSON['type'];
-    var clazz = Layer.getClass(layerType);
+    const layerType = layerJSON['type'];
+    const clazz = Layer.getClass(layerType);
     if (!clazz || !clazz.fromJSON) {
         throw new Error('unsupported layer type:' + layerType);
     }
@@ -113,7 +112,7 @@ Map.include(/** @lends Map.prototype */ {
         if (!options) {
             options = {};
         }
-        var json = {
+        const json = {
             'version': this['JSON_VERSION'],
             'extent': this.getExtent().toJSON()
         };
@@ -121,11 +120,11 @@ Map.include(/** @lends Map.prototype */ {
         json['options']['center'] = this.getCenter();
         json['options']['zoom'] = this.getZoom();
 
-        var baseLayer = this.getBaseLayer();
+        const baseLayer = this.getBaseLayer();
         if ((isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
             json['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
         }
-        var extraLayerOptions = {};
+        const extraLayerOptions = {};
         if (options['clipExtent']) {
             //if clipExtent is set, only geometries intersecting with extent will be exported.
             //clipExtent's value can be an extent or true (map's current extent)
@@ -135,27 +134,26 @@ Map.include(/** @lends Map.prototype */ {
                 extraLayerOptions['clipExtent'] = options['clipExtent'];
             }
         }
-        var i, len, layers, opts,
-            layersJSON = [];
+        const layersJSON = [];
         if (isNil(options['layers']) || (options['layers'] && !Array.isArray(options['layers']))) {
-            layers = this.getLayers();
-            for (i = 0, len = layers.length; i < len; i++) {
+            const layers = this.getLayers();
+            for (let i = 0, len = layers.length; i < len; i++) {
                 if (!layers[i].toJSON) {
                     continue;
                 }
-                opts = extend({}, isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
+                const opts = extend({}, isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
                 layersJSON.push(layers[i].toJSON(opts));
             }
             json['layers'] = layersJSON;
         } else if (isArrayHasData(options['layers'])) {
-            layers = options['layers'];
-            for (i = 0; i < layers.length; i++) {
-                var exportOption = layers[i];
-                var layer = this.getLayer(exportOption['id']);
+            const layers = options['layers'];
+            for (let i = 0; i < layers.length; i++) {
+                const exportOption = layers[i];
+                const layer = this.getLayer(exportOption['id']);
                 if (!layer.toJSON) {
                     continue;
                 }
-                opts = extend({}, exportOption['options'], extraLayerOptions);
+                const opts = extend({}, exportOption['options'], extraLayerOptions);
                 layersJSON.push(layer.toJSON(opts));
             }
             json['layers'] = layersJSON;
@@ -191,18 +189,18 @@ Map.fromJSON = function (container, profile, options) {
     if (!options) {
         options = {};
     }
-    var map = new Map(container, profile['options']);
+    const map = new Map(container, profile['options']);
     if (isNil(options['baseLayer']) || options['baseLayer']) {
-        var baseLayer = Layer.fromJSON(profile['baseLayer']);
+        const baseLayer = Layer.fromJSON(profile['baseLayer']);
         if (baseLayer) {
             map.setBaseLayer(baseLayer);
         }
     }
     if (isNil(options['layers']) || options['layers']) {
-        var layers = [];
-        var layerJSONs = profile['layers'];
-        for (var i = 0; i < layerJSONs.length; i++) {
-            var layer = Layer.fromJSON(layerJSONs[i]);
+        const layers = [];
+        const layerJSONs = profile['layers'];
+        for (let i = 0; i < layerJSONs.length; i++) {
+            const layer = Layer.fromJSON(layerJSONs[i]);
             layers.push(layer);
         }
         map.addLayer(layers);

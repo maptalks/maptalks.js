@@ -14,18 +14,18 @@ class MapTouchZoomHandler extends Handler {
     }
 
     _onTouchStart(event) {
-        var map = this.target;
+        const map = this.target;
         if (!event.touches || event.touches.length !== 2 || map.isZooming()) {
             return;
         }
-        var container = map._containerDOM;
-        var p1 = getEventContainerPoint(event.touches[0], container),
+        const container = map._containerDOM;
+        const p1 = getEventContainerPoint(event.touches[0], container),
             p2 = getEventContainerPoint(event.touches[1], container);
 
         this._startDist = p1.distanceTo(p2);
         this._startZoom = map.getZoom();
 
-        var size = map.getSize();
+        const size = map.getSize();
         this._Origin = new Point(size['width'] / 2, size['height'] / 2);
         addDomEvent(document, 'touchmove', this._onTouchMove, this);
         addDomEvent(document, 'touchend', this._onTouchEnd, this);
@@ -44,18 +44,18 @@ class MapTouchZoomHandler extends Handler {
     }
 
     _onTouchMove(event) {
-        var map = this.target;
+        const map = this.target;
         if (!event.touches || event.touches.length !== 2 || !map.isZooming()) {
             return;
         }
-        var container = map._containerDOM,
+        const container = map._containerDOM,
             p1 = getEventContainerPoint(event.touches[0], container),
             p2 = getEventContainerPoint(event.touches[1], container),
             scale = p1.distanceTo(p2) / this._startDist;
 
         this._scale = scale;
-        var res = map._getResolution(this._startZoom) / scale;
-        var zoom = map.getZoomFromRes(res);
+        const res = map._getResolution(this._startZoom) / scale;
+        const zoom = map.getZoomFromRes(res);
         map.onZooming(zoom, this._Origin);
         /**
           * touchzooming event
@@ -68,7 +68,7 @@ class MapTouchZoomHandler extends Handler {
     }
 
     _onTouchEnd() {
-        var map = this.target;
+        const map = this.target;
         if (!map._zooming) {
             map._zooming = false;
             return;
@@ -78,8 +78,8 @@ class MapTouchZoomHandler extends Handler {
         off(document, 'touchmove', this._onTouchMove, this);
         off(document, 'touchend', this._onTouchEnd, this);
 
-        var scale = this._scale;
-        var zoom = map.getZoomForScale(scale);
+        const scale = this._scale;
+        let zoom = map.getZoomForScale(scale);
         if (zoom === -1) {
             zoom = map.getZoom();
         }

@@ -20,7 +20,7 @@ import Renderable from 'renderer/Renderable';
  * @memberOf Layer
  * @instance
  */
-var options = {
+const options = {
     'minZoom': null,
     'maxZoom': null,
     'visible': true,
@@ -59,7 +59,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             return this;
         }
         this._initRenderer();
-        var zIndex = this.getZIndex();
+        const zIndex = this.getZIndex();
         if (this.onAdd()) {
             if (!isNil(zIndex)) {
                 this._renderer.setZIndex(zIndex);
@@ -85,7 +85,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     setId(id) {
         //TODO 设置id可能造成map无法找到layer
-        var old = this._id;
+        const old = this._id;
         if (!isNil(id)) {
             id = id + '';
         }
@@ -125,7 +125,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     setZIndex(zIndex) {
         this._zIndex = zIndex;
         if (this.map) {
-            var layerList = this._getLayerList();
+            const layerList = this._getLayerList();
             this.map._sortLayersByZIndex(layerList);
         }
         if (this._renderer) {
@@ -148,7 +148,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @protected
      */
     isCanvasRender() {
-        var renderer = this._getRenderer();
+        const renderer = this._getRenderer();
         if (renderer) {
             return renderer.isCanvasRender();
         }
@@ -172,15 +172,15 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @returns {Layer} this
      */
     bringToFront() {
-        var layers = this._getLayerList();
+        const layers = this._getLayerList();
         if (!layers.length) {
             return this;
         }
-        var topLayer = layers[layers.length - 1];
+        const topLayer = layers[layers.length - 1];
         if (layers.length === 1 || topLayer === this) {
             return this;
         }
-        var max = topLayer.getZIndex();
+        const max = topLayer.getZIndex();
         this.setZIndex(max + 1);
         return this;
     }
@@ -190,15 +190,15 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @returns {Layer} this
      */
     bringToBack() {
-        var layers = this._getLayerList();
+        const layers = this._getLayerList();
         if (!layers.length) {
             return this;
         }
-        var bottomLayer = layers[0];
+        const bottomLayer = layers[0];
         if (layers.length === 1 || bottomLayer === this) {
             return this;
         }
-        var min = bottomLayer.getZIndex();
+        const min = bottomLayer.getZIndex();
         this.setZIndex(min - 1);
         return this;
     }
@@ -241,9 +241,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
             return false;
         }
-        var map = this.getMap();
+        const map = this.getMap();
         if (map) {
-            var zoom = map.getZoom();
+            const zoom = map.getZoom();
             if ((!isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom) ||
                 (!isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
                 return false;
@@ -351,11 +351,11 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     _initRenderer() {
-        var renderer = this.options['renderer'];
+        const renderer = this.options['renderer'];
         if (!this.constructor.getRendererClass) {
             return;
         }
-        var clazz = this.constructor.getRendererClass(renderer);
+        const clazz = this.constructor.getRendererClass(renderer);
         if (!clazz) {
             throw new Error('Invalid renderer for Layer(' + this.getId() + '):' + renderer);
         }

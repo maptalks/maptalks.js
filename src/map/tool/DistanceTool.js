@@ -100,7 +100,7 @@ class DistanceTool extends DrawTool {
      */
     clear() {
         if (isArrayHasData(this._measureLayers)) {
-            for (var i = 0; i < this._measureLayers.length; i++) {
+            for (let i = 0; i < this._measureLayers.length; i++) {
                 this._measureLayers[i].remove();
             }
         }
@@ -130,21 +130,21 @@ class DistanceTool extends DrawTool {
     }
 
     _measure(toMeasure) {
-        var map = this.getMap();
-        var length;
+        const map = this.getMap();
+        let length;
         if (toMeasure instanceof Geometry) {
             length = map.computeGeometryLength(toMeasure);
         } else if (Array.isArray(toMeasure)) {
             length = map.getProjection().measureLength(toMeasure);
         }
         this._lastMeasure = length;
-        var units;
+        let units;
         if (this.options['language'] === 'zh-CN') {
             units = [' 米', ' 公里', ' 英尺', ' 英里'];
         } else {
             units = [' m', ' km', ' feet', ' mile'];
         }
-        var content = '';
+        let content = '';
         if (this.options['metric']) {
             content += length < 1000 ? length.toFixed(0) + units[0] : (length / 1000).toFixed(2) + units[1];
         }
@@ -177,10 +177,10 @@ class DistanceTool extends DrawTool {
     }
 
     _msOnDrawStart(param) {
-        var map = this.getMap();
-        var uid = UID();
-        var layerId = 'distancetool_' + uid;
-        var markerLayerId = 'distancetool_markers_' + uid;
+        const map = this.getMap();
+        const uid = UID();
+        const layerId = 'distancetool_' + uid;
+        const markerLayerId = 'distancetool_markers_' + uid;
         if (!map.getLayer(layerId)) {
             this._measureLineLayer = new VectorLayer(layerId, {
                 'drawImmediate': true
@@ -198,8 +198,8 @@ class DistanceTool extends DrawTool {
         new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
-        var content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
-        var startLabel = new Label(content, param['coordinate'], this.options['labelOptions']);
+        const content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
+        const startLabel = new Label(content, param['coordinate'], this.options['labelOptions']);
         this._measureMarkerLayer.addGeometry(startLabel);
     }
 
@@ -225,31 +225,31 @@ class DistanceTool extends DrawTool {
     }
 
     _msOnDrawVertex(param) {
-        var geometry = param['geometry'];
+        const geometry = param['geometry'];
         //vertex marker
         new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
-        var length = this._measure(geometry);
-        var vertexLabel = new Label(length, param['coordinate'], this.options['labelOptions']);
+        const length = this._measure(geometry);
+        const vertexLabel = new Label(length, param['coordinate'], this.options['labelOptions']);
         this._measureMarkerLayer.addGeometry(vertexLabel);
         this._lastVertex = vertexLabel;
     }
 
     _msOnDrawEnd(param) {
         this._clearTailMarker();
-        var size = this._lastVertex.getSize();
+        let size = this._lastVertex.getSize();
         if (!size) {
             size = new Size(10, 10);
         }
         this._addClearMarker(this._lastVertex.getCoordinates(), size['width']);
-        var geo = param['geometry'].copy();
+        const geo = param['geometry'].copy();
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getLength();
     }
 
     _addClearMarker(coordinates, dx) {
-        var endMarker = new Marker(coordinates, {
+        const endMarker = new Marker(coordinates, {
             'symbol': [{
                 'markerType': 'square',
                 'markerFill': '#ffffff',
@@ -265,7 +265,7 @@ class DistanceTool extends DrawTool {
                 'markerDx': 20 + dx
             }]
         });
-        var measureLineLayer = this._measureLineLayer,
+        const measureLineLayer = this._measureLineLayer,
             measureMarkerLayer = this._measureMarkerLayer;
         endMarker.on('click', function () {
             measureLineLayer.remove();

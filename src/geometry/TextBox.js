@@ -54,17 +54,17 @@ class TextBox extends TextMarker {
     }
 
     _refresh() {
-        var symbol = this.getSymbol() || this._getDefaultTextSymbol();
+        const symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
 
-        var sizes = this._getBoxSize(symbol),
-            boxSize = sizes[0],
+        const sizes = this._getBoxSize(symbol),
             textSize = sizes[1];
+        let boxSize = sizes[0];
 
         //if no boxSize then use text's size in default
         if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
-            var padding = this.options['boxPadding'];
-            var width = textSize['width'] + padding['width'] * 2,
+            const padding = this.options['boxPadding'];
+            const width = textSize['width'] + padding['width'] * 2,
                 height = textSize['height'] + padding['height'] * 2;
             boxSize = new Size(width, height);
             symbol['markerWidth'] = boxSize['width'];
@@ -74,7 +74,7 @@ class TextBox extends TextMarker {
             symbol['markerHeight'] = boxSize['height'];
         }
 
-        var textAlign = symbol['textHorizontalAlignment'];
+        const textAlign = symbol['textHorizontalAlignment'];
         if (textAlign) {
             symbol['textDx'] = symbol['markerDx'] || 0;
             if (textAlign === 'left') {
@@ -84,7 +84,7 @@ class TextBox extends TextMarker {
             }
         }
 
-        var vAlign = symbol['textVerticalAlignment'];
+        const vAlign = symbol['textVerticalAlignment'];
         if (vAlign) {
             symbol['textDy'] = symbol['markerDy'] || 0;
             if (vAlign === 'top') {
@@ -100,7 +100,7 @@ class TextBox extends TextMarker {
 
     _getInternalSymbol() {
         //In TextBox, textHorizontalAlignment's meaning is textAlign in the box which is reversed from original textHorizontalAlignment.
-        var textSymbol = extend({}, this._symbol);
+        const textSymbol = extend({}, this._symbol);
         if (textSymbol['textHorizontalAlignment'] === 'left') {
             textSymbol['textHorizontalAlignment'] = 'right';
         } else if (textSymbol['textHorizontalAlignment'] === 'right') {

@@ -55,7 +55,7 @@ class Scale extends Control {
     }
 
     _addScales() {
-        var css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
+        const css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
             'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
             ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
         if (this.options['metric']) {
@@ -67,8 +67,8 @@ class Scale extends Control {
     }
 
     _update() {
-        var map = this._map;
-        var maxMeters = map.pixelToDistance(this.options['maxWidth'], 0);
+        const map = this._map;
+        const maxMeters = map.pixelToDistance(this.options['maxWidth'], 0);
         this._updateScales(maxMeters);
     }
 
@@ -82,15 +82,15 @@ class Scale extends Control {
     }
 
     _updateMetric(maxMeters) {
-        var meters = this._getRoundNum(maxMeters),
+        const meters = this._getRoundNum(maxMeters),
             label = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
 
         this._updateScale(this._mScale, label, meters / maxMeters);
     }
 
     _updateImperial(maxMeters) {
-        var maxFeet = maxMeters * 3.2808399,
-            maxMiles, miles, feet;
+        const maxFeet = maxMeters * 3.2808399;
+        let maxMiles, miles, feet;
 
         if (maxFeet > 5280) {
             maxMiles = maxFeet / 5280;
@@ -109,8 +109,8 @@ class Scale extends Control {
     }
 
     _getRoundNum(num) {
-        var pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
-            d = num / pow10;
+        const pow10 = Math.pow(10, (Math.floor(num) + '').length - 1);
+        let d = num / pow10;
 
         d = d >= 10 ? 10 :
             d >= 5 ? 5 :

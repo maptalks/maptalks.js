@@ -117,7 +117,7 @@ class CanvasRenderer extends Class {
         if (this.isBlank && this.isBlank()) {
             return null;
         }
-        var map = this.getMap(),
+        const map = this.getMap(),
             size = this._extent2D.getSize(),
             // point = this._extent2D.getMin(),
             containerPoint = map._pointToContainerPoint(this._northWest);
@@ -196,13 +196,12 @@ class CanvasRenderer extends Class {
      * @returns {Promise[]}
      */
     loadResources(resourceUrls) {
-        var resources = this.resources,
+        const resources = this.resources,
             promises = [];
         if (isArrayHasData(resourceUrls)) {
-            var cache = {},
-                url;
-            for (var i = resourceUrls.length - 1; i >= 0; i--) {
-                url = resourceUrls[i];
+            const cache = {};
+            for (let i = resourceUrls.length - 1; i >= 0; i--) {
+                const url = resourceUrls[i];
                 if (!url || !url.length || cache[url.join('-')]) {
                     continue;
                 }
@@ -233,9 +232,9 @@ class CanvasRenderer extends Class {
         if (this.canvas) {
             return;
         }
-        var map = this.getMap();
-        var size = map.getSize();
-        var r = Browser.retina ? 2 : 1;
+        const map = this.getMap();
+        const size = map.getSize();
+        const r = Browser.retina ? 2 : 1;
         this.canvas = Canvas2D.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
@@ -258,14 +257,14 @@ class CanvasRenderer extends Class {
         if (!this.canvas) {
             return;
         }
-        var size;
+        let size;
         if (!canvasSize) {
-            var map = this.getMap();
+            const map = this.getMap();
             size = map.getSize();
         } else {
             size = canvasSize;
         }
-        var r = Browser.retina ? 2 : 1;
+        const r = Browser.retina ? 2 : 1;
         //only make canvas bigger, never smaller
         if (this.canvas.width >= r * size['width'] && this.canvas.height >= r * size['height']) {
             return;
@@ -305,14 +304,14 @@ class CanvasRenderer extends Class {
             this.clearCanvas();
         }
         delete this._maskExtent;
-        var mask = this.layer.getMask();
+        const mask = this.layer.getMask();
         if (!mask) {
             this.layer.fire('renderstart', {
                 'context': this.context
             });
             return null;
         }
-        var maskExtent2D = this._maskExtent = mask._getPainter().get2DExtent();
+        const maskExtent2D = this._maskExtent = mask._getPainter().get2DExtent();
         if (!maskExtent2D.intersects(this._extent2D)) {
             this.layer.fire('renderstart', {
                 'context': this.context
@@ -552,14 +551,14 @@ class CanvasRenderer extends Class {
     }
 
     _promiseResource(url) {
-        var me = this, resources = this.resources,
+        const me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
         return function (resolve) {
             if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
                 return;
             }
-            var img = new Image();
+            const img = new Image();
             if (crossOrigin) {
                 img['crossOrigin'] = crossOrigin;
             }
@@ -596,7 +595,7 @@ class CanvasRenderer extends Class {
         if (!this.layer || !this.resources) {
             return;
         }
-        var w = url[1], h = url[2];
+        let w = url[1], h = url[2];
         if (this.layer.options['cacheSvgOnCanvas'] && isSVG(url[0]) === 1 && (Browser.edge || Browser.ie)) {
             //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
             if (isNil(w)) {
@@ -605,7 +604,7 @@ class CanvasRenderer extends Class {
             if (isNil(h)) {
                 h = img.height || this.layer.options['defaultIconSize'][1];
             }
-            var canvas = Canvas2D.createCanvas(w, h);
+            const canvas = Canvas2D.createCanvas(w, h);
             Canvas2D.image(canvas.getContext('2d'), img, 0, 0, w, h);
             img = canvas;
         }
@@ -652,11 +651,11 @@ export class ResourceCache {
         if (!url) {
             return false;
         }
-        var imgUrl = this._getImgUrl(url);
+        const imgUrl = this._getImgUrl(url);
         if (this._errors[imgUrl]) {
             return true;
         }
-        var img = this.resources[imgUrl];
+        const img = this.resources[imgUrl];
         if (!img) {
             return false;
         }
@@ -667,7 +666,7 @@ export class ResourceCache {
     }
 
     getImage(url) {
-        var imgUrl = this._getImgUrl(url);
+        const imgUrl = this._getImgUrl(url);
         if (!this.isResourceLoaded(url) || this._errors[imgUrl]) {
             return null;
         }
@@ -682,8 +681,8 @@ export class ResourceCache {
         if (!res) {
             return this;
         }
-        for (var p in res.resources) {
-            var img = res.resources[p];
+        for (const p in res.resources) {
+            const img = res.resources[p];
             this.addResource([p, img.width, img.height], img.image);
         }
         return this;

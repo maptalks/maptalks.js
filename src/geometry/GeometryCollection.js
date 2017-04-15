@@ -184,10 +184,10 @@ class GeometryCollection extends Geometry {
     }
 
     getSymbol() {
-        var s = super.getSymbol();
+        let s = super.getSymbol();
         if (!s) {
             const symbols = [];
-            var is = false;
+            let is = false;
             this.forEach(g => {
                 const symbol = g.getSymbol();
                 if (symbol && !is) {
@@ -301,7 +301,7 @@ class GeometryCollection extends Geometry {
         if (!projection || this.isEmpty()) {
             return null;
         }
-        var sumX = 0,
+        let sumX = 0,
             sumY = 0,
             counter = 0;
         const geometries = this.getGeometries();
@@ -309,7 +309,7 @@ class GeometryCollection extends Geometry {
             if (!geometries[i]) {
                 continue;
             }
-            let center = geometries[i]._computeCenter(projection);
+            const center = geometries[i]._computeCenter(projection);
             if (center) {
                 sumX += center.x;
                 sumY += center.y;
@@ -341,12 +341,12 @@ class GeometryCollection extends Geometry {
             return null;
         }
         const geometries = this.getGeometries();
-        var result = null;
+        let result = null;
         for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
             }
-            let geoExtent = geometries[i]._computeExtent(projection);
+            const geoExtent = geometries[i]._computeExtent(projection);
             if (geoExtent) {
                 result = geoExtent.combine(result);
             }
@@ -359,7 +359,7 @@ class GeometryCollection extends Geometry {
             return 0;
         }
         const geometries = this.getGeometries();
-        var result = 0;
+        let result = 0;
         for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
@@ -374,7 +374,7 @@ class GeometryCollection extends Geometry {
             return 0;
         }
         const geometries = this.getGeometries();
-        var result = 0;
+        let result = 0;
         for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;
@@ -435,10 +435,10 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return [];
         }
-        var geometries = this.getGeometries(),
-            resources = [],
-            symbol, res, cache = {},
-            key;
+        const geometries = this.getGeometries(),
+            resources = [];
+        const cache = {};
+        let symbol, res, key;
         for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
                 continue;

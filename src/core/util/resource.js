@@ -13,7 +13,7 @@ import { Symbolizer } from 'renderer/geometry/symbolizers';
  * @memberOf Util
  */
 export function translateToSVGStyles(s) {
-    var result = {
+    const result = {
         'stroke': {
             'stroke': s['markerLineColor'],
             'stroke-width': s['markerLineWidth'],
@@ -49,8 +49,8 @@ export function getMarkerPathBase64(symbol, width, height) {
     if (!symbol['markerPath']) {
         return null;
     }
-    var op = 1,
-        styles = translateToSVGStyles(symbol);
+    let op = 1;
+    const styles = translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
     if (isNumber(symbol['markerOpacity'])) {
         op = symbol['markerOpacity'];
@@ -58,16 +58,16 @@ export function getMarkerPathBase64(symbol, width, height) {
     if (isNumber(symbol['opacity'])) {
         op *= symbol['opacity'];
     }
-    var p, svgStyles = {};
+    const svgStyles = {};
     if (styles) {
-        for (p in styles['stroke']) {
+        for (const p in styles['stroke']) {
             if (styles['stroke'].hasOwnProperty(p)) {
                 if (!isNil(styles['stroke'][p])) {
                     svgStyles[p] = styles['stroke'][p];
                 }
             }
         }
-        for (p in styles['fill']) {
+        for (const p in styles['fill']) {
             if (styles['fill'].hasOwnProperty(p)) {
                 if (!isNil(styles['fill'][p])) {
                     svgStyles[p] = styles['fill'][p];
@@ -76,9 +76,10 @@ export function getMarkerPathBase64(symbol, width, height) {
         }
     }
 
-    var pathes = Array.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
-    var i, path, pathesToRender = [];
-    for (i = 0; i < pathes.length; i++) {
+    const pathes = Array.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    let path;
+    const pathesToRender = [];
+    for (let i = 0; i < pathes.length; i++) {
         path = isString(pathes[i]) ? {
             'path': pathes[i]
         } : pathes[i];
@@ -87,7 +88,7 @@ export function getMarkerPathBase64(symbol, width, height) {
         delete path['path'];
         pathesToRender.push(path);
     }
-    var svg = ['<svg version="1.1"', 'xmlns="http://www.w3.org/2000/svg"'];
+    const svg = ['<svg version="1.1"', 'xmlns="http://www.w3.org/2000/svg"'];
     if (op < 1) {
         svg.push('opacity="' + op + '"');
     }
@@ -106,9 +107,9 @@ export function getMarkerPathBase64(symbol, width, height) {
     }
     svg.push('><defs></defs>');
 
-    for (i = 0; i < pathesToRender.length; i++) {
-        var strPath = '<path ';
-        for (p in pathesToRender[i]) {
+    for (let i = 0; i < pathesToRender.length; i++) {
+        let strPath = '<path ';
+        for (const p in pathesToRender[i]) {
             if (pathesToRender[i].hasOwnProperty(p)) {
                 strPath += ' ' + p + '="' + pathesToRender[i][p] + '"';
             }
@@ -117,7 +118,7 @@ export function getMarkerPathBase64(symbol, width, height) {
         svg.push(strPath);
     }
     svg.push('</svg>');
-    var b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' '));
+    const b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' '));
     return b64;
 }
 
@@ -132,15 +133,15 @@ export function getExternalResources(symbol, toAbsolute) {
     if (!symbol) {
         return [];
     }
-    var symbols = symbol;
+    let symbols = symbol;
     if (!Array.isArray(symbol)) {
         symbols = [symbol];
     }
-    var resources = [];
-    var props = Symbolizer.resourceProperties,
-        i, ii, iii, res, resSizeProp;
-    var w, h;
-    for (i = symbols.length - 1; i >= 0; i--) {
+    const resources = [];
+    const props = Symbolizer.resourceProperties;
+    let res, resSizeProp;
+    let w, h;
+    for (let i = symbols.length - 1; i >= 0; i--) {
         symbol = symbols[i];
         if (!symbol) {
             continue;
@@ -148,7 +149,7 @@ export function getExternalResources(symbol, toAbsolute) {
         if (toAbsolute) {
             symbol = convertResourceUrl(symbol);
         }
-        for (ii = 0; ii < props.length; ii++) {
+        for (let ii = 0; ii < props.length; ii++) {
             res = symbol[props[ii]];
             if (isFunctionDefinition(res)) {
                 res = getFunctionTypeResources(res);
@@ -159,7 +160,7 @@ export function getExternalResources(symbol, toAbsolute) {
             if (!Array.isArray(res)) {
                 res = [res];
             }
-            for (iii = 0; iii < res.length; iii++) {
+            for (let iii = 0; iii < res.length; iii++) {
                 if (res[iii].slice(0, 4) === 'url(') {
                     res[iii] = extractCssUrl(res[iii]);
                 }
@@ -172,8 +173,8 @@ export function getExternalResources(symbol, toAbsolute) {
             h = isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
             if (isFunctionDefinition(symbol['markerPath'])) {
                 res = getFunctionTypeResources(symbol['markerPath']);
-                var path = symbol['markerPath'];
-                for (iii = 0; iii < res.length; iii++) {
+                const path = symbol['markerPath'];
+                for (let iii = 0; iii < res.length; iii++) {
                     symbol['markerPath'] = res[iii];
                     resources.push([getMarkerPathBase64(symbol), w, h]);
                 }
@@ -197,13 +198,13 @@ export function convertResourceUrl(symbol) {
         return null;
     }
 
-    var s = symbol;
+    const s = symbol;
     if (isNode) {
         return s;
     }
-    var props = Symbolizer.resourceProperties;
-    var res;
-    for (var ii = 0, len = props.length; ii < len; ii++) {
+    const props = Symbolizer.resourceProperties;
+    let res;
+    for (let ii = 0, len = props.length; ii < len; ii++) {
         res = s[props[ii]];
         if (!res) {
             continue;
@@ -215,13 +216,13 @@ export function convertResourceUrl(symbol) {
 
 function _convertUrlToAbsolute(res) {
     if (isFunctionDefinition(res)) {
-        var stops = res.stops;
-        for (var i = 0; i < stops.length; i++) {
+        const stops = res.stops;
+        for (let i = 0; i < stops.length; i++) {
             stops[i][1] = _convertUrlToAbsolute(stops[i][1]);
         }
         return res;
     }
-    var embed = 'data:';
+    const embed = 'data:';
     if (res.slice(0, 4) === 'url(') {
         res = extractCssUrl(res);
     }
@@ -233,14 +234,14 @@ function _convertUrlToAbsolute(res) {
 }
 
 function _absolute(base, relative) {
-    var stack = base.split('/'),
+    const stack = base.split('/'),
         parts = relative.split('/');
     if (relative.slice(0, 1) === 0) {
         return stack.slice(0, 3).join('/') + relative;
     } else {
         stack.pop(); // remove current file name (or empty string)
         // (omit if "base" is the current folder without trailing slash)
-        for (var i = 0; i < parts.length; i++) {
+        for (let i = 0; i < parts.length; i++) {
             if (parts[i] === '.')
                 continue;
             if (parts[i] === '..')

@@ -37,18 +37,18 @@ class GeometryDragHandler extends Handler  {
     }
 
     _startDrag(param) {
-        var map = this.target.getMap();
+        const map = this.target.getMap();
         if (!map) {
             return;
         }
-        var parent = this.target._getParent();
+        const parent = this.target._getParent();
         if (parent) {
             return;
         }
         if (this.isDragging()) {
             return;
         }
-        var domEvent = param['domEvent'];
+        const domEvent = param['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
@@ -73,7 +73,7 @@ class GeometryDragHandler extends Handler  {
     }
 
     _prepareMap() {
-        var map = this.target.getMap();
+        const map = this.target.getMap();
         this._mapDraggable = map.options['draggable'];
         this._mapHitDetect = map.options['hitDetect'];
         map._trySetCursor('move');
@@ -84,7 +84,7 @@ class GeometryDragHandler extends Handler  {
     }
 
     _prepareDragHandler() {
-        var map = this.target.getMap();
+        const map = this.target.getMap();
         this._dragHandler = new DragHandler(map._panels.mapWrapper || map._containerDOM);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
@@ -92,29 +92,29 @@ class GeometryDragHandler extends Handler  {
     }
 
     _prepareShadow() {
-        var target = this.target;
+        const target = this.target;
         this._prepareDragStageLayer();
-        var resources = this._dragStageLayer._getRenderer().resources;
+        const resources = this._dragStageLayer._getRenderer().resources;
         if (this._shadow) {
             this._shadow.remove();
         }
 
         this._shadow = target.copy();
         this._shadow.setSymbol(target._getInternalSymbol());
-        var shadow = this._shadow;
+        const shadow = this._shadow;
         if (target.options['dragShadow']) {
-            var symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
+            const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
             shadow.setSymbol(symbol);
         }
         shadow.setId(null);
         //copy connectors
-        var shadowConnectors = [];
+        const shadowConnectors = [];
         if (ConnectorLine._hasConnectors(target)) {
-            var connectors = ConnectorLine._getConnectors(target);
+            const connectors = ConnectorLine._getConnectors(target);
 
             for (let i = 0, l = connectors.length; i < l; i++) {
-                let targetConn = connectors[i];
-                let connOptions = targetConn.config(),
+                const targetConn = connectors[i];
+                const connOptions = targetConn.config(),
                     connSymbol = targetConn._getInternalSymbol();
                 connOptions['symbol'] = lowerSymbolOpacity(connSymbol, 0.5);
                 let conn;
@@ -142,7 +142,7 @@ class GeometryDragHandler extends Handler  {
     }
 
     _prepareDragStageLayer() {
-        var map = this.target.getMap(),
+        const map = this.target.getMap(),
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
@@ -152,17 +152,17 @@ class GeometryDragHandler extends Handler  {
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
-        var resources = new ResourceCache();
+        const resources = new ResourceCache();
         resources.merge(layer._getRenderer().resources);
         this._dragStageLayer._getRenderer().resources = resources;
     }
 
     _dragging(param) {
-        var target = this.target;
-        var map = target.getMap(),
+        const target = this.target;
+        const map = target.getMap(),
             eventParam = map._parseEvent(param['domEvent']);
 
-        var domEvent = eventParam['domEvent'];
+        const domEvent = eventParam['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
@@ -182,12 +182,12 @@ class GeometryDragHandler extends Handler  {
         if (!this._shadow) {
             return;
         }
-        var axis = this._shadow.options['dragOnAxis'];
-        var currentPos = eventParam['coordinate'];
+        const axis = this._shadow.options['dragOnAxis'];
+        const currentPos = eventParam['coordinate'];
         if (!this._lastPos) {
             this._lastPos = currentPos;
         }
-        var dragOffset = currentPos.sub(this._lastPos);
+        const dragOffset = currentPos.sub(this._lastPos);
         if (axis === 'x') {
             dragOffset.y = 0;
         } else if (axis === 'y') {
@@ -217,7 +217,7 @@ class GeometryDragHandler extends Handler  {
     }
 
     _endDrag(param) {
-        var target = this.target,
+        const target = this.target,
             map = target.getMap();
         if (this._dragHandler) {
             target.off('click', this._endDrag, this);
@@ -227,7 +227,7 @@ class GeometryDragHandler extends Handler  {
         if (!map) {
             return;
         }
-        var eventParam;
+        let eventParam;
         if (map) {
             eventParam = map._parseEvent(param['domEvent']);
         }
@@ -236,7 +236,7 @@ class GeometryDragHandler extends Handler  {
         if (!target.options['dragShadow']) {
             target.show();
         }
-        var shadow = this._shadow;
+        const shadow = this._shadow;
         if (shadow) {
             if (target.options['dragShadow']) {
                 target.setCoordinates(shadow.getCoordinates());

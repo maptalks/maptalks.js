@@ -17,9 +17,9 @@ export default class MapRenderer extends Class {
 
     panAnimation(distance, t, onFinish) {
         distance = new Point(distance);
-        var map = this.map;
+        const map = this.map;
         if (map.options['panAnimation']) {
-            var duration;
+            let duration;
             if (!t) {
                 duration = map.options['panAnimationDuration'];
             } else {
@@ -27,7 +27,7 @@ export default class MapRenderer extends Class {
             }
             map._enablePanAnimation = true;
             map._panAnimating = true;
-            var preDist = null;
+            let preDist = null;
             const player = Animation.animate({
                 'distance': distance
             }, {
@@ -46,11 +46,11 @@ export default class MapRenderer extends Class {
                 }
 
                 if (player.playState === 'running' && frame.styles['distance']) {
-                    var dist = frame.styles['distance'];
+                    const dist = frame.styles['distance'];
                     if (!preDist) {
                         preDist = dist;
                     }
-                    var offset = dist.sub(preDist);
+                    const offset = dist.sub(preDist);
                     map.offsetPlatform(offset);
                     map._offsetCenterByPixel(offset);
                     preDist = dist;
@@ -78,7 +78,7 @@ export default class MapRenderer extends Class {
         if (!this.map._panels.front) {
             return this;
         }
-        var pos = this.map.offsetPlatform().add(offset)._round();
+        const pos = this.map.offsetPlatform().add(offset)._round();
         offsetDom(this.map._panels.back, pos);
         offsetDom(this.map._panels.front, pos);
         return this;
@@ -90,7 +90,7 @@ export default class MapRenderer extends Class {
         }
         this.map._resetMapViewPoint();
         if (this.map._panels.front) {
-            var pos = new Point(0, 0);
+            const pos = new Point(0, 0);
             offsetDom(this.map._panels.back, pos);
             offsetDom(this.map._panels.front, pos);
         }

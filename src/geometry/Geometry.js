@@ -62,10 +62,10 @@ const options = {
 class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     constructor(options) {
-        var opts = extend({}, options);
-        var symbol = opts['symbol'];
-        var properties = opts['properties'];
-        var id = opts['id'];
+        const opts = extend({}, options);
+        const symbol = opts['symbol'];
+        const properties = opts['properties'];
+        const id = opts['id'];
         delete opts['symbol'];
         delete opts['id'];
         delete opts['properties'];
@@ -89,13 +89,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     getFirstCoordinate() {
         if (this.type === 'GeometryCollection') {
-            var geometries = this.getGeometries();
+            const geometries = this.getGeometries();
             if (!geometries.length) {
                 return null;
             }
             return geometries[0].getFirstCoordinate();
         }
-        var coordinates = this.getCoordinates();
+        let coordinates = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
             return coordinates;
         }
@@ -112,13 +112,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     getLastCoordinate() {
         if (this.type === 'GeometryCollection') {
-            var geometries = this.getGeometries();
+            const geometries = this.getGeometries();
             if (!geometries.length) {
                 return null;
             }
             return geometries[geometries.length - 1].getLastCoordinate();
         }
-        var coordinates = this.getCoordinates();
+        let coordinates = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
             return coordinates;
         }
@@ -177,7 +177,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#idchange
      */
     setId(id) {
-        var oldId = this.getId();
+        const oldId = this.getId();
         this._id = id;
         /**
          * idchange event.
@@ -219,7 +219,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#propertieschange
      */
     setProperties(properties) {
-        var old = this.properties;
+        const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
         /**
          * propertieschange event, thrown when geometry's properties is changed.
@@ -299,7 +299,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!props) {
             return this;
         }
-        var s = this._getSymbol();
+        let s = this._getSymbol();
         if (s) {
             s = extendSymbol(s, props);
         } else {
@@ -323,9 +323,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Extent} geometry's extent
      */
     getExtent() {
-        var prjExt = this._getPrjExtent();
+        const prjExt = this._getPrjExtent();
         if (prjExt) {
-            var p = this._getProjection();
+            const p = this._getProjection();
             return new Extent(p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax'])));
         } else {
             return this._computeExtent(this._getMeasurer());
@@ -376,7 +376,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     show() {
         this.options['visible'] = true;
         if (this.getMap()) {
-            var painter = this._getPainter();
+            const painter = this._getPainter();
             if (painter) {
                 painter.show();
             }
@@ -403,7 +403,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this.options['visible'] = false;
         if (this.getMap()) {
             this.onHide();
-            var painter = this._getPainter();
+            const painter = this._getPainter();
             if (painter) {
                 painter.hide();
             }
@@ -429,7 +429,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!this.options['visible']) {
             return false;
         }
-        var symbol = this._getInternalSymbol();
+        const symbol = this._getInternalSymbol();
         if (!symbol) {
             return true;
         }
@@ -463,7 +463,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#zindexchange
      */
     setZIndex(zIndex) {
-        var old = this._zIndex;
+        const old = this._zIndex;
         this._zIndex = zIndex;
         /**
          * zindexchange event, fired when geometry's zIndex is changed.
@@ -501,11 +501,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#zindexchange
      */
     bringToFront() {
-        var layer = this.getLayer();
+        const layer = this.getLayer();
         if (!layer || !layer.getLastGeometry) {
             return this;
         }
-        var topZ = layer.getLastGeometry().getZIndex();
+        const topZ = layer.getLastGeometry().getZIndex();
         this.setZIndex(topZ + 1);
         return this;
     }
@@ -516,11 +516,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#zindexchange
      */
     bringToBack() {
-        var layer = this.getLayer();
+        const layer = this.getLayer();
         if (!layer || !layer.getFirstGeometry) {
             return this;
         }
-        var bottomZ = layer.getFirstGeometry().getZIndex();
+        const bottomZ = layer.getFirstGeometry().getZIndex();
         this.setZIndex(bottomZ - 1);
         return this;
     }
@@ -550,10 +550,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (offset.x === 0 && offset.y === 0) {
             return this;
         }
-        var coordinates = this.getCoordinates();
+        const coordinates = this.getCoordinates();
         if (coordinates) {
             if (Array.isArray(coordinates)) {
-                var translated = mapArrayRecursively(coordinates, function (coord) {
+                const translated = mapArrayRecursively(coordinates, function (coord) {
                     return coord.add(offset);
                 });
                 this.setCoordinates(translated);
@@ -580,7 +580,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!count) {
             count = 4;
         }
-        var me = this;
+        const me = this;
         count *= 2;
         if (this._flashTimeout) {
             clearTimeout(this._flashTimeout);
@@ -616,8 +616,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Geometry} copy
      */
     copy() {
-        var json = this.toJSON();
-        var ret = Geometry.fromJSON(json);
+        const json = this.toJSON();
+        const ret = Geometry.fromJSON(json);
         //restore visibility
         ret.options['visible'] = true;
         return ret;
@@ -631,7 +631,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#remove
      */
     remove() {
-        var layer = this.getLayer();
+        const layer = this.getLayer();
         if (!layer) {
             return this;
         }
@@ -672,7 +672,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Object} GeoJSON Geometry
      */
     toGeoJSONGeometry() {
-        var gJson = this._exportGeoJSONGeometry();
+        const gJson = this._exportGeoJSONGeometry();
         return gJson;
     }
 
@@ -687,19 +687,19 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!opts) {
             opts = {};
         }
-        var feature = {
+        const feature = {
             'type': 'Feature',
             'geometry': null
         };
         if (isNil(opts['geometry']) || opts['geometry']) {
-            var geoJSON = this._exportGeoJSONGeometry();
+            const geoJSON = this._exportGeoJSONGeometry();
             feature['geometry'] = geoJSON;
         }
-        var id = this.getId();
+        const id = this.getId();
         if (!isNil(id)) {
             feature['id'] = id;
         }
-        var properties;
+        let properties;
         if (isNil(opts['properties']) || opts['properties']) {
             properties = this._exportProperties();
         }
@@ -756,8 +756,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!options) {
             options = {};
         }
-        var json = this._toJSON(options);
-        var other = this._exportGraphicOptions(options);
+        const json = this._toJSON(options);
+        const other = this._exportGraphicOptions(options);
         extend(json, other);
         return json;
     }
@@ -789,10 +789,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     //options initializing
     _initOptions(options) {
-        var opts = extend({}, options);
-        var symbol = opts['symbol'];
-        var properties = opts['properties'];
-        var id = opts['id'];
+        const opts = extend({}, options);
+        const symbol = opts['symbol'];
+        const properties = opts['properties'];
+        const id = opts['id'];
         delete opts['symbol'];
         delete opts['id'];
         delete opts['properties'];
@@ -822,8 +822,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _prepareSymbol(symbol) {
         if (Array.isArray(symbol)) {
-            var cookedSymbols = [];
-            for (var i = 0; i < symbol.length; i++) {
+            const cookedSymbols = [];
+            for (let i = 0; i < symbol.length; i++) {
                 cookedSymbols.push(convertResourceUrl(this._checkAndCopySymbol(symbol[i])));
             }
             return cookedSymbols;
@@ -835,9 +835,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _checkAndCopySymbol(symbol) {
-        var s = {};
-        var numericalProperties = Symbolizer.numericalProperties;
-        for (var i in symbol) {
+        const s = {};
+        const numericalProperties = Symbolizer.numericalProperties;
+        for (const i in symbol) {
             if (numericalProperties[i] && isString(symbol[i])) {
                 s[i] = +symbol[i];
             } else {
@@ -874,13 +874,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _getPrjExtent() {
-        var p = this._getProjection();
+        const p = this._getProjection();
         if (!this._extent && p) {
-            var ext = this._computeExtent(p);
+            const ext = this._computeExtent(p);
             if (ext) {
-                var isAntiMeridian = this.options['antiMeridian'] && Measurer.isSphere(p);
+                const isAntiMeridian = this.options['antiMeridian'] && Measurer.isSphere(p);
                 if (isAntiMeridian && isAntiMeridian !== 'default') {
-                    var firstCoordinate = this.getFirstCoordinate();
+                    const firstCoordinate = this.getFirstCoordinate();
                     if (isAntiMeridian === 'continuous') {
                         if (ext['xmax'] - ext['xmin'] > 180) {
                             if (firstCoordinate.x > 0) {
@@ -891,7 +891,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                         }
                     }
                     if (ext['xmax'] < ext['xmin']) {
-                        var tmp = ext['xmax'];
+                        const tmp = ext['xmax'];
                         ext['xmax'] = ext['xmin'];
                         ext['xmin'] = tmp;
                     }
@@ -905,7 +905,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _unbind() {
-        var layer = this.getLayer();
+        const layer = this.getLayer();
         if (!layer) {
             return;
         }
@@ -1047,10 +1047,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     onConfig(conf) {
-        var needRepaint = false;
-        for (var p in conf) {
+        let needRepaint = false;
+        for (const p in conf) {
             if (conf.hasOwnProperty(p)) {
-                var prefix = p.slice(0, 5);
+                const prefix = p.slice(0, 5);
                 if (prefix === 'arrow' || prefix === 'shado') {
                     needRepaint = true;
                     break;
@@ -1096,7 +1096,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _exportGraphicOptions(options) {
-        var json = {};
+        const json = {};
         if (isNil(options['options']) || options['options']) {
             json['options'] = this.config();
         }
@@ -1112,8 +1112,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _exportGeoJSONGeometry() {
-        var points = this.getCoordinates();
-        var coordinates = Coordinate.toNumberArrays(points);
+        const points = this.getCoordinates();
+        const coordinates = Coordinate.toNumberArrays(points);
         return {
             'type': this.getType(),
             'coordinates': coordinates
@@ -1121,13 +1121,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _exportProperties() {
-        var properties = null;
-        var geoProperties = this.getProperties();
-        if (geoProperties) {
+        let properties = null;
+        const geoProperties = this.getProperties();
+        if (!isNil(geoProperties)) {
             if (isObject(geoProperties)) {
                 properties = extend({}, geoProperties);
             } else {
-                geoProperties = properties;
+                properties = geoProperties;
             }
         }
         return properties;

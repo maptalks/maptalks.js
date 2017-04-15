@@ -13,16 +13,16 @@ class MapScrollWheelZoomHandler extends Handler {
     }
 
     _onWheelScroll(evt) {
-        var map = this.target;
-        var container = map._containerDOM;
+        const map = this.target;
+        const container = map._containerDOM;
         preventDefault(evt);
         stopPropagation(evt);
         if (map.isZooming()) { return false; }
-        var levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
+        let levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             levelValue *= -1;
         }
-        var mouseOffset = getEventContainerPoint(evt, container);
+        const mouseOffset = getEventContainerPoint(evt, container);
         if (this._scrollZoomFrame) {
             cancelAnimFrame(this._scrollZoomFrame);
         }

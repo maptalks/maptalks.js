@@ -125,7 +125,7 @@ class VectorLayer extends OverlayLayer {
     }
 
     onAddGeometry(geo) {
-        var style = this.getStyle();
+        const style = this.getStyle();
         if (style) {
             this._styleGeometry(geo);
         }
@@ -135,8 +135,8 @@ class VectorLayer extends OverlayLayer {
         if (!this._cookedStyles) {
             return false;
         }
-        var g = getFilterFeature(geometry);
-        for (var i = 0, len = this._cookedStyles.length; i < len; i++) {
+        const g = getFilterFeature(geometry);
+        for (let i = 0, len = this._cookedStyles.length; i < len; i++) {
             if (this._cookedStyles[i]['filter'](g) === true) {
                 geometry._setExternSymbol(this._cookedStyles[i]['symbol']);
                 return true;
@@ -166,15 +166,14 @@ class VectorLayer extends OverlayLayer {
             profile['style'] = this.getStyle();
         }
         if (isNil(options['geometries']) || options['geometries']) {
-            var clipExtent;
+            let clipExtent;
             if (options['clipExtent']) {
                 clipExtent = new Extent(options['clipExtent']);
             }
-            var geoJSONs = [];
-            var geometries = this.getGeometries(),
-                geoExt,
-                json;
-            for (var i = 0, len = geometries.length; i < len; i++) {
+            const geoJSONs = [];
+            const geometries = this.getGeometries();
+            let geoExt, json;
+            for (let i = 0, len = geometries.length; i < len; i++) {
                 geoExt = geometries[i].getExtent();
                 if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
                     continue;
@@ -206,7 +205,7 @@ class VectorLayer extends OverlayLayer {
         const geoJSONs = json['geometries'];
         const geometries = [];
         for (let i = 0; i < geoJSONs.length; i++) {
-            let geo = Geometry.fromJSON(geoJSONs[i]);
+            const geo = Geometry.fromJSON(geoJSONs[i]);
             if (geo) {
                 geometries.push(geo);
             }

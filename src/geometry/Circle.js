@@ -81,12 +81,12 @@ class Circle extends CenterMixin(Polygon) {
             numberOfPoints = this.options['numberOfShellPoints'],
             radius = this.getRadius();
         const shell = [];
-        var rad, dx, dy;
+        let rad, dx, dy;
         for (let i = 0; i < numberOfPoints; i++) {
             rad = (360 * i / numberOfPoints) * Math.PI / 180;
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
-            let vertex = measurer.locate(center, dx, dy);
+            const vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
         return shell;
@@ -141,7 +141,7 @@ class Circle extends CenterMixin(Polygon) {
     }
 
     _exportGeoJSONGeometry() {
-        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
+        const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
@@ -149,10 +149,10 @@ class Circle extends CenterMixin(Polygon) {
     }
 
     _toJSON(options) {
-        var center = this.getCenter();
-        var opts = extend({}, options);
+        const center = this.getCenter();
+        const opts = extend({}, options);
         opts.geometry = false;
-        var feature = this.toGeoJSON(opts);
+        const feature = this.toGeoJSON(opts);
         feature['geometry'] = {
             'type': 'Polygon'
         };

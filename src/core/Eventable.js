@@ -29,22 +29,22 @@ const Eventable = Base =>
             if (!this._eventMap) {
                 this._eventMap = {};
             }
-            var eventTypes = eventsOn.toLowerCase().split(' ');
-            var evtType;
+            const eventTypes = eventsOn.toLowerCase().split(' ');
+            let evtType;
             if (!context) {
                 context = this;
             }
-            var handlerChain, i, l;
-            for (var ii = 0, ll = eventTypes.length; ii < ll; ii++) {
+            let handlerChain;
+            for (let ii = 0, ll = eventTypes.length; ii < ll; ii++) {
                 evtType = eventTypes[ii];
                 handlerChain = this._eventMap[evtType];
                 if (!handlerChain) {
                     handlerChain = [];
                     this._eventMap[evtType] = handlerChain;
                 }
-                l = handlerChain.length;
+                const l = handlerChain.length;
                 if (l > 0) {
-                    for (i = 0; i < l; i++) {
+                    for (let i = 0; i < l; i++) {
                         if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
                             return this;
                         }
@@ -84,16 +84,16 @@ const Eventable = Base =>
          */
         once(eventTypes, handler, context) {
             if (!isString(eventTypes)) {
-                var once = {};
-                for (var p in eventTypes) {
+                const once = {};
+                for (const p in eventTypes) {
                     if (eventTypes.hasOwnProperty(p)) {
                         once[p] = this._wrapOnceHandler(p, eventTypes[p], context);
                     }
                 }
                 return this._switch('on', once);
             }
-            var evetTypes = eventTypes.split(' ');
-            for (var i = 0, l = evetTypes.length; i < l; i++) {
+            const evetTypes = eventTypes.split(' ');
+            for (let i = 0, l = evetTypes.length; i < l; i++) {
                 this.on(evetTypes[i], this._wrapOnceHandler(evetTypes[i], handler, context));
             }
             return this;
@@ -117,19 +117,18 @@ const Eventable = Base =>
             if (!isString(eventsOff)) {
                 return this._switch('off', eventsOff, handler);
             }
-            var eventTypes = eventsOff.split(' ');
-            var eventType, handlerChain;
+            const eventTypes = eventsOff.split(' ');
+            let eventType, handlerChain;
             if (!context) {
                 context = this;
             }
-            var i;
-            for (var j = 0, jl = eventTypes.length; j < jl; j++) {
+            for (let j = 0, jl = eventTypes.length; j < jl; j++) {
                 eventType = eventTypes[j].toLowerCase();
                 handlerChain = this._eventMap[eventType];
                 if (!handlerChain) {
                     return this;
                 }
-                for (i = handlerChain.length - 1; i >= 0; i--) {
+                for (let i = handlerChain.length - 1; i >= 0; i--) {
                     if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
                         handlerChain.splice(i, 1);
                     }
@@ -164,12 +163,12 @@ const Eventable = Base =>
             if (!this._eventMap || !isString(eventType)) {
                 return 0;
             }
-            var handlerChain = this._eventMap[eventType.toLowerCase()];
+            const handlerChain = this._eventMap[eventType.toLowerCase()];
             if (!handlerChain || !handlerChain.length) {
                 return 0;
             }
-            var count = 0;
-            for (var i = 0, len = handlerChain.length; i < len; i++) {
+            let count = 0;
+            for (let i = 0, len = handlerChain.length; i < len; i++) {
                 if (handler) {
                     if (handler === handlerChain[i].handler &&
                         (isNil(context) || handlerChain[i].context === context)) {
@@ -189,14 +188,14 @@ const Eventable = Base =>
          * @function Eventable.copyEventListeners
          */
         copyEventListeners(target) {
-            var eventMap = target._eventMap;
+            const eventMap = target._eventMap;
             if (!eventMap) {
                 return this;
             }
-            var handlerChain, i, len;
-            for (var eventType in eventMap) {
+            let handlerChain;
+            for (const eventType in eventMap) {
                 handlerChain = eventMap[eventType];
-                for (i = 0, len = handlerChain.length; i < len; i++) {
+                for (let i = 0, len = handlerChain.length; i < len; i++) {
                     this.on(eventType, handlerChain[i].handler, handlerChain[i].context);
                 }
             }
@@ -219,8 +218,8 @@ const Eventable = Base =>
         }
 
         _wrapOnceHandler(evtType, handler, context) {
-            var me = this;
-            var called = false;
+            const me = this;
+            let called = false;
             return function onceHandler() {
                 if (called) {
                     return;
@@ -236,7 +235,7 @@ const Eventable = Base =>
         }
 
         _switch(to, eventKeys, context) {
-            for (var p in eventKeys) {
+            for (const p in eventKeys) {
                 if (eventKeys.hasOwnProperty(p)) {
                     this[to](p, eventKeys[p], context);
                 }
@@ -248,7 +247,7 @@ const Eventable = Base =>
             if (!this._eventMap || !isString(eventType)) {
                 return;
             }
-            var handlerChain = this._eventMap[eventType.toLowerCase()];
+            const handlerChain = this._eventMap[eventType.toLowerCase()];
             if (!handlerChain) {
                 return;
             }
@@ -275,7 +274,7 @@ const Eventable = Base =>
             if (!this._eventMap) {
                 return this;
             }
-            var handlerChain = this._eventMap[eventType.toLowerCase()];
+            const handlerChain = this._eventMap[eventType.toLowerCase()];
             if (!handlerChain) {
                 return this;
             }
@@ -285,9 +284,9 @@ const Eventable = Base =>
             param['type'] = eventType;
             param['target'] = this;
             //in case of deleting a listener in a execution, copy the handlerChain to execute.
-            var queue = handlerChain.slice(0),
-                context, bubble, passed;
-            for (var i = 0, len = queue.length; i < len; i++) {
+            const queue = handlerChain.slice(0);
+            let context, bubble, passed;
+            for (let i = 0, len = queue.length; i < len; i++) {
                 if (!queue[i]) {
                     continue;
                 }

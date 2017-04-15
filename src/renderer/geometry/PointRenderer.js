@@ -48,7 +48,7 @@ const PolyRenderer = {
     _getRenderPoints(placement) {
         const map = this.getMap();
         const maxZoom = map.getMaxNativeZoom();
-        var points, rotations = null;
+        let points, rotations = null;
         if (placement === 'vertex') {
             points = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom);
             if (points && points.length > 0 && Array.isArray(points[0])) {
@@ -58,7 +58,7 @@ const PolyRenderer = {
         } else if (placement === 'line') {
             points = [];
             rotations = [];
-            let vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom),
+            const vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom),
                 isSplitted =  vertice.length > 0 && Array.isArray(vertice[0]);
             if (isSplitted) {
                 //anti-meridian splitted
@@ -84,13 +84,13 @@ const PolyRenderer = {
             }
 
         } else if (placement === 'vertex-first') {
-            let first = this._getPrjCoordinates()[0];
+            const first = this._getPrjCoordinates()[0];
             points = [map._prjToPoint(first, maxZoom)];
         } else if (placement === 'vertex-last') {
-            let last = this._getPrjCoordinates()[this._getPrjCoordinates().length - 1];
+            const last = this._getPrjCoordinates()[this._getPrjCoordinates().length - 1];
             points = [map._prjToPoint(last, maxZoom)];
         } else {
-            let pcenter = this._getProjection().project(this.getCenter());
+            const pcenter = this._getProjection().project(this.getCenter());
             points = [map._prjToPoint(pcenter, maxZoom)];
         }
         return [points, rotations];

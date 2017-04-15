@@ -43,7 +43,7 @@ export default Base =>
         getJSONType() {
             if (this._jsonType === undefined) {
                 const clazz = Object.getPrototypeOf(this).constructor;
-                for (let p in registeredTypes) {
+                for (const p in registeredTypes) {
                     if (registeredTypes[p] === clazz) {
                         this._jsonType = p;
                         break;

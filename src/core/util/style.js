@@ -17,13 +17,13 @@ export function isGradient(g) {
  * @memberOf Util
  */
 export function getGradientStamp(g) {
-    var keys = [g['type']];
+    const keys = [g['type']];
     if (g['places']) {
         keys.push(g['places'].join());
     }
     if (g['colorStops']) {
-        var stops = [];
-        for (var i = g['colorStops'].length - 1; i >= 0; i--) {
+        const stops = [];
+        for (let i = g['colorStops'].length - 1; i >= 0; i--) {
             stops.push(g['colorStops'][i].join());
         }
         keys.push(stops.join(','));
@@ -38,14 +38,14 @@ export function getGradientStamp(g) {
  * @memberOf Util
  */
 export function getSymbolStamp(symbol) {
-    var keys = [];
+    const keys = [];
     if (Array.isArray(symbol)) {
-        for (var i = 0; i < symbol.length; i++) {
+        for (let i = 0; i < symbol.length; i++) {
             keys.push(getSymbolStamp(symbol[i]));
         }
         return '[ ' + keys.join(' , ') + ' ]';
     }
-    for (var p in symbol) {
+    for (const p in symbol) {
         if (hasOwn(symbol, p)) {
             if (!isFunction(symbol[p])) {
                 if (isGradient(symbol[p])) {
@@ -68,18 +68,18 @@ export function getSymbolStamp(symbol) {
  */
 export function lowerSymbolOpacity(symbol, ratio) {
     function s(_symbol, _ratio) {
-        var op = _symbol['opacity'];
+        const op = _symbol['opacity'];
         if (isNil(op)) {
             _symbol['opacity'] = _ratio;
         } else {
             _symbol['opacity'] *= _ratio;
         }
     }
-    var lower;
+    let lower;
     if (Array.isArray(symbol)) {
         lower = [];
         for (let i = 0; i < symbol.length; i++) {
-            var d = extend({}, symbol[i]);
+            const d = extend({}, symbol[i]);
             s(d, ratio);
             lower.push(d);
         }
@@ -98,12 +98,12 @@ export function lowerSymbolOpacity(symbol, ratio) {
  * @memberOf Util
  */
 export function extendSymbol(symbol) {
-    var sources = Array.prototype.slice.call(arguments, 1);
+    let sources = Array.prototype.slice.call(arguments, 1);
     if (!sources || !sources.length) {
         sources = [{}];
     }
     if (Array.isArray(symbol)) {
-        var s, dest;
+        let s, dest;
         const result = [];
         for (let i = 0, l = symbol.length; i < l; i++) {
             s = symbol[i];

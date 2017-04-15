@@ -94,17 +94,17 @@ class Ellipse extends CenterMixin(Polygon) {
      * @return {Coordinate[]} - shell coordinates
      */
     getShell() {
-        var measurer = this._getMeasurer(),
+        const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
             width = this.getWidth(),
             height = this.getHeight();
-        var shell = [];
-        var s = Math.pow(width / 2, 2) * Math.pow(height / 2, 2),
+        const shell = [];
+        const s = Math.pow(width / 2, 2) * Math.pow(height / 2, 2),
             sx = Math.pow(width / 2, 2),
             sy = Math.pow(height / 2, 2);
-        var deg, rad, dx, dy;
-        for (var i = 0; i < numberOfPoints; i++) {
+        let deg, rad, dx, dy;
+        for (let i = 0; i < numberOfPoints; i++) {
             deg = 360 * i / numberOfPoints;
             rad = deg * Math.PI / 180;
             dx = Math.sqrt(s / (sx * Math.pow(Math.tan(rad), 2) + sy));
@@ -115,7 +115,7 @@ class Ellipse extends CenterMixin(Polygon) {
             if (deg > 180 && deg < 360) {
                 dy *= -1;
             }
-            var vertex = measurer.locate(center, dx, dy);
+            const vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
         return shell;
@@ -134,15 +134,15 @@ class Ellipse extends CenterMixin(Polygon) {
         if (map.getCameraMatrix()) {
             return super._containsPoint(point, tolerance);
         }
-        var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+        const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             pa = map.distanceToPixel(this.width / 2, 0),
             pb = map.distanceToPixel(0, this.height / 2),
             a = pa.width,
             b = pb.height,
             c = Math.sqrt(Math.abs(a * a - b * b)),
             xfocus = a >= b;
-        var center = this._getCenter2DPoint();
-        var f1, f2, d;
+        const center = this._getCenter2DPoint();
+        let f1, f2, d;
         if (xfocus) {
             f1 = new Point(center.x - c, center.y);
             f2 = new Point(center.x + c, center.y);
@@ -167,10 +167,10 @@ class Ellipse extends CenterMixin(Polygon) {
         if (!measurer || !this._coordinates || isNil(this.width) || isNil(this.height)) {
             return null;
         }
-        var width = this.getWidth(),
+        const width = this.getWidth(),
             height = this.getHeight();
-        var p1 = measurer.locate(this._coordinates, width / 2, height / 2);
-        var p2 = measurer.locate(this._coordinates, -width / 2, -height / 2);
+        const p1 = measurer.locate(this._coordinates, width / 2, height / 2);
+        const p2 = measurer.locate(this._coordinates, -width / 2, -height / 2);
         return new Extent(p1, p2);
     }
 
@@ -180,7 +180,7 @@ class Ellipse extends CenterMixin(Polygon) {
         }
         //L=2πb+4(a-b)
         //近似值
-        var longer = (this.width > this.height ? this.width : this.height);
+        const longer = (this.width > this.height ? this.width : this.height);
         return 2 * Math.PI * longer / 2 - 4 * Math.abs(this.width - this.height);
     }
 
@@ -192,7 +192,7 @@ class Ellipse extends CenterMixin(Polygon) {
     }
 
     _exportGeoJSONGeometry() {
-        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
+        const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
@@ -200,10 +200,10 @@ class Ellipse extends CenterMixin(Polygon) {
     }
 
     _toJSON(options) {
-        var opts = extend({}, options);
-        var center = this.getCenter();
+        const opts = extend({}, options);
+        const center = this.getCenter();
         opts.geometry = false;
-        var feature = this.toGeoJSON(opts);
+        const feature = this.toGeoJSON(opts);
         feature['geometry'] = {
             'type': 'Polygon'
         };

@@ -63,7 +63,7 @@ Circle.include(el, {
             center = this.getCenter(),
             radius = this.getRadius(),
             target = map.locate(center, radius, 0);
-        var w = map.coordinateToContainerPoint(center).distanceTo(map.coordinateToContainerPoint(target));
+        let w = map.coordinateToContainerPoint(center).distanceTo(map.coordinateToContainerPoint(target));
         w *= scale;
         return new Size(w, w);
     }
@@ -85,8 +85,8 @@ Sector.include({
     _redrawWhenPitch : () => true,
 
     _getRenderSize() {
-        var radius = this.getRadius();
-        var map = this.getMap();
+        const radius = this.getRadius();
+        const map = this.getMap();
         return map.distanceToPixel(radius, radius, map.getMaxNativeZoom());
     },
 
@@ -192,7 +192,7 @@ LineString.include({
     },
 
     _paintArrow(ctx, points, lineOpacity) {
-        var lineWidth = this._getInternalSymbol()['lineWidth'];
+        let lineWidth = this._getInternalSymbol()['lineWidth'];
         if (!lineWidth || lineWidth < 3) {
             lineWidth = 3;
         }
@@ -215,7 +215,7 @@ Polygon.include({
     _getPaintParams(disableSimplify) {
         const maxZoom = this.getMap().getMaxNativeZoom();
         const prjVertexes = this._getPrjShell();
-        var points = this._getPath2DPoints(prjVertexes, disableSimplify, maxZoom);
+        let points = this._getPath2DPoints(prjVertexes, disableSimplify, maxZoom);
         //splitted by anti-meridian
         const isSplitted = points.length > 0 && Array.isArray(points[0]);
         if (isSplitted) {
@@ -228,7 +228,7 @@ Polygon.include({
         const holePoints = [];
         if (prjHoles && prjHoles.length > 0) {
             for (let i = 0; i < prjHoles.length; i++) {
-                let hole = this._getPath2DPoints(prjHoles[i], disableSimplify, maxZoom);
+                const hole = this._getPath2DPoints(prjHoles[i], disableSimplify, maxZoom);
                 if (isSplitted) {
                     if (Array.isArray(hole)) {
                         points[0].push(hole[0]);

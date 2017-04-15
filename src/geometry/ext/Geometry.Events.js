@@ -21,7 +21,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     _getEventTypeToFire: function (originalEvent) {
-        var eventType = originalEvent.type;
+        let eventType = originalEvent.type;
         //change event type to contextmenu
         if (eventType === 'click' || eventType === 'mousedown') {
             if (originalEvent.button === 2) {
@@ -38,13 +38,13 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @private
      */
     _getEventParams: function (e) {
-        var map = this.getMap();
-        var eventParam = {
+        const map = this.getMap();
+        const eventParam = {
             'domEvent': e
         };
-        var actual = e.touches ? e.touches[0] : e;
+        const actual = e.touches ? e.touches[0] : e;
         if (actual) {
-            var containerPoint = getEventContainerPoint(actual, map._containerDOM);
+            const containerPoint = getEventContainerPoint(actual, map._containerDOM);
             eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
             eventParam['containerPoint'] = containerPoint;
             eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
@@ -62,8 +62,8 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (!this.getMap()) {
             return;
         }
-        var originalEvent = event;
-        var params = this._getEventParams(originalEvent);
+        const originalEvent = event;
+        const params = this._getEventParams(originalEvent);
         /**
          * mouseover event for geometry
          * @event Geometry#mouseover
@@ -87,8 +87,8 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (!this.getMap()) {
             return;
         }
-        var originalEvent = event;
-        var params = this._getEventParams(originalEvent);
+        const originalEvent = event;
+        const params = this._getEventParams(originalEvent);
         /**
          * mouseout event for geometry
          * @event Geometry#mouseout

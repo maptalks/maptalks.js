@@ -63,7 +63,7 @@ class InfoWindow extends UIComponent {
      * @fires InfoWindow#contentchange
      */
     setContent(content) {
-        var old = this.options['content'];
+        const old = this.options['content'];
         this.options['content'] = content;
         /**
          * contentchange event.
@@ -100,7 +100,7 @@ class InfoWindow extends UIComponent {
      * @fires InfoWindow#titlechange
      */
     setTitle(title) {
-        var old = title;
+        const old = title;
         this.options['title'] = title;
         /**
          * titlechange event.
@@ -131,30 +131,28 @@ class InfoWindow extends UIComponent {
     }
 
     buildOn() {
-        var dom;
         if (this.options['custom']) {
             if (isString(this.options['content'])) {
-                dom = createEl('div');
+                const dom = createEl('div');
                 dom.innerHTML = this.options['content'];
                 return dom;
             } else {
                 return this.options['content'];
             }
-        } else {
-            dom = createEl('div');
-            dom.className = 'maptalks-msgBox';
-            dom.style.width = this._getWindowWidth() + 'px';
-            var content = '<em class="maptalks-ico"></em>';
-            if (this.options['title']) {
-                content += '<h2>' + this.options['title'] + '</h2>';
-            }
-            const onClose = '"this.parentNode.style.display=\'none\';return false;"';
-            content += '<a href="javascript:void(0);" onclick=' + onClose +
-                ' ontouchend=' + onClose +
-                ' class="maptalks-close"></a><div class="maptalks-msgContent">' + this.options['content'] + '</div>';
-            dom.innerHTML = content;
-            return dom;
         }
+        const dom = createEl('div');
+        dom.className = 'maptalks-msgBox';
+        dom.style.width = this._getWindowWidth() + 'px';
+        let content = '<em class="maptalks-ico"></em>';
+        if (this.options['title']) {
+            content += '<h2>' + this.options['title'] + '</h2>';
+        }
+        const onClose = '"this.parentNode.style.display=\'none\';return false;"';
+        content += '<a href="javascript:void(0);" onclick=' + onClose +
+            ' ontouchend=' + onClose +
+            ' class="maptalks-close"></a><div class="maptalks-msgContent">' + this.options['content'] + '</div>';
+        dom.innerHTML = content;
+        return dom;
     }
 
     /**
@@ -163,8 +161,8 @@ class InfoWindow extends UIComponent {
      * @return {Point} transform origin
      */
     getTransformOrigin() {
-        var size = this.getSize();
-        var o = new Point(size['width'] / 2, size['height']);
+        const size = this.getSize();
+        const o = new Point(size['width'] / 2, size['height']);
         if (!this.options['custom']) {
             o._add(4, 12);
         }
@@ -172,13 +170,13 @@ class InfoWindow extends UIComponent {
     }
 
     getOffset() {
-        var size = this.getSize();
-        var o = new Point(-size['width'] / 2, -size['height']);
+        const size = this.getSize();
+        const o = new Point(-size['width'] / 2, -size['height']);
         if (!this.options['custom']) {
             o._sub(4, 12);
         }
         if (this.getOwner() instanceof Marker) {
-            var markerSize = this.getOwner().getSize();
+            const markerSize = this.getOwner().getSize();
             if (markerSize) {
                 o._add(0, -markerSize['height']);
             }
@@ -197,8 +195,8 @@ class InfoWindow extends UIComponent {
     }
 
     _getWindowWidth() {
-        var defaultWidth = 300;
-        var width = this.options['width'];
+        const defaultWidth = 300;
+        let width = this.options['width'];
         if (!width) {
             width = defaultWidth;
         }

@@ -6,7 +6,7 @@ import Handler from 'handler/Handler';
  * Class is the root class of class hierachy. <br />
  * It provides utility methods to make it easier to manage configration options, merge mixins and add init hooks.
  * @example
- * const defaultOptions = {
+ * var defaultOptions = {
  *     'foo' : 'bar'
  * };
  * class Foo extends maptalks.Class {
@@ -68,7 +68,7 @@ class Class {
         if (!options) {
             return this;
         }
-        for (let i in options) {
+        for (const i in options) {
             this.options[i] = options[i];
         }
         return this;
@@ -94,7 +94,7 @@ class Class {
     config(conf) {
         if (!conf) {
             const config = {};
-            for (let p in this.options) {
+            for (const p in this.options) {
                 if (this.options.hasOwnProperty(p)) {
                     config[p] = this.options[p];
                 }
@@ -102,11 +102,11 @@ class Class {
             return config;
         } else {
             if (arguments.length === 2) {
-                let t = {};
+                const t = {};
                 t[conf] = arguments[1];
                 conf = t;
             }
-            for (let i in conf) {
+            for (const i in conf) {
                 this.options[i] = conf[i];
                 // enable/disable handler
                 if (this[i] && (this[i] instanceof Handler)) {

@@ -50,7 +50,7 @@ class Attribution extends Control {
         if (!this.getMap()) {
             return;
         }
-        var content = this.options['content'];
+        let content = this.options['content'];
         if (isString(content) && content.charAt(0) !== '<') {
             content = '<span style="padding:0px 4px">' + content + '</span>';
         }

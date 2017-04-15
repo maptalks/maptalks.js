@@ -50,9 +50,9 @@ export const Measurer = {
         if (!name) {
             return DEFAULT;
         }
-        for (var p in measurers) {
+        for (const p in measurers) {
             if (hasOwn(measurers, p)) {
-                var mName = measurers[p]['measure'];
+                const mName = measurers[p]['measure'];
                 if (!mName) {
                     continue;
                 }

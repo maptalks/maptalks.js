@@ -11,6 +11,8 @@
   "globals": {
   },
   "rules": {
+    "no-var" : "error",
+    "prefer-const": "error",
     "global-require": 0
   }
 }

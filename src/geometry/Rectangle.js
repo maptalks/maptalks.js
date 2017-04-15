@@ -58,7 +58,7 @@ class Rectangle extends Polygon {
             this.onPositionChanged();
             return this;
         }
-        var projection = this._getProjection();
+        const projection = this._getProjection();
         this._setPrjCoordinates(projection.project(this._coordinates));
         return this;
     }
@@ -108,17 +108,17 @@ class Rectangle extends Polygon {
      * @return {Coordinate[]} - shell coordinates
      */
     getShell() {
-        var measurer = this._getMeasurer();
-        var nw = this._coordinates;
-        var map = this.getMap();
-        var r = -1;
+        const measurer = this._getMeasurer();
+        const nw = this._coordinates;
+        const map = this.getMap();
+        let r = -1;
         if (map) {
-            var fExt = map.getFullExtent();
+            const fExt = map.getFullExtent();
             if (fExt['bottom'] > fExt['top']) {
                 r = 1;
             }
         }
-        var points = [];
+        const points = [];
         points.push(nw);
         points.push(measurer.locate(nw, this._width, 0));
         points.push(measurer.locate(nw, this._width, r * this._height));
@@ -137,7 +137,7 @@ class Rectangle extends Polygon {
     }
 
     _getPrjCoordinates() {
-        var projection = this._getProjection();
+        const projection = this._getProjection();
         if (!projection) {
             return null;
         }
@@ -157,7 +157,7 @@ class Rectangle extends Polygon {
     //update cached variables if geometry is updated.
     _updateCache() {
         this._clearCache();
-        var projection = this._getProjection();
+        const projection = this._getProjection();
         if (this._pnw && projection) {
             this._coordinates = projection.unproject(this._pnw);
         }
@@ -176,10 +176,10 @@ class Rectangle extends Polygon {
         if (map.getCameraMatrix()) {
             return super._containsPoint(point, tolerance);
         }
-        var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+        const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             sp = map.coordinateToPoint(this._coordinates),
             pxSize = map.distanceToPixel(this._width, this._height);
-        var pxExtent = new PointExtent(sp.x - t, sp.y - t,
+        const pxExtent = new PointExtent(sp.x - t, sp.y - t,
                 sp.x + pxSize.width + t, sp.y + pxSize.height + t);
         return pxExtent.contains(point);
     }
@@ -187,9 +187,9 @@ class Rectangle extends Polygon {
         if (!measurer || !this._coordinates || isNil(this._width) || isNil(this._height)) {
             return null;
         }
-        var width = this.getWidth(),
+        const width = this.getWidth(),
             height = this.getHeight();
-        var p1 = measurer.locate(this._coordinates, width, -height);
+        const p1 = measurer.locate(this._coordinates, width, -height);
         return new Extent(p1, this._coordinates);
     }
 
@@ -208,7 +208,7 @@ class Rectangle extends Polygon {
     }
 
     _exportGeoJSONGeometry() {
-        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
+        const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
@@ -216,10 +216,10 @@ class Rectangle extends Polygon {
     }
 
     _toJSON(options) {
-        var opts = extend({}, options);
-        var nw = this.getCoordinates();
+        const opts = extend({}, options);
+        const nw = this.getCoordinates();
         opts.geometry = false;
-        var feature = this.toGeoJSON(opts);
+        const feature = this.toGeoJSON(opts);
         feature['geometry'] = {
             'type': 'Polygon'
         };

@@ -9,16 +9,16 @@ const EVENTS = 'mousedown mouseup mousemove click dblclick contextmenu touchstar
 class MapGeometryEventsHandler extends Handler {
 
     addHooks() {
-        var map = this.target;
-        var dom = map._panels.allLayers || map._containerDOM;
+        const map = this.target;
+        const dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
             on(dom, EVENTS, this._identifyGeometryEvents, this);
         }
     }
 
     removeHooks() {
-        var map = this.target;
-        var dom = map._panels.allLayers || map._containerDOM;
+        const map = this.target;
+        const dom = map._panels.allLayers || map._containerDOM;
         if (dom) {
             off(dom, EVENTS, this._identifyGeometryEvents, this);
         }
@@ -35,15 +35,15 @@ class MapGeometryEventsHandler extends Handler {
         if (map.isZooming() || map.isMoving() || !layers || !layers.length) {
             return;
         }
-        var oneMoreEvent = null;
-        var eventType = type || domEvent.type;
+        let oneMoreEvent = null;
+        const eventType = type || domEvent.type;
         // ignore click lasted for more than 300ms.
         if (eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches.length === 1)) {
             this._mouseDownTime = now();
         } else if ((eventType === 'click' || eventType === 'touchend') && this._mouseDownTime) {
             const downTime = this._mouseDownTime;
             delete this._mouseDownTime;
-            var time = now();
+            const time = now();
             if (time - downTime > 300) {
                 if (eventType === 'click') {
                     return;
@@ -54,23 +54,23 @@ class MapGeometryEventsHandler extends Handler {
         }
 
 
-        var actual = domEvent.touches && domEvent.touches.length > 0 ?
+        const actual = domEvent.touches && domEvent.touches.length > 0 ?
             domEvent.touches[0] : domEvent.changedTouches && domEvent.changedTouches.length > 0 ?
             domEvent.changedTouches[0] : domEvent;
         if (!actual) {
             return;
         }
-        var containerPoint = getEventContainerPoint(actual, map._containerDOM),
+        const containerPoint = getEventContainerPoint(actual, map._containerDOM),
             coordinate = map.containerPointToCoordinate(containerPoint);
         if (eventType === 'touchstart') {
             preventDefault(domEvent);
         }
-        var geometryCursorStyle = null;
-        var identifyOptions = {
+        let geometryCursorStyle = null;
+        const identifyOptions = {
             'includeInternals': true,
             //return only one geometry on top,
             'filter': geometry => {
-                var eventToFire = geometry._getEventTypeToFire(domEvent);
+                const eventToFire = geometry._getEventTypeToFire(domEvent);
                 if (eventType === 'mousemove') {
                     if (!geometryCursorStyle && geometry.options['cursor']) {
                         geometryCursorStyle = geometry.options['cursor'];
@@ -88,7 +88,7 @@ class MapGeometryEventsHandler extends Handler {
             'coordinate': coordinate,
             'layers': layers
         };
-        var callback = fireGeometryEvent.bind(this);
+        const callback = fireGeometryEvent.bind(this);
 
         if (this._queryIdentifyTimeout) {
             cancelAnimFrame(this._queryIdentifyTimeout);
@@ -102,9 +102,9 @@ class MapGeometryEventsHandler extends Handler {
         }
 
         function fireGeometryEvent(geometries) {
-            var propagation = true;
+            let propagation = true;
             if (eventType === 'mousemove') {
-                var geoMap = {};
+                const geoMap = {};
                 if (isArrayHasData(geometries)) {
                     for (let i = geometries.length - 1; i >= 0; i--) {
                         if (!(geometries[i] instanceof Geometry)) {
@@ -119,17 +119,17 @@ class MapGeometryEventsHandler extends Handler {
 
                 map._setPriorityCursor(geometryCursorStyle);
 
-                var oldTargets = this._prevMouseOverTargets;
+                const oldTargets = this._prevMouseOverTargets;
                 this._prevMouseOverTargets = geometries;
                 if (isArrayHasData(oldTargets)) {
                     for (let i = oldTargets.length - 1; i >= 0; i--) {
-                        var oldTarget = oldTargets[i];
+                        const oldTarget = oldTargets[i];
                         if (!(oldTarget instanceof Geometry)) {
                             continue;
                         }
-                        var oldTargetId = oldTargets[i]._getInternalId();
+                        const oldTargetId = oldTargets[i]._getInternalId();
                         if (geometries && geometries.length > 0) {
-                            var mouseout = true;
+                            let mouseout = true;
                             /**
                              * 鼠标经过的新位置中不包含老的目标geometry
                              */

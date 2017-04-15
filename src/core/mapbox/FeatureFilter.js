@@ -1,3 +1,4 @@
+/*eslint-disable no-var*/
 /*!
     Feature Filter by
 
@@ -89,7 +90,7 @@ function compare(a, b) {
  * @memberOf MapboxUtil
  */
 export function getFilterFeature(geometry) {
-    var json = geometry._toJSON(),
+    const json = geometry._toJSON(),
         g = json['feature'];
     g['type'] = types.indexOf(g['geometry']['type']);
     g['subType'] = json['subType'];
@@ -114,8 +115,8 @@ export function compileStyle(styles) {
     if (!Array.isArray(styles)) {
         return compileStyle([styles]);
     }
-    var compiled = [];
-    for (var i = 0; i < styles.length; i++) {
+    const compiled = [];
+    for (let i = 0; i < styles.length; i++) {
         if (styles[i]['filter'] === true) {
             compiled.push({
                 filter: function () {
@@ -132,3 +133,4 @@ export function compileStyle(styles) {
     }
     return compiled;
 }
+/*eslint-enable no-var*/
