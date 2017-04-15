@@ -31,7 +31,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         this._dynamic = hasFunctionDefinition(symbol);
         this.style = this._defineStyle(this.translate());
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
-        var textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
+        const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
         if (!this._dynamic) {
             // the key to cache text descriptor
             this._cacheKey = genCacheKey(textContent, this.style);
@@ -43,21 +43,20 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         if (this.style['textSize'] === 0 || this.style['textOpacity'] === 0) {
             return;
         }
-        var cookedPoints = this._getRenderContainerPoints();
+        const cookedPoints = this._getRenderContainerPoints();
         if (!isArrayHasData(cookedPoints)) {
             return;
         }
-        var style = this.style,
+        const style = this.style,
             strokeAndFill = this.strokeAndFill;
-        var textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
+        const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
         this._descText(textContent);
         this._prepareContext(ctx);
         Canvas.prepareCanvas(ctx, strokeAndFill, resources);
         Canvas.prepareCanvasFont(ctx, style);
-        var p;
-        for (var i = 0, len = cookedPoints.length; i < len; i++) {
-            p = cookedPoints[i];
-            var origin = this._rotate(ctx, p, this._getRotationAt(i));
+        for (let i = 0, len = cookedPoints.length; i < len; i++) {
+            let p = cookedPoints[i];
+            const origin = this._rotate(ctx, p, this._getRotationAt(i));
             if (origin) {
                 p = origin;
             }
@@ -73,7 +72,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     getRotation() {
-        var r = this.style['textRotation'];
+        const r = this.style['textRotation'];
         if (!isNumber(r)) {
             return null;
         }
@@ -82,18 +81,18 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     getDxDy() {
-        var s = this.style;
-        var dx = s['textDx'],
+        const s = this.style;
+        const dx = s['textDx'],
             dy = s['textDy'];
         return new Point(dx, dy);
     }
 
     getMarkerExtent() {
-        var dxdy = this.getDxDy(),
+        const dxdy = this.getDxDy(),
             style = this.style,
             size = this.textDesc['size'];
-        var alignPoint = getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
-        var alignW = alignPoint.x,
+        const alignPoint = getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
+        const alignW = alignPoint.x,
             alignH = alignPoint.y;
         return new PointExtent(
             dxdy.add(alignW, alignH),
@@ -102,8 +101,8 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     translate() {
-        var s = this.symbol;
-        var result = {
+        const s = this.symbol;
+        const result = {
             'textName': s['textName'],
             'textFaceName': getValueOrDefault(s['textFaceName'], 'monospace'),
             'textWeight': getValueOrDefault(s['textWeight'], 'normal'), //'bold', 'bolder'
@@ -178,7 +177,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
 
 function genCacheKey(textContent, style) {
     const key = [textContent];
-    for (let p in style) {
+    for (const p in style) {
         if (style.hasOwnProperty(p) && p.length > 4 && p.substring(0, 4) === 'text') {
             key.push(p + '=' + style[p]);
         }

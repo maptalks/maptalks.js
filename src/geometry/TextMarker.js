@@ -66,7 +66,7 @@ class TextMarker extends Marker {
      * @fires Label#contentchange
      */
     setContent(content) {
-        var old = this._content;
+        const old = this._content;
         this._content = content;
         this._refresh();
         /**
@@ -99,8 +99,8 @@ class TextMarker extends Marker {
         } else {
             this._textSymbolChanged = true;
         }
-        var cooked = this._prepareSymbol(symbol);
-        var s = this._getDefaultTextSymbol();
+        const cooked = this._prepareSymbol(symbol);
+        const s = this._getDefaultTextSymbol();
         extend(s, cooked);
         this._symbol = s;
         this._refresh();
@@ -108,8 +108,8 @@ class TextMarker extends Marker {
     }
 
     onConfig(conf) {
-        var needRepaint = false;
-        for (var p in conf) {
+        let needRepaint = false;
+        for (const p in conf) {
             if (conf.hasOwnProperty(p)) {
                 if (p.slice(0, 3) === 'box') {
                     needRepaint = true;
@@ -127,10 +127,10 @@ class TextMarker extends Marker {
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';
         }
-        var size = splitTextToRow(this._content, symbol)['size'],
-            width, height;
+        const size = splitTextToRow(this._content, symbol)['size'];
+        let width, height;
         if (this.options['boxAutoSize']) {
-            var padding = this.options['boxPadding'];
+            const padding = this.options['boxPadding'];
             width = size['width'] + padding['width'] * 2;
             height = size['height'] + padding['height'] * 2;
         }
@@ -152,7 +152,7 @@ class TextMarker extends Marker {
     }
 
     _getDefaultTextSymbol() {
-        var s = {};
+        const s = {};
         extend(s, defaultSymbol);
         if (this.options['box']) {
             extend(s, defaultBoxSymbol);

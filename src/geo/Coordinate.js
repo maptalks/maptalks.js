@@ -69,9 +69,9 @@ class Coordinate {
         if (isNumber(coordinates[0]) && isNumber(coordinates[1])) {
             return new Coordinate(coordinates);
         }
-        var result = [];
-        for (var i = 0, len = coordinates.length; i < len; i++) {
-            var child = coordinates[i];
+        const result = [];
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            const child = coordinates[i];
             if (Array.isArray(child)) {
                 if (isNumber(child[0])) {
                     result.push(new Coordinate(child));
@@ -111,7 +111,7 @@ class Coordinate {
      * @return {Coordinate} result
      */
     add(x, y) {
-        var nx, ny;
+        let nx, ny;
         if (x instanceof Coordinate) {
             nx = this.x + x.x;
             ny = this.y + x.y;
@@ -144,7 +144,7 @@ class Coordinate {
      * @return {Coordinate} result
      */
     sub(x, y) {
-        var nx, ny;
+        let nx, ny;
         if (x instanceof Coordinate) {
             nx = this.x - x.x;
             ny = this.y - x.y;

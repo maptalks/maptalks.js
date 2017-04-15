@@ -39,7 +39,7 @@ export default class DebugSymbolizer extends PointSymbolizer {
         const outline = this.getPainter().getContainerExtent().toArray();
         Canvas.polygon(ctx, [outline], op, 0);
 
-        /*var nw = pixelExtent.getMin(),
+        /*const nw = pixelExtent.getMin(),
             size = pixelExtent.getSize();
         Canvas.rectangle(ctx, nw, size, op, 0);*/
 
@@ -49,11 +49,11 @@ export default class DebugSymbolizer extends PointSymbolizer {
         const id = this.geometry.getId();
         const cross = VectorMarkerSymbolizer._getVectorPoints('cross', 10, 10);
         for (let i = 0; i < points.length; i++) {
-            let p = points[i];
+            const p = points[i];
             if (!isNil(id)) {
                 Canvas.fillText(ctx, id, p.add(8, -4), 'rgba(0,0,0,1)');
             }
-            var c = [];
+            const c = [];
             for (let ii = 0; ii < cross.length; ii++) {
                 c.push(cross[ii].add(p));
             }

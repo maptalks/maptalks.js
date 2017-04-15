@@ -29,7 +29,7 @@ Map.include(/** @lends Map.prototype */{
         }
         fov = Math.max(0.01, Math.min(60, fov));
         if (this._fov === fov) return this;
-        var from = this.getFov();
+        const from = this.getFov();
         this._fov = fov * RADIAN;
         this._calcMatrices();
         this._renderLayers();
@@ -60,7 +60,7 @@ Map.include(/** @lends Map.prototype */{
         if (this.isZooming()) {
             return this;
         }
-        var b = -wrap(bearing, -180, 180) * RADIAN;
+        const b = -wrap(bearing, -180, 180) * RADIAN;
         if (this._angle === b) return this;
         const from = this.getBearing();
         this._angle = b;
@@ -126,7 +126,7 @@ Map.include(/** @lends Map.prototype */{
     _pointToContainerPoint(point, zoom) {
         point = this._pointToPoint(point, zoom);
         if (this.pixelMatrix) {
-            var t = [point.x, point.y, 0, 1];
+            const t = [point.x, point.y, 0, 1];
             mat4.transformMat4(t, t, this.pixelMatrix);
             return new Point(t[0] / t[3], t[1] / t[3]);
         } else {
@@ -212,7 +212,7 @@ Map.include(/** @lends Map.prototype */{
         const farZ = furthestDistance * 1.01;
 
         // matrix for conversion from location to GL coordinates (-1 .. 1)
-        var m = new Float64Array(16);
+        let m = new Float64Array(16);
         mat4.perspective(m, this._fov, this.width / this.height, 1, farZ);
 
         mat4.scale(m, m, [1, -1, 1]);
@@ -221,7 +221,7 @@ Map.include(/** @lends Map.prototype */{
         mat4.rotateZ(m, m, this._angle);
 
         //matrix for TileLayerDomRenderer
-        var m2 = mat4.copy(new Float64Array(16), m);
+        const m2 = mat4.copy(new Float64Array(16), m);
 
         mat4.translate(m, m, [-x, -y, 0]);
 

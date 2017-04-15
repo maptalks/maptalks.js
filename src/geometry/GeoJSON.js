@@ -69,16 +69,16 @@ const GeoJSON = {
      *      ]
      *  }
      *  // A geometry array.
-     *  var geometries = GeoJSON.toGeometry(collection);
+     *  const geometries = GeoJSON.toGeometry(collection);
      */
     toGeometry: function (geoJSON) {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
         if (Array.isArray(geoJSON)) {
-            var resultGeos = [];
-            for (var i = 0, len = geoJSON.length; i < len; i++) {
-                var geo = this._convert(geoJSON[i]);
+            const resultGeos = [];
+            for (let i = 0, len = geoJSON.length; i < len; i++) {
+                const geo = this._convert(geoJSON[i]);
                 if (Array.isArray(geo)) {
                     resultGeos.push.apply(resultGeos, geo);
                 } else {
@@ -87,7 +87,7 @@ const GeoJSON = {
             }
             return resultGeos;
         } else {
-            var resultGeo = this._convert(geoJSON);
+            const resultGeo = this._convert(geoJSON);
             return resultGeo;
         }
 
@@ -104,10 +104,10 @@ const GeoJSON = {
             return null;
         }
 
-        var type = json['type'];
+        const type = json['type'];
         if (type === 'Feature') {
-            var g = json['geometry'];
-            var geometry = this._convert(g);
+            const g = json['geometry'];
+            const geometry = this._convert(g);
             if (!geometry) {
                 return null;
             }
@@ -115,24 +115,24 @@ const GeoJSON = {
             geometry.setProperties(json['properties']);
             return geometry;
         } else if (type === 'FeatureCollection') {
-            var features = json['features'];
+            const features = json['features'];
             if (!features) {
                 return null;
             }
             //返回geometry数组
-            var result = this.toGeometry(features);
+            const result = this.toGeometry(features);
             return result;
         } else if (['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon'].indexOf(type) >= 0) {
-            var clazz = (type === 'Point' ? 'Marker' : type);
+            const clazz = (type === 'Point' ? 'Marker' : type);
             return new types[clazz](json['coordinates']);
         } else if (type === 'GeometryCollection') {
-            var geometries = json['geometries'];
+            const geometries = json['geometries'];
             if (!isArrayHasData(geometries)) {
                 return new GeometryCollection();
             }
-            var mGeos = [];
-            var size = geometries.length;
-            for (var i = 0; i < size; i++) {
+            const mGeos = [];
+            const size = geometries.length;
+            for (let i = 0; i < size; i++) {
                 mGeos.push(this._convert(geometries[i]));
             }
             return new GeometryCollection(mGeos);

@@ -45,7 +45,7 @@ class MultiGeometry extends GeometryCollection {
         coordinates = coordinates || [];
         const geometries = [];
         for (let i = 0, l = coordinates.length; i < l; i++) {
-            let g = new this.GeometryType(coordinates[i], this.config());
+            const g = new this.GeometryType(coordinates[i], this.config());
             geometries.push(g);
         }
         this.setGeometries(geometries);
@@ -69,8 +69,8 @@ class MultiGeometry extends GeometryCollection {
 
     //override _exportGeoJSONGeometry in GeometryCollection
     _exportGeoJSONGeometry() {
-        var points = this.getCoordinates();
-        var coordinates = Coordinate.toNumberArrays(points);
+        const points = this.getCoordinates();
+        const coordinates = Coordinate.toNumberArrays(points);
         return {
             'type': this.getType(),
             'coordinates': coordinates

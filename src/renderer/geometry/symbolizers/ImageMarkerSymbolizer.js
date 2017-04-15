@@ -23,16 +23,16 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx, resources) {
-        var style = this.style;
+        const style = this.style;
         if (style['markerWidth'] === 0 || style['markerHeight'] === 0 || style['markerOpacity'] === 0) {
             return;
         }
-        var cookedPoints = this._getRenderContainerPoints();
+        const cookedPoints = this._getRenderContainerPoints();
         if (!isArrayHasData(cookedPoints)) {
             return;
         }
 
-        var img = this._getImage(resources);
+        const img = this._getImage(resources);
         if (!img) {
             if (!Browser.phantomjs && console) {
                 console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
@@ -40,33 +40,32 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             return;
         }
         this._prepareContext(ctx);
-        var width = style['markerWidth'];
-        var height = style['markerHeight'];
+        let width = style['markerWidth'];
+        let height = style['markerHeight'];
         if (!isNumber(width) || !isNumber(height)) {
             width = img.width;
             height = img.height;
             style['markerWidth'] = width;
             style['markerHeight'] = height;
-            var imgURL = [style['markerFile'], style['markerWidth'], style['markerHeight']];
+            const imgURL = [style['markerFile'], style['markerWidth'], style['markerHeight']];
             if (!resources.isResourceLoaded(imgURL)) {
                 resources.addResource(imgURL, img);
             }
-            var painter = this.getPainter();
+            const painter = this.getPainter();
             if (!painter.isSpriting()) {
                 painter.removeCache();
             }
         }
-        var alpha;
+        let alpha;
         // for VectorPathMarkerSymbolizer, opacity is already set into SVG element.
         if (this.symbol['markerType'] !== 'path' &&
             isNumber(style['markerOpacity']) && style['markerOpacity'] < 1) {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= style['markerOpacity'];
         }
-        var p;
-        for (var i = 0, len = cookedPoints.length; i < len; i++) {
-            p = cookedPoints[i];
-            var origin = this._rotate(ctx, p, this._getRotationAt(i));
+        for (let i = 0, len = cookedPoints.length; i < len; i++) {
+            let p = cookedPoints[i];
+            const origin = this._rotate(ctx, p, this._getRotationAt(i));
             if (origin) {
                 p = origin;
             }
@@ -85,7 +84,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     _getImage(resources) {
-        var img = !resources ? null : resources.getImage([this.style['markerFile'], this.style['markerWidth'], this.style['markerHeight']]);
+        const img = !resources ? null : resources.getImage([this.style['markerFile'], this.style['markerWidth'], this.style['markerHeight']]);
         return img;
     }
 
@@ -94,7 +93,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     getRotation() {
-        var r = this.style['markerRotation'];
+        const r = this.style['markerRotation'];
         if (!isNumber(r)) {
             return null;
         }
@@ -103,23 +102,23 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     getDxDy() {
-        var s = this.style;
-        var dx = s['markerDx'] || 0,
+        const s = this.style;
+        const dx = s['markerDx'] || 0,
             dy = s['markerDy'] || 0;
         return new Point(dx, dy);
     }
 
     getMarkerExtent(resources) {
-        var url = this.style['markerFile'],
+        const url = this.style['markerFile'],
             img = resources ? resources.getImage(url) : null;
-        var width = this.style['markerWidth'] || (img ? img.width : 0),
+        const width = this.style['markerWidth'] || (img ? img.width : 0),
             height = this.style['markerHeight'] || (img ? img.height : 0);
-        var dxdy = this.getDxDy();
+        const dxdy = this.getDxDy();
         return new PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
     }
 
     translate() {
-        var s = this.symbol;
+        const s = this.symbol;
         return {
             'markerFile': s['markerFile'],
             'markerOpacity': getValueOrDefault(s['markerOpacity'], 1),

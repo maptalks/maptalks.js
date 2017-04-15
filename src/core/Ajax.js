@@ -29,7 +29,7 @@ const Ajax = {
         if (isNode && Ajax.get.node) {
             return Ajax.get.node(url, cb);
         }
-        var client = this._getClient(cb);
+        const client = this._getClient(cb);
         client.open('GET', url, true);
         client.send(null);
         return this;
@@ -64,7 +64,7 @@ const Ajax = {
         if (isNode && Ajax.post.node) {
             return Ajax.post.node(options, postData, cb);
         }
-        var client = this._getClient(cb);
+        const client = this._getClient(cb);
         client.open('POST', options.url, true);
         if (!options.headers) {
             options.headers = {};
@@ -73,7 +73,7 @@ const Ajax = {
             options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
         }
         if ('setRequestHeader' in client) {
-            for (var p in options.headers) {
+            for (const p in options.headers) {
                 if (options.headers.hasOwnProperty(p)) {
                     client.setRequestHeader(p, options.headers[p]);
                 }
@@ -87,7 +87,7 @@ const Ajax = {
     },
 
     _wrapCallback: function (client, cb) {
-        var me = this;
+        const me = this;
         return function () {
             if (client.withCredentials !== undefined || me._isIE8()) {
                 cb(null, client.responseText);
@@ -110,7 +110,7 @@ const Ajax = {
 
     _getClient: function (cb) {
         /*eslint-disable no-empty, no-undef*/
-        var client;
+        let client;
         if (this._isIE8()) {
             try {
                 client = new XDomainRequest();

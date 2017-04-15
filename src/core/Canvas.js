@@ -21,7 +21,7 @@ const DEFAULT_TEXT_COLOR = '#000';
 
 const Canvas = {
     createCanvas(width, height, canvasClass) {
-        var canvas;
+        let canvas;
         if (!isNode) {
             canvas = createEl('canvas');
             canvas.width = width;
@@ -41,7 +41,7 @@ const Canvas = {
         ctx.fillStyle = 'rgba(255,255,255,0)';
         ctx.textAlign = 'start';
         ctx.textBaseline = 'top';
-        var fontSize = 11;
+        const fontSize = 11;
         ctx.font = fontSize + 'px monospace';
         ctx.shadowBlur = null;
         ctx.shadowColor = null;
@@ -54,7 +54,7 @@ const Canvas = {
     prepareCanvasFont(ctx, style) {
         ctx.textBaseline = 'top';
         ctx.font = getFont(style);
-        var fill = style['textFill'];
+        let fill = style['textFill'];
         if (!fill) {
             fill = DEFAULT_TEXT_COLOR;
         }
@@ -65,11 +65,11 @@ const Canvas = {
         if (!style) {
             return;
         }
-        var strokeWidth = style['lineWidth'];
+        const strokeWidth = style['lineWidth'];
         if (!isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
             ctx.lineWidth = strokeWidth;
         }
-        var strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
+        const strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
         if (isCssUrl(strokeColor) && resources) {
             Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
@@ -92,19 +92,19 @@ const Canvas = {
         if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-        var fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
+        const fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
         if (isCssUrl(fill)) {
-            var fillImgUrl = extractCssUrl(fill);
-            var fillTexture = resources.getImage([fillImgUrl, null, null]);
+            const fillImgUrl = extractCssUrl(fill);
+            let fillTexture = resources.getImage([fillImgUrl, null, null]);
             if (!fillTexture) {
                 //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
                 fillTexture = resources.getImage([fillImgUrl + '-texture', null, strokeWidth]);
             }
             if (isSVG(fillImgUrl) && (fillTexture instanceof Image) && (Browser.edge || Browser.ie)) {
                 //opacity of svg img painted on canvas is always 1, so we paint svg on a canvas at first.
-                var w = fillTexture.width || 20,
+                const w = fillTexture.width || 20,
                     h = fillTexture.height || 20;
-                var canvas = Canvas.createCanvas(w, h);
+                const canvas = Canvas.createCanvas(w, h);
                 Canvas.image(canvas.getContext('2d'), fillTexture, 0, 0, w, h);
                 fillTexture = canvas;
             }
@@ -128,9 +128,9 @@ const Canvas = {
     },
 
     _createGradient(ctx, g, extent) {
-        var gradient = null,
-            places = g['places'],
-            min = extent.getMin(),
+        let gradient = null,
+            places = g['places'];
+        const min = extent.getMin(),
             max = extent.getMax(),
             width = extent.getWidth(),
             height = extent.getHeight();
@@ -149,7 +149,7 @@ const Canvas = {
             gradient = ctx.createLinearGradient.apply(ctx, places);
         } else if (g['type'] === 'radial') {
             if (!places) {
-                var c = extent.getCenter()._round();
+                const c = extent.getCenter()._round();
                 places = [c.x, c.y, Math.abs(c.x - min.x), c.x, c.y, 0];
             } else {
                 if (places.length !== 6) {
@@ -169,23 +169,23 @@ const Canvas = {
     },
 
     _setStrokePattern(ctx, strokePattern, strokeWidth, resources) {
-        var imgUrl = extractCssUrl(strokePattern);
-        var imageTexture;
+        const imgUrl = extractCssUrl(strokePattern);
+        let imageTexture;
         if (isNode) {
             imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
         } else {
-            var key = imgUrl + '-texture-' + strokeWidth;
+            const key = imgUrl + '-texture-' + strokeWidth;
             imageTexture = resources.getImage(key);
             if (!imageTexture) {
-                var imageRes = resources.getImage([imgUrl, null, null]);
+                const imageRes = resources.getImage([imgUrl, null, null]);
                 if (imageRes) {
-                    var w;
+                    let w;
                     if (!imageRes.width || !imageRes.height) {
                         w = strokeWidth;
                     } else {
                         w = round(imageRes.width * strokeWidth / imageRes.height);
                     }
-                    var patternCanvas = Canvas.createCanvas(w, strokeWidth, ctx.canvas.constructor);
+                    const patternCanvas = Canvas.createCanvas(w, strokeWidth, ctx.canvas.constructor);
                     Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
                     resources.addResource([key, null, strokeWidth], patternCanvas);
                     imageTexture = patternCanvas;
@@ -207,11 +207,11 @@ const Canvas = {
         if (fillOpacity === 0) {
             return;
         }
-        var isPattern = Canvas._isPattern(ctx.fillStyle);
+        const isPattern = Canvas._isPattern(ctx.fillStyle);
         if (isNil(fillOpacity)) {
             fillOpacity = 1;
         }
-        var alpha;
+        let alpha;
         if (fillOpacity < 1) {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= fillOpacity;
@@ -241,7 +241,7 @@ const Canvas = {
         if (color[0] !== '#') {
             return color;
         }
-        var r, g, b;
+        let r, g, b;
         if (color.length === 7) {
             r = parseInt(color.substring(1, 3), 16);
             g = parseInt(color.substring(3, 5), 16);
@@ -277,11 +277,11 @@ const Canvas = {
     },
 
     _textOnMultiRow(ctx, texts, style, point, splitTextSize, textSize) {
-        var ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']);
-        var lineHeight = textSize['height'] + style['textLineSpacing'];
-        var basePoint = point.add(0, ptAlign.y);
-        var text, rowAlign;
-        for (var i = 0, len = texts.length; i < len; i++) {
+        const ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']);
+        const lineHeight = textSize['height'] + style['textLineSpacing'];
+        const basePoint = point.add(0, ptAlign.y);
+        let text, rowAlign;
+        for (let i = 0, len = texts.length; i < len; i++) {
             text = texts[i]['text'];
             rowAlign = getAlignPoint(texts[i]['size'], style['textHorizontalAlignment'], style['textVerticalAlignment']);
             Canvas._textOnLine(ctx, text, basePoint.add(rowAlign.x, i * lineHeight), style['textHaloRadius'], style['textHaloFill'], style['textHaloOpacity']);
@@ -292,10 +292,10 @@ const Canvas = {
         // pt = pt._round();
         ctx.textBaseline = 'top';
         if (textHaloOp !== 0 && textHaloRadius !== 0) {
+            const alpha = ctx.globalAlpha;
             //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
             //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
             if (textHaloOp) {
-                var alpha = ctx.globalAlpha;
                 ctx.globalAlpha *= textHaloOp;
             }
 
@@ -325,11 +325,11 @@ const Canvas = {
     },
 
     _stroke(ctx, strokeOpacity, x, y) {
-        var isPattern = Canvas._isPattern(ctx.strokeStyle) && !isNil(x) && !isNil(y);
+        const isPattern = Canvas._isPattern(ctx.strokeStyle) && !isNil(x) && !isNil(y);
         if (isNil(strokeOpacity)) {
             strokeOpacity = 1;
         }
-        var alpha;
+        let alpha;
         if (strokeOpacity < 1) {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= strokeOpacity;
@@ -350,7 +350,7 @@ const Canvas = {
 
     _path(ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
         function fillWithPattern(p1, p2) {
-            var degree = computeDegree(p1, p2);
+            const degree = computeDegree(p1, p2);
             ctx.save();
             ctx.translate(p1.x, p1.y - ctx.lineWidth / 2 / Math.cos(degree));
             ctx.rotate(degree);
@@ -366,29 +366,29 @@ const Canvas = {
             // Because of this, our algorithm needs to understand if the x-coord and
             // y-coord should be getting smaller or larger and properly cap the values
             // based on (x,y).
-            var fromX = startPoint.x,
+            const fromX = startPoint.x,
                 fromY = startPoint.y,
                 toX = endPoint.x,
                 toY = endPoint.y;
-            var pattern = dashArray;
-            var lt = function (a, b) {
+            const pattern = dashArray;
+            const lt = function (a, b) {
                 return a <= b;
             };
-            var gt = function (a, b) {
+            const gt = function (a, b) {
                 return a >= b;
             };
-            var capmin = function (a, b) {
+            const capmin = function (a, b) {
                 return Math.min(a, b);
             };
-            var capmax = function (a, b) {
+            const capmax = function (a, b) {
                 return Math.max(a, b);
             };
 
-            var checkX = {
+            const checkX = {
                 thereYet: gt,
                 cap: capmin
             };
-            var checkY = {
+            const checkY = {
                 thereYet: gt,
                 cap: capmin
             };
@@ -403,11 +403,11 @@ const Canvas = {
             }
 
             ctx.moveTo(fromX, fromY);
-            var offsetX = fromX;
-            var offsetY = fromY;
-            var idx = 0,
+            let offsetX = fromX;
+            let offsetY = fromY;
+            let idx = 0,
                 dash = true;
-            var ang, len;
+            let ang, len;
             while (!(checkX.thereYet(offsetX, toX) && checkY.thereYet(offsetY, toY))) {
                 ang = Math.atan2(toY - fromY, toX - fromX);
                 len = pattern[idx];
@@ -429,10 +429,10 @@ const Canvas = {
             return;
         }
 
-        var isDashed = isArrayHasData(lineDashArray);
-        var isPatternLine = (ignoreStrokePattern === true ? false : Canvas._isPattern(ctx.strokeStyle));
-        var point, prePoint, nextPoint;
-        for (var i = 0, len = points.length; i < len; i++) {
+        const isDashed = isArrayHasData(lineDashArray);
+        const isPatternLine = (ignoreStrokePattern === true ? false : Canvas._isPattern(ctx.strokeStyle));
+        let point, prePoint, nextPoint;
+        for (let i = 0, len = points.length; i < len; i++) {
             point = points[i];
             if (!isDashed || ctx.setLineDash) { //IE9+
                 ctx.lineTo(point.x, point.y);
@@ -463,12 +463,12 @@ const Canvas = {
         function fillPolygon(points, i, op) {
             Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
         }
-        var isPatternLine = Canvas._isPattern(ctx.strokeStyle),
+        const isPatternLine = Canvas._isPattern(ctx.strokeStyle),
             fillFirst = (isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine;
         if (!isArrayHasData(points[0])) {
             points = [points];
         }
-        var op, i, len;
+        let op, i, len;
         if (fillFirst) {
             //因为canvas只填充moveto,lineto,lineto的空间, 而dashline的moveto不再构成封闭空间, 所以重新绘制图形轮廓用于填充
             ctx.save();
@@ -533,29 +533,29 @@ const Canvas = {
      * @param  {Number} degree arc degree between p1 and p2
      */
     _arcBetween(ctx, p1, p2, degree) {
-        var a = degree,
+        const a = degree,
             dist = p1.distanceTo(p2),
             //radius of circle
             r = dist / 2 / Math.sin(a / 2);
         //angle between p1 and p2
-        var p1p2 = Math.asin((p2.y - p1.y) / dist);
+        let p1p2 = Math.asin((p2.y - p1.y) / dist);
         if (p1.x > p2.x) {
             p1p2 = Math.PI - p1p2;
         }
         //angle between circle center and p2
-        var cp2 = 90 * Math.PI / 180 - a / 2,
+        const cp2 = 90 * Math.PI / 180 - a / 2,
             da = p1p2 - cp2;
 
-        var dx = Math.cos(da) * r,
+        const dx = Math.cos(da) * r,
             dy = Math.sin(da) * r,
             cx = p1.x + dx,
             cy = p1.y + dy;
 
-        var startAngle = Math.asin((p2.y - cy) / r);
+        let startAngle = Math.asin((p2.y - cy) / r);
         if (cx > p2.x) {
             startAngle = Math.PI - startAngle;
         }
-        var endAngle = startAngle + a;
+        const endAngle = startAngle + a;
 
         ctx.beginPath();
         ctx.arc(cx, cy, r, startAngle, endAngle);
@@ -567,7 +567,7 @@ const Canvas = {
 
     bezierCurveAndFill(ctx, points, lineOpacity, fillOpacity) {
         ctx.beginPath();
-        var start = points[0];
+        const start = points[0];
         ctx.moveTo(start.x, start.y);
         const args = [ctx];
         args.push.apply(args, points.splice(1));
@@ -584,7 +584,7 @@ const Canvas = {
     //各种图形的绘制方法
     ellipse(ctx, pt, width, height, lineOpacity, fillOpacity) {
         function bezierEllipse(x, y, a, b) {
-            var k = 0.5522848,
+            const k = 0.5522848,
                 ox = a * k, // 水平控制点偏移量
                 oy = b * k; // 垂直控制点偏移量
             ctx.beginPath();
@@ -620,13 +620,13 @@ const Canvas = {
     },
 
     sector(ctx, pt, size, angles, lineOpacity, fillOpacity) {
-        var startAngle = angles[0],
+        const startAngle = angles[0],
             endAngle = angles[1];
 
         function sector(ctx, x, y, radius, startAngle, endAngle) {
-            var rad = Math.PI / 180;
-            var sDeg = rad * -endAngle;
-            var eDeg = rad * -startAngle;
+            const rad = Math.PI / 180;
+            const sDeg = rad * -endAngle;
+            const eDeg = rad * -startAngle;
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.arc(x, y, radius, sDeg, eDeg);
@@ -648,22 +648,20 @@ const Canvas = {
         if (!points || points.length <= 2) {
             return;
         }
-        var xc = (points[0].x + points[1].x) / 2,
+        const xc = (points[0].x + points[1].x) / 2,
             yc = (points[0].y + points[1].y) / 2;
         ctx.lineTo(xc, yc);
-        var ctrlPts = Canvas._getQuadCurvePoints(points);
-        var i, len = ctrlPts.length;
-        for (i = 0; i < len; i += 4) {
+        const ctrlPts = Canvas._getQuadCurvePoints(points);
+        for (let i = 0, len = ctrlPts.length; i < len; i += 4) {
             ctx.quadraticCurveTo(ctrlPts[i], ctrlPts[i + 1], ctrlPts[i + 2], ctrlPts[i + 3]);
         }
         ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
     },
 
     _getQuadCurvePoints(points) {
-        var ctrlPts = [];
-        var i, len = points.length;
-        var xc, yc;
-        for (i = 1; i < len - 1; i++) {
+        const ctrlPts = [];
+        let xc, yc;
+        for (let i = 1, len = points.length; i < len - 1; i++) {
             xc = (points[i].x + points[i + 1].x) / 2;
             yc = (points[i].y + points[i + 1].y) / 2;
             ctrlPts.push(points[i].x, points[i].y, xc, yc);

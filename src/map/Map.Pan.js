@@ -15,12 +15,12 @@ Map.include(/** @lends Map.prototype */ {
         if (!coordinate) {
             return this;
         }
-        var map = this;
+        const map = this;
         coordinate = new Coordinate(coordinate);
-        var dest = this.coordinateToContainerPoint(coordinate),
+        const dest = this.coordinateToContainerPoint(coordinate),
             current = this.coordinateToContainerPoint(this.getCenter());
         return this._panBy(dest.sub(current), options, function () {
-            var c = map.getProjection().project(coordinate);
+            const c = map.getProjection().project(coordinate);
             map._setPrjCenterAndMove(c);
         });
     },

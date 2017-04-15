@@ -1,3 +1,4 @@
+/*eslint-disable no-var, prefer-const*/
 function createFunction(parameters, defaultType) {
     var fun;
 
@@ -26,7 +27,7 @@ function createFunction(parameters, defaultType) {
         if (zoomAndFeatureDependent) {
             var featureFunctions = {};
             var featureFunctionStops = [];
-            for (var s = 0; s < parameters.stops.length; s++) {
+            for (let s = 0; s < parameters.stops.length; s++) {
                 var stop = parameters.stops[s];
                 if (featureFunctions[stop[0].zoom] === undefined) {
                     featureFunctions[stop[0].zoom] = {
@@ -39,7 +40,7 @@ function createFunction(parameters, defaultType) {
                 featureFunctions[stop[0].zoom].stops.push([stop[0].value, stop[1]]);
             }
 
-            for (var z in featureFunctions) {
+            for (let z in featureFunctions) {
                 featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z])]);
             }
             fun = function (zoom, feature) {
@@ -67,7 +68,7 @@ function createFunction(parameters, defaultType) {
 }
 
 function evaluateCategoricalFunction(parameters, input) {
-    for (var i = 0; i < parameters.stops.length; i++) {
+    for (let i = 0; i < parameters.stops.length; i++) {
         if (input === parameters.stops[i][0]) {
             return parameters.stops[i][1];
         }
@@ -140,7 +141,7 @@ function interpolateNumber(input, base, inputLower, inputUpper, outputLower, out
 
 function interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper) {
     var output = [];
-    for (var i = 0; i < outputLower.length; i++) {
+    for (let i = 0; i < outputLower.length; i++) {
         output[i] = interpolateNumber(input, base, inputLower, inputUpper, outputLower[i], outputUpper[i]);
     }
     return output;
@@ -163,7 +164,7 @@ export function isFunctionDefinition(obj) {
  * @memberOf MapboxUtil
  */
 export function hasFunctionDefinition(obj) {
-    for (let p in obj) {
+    for (const p in obj) {
         if (isFunctionDefinition(obj[p])) {
             return true;
         }
@@ -259,3 +260,4 @@ export function getFunctionTypeResources(t) {
     }
     return res;
 }
+/*eslint-enable no-var, prefer-const*/

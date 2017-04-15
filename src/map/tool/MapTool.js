@@ -30,7 +30,7 @@ class MapTool extends Eventable(Class) {
             return this;
         }
         this._map = map;
-        var key = '_tool' + this.name;
+        const key = '_tool' + this.name;
         if (map[key]) {
             map[key].disable();
         }
@@ -66,7 +66,7 @@ class MapTool extends Eventable(Class) {
      * @fires MapTool#enable
      */
     enable() {
-        var map = this._map;
+        const map = this._map;
         if (!map || this._enabled) {
             return this;
         }
@@ -131,7 +131,7 @@ class MapTool extends Eventable(Class) {
     }
 
     _switchEvents(to) {
-        var events = this.getEvents();
+        const events = this.getEvents();
         if (events) {
             this._map[to](events, this);
         }

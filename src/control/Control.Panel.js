@@ -47,7 +47,7 @@ class Panel extends Control {
      * @return {HTMLDOMElement}
      */
     buildOn() {
-        var dom;
+        let dom;
         if (this.options['custom']) {
             if (isString(this.options['content'])) {
                 dom = createEl('div');
@@ -58,7 +58,7 @@ class Panel extends Control {
         } else {
             dom = createEl('div', 'maptalks-panel');
             if (this.options['closeButton']) {
-                let closeButton = createEl('a', 'maptalks-close');
+                const closeButton = createEl('a', 'maptalks-close');
                 closeButton.href = 'javascript:;';
                 closeButton.onclick = function () {
                     dom.style.display = 'none';
@@ -66,7 +66,7 @@ class Panel extends Control {
                 dom.appendChild(closeButton);
             }
 
-            let panelContent = createEl('div', 'maptalks-panel-content');
+            const panelContent = createEl('div', 'maptalks-panel-content');
             panelContent.innerHTML = this.options['content'];
             dom.appendChild(panelContent);
         }

@@ -12,5 +12,9 @@
     "COMMON_SYMBOL_TESTOR" : true,
     "COMMON_GEOEVENTS_TESTOR" : true
   },
-  "plugins": ["mocha"]
+  "plugins": ["mocha"],
+  "rules": {
+    "no-var" : 0,
+    "prefer-const": 0
+  }
 }

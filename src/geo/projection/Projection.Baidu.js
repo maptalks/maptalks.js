@@ -50,26 +50,26 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
     ],
 
     convertMC2LL: function (cB) {
-        var cC, cE;
-        cC = {
+        const cC = {
             x: Math.abs(cB.x),
             y: Math.abs(cB.y)
         };
-        for (var cD = 0, len = this.MCBAND.length; cD < len; cD++) {
+        let cE;
+        for (let cD = 0, len = this.MCBAND.length; cD < len; cD++) {
             if (cC.y >= this.MCBAND[cD]) {
                 cE = this.MC2LL[cD];
                 break;
             }
         }
-        var T = this.convertor(cB, cE);
-        var result = new Coordinate(T.x.toFixed(6), T.y.toFixed(6));
+        const T = this.convertor(cB, cE);
+        const result = new Coordinate(T.x.toFixed(6), T.y.toFixed(6));
         return result;
     },
     convertLL2MC: function (T) {
-        var cB, cD, cC, len;
+        let cD, cC, len;
         T.x = this.getLoop(T.x, -180, 180);
         T.y = this.getRange(T.y, -74, 74);
-        cB = new Coordinate(T.x, T.y);
+        const cB = new Coordinate(T.x, T.y);
         for (cC = 0, len = this.LLBAND.length; cC < len; cC++) {
             if (cB.y >= this.LLBAND[cC]) {
                 cD = this.LL2MC[cC];
@@ -84,17 +84,17 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
                 }
             }
         }
-        var cE = this.convertor(T, cD);
-        var result = new Coordinate(cE.x.toFixed(2), cE.y.toFixed(2));
+        const cE = this.convertor(T, cD);
+        const result = new Coordinate(cE.x.toFixed(2), cE.y.toFixed(2));
         return result;
     },
     convertor: function (cC, cD) {
         if (!cC || !cD) {
             return null;
         }
-        var T = cD[0] + cD[1] * Math.abs(cC.x);
-        var cB = Math.abs(cC.y) / cD[9];
-        var cE = cD[2] + cD[3] * cB + cD[4] * cB * cB +
+        let T = cD[0] + cD[1] * Math.abs(cC.x);
+        const cB = Math.abs(cC.y) / cD[9];
+        let cE = cD[2] + cD[3] * cB + cD[4] * cB * cB +
             cD[5] * cB * cB * cB + cD[6] * cB * cB * cB * cB +
             cD[7] * cB * cB * cB * cB * cB +
             cD[8] * cB * cB * cB * cB * cB * cB;

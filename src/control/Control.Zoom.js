@@ -37,29 +37,29 @@ class Zoom extends Control {
      */
     buildOn(map) {
         this._map = map;
-        var options = this.options;
+        const options = this.options;
 
-        var dom = createEl('div', 'maptalks-zoom');
+        const dom = createEl('div', 'maptalks-zoom');
 
         if (options['zoomLevel']) {
-            var levelDOM = createEl('span', 'maptalks-zoom-zoomlevel');
+            const levelDOM = createEl('span', 'maptalks-zoom-zoomlevel');
             dom.appendChild(levelDOM);
             this._levelDOM = levelDOM;
         }
 
-        var zoomDOM = createEl('div', 'maptalks-zoom-slider');
+        const zoomDOM = createEl('div', 'maptalks-zoom-slider');
 
-        var zoomInButton = createEl('a', 'maptalks-zoom-zoomin');
+        const zoomInButton = createEl('a', 'maptalks-zoom-zoomin');
         zoomInButton.href = 'javascript:;';
         zoomInButton.innerHTML = '+';
         zoomDOM.appendChild(zoomInButton);
         this._zoomInButton = zoomInButton;
 
         if (options['slider']) {
-            var sliderDOM = createEl('div', 'maptalks-zoom-slider-box');
-            var ruler = createEl('div', 'maptalks-zoom-slider-ruler');
-            var reading = createEl('span', 'maptalks-zoom-slider-reading');
-            var dot = createEl('span', 'maptalks-zoom-slider-dot');
+            const sliderDOM = createEl('div', 'maptalks-zoom-slider-box');
+            const ruler = createEl('div', 'maptalks-zoom-slider-ruler');
+            const reading = createEl('span', 'maptalks-zoom-slider-reading');
+            const dot = createEl('span', 'maptalks-zoom-slider-dot');
             ruler.appendChild(reading);
             ruler.appendChild(dot);
             sliderDOM.appendChild(ruler);
@@ -70,7 +70,7 @@ class Zoom extends Control {
             this._sliderDot = dot;
         }
 
-        var zoomOutButton = createEl('a', 'maptalks-zoom-zoomout');
+        const zoomOutButton = createEl('a', 'maptalks-zoom-zoomout');
         zoomOutButton.href = 'javascript:;';
         zoomOutButton.innerHTML = '-';
         zoomDOM.appendChild(zoomOutButton);
@@ -87,13 +87,13 @@ class Zoom extends Control {
     }
 
     _update() {
-        var map = this.getMap();
+        const map = this.getMap();
         if (this._sliderBox) {
-            var pxUnit = 10;
-            var totalRange = (map.getMaxZoom() - map.getMinZoom()) * pxUnit;
+            const pxUnit = 10;
+            const totalRange = (map.getMaxZoom() - map.getMinZoom()) * pxUnit;
             this._sliderBox.style.height = totalRange + 6 + 'px';
             this._sliderRuler.style.height = totalRange + 'px';
-            var zoomRange = (map.getZoom() - map.getMinZoom()) * pxUnit;
+            const zoomRange = (map.getZoom() - map.getMinZoom()) * pxUnit;
             this._sliderReading.style.height = zoomRange + 'px';
             this._sliderDot.style.bottom = zoomRange + 'px';
         }
@@ -104,7 +104,7 @@ class Zoom extends Control {
     }
 
     _registerDomEvents() {
-        var map = this.getMap();
+        const map = this.getMap();
         if (this._zoomInButton) {
             on(this._zoomInButton, 'click', map.zoomIn, map);
         }
@@ -115,7 +115,7 @@ class Zoom extends Control {
     }
 
     onRemove() {
-        var map = this.getMap();
+        const map = this.getMap();
         if (this._zoomInButton) {
             off(this._zoomInButton, 'click', map.zoomIn, map);
         }

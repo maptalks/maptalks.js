@@ -67,20 +67,20 @@ class AreaTool extends DistanceTool {
 
     _measure(toMeasure) {
         const map = this.getMap();
-        var area;
+        let area;
         if (toMeasure instanceof Geometry) {
             area = map.computeGeometryArea(toMeasure);
         } else if (Array.isArray(toMeasure)) {
             area = map.getProjection().measureArea(toMeasure);
         }
         this._lastMeasure = area;
-        var units;
+        let units;
         if (this.options['language'] === 'zh-CN') {
             units = [' 平方米', ' 平方公里', ' 平方英尺', ' 平方英里'];
         } else {
             units = [' sq.m', ' sq.km', ' sq.ft', ' sq.mi'];
         }
-        var content = '';
+        let content = '';
         if (this.options['metric']) {
             content += area < 1E6 ? area.toFixed(0) + units[0] : (area / 1E6).toFixed(2) + units[1];
         }
@@ -110,15 +110,15 @@ class AreaTool extends DistanceTool {
     _msOnDrawEnd(param) {
         this._clearTailMarker();
 
-        var ms = this._measure(param['geometry']);
-        var endLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
+        const ms = this._measure(param['geometry']);
+        const endLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
             .addTo(this._measureMarkerLayer);
-        var size = endLabel.getSize();
+        let size = endLabel.getSize();
         if (!size) {
             size = new Size(10, 10);
         }
         this._addClearMarker(param['coordinate'], size['width']);
-        var geo = param['geometry'].copy();
+        const geo = param['geometry'].copy();
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getArea();
     }

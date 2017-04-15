@@ -60,14 +60,13 @@ class Label extends TextMarker {
         const symbol = this.getSymbol() || this._getDefaultTextSymbol();
         symbol['textName'] = this._content;
         if (this.options['box']) {
-            var sizes = this._getBoxSize(symbol),
-                boxSize = sizes[0],
+            const sizes = this._getBoxSize(symbol),
                 textSize = sizes[1],
                 padding = this.options['boxPadding'];
-
+            let boxSize = sizes[0];
             //if no boxSize then use text's size in default
             if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
-                var width = textSize['width'] + padding['width'] * 2,
+                const width = textSize['width'] + padding['width'] * 2,
                     height = textSize['height'] + padding['height'] * 2;
                 boxSize = new Size(width, height);
                 symbol['markerWidth'] = boxSize['width'];
@@ -77,12 +76,12 @@ class Label extends TextMarker {
                 symbol['markerHeight'] = boxSize['height'];
             }
 
-            var align = this.options['boxTextAlign'];
+            const align = this.options['boxTextAlign'];
             if (align) {
-                var textAlignPoint = getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
-                    dx = symbol['textDx'] || 0,
-                    dy = symbol['textDy'] || 0;
-                textAlignPoint = textAlignPoint._add(dx, dy);
+                const dx = symbol['textDx'] || 0,
+                    dy = symbol['textDy'] || 0,
+                    textAlignPoint = getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment'])
+                        ._add(dx, dy);
                 symbol['markerDx'] = textAlignPoint.x;
                 symbol['markerDy'] = textAlignPoint.y + textSize['height'] / 2;
                 if (align === 'left') {

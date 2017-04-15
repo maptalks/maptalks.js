@@ -121,15 +121,15 @@ class LineString extends Path {
             this.setCoordinates([]);
             return;
         }
-        var map = this.getMap();
-        var targetLength = t / duration * length;
+        const map = this.getMap();
+        const targetLength = t / duration * length;
         if (!this._animIdx) {
             this._animIdx = 0;
             this._animLenSoFar = 0;
             this.show();
         }
-        var i, l;
-        var segLen = 0;
+        let segLen = 0;
+        let i, l;
         for (i = this._animIdx, l = coordinates.length; i < l - 1; i++) {
             segLen = map.computeLength(coordinates[i], coordinates[i + 1]);
             if (this._animLenSoFar + segLen > targetLength) {
@@ -142,15 +142,15 @@ class LineString extends Path {
             this.setCoordinates(coordinates);
             return;
         }
-        var idx = this._animIdx;
-        var p1 = coordinates[idx],
+        const idx = this._animIdx;
+        const p1 = coordinates[idx],
             p2 = coordinates[idx + 1],
             span = targetLength - this._animLenSoFar,
             r = span / segLen;
-        var x = p1.x + (p2.x - p1.x) * r,
+        const x = p1.x + (p2.x - p1.x) * r,
             y = p1.y + (p2.y - p1.y) * r,
             targetCoord = new Coordinate(x, y);
-        var animCoords = coordinates.slice(0, this._animIdx + 1);
+        const animCoords = coordinates.slice(0, this._animIdx + 1);
         animCoords.push(targetCoord);
 
         this.setCoordinates(animCoords);
@@ -165,13 +165,12 @@ class LineString extends Path {
     }
 
     _containsPoint(point, tolerance) {
-        var t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;
+        let t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;
 
         function isContains(points) {
-            var i, p1, p2,
-                len = points.length;
+            let p1, p2;
 
-            for (i = 0, len = points.length; i < len - 1; i++) {
+            for (let i = 0, len = points.length; i < len - 1; i++) {
                 p1 = points[i];
                 p2 = points[i + 1];
 
@@ -186,10 +185,10 @@ class LineString extends Path {
             t = 2;
         }
 
-        var arrowStyle = this._getArrowStyle();
-        var lineWidth = this._getInternalSymbol()['lineWidth'];
+        const arrowStyle = this._getArrowStyle();
+        const lineWidth = this._getInternalSymbol()['lineWidth'];
 
-        var map = this.getMap(),
+        const map = this.getMap(),
             extent = this._getPrjExtent(),
             nw = new Coordinate(extent.xmin, extent.ymax),
             se = new Coordinate(extent.xmax, extent.ymin),
@@ -205,11 +204,11 @@ class LineString extends Path {
         }
 
         // check arrow
-        var points;
+        let points;
         if (this._getArrowStyle()) {
             points = this._getPath2DPoints(this._getPrjCoordinates(), true);
-            var arrows = this._getArrows(points, lineWidth, (tolerance ? tolerance : 2) + lineWidth / 2);
-            for (var ii = arrows.length - 1; ii >= 0; ii--) {
+            const arrows = this._getArrows(points, lineWidth, (tolerance ? tolerance : 2) + lineWidth / 2);
+            for (let ii = arrows.length - 1; ii >= 0; ii--) {
                 if (pointInsidePolygon(point, arrows[ii])) {
                     return true;
                 }
@@ -217,9 +216,9 @@ class LineString extends Path {
         }
 
         points = points || this._getPath2DPoints(this._getPrjCoordinates());
-        var isSplitted = points.length > 0 && Array.isArray(points[0]);
+        const isSplitted = points.length > 0 && Array.isArray(points[0]);
         if (isSplitted) {
-            for (var i = 0, l = points.length; i < l; i++) {
+            for (let i = 0, l = points.length; i < l; i++) {
                 if (isContains(points[i])) {
                     return true;
                 }

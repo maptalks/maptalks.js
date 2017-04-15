@@ -44,19 +44,18 @@ export default class Painter extends Class {
      * @return {*} [description]
      */
     _createSymbolizers() {
-        var geoSymbol = this.getSymbol(),
+        const geoSymbol = this.getSymbol(),
             symbolizers = [],
-            regSymbolizers = registerSymbolizers,
-            symbols = geoSymbol;
+            regSymbolizers = registerSymbolizers;
+        let symbols = geoSymbol;
         if (!Array.isArray(geoSymbol)) {
             symbols = [geoSymbol];
         }
-        var symbol, symbolizer;
         for (let ii = symbols.length - 1; ii >= 0; ii--) {
-            symbol = symbols[ii];
+            const symbol = symbols[ii];
             for (let i = regSymbolizers.length - 1; i >= 0; i--) {
                 if (regSymbolizers[i].test(symbol, this.geometry)) {
-                    symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
+                    const symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Symbolizers.PointSymbolizer) {
                         this._hasPointSymbolizer = true;
@@ -70,7 +69,7 @@ export default class Painter extends Class {
             }
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
-        this._debugSymbolizer = new Symbolizers.DebugSymbolizer(symbol, this.geometry, this);
+        this._debugSymbolizer = new Symbolizers.DebugSymbolizer(geoSymbol, this.geometry, this);
         this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
     }
@@ -105,7 +104,7 @@ export default class Painter extends Class {
         const zoom = map.getZoom();
         const pitched = map.getPitch() > 0;
         const rotated = map.getBearing() > 0;
-        var params = this._paintParams;
+        let params = this._paintParams;
         // remove cached points if the geometry is simplified on the zoom.
         if (!params ||
             (params._zoom !== undefined && params._zoom !== zoom) ||
@@ -132,7 +131,7 @@ export default class Painter extends Class {
             tPaintParams = [], // transformed params
             //refer to Geometry.Canvas
             points = paintParams[0];
-        var containerPoints;
+        let containerPoints;
         //convert view points to container points needed by canvas
         if (Array.isArray(points)) {
             containerPoints = mapArrayRecursively(points, point => {
@@ -177,7 +176,7 @@ export default class Painter extends Class {
         }
         const contexts = [renderer.context, renderer.resources];
         this._prepareShadow(renderer.context);
-        for (var i = this.symbolizers.length - 1; i >= 0; i--) {
+        for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._painted = true;
@@ -192,20 +191,20 @@ export default class Painter extends Class {
         if (!this._sprite && this.symbolizers.length > 0) {
             const extent = new PointExtent();
             this.symbolizers.forEach(s => {
-                var markerExtent = s.getMarkerExtent(resources);
+                const markerExtent = s.getMarkerExtent(resources);
                 extent._combine(markerExtent);
             });
             const origin = extent.getMin().multi(-1);
             const clazz = canvasClass || (this.getMap() ? this.getMap().CanvasClass : null);
             const canvas = Canvas.createCanvas(extent.getWidth(), extent.getHeight(), clazz);
-            var bak;
+            let bak;
             if (this._renderPoints) {
                 bak = this._renderPoints;
             }
             const contexts = [canvas.getContext('2d'), resources];
             this._prepareShadow(canvas.getContext('2d'));
             for (let i = this.symbolizers.length - 1; i >= 0; i--) {
-                let dxdy = this.symbolizers[i].getDxDy();
+                const dxdy = this.symbolizers[i].getDxDy();
                 this._renderPoints = {
                     'point': [
                         [origin.add(dxdy)]
@@ -247,7 +246,7 @@ export default class Painter extends Class {
         if (!context) {
             context = this;
         }
-        for (var i = this.symbolizers.length - 1; i >= 0; i--) {
+        for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             fn.apply(context, [this.symbolizers[i]]);
         }
     }
@@ -262,9 +261,8 @@ export default class Painter extends Class {
             if (this.symbolizers) {
                 const extent = this._extent2D = new PointExtent();
                 const markerExt = this._markerExtent = new PointExtent();
-                var symbolizer;
                 for (let i = this.symbolizers.length - 1; i >= 0; i--) {
-                    symbolizer = this.symbolizers[i];
+                    const symbolizer = this.symbolizers[i];
                     extent._combine(symbolizer.get2DExtent());
                     if (symbolizer.getMarkerExtent) {
                         markerExt._combine(symbolizer.getMarkerExtent(resources));
@@ -295,7 +293,7 @@ export default class Painter extends Class {
 
     show() {
         if (!this._painted) {
-            var layer = this.getLayer();
+            const layer = this.getLayer();
             if (!layer.isCanvasRender()) {
                 this.paint();
             }

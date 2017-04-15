@@ -116,7 +116,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     onZoomEnd(nextZoom, origin) {
-        var startZoomVal = this._startZoomVal;
+        const startZoomVal = this._startZoomVal;
         this._zoomTo(nextZoom, origin);
         this._zooming = false;
         this._getRenderer().onZoomEnd();
@@ -142,7 +142,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _checkZoom(nextZoom) {
-        var maxZoom = this.getMaxZoom(),
+        const maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
         if (nextZoom < minZoom) {
             nextZoom = minZoom;

@@ -166,7 +166,7 @@ class MapDragHandler extends Handler {
             }
         }
         if (this._rotateMode === 'rotate' && map.options['dragRotate']) {
-            map.setBearing(map.getBearing() + 1.5 * (mx > this.preX ? 1 : -1));
+            map.setBearing(map.getBearing() + 1.2 * (mx > this.preX ? 1 : -1));
         } else if (this._rotateMode === 'pitch' && map.options['dragPitch']) {
             map.setPitch(map.getPitch() + (my > this.preY ? -1 : 1));
         }

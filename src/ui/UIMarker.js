@@ -190,9 +190,9 @@ const domEvents =
  * @mixes Handlerable
  * @memberOf ui
  * @example
- * const dom = document.createElement('div');
+ * var dom = document.createElement('div');
  * dom.innerHTML = 'hello ui marker';
- * const marker = new maptalks.UIMarker([0, 0], {
+ * var marker = new maptalks.UIMarker([0, 0], {
  *      draggable : true,
  *      content : dom
  *  }).addTo(map);
@@ -254,7 +254,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @fires UIMarker#contentchange
      */
     setContent(content) {
-        var old = this.options['content'];
+        const old = this.options['content'];
         this.options['content'] = content;
         /**
          * contentchange event.
@@ -301,7 +301,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @return {HTMLElement} UIMarker's HTMLElement
      */
     buildOn() {
-        var dom;
+        let dom;
         if (isString(this.options['content'])) {
             dom = createEl('div');
             dom.innerHTML = this.options['content'];
@@ -318,7 +318,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @return {Point} offset
      */
     getOffset() {
-        var size = this.getSize();
+        const size = this.getSize();
         return new Point(-size['width'] / 2, -size['height'] / 2);
     }
 
@@ -328,12 +328,12 @@ class UIMarker extends Handlerable(UIComponent) {
      * @return {Point} transform origin
      */
     getTransformOrigin() {
-        var size = this.getSize();
+        const size = this.getSize();
         return new Point(size['width'] / 2, size['height'] / 2);
     }
 
     onDomRemove() {
-        var dom = this.getDOM();
+        const dom = this.getDOM();
         this._removeDOMEvents(dom);
     }
 
@@ -353,7 +353,7 @@ class UIMarker extends Handlerable(UIComponent) {
     }
 
     _onDomEvents(e) {
-        var event = this.getMap()._parseEvent(e, e.type);
+        const event = this.getMap()._parseEvent(e, e.type);
         this.fire(e.type, event);
     }
 
@@ -383,7 +383,7 @@ class UIMarkerDragHandler extends Handler {
     }
 
     _startDrag(param) {
-        var domEvent = param['domEvent'];
+        const domEvent = param['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
@@ -420,7 +420,7 @@ class UIMarkerDragHandler extends Handler {
     }
 
     _cancelOn(domEvent) {
-        var target = domEvent.srcElement || domEvent.target,
+        const target = domEvent.srcElement || domEvent.target,
             tagName = target.tagName.toLowerCase();
         if (tagName === 'button' ||
             tagName === 'input' ||
@@ -437,7 +437,7 @@ class UIMarkerDragHandler extends Handler {
     }
 
     _dragging(param) {
-        var target = this.target,
+        const target = this.target,
             map = target.getMap(),
             eventParam = map._parseEvent(param['domEvent']),
             domEvent = eventParam['domEvent'];
@@ -448,11 +448,11 @@ class UIMarkerDragHandler extends Handler {
             this._isDragging = true;
             return;
         }
-        var currentPos = eventParam['coordinate'];
+        const currentPos = eventParam['coordinate'];
         if (!this._lastPos) {
             this._lastPos = currentPos;
         }
-        var dragOffset = currentPos.sub(this._lastPos);
+        const dragOffset = currentPos.sub(this._lastPos);
         this._lastPos = currentPos;
         this.target.setCoordinates(this.target.getCoordinates().add(dragOffset));
         eventParam['dragOffset'] = dragOffset;
@@ -473,7 +473,7 @@ class UIMarkerDragHandler extends Handler {
     }
 
     _endDrag(param) {
-        var target = this.target,
+        const target = this.target,
             map = target.getMap();
         if (this._dragHandler) {
             target.off('click', this._endDrag, this);
@@ -485,7 +485,7 @@ class UIMarkerDragHandler extends Handler {
         if (!map) {
             return;
         }
-        var eventParam = map._parseEvent(param['domEvent']);
+        const eventParam = map._parseEvent(param['domEvent']);
         /**
          * dragend event
          * @event ui.UIMarker#dragend

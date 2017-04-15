@@ -140,7 +140,7 @@ class DrawTool extends MapTool {
      * @return {Object} symbol
      */
     getSymbol() {
-        var symbol = this.options['symbol'];
+        const symbol = this.options['symbol'];
         if (symbol) {
             return extendSymbol(symbol);
         } else {
@@ -194,7 +194,7 @@ class DrawTool extends MapTool {
     }
 
     onDisable() {
-        var map = this.getMap();
+        const map = this.getMap();
         map.config({
             'autoBorderPanning': this._autoBorderPanning,
             'doubleClickZoom': this._mapDoubleClickZoom
@@ -212,8 +212,8 @@ class DrawTool extends MapTool {
 
 
     _loadResources() {
-        var symbol = this.getSymbol();
-        var resources = getExternalResources(symbol);
+        const symbol = this.getSymbol();
+        const resources = getExternalResources(symbol);
         if (resources.length > 0) {
             //load external resources at first
             this._drawToolLayer._getRenderer().loadResources(resources);
@@ -225,8 +225,8 @@ class DrawTool extends MapTool {
     }
 
     _getRegisterMode() {
-        var mode = this.getMode();
-        var registerMode = DrawTool.getRegisterMode(mode);
+        const mode = this.getMode();
+        const registerMode = DrawTool.getRegisterMode(mode);
         if (!registerMode) {
             throw new Error(mode + ' is not a valid mode of DrawTool.');
         }
@@ -234,7 +234,7 @@ class DrawTool extends MapTool {
     }
 
     getEvents() {
-        var action = this._getRegisterMode()['action'];
+        const action = this._getRegisterMode()['action'];
         if (action === 'clickDblclick') {
             return {
                 'click': this._clickForPath,
@@ -254,12 +254,12 @@ class DrawTool extends MapTool {
     }
 
     _addGeometryToStage(geometry) {
-        var drawLayer = this._getDrawLayer();
+        const drawLayer = this._getDrawLayer();
         drawLayer.addGeometry(geometry);
     }
 
     _clickForPoint(param) {
-        var registerMode = this._getRegisterMode();
+        const registerMode = this._getRegisterMode();
         this._geometry = registerMode['create'](param['coordinate']);
         if (this.options['symbol'] && this.options.hasOwnProperty('symbol')) {
             this._geometry.setSymbol(this.options['symbol']);
@@ -268,9 +268,9 @@ class DrawTool extends MapTool {
     }
 
     _clickForPath(param) {
-        var registerMode = this._getRegisterMode();
-        var coordinate = param['coordinate'];
-        var symbol = this.getSymbol();
+        const registerMode = this._getRegisterMode();
+        const coordinate = param['coordinate'];
+        const symbol = this.getSymbol();
         if (!this._geometry) {
             this._clickCoords = [coordinate];
             this._geometry = registerMode['create'](this._clickCoords);
@@ -316,13 +316,13 @@ class DrawTool extends MapTool {
         if (!this._geometry) {
             return;
         }
-        var containerPoint = this._getMouseContainerPoint(param);
+        const containerPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(containerPoint)) {
             return;
         }
-        var coordinate = param['coordinate'];
-        var registerMode = this._getRegisterMode();
-        var path = this._clickCoords;
+        const coordinate = param['coordinate'];
+        const registerMode = this._getRegisterMode();
+        const path = this._clickCoords;
         if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
             return;
         }
@@ -347,26 +347,25 @@ class DrawTool extends MapTool {
         if (!this._geometry) {
             return;
         }
-        var containerPoint = this._getMouseContainerPoint(param);
+        const containerPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(containerPoint)) {
             return;
         }
-        var registerMode = this._getRegisterMode();
-        var coordinate = param['coordinate'];
-        var path = this._clickCoords;
+        const registerMode = this._getRegisterMode();
+        const coordinate = param['coordinate'];
+        const path = this._clickCoords;
         path.push(coordinate);
         if (path.length < 2) {
             return;
         }
         //去除重复的端点
-        var nIndexes = [];
-        var i, len;
-        for (i = 1, len = path.length; i < len; i++) {
+        const nIndexes = [];
+        for (let i = 1, len = path.length; i < len; i++) {
             if (path[i].x === path[i - 1].x && path[i].y === path[i - 1].y) {
                 nIndexes.push(i);
             }
         }
-        for (i = nIndexes.length - 1; i >= 0; i--) {
+        for (let i = nIndexes.length - 1; i >= 0; i--) {
             path.splice(nIndexes[i], 1);
         }
 
@@ -378,17 +377,17 @@ class DrawTool extends MapTool {
     }
 
     _mousedownToDraw(param) {
-        var registerMode = this._getRegisterMode();
-        var me = this,
+        const registerMode = this._getRegisterMode();
+        const me = this,
             firstPoint = this._getMouseContainerPoint(param);
         if (!this._isValidContainerPoint(firstPoint)) {
             return false;
         }
-        var firstCoord = param['coordinate'];
+        const firstCoord = param['coordinate'];
 
         function genGeometry(coordinate) {
-            var symbol = me.getSymbol(),
-                geometry = me._geometry;
+            const symbol = me.getSymbol();
+            let geometry = me._geometry;
             if (!geometry) {
                 geometry = registerMode['create'](coordinate);
                 geometry.setSymbol(symbol);
@@ -403,22 +402,22 @@ class DrawTool extends MapTool {
             if (!this._geometry) {
                 return false;
             }
-            var current = this._getMouseContainerPoint(_event);
+            const current = this._getMouseContainerPoint(_event);
             if (!this._isValidContainerPoint(current)) {
                 return false;
             }
-            var coordinate = _event['coordinate'];
+            const coordinate = _event['coordinate'];
             genGeometry(coordinate);
             this._fireEvent('mousemove', param);
             return false;
         }
-        var onMouseUp = function (_event) {
+        const onMouseUp = function (_event) {
             if (!this._geometry) {
                 return false;
             }
-            var current = this._getMouseContainerPoint(_event);
+            const current = this._getMouseContainerPoint(_event);
             if (this._isValidContainerPoint(current)) {
-                var coordinate = _event['coordinate'];
+                const coordinate = _event['coordinate'];
                 genGeometry(coordinate);
             }
             this._map.off('mousemove', onMouseMove, this);
@@ -439,7 +438,7 @@ class DrawTool extends MapTool {
             return;
         }
         this._ending = true;
-        var geometry = this._geometry;
+        const geometry = this._geometry;
         this._clearStage();
         if (!param) {
             param = {};
@@ -487,8 +486,8 @@ class DrawTool extends MapTool {
     }
 
     _isValidContainerPoint(containerPoint) {
-        var mapSize = this._map.getSize();
-        var w = mapSize['width'],
+        const mapSize = this._map.getSize();
+        const w = mapSize['width'],
             h = mapSize['height'];
         if (containerPoint.x < 0 || containerPoint.y < 0) {
             return false;
@@ -499,8 +498,8 @@ class DrawTool extends MapTool {
     }
 
     _getDrawLayer() {
-        var drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
-        var drawToolLayer = this._map.getLayer(drawLayerId);
+        const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
+        let drawToolLayer = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
             drawToolLayer = new VectorLayer(drawLayerId, {
                 'enableSimplify': false
@@ -530,9 +529,9 @@ DrawTool.registerMode('circle', {
         return new Circle(coordinate, 0);
     },
     'update': function (coordinate, geometry) {
-        var map = geometry.getMap();
-        var center = geometry.getCenter();
-        var radius = map.computeLength(center, coordinate);
+        const map = geometry.getMap();
+        const center = geometry.getCenter();
+        const radius = map.computeLength(center, coordinate);
         geometry.setRadius(radius);
     },
     'generate': function (geometry) {
@@ -546,13 +545,13 @@ DrawTool.registerMode('ellipse', {
         return new Ellipse(coordinate, 0, 0);
     },
     'update': function (coordinate, geometry) {
-        var map = geometry.getMap();
-        var center = geometry.getCenter();
-        var rx = map.computeLength(center, new Coordinate({
+        const map = geometry.getMap();
+        const center = geometry.getCenter();
+        const rx = map.computeLength(center, new Coordinate({
             x: coordinate.x,
             y: center.y
         }));
-        var ry = map.computeLength(center, new Coordinate({
+        const ry = map.computeLength(center, new Coordinate({
             x: center.x,
             y: coordinate.y
         }));
@@ -567,18 +566,18 @@ DrawTool.registerMode('ellipse', {
 DrawTool.registerMode('rectangle', {
     'action': 'drag',
     'create': function (coordinate) {
-        var rect = new Rectangle(coordinate, 0, 0);
+        const rect = new Rectangle(coordinate, 0, 0);
         rect._firstClick = coordinate;
         return rect;
     },
     'update': function (coordinate, geometry) {
-        var firstCoord = geometry._firstClick;
-        var map = geometry.getMap();
-        var width = map.computeLength(firstCoord, new Coordinate(coordinate.x, firstCoord.y)),
+        const firstCoord = geometry._firstClick;
+        const map = geometry.getMap();
+        const width = map.computeLength(firstCoord, new Coordinate(coordinate.x, firstCoord.y)),
             height = map.computeLength(firstCoord, new Coordinate(firstCoord.x, coordinate.y));
-        var cnw = map.coordinateToContainerPoint(firstCoord),
+        const cnw = map.coordinateToContainerPoint(firstCoord),
             cc = map.coordinateToContainerPoint(coordinate);
-        var x = Math.min(cnw.x, cc.x),
+        const x = Math.min(cnw.x, cc.x),
             y = Math.min(cnw.y, cc.y);
         geometry.setCoordinates(map.containerPointToCoordinate(new Point(x, y)));
         geometry.setWidth(width);
@@ -605,18 +604,18 @@ DrawTool.registerMode('polygon', {
         return new LineString(path);
     },
     'update': function (path, geometry) {
-        var symbol = geometry.getSymbol();
+        const symbol = geometry.getSymbol();
         geometry.setCoordinates(path);
         if (path.length >= 3) {
-            var layer = geometry.getLayer();
+            const layer = geometry.getLayer();
             if (layer) {
-                var polygon = layer.getGeometryById('polygon');
+                let polygon = layer.getGeometryById('polygon');
                 if (!polygon) {
                     polygon = new Polygon([path], {
                         'id': 'polygon'
                     });
                     if (symbol) {
-                        var pSymbol = extendSymbol(symbol, {
+                        const pSymbol = extendSymbol(symbol, {
                             'lineOpacity': 0
                         });
                         polygon.setSymbol(pSymbol);

@@ -182,7 +182,7 @@ class UIComponent extends Eventable(Class) {
             }
             if (anim.scale) {
                 if (this.getTransformOrigin) {
-                    var origin = this.getTransformOrigin();
+                    const origin = this.getTransformOrigin();
                     dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
                 }
                 dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
@@ -231,7 +231,7 @@ class UIComponent extends Eventable(Class) {
             return this;
         }
 
-        var anim = this._getAnimation(),
+        const anim = this._getAnimation(),
             dom = this.getDOM();
         if (!this.options['animationOnHide']) {
             anim.ok = false;
@@ -329,9 +329,9 @@ class UIComponent extends Eventable(Class) {
         if (!this.getMap()) {
             return null;
         }
-        var p = this._getViewPoint()._round();
+        const p = this._getViewPoint()._round();
         if (this.getOffset) {
-            var o = this.getOffset()._round();
+            const o = this.getOffset()._round();
             if (o) {
                 p._add(o);
             }
@@ -340,20 +340,20 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getAnimation() {
-        var anim = {
+        const anim = {
             'fade': false,
             'scale': false
         };
-        var animations = this.options['animation'] ? this.options['animation'].split(',') : [];
+        const animations = this.options['animation'] ? this.options['animation'].split(',') : [];
         for (let i = 0; i < animations.length; i++) {
-            let trimed = trim(animations[i]);
+            const trimed = trim(animations[i]);
             if (trimed === 'fade') {
                 anim.fade = true;
             } else if (trimed === 'scale') {
                 anim.scale = true;
             }
         }
-        var transition = null;
+        let transition = null;
         if (anim.fade) {
             transition = 'opacity ' + this.options['animationDuration'] + 'ms';
         }
@@ -377,15 +377,15 @@ class UIComponent extends Eventable(Class) {
         if (map.isMoving() || map._panAnimating) {
             return;
         }
-        var point = this._pos;
-        var mapSize = map.getSize(),
+        const point = this._pos;
+        const mapSize = map.getSize(),
             mapWidth = mapSize['width'],
             mapHeight = mapSize['height'];
 
-        var containerPoint = map.viewPointToContainerPoint(point);
-        var clientWidth = parseInt(dom.clientWidth),
+        const containerPoint = map.viewPointToContainerPoint(point);
+        const clientWidth = parseInt(dom.clientWidth),
             clientHeight = parseInt(dom.clientHeight);
-        var left = 0,
+        let left = 0,
             top = 0;
         if ((containerPoint.x) < 0) {
             left = -(containerPoint.x - clientWidth / 2);
@@ -409,7 +409,7 @@ class UIComponent extends Eventable(Class) {
      * @private
      */
     _measureSize(dom) {
-        var container = this._getUIContainer();
+        const container = this._getUIContainer();
         dom.style.position = 'absolute';
         dom.style.left = -99999 + 'px';
         dom.style.top = -99999 + 'px';
@@ -432,7 +432,7 @@ class UIComponent extends Eventable(Class) {
             this.onDomRemove();
         }
         if (this._singleton()) {
-            var map = this.getMap(),
+            const map = this.getMap(),
                 key = this._uiDomKey();
             if (map[key]) {
                 removeDomNode(map[key]);
@@ -467,24 +467,23 @@ class UIComponent extends Eventable(Class) {
     }
 
     _switchEvents(to) {
-        var events = this._getDefaultEvents();
+        const events = this._getDefaultEvents();
         if (this.getEvents) {
             extend(events, this.getEvents());
         }
-        var p;
         if (events) {
-            var map = this.getMap();
+            const map = this.getMap();
             if (map) {
-                for (p in events) {
+                for (const p in events) {
                     if (events.hasOwnProperty(p)) {
                         map[to](p, events[p], this);
                     }
                 }
             }
         }
-        var ownerEvents = this._getOwnerEvents();
+        const ownerEvents = this._getOwnerEvents();
         if (this._owner && ownerEvents) {
-            for (p in ownerEvents) {
+            for (const p in ownerEvents) {
                 if (ownerEvents.hasOwnProperty(p)) {
                     this._owner[to](p, ownerEvents[p], this);
                 }
@@ -527,7 +526,7 @@ class UIComponent extends Eventable(Class) {
     }
 
     _updatePosition() {
-        var dom = this.getDOM(),
+        const dom = this.getDOM(),
             p = this.getPosition();
         this._pos = p;
         dom.style[TRANSITION] = null;

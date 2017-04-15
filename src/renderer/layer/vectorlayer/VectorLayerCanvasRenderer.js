@@ -16,7 +16,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     checkResources() {
         const resources = super.checkResources.apply(this, arguments);
-        var style = this.layer.getStyle();
+        let style = this.layer.getStyle();
         if (style) {
             if (!Array.isArray(style)) {
                 style = [style];
@@ -83,7 +83,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _drawGeos() {
-        var extent2D = this._extent2D;
+        let extent2D = this._extent2D;
         if (this._maskExtent) {
             if (!this._maskExtent.intersects(extent2D)) {
                 this.fireLoadedEvent();
@@ -94,7 +94,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._prepareToDraw();
         this._displayExtent = extent2D;
         this._forEachGeo(this._checkGeo, this);
-        for (var i = 0, len = this._geosToDraw.length; i < len; i++) {
+        for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
         }
     }
@@ -109,7 +109,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
             return;
         }
-        var painter = geo._getPainter(),
+        const painter = geo._getPainter(),
             extent2D = painter.get2DExtent(this.resources);
         if (!extent2D || !extent2D.intersects(this._displayExtent)) {
             return;

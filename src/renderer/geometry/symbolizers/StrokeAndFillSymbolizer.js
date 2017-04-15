@@ -14,8 +14,8 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (geometry && (geometry.type === 'Point')) {
             return false;
         }
-        for (var p in symbol) {
-            var f = p.slice(0, 4);
+        for (const p in symbol) {
+            const f = p.slice(0, 4);
             if (f === 'line' || f === 'poly') {
                 return true;
             }
@@ -59,14 +59,14 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         const points = paintParams[0],
             isSplitted = (this.geometry.getJSONType() === 'Polygon' && points.length > 1 && Array.isArray(points[0][0])) ||
             (this.geometry.type === 'LineString' && points.length > 1 && Array.isArray(points[0]));
-        var params;
+
         if (isSplitted) {
             for (let i = 0; i < points.length; i++) {
                 Canvas.prepareCanvas(ctx, style, resources);
                 if (isGradient && isPath && !style['lineColor']['places']) {
                     this._createGradient(ctx, points[i], style['lineColor']);
                 }
-                params = [ctx, points[i]];
+                const params = [ctx, points[i]];
                 if (paintParams.length > 1) {
                     params.push.apply(params, paintParams.slice(1));
                 }
@@ -78,7 +78,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             if (isGradient && isPath && !style['lineColor']['places']) {
                 this._createGradient(ctx, points, style['lineColor']);
             }
-            params = [ctx];
+            const params = [ctx];
             params.push.apply(params, paintParams);
             params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
             this.geometry._paintOn.apply(this.geometry, params);

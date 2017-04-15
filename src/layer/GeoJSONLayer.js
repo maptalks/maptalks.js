@@ -20,7 +20,7 @@ class GeoJSONLayer extends VectorLayer {
         if (!profile || profile['type'] !== 'GeoJSONLayer') {
             return null;
         }
-        var layer = new GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
+        const layer = new GeoJSONLayer(profile['id'], profile['geojson'], profile['options']);
         if (profile['style']) {
             layer.setStyle(profile['style']);
         }
@@ -42,7 +42,7 @@ class GeoJSONLayer extends VectorLayer {
         }
         super(id, options);
         if (json) {
-            var geometries = this._parse(json);
+            const geometries = this._parse(json);
             this.addGeometry(geometries);
         }
     }
@@ -53,7 +53,7 @@ class GeoJSONLayer extends VectorLayer {
      * @return {GeoJSONLayer} this
      */
     addData(json) {
-        var geometries = this._parse(json);
+        const geometries = this._parse(json);
         this.addGeometry(geometries);
         return this;
     }
@@ -72,13 +72,12 @@ class GeoJSONLayer extends VectorLayer {
      * @return {Object} layer's profile JSON
      */
     toJSON(options) {
-        var profile = VectorLayer.prototype.toJSON.call(this, options);
+        const profile = VectorLayer.prototype.toJSON.call(this, options);
         profile['type'] = 'GeoJSONLayer';
-        var json = [];
+        const json = [];
         if (profile['geometries']) {
-            var g;
-            for (var i = 0, len = profile['geometries'].length; i < len; i++) {
-                g = profile['geometries'][i]['feature'];
+            for (let i = 0, len = profile['geometries'].length; i < len; i++) {
+                let g = profile['geometries'][i]['feature'];
                 if (!g['id'] && !g['properties']) {
                     g = g['geometry'];
                 }

@@ -73,7 +73,7 @@ class TileConfig {
         const tileSystem = this.tileSystem,
             tileSize = this['tileSize'];
         const point = this.transformation.transform(pCoord, 1);
-        var tileIndex = this.getTileIndex(point, res);
+        let tileIndex = this.getTileIndex(point, res);
 
         const tileLeft = tileIndex['x'] * tileSize['width'];
         const tileTop = tileIndex['y'] * tileSize['height'];
@@ -111,8 +111,8 @@ class TileConfig {
      */
     getNeighorTileIndex(tileY, tileX, offsetY, offsetX, res, isRepeatWorld) {
         const tileSystem = this.tileSystem;
-        var x = (tileX + tileSystem['scale']['x'] * offsetX);
-        var y = (tileY - tileSystem['scale']['y'] * offsetY);
+        let x = (tileX + tileSystem['scale']['x'] * offsetX);
+        let y = (tileY - tileSystem['scale']['y'] * offsetY);
         const idx = x;
         const idy = y;
         if (isRepeatWorld) {

@@ -55,7 +55,7 @@ class DragHandler extends Handler {
         if (this.options['cancelOn'] && this.options['cancelOn'](event) === true) {
             return;
         }
-        var dom = this.dom;
+        const dom = this.dom;
         if (dom.setCapture) {
             dom.setCapture();
         } else if (window.captureEvents) {
@@ -65,7 +65,7 @@ class DragHandler extends Handler {
             return false;
         };
         this.moved = false;
-        var actual = event.touches ? event.touches[0] : event;
+        const actual = event.touches ? event.touches[0] : event;
         this.startPos = new Point(actual.clientX, actual.clientY);
         on(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
         on(document, END_EVENTS[event.type], this.onMouseUp, this);
@@ -80,9 +80,9 @@ class DragHandler extends Handler {
         if (event.touches && event.touches.length > 1) {
             return;
         }
-        var actual = event.touches ? event.touches[0] : event;
+        const actual = event.touches ? event.touches[0] : event;
 
-        var newPos = new Point(actual.clientX, actual.clientY),
+        const newPos = new Point(actual.clientX, actual.clientY),
             offset = newPos.sub(this.startPos);
         if (!offset.x && !offset.y) {
             return;
@@ -102,9 +102,9 @@ class DragHandler extends Handler {
     }
 
     onMouseUp(event) {
-        var dom = this.dom;
-        var actual = event.changedTouches ? event.changedTouches[0] : event;
-        for (var i in MOVE_EVENTS) {
+        const dom = this.dom;
+        const actual = event.changedTouches ? event.changedTouches[0] : event;
+        for (const i in MOVE_EVENTS) {
             off(document, MOVE_EVENTS[i], this.onMouseMove, this);
             off(document, END_EVENTS[i], this.onMouseUp, this);
         }
@@ -114,7 +114,7 @@ class DragHandler extends Handler {
         } else if (window.captureEvents) {
             window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
         }
-        var param = {
+        const param = {
             'domEvent': event
         };
         if (isNumber(actual.clientX)) {

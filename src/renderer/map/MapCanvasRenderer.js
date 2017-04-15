@@ -51,7 +51,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!this.canvas) {
             this.createCanvas();
         }
-        var layers = this._getAllLayerToRender();
+        const layers = this._getAllLayerToRender();
 
         if (!this._updateCanvasSize()) {
             this.clearCanvas();
@@ -59,13 +59,13 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         this._drawBackground();
 
-        for (var i = 0, len = layers.length; i < len; i++) {
+        for (let i = 0, len = layers.length; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
                 continue;
             }
-            var renderer = layers[i]._getRenderer();
+            const renderer = layers[i]._getRenderer();
             if (renderer) {
-                var layerImage = this._getLayerImage(layers[i]);
+                const layerImage = this._getLayerImage(layers[i]);
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage);
                 }
@@ -143,13 +143,12 @@ export default class MapCanvasRenderer extends MapRenderer {
     _getCountOfGeosToDraw() {
         const map = this.map;
         const layers = this._getAllLayerToRender();
-        var geos, renderer,
-            total = 0;
-        for (var i = layers.length - 1; i >= 0; i--) {
-            renderer = layers[i]._getRenderer();
+        let total = 0;
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const renderer = layers[i]._getRenderer();
             if ((layers[i] instanceof OverlayLayer) &&
                 layers[i].isVisible() && !layers[i].isEmpty() && (renderer._hasPointSymbolizer || map.getPitch())) {
-                geos = renderer._geosToDraw;
+                const geos = renderer._geosToDraw;
                 if (geos) {
                     total += renderer._geosToDraw.length;
                 }
@@ -162,10 +161,10 @@ export default class MapCanvasRenderer extends MapRenderer {
      * initialize container DOM of panels
      */
     initContainer() {
-        var panels = this.map._panels;
+        const panels = this.map._panels;
 
         function createContainer(name, className, cssText, enableSelect) {
-            var c = createEl('div', className);
+            const c = createEl('div', className);
             if (cssText) {
                 c.style.cssText = cssText;
             }
@@ -224,28 +223,28 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!layer || !layerImage) {
             return;
         }
-        var ctx = this.context;
-        var point = layerImage['point'].multi(Browser.retina ? 2 : 1);
-        var canvasImage = layerImage['image'];
+        const ctx = this.context;
+        const point = layerImage['point'].multi(Browser.retina ? 2 : 1);
+        let canvasImage = layerImage['image'];
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
         }
         //opacity of the layer image
-        var op = layer.options['opacity'];
+        let op = layer.options['opacity'];
         if (!isNumber(op)) {
             op = 1;
         }
         if (op <= 0) {
             return;
         }
-        var imgOp = layerImage['opacity'];
+        let imgOp = layerImage['opacity'];
         if (!isNumber(imgOp)) {
             imgOp = 1;
         }
         if (imgOp <= 0) {
             return;
         }
-        var alpha = ctx.globalAlpha;
+        const alpha = ctx.globalAlpha;
 
         if (op < 1) {
             ctx.globalAlpha *= op;
@@ -263,7 +262,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
 
         if (isNode) {
-            var context = canvasImage.getContext('2d');
+            const context = canvasImage.getContext('2d');
             if (context.getSvg) {
                 //canvas2svg
                 canvasImage = context;
@@ -292,7 +291,7 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _storeBackground(baseLayerImage) {
         if (baseLayerImage) {
-            var map = this.map;
+            const map = this.map;
             this._canvasBg = copyCanvas(baseLayerImage['image']);
             this._canvasBgRes = map._getResolution();
             this._canvasBgCoord = map.containerPointToCoordinate(baseLayerImage['point']);
@@ -300,14 +299,14 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     _drawBackground() {
-        var map = this.map;
+        const map = this.map;
         if (this._canvasBg) {
-            var baseLayer = this.map.getBaseLayer();
+            const baseLayer = this.map.getBaseLayer();
             if (baseLayer.options['cssFilter']) {
                 this.context.filter = baseLayer.options['cssFilter'];
             }
-            var scale = this._canvasBgRes / map._getResolution();
-            var p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Browser.retina ? 2 : 1);
+            const scale = this._canvasBgRes / map._getResolution();
+            const p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Browser.retina ? 2 : 1);
             Canvas2D.image(this.context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
             if (this.context.filter !== 'none') {
                 this.context.filter = 'none';
@@ -316,10 +315,10 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     _drawCenterCross() {
-        var cross = this.map.options['centerCross'];
+        const cross = this.map.options['centerCross'];
         if (cross) {
-            var ctx = this.context;
-            var p = new Point(this.canvas.width / 2, this.canvas.height / 2);
+            const ctx = this.context;
+            const p = new Point(this.canvas.width / 2, this.canvas.height / 2);
             if (isFunction(cross)) {
                 cross(ctx, p);
             } else {
@@ -343,10 +342,10 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!this.canvas || this._containerIsCanvas) {
             return false;
         }
-        var map = this.map;
-        var mapSize = map.getSize();
-        var canvas = this.canvas;
-        var r = Browser.retina ? 2 : 1;
+        const map = this.map;
+        const mapSize = map.getSize();
+        const canvas = this.canvas;
+        const r = Browser.retina ? 2 : 1;
         if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
             return false;
         }
@@ -440,10 +439,10 @@ export default class MapCanvasRenderer extends MapRenderer {
                     }
                     const point = param['point2d'];
                     const layers = map._getLayers();
-                    var hit = false,
+                    let hit = false,
                         cursor;
                     for (let i = layers.length - 1; i >= 0; i--) {
-                        let layer = layers[i];
+                        const layer = layers[i];
                         if (layer._getRenderer() && layer._getRenderer().hitDetect) {
                             if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(point)) {
                                 cursor = layer.options['cursor'] || 'pointer';

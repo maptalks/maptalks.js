@@ -82,8 +82,8 @@ class Toolbar extends Control {
         const items = this.options['items'];
         if (isArrayHasData(items)) {
             for (let i = 0, len = items.length; i < len; i++) {
-                let item = items[i];
-                let li = createEl('li');
+                const item = items[i];
+                const li = createEl('li');
                 if (this.options['height'] !== 28) {
                     li.style.lineHeight = this.options['height'] + 'px';
                 }
@@ -91,7 +91,7 @@ class Toolbar extends Control {
                 li.style.cursor = 'pointer';
                 if (isHTML(item['item'])) {
                     li.style.textAlign = 'center';
-                    let itemSize = measureDom('div', item['item']);
+                    const itemSize = measureDom('div', item['item']);
                     //vertical-middle
                     li.innerHTML = '<div style="margin-top:' + (this.options['height'] - itemSize['height']) / 2 + 'px;">' + item['item'] + '</div>';
                 } else {
@@ -101,7 +101,7 @@ class Toolbar extends Control {
                     on(li, 'click', (onButtonClick)(item['click'], i, null, li));
                 }
                 if (isArrayHasData(item['children'])) {
-                    let dropMenu = this._createDropMenu(i);
+                    const dropMenu = this._createDropMenu(i);
                     li.appendChild(dropMenu);
                     li._menu = dropMenu;
                     on(li, 'mouseover', function () {
@@ -135,16 +135,16 @@ class Toolbar extends Control {
         menuDom.appendChild(createEl('em', 'maptalks-ico'));
         const menuUL = createEl('ul');
         const children = this._getItems()[index]['children'];
-        var liWidth = 0;
+        let liWidth = 0;
         for (let i = 0, l = children.length; i < l; i++) {
-            let size = stringLength(children[i]['item'], '12px');
+            const size = stringLength(children[i]['item'], '12px');
             if (size.width > liWidth) {
                 liWidth = size.width;
             }
         }
         for (let i = 0, l = children.length; i < l; i++) {
-            let child = children[i];
-            let li = createEl('li');
+            const child = children[i];
+            const li = createEl('li');
             li.innerHTML = '<a href="javascript:;">' + child['item'] + '</a>';
             li.style.cursor = 'pointer';
             li.style.width = (liWidth + 24) + 'px'; // 20 for text-intent

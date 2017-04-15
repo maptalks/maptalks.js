@@ -52,15 +52,15 @@ class Polygon extends Path {
             this._projectRings();
             return this;
         }
-        var rings = Coordinate.toCoordinates(coordinates);
-        var len = rings.length;
+        const rings = Coordinate.toCoordinates(coordinates);
+        const len = rings.length;
         if (!Array.isArray(rings[0])) {
             this._coordinates = this._trimRing(rings);
         } else {
             this._coordinates = this._trimRing(rings[0]);
             if (len > 1) {
-                var holes = [];
-                for (var i = 1; i < len; i++) {
+                const holes = [];
+                for (let i = 1; i < len; i++) {
                     if (!rings[i]) {
                         continue;
                     }
@@ -129,7 +129,7 @@ class Polygon extends Path {
     }
 
     _cleanRing(ring) {
-        for (var i = ring.length - 1; i >= 0; i--) {
+        for (let i = ring.length - 1; i >= 0; i--) {
             if (!ring[i]) {
                 ring.splice(i, 1);
             }
@@ -147,8 +147,8 @@ class Polygon extends Path {
         if (!ring || !isArrayHasData(ring)) {
             return false;
         }
-        var lastPoint = ring[ring.length - 1];
-        var isClose = true;
+        const lastPoint = ring[ring.length - 1];
+        let isClose = true;
         if (ring[0].x !== lastPoint.x || ring[0].y !== lastPoint.y) {
             isClose = false;
         }
@@ -160,7 +160,7 @@ class Polygon extends Path {
      * @private
      */
     _trimRing(ring) {
-        var isClose = this._checkRing(ring);
+        const isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && isClose) {
             ring.splice(ring.length - 1, 1);
         }
@@ -173,7 +173,7 @@ class Polygon extends Path {
      */
     _copyAndCloseRing(ring) {
         ring = ring.slice(0);
-        var isClose = this._checkRing(ring);
+        const isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && !isClose) {
             ring.push(ring[0].copy());
             return ring;
@@ -200,25 +200,25 @@ class Polygon extends Path {
     }
 
     _computeGeodesicLength(measurer) {
-        var rings = this.getCoordinates();
+        const rings = this.getCoordinates();
         if (!isArrayHasData(rings)) {
             return 0;
         }
-        var result = 0;
-        for (var i = 0, len = rings.length; i < len; i++) {
+        let result = 0;
+        for (let i = 0, len = rings.length; i < len; i++) {
             result += measurer.measureLength(rings[i]);
         }
         return result;
     }
 
     _computeGeodesicArea(measurer) {
-        var rings = this.getCoordinates();
+        const rings = this.getCoordinates();
         if (!isArrayHasData(rings)) {
             return 0;
         }
-        var result = measurer.measureArea(rings[0]);
+        let result = measurer.measureArea(rings[0]);
         //holes
-        for (var i = 1, len = rings.length; i < len; i++) {
+        for (let i = 1, len = rings.length; i < len; i++) {
             result -= measurer.measureArea(rings[i]);
 
         }
@@ -230,13 +230,13 @@ class Polygon extends Path {
             pxExtent = this._getPainter().get2DExtent().expand(t);
 
         function isContains(points) {
-            var c = pointInsidePolygon(point, points);
+            const c = pointInsidePolygon(point, points);
             if (c) {
                 return c;
             }
 
-            var i, j, p1, p2,
-                len = points.length;
+            let i, j, p1, p2;
+            const len = points.length;
 
             for (i = 0, j = len - 1; i < len; j = i++) {
                 p1 = points[i];
@@ -260,7 +260,7 @@ class Polygon extends Path {
         const points = this._getPath2DPoints(shell),
             isSplitted = Array.isArray(points[0]);
         if (isSplitted) {
-            for (var i = 0; i < points.length; i++) {
+            for (let i = 0; i < points.length; i++) {
                 if (isContains(points[i])) {
                     return true;
                 }

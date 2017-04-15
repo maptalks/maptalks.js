@@ -41,8 +41,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
             this.clear();
             return;
         }
-        var layer = this.layer;
-        var tileGrid = layer._getTiles();
+        const layer = this.layer;
+        const tileGrid = layer._getTiles();
         if (!tileGrid) {
             this.completeRender();
             return;
@@ -50,10 +50,10 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (!this._tileRended) {
             this._tileRended = {};
         }
-        var tileRended = this._tileRended;
+        const tileRended = this._tileRended;
         this._tileRended = {};
 
-        var tiles = tileGrid['tiles'],
+        const tiles = tileGrid['tiles'],
             tileCache = this._tileCache,
             tileSize = layer.getTileSize();
 
@@ -63,7 +63,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             this.createCanvas();
         }
         // this.resizeCanvas(tileGrid['fullExtent'].getSize());
-        var mask2DExtent = this.prepareCanvas();
+        const mask2DExtent = this.prepareCanvas();
         if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
             this.completeRender();
             return;
@@ -71,14 +71,12 @@ export default class TileLayerRenderer extends CanvasRenderer {
 
         //visit all the tiles
         this._totalTileToLoad = this._tileToLoadCounter = 0;
-        var tile, tileId, cached, tile2DExtent;
-        for (var i = tiles.length - 1; i >= 0; i--) {
-            tile = tiles[i];
-            tileId = tiles[i]['id'];
+        for (let i = tiles.length - 1; i >= 0; i--) {
+            const tile = tiles[i];
+            const tileId = tiles[i]['id'];
             //load tile in cache at first if it has.
-            cached = tileRended[tileId] || (tileCache ? tileCache.get(tileId) : null);
-            tile2DExtent = new PointExtent(tile['point'],
-                tile['point'].add(tileSize.toPoint()));
+            const cached = tileRended[tileId] || (tileCache ? tileCache.get(tileId) : null);
+            const tile2DExtent = new PointExtent(tile['point'], tile['point'].add(tileSize.toPoint()));
             if (!this._extent2D.intersects(tile2DExtent) || (mask2DExtent && !mask2DExtent.intersects(tile2DExtent))) {
                 continue;
             }
@@ -119,7 +117,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     _loadTileQueue() {
-        var me = this;
+        const me = this;
         function onTileLoad() {
             if (!isNode) {
                 if (me._tileCache) {
@@ -133,11 +131,11 @@ export default class TileLayerRenderer extends CanvasRenderer {
         function onTileError() {
             me._clearTileRectAndRequest(this);
         }
-        var tileId, tile;
-        for (let p in this._tileQueue) {
+
+        for (const p in this._tileQueue) {
             if (this._tileQueue.hasOwnProperty(p)) {
-                tileId = p.split('@')[0];
-                tile = this._tileQueue[p];
+                const tileId = p.split('@')[0];
+                const tile = this._tileQueue[p];
                 delete this._tileQueue[p];
                 if (!this._tileCache || !this._tileCache[tileId]) {
                     this._loadTile(tileId, tile, onTileLoad, onTileError);
@@ -150,9 +148,9 @@ export default class TileLayerRenderer extends CanvasRenderer {
 
 
     _loadTile(tileId, tile, onTileLoad, onTileError) {
-        var crossOrigin = this.layer.options['crossOrigin'];
-        var tileSize = this.layer.getTileSize();
-        var tileImage = new Image();
+        const crossOrigin = this.layer.options['crossOrigin'];
+        const tileSize = this.layer.getTileSize();
+        const tileImage = new Image();
         tileImage.width = tileSize['width'];
         tileImage.height = tileSize['height'];
         tileImage[this.propertyOfTileId] = tileId;
@@ -172,13 +170,13 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (!point) {
             return;
         }
-        var tileSize = this.layer.getTileSize();
+        const tileSize = this.layer.getTileSize();
         const ctx = this.context;
         Canvas2D.image(ctx, tileImage,
             Math.floor(point.x - this._northWest.x), Math.floor(point.y - this._northWest.y),
             tileSize['width'], tileSize['height']);
         if (this.layer.options['debug']) {
-            var p = point.sub(this._northWest);
+            const p = point.sub(this._northWest);
             ctx.save();
             const color = '#0f0';
             ctx.strokeStyle = color;
@@ -186,7 +184,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             ctx.strokeWidth = 10;
             ctx.font = '15px monospace';
             Canvas2D.rectangle(ctx, p, tileSize, 1, 0);
-            var xyz = tileImage[this.propertyOfTileId].split('__');
+            const xyz = tileImage[this.propertyOfTileId].split('__');
             Canvas2D.fillText(ctx, 'x:' + xyz[1] + ', y:' + xyz[0] + ', z:' + xyz[2], p.add(10, 20), color);
             Canvas2D.drawCross(ctx, p.add(tileSize['width'] / 2, tileSize['height'] / 2), 2, color);
             this.context.restore();
@@ -203,17 +201,17 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (!this.getMap()) {
             return;
         }
-        var zoom = this.getMap().getZoom();
+        const zoom = this.getMap().getZoom();
         if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
         }
         this._tileToLoadCounter--;
-        var point = tileImage[this.propertyOfPointOnTile];
+        const point = tileImage[this.propertyOfPointOnTile];
         this._drawTile(point, tileImage);
 
         if (!isNode) {
-            var tileSize = this.layer.getTileSize();
-            var mapExtent = this.getMap()._get2DExtent();
+            const tileSize = this.layer.getTileSize();
+            const mapExtent = this.getMap()._get2DExtent();
             if (mapExtent.intersects(new PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
                 this.requestMapToRender();
             }
@@ -240,7 +238,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (!this.getMap()) {
             return;
         }
-        var zoom = this.getMap().getZoom();
+        const zoom = this.getMap().getZoom();
         if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
         }

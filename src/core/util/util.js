@@ -2,7 +2,7 @@ import { isNode } from './env';
 import { isString, isNil, hasOwn } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
-var requestAnimFrame, cancelAnimFrame;
+let requestAnimFrame, cancelAnimFrame;
 (function () {
     if (isNode) {
         requestAnimFrame = function (fn) {
@@ -13,12 +13,12 @@ var requestAnimFrame, cancelAnimFrame;
         return;
     }
 
-    var requestFn, cancelFn;
-    var lastTime = 0;
+    let requestFn, cancelFn;
+    let lastTime = 0;
 
     // fallback for IE 7-8
     function timeoutDefer(fn) {
-        var time = +new Date(),
+        const time = +new Date(),
             timeToCall = Math.max(0, 16 - (time - lastTime));
 
         lastTime = time + timeToCall;
@@ -76,14 +76,14 @@ export function setOptions(obj, options) {
     if (hasOwn(obj, 'options')) {
         obj.options = obj.options ? Object.create(obj.options) : {};
     }
-    for (var i in options) {
+    for (const i in options) {
         obj.options[i] = options[i];
     }
     return obj.options;
 }
 
 export function isSVG(url) {
-    var prefix = 'data:image/svg+xml';
+    const prefix = 'data:image/svg+xml';
     if (url.length > 4 && url.slice(-4) === '.svg') {
         return 1;
     } else if (url.slice(0, prefix.length) === prefix) {
@@ -108,7 +108,7 @@ export function loadImage(img, imgDesc) {
     img.src = imgDesc[0];
 }
 
-var uid = 0;
+let uid = 0;
 
 export function UID() {
     return uid++;
@@ -129,7 +129,7 @@ export function parseJSON(str) {
 }
 
 export function executeWhen(fn, when) {
-    var exe = function () {
+    const exe = function () {
         if (when()) {
             fn();
         } else {
@@ -152,7 +152,7 @@ export function mapArrayRecursively(arr, fn, context) {
         return context ? fn.call(context, arr) : fn(arr);
     }
     const result = [];
-    var p, pp;
+    let p, pp;
     for (let i = 0, len = arr.length; i < len; i++) {
         p = arr[i];
         if (isNil(p)) {
@@ -226,8 +226,8 @@ export function interpolate(a, b, t) {
  * @private
  */
 export function wrap(n, min, max) {
-    var d = max - min;
-    var w = ((n - min) % d + d) % d + min;
+    const d = max - min;
+    const w = ((n - min) % d + d) % d + min;
     return (w === min) ? max : w;
 }
 
@@ -266,7 +266,7 @@ export function isURL(url) {
     if (!url) {
         return false;
     }
-    var head = url.slice(0, 6);
+    const head = url.slice(0, 6);
     if (head === 'http:/' || head === 'https:' || head === 'file:/') {
         return true;
     }
@@ -285,7 +285,7 @@ export function isCssUrl(str) {
     if (!isString(str)) {
         return 0;
     }
-    var head = str.slice(0, 6);
+    const head = str.slice(0, 6);
     if (head === 'http:/' || head === 'https:') {
         return 3;
     }
@@ -299,8 +299,8 @@ export function isCssUrl(str) {
 }
 
 export function extractCssUrl(str) {
-    var test = isCssUrl(str),
-        matches;
+    const test = isCssUrl(str);
+    let matches;
     if (test === 3) {
         return str;
     }
@@ -326,16 +326,17 @@ const b64chrs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
  * @return {String} ascii
  * @memberOf Util
  * @example
- *     var encodedData = Util.btoa(stringToEncode);
+ *     const encodedData = Util.btoa(stringToEncode);
  */
 export function btoa(input) {
     if ((typeof window !== 'undefined') && window.btoa) {
         return window.btoa(input);
     }
-    var str = String(input);
+    const str = String(input);
+    let output = '';
     for (
         // initialize result and counter
-        var block, charCode, idx = 0, map = b64chrs, output = '';
+        let block, charCode, idx = 0, map = b64chrs;
         // if the next str index does not exist:
         //   change the mapping table to "="
         //   check if d has no fractional digits
@@ -360,7 +361,7 @@ export function btoa(input) {
  * @memberOf Util
  */
 export function computeDegree(p1, p2) {
-    var dx = p2.x - p1.x;
-    var dy = p2.y - p1.y;
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
     return Math.atan2(dy, dx);
 }

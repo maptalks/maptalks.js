@@ -116,7 +116,7 @@ class Control extends Eventable(Class) {
         const position = this.getPosition();
 
         const size = this.getMap().getSize();
-        var x, y;
+        let x, y;
         if (!isNil(position['top'])) {
             x = position['top'];
         } else if (!isNil(position['bottom'])) {
@@ -202,7 +202,7 @@ class Control extends Eventable(Class) {
     }
 
     _parse(position) {
-        var p = position;
+        let p = position;
         if (isString(position)) {
             p = Control['positions'][p];
         }
@@ -210,7 +210,7 @@ class Control extends Eventable(Class) {
     }
 
     _updatePosition() {
-        var position = this.getPosition();
+        let position = this.getPosition();
         if (!position) {
             //default one
             position = {
@@ -218,7 +218,7 @@ class Control extends Eventable(Class) {
                 'left': 20
             };
         }
-        for (var p in position) {
+        for (const p in position) {
             if (position.hasOwnProperty(p)) {
                 position[p] = parseInt(position[p]);
                 this.__ctrlContainer.style[p] = position[p] + 'px';

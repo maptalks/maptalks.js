@@ -9,9 +9,9 @@ import loadArcgis from './View.Arc';
 const DefaultView = {
     'EPSG:3857': {
         'resolutions': (function () {
-            var resolutions = [];
-            var d = 2 * 6378137 * Math.PI;
-            for (var i = 0; i < 21; i++) {
+            const resolutions = [];
+            const d = 2 * 6378137 * Math.PI;
+            for (let i = 0; i < 21; i++) {
                 resolutions[i] = d / (256 * Math.pow(2, i));
             }
             return resolutions;
@@ -31,8 +31,8 @@ const DefaultView = {
             'right': 180
         },
         'resolutions': (function () {
-            var resolutions = [];
-            for (var i = 0; i < 21; i++) {
+            const resolutions = [];
+            for (let i = 0; i < 21; i++) {
                 resolutions[i] = 180 / (Math.pow(2, i) * 128);
             }
             return resolutions;
@@ -40,9 +40,9 @@ const DefaultView = {
     },
     'BAIDU': {
         'resolutions': (function () {
-            var res = Math.pow(2, 18);
-            var resolutions = [];
-            for (var i = 0; i < 20; i++) {
+            let res = Math.pow(2, 18);
+            const resolutions = [];
+            for (let i = 0; i < 20; i++) {
                 resolutions[i] = res;
                 res *= 0.5;
             }
@@ -67,12 +67,12 @@ export default class View {
     }
 
     _initView() {
-        var projection = this.options['projection'];
+        let projection = this.options['projection'];
         if (projection) {
             if (isString(projection)) {
-                for (var p in projections) {
+                for (const p in projections) {
                     if (hasOwn(projections, p)) {
-                        var regName = projections[p]['code'];
+                        const regName = projections[p]['code'];
                         if (regName && regName.toLowerCase() === projection.toLowerCase()) {
                             projection = projections[p];
                             break;
@@ -91,7 +91,7 @@ export default class View {
             extend(projection, Measurer.DEFAULT);
         }
         this._projection = projection;
-        var defaultView,
+        let defaultView,
             resolutions = this.options['resolutions'];
         if (!resolutions) {
             if (projection['code']) {
@@ -105,7 +105,7 @@ export default class View {
             }
         }
         this._resolutions = resolutions;
-        var fullExtent = this.options['fullExtent'];
+        let fullExtent = this.options['fullExtent'];
         if (!fullExtent) {
             if (projection['code']) {
                 defaultView = DefaultView[projection['code']];
@@ -132,7 +132,7 @@ export default class View {
         //set left, right, top, bottom value
         extend(this._fullExtent, fullExtent);
 
-        var a = fullExtent['right'] >= fullExtent['left'] ? 1 : -1,
+        const a = fullExtent['right'] >= fullExtent['left'] ? 1 : -1,
             b = fullExtent['top'] >= fullExtent['bottom'] ? -1 : 1;
         this._transformation = new Transformation([a, b, 0, 0]);
     }
@@ -142,15 +142,15 @@ export default class View {
     }
 
     getResolution(zoom) {
-        var z = (zoom | 0);
+        let z = (zoom | 0);
         if (z < 0) {
             z = 0;
         } else if (z > this._resolutions.length - 1) {
             z = this._resolutions.length - 1;
         }
-        var res = this._resolutions[z];
+        const res = this._resolutions[z];
         if (!isInteger(zoom) && z !== this._resolutions.length - 1) {
-            var next = this._resolutions[z + 1];
+            const next = this._resolutions[z + 1];
             return res + (next - res) * (zoom - z);
         }
         return res;
@@ -169,7 +169,7 @@ export default class View {
     }
 
     getMinZoom() {
-        for (var i = 0; i < this._resolutions.length; i++) {
+        for (let i = 0; i < this._resolutions.length; i++) {
             if (!isNil(this._resolutions[i])) {
                 return i;
             }
@@ -178,7 +178,7 @@ export default class View {
     }
 
     getMaxZoom() {
-        for (var i = this._resolutions.length - 1; i >= 0; i--) {
+        for (let i = this._resolutions.length - 1; i >= 0; i--) {
             if (!isNil(this._resolutions[i])) {
                 return i;
             }

@@ -42,7 +42,7 @@ class Path extends Geometry {
      * @private
      */
     _getPath2DPoints(prjCoords, disableSimplify, zoom) {
-        var result = [];
+        let result = [];
         if (!isArrayHasData(prjCoords)) {
             return result;
         }
@@ -63,9 +63,10 @@ class Path extends Geometry {
         if (isNil(zoom)) {
             zoom = map.getZoom();
         }
-        var p, pre, current, dx, dy, my,
+        let p, pre, current, dx, dy, my;
             // for anit-meridian splits
-            part1 = [], part2 = [], part = part1;
+        const part1 = [], part2 = [];
+        let part = part1;
         for (let i = 0, len = prjCoords.length; i < len; i++) {
             p = prjCoords[i];
             if (isMulti) {
@@ -128,7 +129,7 @@ class Path extends Geometry {
 
     _getPrjCoordinates() {
         if (!this._prjCoords) {
-            var points = this._coordinates;
+            const points = this._coordinates;
             this._prjCoords = this._projectCoords(points);
         }
         return this._prjCoords;
@@ -137,7 +138,7 @@ class Path extends Geometry {
     //update cached variables if geometry is updated.
     _updateCache() {
         this._clearCache();
-        var projection = this._getProjection();
+        const projection = this._getProjection();
         if (!projection) {
             return;
         }
@@ -157,7 +158,7 @@ class Path extends Geometry {
     }
 
     _projectCoords(points) {
-        var projection = this._getProjection();
+        const projection = this._getProjection();
         if (projection) {
             return projection.projectCoords(points);
         }
@@ -165,7 +166,7 @@ class Path extends Geometry {
     }
 
     _unprojectCoords(prjPoints) {
-        var projection = this._getProjection();
+        const projection = this._getProjection();
         if (projection) {
             return projection.unprojectCoords(prjPoints);
         }
@@ -173,15 +174,15 @@ class Path extends Geometry {
     }
 
     _computeCenter() {
-        var ring = this._coordinates;
+        const ring = this._coordinates;
         if (!isArrayHasData(ring)) {
             return null;
         }
-        var sumx = 0,
-            sumy = 0;
-        var counter = 0;
-        var size = ring.length;
-        for (var i = 0; i < size; i++) {
+        let sumx = 0,
+            sumy = 0,
+            counter = 0;
+        const size = ring.length;
+        for (let i = 0; i < size; i++) {
             if (ring[i]) {
                 if (isNumber(ring[i].x) && isNumber(ring[i].y)) {
                     sumx += ring[i].x;
@@ -194,11 +195,11 @@ class Path extends Geometry {
     }
 
     _computeExtent() {
-        var shell = this._coordinates;
+        const shell = this._coordinates;
         if (!isArrayHasData(shell)) {
             return null;
         }
-        var rings = [shell];
+        const rings = [shell];
         if (this.hasHoles && this.hasHoles()) {
             rings.push.apply(rings, this.getHoles());
         }
@@ -212,11 +213,11 @@ class Path extends Geometry {
      * @private
      */
     _computeCoordsExtent(coords) {
-        var result = null,
-            anti = this.options['antiMeridian'];
-        var ext, p, dx, pre;
-        for (var i = 0, len = coords.length; i < len; i++) {
-            for (var j = 0, jlen = coords[i].length; j < jlen; j++) {
+        const anti = this.options['antiMeridian'];
+        let result = null;
+        let ext, p, dx, pre;
+        for (let i = 0, len = coords.length; i < len; i++) {
+            for (let j = 0, jlen = coords[i].length; j < jlen; j++) {
                 p = coords[i][j];
                 if (j > 0 && anti) {
                     if (!pre) {
@@ -237,20 +238,20 @@ class Path extends Geometry {
     }
 
     _get2DLength() {
-        var vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true);
-        var len = 0;
-        for (var i = 1, l = vertexes.length; i < l; i++) {
+        const vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true);
+        let len = 0;
+        for (let i = 1, l = vertexes.length; i < l; i++) {
             len += vertexes[i].distanceTo(vertexes[i - 1]);
         }
         return len;
     }
 
     _hitTestTolerance() {
-        var symbol = this._getInternalSymbol();
-        var w;
+        const symbol = this._getInternalSymbol();
+        let w;
         if (Array.isArray(symbol)) {
             w = 0;
-            for (var i = 0; i < symbol.length; i++) {
+            for (let i = 0; i < symbol.length; i++) {
                 if (isNumber(symbol[i]['lineWidth'])) {
                     if (symbol[i]['lineWidth'] > w) {
                         w = symbol[i]['lineWidth'];

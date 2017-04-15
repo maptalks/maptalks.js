@@ -146,11 +146,11 @@ const Animation = {
             if (!Array.isArray(child)) {
                 return Animation._resolveStyles(child);
             }
-            var start = [],
+            const start = [],
                 d = [],
                 dest = [];
             for (let i = 0; i < child.length; i++) {
-                let styles = Animation._resolveStyles(child[i]);
+                const styles = Animation._resolveStyles(child[i]);
                 if (styles) {
                     start.push(styles[0]);
                     d.push(styles[1]);
@@ -165,8 +165,8 @@ const Animation = {
         }
         // resolve a style value.
         function resolveVal(val) {
-            var values = val,
-                clazz;
+            let values = val;
+            let clazz;
             //val is just a destination value, so we set start value to 0 or a 0-point or a 0-coordinate.
             if (!Array.isArray(val)) {
                 if (isNumber(val)) {
@@ -179,7 +179,7 @@ const Animation = {
                 }
             }
             //val is an array and val[0] is the start value and val[1] is the destination value.
-            var v1 = values[0],
+            let v1 = values[0],
                 v2 = values[1];
             if (isNumber(v1) && isNumber(v2)) {
                 if (v1 === v2) {
@@ -215,13 +215,13 @@ const Animation = {
             return false;
         }
 
-        var d = {},
+        const d = {},
             start = {},
             dest = {};
-        for (var p in styles) {
+        for (const p in styles) {
             if (styles.hasOwnProperty(p)) {
-                var values = styles[p];
-                var childStyles;
+                const values = styles[p];
+                let childStyles;
                 if (isChild(values)) {
                     childStyles = resolveChild(values);
                 } else {
@@ -248,43 +248,43 @@ const Animation = {
         if (!options) {
             options = {};
         }
-        var easing = options['easing'] ? Easing[options['easing']] : Easing.linear;
+        let easing = options['easing'] ? Easing[options['easing']] : Easing.linear;
         if (!easing) {
             easing = Easing.linear;
         }
-        var dStyles, startStyles, destStyles;
+        let dStyles, startStyles, destStyles;
         styles = Animation._resolveStyles(styles);
         if (styles) {
             startStyles = styles[0];
             dStyles = styles[1];
             destStyles = styles[2];
         }
-        var deltaStyles = function (delta, _startStyles, _dStyles) {
+        const deltaStyles = function (delta, _startStyles, _dStyles) {
             if (!_startStyles || !_dStyles) {
                 return null;
             }
-            var result = {};
-            for (var p in _dStyles) {
+            const result = {};
+            for (const p in _dStyles) {
                 if (_dStyles.hasOwnProperty(p)) {
                     if (_startStyles[p] === destStyles[p]) {
                         result[p] = _startStyles[p];
                         continue;
                     }
-                    var s = _startStyles[p],
+                    const s = _startStyles[p],
                         d = _dStyles[p];
                     if (isNumber(d)) {
                         //e.g. radius, width, height
                         result[p] = s + delta * d;
                     } else if (Array.isArray(d)) {
                         //e.g. a composite symbol, element in array can only be a object.
-                        var children = [];
-                        for (var i = 0; i < d.length; i++) {
+                        const children = [];
+                        for (let i = 0; i < d.length; i++) {
                             children.push(deltaStyles(delta, s[i], d[i]));
                         }
                         result[p] = children;
                     } else {
                         //e.g. translate or a child
-                        var clazz = d.constructor;
+                        const clazz = d.constructor;
                         if (clazz === Object) {
                             result[p] = deltaStyles(delta, s, d);
                         } else if (s instanceof Point || s instanceof Coordinate) {
@@ -296,7 +296,7 @@ const Animation = {
             return result;
         };
         return function (elapsed, duration) {
-            var state, d;
+            let state, d;
             if (elapsed < 0) {
                 state = {
                     'playState': 'idle',
@@ -304,7 +304,7 @@ const Animation = {
                 };
                 d = startStyles;
             } else if (elapsed < duration) {
-                var delta = easing(elapsed / duration);
+                const delta = easing(elapsed / duration);
                 state = {
                     'playState': 'running',
                     'delta': delta
@@ -342,7 +342,7 @@ const Animation = {
 
     _run() {
         if (this._frameQueue.length) {
-            var running = this._frameQueue;
+            const running = this._frameQueue;
             this._frameQueue = [];
             for (let i = 0, len = running.length; i < len; i++) {
                 running[i]();
@@ -366,7 +366,7 @@ const Animation = {
         if (!options) {
             options = {};
         }
-        var animation = Animation.framing(styles, options);
+        const animation = Animation.framing(styles, options);
         return new Player(animation, options, step);
     }
 };
@@ -375,8 +375,8 @@ Animation._frameFn = Animation._run.bind(Animation);
 
 extend(Player.prototype, /** @lends animation.Player.prototype */{
     _prepare() {
-        var options = this._options;
-        var duration = options['speed'] || options['duration'];
+        const options = this._options;
+        let duration = options['speed'] || options['duration'];
         if (isString(duration)) {
             duration = Animation.speed[duration];
             if (!duration) {
@@ -401,9 +401,9 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             this.currentTime = 0;
             this._prepare();
         }
-        var t = Date.now();
+        const t = Date.now();
         if (!this.startTime) {
-            var options = this._options;
+            const options = this._options;
             this.startTime = options['startTime'] ? options['startTime'] : t;
         }
         this._playStartTime = Math.max(t, this.startTime);
@@ -453,7 +453,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             return;
         }
         const t = Date.now();
-        var elapsed = t - this._playStartTime;
+        let elapsed = t - this._playStartTime;
         if (this._options['repeat'] && elapsed >= this.duration) {
             this._playStartTime = t;
             elapsed = 0;

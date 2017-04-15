@@ -1,3 +1,4 @@
+/*eslint-disable no-var*/
 // Contains code from glmatrix.js
 
 const ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
@@ -304,3 +305,4 @@ export function invert(out, a) {
 
     return out;
 }
+/*eslint-enable no-var*/

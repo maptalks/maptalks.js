@@ -41,8 +41,7 @@ const TextEditable = {
      */
     endEditText() {
         if (this._textEditor) {
-            var content = this._textEditor.innerText;
-            content = escapeSpecialChars(content);
+            const content = escapeSpecialChars(this._textEditor.innerText);
             this.setContent(content);
             this.show();
             off(this._textEditor, 'mousedown dblclick', stopPropagation);
@@ -84,11 +83,11 @@ const TextEditable = {
     },
 
     _prepareEditor() {
-        var map = this.getMap();
-        var editContainer = this._createEditor();
+        const map = this.getMap();
+        const editContainer = this._createEditor();
         this._textEditor = editContainer;
         map.on('mousedown', this.endEditText, this);
-        var offset = this._getEditorOffset();
+        const offset = this._getEditorOffset();
         this._editUIMarker = new UIMarker(this.getCoordinates(), {
             'content': editContainer,
             'dx': offset.dx,
@@ -98,10 +97,10 @@ const TextEditable = {
     },
 
     _getEditorOffset() {
-        var symbol = this._getInternalSymbol() || {},
-            dx = 0,
+        const symbol = this._getInternalSymbol() || {};
+        let dx = 0,
             dy = 0;
-        var textAlign = symbol['textHorizontalAlignment'];
+        const textAlign = symbol['textHorizontalAlignment'];
         if (textAlign === 'middle') {
             dx = symbol['textDx'] - 2 || 0;
             dy = symbol['textDy'] - 2 || 0;
@@ -119,8 +118,8 @@ const TextEditable = {
     },
 
     _createEditor() {
-        var content = this.getContent();
-        var labelSize = this.getSize(),
+        const content = this.getContent();
+        const labelSize = this.getSize(),
             symbol = this._getInternalSymbol() || {},
             width = (content && content.length > 0) ? (Math.max(labelSize['width'], this.options['boxMinWidth']) || 100) : 100,
             textColor = symbol['textFill'] || '#000000',
@@ -130,7 +129,7 @@ const TextEditable = {
             fill = symbol['markerFill'] || '#3398CC',
             spacing = symbol['textLineSpacing'] || 0;
         // opacity = symbol['markerFillOpacity'];
-        var editor = createEl('div');
+        const editor = createEl('div');
         editor.contentEditable = true;
         editor.style.cssText = 'background: ' + fill + ';' +
             'border: 1px solid ' + lineColor + ';' +
@@ -150,10 +149,7 @@ const TextEditable = {
         editor.innerText = content;
         on(editor, 'mousedown dblclick', stopPropagation);
         editor.onkeyup = function (event) {
-            var h = editor.style.height;
-            if (!h) {
-                h = 0;
-            }
+            const h = editor.style.height || 0;
             if (event.keyCode === 13) {
                 editor.style.height = (parseInt(h) + textSize / 2) + 'px';
             }
@@ -162,7 +158,7 @@ const TextEditable = {
     },
 
     _setCursorToLast(obj) {
-        var range;
+        let range;
         if (window.getSelection) {
             obj.focus();
             range = window.getSelection();

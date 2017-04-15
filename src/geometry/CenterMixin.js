@@ -71,7 +71,7 @@ export default function (Base) {
             this.onPositionChanged();
         }
 
-        //update cached variables if geometry is updated.
+        //update cached const iables if geometry is updated.
         _updateCache() {
             this._clearCache();
             const projection = this._getProjection();

@@ -91,7 +91,7 @@ class Point {
      * @return {Number} distance
      */
     distanceTo(point) {
-        var x = point.x - this.x,
+        const x = point.x - this.x,
             y = point.y - this.y;
         return Math.sqrt(x * x + y * y);
     }
@@ -114,7 +114,7 @@ class Point {
      * @return {Point} result
      */
     add(x, y) {
-        var nx, ny;
+        let nx, ny;
         if (x instanceof Point) {
             nx = this.x + x.x;
             ny = this.y + x.y;
@@ -146,7 +146,7 @@ class Point {
      * @return {Point} result
      */
     sub(x, y) {
-        var nx, ny;
+        let nx, ny;
         if (x instanceof Point) {
             nx = this.x - x.x;
             ny = this.y - x.y;
@@ -259,7 +259,7 @@ class Point {
     }
 
     _perp() {
-        var y = this.y;
+        const y = this.y;
         this.y = this.x;
         this.x = -y;
         return this;

@@ -44,7 +44,7 @@ class GeometryEditor extends Eventable(Class) {
      * Prepare to edit
      */
     prepare() {
-        var map = this.getMap();
+        const map = this.getMap();
         if (!map) {
             return;
         }
@@ -60,8 +60,8 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     _prepareEditStageLayer() {
-        var map = this.getMap();
-        var uid = UID();
+        const map = this.getMap();
+        const uid = UID();
         this._editStageLayer = map.getLayer(EDIT_STAGE_LAYER_PREFIX + uid);
         if (!this._editStageLayer) {
             this._editStageLayer = new VectorLayer(EDIT_STAGE_LAYER_PREFIX + uid);
@@ -77,12 +77,12 @@ class GeometryEditor extends Eventable(Class) {
             return;
         }
         this.editing = true;
-        var geometry = this._geometry;
+        const geometry = this._geometry;
         this._geometryDraggble = geometry.options['draggable'];
         geometry.config('draggable', false);
         this.prepare();
         //edits are applied to a shadow of geometry to improve performance.
-        var shadow = geometry.copy();
+        const shadow = geometry.copy();
         shadow.setSymbol(geometry._getInternalSymbol());
         //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
         //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
@@ -135,7 +135,7 @@ class GeometryEditor extends Eventable(Class) {
      */
     stop() {
         this._switchGeometryEvents('off');
-        var map = this.getMap();
+        const map = this.getMap();
         if (!map) {
             return;
         }
@@ -152,7 +152,7 @@ class GeometryEditor extends Eventable(Class) {
         this._editStageLayer.remove();
         if (isArrayHasData(this._eventListeners)) {
             for (let i = this._eventListeners.length - 1; i >= 0; i--) {
-                let listener = this._eventListeners[i];
+                const listener = this._eventListeners[i];
                 listener[0].off(listener[1], listener[2], this);
             }
             this._eventListeners = [];
@@ -184,8 +184,8 @@ class GeometryEditor extends Eventable(Class) {
 
     _switchGeometryEvents(oper) {
         if (this._geometry) {
-            var events = this._getGeometryEvents();
-            for (var p in events) {
+            const events = this._getGeometryEvents();
+            for (const p in events) {
                 this._geometry[oper](p, events[p], this);
             }
         }
@@ -235,13 +235,13 @@ class GeometryEditor extends Eventable(Class) {
      * @private
      */
     _createOrRefreshOutline() {
-        var geometry = this._geometry,
-            map = this.getMap(),
-            outline = this._editOutline;
-        var pixelExtent = geometry._getPainter().get2DExtent(),
+        const geometry = this._geometry,
+            map = this.getMap();
+        let outline = this._editOutline;
+        const pixelExtent = geometry._getPainter().get2DExtent(),
             size = pixelExtent.getSize();
-        var nw = map.pointToCoordinate(pixelExtent.getMin());
-        var width = map.pixelToDistance(size['width'], 0),
+        const nw = map.pointToCoordinate(pixelExtent.getMin());
+        const width = map.pixelToDistance(size['width'], 0),
             height = map.pixelToDistance(0, size['height']);
         if (!outline) {
             outline = new Rectangle(nw, width, height, {
@@ -265,7 +265,7 @@ class GeometryEditor extends Eventable(Class) {
 
     _createCenterHandle() {
         const center = this._shadow.getCenter();
-        var shadow;
+        let shadow;
         const handle = this.createHandle(center, {
             'markerType': 'ellipse',
             'dxdy': new Point(0, 0),
@@ -297,7 +297,7 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     _createHandleInstance(coordinate, opts) {
-        var symbol = {
+        const symbol = {
             'markerType': opts['markerType'],
             'markerFill': '#ffffff', //"#d0d2d6",
             'markerLineColor': '#000000',
@@ -310,7 +310,7 @@ class GeometryEditor extends Eventable(Class) {
         if (opts['symbol']) {
             extend(symbol, opts['symbol']);
         }
-        var handle = new Marker(coordinate, {
+        const handle = new Marker(coordinate, {
             'draggable': true,
             'dragShadow': false,
             'dragOnAxis': opts['axis'],
@@ -324,9 +324,9 @@ class GeometryEditor extends Eventable(Class) {
         if (!opts) {
             opts = {};
         }
-        var map = this.getMap();
-        var handle = this._createHandleInstance(coordinate, opts);
-        var me = this;
+        const map = this.getMap();
+        const handle = this._createHandleInstance(coordinate, opts);
+        const me = this;
 
         function onHandleDragstart(param) {
             if (opts.onDown) {
@@ -336,7 +336,7 @@ class GeometryEditor extends Eventable(Class) {
 
         function onHandleDragging(param) {
             me._hideContext();
-            var viewPoint = map._prjToViewPoint(handle._getPrjCoordinates());
+            const viewPoint = map._prjToViewPoint(handle._getPrjCoordinates());
             if (opts.onMove) {
                 opts.onMove.call(me, viewPoint, param);
             }
@@ -366,18 +366,18 @@ class GeometryEditor extends Eventable(Class) {
      */
     _createResizeHandles(blackList, onHandleMove) {
         //cursor styles.
-        var cursors = [
+        const cursors = [
             'nw-resize', 'n-resize', 'ne-resize',
             'w-resize', 'e-resize',
             'sw-resize', 's-resize', 'se-resize'
         ];
         //defines dragOnAxis of resize handle
-        var axis = [
+        const axis = [
             null, 'y', null,
             'x', 'x',
             null, 'y', null
         ];
-        var geometry = this._geometry;
+        const geometry = this._geometry;
 
         function getResizeAnchors(ext) {
             return [
@@ -394,24 +394,24 @@ class GeometryEditor extends Eventable(Class) {
         if (!blackList) {
             blackList = [];
         }
-        var resizeHandles = [];
-        var anchorIndexes = {};
-        var map = this.getMap();
-        var fnLocateHandles = () => {
-            var pExt = geometry._getPainter().get2DExtent(),
+        const resizeHandles = [];
+        const anchorIndexes = {};
+        const map = this.getMap();
+        const fnLocateHandles = () => {
+            const pExt = geometry._getPainter().get2DExtent(),
                 anchors = getResizeAnchors(pExt);
             for (let i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist
                 if (Array.isArray(blackList)) {
-                    let isBlack = blackList.some(ele => ele === i);
+                    const isBlack = blackList.some(ele => ele === i);
                     if (isBlack) {
                         continue;
                     }
                 }
-                let anchor = anchors[i],
+                const anchor = anchors[i],
                     coordinate = map.pointToCoordinate(anchor);
                 if (resizeHandles.length < (anchors.length - blackList.length)) {
-                    let handle = this.createHandle(coordinate, {
+                    const handle = this.createHandle(coordinate, {
                         'markerType': 'square',
                         'dxdy': new Point(0, 0),
                         'cursor': cursors[i],
@@ -449,7 +449,100 @@ class GeometryEditor extends Eventable(Class) {
         const marker = this._shadow,
             geometryToEdit = this._geometry,
             map = this.getMap();
-        var resizeHandles;
+        if (!marker._canEdit()) {
+            if (console) {
+                console.warn('A marker can\'t be resized with symbol:', marker.getSymbol());
+            }
+            return;
+        }
+        //only image marker and vector marker can be edited now.
+
+        const symbol = marker._getInternalSymbol();
+        const dxdy = new Point(0, 0);
+        if (isNumber(symbol['markerDx'])) {
+            dxdy.x = symbol['markerDx'];
+        }
+        if (isNumber(symbol['markerDy'])) {
+            dxdy.y = symbol['markerDy'];
+        }
+
+        let blackList = null;
+
+        if (Symbolizers.VectorMarkerSymbolizer.test(symbol)) {
+            if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
+                //as these types of markers' anchor stands on its bottom
+                blackList = [5, 6, 7];
+            }
+        } else if (Symbolizers.ImageMarkerSymbolizer.test(symbol) ||
+            Symbolizers.VectorPathMarkerSymbolizer.test(symbol)) {
+            blackList = [5, 6, 7];
+        }
+
+        //defines what can be resized by the handle
+        //0: resize width; 1: resize height; 2: resize both width and height.
+        const resizeAbilities = [
+            2, 1, 2,
+            0, 0,
+            2, 1, 2
+        ];
+
+        let aspectRatio;
+        if (this.options['fixAspectRatio']) {
+            const size = marker.getSize();
+            aspectRatio = size.width / size.height;
+        }
+
+        const resizeHandles = this._createResizeHandles(null, (handleViewPoint, i) => {
+            if (blackList && blackList.indexOf(i) >= 0) {
+                //need to change marker's coordinates
+                const newCoordinates = map.viewPointToCoordinate(handleViewPoint.sub(dxdy));
+                const coordinates = marker.getCoordinates();
+                newCoordinates.x = coordinates.x;
+                marker.setCoordinates(newCoordinates);
+                geometryToEdit.setCoordinates(newCoordinates);
+                //coordinates changed, and use mirror handle instead to caculate width and height
+                const mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
+                const mirrorViewPoint = map.coordinateToViewPoint(mirrorHandle.getCoordinates());
+                handleViewPoint = mirrorViewPoint;
+            }
+
+            //caculate width and height
+            const viewCenter = map._pointToViewPoint(marker._getCenter2DPoint()).add(dxdy),
+                symbol = marker._getInternalSymbol();
+            const wh = handleViewPoint.sub(viewCenter);
+            if (blackList && handleViewPoint.y > viewCenter.y) {
+                wh.y = 0;
+            }
+
+            //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
+            const r = blackList ? 1 : 2;
+            let width = Math.abs(wh.x) * 2,
+                height = Math.abs(wh.y) * r;
+            if (aspectRatio) {
+                width = Math.max(width, height * aspectRatio);
+                height = width / aspectRatio;
+            }
+            const ability = resizeAbilities[i];
+            if (!(marker instanceof TextMarker)) {
+                if (aspectRatio || ability === 0 || ability === 2) {
+                    symbol['markerWidth'] = width;
+                }
+                if (aspectRatio || ability === 1 || ability === 2) {
+                    symbol['markerHeight'] = height;
+                }
+                marker.setSymbol(symbol);
+                geometryToEdit.setSymbol(symbol);
+            } else {
+                if (aspectRatio || ability === 0 || ability === 2) {
+                    geometryToEdit.config('boxMinWidth', width);
+                    marker.config('boxMinWidth', width);
+                }
+                if (aspectRatio || ability === 1 || ability === 2) {
+                    geometryToEdit.config('boxMinHeight', height);
+                    marker.config('boxMinHeight', height);
+                }
+            }
+        });
 
         function onZoomStart() {
             if (Array.isArray(resizeHandles)) {
@@ -473,100 +566,7 @@ class GeometryEditor extends Eventable(Class) {
                 this._editOutline.show();
             }
         }
-        if (!marker._canEdit()) {
-            if (console) {
-                console.warn('A marker can\'t be resized with symbol:', marker.getSymbol());
-            }
-            return;
-        }
-        //only image marker and vector marker can be edited now.
 
-        var symbol = marker._getInternalSymbol();
-        var dxdy = new Point(0, 0);
-        if (isNumber(symbol['markerDx'])) {
-            dxdy.x = symbol['markerDx'];
-        }
-        if (isNumber(symbol['markerDy'])) {
-            dxdy.y = symbol['markerDy'];
-        }
-
-        var blackList = null;
-
-        if (Symbolizers.VectorMarkerSymbolizer.test(symbol)) {
-            if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
-                //as these types of markers' anchor stands on its bottom
-                blackList = [5, 6, 7];
-            }
-        } else if (Symbolizers.ImageMarkerSymbolizer.test(symbol) ||
-            Symbolizers.VectorPathMarkerSymbolizer.test(symbol)) {
-            blackList = [5, 6, 7];
-        }
-
-        //defines what can be resized by the handle
-        //0: resize width; 1: resize height; 2: resize both width and height.
-        var resizeAbilities = [
-            2, 1, 2,
-            0, 0,
-            2, 1, 2
-        ];
-
-        var aspectRatio;
-        if (this.options['fixAspectRatio']) {
-            var size = marker.getSize();
-            aspectRatio = size.width / size.height;
-        }
-
-        resizeHandles = this._createResizeHandles(null, function (handleViewPoint, i) {
-            if (blackList && blackList.indexOf(i) >= 0) {
-                //need to change marker's coordinates
-                var newCoordinates = map.viewPointToCoordinate(handleViewPoint.sub(dxdy));
-                var coordinates = marker.getCoordinates();
-                newCoordinates.x = coordinates.x;
-                marker.setCoordinates(newCoordinates);
-                geometryToEdit.setCoordinates(newCoordinates);
-                //coordinates changed, and use mirror handle instead to caculate width and height
-                var mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
-                var mirrorViewPoint = map.coordinateToViewPoint(mirrorHandle.getCoordinates());
-                handleViewPoint = mirrorViewPoint;
-            }
-
-            //caculate width and height
-            var viewCenter = map._pointToViewPoint(marker._getCenter2DPoint()).add(dxdy),
-                symbol = marker._getInternalSymbol();
-            var wh = handleViewPoint.sub(viewCenter);
-            if (blackList && handleViewPoint.y > viewCenter.y) {
-                wh.y = 0;
-            }
-
-            //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
-            var r = blackList ? 1 : 2;
-            var width = Math.abs(wh.x) * 2,
-                height = Math.abs(wh.y) * r;
-            if (aspectRatio) {
-                width = Math.max(width, height * aspectRatio);
-                height = width / aspectRatio;
-            }
-            var ability = resizeAbilities[i];
-            if (!(marker instanceof TextMarker)) {
-                if (aspectRatio || ability === 0 || ability === 2) {
-                    symbol['markerWidth'] = width;
-                }
-                if (aspectRatio || ability === 1 || ability === 2) {
-                    symbol['markerHeight'] = height;
-                }
-                marker.setSymbol(symbol);
-                geometryToEdit.setSymbol(symbol);
-            } else {
-                if (aspectRatio || ability === 0 || ability === 2) {
-                    geometryToEdit.config('boxMinWidth', width);
-                    marker.config('boxMinWidth', width);
-                }
-                if (aspectRatio || ability === 1 || ability === 2) {
-                    geometryToEdit.config('boxMinHeight', height);
-                    marker.config('boxMinHeight', height);
-                }
-            }
-        });
         this._addListener([map, 'zoomstart', onZoomStart]);
         this._addListener([map, 'zoomend', onZoomEnd]);
 
@@ -577,15 +577,15 @@ class GeometryEditor extends Eventable(Class) {
      * @private
      */
     createCircleEditor() {
-        var shadow = this._shadow,
+        const shadow = this._shadow,
             circle = this._geometry;
-        var map = this.getMap();
+        const map = this.getMap();
         this._createResizeHandles(null, handleViewPoint => {
-            var viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
-            var wh = handleViewPoint.sub(viewCenter);
-            var w = Math.abs(wh.x),
+            const viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
+            const wh = handleViewPoint.sub(viewCenter);
+            const w = Math.abs(wh.x),
                 h = Math.abs(wh.y);
-            var r;
+            let r;
             if (w > h) {
                 r = map.pixelToDistance(w, 0);
             } else {
@@ -612,14 +612,14 @@ class GeometryEditor extends Eventable(Class) {
             geometryToEdit = this._geometry;
         const map = this.getMap();
         const isRect = this._geometry instanceof Rectangle;
-        var aspectRatio;
+        let aspectRatio;
         if (this.options['fixAspectRatio']) {
             aspectRatio = geometryToEdit.getWidth() / geometryToEdit.getHeight();
         }
         const resizeHandles = this._createResizeHandles(null, (mouseViewPoint, i) => {
             //ratio of width and height
             const r = isRect ? 1 : 2;
-            var pointSub, w, h;
+            let pointSub, w, h;
             const targetPoint = mouseViewPoint;
             const ability = resizeAbilities[i];
             if (isRect) {
@@ -667,12 +667,12 @@ class GeometryEditor extends Eventable(Class) {
                     }
                 }
                 //change rectangle's coordinates
-                var newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
+                const newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
                 shadow.setCoordinates(newCoordinates);
                 geometryToEdit.setCoordinates(newCoordinates);
 
             } else {
-                var viewCenter = map.coordinateToViewPoint(geometryToEdit.getCenter());
+                const viewCenter = map.coordinateToViewPoint(geometryToEdit.getCenter());
                 pointSub = viewCenter.sub(targetPoint)._abs();
                 w = map.pixelToDistance(pointSub.x, 0);
                 h = map.pixelToDistance(0, pointSub.y);
@@ -699,19 +699,19 @@ class GeometryEditor extends Eventable(Class) {
      */
     createPolygonEditor() {
 
-        var map = this.getMap(),
+        const map = this.getMap(),
             shadow = this._shadow,
             me = this,
             projection = map.getProjection();
-        var verticeLimit = shadow instanceof Polygon ? 3 : 2;
-        var propertyOfVertexRefreshFn = 'maptalks--editor-refresh-fn',
+        const verticeLimit = shadow instanceof Polygon ? 3 : 2;
+        const propertyOfVertexRefreshFn = 'maptalks--editor-refresh-fn',
             propertyOfVertexIndex = 'maptalks--editor-vertex-index';
-        var vertexHandles = [],
+        const vertexHandles = [],
             newVertexHandles = [];
 
         function getVertexCoordinates() {
             if (shadow instanceof Polygon) {
-                var coordinates = shadow.getCoordinates()[0];
+                const coordinates = shadow.getCoordinates()[0];
                 return coordinates.slice(0, coordinates.length - 1);
             } else {
                 return shadow.getCoordinates();
@@ -734,9 +734,9 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         function removeVertex(param) {
-            var handle = param['target'],
+            const handle = param['target'],
                 index = handle[propertyOfVertexIndex];
-            var prjCoordinates = getVertexPrjCoordinates();
+            const prjCoordinates = getVertexPrjCoordinates();
             if (prjCoordinates.length <= verticeLimit) {
                 return;
             }
@@ -749,7 +749,7 @@ class GeometryEditor extends Eventable(Class) {
             if (index < newVertexHandles.length) {
                 newVertexHandles.splice(index, 1)[0].remove();
             }
-            var nextIndex;
+            let nextIndex;
             if (index === 0) {
                 nextIndex = newVertexHandles.length - 1;
             } else {
@@ -762,14 +762,14 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         function moveVertexHandle(handleViewPoint, index) {
-            var vertice = getVertexPrjCoordinates();
-            var nVertex = map._viewPointToPrj(handleViewPoint);
-            var pVertex = vertice[index];
+            const vertice = getVertexPrjCoordinates();
+            const nVertex = map._viewPointToPrj(handleViewPoint);
+            const pVertex = vertice[index];
             pVertex.x = nVertex.x;
             pVertex.y = nVertex.y;
             shadow._updateCache();
             shadow.onShapeChanged();
-            var nextIndex;
+            let nextIndex;
             if (index === 0) {
                 nextIndex = newVertexHandles.length - 1;
             } else {
@@ -787,8 +787,8 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         function createVertexHandle(index) {
-            var vertex = getVertexCoordinates()[index];
-            var handle = me.createHandle(vertex, {
+            let vertex = getVertexCoordinates()[index];
+            const handle = me.createHandle(vertex, {
                 'markerType': 'square',
                 'dxdy': new Point(0, 0),
                 'cursor': 'pointer',
@@ -810,15 +810,15 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         function createNewVertexHandle(index) {
-            var vertexCoordinates = getVertexCoordinates();
-            var nextVertex;
+            let vertexCoordinates = getVertexCoordinates();
+            let nextVertex;
             if (index + 1 >= vertexCoordinates.length) {
                 nextVertex = vertexCoordinates[0];
             } else {
                 nextVertex = vertexCoordinates[index + 1];
             }
-            var vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
-            var handle = me.createHandle(vertex, {
+            const vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
+            const handle = me.createHandle(vertex, {
                 'markerType': 'square',
                 'symbol': {
                     'opacity': 0.4
@@ -827,16 +827,16 @@ class GeometryEditor extends Eventable(Class) {
                 'cursor': 'pointer',
                 'axis': null,
                 onDown: function () {
-                    var prjCoordinates = getVertexPrjCoordinates();
-                    var vertexIndex = handle[propertyOfVertexIndex];
+                    const prjCoordinates = getVertexPrjCoordinates();
+                    const vertexIndex = handle[propertyOfVertexIndex];
                     //add a new vertex
-                    var pVertex = projection.project(handle.getCoordinates());
+                    const pVertex = projection.project(handle.getCoordinates());
                     //update shadow's vertice
                     prjCoordinates.splice(vertexIndex + 1, 0, pVertex);
                     shadow._setPrjCoordinates(prjCoordinates);
                     shadow._updateCache();
 
-                    var symbol = handle.getSymbol();
+                    const symbol = handle.getSymbol();
                     delete symbol['opacity'];
                     handle.setSymbol(symbol);
 
@@ -848,7 +848,7 @@ class GeometryEditor extends Eventable(Class) {
                     moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex] + 1);
                 },
                 onUp: function () {
-                    var vertexIndex = handle[propertyOfVertexIndex];
+                    const vertexIndex = handle[propertyOfVertexIndex];
                     //remove this handle
                     removeFromArray(handle, newVertexHandles);
                     handle.remove();
@@ -858,21 +858,21 @@ class GeometryEditor extends Eventable(Class) {
                 },
                 onRefresh: function () {
                     vertexCoordinates = getVertexCoordinates();
-                    var vertexIndex = handle[propertyOfVertexIndex];
-                    var nextIndex;
+                    const vertexIndex = handle[propertyOfVertexIndex];
+                    let nextIndex;
                     if (vertexIndex === vertexCoordinates.length - 1) {
                         nextIndex = 0;
                     } else {
                         nextIndex = vertexIndex + 1;
                     }
-                    var refreshVertex = vertexCoordinates[vertexIndex].add(vertexCoordinates[nextIndex]).multi(1 / 2);
+                    const refreshVertex = vertexCoordinates[vertexIndex].add(vertexCoordinates[nextIndex]).multi(1 / 2);
                     handle.setCoordinates(refreshVertex);
                 }
             });
             handle[propertyOfVertexIndex] = index;
             return handle;
         }
-        var vertexCoordinates = getVertexCoordinates();
+        const vertexCoordinates = getVertexCoordinates();
         for (let i = 0, len = vertexCoordinates.length; i < len; i++) {
             vertexHandles.push(createVertexHandle.call(this, i));
             if (i < len - 1) {

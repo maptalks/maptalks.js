@@ -55,7 +55,7 @@ const Menuable = {
      * @function ui.Menuable.openMenu
      */
     openMenu(coordinate) {
-        var map = (this instanceof Map) ? this : this.getMap();
+        const map = (this instanceof Map) ? this : this.getMap();
         if (!coordinate) {
             coordinate = this.getCenter();
         }

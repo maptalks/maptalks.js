@@ -19,7 +19,7 @@ Map.include(/** @lends Map.prototype */ {
         if (!this.getProjection()) {
             return null;
         }
-        var p1 = new Coordinate(coord1),
+        const p1 = new Coordinate(coord1),
             p2 = new Coordinate(coord2);
         if (p1.equals(p2)) {
             return 0;
@@ -88,11 +88,11 @@ Map.include(/** @lends Map.prototype */ {
             if (opts['count'] && hits.length >= opts['count']) {
                 break;
             }
-            let layer = layers[i];
+            const layer = layers[i];
             if (!layer || !layer.getMap() || (!opts['includeInvisible'] && !layer.isVisible()) || (!opts['includeInternals'] && layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0)) {
                 continue;
             }
-            let layerHits = layer.identify(coordinate, options);
+            const layerHits = layer.identify(coordinate, options);
             if (layerHits) {
                 if (Array.isArray(layerHits)) {
                     hits.push.apply(hits, layerHits);

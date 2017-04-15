@@ -16,7 +16,7 @@ export default class CollectionPainter extends Class {
 
     _eachPainter(fn) {
         const geometries = this.geometry.getGeometries();
-        var painter;
+        let painter;
         for (let i = 0, len = geometries.length; i < len; i++) {
             painter = geometries[i]._getPainter();
             if (!painter) {
@@ -40,7 +40,7 @@ export default class CollectionPainter extends Class {
     }
 
     get2DExtent(resources) {
-        var extent = new PointExtent();
+        let extent = new PointExtent();
         this._eachPainter(painter => {
             extent = extent.combine(painter.get2DExtent(resources));
         });
@@ -48,7 +48,7 @@ export default class CollectionPainter extends Class {
     }
 
     getContainerExtent() {
-        var extent = new PointExtent();
+        let extent = new PointExtent();
         this._eachPainter(painter => {
             extent = extent.combine(painter.getContainerExtent());
         });
@@ -98,7 +98,7 @@ export default class CollectionPainter extends Class {
     }
 
     hasPointSymbolizer() {
-        var result = false;
+        let result = false;
         this._eachPainter(painter => {
             if (painter.hasPointSymbolizer()) {
                 result = true;

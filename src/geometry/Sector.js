@@ -123,12 +123,12 @@ class Sector extends CenterMixin(Polygon) {
             shell = [center.copy()],
             startAngle = this.getStartAngle(),
             angle = this.getEndAngle() - startAngle;
-        var rad, dx, dy;
+        let rad, dx, dy;
         for (let i = 0; i < numberOfPoints; i++) {
             rad = (angle * i / (numberOfPoints - 2) + startAngle) * Math.PI / 180;
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
-            let vertex = measurer.locate(center, dx, dy);
+            const vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
         shell.push(center.copy());
@@ -147,7 +147,7 @@ class Sector extends CenterMixin(Polygon) {
         if (this.getMap().getCameraMatrix()) {
             return super._containsPoint(point, tolerance);
         }
-        var center = this._getCenter2DPoint(),
+        const center = this._getCenter2DPoint(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
             pc = center,
@@ -158,9 +158,9 @@ class Sector extends CenterMixin(Polygon) {
             // [0.0, 360.0)
             angle = atan2 < 0 ? (atan2 + 2 * Math.PI) * 360 / (2 * Math.PI) :
             atan2 * 360 / (2 * Math.PI);
-        var sAngle = this.startAngle % 360,
+        const sAngle = this.startAngle % 360,
             eAngle = this.endAngle % 360;
-        var between = false;
+        let between = false;
         if (sAngle > eAngle) {
             between = !(angle > eAngle && angle < sAngle);
         } else {
@@ -176,9 +176,9 @@ class Sector extends CenterMixin(Polygon) {
             return null;
         }
 
-        var radius = this._radius;
-        var p1 = measurer.locate(this._coordinates, radius, radius);
-        var p2 = measurer.locate(this._coordinates, -radius, -radius);
+        const radius = this._radius;
+        const p1 = measurer.locate(this._coordinates, radius, radius);
+        const p2 = measurer.locate(this._coordinates, -radius, -radius);
         return new Extent(p1, p2);
     }
 
@@ -197,7 +197,7 @@ class Sector extends CenterMixin(Polygon) {
     }
 
     _exportGeoJSONGeometry() {
-        var coordinates = Coordinate.toNumberArrays([this.getShell()]);
+        const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates
@@ -205,10 +205,10 @@ class Sector extends CenterMixin(Polygon) {
     }
 
     _toJSON(options) {
-        var opts = extend({}, options);
-        var center = this.getCenter();
+        const opts = extend({}, options);
+        const center = this.getCenter();
         opts.geometry = false;
-        var feature = this.toGeoJSON(opts);
+        const feature = this.toGeoJSON(opts);
         feature['geometry'] = {
             'type': 'Polygon'
         };
