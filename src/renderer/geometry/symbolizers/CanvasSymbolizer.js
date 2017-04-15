@@ -23,7 +23,6 @@ export default class CanvasSymbolizer extends Symbolizer {
         }
     }
 
-    //所有point symbolizer的共同的remove方法
     remove() {}
 
     setZIndex() {}
