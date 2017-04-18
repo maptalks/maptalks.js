@@ -1541,8 +1541,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
-    _sortLayersByZIndex(layerList) {
-        layerList.sort(function (a, b) {
+    _sortLayersByZIndex() {
+        if (!this._layers) {
+            return;
+        }
+        this._layers.sort(function (a, b) {
             return a.getZIndex() - b.getZIndex();
         });
     }
@@ -1652,6 +1655,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         for (let j = 0, jlen = layers.length; j < jlen; j++) {
             fn.call(fn, layers[j]);
+        }
+    }
+
+    _onLayerEvent(param) {
+        if (!param) {
+            return;
+        }
+        if (param['type'] === 'idchange') {
+            delete this._layerCache[param['old']];
+            this._layerCache[param['new']] = param['target'];
         }
     }
 

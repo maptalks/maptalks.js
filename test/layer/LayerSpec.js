@@ -43,6 +43,13 @@ describe('#Layer', function () {
             }
             /*eslint-enable no-empty */
         });
+
+        it('update id', function () {
+            var layer1 = new maptalks.TileLayer('1');
+            map.addLayer(layer1);
+            layer1.setId('2');
+            expect(layer1).to.be.eql(map.getLayer('2'));
+        });
     });
 
     describe('change order of layers', function () {
