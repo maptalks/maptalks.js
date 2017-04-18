@@ -1,4 +1,4 @@
-import { isArrayHasData } from 'core/util';
+import { isArrayHasData, pushIn } from 'core/util';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 
 /**
@@ -62,7 +62,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         if (!this._geosToCheck) {
             this._geosToCheck = [];
         }
-        this._geosToCheck.push.apply(this._geosToCheck, res);
+        pushIn(this._geosToCheck, res);
     }
 
     onGeometryAdd(geometries) {

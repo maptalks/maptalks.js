@@ -2,7 +2,8 @@ import {
     isNil,
     isString,
     parseJSON,
-    isArrayHasData
+    isArrayHasData,
+    pushIn
 } from 'core/util';
 import Marker from './Marker';
 import LineString from './LineString';
@@ -80,7 +81,7 @@ const GeoJSON = {
             for (let i = 0, len = geoJSON.length; i < len; i++) {
                 const geo = this._convert(geoJSON[i]);
                 if (Array.isArray(geo)) {
-                    resultGeos.push.apply(resultGeos, geo);
+                    pushIn(resultGeos, geo);
                 } else {
                     resultGeos.push(geo);
                 }
