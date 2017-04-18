@@ -405,10 +405,10 @@ class OverlayLayer extends Layer {
     }
 
     _compare(a, b) {
-        if (a._zIndex === b._zIndex) {
+        if (a.getZIndex() === b.getZIndex()) {
             return a._getInternalId() - b._getInternalId();
         }
-        return a._zIndex - b._zIndex;
+        return a.getZIndex() - b.getZIndex();
     }
 
     //binarySearch

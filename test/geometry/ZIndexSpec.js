@@ -97,4 +97,62 @@ describe('#Geometry.zindex', function () {
         });
         layer.addGeometry(markers);
     });
+
+    it('zIndex in options', function (done) {
+        var red = new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#f00'
+            },
+            zIndex : 1,
+        });
+        var green = new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#0f0'
+            },
+            zIndex : 0
+        });
+        layer.on('layerload', function () {
+            expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            expect(layer.getGeometries()).to.be.eql([green, red]);
+            done();
+        });
+        layer.addGeometry([red, green]);
+    });
+
+    it('zIndex in ser/dser', function (done) {
+        var red = new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#f00'
+            }
+        });
+        var green = new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#0f0'
+            }
+        });
+        layer.addGeometry([red, green]);
+        red.bringToFront();
+        var json = layer.toJSON();
+
+        var layer2 = maptalks.Layer.fromJSON(json);
+        layer2.setId('canvas2');
+
+        layer2.on('layerload', function () {
+            expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            done();
+        });
+        map.addLayer(layer2);
+    });
 });
