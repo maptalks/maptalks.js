@@ -391,10 +391,10 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
     },
 
     _compare: function (a, b) {
-        if (a._zIndex === b._zIndex) {
+        if (a.getZIndex() === b.getZIndex()) {
             return a._getInternalId() - b._getInternalId();
         }
-        return a._zIndex - b._zIndex;
+        return a.getZIndex() - b.getZIndex();
     },
 
     //binarySearch

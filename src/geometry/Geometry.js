@@ -440,7 +440,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
      * @return {Number} zIndex
      */
     getZIndex: function () {
-        return this._zIndex;
+        return this.options['zIndex'] || 0;
     },
 
     /**
@@ -450,8 +450,8 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
      * @fires maptalks.Geometry#zindexchange
      */
     setZIndex: function (zIndex) {
-        var old = this._zIndex;
-        this._zIndex = zIndex;
+        var old = this.options['zIndex'] || 0;
+        this.options['zIndex'] = zIndex;
         /**
          * zindexchange event, fired when geometry's zIndex is changed.
          *
@@ -474,7 +474,7 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
      * @return {maptalks.Geometry} this
      */
     setZIndexSilently: function (zIndex) {
-        this._zIndex = zIndex;
+        this.options['zIndex'] = zIndex;
         return this;
     },
 
@@ -781,7 +781,6 @@ maptalks.Geometry = maptalks.Class.extend(/** @lends maptalks.Geometry.prototype
         if (!maptalks.Util.isNil(id)) {
             this.setId(id);
         }
-        this._zIndex = 0;
     },
 
     //bind the geometry to a layer
