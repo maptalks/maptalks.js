@@ -11,7 +11,7 @@ const DefaultView = {
         'resolutions': (function () {
             const resolutions = [];
             const d = 2 * 6378137 * Math.PI;
-            for (let i = 0; i < 21; i++) {
+            for (let i = 0; i < 20; i++) {
                 resolutions[i] = d / (256 * Math.pow(2, i));
             }
             return resolutions;
@@ -32,7 +32,7 @@ const DefaultView = {
         },
         'resolutions': (function () {
             const resolutions = [];
-            for (let i = 0; i < 21; i++) {
+            for (let i = 0; i < 20; i++) {
                 resolutions[i] = 180 / (Math.pow(2, i) * 128);
             }
             return resolutions;
