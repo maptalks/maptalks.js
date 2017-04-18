@@ -1,3 +1,4 @@
+import { pushIn } from 'core/util';
 import Size from 'geo/Size';
 import Canvas from 'core/Canvas';
 import Geometry from 'geometry/Geometry';
@@ -237,7 +238,7 @@ Polygon.include({
         }
         if (!isSplitted) {
             points = [points];
-            points.push.apply(points, holePoints);
+            pushIn(points, holePoints);
         }
         return [points];
     },

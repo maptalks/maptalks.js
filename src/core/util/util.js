@@ -140,6 +140,13 @@ export function executeWhen(fn, when) {
     exe();
 }
 
+export function pushIn(arr1, arr2) {
+    for (let i = 0, l = arr2.length; i < l; i++) {
+        arr1.push(arr2[i]);
+    }
+    return arr1.length;
+}
+
 export function removeFromArray(obj, array) {
     const i = array.indexOf(obj);
     if (i > -1) {
