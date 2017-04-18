@@ -255,11 +255,11 @@ const Canvas = {
     },
 
     image(ctx, img, x, y, width, height) {
-        // x = round(x);
-        // y = round(y);
+        x = round(x);
+        y = round(y);
         try {
             if (isNumber(width) && isNumber(height)) {
-                ctx.drawImage(img, x, y, width, height);
+                ctx.drawImage(img, x, y, round(width), round(height));
             } else {
                 ctx.drawImage(img, x, y);
             }
@@ -305,7 +305,7 @@ const Canvas = {
                 ctx.lineCap = 'round';
                 ctx.lineWidth = (textHaloRadius * 2 - 1);
                 ctx.strokeStyle = textHaloFill;
-                ctx.strokeText(text, pt.x, pt.y);
+                ctx.strokeText(text, round(pt.x), round(pt.y));
                 ctx.lineWidth = 1;
                 ctx.miterLimit = 10; //default
             }
@@ -314,14 +314,14 @@ const Canvas = {
                 ctx.globalAlpha = alpha;
             }
         }
-        ctx.fillText(text, pt.x, pt.y);
+        ctx.fillText(text, round(pt.x), round(pt.y));
     },
 
     fillText(ctx, text, point, rgba) {
         if (rgba) {
             ctx.fillStyle = rgba;
         }
-        ctx.fillText(text, point.x, point.y);
+        ctx.fillText(text, round(point.x), round(point.y));
     },
 
     _stroke(ctx, strokeOpacity, x, y) {
