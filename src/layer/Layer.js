@@ -84,7 +84,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @fires Layer#idchange
      */
     setId(id) {
-        //TODO 设置id可能造成map无法找到layer
         const old = this._id;
         if (!isNil(id)) {
             id = id + '';
@@ -125,8 +124,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     setZIndex(zIndex) {
         this._zIndex = zIndex;
         if (this.map) {
-            const layerList = this._getLayerList();
-            this.map._sortLayersByZIndex(layerList);
+            this.map._sortLayersByZIndex();
         }
         if (this._renderer) {
             this._renderer.setZIndex(zIndex);
@@ -402,9 +400,17 @@ Layer.mergeOptions(options);
 
 const fire = Layer.prototype.fire;
 
-Layer.prototype.fire = function (eventType) {
+Layer.prototype.fire = function (eventType, param) {
     if (eventType === 'layerload') {
         this._loaded = true;
+    }
+    if (this.map) {
+        if (!param) {
+            param = {};
+        }
+        param['type'] = eventType;
+        param['target'] = this;
+        this.map._onLayerEvent(param);
     }
     return fire.apply(this, arguments);
 };
