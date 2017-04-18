@@ -79,7 +79,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!isNil(id)) {
             this.setId(id);
         }
-        this._zIndex = 0;
     }
 
     /**
@@ -453,7 +452,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Number} zIndex
      */
     getZIndex() {
-        return this._zIndex;
+        return this.options['zIndex'] || 0;
     }
 
     /**
@@ -463,8 +462,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#zindexchange
      */
     setZIndex(zIndex) {
-        const old = this._zIndex;
-        this._zIndex = zIndex;
+        const old = this.options['zIndex'];
+        this.options['zIndex'] = zIndex;
         /**
          * zindexchange event, fired when geometry's zIndex is changed.
          *
@@ -491,7 +490,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      */
     setZIndexSilently(zIndex) {
-        this._zIndex = zIndex;
+        this.options['zIndex'] = zIndex;
         return this;
     }
 
@@ -806,7 +805,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!isNil(id)) {
             this.setId(id);
         }
-        this._zIndex = 0;
     }
 
     //bind the geometry to a layer
