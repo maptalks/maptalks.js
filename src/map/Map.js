@@ -1447,6 +1447,58 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
+    onDragRotateStart(param) {
+        this._enablePanAnimation = false;
+        this._dragRotating = true;
+        /**
+         * rotatestart event
+         * @event Map#rotatestart
+         * @type {Object}
+         * @property {String} type - rotatestart
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('rotatestart', this._parseEvent(param ? param['domEvent'] : null, 'rotatestart'));
+    }
+
+    onDragRotating(param) {
+        /**
+         * rotating event
+         * @event Map#rotating
+         * @type {Object}
+         * @property {String} type - rotating
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('rotating', this._parseEvent(param ? param['domEvent'] : null, 'rotating'));
+    }
+
+    onDragRotateEnd(param) {
+        this._dragRotating = false;
+        /**
+         * rotateend event
+         * @event Map#rotateend
+         * @type {Object}
+         * @property {String} type - rotateend
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('rotateend', this._parseEvent(param ? param['domEvent'] : null, 'rotateend'));
+    }
+
+    isDragRotating() {
+        return !!this._dragRotating;
+    }
+
     //-----------------------------------------------------------
     /**
      * try to change cursor when map is not setCursored
