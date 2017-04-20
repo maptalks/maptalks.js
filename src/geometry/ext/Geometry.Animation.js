@@ -31,7 +31,7 @@ maptalks.Geometry.include(/** @lends maptalks.Geometry.prototype */{
         }
         var map = this.getMap(),
             projection = this._getProjection(),
-            symbol = this._getInternalSymbol(),
+            symbol = this.getSymbol(),
             stylesToAnimate = this._prepareAnimationStyles(styles),
             preTranslate, isFocusing;
 
