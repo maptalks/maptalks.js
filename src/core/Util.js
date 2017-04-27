@@ -891,6 +891,21 @@ maptalks.Util = {
             }
         }
         return compiled;
+    },
+
+    callImmediate: function (fn) {
+        if (typeof (setImmediate) !== 'undefined') {
+            return setImmediate(fn);
+        }
+        return setTimeout(fn, 1);
+    },
+
+
+    clearCallImmediate: function (id) {
+        if (typeof (clearImmediate) !== 'undefined') {
+            return clearImmediate(id);
+        }
+        return clearTimeout(id);
     }
 
 };

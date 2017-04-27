@@ -20,7 +20,7 @@ var knownOptions = {
   alias: {
     'coverage': 'cov'
   },
-  default: { browsers: 'PhantomJS', coverage: false }
+  default: { browsers: 'Chrome', coverage: false }
 };
 
 var options = minimist(process.argv.slice(2), knownOptions);
@@ -63,9 +63,6 @@ gulp.task('watch', ['build'], function () {
 var browsers = options.browsers.split(',');
 browsers = browsers.map(function(name) {
   var lname = name.toLowerCase();
-  if (lname.indexOf('phantom') === 0) {
-    return 'PhantomJS';
-  }
   if (lname[0] === 'i') {
     return 'IE' + lname.substr(2);
   } else {

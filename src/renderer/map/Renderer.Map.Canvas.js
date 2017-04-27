@@ -409,14 +409,26 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
                     }
                     var vp = param['point2d'];
                     var layers = map._getLayers();
-                    var hit = false,
-                        cursor;
+                    var hit = false, cursor;
+                    var limit = map.options['hitDetectLimit'] || 0;
+                    var counter = 0;
                     for (var i = layers.length - 1; i >= 0; i--) {
                         var layer = layers[i];
-                        if (layer._getRenderer() && layer._getRenderer().hitDetect) {
-                            if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(vp)) {
+                        var renderer = layer._getRenderer();
+                        if (layer.isEmpty && layer.isEmpty()) {
+                            continue;
+                        }
+                        if (renderer.isBlank && renderer.isBlank()) {
+                            continue;
+                        }
+                        if (renderer && renderer.hitDetect) {
+                            if (layer.options['cursor'] !== 'default' && renderer.hitDetect(vp)) {
                                 cursor = layer.options['cursor'];
                                 hit = true;
+                                break;
+                            }
+                            counter++;
+                            if (limit > 0 && counter > limit) {
                                 break;
                             }
                         }

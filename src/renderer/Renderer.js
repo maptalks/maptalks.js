@@ -409,7 +409,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             this._painted = true;
             this.draw.apply(this, args);
         } else {
-            this._currentFrameId = maptalks.Util.requestAnimFrame(function () {
+            this._currentFrameId = maptalks.Util.callImmediate(function () {
                 if (me.layer) {
                     me._painted = true;
                     me.draw.apply(me, args);
@@ -495,7 +495,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     _clearTimeout:function () {
         if (this._currentFrameId) {
             //clearTimeout(this._currentFrameId);
-            maptalks.Util.cancelAnimFrame(this._currentFrameId);
+            maptalks.Util.clearCallImmediate(this._currentFrameId);
         }
     }
 });

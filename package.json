@@ -40,12 +40,10 @@
     "karma-firefox-launcher": "~1.0.0",
     "karma-ie-launcher": "^1.0.0",
     "karma-mocha": "~1.1.1",
-    "karma-phantomjs-launcher": "^1.0.0",
     "karma-safari-launcher": "~1.0.0",
     "karma-sinon": "^1.0.5",
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
-    "phantomjs-prebuilt": "^2.1.6",
     "sinon": "^1.14.1"
   },
   "dependencies": {}

@@ -97,6 +97,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         'enableInfoWindow':true,
 
         'hitDetect' : (function () { return !maptalks.Browser.mobile; })(),
+        'hitDetectLimit' : 5,
 
         'maxZoom' : null,
         'minZoom' : null,
@@ -1181,7 +1182,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!projection) {
             return null;
         }
-        //计算前刷新scales
+        //录脝脣茫脟掳脣垄脨脗scales
         var center = this.getCenter(),
             pcenter = this._getPrjCenter(),
             res = this._getResolution(zoom);
@@ -1734,7 +1735,7 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         var centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (!maptalks.Util.isNil(zoom) ? this._getResolution() / this._getResolution(zoom) : 1);
 
-        //容器的像素坐标方向是固定方向的, 和html标准一致, 即从左到右增大, 从上到下增大
+        //脠脻脝梅碌脛脧帽脣脴脳酶卤锚路陆脧貌脢脟鹿脤露篓路陆脧貌碌脛, 潞脥html卤锚脳录脪禄脰脗, 录麓麓脫脳贸碌陆脫脪脭枚麓贸, 麓脫脡脧碌陆脧脗脭枚麓贸
 
         return new maptalks.Point(centerPoint.x + scale * (containerPoint.x - this.width / 2), centerPoint.y + scale * (containerPoint.y - this.height / 2));
     },
