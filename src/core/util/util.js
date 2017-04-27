@@ -65,20 +65,36 @@ let requestAnimFrame, cancelAnimFrame;
 })();
 export { requestAnimFrame, cancelAnimFrame };
 
-export function callImmediate(fn) {
+let callImmediateFn, clearCallImmediateFn;
+(function () {
     if (typeof (setImmediate) !== 'undefined') {
-        return setImmediate(fn);
+        callImmediateFn = setImmediate;
+    } else {
+        callImmediateFn = function (fn) {
+            setTimeout(fn, 1);
+        };
     }
-    return setTimeout(fn, 1);
+
+    if (typeof (clearImmediate) !== 'undefined') {
+        clearCallImmediateFn = clearImmediate;
+    } else {
+        clearCallImmediateFn = function (id) {
+            clearTimeout(id);
+        };
+    }
+})();
+
+export function callImmediate(fn) {
+    return callImmediateFn(fn);
 }
 
 
 export function clearCallImmediate(id) {
-    if (typeof (clearImmediate) !== 'undefined') {
-        return clearImmediate(id);
+    if (id) {
+        clearCallImmediateFn(id);
     }
-    return clearTimeout(id);
 }
+
 
 /**
  * Merges options with the default options of the object.
