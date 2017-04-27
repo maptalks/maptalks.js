@@ -133,6 +133,43 @@ export default class MapCanvasRenderer extends MapRenderer {
         delete this._canvasBg;
     }
 
+    hitDetect(point) {
+        const map = this.map;
+        if (map.isInteracting() || !map.options['hitDetect']) {
+            return;
+        }
+        const layers = map._getLayers();
+        let hit = false, cursor;
+        const limit = map.options['hitDetectLimit'] || 0;
+        let counter = 0;
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const layer = layers[i];
+            const renderer = layer._getRenderer();
+            if (layer.isEmpty && layer.isEmpty()) {
+                continue;
+            }
+            if (renderer.isBlank && renderer.isBlank()) {
+                continue;
+            }
+            if (renderer && renderer.hitDetect) {
+                if (layer.options['cursor'] !== 'default' && renderer.hitDetect(point)) {
+                    cursor = layer.options['cursor'] || 'pointer';
+                    hit = true;
+                    break;
+                }
+                counter++;
+                if (limit > 0 && counter > limit) {
+                    break;
+                }
+            }
+        }
+        if (hit) {
+            map._trySetCursor(cursor);
+        } else {
+            map._trySetCursor('default');
+        }
+    }
+
     _getLayerImage(layer) {
         if (layer && layer._getRenderer() && layer._getRenderer().getCanvasImage) {
             return layer._getRenderer().getCanvasImage();
@@ -185,18 +222,18 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         const POSITION0 = 'position:absolute;top:0px;left:0px;';
 
-        const control = createContainer('control', 'maptalks-control', null, true);
-        const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
-        const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;', true);
-        const frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0, true);
-        const front = createContainer('front', 'maptalks-front', POSITION0 + 'will-change:transform;', true);
-        const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0);
-        // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
-        const ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:10000;', true);
-        const backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0, true);
-        const back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;');
-        const backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0);
-        const canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
+        const control = createContainer('control', 'maptalks-control', null, true),
+            mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true),
+            mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;', true),
+            frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0, true),
+            front = createContainer('front', 'maptalks-front', POSITION0 + 'will-change:transform;', true),
+            frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0),
+            // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
+            ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:10000;', true),
+            backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0, true),
+            back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;'),
+            backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0),
+            canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
 
         containerDOM.appendChild(mapWrapper);
 
@@ -374,12 +411,12 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _checkSize() {
         cancelAnimFrame(this._resizeFrame);
-        if (!this.map || this.map.isZooming() || this.map.isMoving() || this.map._panAnimating || this.map.isDragRotating()) {
+        if (!this.map || this.map.isInteracting() || this.map._panAnimating) {
             return;
         }
         this._resizeFrame = requestAnimFrame(
             () => {
-                if (!this.map || this.map.isMoving() || this.map.isZooming()) {
+                if (!this.map || this.map.isInteracting()) {
                     return;
                 }
                 this.map.checkSize();
@@ -406,65 +443,40 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _registerEvents() {
         const map = this.map;
-        map.on('_baselayerchangestart', () => {
-            delete this._canvasBg;
-        });
+        map.on('_baselayerchangestart _resize _zoomstart', this._clearBackground, this);
         map.on('_baselayerload', () => {
             const baseLayer = map.getBaseLayer();
             if (!map.options['zoomBackground'] || baseLayer.getMask()) {
-                delete this._canvasBg;
+                this._clearBackground();
             }
-        });
-        map.on('_resize', () => {
-            delete this._canvasBg;
-        });
-        map.on('_zoomstart', () => {
-            delete this._canvasBg;
-            // this.clearCanvas();
         });
         if (map.options['checkSize'] && !isNode && (typeof window !== 'undefined')) {
             this._setCheckSizeInterval(1000);
         }
-        if (!Browser.mobile && Browser.canvas) {
-            this._onMapMouseMove = function (param) {
-                if (map.isZooming() || map.isMoving() || !map.options['hitDetect']) {
-                    return;
-                }
-                if (this._hitDetectFrame) {
-                    cancelAnimFrame(this._hitDetectFrame);
-                }
-                this._hitDetectFrame = requestAnimFrame(() => {
-                    if (map.isZooming() || map.isMoving() || !map.options['hitDetect']) {
-                        return;
-                    }
-                    const point = param['point2d'];
-                    const layers = map._getLayers();
-                    let hit = false,
-                        cursor;
-                    for (let i = layers.length - 1; i >= 0; i--) {
-                        const layer = layers[i];
-                        if (layer._getRenderer() && layer._getRenderer().hitDetect) {
-                            if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(point)) {
-                                cursor = layer.options['cursor'] || 'pointer';
-                                hit = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (hit) {
-                        map._trySetCursor(cursor);
-                    } else {
-                        map._trySetCursor('default');
-                    }
-                });
-
-            };
+        if (!Browser.mobile) {
             map.on('_mousemove', this._onMapMouseMove, this);
         }
         map.on('_moving _moveend', () => {
             if (!map.getPitch()) {
                 this.render();
             }
+        });
+    }
+
+    _clearBackground() {
+        delete this._canvasBg;
+    }
+
+    _onMapMouseMove(param) {
+        const map = this.map;
+        if (map.isInteracting() || !map.options['hitDetect']) {
+            return;
+        }
+        if (this._hitDetectFrame) {
+            cancelAnimFrame(this._hitDetectFrame);
+        }
+        this._hitDetectFrame = requestAnimFrame(() => {
+            this.hitDetect(param['containerPoint']);
         });
     }
 }

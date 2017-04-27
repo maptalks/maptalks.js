@@ -40,6 +40,7 @@ import View from './view/View';
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
  * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
  * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
+ * @property {Boolean} [options.hitDetectLimit=5]               - the maximum number of layers to perform hit detect.
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
@@ -93,6 +94,8 @@ const options = {
     'hitDetect': (function () {
         return !Browser.mobile;
     })(),
+
+    'hitDetectLimit' : 5,
 
     'maxZoom': null,
     'minZoom': null,
@@ -699,6 +702,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     isZooming() {
         return !!this._zooming;
+    }
+
+    /**
+     * Whether the map is being interacted
+     * @return {Boolean}
+     */
+    isInteracting() {
+        return this.isZooming() || this.isMoving() || this.isDragRotating();
     }
 
     /**
@@ -1349,7 +1360,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this.isRemoved()) {
             return this;
         }
-        this._registerDomEvents(true);
+        this._removeDomEvents();
         this._clearHandlers();
         this.removeBaseLayer();
         const layers = this.getLayers();

@@ -111,6 +111,9 @@ class CanvasRenderer extends Class {
         if (this._renderZoom !== this.getMap().getZoom() || !this.canvas || !this._extent2D) {
             return null;
         }
+        if (this.isBlank()) {
+            return null;
+        }
         if (this.layer.isEmpty && this.layer.isEmpty()) {
             return null;
         }
@@ -130,6 +133,13 @@ class CanvasRenderer extends Class {
     clear() {
         this.clearCanvas();
         this.requestMapToRender();
+    }
+
+    isBlank() {
+        if (!this.context) {
+            return false;
+        }
+        return !this.context._drawn;
     }
 
     /**
@@ -156,17 +166,16 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     hitDetect(point) {
-        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown) {
             return false;
         }
         const map = this.getMap();
         const size = map.getSize();
-        const detectPoint = map._pointToContainerPoint(point);
-        if (detectPoint.x < 0 || detectPoint.x > size['width'] || detectPoint.y < 0 || detectPoint.y > size['height']) {
+        if (point.x < 0 || point.x > size['width'] || point.y < 0 || point.y > size['height']) {
             return false;
         }
         try {
-            const imgData = this.context.getImageData(detectPoint.x, detectPoint.y, 1, 1).data;
+            const imgData = this.context.getImageData(point.x, point.y, 1, 1).data;
             if (imgData[3] > 0) {
                 return true;
             }
