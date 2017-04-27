@@ -575,11 +575,11 @@ export default class TileLayerDomRenderer extends Class {
         if (!this.onMapMoving) {
             this.onMapMoving = throttle(this._onMapMoving, interval, this);
         }
-        // if (!this.onMapRotating) {
-        //     this.onMapRotating = throttle(this._renderTiles, 1024, this);
-        // }
+        if (!this.onMapRotating) {
+            this.onMapRotating = throttle(this.onRotating, interval * 2, this);
+        }
         events['_moving'] = this.onMapMoving;
-        // events['_rotating'] = this.onMapRotating;
+        events['_rotating'] = this.onMapRotating;
         return events;
     }
 
@@ -641,8 +641,17 @@ export default class TileLayerDomRenderer extends Class {
         }
     }
 
+    onRotating() {
+        if (!this.getMap() || !this.layer.options['renderOnRotating']) {
+            return;
+        }
+        this._renderTiles();
+    }
+
     onRotateEnd() {
-        this.render();
+        if (!this.layer.options['renderOnRotating']) {
+            this.render();
+        }
     }
 
     _clearCameraCache() {

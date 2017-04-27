@@ -374,7 +374,7 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _checkSize() {
         cancelAnimFrame(this._resizeFrame);
-        if (!this.map || this.map.isZooming() || this.map.isMoving() || this.map._panAnimating) {
+        if (!this.map || this.map.isZooming() || this.map.isMoving() || this.map._panAnimating || this.map.isDragRotating()) {
             return;
         }
         this._resizeFrame = requestAnimFrame(
