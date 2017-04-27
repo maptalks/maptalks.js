@@ -135,7 +135,7 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     hitDetect(point) {
         const map = this.map;
-        if (map.isInteracting() || !map.options['hitDetect']) {
+        if (!map || !map.options['hitDetect'] || map.isInteracting()) {
             return;
         }
         const layers = map._getLayers();

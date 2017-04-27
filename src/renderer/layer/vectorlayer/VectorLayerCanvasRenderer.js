@@ -55,6 +55,13 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.completeRender();
     }
 
+    isBlank() {
+        if (!this.context) {
+            return false;
+        }
+        return !this.context._drawn;
+    }
+
     drawOnZooming() {
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             this._geosToDraw[i]._paint();

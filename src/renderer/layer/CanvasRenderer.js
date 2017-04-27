@@ -136,10 +136,7 @@ class CanvasRenderer extends Class {
     }
 
     isBlank() {
-        if (!this.context) {
-            return false;
-        }
-        return !this.context._drawn;
+        return false;
     }
 
     /**
