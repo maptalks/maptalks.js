@@ -37,7 +37,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         }
         const map = this.getMap(),
             projection = this._getProjection(),
-            symbol = this._getInternalSymbol(),
+            symbol = this.getSymbol() || {},
             stylesToAnimate = this._prepareAnimationStyles(styles);
         let preTranslate, isFocusing;
 

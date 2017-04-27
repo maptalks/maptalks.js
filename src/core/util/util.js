@@ -65,6 +65,21 @@ let requestAnimFrame, cancelAnimFrame;
 })();
 export { requestAnimFrame, cancelAnimFrame };
 
+export function callImmediate(fn) {
+    if (typeof (setImmediate) !== 'undefined') {
+        return setImmediate(fn);
+    }
+    return setTimeout(fn, 1);
+}
+
+
+export function clearCallImmediate(id) {
+    if (typeof (clearImmediate) !== 'undefined') {
+        return clearImmediate(id);
+    }
+    return clearTimeout(id);
+}
+
 /**
  * Merges options with the default options of the object.
  * @param {Object} obj      - object

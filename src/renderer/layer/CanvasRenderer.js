@@ -1,4 +1,4 @@
-import { isNil, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { isNil, isArrayHasData, isSVG, isNode, loadImage, callImmediate, clearCallImmediate } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'core/Promise';
@@ -78,7 +78,7 @@ class CanvasRenderer extends Class {
      * Remove the renderer, will be called when layer is removed
      */
     remove() {
-        this._clearTimeout();
+        this._cancelDrawFrame();
         if (this.onRemove) {
             this.onRemove();
         }
@@ -112,9 +112,6 @@ class CanvasRenderer extends Class {
             return null;
         }
         if (this.layer.isEmpty && this.layer.isEmpty()) {
-            return null;
-        }
-        if (this.isBlank && this.isBlank()) {
             return null;
         }
         const map = this.getMap(),
@@ -414,7 +411,10 @@ class CanvasRenderer extends Class {
             '_moving' : this.onMoving,
             '_moveend' : this.onMoveEnd,
             '_pitch' : this.onPitch,
-            '_rotate' : this.onRotate
+            '_rotate' : this.onRotate,
+            '_rotatestart' : this.onRotateStart,
+            '_rotating' : this.onRotating,
+            '_rotateend' : this.onRotateEnd
         };
     }
 
@@ -528,8 +528,20 @@ class CanvasRenderer extends Class {
 
     }
 
+    onRotateStart() {
+
+    }
+
+    onRotating() {
+
+    }
+
+    onRotateEnd() {
+
+    }
+
     _tryToDraw() {
-        this._clearTimeout();
+        this._cancelDrawFrame();
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
             this.completeRender();
             return;
@@ -541,7 +553,7 @@ class CanvasRenderer extends Class {
             this._painted = true;
             this.draw();
         } else {
-            this._currentFrameId = requestAnimFrame(() => {
+            this._currentFrameId = callImmediate(() => {
                 if (this.getMap()) {
                     this._painted = true;
                     this.draw();
@@ -624,9 +636,9 @@ class CanvasRenderer extends Class {
         }
     }
 
-    _clearTimeout() {
+    _cancelDrawFrame() {
         if (this._currentFrameId) {
-            cancelAnimFrame(this._currentFrameId);
+            clearCallImmediate(this._currentFrameId);
         }
     }
 }
