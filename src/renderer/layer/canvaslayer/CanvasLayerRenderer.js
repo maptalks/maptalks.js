@@ -46,7 +46,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
             const bufferContext = this.buffer.getContext('2d');
             const prevent = this.layer.doubleBuffer(bufferContext, this.context);
             if (prevent === undefined || prevent) {
-                bufferContext.drawImage(canvas, 0, 0);
+                Canvas.image(bufferContext, canvas, 0, 0);
                 canvasImg.image = this.buffer;
             }
         }
