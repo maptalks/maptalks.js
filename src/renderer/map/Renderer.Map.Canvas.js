@@ -47,7 +47,17 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
 
         this._drawBackground();
 
-        for (var i = 0, len = layers.length; i < len; i++) {
+        var start = 0;
+        var len = layers.length;
+
+        if (this.map._zooming || this.map._moving) {
+            var limit = this.map.options['numOfLayersOnInteracting'];
+            if (limit > 0 && len > limit) {
+                start = len - limit;
+            }
+        }
+
+        for (var i = start; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
                 continue;
             }

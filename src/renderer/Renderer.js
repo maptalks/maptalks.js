@@ -404,7 +404,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
     _tryToDraw:function () {
         this._clearTimeout();
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
-            this.completeRender();
+            this.fireLoadedEvent();
             return;
         }
         var me = this, args = arguments;

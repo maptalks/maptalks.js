@@ -99,6 +99,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         'hitDetect' : (function () { return !maptalks.Browser.mobile; })(),
         'hitDetectLimit' : 5,
 
+        'numOfLayersOnInteracting' : 10,
+
         'maxZoom' : null,
         'minZoom' : null,
         'maxExtent' : null,
