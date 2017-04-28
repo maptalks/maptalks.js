@@ -37,11 +37,7 @@ class CanvasRenderer extends Class {
      */
     render() {
         this.prepareRender();
-        if (!this.getMap()) {
-            return;
-        }
-        if (!this.layer.isVisible()) {
-            this.completeRender();
+        if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
         if (!this.resources) {
@@ -153,7 +149,10 @@ class CanvasRenderer extends Class {
         this.clear();
     }
 
-    setZIndex() {
+    setZIndex(z) {
+        if (this.layer.getZIndex() === z) {
+            return;
+        }
         this.requestMapToRender();
     }
 
@@ -549,7 +548,7 @@ class CanvasRenderer extends Class {
     _tryToDraw() {
         this._cancelDrawFrame();
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
-            this.completeRender();
+            this.fireLoadedEvent();
             return;
         }
         if (!this._painted && this.onAdd) {
