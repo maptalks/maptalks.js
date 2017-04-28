@@ -59,7 +59,17 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         this._drawBackground();
 
-        for (let i = 0, len = layers.length; i < len; i++) {
+        let start = 0;
+        const len = layers.length;
+
+        if (this.map.isInteracting()) {
+            const limit = this.map.options['numOfLayersOnInteracting'];
+            if (limit > 0 && len > limit) {
+                start = len - limit;
+            }
+        }
+
+        for (let i = start; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
                 continue;
             }

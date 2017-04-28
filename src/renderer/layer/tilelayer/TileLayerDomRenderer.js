@@ -88,11 +88,6 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     render() {
-        const map = this.getMap();
-        if (map.isDragRotating()) {
-            this._prepareTileContainer();
-            return;
-        }
         this._renderTiles();
     }
 
@@ -569,7 +564,9 @@ export default class TileLayerDomRenderer extends Class {
             '_zoomend'      : this.onZoomEnd,
             '_moveend _resize' : this.render,
             '_movestart'    : this.onMoveStart,
-            '_rotateend'    : this.onRotateEnd
+            '_rotateend'    : this.onRotateEnd,
+            '_rotate'       : this.onRotateOrPitch,
+            '_pitch'        : this.onRotateOrPitch
         };
         const interval = this.layer.options['updateInterval'];
         if (!this.onMapMoving) {
@@ -651,6 +648,13 @@ export default class TileLayerDomRenderer extends Class {
     onRotateEnd() {
         if (!this.layer.options['renderOnRotating']) {
             this.render();
+        }
+    }
+
+    onRotateOrPitch() {
+        this._prepareTileContainer();
+        if (!this.getMap().isInteracting()) {
+            this._renderTiles();
         }
     }
 

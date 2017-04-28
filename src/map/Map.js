@@ -34,7 +34,7 @@ import View from './view/View';
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
  * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
  * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
- * @property {Number}  [options.pointThresholdOfZoomAnimation=150] - threshold of point count to perform zoom animation.
+ * @property {Number}  [options.pointLimitOnInteracting=150] - threshold of point count to perform zoom animation.
  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
@@ -80,7 +80,7 @@ const options = {
     //controls whether other layers than base tilelayer will show during zoom animation.
     'layerZoomAnimation': true,
 
-    'pointThresholdOfZoomAnimation': 200,
+    'pointLimitOnInteracting': 200,
 
     'panAnimation': (function () {
         return !isNode;
@@ -96,6 +96,8 @@ const options = {
     })(),
 
     'hitDetectLimit' : 5,
+
+    'numOfLayersOnInteracting' : 10,
 
     'maxZoom': null,
     'minZoom': null,

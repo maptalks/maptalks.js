@@ -1,4 +1,4 @@
-import { isNil, isArrayHasData, isSVG, isNode, loadImage, callImmediate, clearCallImmediate } from 'core/util';
+import { now, isNil, isArrayHasData, isSVG, isNode, loadImage, callImmediate, clearCallImmediate } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'core/Promise';
@@ -21,6 +21,7 @@ class CanvasRenderer extends Class {
     constructor(layer) {
         super();
         this.layer = layer;
+        this._drawTime = -1;
     }
 
     /**
@@ -543,6 +544,8 @@ class CanvasRenderer extends Class {
 
     onRotateEnd() {
 
+    getDrawTime() {
+        return this._drawTime;
     }
 
     _tryToDraw() {
@@ -555,16 +558,22 @@ class CanvasRenderer extends Class {
             this.onAdd();
         }
         if (this.layer.options['drawImmediate']) {
-            this._painted = true;
-            this.draw();
+            this._drawAndRecord();
         } else {
             this._currentFrameId = callImmediate(() => {
-                if (this.getMap()) {
-                    this._painted = true;
-                    this.draw();
-                }
+                this._drawAndRecord();
             });
         }
+    }
+
+    _drawAndRecord() {
+        if (!this.getMap()) {
+            return;
+        }
+        this._painted = true;
+        const nowTime = now();
+        this.draw();
+        this._drawTime = now() - nowTime;
     }
 
     _promiseResource(url) {
