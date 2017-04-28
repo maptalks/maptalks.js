@@ -348,6 +348,7 @@ maptalks.OverlayLayer = maptalks.Layer.extend(/** @lends maptalks.OverlayLayer.p
      * @return {maptalks.Geometry[]} geometries identified
      */
     identify: function (point, options) {
+        options = options || {};
         var geometries = this._geoList,
             filter = options ? options.filter : null,
             extent2d,

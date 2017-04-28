@@ -155,8 +155,8 @@ maptalks.LineString = maptalks.Polyline = maptalks.Vector.extend(/** @lends mapt
             return false;
         }
 
-        if (t < 2) {
-            t = 2;
+        if (t < 3) {
+            t = 3;
         }
 
         var arrowStyle = this._getArrowStyle();
