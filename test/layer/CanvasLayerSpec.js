@@ -126,12 +126,12 @@ describe('#CanvasLayer', function () {
                 polygonFill : '#000'
             }
         }));
-        layer.addTo(map);
         layer.once('layerload', function () {
             expect(layer).to.be.painted(0, 0, [255, 0, 0]);
             expect(layer).not.to.be.painted(0, maskRadius + 2);
             done();
         });
+        layer.addTo(map);
     });
 
     it('show', function (done) {
@@ -142,7 +142,7 @@ describe('#CanvasLayer', function () {
             context.fillRect(0, 0, size.width, size.height);
         };
 
-        layer.once('layerload', function () {
+        layer.once('add', function () {
             expect(layer).not.to.be.painted();
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, 0, [255, 0, 0]);
