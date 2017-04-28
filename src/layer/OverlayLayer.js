@@ -360,9 +360,9 @@ class OverlayLayer extends Layer {
      * @param  {Object} [options.count=null] - result count
      * @return {Geometry[]} geometries identified
      */
-    identify(coordinate, options) {
+    identify(coordinate, options = {}) {
         const geometries = this._geoList,
-            filter = options ? options.filter : null,
+            filter = options.filter,
             hits = [];
         const map = this.getMap();
         const point = map.coordinateToPoint(coordinate);

@@ -32,7 +32,7 @@ class MapGeometryEventsHandler extends Handler {
             }
             return false;
         });
-        if (map.isZooming() || map.isMoving() || !layers || !layers.length) {
+        if (map.isInteracting() || !layers || !layers.length) {
             return;
         }
         let oneMoreEvent = null;

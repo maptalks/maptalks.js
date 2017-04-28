@@ -50,19 +50,22 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
         this.prepareCanvas();
 
-        this._drawGeos();
+        this.drawGeos();
 
         this.completeRender();
+    }
+
+    isBlank() {
+        if (!this.context) {
+            return false;
+        }
+        return !this.context._drawn;
     }
 
     drawOnZooming() {
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             this._geosToDraw[i]._paint();
         }
-    }
-
-    isBlank() {
-        return !this._geosToDraw || this._geosToDraw.length === 0;
     }
 
     /**
@@ -82,7 +85,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return ((this._hasPointSymbolizer || map.getPitch()) && count > 0 && count <= map.options['pointThresholdOfZoomAnimation']);
     }
 
-    _drawGeos() {
+    forEachGeo(fn, context) {
+        this.layer.forEach(fn, context);
+    }
+
+    drawGeos() {
         let extent2D = this._extent2D;
         if (this._maskExtent) {
             if (!this._maskExtent.intersects(extent2D)) {
@@ -91,20 +98,20 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
             extent2D = extent2D.intersection(this._maskExtent);
         }
-        this._prepareToDraw();
+        this.prepareToDraw();
         this._displayExtent = extent2D;
-        this._forEachGeo(this._checkGeo, this);
+        this.forEachGeo(this.checkGeo, this);
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
         }
     }
 
-    _prepareToDraw() {
+    prepareToDraw() {
         this._hasPointSymbolizer = false;
         this._geosToDraw = [];
     }
 
-    _checkGeo(geo) {
+    checkGeo(geo) {
         if (!geo || !geo.isVisible() || !geo.getMap() ||
             !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
             return;
@@ -114,17 +121,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!extent2D || !extent2D.intersects(this._displayExtent)) {
             return;
         }
-        this._isBlank = false;
         if (painter.hasPointSymbolizer()) {
             this._hasPointSymbolizer = true;
         }
         this._geosToDraw.push(geo);
     }
-
-    _forEachGeo(fn, context) {
-        this.layer.forEach(fn, context);
-    }
-
 
     onZoomEnd() {
         delete this._extent2D;
@@ -132,7 +133,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     onRemove() {
-        this._forEachGeo(function (g) {
+        this.forEachGeo(function (g) {
             g.onHide();
         });
         delete this._geosToDraw;

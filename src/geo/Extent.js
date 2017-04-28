@@ -277,7 +277,7 @@ class Extent {
     }
 
     __combine(extent) {
-        if (extent instanceof Point) {
+        if ((extent instanceof Point) || (extent instanceof Coordinate)) {
             extent = {
                 'xmin': extent.x,
                 'xmax': extent.x,

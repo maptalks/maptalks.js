@@ -150,6 +150,7 @@ class MapDragHandler extends Handler {
     _rotateStart(param) {
         this._start(param);
         delete this._rotateMode;
+        this.target.onDragRotateStart(param);
     }
 
     _rotating(param) {
@@ -172,10 +173,12 @@ class MapDragHandler extends Handler {
         }
         this.preX = mx;
         this.preY = my;
+        map.onDragRotating(param);
     }
 
-    _rotateEnd() {
+    _rotateEnd(param) {
         this._clear();
+        this.target.onDragRotateEnd(param);
     }
 
     _clear() {

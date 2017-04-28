@@ -87,7 +87,16 @@ export default class TileLayerDomRenderer extends Class {
         return false;
     }
 
-    render(updateTiles = true) {
+    render() {
+        const map = this.getMap();
+        if (map.isDragRotating()) {
+            this._prepareTileContainer();
+            return;
+        }
+        this._renderTiles();
+    }
+
+    _renderTiles() {
         const layer = this.layer;
         if (!this._container) {
             this._createLayerContainer();
@@ -97,18 +106,19 @@ export default class TileLayerDomRenderer extends Class {
             return;
         }
 
+        const map = this.getMap();
+
         const queue = this._getTileQueue(tileGrid);
 
-        const cssMat = this.getMap().domCssMatrix;
+        const cssMat = map.domCssMatrix;
         // disable throttle of onMapMoving if map tilts or rotates.
         this.onMapMoving.time = cssMat ? 0 : layer.options['updateInterval'];
 
-
-        this._currentTileZoom = this.getMap().getZoom();
+        this._currentTileZoom = map.getZoom();
 
         this._prepareTileContainer();
 
-        if (updateTiles && queue.length > 0) {
+        if (queue.length > 0) {
             const container = this._getTileContainer();
             const fragment = document.createDocumentFragment();
             for (let i = 0, l = queue.length; i < l; i++) {
@@ -212,35 +222,41 @@ export default class TileLayerDomRenderer extends Class {
         if (this._levelContainers && this._levelContainers[zoom]) {
             const matrix = param.matrix['view'];
             if (map.domCssMatrix) {
-                const pitch = map.getPitch();
-                const scale = matrix[0];
-                const size = map.getSize();
-                const origin = param['origin'];
-                const m = mat4.create();
-                const matOffset = [
-                    (origin.x - size['width'] / 2)  * (1 - scale),
-                    //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
-                    (origin.y - size['height'] / 2) * (1 - scale) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
-                    0
-                ];
-
-                // rotation is right
-                mat4.translate(m, m, matOffset);
-                mat4.multiply(m, m, map.domCssMatrix);
-                mat4.scale(m, m, [scale, scale, 1]);
-
-                // mat4.translate(m, m, matOffset);
-                // mat4.scale(m, m, [scale, scale, 1]);
-                // mat4.multiply(m, m, map.domCssMatrix);
-
-                const offset = map.offsetPlatform();
-                const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(m) + ')';
-                this._levelContainers[zoom].style[TRANSFORM] = transform;
+                this._setCssMatrix(param['origin'], zoom, matrix[0]);
             } else {
                 setTransformMatrix(this._levelContainers[zoom], matrix);
             }
 
         }
+    }
+
+    _setCssMatrix(origin, zoom, scale) {
+        const map = this.getMap();
+        if (!map.domCssMatrix) {
+            return;
+        }
+        const pitch = map.getPitch();
+        const size = map.getSize();
+        const m = mat4.create();
+        const matOffset = [
+            (origin.x - size['width'] / 2)  * (1 - scale),
+            //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
+            (origin.y - size['height'] / 2) * (1 - scale) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
+            0
+        ];
+
+        // rotation is right
+        mat4.translate(m, m, matOffset);
+        mat4.multiply(m, m, map.domCssMatrix);
+        mat4.scale(m, m, [scale, scale, 1]);
+
+        // mat4.translate(m, m, matOffset);
+        // mat4.scale(m, m, [scale, scale, 1]);
+        // mat4.multiply(m, m, map.domCssMatrix);
+
+        const offset = map.offsetPlatform();
+        const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(m) + ')';
+        this._levelContainers[zoom].style[TRANSFORM] = transform;
     }
 
     _getTileSize() {
@@ -422,7 +438,7 @@ export default class TileLayerDomRenderer extends Class {
 
     _pruneTiles(pruneLevels) {
         const map = this.getMap();
-        if (!map || map.isMoving()) {
+        if (!map || map.isMoving() || map.isDragRotating()) {
             return;
         }
 
@@ -552,13 +568,18 @@ export default class TileLayerDomRenderer extends Class {
             '_zooming'      : this.onZooming,
             '_zoomend'      : this.onZoomEnd,
             '_moveend _resize' : this.render,
-            '_movestart'    : this.onMoveStart
+            '_movestart'    : this.onMoveStart,
+            '_rotateend'    : this.onRotateEnd
         };
+        const interval = this.layer.options['updateInterval'];
         if (!this.onMapMoving) {
-            const interval = this.layer.options['updateInterval'];
             this.onMapMoving = throttle(this._onMapMoving, interval, this);
         }
+        if (!this.onMapRotating) {
+            this.onMapRotating = throttle(this.onRotating, interval * 2, this);
+        }
         events['_moving'] = this.onMapMoving;
+        events['_rotating'] = this.onMapRotating;
         return events;
     }
 
@@ -617,6 +638,19 @@ export default class TileLayerDomRenderer extends Class {
                 }
                 this._show();
             }
+        }
+    }
+
+    onRotating() {
+        if (!this.getMap() || !this.layer.options['renderOnRotating']) {
+            return;
+        }
+        this._renderTiles();
+    }
+
+    onRotateEnd() {
+        if (!this.layer.options['renderOnRotating']) {
+            this.render();
         }
     }
 

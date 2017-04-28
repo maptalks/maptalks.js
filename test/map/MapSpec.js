@@ -645,7 +645,7 @@ describe('#Map', function () {
             subdomains: [1, 2, 3],
             visible : false
         });
-        tilelayer.on('layerload', function () {
+        tilelayer.on('add', function () {
             map.remove();
             done();
         });

@@ -83,6 +83,22 @@ class GeometryDragHandler extends Handler  {
         });
     }
 
+    _restoreMap() {
+        const map = this.target.getMap();
+        //restore map status
+        map._trySetCursor('default');
+        if (isNil(this._mapDraggable)) {
+            this._mapDraggable = true;
+        }
+        map.config({
+            'hitDetect': this._mapHitDetect,
+            'draggable': this._mapDraggable
+        });
+
+        delete this._mapDraggable;
+        delete this._mapHitDetect;
+    }
+
     _prepareDragHandler() {
         const map = this.target.getMap();
         this._dragHandler = new DragHandler(map._panels.mapWrapper || map._containerDOM);
@@ -94,7 +110,6 @@ class GeometryDragHandler extends Handler  {
     _prepareShadow() {
         const target = this.target;
         this._prepareDragStageLayer();
-        const resources = this._dragStageLayer._getRenderer().resources;
         if (this._shadow) {
             this._shadow.remove();
         }
@@ -107,7 +122,15 @@ class GeometryDragHandler extends Handler  {
             shadow.setSymbol(symbol);
         }
         shadow.setId(null);
+        this._prepareShadowConnectors();
+    }
+
+    _prepareShadowConnectors() {
         //copy connectors
+        const target = this.target;
+        const shadow = this._shadow;
+        const resources = this._dragStageLayer._getRenderer().resources;
+
         const shadowConnectors = [];
         if (ConnectorLine._hasConnectors(target)) {
             const connectors = ConnectorLine._getConnectors(target);
@@ -227,45 +250,15 @@ class GeometryDragHandler extends Handler  {
         if (!map) {
             return;
         }
-        let eventParam;
-        if (map) {
-            eventParam = map._parseEvent(param['domEvent']);
-        }
+        const eventParam = map._parseEvent(param['domEvent']);
         target.off('symbolchange', this._onTargetUpdated, this);
 
-        if (!target.options['dragShadow']) {
-            target.show();
-        }
-        const shadow = this._shadow;
-        if (shadow) {
-            if (target.options['dragShadow']) {
-                target.setCoordinates(shadow.getCoordinates());
-            }
-            shadow._fireEvent('dragend', eventParam);
-            shadow.remove();
-            delete this._shadow;
-        }
-        if (this._shadowConnectors) {
-            map.getLayer(DRAG_STAGE_LAYER_ID).removeGeometry(this._shadowConnectors);
-            delete this._shadowConnectors;
-        }
+        this._updateTargetAndRemoveShadow(eventParam);
+
         delete this._lastPos;
 
-        //restore map status
-        map._trySetCursor('default');
-        if (isNil(this._mapDraggable)) {
-            this._mapDraggable = true;
-        }
-        map.config({
-            'hitDetect': this._mapHitDetect,
-            'draggable': this._mapDraggable
-        });
+        this._restoreMap();
 
-        delete this._mapDraggable;
-        delete this._mapHitDetect;
-        if (this._dragStageLayer) {
-            this._dragStageLayer.remove();
-        }
         this._isDragging = false;
         /**
          * dragend event
@@ -286,6 +279,37 @@ class GeometryDragHandler extends Handler  {
             return false;
         }
         return true;
+    }
+
+    _updateTargetAndRemoveShadow(eventParam) {
+        const target = this.target,
+            layer = target.getLayer(),
+            map = target.getMap();
+        if (!target.options['dragShadow']) {
+            const d = layer.options['drawImmediate'];
+            layer.config('drawImmediate', true);
+            target.show();
+            layer.config('drawImmediate', d);
+        }
+        const shadow = this._shadow;
+        if (shadow) {
+            if (target.options['dragShadow']) {
+                const d = layer.options['drawImmediate'];
+                layer.config('drawImmediate', true);
+                target.setCoordinates(shadow.getCoordinates());
+                layer.config('drawImmediate', d);
+            }
+            shadow._fireEvent('dragend', eventParam);
+            shadow.remove();
+            delete this._shadow;
+        }
+        if (this._shadowConnectors) {
+            map.getLayer(DRAG_STAGE_LAYER_ID).removeGeometry(this._shadowConnectors);
+            delete this._shadowConnectors;
+        }
+        if (this._dragStageLayer) {
+            this._dragStageLayer.remove();
+        }
     }
 
 }

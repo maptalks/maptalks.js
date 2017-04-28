@@ -1,4 +1,4 @@
-import { isNil, isArrayHasData, isSVG, isNode, loadImage, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { isNil, isArrayHasData, isSVG, isNode, loadImage, callImmediate, clearCallImmediate } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'core/Promise';
@@ -37,11 +37,7 @@ class CanvasRenderer extends Class {
      */
     render() {
         this.prepareRender();
-        if (!this.getMap()) {
-            return;
-        }
-        if (!this.layer.isVisible()) {
-            this.completeRender();
+        if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
         if (!this.resources) {
@@ -78,7 +74,7 @@ class CanvasRenderer extends Class {
      * Remove the renderer, will be called when layer is removed
      */
     remove() {
-        this._clearTimeout();
+        this._cancelDrawFrame();
         if (this.onRemove) {
             this.onRemove();
         }
@@ -111,10 +107,10 @@ class CanvasRenderer extends Class {
         if (this._renderZoom !== this.getMap().getZoom() || !this.canvas || !this._extent2D) {
             return null;
         }
-        if (this.layer.isEmpty && this.layer.isEmpty()) {
+        if (this.isBlank()) {
             return null;
         }
-        if (this.isBlank && this.isBlank()) {
+        if (this.layer.isEmpty && this.layer.isEmpty()) {
             return null;
         }
         const map = this.getMap(),
@@ -135,6 +131,10 @@ class CanvasRenderer extends Class {
         this.requestMapToRender();
     }
 
+    isBlank() {
+        return false;
+    }
+
     /**
      * Show the layer
      */
@@ -149,7 +149,10 @@ class CanvasRenderer extends Class {
         this.clear();
     }
 
-    setZIndex() {
+    setZIndex(z) {
+        if (this.layer.getZIndex() === z) {
+            return;
+        }
         this.requestMapToRender();
     }
 
@@ -159,17 +162,16 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     hitDetect(point) {
-        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this._errorThrown) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown) {
             return false;
         }
         const map = this.getMap();
         const size = map.getSize();
-        const detectPoint = map._pointToContainerPoint(point);
-        if (detectPoint.x < 0 || detectPoint.x > size['width'] || detectPoint.y < 0 || detectPoint.y > size['height']) {
+        if (point.x < 0 || point.x > size['width'] || point.y < 0 || point.y > size['height']) {
             return false;
         }
         try {
-            const imgData = this.context.getImageData(detectPoint.x, detectPoint.y, 1, 1).data;
+            const imgData = this.context.getImageData(point.x, point.y, 1, 1).data;
             if (imgData[3] > 0) {
                 return true;
             }
@@ -414,7 +416,10 @@ class CanvasRenderer extends Class {
             '_moving' : this.onMoving,
             '_moveend' : this.onMoveEnd,
             '_pitch' : this.onPitch,
-            '_rotate' : this.onRotate
+            '_rotate' : this.onRotate,
+            '_rotatestart' : this.onRotateStart,
+            '_rotating' : this.onRotating,
+            '_rotateend' : this.onRotateEnd
         };
     }
 
@@ -528,10 +533,22 @@ class CanvasRenderer extends Class {
 
     }
 
+    onRotateStart() {
+
+    }
+
+    onRotating() {
+
+    }
+
+    onRotateEnd() {
+
+    }
+
     _tryToDraw() {
-        this._clearTimeout();
+        this._cancelDrawFrame();
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
-            this.completeRender();
+            this.fireLoadedEvent();
             return;
         }
         if (!this._painted && this.onAdd) {
@@ -541,7 +558,7 @@ class CanvasRenderer extends Class {
             this._painted = true;
             this.draw();
         } else {
-            this._currentFrameId = requestAnimFrame(() => {
+            this._currentFrameId = callImmediate(() => {
                 if (this.getMap()) {
                     this._painted = true;
                     this.draw();
@@ -624,9 +641,9 @@ class CanvasRenderer extends Class {
         }
     }
 
-    _clearTimeout() {
+    _cancelDrawFrame() {
         if (this._currentFrameId) {
-            cancelAnimFrame(this._currentFrameId);
+            clearCallImmediate(this._currentFrameId);
         }
     }
 }
