@@ -8,6 +8,8 @@ maptalks.symbolizer.TextMarkerSymbolizer = maptalks.symbolizer.PointSymbolizer.e
         this.style = this._defineStyle(style);
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(style));
         var textContent = maptalks.StringUtil.replaceVariable(this.style['textName'], this.geometry.getProperties());
+        // the key to cache text descriptor
+        this._cacheKey = this._genCacheKey(textContent, this.style);
         this._descText(textContent);
     },
 
@@ -118,28 +120,28 @@ maptalks.symbolizer.TextMarkerSymbolizer = maptalks.symbolizer.PointSymbolizer.e
     },
 
     _descText : function (textContent) {
-        this.textDesc = this._loadFromCache(textContent, this.style);
+        this.textDesc = this._loadFromCache();
         if (!this.textDesc) {
             this.textDesc = maptalks.StringUtil.splitTextToRow(textContent, this.style);
-            this._storeToCache(textContent, this.style, this.textDesc);
+            this._storeToCache(this.textDesc);
         }
     },
 
-    _storeToCache: function (textContent, style, textDesc) {
+    _storeToCache: function (textDesc) {
         if (maptalks.node) {
             return;
         }
         if (!this.geometry['___text_symbol_cache']) {
             this.geometry['___text_symbol_cache'] = {};
         }
-        this.geometry['___text_symbol_cache'][this._genCacheKey(style)] = textDesc;
+        this.geometry['___text_symbol_cache'][this._cacheKey] = textDesc;
     },
 
-    _loadFromCache:function (textContent, style) {
+    _loadFromCache:function () {
         if (!this.geometry['___text_symbol_cache']) {
             return null;
         }
-        return this.geometry['___text_symbol_cache'][this._genCacheKey(textContent, style)];
+        return this.geometry['___text_symbol_cache'][this._cacheKey];
     },
 
     _genCacheKey: function (textContent, style) {

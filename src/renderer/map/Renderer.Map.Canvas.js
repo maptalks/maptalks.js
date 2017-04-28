@@ -24,6 +24,9 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
      * Renders the layers
      */
     render:function () {
+        if (!this.map) {
+            return;
+        }
          /**
           * renderstart event, an event fired when map starts to render.
           * @event maptalks.Map#renderstart

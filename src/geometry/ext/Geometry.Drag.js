@@ -208,6 +208,7 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
 
     _endDrag: function (param) {
         var target = this.target,
+            layer = target.getLayer(),
             map = target.getMap();
         if (this._dragHandler) {
             target.off('click', this._endDrag, this);
@@ -224,7 +225,10 @@ maptalks.Geometry.Drag = maptalks.Handler.extend(/** @lends maptalks.Geometry.Dr
         target.off('symbolchange', this._onTargetUpdated, this);
 
         if (!target.options['dragShadow']) {
+            var d = layer.options['drawImmediate'];
+            layer.config('drawImmediate', true);
             target.show();
+            layer.config('drawImmediate', d);
         }
         var shadow = this._shadow;
         if (shadow) {
