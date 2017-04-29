@@ -12,7 +12,7 @@ describe('#MapDrag', function () {
         var spy = sinon.spy();
         map.on('mousedown', spy);
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
         happen.mousedown(map._panels.front, {
@@ -91,7 +91,7 @@ describe('#MapDrag', function () {
     function dragToRotate(dx, dy) {
         dx = dx || 0;
         dy = dy || 0;
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = getPagePosition(container);
         var center = map.getCenter();
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
