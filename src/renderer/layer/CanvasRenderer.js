@@ -566,7 +566,7 @@ class CanvasRenderer extends Class {
             //Thus prepareRender needs to be called here
             this.prepareRender();
             if (this.layer.isVisible()) {
-                this.draw();
+                this._drawAndRecord();
             }
         }
     }
