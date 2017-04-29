@@ -157,15 +157,22 @@ class MapDragHandler extends Handler {
         const map = this.target;
         const mx = param['mousePos'].x,
             my = param['mousePos'].y;
+        const prePitch = map.getPitch(),
+            preBearing = map.getBearing();
+        const dx = Math.abs(mx - this.preX),
+            dy = Math.abs(my - this.preY);
         if (!this._rotateMode) {
-            const dx = Math.abs(mx - this.startX),
-                dy = Math.abs(my - this.startY);
             if (dx > dy) {
                 this._rotateMode = 'rotate';
             } else if (dx < dy) {
                 this._rotateMode = 'pitch';
             }
         }
+
+        if (this._rotateMode === 'pitch' && prePitch === 0 && dy < 10) {
+            return;
+        }
+
         if (this._rotateMode === 'rotate' && map.options['dragRotate']) {
             map.setBearing(map.getBearing() + 1.2 * (mx > this.preX ? 1 : -1));
         } else if (this._rotateMode === 'pitch' && map.options['dragPitch']) {
@@ -173,7 +180,9 @@ class MapDragHandler extends Handler {
         }
         this.preX = mx;
         this.preY = my;
-        map.onDragRotating(param);
+        if (map.getBearing() !== preBearing || map.getPitch() !== prePitch) {
+            map.onDragRotating(param);
+        }
     }
 
     _rotateEnd(param) {
