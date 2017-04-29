@@ -9,7 +9,7 @@
 import Browser from 'core/Browser';
 import { isNode } from './env';
 import { isString, isNil } from './common';
-import { splitWords, trim } from './strings';
+import { splitWords } from './strings';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 
@@ -314,18 +314,6 @@ export function offsetDom(dom, offset) {
 }
 
 /**
- * 获取dom对象在页面上的屏幕坐标
- * @param  {HTMLElement} obj Dom对象
- * @return {Object}     屏幕坐标
- * @memberOf DomUtil
- */
-export function getPagePosition(obj) {
-    const docEl = document.documentElement;
-    const rect = obj.getBoundingClientRect();
-    return new Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
-}
-
-/**
  * 获取鼠标在容器上相对容器左上角的坐标值
  * @param {Event} ev  触发的事件
  * @return {Point} left:鼠标在页面上的横向位置, top:鼠标在页面上的纵向位置
@@ -342,6 +330,11 @@ export function getEventContainerPoint(ev, dom) {
         ev.clientY - rect.top - dom.clientTop);
 }
 
+function endsWith(str, suffix) {
+    const l = str.length - suffix.length;
+    return l >= 0 && str.indexOf(suffix, l) === l;
+}
+
 /**
  * 为dom设置样式
  * @param {HTMLElement} dom dom节点
@@ -349,26 +342,12 @@ export function getEventContainerPoint(ev, dom) {
  * @memberOf DomUtil
  */
 export function setStyle(dom, strCss) {
-    function endsWith(str, suffix) {
-        const l = str.length - suffix.length;
-        return l >= 0 && str.indexOf(suffix, l) === l;
-    }
     const style = dom.style;
     let cssText = style.cssText;
     if (!endsWith(cssText, ';')) {
         cssText += ';';
     }
     dom.style.cssText = cssText + strCss;
-    return this;
-}
-
-/**
- * 清空dom样式
- * @param {HTMLElement} dom dom节点
- * @memberOf DomUtil
- */
-export function removeStyle(dom) {
-    dom.style.cssText = '';
     return this;
 }
 
@@ -417,21 +396,6 @@ export function addClass(el, name) {
     } else if (!hasClass(el, name)) {
         const className = getClass(el);
         setClass(el, (className ? className + ' ' : '') + name);
-    }
-    return this;
-}
-
-/**
- * 移除dom class
- * @param {HTMLElement} el html元素
- * @param {String} name class名称
- * @memberOf DomUtil
- */
-export function removeClass(el, name) {
-    if (el.classList !== undefined) {
-        el.classList.remove(name);
-    } else {
-        setClass(el, trim((' ' + getClass(el) + ' ').replace(' ' + name + ' ', ' ')));
     }
     return this;
 }
@@ -548,7 +512,7 @@ export function isHTML(str) {
 }
 
 export function measureDom(parentTag, dom) {
-    const ruler = _getDomRuler(parentTag);
+    const ruler = getDomRuler(parentTag);
     if (isString(dom)) {
         ruler.innerHTML = dom;
     } else {
@@ -559,7 +523,7 @@ export function measureDom(parentTag, dom) {
     return result;
 }
 
-export function _getDomRuler(tag) {
+export function getDomRuler(tag) {
     const span = document.createElement(tag);
     span.style.cssText = 'position:absolute;left:-10000px;top:-10000px;';
     document.body.appendChild(span);

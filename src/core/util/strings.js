@@ -1,5 +1,5 @@
 import { isObject, isString, isNil } from './common';
-import { _getDomRuler, removeDomNode } from './dom';
+import { getDomRuler, removeDomNode } from './dom';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 
@@ -58,7 +58,7 @@ export function stringLength(text, font) {
     if (stringLength.env) {
         return stringLength.env(text, font);
     } else {
-        const ruler = _getDomRuler('span');
+        const ruler = getDomRuler('span');
         ruler.style.font = font;
         ruler.innerHTML = text;
         const result = new Size(ruler.clientWidth, ruler.clientHeight);

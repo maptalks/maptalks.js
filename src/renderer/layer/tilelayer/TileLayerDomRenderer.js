@@ -651,11 +651,12 @@ export default class TileLayerDomRenderer extends Class {
 
     onRotateOrPitch() {
         if (this.getMap().isInteracting()) {
-            this._prepareTileContainer();
             // when rotation is canceled, tiles needs to be repositioned.
             const mat = this.getMap().domCssMatrix;
             if (!mat) {
                 this._renderTiles();
+            } else {
+                this._prepareTileContainer();
             }
         }
     }
