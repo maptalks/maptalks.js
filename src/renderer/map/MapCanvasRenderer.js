@@ -1,4 +1,4 @@
-import { isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { now, isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
@@ -54,17 +54,12 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         this._drawBackground();
 
-        let start = 0;
         const len = layers.length;
 
-        if (this.map.isInteracting()) {
-            const limit = this.map.options['numOfLayersOnInteracting'];
-            if (limit > 0 && len > limit) {
-                start = len - limit;
-            }
-        }
-
-        for (let i = start; i < len; i++) {
+        const fps = this.map.options['fpsOnInteracting'];
+        const limit = fps === 0 ? 0 : 1000 / fps;
+        const beginTime = now();
+        for (let i = 0; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
                 continue;
             }
@@ -74,6 +69,9 @@ export default class MapCanvasRenderer extends MapRenderer {
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage);
                 }
+            }
+            if (limit > 0 && now() - beginTime >= limit) {
+                break;
             }
         }
 
@@ -482,10 +480,19 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     _drawOnInteracting() {
+        function drawLayer(renderer) {
+            if (!renderer.drawOnInteracting) {
+                return false;
+            }
+            renderer.prepareRender();
+            renderer.prepareCanvas();
+            renderer.drawOnInteracting();
+            return true;
+        }
         this._suppressRender = true;
         const map = this.map;
-        // fps 12
-        const limit = 1000 / 12;
+        const fps = map.options['fpsOnInteracting'];
+        const limit = fps === 0 ? 0 : 1000 / fps;
         let currentFrame = 0;
         const layers = this._getCanvasLayers();
         for (let i = layers.length - 1; i >= 0; i--) {
@@ -496,14 +503,16 @@ export default class MapCanvasRenderer extends MapRenderer {
             let drawn = false;
             const renderer = layer._getRenderer();
             delete renderer._zoomTransform;
-            if (renderer.getDrawTime) {
+            if (limit === 0 ||
+                layer.options['forceRenderOnZooming'] && map.isZooming() ||
+                layer.options['forceRenderOnMoving'] && map.isMoving() ||
+                layer.options['forceRenderOnRotating'] && map.isDragRotating()) {
+                drawn = drawLayer(renderer);
+            } else if (renderer.getDrawTime) {
                 if (currentFrame + renderer.getDrawTime() <= limit) {
-                    if (renderer.drawOnInteracting) {
-                        renderer.prepareRender();
-                        renderer.prepareCanvas();
-                        renderer.drawOnInteracting();
+                    drawn = drawLayer(renderer);
+                    if (drawn) {
                         currentFrame += renderer.getDrawTime();
-                        drawn = true;
                     }
                 }
             }
