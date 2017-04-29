@@ -439,9 +439,7 @@ class CanvasRenderer extends Class {
     * onMoveStart
     * @param  {Object} param event parameters
     */
-    onMoveStart() {
-
-    }
+    onMoveStart() {}
 
     /**
     * onMoveEnd
@@ -461,9 +459,7 @@ class CanvasRenderer extends Class {
         this._drawOnEvent();
     }
 
-    onDragRotateStart() {
-
-    }
+    onDragRotateStart() {}
 
     onDragRotateEnd() {
         this._drawOnEvent();

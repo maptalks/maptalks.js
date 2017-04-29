@@ -33,14 +33,13 @@ import View from './view/View';
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
  * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
- * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
- * @property {Number}  [options.pointLimitOnInteracting=150] - threshold of point count to perform zoom animation.
- * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
+  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
  * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
  * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
  * @property {Boolean} [options.hitDetectLimit=5]               - the maximum number of layers to perform hit detect.
+ * @property {Boolean} [options.numOfLayersOnInteracting=20]    - the maximum number of layers to draw on map when interacting.
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
@@ -77,10 +76,6 @@ const options = {
     'zoomAnimationDuration': 330,
     //still leave background after zooming, set it to false if baseLayer is a transparent layer
     'zoomBackground': false,
-    //controls whether other layers than base tilelayer will show during zoom animation.
-    'layerZoomAnimation': true,
-
-    'pointLimitOnInteracting': 200,
 
     'panAnimation': (function () {
         return !isNode;

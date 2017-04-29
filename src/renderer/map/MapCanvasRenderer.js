@@ -488,7 +488,6 @@ export default class MapCanvasRenderer extends MapRenderer {
         const limit = 1000 / 12;
         let currentFrame = 0;
         const layers = this._getCanvasLayers();
-        const layerNames = [];
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             if (!layer.isVisible() || layer.isEmpty && layer.isEmpty()) {
@@ -500,7 +499,6 @@ export default class MapCanvasRenderer extends MapRenderer {
             if (renderer.getDrawTime) {
                 if (currentFrame + renderer.getDrawTime() <= limit) {
                     if (renderer.drawOnInteracting) {
-                        layerNames.push(layer.getId());
                         renderer.prepareRender();
                         renderer.prepareCanvas();
                         renderer.drawOnInteracting();
