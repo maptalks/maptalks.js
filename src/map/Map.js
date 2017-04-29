@@ -97,7 +97,7 @@ const options = {
 
     'hitDetectLimit' : 5,
 
-    'numOfLayersOnInteracting' : 10,
+    'numOfLayersOnInteracting' : 20,
 
     'maxZoom': null,
     'minZoom': null,
@@ -241,21 +241,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     isLoaded() {
         return this._loaded;
-    }
-
-    /**
-     * Whether the map is rendered by canvas
-     * @return {Boolean}
-     * @protected
-     * @example
-     * var isCanvas = map.isCanvasRender();
-     */
-    isCanvasRender() {
-        const renderer = this._getRenderer();
-        if (renderer) {
-            return renderer.isCanvasRender();
-        }
-        return false;
     }
 
     /**
@@ -1464,48 +1449,48 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._enablePanAnimation = false;
         this._dragRotating = true;
         /**
-         * rotatestart event
-         * @event Map#rotatestart
+         * dragrotatestart event
+         * @event Map#dragrotatestart
          * @type {Object}
-         * @property {String} type - rotatestart
+         * @property {String} type - dragrotatestart
          * @property {Map} target - map fires the event
          * @property {Coordinate} coordinate - coordinate of the event
          * @property {Point} containerPoint  - container point of the event
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('rotatestart', this._parseEvent(param ? param['domEvent'] : null, 'rotatestart'));
+        this._fireEvent('dragrotatestart', this._parseEvent(param ? param['domEvent'] : null, 'dragrotatestart'));
     }
 
     onDragRotating(param) {
         /**
-         * rotating event
-         * @event Map#rotating
+         * dragrotating event
+         * @event Map#dragrotating
          * @type {Object}
-         * @property {String} type - rotating
+         * @property {String} type - dragrotating
          * @property {Map} target - map fires the event
          * @property {Coordinate} coordinate - coordinate of the event
          * @property {Point} containerPoint  - container point of the event
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('rotating', this._parseEvent(param ? param['domEvent'] : null, 'rotating'));
+        this._fireEvent('dragrotating', this._parseEvent(param ? param['domEvent'] : null, 'dragrotating'));
     }
 
     onDragRotateEnd(param) {
         this._dragRotating = false;
         /**
-         * rotateend event
-         * @event Map#rotateend
+         * dragrotateend event
+         * @event Map#dragrotateend
          * @type {Object}
-         * @property {String} type - rotateend
+         * @property {String} type - dragrotateend
          * @property {Map} target - map fires the event
          * @property {Coordinate} coordinate - coordinate of the event
          * @property {Point} containerPoint  - container point of the event
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('rotateend', this._parseEvent(param ? param['domEvent'] : null, 'rotateend'));
+        this._fireEvent('dragrotateend', this._parseEvent(param ? param['domEvent'] : null, 'dragrotateend'));
     }
 
     isDragRotating() {

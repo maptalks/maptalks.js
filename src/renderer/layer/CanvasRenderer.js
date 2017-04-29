@@ -122,8 +122,7 @@ class CanvasRenderer extends Class {
             'image': this.canvas,
             'layer': this.layer,
             'point': containerPoint,
-            'size': size,
-            'transform': this._transform
+            'size': size
         };
     }
 
@@ -358,7 +357,7 @@ class CanvasRenderer extends Class {
      * This should be called once any canvas layer is updated
      */
     requestMapToRender() {
-        if (this.getMap() && !this._suppressMapRender) {
+        if (this.getMap()) {
             if (this.context) {
                 /**
                  * renderend event, fired when layer ends rendering.
@@ -381,7 +380,7 @@ class CanvasRenderer extends Class {
      * Ask the layer to fire the layerload event
      */
     fireLoadedEvent() {
-        if (this.layer && !this._suppressMapRender) {
+        if (this.layer) {
             /**
              * layerload event, fired when layer is loaded.
              *
@@ -411,68 +410,15 @@ class CanvasRenderer extends Class {
         return {
             '_zoomstart' : this.onZoomStart,
             '_zoomend' : this.onZoomEnd,
-            '_zooming' : this.onZooming,
             '_resize'  : this.onResize,
             '_movestart' : this.onMoveStart,
-            '_moving' : this.onMoving,
             '_moveend' : this.onMoveEnd,
-            '_pitch' : this.onPitch,
-            '_rotate' : this.onRotate,
-            '_rotatestart' : this.onRotateStart,
-            '_rotating' : this.onRotating,
-            '_rotateend' : this.onRotateEnd
+            '_dragrotatestart' : this.onDragRotateStart,
+            '_dragrotateend' : this.onDragRotateEnd
         };
     }
 
     /**
-     * Should render the layer when zooming? default is false.<br>
-     * If enabled, renderer's drawOnZooming will be called when map is zooming. <br>
-     * Can be disabled to improve performance if not necessary.
-     * @return {Boolean}
-     */
-    isRenderOnZooming() {
-        return this.layer.options['renderOnZooming'];
-    }
-
-    /**
-     * Should render the layer when moving? default is false.<br>
-     * If enabled, draw will be called when map is moving. <br>
-     * Can be disabled to improve performance if not necessary.
-     * @return {Boolean}
-     */
-    isRenderOnMoving() {
-        return this.layer.options['renderOnMoving'] || !!this.getMap().getPitch();
-    }
-
-    /**
-     * onZooming
-     * @param  {Object} param event parameters
-     */
-    onZooming(param) {
-        const map = this.getMap();
-        if (!map || !this.layer.isVisible()) {
-            return;
-        }
-        const pitch = map.getPitch();
-        // map.render() is called in map.onZooming, suppress map's render here
-        this._suppressMapRender = true;
-        this.prepareRender();
-        if (this.isRenderOnZooming()) {
-            this.prepareCanvas();
-            if (this.drawOnZooming) {
-                this.drawOnZooming(param);
-            } else {
-                this._drawOnEvent(param);
-            }
-        } else if (!pitch) {
-            this._transform = param['matrix']['container'];
-        } else if (pitch) {
-            // leave the layer to blank when map is pitching
-            this.prepareCanvas();
-        }
-        this._suppressMapRender = false;
-    }
-
     /**
      * onZoomStart
      * @param  {Object} param event parameters
@@ -486,7 +432,6 @@ class CanvasRenderer extends Class {
     * @param  {Object} param event parameters
     */
     onZoomEnd() {
-        delete this._transform;
         this._drawOnEvent();
     }
 
@@ -496,16 +441,6 @@ class CanvasRenderer extends Class {
     */
     onMoveStart() {
 
-    }
-
-    /**
-    * onMoving
-    * @param  {Object} param event parameters
-    */
-    onMoving() {
-        if (this.isRenderOnMoving()) {
-            this._drawOnEvent();
-        }
     }
 
     /**
@@ -526,23 +461,13 @@ class CanvasRenderer extends Class {
         this._drawOnEvent();
     }
 
-    onPitch() {
+    onDragRotateStart() {
 
     }
 
-    onRotate() {
-
+    onDragRotateEnd() {
+        this._drawOnEvent();
     }
-
-    onRotateStart() {
-
-    }
-
-    onRotating() {
-
-    }
-
-    onRotateEnd() {
 
     getDrawTime() {
         return this._drawTime;

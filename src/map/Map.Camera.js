@@ -289,14 +289,17 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _renderLayers() {
-        // const render = layer => {
-        //     if (layer && layer._getRenderer()) {
-        //         layer._getRenderer().render();
-        //     }
-        // };
-        // render(this.getBaseLayer());
-        // this._getLayers().forEach(layer => {
-        //     render(layer);
-        // });
+        if (this.isInteracting()) {
+            return;
+        }
+        const render = layer => {
+            if (layer && layer._getRenderer()) {
+                layer._getRenderer().render();
+            }
+        };
+        render(this.getBaseLayer());
+        this._getLayers().forEach(layer => {
+            render(layer);
+        });
     }
 });

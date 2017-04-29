@@ -1,6 +1,5 @@
 import { getExternalResources } from 'core/util/resource';
 import VectorLayer from 'layer/VectorLayer';
-import CanvasRenderer from '../CanvasRenderer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 
 /**
@@ -62,7 +61,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return !this.context._drawn;
     }
 
-    drawOnZooming() {
+    drawOnInteracting() {
+        if (!this._geosToDraw) {
+            return;
+        }
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             this._geosToDraw[i]._paint();
         }
@@ -76,13 +78,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.layer.forEach(function (geo) {
             geo._repaint();
         });
-        CanvasRenderer.prototype.show.apply(this, arguments);
-    }
-
-    isRenderOnZooming() {
-        const map = this.getMap();
-        const count = map._getRenderer()._getCountOfGeosToDraw();
-        return ((this._hasPointSymbolizer || map.getPitch()) && count > 0 && count <= map.options['pointLimitOnInteracting']);
+        super.show.apply(this, arguments);
     }
 
     forEachGeo(fn, context) {
@@ -107,7 +103,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     prepareToDraw() {
-        this._hasPointSymbolizer = false;
         this._geosToDraw = [];
     }
 
@@ -121,15 +116,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!extent2D || !extent2D.intersects(this._displayExtent)) {
             return;
         }
-        if (painter.hasPointSymbolizer()) {
-            this._hasPointSymbolizer = true;
-        }
         this._geosToDraw.push(geo);
     }
 
     onZoomEnd() {
         delete this._extent2D;
-        CanvasRenderer.prototype.onZoomEnd.apply(this, arguments);
+        super.onZoomEnd.apply(this, arguments);
     }
 
     onRemove() {

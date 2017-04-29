@@ -564,7 +564,7 @@ export default class TileLayerDomRenderer extends Class {
             '_zoomend'      : this.onZoomEnd,
             '_moveend _resize' : this.render,
             '_movestart'    : this.onMoveStart,
-            '_rotateend'    : this.onRotateEnd,
+            '_dragrotateend'    : this.onRotateEnd,
             '_rotate'       : this.onRotateOrPitch,
             '_pitch'        : this.onRotateOrPitch
         };
@@ -573,10 +573,10 @@ export default class TileLayerDomRenderer extends Class {
             this.onMapMoving = throttle(this._onMapMoving, interval, this);
         }
         if (!this.onMapRotating) {
-            this.onMapRotating = throttle(this.onRotating, interval * 2, this);
+            this.onMapRotating = throttle(this.onDragRotating, interval * 2, this);
         }
         events['_moving'] = this.onMapMoving;
-        events['_rotating'] = this.onMapRotating;
+        events['_dragrotating'] = this.onMapRotating;
         return events;
     }
 
@@ -638,7 +638,7 @@ export default class TileLayerDomRenderer extends Class {
         }
     }
 
-    onRotating() {
+    onDragRotating() {
         if (!this.getMap() || !this.layer.options['renderOnRotating']) {
             return;
         }
@@ -646,9 +646,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     onRotateEnd() {
-        if (!this.layer.options['renderOnRotating']) {
-            this.render();
-        }
+        this.render();
     }
 
     onRotateOrPitch() {

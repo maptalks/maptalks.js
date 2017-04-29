@@ -3,7 +3,6 @@ import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Canvas2D from 'core/Canvas';
-import OverlayLayer from 'layer/OverlayLayer';
 import MapRenderer from './MapRenderer';
 import Map from 'map/Map';
 
@@ -26,15 +25,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         this._registerEvents();
     }
 
-    isCanvasRender() {
-        return true;
-    }
-
     /**
      * Renders the layers
      */
     render() {
-        if (!this.map) {
+        if (!this.map || this._suppressRender) {
             return;
         }
         /**
@@ -187,23 +182,6 @@ export default class MapCanvasRenderer extends MapRenderer {
         return null;
     }
 
-    _getCountOfGeosToDraw() {
-        const map = this.map;
-        const layers = this._getAllLayerToRender();
-        let total = 0;
-        for (let i = layers.length - 1; i >= 0; i--) {
-            const renderer = layers[i]._getRenderer();
-            if ((layers[i] instanceof OverlayLayer) &&
-                layers[i].isVisible() && !layers[i].isEmpty() && (renderer._hasPointSymbolizer || map.getPitch())) {
-                const geos = renderer._geosToDraw;
-                if (geos) {
-                    total += renderer._geosToDraw.length;
-                }
-            }
-        }
-        return total;
-    }
-
     /**
      * initialize container DOM of panels
      */
@@ -272,7 +250,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
         const ctx = this.context;
         const point = layerImage['point'].multi(Browser.retina ? 2 : 1);
-        let canvasImage = layerImage['image'];
+        const canvasImage = layerImage['image'];
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
         }
@@ -302,18 +280,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (layer.options['cssFilter']) {
             ctx.filter = layer.options['cssFilter'];
         }
-
-        if (layerImage['transform']) {
+        const matrix = this._zoomMatrix;
+        const shouldTransform = !!layer._getRenderer()._zoomTransform;
+        if (matrix && shouldTransform) {
             ctx.save();
-            ctx.setTransform.apply(ctx, layerImage['transform']);
-        }
-
-        if (isNode) {
-            const context = canvasImage.getContext('2d');
-            if (context.getSvg) {
-                //canvas2svg
-                canvasImage = context;
-            }
+            ctx.setTransform.apply(ctx, matrix);
         }
 
         if (layer.options['debugOutline']) {
@@ -324,10 +295,9 @@ export default class MapCanvasRenderer extends MapRenderer {
             ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width + ',' + canvasImage.height].join(' '),
                 point.x + 18, point.y + 18);
         }
-        // console.log(layer.getId(), point);
 
         ctx.drawImage(canvasImage, point.x, point.y);
-        if (layerImage['transform']) {
+        if (matrix && shouldTransform) {
             ctx.restore();
         }
         if (ctx.filter !== 'none') {
@@ -466,10 +436,31 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!Browser.mobile) {
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-        map.on('_moving _moveend', () => {
+        map.on('_moving', () => {
             if (!map.getPitch()) {
                 this.render();
+            } else {
+                this._drawOnInteracting();
             }
+        });
+
+        map.on('_moveend', () => {
+            this.render();
+        });
+
+        map.on('_zooming', (param) => {
+            if (!map.getPitch()) {
+                this._zoomMatrix = param['matrix']['container'];
+            }
+            this._drawOnInteracting();
+        });
+
+        map.on('_dragrotating', () => {
+            this._drawOnInteracting();
+        });
+
+        map.on('_zoomend', () => {
+            delete this._zoomMatrix;
         });
     }
 
@@ -488,6 +479,51 @@ export default class MapCanvasRenderer extends MapRenderer {
         this._hitDetectFrame = requestAnimFrame(() => {
             this.hitDetect(param['containerPoint']);
         });
+    }
+
+    _drawOnInteracting() {
+        this._suppressRender = true;
+        const map = this.map;
+        // fps 12
+        const limit = 1000 / 12;
+        let currentFrame = 0;
+        const layers = this._getCanvasLayers();
+        const layerNames = [];
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const layer = layers[i];
+            if (!layer.isVisible() || layer.isEmpty && layer.isEmpty()) {
+                continue;
+            }
+            let drawn = false;
+            const renderer = layer._getRenderer();
+            delete renderer._zoomTransform;
+            if (renderer.getDrawTime) {
+                if (currentFrame + renderer.getDrawTime() <= limit) {
+                    if (renderer.drawOnInteracting) {
+                        layerNames.push(layer.getId());
+                        renderer.prepareRender();
+                        renderer.prepareCanvas();
+                        renderer.drawOnInteracting();
+                        currentFrame += renderer.getDrawTime();
+                        drawn = true;
+                    }
+                }
+            }
+            if (!drawn) {
+                if (map.isZooming() && !map.getPitch()) {
+                    renderer.prepareRender();
+                    renderer._zoomTransform = true;
+                } else {
+                    renderer.clearCanvas();
+                }
+            }
+        }
+        this._suppressRender = false;
+        this.render();
+    }
+
+    _getCanvasLayers() {
+        return this.map._getLayers(layer => layer.isCanvasRender());
     }
 }
 

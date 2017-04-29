@@ -57,9 +57,6 @@ export default class Painter extends Class {
                 if (regSymbolizers[i].test(symbol, this.geometry)) {
                     const symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
                     symbolizers.push(symbolizer);
-                    if (symbolizer instanceof Symbolizers.PointSymbolizer) {
-                        this._hasPointSymbolizer = true;
-                    }
                 }
             }
         }
@@ -73,10 +70,6 @@ export default class Painter extends Class {
         this._debugSymbolizer = new Symbolizers.DebugSymbolizer(geoSymbol, this.geometry, this);
         this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
-    }
-
-    hasPointSymbolizer() {
-        return this._hasPointSymbolizer;
     }
 
     /**
