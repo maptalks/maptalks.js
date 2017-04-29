@@ -274,7 +274,7 @@ COMMON_GEOEVENTS_TESTOR.prototype = {
         layer.addGeometry(vector);
         var point = map.coordinateToContainerPoint(testPoint);
         var dom = map._panels.front;
-        var domPosition = getPagePosition(dom);
+        var domPosition = GET_PAGE_POSITION(dom);
         point._add(domPosition);
         this._verifyGeometryEvents(dom,
             {
@@ -316,9 +316,9 @@ var COMMON_GET_MAP_COLOR = function (map, x, y) {
     return  map._getRenderer().canvas.getContext('2d').getImageData(x, y, 1, 1).data;
 };
 
-function getPagePosition(obj) {
+function GET_PAGE_POSITION(obj) {
     const docEl = document.documentElement;
     const rect = obj.getBoundingClientRect();
-    return new Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
+    return new maptalks.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
 }
 /*eslint-enable no-unused-vars */

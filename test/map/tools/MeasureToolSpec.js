@@ -9,7 +9,7 @@ describe('#DistanceTool and AreaTool', function () {
     function measure(tool) {
         var center = map.getCenter();
 
-        var domPosition = getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
         var measure = 0;

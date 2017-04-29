@@ -10,7 +10,8 @@
     "COMMON_CREATE_MAP" : true,
     "REMOVE_CONTAINER" : true,
     "COMMON_SYMBOL_TESTOR" : true,
-    "COMMON_GEOEVENTS_TESTOR" : true
+    "COMMON_GEOEVENTS_TESTOR" : true,
+    "GET_PAGE_POSITION" : true
   },
   "plugins": ["mocha"],
   "rules": {
