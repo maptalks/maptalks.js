@@ -85,10 +85,6 @@ describe('#Map', function () {
         it('isLoaded', function () {
             expect(map.isLoaded()).to.be.ok();
         });
-
-        it('is rendered by canvas', function () {
-            expect(map.isCanvasRender()).to.be.ok();
-        });
     });
 
     describe('conversions', function () {
