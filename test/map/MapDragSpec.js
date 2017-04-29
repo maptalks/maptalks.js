@@ -125,7 +125,7 @@ describe('#MapDrag', function () {
 
     it('drag to pitch', function () {
         var pitch = map.getPitch();
-        dragToRotate(0, -1);
+        dragToRotate(0, -15);
         expect(map.getPitch()).not.to.be.eql(pitch);
     });
 
