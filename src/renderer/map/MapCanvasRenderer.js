@@ -1,9 +1,8 @@
-import { isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { now, isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Canvas2D from 'core/Canvas';
-import OverlayLayer from 'layer/OverlayLayer';
 import MapRenderer from './MapRenderer';
 import Map from 'map/Map';
 
@@ -26,15 +25,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         this._registerEvents();
     }
 
-    isCanvasRender() {
-        return true;
-    }
-
     /**
      * Renders the layers
      */
     render() {
-        if (!this.map) {
+        if (!this.map || this._suppressRender) {
             return;
         }
         /**
@@ -59,7 +54,12 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         this._drawBackground();
 
-        for (let i = 0, len = layers.length; i < len; i++) {
+        const len = layers.length;
+
+        const fps = this.map.options['fpsOnInteracting'];
+        const limit = fps === 0 ? 0 : 1000 / fps;
+        const beginTime = now();
+        for (let i = 0; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
                 continue;
             }
@@ -69,6 +69,9 @@ export default class MapCanvasRenderer extends MapRenderer {
                 if (layerImage && layerImage['image']) {
                     this._drawLayerCanvasImage(layers[i], layerImage);
                 }
+            }
+            if (limit > 0 && now() - beginTime >= limit) {
+                break;
             }
         }
 
@@ -133,28 +136,48 @@ export default class MapCanvasRenderer extends MapRenderer {
         delete this._canvasBg;
     }
 
+    hitDetect(point) {
+        const map = this.map;
+        if (!map || !map.options['hitDetect'] || map.isInteracting()) {
+            return;
+        }
+        const layers = map._getLayers();
+        let hit = false, cursor;
+        const limit = map.options['hitDetectLimit'] || 0;
+        let counter = 0;
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const layer = layers[i];
+            const renderer = layer._getRenderer();
+            if (layer.isEmpty && layer.isEmpty()) {
+                continue;
+            }
+            if (renderer.isBlank && renderer.isBlank()) {
+                continue;
+            }
+            if (renderer && renderer.hitDetect) {
+                if (layer.options['cursor'] !== 'default' && renderer.hitDetect(point)) {
+                    cursor = layer.options['cursor'] || 'pointer';
+                    hit = true;
+                    break;
+                }
+                counter++;
+                if (limit > 0 && counter > limit) {
+                    break;
+                }
+            }
+        }
+        if (hit) {
+            map._trySetCursor(cursor);
+        } else {
+            map._trySetCursor('default');
+        }
+    }
+
     _getLayerImage(layer) {
         if (layer && layer._getRenderer() && layer._getRenderer().getCanvasImage) {
             return layer._getRenderer().getCanvasImage();
         }
         return null;
-    }
-
-    _getCountOfGeosToDraw() {
-        const map = this.map;
-        const layers = this._getAllLayerToRender();
-        let total = 0;
-        for (let i = layers.length - 1; i >= 0; i--) {
-            const renderer = layers[i]._getRenderer();
-            if ((layers[i] instanceof OverlayLayer) &&
-                layers[i].isVisible() && !layers[i].isEmpty() && (renderer._hasPointSymbolizer || map.getPitch())) {
-                const geos = renderer._geosToDraw;
-                if (geos) {
-                    total += renderer._geosToDraw.length;
-                }
-            }
-        }
-        return total;
     }
 
     /**
@@ -185,18 +208,18 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         const POSITION0 = 'position:absolute;top:0px;left:0px;';
 
-        const control = createContainer('control', 'maptalks-control', null, true);
-        const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true);
-        const mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;', true);
-        const frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0, true);
-        const front = createContainer('front', 'maptalks-front', POSITION0 + 'will-change:transform;', true);
-        const frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0);
-        // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
-        const ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:10000;', true);
-        const backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0, true);
-        const back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;');
-        const backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0);
-        const canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
+        const control = createContainer('control', 'maptalks-control', null, true),
+            mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true),
+            mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;', true),
+            frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0, true),
+            front = createContainer('front', 'maptalks-front', POSITION0 + 'will-change:transform;', true),
+            frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0),
+            // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
+            ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:10000;', true),
+            backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0, true),
+            back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;'),
+            backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0),
+            canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
 
         containerDOM.appendChild(mapWrapper);
 
@@ -225,7 +248,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
         const ctx = this.context;
         const point = layerImage['point'].multi(Browser.retina ? 2 : 1);
-        let canvasImage = layerImage['image'];
+        const canvasImage = layerImage['image'];
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
         }
@@ -255,18 +278,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (layer.options['cssFilter']) {
             ctx.filter = layer.options['cssFilter'];
         }
-
-        if (layerImage['transform']) {
+        const matrix = this._zoomMatrix;
+        const shouldTransform = !!layer._getRenderer()._zoomTransform;
+        if (matrix && shouldTransform) {
             ctx.save();
-            ctx.setTransform.apply(ctx, layerImage['transform']);
-        }
-
-        if (isNode) {
-            const context = canvasImage.getContext('2d');
-            if (context.getSvg) {
-                //canvas2svg
-                canvasImage = context;
-            }
+            ctx.setTransform.apply(ctx, matrix);
         }
 
         if (layer.options['debugOutline']) {
@@ -277,10 +293,9 @@ export default class MapCanvasRenderer extends MapRenderer {
             ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width + ',' + canvasImage.height].join(' '),
                 point.x + 18, point.y + 18);
         }
-        // console.log(layer.getId(), point);
 
         ctx.drawImage(canvasImage, point.x, point.y);
-        if (layerImage['transform']) {
+        if (matrix && shouldTransform) {
             ctx.restore();
         }
         if (ctx.filter !== 'none') {
@@ -374,12 +389,12 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _checkSize() {
         cancelAnimFrame(this._resizeFrame);
-        if (!this.map || this.map.isZooming() || this.map.isMoving() || this.map._panAnimating) {
+        if (!this.map || this.map.isInteracting() || this.map._panAnimating) {
             return;
         }
         this._resizeFrame = requestAnimFrame(
             () => {
-                if (!this.map || this.map.isMoving() || this.map.isZooming()) {
+                if (!this.map || this.map.isInteracting()) {
                     return;
                 }
                 this.map.checkSize();
@@ -406,66 +421,116 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _registerEvents() {
         const map = this.map;
-        map.on('_baselayerchangestart', () => {
-            delete this._canvasBg;
-        });
+        map.on('_baselayerchangestart _resize _zoomstart', this._clearBackground, this);
         map.on('_baselayerload', () => {
             const baseLayer = map.getBaseLayer();
             if (!map.options['zoomBackground'] || baseLayer.getMask()) {
-                delete this._canvasBg;
+                this._clearBackground();
             }
-        });
-        map.on('_resize', () => {
-            delete this._canvasBg;
-        });
-        map.on('_zoomstart', () => {
-            delete this._canvasBg;
-            // this.clearCanvas();
         });
         if (map.options['checkSize'] && !isNode && (typeof window !== 'undefined')) {
             this._setCheckSizeInterval(1000);
         }
-        if (!Browser.mobile && Browser.canvas) {
-            this._onMapMouseMove = function (param) {
-                if (map.isZooming() || map.isMoving() || !map.options['hitDetect']) {
-                    return;
-                }
-                if (this._hitDetectFrame) {
-                    cancelAnimFrame(this._hitDetectFrame);
-                }
-                this._hitDetectFrame = requestAnimFrame(() => {
-                    if (map.isZooming() || map.isMoving() || !map.options['hitDetect']) {
-                        return;
-                    }
-                    const point = param['point2d'];
-                    const layers = map._getLayers();
-                    let hit = false,
-                        cursor;
-                    for (let i = layers.length - 1; i >= 0; i--) {
-                        const layer = layers[i];
-                        if (layer._getRenderer() && layer._getRenderer().hitDetect) {
-                            if (layer.options['cursor'] !== 'default' && layer._getRenderer().hitDetect(point)) {
-                                cursor = layer.options['cursor'] || 'pointer';
-                                hit = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (hit) {
-                        map._trySetCursor(cursor);
-                    } else {
-                        map._trySetCursor('default');
-                    }
-                });
-
-            };
+        if (!Browser.mobile) {
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-        map.on('_moving _moveend', () => {
+        map.on('_moving', () => {
             if (!map.getPitch()) {
                 this.render();
+            } else {
+                this._drawOnInteracting();
             }
         });
+
+        map.on('_moveend', () => {
+            this.render();
+        });
+
+        map.on('_zooming', (param) => {
+            if (!map.getPitch()) {
+                this._zoomMatrix = param['matrix']['container'];
+            }
+            this._drawOnInteracting();
+        });
+
+        map.on('_dragrotating', () => {
+            this._drawOnInteracting();
+        });
+
+        map.on('_zoomend', () => {
+            delete this._zoomMatrix;
+        });
+    }
+
+    _clearBackground() {
+        delete this._canvasBg;
+    }
+
+    _onMapMouseMove(param) {
+        const map = this.map;
+        if (map.isInteracting() || !map.options['hitDetect']) {
+            return;
+        }
+        if (this._hitDetectFrame) {
+            cancelAnimFrame(this._hitDetectFrame);
+        }
+        this._hitDetectFrame = requestAnimFrame(() => {
+            this.hitDetect(param['containerPoint']);
+        });
+    }
+
+    _drawOnInteracting() {
+        function drawLayer(renderer) {
+            if (!renderer.drawOnInteracting) {
+                return false;
+            }
+            renderer.prepareRender();
+            renderer.prepareCanvas();
+            renderer.drawOnInteracting();
+            return true;
+        }
+        this._suppressRender = true;
+        const map = this.map;
+        const fps = map.options['fpsOnInteracting'];
+        const limit = fps === 0 ? 0 : 1000 / fps;
+        let currentFrame = 0;
+        const layers = this._getCanvasLayers();
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const layer = layers[i];
+            if (!layer.isVisible() || layer.isEmpty && layer.isEmpty()) {
+                continue;
+            }
+            let drawn = false;
+            const renderer = layer._getRenderer();
+            delete renderer._zoomTransform;
+            if (limit === 0 ||
+                layer.options['forceRenderOnZooming'] && map.isZooming() ||
+                layer.options['forceRenderOnMoving'] && map.isMoving() ||
+                layer.options['forceRenderOnRotating'] && map.isDragRotating()) {
+                drawn = drawLayer(renderer);
+            } else if (renderer.getDrawTime) {
+                if (currentFrame + renderer.getDrawTime() <= limit) {
+                    drawn = drawLayer(renderer);
+                    if (drawn) {
+                        currentFrame += renderer.getDrawTime();
+                    }
+                }
+            }
+            if (!drawn) {
+                if (map.isZooming() && !map.getPitch()) {
+                    renderer.prepareRender();
+                    renderer._zoomTransform = true;
+                } else {
+                    renderer.clearCanvas();
+                }
+            }
+        }
+        this._suppressRender = false;
+        this.render();
+    }
+
+    _getCanvasLayers() {
+        return this.map._getLayers(layer => layer.isCanvasRender());
     }
 }
 

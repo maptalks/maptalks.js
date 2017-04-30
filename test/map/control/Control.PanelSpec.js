@@ -51,7 +51,7 @@ describe('Control.Panel', function () {
 
     function dragPanel(panel) {
         var dom = panel.getContainer().childNodes[0],
-            domPosition = maptalks.DomUtil.getPagePosition(dom),
+            domPosition = GET_PAGE_POSITION(dom),
             point = new maptalks.Point(0, 0).add(domPosition);
         happen.mousedown(dom, {
             'clientX':point.x,

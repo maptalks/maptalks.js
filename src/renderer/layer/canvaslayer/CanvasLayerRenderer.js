@@ -46,7 +46,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
             const bufferContext = this.buffer.getContext('2d');
             const prevent = this.layer.doubleBuffer(bufferContext, this.context);
             if (prevent === undefined || prevent) {
-                bufferContext.drawImage(canvas, 0, 0);
+                Canvas.image(bufferContext, canvas, 0, 0);
                 canvasImg.image = this.buffer;
             }
         }
@@ -82,19 +82,6 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         return super.remove();
     }
 
-    isRenderOnZooming() {
-        if (this.layer.options['renderOnZooming']) {
-            return true;
-        }
-        return super.isRenderOnZooming();
-    }
-
-    isRenderOnMoving() {
-        if (this.layer.options['renderOnMoving']) {
-            return true;
-        }
-        return super.isRenderOnMoving();
-    }
 
     onZoomStart(param) {
         this.pause();

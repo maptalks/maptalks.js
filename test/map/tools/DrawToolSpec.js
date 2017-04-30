@@ -10,7 +10,7 @@ describe('#DrawTool', function () {
     function drawLine() {
         var center = map.getCenter();
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
         happen.click(eventContainer, {
@@ -40,7 +40,7 @@ describe('#DrawTool', function () {
     function dragDraw() {
         var center = map.getCenter();
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.mousedown(eventContainer, {
             'clientX':point.x,
@@ -60,7 +60,7 @@ describe('#DrawTool', function () {
     function drawPoint() {
         var center = map.getCenter();
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.click(eventContainer, {
             'clientX':point.x,

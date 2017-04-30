@@ -289,14 +289,29 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _renderLayers() {
-        const render = layer => {
-            if (layer && layer._getRenderer()) {
-                layer._getRenderer().render();
+        if (this.isInteracting()) {
+            return;
+        }
+        const layers = this._getLayers();
+        // clear canvas layers to prevent unsync painting with tile layers.
+        layers.forEach(layer => {
+            if (!layer) {
+                return;
             }
-        };
-        render(this.getBaseLayer());
-        this._getLayers().forEach(layer => {
-            render(layer);
+            const renderer = layer._getRenderer();
+            if (renderer && renderer.isCanvasRender()) {
+                renderer.clearCanvas();
+            }
+        });
+        this._getRenderer().render();
+        layers.forEach(layer => {
+            if (!layer) {
+                return;
+            }
+            const renderer = layer._getRenderer();
+            if (renderer) {
+                renderer.render();
+            }
         });
     }
 });

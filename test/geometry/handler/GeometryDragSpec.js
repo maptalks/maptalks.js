@@ -13,7 +13,7 @@ describe('#GeometryDrag', function () {
         var spy = sinon.spy();
         geometry.on('mousedown', spy);
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(geometry.getFirstCoordinate()).add(domPosition);
 
         happen.mousedown(eventContainer, {
@@ -33,7 +33,7 @@ describe('#GeometryDrag', function () {
     }
 
     function dragMap() {
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new maptalks.Point(30, 20));
         happen.mousedown(eventContainer, {
             'clientX':point.x,

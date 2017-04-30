@@ -10,7 +10,7 @@ describe('MapTouchZoomSpec', function () {
         container = setups.container;
         map = setups.map;
         eventContainer = map._panels.canvasContainer;
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         centerPoint = map.coordinateToContainerPoint(center).add(domPosition);
     });
 

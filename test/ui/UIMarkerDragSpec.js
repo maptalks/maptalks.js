@@ -6,7 +6,7 @@ describe('#UIMarkerDrag', function () {
     function dragMarker(marker, isMove) {
         var spy = sinon.spy();
         marker.on('mousedown', spy);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(marker.getCoordinates()).add(domPosition);
         happen.mousedown(marker.getDOM(), {
             'clientX':point.x,
@@ -29,7 +29,7 @@ describe('#UIMarkerDrag', function () {
     }
 
     function dragMap() {
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new maptalks.Point(30, 20));
         happen.mousedown(eventContainer, {
             'clientX':point.x,

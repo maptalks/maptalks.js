@@ -120,7 +120,7 @@ describe('#ParticleLayer', function () {
         layer = new maptalks.ParticleLayer('v', { visible : false });
         layer.getParticles = getParticles;
 
-        layer.once('layerload', function () {
+        layer.once('add', function () {
             expect(layer).not.to.be.painted();
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, 0, [255, 0, 0]);

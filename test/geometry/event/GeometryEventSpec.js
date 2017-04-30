@@ -23,7 +23,7 @@ describe('Geometry.Events', function () {
     it('event propagation to map', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
         var spy = sinon.spy();
@@ -41,7 +41,7 @@ describe('Geometry.Events', function () {
     it('can stop event\'s propagation', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
         var circleClicked = false;
@@ -62,7 +62,7 @@ describe('Geometry.Events', function () {
     it('mousemove and mouseout', function (done) {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         function onMouseMove(param) {
             expect(param.type).to.be.eql('mousemove');
@@ -87,7 +87,7 @@ describe('Geometry.Events', function () {
     it('mouseover', function (done) {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         function onMouseOver(param) {
             expect(param.type).to.be.eql('mouseover');
@@ -104,7 +104,7 @@ describe('Geometry.Events', function () {
     it('click', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         circle.on('click', spy);
@@ -125,7 +125,7 @@ describe('Geometry.Events', function () {
     it('prevent click longer than 300ms', function (done) {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         circle.on('click', spy);
@@ -147,7 +147,7 @@ describe('Geometry.Events', function () {
     it('fire an additional click event after touch', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         circle.on('click', spy);
@@ -172,7 +172,7 @@ describe('Geometry.Events', function () {
     it('listen click once', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         circle.once('click', spy);
@@ -194,7 +194,7 @@ describe('Geometry.Events', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
         map.config('geometryEvents', false);
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         circle.on('click', spy);

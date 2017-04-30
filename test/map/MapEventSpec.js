@@ -25,7 +25,7 @@ describe('#MapEventSpec', function () {
     });
 
     it('prevent click longer than 300ms', function (done) {
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         map.on('click', spy);
@@ -45,7 +45,7 @@ describe('#MapEventSpec', function () {
     });
 
     it('fire an additional click event after touch', function () {
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         map.on('click', spy);
@@ -68,7 +68,7 @@ describe('#MapEventSpec', function () {
     });
 
     it('listen click once', function () {
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         map.once('click', spy);

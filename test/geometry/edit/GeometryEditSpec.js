@@ -5,7 +5,7 @@ describe('#GeometryEdit', function () {
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     function dragGeometry(geometry, offset) {
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(geometry.getCenter()).add(domPosition);
         if (offset) {
             point._add(offset);

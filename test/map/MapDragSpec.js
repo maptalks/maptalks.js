@@ -12,7 +12,7 @@ describe('#MapDrag', function () {
         var spy = sinon.spy();
         map.on('mousedown', spy);
 
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
         happen.mousedown(map._panels.front, {
@@ -91,7 +91,7 @@ describe('#MapDrag', function () {
     function dragToRotate(dx, dy) {
         dx = dx || 0;
         dy = dy || 0;
-        var domPosition = maptalks.DomUtil.getPagePosition(container);
+        var domPosition = GET_PAGE_POSITION(container);
         var center = map.getCenter();
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
@@ -125,7 +125,7 @@ describe('#MapDrag', function () {
 
     it('drag to pitch', function () {
         var pitch = map.getPitch();
-        dragToRotate(0, -1);
+        dragToRotate(0, -15);
         expect(map.getPitch()).not.to.be.eql(pitch);
     });
 

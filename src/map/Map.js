@@ -33,13 +33,13 @@ import View from './view/View';
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
  * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
- * @property {Boolean} [options.layerZoomAnimation=true]        - also animate layers when zooming.
- * @property {Number}  [options.pointThresholdOfZoomAnimation=150] - threshold of point count to perform zoom animation.
- * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
+  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
  * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
  * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
+ * @property {Boolean} [options.hitDetectLimit=5]               - the maximum number of layers to perform hit detect.
+ * @property {Boolean} [options.fpsOnInteracting=20]            - fps when map is interacting.
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
@@ -76,10 +76,6 @@ const options = {
     'zoomAnimationDuration': 330,
     //still leave background after zooming, set it to false if baseLayer is a transparent layer
     'zoomBackground': false,
-    //controls whether other layers than base tilelayer will show during zoom animation.
-    'layerZoomAnimation': true,
-
-    'pointThresholdOfZoomAnimation': 200,
 
     'panAnimation': (function () {
         return !isNode;
@@ -93,6 +89,10 @@ const options = {
     'hitDetect': (function () {
         return !Browser.mobile;
     })(),
+
+    'hitDetectLimit' : 5,
+
+    'fpsOnInteracting' : 20,
 
     'maxZoom': null,
     'minZoom': null,
@@ -236,21 +236,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     isLoaded() {
         return this._loaded;
-    }
-
-    /**
-     * Whether the map is rendered by canvas
-     * @return {Boolean}
-     * @protected
-     * @example
-     * var isCanvas = map.isCanvasRender();
-     */
-    isCanvasRender() {
-        const renderer = this._getRenderer();
-        if (renderer) {
-            return renderer.isCanvasRender();
-        }
-        return false;
     }
 
     /**
@@ -699,6 +684,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     isZooming() {
         return !!this._zooming;
+    }
+
+    /**
+     * Whether the map is being interacted
+     * @return {Boolean}
+     */
+    isInteracting() {
+        return this.isZooming() || this.isMoving() || this.isDragRotating();
     }
 
     /**
@@ -1349,7 +1342,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this.isRemoved()) {
             return this;
         }
-        this._registerDomEvents(true);
+        this._removeDomEvents();
         this._clearHandlers();
         this.removeBaseLayer();
         const layers = this.getLayers();
@@ -1445,6 +1438,58 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             this.panTo(moveTo);
         }
+    }
+
+    onDragRotateStart(param) {
+        this._enablePanAnimation = false;
+        this._dragRotating = true;
+        /**
+         * dragrotatestart event
+         * @event Map#dragrotatestart
+         * @type {Object}
+         * @property {String} type - dragrotatestart
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('dragrotatestart', this._parseEvent(param ? param['domEvent'] : null, 'dragrotatestart'));
+    }
+
+    onDragRotating(param) {
+        /**
+         * dragrotating event
+         * @event Map#dragrotating
+         * @type {Object}
+         * @property {String} type - dragrotating
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('dragrotating', this._parseEvent(param ? param['domEvent'] : null, 'dragrotating'));
+    }
+
+    onDragRotateEnd(param) {
+        this._dragRotating = false;
+        /**
+         * dragrotateend event
+         * @event Map#dragrotateend
+         * @type {Object}
+         * @property {String} type - dragrotateend
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('dragrotateend', this._parseEvent(param ? param['domEvent'] : null, 'dragrotateend'));
+    }
+
+    isDragRotating() {
+        return !!this._dragRotating;
     }
 
     //-----------------------------------------------------------
@@ -1621,8 +1666,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         this._eachLayer(loadLayer, this.getLayers());
     }
-
-
 
     /**
      * Gets layers that fits for the filter

@@ -85,10 +85,6 @@ describe('#Map', function () {
         it('isLoaded', function () {
             expect(map.isLoaded()).to.be.ok();
         });
-
-        it('is rendered by canvas', function () {
-            expect(map.isCanvasRender()).to.be.ok();
-        });
     });
 
     describe('conversions', function () {
@@ -645,7 +641,7 @@ describe('#Map', function () {
             subdomains: [1, 2, 3],
             visible : false
         });
-        tilelayer.on('layerload', function () {
+        tilelayer.on('add', function () {
             map.remove();
             done();
         });
