@@ -153,32 +153,15 @@ describe('#Sprite', function () {
         });
         var symbol = marker.getSymbol();
 
-        if (maptalks.Browser.phantomjs) {
-            // unlike chrome, in phantomjs, the image with svg base64 can't be loaded immediately.
-            var url = maptalks.Util.getMarkerPathBase64(symbol);
-            var img = new Image();
-            img.onload = function () {
-                var sprite = marker._getSprite();
-                var canvas = sprite.canvas;
-                expect(sprite.offset.x).to.be.eql(0 + 10);
-                expect(sprite.offset.y).to.be.eql(-70 / 2 + 5);
-                expect(canvas.getContext('2d').getImageData(40, 15, 1, 1).data[3]).to.be.above(0);
-                expect(canvas.width).to.be.eql(symbol.markerWidth);
-                expect(canvas.height).to.be.eql(symbol.markerHeight);
-                done();
-            };
-            img.src = url;
-        } else {
-            var sprite = marker._getSprite();
-            var canvas = sprite.canvas;
-            expect(sprite.offset.x).to.be.eql(0 + 10);
-            expect(sprite.offset.y).to.be.eql(-70 / 2 + 5);
-            expect(canvas).to.be.ok();
-            expect(canvas.getContext('2d').getImageData(40, 15, 1, 1).data[3]).to.be.above(0);
-            expect(canvas.width).to.be.eql(symbol.markerWidth);
-            expect(canvas.height).to.be.eql(symbol.markerHeight);
-            done();
-        }
+        var sprite = marker._getSprite();
+        var canvas = sprite.canvas;
+        expect(sprite.offset.x).to.be.eql(0 + 10);
+        expect(sprite.offset.y).to.be.eql(-70 / 2 + 5);
+        expect(canvas).to.be.ok();
+        expect(canvas.getContext('2d').getImageData(40, 10, 1, 1).data[3]).to.be.above(0);
+        expect(canvas.width).to.be.eql(symbol.markerWidth);
+        expect(canvas.height).to.be.eql(symbol.markerHeight);
+        done();
     });
 
     it('text marker sprite', function () {

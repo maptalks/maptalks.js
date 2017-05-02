@@ -80,14 +80,14 @@ describe('Spec of Masks', function () {
                 context.map.removeLayer(layerToTest);
             });
 
-            it('can set mask', function (done) {
+            it('can set mask,' + layerToTest.getJSONType(), function (done) {
                 layerToTest.once('layerload', function () {
                     expect(layerToTest).to.be.painted(-20, 0);
                     testMask(layerToTest, done);
                 });
             });
 
-            it('can remove mask', function (done) {
+            it('can remove mask,' + layerToTest.getJSONType(), function (done) {
                 layerToTest.once('layerload', function () {
                     layerToTest.once('layerload', function () {
                         layerToTest.once('layerload', function () {
@@ -109,7 +109,7 @@ describe('Spec of Masks', function () {
                 });
             });
 
-            it('zoom with mask', function (done) {
+            it('zoom with mask,' + layerToTest.getJSONType(), function (done) {
                 layerToTest.once('layerload', function () {
                     var zoomed = false;
                     layerToTest.on('layerload', function () {

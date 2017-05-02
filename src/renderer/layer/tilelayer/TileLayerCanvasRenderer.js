@@ -101,6 +101,10 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
     }
 
+    drawOnInteracting() {
+        // draw nothing when interacting
+    }
+
     hitDetect() {
         return false;
     }
