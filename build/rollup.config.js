@@ -5,6 +5,9 @@ const rollup = require('rollup'),
     localResolve = require('rollup-plugin-local-resolve'),
     babel = require('rollup-plugin-babel'),
     alias = require('rollup-plugin-alias');
+const pkg = require('../package.json');
+
+
 
 const config = {
     plugins: [
@@ -25,14 +28,16 @@ const config = {
 
 module.exports = {
     watch(cb) {
-        const pkg = require('../package.json');
+
         const year = new Date().getFullYear();
-        var banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${year} maptalks.org\n */`;
+        const outro = pkg.name + ' v' + pkg.version;
+        const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${year} maptalks.org\n */`;
         config.entry = 'src/maptalks.js';
         config.dest = 'dist/maptalks.js';
         config.format = 'umd';
         config.moduleName = 'maptalks';
         config.banner = banner;
+        config.outro = `typeof console !== \'undefined\' && console.log('${pkg.name} v${pkg.version}');`;
         const watcher = watch(rollup, config);
         watcher.on('event', e => {
             if (e.code === 'BUILD_START') {

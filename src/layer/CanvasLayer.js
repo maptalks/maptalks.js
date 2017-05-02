@@ -55,6 +55,17 @@ class CanvasLayer extends Layer {
     draw() {}
 
     /**
+     * An optional interface function to draw while map is interacting.
+     * By default, it will call draw method instead.
+     * You can override this method if you are clear with what to draw when interacting to improve performance.
+     * @param  {CanvasRenderingContext2D} context - CanvasRenderingContext2D of the layer canvas.
+     * @param  {*} params.. - parameters returned by function prepareToDraw(context).
+     */
+    drawOnInteracting() {
+        return this.draw.apply(this, arguments);
+    }
+
+    /**
      * Redraw the layer
      * @return {CanvasLayer} this
      */

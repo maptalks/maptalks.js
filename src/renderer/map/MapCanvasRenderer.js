@@ -481,9 +481,6 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _drawOnInteracting() {
         function drawLayer(renderer) {
-            if (!renderer.drawOnInteracting) {
-                return false;
-            }
             renderer.prepareRender();
             renderer.prepareCanvas();
             renderer.drawOnInteracting();

@@ -35,6 +35,10 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         this._drawLayer();
     }
 
+    drawOnInteracting() {
+        this._drawLayerOnInteracting();
+    }
+
     getCanvasImage() {
         const canvasImg = super.getCanvasImage();
         if (canvasImg && canvasImg.image && this.layer.options['doubleBuffer']) {
@@ -110,22 +114,39 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         super.onResize(param);
     }
 
-    _drawLayer() {
+    _prepareDrawParams() {
         if (!this.getMap()) {
-            return;
+            return null;
         }
         const view = this.getViewExtent();
         if (view['maskExtent'] && !view['extent'].intersects(view['maskExtent'])) {
             this.completeRender();
-            return;
+            return null;
         }
         const args = [this.context, view];
         const params = ensureParams(this.getDrawParams());
         args.push.apply(args, params);
         args.push.apply(args, this._drawContext);
+        return args;
+    }
+
+    _drawLayer() {
+        const args = this._prepareDrawParams();
+        if (!args) {
+            return;
+        }
         this.layer.draw.apply(this.layer, args);
         this.completeRender();
         this.play();
+    }
+
+    _drawLayerOnInteracting() {
+        const args = this._prepareDrawParams();
+        if (!args) {
+            return;
+        }
+        this.layer.drawOnInteracting.apply(this.layer, args);
+        this.completeRender();
     }
 
     pause() {
