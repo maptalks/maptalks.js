@@ -156,8 +156,8 @@ export function getFont(style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
-        return (style['textStyle'] ? style['textStyle'] + ' ' : '') +
-            (style['textWeight'] ? style['textWeight'] + ' ' : '') +
+        return (style['textStyle'] && style['textStyle'] !== 'normal' ? style['textStyle'] + ' ' : '') +
+            (style['textWeight'] && style['textWeight'] !== 'normal' ? style['textWeight'] + ' ' : '') +
             style['textSize'] + 'px ' +
             (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
     }
