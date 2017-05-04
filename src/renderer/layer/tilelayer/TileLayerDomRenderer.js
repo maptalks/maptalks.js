@@ -433,7 +433,7 @@ export default class TileLayerDomRenderer extends Class {
 
     _pruneTiles(pruneLevels) {
         const map = this.getMap();
-        if (!map || map.isMoving() || map.isDragRotating()) {
+        if (!map || map.isMoving()) {
             return;
         }
 
@@ -564,6 +564,7 @@ export default class TileLayerDomRenderer extends Class {
             '_zoomend'      : this.onZoomEnd,
             '_moveend _resize' : this.render,
             '_movestart'    : this.onMoveStart,
+            '_dragrotatestart'    : this.onRotateStart,
             '_dragrotateend'    : this.onRotateEnd,
             '_rotate'       : this.onRotateOrPitch,
             '_pitch'        : this.onRotateOrPitch
@@ -645,6 +646,10 @@ export default class TileLayerDomRenderer extends Class {
             return;
         }
         this._renderTiles();
+    }
+
+    onRotateStart() {
+        this._pruneTiles(true);
     }
 
     onRotateEnd() {
