@@ -449,19 +449,28 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
     },
 
     _run() {
-        if (this.playState === 'finished' || this.playState === 'paused') {
-            return;
-        }
+        const onFrame = this._onFrame;
         const t = Date.now();
         let elapsed = t - this._playStartTime;
         if (this._options['repeat'] && elapsed >= this.duration) {
             this._playStartTime = t;
             elapsed = 0;
         }
+        if (this.playState === 'finished' || this.playState === 'paused') {
+            if (onFrame) {
+                if (this.playState === 'finished') {
+                    elapsed = this.duration;
+                }
+                const frame = this._animation(elapsed, this.duration);
+                frame.state.playState = this.playState;
+                onFrame(frame);
+            }
+            return;
+        }
         //elapsed, duration
         const frame = this._animation(elapsed, this.duration);
         this.playState = frame.state['playState'];
-        const onFrame = this._onFrame;
+
         if (this.playState === 'idle') {
             if (this.startTime > t) {
                 setTimeout(this._run.bind(this), this.startTime - t);
