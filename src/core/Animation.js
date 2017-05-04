@@ -467,7 +467,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
                 setTimeout(this._run.bind(this), this.startTime - t);
             }
         } else if (this.playState === 'running') {
-            this._animeFrameId = Animation._requestAnimFrame(() => {
+            Animation._requestAnimFrame(() => {
                 if (this.playState !== 'running') {
                     return;
                 }
@@ -481,9 +481,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             this.finished = true;
             //finished
             if (onFrame) {
-                requestAnimFrame(function () {
-                    onFrame(frame);
-                });
+                onFrame(frame);
             }
         }
 

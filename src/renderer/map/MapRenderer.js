@@ -25,7 +25,6 @@ export default class MapRenderer extends Class {
             } else {
                 duration = t;
             }
-            map._enablePanAnimation = true;
             map._panAnimating = true;
             let preDist = null;
             const player = Animation.animate({
@@ -38,7 +37,7 @@ export default class MapRenderer extends Class {
                     player.finish();
                     return;
                 }
-                if (!map._enablePanAnimation) {
+                if (map.isZooming() || map.isDragRotating()) {
                     player.finish();
                     map._panAnimating = false;
                     map.onMoveEnd();

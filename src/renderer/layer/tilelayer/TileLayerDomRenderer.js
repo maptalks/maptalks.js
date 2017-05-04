@@ -593,7 +593,9 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _onMapMoving() {
-        if (!this.getMap() || !this.getMap().getPitch() && !this.layer.options['renderOnMoving']) {
+        const map = this.getMap();
+        // prevent render when zooming or dragrotating, which may crash the browser
+        if (!map || map.isZooming() || map.isDragRotating() || !map.getPitch() && !this.layer.options['renderOnMoving']) {
             return;
         }
         this.render();
