@@ -27,7 +27,7 @@ export default class MapRenderer extends Class {
             }
             map._panAnimating = true;
             let preDist = null;
-            const player = Animation.animate({
+            const player = this._panPlayer = Animation.animate({
                 'distance': distance
             }, {
                 'easing': 'out',
@@ -37,10 +37,8 @@ export default class MapRenderer extends Class {
                     player.finish();
                     return;
                 }
-                if (map.isZooming() || map.isDragRotating()) {
+                if (player.playState === 'running' && (map.isZooming() || map.isDragRotating())) {
                     player.finish();
-                    map._panAnimating = false;
-                    map.onMoveEnd();
                     return;
                 }
 
