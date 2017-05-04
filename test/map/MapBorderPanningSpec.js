@@ -1,6 +1,6 @@
 
 
-describe('#MapBorderPanningSpec', function () {
+describe.skip('#MapBorderPanningSpec', function () {
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);

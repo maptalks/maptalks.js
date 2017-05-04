@@ -1,6 +1,5 @@
 import Map from './Map';
 
-import './handler/Map.AutoBorderPanning';
 import './handler/Map.DoubleClickZoom';
 import './handler/Map.Drag';
 import './handler/Map.GeometryEvents';
