@@ -308,7 +308,8 @@ class DrawTool extends MapTool {
     }
 
     _mousemoveForPath(param) {
-        if (!this._geometry || map.isInteracting()) {
+        const map = this.getMap();
+        if (!this._geometry || !map || map.isInteracting()) {
             return;
         }
         const containerPoint = this._getMouseContainerPoint(param);
