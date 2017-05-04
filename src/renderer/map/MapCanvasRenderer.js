@@ -1,4 +1,4 @@
-import { now, isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { now, IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
@@ -279,7 +279,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             ctx.filter = layer.options['cssFilter'];
         }
         const matrix = this._zoomMatrix;
-        const shouldTransform = !!layer._getRenderer()._zoomTransform;
+        const shouldTransform = !!layer._getRenderer().__shouldZoomTransform;
         if (matrix && shouldTransform) {
             ctx.save();
             ctx.setTransform.apply(ctx, matrix);
@@ -428,7 +428,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                 this._clearBackground();
             }
         });
-        if (map.options['checkSize'] && !isNode && (typeof window !== 'undefined')) {
+        if (map.options['checkSize'] && !IS_NODE && (typeof window !== 'undefined')) {
             this._setCheckSizeInterval(1000);
         }
         if (!Browser.mobile) {
@@ -499,7 +499,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             }
             let drawn = false;
             const renderer = layer._getRenderer();
-            delete renderer._zoomTransform;
+            delete renderer.__shouldZoomTransform;
             if (limit === 0 ||
                 layer.options['forceRenderOnZooming'] && map.isZooming() ||
                 layer.options['forceRenderOnMoving'] && map.isMoving() ||
@@ -516,7 +516,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             if (!drawn) {
                 if (map.isZooming() && !map.getPitch()) {
                     renderer.prepareRender();
-                    renderer._zoomTransform = true;
+                    renderer.__shouldZoomTransform = true;
                 } else {
                     renderer.clearCanvas();
                 }

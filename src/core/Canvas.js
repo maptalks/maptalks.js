@@ -1,5 +1,5 @@
 import {
-    isNode,
+    IS_NODE,
     isNil,
     isNumber,
     isString,
@@ -22,7 +22,7 @@ const DEFAULT_TEXT_COLOR = '#000';
 const Canvas = {
     createCanvas(width, height, canvasClass) {
         let canvas;
-        if (!isNode) {
+        if (!IS_NODE) {
             canvas = createEl('canvas');
             canvas.width = width;
             canvas.height = height;
@@ -171,7 +171,7 @@ const Canvas = {
     _setStrokePattern(ctx, strokePattern, strokeWidth, resources) {
         const imgUrl = extractCssUrl(strokePattern);
         let imageTexture;
-        if (isNode) {
+        if (IS_NODE) {
             imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
         } else {
             const key = imgUrl + '-texture-' + strokeWidth;

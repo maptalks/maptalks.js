@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, isNode, loadImage, callImmediate, clearCallImmediate } from 'core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, callImmediate, clearCallImmediate } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'core/Promise';
@@ -509,7 +509,7 @@ class CanvasRenderer extends Class {
             if (crossOrigin) {
                 img['crossOrigin'] = crossOrigin;
             }
-            if (isSVG(url[0]) && !isNode) {
+            if (isSVG(url[0]) && !IS_NODE) {
                 //amplify the svg image to reduce loading.
                 if (url[1]) { url[1] *= 2; }
                 if (url[2]) { url[2] *= 2; }

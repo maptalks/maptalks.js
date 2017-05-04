@@ -7,7 +7,7 @@
  */
 
 import Browser from 'core/Browser';
-import { isNode } from './env';
+import { IS_NODE } from './env';
 import { isString, isNil } from './common';
 import { splitWords } from './strings';
 import Point from 'geo/Point';
@@ -27,7 +27,7 @@ const first = (props) => {
  * @memberOf DomUtil
  * @private
  */
-const testProp = isNode ? first : (props) => {
+const testProp = IS_NODE ? first : (props) => {
 
     const style = document.documentElement.style;
 
@@ -471,7 +471,7 @@ function _setOpacityIE(el, value) {
  * @memberOf DomUtil
  */
 export function copyCanvas(src) {
-    if (isNode) {
+    if (IS_NODE) {
         return null;
     }
     const target = createEl('canvas');

@@ -1,8 +1,8 @@
-import { isNode } from 'core/util';
+import { IS_NODE } from 'core/util';
 
 let Browser = {};
 
-if (!isNode) {
+if (!IS_NODE) {
     const ua = navigator.userAgent.toLowerCase(),
         doc = document.documentElement,
 

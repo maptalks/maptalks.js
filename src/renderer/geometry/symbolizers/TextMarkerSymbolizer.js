@@ -1,5 +1,5 @@
 import {
-    isNode,
+    IS_NODE,
     isNil,
     isNumber,
     isArrayHasData,
@@ -158,7 +158,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     _storeToCache(textDesc) {
-        if (isNode) {
+        if (IS_NODE) {
             return;
         }
         if (!this.geometry[CACHE_KEY]) {

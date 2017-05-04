@@ -1,4 +1,4 @@
-import { isNode, isArrayHasData, isFunction, isNil, isInteger } from 'core/util';
+import { IS_NODE, isArrayHasData, isFunction, isNil, isInteger } from 'core/util';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
@@ -52,7 +52,7 @@ const options = {
     'container' : 'back',
 
     'baseLayerRenderer': (() => {
-        return isNode ? 'canvas' : 'dom';
+        return IS_NODE ? 'canvas' : 'dom';
     })()
 };
 

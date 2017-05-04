@@ -1,10 +1,10 @@
-import { isNode } from './env';
+import { IS_NODE } from './env';
 import { isString, isNil, hasOwn } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
 (function () {
-    if (isNode) {
+    if (IS_NODE) {
         requestAnimFrame = function (fn) {
             return setTimeout(fn, 16);
         };
@@ -132,7 +132,7 @@ export function isSVG(url) {
  * @memberOf Util
  */
 export function loadImage(img, imgDesc) {
-    if (isNode && loadImage.node) {
+    if (IS_NODE && loadImage.node) {
         loadImage.node(img, imgDesc);
         return;
     }

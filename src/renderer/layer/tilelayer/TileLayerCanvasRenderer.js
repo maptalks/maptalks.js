@@ -1,5 +1,5 @@
 import {
-    isNode,
+    IS_NODE,
     requestAnimFrame,
     cancelAnimFrame,
     loadImage
@@ -27,7 +27,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         this.propertyOfTileId = '--maptalks-tile-id';
         this.propertyOfTileZoom = '--maptalks-tile-zoom';
         this._mapRender = layer.getMap()._getRenderer();
-        if (!isNode && this.layer.options['cacheTiles']) {
+        if (!IS_NODE && this.layer.options['cacheTiles']) {
             this._tileCache = new TileCache();
         }
         this._tileQueue = {};
@@ -123,7 +123,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
     _loadTileQueue() {
         const me = this;
         function onTileLoad() {
-            if (!isNode) {
+            if (!IS_NODE) {
                 if (me._tileCache) {
                     me._tileCache.add(this[me.propertyOfTileId], this);
                 }
@@ -213,7 +213,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         const point = tileImage[this.propertyOfPointOnTile];
         this._drawTile(point, tileImage);
 
-        if (!isNode) {
+        if (!IS_NODE) {
             const tileSize = this.layer.getTileSize();
             const mapExtent = this.getMap()._get2DExtent();
             if (mapExtent.intersects(new PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
@@ -228,7 +228,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
     _onTileLoadComplete() {
         //In browser, map will be requested to render once a tile was loaded.
         //but in node, map will be requested to render when the layer is loaded.
-        if (isNode) {
+        if (IS_NODE) {
             this.requestMapToRender();
         }
         this.fireLoadedEvent();
@@ -246,7 +246,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
         }
-        if (!isNode) {
+        if (!IS_NODE) {
             this.requestMapToRender();
         }
         this._tileToLoadCounter--;
@@ -259,7 +259,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
      * @override
      */
     requestMapToRender() {
-        if (isNode) {
+        if (IS_NODE) {
             if (this.getMap() && !this.getMap().isZooming()) {
                 this._mapRender.render();
             }

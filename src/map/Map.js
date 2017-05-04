@@ -2,7 +2,7 @@ import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import {
     now,
     extend,
-    isNode,
+    IS_NODE,
     isNil,
     isString,
     isFunction,
@@ -51,7 +51,6 @@ import View from './view/View';
  * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
  * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
  * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
- * @property {Boolean} [options.autoBorderPanning=false]                - whether to pan the map automatically if mouse moves on the border of the map
  * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
  *
  * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
@@ -71,14 +70,14 @@ const options = {
 
     'zoomInCenter' : false,
     'zoomAnimation': (function () {
-        return !isNode;
+        return !IS_NODE;
     })(),
     'zoomAnimationDuration': 330,
     //still leave background after zooming, set it to false if baseLayer is a transparent layer
     'zoomBackground': false,
 
     'panAnimation': (function () {
-        return !isNode;
+        return !IS_NODE;
     })(),
     //default pan animation duration
     'panAnimationDuration': 600,
@@ -172,13 +171,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
         } else {
             this._containerDOM = container;
-            if (isNode) {
+            if (IS_NODE) {
                 //Reserve container's constructor in node for canvas creating.
                 this.CanvasClass = this._containerDOM.constructor;
             }
         }
 
-        if (!isNode) {
+        if (!IS_NODE) {
             if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
                 if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
                     throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
@@ -1384,7 +1383,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     onMoveStart(param) {
         this._originCenter = this.getCenter();
-        this._enablePanAnimation = false;
         this._moving = true;
         this._trySetCursor('move');
         /**
@@ -1441,7 +1439,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     onDragRotateStart(param) {
-        this._enablePanAnimation = false;
         this._dragRotating = true;
         /**
          * dragrotatestart event
