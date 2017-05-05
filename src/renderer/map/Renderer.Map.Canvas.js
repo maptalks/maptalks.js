@@ -20,11 +20,20 @@ maptalks.renderer.map.Canvas = maptalks.renderer.map.Renderer.extend(/** @lends 
         return true;
     },
 
+    enableRender: function () {
+        this._suppressRender = false;
+    },
+
+    disableRender: function () {
+        this._suppressRender = true;
+    },
+
+
     /**
      * Renders the layers
      */
     render:function () {
-        if (!this.map) {
+        if (!this.map || this._suppressRender) {
             return;
         }
          /**

@@ -124,10 +124,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
         this.requestMapToRender();
     },
 
-    setZIndex: function (z) {
-        if (this.layer.getZIndex() === z) {
-            return;
-        }
+    setZIndex: function (/*z*/) {
         this.requestMapToRender();
     },
 

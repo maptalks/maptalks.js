@@ -952,6 +952,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         if (!layers || !maptalks.Util.isArray(layers)) {
             return this;
         }
+        var renderer = this._getRenderer();
+        renderer.disableRender();
         var layersToOrder = [];
         var minZ = Number.MAX_VALUE;
         for (var i = 0; i < layers.length; i++) {
@@ -970,6 +972,8 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         for (var ii = 0; ii < layersToOrder.length; ii++) {
             layersToOrder[ii].setZIndex(minZ + ii);
         }
+        renderer.enableRender();
+        renderer.render();
         return this;
     },
 
@@ -1396,12 +1400,15 @@ maptalks.Map = maptalks.Class.extend(/** @lends maptalks.Map.prototype */{
         var index = maptalks.Util.indexOfArray(layer, layerList);
         if (index > -1) {
             layerList.splice(index, 1);
-
+            var renderer = this._getRenderer();
+            renderer.disableRender();
             for (var j = 0, jlen = layerList.length; j < jlen; j++) {
                 if (layerList[j].setZIndex) {
                     layerList[j].setZIndex(j);
                 }
             }
+            renderer.enableRender();
+            renderer.render();
         }
     },
 
