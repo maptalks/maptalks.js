@@ -92,15 +92,28 @@ describe('#Layer', function () {
             expect(map.getLayers()).to.be.eql([layer3, layer2, layer1]);
         });
 
-        it('sort layers by map', function () {
-            var layer1 = new maptalks.TileLayer('1');
-            var layer2 = new maptalks.VectorLayer('2');
-            var layer3 = new maptalks.VectorLayer('3');
-
+        it('sort layers by map and paint', function () {
+            var layer1 = new maptalks.VectorLayer('1', new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    polygonFill : '#f00'
+                }
+            }), { drawImmediate : true });
+            var layer2 = new maptalks.VectorLayer('2', new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    polygonFill : '#0f0'
+                }
+            }), { drawImmediate : true });
+            var layer3 = new maptalks.VectorLayer('3', new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    polygonFill : '#00f'
+                }
+            }), { drawImmediate : true });
             map.addLayer([layer1, layer2, layer3]);
-
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+            expect(map).to.be.painted(0, 0, [0, 0, 255]);
             map.sortLayers(['3', '2', '1']);
             expect(map.getLayers()).to.be.eql([layer3, layer2, layer1]);
+            expect(map).to.be.painted(0, 0, [255, 0, 0]);
         });
     });
 
