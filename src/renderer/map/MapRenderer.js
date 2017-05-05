@@ -25,7 +25,6 @@ export default class MapRenderer extends Class {
             } else {
                 duration = t;
             }
-            map._panAnimating = true;
             let preDist = null;
             const player = this._panPlayer = Animation.animate({
                 'distance': distance
@@ -53,7 +52,6 @@ export default class MapRenderer extends Class {
                     preDist = dist;
                     map.onMoving();
                 } else if (player.playState === 'finished') {
-                    map._panAnimating = false;
                     if (onFinish) {
                         onFinish();
                     }
@@ -64,6 +62,13 @@ export default class MapRenderer extends Class {
         } else {
             map.onMoveEnd();
         }
+    }
+
+    stopPanAnimation() {
+        if (this._panPlayer) {
+            this._panPlayer.finish();
+        }
+        delete this._panPlayer;
     }
 
     /**

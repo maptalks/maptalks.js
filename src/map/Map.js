@@ -85,6 +85,8 @@ const options = {
     'zoomable': true,
     'enableInfoWindow': true,
 
+    'numOfLayersOnInteracting' : 10,
+
     'hitDetect': (function () {
         return !Browser.mobile;
     })(),
@@ -1052,6 +1054,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!layers || !Array.isArray(layers)) {
             return this;
         }
+        const renderer = this._getRenderer();
+        renderer.disableRender();
         const layersToOrder = [];
         let minZ = Number.MAX_VALUE;
         for (let i = 0; i < layers.length; i++) {
@@ -1070,6 +1074,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         for (let ii = 0; ii < layersToOrder.length; ii++) {
             layersToOrder[ii].setZIndex(minZ + ii);
         }
+        renderer.enableRender();
+        renderer.render();
         return this;
     }
 
@@ -1574,12 +1580,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const index = layerList.indexOf(layer);
         if (index > -1) {
             layerList.splice(index, 1);
-
+            const renderer = this._getRenderer();
+            renderer.disableRender();
             for (let j = 0, jlen = layerList.length; j < jlen; j++) {
                 if (layerList[j].setZIndex) {
                     layerList[j].setZIndex(j);
                 }
             }
+            renderer.enableRender();
+            renderer.render();
         }
     }
 

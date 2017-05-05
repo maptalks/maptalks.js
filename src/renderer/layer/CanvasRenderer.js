@@ -149,10 +149,7 @@ class CanvasRenderer extends Class {
         this.clear();
     }
 
-    setZIndex(z) {
-        if (this.layer.getZIndex() === z) {
-            return;
-        }
+    setZIndex(/*z*/) {
         this.requestMapToRender();
     }
 

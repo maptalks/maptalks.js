@@ -478,6 +478,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         } else if (this.playState === 'running') {
             Animation._requestAnimFrame(() => {
                 if (this.playState !== 'running') {
+                    this._run();
                     return;
                 }
                 this.currentTime = elapsed;
