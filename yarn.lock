@@ -1717,9 +1717,9 @@ expand-tilde@^1.2.1, expand-tilde@^1.2.2:
   dependencies:
     os-homedir "^1.0.1"
 
-expect-maptalks@^0.2.0:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/expect-maptalks/-/expect-maptalks-0.2.5.tgz#963796f10f64c0b5531733bace2d576de03a6cee"
+expect-maptalks@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.npmjs.org/expect-maptalks/-/expect-maptalks-0.4.0.tgz#55be6f7e82d263b2a18a5b864d250f1f2b5703ec"
 
 expect.js@^0.3.1:
   version "0.3.1"
