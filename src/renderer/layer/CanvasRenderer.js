@@ -264,8 +264,7 @@ class CanvasRenderer extends Class {
             size = canvasSize;
         }
         const r = Browser.retina ? 2 : 1;
-        //only make canvas bigger, never smaller
-        if (this.canvas.width >= r * size['width'] && this.canvas.height >= r * size['height']) {
+        if (this.canvas.width !== r * size['width'] && this.canvas.height !== r * size['height']) {
             return;
         }
         //retina support
