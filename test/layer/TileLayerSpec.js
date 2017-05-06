@@ -56,7 +56,7 @@ describe('#TileLayer', function () {
             map.config({
                 minZoom:1,
                 maxZoom:18,
-                view:{
+                spatialReference:{
                     projection:'EPSG:4326',
                     resolutions: (function () {
                         var resolutions = [];
@@ -84,7 +84,7 @@ describe('#TileLayer', function () {
             map.config({
                 minZoom:1,
                 maxZoom:19,
-                view:{
+                spatialReference:{
                     projection : 'baidu'
                 }
             });

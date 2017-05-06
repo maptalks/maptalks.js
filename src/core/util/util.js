@@ -1,10 +1,10 @@
-import { isNode } from './env';
+import { IS_NODE } from './env';
 import { isString, isNil, hasOwn } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
 (function () {
-    if (isNode) {
+    if (IS_NODE) {
         requestAnimFrame = function (fn) {
             return setTimeout(fn, 16);
         };
@@ -70,17 +70,13 @@ let callImmediateFn, clearCallImmediateFn;
     if (typeof (setImmediate) !== 'undefined') {
         callImmediateFn = setImmediate;
     } else {
-        callImmediateFn = function (fn) {
-            setTimeout(fn, 1);
-        };
+        callImmediateFn = requestAnimFrame;
     }
 
     if (typeof (clearImmediate) !== 'undefined') {
         clearCallImmediateFn = clearImmediate;
     } else {
-        clearCallImmediateFn = function (id) {
-            clearTimeout(id);
-        };
+        clearCallImmediateFn = cancelAnimFrame;
     }
 })();
 
@@ -132,7 +128,7 @@ export function isSVG(url) {
  * @memberOf Util
  */
 export function loadImage(img, imgDesc) {
-    if (isNode && loadImage.node) {
+    if (IS_NODE && loadImage.node) {
         loadImage.node(img, imgDesc);
         return;
     }

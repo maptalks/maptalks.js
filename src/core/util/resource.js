@@ -1,4 +1,4 @@
-import { isNode } from './env';
+import { IS_NODE } from './env';
 import Browser from '../Browser';
 import { extend, isNil, isNumber, isString } from './common';
 import { isURL, extractCssUrl, btoa } from './util';
@@ -199,7 +199,7 @@ export function convertResourceUrl(symbol) {
     }
 
     const s = symbol;
-    if (isNode) {
+    if (IS_NODE) {
         return s;
     }
     const props = Symbolizer.resourceProperties;

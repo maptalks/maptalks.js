@@ -81,7 +81,7 @@ function COMMON_CREATE_MAP(center, baseLayer) {
         zoomAnimationDuration : 50,
         zoom: 17,
         center: center,
-        centerCross : true
+        // centerCross : true
     };
     var map = new maptalks.Map(container, option);
     if (baseLayer === undefined) {

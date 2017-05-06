@@ -15,7 +15,7 @@ import { Identity } from '../measurer';
  */
 export default extend({}, Common, /** @lends projection.IDENTITY */ {
     /**
-     * "IDENTITY", Code of the projection, used by [View]{@link View} to get projection instance.
+     * "IDENTITY", Code of the projection
      * @type {String}
      * @constant
      */

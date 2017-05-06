@@ -2,7 +2,7 @@ import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import {
     now,
     extend,
-    isNode,
+    IS_NODE,
     isNil,
     isString,
     isFunction,
@@ -23,7 +23,7 @@ import Layer from 'layer/Layer';
 import TileLayer from 'layer/tile/TileLayer';
 import TileSystem from 'layer/tile/tileinfo/TileSystem';
 import Renderable from 'renderer/Renderable';
-import View from './view/View';
+import SpatialReference from './spatial-reference/SpatialReference';
 
 
 /**
@@ -51,7 +51,6 @@ import View from './view/View';
  * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
  * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
  * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
- * @property {Boolean} [options.autoBorderPanning=false]                - whether to pan the map automatically if mouse moves on the border of the map
  * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
  *
  * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
@@ -71,20 +70,22 @@ const options = {
 
     'zoomInCenter' : false,
     'zoomAnimation': (function () {
-        return !isNode;
+        return !IS_NODE;
     })(),
     'zoomAnimationDuration': 330,
     //still leave background after zooming, set it to false if baseLayer is a transparent layer
     'zoomBackground': false,
 
     'panAnimation': (function () {
-        return !isNode;
+        return !IS_NODE;
     })(),
     //default pan animation duration
     'panAnimationDuration': 600,
 
     'zoomable': true,
     'enableInfoWindow': true,
+
+    'numOfLayersOnInteracting' : 10,
 
     'hitDetect': (function () {
         return !Browser.mobile;
@@ -138,7 +139,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Object} options - construct options
      * @param {(Number[]|Coordinate)} options.center - initial center of the map.
      * @param {Number} options.zoom - initial zoom of the map.
-     * @param {Object} [options.view=null] - map's view config, default is using projection EPSG:3857 with resolutions used by google map/osm.
+     * @param {Object} [options.spatialReference=null] - map's spatial reference, default is using projection EPSG:3857 with resolutions used by google map/osm.
      * @param {Layer} [options.baseLayer=null] - base layer that will be set to map initially.
      * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
      * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
@@ -172,13 +173,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
         } else {
             this._containerDOM = container;
-            if (isNode) {
+            if (IS_NODE) {
                 //Reserve container's constructor in node for canvas creating.
                 this.CanvasClass = this._containerDOM.constructor;
             }
         }
 
-        if (!isNode) {
+        if (!IS_NODE) {
             if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
                 if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
                     throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
@@ -195,7 +196,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._zoomLevel = zoom;
         this._center = center;
 
-        this.setView(opts['view']);
+        this.setSpatialReference(opts['spatialReference']);
 
         if (baseLayer) {
             this.setBaseLayer(baseLayer);
@@ -239,29 +240,29 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Get the view of the Map.
-     * @return {View} map's view
+     * Get the spatial reference of the Map.
+     * @return {SpatialReference} map's spatial reference
      */
-    getView() {
-        if (!this._view) {
+    getSpatialReference() {
+        if (!this._spatialReference) {
             return null;
         }
-        return this._view;
+        return this._spatialReference;
     }
 
     /**
-     * Change the view of the map. <br>
-     * A view is a series of settings to decide the map presentation:<br>
+     * Change the spatial reference of the map. <br>
+     * A SpatialReference is a series of settings to decide the map presentation:<br>
      * 1. the projection.<br>
      * 2. zoom levels and resolutions. <br>
      * 3. full extent.<br>
-     * There are some [predefined views]{@link http://www.foo.com}, and surely you can [define a custom one.]{@link http://www.foo.com}.<br>
-     * View can also be updated by map.config('view', view);
-     * @param {View} view - view settings
+     * There are some [predefined spatial references]{@link http://www.foo.com}, and surely you can [define a custom one.]{@link http://www.foo.com}.<br>
+     * SpatialReference can also be updated by map.config('spatialReference', spatialReference);
+     * @param {SpatialReference} spatialReference - spatial reference
      * @returns {Map} this
-     * @fires Map#viewchange
+     * @fires Map#spatialreferencechange
      * @example
-     *  map.setView({
+     *  map.setSpatialReference({
             projection:'EPSG:4326',
             resolutions: (function() {
                 const resolutions = [];
@@ -272,7 +273,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             })()
      *  });
        @example
-     *  map.config('view', {
+     *  map.config('spatialReference', {
             projection:'EPSG:4326',
             resolutions: (function() {
                 const resolutions = [];
@@ -283,33 +284,34 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             })()
         });
      */
-    setView(view) {
-        const oldView = this.options['view'];
-        if (oldView && !view) {
+    setSpatialReference(ref) {
+        const oldRef = this.options['spatialReference'];
+        if (oldRef && !ref) {
             return this;
         }
+        ref = extend({}, ref);
         this._center = this.getCenter();
-        this.options['view'] = view;
-        this._view = new View(view);
-        if (this.options['view'] && isFunction(this.options['view']['projection'])) {
-            const projection = this._view.getProjection();
+        this.options['spatialReference'] = ref;
+        this._spatialReference = new SpatialReference(ref);
+        if (this.options['spatialReference'] && isFunction(this.options['spatialReference']['projection'])) {
+            const projection = this._spatialReference.getProjection();
             //save projection code for map profiling (toJSON/fromJSON)
-            this.options['view']['projection'] = projection['code'];
+            this.options['spatialReference']['projection'] = projection['code'];
         }
         this._resetMapStatus();
         /**
-         * viewchange event, fired when map's view is updated.
+         * spatialreferencechange event, fired when map's spatial reference is updated.
          *
-         * @event Map#viewchange
+         * @event Map#spatialreferencechange
          * @type {Object}
-         * @property {String} type - viewchange
+         * @property {String} type - spatialreferencechange
          * @property {Map} target - map
-         * @property {Map} old - the old view
-         * @property {Map} new - the new view changed to
+         * @property {Map} old - the old spatial reference
+         * @property {Map} new - the new spatial reference changed to
          */
-        this._fireEvent('viewchange', {
-            'old': oldView,
-            'new': extend({}, this.options['view'])
+        this._fireEvent('spatialreferencechange', {
+            'old': oldRef,
+            'new': extend({}, this.options['spatialReference'])
         });
         return this;
     }
@@ -321,8 +323,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map}   this
      */
     onConfig(conf) {
-        if (!isNil(conf['view'])) {
-            this.setView(conf['view']);
+        if (!isNil(conf['spatialReference'])) {
+            this.setSpatialReference(conf['spatialReference']);
+            this.setSpatialReference(conf['spatialReference']);
         }
         return this;
     }
@@ -340,16 +343,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Object}
      */
     getProjection() {
-        return this._view.getProjection();
+        return this._spatialReference.getProjection();
     }
 
     /**
-     * Get map's full extent, which is defined in map's view. <br>
+     * Get map's full extent, which is defined in map's spatial reference. <br>
      * eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
      * @return {Extent}
      */
     getFullExtent() {
-        return this._view.getFullExtent();
+        return this._spatialReference.getFullExtent();
     }
 
     /**
@@ -601,11 +604,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Number}
      */
     getMaxNativeZoom() {
-        const view = this.getView();
-        if (!view) {
+        const ref = this.getSpatialReference();
+        if (!ref) {
             return null;
         }
-        return view.getResolutions().length - 1;
+        return ref.getResolutions().length - 1;
     }
 
     /**
@@ -614,7 +617,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Map} this
      */
     setMaxZoom(maxZoom) {
-        const viewMaxZoom = this._view.getMaxZoom();
+        const viewMaxZoom = this._spatialReference.getMaxZoom();
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
         }
@@ -642,7 +645,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      */
     setMinZoom(minZoom) {
-        const viewMinZoom = this._view.getMinZoom();
+        const viewMinZoom = this._spatialReference.getMinZoom();
         if (minZoom < viewMinZoom) {
             minZoom = viewMinZoom;
         }
@@ -759,6 +762,30 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this.getMaxZoom();
         }
         return ret;
+    }
+
+    /**
+     * Set map's center/zoom/pitch/bearing at one time
+     * @param {Object} view - a object containing center/zoom/pitch/bearing
+     * return {Map} this
+     */
+    setView(view) {
+        if (!view) {
+            return this;
+        }
+        if (view['center']) {
+            this.setCenter(view['center']);
+        }
+        if (view['zoom']) {
+            this.setZoom(view['zoom']);
+        }
+        if (view['pitch']) {
+            this.setPitch(view['pitch']);
+        }
+        if (view['bearing']) {
+            this.setBearing(view['bearing']);
+        }
+        return this;
     }
 
     /**
@@ -1053,6 +1080,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!layers || !Array.isArray(layers)) {
             return this;
         }
+        const renderer = this._getRenderer();
+        renderer.disableRender();
         const layersToOrder = [];
         let minZ = Number.MAX_VALUE;
         for (let i = 0; i < layers.length; i++) {
@@ -1071,6 +1100,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         for (let ii = 0; ii < layersToOrder.length; ii++) {
             layersToOrder[ii].setZIndex(minZ + ii);
         }
+        renderer.enableRender();
+        renderer.render();
         return this;
     }
 
@@ -1384,7 +1415,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     onMoveStart(param) {
         this._originCenter = this.getCenter();
-        this._enablePanAnimation = false;
         this._moving = true;
         this._trySetCursor('move');
         /**
@@ -1441,7 +1471,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     onDragRotateStart(param) {
-        this._enablePanAnimation = false;
         this._dragRotating = true;
         /**
          * dragrotatestart event
@@ -1577,12 +1606,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const index = layerList.indexOf(layer);
         if (index > -1) {
             layerList.splice(index, 1);
-
+            const renderer = this._getRenderer();
+            renderer.disableRender();
             for (let j = 0, jlen = layerList.length; j < jlen; j++) {
                 if (layerList[j].setZIndex) {
                     layerList[j].setZIndex(j);
                 }
             }
+            renderer.enableRender();
+            renderer.render();
         }
     }
 
@@ -1711,12 +1743,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
-    //Check and reset map's status when map'sview is changed.
+    //Check and reset map's status when map's spatial reference is changed.
     _resetMapStatus() {
         let maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
-        const viewMaxZoom = this._view.getMaxZoom(),
-            viewMinZoom = this._view.getMinZoom();
+        const viewMaxZoom = this._spatialReference.getMaxZoom(),
+            viewMinZoom = this._spatialReference.getMinZoom();
         if (isNil(maxZoom) || maxZoom === -1 || maxZoom > viewMaxZoom) {
             this.setMaxZoom(viewMaxZoom);
         }
@@ -1844,11 +1876,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
-        return this._view.getResolution(zoom);
+        return this._spatialReference.getResolution(zoom);
     }
 
     _getResolutions() {
-        return this._view.getResolutions();
+        return this._spatialReference.getResolutions();
     }
 
     /**
@@ -1860,7 +1892,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _prjToPoint(pCoord, zoom) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
-        return this._view.getTransformation().transform(pCoord, this._getResolution(zoom));
+        return this._spatialReference.getTransformation().transform(pCoord, this._getResolution(zoom));
     }
 
     /**
@@ -1872,7 +1904,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _pointToPrj(point, zoom) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
-        return this._view.getTransformation().untransform(point, this._getResolution(zoom));
+        return this._spatialReference.getTransformation().untransform(point, this._getResolution(zoom));
     }
 
     /**

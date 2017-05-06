@@ -25,10 +25,8 @@ export default class MapRenderer extends Class {
             } else {
                 duration = t;
             }
-            map._enablePanAnimation = true;
-            map._panAnimating = true;
             let preDist = null;
-            const player = Animation.animate({
+            const player = this._panPlayer = Animation.animate({
                 'distance': distance
             }, {
                 'easing': 'out',
@@ -38,10 +36,8 @@ export default class MapRenderer extends Class {
                     player.finish();
                     return;
                 }
-                if (!map._enablePanAnimation) {
+                if (player.playState === 'running' && (map.isZooming() || map.isDragRotating())) {
                     player.finish();
-                    map._panAnimating = false;
-                    map.onMoveEnd();
                     return;
                 }
 
@@ -56,7 +52,6 @@ export default class MapRenderer extends Class {
                     preDist = dist;
                     map.onMoving();
                 } else if (player.playState === 'finished') {
-                    map._panAnimating = false;
                     if (onFinish) {
                         onFinish();
                     }
@@ -67,6 +62,13 @@ export default class MapRenderer extends Class {
         } else {
             map.onMoveEnd();
         }
+    }
+
+    stopPanAnimation() {
+        if (this._panPlayer) {
+            this._panPlayer.finish();
+        }
+        delete this._panPlayer;
     }
 
     /**

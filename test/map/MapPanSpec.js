@@ -61,12 +61,7 @@ describe('#MapPan', function () {
     it('change zoom or center during panning', function (done) {
         var coord = center.substract(1, 1),
             newCenter = center.add(1, 1);
-        var counter = 0;
-        map.on('moveend', function () {
-            counter++;
-            if (counter === 1) {
-                return;
-            }
+        map.once('moveend', function () {
             expect(map.getCenter()).to.be.closeTo(newCenter);
             done();
         });

@@ -1,4 +1,4 @@
-import { isNode, isString, parseJSON } from 'core/util';
+import { IS_NODE, isString, parseJSON } from 'core/util';
 import Browser from 'core/Browser';
 
 /**
@@ -26,7 +26,7 @@ const Ajax = {
      * );
      */
     get: function (url, cb) {
-        if (isNode && Ajax.get.node) {
+        if (IS_NODE && Ajax.get.node) {
             return Ajax.get.node(url, cb);
         }
         const client = this._getClient(cb);
@@ -61,7 +61,7 @@ const Ajax = {
      * );
      */
     post: function (options, postData, cb) {
-        if (isNode && Ajax.post.node) {
+        if (IS_NODE && Ajax.post.node) {
             return Ajax.post.node(options, postData, cb);
         }
         const client = this._getClient(cb);

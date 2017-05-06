@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, isNode, loadImage, callImmediate, clearCallImmediate } from 'core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, callImmediate, clearCallImmediate } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'core/Promise';
@@ -149,10 +149,7 @@ class CanvasRenderer extends Class {
         this.clear();
     }
 
-    setZIndex(z) {
-        if (this.layer.getZIndex() === z) {
-            return;
-        }
+    setZIndex(/*z*/) {
         this.requestMapToRender();
     }
 
@@ -267,8 +264,7 @@ class CanvasRenderer extends Class {
             size = canvasSize;
         }
         const r = Browser.retina ? 2 : 1;
-        //only make canvas bigger, never smaller
-        if (this.canvas.width >= r * size['width'] && this.canvas.height >= r * size['height']) {
+        if (this.canvas.width === r * size['width'] && this.canvas.height === r * size['height']) {
             return;
         }
         //retina support
@@ -509,7 +505,7 @@ class CanvasRenderer extends Class {
             if (crossOrigin) {
                 img['crossOrigin'] = crossOrigin;
             }
-            if (isSVG(url[0]) && !isNode) {
+            if (isSVG(url[0]) && !IS_NODE) {
                 //amplify the svg image to reduce loading.
                 if (url[1]) { url[1] *= 2; }
                 if (url[2]) { url[2] *= 2; }

@@ -15,6 +15,11 @@ describe('Util', function () {
         });
     });
 
+    it('sign', function () {
+        expect(maptalks.Util.sign(-2)).to.be.eql(-1);
+        expect(maptalks.Util.sign(2)).to.be.eql(1);
+    });
+
     it('getSymbolStamp', function () {
         var symbol = {
             'markerType' : 'ellipse',

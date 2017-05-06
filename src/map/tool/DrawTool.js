@@ -33,7 +33,6 @@ const options = {
         'polygonFill': '#fff',
         'polygonOpacity': 0.3
     },
-    'autoBorderPanning' : true,
     'doubleClickZoom' : false,
     'mode': null,
     'once': false
@@ -170,10 +169,8 @@ class DrawTool extends MapTool {
 
     onEnable() {
         const map = this.getMap();
-        this._autoBorderPanning = map.options['autoBorderPanning'];
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
         map.config({
-            'autoBorderPanning': this.options['autoBorderPanning'],
             'doubleClickZoom': this.options['doubleClickZoom']
         });
         const action = this._getRegisterMode()['action'];
@@ -196,13 +193,11 @@ class DrawTool extends MapTool {
     onDisable() {
         const map = this.getMap();
         map.config({
-            'autoBorderPanning': this._autoBorderPanning,
             'doubleClickZoom': this._mapDoubleClickZoom
         });
         if (!isNil(this._mapDraggable)) {
             map.config('draggable', this._mapDraggable);
         }
-        delete this._autoBorderPanning;
         delete this._mapDraggable;
         delete this._mapDoubleClickZoom;
         this._endDraw();
@@ -313,7 +308,8 @@ class DrawTool extends MapTool {
     }
 
     _mousemoveForPath(param) {
-        if (!this._geometry) {
+        const map = this.getMap();
+        if (!this._geometry || !map || map.isInteracting()) {
             return;
         }
         const containerPoint = this._getMouseContainerPoint(param);

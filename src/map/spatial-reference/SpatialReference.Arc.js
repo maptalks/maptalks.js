@@ -17,7 +17,7 @@ function parse(arcConf) {
         tileSystem = [1, -1, origin['x'], origin['y']];
     delete fullExtent['spatialReference'];
     return {
-        'view': {
+        'spatialReference': {
             'resolutions': resolutions,
             'fullExtent': fullExtent
         },
@@ -37,22 +37,22 @@ export default function loadArcgis(url, cb, context) {
                 }
                 return;
             }
-            const view = parse(json);
+            const spatialRef = parse(json);
             if (context) {
-                cb.call(context, null, view);
+                cb.call(context, null, spatialRef);
             } else {
-                cb(null, view);
+                cb(null, spatialRef);
             }
         });
     } else {
         if (isString(url)) {
             url = parseJSON(url);
         }
-        const view = parse(url);
+        const spatialRef = parse(url);
         if (context) {
-            cb.call(context, null, view);
+            cb.call(context, null, spatialRef);
         } else {
-            cb(null, view);
+            cb(null, spatialRef);
         }
 
     }

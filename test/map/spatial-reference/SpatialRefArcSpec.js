@@ -1,5 +1,5 @@
-describe('#View.Arc', function () {
-    var expected = { 'view':{ 'resolutions':[132.291931250529, 52.9167725002117, 26.4583862501058, 13.2291931250529, 5.29167725002117, 2.64583862501058, 1.32291931250529, 0.529167725002117, 0.264583862501058, 0.132291931250529], 'fullExtent':{ 'xmin':-72625.16349000037, 'ymin':-82574.4862099995, 'xmax':75957.00628999919, 'ymax':86066.27641000012 }}, 'tileSystem':[1, -1, -66000, 75000], 'tileSize':{ 'width':512, 'height':512 }};
+describe('#SpatialReference.Arc', function () {
+    var expected = { 'spatialReference':{ 'resolutions':[132.291931250529, 52.9167725002117, 26.4583862501058, 13.2291931250529, 5.29167725002117, 2.64583862501058, 1.32291931250529, 0.529167725002117, 0.264583862501058, 0.132291931250529], 'fullExtent':{ 'xmin':-72625.16349000037, 'ymin':-82574.4862099995, 'xmax':75957.00628999919, 'ymax':86066.27641000012 }}, 'tileSystem':[1, -1, -66000, 75000], 'tileSize':{ 'width':512, 'height':512 }};
 
     var arcgis = {
         'serviceDescription': '',
@@ -116,7 +116,7 @@ describe('#View.Arc', function () {
     };
 
     it('load from url', function (done) {
-        maptalks.View.loadArcgis('/resources/arcgis.json', function (err, conf) {
+        maptalks.SpatialReference.loadArcgis('/resources/arcgis.json', function (err, conf) {
             expect(err).to.be(null);
             expect(conf).to.be.eql(expected);
             done();
@@ -124,7 +124,7 @@ describe('#View.Arc', function () {
     });
 
     it('load from json', function (done) {
-        maptalks.View.loadArcgis(arcgis, function (err, conf) {
+        maptalks.SpatialReference.loadArcgis(arcgis, function (err, conf) {
             expect(err).to.be(null);
             expect(conf).to.be.eql(expected);
             done();
@@ -132,7 +132,7 @@ describe('#View.Arc', function () {
     });
 
     it('load from string', function (done) {
-        maptalks.View.loadArcgis(JSON.stringify(arcgis), function (err, conf) {
+        maptalks.SpatialReference.loadArcgis(JSON.stringify(arcgis), function (err, conf) {
             expect(err).to.be(null);
             expect(conf).to.be.eql(expected);
             done();

@@ -23,7 +23,7 @@ module.exports = function (config) {
         const babel = require('rollup-plugin-babel');
         plugins.splice(idx, 1, babel({
             plugins: [['istanbul', {
-                exclude: ['test/**/*.js', 'node_modules/**/*']
+                exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'node_modules/**/*']
             }]]
         }));
     }

@@ -1,6 +1,5 @@
 import Map from './Map';
 
-import './handler/Map.AutoBorderPanning';
 import './handler/Map.DoubleClickZoom';
 import './handler/Map.Drag';
 import './handler/Map.GeometryEvents';
@@ -18,4 +17,4 @@ import './Map.Camera';
 export { Map };
 
 export { MapTool, DrawTool, AreaTool, DistanceTool } from './tool';
-export { default as View } from './view/View';
+export { default as SpatialReference } from './spatial-reference/SpatialReference';

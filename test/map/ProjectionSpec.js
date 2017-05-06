@@ -33,7 +33,7 @@ describe('#Projection', function () {
             }
         };
 
-        map.setView({
+        map.setSpatialReference({
             'projection': custom,
             'resolutions': (function () {
                 var resolutions = [];
@@ -69,17 +69,17 @@ describe('#Projection', function () {
 
     describe('change to EPSG:4326', function () {
         it('change to EPSG:4326', function () {
-            map.setView({
+            map.setSpatialReference({
                 projection:'EPSG:4326'
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4326');
             expect(map.getCenter()).to.closeTo(center);
         });
 
-        it('change center before changing view', function () {
+        it('change center before changing spatial reference', function () {
             var newCenter = new maptalks.Coordinate(100, 0);
             map.setCenter(newCenter);
-            map.setView({
+            map.setSpatialReference({
                 projection:'EPSG:4326'
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4326');
@@ -89,7 +89,7 @@ describe('#Projection', function () {
 
     describe('change to IDENTITY', function () {
         it('change to IDENTITY', function () {
-            map.setView({
+            map.setSpatialReference({
                 projection:'IDENTITY',
                 resolutions : [0, 10, 20],
                 fullExtent:{
@@ -114,7 +114,7 @@ describe('#Projection', function () {
 
     describe('change to Baidu', function () {
         it('change to baidu', function () {
-            map.setView({
+            map.setSpatialReference({
                 projection:'baidu'
             });
             expect(map.getProjection().code).to.be.eql('BAIDU');

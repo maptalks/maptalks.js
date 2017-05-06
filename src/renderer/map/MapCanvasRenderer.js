@@ -1,4 +1,4 @@
-import { now, isNode, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
 import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
@@ -25,6 +25,14 @@ export default class MapCanvasRenderer extends MapRenderer {
         this._registerEvents();
     }
 
+    enableRender() {
+        this._suppressRender = false;
+    }
+
+    disableRender() {
+        this._suppressRender = true;
+    }
+
     /**
      * Renders the layers
      */
@@ -36,7 +44,7 @@ export default class MapCanvasRenderer extends MapRenderer {
          * renderstart event, an event fired when map starts to render.
          * @event Map#renderstart
          * @type {Object}
-         * @property {String} type                    - renderstart
+         * @property {String} type           - renderstart
          * @property {Map} target            - the map fires event
          * @property {CanvasRenderingContext2D} context  - canvas context
          */
@@ -53,25 +61,22 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
 
         this._drawBackground();
-
+        const interacting = this.map.isInteracting();
+        const limit = this.map.options['numOfLayersOnInteracting'];
         const len = layers.length;
 
-        const fps = this.map.options['fpsOnInteracting'];
-        const limit = fps === 0 ? 0 : 1000 / fps;
-        const beginTime = now();
-        for (let i = 0; i < len; i++) {
+        const start = interacting && len > limit ? len - limit : 0;
+        for (let i = start; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
                 continue;
             }
             const renderer = layers[i]._getRenderer();
-            if (renderer) {
-                const layerImage = this._getLayerImage(layers[i]);
-                if (layerImage && layerImage['image']) {
-                    this._drawLayerCanvasImage(layers[i], layerImage);
-                }
+            if (!renderer || interacting && renderer.__isEmpty) {
+                continue;
             }
-            if (limit > 0 && now() - beginTime >= limit) {
-                break;
+            const layerImage = this._getLayerImage(layers[i]);
+            if (layerImage && layerImage['image']) {
+                this._drawLayerCanvasImage(layers[i], layerImage);
             }
         }
 
@@ -142,35 +147,32 @@ export default class MapCanvasRenderer extends MapRenderer {
             return;
         }
         const layers = map._getLayers();
-        let hit = false, cursor;
+        let cursor = 'default';
         const limit = map.options['hitDetectLimit'] || 0;
         let counter = 0;
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
-            const renderer = layer._getRenderer();
             if (layer.isEmpty && layer.isEmpty()) {
+                continue;
+            }
+            const renderer = layer._getRenderer();
+            if (!renderer || !renderer.hitDetect) {
                 continue;
             }
             if (renderer.isBlank && renderer.isBlank()) {
                 continue;
             }
-            if (renderer && renderer.hitDetect) {
-                if (layer.options['cursor'] !== 'default' && renderer.hitDetect(point)) {
-                    cursor = layer.options['cursor'] || 'pointer';
-                    hit = true;
-                    break;
-                }
-                counter++;
-                if (limit > 0 && counter > limit) {
-                    break;
-                }
+            if (layer.options['cursor'] !== 'default' && renderer.hitDetect(point)) {
+                cursor = layer.options['cursor'] || 'pointer';
+                break;
+            }
+            counter++;
+            if (limit > 0 && counter > limit) {
+                break;
             }
         }
-        if (hit) {
-            map._trySetCursor(cursor);
-        } else {
-            map._trySetCursor('default');
-        }
+
+        map._trySetCursor(cursor);
     }
 
     _getLayerImage(layer) {
@@ -279,7 +281,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             ctx.filter = layer.options['cssFilter'];
         }
         const matrix = this._zoomMatrix;
-        const shouldTransform = !!layer._getRenderer()._zoomTransform;
+        const shouldTransform = !!layer._getRenderer().__shouldZoomTransform;
         if (matrix && shouldTransform) {
             ctx.save();
             ctx.setTransform.apply(ctx, matrix);
@@ -389,7 +391,7 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _checkSize() {
         cancelAnimFrame(this._resizeFrame);
-        if (!this.map || this.map.isInteracting() || this.map._panAnimating) {
+        if (!this.map || this.map.isInteracting()) {
             return;
         }
         this._resizeFrame = requestAnimFrame(
@@ -402,20 +404,16 @@ export default class MapCanvasRenderer extends MapRenderer {
         );
     }
 
-    _checkSizeLoop() {
-        if (!this.map || this.map.isRemoved()) {
-            //is deleted
-            clearInterval(this._resizeInterval);
-        } else {
-            this._checkSize();
-        }
-    }
-
     _setCheckSizeInterval(interval) {
         clearInterval(this._resizeInterval);
         this._checkSizeInterval = interval;
         this._resizeInterval = setInterval(() => {
-            this._checkSizeLoop();
+            if (!this.map || this.map.isRemoved()) {
+                //is deleted
+                clearInterval(this._resizeInterval);
+            } else {
+                this._checkSize();
+            }
         }, this._checkSizeInterval);
     }
 
@@ -428,7 +426,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                 this._clearBackground();
             }
         });
-        if (map.options['checkSize'] && !isNode && (typeof window !== 'undefined')) {
+        if (map.options['checkSize'] && !IS_NODE && (typeof window !== 'undefined')) {
             this._setCheckSizeInterval(1000);
         }
         if (!Browser.mobile) {
@@ -484,45 +482,49 @@ export default class MapCanvasRenderer extends MapRenderer {
             renderer.prepareRender();
             renderer.prepareCanvas();
             renderer.drawOnInteracting();
-            return true;
         }
-        this._suppressRender = true;
+        this.disableRender();
         const map = this.map;
         const fps = map.options['fpsOnInteracting'];
         const limit = fps === 0 ? 0 : 1000 / fps;
-        let currentFrame = 0;
+        let currentTime = 0;
         const layers = this._getCanvasLayers();
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             if (!layer.isVisible() || layer.isEmpty && layer.isEmpty()) {
                 continue;
             }
-            let drawn = false;
+            let drawnOnMap = false;
             const renderer = layer._getRenderer();
-            delete renderer._zoomTransform;
+            delete renderer.__shouldZoomTransform;
+            delete renderer.__isEmpty;
             if (limit === 0 ||
                 layer.options['forceRenderOnZooming'] && map.isZooming() ||
                 layer.options['forceRenderOnMoving'] && map.isMoving() ||
                 layer.options['forceRenderOnRotating'] && map.isDragRotating()) {
-                drawn = drawLayer(renderer);
+                drawLayer(renderer);
+                drawnOnMap = true;
+                if (renderer.getDrawTime) {
+                    currentTime += renderer.getDrawTime();
+                }
             } else if (renderer.getDrawTime) {
-                if (currentFrame + renderer.getDrawTime() <= limit) {
-                    drawn = drawLayer(renderer);
-                    if (drawn) {
-                        currentFrame += renderer.getDrawTime();
-                    }
+                if (currentTime + renderer.getDrawTime() <= limit) {
+                    drawLayer(renderer);
+                    drawnOnMap = true;
+                    currentTime += renderer.getDrawTime();
                 }
             }
-            if (!drawn) {
+            if (!drawnOnMap) {
                 if (map.isZooming() && !map.getPitch()) {
                     renderer.prepareRender();
-                    renderer._zoomTransform = true;
+                    renderer.__shouldZoomTransform = true;
                 } else {
                     renderer.clearCanvas();
+                    renderer.__isEmpty = true;
                 }
             }
         }
-        this._suppressRender = false;
+        this.enableRender();
         this.render();
     }
 
