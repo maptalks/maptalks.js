@@ -897,7 +897,7 @@ maptalks.Util = {
         if (typeof (setImmediate) !== 'undefined') {
             return setImmediate(fn);
         }
-        return setTimeout(fn, 1);
+        return maptalks.Util.requestAnimFrame(fn);
     },
 
 
@@ -905,7 +905,7 @@ maptalks.Util = {
         if (typeof (clearImmediate) !== 'undefined') {
             return clearImmediate(id);
         }
-        return clearTimeout(id);
+        return maptalks.Util.cancelAnimFrame(id);
     }
 
 };
