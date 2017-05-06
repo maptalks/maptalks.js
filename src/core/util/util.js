@@ -70,17 +70,13 @@ let callImmediateFn, clearCallImmediateFn;
     if (typeof (setImmediate) !== 'undefined') {
         callImmediateFn = setImmediate;
     } else {
-        callImmediateFn = function (fn) {
-            setTimeout(fn, 1);
-        };
+        callImmediateFn = requestAnimFrame;
     }
 
     if (typeof (clearImmediate) !== 'undefined') {
         clearCallImmediateFn = clearImmediate;
     } else {
-        clearCallImmediateFn = function (id) {
-            clearTimeout(id);
-        };
+        clearCallImmediateFn = cancelAnimFrame;
     }
 })();
 
