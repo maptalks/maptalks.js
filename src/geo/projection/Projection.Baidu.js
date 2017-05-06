@@ -15,7 +15,7 @@ import { BaiduSphere } from '../measurer';
  */
 export default extend({}, Common, /** @lends projection.BAIDU */ {
     /**
-     * "BAIDU", Code of the projection, used by [View]{@link View} to get projection instance.
+     * "BAIDU", Code of the projection
      * @type {String}
      * @constant
      */

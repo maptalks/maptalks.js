@@ -17,4 +17,4 @@ import './Map.Camera';
 export { Map };
 
 export { MapTool, DrawTool, AreaTool, DistanceTool } from './tool';
-export { default as View } from './view/View';
+export { default as SpatialReference } from './spatial-reference/SpatialReference';

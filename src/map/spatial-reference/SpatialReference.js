@@ -4,9 +4,9 @@ import Extent from 'geo/Extent';
 import * as projections from 'geo/projection';
 import Transformation from 'geo/transformation/Transformation';
 import { Measurer } from 'geo/measurer';
-import loadArcgis from './View.Arc';
+import loadArcgis from './SpatialReference.Arc';
 
-const DefaultView = {
+const DefaultSpatialRef = {
     'EPSG:3857': {
         'resolutions': (function () {
             const resolutions = [];
@@ -60,13 +60,13 @@ const DefaultView = {
     }
 };
 
-export default class View {
+export default class SpatialReference {
     constructor(options = {}) {
         this.options = options;
-        this._initView();
+        this._initSpatialRef();
     }
 
-    _initView() {
+    _initSpatialRef() {
         let projection = this.options['projection'];
         if (projection) {
             if (isString(projection)) {
@@ -84,37 +84,37 @@ export default class View {
             projection = projections.DEFAULT;
         }
         if (!projection || isString(projection)) {
-            throw new Error('must provide a valid projection in map\'s view.');
+            throw new Error('must provide a valid projection in map\'s spatial reference.');
         }
         projection = extend({}, projections.Common, projection);
         if (!projection.measureLength) {
             extend(projection, Measurer.DEFAULT);
         }
         this._projection = projection;
-        let defaultView,
+        let defaultSpatialRef,
             resolutions = this.options['resolutions'];
         if (!resolutions) {
             if (projection['code']) {
-                defaultView = DefaultView[projection['code']];
-                if (defaultView) {
-                    resolutions = defaultView['resolutions'];
+                defaultSpatialRef = DefaultSpatialRef[projection['code']];
+                if (defaultSpatialRef) {
+                    resolutions = defaultSpatialRef['resolutions'];
                 }
             }
             if (!resolutions) {
-                throw new Error('must provide valid resolutions in map\'s view.');
+                throw new Error('must provide valid resolutions in map\'s spatial reference.');
             }
         }
         this._resolutions = resolutions;
         let fullExtent = this.options['fullExtent'];
         if (!fullExtent) {
             if (projection['code']) {
-                defaultView = DefaultView[projection['code']];
-                if (defaultView) {
-                    fullExtent = defaultView['fullExtent'];
+                defaultSpatialRef = DefaultSpatialRef[projection['code']];
+                if (defaultSpatialRef) {
+                    fullExtent = defaultSpatialRef['fullExtent'];
                 }
             }
             if (!fullExtent) {
-                throw new Error('must provide a valid fullExtent in map\'s view.');
+                throw new Error('must provide a valid fullExtent in map\'s spatial reference.');
             }
         }
         if (!isNil(fullExtent['left'])) {
@@ -188,4 +188,4 @@ export default class View {
 
 }
 
-View.loadArcgis = loadArcgis;
+SpatialReference.loadArcgis = loadArcgis;

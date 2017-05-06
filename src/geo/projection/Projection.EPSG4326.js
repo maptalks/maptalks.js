@@ -16,7 +16,7 @@ import { WGS84Sphere } from '../measurer';
  */
 export default extend({}, Common, /** @lends projection.EPSG4326 */ {
     /**
-     * "EPSG:4326", Code of the projection, used by [View]{@link View} to get projection instance.
+     * "EPSG:4326", Code of the projection
      * @type {String}
      * @constant
      */

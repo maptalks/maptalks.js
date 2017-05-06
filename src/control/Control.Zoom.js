@@ -78,7 +78,7 @@ class Zoom extends Control {
 
         dom.appendChild(zoomDOM);
 
-        map.on('_zoomend _zoomstart _viewchange', this._update, this);
+        map.on('_zoomend _zoomstart _spatialreferencechange', this._update, this);
 
         this._update();
         this._registerDomEvents();

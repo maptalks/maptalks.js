@@ -1,4 +1,4 @@
-describe('#View.Conversion', function () {
+describe('#SpatialReference.Conversion', function () {
     beforeEach(function () {
 
     });
@@ -13,7 +13,7 @@ describe('#View.Conversion', function () {
         container.style.height = '100px';
         document.body.appendChild(container);
         return  new maptalks.Map(container, {
-            'view' : {
+            'spatialReference' : {
                 'resolutions' : [1, 2, 4],
                 'projection' : 'EPSG:4326',
                 'fullExtent' : fullExtent
