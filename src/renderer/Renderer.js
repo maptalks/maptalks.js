@@ -229,7 +229,7 @@ maptalks.renderer.Canvas = maptalks.Class.extend(/** @lends maptalks.renderer.Ca
             size = canvasSize;
         }
         var r = maptalks.Browser.retina ? 2 : 1;
-        if (this.canvas.width !== r * size['width'] && this.canvas.height !== r * size['height']) {
+        if (this.canvas.width === r * size['width'] && this.canvas.height === r * size['height']) {
             return;
         }
         //retina support
