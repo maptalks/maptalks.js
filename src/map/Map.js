@@ -765,6 +765,30 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Set map's center/zoom/pitch/bearing at one time
+     * @param {Object} view - a object containing center/zoom/pitch/bearing
+     * return {Map} this
+     */
+    setView(view) {
+        if (!view) {
+            return this;
+        }
+        if (view['center']) {
+            this.setCenter(view['center']);
+        }
+        if (view['zoom']) {
+            this.setZoom(view['zoom']);
+        }
+        if (view['pitch']) {
+            this.setPitch(view['pitch']);
+        }
+        if (view['bearing']) {
+            this.setBearing(view['bearing']);
+        }
+        return this;
+    }
+
+    /**
      * Get map's resolution
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} resolution

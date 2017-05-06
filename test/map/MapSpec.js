@@ -301,6 +301,26 @@ describe('#Map', function () {
         });
     });
 
+    describe('#setView', function () {
+        it('setView', function () {
+            var nc = new maptalks.Coordinate(119, 32);
+            var z = map.getZoom() + 1;
+            var pitch = 60;
+            var bearing = 30;
+            map.setView({
+                center : nc,
+                zoom : z,
+                pitch : pitch,
+                bearing : bearing
+            });
+
+            expect(map.getCenter()).to.closeTo(nc);
+            expect(map.getZoom()).to.be.eql(z);
+            expect(map.getPitch()).to.be.eql(pitch);
+            expect(map.getBearing()).to.be.eql(bearing);
+        });
+    });
+
     describe('#addLayer', function () {
         it('addLayer will trigger add event on layer', function () {
             var spy = sinon.spy();
