@@ -316,7 +316,7 @@ describe('#Map', function () {
 
             expect(map.getCenter()).to.closeTo(nc);
             expect(map.getZoom()).to.be.eql(z);
-            expect(map.getPitch()).to.be.eql(pitch);
+            expect(map.getPitch()).to.be.approx(pitch);
             expect(map.getBearing()).to.be.eql(bearing);
         });
     });
