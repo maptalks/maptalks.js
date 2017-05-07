@@ -94,6 +94,68 @@ export default class MapCanvasRenderer extends MapRenderer {
         });
     }
 
+    renderOnInteracting() {
+        function drawLayer(renderer) {
+            renderer.prepareRender();
+            renderer.prepareCanvas();
+            renderer.drawOnInteracting();
+        }
+        this.disableRender();
+        const map = this.map;
+        const fps = map.options['fpsOnInteracting'];
+        const limit = fps === 0 ? 0 : 1000 / fps;
+        let currentTime = 0;
+
+        const layers = this._getCanvasLayers();
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const layer = layers[i];
+            if (!layer.isVisible() || layer.isEmpty && layer.isEmpty()) {
+                continue;
+            }
+            let drawn = false;
+            const renderer = layer._getRenderer();
+            //reset temporary statuses before drawing the layer
+            delete renderer.__shouldZoomTransform;
+            delete renderer.__isEmpty;
+            if (limit === 0 ||
+                layer.options['forceRenderOnZooming'] && map.isZooming() ||
+                layer.options['forceRenderOnMoving'] && map.isMoving() ||
+                layer.options['forceRenderOnRotating'] && map.isDragRotating()) {
+                // force to draw layer when zooming/moving/rotating
+                drawLayer(renderer);
+                drawn = true;
+                if (renderer.getDrawTime) {
+                    currentTime += renderer.getDrawTime();
+                }
+            } else if (renderer.getDrawTime && renderer.drawOnInteracting) {
+                // drawOnInteracting method is required in layer's renderer to draw map when interacting
+                if (currentTime + renderer.getDrawTime() <= limit) {
+                    drawLayer(renderer);
+                    drawn = true;
+                    currentTime += renderer.getDrawTime();
+                }
+            }
+            if (!drawn) {
+                // layer is not drawn by drawOnInteracting, may be:
+                // 1. layer's renderer does't have drawOnInteracting method, as TileLayerCanvasRenderer
+                // 2. currentTime exceeds limit, give up this layer's drawing
+                // in this case, use its canvas's previous painting to draw on the map when possible
+                if (map.isZooming() && !map.getPitch()) {
+                    //when map is zooming and not pitching, we can use layer's canvas's previous painting to draw on the map.
+                    renderer.prepareRender();
+                    //set __shouldZoomTransform to true to tell map to apply zoom matrix when drawing the layer canvas
+                    renderer.__shouldZoomTransform = true;
+                } else {
+                    // when the map is pitching/rotating, just clear the canvas as its previous painting is not usable.
+                    renderer.clearCanvas();
+                    renderer.__isEmpty = true;
+                }
+            }
+        }
+        this.enableRender();
+        this.render();
+    }
+
     updateMapSize(size) {
         if (!size || this._containerIsCanvas) {
             return;
@@ -436,7 +498,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             if (!map.getPitch()) {
                 this.render();
             } else {
-                this._drawOnInteracting();
+                this.renderOnInteracting();
             }
         });
 
@@ -448,11 +510,11 @@ export default class MapCanvasRenderer extends MapRenderer {
             if (!map.getPitch()) {
                 this._zoomMatrix = param['matrix']['container'];
             }
-            this._drawOnInteracting();
+            this.renderOnInteracting();
         });
 
         map.on('_dragrotating', () => {
-            this._drawOnInteracting();
+            this.renderOnInteracting();
         });
 
         map.on('_zoomend', () => {
@@ -475,57 +537,6 @@ export default class MapCanvasRenderer extends MapRenderer {
         this._hitDetectFrame = requestAnimFrame(() => {
             this.hitDetect(param['containerPoint']);
         });
-    }
-
-    _drawOnInteracting() {
-        function drawLayer(renderer) {
-            renderer.prepareRender();
-            renderer.prepareCanvas();
-            renderer.drawOnInteracting();
-        }
-        this.disableRender();
-        const map = this.map;
-        const fps = map.options['fpsOnInteracting'];
-        const limit = fps === 0 ? 0 : 1000 / fps;
-        let currentTime = 0;
-        const layers = this._getCanvasLayers();
-        for (let i = layers.length - 1; i >= 0; i--) {
-            const layer = layers[i];
-            if (!layer.isVisible() || layer.isEmpty && layer.isEmpty()) {
-                continue;
-            }
-            let drawnOnMap = false;
-            const renderer = layer._getRenderer();
-            delete renderer.__shouldZoomTransform;
-            delete renderer.__isEmpty;
-            if (limit === 0 ||
-                layer.options['forceRenderOnZooming'] && map.isZooming() ||
-                layer.options['forceRenderOnMoving'] && map.isMoving() ||
-                layer.options['forceRenderOnRotating'] && map.isDragRotating()) {
-                drawLayer(renderer);
-                drawnOnMap = true;
-                if (renderer.getDrawTime) {
-                    currentTime += renderer.getDrawTime();
-                }
-            } else if (renderer.getDrawTime) {
-                if (currentTime + renderer.getDrawTime() <= limit) {
-                    drawLayer(renderer);
-                    drawnOnMap = true;
-                    currentTime += renderer.getDrawTime();
-                }
-            }
-            if (!drawnOnMap) {
-                if (map.isZooming() && !map.getPitch()) {
-                    renderer.prepareRender();
-                    renderer.__shouldZoomTransform = true;
-                } else {
-                    renderer.clearCanvas();
-                    renderer.__isEmpty = true;
-                }
-            }
-        }
-        this.enableRender();
-        this.render();
     }
 
     _getCanvasLayers() {
