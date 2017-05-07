@@ -1,0 +1,40 @@
+{
+  "name": "kiwi",
+  "version": "1.0.0",
+  "description": "a coder-friendly map engine,include shaders and many other excllent characters",
+  "main": "gulpfile.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.24.0",
+    "babel-loader": "^6.4.1",
+    "babel-preset-es2015": "^6.24.0",
+    "babel-preset-es2015-rollup": "^3.0.0",
+    "css-loader": "^0.28.0",
+    "gulp": "^3.9.1",
+    "gulp-rollup": "^2.11.0",
+    "less": "^2.7.2",
+    "less-loader": "^4.0.3",
+    "rollup": "^0.41.6",
+    "rollup-plugin-babel": "^2.7.1",
+    "style-loader": "^0.16.1",
+    "webpack": "^2.3.2"
+  },
+  "keywords": [
+    "map",
+    "engine",
+    "shader"
+  ], 
+  "dependencies": {
+    "bower": "^1.8.0",
+    "gulp-mocha": "^4.3.1"
+  }
+}
