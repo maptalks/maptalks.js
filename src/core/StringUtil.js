@@ -186,5 +186,13 @@ maptalks.StringUtil = {
         }
         var pattern = /[\b\t\r\v\f]/igm;
         return content.replace(pattern, '');
+    },
+
+    filterLastEnter:function(content) {
+        if (!maptalks.Util.isString(content)) {
+            return content;
+        }
+        var pattern = /[\r\n]+$/gi;
+        return content.replace(pattern, '');
     }
 };

@@ -36,6 +36,7 @@ maptalks.TextMarker.Editor = {
     endEditText: function () {
         if (this._textEditor) {
             var content = this._textEditor.innerText;
+            content = maptalks.StringUtil.filterLastEnter(content);
             this.setContent(content);
             this.show();
             maptalks.DomUtil.off(this._textEditor, 'mousedown dblclick', maptalks.DomUtil.stopPropagation);
