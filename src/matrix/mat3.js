@@ -5,7 +5,7 @@
  * @author yellow 2017/5/8
  */
 
-import glMatrix from './matrix';
+import glMatrix from './mat';
 
 /**
  * @class 3x3 Matrix

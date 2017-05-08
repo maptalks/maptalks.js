@@ -1,4 +1,4 @@
-var glMatrix = require("./common.js");
+import matrix from './mat';
 
 /**
  * @class 3 Dimensional Vector

@@ -2,7 +2,7 @@
  * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/vec2.js
  * @author yellow 2017/5/8
  */
-import matrix from './matrix';
+import matrix from './mat';
 
 export default class vec2 {
 
