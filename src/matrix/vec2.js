@@ -157,7 +157,7 @@ export default class vec2 {
     /**
      * Calculates the length of a vec2
      */
-    vec2Length() {
+    len() {
         return this.distance(new vec2());
     };
     /**
