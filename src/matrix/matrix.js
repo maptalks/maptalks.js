@@ -2,11 +2,12 @@
 /**
  * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/common.js
  * switch to es6 syntax
+ * @author yellow 2017/5/8
  */
 
 let degree = Math.PI / 180;
 
-export class matrix{
+export default class matrix{
     //precision
     static EPSILON = 1e-6;
     //support ie9
