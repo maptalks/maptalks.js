@@ -1,6 +1,7 @@
 /**
  * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/vec3.js
  * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use mat.clone().* instead of mat.*
  * @author yellow 2017/5/8
  * 
  */
@@ -11,7 +12,9 @@ import matrix from './mat';
  * @name vec3
  */
 export default class vec3 {
-
+    /**
+     * private array store for vec3
+     */
     _out;
     /**
      * Creates a new, empty vec3

@@ -1,6 +1,7 @@
 /**
  * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/vec4.js
  * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use mat.clone().* instead of mat.*
  * @author yellow 2017.5.9
  */
 import matrix from './mat';

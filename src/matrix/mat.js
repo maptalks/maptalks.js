@@ -2,6 +2,7 @@
 /**
  * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/common.js
  * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use mat.clone().* instead of mat.*
  * @author yellow 2017/5/8
  */
 

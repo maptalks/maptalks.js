@@ -1,11 +1,15 @@
 /**
  * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/vec2.js
+ * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use mat.clone().* instead of mat.*
  * @author yellow 2017/5/8
  */
 import matrix from './mat';
 
 export default class vec2 {
-
+    /**
+     * private array store for vec2
+     */
     _out;
     /**
      * Creates a new, empty vec2
