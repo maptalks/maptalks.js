@@ -72,40 +72,48 @@ class OverlayLayerRenderer extends CanvasRenderer {
             }
             this._addGeoToCheckRes(geometries);
         }
-        this.setToRedraw();
+        redraw(this);
     }
 
     onGeometryRemove() {
-        this.setToRedraw();
+        redraw(this);
     }
 
     onGeometrySymbolChange(e) {
         this._addGeoToCheckRes([e.target]);
-        this.setToRedraw();
+        redraw(this);
     }
 
     onGeometryShapeChange() {
-        this.setToRedraw();
+        redraw(this);
     }
 
     onGeometryPositionChange() {
-        this.setToRedraw();
+        redraw(this);
     }
 
     onGeometryZIndexChange() {
-        this.setToRedraw();
+        redraw(this);
     }
 
     onGeometryShow() {
-        this.setToRedraw();
+        redraw(this);
     }
 
     onGeometryHide() {
-        this.setToRedraw();
+        redraw(this);
     }
 
     onGeometryPropertiesChange() {
-        this.setToRedraw();
+        redraw(this);
+    }
+}
+
+function redraw(renderer) {
+    if (renderer.layer.options['drawImmediate']) {
+        renderer.render();
+    } else {
+        renderer.setToRedraw();
     }
 }
 

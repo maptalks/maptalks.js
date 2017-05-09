@@ -30,6 +30,10 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     // render layers in current frame
     renderFrame() {
+        if (!this.map) {
+            this._cancelAnimationLoop();
+            return;
+        }
         this.updateMap();
         this.executeEventHandlers();
         this.drawLayers();
@@ -43,6 +47,9 @@ export default class MapCanvasRenderer extends MapRenderer {
             return;
         }
         const pre = map._mapViewCoord;
+        if (!pre) {
+            return;
+        }
         const current = map._getPrjCenter();
         if (pre.equals(current)) {
             return;
@@ -54,39 +61,38 @@ export default class MapCanvasRenderer extends MapRenderer {
     drawLayers() {
         const layers = this._getAllLayerToRender();
         const isInteracting = this.map.isInteracting();
-        const animLayers = [];
+        const ids = [];
         layers.forEach(layer => {
+            ids.push(layer.getId());
             const renderer = layer._getRenderer();
-            if (renderer.isAnimating()) {
-                animLayers.push(renderer);
-                return;
-            }
-            if (!renderer.needToRedraw()) {
+            if (!renderer.isAnimating() && !renderer.needToRedraw()) {
                 return;
             }
             if (isInteracting) {
-                renderer.prepareRender();
                 if (renderer.drawOnInteracting) {
+                    renderer.prepareRender();
                     if (layer.isCanvasRender()) {
                         renderer.prepareCanvas();
                     }
                     renderer.drawOnInteracting();
                 } else if (this.map.isZooming()) {
+                    renderer.prepareRender();
                     renderer.__shouldZoomTransform = true;
                 }
             } else {
                 renderer.render();
             }
-            this.setToRedraw();
-        });
-        animLayers.forEach(renderer => {
-            if (isInteracting) {
-                renderer.drawFrameOnInteracting();
-            } else {
-                renderer.drawFrame();
+            if (layer.isCanvasRender()) {
+                this.setToRedraw();
             }
-            this.setToRedraw();
         });
+        // compare previous layers drawn and current layers drawn
+        // if changed, set map to redraw
+        const previous = this._drawnIds;
+        this._drawnIds = ids.join('---');
+        if (previous !== this._drawnIds) {
+            this.setToRedraw();
+        }
     }
 
     /**

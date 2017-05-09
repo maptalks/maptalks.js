@@ -91,7 +91,8 @@ describe('PointSymbolSpec', function () {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(circle).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addTo(map);
+            v.addGeometry(circle);
             expect(v).to.be.painted();
         });
 
@@ -110,7 +111,8 @@ describe('PointSymbolSpec', function () {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(circle).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addTo(map);
+            v.addGeometry(circle);
             expect(v).to.be.painted();
         });
 
@@ -127,7 +129,8 @@ describe('PointSymbolSpec', function () {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(line).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addTo(map);
+            v.addGeometry(line);
             expect(v).to.be.painted();
             expect(v).to.be.painted(10, 0);
             expect(v).to.be.painted(20, 0);
@@ -146,7 +149,8 @@ describe('PointSymbolSpec', function () {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(line).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addTo(map);
+            v.addGeometry(line);
             expect(v).to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).not.to.be.painted(20, 0);
@@ -165,7 +169,8 @@ describe('PointSymbolSpec', function () {
                     'markerHeight': 3
                 }
             });
-            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(line).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addTo(map);
+            v.addGeometry(line);
             expect(v).not.to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).to.be.painted(20, 0);
@@ -184,7 +189,8 @@ describe('PointSymbolSpec', function () {
                     'markerHeight': 2
                 }
             });
-            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addGeometry(line).addTo(map);
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addTo(map);
+            v.addGeometry(line);
             expect(v).not.to.be.painted();
             expect(v).not.to.be.painted(10, 0);
             expect(v).not.to.be.painted(20, 0);

@@ -99,6 +99,14 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
     }
 
+    needToRedraw() {
+        const map = this.getMap();
+        if (map.isInteracting()) {
+            return true;
+        }
+        return super.needToRedraw();
+    }
+
     hitDetect() {
         return false;
     }

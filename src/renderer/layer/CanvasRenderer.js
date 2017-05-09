@@ -42,11 +42,7 @@ class CanvasRenderer extends Class {
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
-        if (!this.resources) {
-            /* eslint-disable no-use-before-define */
-            this.resources = new ResourceCache();
-            /* eslint-enable no-use-before-define */
-        }
+
         if (this.checkResources) {
             const resources = this.checkResources();
             if (resources.length > 0) {
@@ -227,6 +223,11 @@ class CanvasRenderer extends Class {
      * @returns {Promise[]}
      */
     loadResources(resourceUrls) {
+        if (!this.resources) {
+            /* eslint-disable no-use-before-define */
+            this.resources = new ResourceCache();
+            /* eslint-enable no-use-before-define */
+        }
         const resources = this.resources,
             promises = [];
         if (isArrayHasData(resourceUrls)) {

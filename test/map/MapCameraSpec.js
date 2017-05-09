@@ -45,17 +45,21 @@ describe('#Map.Camera', function () {
         expect(map.getFov()).to.be.approx(60);
     });
 
-    describe('TileLayer\'s dom rendering', function () {
+    describe('TileLayer\'s dom rendering', function (done) {
         it('render after composite operations', function () {
+            var baseLayer = map.getBaseLayer();
             map.setBearing(60);
             map.setCenter(map.getCenter().add(0.001, 0.001));
             map.setPitch(40);
             map.setCenter(map.getCenter().add(0.001, 0.002));
             map.setBearing(0);
             map.setPitch(0);
-            const tiles = map.getBaseLayer()._getRenderer()._tiles;
-            const pos = tiles['53162__108844__17'].pos;
-            expect(pos.toArray()).to.be.eql([52, -412]);
+            baseLayer.on('layerload', function () {
+                const tiles = baseLayer._getRenderer()._tiles;
+                const pos = tiles['53162__108844__17'].pos;
+                expect(pos.toArray()).to.be.eql([52, -412]);
+                done();
+            });
         });
     });
 

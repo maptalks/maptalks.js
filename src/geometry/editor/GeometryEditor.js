@@ -299,8 +299,8 @@ class GeometryEditor extends Eventable(Class) {
     _createHandleInstance(coordinate, opts) {
         const symbol = {
             'markerType': opts['markerType'],
-            'markerFill': '#ffffff', //"#d0d2d6",
-            'markerLineColor': '#000000',
+            'markerFill': '#fff', //"#d0d2d6",
+            'markerLineColor': '#000',
             'markerLineWidth': 2,
             'markerWidth': 10,
             'markerHeight': 10,

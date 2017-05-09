@@ -338,7 +338,7 @@ describe('#Map', function () {
         it('layer will trigger layerload event', function (done) {
             map.setBaseLayer(tile);
 
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new maptalks.VectorLayer('id', new maptalks.Marker(map.getCenter()));
             layer.on('layerload', function () {
                 done();
             });
@@ -356,7 +356,7 @@ describe('#Map', function () {
         });
 
         it('layerload triggered after setBaseLayer', function (done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new maptalks.VectorLayer('id', new maptalks.Marker(map.getCenter()));
             layer.on('layerload', function () {
                 done();
             });

@@ -11,8 +11,7 @@ import Layer from './Layer';
  */
 const options = {
     'doubleBuffer'  : false,
-    'animation'     : false,
-    'fps'           : 1000 / 16
+    'animation'     : false
 };
 
 /**
@@ -39,6 +38,10 @@ const options = {
  * @param {Object} options - options defined in [options]{@link CanvasLayer#options}
  */
 class CanvasLayer extends Layer {
+
+    isCanvasRender() {
+        return true;
+    }
 
     /**
      * An optional interface function called only once before the first draw, useful for preparing your canvas operations.
@@ -81,9 +84,7 @@ class CanvasLayer extends Layer {
      * @return {CanvasLayer} this
      */
     play() {
-        if (this._getRenderer()) {
-            this._getRenderer().startAnim();
-        }
+        this.config('animation', true);
         return this;
     }
 
@@ -92,9 +93,7 @@ class CanvasLayer extends Layer {
      * @return {CanvasLayer} this
      */
     pause() {
-        if (this._getRenderer()) {
-            this._getRenderer().pauseAnim();
-        }
+        this.config('animation', false);
         return this;
     }
 
@@ -103,10 +102,7 @@ class CanvasLayer extends Layer {
      * @return {Boolean}
      */
     isPlaying() {
-        if (this._getRenderer()) {
-            return this._getRenderer().isPlaying();
-        }
-        return false;
+        return this.options['animation'];
     }
 
     /**
