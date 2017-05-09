@@ -114,7 +114,37 @@ describe('#Rectangle', function () {
         });
     });
 
+    describe('symbol test', function () {
+        it('symbol with vertex marker', function (done) {
+            var symbol = {
+                markerType: 'ellipse',
+                markerPlacement: 'vertex',
+                markerWidth: 8,
+                markerHeight: 8,
+                markerFill: '#eb5988',
+                markerFillOpacity: 1,
+                markerLineWidth: 2,
+                markerLineOpacity: 1,
+                markerLineColor: '#fff',
+                polygonFill: '#eb5988',
+                polygonOpacity: 0.1,
+                lineColor: '#eb5988',
+                lineWidth: 2.5
+            };
 
+            var vector = new maptalks.Rectangle(center, 100, 200, {
+                symbol : symbol
+            });
+
+            var layer = new maptalks.VectorLayer('svg');
+            map.addLayer(layer);
+            layer.on('layerload', function () {
+                expect(layer).to.be.painted(1, 1);
+                done();
+            });
+            layer.addGeometry(vector);
+        });
+    });
 
     describe('change shape and position', function () {
         it('events', function () {
