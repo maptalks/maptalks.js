@@ -671,6 +671,7 @@ export default class TileLayerDomRenderer extends Class {
 
 
     onDragRotateStart() {
+        //prune tiles before drag rotating to reduce tiles when rotating
         this._pruneTiles(true);
     }
 

@@ -135,6 +135,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (param) {
             this.layer._styleGeometry(param['target']);
         }
+        super.onGeometryPropertiesChange(param);
     }
 }
 

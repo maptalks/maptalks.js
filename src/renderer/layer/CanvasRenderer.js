@@ -381,22 +381,20 @@ class CanvasRenderer extends Class {
     }
 
     completeRender() {
-        if (this.getMap()) {
+        if (this.getMap() && this.context) {
             this.setToRedraw();
-            if (this.context) {
-                /**
-                 * renderend event, fired when layer ends rendering.
-                 *
-                 * @event Layer#renderend
-                 * @type {Object}
-                 * @property {String} type              - renderend
-                 * @property {Layer} target    - layer
-                 * @property {CanvasRenderingContext2D} context - canvas's context
-                 */
-                this.layer.fire('renderend', {
-                    'context': this.context
-                });
-            }
+            /**
+             * renderend event, fired when layer ends rendering.
+             *
+             * @event Layer#renderend
+             * @type {Object}
+             * @property {String} type              - renderend
+             * @property {Layer} target    - layer
+             * @property {CanvasRenderingContext2D} context - canvas's context
+             */
+            this.layer.fire('renderend', {
+                'context': this.context
+            });
             /**
              * layerload event, fired when layer is loaded.
              *
