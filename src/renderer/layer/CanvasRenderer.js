@@ -475,6 +475,7 @@ class CanvasRenderer extends Class {
     }
 
     _tryToDraw() {
+        this._toRedraw = false;
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
             return;
         }
@@ -482,7 +483,6 @@ class CanvasRenderer extends Class {
             this.onAdd();
         }
         this._drawAndRecord();
-        this._toRedraw = false;
     }
 
     _drawAndRecord() {

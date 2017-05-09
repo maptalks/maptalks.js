@@ -111,6 +111,10 @@ export default class TileLayerRenderer extends CanvasRenderer {
         const me = this;
         function onTileLoad() {
             if (!IS_NODE) {
+                if (!me._tileRended) {
+                    // removed
+                    return;
+                }
                 if (me._tileCache) {
                     me._tileCache.add(this[me.propertyOfTileId], this);
                 }

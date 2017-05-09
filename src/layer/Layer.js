@@ -285,6 +285,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }
 
+        if (!this.isCanvasRender()) {
+            throw new Error('Only canvas layers can setMask');
+        }
         if (mask.type === 'Point') {
             mask.updateSymbol({
                 'markerLineColor': 'rgba(0, 0, 0, 0)',
@@ -301,7 +304,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
-        if (this._getRenderer()) {
+        const renderer = this._getRenderer();
+        if (renderer && renderer.setToRedraw) {
             this._getRenderer().setToRedraw();
         }
         return this;
@@ -316,7 +320,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
-        if (this._getRenderer()) {
+        const renderer = this._getRenderer();
+        if (renderer && renderer.setToRedraw) {
             this._getRenderer().setToRedraw();
         }
         return this;

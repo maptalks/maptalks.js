@@ -28,7 +28,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         this.initContainer();
     }
 
-    // render canvas layers in current frame
+    // render layers in current frame
     renderFrame() {
         this.updateMap();
         this.executeEventHandlers();
@@ -218,9 +218,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
         }
-        if (this._resizeFrame) {
-            cancelAnimFrame(this._resizeFrame);
-        }
+        this._cancelAnimationLoop();
         delete this.context;
         delete this.canvas;
         delete this.map;
