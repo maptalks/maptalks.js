@@ -19,11 +19,12 @@ export default class vec2 {
     /**
      * generate a random vector
      */
-    static random() {
+    static random(scale=1.0) {
+        scale=scale||1.0;
         let vec = new vec2(),
             r = matrix.RANDOM() * 2.0 * Math.PI;
-        vec._out[0] = Math.cos(r);
-        vec._out[1] = Math.sin(r);
+        ax = Math.cos(r)*scale;
+        ay = Math.sin(r)*scale;
         return vec;
     };
     /**
