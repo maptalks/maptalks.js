@@ -63,8 +63,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this.onAdd()) {
             if (!isNil(zIndex)) {
                 this._renderer.setZIndex(zIndex);
+                if (!this._renderer.isCanvasRender()) {
+                    this._renderer.render();
+                }
             }
-            this._renderer.render();
         }
         return this;
     }
@@ -300,7 +302,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             return this;
         }
         if (this._getRenderer()) {
-            this._getRenderer().render();
+            this._getRenderer().setToRedraw();
         }
         return this;
     }
@@ -315,7 +317,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             return this;
         }
         if (this._getRenderer()) {
-            this._getRenderer().render();
+            this._getRenderer().setToRedraw();
         }
         return this;
     }

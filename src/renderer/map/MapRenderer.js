@@ -15,6 +15,41 @@ import Point from 'geo/Point';
  */
 export default class MapRenderer extends Class {
 
+    constructor(map) {
+        super();
+        this.map = map;
+        this._handlerQueue = {};
+    }
+
+    addEventHandler(key, fn) {
+        if (!fn) {
+            fn = key;
+            key = null;
+        }
+        fn.key = key;
+        if (key) {
+            this.removeEventHandler(key);
+        }
+        this._handlerQueue.push(fn);
+    }
+
+    removeEventHandler(key) {
+        for (let i = this._handlerQueue.length - 1; i >= 0; i--) {
+            if (this._handlerQueue[i].key === key) {
+                this._handlerQueue.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    executeEventHandlers() {
+        const running = this._handlerQueue;
+        this._handlerQueue = [];
+        for (let i = 0, l = running.length; i < l; i++) {
+            running[i]();
+        }
+    }
+
     panAnimation(distance, t, onFinish) {
         distance = new Point(distance);
         const map = this.map;
@@ -31,7 +66,7 @@ export default class MapRenderer extends Class {
             }, {
                 'easing': 'out',
                 'duration': duration
-            }, function (frame) {
+            }, frame => {
                 if (map.isRemoved()) {
                     player.finish();
                     return;
@@ -47,7 +82,6 @@ export default class MapRenderer extends Class {
                         preDist = dist;
                     }
                     const offset = dist.sub(preDist);
-                    map.offsetPlatform(offset);
                     map._offsetCenterByPixel(offset);
                     preDist = dist;
                     map.onMoving();
@@ -103,6 +137,6 @@ export default class MapRenderer extends Class {
     }
 
     onLoad() {
-        this.render();
+        this._animationLoop();
     }
 }

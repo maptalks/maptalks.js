@@ -196,7 +196,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._zoomLevel = zoom;
         this._center = center;
 
-        this.setSpatialReference(opts['spatialReference']);
+        this.setSpatialReference(opts['spatialReference'] || opts['view']);
 
         if (baseLayer) {
             this.setBaseLayer(baseLayer);
@@ -208,7 +208,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._mapViewPoint = new Point(0, 0);
 
         this._initRenderer();
-        this._getRenderer().initContainer();
         this._updateMapSize(this._getContainerDomSize());
 
         this._Load();
@@ -1080,8 +1079,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!layers || !Array.isArray(layers)) {
             return this;
         }
-        const renderer = this._getRenderer();
-        renderer.disableRender();
         const layersToOrder = [];
         let minZ = Number.MAX_VALUE;
         for (let i = 0; i < layers.length; i++) {
@@ -1097,11 +1094,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             layersToOrder.push(layer);
         }
-        for (let ii = 0; ii < layersToOrder.length; ii++) {
-            layersToOrder[ii].setZIndex(minZ + ii);
+        for (let i = 0; i < layersToOrder.length; i++) {
+            layersToOrder[i].setZIndex(minZ + i);
         }
-        renderer.enableRender();
-        renderer.render();
+
         return this;
     }
 
@@ -1345,8 +1341,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} Result coordinate
      */
     locateByPoint(coordinate, px, py) {
-        const point = this.coordinateToPoint(coordinate);
-        return this.pointToCoordinate(point._add(px, py));
+        const point = this.coordinateToContainerPoint(coordinate);
+        return this.containerPointToCoordinate(point._add(px, py));
     }
 
     /**
@@ -1593,9 +1589,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     _setPrjCenterAndMove(pcenter) {
-        const offset = this._getPixelDistance(pcenter);
+        // const offset = this._getPixelDistance(pcenter);
         this._setPrjCenter(pcenter);
-        this.offsetPlatform(offset);
+        // this.offsetPlatform(offset);
     }
 
     //remove a layer from the layerList
@@ -1606,15 +1602,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const index = layerList.indexOf(layer);
         if (index > -1) {
             layerList.splice(index, 1);
-            const renderer = this._getRenderer();
-            renderer.disableRender();
             for (let j = 0, jlen = layerList.length; j < jlen; j++) {
                 if (layerList[j].setZIndex) {
                     layerList[j].setZIndex(j);
                 }
             }
-            renderer.enableRender();
-            renderer.render();
         }
     }
 
@@ -1681,6 +1673,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const renderer = this.options['renderer'];
         const clazz = Map.getRendererClass(renderer);
         this._renderer = new clazz(this);
+        this._renderer.load();
     }
 
     _getRenderer() {
@@ -1859,12 +1852,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         } else {
             this._getRenderer().offsetPlatform(offset);
             this._mapViewPoint = this._mapViewPoint.add(offset);
+            this._mapViewCoord = this._getPrjCenter();
             return this;
         }
     }
 
     _resetMapViewPoint() {
         this._mapViewPoint = new Point(0, 0);
+        this._mapViewCoord = this._getPrjCenter();
     }
 
     /**

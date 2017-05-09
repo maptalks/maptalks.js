@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, callImmediate, clearCallImmediate } from 'core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
 import Promise from 'core/Promise';
@@ -22,6 +22,7 @@ class CanvasRenderer extends Class {
         super();
         this.layer = layer;
         this._drawTime = -1;
+        this.setToRedraw();
     }
 
     /**
@@ -49,7 +50,9 @@ class CanvasRenderer extends Class {
         if (this.checkResources) {
             const resources = this.checkResources();
             if (resources.length > 0) {
+                this._checkingResource = true;
                 this.loadResources(resources).then(() => {
+                    this._checkingResource = false;
                     if (this.layer) {
                         /**
                          * resourceload event, fired when external resources of the layer complete loading.
@@ -60,7 +63,7 @@ class CanvasRenderer extends Class {
                          * @property {Layer} target    - layer
                          */
                         this.layer.fire('resourceload');
-                        this._tryToDraw();
+                        this.setToRedraw();
                     }
                 });
             } else {
@@ -71,11 +74,43 @@ class CanvasRenderer extends Class {
         }
     }
 
+    // whether the layer is animating
+    isAnimating() {
+        return false;
+    }
+
+    // when animating, this method will be called when map is not interacting
+    drawFrame() {
+
+    }
+
+    // when animating, this method will be called when map is interacting
+    drawFrameOnInteracting() {
+
+    }
+
+    needToRedraw() {
+        if (this._checkingResource) {
+            return false;
+        }
+        if (this._toRedraw) {
+            return true;
+        }
+        const map = this.getMap();
+        if (map.isInteracting()) {
+            return !(!map.getPitch() && map.isMoving());
+        }
+        return false;
+    }
+
+    setToRedraw() {
+        this._toRedraw = true;
+    }
+
     /**
      * Remove the renderer, will be called when layer is removed
      */
     remove() {
-        this._cancelDrawFrame();
         if (this.onRemove) {
             this.onRemove();
         }
@@ -84,8 +119,6 @@ class CanvasRenderer extends Class {
         delete this.context;
         delete this._extent2D;
         delete this.resources;
-        // requestMapToRender may be overrided, e.g. renderer.TileLayer.Canvas
-        CanvasRenderer.prototype.requestMapToRender.call(this);
         delete this.layer;
     }
 
@@ -128,7 +161,6 @@ class CanvasRenderer extends Class {
 
     clear() {
         this.clearCanvas();
-        this.requestMapToRender();
     }
 
     isBlank() {
@@ -139,7 +171,7 @@ class CanvasRenderer extends Class {
      * Show the layer
      */
     show() {
-        this.render();
+        this.setToRedraw();
     }
 
     /**
@@ -150,7 +182,7 @@ class CanvasRenderer extends Class {
     }
 
     setZIndex(/*z*/) {
-        this.requestMapToRender();
+        this.setToRedraw();
     }
 
     /**
@@ -348,12 +380,9 @@ class CanvasRenderer extends Class {
         };
     }
 
-    /**
-     * Request map to render, to redraw all layer's canvas on map's canvas.<br>
-     * This should be called once any canvas layer is updated
-     */
-    requestMapToRender() {
+    completeRender() {
         if (this.getMap()) {
+            this.setToRedraw();
             if (this.context) {
                 /**
                  * renderend event, fired when layer ends rendering.
@@ -368,15 +397,6 @@ class CanvasRenderer extends Class {
                     'context': this.context
                 });
             }
-            this.getMap()._getRenderer().render();
-        }
-    }
-
-    /**
-     * Ask the layer to fire the layerload event
-     */
-    fireLoadedEvent() {
-        if (this.layer) {
             /**
              * layerload event, fired when layer is loaded.
              *
@@ -387,14 +407,6 @@ class CanvasRenderer extends Class {
              */
             this.layer.fire('layerload');
         }
-    }
-
-    /**
-     * requestMapToRender and fireLoadedEvent
-     */
-    completeRender() {
-        this.requestMapToRender();
-        this.fireLoadedEvent();
     }
 
 
@@ -420,7 +432,6 @@ class CanvasRenderer extends Class {
      * @param  {Object} param event parameters
      */
     onZoomStart() {
-        delete this._transform;
     }
 
     /**
@@ -428,7 +439,7 @@ class CanvasRenderer extends Class {
     * @param  {Object} param event parameters
     */
     onZoomEnd() {
-        this._drawOnEvent();
+        this.setToRedraw();
     }
 
     /**
@@ -442,7 +453,7 @@ class CanvasRenderer extends Class {
     * @param  {Object} param event parameters
     */
     onMoveEnd() {
-        this._drawOnEvent();
+        this.setToRedraw();
     }
 
     /**
@@ -452,13 +463,13 @@ class CanvasRenderer extends Class {
     onResize() {
         delete this._extent2D;
         this.resizeCanvas();
-        this._drawOnEvent();
+        this.setToRedraw();
     }
 
     onDragRotateStart() {}
 
     onDragRotateEnd() {
-        this._drawOnEvent();
+        this.setToRedraw();
     }
 
     getDrawTime() {
@@ -466,21 +477,14 @@ class CanvasRenderer extends Class {
     }
 
     _tryToDraw() {
-        this._cancelDrawFrame();
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
-            this.fireLoadedEvent();
             return;
         }
         if (!this._painted && this.onAdd) {
             this.onAdd();
         }
-        if (this.layer.options['drawImmediate']) {
-            this._drawAndRecord();
-        } else {
-            this._currentFrameId = callImmediate(() => {
-                this._drawAndRecord();
-            });
-        }
+        this._drawAndRecord();
+        this._toRedraw = false;
     }
 
     _drawAndRecord() {
@@ -552,25 +556,6 @@ class CanvasRenderer extends Class {
             img = canvas;
         }
         this.resources.addResource(url, img);
-    }
-
-    _drawOnEvent() {
-        if (!this._painted) {
-            this.render();
-        } else {
-            //prepareRender is called in render not in draw.
-            //Thus prepareRender needs to be called here
-            this.prepareRender();
-            if (this.layer.isVisible()) {
-                this._drawAndRecord();
-            }
-        }
-    }
-
-    _cancelDrawFrame() {
-        if (this._currentFrameId) {
-            clearCallImmediate(this._currentFrameId);
-        }
     }
 }
 

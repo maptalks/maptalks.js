@@ -112,7 +112,6 @@ Map.include(/** @lends Map.prototype */{
           */
         this._fireEvent('zooming', { 'from' : this._startZoomVal, 'to': nextZoom, 'origin' : origin, 'matrix' : matrix });
         this._frameZoom = nextZoom;
-        this._getRenderer().render();
     },
 
     onZoomEnd(nextZoom, origin) {

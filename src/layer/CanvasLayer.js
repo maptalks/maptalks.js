@@ -71,7 +71,7 @@ class CanvasLayer extends Layer {
      */
     redraw() {
         if (this._getRenderer()) {
-            this._getRenderer().draw();
+            this._getRenderer().setToRedraw();
         }
         return this;
     }
