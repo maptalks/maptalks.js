@@ -963,10 +963,18 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Layer}
      */
     getLayer(id) {
-        if (!id || !this._layerCache || !this._layerCache[id]) {
+        if (!id) {
             return null;
         }
-        return this._layerCache[id];
+        const layer =  this._layerCache ? this._layerCache[id] : null;
+        if (layer) {
+            return layer;
+        }
+        const baseLayer = this.getBaseLayer();
+        if (baseLayer && baseLayer.getId() === id) {
+            return baseLayer;
+        }
+        return null;
     }
 
     /**
@@ -1029,6 +1037,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!Array.isArray(layers)) {
             return this.removeLayer([layers]);
         }
+        const removed = [];
         for (let i = 0, len = layers.length; i < len; i++) {
             let layer = layers[i];
             if (!(layer instanceof Layer)) {
@@ -1041,6 +1050,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (!map || map !== this) {
                 continue;
             }
+            removed.push(layer);
             this._removeLayer(layer, this._layers);
             if (this._loaded) {
                 layer._doRemove();
@@ -1049,7 +1059,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (this._layerCache) {
                 delete this._layerCache[id];
             }
-            layer.fire('remove');
+        }
+        if (removed.length > 0) {
+            this.once('frameend', () => {
+                removed.forEach(layer => {
+                    layer.fire('remove');
+                });
+            });
         }
         /**
          * removelayer event, fired when removing layers.

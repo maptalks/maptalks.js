@@ -50,9 +50,9 @@ class CanvasRenderer extends Class {
         if (this.checkResources) {
             const resources = this.checkResources();
             if (resources.length > 0) {
-                this._checkingResource = true;
+                this._loadingResource = true;
                 this.loadResources(resources).then(() => {
-                    this._checkingResource = false;
+                    this._loadingResource = false;
                     if (this.layer) {
                         /**
                          * resourceload event, fired when external resources of the layer complete loading.
@@ -90,7 +90,7 @@ class CanvasRenderer extends Class {
     }
 
     needToRedraw() {
-        if (this._checkingResource) {
+        if (this._loadingResource) {
             return false;
         }
         if (this._toRedraw) {
@@ -101,6 +101,10 @@ class CanvasRenderer extends Class {
             return !(!map.getPitch() && map.isMoving());
         }
         return false;
+    }
+
+    isRenderComplete() {
+        return !!this._renderComplete;
     }
 
     setToRedraw() {
@@ -114,6 +118,7 @@ class CanvasRenderer extends Class {
         if (this.onRemove) {
             this.onRemove();
         }
+        delete this._loadingResource;
         delete this._northWest;
         delete this.canvas;
         delete this.context;
@@ -164,6 +169,9 @@ class CanvasRenderer extends Class {
     }
 
     isBlank() {
+        if (!this._painted) {
+            return true;
+        }
         return false;
     }
 
@@ -171,7 +179,6 @@ class CanvasRenderer extends Class {
      * Show the layer
      */
     show() {
-        this.setToRedraw();
     }
 
     /**
@@ -182,7 +189,7 @@ class CanvasRenderer extends Class {
     }
 
     setZIndex(/*z*/) {
-        this.setToRedraw();
+        // this.setToRedraw();
     }
 
     /**
@@ -255,6 +262,7 @@ class CanvasRenderer extends Class {
      * Prepare rendering,
      */
     prepareRender() {
+        delete this._renderComplete;
         const map = this.getMap();
         this._renderZoom = map.getZoom();
         this._extent2D = map._get2DExtent();
@@ -387,7 +395,8 @@ class CanvasRenderer extends Class {
 
     completeRender() {
         if (this.getMap() && this.context) {
-            this.setToRedraw();
+            this._renderComplete = true;
+            // this.setToRedraw();
             /**
              * renderend event, fired when layer ends rendering.
              *
@@ -408,10 +417,9 @@ class CanvasRenderer extends Class {
              * @property {String} type - layerload
              * @property {Layer} target - layer
              */
-            this.layer.fire('layerload');
+            // this.layer.fire('layerload');
         }
     }
-
 
     /**
      * Get renderer's events registered on the map

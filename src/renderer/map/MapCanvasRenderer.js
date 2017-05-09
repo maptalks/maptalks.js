@@ -34,10 +34,16 @@ export default class MapCanvasRenderer extends MapRenderer {
             this._cancelAnimationLoop();
             return;
         }
+        this.map._fireEvent('framestart');
         this.updateMap();
-        this.executeEventHandlers();
         this.drawLayers();
         this.drawLayerCanvas();
+        // CAUTION: the order to fire frameend and layerload events
+        // fire frameend before layerload, reason:
+        // 1. frameend is often used internally by maptalks and plugins
+        // 2. layerload is often used externally by tests or user apps
+        this.map._fireEvent('frameend');
+        this._fireLayerLoadEvents();
         this._needRedraw = false;
     }
 
@@ -61,9 +67,17 @@ export default class MapCanvasRenderer extends MapRenderer {
     drawLayers() {
         const layers = this._getAllLayerToRender();
         const isInteracting = this.map.isInteracting();
-        const ids = [];
+        // all the canvas layers' ids.
+        const canvasIds = [];
+        // all the drawn canvas layers's ids.
+        const drawnIds = [];
         layers.forEach(layer => {
-            ids.push(layer.getId());
+            if (layer.isCanvasRender()) {
+                canvasIds.push(layer.getId());
+            }
+            if (!layer.isVisible()) {
+                return;
+            }
             const renderer = layer._getRenderer();
             if (!renderer.isAnimating() && !renderer.needToRedraw()) {
                 return;
@@ -83,31 +97,52 @@ export default class MapCanvasRenderer extends MapRenderer {
                 renderer.render();
             }
             if (layer.isCanvasRender()) {
+                drawnIds.push(layer.getId());
                 this.setToRedraw();
             }
         });
-        // compare previous layers drawn and current layers drawn
-        // if changed, set map to redraw
-        const previous = this._drawnIds;
-        this._drawnIds = ids.join('---');
-        if (previous !== this._drawnIds) {
+        // compare:
+        // 1. previous drawn layers and current drawn layers
+        // 2. previous canvas layers and current canvas layers
+        // set map to redraw if changed:
+        const preCanvasIds = this._canvasIds || [];
+        const preDrawnIds = this._drawnIds || [];
+        this._canvasIds = canvasIds;
+        this._drawnIds = drawnIds;
+        const sep = '---';
+        if (preCanvasIds.join(sep) !== canvasIds.join(sep) || preDrawnIds.join(sep) !== drawnIds.join(sep)) {
             this.setToRedraw();
         }
     }
 
     /**
-     * Draw layers in animation
-     * @return {[type]} [description]
+     * Fire layerload events.
+     * Make sure layer are drawn on map when firing the events
      */
-    drawAnimLayers() {
-        const layers = this._getCanvasLayers();
-        layers.forEach(layer => {
-            const renderer = layer._getRenderer();
-            if (renderer.isAnimating()) {
-                renderer.drawFrame();
-                this.setToRedraw();
-            }
-        });
+    _fireLayerLoadEvents() {
+        if (this._drawnIds && this._drawnIds.length > 0) {
+            const map = this.map;
+            this._drawnIds.forEach(id => {
+                const layer = map.getLayer(id);
+                if (!layer) {
+                    return;
+                }
+                const renderer = layer._getRenderer();
+                if (!renderer || !renderer.canvas || !renderer.isRenderComplete()) {
+                    return;
+                }
+                /**
+                 * layerload event, fired when layer is loaded.
+                 *
+                 * @event Layer#layerload
+                 * @type {Object}
+                 * @property {String} type - layerload
+                 * @property {Layer} target - layer
+                 */
+                layer.fire('layerload');
+            });
+        }
+
     }
 
     _needToRedraw() {

@@ -59,6 +59,9 @@ class OverlayLayerRenderer extends CanvasRenderer {
         if (!res) {
             return;
         }
+        if (!Array.isArray(res)) {
+            res = [res];
+        }
         if (!this._geosToCheck) {
             this._geosToCheck = [];
         }
@@ -66,12 +69,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
     }
 
     onGeometryAdd(geometries) {
-        if (geometries) {
-            if (!Array.isArray(geometries)) {
-                geometries = [geometries];
-            }
-            this._addGeoToCheckRes(geometries);
-        }
+        this._addGeoToCheckRes(geometries);
         redraw(this);
     }
 
@@ -80,7 +78,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
     }
 
     onGeometrySymbolChange(e) {
-        this._addGeoToCheckRes([e.target]);
+        this._addGeoToCheckRes(e.target);
         redraw(this);
     }
 
@@ -112,9 +110,8 @@ class OverlayLayerRenderer extends CanvasRenderer {
 function redraw(renderer) {
     if (renderer.layer.options['drawImmediate']) {
         renderer.render();
-    } else {
-        renderer.setToRedraw();
     }
+    renderer.setToRedraw();
 }
 
 export default OverlayLayerRenderer;

@@ -21,7 +21,7 @@ export default class MapRenderer extends Class {
         this._handlerQueue = {};
     }
 
-    addEventHandler(key, fn) {
+/*    addEventHandler(key, fn) {
         if (!fn) {
             fn = key;
             key = null;
@@ -48,7 +48,7 @@ export default class MapRenderer extends Class {
         for (let i = 0, l = running.length; i < l; i++) {
             running[i]();
         }
-    }
+    }*/
 
     panAnimation(distance, t, onFinish) {
         distance = new Point(distance);

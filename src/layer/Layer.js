@@ -210,11 +210,21 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     show() {
         if (!this.options['visible']) {
             this.options['visible'] = true;
+
             if (this._getRenderer()) {
                 this._getRenderer().show();
             }
+
+            const map = this.getMap();
+            if (map) {
+                //fire show at renderend to make sure layer is shown
+                map.once('renderend', () => {
+                    this.fire('show');
+                });
+            } else {
+                this.fire('show');
+            }
         }
-        this.fire('show');
         return this;
     }
 
@@ -228,8 +238,18 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             if (this._getRenderer()) {
                 this._getRenderer().hide();
             }
+
+            const map = this.getMap();
+            if (map) {
+                //fire hide at renderend to make sure layer is hidden
+                map.once('renderend', () => {
+                    this.fire('hide');
+                });
+            } else {
+                this.fire('hide');
+            }
         }
-        this.fire('hide');
+        // this.fire('hide');
         return this;
     }
 
