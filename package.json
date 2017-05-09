@@ -32,9 +32,10 @@
     "map",
     "engine",
     "shader"
-  ], 
+  ],
   "dependencies": {
     "bower": "^1.8.0",
+    "gl-matrix": "^2.3.2",
     "gulp-mocha": "^4.3.1"
   }
 }
