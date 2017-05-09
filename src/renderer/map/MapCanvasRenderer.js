@@ -357,6 +357,10 @@ export default class MapCanvasRenderer extends MapRenderer {
     * Main animation loop
     */
     _animationLoop() {
+        if (!this.map) {
+            this._cancelAnimationLoop();
+            return;
+        }
         this.renderFrame();
         // Keep registering ourselves for the next animation frame
         this._animationFrame = requestAnimFrame(() => { this._animationLoop(); });
