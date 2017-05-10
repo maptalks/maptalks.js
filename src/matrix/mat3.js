@@ -5,7 +5,7 @@
  * @author yellow 2017/5/8
  */
 
-import glMatrix from './mat';
+import matrix from './mat';
 
 /**
  * @class 3x3 Matrix
@@ -25,7 +25,7 @@ class mat3 {
      * Creates a new identity mat3
      */
     constructor() {
-        _out = new glMatrix.ARRAY_TYPE(9);
+        _out = new matrix.ARRAY_TYPE(9);
         _out[0] = 1;
         _out[1] = 0;
         _out[2] = 0;
@@ -99,7 +99,7 @@ class mat3 {
      */
     transpose = function () {
         //temporary array
-        var a = new glMatrix.ARRAY_TYPE(9);
+        var a = new matrix.ARRAY_TYPE(9);
         a[0] = this._out[0];
         a[1] = this._out[3];
         a[2] = this._out[6];
@@ -488,15 +488,15 @@ mat3.exactEquals = function (a, b) {
 mat3.equals = function (a, b) {
     var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3], a4 = a[4], a5 = a[5], a6 = a[6], a7 = a[7], a8 = a[8];
     var b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3], b4 = b[4], b5 = b[5], b6 = b[6], b7 = b[7], b8 = b[8];
-    return (Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
-        Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
-        Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) &&
-        Math.abs(a3 - b3) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) &&
-        Math.abs(a4 - b4) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) &&
-        Math.abs(a5 - b5) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) &&
-        Math.abs(a6 - b6) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) &&
-        Math.abs(a7 - b7) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)) &&
-        Math.abs(a8 - b8) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a8), Math.abs(b8)));
+    return (Math.abs(a0 - b0) <= matrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
+        Math.abs(a1 - b1) <= matrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
+        Math.abs(a2 - b2) <= matrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) &&
+        Math.abs(a3 - b3) <= matrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) &&
+        Math.abs(a4 - b4) <= matrix.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) &&
+        Math.abs(a5 - b5) <= matrix.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) &&
+        Math.abs(a6 - b6) <= matrix.EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) &&
+        Math.abs(a7 - b7) <= matrix.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)) &&
+        Math.abs(a8 - b8) <= matrix.EPSILON * Math.max(1.0, Math.abs(a8), Math.abs(b8)));
 };
 
 
