@@ -21,25 +21,8 @@ export default class MapRenderer extends Class {
         this._handlerQueue = {};
     }
 
-/*    addEventHandler(key, fn) {
-        if (!fn) {
-            fn = key;
-            key = null;
-        }
-        fn.key = key;
-        if (key) {
-            this.removeEventHandler(key);
-        }
+    addEventHandler(fn) {
         this._handlerQueue.push(fn);
-    }
-
-    removeEventHandler(key) {
-        for (let i = this._handlerQueue.length - 1; i >= 0; i--) {
-            if (this._handlerQueue[i].key === key) {
-                this._handlerQueue.splice(i, 1);
-                break;
-            }
-        }
     }
 
     executeEventHandlers() {
@@ -48,7 +31,7 @@ export default class MapRenderer extends Class {
         for (let i = 0, l = running.length; i < l; i++) {
             running[i]();
         }
-    }*/
+    }
 
     panAnimation(distance, t, onFinish) {
         distance = new Point(distance);
@@ -60,12 +43,17 @@ export default class MapRenderer extends Class {
             } else {
                 duration = t;
             }
+            const renderer = map._getRenderer();
+            const framer = function (fn) {
+                renderer.addEventHandler(fn);
+            };
             let preDist = null;
             const player = this._panPlayer = Animation.animate({
                 'distance': distance
             }, {
                 'easing': 'out',
-                'duration': duration
+                'duration': duration,
+                'framer' : framer
             }, frame => {
                 if (map.isRemoved()) {
                     player.finish();

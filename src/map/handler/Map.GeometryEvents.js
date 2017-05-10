@@ -95,6 +95,9 @@ class MapGeometryEventsHandler extends Handler {
         }
         if (eventType === 'mousemove' || eventType === 'touchmove') {
             this._queryIdentifyTimeout = requestAnimFrame(() => {
+                if (map.isInteracting()) {
+                    return;
+                }
                 map.identify(identifyOptions, callback);
             });
         } else {

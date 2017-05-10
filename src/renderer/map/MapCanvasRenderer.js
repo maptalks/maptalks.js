@@ -39,21 +39,23 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
         this.map._fireEvent('framestart');
         this.updateMap();
-        this.drawLayers();
-        this.drawLayerCanvas();
+        const layers = this._getAllLayerToRender();
+        this.drawLayers(layers);
+        this.drawLayerCanvas(layers);
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
         // 1. frameend is often used internally by maptalks and plugins
         // 2. layerload is often used externally by tests or user apps
         this.map._fireEvent('frameend');
         this._fireLayerLoadEvents();
+        this.executeEventHandlers();
         this._needRedraw = false;
         return true;
     }
 
     updateMap() {
         const map = this.map;
-        if (!map.isMoving()) {
+        if (map.isInteracting() && !map.isMoving()) {
             return;
         }
         const pre = map._mapViewCoord;
@@ -68,8 +70,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         map.offsetPlatform(offset);
     }
 
-    drawLayers() {
-        const layers = this._getAllLayerToRender();
+    drawLayers(layers) {
         const map = this.map;
         const isInteracting = map.isInteracting();
         // all the visible canvas layers' ids.
@@ -84,14 +85,15 @@ export default class MapCanvasRenderer extends MapRenderer {
             if (!layer.isVisible()) {
                 continue;
             }
-            if (layer.isCanvasRender()) {
+            const isCanvas = layer.isCanvasRender();
+            if (isCanvas) {
                 canvasIds.push(layer.getId());
             }
             const renderer = layer._getRenderer();
             if (!renderer) {
                 continue;
             }
-            const needsRedraw = renderer.isAnimating() || renderer.needToRedraw();
+            const needsRedraw = renderer.isAnimating && renderer.isAnimating() || renderer.needToRedraw();
             if (renderer.isCanvasUpdated && renderer.isCanvasUpdated()) {
                 if (!needsRedraw) {
                     updatedIds.push(layer.getId());
@@ -102,15 +104,19 @@ export default class MapCanvasRenderer extends MapRenderer {
             if (!needsRedraw) {
                 continue;
             }
-            if (isInteracting && renderer.isCanvasRender()) {
-                if (renderer.getDrawTime) {
-                    t += renderer.getDrawTime();
-                }
-                const inTime = limit === 0 || limit > 0 && t <= limit;
-                if (inTime && renderer.drawOnInteracting) {
+            if (isInteracting && isCanvas) {
+                const drawTime = renderer.getDrawTime();
+                const inTime = limit === 0 || limit > 0 && t + drawTime <= limit;
+                if (renderer.drawOnInteracting &&
+                    (inTime ||
+                    map.isZooming() && layer.options['forceRenderOnZooming'] ||
+                    map.isMoving() && layer.options['forceRenderOnMoving'] ||
+                    map.isDragRotating() && layer.options['forceRenderOnDragRotating'])
+                    ) {
                     renderer.prepareRender();
                     renderer.prepareCanvas();
                     renderer.drawOnInteracting();
+                    t += drawTime;
                 } else if (map.isZooming() && !map.getPitch()) {
                     renderer.prepareRender();
                     renderer.__shouldZoomTransform = true;
@@ -118,14 +124,16 @@ export default class MapCanvasRenderer extends MapRenderer {
                     renderer.clearCanvas();
                 }
             } else if (isInteracting && renderer.drawOnInteracting) {
-                renderer.prepareRender();
                 // dom layers
+                if (renderer.prepareRender) {
+                    renderer.prepareRender();
+                }
                 renderer.drawOnInteracting();
             } else {
                 renderer.render();
             }
 
-            if (layer.isCanvasRender()) {
+            if (isCanvas) {
                 updatedIds.push(layer.getId());
                 this.setToRedraw();
             }
@@ -192,11 +200,11 @@ export default class MapCanvasRenderer extends MapRenderer {
     /**
      * Renders the layers
      */
-    drawLayerCanvas() {
+    drawLayerCanvas(layers) {
         if (!this.map) {
             return;
         }
-        if (!this._needToRedraw() && !this._isStateChanged()) {
+        if (!this._needToRedraw() && !this.isStateChanged()) {
             return;
         }
         if (!this.canvas) {
@@ -214,8 +222,6 @@ export default class MapCanvasRenderer extends MapRenderer {
         this.map._fireEvent('renderstart', {
             'context': this.context
         });
-
-        const layers = this._getAllLayerToRender();
 
         if (!this._updateCanvasSize()) {
             this.clearCanvas();
@@ -404,7 +410,7 @@ export default class MapCanvasRenderer extends MapRenderer {
      * Is current map's state changed?
      * @return {Boolean}
      */
-    _isStateChanged() {
+    isStateChanged() {
         const map = this.map;
         const previous = this._state;
         const center = map.getCenter();
