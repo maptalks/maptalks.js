@@ -82,17 +82,10 @@ export default class TileLayerDomRenderer extends Class {
         }
     }
 
-    isCanvasRender() {
-        return false;
-    }
-
-    isAnimating() {
-        return false;
-    }
-
     needToRedraw() {
         const map = this.getMap();
-        return map.isInteracting();
+        const renderer = map._getRenderer();
+        return map.isInteracting() || renderer && renderer.isStateChanged();
     }
 
     prepareRender() {
@@ -138,7 +131,7 @@ export default class TileLayerDomRenderer extends Class {
     _drawOnMoving() {
         const map = this.getMap();
         // prevent render when zooming or dragrotating, which may crash the browser
-        if (!map.getPitch() && !this.layer.options['renderOnMoving']) {
+        if (!map || !map.getPitch() && !this.layer.options['renderOnMoving']) {
             return;
         }
         this.render();
@@ -180,6 +173,9 @@ export default class TileLayerDomRenderer extends Class {
             this._appendTileFragment(container, fragment);
         }
         this._updateTileSize();
+        if (queue.length === 0) {
+            this.layer.fire('layerload');
+        }
     }
 
     _getTileQueue(tileGrid) {
@@ -475,7 +471,7 @@ export default class TileLayerDomRenderer extends Class {
         return true;
     }
 
-    _pruneTiles(pruneLevels) {
+    _pruneTiles(pruneLevels = true) {
         const map = this.getMap();
         if (!map || map.isMoving()) {
             return;
@@ -603,13 +599,12 @@ export default class TileLayerDomRenderer extends Class {
     getEvents() {
         const events = {
             '_zoomstart'    : this.onZoomStart,
-            '_touchzoomstart' : this._onTouchZoomStart,
+            //prune tiles before drag rotating to reduce tiles when rotating
+            '_touchzoomstart _dragrotatestart' : this._pruneTiles,
             '_zooming'      : this.onZooming,
             '_zoomend'      : this.onZoomEnd,
-            '_moveend _resize' : this.render,
-            '_movestart'    : this.onMoveStart,
-            '_dragrotatestart'    : this.onDragRotateStart,
-            '_dragrotateend'    : this.onDragRotateEnd
+            '_moveend _resize _dragrotateend' : this.render,
+            '_dragrotatestart'    : this.onDragRotateStart
         };
         return events;
     }
@@ -626,17 +621,9 @@ export default class TileLayerDomRenderer extends Class {
         this._container.style.display = 'none';
     }
 
-    onMoveStart() {
-        // this._fadeAnimated = false;
-    }
-
-    _onTouchZoomStart() {
-        this._pruneTiles(true);
-    }
-
     onZoomStart() {
         this._fadeAnimated = !Browser.mobile && true;
-        this._pruneTiles(true);
+        this._pruneTiles();
         this._zoomStartPos = this.getMap().offsetPlatform();
         if (!this._canTransform()) {
             this._hide();
@@ -667,16 +654,6 @@ export default class TileLayerDomRenderer extends Class {
                 this._show();
             }
         }
-    }
-
-
-    onDragRotateStart() {
-        //prune tiles before drag rotating to reduce tiles when rotating
-        this._pruneTiles(true);
-    }
-
-    onDragRotateEnd() {
-        this._renderTiles();
     }
 
     _clearCameraCache() {

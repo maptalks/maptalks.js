@@ -28,27 +28,26 @@ class OverlayLayerRenderer extends CanvasRenderer {
         if (!isArrayHasData(geometries)) {
             return [];
         }
-        const me = this,
-            resources = [];
+        const resources = [];
+        const cache = {};
 
-        function checkGeo(geo) {
+        for (let i = geometries.length - 1; i >= 0; i--) {
+            const geo = geometries[i];
             const res = geo._getExternalResources();
             if (!res.length) {
-                return;
+                continue;
             }
-            if (!me.resources) {
+            if (!this.resources) {
                 resources.push.apply(resources, res);
             } else {
                 for (let i = 0; i < res.length; i++) {
-                    if (!me.resources.isResourceLoaded(res[i])) {
+                    const url = res[i][0];
+                    if (!this.resources.isResourceLoaded(res[i]) && !cache[url]) {
                         resources.push(res[i]);
+                        cache[url] = 1;
                     }
                 }
             }
-        }
-
-        for (let i = geometries.length - 1; i >= 0; i--) {
-            checkGeo(geometries[i]);
         }
         this._resourceChecked = true;
         delete this._geosToCheck;

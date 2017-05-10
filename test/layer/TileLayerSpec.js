@@ -163,4 +163,63 @@ describe('#TileLayer', function () {
 
     });
 
+    describe('pitch and rotation', function () {
+        it('should set domCssMatrix when initialize with pitch', function (done) {
+            container = document.createElement('div');
+            container.style.width = '10px';
+            container.style.height = '10px';
+            document.body.appendChild(container);
+            var baselayer = new maptalks.TileLayer('tile', {
+                urlTemplate : '/resources/tile.png',
+                subdomains:['a', 'b', 'c']
+            });
+            baselayer.on('layerload', function () {
+                expect(baselayer.isCanvasRender()).not.to.be.ok();
+                const cssMat = baselayer._getRenderer()._getTileContainer().style.cssText;
+                expect(cssMat.indexOf('matrix3d') > 0).to.be.ok();
+                done();
+            });
+            var options = {
+                zoom: 17,
+                pitch : 30,
+                center: center,
+                baseLayer : baselayer
+            };
+            map = new maptalks.Map(container, options);
+        });
+
+        it('should set domCssMatrix when pitch', function (done) {
+            // var cmap;
+            container = document.createElement('div');
+            container.style.width = '10px';
+            container.style.height = '10px';
+            document.body.appendChild(container);
+            var tile = new maptalks.TileLayer('tile', {
+                urlTemplate : '/resources/tile.png',
+                subdomains:['a', 'b', 'c']
+            });
+            // fired by tile.load()
+            tile.once('layerload', function () {
+                // fired by mapRenderer.drawLayer when map state changed(first render)
+                tile.once('layerload', function () {
+                    expect(tile.isCanvasRender()).not.to.be.ok();
+                    const cssMat = tile._getRenderer()._getTileContainer().style.cssText;
+                    expect(cssMat.indexOf('matrix3d') === -1).to.be.ok();
+                    tile.on('layerload', function () {
+                        const cssMat = tile._getRenderer()._getTileContainer().style.cssText;
+                        expect(cssMat.indexOf('matrix3d') > 0).to.be.ok();
+                        done();
+                    });
+                    tile.getMap().setPitch(40);
+                });
+            });
+            var option = {
+                zoom: 17,
+                center: center,
+                baseLayer : tile
+            };
+            map = new maptalks.Map(container, option);
+        });
+    });
+
 });

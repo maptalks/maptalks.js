@@ -1661,8 +1661,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     _Load() {
         this._resetMapStatus();
         this._registerDomEvents();
-        this._loadAllLayers();
-        this._getRenderer().onLoad();
         if (this.options['pitch']) {
             this.setPitch(this.options['pitch']);
             delete this.options['pitch'];
@@ -1671,6 +1669,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this.setBearing(this.options['bearing']);
             delete this.options['bearing'];
         }
+        this._loadAllLayers();
+        this._getRenderer().onLoad();
         this._loaded = true;
         this._callOnLoadHooks();
         this._initTime = now();
