@@ -65,33 +65,6 @@ let requestAnimFrame, cancelAnimFrame;
 })();
 export { requestAnimFrame, cancelAnimFrame };
 
-let callImmediateFn, clearCallImmediateFn;
-(function () {
-    if (typeof (setImmediate) !== 'undefined') {
-        callImmediateFn = setImmediate;
-    } else {
-        callImmediateFn = requestAnimFrame;
-    }
-
-    if (typeof (clearImmediate) !== 'undefined') {
-        clearCallImmediateFn = clearImmediate;
-    } else {
-        clearCallImmediateFn = cancelAnimFrame;
-    }
-})();
-
-export function callImmediate(fn) {
-    return callImmediateFn(fn);
-}
-
-
-export function clearCallImmediate(id) {
-    if (id) {
-        clearCallImmediateFn(id);
-    }
-}
-
-
 /**
  * Merges options with the default options of the object.
  * @param {Object} obj      - object

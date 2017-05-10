@@ -85,7 +85,7 @@ const options = {
     'zoomable': true,
     'enableInfoWindow': true,
 
-    'numOfLayersOnInteracting' : 10,
+    'numOfLayersOnInteracting' : 8,
 
     'hitDetect': (function () {
         return !Browser.mobile;
@@ -93,7 +93,7 @@ const options = {
 
     'hitDetectLimit' : 5,
 
-    'fpsOnInteracting' : 20,
+    'fpsOnInteracting' : 40,
 
     'maxZoom': null,
     'minZoom': null,

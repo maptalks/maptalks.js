@@ -21,7 +21,7 @@ class CanvasRenderer extends Class {
     constructor(layer) {
         super();
         this.layer = layer;
-        this._drawTime = -1;
+        this._drawTime = 0;
         this.setToRedraw();
     }
 
@@ -79,19 +79,12 @@ class CanvasRenderer extends Class {
         return false;
     }
 
-    // when animating, this method will be called when map is not interacting
-    drawFrame() {
-
-    }
-
-    // when animating, this method will be called when map is interacting
-    drawFrameOnInteracting() {
-
-    }
-
     needToRedraw() {
         if (this._loadingResource) {
             return false;
+        }
+        if (this.isAnimating()) {
+            return true;
         }
         if (this._toRedraw) {
             return true;
@@ -109,6 +102,15 @@ class CanvasRenderer extends Class {
 
     setToRedraw() {
         this._toRedraw = true;
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        const renderer = map._getRenderer();
+        if (!renderer) {
+            return;
+        }
+        renderer.startFrameLoop();
     }
 
     /**
@@ -179,6 +181,7 @@ class CanvasRenderer extends Class {
      * Show the layer
      */
     show() {
+        this.setToRedraw();
     }
 
     /**
@@ -186,10 +189,11 @@ class CanvasRenderer extends Class {
      */
     hide() {
         this.clear();
+        this.setToRedraw();
     }
 
     setZIndex(/*z*/) {
-        // this.setToRedraw();
+        this.setToRedraw();
     }
 
     /**
@@ -503,9 +507,13 @@ class CanvasRenderer extends Class {
             return;
         }
         this._painted = true;
-        const nowTime = now();
+        const t = now();
         this.draw();
-        this._drawTime = now() - nowTime;
+        this._drawTime = now() - t;
+        if (this.isAnimating()) {
+            // ask map not to stop frame loop
+            this.setToRedraw();
+        }
     }
 
     _promiseResource(url) {
