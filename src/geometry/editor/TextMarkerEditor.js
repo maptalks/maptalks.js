@@ -35,6 +35,10 @@ maptalks.TextMarker.Editor = {
      */
     endEditText: function () {
         if (this._textEditor) {
+            var html = this._textEditor.innerHTML
+            html = html.replace(/<p>/ig, '');
+            html = html.replace(/<\/p>/ig, '<br/>');
+            this._textEditor.innerHTML = html;
             var content = this._textEditor.innerText;
             content = maptalks.StringUtil.filterLastEnter(content);
             this.setContent(content);
@@ -130,7 +134,7 @@ maptalks.TextMarker.Editor = {
             'margin-left: auto;' +
             'margin-right: auto;' +
             'line-height: ' + (textSize + spacing * 2) + 'px;' +
-            'outline: 0;' +
+            'outline: 0; padding:0; margin:0;' +
             'word-wrap: break-word;' +
             'overflow-x: hidden;' +
             'overflow-y: hidden;' +
