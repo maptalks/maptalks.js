@@ -92,9 +92,6 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (this._tileToLoadCounter === 0) {
             this.completeRender();
         } else {
-            if (this._tileToLoadCounter < this._totalTileToLoad) {
-                this.setToRedraw();
-            }
             this._scheduleLoadTileQueue();
         }
     }
@@ -216,7 +213,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             const tileSize = this.layer.getTileSize();
             const mapExtent = this.getMap()._get2DExtent();
             if (mapExtent.intersects(new PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
-                this.setToRedraw();
+                this.setCanvasUpdated();
             }
         }
         if (this._tileToLoadCounter === 0) {
@@ -241,7 +238,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             return;
         }
         if (!IS_NODE) {
-            this.setToRedraw();
+            this.setCanvasUpdated();
         }
         this._tileToLoadCounter--;
         if (this._tileToLoadCounter === 0) {

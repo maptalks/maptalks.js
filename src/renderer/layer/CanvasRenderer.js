@@ -99,19 +99,25 @@ class CanvasRenderer extends Class {
 
     setToRedraw() {
         this._toRedraw = true;
-        this._startAnimationLoop();
+        return this;
     }
 
-    _startAnimationLoop() {
-        const map = this.getMap();
-        if (!map) {
-            return;
-        }
-        const renderer = map._getRenderer();
-        if (!renderer) {
-            return;
-        }
-        renderer.startFrameLoop();
+    /**
+     *  Mark layer's canvas updated
+     */
+    setCanvasUpdated() {
+        this._canvasUpdated = true;
+        return this;
+    }
+
+    /**
+     * Only called by map's renderer to check whether the layer's canvas is updated
+     * @return {Boolean}
+     */
+    isCanvasUpdated() {
+        const u = !!this._canvasUpdated;
+        this._canvasUpdated = false;
+        return u;
     }
 
     /**
@@ -414,7 +420,7 @@ class CanvasRenderer extends Class {
             this.layer.fire('renderend', {
                 'context': this.context
             });
-            this._startAnimationLoop();
+            this.setCanvasUpdated();
             /**
              * layerload event, fired when layer is loaded.
              *
