@@ -35,7 +35,6 @@ export default class MapCanvasRenderer extends MapRenderer {
      */
     renderFrame() {
         if (!this.map) {
-            this._cancelAnimationLoop();
             return false;
         }
         this.map._fireEvent('framestart');
@@ -54,7 +53,6 @@ export default class MapCanvasRenderer extends MapRenderer {
         this._needRedraw = false;
         this._updated = false;
         if (now() - this._loopTime > 100) {
-            this._cancelAnimationLoop();
             return false;
         }
         return true;
@@ -443,7 +441,8 @@ export default class MapCanvasRenderer extends MapRenderer {
             return;
         }
         const goon = this.renderFrame();
-        if (!goon) {
+        if (!goon && !this.map.isInteracting()) {
+            this._cancelAnimationLoop();
             return;
         }
         // Keep registering ourselves for the next animation frame
@@ -631,7 +630,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         //         this._clearBackground();
         //     }
         // });
-        map.on('_movestart _zoomstart _dragrotatestart', this.startFrameLoop, this);
+        map.on('_mousedown _touchstart _movestart _zoomstart _dragrotatestart', this.startFrameLoop, this);
         if (map.options['checkSize'] && !IS_NODE && (typeof window !== 'undefined')) {
             this._setCheckSizeInterval(1000);
         }

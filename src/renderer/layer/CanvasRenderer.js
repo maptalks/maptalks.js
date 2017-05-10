@@ -99,6 +99,10 @@ class CanvasRenderer extends Class {
 
     setToRedraw() {
         this._toRedraw = true;
+        this._startAnimationLoop();
+    }
+
+    _startAnimationLoop() {
         const map = this.getMap();
         if (!map) {
             return;
@@ -410,6 +414,7 @@ class CanvasRenderer extends Class {
             this.layer.fire('renderend', {
                 'context': this.context
             });
+            this._startAnimationLoop();
             /**
              * layerload event, fired when layer is loaded.
              *
