@@ -202,10 +202,11 @@ export default class vec4 {
     normalize() {
         let len = this.len();
         if (len > 0) {
-            this._out[0] /= len;
-            this._out[1] /= len;
-            this._out[2] /= len;
-            this._out[3] /= len;
+            len=1.0/len;
+            this._out[0] *= len;
+            this._out[1] *= len;
+            this._out[2] *= len;
+            this._out[3] *= len;
         }
         return this;
     };
