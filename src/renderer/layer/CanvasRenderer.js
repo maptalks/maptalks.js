@@ -83,9 +83,6 @@ class CanvasRenderer extends Class {
         if (this._loadingResource) {
             return false;
         }
-        if (this.isAnimating()) {
-            return true;
-        }
         if (this._toRedraw) {
             return true;
         }
@@ -510,10 +507,6 @@ class CanvasRenderer extends Class {
         const t = now();
         this.draw();
         this._drawTime = now() - t;
-        if (this.isAnimating()) {
-            // ask map not to stop frame loop
-            this.setToRedraw();
-        }
     }
 
     _promiseResource(url) {
