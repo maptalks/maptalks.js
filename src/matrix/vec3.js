@@ -244,7 +244,6 @@ export default class vec3 {
             factor2 = factorTimes2 * (t - 2) + t,
             factor3 = factorTimes2 * (t - 1),
             factor4 = factorTimes2 * (3 - 2 * t);
-
         this._out[0] = this._out[0] * factor1 + vecI._out[0] * factor2 + vecII._out[0] * factor3 + vecIII._out[0] * factor4;
         this._out[1] = this._out[1] * factor1 + vecI._out[1] * factor2 + vecII._out[1] * factor3 + vecIII._out[1] * factor4;
         this._out[2] = this._out[2] * factor1 + vecI._out[2] * factor2 + vecII._out[2] * factor3 + vecIII._out[2] * factor4;
