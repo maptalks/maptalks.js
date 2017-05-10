@@ -1,3 +1,10 @@
+/**
+ * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/quat.js
+ * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use mat.clone().* instead of mat.*
+ * @author yellow 2017/5/10
+ */
+
 import matrix from './mat';
 import mat3 from './mat3';
 import vec3 from './vec3';
@@ -177,7 +184,7 @@ class quat {
         this._out[3]*=s;
         return this;
     };
-    
+
 
 };
 
