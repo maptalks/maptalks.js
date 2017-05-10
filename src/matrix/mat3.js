@@ -40,16 +40,16 @@ class mat3 {
     /**
      * set matrix value
      */
-    set(m0, m1, m2, m3, m4, m5, m6, m7, m8) {
-        _out[0] = m0;
-        _out[1] = m1;
-        _out[2] = m2;
-        _out[3] = m3;
-        _out[4] = m4;
-        _out[5] = m5;
-        _out[6] = m6;
-        _out[7] = m7;
-        _out[8] = m8;
+    set(m00, m01, m02, m10, m11, m12, m20, m21, m22) {
+        _out[0] = m00;
+        _out[1] = m01;
+        _out[2] = m02;
+        _out[3] = m10;
+        _out[4] = m11;
+        _out[5] = m12;
+        _out[6] = m20;
+        _out[7] = m21;
+        _out[8] = m22;
         return this;
     };
     /**
