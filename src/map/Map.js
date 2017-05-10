@@ -1097,7 +1097,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         const layersToOrder = [];
         let minZ = Number.MAX_VALUE;
-        for (let i = 0; i < layers.length; i++) {
+        for (let i = 0, l = layers.length; i < l; i++) {
             let layer = layers[i];
             if (isString(layers[i])) {
                 layer = this.getLayer(layer);
@@ -1110,7 +1110,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             layersToOrder.push(layer);
         }
-        for (let i = 0; i < layersToOrder.length; i++) {
+        for (let i = 0, l = layersToOrder.length; i < l; i++) {
             layersToOrder[i].setZIndex(minZ + i);
         }
 
