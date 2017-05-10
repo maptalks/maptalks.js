@@ -24,6 +24,7 @@ export default class vec4 {
         this._out[1] = 0;
         this._out[2] = 0;
         this._out[3] = 0;
+        return this;
     };
     /**
      * Generates a random vector with the given scale

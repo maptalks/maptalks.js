@@ -92,6 +92,24 @@ class mat4 {
         this._out[15] = 1;
         return this;
     };
+    /**
+     * Transpose the values of a mat4 not using SIMD
+     */
+    transpose(){
+        //deconstruction assignment
+        [this._out[0],this._out[1],this._out[2],this._out[3],
+         this._out[4],this._out[5],this._out[6],this._out[7],
+         this._out[8],this._out[9],this._out[10],this._out[11],
+         this._out[12],this._out[13],this._out[14],this._out[15]
+         ] 
+         = 
+         [this._out[0],this._out[4],this._out[8],this._out[12],
+          this._out[1],this._out[5],this._out[9],this._out[13],
+          this._out[2],this._out[6],this._out[10],this._out[14],
+          this._out[3],this._out[7],this._out[11],this._out[15]
+         ];
+         return this;
+    };
 
 }
 

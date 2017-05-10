@@ -100,25 +100,17 @@ class mat3 {
     transpose = function () {
         //temporary array
         var a = new matrix.ARRAY_TYPE(9);
-        a[0] = this._out[0];
-        a[1] = this._out[3];
-        a[2] = this._out[6];
-        a[3] = this._out[1];
-        a[4] = this._out[4];
-        a[5] = this._out[7];
-        a[6] = this._out[2];
-        a[7] = this._out[5];
-        a[8] = a[8];
-        //
-        this._out[0] = a[0];
-        this._out[1] = a[1];
-        this._out[2] = a[2];
-        this._out[3] = a[3];
-        this._out[4] = a[4];
-        this._out[5] = a[5];
-        this._out[6] = a[6];
-        this._out[7] = a[7];
-        this._out[8] = a[8];
+        [
+            this._out[0],this._out[1],this._out[2],
+            this._out[3],this._out[4],this._out[5],
+            this._out[6],this._out[7],this._out[8]
+        ]
+        =
+        [
+            this._out[0],this._out[3],this._out[6],
+            this._out[1],this._out[4],this._out[7],
+            this._out[2],this._out[5],this._out[8]
+        ];
         return this;
     };
     /**
