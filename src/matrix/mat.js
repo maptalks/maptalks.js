@@ -14,7 +14,7 @@ export default class matrix{
     //support ie9
     static ARRAY_TYPE = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
     static RANDOM=Math.random;
-    static ENABLE_SIMD=false;
+    static ENABLE_SIMD=true;
     static SIMD_AVAILABLE =(matrix.ARRAY_TYPE === this.Float32Array) && (typeof SIMD != 'undefined');
     static USE_SIMD = matrix.ENABLE_SIMD && matrix.SIMD_AVAILABLE;
 

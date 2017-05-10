@@ -12,7 +12,13 @@ import matrix from './mat';
  */
 class mat4 {
     static scalar = {};
-    static SIMD = {};
+    /**
+     * 
+     */
+    SIMD = {};
+    /**
+     * private 4x4 matrix array store
+     */
     _out;
     /**
      *  Creates a new identity mat4
@@ -40,7 +46,7 @@ class mat4 {
     /**
      * set the value of 4x4 matrix
      */
-    set(m00,m01,m02,m03,m10,m11,m12,m13,m20,m21,m22,m23,m30,m31,m32,m33){
+    set(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33) {
         this._out[0] = m00;
         this._out[1] = m01;
         this._out[2] = m02;
@@ -62,18 +68,18 @@ class mat4 {
     /**
      * Creates a new mat4 initialized with values from an existing matrix
      */
-    clone(){
-        let mat=new mat4();
-        mat.set(this._out[0],this._out[1],this._out[2],this._out[3],
-                this._out[4],this._out[5],this._out[6],this._out[7],
-                this._out[8],this._out[9],this._out[10],this._out[11],
-                this._out[12],this._out[13],this._out[14],this._out[15]);
+    clone() {
+        let mat = new mat4();
+        mat.set(this._out[0], this._out[1], this._out[2], this._out[3],
+            this._out[4], this._out[5], this._out[6], this._out[7],
+            this._out[8], this._out[9], this._out[10], this._out[11],
+            this._out[12], this._out[13], this._out[14], this._out[15]);
         return mat;
     };
     /**
      * Set a mat4 to the identity matrix
      */
-    identity(){
+    identity() {
         this._out[0] = 1;
         this._out[1] = 0;
         this._out[2] = 0;
@@ -93,117 +99,61 @@ class mat4 {
         return this;
     };
     /**
-     * Transpose the values of a mat4 not using SIMD
+     * Transpose the values of a mat4 
      */
-    transpose(){
-        //deconstruction assignment
-        [this._out[0],this._out[1],this._out[2],this._out[3],
-         this._out[4],this._out[5],this._out[6],this._out[7],
-         this._out[8],this._out[9],this._out[10],this._out[11],
-         this._out[12],this._out[13],this._out[14],this._out[15]
-         ] 
-         = 
-         [this._out[0],this._out[4],this._out[8],this._out[12],
-          this._out[1],this._out[5],this._out[9],this._out[13],
-          this._out[2],this._out[6],this._out[10],this._out[14],
-          this._out[3],this._out[7],this._out[11],this._out[15]
-         ];
-         return this;
-    };
+    transpose = (() => {
+        return matrix.USE_SIMD ?
+            () => {
+                let a0, a1, a2, a3,
+                    tmp01, tmp23,
+                    out0, out1, out2, out3;
+                //simd load all 4x4 matrix data
+                r0 = SIMD.Float32x4.load(this._out, 0);
+                r1 = SIMD.Float32x4.load(this._out, 4);
+                r2 = SIMD.Float32x4.load(this._out, 8);
+                r3 = SIMD.Float32x4.load(this._out, 12);
+                //cause this._out[0],this._out[4],this._out[8],this._out[12] distribute in
+                //r0 r1 r2 r3,but shuffle only accept two paramters,so...it need two tempary array
+                tmp01 = SIMD.Float32x4.shuffle(a0, a1, 0, 1, 4, 5);
+                tmp23 = SIMD.Float32x4.shuffle(a2, a3, 0, 1, 4, 5);
+                out0 = SIMD.Float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
+                out1 = SIMD.Float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
+                SIMD.Float32x4.store(this._out, 0, out0);
+                SIMD.Float32x4.store(this._out, 4, out1);
+                //
+                tmp01 = SIMD.Float32x4.shuffle(a0, a1, 2, 3, 6, 7);
+                tmp23 = SIMD.Float32x4.shuffle(a2, a3, 2, 3, 6, 7);
+                out2 = SIMD.Float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
+                out3 = SIMD.Float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
+                SIMD.Float32x4.store(this._out, 8, out2);
+                SIMD.Float32x4.store(this._out, 12, out3);
+                return this;
+            }
+            :
+            () => {
+                //deconstruction assignment
+                [this._out[0], this._out[1], this._out[2], this._out[3],
+                this._out[4], this._out[5], this._out[6], this._out[7],
+                this._out[8], this._out[9], this._out[10], this._out[11],
+                this._out[12], this._out[13], this._out[14], this._out[15]
+                ]
+                =
+                [this._out[0], this._out[4], this._out[8], this._out[12],
+                 this._out[1], this._out[5], this._out[9], this._out[13],
+                 this._out[2], this._out[6], this._out[10], this._out[14],
+                 this._out[3], this._out[7], this._out[11], this._out[15]
+                 ];
+                return this;
+            };
+    })();
+    /**
+     * Inverts a mat4
+     */
+    invert=(()=>{
 
+    })();
 }
 
-
-/**
- * Transpose the values of a mat4 not using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.scalar.transpose = function (out, a) {
-    // If we are transposing ourselves we can skip a few steps but have to cache some values
-    if (out === a) {
-        var a01 = a[1], a02 = a[2], a03 = a[3],
-            a12 = a[6], a13 = a[7],
-            a23 = a[11];
-
-        out[1] = a[4];
-        out[2] = a[8];
-        out[3] = a[12];
-        out[4] = a01;
-        out[6] = a[9];
-        out[7] = a[13];
-        out[8] = a02;
-        out[9] = a12;
-        out[11] = a[14];
-        out[12] = a03;
-        out[13] = a13;
-        out[14] = a23;
-    } else {
-        out[0] = a[0];
-        out[1] = a[4];
-        out[2] = a[8];
-        out[3] = a[12];
-        out[4] = a[1];
-        out[5] = a[5];
-        out[6] = a[9];
-        out[7] = a[13];
-        out[8] = a[2];
-        out[9] = a[6];
-        out[10] = a[10];
-        out[11] = a[14];
-        out[12] = a[3];
-        out[13] = a[7];
-        out[14] = a[11];
-        out[15] = a[15];
-    }
-
-    return out;
-};
-
-/**
- * Transpose the values of a mat4 using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.SIMD.transpose = function (out, a) {
-    var a0, a1, a2, a3,
-        tmp01, tmp23,
-        out0, out1, out2, out3;
-
-    a0 = SIMD.Float32x4.load(a, 0);
-    a1 = SIMD.Float32x4.load(a, 4);
-    a2 = SIMD.Float32x4.load(a, 8);
-    a3 = SIMD.Float32x4.load(a, 12);
-
-    tmp01 = SIMD.Float32x4.shuffle(a0, a1, 0, 1, 4, 5);
-    tmp23 = SIMD.Float32x4.shuffle(a2, a3, 0, 1, 4, 5);
-    out0 = SIMD.Float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
-    out1 = SIMD.Float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
-    SIMD.Float32x4.store(out, 0, out0);
-    SIMD.Float32x4.store(out, 4, out1);
-
-    tmp01 = SIMD.Float32x4.shuffle(a0, a1, 2, 3, 6, 7);
-    tmp23 = SIMD.Float32x4.shuffle(a2, a3, 2, 3, 6, 7);
-    out2 = SIMD.Float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
-    out3 = SIMD.Float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
-    SIMD.Float32x4.store(out, 8, out2);
-    SIMD.Float32x4.store(out, 12, out3);
-
-    return out;
-};
-
-/**
- * Transpse a mat4 using SIMD if available and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.transpose = glMatrix.USE_SIMD ? mat4.SIMD.transpose : mat4.scalar.transpose;
 
 /**
  * Inverts a mat4 not using SIMD

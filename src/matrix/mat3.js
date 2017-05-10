@@ -100,16 +100,14 @@ class mat3 {
     transpose = function () {
         //temporary array
         var a = new matrix.ARRAY_TYPE(9);
-        [
-            this._out[0],this._out[1],this._out[2],
-            this._out[3],this._out[4],this._out[5],
-            this._out[6],this._out[7],this._out[8]
+        [this._out[0],this._out[1],this._out[2],
+         this._out[3],this._out[4],this._out[5],
+         this._out[6],this._out[7],this._out[8]
         ]
         =
-        [
-            this._out[0],this._out[3],this._out[6],
-            this._out[1],this._out[4],this._out[7],
-            this._out[2],this._out[5],this._out[8]
+        [this._out[0],this._out[3],this._out[6],
+         this._out[1],this._out[4],this._out[7],
+         this._out[2],this._out[5],this._out[8]
         ];
         return this;
     };
