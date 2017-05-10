@@ -115,9 +115,7 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     isCanvasUpdated() {
-        const u = !!this._canvasUpdated;
-        this._canvasUpdated = false;
-        return u;
+        return !!this._canvasUpdated;
     }
 
     /**
@@ -152,6 +150,7 @@ class CanvasRenderer extends Class {
      * @return {HTMLCanvasElement}
      */
     getCanvasImage() {
+        this._canvasUpdated = false;
         if (this._renderZoom !== this.getMap().getZoom() || !this.canvas || !this._extent2D) {
             return null;
         }

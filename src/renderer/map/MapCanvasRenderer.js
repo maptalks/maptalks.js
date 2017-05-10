@@ -130,15 +130,15 @@ export default class MapCanvasRenderer extends MapRenderer {
                 this.setToRedraw();
             }
         }
+        // compare:
+        // 1. previous drawn layers and current drawn layers
+        // 2. previous canvas layers and current canvas layers
+        // set map to redraw if either changed
+        const preCanvasIds = this._canvasIds || [];
+        const preUpdatedIds = this._updatedIds || [];
+        this._canvasIds = canvasIds;
+        this._updatedIds = updatedIds;
         if (!this._needToRedraw()) {
-            // compare:
-            // 1. previous drawn layers and current drawn layers
-            // 2. previous canvas layers and current canvas layers
-            // set map to redraw if either changed
-            const preCanvasIds = this._canvasIds || [];
-            const preUpdatedIds = this._updatedIds || [];
-            this._canvasIds = canvasIds;
-            this._updatedIds = updatedIds;
             const sep = '---';
             if (preCanvasIds.join(sep) !== canvasIds.join(sep) || preUpdatedIds.join(sep) !== updatedIds.join(sep)) {
                 this.setToRedraw();
@@ -153,7 +153,8 @@ export default class MapCanvasRenderer extends MapRenderer {
     _fireLayerLoadEvents() {
         if (this._updatedIds && this._updatedIds.length > 0) {
             const map = this.map;
-            this._updatedIds.forEach(id => {
+            //firing order as FIFO, painting as FILO, so the order needs to be reversed
+            this._updatedIds.reverse().forEach(id => {
                 const layer = map.getLayer(id);
                 if (!layer) {
                     return;
