@@ -20,6 +20,41 @@ class quat {
         this._out[3] = 1;
     };
     /**
+     * generic a quat from mat3
+     * @param {mat3} mat the 3x3 matrix 
+     */
+    static fromMat3(mat) {
+
+    };
+    /**
+     * set the value of quat
+     */
+    set(x, y, z, w) {
+        this._out[0] = x;
+        this._out[1] = y;
+        this._out[2] = z;
+        this._out[3] = w;
+        return this;
+    };
+    /**
+     * Creates a new quat initialized with values from an existing quaternion
+     */
+    clone() {
+        let qua = new quat();
+        qua.set(qua._out[0], qua._out[1], qua._out[2], qua._out[3]);
+        return qua;
+    };
+    /**
+     * Set a quat to the identity quaternion
+     */
+    identity() {
+        this._out[0] = 0;
+        this._out[1] = 0;
+        this._out[2] = 0;
+        this._out[3] = 1;
+        return this;
+    };
+    /**
      * @param {vec3} vecI the initial vector
      * @param {vec3} vecII the destination vector
      * 
@@ -54,196 +89,99 @@ class quat {
             }
         }
     })();
+    /**
+     * Sets the specified quaternion with values corresponding to the given
+     * axes. Each axis is a vec3 and is expected to be unit length and
+     * perpendicular to all other specified axes.
+     * @param {vec3} vecView  the vector representing the viewing direction
+     * @param {vec3} vecRight the vector representing the local "right" direction
+     * @param {vec3} vecUp    the vector representing the local "up" direction
+     */
+    setAxes = (() => {
+        var mat = new mat3();
 
-};
+        return (vecView, vecRight, vecUp) => {
+            mat._out[0] = vecRight._out[0];
+            mat._out[3] = vecRight._out[1];
+            mat._out[6] = vecRight._out[2];
+            mat._out[1] = vecUp._out[0];
+            mat._out[4] = vecUp._out[1];
+            mat._out[7] = vecUp._out[2];
+            mat._out[2] = -vecView._out[0];
+            mat._out[5] = -vecView._out[1];
+            mat._out[8] = -vecView._out[2];
+            return quat.fromMat3(mat);
+        }
 
-let qua = new quat();
-qua.r
-    ()
-
-
-/**
- * Sets the specified quaternion with values corresponding to the given
- * axes. Each axis is a vec3 and is expected to be unit length and
- * perpendicular to all other specified axes.
- *
- * @param {vec3} view  the vector representing the viewing direction
- * @param {vec3} right the vector representing the local "right" direction
- * @param {vec3} up    the vector representing the local "up" direction
- * @returns {quat} out
- */
-quat.setAxes = (function () {
-    var matr = mat3.create();
-
-    return function (out, view, right, up) {
-        matr[0] = right[0];
-        matr[3] = right[1];
-        matr[6] = right[2];
-
-        matr[1] = up[0];
-        matr[4] = up[1];
-        matr[7] = up[2];
-
-        matr[2] = -view[0];
-        matr[5] = -view[1];
-        matr[8] = -view[2];
-
-        return quat.normalize(out, quat.fromMat3(out, matr));
+    })();
+    /**
+     * Sets a quat from the given angle and rotation axis,
+     * then returns it.
+     * @param {vec3} axis the axis around which to rotate
+     * @param {number} rad
+     */
+    setAxisAngle(axis, rad) {
+        rad = rad * 0.5;
+        var s = Math.sin(rad);
+        this._out[0] = s * axis._out[0];
+        this._out[1] = s * axis._out[1];
+        this._out[2] = s * axis._out[2];
+        this._out[3] = Math.cos(rad);
+        return this;
     };
-})();
+    /**
+     * Gets the rotation axis and angle for a given quaternion. 
+     * If a quaternion is created with setAxisAngle, 
+     * this method will return the same values as providied in the original parameter list OR functionally equivalent values.
+     * @example The quaternion formed by axis [0, 0, 1] and angle -90 is the same as the quaternion formed by [0, 0, 1] and 270. 
+     *          This method favors the latter.
+     * @return [axis,angle]
+     */
+    getAxisAngle() {
+        let rad = Math.acos(this._out[3]) * 2.0,
+            s = Math.sin(rad / 2.0);
+        let axis = new vec3();
+        s === 0.0 ? axis.set(1, 0, 0) : axis.set(q[0] / s, q[1] / s, q[2] / s);
+        return [axis, rad];
+    };
+    /**
+     * add two quat's
+     * @param {quat} qua 
+     */
+    add(qua) {
+        this._out[0] += qua._out[0];
+        this._out[1] += qua._out[1];
+        this._out[2] += qua._out[2];
+        this._out[3] += qua._out[3];
+        return this;
+    };
+    /**
+     * Multiplies two quat's
+     */
+    multiply(qua) {
+        let [ax, ay, az, aw] = this._out,
+            [bx, by, bz, bw] = qua._out;
+        this._out[0] = ax * bw + aw * bx + ay * bz - az * by;
+        this._out[1] = ay * bw + aw * by + az * bx - ax * bz;
+        this._out[2] = az * bw + aw * bz + ax * by - ay * bx;
+        this._out[3] = aw * bw - ax * bx - ay * by - az * bz;
+        return this;
+    };
+    /**
+     * @param {number} s
+     */
+    scale(s){
+        this._out[0]*=s;
+        this._out[1]*=s;
+        this._out[2]*=s;
+        this._out[3]*=s;
+        return this;
+    };
+    
 
-/**
- * Creates a new quat initialized with values from an existing quaternion
- *
- * @param {quat} a quaternion to clone
- * @returns {quat} a new quaternion
- * @function
- */
-quat.clone = vec4.clone;
-
-/**
- * Creates a new quat initialized with the given values
- *
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {quat} a new quaternion
- * @function
- */
-quat.fromValues = vec4.fromValues;
-
-/**
- * Copy the values from one quat to another
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the source quaternion
- * @returns {quat} out
- * @function
- */
-quat.copy = vec4.copy;
-
-/**
- * Set the components of a quat to the given values
- *
- * @param {quat} out the receiving quaternion
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {quat} out
- * @function
- */
-quat.set = vec4.set;
-
-/**
- * Set a quat to the identity quaternion
- *
- * @param {quat} out the receiving quaternion
- * @returns {quat} out
- */
-quat.identity = function (out) {
-    out[0] = 0;
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 1;
-    return out;
 };
 
-/**
- * Sets a quat from the given angle and rotation axis,
- * then returns it.
- *
- * @param {quat} out the receiving quaternion
- * @param {vec3} axis the axis around which to rotate
- * @param {Number} rad the angle in radians
- * @returns {quat} out
- **/
-quat.setAxisAngle = function (out, axis, rad) {
-    rad = rad * 0.5;
-    var s = Math.sin(rad);
-    out[0] = s * axis[0];
-    out[1] = s * axis[1];
-    out[2] = s * axis[2];
-    out[3] = Math.cos(rad);
-    return out;
-};
 
-/**
- * Gets the rotation axis and angle for a given
- *  quaternion. If a quaternion is created with
- *  setAxisAngle, this method will return the same
- *  values as providied in the original parameter list
- *  OR functionally equivalent values.
- * Example: The quaternion formed by axis [0, 0, 1] and
- *  angle -90 is the same as the quaternion formed by
- *  [0, 0, 1] and 270. This method favors the latter.
- * @param  {vec3} out_axis  Vector receiving the axis of rotation
- * @param  {quat} q     Quaternion to be decomposed
- * @return {Number}     Angle, in radians, of the rotation
- */
-quat.getAxisAngle = function (out_axis, q) {
-    var rad = Math.acos(q[3]) * 2.0;
-    var s = Math.sin(rad / 2.0);
-    if (s != 0.0) {
-        out_axis[0] = q[0] / s;
-        out_axis[1] = q[1] / s;
-        out_axis[2] = q[2] / s;
-    } else {
-        // If s is zero, return any axis (no rotation - axis does not matter)
-        out_axis[0] = 1;
-        out_axis[1] = 0;
-        out_axis[2] = 0;
-    }
-    return rad;
-};
-
-/**
- * Adds two quat's
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @returns {quat} out
- * @function
- */
-quat.add = vec4.add;
-
-/**
- * Multiplies two quat's
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @returns {quat} out
- */
-quat.multiply = function (out, a, b) {
-    var ax = a[0], ay = a[1], az = a[2], aw = a[3],
-        bx = b[0], by = b[1], bz = b[2], bw = b[3];
-
-    out[0] = ax * bw + aw * bx + ay * bz - az * by;
-    out[1] = ay * bw + aw * by + az * bx - ax * bz;
-    out[2] = az * bw + aw * bz + ax * by - ay * bx;
-    out[3] = aw * bw - ax * bx - ay * by - az * bz;
-    return out;
-};
-
-/**
- * Alias for {@link quat.multiply}
- * @function
- */
-quat.mul = quat.multiply;
-
-/**
- * Scales a quat by a scalar number
- *
- * @param {quat} out the receiving vector
- * @param {quat} a the vector to scale
- * @param {Number} b amount to scale the vector by
- * @returns {quat} out
- * @function
- */
-quat.scale = vec4.scale;
 
 /**
  * Rotates a quaternion by the given angle about the X axis

@@ -183,8 +183,10 @@ export default class vec2 {
     normalize() {
         let len = this.vec2Length();
         if (len > 0) {
-            this._out[0] /= len;
-            this._out[1] /= len;
+            //for the reason * has a high performance than /
+            len=1.0/len;
+            this._out[0] *= len;
+            this._out[1] *= len;
         }
         return this;
     };
