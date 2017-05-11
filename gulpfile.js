@@ -1,5 +1,4 @@
 const gulp = require("gulp"),
-    mocha = require("gulp-mocha"),
     rollup = require("rollup"),
     babel = require("rollup-plugin-babel"),
     //glup-karma reference https://github.com/karma-runner/gulp-karma
@@ -15,7 +14,7 @@ gulp.task("kiwl.gl.combine", function () {
         bundle.write({
             format: "umd",
             moduleName: "kiwigl",
-            dest: "./dist/kiwigl.js",
+            dest: "./dist/kiwi.gl.js",
             // sourceMap: "inline"
         })
     });
@@ -36,7 +35,7 @@ gulp.task('tdd', function (done) {
 
 gulp.task("default", ["tdd"]);
 //gulp.task("default",["kiwl.gl.combine"]);
-//gulp.start(["combine.gl"]);
+//gulp.start(["tdd"]);
 //gulp.start(["kiwi.test"]);
 
 // gulp.task("default", function () {

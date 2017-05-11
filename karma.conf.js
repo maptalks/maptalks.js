@@ -6,29 +6,46 @@
 module.exports = function (config) {
 	config.set({
 		// base path, that will be used to resolve files and exclude
-		basePath: '..',
+		//basePath: '..',
 		// frameworks to use
-		frameworks: ['mocha'],
+		frameworks: ['mocha', 'chai'],
+		client: {
+			'mocha': {
+				'ui': 'tdd'
+			}
+		},
 		// list of files / patterns to load in the browser
 		files: [
-			'src/init.js',
+			'dist/kiwi.gl.js',
 			'test/**/*.spec.js',
 		],
 		// add a preprocessor for the main test file
 		preprocessors: {
 			//'src/**/*.js': ['babel'],
-			'src/init.js':['babel']
-            //'test/main-node.js': ['rollupNode'],
+			'src/init.js': ['babel']
+			//'test/main-node.js': ['rollupNode'],
 		},
 		// specify the config for the rollup pre-processor: run babel plugin on the code
-		rollupPreprocessor: {
-			format: 'iife',
-            moduleName: 'kiwi.gl',
-            //sourceMap: 'inline',
-			plugins: [
-				require('rollup-plugin-buble')(),
-			],
+		babelPreprocessor: {
+			options: {
+				presets: ['es2015'],
+				sourceMap: 'inline'
+			},
+			filename: function (file) {
+				return file.originalPath.replace(/\.js$/, '.gl.js');
+			},
+			sourceFileName: function (file) {
+				return file.originalPath;
+			}
 		},
+		// rollupPreprocessor: {
+		// 	format: 'iife',
+		// 	moduleName: 'kiwi.gl',
+		// 	//sourceMap: 'inline',
+		// 	plugins: [
+		// 		require('rollup-plugin-buble')(),
+		// 	],
+		// },
 		// specify a custom config for the rollup pre-processor:
 		// run node-resolve + commonjs + buble plugin on the code
 		// customPreprocessors: {
@@ -45,15 +62,17 @@ module.exports = function (config) {
 		// },
 		// load necessary plugins
 		plugins: [
+			'karma-phantomjs-launcher',
+			'karma-mocha',
 			//'karma-jasmine',
-			//'karma-phantomjs-launcher',
+			'karma-chai'
 			//require('./lib'),
 		],
 		// list of files to exclude
 		exclude: [],
 		// test results reporter to use
 		// possible values: 'dots', 'progress', 'junit', 'growl', 'coverage','mochawesome'
-		reporters: ['mochawesome'],
+		reporters: ['progress'],
 		// web server port
 		port: 9876,
 		// enable / disable colors in the output (reporters and logs)
