@@ -11,7 +11,7 @@ import matrix from './mat';
  * @class 3x3 Matrix
  * @name mat3
  */
-class mat3 {
+export default class mat3 {
     /**
      * an array to store the 3*3 matrix data
      * [1,0,0]
