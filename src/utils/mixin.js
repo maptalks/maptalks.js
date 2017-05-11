@@ -25,3 +25,5 @@ let mix = function (...mixins) {
     }
     return Mix;
 }
+
+export default mix;

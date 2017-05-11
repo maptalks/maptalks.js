@@ -1,3 +1,5 @@
 {
-    "presets": ["es2015-rollup"]
+    "presets": ["es2015-rollup"],
+    "plugins": ["transform-class-properties"]
+    //"transform-es2015-modules-umd"
 }

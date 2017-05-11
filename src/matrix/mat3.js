@@ -20,7 +20,6 @@ export default class mat3 {
      * @private 
      */
     _out;
-
     /**
      * Creates a new identity mat3
      */
@@ -66,14 +65,16 @@ export default class mat3 {
      *  Copies the upper-left 3x3 values into the given mat3.
      *  construct from mat4
      *  @method fromMat4
+     *  @param {mat3} m
      *  @return {mat3}
      */
-    fromMat4(mat) {
-        this.set(mat._out[0], mat._out[1], mat._out[2],
-            mat._out[4], mat._out[5], mat._out[6],
-            mat._out[8], mat._out[9], mat._out[10]
-        )
-        return this;
+    static fromMat4(m) {
+        let mat=new mat3();
+        mat.set(m._out[0], m._out[1], m._out[2],
+            m._out[4], m._out[5], m._out[6],
+            m._out[8], m._out[9], m._out[10]
+        );
+        return mat;
     };
     /**
     * Set a mat3 to the identity matrix
@@ -81,7 +82,7 @@ export default class mat3 {
     * @param {mat3} out the receiving matrix
     * @returns {mat3} out
     */
-    identity = function () {
+    identity(){
         _out[0] = 1;
         _out[1] = 0;
         _out[2] = 0;
@@ -97,7 +98,7 @@ export default class mat3 {
      * Transpose the values of a mat3
      * @method transpose
      */
-    transpose = function () {
+    transpose(){
         //temporary array
         var a = new matrix.ARRAY_TYPE(9);
         [this._out[0],this._out[1],this._out[2],
@@ -170,11 +171,9 @@ export default class mat3 {
         this._out[0] = b00 * a00 + b01 * a10 + b02 * a20;
         this._out[1] = b00 * a01 + b01 * a11 + b02 * a21;
         this._out[2] = b00 * a02 + b01 * a12 + b02 * a22;
-
         this._out[3] = b10 * a00 + b11 * a10 + b12 * a20;
         this._out[4] = b10 * a01 + b11 * a11 + b12 * a21;
         this._out[5] = b10 * a02 + b11 * a12 + b12 * a22;
-
         this._out[6] = b20 * a00 + b21 * a10 + b22 * a20;
         this._out[7] = b20 * a01 + b21 * a11 + b22 * a21;
         this._out[8] = b20 * a02 + b21 * a12 + b22 * a22;
@@ -187,7 +186,7 @@ export default class mat3 {
     translate(vec) {
         let [a00, a01, a02, a10, a11, a12, a20, a21, a22] = this._out;
         let [x, y] = vec._out;
-        out[0] = a00;
+        this._out[0] = a00;
         this._out[1] = a01;
         this._out[2] = a02;
         this._out[3] = a10;
@@ -239,9 +238,9 @@ export default class mat3 {
      */
     fromQuat(q){
 
-    }
+    };
 
-}
+};
 
 
 
@@ -488,6 +487,3 @@ mat3.equals = function (a, b) {
         Math.abs(a7 - b7) <= matrix.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)) &&
         Math.abs(a8 - b8) <= matrix.EPSILON * Math.max(1.0, Math.abs(a8), Math.abs(b8)));
 };
-
-
-module.exports = mat3;
