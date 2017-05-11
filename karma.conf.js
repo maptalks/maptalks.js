@@ -22,22 +22,10 @@ module.exports = function (config) {
 		// add a preprocessor for the main test file
 		preprocessors: {
 			//'src/**/*.js': ['babel'],
-			'src/init.js': ['babel']
+			'test/**/*.spec.js': ['babel']
 			//'test/main-node.js': ['rollupNode'],
 		},
 		// specify the config for the rollup pre-processor: run babel plugin on the code
-		babelPreprocessor: {
-			options: {
-				presets: ['es2015'],
-				sourceMap: 'inline'
-			},
-			filename: function (file) {
-				return file.originalPath.replace(/\.js$/, '.gl.js');
-			},
-			sourceFileName: function (file) {
-				return file.originalPath;
-			}
-		},
 		// rollupPreprocessor: {
 		// 	format: 'iife',
 		// 	moduleName: 'kiwi.gl',
@@ -63,6 +51,8 @@ module.exports = function (config) {
 		// load necessary plugins
 		plugins: [
 			'karma-phantomjs-launcher',
+			'karma-babel-preprocessor',
+			'karma-chrome-launcher',
 			'karma-mocha',
 			//'karma-jasmine',
 			'karma-chai'
@@ -91,7 +81,7 @@ module.exports = function (config) {
 		// - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
 		// - PhantomJS
 		// - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-		browsers: ['Chrome'],
+		browsers: ['PhantomJS'],
 		// If browser does not capture in given timeout [ms], kill it
 		captureTimeout: 60000,
 		// Continuous Integration mode

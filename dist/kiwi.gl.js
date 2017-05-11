@@ -163,7 +163,7 @@ matrix.EPSILON = 1e-6;
 matrix.ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
 matrix.RANDOM = Math.random;
 matrix.ENABLE_SIMD = true;
-matrix.SIMD_AVAILABLE = matrix.ARRAY_TYPE === undefined.Float32Array && typeof SIMD != 'undefined';
+matrix.SIMD_AVAILABLE = matrix.ARRAY_TYPE === Float32Array && typeof SIMD != 'undefined';
 matrix.USE_SIMD = matrix.ENABLE_SIMD && matrix.SIMD_AVAILABLE;
 
 /**

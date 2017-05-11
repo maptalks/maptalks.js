@@ -33,7 +33,7 @@ gulp.task('tdd', function (done) {
     }, done).start();
 });
 
-gulp.task("default", ["tdd"]);
+gulp.task("default", ["kiwl.gl.combine","tdd"]);
 //gulp.task("default",["kiwl.gl.combine"]);
 //gulp.start(["tdd"]);
 //gulp.start(["kiwi.test"]);
