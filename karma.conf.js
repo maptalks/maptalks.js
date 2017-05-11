@@ -8,10 +8,10 @@ module.exports = function (config) {
 		// base path, that will be used to resolve files and exclude
 		//basePath: '..',
 		// frameworks to use
-		frameworks: ['mocha', 'chai'],
+		frameworks: ['mocha', 'expect'],
 		client: {
 			'mocha': {
-				'ui': 'tdd'
+				'ui': 'bdd'
 			}
 		},
 		// list of files / patterns to load in the browser
@@ -25,44 +25,32 @@ module.exports = function (config) {
 			'test/**/*.spec.js': ['babel']
 			//'test/main-node.js': ['rollupNode'],
 		},
-		// specify the config for the rollup pre-processor: run babel plugin on the code
-		// rollupPreprocessor: {
-		// 	format: 'iife',
-		// 	moduleName: 'kiwi.gl',
-		// 	//sourceMap: 'inline',
-		// 	plugins: [
-		// 		require('rollup-plugin-buble')(),
-		// 	],
-		// },
-		// specify a custom config for the rollup pre-processor:
-		// run node-resolve + commonjs + buble plugin on the code
-		// customPreprocessors: {
-		// 	rollupNode: {
-		// 		base: 'rollup',
-		// 		options: {
-		// 			plugins: [
-		// 				require('rollup-plugin-node-resolve')(),
-		// 				require('rollup-plugin-commonjs')(),
-		// 				require('rollup-plugin-buble')(),
-		// 			],
-		// 		},
-		// 	},
-		// },
+		babelPreprocessor: {
+			options: {
+				presets: ['es2015'],
+				sourceMap: 'inline'
+			},
+			filename: function (file) {
+				return file.originalPath.replace(/\.js$/, '.es5.js');
+			},
+			sourceFileName: function (file) {
+				return file.originalPath;
+			}
+		},
 		// load necessary plugins
 		plugins: [
 			'karma-phantomjs-launcher',
 			'karma-babel-preprocessor',
 			'karma-chrome-launcher',
+			'karma-expect',
 			'karma-mocha',
-			//'karma-jasmine',
-			'karma-chai'
-			//require('./lib'),
+			'karma-mocha-reporter'
 		],
 		// list of files to exclude
 		exclude: [],
 		// test results reporter to use
-		// possible values: 'dots', 'progress', 'junit', 'growl', 'coverage','mochawesome'
-		reporters: ['progress'],
+		// possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
+		reporters: ['mocha'],
 		// web server port
 		port: 9876,
 		// enable / disable colors in the output (reporters and logs)
