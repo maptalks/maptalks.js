@@ -14,7 +14,7 @@ import vec4 from './vec4';
  * @class Quaternion
  * @name quat
  */
-class quat {
+export default class quat {
     _out;
     /**
      * Creates a new identity quat

@@ -5,7 +5,8 @@
  * @author yellow 2017/5/10
  */
 import matrix from './mat';
-
+import vec3 from './vec3';
+import quat from './quat';
 /**
  * @class 4x4 Matrix
  * @name mat4
@@ -113,7 +114,7 @@ class mat4 {
                 r2 = SIMD.Float32x4.load(this._out, 8);
                 r3 = SIMD.Float32x4.load(this._out, 12);
                 //cause this._out[0],this._out[4],this._out[8],this._out[12] distribute in
-                //r0 r1 r2 r3,but shuffle only accept two paramters,so...it need two tempary array
+                //r0 r1 r2 r3,but shuffle only accept two paramters,so...it need two tempary arrays
                 tmp01 = SIMD.Float32x4.shuffle(a0, a1, 0, 1, 4, 5);
                 tmp23 = SIMD.Float32x4.shuffle(a2, a3, 0, 1, 4, 5);
                 out0 = SIMD.Float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
@@ -137,1487 +138,719 @@ class mat4 {
                 this._out[8], this._out[9], this._out[10], this._out[11],
                 this._out[12], this._out[13], this._out[14], this._out[15]
                 ]
-                =
-                [this._out[0], this._out[4], this._out[8], this._out[12],
-                 this._out[1], this._out[5], this._out[9], this._out[13],
-                 this._out[2], this._out[6], this._out[10], this._out[14],
-                 this._out[3], this._out[7], this._out[11], this._out[15]
-                 ];
+                    =
+                    [this._out[0], this._out[4], this._out[8], this._out[12],
+                    this._out[1], this._out[5], this._out[9], this._out[13],
+                    this._out[2], this._out[6], this._out[10], this._out[14],
+                    this._out[3], this._out[7], this._out[11], this._out[15]
+                    ];
                 return this;
             };
     })();
     /**
      * Inverts a mat4
      */
-    invert=(()=>{
-
+    invert = (() => {
+        //deconstruction assignment
+        return () => {
+            let [a00, a01, a02, a03,
+                a10, a11, a12, a13,
+                a20, a21, a22, a23,
+                a30, a31, a32, a33] = this._out,
+                b00 = a00 * a11 - a01 * a10,
+                b01 = a00 * a12 - a02 * a10,
+                b02 = a00 * a13 - a03 * a10,
+                b03 = a01 * a12 - a02 * a11,
+                b04 = a01 * a13 - a03 * a11,
+                b05 = a02 * a13 - a03 * a12,
+                b06 = a20 * a31 - a21 * a30,
+                b07 = a20 * a32 - a22 * a30,
+                b08 = a20 * a33 - a23 * a30,
+                b09 = a21 * a32 - a22 * a31,
+                b10 = a21 * a33 - a23 * a31,
+                b11 = a22 * a33 - a23 * a32,
+                // Calculate the determinant
+                det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+            if (!det) {
+                return null;
+            }
+            det = 1.0 / det;
+            [
+                this._out[0], this._out[1], this._out[2], this._out[3],
+                this._out[4], this._out[5], this._out[6], this._out[7],
+                this._out[8], this._out[9], this._out[10], this._out[11],
+                this._out[12], this._out[13], this._out[14], this._out[15]
+            ]
+                =
+                [
+                    (a11 * b11 - a12 * b10 + a13 * b09) * det, (a02 * b10 - a01 * b11 - a03 * b09) * det, (a31 * b05 - a32 * b04 + a33 * b03) * det, (a22 * b04 - a21 * b05 - a23 * b03) * det,
+                    (a12 * b08 - a10 * b11 - a13 * b07) * det, (a00 * b11 - a02 * b08 + a03 * b07) * det, (a32 * b02 - a30 * b05 - a33 * b01) * det, (a20 * b05 - a22 * b02 + a23 * b01) * det,
+                    (a10 * b10 - a11 * b08 + a13 * b06) * det, (a01 * b08 - a00 * b10 - a03 * b06) * det, (a30 * b04 - a31 * b02 + a33 * b00) * det, (a21 * b02 - a20 * b04 - a23 * b00) * det,
+                    (a11 * b07 - a10 * b09 - a12 * b06) * det, (a00 * b09 - a01 * b07 + a02 * b06) * det, (a31 * b01 - a30 * b03 - a32 * b00) * det, (a20 * b03 - a21 * b01 + a22 * b00) * det
+                ]
+            return this;
+        }
     })();
-}
-
-
-/**
- * Inverts a mat4 not using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.scalar.invert = function (out, a) {
-    var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
-        a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
-        a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
-        a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
-
-        b00 = a00 * a11 - a01 * a10,
-        b01 = a00 * a12 - a02 * a10,
-        b02 = a00 * a13 - a03 * a10,
-        b03 = a01 * a12 - a02 * a11,
-        b04 = a01 * a13 - a03 * a11,
-        b05 = a02 * a13 - a03 * a12,
-        b06 = a20 * a31 - a21 * a30,
-        b07 = a20 * a32 - a22 * a30,
-        b08 = a20 * a33 - a23 * a30,
-        b09 = a21 * a32 - a22 * a31,
-        b10 = a21 * a33 - a23 * a31,
-        b11 = a22 * a33 - a23 * a32,
-
+    /**
+     * Calculates the adjugate of a mat4 not using SIMD
+     */
+    adjoint() {
+        let [a00, a01, a02, a03,
+            a10, a11, a12, a13,
+            a20, a21, a22, a23,
+            a30, a31, a32, a33] = this._out;
+        this._out[0] = (a11 * (a22 * a33 - a23 * a32) - a21 * (a12 * a33 - a13 * a32) + a31 * (a12 * a23 - a13 * a22));
+        this._out[1] = -(a01 * (a22 * a33 - a23 * a32) - a21 * (a02 * a33 - a03 * a32) + a31 * (a02 * a23 - a03 * a22));
+        this._out[2] = (a01 * (a12 * a33 - a13 * a32) - a11 * (a02 * a33 - a03 * a32) + a31 * (a02 * a13 - a03 * a12));
+        this._out[3] = -(a01 * (a12 * a23 - a13 * a22) - a11 * (a02 * a23 - a03 * a22) + a21 * (a02 * a13 - a03 * a12));
+        this._out[4] = -(a10 * (a22 * a33 - a23 * a32) - a20 * (a12 * a33 - a13 * a32) + a30 * (a12 * a23 - a13 * a22));
+        this._out[5] = (a00 * (a22 * a33 - a23 * a32) - a20 * (a02 * a33 - a03 * a32) + a30 * (a02 * a23 - a03 * a22));
+        this._out[6] = -(a00 * (a12 * a33 - a13 * a32) - a10 * (a02 * a33 - a03 * a32) + a30 * (a02 * a13 - a03 * a12));
+        this._out[7] = (a00 * (a12 * a23 - a13 * a22) - a10 * (a02 * a23 - a03 * a22) + a20 * (a02 * a13 - a03 * a12));
+        this._out[8] = (a10 * (a21 * a33 - a23 * a31) - a20 * (a11 * a33 - a13 * a31) + a30 * (a11 * a23 - a13 * a21));
+        this._out[9] = -(a00 * (a21 * a33 - a23 * a31) - a20 * (a01 * a33 - a03 * a31) + a30 * (a01 * a23 - a03 * a21));
+        this._out[10] = (a00 * (a11 * a33 - a13 * a31) - a10 * (a01 * a33 - a03 * a31) + a30 * (a01 * a13 - a03 * a11));
+        this._out[11] = -(a00 * (a11 * a23 - a13 * a21) - a10 * (a01 * a23 - a03 * a21) + a20 * (a01 * a13 - a03 * a11));
+        this._out[12] = -(a10 * (a21 * a32 - a22 * a31) - a20 * (a11 * a32 - a12 * a31) + a30 * (a11 * a22 - a12 * a21));
+        this._out[13] = (a00 * (a21 * a32 - a22 * a31) - a20 * (a01 * a32 - a02 * a31) + a30 * (a01 * a22 - a02 * a21));
+        this._out[14] = -(a00 * (a11 * a32 - a12 * a31) - a10 * (a01 * a32 - a02 * a31) + a30 * (a01 * a12 - a02 * a11));
+        this._out[15] = (a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11));
+        return this;
+    };
+    /**
+     * Calculates the determinant of a mat4
+     * @return {number} determinant of this matrix
+     */
+    determinant() {
+        let [a00, a01, a02, a03,
+            a10, a11, a12, a13,
+            a20, a21, a22, a23,
+            a30, a31, a32, a33] = this._out;
+        let b00 = a00 * a11 - a01 * a10,
+            b01 = a00 * a12 - a02 * a10,
+            b02 = a00 * a13 - a03 * a10,
+            b03 = a01 * a12 - a02 * a11,
+            b04 = a01 * a13 - a03 * a11,
+            b05 = a02 * a13 - a03 * a12,
+            b06 = a20 * a31 - a21 * a30,
+            b07 = a20 * a32 - a22 * a30,
+            b08 = a20 * a33 - a23 * a30,
+            b09 = a21 * a32 - a22 * a31,
+            b10 = a21 * a33 - a23 * a31,
+            b11 = a22 * a33 - a23 * a32;
         // Calculate the determinant
-        det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+        return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+    };
+    /**
+     * Multiplies two mat4's explicitly not using SIMD
+     * @param {mat4} mat
+     */
+    multiply(mat) {
+        let [a00, a01, a02, a03,
+            a10, a11, a12, a13,
+            a20, a21, a22, a23,
+            a30, a31, a32, a33] = this._out;
+        // Cache only the current line of the second matrix
+        let b0 = mat._out[0], b1 = mat._out[1], b2 = mat._out[2], b3 = mat._out[3];
+        this._out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+        this._out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+        this._out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+        this._out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
 
-    if (!det) {
-        return null;
-    }
-    det = 1.0 / det;
+        b0 = mat._out[4]; b1 = mat._out[5]; b2 = mat._out[6]; b3 = mat._out[7];
+        this._out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+        this._out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+        this._out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+        this._out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
 
-    out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
-    out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
-    out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
-    out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
-    out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
-    out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
-    out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
-    out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
-    out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
-    out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
-    out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
-    out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
-    out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
-    out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
-    out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
-    out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+        b0 = mat._out[8]; b1 = mat._out[9]; b2 = mat._out[10]; b3 = mat._out[11];
+        this._out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+        this._out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+        this._out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+        this._out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
 
-    return out;
-};
+        b0 = mat._out[12]; b1 = mat._out[13]; b2 = mat._out[14]; b3 = mat._out[15];
+        this._out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+        this._out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+        this._out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+        this._out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
 
-/**
- * Inverts a mat4 using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.SIMD.invert = function (out, a) {
-    var row0, row1, row2, row3,
-        tmp1,
-        minor0, minor1, minor2, minor3,
-        det,
-        a0 = SIMD.Float32x4.load(a, 0),
-        a1 = SIMD.Float32x4.load(a, 4),
-        a2 = SIMD.Float32x4.load(a, 8),
-        a3 = SIMD.Float32x4.load(a, 12);
-
-    // Compute matrix adjugate
-    tmp1 = SIMD.Float32x4.shuffle(a0, a1, 0, 1, 4, 5);
-    row1 = SIMD.Float32x4.shuffle(a2, a3, 0, 1, 4, 5);
-    row0 = SIMD.Float32x4.shuffle(tmp1, row1, 0, 2, 4, 6);
-    row1 = SIMD.Float32x4.shuffle(row1, tmp1, 1, 3, 5, 7);
-    tmp1 = SIMD.Float32x4.shuffle(a0, a1, 2, 3, 6, 7);
-    row3 = SIMD.Float32x4.shuffle(a2, a3, 2, 3, 6, 7);
-    row2 = SIMD.Float32x4.shuffle(tmp1, row3, 0, 2, 4, 6);
-    row3 = SIMD.Float32x4.shuffle(row3, tmp1, 1, 3, 5, 7);
-
-    tmp1 = SIMD.Float32x4.mul(row2, row3);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor0 = SIMD.Float32x4.mul(row1, tmp1);
-    minor1 = SIMD.Float32x4.mul(row0, tmp1);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor0 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row1, tmp1), minor0);
-    minor1 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor1);
-    minor1 = SIMD.Float32x4.swizzle(minor1, 2, 3, 0, 1);
-
-    tmp1 = SIMD.Float32x4.mul(row1, row2);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor0 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor0);
-    minor3 = SIMD.Float32x4.mul(row0, tmp1);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor0 = SIMD.Float32x4.sub(minor0, SIMD.Float32x4.mul(row3, tmp1));
-    minor3 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor3);
-    minor3 = SIMD.Float32x4.swizzle(minor3, 2, 3, 0, 1);
-
-    tmp1 = SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(row1, 2, 3, 0, 1), row3);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    row2 = SIMD.Float32x4.swizzle(row2, 2, 3, 0, 1);
-    minor0 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row2, tmp1), minor0);
-    minor2 = SIMD.Float32x4.mul(row0, tmp1);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor0 = SIMD.Float32x4.sub(minor0, SIMD.Float32x4.mul(row2, tmp1));
-    minor2 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor2);
-    minor2 = SIMD.Float32x4.swizzle(minor2, 2, 3, 0, 1);
-
-    tmp1 = SIMD.Float32x4.mul(row0, row1);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor2 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor2);
-    minor3 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row2, tmp1), minor3);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor2 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row3, tmp1), minor2);
-    minor3 = SIMD.Float32x4.sub(minor3, SIMD.Float32x4.mul(row2, tmp1));
-
-    tmp1 = SIMD.Float32x4.mul(row0, row3);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor1 = SIMD.Float32x4.sub(minor1, SIMD.Float32x4.mul(row2, tmp1));
-    minor2 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row1, tmp1), minor2);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor1 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row2, tmp1), minor1);
-    minor2 = SIMD.Float32x4.sub(minor2, SIMD.Float32x4.mul(row1, tmp1));
-
-    tmp1 = SIMD.Float32x4.mul(row0, row2);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor1 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor1);
-    minor3 = SIMD.Float32x4.sub(minor3, SIMD.Float32x4.mul(row1, tmp1));
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor1 = SIMD.Float32x4.sub(minor1, SIMD.Float32x4.mul(row3, tmp1));
-    minor3 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row1, tmp1), minor3);
-
-    // Compute matrix determinant
-    det = SIMD.Float32x4.mul(row0, minor0);
-    det = SIMD.Float32x4.add(SIMD.Float32x4.swizzle(det, 2, 3, 0, 1), det);
-    det = SIMD.Float32x4.add(SIMD.Float32x4.swizzle(det, 1, 0, 3, 2), det);
-    tmp1 = SIMD.Float32x4.reciprocalApproximation(det);
-    det = SIMD.Float32x4.sub(
-        SIMD.Float32x4.add(tmp1, tmp1),
-        SIMD.Float32x4.mul(det, SIMD.Float32x4.mul(tmp1, tmp1)));
-    det = SIMD.Float32x4.swizzle(det, 0, 0, 0, 0);
-    if (!det) {
-        return null;
-    }
-
-    // Compute matrix inverse
-    SIMD.Float32x4.store(out, 0, SIMD.Float32x4.mul(det, minor0));
-    SIMD.Float32x4.store(out, 4, SIMD.Float32x4.mul(det, minor1));
-    SIMD.Float32x4.store(out, 8, SIMD.Float32x4.mul(det, minor2));
-    SIMD.Float32x4.store(out, 12, SIMD.Float32x4.mul(det, minor3));
-    return out;
-}
-
-/**
- * Inverts a mat4 using SIMD if available and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.invert = glMatrix.USE_SIMD ? mat4.SIMD.invert : mat4.scalar.invert;
-
-/**
- * Calculates the adjugate of a mat4 not using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.scalar.adjoint = function (out, a) {
-    var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
-        a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
-        a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
-        a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
-
-    out[0] = (a11 * (a22 * a33 - a23 * a32) - a21 * (a12 * a33 - a13 * a32) + a31 * (a12 * a23 - a13 * a22));
-    out[1] = -(a01 * (a22 * a33 - a23 * a32) - a21 * (a02 * a33 - a03 * a32) + a31 * (a02 * a23 - a03 * a22));
-    out[2] = (a01 * (a12 * a33 - a13 * a32) - a11 * (a02 * a33 - a03 * a32) + a31 * (a02 * a13 - a03 * a12));
-    out[3] = -(a01 * (a12 * a23 - a13 * a22) - a11 * (a02 * a23 - a03 * a22) + a21 * (a02 * a13 - a03 * a12));
-    out[4] = -(a10 * (a22 * a33 - a23 * a32) - a20 * (a12 * a33 - a13 * a32) + a30 * (a12 * a23 - a13 * a22));
-    out[5] = (a00 * (a22 * a33 - a23 * a32) - a20 * (a02 * a33 - a03 * a32) + a30 * (a02 * a23 - a03 * a22));
-    out[6] = -(a00 * (a12 * a33 - a13 * a32) - a10 * (a02 * a33 - a03 * a32) + a30 * (a02 * a13 - a03 * a12));
-    out[7] = (a00 * (a12 * a23 - a13 * a22) - a10 * (a02 * a23 - a03 * a22) + a20 * (a02 * a13 - a03 * a12));
-    out[8] = (a10 * (a21 * a33 - a23 * a31) - a20 * (a11 * a33 - a13 * a31) + a30 * (a11 * a23 - a13 * a21));
-    out[9] = -(a00 * (a21 * a33 - a23 * a31) - a20 * (a01 * a33 - a03 * a31) + a30 * (a01 * a23 - a03 * a21));
-    out[10] = (a00 * (a11 * a33 - a13 * a31) - a10 * (a01 * a33 - a03 * a31) + a30 * (a01 * a13 - a03 * a11));
-    out[11] = -(a00 * (a11 * a23 - a13 * a21) - a10 * (a01 * a23 - a03 * a21) + a20 * (a01 * a13 - a03 * a11));
-    out[12] = -(a10 * (a21 * a32 - a22 * a31) - a20 * (a11 * a32 - a12 * a31) + a30 * (a11 * a22 - a12 * a21));
-    out[13] = (a00 * (a21 * a32 - a22 * a31) - a20 * (a01 * a32 - a02 * a31) + a30 * (a01 * a22 - a02 * a21));
-    out[14] = -(a00 * (a11 * a32 - a12 * a31) - a10 * (a01 * a32 - a02 * a31) + a30 * (a01 * a12 - a02 * a11));
-    out[15] = (a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11));
-    return out;
-};
-
-/**
- * Calculates the adjugate of a mat4 using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.SIMD.adjoint = function (out, a) {
-    var a0, a1, a2, a3;
-    var row0, row1, row2, row3;
-    var tmp1;
-    var minor0, minor1, minor2, minor3;
-
-    a0 = SIMD.Float32x4.load(a, 0);
-    a1 = SIMD.Float32x4.load(a, 4);
-    a2 = SIMD.Float32x4.load(a, 8);
-    a3 = SIMD.Float32x4.load(a, 12);
-
-    // Transpose the source matrix.  Sort of.  Not a true transpose operation
-    tmp1 = SIMD.Float32x4.shuffle(a0, a1, 0, 1, 4, 5);
-    row1 = SIMD.Float32x4.shuffle(a2, a3, 0, 1, 4, 5);
-    row0 = SIMD.Float32x4.shuffle(tmp1, row1, 0, 2, 4, 6);
-    row1 = SIMD.Float32x4.shuffle(row1, tmp1, 1, 3, 5, 7);
-
-    tmp1 = SIMD.Float32x4.shuffle(a0, a1, 2, 3, 6, 7);
-    row3 = SIMD.Float32x4.shuffle(a2, a3, 2, 3, 6, 7);
-    row2 = SIMD.Float32x4.shuffle(tmp1, row3, 0, 2, 4, 6);
-    row3 = SIMD.Float32x4.shuffle(row3, tmp1, 1, 3, 5, 7);
-
-    tmp1 = SIMD.Float32x4.mul(row2, row3);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor0 = SIMD.Float32x4.mul(row1, tmp1);
-    minor1 = SIMD.Float32x4.mul(row0, tmp1);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor0 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row1, tmp1), minor0);
-    minor1 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor1);
-    minor1 = SIMD.Float32x4.swizzle(minor1, 2, 3, 0, 1);
-
-    tmp1 = SIMD.Float32x4.mul(row1, row2);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor0 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor0);
-    minor3 = SIMD.Float32x4.mul(row0, tmp1);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor0 = SIMD.Float32x4.sub(minor0, SIMD.Float32x4.mul(row3, tmp1));
-    minor3 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor3);
-    minor3 = SIMD.Float32x4.swizzle(minor3, 2, 3, 0, 1);
-
-    tmp1 = SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(row1, 2, 3, 0, 1), row3);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    row2 = SIMD.Float32x4.swizzle(row2, 2, 3, 0, 1);
-    minor0 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row2, tmp1), minor0);
-    minor2 = SIMD.Float32x4.mul(row0, tmp1);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor0 = SIMD.Float32x4.sub(minor0, SIMD.Float32x4.mul(row2, tmp1));
-    minor2 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor2);
-    minor2 = SIMD.Float32x4.swizzle(minor2, 2, 3, 0, 1);
-
-    tmp1 = SIMD.Float32x4.mul(row0, row1);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor2 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor2);
-    minor3 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row2, tmp1), minor3);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor2 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row3, tmp1), minor2);
-    minor3 = SIMD.Float32x4.sub(minor3, SIMD.Float32x4.mul(row2, tmp1));
-
-    tmp1 = SIMD.Float32x4.mul(row0, row3);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor1 = SIMD.Float32x4.sub(minor1, SIMD.Float32x4.mul(row2, tmp1));
-    minor2 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row1, tmp1), minor2);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor1 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row2, tmp1), minor1);
-    minor2 = SIMD.Float32x4.sub(minor2, SIMD.Float32x4.mul(row1, tmp1));
-
-    tmp1 = SIMD.Float32x4.mul(row0, row2);
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2);
-    minor1 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor1);
-    minor3 = SIMD.Float32x4.sub(minor3, SIMD.Float32x4.mul(row1, tmp1));
-    tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1);
-    minor1 = SIMD.Float32x4.sub(minor1, SIMD.Float32x4.mul(row3, tmp1));
-    minor3 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row1, tmp1), minor3);
-
-    SIMD.Float32x4.store(out, 0, minor0);
-    SIMD.Float32x4.store(out, 4, minor1);
-    SIMD.Float32x4.store(out, 8, minor2);
-    SIMD.Float32x4.store(out, 12, minor3);
-    return out;
-};
-
-/**
- * Calculates the adjugate of a mat4 using SIMD if available and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-mat4.adjoint = glMatrix.USE_SIMD ? mat4.SIMD.adjoint : mat4.scalar.adjoint;
-
-/**
- * Calculates the determinant of a mat4
- *
- * @param {mat4} a the source matrix
- * @returns {Number} determinant of a
- */
-mat4.determinant = function (a) {
-    var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
-        a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
-        a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
-        a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
-
-        b00 = a00 * a11 - a01 * a10,
-        b01 = a00 * a12 - a02 * a10,
-        b02 = a00 * a13 - a03 * a10,
-        b03 = a01 * a12 - a02 * a11,
-        b04 = a01 * a13 - a03 * a11,
-        b05 = a02 * a13 - a03 * a12,
-        b06 = a20 * a31 - a21 * a30,
-        b07 = a20 * a32 - a22 * a30,
-        b08 = a20 * a33 - a23 * a30,
-        b09 = a21 * a32 - a22 * a31,
-        b10 = a21 * a33 - a23 * a31,
-        b11 = a22 * a33 - a23 * a32;
-
-    // Calculate the determinant
-    return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-};
-
-/**
- * Multiplies two mat4's explicitly using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand, must be a Float32Array
- * @param {mat4} b the second operand, must be a Float32Array
- * @returns {mat4} out
- */
-mat4.SIMD.multiply = function (out, a, b) {
-    var a0 = SIMD.Float32x4.load(a, 0);
-    var a1 = SIMD.Float32x4.load(a, 4);
-    var a2 = SIMD.Float32x4.load(a, 8);
-    var a3 = SIMD.Float32x4.load(a, 12);
-
-    var b0 = SIMD.Float32x4.load(b, 0);
-    var out0 = SIMD.Float32x4.add(
-        SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b0, 0, 0, 0, 0), a0),
-        SIMD.Float32x4.add(
-            SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b0, 1, 1, 1, 1), a1),
-            SIMD.Float32x4.add(
-                SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b0, 2, 2, 2, 2), a2),
-                SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b0, 3, 3, 3, 3), a3))));
-    SIMD.Float32x4.store(out, 0, out0);
-
-    var b1 = SIMD.Float32x4.load(b, 4);
-    var out1 = SIMD.Float32x4.add(
-        SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b1, 0, 0, 0, 0), a0),
-        SIMD.Float32x4.add(
-            SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b1, 1, 1, 1, 1), a1),
-            SIMD.Float32x4.add(
-                SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b1, 2, 2, 2, 2), a2),
-                SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b1, 3, 3, 3, 3), a3))));
-    SIMD.Float32x4.store(out, 4, out1);
-
-    var b2 = SIMD.Float32x4.load(b, 8);
-    var out2 = SIMD.Float32x4.add(
-        SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b2, 0, 0, 0, 0), a0),
-        SIMD.Float32x4.add(
-            SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b2, 1, 1, 1, 1), a1),
-            SIMD.Float32x4.add(
-                SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b2, 2, 2, 2, 2), a2),
-                SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b2, 3, 3, 3, 3), a3))));
-    SIMD.Float32x4.store(out, 8, out2);
-
-    var b3 = SIMD.Float32x4.load(b, 12);
-    var out3 = SIMD.Float32x4.add(
-        SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b3, 0, 0, 0, 0), a0),
-        SIMD.Float32x4.add(
-            SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b3, 1, 1, 1, 1), a1),
-            SIMD.Float32x4.add(
-                SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b3, 2, 2, 2, 2), a2),
-                SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b3, 3, 3, 3, 3), a3))));
-    SIMD.Float32x4.store(out, 12, out3);
-
-    return out;
-};
-
-/**
- * Multiplies two mat4's explicitly not using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
- */
-mat4.scalar.multiply = function (out, a, b) {
-    var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
-        a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
-        a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
-        a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
-
-    // Cache only the current line of the second matrix
-    var b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
-    out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-    out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-    out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-    out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-    b0 = b[4]; b1 = b[5]; b2 = b[6]; b3 = b[7];
-    out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-    out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-    out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-    out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-    b0 = b[8]; b1 = b[9]; b2 = b[10]; b3 = b[11];
-    out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-    out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-    out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-    out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-    b0 = b[12]; b1 = b[13]; b2 = b[14]; b3 = b[15];
-    out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-    out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-    out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-    out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-    return out;
-};
-
-/**
- * Multiplies two mat4's using SIMD if available and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
- */
-mat4.multiply = glMatrix.USE_SIMD ? mat4.SIMD.multiply : mat4.scalar.multiply;
-
-/**
- * Alias for {@link mat4.multiply}
- * @function
- */
-mat4.mul = mat4.multiply;
-
-/**
- * Translate a mat4 by the given vector not using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to translate
- * @param {vec3} v vector to translate by
- * @returns {mat4} out
- */
-mat4.scalar.translate = function (out, a, v) {
-    var x = v[0], y = v[1], z = v[2],
-        a00, a01, a02, a03,
-        a10, a11, a12, a13,
-        a20, a21, a22, a23;
-
-    if (a === out) {
-        out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
-        out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
-        out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
-        out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
-    } else {
+        return this;
+    };
+    /**
+     * add two 4x4 matrixs 
+     */
+    add(mat) {
+        this._out[0] += mat._out[0];
+        this._out[1] += mat._out[1];
+        this._out[2] += mat._out[2];
+        this._out[3] += mat._out[3];
+        this._out[4] += mat._out[4];
+        this._out[5] += mat._out[5];
+        this._out[6] += mat._out[6];
+        this._out[7] += mat._out[7];
+        this._out[8] += mat._out[8];
+        this._out[9] += mat._out[9];
+        this._out[10] += mat._out[10];
+        this._out[11] += mat._out[11];
+        this._out[12] += mat._out[12];
+        this._out[13] += mat._out[13];
+        this._out[14] += mat._out[14];
+        this._out[15] += mat._out[15];
+        return this;
+    };
+    /**
+     * Translate a mat4 by the given vector not using SIMD
+     * @param {vec3} vec vector to translate by
+     */
+    translate(vec) {
+        let [x, y, z] = vec._out,
+            [a00, a01, a02, a03,
+                a10, a11, a12, a13,
+                a20, a21, a22, a23] = this._out;
+        this._out[12] = a00 * x + a10 * y + a20 * z + a[12];
+        this._out[13] = a01 * x + a11 * y + a21 * z + a[13];
+        this._out[14] = a02 * x + a12 * y + a22 * z + a[14];
+        this._out[15] = a03 * x + a13 * y + a23 * z + a[15];
+        return this;
+    };
+    /**
+     * Scales the mat4 by the dimensions in the given vec3 not using vectorization
+     * @param {vec3} vec the vec3 to scale the matrix by
+     */
+    scale(vec) {
+        let [x, y, z] = vec._out;
+        this._out[0] *= x;
+        this._out[1] *= x;
+        this._out[2] *= x;
+        this._out[3] *= x;
+        this._out[4] *= y;
+        this._out[5] *= y;
+        this._out[6] *= y;
+        this._out[7] *= y;
+        this._out[8] *= z;
+        this._out[9] *= z;
+        this._out[10] *= z;
+        this._out[11] *= z;
+        return this;
+    };
+    /**
+     * Rotates a mat4 by the given angle around the given axis
+     * @param {number} rad the angle to rotate the matrix by
+     * @param {vec3} axis the axis to rotate around
+     */
+    rotate(rad, axis) {
+        var [x, y, z] = axis._out,
+            len = axis.len(),
+            s, c, t,
+            a00, a01, a02, a03,
+            a10, a11, a12, a13,
+            a20, a21, a22, a23,
+            b00, b01, b02,
+            b10, b11, b12,
+            b20, b21, b22;
+        if (Math.abs(len) < matrix.EPSILON) { return null; }
+        len = 1.0 / len;
+        x *= len;
+        y *= len;
+        z *= len;
+        s = Math.sin(rad);
+        c = Math.cos(rad);
+        t = 1 - c;
         a00 = a[0]; a01 = a[1]; a02 = a[2]; a03 = a[3];
         a10 = a[4]; a11 = a[5]; a12 = a[6]; a13 = a[7];
         a20 = a[8]; a21 = a[9]; a22 = a[10]; a23 = a[11];
-
-        out[0] = a00; out[1] = a01; out[2] = a02; out[3] = a03;
-        out[4] = a10; out[5] = a11; out[6] = a12; out[7] = a13;
-        out[8] = a20; out[9] = a21; out[10] = a22; out[11] = a23;
-
-        out[12] = a00 * x + a10 * y + a20 * z + a[12];
-        out[13] = a01 * x + a11 * y + a21 * z + a[13];
-        out[14] = a02 * x + a12 * y + a22 * z + a[14];
-        out[15] = a03 * x + a13 * y + a23 * z + a[15];
-    }
-
-    return out;
-};
-
-/**
- * Translates a mat4 by the given vector using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to translate
- * @param {vec3} v vector to translate by
- * @returns {mat4} out
- */
-mat4.SIMD.translate = function (out, a, v) {
-    var a0 = SIMD.Float32x4.load(a, 0),
-        a1 = SIMD.Float32x4.load(a, 4),
-        a2 = SIMD.Float32x4.load(a, 8),
-        a3 = SIMD.Float32x4.load(a, 12),
-        vec = SIMD.Float32x4(v[0], v[1], v[2], 0);
-
-    if (a !== out) {
-        out[0] = a[0]; out[1] = a[1]; out[2] = a[2]; out[3] = a[3];
-        out[4] = a[4]; out[5] = a[5]; out[6] = a[6]; out[7] = a[7];
-        out[8] = a[8]; out[9] = a[9]; out[10] = a[10]; out[11] = a[11];
-    }
-
-    a0 = SIMD.Float32x4.mul(a0, SIMD.Float32x4.swizzle(vec, 0, 0, 0, 0));
-    a1 = SIMD.Float32x4.mul(a1, SIMD.Float32x4.swizzle(vec, 1, 1, 1, 1));
-    a2 = SIMD.Float32x4.mul(a2, SIMD.Float32x4.swizzle(vec, 2, 2, 2, 2));
-
-    var t0 = SIMD.Float32x4.add(a0, SIMD.Float32x4.add(a1, SIMD.Float32x4.add(a2, a3)));
-    SIMD.Float32x4.store(out, 12, t0);
-
-    return out;
-};
-
-/**
- * Translates a mat4 by the given vector using SIMD if available and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to translate
- * @param {vec3} v vector to translate by
- * @returns {mat4} out
- */
-mat4.translate = glMatrix.USE_SIMD ? mat4.SIMD.translate : mat4.scalar.translate;
-
-/**
- * Scales the mat4 by the dimensions in the given vec3 not using vectorization
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
- * @param {vec3} v the vec3 to scale the matrix by
- * @returns {mat4} out
- **/
-mat4.scalar.scale = function (out, a, v) {
-    var x = v[0], y = v[1], z = v[2];
-
-    out[0] = a[0] * x;
-    out[1] = a[1] * x;
-    out[2] = a[2] * x;
-    out[3] = a[3] * x;
-    out[4] = a[4] * y;
-    out[5] = a[5] * y;
-    out[6] = a[6] * y;
-    out[7] = a[7] * y;
-    out[8] = a[8] * z;
-    out[9] = a[9] * z;
-    out[10] = a[10] * z;
-    out[11] = a[11] * z;
-    out[12] = a[12];
-    out[13] = a[13];
-    out[14] = a[14];
-    out[15] = a[15];
-    return out;
-};
-
-/**
- * Scales the mat4 by the dimensions in the given vec3 using vectorization
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
- * @param {vec3} v the vec3 to scale the matrix by
- * @returns {mat4} out
- **/
-mat4.SIMD.scale = function (out, a, v) {
-    var a0, a1, a2;
-    var vec = SIMD.Float32x4(v[0], v[1], v[2], 0);
-
-    a0 = SIMD.Float32x4.load(a, 0);
-    SIMD.Float32x4.store(
-        out, 0, SIMD.Float32x4.mul(a0, SIMD.Float32x4.swizzle(vec, 0, 0, 0, 0)));
-
-    a1 = SIMD.Float32x4.load(a, 4);
-    SIMD.Float32x4.store(
-        out, 4, SIMD.Float32x4.mul(a1, SIMD.Float32x4.swizzle(vec, 1, 1, 1, 1)));
-
-    a2 = SIMD.Float32x4.load(a, 8);
-    SIMD.Float32x4.store(
-        out, 8, SIMD.Float32x4.mul(a2, SIMD.Float32x4.swizzle(vec, 2, 2, 2, 2)));
-
-    out[12] = a[12];
-    out[13] = a[13];
-    out[14] = a[14];
-    out[15] = a[15];
-    return out;
-};
-
-/**
- * Scales the mat4 by the dimensions in the given vec3 using SIMD if available and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
- * @param {vec3} v the vec3 to scale the matrix by
- * @returns {mat4} out
- */
-mat4.scale = glMatrix.USE_SIMD ? mat4.SIMD.scale : mat4.scalar.scale;
-
-/**
- * Rotates a mat4 by the given angle around the given axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @param {vec3} axis the axis to rotate around
- * @returns {mat4} out
- */
-mat4.rotate = function (out, a, rad, axis) {
-    var x = axis[0], y = axis[1], z = axis[2],
-        len = Math.sqrt(x * x + y * y + z * z),
-        s, c, t,
-        a00, a01, a02, a03,
-        a10, a11, a12, a13,
-        a20, a21, a22, a23,
-        b00, b01, b02,
-        b10, b11, b12,
-        b20, b21, b22;
-
-    if (Math.abs(len) < glMatrix.EPSILON) { return null; }
-
-    len = 1 / len;
-    x *= len;
-    y *= len;
-    z *= len;
-
-    s = Math.sin(rad);
-    c = Math.cos(rad);
-    t = 1 - c;
-
-    a00 = a[0]; a01 = a[1]; a02 = a[2]; a03 = a[3];
-    a10 = a[4]; a11 = a[5]; a12 = a[6]; a13 = a[7];
-    a20 = a[8]; a21 = a[9]; a22 = a[10]; a23 = a[11];
-
-    // Construct the elements of the rotation matrix
-    b00 = x * x * t + c; b01 = y * x * t + z * s; b02 = z * x * t - y * s;
-    b10 = x * y * t - z * s; b11 = y * y * t + c; b12 = z * y * t + x * s;
-    b20 = x * z * t + y * s; b21 = y * z * t - x * s; b22 = z * z * t + c;
-
-    // Perform rotation-specific matrix multiplication
-    out[0] = a00 * b00 + a10 * b01 + a20 * b02;
-    out[1] = a01 * b00 + a11 * b01 + a21 * b02;
-    out[2] = a02 * b00 + a12 * b01 + a22 * b02;
-    out[3] = a03 * b00 + a13 * b01 + a23 * b02;
-    out[4] = a00 * b10 + a10 * b11 + a20 * b12;
-    out[5] = a01 * b10 + a11 * b11 + a21 * b12;
-    out[6] = a02 * b10 + a12 * b11 + a22 * b12;
-    out[7] = a03 * b10 + a13 * b11 + a23 * b12;
-    out[8] = a00 * b20 + a10 * b21 + a20 * b22;
-    out[9] = a01 * b20 + a11 * b21 + a21 * b22;
-    out[10] = a02 * b20 + a12 * b21 + a22 * b22;
-    out[11] = a03 * b20 + a13 * b21 + a23 * b22;
-
-    if (a !== out) { // If the source and destination differ, copy the unchanged last row
-        out[12] = a[12];
-        out[13] = a[13];
-        out[14] = a[14];
-        out[15] = a[15];
-    }
-    return out;
-};
-
-/**
- * Rotates a matrix by the given angle around the X axis not using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.scalar.rotateX = function (out, a, rad) {
-    var s = Math.sin(rad),
-        c = Math.cos(rad),
-        a10 = a[4],
-        a11 = a[5],
-        a12 = a[6],
-        a13 = a[7],
-        a20 = a[8],
-        a21 = a[9],
-        a22 = a[10],
-        a23 = a[11];
-
-    if (a !== out) { // If the source and destination differ, copy the unchanged rows
-        out[0] = a[0];
-        out[1] = a[1];
-        out[2] = a[2];
-        out[3] = a[3];
-        out[12] = a[12];
-        out[13] = a[13];
-        out[14] = a[14];
-        out[15] = a[15];
-    }
-
-    // Perform axis-specific matrix multiplication
-    out[4] = a10 * c + a20 * s;
-    out[5] = a11 * c + a21 * s;
-    out[6] = a12 * c + a22 * s;
-    out[7] = a13 * c + a23 * s;
-    out[8] = a20 * c - a10 * s;
-    out[9] = a21 * c - a11 * s;
-    out[10] = a22 * c - a12 * s;
-    out[11] = a23 * c - a13 * s;
-    return out;
-};
-
-/**
- * Rotates a matrix by the given angle around the X axis using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.SIMD.rotateX = function (out, a, rad) {
-    var s = SIMD.Float32x4.splat(Math.sin(rad)),
-        c = SIMD.Float32x4.splat(Math.cos(rad));
-
-    if (a !== out) { // If the source and destination differ, copy the unchanged rows
-        out[0] = a[0];
-        out[1] = a[1];
-        out[2] = a[2];
-        out[3] = a[3];
-        out[12] = a[12];
-        out[13] = a[13];
-        out[14] = a[14];
-        out[15] = a[15];
-    }
-
-    // Perform axis-specific matrix multiplication
-    var a_1 = SIMD.Float32x4.load(a, 4);
-    var a_2 = SIMD.Float32x4.load(a, 8);
-    SIMD.Float32x4.store(out, 4,
-        SIMD.Float32x4.add(SIMD.Float32x4.mul(a_1, c), SIMD.Float32x4.mul(a_2, s)));
-    SIMD.Float32x4.store(out, 8,
-        SIMD.Float32x4.sub(SIMD.Float32x4.mul(a_2, c), SIMD.Float32x4.mul(a_1, s)));
-    return out;
-};
-
-/**
- * Rotates a matrix by the given angle around the X axis using SIMD if availabe and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.rotateX = glMatrix.USE_SIMD ? mat4.SIMD.rotateX : mat4.scalar.rotateX;
-
-/**
- * Rotates a matrix by the given angle around the Y axis not using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.scalar.rotateY = function (out, a, rad) {
-    var s = Math.sin(rad),
-        c = Math.cos(rad),
-        a00 = a[0],
-        a01 = a[1],
-        a02 = a[2],
-        a03 = a[3],
-        a20 = a[8],
-        a21 = a[9],
-        a22 = a[10],
-        a23 = a[11];
-
-    if (a !== out) { // If the source and destination differ, copy the unchanged rows
-        out[4] = a[4];
-        out[5] = a[5];
-        out[6] = a[6];
-        out[7] = a[7];
-        out[12] = a[12];
-        out[13] = a[13];
-        out[14] = a[14];
-        out[15] = a[15];
-    }
-
-    // Perform axis-specific matrix multiplication
-    out[0] = a00 * c - a20 * s;
-    out[1] = a01 * c - a21 * s;
-    out[2] = a02 * c - a22 * s;
-    out[3] = a03 * c - a23 * s;
-    out[8] = a00 * s + a20 * c;
-    out[9] = a01 * s + a21 * c;
-    out[10] = a02 * s + a22 * c;
-    out[11] = a03 * s + a23 * c;
-    return out;
-};
-
-/**
- * Rotates a matrix by the given angle around the Y axis using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.SIMD.rotateY = function (out, a, rad) {
-    var s = SIMD.Float32x4.splat(Math.sin(rad)),
-        c = SIMD.Float32x4.splat(Math.cos(rad));
-
-    if (a !== out) { // If the source and destination differ, copy the unchanged rows
-        out[4] = a[4];
-        out[5] = a[5];
-        out[6] = a[6];
-        out[7] = a[7];
-        out[12] = a[12];
-        out[13] = a[13];
-        out[14] = a[14];
-        out[15] = a[15];
-    }
-
-    // Perform axis-specific matrix multiplication
-    var a_0 = SIMD.Float32x4.load(a, 0);
-    var a_2 = SIMD.Float32x4.load(a, 8);
-    SIMD.Float32x4.store(out, 0,
-        SIMD.Float32x4.sub(SIMD.Float32x4.mul(a_0, c), SIMD.Float32x4.mul(a_2, s)));
-    SIMD.Float32x4.store(out, 8,
-        SIMD.Float32x4.add(SIMD.Float32x4.mul(a_0, s), SIMD.Float32x4.mul(a_2, c)));
-    return out;
-};
-
-/**
- * Rotates a matrix by the given angle around the Y axis if SIMD available and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.rotateY = glMatrix.USE_SIMD ? mat4.SIMD.rotateY : mat4.scalar.rotateY;
-
-/**
- * Rotates a matrix by the given angle around the Z axis not using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.scalar.rotateZ = function (out, a, rad) {
-    var s = Math.sin(rad),
-        c = Math.cos(rad),
-        a00 = a[0],
-        a01 = a[1],
-        a02 = a[2],
-        a03 = a[3],
-        a10 = a[4],
-        a11 = a[5],
-        a12 = a[6],
-        a13 = a[7];
-
-    if (a !== out) { // If the source and destination differ, copy the unchanged last row
-        out[8] = a[8];
-        out[9] = a[9];
-        out[10] = a[10];
-        out[11] = a[11];
-        out[12] = a[12];
-        out[13] = a[13];
-        out[14] = a[14];
-        out[15] = a[15];
-    }
-
-    // Perform axis-specific matrix multiplication
-    out[0] = a00 * c + a10 * s;
-    out[1] = a01 * c + a11 * s;
-    out[2] = a02 * c + a12 * s;
-    out[3] = a03 * c + a13 * s;
-    out[4] = a10 * c - a00 * s;
-    out[5] = a11 * c - a01 * s;
-    out[6] = a12 * c - a02 * s;
-    out[7] = a13 * c - a03 * s;
-    return out;
-};
-
-/**
- * Rotates a matrix by the given angle around the Z axis using SIMD
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.SIMD.rotateZ = function (out, a, rad) {
-    var s = SIMD.Float32x4.splat(Math.sin(rad)),
-        c = SIMD.Float32x4.splat(Math.cos(rad));
-
-    if (a !== out) { // If the source and destination differ, copy the unchanged last row
-        out[8] = a[8];
-        out[9] = a[9];
-        out[10] = a[10];
-        out[11] = a[11];
-        out[12] = a[12];
-        out[13] = a[13];
-        out[14] = a[14];
-        out[15] = a[15];
-    }
-
-    // Perform axis-specific matrix multiplication
-    var a_0 = SIMD.Float32x4.load(a, 0);
-    var a_1 = SIMD.Float32x4.load(a, 4);
-    SIMD.Float32x4.store(out, 0,
-        SIMD.Float32x4.add(SIMD.Float32x4.mul(a_0, c), SIMD.Float32x4.mul(a_1, s)));
-    SIMD.Float32x4.store(out, 4,
-        SIMD.Float32x4.sub(SIMD.Float32x4.mul(a_1, c), SIMD.Float32x4.mul(a_0, s)));
-    return out;
-};
-
-/**
- * Rotates a matrix by the given angle around the Z axis if SIMD available and enabled
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.rotateZ = glMatrix.USE_SIMD ? mat4.SIMD.rotateZ : mat4.scalar.rotateZ;
-
-/**
- * Creates a matrix from a vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, dest, vec);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {vec3} v Translation vector
- * @returns {mat4} out
- */
-mat4.fromTranslation = function (out, v) {
-    out[0] = 1;
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = 1;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = 1;
-    out[11] = 0;
-    out[12] = v[0];
-    out[13] = v[1];
-    out[14] = v[2];
-    out[15] = 1;
-    return out;
-}
-
-/**
- * Creates a matrix from a vector scaling
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.scale(dest, dest, vec);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {vec3} v Scaling vector
- * @returns {mat4} out
- */
-mat4.fromScaling = function (out, v) {
-    out[0] = v[0];
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = v[1];
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = v[2];
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-    return out;
-}
-
-/**
- * Creates a matrix from a given angle around a given axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotate(dest, dest, rad, axis);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @param {vec3} axis the axis to rotate around
- * @returns {mat4} out
- */
-mat4.fromRotation = function (out, rad, axis) {
-    var x = axis[0], y = axis[1], z = axis[2],
-        len = Math.sqrt(x * x + y * y + z * z),
-        s, c, t;
-
-    if (Math.abs(len) < glMatrix.EPSILON) { return null; }
-
-    len = 1 / len;
-    x *= len;
-    y *= len;
-    z *= len;
-
-    s = Math.sin(rad);
-    c = Math.cos(rad);
-    t = 1 - c;
-
-    // Perform rotation-specific matrix multiplication
-    out[0] = x * x * t + c;
-    out[1] = y * x * t + z * s;
-    out[2] = z * x * t - y * s;
-    out[3] = 0;
-    out[4] = x * y * t - z * s;
-    out[5] = y * y * t + c;
-    out[6] = z * y * t + x * s;
-    out[7] = 0;
-    out[8] = x * z * t + y * s;
-    out[9] = y * z * t - x * s;
-    out[10] = z * z * t + c;
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-    return out;
-}
-
-/**
- * Creates a matrix from the given angle around the X axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateX(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.fromXRotation = function (out, rad) {
-    var s = Math.sin(rad),
+        // Construct the elements of the rotation matrix
+        b00 = x * x * t + c; b01 = y * x * t + z * s; b02 = z * x * t - y * s;
+        b10 = x * y * t - z * s; b11 = y * y * t + c; b12 = z * y * t + x * s;
+        b20 = x * z * t + y * s; b21 = y * z * t - x * s; b22 = z * z * t + c;
+        // Perform rotation-specific matrix multiplication
+        this._out[0] = a00 * b00 + a10 * b01 + a20 * b02;
+        this._out[1] = a01 * b00 + a11 * b01 + a21 * b02;
+        this._out[2] = a02 * b00 + a12 * b01 + a22 * b02;
+        this._out[3] = a03 * b00 + a13 * b01 + a23 * b02;
+        this._out[4] = a00 * b10 + a10 * b11 + a20 * b12;
+        this._out[5] = a01 * b10 + a11 * b11 + a21 * b12;
+        this._out[6] = a02 * b10 + a12 * b11 + a22 * b12;
+        this._out[7] = a03 * b10 + a13 * b11 + a23 * b12;
+        this._out[8] = a00 * b20 + a10 * b21 + a20 * b22;
+        this._out[9] = a01 * b20 + a11 * b21 + a21 * b22;
+        this._out[10] = a02 * b20 + a12 * b21 + a22 * b22;
+        this._out[11] = a03 * b20 + a13 * b21 + a23 * b22;
+        return this;
+    };
+    /**
+     * Rotates a matrix by the given angle around the X axis not using SIMD
+     * @param {number} rad
+     */
+    rotateX(rad) {
+        var s = Math.sin(rad),
+            c = Math.cos(rad),
+            a10 = this._out[4],
+            a11 = this._out[5],
+            a12 = this._out[6],
+            a13 = this._out[7],
+            a20 = this._out[8],
+            a21 = this._out[9],
+            a22 = this._out[10],
+            a23 = this._out[11];
+        // Perform axis-specific matrix multiplication
+        this._out[4] = a10 * c + a20 * s;
+        this._out[5] = a11 * c + a21 * s;
+        this._out[6] = a12 * c + a22 * s;
+        this._out[7] = a13 * c + a23 * s;
+        this._out[8] = a20 * c - a10 * s;
+        this._out[9] = a21 * c - a11 * s;
+        this._out[10] = a22 * c - a12 * s;
+        this._out[11] = a23 * c - a13 * s;
+        return this;
+    };
+    /**
+     * Rotates a matrix by the given angle around the Y axis not using SIMD
+     * @param {Number} rad the angle to rotate the matrix by
+     */
+    rotateY(rad) {
+        var s = Math.sin(rad),
+            c = Math.cos(rad),
+            a00 = this._out[0],
+            a01 = this._out[1],
+            a02 = this._out[2],
+            a03 = this._out[3],
+            a20 = this._out[8],
+            a21 = this._out[9],
+            a22 = this._out[10],
+            a23 = this._out[11];
+        // Perform axis-specific matrix multiplication
+        this._out[0] = a00 * c - a20 * s;
+        this._out[1] = a01 * c - a21 * s;
+        this._out[2] = a02 * c - a22 * s;
+        this._out[3] = a03 * c - a23 * s;
+        this._out[8] = a00 * s + a20 * c;
+        this._out[9] = a01 * s + a21 * c;
+        this._out[10] = a02 * s + a22 * c;
+        this._out[11] = a03 * s + a23 * c;
+        return this;
+    };
+    /**
+     * Rotates a matrix by the given angle around the Z axis not using SIMD
+     * @param {Number} rad the angle to rotate the matrix by
+     */
+    rotateZ(rad) {
+        var s = Math.sin(rad),
+            c = Math.cos(rad),
+            a00 = this._out[0],
+            a01 = this._out[1],
+            a02 = this._out[2],
+            a03 = this._out[3],
+            a10 = this._out[4],
+            a11 = this._out[5],
+            a12 = this._out[6],
+            a13 = this._out[7];
+        // Perform axis-specific matrix multiplication
+        this._out[0] = a00 * c + a10 * s;
+        this._out[1] = a01 * c + a11 * s;
+        this._out[2] = a02 * c + a12 * s;
+        this._out[3] = a03 * c + a13 * s;
+        this._out[4] = a10 * c - a00 * s;
+        this._out[5] = a11 * c - a01 * s;
+        this._out[6] = a12 * c - a02 * s;
+        this._out[7] = a13 * c - a03 * s;
+        return this;
+    };
+    /**
+     * Creates a matrix from a vector translation
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.translate(dest, dest, vec);
+     * 
+     * @param {vec3} vec Translation vector
+     */
+    static fromVec3Translation(vec) {
+        let mat = new mat4(),
+            [x, y, z] = vec._out;
+        mat.set(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            x, y, z, 1);
+        return mat;
+    };
+    /**
+     * Creates a matrix from a vector scaling
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.scale(dest, dest, vec);
+     * @param {vec3} vec Scaling vector
+     * @returns {mat4} 
+     */
+    static fromScaling(vec) {
+        let mat = new mat4(),
+            [x, y, z] = vec._out;
+        mat.set(x, 0, 0, 0,
+            0, y, 0, 0,
+            0, 0, z, 0,
+            0, 0, 0, 1);
+        return mat;
+    };
+    /**
+     * Creates a matrix from a given angle around a given axis
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.rotate(dest, dest, rad, axis);
+     * @param {Number} rad the angle to rotate the matrix by
+     * @param {vec3} axis the axis to rotate around
+     */
+    static fromRotation(rad, axis) {
+        var [x, y, z] = axis._out,
+            len = axis.len(),
+            mat = new mat4(),
+            s, c, t;
+        if (len < matrix.EPSILON) { return null; }
+        len = 1.0 / len;
+        x *= len;
+        y *= len;
+        z *= len;
+        s = Math.sin(rad);
         c = Math.cos(rad);
+        t = 1 - c;
+        // Perform rotation-specific matrix multiplication
+        mat.set(x * x * t + c, y * x * t + z * s, z * x * t - y * s, 0,
+            x * y * t - z * s, y * y * t + c, z * y * t + x * s, 0,
+            x * z * t + y * s, y * z * t - x * s, z * z * t + c, 0,
+            0, 0, 0, 1);
+        return mat;
+    };
+    /**
+     * Creates a matrix from the given angle around the X axis
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.rotateX(dest, dest, rad);
+     * @param {Number} rad the angle to rotate the matrix by
+     */
+    static fromXRotation(rad) {
+        let mat = new mat4(),
+            s = Math.sin(rad),
+            c = Math.cos(rad);
+        mat.set(1, 0, 0, 0,
+            0, c, s, 0,
+            0, -s, c, 0,
+            0, 0, 0, 1);
+        return mat;
+    };
+    /**
+     * Creates a matrix from the given angle around the Y axis
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.rotateY(dest, dest, rad);
+     * 
+     * @param {Number} rad the angle to rotate the matrix by
+     */
+    static fromYRotation(rad) {
+        let mat = new mat4(),
+            s = Math.sin(rad),
+            c = Math.cos(rad);
+        // Perform axis-specific matrix multiplication
+        mat.set(c, 0, -s, 0,
+            0, 1, 0, 0,
+            s, 0, c, 0,
+            0, 0, 0, 1);
+        return mat;
+    };
+    /**
+     * Creates a matrix from the given angle around the Z axis
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.rotateZ(dest, dest, rad);
+     * 
+     * @param {Number} rad the angle to rotate the matrix by
+     */
+    static fromZRotation(rad) {
+        let mat = new mat4(),
+            s = Math.sin(rad),
+            c = Math.cos(rad);
+        // Perform axis-specific matrix multiplication
+        mat.set(c, s, 0, 0,
+            -s, c, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+        return mat;
+    };
+    /**
+     * Returns the translation vector component of a transformation
+     *  matrix. If a matrix is built with fromRotationTranslation,
+     *  the returned vector will be the same as the translation vector
+     *  originally supplied.
+     * @return {vec3} out
+    */
+    getTranslation() {
+        let vec = new vec3();
+        vec.set(mat._out[12], mat._out[13], mat._out[14]);
+        return vec;
+    };
+    /**
+     * Creates a matrix from a quaternion rotation and vector translation
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.translate(dest, vec);
+     *  var quatMat = mat4.create();
+     *  quat4.toMat4(quat, quatMat);
+     *  mat4.multiply(dest, quatMat);
+     * 
+     * @param {quat} qua Rotation quaternion
+     * @param {vec3} vec Translation vector
+     */
+    static fromRotationTranslation(qua, vec) {
+        // Quaternion math
+        let mat = new mat4(),
+            [x, y, z, w] = qua._out,
+            [v0, v1, v2] = vec._out,
+            x2 = x + x,
+            y2 = y + y,
+            z2 = z + z,
+            xx = x * x2,
+            xy = x * y2,
+            xz = x * z2,
+            yy = y * y2,
+            yz = y * z2,
+            zz = z * z2,
+            wx = w * x2,
+            wy = w * y2,
+            wz = w * z2;
+        mat.set(1 - (yy + zz), xy + wz, xz - wy, 0,
+            xy - wz, 1 - (xx + zz), yz + wx, 0,
+            xz + wy, yz - wx, 1 - (xx + yy), 0,
+            v0, v1, v2, 1);
+        return mat;
+    };
+    /**
+     * Returns the scaling factor component of a transformation
+     * matrix. If a matrix is built with fromRotationTranslationScale
+     * with a normalized Quaternion paramter, the returned vector will be 
+     * the same as the scaling vector
+     * originally supplied.
+     * @return {vec3} 
+     */
+    getScaling() {
+        let vec = new vec3(),
+            m11 = mat[0],
+            m12 = mat[1],
+            m13 = mat[2],
+            m21 = mat[4],
+            m22 = mat[5],
+            m23 = mat[6],
+            m31 = mat[8],
+            m32 = mat[9],
+            m33 = mat[10];
+        x = Math.sqrt(m11 * m11 + m12 * m12 + m13 * m13);
+        y = Math.sqrt(m21 * m21 + m22 * m22 + m23 * m23);
+        z = Math.sqrt(m31 * m31 + m32 * m32 + m33 * m33);
+        vec.set(x, y, z);
+        return vec;
+    };
+    /**
+     * Returns a quaternion representing the rotational component
+     * of a transformation matrix. If a matrix is built with
+     * fromRotationTranslation, the returned quaternion will be the
+     * same as the quaternion originally supplied.
+     * Algorithm taken from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
+     * @return {quat} 
+     */
+    getRotation() {
+        let S = 0,
+            x, y, z, w,
+            qua = new quat(),
+            trace = this._out[0] + this._out[5] + this._out[10];
 
-    // Perform axis-specific matrix multiplication
-    out[0] = 1;
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = c;
-    out[6] = s;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = -s;
-    out[10] = c;
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-    return out;
+        if (trace > 0) {
+            S = Math.sqrt(trace + 1.0) * 2;
+            w = 0.25 * S;
+            x = (this._out[6] - this._out[9]) / S;
+            y = (this._out[8] - this._out[2]) / S;
+            z = (this._out[1] - this._out[4]) / S;
+        } else if ((this._out[0] > this._out[5]) & (this._out[0] > this._out[10])) {
+            S = Math.sqrt(1.0 + this._out[0] - this._out[5] - this._out[10]) * 2;
+            w = (this._out[6] - this._out[9]) / S;
+            x = 0.25 * S;
+            y = (this._out[1] + this._out[4]) / S;
+            z = (this._out[8] + this._out[2]) / S;
+        } else if (this._out[5] > this._out[10]) {
+            S = Math.sqrt(1.0 + this._out[5] - this._out[0] - this._out[10]) * 2;
+            w = (this._out[8] - this._out[2]) / S;
+            x = (this._out[1] + this._out[4]) / S;
+            y = 0.25 * S;
+            z = (this._out[6] + this._out[9]) / S;
+        } else {
+            S = Math.sqrt(1.0 + this._out[10] - this._out[0] - this._out[5]) * 2;
+            w = (this._out[1] - this._out[4]) / S;
+            x = (this._out[8] + this._out[2]) / S;
+            y = (this._out[6] + this._out[9]) / S;
+            z = 0.25 * S;
+        }
+        qua.set(x, y, z, w);
+        return qua;
+    };
+
+    /**
+     * Creates a matrix from a quaternion rotation, vector translation and vector scale
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.translate(dest, vec);
+     *  var quatMat = mat4.create();
+     *  quat4.toMat4(quat, quatMat);
+     *  mat4.multiply(dest, quatMat);
+     *  mat4.scale(dest, scale)
+     * 
+     * @param {quat} q rotation quaternion
+     * @param {vec3} v translation vector
+     * @param {vec3} s scaling vectoer
+     * @returns {mat4} 
+     */
+    static fromRotationTranslationScale(q, v, s) {
+        let mat = new mat4(),
+            [x, y, z, w] = qua._out,
+            [v0, v1, v2] = v._out,
+            x2 = x + x,
+            y2 = y + y,
+            z2 = z + z,
+            xx = x * x2,
+            xy = x * y2,
+            xz = x * z2,
+            yy = y * y2,
+            yz = y * z2,
+            zz = z * z2,
+            wx = w * x2,
+            wy = w * y2,
+            wz = w * z2,
+            sx = s[0],
+            sy = s[1],
+            sz = s[2];
+        mat.set((1 - (yy + zz)) * sx, (xy + wz) * sx, (xz - wy) * sx, 0
+            (xy - wz) * sy, (1 - (xx + zz)) * sy, (yz + wx) * sy, 0,
+            (xz + wy) * sz, (yz - wx) * sz, (1 - (xx + yy)) * sz, 0,
+            v0, v1, v2, 1);
+        return mat;
+    };
+    /**
+     * Creates a matrix from a quaternion rotation, vector translation and vector scale, rotating and scaling around the given origin
+     * This is equivalent to (but much faster than):
+     *  mat4.identity(dest);
+     *  mat4.translate(dest, vec);
+     *  mat4.translate(dest, origin);
+     *  var quatMat = mat4.create();
+     *  quat4.toMat4(quat, quatMat);
+     *  mat4.multiply(dest, quatMat);
+     *  mat4.scale(dest, scale);
+     *  mat4.translate(dest, negativeOrigin);
+     * 
+     * @param {quat} q Rotation quaternion
+     * @param {vec3} v Translation vector
+     * @param {vec3} s Scaling vector
+     * @param {vec3} o The origin vector around which to scale and rotate
+     * @returns {mat4}
+     */
+    static fromRotationTranslationScaleOrigin(q, v, s, o) {
+        // Quaternion math
+        var mat = new mat4(),
+            [x, y, z, w] = q._out,
+            [sx, sy, sz] = v._out,
+            [ox, oy, oz] = o._out,
+            [vx, vy, vz] = v._out,
+            x2 = x + x,
+            y2 = y + y,
+            z2 = z + z,
+            xx = x * x2,
+            xy = x * y2,
+            xz = x * z2,
+            yy = y * y2,
+            yz = y * z2,
+            zz = z * z2,
+            wx = w * x2,
+            wy = w * y2,
+            wz = w * z2;
+        mat.set((1 - (yy + zz)) * sx, (xy + wz) * sx, (xz - wy) * sx, 0,
+            (xy - wz) * sy, (1 - (xx + zz)) * sy, (yz + wx) * sy, 0,
+            (xz + wy) * sz, (yz - wx) * sz, (1 - (xx + yy)) * sz, 0,
+            vx + ox - (out[0] * ox + out[4] * oy + out[8] * oz), vy + oy - (out[1] * ox + out[5] * oy + out[9] * oz), vz + oz - (out[2] * ox + out[6] * oy + out[10] * oz), 1);
+        return mat;
+    };
+    /**
+     * Calculates a 4x4 matrix from the given quaternion
+     * @param {quat} q Quaternion to create matrix from
+     * @returns {mat4}
+     */
+    static fromQuat(q) {
+        let mat = new mat4(),
+            [x, y, z, w] = q._out,
+            x2 = x + x,
+            y2 = y + y,
+            z2 = z + z,
+
+            xx = x * x2,
+            yx = y * x2,
+            yy = y * y2,
+            zx = z * x2,
+            zy = z * y2,
+            zz = z * z2,
+            wx = w * x2,
+            wy = w * y2,
+            wz = w * z2;
+        mat.set(1 - yy - zz, yx + wz, zx - wy, 0,
+            yx - wz, 1 - xx - zz, zy + wx, 0,
+            zx + wy, zy - wx, 1 - xx - yy, 0,
+            0, 0, 0, 1)
+        return mat;
+    };
+    /**
+     * Generates a frustum matrix with the given bounds
+     * @param {Number} left Left bound of the frustum
+     * @param {Number} right Right bound of the frustum
+     * @param {Number} bottom Bottom bound of the frustum
+     * @param {Number} top Top bound of the frustum
+     * @param {Number} near Near bound of the frustum
+     * @param {Number} far Far bound of the frustum
+     * @returns {mat4}
+     */
+    static frustum(left, right, bottom, top, near, far) {
+        var mat = new mat4(),
+            rl = 1 / (right - left),
+            tb = 1 / (top - bottom),
+            nf = 1 / (near - far);
+        mat.set((near * 2) * rl, 0, 0, 0,
+            0, (near * 2) * tb, 0, 0,
+            (right + left) * rl, (top + bottom) * tb, (far + near) * nf, -1,
+            0, 0, (far * near * 2) * nf, 0);
+        return mat;
+    };
+    /**
+     * Generates a perspective projection matrix with the given bounds
+     * @param {number} fovy Vertical field of view in radians
+     * @param {number} aspect Aspect ratio. typically viewport width/height
+     * @param {number} near Near bound of the frustum
+     * @param {number} far Far bound of the frustum
+     */
+    perspective(fov, aspect, near, far) {
+        var f = 1.0 / Math.tan(fovy / 2),
+            nf = 1 / (near - far);
+        out[0] = f / aspect;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+        out[4] = 0;
+        out[5] = f;
+        out[6] = 0;
+        out[7] = 0;
+        out[8] = 0;
+        out[9] = 0;
+        out[10] = (far + near) * nf;
+        out[11] = -1;
+        out[12] = 0;
+        out[13] = 0;
+        out[14] = (2 * far * near) * nf;
+        out[15] = 0;
+        return out;
+    };
+
 }
 
-/**
- * Creates a matrix from the given angle around the Y axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateY(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.fromYRotation = function (out, rad) {
-    var s = Math.sin(rad),
-        c = Math.cos(rad);
-
-    // Perform axis-specific matrix multiplication
-    out[0] = c;
-    out[1] = 0;
-    out[2] = -s;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = 1;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = s;
-    out[9] = 0;
-    out[10] = c;
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-    return out;
-}
-
-/**
- * Creates a matrix from the given angle around the Z axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateZ(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-mat4.fromZRotation = function (out, rad) {
-    var s = Math.sin(rad),
-        c = Math.cos(rad);
-
-    // Perform axis-specific matrix multiplication
-    out[0] = c;
-    out[1] = s;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = -s;
-    out[5] = c;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = 1;
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-    return out;
-}
-
-/**
- * Creates a matrix from a quaternion rotation and vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     var quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @returns {mat4} out
- */
-mat4.fromRotationTranslation = function (out, q, v) {
-    // Quaternion math
-    var x = q[0], y = q[1], z = q[2], w = q[3],
-        x2 = x + x,
-        y2 = y + y,
-        z2 = z + z,
-
-        xx = x * x2,
-        xy = x * y2,
-        xz = x * z2,
-        yy = y * y2,
-        yz = y * z2,
-        zz = z * z2,
-        wx = w * x2,
-        wy = w * y2,
-        wz = w * z2;
-
-    out[0] = 1 - (yy + zz);
-    out[1] = xy + wz;
-    out[2] = xz - wy;
-    out[3] = 0;
-    out[4] = xy - wz;
-    out[5] = 1 - (xx + zz);
-    out[6] = yz + wx;
-    out[7] = 0;
-    out[8] = xz + wy;
-    out[9] = yz - wx;
-    out[10] = 1 - (xx + yy);
-    out[11] = 0;
-    out[12] = v[0];
-    out[13] = v[1];
-    out[14] = v[2];
-    out[15] = 1;
-
-    return out;
-};
-
-/**
- * Returns the translation vector component of a transformation
- *  matrix. If a matrix is built with fromRotationTranslation,
- *  the returned vector will be the same as the translation vector
- *  originally supplied.
- * @param  {vec3} out Vector to receive translation component
- * @param  {mat4} mat Matrix to be decomposed (input)
- * @return {vec3} out
- */
-mat4.getTranslation = function (out, mat) {
-    out[0] = mat[12];
-    out[1] = mat[13];
-    out[2] = mat[14];
-
-    return out;
-};
-
-/**
- * Returns the scaling factor component of a transformation
- *  matrix. If a matrix is built with fromRotationTranslationScale
- *  with a normalized Quaternion paramter, the returned vector will be 
- *  the same as the scaling vector
- *  originally supplied.
- * @param  {vec3} out Vector to receive scaling factor component
- * @param  {mat4} mat Matrix to be decomposed (input)
- * @return {vec3} out
- */
-mat4.getScaling = function (out, mat) {
-    var m11 = mat[0],
-        m12 = mat[1],
-        m13 = mat[2],
-        m21 = mat[4],
-        m22 = mat[5],
-        m23 = mat[6],
-        m31 = mat[8],
-        m32 = mat[9],
-        m33 = mat[10];
-
-    out[0] = Math.sqrt(m11 * m11 + m12 * m12 + m13 * m13);
-    out[1] = Math.sqrt(m21 * m21 + m22 * m22 + m23 * m23);
-    out[2] = Math.sqrt(m31 * m31 + m32 * m32 + m33 * m33);
-
-    return out;
-};
-
-/**
- * Returns a quaternion representing the rotational component
- *  of a transformation matrix. If a matrix is built with
- *  fromRotationTranslation, the returned quaternion will be the
- *  same as the quaternion originally supplied.
- * @param {quat} out Quaternion to receive the rotation component
- * @param {mat4} mat Matrix to be decomposed (input)
- * @return {quat} out
- */
-mat4.getRotation = function (out, mat) {
-    // Algorithm taken from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
-    var trace = mat[0] + mat[5] + mat[10];
-    var S = 0;
-
-    if (trace > 0) {
-        S = Math.sqrt(trace + 1.0) * 2;
-        out[3] = 0.25 * S;
-        out[0] = (mat[6] - mat[9]) / S;
-        out[1] = (mat[8] - mat[2]) / S;
-        out[2] = (mat[1] - mat[4]) / S;
-    } else if ((mat[0] > mat[5]) & (mat[0] > mat[10])) {
-        S = Math.sqrt(1.0 + mat[0] - mat[5] - mat[10]) * 2;
-        out[3] = (mat[6] - mat[9]) / S;
-        out[0] = 0.25 * S;
-        out[1] = (mat[1] + mat[4]) / S;
-        out[2] = (mat[8] + mat[2]) / S;
-    } else if (mat[5] > mat[10]) {
-        S = Math.sqrt(1.0 + mat[5] - mat[0] - mat[10]) * 2;
-        out[3] = (mat[8] - mat[2]) / S;
-        out[0] = (mat[1] + mat[4]) / S;
-        out[1] = 0.25 * S;
-        out[2] = (mat[6] + mat[9]) / S;
-    } else {
-        S = Math.sqrt(1.0 + mat[10] - mat[0] - mat[5]) * 2;
-        out[3] = (mat[1] - mat[4]) / S;
-        out[0] = (mat[8] + mat[2]) / S;
-        out[1] = (mat[6] + mat[9]) / S;
-        out[2] = 0.25 * S;
-    }
-
-    return out;
-};
-
-/**
- * Creates a matrix from a quaternion rotation, vector translation and vector scale
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     var quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *     mat4.scale(dest, scale)
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @param {vec3} s Scaling vector
- * @returns {mat4} out
- */
-mat4.fromRotationTranslationScale = function (out, q, v, s) {
-    // Quaternion math
-    var x = q[0], y = q[1], z = q[2], w = q[3],
-        x2 = x + x,
-        y2 = y + y,
-        z2 = z + z,
-
-        xx = x * x2,
-        xy = x * y2,
-        xz = x * z2,
-        yy = y * y2,
-        yz = y * z2,
-        zz = z * z2,
-        wx = w * x2,
-        wy = w * y2,
-        wz = w * z2,
-        sx = s[0],
-        sy = s[1],
-        sz = s[2];
-
-    out[0] = (1 - (yy + zz)) * sx;
-    out[1] = (xy + wz) * sx;
-    out[2] = (xz - wy) * sx;
-    out[3] = 0;
-    out[4] = (xy - wz) * sy;
-    out[5] = (1 - (xx + zz)) * sy;
-    out[6] = (yz + wx) * sy;
-    out[7] = 0;
-    out[8] = (xz + wy) * sz;
-    out[9] = (yz - wx) * sz;
-    out[10] = (1 - (xx + yy)) * sz;
-    out[11] = 0;
-    out[12] = v[0];
-    out[13] = v[1];
-    out[14] = v[2];
-    out[15] = 1;
-
-    return out;
-};
-
-/**
- * Creates a matrix from a quaternion rotation, vector translation and vector scale, rotating and scaling around the given origin
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     mat4.translate(dest, origin);
- *     var quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *     mat4.scale(dest, scale)
- *     mat4.translate(dest, negativeOrigin);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @param {vec3} s Scaling vector
- * @param {vec3} o The origin vector around which to scale and rotate
- * @returns {mat4} out
- */
-mat4.fromRotationTranslationScaleOrigin = function (out, q, v, s, o) {
-    // Quaternion math
-    var x = q[0], y = q[1], z = q[2], w = q[3],
-        x2 = x + x,
-        y2 = y + y,
-        z2 = z + z,
-
-        xx = x * x2,
-        xy = x * y2,
-        xz = x * z2,
-        yy = y * y2,
-        yz = y * z2,
-        zz = z * z2,
-        wx = w * x2,
-        wy = w * y2,
-        wz = w * z2,
-
-        sx = s[0],
-        sy = s[1],
-        sz = s[2],
-
-        ox = o[0],
-        oy = o[1],
-        oz = o[2];
-
-    out[0] = (1 - (yy + zz)) * sx;
-    out[1] = (xy + wz) * sx;
-    out[2] = (xz - wy) * sx;
-    out[3] = 0;
-    out[4] = (xy - wz) * sy;
-    out[5] = (1 - (xx + zz)) * sy;
-    out[6] = (yz + wx) * sy;
-    out[7] = 0;
-    out[8] = (xz + wy) * sz;
-    out[9] = (yz - wx) * sz;
-    out[10] = (1 - (xx + yy)) * sz;
-    out[11] = 0;
-    out[12] = v[0] + ox - (out[0] * ox + out[4] * oy + out[8] * oz);
-    out[13] = v[1] + oy - (out[1] * ox + out[5] * oy + out[9] * oz);
-    out[14] = v[2] + oz - (out[2] * ox + out[6] * oy + out[10] * oz);
-    out[15] = 1;
-
-    return out;
-};
-
-/**
- * Calculates a 4x4 matrix from the given quaternion
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat} q Quaternion to create matrix from
- *
- * @returns {mat4} out
- */
-mat4.fromQuat = function (out, q) {
-    var x = q[0], y = q[1], z = q[2], w = q[3],
-        x2 = x + x,
-        y2 = y + y,
-        z2 = z + z,
-
-        xx = x * x2,
-        yx = y * x2,
-        yy = y * y2,
-        zx = z * x2,
-        zy = z * y2,
-        zz = z * z2,
-        wx = w * x2,
-        wy = w * y2,
-        wz = w * z2;
-
-    out[0] = 1 - yy - zz;
-    out[1] = yx + wz;
-    out[2] = zx - wy;
-    out[3] = 0;
-
-    out[4] = yx - wz;
-    out[5] = 1 - xx - zz;
-    out[6] = zy + wx;
-    out[7] = 0;
-
-    out[8] = zx + wy;
-    out[9] = zy - wx;
-    out[10] = 1 - xx - yy;
-    out[11] = 0;
-
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-
-    return out;
-};
-
-/**
- * Generates a frustum matrix with the given bounds
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {Number} left Left bound of the frustum
- * @param {Number} right Right bound of the frustum
- * @param {Number} bottom Bottom bound of the frustum
- * @param {Number} top Top bound of the frustum
- * @param {Number} near Near bound of the frustum
- * @param {Number} far Far bound of the frustum
- * @returns {mat4} out
- */
-mat4.frustum = function (out, left, right, bottom, top, near, far) {
-    var rl = 1 / (right - left),
-        tb = 1 / (top - bottom),
-        nf = 1 / (near - far);
-    out[0] = (near * 2) * rl;
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = (near * 2) * tb;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = (right + left) * rl;
-    out[9] = (top + bottom) * tb;
-    out[10] = (far + near) * nf;
-    out[11] = -1;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = (far * near * 2) * nf;
-    out[15] = 0;
-    return out;
-};
 
 /**
  * Generates a perspective projection matrix with the given bounds
@@ -1896,33 +1129,6 @@ mat4.subtract = function (out, a, b) {
  */
 mat4.sub = mat4.subtract;
 
-/**
- * Multiply each element of the matrix by a scalar.
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
- * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat4} out
- */
-mat4.multiplyScalar = function (out, a, b) {
-    out[0] = a[0] * b;
-    out[1] = a[1] * b;
-    out[2] = a[2] * b;
-    out[3] = a[3] * b;
-    out[4] = a[4] * b;
-    out[5] = a[5] * b;
-    out[6] = a[6] * b;
-    out[7] = a[7] * b;
-    out[8] = a[8] * b;
-    out[9] = a[9] * b;
-    out[10] = a[10] * b;
-    out[11] = a[11] * b;
-    out[12] = a[12] * b;
-    out[13] = a[13] * b;
-    out[14] = a[14] * b;
-    out[15] = a[15] * b;
-    return out;
-};
 
 
 
