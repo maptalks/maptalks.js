@@ -11,7 +11,7 @@ import quat from './quat';
  * @class 4x4 Matrix
  * @name mat4
  */
-class mat4 {
+export default class mat4 {
     /**
      * private 4x4 matrix array store
      */
