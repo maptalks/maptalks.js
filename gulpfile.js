@@ -12,7 +12,7 @@ gulp.task("kiwl.gl.combine", function () {
         plugins: [babel()]
     }).then(function (bundle) {
         bundle.write({
-            format: "umd",
+            format: "iife", //umd
             moduleName: "kiwigl",
             dest: "./dist/kiwi.gl.js",
             // sourceMap: "inline"
@@ -33,7 +33,7 @@ gulp.task('tdd', function (done) {
     }, done).start();
 });
 
-gulp.task("default", ["kiwl.gl.combine","tdd"]);
+gulp.task("default", ["tdd","kiwl.gl.combine"]);
 //gulp.task("default",["kiwl.gl.combine"]);
 //gulp.start(["tdd"]);
 //gulp.start(["kiwi.test"]);

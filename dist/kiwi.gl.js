@@ -1,8 +1,5 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.kiwigl = global.kiwigl || {})));
-}(this, (function (exports) { 'use strict';
+(function (exports) {
+'use strict';
 
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -3598,9 +3595,9 @@ var vec2 = function () {
     function vec2() {
         classCallCheck(this, vec2);
 
-        _out = new matrix.ARRAY_TYPE(2);
-        _out[0] = 0;
-        _out[1] = 0;
+        this._out = new matrix.ARRAY_TYPE(2);
+        this._out[0] = 0;
+        this._out[1] = 0;
         return this;
     }
     /**
@@ -3946,6 +3943,4 @@ exports.mat3 = mat3;
 exports.mat4 = mat4;
 exports.quat = quat;
 
-Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
+}((this.kiwigl = this.kiwigl || {})));

@@ -15,9 +15,9 @@ export default class vec2 {
      * Creates a new, empty vec2
      */
     constructor() {
-        _out = new matrix.ARRAY_TYPE(2);
-        _out[0] = 0;
-        _out[1] = 0;
+        this._out = new matrix.ARRAY_TYPE(2);
+        this._out[0] = 0;
+        this._out[1] = 0;
         return this;
     };
     /**
