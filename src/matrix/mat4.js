@@ -76,22 +76,11 @@ export default class mat4 {
      * Set a mat4 to the identity matrix
      */
     identity() {
-        this._out[0] = 1;
-        this._out[1] = 0;
-        this._out[2] = 0;
-        this._out[3] = 0;
-        this._out[4] = 0;
-        this._out[5] = 1;
-        this._out[6] = 0;
-        this._out[7] = 0;
-        this._out[8] = 0;
-        this._out[9] = 0;
-        this._out[10] = 1;
-        this._out[11] = 0;
-        this._out[12] = 0;
-        this._out[13] = 0;
-        this._out[14] = 0;
-        this._out[15] = 1;
+        this.set(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
         return this;
     };
     /**
