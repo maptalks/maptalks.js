@@ -3612,8 +3612,8 @@ var vec2 = function () {
          * set value of vec2,such as [x,y]
          */
         value: function set$$1(x, y) {
-            _out[0] = x;
-            _out[1] = y;
+            this._out[0] = x;
+            this._out[1] = y;
             return this;
         }
 
@@ -3843,9 +3843,9 @@ var vec2 = function () {
          * @param {number} t interpolation amount between the two inputs
          */
         value: function lerp(vec, t) {
-            var _out2 = slicedToArray(this._out, 2),
-                ax = _out2[0],
-                ay = _out2[1],
+            var _out = slicedToArray(this._out, 2),
+                ax = _out[0],
+                ay = _out[1],
                 _vec$_out = slicedToArray(vec._out, 2),
                 bx = _vec$_out[0],
                 by = _vec$_out[1];
@@ -3871,9 +3871,9 @@ var vec2 = function () {
          * @param {mat3} mat matrix to transform with
          */
         value: function transformMat3(mat) {
-            var _out3 = slicedToArray(this._out, 2),
-                x = _out3[0],
-                y = _out3[1];
+            var _out2 = slicedToArray(this._out, 2),
+                x = _out2[0],
+                y = _out2[1];
 
             this._out[0] = mat._out[0] * x + mat._out[3] * y + mat._out[6];
             this._out[1] = mat._out[1] * x + mat._out[4] * y + mat._out[7];
@@ -3886,9 +3886,9 @@ var vec2 = function () {
          * Transforms the vec2 with a mat4
          */
         value: function transformMat4(mat) {
-            var _out4 = slicedToArray(this._out, 2),
-                x = _out4[0],
-                y = _out4[1];
+            var _out3 = slicedToArray(this._out, 2),
+                x = _out3[0],
+                y = _out3[1];
 
             this._out[0] = mat._out[0] * x + mat._out[4] * y + mat._out[5];
             this._out[1] = mat._out[1] * x + mat._out[5] * y + mat._out[13];
@@ -3902,9 +3902,9 @@ var vec2 = function () {
          * precision
          */
         value: function equals(vec) {
-            var _out5 = slicedToArray(this._out, 2),
-                a0 = _out5[0],
-                a1 = _out5[1],
+            var _out4 = slicedToArray(this._out, 2),
+                a0 = _out4[0],
+                a1 = _out4[1],
                 _vec$_out2 = slicedToArray(vec._out, 2),
                 b0 = _vec$_out2[0],
                 b1 = _vec$_out2[1];
@@ -3936,11 +3936,16 @@ var vec2 = function () {
  * 
  */
 
-exports.vec2 = vec2;
-exports.vec3 = vec3;
-exports.vec4 = vec4;
-exports.mat3 = mat3;
-exports.mat4 = mat4;
-exports.quat = quat;
 
-}((this.kiwigl = this.kiwigl || {})));
+var init = Object.freeze({
+	vec2: vec2,
+	vec3: vec3,
+	vec4: vec4,
+	mat3: mat3,
+	mat4: mat4,
+	quat: quat
+});
+
+exports.matrix = init;
+
+}((this.kiwi = this.kiwi || {})));

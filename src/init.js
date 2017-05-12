@@ -1,1 +1,3 @@
-export * from './matrix/init';
+import * as matrix from './matrix/init';
+// kiwi.matrix;
+export {matrix};

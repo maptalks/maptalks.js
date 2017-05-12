@@ -5,6 +5,9 @@
 doc/**/*
 !doc/files.js
 
+### vscode
+.vscode/
+
 ### bower
 vendor/
 

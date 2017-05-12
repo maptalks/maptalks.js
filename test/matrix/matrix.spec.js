@@ -5,12 +5,13 @@
 describe("vec2",()=>{
 
     describe("#add",()=>{
-        it("the first test#add",()=>{
-            var s = new kiwi.vec2();
-            var s2 = new kiwi.vec2();
-            
+        it("ve2向量基本运算",()=>{
+            var s = new kiwi.matrix.vec2();
+            var s2 = new kiwi.matrix.vec2().set(1,6);
             s.add(s2);
-            expect("1").to.be.equal("1");
+            console.log(s.toString());
+            console.log(s2.toString());
+            expect(s.toString()).to.be.equal(s2.toString());
         });
     });
 

@@ -35,8 +35,8 @@ export default class vec2 {
      * set value of vec2,such as [x,y]
      */
     set(x, y) {
-        _out[0] = x;
-        _out[1] = y;
+        this._out[0] = x;
+        this._out[1] = y;
         return this;
     }
 

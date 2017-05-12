@@ -8,7 +8,7 @@ const gulp = require("gulp"),
 //combine
 gulp.task("kiwl.gl.combine", function () {
     rollup.rollup({
-        entry: "./src/matrix/init.js",
+        entry: "./src/init.js",
         plugins: [babel()]
     }).then(function (bundle) {
         bundle.write({
@@ -36,7 +36,7 @@ gulp.task('tdd', function (done) {
 gulp.task("default", ["tdd","kiwl.gl.combine"]);
 //gulp.task("default",["kiwl.gl.combine"]);
 //gulp.start(["tdd"]);
-//gulp.start(["kiwi.test"]);
+//gulp.start(["test"]);
 
 // gulp.task("default", function () {
 
