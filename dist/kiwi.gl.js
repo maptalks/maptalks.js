@@ -3616,13 +3616,12 @@ var vec2 = function () {
             this._out[1] = y;
             return this;
         }
+    }, {
+        key: 'clone',
 
         /**
          * Creates a new vec2 initialized with values from an existing vector
          */
-
-    }, {
-        key: 'clone',
         value: function clone() {
             var vec = new vec2();
             vec.set(this._out[0], this._out[1]);
@@ -3638,7 +3637,7 @@ var vec2 = function () {
         value: function add(vec) {
             this._out[0] += vec._out[0];
             this._out[1] += vec._out[1];
-            return vec;
+            return this;
         }
     }, {
         key: 'sub',

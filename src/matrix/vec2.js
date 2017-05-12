@@ -38,8 +38,7 @@ export default class vec2 {
         this._out[0] = x;
         this._out[1] = y;
         return this;
-    }
-
+    };
     /**
      * Creates a new vec2 initialized with values from an existing vector
      */
@@ -55,7 +54,7 @@ export default class vec2 {
     add(vec) {
         this._out[0] += vec._out[0];
         this._out[1] += vec._out[1];
-        return vec;
+        return this;
     };
     /**
      * substract vector vec from this
