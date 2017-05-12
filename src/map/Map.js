@@ -731,10 +731,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const projection = this.getProjection(),
             x = Math.abs(extent['xmin'] - extent['xmax']),
             y = Math.abs(extent['ymin'] - extent['ymax']),
-            projectedExtent = projection.project({
-                x: x,
-                y: y
-            }),
+            projectedExtent = projection.project(new Coordinate(x, y)),
             resolutions = this._getResolutions();
         let xz = -1,
             yz = -1;
