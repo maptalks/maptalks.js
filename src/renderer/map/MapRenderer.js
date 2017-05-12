@@ -125,6 +125,6 @@ export default class MapRenderer extends Class {
     }
 
     onLoad() {
-        this._animationLoop();
+        this._frameLoop();
     }
 }

@@ -1,5 +1,5 @@
 import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
-import { createEl, preventSelection } from 'core/util/dom';
+import { createEl, preventSelection, computeDomPosition } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Canvas2D from 'core/Canvas';
@@ -337,7 +337,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         delete this.canvas;
         delete this.map;
 
-        this._cancelAnimationLoop();
+        this._cancelFrameLoop();
     }
 
     hitDetect(point) {
@@ -467,19 +467,19 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     /**
-    * Main animation loop
+    * Main frame loop
     */
-    _animationLoop() {
+    _frameLoop() {
         if (!this.map) {
-            this._cancelAnimationLoop();
+            this._cancelFrameLoop();
             return;
         }
         this.renderFrame();
         // Keep registering ourselves for the next animation frame
-        this._animationFrame = requestAnimFrame(() => { this._animationLoop(); });
+        this._animationFrame = requestAnimFrame(() => { this._frameLoop(); });
     }
 
-    _cancelAnimationLoop() {
+    _cancelFrameLoop() {
         if (this._animationFrame) {
             cancelAnimFrame(this._animationFrame);
         }
@@ -609,6 +609,8 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!this.map || this.map.isInteracting()) {
             return;
         }
+        // refresh map's dom position
+        computeDomPosition(this.map._containerDOM);
         this.map.checkSize();
     }
 
