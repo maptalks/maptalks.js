@@ -63,8 +63,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this.onAdd()) {
             if (!isNil(zIndex)) {
                 this._renderer.setZIndex(zIndex);
+                if (!this._renderer.isCanvasRender || !this._renderer.isCanvasRender()) {
+                    this._renderer.render();
+                }
             }
-            this._renderer.render();
         }
         return this;
     }
@@ -148,6 +150,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     isCanvasRender() {
         const renderer = this._getRenderer();
         if (renderer) {
+            if (!renderer.isCanvasRender) {
+                return false;
+            }
             return renderer.isCanvasRender();
         }
         return false;
@@ -208,11 +213,21 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     show() {
         if (!this.options['visible']) {
             this.options['visible'] = true;
+
             if (this._getRenderer()) {
                 this._getRenderer().show();
             }
+
+            const map = this.getMap();
+            if (map) {
+                //fire show at renderend to make sure layer is shown
+                map.once('renderend', () => {
+                    this.fire('show');
+                });
+            } else {
+                this.fire('show');
+            }
         }
-        this.fire('show');
         return this;
     }
 
@@ -226,8 +241,18 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             if (this._getRenderer()) {
                 this._getRenderer().hide();
             }
+
+            const map = this.getMap();
+            if (map) {
+                //fire hide at renderend to make sure layer is hidden
+                map.once('renderend', () => {
+                    this.fire('hide');
+                });
+            } else {
+                this.fire('hide');
+            }
         }
-        this.fire('hide');
+        // this.fire('hide');
         return this;
     }
 
@@ -280,9 +305,12 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     setMask(mask) {
         if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon')) {
-            throw new Error('Mask for a layer must be either a marker with vector marker symbol, a Polygon or a MultiPolygon.');
+            throw new Error('Mask for a layer must be a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }
 
+        if (!this.isCanvasRender()) {
+            throw new Error('Only canvas layers can setMask');
+        }
         if (mask.type === 'Point') {
             mask.updateSymbol({
                 'markerLineColor': 'rgba(0, 0, 0, 0)',
@@ -299,8 +327,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
-        if (this._getRenderer()) {
-            this._getRenderer().render();
+        const renderer = this._getRenderer();
+        if (renderer && renderer.setToRedraw) {
+            this._getRenderer().setToRedraw();
         }
         return this;
     }
@@ -314,8 +343,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
-        if (this._getRenderer()) {
-            this._getRenderer().render();
+        const renderer = this._getRenderer();
+        if (renderer && renderer.setToRedraw) {
+            this._getRenderer().setToRedraw();
         }
         return this;
     }

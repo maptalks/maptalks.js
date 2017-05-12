@@ -11,6 +11,8 @@ describe('Remove and Hide Geometry', function () {
         container = document.createElement('canvas');
         container.style.width = '800px';
         container.style.height = '600px';
+        container.width = 800;
+        container.height = 600;
         document.body.appendChild(container);
         var option = {
             zoom: 17,

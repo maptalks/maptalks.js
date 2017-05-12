@@ -183,18 +183,14 @@ describe('#ParticleLayer', function () {
         layer.once('layerload', function () {
             layer.pause();
             layer.clearCanvas();
-            layer.requestMapToRender();
             layer.completeRender();
             expect(layer.isPlaying()).not.to.be.ok();
-            layer.once('layerload', function () {
-                if (count === 2) {
+            setTimeout(function () {
+                layer.once('layerload', function () {
                     expect(layer).to.be.painted(3, 0, [255, 0, 0]);
                     expect(layer.isPlaying()).to.be.ok();
                     done();
-                }
-            });
-            setTimeout(function () {
-                expect(count).to.be(1);
+                });
                 expect(layer).not.to.be.painted(0, 0);
                 layer.play();
             }, 40);

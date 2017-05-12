@@ -338,7 +338,7 @@ describe('#Map', function () {
         it('layer will trigger layerload event', function (done) {
             map.setBaseLayer(tile);
 
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new maptalks.VectorLayer('id', new maptalks.Marker(map.getCenter()));
             layer.on('layerload', function () {
                 done();
             });
@@ -356,7 +356,7 @@ describe('#Map', function () {
         });
 
         it('layerload triggered after setBaseLayer', function (done) {
-            var layer = new maptalks.VectorLayer('id');
+            var layer = new maptalks.VectorLayer('id', new maptalks.Marker(map.getCenter()));
             layer.on('layerload', function () {
                 done();
             });
@@ -384,14 +384,13 @@ describe('#Map', function () {
             expect(map.getLayer(layer)).to.equal(null);
         });
 
-        it('layer fire remove event when it is removed', function () {
-            var spy = sinon.spy();
+        it('layer fire remove event when it is removed', function (done) {
             var layer = new maptalks.VectorLayer('id');
-            layer.on('remove', spy);
+            layer.on('remove', function () {
+                done();
+            });
             map.addLayer(layer);
             map.removeLayer(layer);
-
-            expect(spy.called).to.be.ok();
         });
     });
 

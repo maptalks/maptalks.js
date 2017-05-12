@@ -85,7 +85,7 @@ const options = {
     'zoomable': true,
     'enableInfoWindow': true,
 
-    'numOfLayersOnInteracting' : 10,
+    'numOfLayersOnInteracting' : 8,
 
     'hitDetect': (function () {
         return !Browser.mobile;
@@ -93,7 +93,7 @@ const options = {
 
     'hitDetectLimit' : 5,
 
-    'fpsOnInteracting' : 20,
+    'fpsOnInteracting' : 40,
 
     'maxZoom': null,
     'minZoom': null,
@@ -196,7 +196,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._zoomLevel = zoom;
         this._center = center;
 
-        this.setSpatialReference(opts['spatialReference']);
+        this.setSpatialReference(opts['spatialReference'] || opts['view']);
 
         if (baseLayer) {
             this.setBaseLayer(baseLayer);
@@ -208,7 +208,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._mapViewPoint = new Point(0, 0);
 
         this._initRenderer();
-        this._getRenderer().initContainer();
         this._updateMapSize(this._getContainerDomSize());
 
         this._Load();
@@ -732,10 +731,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const projection = this.getProjection(),
             x = Math.abs(extent['xmin'] - extent['xmax']),
             y = Math.abs(extent['ymin'] - extent['ymax']),
-            projectedExtent = projection.project({
-                x: x,
-                y: y
-            }),
+            projectedExtent = projection.project(new Coordinate(x, y)),
             resolutions = this._getResolutions();
         let xz = -1,
             yz = -1;
@@ -964,10 +960,18 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Layer}
      */
     getLayer(id) {
-        if (!id || !this._layerCache || !this._layerCache[id]) {
+        if (!id) {
             return null;
         }
-        return this._layerCache[id];
+        const layer =  this._layerCache ? this._layerCache[id] : null;
+        if (layer) {
+            return layer;
+        }
+        const baseLayer = this.getBaseLayer();
+        if (baseLayer && baseLayer.getId() === id) {
+            return baseLayer;
+        }
+        return null;
     }
 
     /**
@@ -1030,6 +1034,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!Array.isArray(layers)) {
             return this.removeLayer([layers]);
         }
+        const removed = [];
         for (let i = 0, len = layers.length; i < len; i++) {
             let layer = layers[i];
             if (!(layer instanceof Layer)) {
@@ -1042,6 +1047,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (!map || map !== this) {
                 continue;
             }
+            removed.push(layer);
             this._removeLayer(layer, this._layers);
             if (this._loaded) {
                 layer._doRemove();
@@ -1050,7 +1056,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (this._layerCache) {
                 delete this._layerCache[id];
             }
-            layer.fire('remove');
+        }
+        if (removed.length > 0) {
+            this.once('frameend', () => {
+                removed.forEach(layer => {
+                    layer.fire('remove');
+                });
+            });
         }
         /**
          * removelayer event, fired when removing layers.
@@ -1080,11 +1092,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!layers || !Array.isArray(layers)) {
             return this;
         }
-        const renderer = this._getRenderer();
-        renderer.disableRender();
         const layersToOrder = [];
         let minZ = Number.MAX_VALUE;
-        for (let i = 0; i < layers.length; i++) {
+        for (let i = 0, l = layers.length; i < l; i++) {
             let layer = layers[i];
             if (isString(layers[i])) {
                 layer = this.getLayer(layer);
@@ -1097,11 +1107,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             layersToOrder.push(layer);
         }
-        for (let ii = 0; ii < layersToOrder.length; ii++) {
-            layersToOrder[ii].setZIndex(minZ + ii);
+        for (let i = 0, l = layersToOrder.length; i < l; i++) {
+            layersToOrder[i].setZIndex(minZ + i);
         }
-        renderer.enableRender();
-        renderer.render();
+
         return this;
     }
 
@@ -1265,6 +1274,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._updateMapSize(watched);
         const resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
         this._offsetCenterByPixel(resizeOffset);
+        this._mapViewCoord = this._getPrjCenter();
 
         const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
@@ -1345,8 +1355,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} Result coordinate
      */
     locateByPoint(coordinate, px, py) {
-        const point = this.coordinateToPoint(coordinate);
-        return this.pointToCoordinate(point._add(px, py));
+        const point = this.coordinateToContainerPoint(coordinate);
+        return this.containerPointToCoordinate(point._add(px, py));
     }
 
     /**
@@ -1593,9 +1603,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     _setPrjCenterAndMove(pcenter) {
-        const offset = this._getPixelDistance(pcenter);
+        // const offset = this._getPixelDistance(pcenter);
         this._setPrjCenter(pcenter);
-        this.offsetPlatform(offset);
+        // this.offsetPlatform(offset);
     }
 
     //remove a layer from the layerList
@@ -1606,15 +1616,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const index = layerList.indexOf(layer);
         if (index > -1) {
             layerList.splice(index, 1);
-            const renderer = this._getRenderer();
-            renderer.disableRender();
             for (let j = 0, jlen = layerList.length; j < jlen; j++) {
                 if (layerList[j].setZIndex) {
                     layerList[j].setZIndex(j);
                 }
             }
-            renderer.enableRender();
-            renderer.render();
         }
     }
 
@@ -1653,8 +1659,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     _Load() {
         this._resetMapStatus();
         this._registerDomEvents();
-        this._loadAllLayers();
-        this._getRenderer().onLoad();
         if (this.options['pitch']) {
             this.setPitch(this.options['pitch']);
             delete this.options['pitch'];
@@ -1663,6 +1667,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this.setBearing(this.options['bearing']);
             delete this.options['bearing'];
         }
+        this._loadAllLayers();
+        this._getRenderer().onLoad();
         this._loaded = true;
         this._callOnLoadHooks();
         this._initTime = now();
@@ -1681,6 +1687,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const renderer = this.options['renderer'];
         const clazz = Map.getRendererClass(renderer);
         this._renderer = new clazz(this);
+        this._renderer.load();
     }
 
     _getRenderer() {
@@ -1859,12 +1866,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         } else {
             this._getRenderer().offsetPlatform(offset);
             this._mapViewPoint = this._mapViewPoint.add(offset);
+            this._mapViewCoord = this._getPrjCenter();
             return this;
         }
     }
 
     _resetMapViewPoint() {
         this._mapViewPoint = new Point(0, 0);
+        this._mapViewCoord = this._getPrjCenter();
     }
 
     /**

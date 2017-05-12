@@ -1,5 +1,5 @@
 import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
-import { createEl, preventSelection, copyCanvas } from 'core/util/dom';
+import { createEl, preventSelection, computeDomPosition } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Canvas2D from 'core/Canvas';
@@ -18,28 +18,236 @@ import Map from 'map/Map';
  */
 export default class MapCanvasRenderer extends MapRenderer {
     constructor(map) {
-        super();
-        this.map = map;
+        super(map);
         //container is a <canvas> element
         this._containerIsCanvas = !!map._containerDOM.getContext;
         this._registerEvents();
+        this._loopTime = 0;
     }
 
-    enableRender() {
-        this._suppressRender = false;
+    load() {
+        this.initContainer();
     }
 
-    disableRender() {
-        this._suppressRender = true;
+    /**
+     * render layers in current frame
+     * @return {Boolean} return false to cease frame loop
+     */
+    renderFrame() {
+        if (!this.map) {
+            return false;
+        }
+        this.map._fireEvent('framestart');
+        this.updateMap();
+        const layers = this._getAllLayerToRender();
+        this.drawLayers(layers);
+        this.drawLayerCanvas(layers);
+        // CAUTION: the order to fire frameend and layerload events
+        // fire frameend before layerload, reason:
+        // 1. frameend is often used internally by maptalks and plugins
+        // 2. layerload is often used externally by tests or user apps
+        this.map._fireEvent('frameend');
+        this._fireLayerLoadEvents();
+        this.executeEventHandlers();
+        this._needRedraw = false;
+        return true;
+    }
+
+    updateMap() {
+        const map = this.map;
+        if (map.isInteracting() && !map.isMoving()) {
+            return;
+        }
+        const pre = map._mapViewCoord;
+        if (!pre) {
+            return;
+        }
+        const current = map._getPrjCenter();
+        if (pre.equals(current)) {
+            return;
+        }
+        const offset = map._prjToContainerPoint(pre).sub(map._prjToContainerPoint(current));
+        map.offsetPlatform(offset);
+    }
+
+    drawLayers(layers) {
+        const map = this.map;
+        const isInteracting = map.isInteracting();
+        // all the visible canvas layers' ids.
+        const canvasIds = [];
+        // all the updated canvas layers's ids.
+        const updatedIds = [];
+        const fps = map.options['fpsOnInteracting'] || 0;
+        const limit = fps === 0 ? 0 : 1000 / fps;
+        // time of layer drawing
+        let t = 0;
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const layer = layers[i];
+            if (!layer.isVisible()) {
+                continue;
+            }
+            const isCanvas = layer.isCanvasRender();
+            if (isCanvas) {
+                canvasIds.push(layer.getId());
+            }
+            const renderer = layer._getRenderer();
+            if (!renderer) {
+                continue;
+            }
+            // if need to call layer's draw/drawInteracting
+            const needsRedraw = this._checkLayerRedraw(layer);
+            if (renderer.isCanvasUpdated && renderer.isCanvasUpdated()) {
+                // don't need to call layer's draw/drawOnInteracting but need to redraw layer's updated canvas
+                if (!needsRedraw) {
+                    updatedIds.push(layer.getId());
+                }
+                this.setToRedraw();
+            }
+            delete renderer.__shouldZoomTransform;
+            if (!needsRedraw) {
+                continue;
+            }
+            if (isInteracting && isCanvas) {
+                t += this._drawCanvasLayerOnInteracting(layer, t, limit);
+            } else if (isInteracting && renderer.drawOnInteracting) {
+                // dom layers
+                if (renderer.prepareRender) {
+                    renderer.prepareRender();
+                }
+                renderer.drawOnInteracting(this._eventParam);
+            } else {
+                // map is not interacting, call layer's render
+                renderer.render();
+            }
+
+            if (isCanvas) {
+                updatedIds.push(layer.getId());
+                this.setToRedraw();
+            }
+        }
+        // compare:
+        // 1. previous drawn layers and current drawn layers
+        // 2. previous canvas layers and current canvas layers
+        // set map to redraw if either changed
+        const preCanvasIds = this._canvasIds || [];
+        const preUpdatedIds = this._updatedIds || [];
+        this._canvasIds = canvasIds;
+        this._updatedIds = updatedIds;
+        if (!this._needToRedraw()) {
+            const sep = '---';
+            if (preCanvasIds.join(sep) !== canvasIds.join(sep) || preUpdatedIds.join(sep) !== updatedIds.join(sep)) {
+                this.setToRedraw();
+            }
+        }
+    }
+
+    /**
+     * check if need to call layer's draw/drawInteracting
+     * @param  {Layer} layer
+     * @return {Boolean}
+     */
+    _checkLayerRedraw(layer) {
+        const map = this.map;
+        const renderer = layer._getRenderer();
+        if (layer.isCanvasRender()) {
+            return renderer.isAnimating && renderer.isAnimating() || renderer.needToRedraw();
+        } else {
+            if (renderer.needToRedraw && renderer.needToRedraw()) {
+                return true;
+            }
+            // dom layers, redraw it if map is interacting or state is changed
+            return map.isInteracting() || this.isStateChanged();
+        }
+    }
+
+    /**
+     * Draw canvas rendered layer when map is interacting
+     * @param  {Layer} layer
+     * @param  {Number} t     current consumed time of layer drawing
+     * @param  {Number} limit time limit for layer drawing
+     * @return {Number}       time to draw this layer
+     */
+    _drawCanvasLayerOnInteracting(layer, t, limit) {
+        const map = this.map;
+        const renderer = layer._getRenderer();
+        const drawTime = renderer.getDrawTime();
+        const inTime = limit === 0 || limit > 0 && t + drawTime <= limit;
+        if (renderer.drawOnInteracting &&
+            (inTime ||
+            map.isZooming() && layer.options['forceRenderOnZooming'] ||
+            map.isMoving() && layer.options['forceRenderOnMoving'] ||
+            map.isDragRotating() && layer.options['forceRenderOnDragRotating'])
+            ) {
+            renderer.prepareRender();
+            renderer.prepareCanvas();
+            renderer.drawOnInteracting(this._eventParam);
+            return drawTime;
+        } else if (map.isZooming() && !map.getPitch()) {
+            renderer.prepareRender();
+            renderer.__shouldZoomTransform = true;
+        } else if (map.isDragRotating() || map.getPitch()) {
+            renderer.clearCanvas();
+        }
+        return 0;
+    }
+
+    /**
+     * Fire layerload events.
+     * Make sure layer are drawn on map when firing the events
+     */
+    _fireLayerLoadEvents() {
+        if (this._updatedIds && this._updatedIds.length > 0) {
+            const map = this.map;
+            //firing order as FIFO, painting as FILO, so the order needs to be reversed
+            this._updatedIds.reverse().forEach(id => {
+                const layer = map.getLayer(id);
+                if (!layer) {
+                    return;
+                }
+                const renderer = layer._getRenderer();
+                if (!renderer || !renderer.canvas || !renderer.isRenderComplete()) {
+                    return;
+                }
+                /**
+                 * layerload event, fired when layer is loaded.
+                 *
+                 * @event Layer#layerload
+                 * @type {Object}
+                 * @property {String} type - layerload
+                 * @property {Layer} target - layer
+                 */
+                layer.fire('layerload');
+            });
+        }
+
+    }
+
+    _needToRedraw() {
+        return this._needRedraw;
+    }
+
+    setToRedraw() {
+        this._needRedraw = true;
+    }
+
+    _canResueLayerCanvas() {
+        return !this.map.getPitch() && this.map.isZooming();
     }
 
     /**
      * Renders the layers
      */
-    render() {
-        if (!this.map || this._suppressRender) {
+    drawLayerCanvas(layers) {
+        if (!this.map) {
             return;
         }
+        if (!this._needToRedraw() && !this.isStateChanged()) {
+            return;
+        }
+        if (!this.canvas) {
+            this.createCanvas();
+        }
+
         /**
          * renderstart event, an event fired when map starts to render.
          * @event Map#renderstart
@@ -51,16 +259,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         this.map._fireEvent('renderstart', {
             'context': this.context
         });
-        if (!this.canvas) {
-            this.createCanvas();
-        }
-        const layers = this._getAllLayerToRender();
 
         if (!this._updateCanvasSize()) {
             this.clearCanvas();
         }
 
-        this._drawBackground();
         const interacting = this.map.isInteracting();
         const limit = this.map.options['numOfLayersOnInteracting'];
         const len = layers.length;
@@ -130,15 +333,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
         }
-        if (this._resizeFrame) {
-            cancelAnimFrame(this._resizeFrame);
-        }
         delete this.context;
         delete this.canvas;
         delete this.map;
-        delete this._canvasBgRes;
-        delete this._canvasBgCoord;
-        delete this._canvasBg;
+
+        this._cancelFrameLoop();
     }
 
     hitDetect(point) {
@@ -244,6 +443,48 @@ export default class MapCanvasRenderer extends MapRenderer {
         this.updateMapSize(mapSize);
     }
 
+    /**
+     * Is current map's state changed?
+     * @return {Boolean}
+     */
+    isStateChanged() {
+        const map = this.map;
+        const previous = this._state;
+        const center = map.getCenter();
+        this._state = {
+            x       : center.x,
+            y       : center.y,
+            zoom    : map.getZoom(),
+            pitch   : map.getPitch(),
+            bearing : map.getBearing(),
+            width   : map.width,
+            height  : map.height
+        };
+        if (!previous || !equalState(previous, this._state)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+    * Main frame loop
+    */
+    _frameLoop() {
+        if (!this.map) {
+            this._cancelFrameLoop();
+            return;
+        }
+        this.renderFrame();
+        // Keep registering ourselves for the next animation frame
+        this._animationFrame = requestAnimFrame(() => { this._frameLoop(); });
+    }
+
+    _cancelFrameLoop() {
+        if (this._animationFrame) {
+            cancelAnimFrame(this._animationFrame);
+        }
+    }
+
     _drawLayerCanvasImage(layer, layerImage) {
         if (!layer || !layerImage) {
             return;
@@ -306,31 +547,6 @@ export default class MapCanvasRenderer extends MapRenderer {
         ctx.globalAlpha = alpha;
     }
 
-    _storeBackground(baseLayerImage) {
-        if (baseLayerImage) {
-            const map = this.map;
-            this._canvasBg = copyCanvas(baseLayerImage['image']);
-            this._canvasBgRes = map._getResolution();
-            this._canvasBgCoord = map.containerPointToCoordinate(baseLayerImage['point']);
-        }
-    }
-
-    _drawBackground() {
-        const map = this.map;
-        if (this._canvasBg) {
-            const baseLayer = this.map.getBaseLayer();
-            if (baseLayer.options['cssFilter']) {
-                this.context.filter = baseLayer.options['cssFilter'];
-            }
-            const scale = this._canvasBgRes / map._getResolution();
-            const p = map.coordinateToContainerPoint(this._canvasBgCoord)._multi(Browser.retina ? 2 : 1);
-            Canvas2D.image(this.context, this._canvasBg, p.x, p.y, this._canvasBg.width * scale, this._canvasBg.height * scale);
-            if (this.context.filter !== 'none') {
-                this.context.filter = 'none';
-            }
-        }
-    }
-
     _drawCenterCross() {
         const cross = this.map.options['centerCross'];
         if (cross) {
@@ -390,18 +606,12 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     _checkSize() {
-        cancelAnimFrame(this._resizeFrame);
         if (!this.map || this.map.isInteracting()) {
             return;
         }
-        this._resizeFrame = requestAnimFrame(
-            () => {
-                if (!this.map || this.map.isInteracting()) {
-                    return;
-                }
-                this.map.checkSize();
-            }
-        );
+        // refresh map's dom position
+        computeDomPosition(this.map._containerDOM);
+        this.map.checkSize();
     }
 
     _setCheckSizeInterval(interval) {
@@ -419,49 +629,29 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     _registerEvents() {
         const map = this.map;
-        map.on('_baselayerchangestart _resize _zoomstart', this._clearBackground, this);
-        map.on('_baselayerload', () => {
-            const baseLayer = map.getBaseLayer();
-            if (!map.options['zoomBackground'] || baseLayer.getMask()) {
-                this._clearBackground();
-            }
-        });
+
         if (map.options['checkSize'] && !IS_NODE && (typeof window !== 'undefined')) {
             this._setCheckSizeInterval(1000);
         }
         if (!Browser.mobile) {
             map.on('_mousemove', this._onMapMouseMove, this);
         }
-        map.on('_moving', () => {
-            if (!map.getPitch()) {
-                this.render();
-            } else {
-                this._drawOnInteracting();
-            }
-        });
 
-        map.on('_moveend', () => {
-            this.render();
+        map.on('_dragrotatestart _dragrotating _dragrotateend _movestart _moving _moveend _zoomstart', (param) => {
+            this._eventParam = param;
         });
 
         map.on('_zooming', (param) => {
             if (!map.getPitch()) {
                 this._zoomMatrix = param['matrix']['container'];
             }
-            this._drawOnInteracting();
+            this._eventParam = param;
         });
 
-        map.on('_dragrotating', () => {
-            this._drawOnInteracting();
-        });
-
-        map.on('_zoomend', () => {
+        map.on('_zoomend', (param) => {
+            this._eventParam = param;
             delete this._zoomMatrix;
         });
-    }
-
-    _clearBackground() {
-        delete this._canvasBg;
     }
 
     _onMapMouseMove(param) {
@@ -477,60 +667,18 @@ export default class MapCanvasRenderer extends MapRenderer {
         });
     }
 
-    _drawOnInteracting() {
-        function drawLayer(renderer) {
-            renderer.prepareRender();
-            renderer.prepareCanvas();
-            renderer.drawOnInteracting();
-        }
-        this.disableRender();
-        const map = this.map;
-        const fps = map.options['fpsOnInteracting'];
-        const limit = fps === 0 ? 0 : 1000 / fps;
-        let currentTime = 0;
-        const layers = this._getCanvasLayers();
-        for (let i = layers.length - 1; i >= 0; i--) {
-            const layer = layers[i];
-            if (!layer.isVisible() || layer.isEmpty && layer.isEmpty()) {
-                continue;
-            }
-            let drawnOnMap = false;
-            const renderer = layer._getRenderer();
-            delete renderer.__shouldZoomTransform;
-            delete renderer.__isEmpty;
-            if (limit === 0 ||
-                layer.options['forceRenderOnZooming'] && map.isZooming() ||
-                layer.options['forceRenderOnMoving'] && map.isMoving() ||
-                layer.options['forceRenderOnRotating'] && map.isDragRotating()) {
-                drawLayer(renderer);
-                drawnOnMap = true;
-                if (renderer.getDrawTime) {
-                    currentTime += renderer.getDrawTime();
-                }
-            } else if (renderer.getDrawTime) {
-                if (currentTime + renderer.getDrawTime() <= limit) {
-                    drawLayer(renderer);
-                    drawnOnMap = true;
-                    currentTime += renderer.getDrawTime();
-                }
-            }
-            if (!drawnOnMap) {
-                if (map.isZooming() && !map.getPitch()) {
-                    renderer.prepareRender();
-                    renderer.__shouldZoomTransform = true;
-                } else {
-                    renderer.clearCanvas();
-                    renderer.__isEmpty = true;
-                }
-            }
-        }
-        this.enableRender();
-        this.render();
-    }
-
     _getCanvasLayers() {
         return this.map._getLayers(layer => layer.isCanvasRender());
     }
 }
 
 Map.registerRenderer('canvas', MapCanvasRenderer);
+
+function equalState(obj1, obj2) {
+    for (const p in obj1) {
+        if (obj1[p] !== obj2[p]) {
+            return false;
+        }
+    }
+    return true;
+}

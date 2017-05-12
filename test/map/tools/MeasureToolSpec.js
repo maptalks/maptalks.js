@@ -137,7 +137,21 @@ describe('#DistanceTool and AreaTool', function () {
         it('can get measureLayers', function () {
             var areaTool = new maptalks.AreaTool({
                 metric : true,
-                imperial:true
+                imperial:true,
+                'clearButtonSymbol' : [{
+                    'markerType': 'ellipse',
+                    'markerFill': '#ffffff',
+                    'markerLineColor': '#b4b3b3',
+                    'markerLineWidth': 2,
+                    'markerWidth': 15,
+                    'markerHeight': 15,
+                    'markerDx': 20
+                }, {
+                    'markerType': 'x',
+                    'markerWidth': 10,
+                    'markerHeight': 10,
+                    'markerDx': 20
+                }]
             }).addTo(map);
             measure(areaTool);
             var measureLayers = areaTool.getMeasureLayers();
@@ -149,7 +163,16 @@ describe('#DistanceTool and AreaTool', function () {
         it('can clear measure results', function () {
             var areaTool = new maptalks.AreaTool({
                 metric : true,
-                imperial:true
+                imperial:true,
+                'clearButtonSymbol' : {
+                    'markerType': 'ellipse',
+                    'markerFill': '#ffffff',
+                    'markerLineColor': '#b4b3b3',
+                    'markerLineWidth': 2,
+                    'markerWidth': 15,
+                    'markerHeight': 15,
+                    'markerDx': 20
+                }
             }).addTo(map);
             measure(areaTool);
             areaTool.clear();

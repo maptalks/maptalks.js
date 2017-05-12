@@ -42,13 +42,19 @@ Map.include(/** @lends Map.prototype */{
         const endScale = this._getResolution(this._startZoomVal) / this._getResolution(nextZoom);
         const duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
         this._frameZoom = this._startZoomVal;
+        const renderer = this._getRenderer();
+        const framer = function (fn) {
+            renderer.addEventHandler(fn);
+        };
+
         const player = Animation.animate(
             {
                 'zoom'  : [this._startZoomVal, nextZoom]
             },
             {
                 'easing' : 'out',
-                'duration'  : duration
+                'duration'  : duration,
+                'framer' : framer
             },
             frame => {
                 if (this.isRemoved()) {
@@ -112,7 +118,6 @@ Map.include(/** @lends Map.prototype */{
           */
         this._fireEvent('zooming', { 'from' : this._startZoomVal, 'to': nextZoom, 'origin' : origin, 'matrix' : matrix });
         this._frameZoom = nextZoom;
-        this._getRenderer().render();
     },
 
     onZoomEnd(nextZoom, origin) {

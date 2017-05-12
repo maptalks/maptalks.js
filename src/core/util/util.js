@@ -14,14 +14,9 @@ let requestAnimFrame, cancelAnimFrame;
     }
 
     let requestFn, cancelFn;
-    let lastTime = 0;
-
-    // fallback for IE 7-8
+    // slow down fps in IE9 for performance
+    const timeToCall = 1000 / 30;
     function timeoutDefer(fn) {
-        const time = +new Date(),
-            timeToCall = Math.max(0, 16 - (time - lastTime));
-
-        lastTime = time + timeToCall;
         return setTimeout(fn, timeToCall);
     }
 
@@ -38,9 +33,7 @@ let requestAnimFrame, cancelAnimFrame;
             };
     } else {
         requestFn = timeoutDefer;
-        cancelFn = function (id) {
-            clearTimeout(id);
-        };
+        cancelFn = clearTimeout;
     }
     /**
      * Polyfill of RequestAnimationFrame
@@ -64,33 +57,6 @@ let requestAnimFrame, cancelAnimFrame;
     };
 })();
 export { requestAnimFrame, cancelAnimFrame };
-
-let callImmediateFn, clearCallImmediateFn;
-(function () {
-    if (typeof (setImmediate) !== 'undefined') {
-        callImmediateFn = setImmediate;
-    } else {
-        callImmediateFn = requestAnimFrame;
-    }
-
-    if (typeof (clearImmediate) !== 'undefined') {
-        clearCallImmediateFn = clearImmediate;
-    } else {
-        clearCallImmediateFn = cancelAnimFrame;
-    }
-})();
-
-export function callImmediate(fn) {
-    return callImmediateFn(fn);
-}
-
-
-export function clearCallImmediate(id) {
-    if (id) {
-        clearCallImmediateFn(id);
-    }
-}
-
 
 /**
  * Merges options with the default options of the object.

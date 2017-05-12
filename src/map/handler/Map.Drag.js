@@ -54,6 +54,7 @@ class MapDragHandler extends Handler {
     }
 
     _onMouseDown(param) {
+        delete this.startDragTime;
         delete this._mode;
         if (param.domEvent.button === 2 || param.domEvent.ctrlKey) {
             if (this.target.options['dragRotate'] || this.target.options['dragPitch']) {
@@ -91,11 +92,7 @@ class MapDragHandler extends Handler {
     }
 
     _start(param) {
-        const map = this.target;
         this.startDragTime = now();
-        const domOffset = map.offsetPlatform();
-        this.startLeft = domOffset.x;
-        this.startTop = domOffset.y;
         this.preX = param['mousePos'].x;
         this.preY = param['mousePos'].y;
         this.startX = this.preX;
@@ -108,36 +105,36 @@ class MapDragHandler extends Handler {
     }
 
     _moving(param) {
-        if (this.startLeft === undefined) {
+        if (!this.startDragTime) {
             return;
         }
         const map = this.target;
         const mx = param['mousePos'].x,
             my = param['mousePos'].y;
-        const nextLeft = (this.startLeft + mx - this.startX);
-        const nextTop = (this.startTop + my - this.startY);
-        const mapPos = map.offsetPlatform();
-        const offset = new Point(nextLeft, nextTop)._sub(mapPos);
-        map.offsetPlatform(offset);
-        map._offsetCenterByPixel(offset);
+        const dx = mx - this.preX,
+            dy = my - this.preY;
+        map._offsetCenterByPixel(new Point(dx, dy));
+        this.preX = mx;
+        this.preY = my;
         map.onMoving(param);
     }
 
     _moveEnd(param) {
-        if (this.startLeft === undefined) {
+        if (!this.startDragTime) {
             return;
         }
         const map = this.target;
         let t = now() - this.startDragTime;
-        const domOffset = map.offsetPlatform();
-        const xSpan = domOffset.x - this.startLeft;
-        const ySpan = domOffset.y - this.startTop;
+        const mx = param['mousePos'].x,
+            my = param['mousePos'].y;
+        const dx = mx - this.startX;
+        const dy = my - this.startY;
 
         this._clear();
 
-        if (t < 280 && Math.abs(ySpan) + Math.abs(xSpan) > 5) {
-            // const distance = new Point(xSpan * Math.ceil(500 / t), ySpan * Math.ceil(500 / t))._multi(0.5);
-            const distance = new Point(xSpan, ySpan);
+        if (t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
+            // const distance = new Point(dx * Math.ceil(500 / t), dy * Math.ceil(500 / t))._multi(0.5);
+            const distance = new Point(dx, dy);
             t = 5 * t * (Math.abs(distance.x) + Math.abs(distance.y)) / 500;
             map._panAnimation(distance, t);
         } else {

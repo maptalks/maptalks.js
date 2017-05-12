@@ -1,6 +1,5 @@
 import {
     join,
-    throttle,
     requestAnimFrame
 } from 'core/util';
 import * as mat4 from 'core/util/mat4';
@@ -83,16 +82,66 @@ export default class TileLayerDomRenderer extends Class {
         }
     }
 
-    isCanvasRender() {
-        return false;
+    prepareRender() {
+
     }
 
     render() {
         this._renderTiles();
     }
 
+    drawOnInteracting() {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        if (map.isZooming()) {
+            this._drawOnZooming();
+        } else if (map.isDragRotating()) {
+            this._drawOnDragRotating();
+        } else if (map.isMoving()) {
+            this._drawOnMoving();
+        }
+
+    }
+
+    _drawOnZooming() {
+        if (!this._zoomParam) {
+            return;
+        }
+        const map = this.getMap();
+        const param = this._zoomParam;
+        const zoom = Math.floor(param['from']);
+        if (this._levelContainers && this._levelContainers[zoom]) {
+            const matrix = param.matrix['view'];
+            if (map.domCssMatrix) {
+                this._setCssMatrix(param['origin'], zoom, matrix[0]);
+            } else {
+                setTransformMatrix(this._levelContainers[zoom], matrix);
+            }
+        }
+    }
+
+    _drawOnMoving() {
+        const map = this.getMap();
+        // prevent render when zooming or dragrotating, which may crash the browser
+        if (!map || !map.getPitch() && !this.layer.options['renderOnMoving']) {
+            return;
+        }
+        this.render();
+    }
+
+    _drawOnDragRotating() {
+        // when rotation is canceled, tiles needs to be repositioned.
+        const mat = this.getMap().domCssMatrix;
+        if (!mat) {
+            this._renderTiles();
+        } else {
+            this._prepareTileContainer();
+        }
+    }
+
     _renderTiles() {
-        const layer = this.layer;
         if (!this._container) {
             this._createLayerContainer();
         }
@@ -104,10 +153,6 @@ export default class TileLayerDomRenderer extends Class {
         const map = this.getMap();
 
         const queue = this._getTileQueue(tileGrid);
-
-        const cssMat = map.domCssMatrix;
-        // disable throttle of onMapMoving if map tilts or rotates.
-        this.onMapMoving.time = cssMat ? 0 : layer.options['updateInterval'];
 
         this._currentTileZoom = map.getZoom();
 
@@ -122,6 +167,9 @@ export default class TileLayerDomRenderer extends Class {
             this._appendTileFragment(container, fragment);
         }
         this._updateTileSize();
+        if (queue.length === 0) {
+            this.layer.fire('layerload');
+        }
     }
 
     _getTileQueue(tileGrid) {
@@ -208,20 +256,6 @@ export default class TileLayerDomRenderer extends Class {
             const mapOffset = map.offsetPlatform();
             container.childNodes[0].style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x) + 'px, ' + (this._camOffset.y + mapOffset.y) + 'px, 0px)';
             container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
-        }
-    }
-
-    onZooming(param) {
-        const map = this.getMap();
-        const zoom = Math.floor(param['from']);
-        if (this._levelContainers && this._levelContainers[zoom]) {
-            const matrix = param.matrix['view'];
-            if (map.domCssMatrix) {
-                this._setCssMatrix(param['origin'], zoom, matrix[0]);
-            } else {
-                setTransformMatrix(this._levelContainers[zoom], matrix);
-            }
-
         }
     }
 
@@ -431,7 +465,7 @@ export default class TileLayerDomRenderer extends Class {
         return true;
     }
 
-    _pruneTiles(pruneLevels) {
+    _pruneTiles(pruneLevels = true) {
         const map = this.getMap();
         if (!map || map.isMoving()) {
             return;
@@ -559,25 +593,13 @@ export default class TileLayerDomRenderer extends Class {
     getEvents() {
         const events = {
             '_zoomstart'    : this.onZoomStart,
-            '_touchzoomstart' : this._onTouchZoomStart,
+            //prune tiles before drag rotating to reduce tiles when rotating
+            '_touchzoomstart _dragrotatestart' : this._pruneTiles,
             '_zooming'      : this.onZooming,
             '_zoomend'      : this.onZoomEnd,
-            '_moveend _resize' : this.render,
-            '_movestart'    : this.onMoveStart,
-            '_dragrotatestart'    : this.onRotateStart,
-            '_dragrotateend'    : this.onRotateEnd,
-            '_rotate'       : this.onRotateOrPitch,
-            '_pitch'        : this.onRotateOrPitch
+            '_moveend _resize _dragrotateend' : this.render,
+            '_dragrotatestart'    : this.onDragRotateStart
         };
-        const interval = this.layer.options['updateInterval'];
-        if (!this.onMapMoving) {
-            this.onMapMoving = throttle(this._onMapMoving, interval, this);
-        }
-        if (!this.onMapRotating) {
-            this.onMapRotating = throttle(this.onDragRotating, interval * 2, this);
-        }
-        events['_moving'] = this.onMapMoving;
-        events['_dragrotating'] = this.onMapRotating;
         return events;
     }
 
@@ -593,31 +615,18 @@ export default class TileLayerDomRenderer extends Class {
         this._container.style.display = 'none';
     }
 
-    _onMapMoving() {
-        const map = this.getMap();
-        // prevent render when zooming or dragrotating, which may crash the browser
-        if (!map || map.isZooming() || map.isDragRotating() || !map.getPitch() && !this.layer.options['renderOnMoving']) {
-            return;
-        }
-        this.render();
-    }
-
-    onMoveStart() {
-        // this._fadeAnimated = false;
-    }
-
-    _onTouchZoomStart() {
-        this._pruneTiles(true);
-    }
-
     onZoomStart() {
         this._fadeAnimated = !Browser.mobile && true;
-        this._pruneTiles(true);
+        this._pruneTiles();
         this._zoomStartPos = this.getMap().offsetPlatform();
         if (!this._canTransform()) {
             this._hide();
         }
         this._updateTileSize();
+    }
+
+    onZooming(param) {
+        this._zoomParam = param;
     }
 
     onZoomEnd(param) {
@@ -637,33 +646,6 @@ export default class TileLayerDomRenderer extends Class {
                     this._levelContainers[param.from].style.display = 'none';
                 }
                 this._show();
-            }
-        }
-    }
-
-    onDragRotating() {
-        if (!this.getMap() || !this.layer.options['renderOnRotating']) {
-            return;
-        }
-        this._renderTiles();
-    }
-
-    onRotateStart() {
-        this._pruneTiles(true);
-    }
-
-    onRotateEnd() {
-        this._renderTiles();
-    }
-
-    onRotateOrPitch() {
-        if (this.getMap().isInteracting()) {
-            // when rotation is canceled, tiles needs to be repositioned.
-            const mat = this.getMap().domCssMatrix;
-            if (!mat) {
-                this._renderTiles();
-            } else {
-                this._prepareTileContainer();
             }
         }
     }

@@ -387,6 +387,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             duration = Animation.speed['normal'];
         }
         this.duration = duration;
+        this._framer = options['framer'] || Animation._requestAnimFrame.bind(Animation);
     },
 
     /**
@@ -476,7 +477,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
                 setTimeout(this._run.bind(this), this.startTime - t);
             }
         } else if (this.playState === 'running') {
-            Animation._requestAnimFrame(() => {
+            this._framer(() => {
                 if (this.playState !== 'running') {
                     this._run();
                     return;

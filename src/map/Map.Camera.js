@@ -299,18 +299,8 @@ Map.include(/** @lends Map.prototype */{
                 return;
             }
             const renderer = layer._getRenderer();
-            if (renderer && renderer.isCanvasRender()) {
-                renderer.clearCanvas();
-            }
-        });
-        this._getRenderer().render();
-        layers.forEach(layer => {
-            if (!layer) {
-                return;
-            }
-            const renderer = layer._getRenderer();
-            if (renderer) {
-                renderer.render();
+            if (renderer && renderer.setToRedraw) {
+                renderer.setToRedraw();
             }
         });
     }

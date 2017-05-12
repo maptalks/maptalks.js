@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { extend, isNil, isNumber, sign, isArrayHasData, removeFromArray, UID } from 'core/util';
+import { isNil, isNumber, sign, isArrayHasData, removeFromArray, UID } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
@@ -9,6 +9,29 @@ import VectorLayer from 'layer/VectorLayer';
 import * as Symbolizers from 'renderer/geometry/symbolizers';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
+
+function createHandleSymbol(markerType, opacity) {
+    return {
+        'markerType': markerType,
+        'markerFill': '#fff',
+        'markerLineColor': '#000',
+        'markerLineWidth': 2,
+        'markerWidth': 10,
+        'markerHeight': 10,
+        'opacity' : opacity
+    };
+}
+
+const options = {
+    //fix outline's aspect ratio when resizing
+    'fixAspectRatio' : false,
+    // geometry's symbol when editing
+    'symbol' : null,
+    //symbols of edit handles
+    'centerHandleSymbol' : createHandleSymbol('ellipse', 1),
+    'vertexHandleSymbol' : createHandleSymbol('square', 1),
+    'newVertexHandleSymbol' : createHandleSymbol('square', 0.4)
+};
 
 /**
  * Geometry editor used internally for geometry editing.
@@ -265,10 +288,10 @@ class GeometryEditor extends Eventable(Class) {
 
     _createCenterHandle() {
         const center = this._shadow.getCenter();
+        const symbol = this.options['centerHandleSymbol'];
         let shadow;
         const handle = this.createHandle(center, {
-            'markerType': 'ellipse',
-            'dxdy': new Point(0, 0),
+            'symbol': symbol,
             'cursor': 'move',
             onDown: () => {
                 shadow = this._shadow.copy();
@@ -297,19 +320,7 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     _createHandleInstance(coordinate, opts) {
-        const symbol = {
-            'markerType': opts['markerType'],
-            'markerFill': '#ffffff', //"#d0d2d6",
-            'markerLineColor': '#000000',
-            'markerLineWidth': 2,
-            'markerWidth': 10,
-            'markerHeight': 10,
-            'markerDx': opts['dxdy'].x,
-            'markerDy': opts['dxdy'].y
-        };
-        if (opts['symbol']) {
-            extend(symbol, opts['symbol']);
-        }
+        const symbol = opts['symbol'];
         const handle = new Marker(coordinate, {
             'draggable': true,
             'dragShadow': false,
@@ -397,6 +408,7 @@ class GeometryEditor extends Eventable(Class) {
         const resizeHandles = [];
         const anchorIndexes = {};
         const map = this.getMap();
+        const handleSymbol = this.options['vertexHandleSymbol'];
         const fnLocateHandles = () => {
             const pExt = geometry._getPainter().get2DExtent(),
                 anchors = getResizeAnchors(pExt);
@@ -412,8 +424,7 @@ class GeometryEditor extends Eventable(Class) {
                     coordinate = map.pointToCoordinate(anchor);
                 if (resizeHandles.length < (anchors.length - blackList.length)) {
                     const handle = this.createHandle(coordinate, {
-                        'markerType': 'square',
-                        'dxdy': new Point(0, 0),
+                        'symbol' : handleSymbol,
                         'cursor': cursors[i],
                         'axis': axis[i],
                         onMove: (function (_index) {
@@ -789,8 +800,7 @@ class GeometryEditor extends Eventable(Class) {
         function createVertexHandle(index) {
             let vertex = getVertexCoordinates()[index];
             const handle = me.createHandle(vertex, {
-                'markerType': 'square',
-                'dxdy': new Point(0, 0),
+                'symbol': me.options['vertexHandleSymbol'],
                 'cursor': 'pointer',
                 'axis': null,
                 onMove: function (handleViewPoint) {
@@ -819,11 +829,7 @@ class GeometryEditor extends Eventable(Class) {
             }
             const vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
             const handle = me.createHandle(vertex, {
-                'markerType': 'square',
-                'symbol': {
-                    'opacity': 0.4
-                },
-                'dxdy': new Point(0, 0),
+                'symbol': me.options['newVertexHandleSymbol'],
                 'cursor': 'pointer',
                 'axis': null,
                 onDown: function () {
@@ -855,6 +861,7 @@ class GeometryEditor extends Eventable(Class) {
                     //add a new vertex handle
                     vertexHandles.splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1));
                     onVertexAddOrRemove();
+                    me._refresh();
                 },
                 onRefresh: function () {
                     vertexCoordinates = getVertexCoordinates();
@@ -927,5 +934,7 @@ class GeometryEditor extends Eventable(Class) {
     }
 
 }
+
+GeometryEditor.mergeOptions(options);
 
 export default GeometryEditor;

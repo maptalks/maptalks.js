@@ -28,27 +28,26 @@ class OverlayLayerRenderer extends CanvasRenderer {
         if (!isArrayHasData(geometries)) {
             return [];
         }
-        const me = this,
-            resources = [];
+        const resources = [];
+        const cache = {};
 
-        function checkGeo(geo) {
+        for (let i = geometries.length - 1; i >= 0; i--) {
+            const geo = geometries[i];
             const res = geo._getExternalResources();
             if (!res.length) {
-                return;
+                continue;
             }
-            if (!me.resources) {
+            if (!this.resources) {
                 resources.push.apply(resources, res);
             } else {
                 for (let i = 0; i < res.length; i++) {
-                    if (!me.resources.isResourceLoaded(res[i])) {
+                    const url = res[i][0];
+                    if (!this.resources.isResourceLoaded(res[i]) && !cache[url]) {
                         resources.push(res[i]);
+                        cache[url] = 1;
                     }
                 }
             }
-        }
-
-        for (let i = geometries.length - 1; i >= 0; i--) {
-            checkGeo(geometries[i]);
         }
         this._resourceChecked = true;
         delete this._geosToCheck;
@@ -59,6 +58,9 @@ class OverlayLayerRenderer extends CanvasRenderer {
         if (!res) {
             return;
         }
+        if (!Array.isArray(res)) {
+            res = [res];
+        }
         if (!this._geosToCheck) {
             this._geosToCheck = [];
         }
@@ -66,48 +68,49 @@ class OverlayLayerRenderer extends CanvasRenderer {
     }
 
     onGeometryAdd(geometries) {
-        if (geometries) {
-            if (!Array.isArray(geometries)) {
-                geometries = [geometries];
-            }
-            this._addGeoToCheckRes(geometries);
-        }
-
-        this.render();
+        this._addGeoToCheckRes(geometries);
+        redraw(this);
     }
 
     onGeometryRemove() {
-        this.render();
+        redraw(this);
     }
 
     onGeometrySymbolChange(e) {
-        this._addGeoToCheckRes([e.target]);
-        this.render();
+        this._addGeoToCheckRes(e.target);
+        redraw(this);
     }
 
     onGeometryShapeChange() {
-        this.render();
+        redraw(this);
     }
 
     onGeometryPositionChange() {
-        this.render();
+        redraw(this);
     }
 
     onGeometryZIndexChange() {
-        this.render();
+        redraw(this);
     }
 
     onGeometryShow() {
-        this.render();
+        redraw(this);
     }
 
     onGeometryHide() {
-        this.render();
+        redraw(this);
     }
 
     onGeometryPropertiesChange() {
-        this.render();
+        redraw(this);
     }
+}
+
+function redraw(renderer) {
+    if (renderer.layer.options['drawImmediate']) {
+        renderer.render();
+    }
+    renderer.setToRedraw();
 }
 
 export default OverlayLayerRenderer;

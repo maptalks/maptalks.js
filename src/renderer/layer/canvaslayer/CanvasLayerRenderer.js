@@ -1,5 +1,3 @@
-import { isNil, requestAnimFrame, cancelAnimFrame } from 'core/util';
-import Browser from 'core/Browser';
 import Canvas from 'core/Canvas';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 
@@ -57,38 +55,18 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         return canvasImg;
     }
 
-    startAnim() {
-        this._paused = false;
-        this.play();
+    isAnimating() {
+        return this.layer.options['animation'];
     }
 
-    pauseAnim() {
-        this.pause();
-        this._paused = true;
-    }
-
-    isPlaying() {
-        return !isNil(this._animFrame);
-    }
-
-    hide() {
-        this.pause();
-        return super.hide();
-    }
-
-    show() {
-        return super.show();
-    }
 
     remove() {
-        this.pause();
         delete this._drawContext;
         return super.remove();
     }
 
 
     onZoomStart(param) {
-        this.pause();
         this.layer.onZoomStart(param);
         super.onZoomStart(param);
     }
@@ -99,7 +77,6 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     }
 
     onMoveStart(param) {
-        this.pause();
         this.layer.onMoveStart(param);
         super.onMoveStart(param);
     }
@@ -137,7 +114,6 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         }
         this.layer.draw.apply(this.layer, args);
         this.completeRender();
-        this.play();
     }
 
     _drawLayerOnInteracting() {
@@ -147,41 +123,6 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         }
         this.layer.drawOnInteracting.apply(this.layer, args);
         this.completeRender();
-    }
-
-    pause() {
-        if (this._animFrame) {
-            cancelAnimFrame(this._animFrame);
-            delete this._animFrame;
-        }
-        if (this._fpsFrame) {
-            clearTimeout(this._fpsFrame);
-            delete this._fpsFrame;
-        }
-    }
-
-    play() {
-        if (this._paused || !this.layer || !this.layer.options['animation']) {
-            return;
-        }
-        if (!this._bindDrawLayer) {
-            this._bindDrawLayer = this._drawLayer.bind(this);
-        }
-        this.pause();
-        const fps = this.layer.options['fps'];
-        if (fps >= 1000 / 16) {
-            this._animFrame = requestAnimFrame(this._bindDrawLayer);
-        } else {
-            this._fpsFrame = setTimeout(() => {
-                if (Browser.ie9) {
-                    // ie9 doesn't support RAF
-                    this._bindDrawLayer();
-                    this._animFrame = 1;
-                } else {
-                    this._animFrame = requestAnimFrame(this._bindDrawLayer);
-                }
-            }, 1000 / fps);
-        }
     }
 }
 

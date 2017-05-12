@@ -45,6 +45,15 @@ Geometry.include(/** @lends Geometry.prototype */ {
             isFocusing = options['focus'];
         }
         delete this._animationStarted;
+        // geometry.animate can be called without map
+        if (map) {
+            // merge geometry animation framing into map's frame loop
+            const renderer = map._getRenderer();
+            const framer = function (fn) {
+                renderer.addEventHandler(fn);
+            };
+            options['framer'] = framer;
+        }
 
         const player = Animation.animate(stylesToAnimate, options, frame => {
             if (map && map.isRemoved()) {

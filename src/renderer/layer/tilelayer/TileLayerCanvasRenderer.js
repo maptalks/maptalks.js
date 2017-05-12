@@ -1,7 +1,5 @@
 import {
     IS_NODE,
-    requestAnimFrame,
-    cancelAnimFrame,
     loadImage
 } from 'core/util';
 import PointExtent from 'geo/PointExtent';
@@ -94,15 +92,16 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (this._tileToLoadCounter === 0) {
             this.completeRender();
         } else {
-            if (this._tileToLoadCounter < this._totalTileToLoad) {
-                this.requestMapToRender();
-            }
             this._scheduleLoadTileQueue();
         }
     }
 
-    drawOnInteracting() {
-        // draw nothing when interacting
+    needToRedraw() {
+        const map = this.getMap();
+        if (map.isInteracting()) {
+            return true;
+        }
+        return super.needToRedraw();
     }
 
     hitDetect() {
@@ -110,20 +109,17 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     _scheduleLoadTileQueue() {
-        if (this._loadQueueTimeout) {
-            cancelAnimFrame(this._loadQueueTimeout);
-        }
-        this._loadQueueTimeout = requestAnimFrame(() => {
-            if (this.getMap()) {
-                this._loadTileQueue();
-            }
-        });
+        this._loadTileQueue();
     }
 
     _loadTileQueue() {
         const me = this;
         function onTileLoad() {
             if (!IS_NODE) {
+                if (!me._tileRended) {
+                    // removed
+                    return;
+                }
                 if (me._tileCache) {
                     me._tileCache.add(this[me.propertyOfTileId], this);
                 }
@@ -217,7 +213,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             const tileSize = this.layer.getTileSize();
             const mapExtent = this.getMap()._get2DExtent();
             if (mapExtent.intersects(new PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
-                this.requestMapToRender();
+                this.setCanvasUpdated();
             }
         }
         if (this._tileToLoadCounter === 0) {
@@ -226,12 +222,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     _onTileLoadComplete() {
-        //In browser, map will be requested to render once a tile was loaded.
-        //but in node, map will be requested to render when the layer is loaded.
-        if (IS_NODE) {
-            this.requestMapToRender();
-        }
-        this.fireLoadedEvent();
+        this.completeRender();
     }
 
     /**
@@ -247,7 +238,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             return;
         }
         if (!IS_NODE) {
-            this.requestMapToRender();
+            this.setCanvasUpdated();
         }
         this._tileToLoadCounter--;
         if (this._tileToLoadCounter === 0) {
@@ -255,29 +246,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
     }
 
-    /**
-     * @override
-     */
-    requestMapToRender() {
-        if (IS_NODE) {
-            if (this.getMap() && !this.getMap().isZooming()) {
-                this._mapRender.render();
-            }
-            return;
-        }
-        if (this._mapRenderRequest) {
-            cancelAnimFrame(this._mapRenderRequest);
-        }
-        this._mapRenderRequest = requestAnimFrame(() => {
-            if (this.getMap() && !this.getMap().isZooming()) {
-                this._mapRender.render();
-            }
-        });
-    }
-
     onRemove() {
-        cancelAnimFrame(this._loadQueueTimeout);
-        cancelAnimFrame(this._mapRenderRequest);
         delete this._mapRender;
         delete this._tileCache;
         delete this._tileRended;

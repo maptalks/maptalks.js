@@ -89,7 +89,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         let extent2D = this._extent2D;
         if (this._maskExtent) {
             if (!this._maskExtent.intersects(extent2D)) {
-                this.fireLoadedEvent();
+                this.completeRender();
                 return;
             }
             extent2D = extent2D.intersection(this._maskExtent);
@@ -135,6 +135,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (param) {
             this.layer._styleGeometry(param['target']);
         }
+        super.onGeometryPropertiesChange(param);
     }
 }
 
