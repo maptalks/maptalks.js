@@ -1277,6 +1277,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._updateMapSize(watched);
         const resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
         this._offsetCenterByPixel(resizeOffset);
+        this._mapViewCoord = this._getPrjCenter();
 
         const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
