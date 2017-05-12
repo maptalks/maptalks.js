@@ -5,6 +5,9 @@
 doc/**/*
 !doc/files.js
 
+### bower
+vendor/
+
 ### yarn log
 yarn*.log
 

@@ -13,7 +13,7 @@ gulp.task("kiwl.gl.combine", function () {
     }).then(function (bundle) {
         bundle.write({
             format: "iife", //umd
-            moduleName: "kiwigl",
+            moduleName: "kiwi",
             dest: "./dist/kiwi.gl.js",
             // sourceMap: "inline"
         })
