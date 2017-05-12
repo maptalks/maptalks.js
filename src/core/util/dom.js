@@ -314,6 +314,22 @@ export function offsetDom(dom, offset) {
 }
 
 /**
+ * Compute dom's position
+ * @param  {HTMLElement} dom
+ * @return {Number[]}
+ */
+export function computeDomPosition(dom) {
+    const style = window.getComputedStyle(dom);
+    const padding = {
+        left: parseInt(style['padding-left']),
+        top: parseInt(style['padding-top'])
+    };
+    const rect = dom.getBoundingClientRect();
+    dom.__position = [rect.left + padding.left, rect.top + padding.top];
+    return dom.__position;
+}
+
+/**
  * 获取鼠标在容器上相对容器左上角的坐标值
  * @param {Event} ev  触发的事件
  * @return {Point} left:鼠标在页面上的横向位置, top:鼠标在页面上的纵向位置
@@ -323,11 +339,15 @@ export function getEventContainerPoint(ev, dom) {
     if (!ev) {
         ev = window.event;
     }
-    const rect = dom.getBoundingClientRect();
+    let domPos = dom.__position;
+    if (!domPos) {
+        domPos = computeDomPosition(dom);
+    }
 
     return new Point(
-        ev.clientX - rect.left - dom.clientLeft,
-        ev.clientY - rect.top - dom.clientTop);
+        ev.clientX - domPos[0] - dom.clientLeft,
+        ev.clientY - domPos[1] - dom.clientTop
+    );
 }
 
 function endsWith(str, suffix) {
