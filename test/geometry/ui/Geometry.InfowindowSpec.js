@@ -67,7 +67,7 @@ describe('#Geometry.InfoWindow', function () {
     });
 
     describe('all kinds of geometries can have a infowindow', function () {
-        it('set a infowindow', function () {
+        it('set an infowindow', function () {
             var options = {
                 title: 'title',
                 content: 'content'
@@ -76,6 +76,20 @@ describe('#Geometry.InfoWindow', function () {
             for (var i = 0; i < geometries.length; i++) {
                 geometries[i].setInfoWindow(options);
                 expect(geometries[i].getInfoWindow()).not.to.be.ok();
+            }
+            layer.addGeometry(geometries);
+        });
+
+        it('set an infowindow with an infowindow instance', function () {
+            var options = {
+                title: 'title',
+                content: 'content'
+            };
+            var infoWindow = new maptalks.ui.InfoWindow(options);
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+            for (var i = 0; i < geometries.length; i++) {
+                geometries[i].setInfoWindow(infoWindow);
+                expect(geometries[i].getInfoWindow()).to.be.ok();
             }
             layer.addGeometry(geometries);
         });

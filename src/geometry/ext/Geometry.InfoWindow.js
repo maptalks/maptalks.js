@@ -14,6 +14,13 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * });
      */
     setInfoWindow(options) {
+        this.removeInfoWindow();
+        if (options instanceof InfoWindow) {
+            this._infoWindow = options;
+            this._infoWinOptions = extend({}, this._infoWindow.options);
+            this._infoWindow.addTo(this);
+            return this;
+        }
         this._infoWinOptions = extend({}, options);
         if (this._infoWindow) {
             setOptions(this._infoWindow, options);
