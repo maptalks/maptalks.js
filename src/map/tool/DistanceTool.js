@@ -24,13 +24,13 @@ const options = {
     'metric': true,
     'imperial': false,
     'symbol': {
-        'lineColor': '#000', //'#3388ff',
+        'lineColor': '#000',
         'lineWidth': 3,
         'lineOpacity': 1
     },
     'vertexSymbol': {
         'markerType': 'ellipse',
-        'markerFill': '#fff', //"#d0d2d6",
+        'markerFill': '#fff',
         'markerLineColor': '#000',
         'markerLineWidth': 3,
         'markerWidth': 11,
@@ -49,7 +49,21 @@ const options = {
             'width': 6,
             'height': 4
         }
-    }
+    },
+    'clearButtonSymbol' :[{
+        'markerType': 'square',
+        'markerFill': '#ffffff',
+        'markerLineColor': '#b4b3b3',
+        'markerLineWidth': 2,
+        'markerWidth': 15,
+        'markerHeight': 15,
+        'markerDx': 20
+    }, {
+        'markerType': 'x',
+        'markerWidth': 10,
+        'markerHeight': 10,
+        'markerDx': 20
+    }]
 };
 
 
@@ -249,21 +263,25 @@ class DistanceTool extends DrawTool {
     }
 
     _addClearMarker(coordinates, dx) {
+        let symbol = this.options['clearButtonSymbol'];
+        let dxSymbol = {
+            'markerDx' : (symbol['markerDx'] || 0) + dx,
+            'textDx' : (symbol['textDx'] || 0) + dx
+        };
+        if (Array.isArray(symbol)) {
+            dxSymbol = symbol.map(s => {
+                if (s) {
+                    return {
+                        'markerDx' : (s['markerDx'] || 0) + dx,
+                        'textDx' : (s['textDx'] || 0) + dx
+                    };
+                }
+                return null;
+            });
+        }
+        symbol = extendSymbol(symbol, dxSymbol);
         const endMarker = new Marker(coordinates, {
-            'symbol': [{
-                'markerType': 'square',
-                'markerFill': '#ffffff',
-                'markerLineColor': '#b4b3b3',
-                'markerLineWidth': 2,
-                'markerWidth': 15,
-                'markerHeight': 15,
-                'markerDx': 20 + dx
-            }, {
-                'markerType': 'x',
-                'markerWidth': 10,
-                'markerHeight': 10,
-                'markerDx': 20 + dx
-            }]
+            'symbol': symbol
         });
         const measureLineLayer = this._measureLineLayer,
             measureMarkerLayer = this._measureMarkerLayer;
