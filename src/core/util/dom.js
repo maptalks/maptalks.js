@@ -171,7 +171,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
             src: handler
         });
         if ('addEventListener' in obj) {
-            //滚轮事件的特殊处理
+            //firefox
             if (type === 'mousewheel' && Browser.gecko) {
                 type = 'DOMMouseScroll';
             }
@@ -320,19 +320,19 @@ export function offsetDom(dom, offset) {
  */
 export function computeDomPosition(dom) {
     const style = window.getComputedStyle(dom);
-    const padding = {
-        left: parseInt(style['padding-left']),
-        top: parseInt(style['padding-top'])
-    };
+    const padding = [
+        parseInt(style['padding-left']),
+        parseInt(style['padding-top'])
+    ];
     const rect = dom.getBoundingClientRect();
-    dom.__position = [rect.left + padding.left, rect.top + padding.top];
+    dom.__position = [rect.left + padding[0], rect.top + padding[1]];
     return dom.__position;
 }
 
 /**
- * 获取鼠标在容器上相对容器左上角的坐标值
- * @param {Event} ev  触发的事件
- * @return {Point} left:鼠标在页面上的横向位置, top:鼠标在页面上的纵向位置
+ * Get event's position from the top-left corner of the dom container
+ * @param {Event} ev    event
+ * @return {Point}
  * @memberOf DomUtil
  */
 export function getEventContainerPoint(ev, dom) {
@@ -356,9 +356,9 @@ function endsWith(str, suffix) {
 }
 
 /**
- * 为dom设置样式
- * @param {HTMLElement} dom dom节点
- * @param {String} strCss 样式字符串
+ * set css style to the dom element
+ * @param {HTMLElement} dom dom element
+ * @param {String} strCss css text
  * @memberOf DomUtil
  */
 export function setStyle(dom, strCss) {
@@ -372,10 +372,10 @@ export function setStyle(dom, strCss) {
 }
 
 /**
- * 为dom添加样式
- * @param {HTMLElement} dom dom节点
- * @param {String} attr 样式标签
- * @param {String} value 样式值
+ * add css style to dom element
+ * @param {HTMLElement} dom dom element
+ * @param {String} attr css property
+ * @param {String} value css style value
  * @memberOf DomUtil
  */
 export function addStyle(dom, attr, value) {
@@ -388,9 +388,9 @@ export function addStyle(dom, attr, value) {
 }
 
 /**
- * 判断元素是否包含class
- * @param {HTMLElement} el html元素
- * @param {String} name class名称
+ * Whether the dom has the given css class.
+ * @param {HTMLElement} el HTML Element
+ * @param {String} name css class
  * @memberOf DomUtil
  */
 export function hasClass(el, name) {
@@ -402,18 +402,18 @@ export function hasClass(el, name) {
 }
 
 /**
- * 为dom添加class
- * @param {HTMLElement} el html元素
- * @param {String} name class名称
+ * add css class to dom element
+ * @param {HTMLElement} el HTML Element
+ * @param {String} name css class
  * @memberOf DomUtil
  */
 export function addClass(el, name) {
-    if (el.classList !== undefined) {
+    if (el.classList !== undefined && !hasClass(el, name)) {
         const classes = splitWords(name);
         for (let i = 0, len = classes.length; i < len; i++) {
             el.classList.add(classes[i]);
         }
-    } else if (!hasClass(el, name)) {
+    } else {
         const className = getClass(el);
         setClass(el, (className ? className + ' ' : '') + name);
     }
@@ -421,9 +421,9 @@ export function addClass(el, name) {
 }
 
 /**
- * 设置dom class
- * @param {HTMLElement} el html元素
- * @param {String} name class名称
+ * Set dom's css class
+ * @param {HTMLElement} el HTML Element
+ * @param {String} name css class
  * @memberOf DomUtil
  */
 export function setClass(el, name) {
@@ -436,8 +436,8 @@ export function setClass(el, name) {
 }
 
 /**
- * 获取dom class
- * @param {String} name class名称
+ * Get dom's css class
+ * @param {String} name css class
  * @retrun {String} class字符串
  * @memberOf DomUtil
  */
@@ -445,43 +445,10 @@ export function getClass(el) {
     return isNil(el.className.baseVal) ? el.className : el.className.baseVal;
 }
 
-// Borrowed from Leaflet
-// @function setOpacity(el: HTMLElement, opacity: Number)
-// Set the opacity of an element (including old IE support).
-// `opacity` must be a number from `0` to `1`.
+
 export function setOpacity(el, value) {
-    if ('opacity' in el.style) {
-        el.style.opacity = value;
-
-    } else if ('filter' in el.style) {
-        _setOpacityIE(el, value);
-    }
+    el.style.opacity = value;
     return this;
-}
-
-function _setOpacityIE(el, value) {
-    let filter = false;
-    const filterName = 'DXImageTransform.Microsoft.Alpha';
-
-    // filters collection throws an error if we try to retrieve a filter that doesn't exist
-    try {
-        filter = el.filters.item(filterName);
-    } catch (e) {
-        // don't set opacity to 1 if we haven't already set an opacity,
-        // it isn't needed and breaks transparent pngs.
-        if (value === 1) {
-            return;
-        }
-    }
-
-    value = Math.round(value * 100);
-
-    if (filter) {
-        filter.Enabled = (value !== 100);
-        filter.Opacity = value;
-    } else {
-        el.style.filter += ' progid:' + filterName + '(opacity=' + value + ')';
-    }
 }
 
 /**
