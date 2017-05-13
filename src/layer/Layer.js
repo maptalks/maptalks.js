@@ -3,6 +3,7 @@ import { isNil, isNumber } from 'core/util';
 import Eventable from 'core/Eventable';
 import JSONAble from 'core/JSONAble';
 import Renderable from 'renderer/Renderable';
+import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 
 /**
  * @property {Object}  [options=null] - base options of layer.
@@ -149,7 +150,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     isCanvasRender() {
         const renderer = this._getRenderer();
-        return (renderer && renderer.canvas && renderer.canvas.getContext);
+        return (renderer && (renderer instanceof CanvasRenderer));
     }
 
     /**
