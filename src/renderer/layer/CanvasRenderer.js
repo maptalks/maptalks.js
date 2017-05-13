@@ -26,14 +26,6 @@ class CanvasRenderer extends Class {
     }
 
     /**
-     * Whether it's a renderer based on Canvas
-     * @return {Boolean}
-     */
-    isCanvasRender() {
-        return true;
-    }
-
-    /**
      * Render the layer
      * @param  {Boolean} isCheckRes whether to check and load external resources in the layer
      */
