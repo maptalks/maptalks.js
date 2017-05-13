@@ -1,7 +1,4 @@
 export function now() {
-    if (!Date.now) {
-        return new Date().getTime();
-    }
     return Date.now();
 }
 
@@ -29,46 +26,6 @@ export function extend(dest) { // (Object[, Object, ...]) ->
         }
     }
     return dest;
-}
-
-/**
- * From leaflet <br>
- * return a function that won't be called more often than the given interval
- *
- * @param  {Function} fn      - function to call
- * @param  {Number}   time    - interval to throttle
- * @param  {Object}   context - function's context
- * @return {Function} the throttled function
- * @memberOf Util
- */
-export function throttle(fn, time, context) {
-    let lock, args;
-
-    function later() {
-        // reset lock and call if queued
-        lock = false;
-        if (args) {
-            wrapperFn.apply(context, args);
-            args = false;
-        }
-    }
-
-    function wrapperFn() {
-        if (lock && wrapperFn.time > 0) {
-            // called too soon, queue to call later
-            args = arguments;
-
-        } else {
-            // call and lock until later
-            fn.apply(context, arguments);
-            setTimeout(later, wrapperFn.time);
-            lock = true;
-        }
-    }
-
-    wrapperFn.time = time;
-
-    return wrapperFn;
 }
 
 /**
