@@ -7,7 +7,7 @@ import { stopPropagation } from './util/dom';
 
 const Eventable = Base =>
 
-    class Eventable extends Base {
+    class extends Base {
         /**
          * Register a handler function to be called whenever this event is fired.
          *

@@ -20,11 +20,11 @@ Geometry.include(/** @lends Geometry.prototype */ {
         this._fireEvent(eventType, params);
     },
 
-    _getEventTypeToFire: function (originalEvent) {
-        let eventType = originalEvent.type;
+    _getEventTypeToFire: function (domEvent) {
+        let eventType = domEvent.type;
         //change event type to contextmenu
         if (eventType === 'click' || eventType === 'mousedown') {
-            if (originalEvent.button === 2) {
+            if (domEvent.button === 2) {
                 eventType = 'contextmenu';
             }
         }

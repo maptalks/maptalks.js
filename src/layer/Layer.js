@@ -144,7 +144,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
-     * If the layer is rendered by HTML5 Canvas 2d.
+     * If the layer is rendered by HTML5 Canvas.
      * @return {Boolean}
      * @protected
      */

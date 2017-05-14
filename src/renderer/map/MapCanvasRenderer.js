@@ -38,7 +38,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             return false;
         }
         this.map._fireEvent('framestart');
-        this.updateMap();
+        this.updateMapDOM();
         const layers = this._getAllLayerToRender();
         this.drawLayers(layers);
         this.drawLayerCanvas(layers);
@@ -53,7 +53,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         return true;
     }
 
-    updateMap() {
+    updateMapDOM() {
         const map = this.map;
         if (map.isInteracting() && !map.isMoving()) {
             return;
@@ -228,10 +228,6 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     setToRedraw() {
         this._needRedraw = true;
-    }
-
-    _canResueLayerCanvas() {
-        return !this.map.getPitch() && this.map.isZooming();
     }
 
     /**
