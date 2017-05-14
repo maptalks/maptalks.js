@@ -70,6 +70,9 @@ class MapGeometryEventsHandler extends Handler {
             'includeInternals': true,
             //return only one geometry on top,
             'filter': geometry => {
+                if (!(geometry instanceof Geometry)) {
+                    return false;
+                }
                 const eventToFire = geometry._getEventTypeToFire(domEvent);
                 if (eventType === 'mousemove') {
                     if (!geometryCursorStyle && geometry.options['cursor']) {
