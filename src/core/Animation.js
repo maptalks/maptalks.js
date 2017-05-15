@@ -457,10 +457,12 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             this._playStartTime = t;
             elapsed = 0;
         }
-        if (this.playState === 'finished' || this.playState === 'paused') {
+        if (this.playState === 'finished' || this.playState === 'paused' || this.playState === 'idle') {
             if (onFrame) {
                 if (this.playState === 'finished') {
                     elapsed = this.duration;
+                } else if (this.playState === 'idle') {
+                    elapsed = 0;
                 }
                 const frame = this._animation(elapsed, this.duration);
                 frame.state.playState = this.playState;
