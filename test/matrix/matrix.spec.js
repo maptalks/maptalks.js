@@ -8,7 +8,9 @@ describe("vec2",()=>{
            //var v=new kiwi.matrix.mat3();
             //let v=kiwi.matrix.
             console.log(matrix);
+ 
             var s=new matrix.vec2();
+            
         });
     });
 
