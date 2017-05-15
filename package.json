@@ -1,24 +1,21 @@
 {
-  "name": "karma-rollup-mocha",
+  "name": "kiwi.gl",
   "version": "1.0.0",
   "description": "",
   "main": "dist/bundle.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "compile":"rollup -c",
-    "prepublish":"npm run compile",
-    "start":"karma start"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/axmand/karma-rollup-mocha.git"
+    "url": "git+https://github.com/axmand/kiwi.gl.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/axmand/karma-rollup-mocha/issues"
+    "url": "https://github.com/axmand/kiwi.gl/issues"
   },
-  "homepage": "https://github.com/axmand/karma-rollup-mocha#readme",
+  "homepage": "https://github.com/axmand/kiwi.gl#readme",
   "devDependencies": {
     "babel": "^6.23.0",
     "babel-plugin-external-helpers": "^6.22.0",
@@ -31,6 +28,7 @@
     "karma-cli": "^1.0.1",
     "karma-mocha": "^1.3.0",
     "karma-rollup-preprocessor": "^4.0.0",
+    "kiwi.matrix": "^0.1.4",
     "mocha": "^3.3.0",
     "rollup": "^0.41.6",
     "rollup-plugin-babel": "^2.7.1",

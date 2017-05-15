@@ -34,6 +34,7 @@ module.exports = function (config) {
 					// In this case, to use
 					// a different transpiler:
 					plugins: [
+						require('rollup-plugin-node-resolve')(),
 						require('rollup-plugin-babel')(),
 					],
 				}
