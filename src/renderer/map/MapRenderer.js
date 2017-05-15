@@ -21,11 +21,11 @@ export default class MapRenderer extends Class {
         this._handlerQueue = {};
     }
 
-    addEventHandler(fn) {
+    callInFrameLoop(fn) {
         this._handlerQueue.push(fn);
     }
 
-    executeEventHandlers() {
+    executeFrameCallbacks() {
         const running = this._handlerQueue;
         this._handlerQueue = [];
         for (let i = 0, l = running.length; i < l; i++) {
@@ -45,7 +45,7 @@ export default class MapRenderer extends Class {
             }
             const renderer = map._getRenderer();
             const framer = function (fn) {
-                renderer.addEventHandler(fn);
+                renderer.callInFrameLoop(fn);
             };
             let preDist = null;
             const player = this._panPlayer = Animation.animate({
