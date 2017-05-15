@@ -44,7 +44,7 @@ Map.include(/** @lends Map.prototype */{
         this._frameZoom = this._startZoomVal;
         const renderer = this._getRenderer();
         const framer = function (fn) {
-            renderer.addEventHandler(fn);
+            renderer.callInFrameLoop(fn);
         };
 
         const player = Animation.animate(

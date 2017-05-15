@@ -50,7 +50,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             // merge geometry animation framing into map's frame loop
             const renderer = map._getRenderer();
             const framer = function (fn) {
-                renderer.addEventHandler(fn);
+                renderer.callInFrameLoop(fn);
             };
             options['framer'] = framer;
         }
