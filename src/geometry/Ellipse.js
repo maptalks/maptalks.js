@@ -123,7 +123,7 @@ class Ellipse extends CenterMixin(Polygon) {
 
     /**
      * Ellipse won't have any holes, always returns null
-     * @return {[]} an empty array
+     * @return {Object[]} an empty array
      */
     getHoles() {
         return [];

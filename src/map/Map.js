@@ -30,19 +30,21 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
  * @property {Boolean} [options.clipFullExtent=false]           - clip geometries outside map's full extent
+ * @property {Boolean} [options.zoomInCentger=false]            - whether to fix in the center when zooming
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
  * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
-  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
+ * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
  * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
  * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
  * @property {Boolean} [options.hitDetectLimit=5]               - the maximum number of layers to perform hit detect.
- * @property {Boolean} [options.fpsOnInteracting=20]            - fps when map is interacting.
+ * @property {Boolean} [options.fpsOnInteracting=40]            - fps when map is interacting.
+ * @property {Boolean} [options.layerCanvasLimitOnInteracting=-1]    - limit of layer canvas to draw on map when interacting, set it to improve perf.
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
- * @property {Extent} [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
+ * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
  *
  * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
  * @property {Boolean} [options.dragPan=true]                           - if true, map can be dragged to pan.
@@ -85,8 +87,6 @@ const options = {
     'zoomable': true,
     'enableInfoWindow': true,
 
-    'numOfLayersOnInteracting' : 8,
-
     'hitDetect': (function () {
         return !Browser.mobile;
     })(),
@@ -94,6 +94,8 @@ const options = {
     'hitDetectLimit' : 5,
 
     'fpsOnInteracting' : 40,
+
+    'layerCanvasLimitOnInteracting' : -1,
 
     'maxZoom': null,
     'minZoom': null,

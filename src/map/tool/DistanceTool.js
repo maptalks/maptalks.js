@@ -52,7 +52,7 @@ const options = {
     },
     'clearButtonSymbol' :[{
         'markerType': 'square',
-        'markerFill': '#ffffff',
+        'markerFill': '#fff',
         'markerLineColor': '#b4b3b3',
         'markerLineWidth': 2,
         'markerWidth': 15,

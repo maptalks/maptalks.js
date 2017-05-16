@@ -7,14 +7,9 @@ import Marker from './Marker';
 const defaultSymbol = {
     'textFaceName': 'monospace',
     'textSize': 12,
-    'textWrapBefore': false,
-    'textWrapCharacter': '\n',
     'textLineSpacing': 8,
     'textHorizontalAlignment': 'middle', //left middle right
-    'textVerticalAlignment': 'middle', //top middle bottom
-    'textOpacity': 1,
-    'textDx': 0,
-    'textDy': 0
+    'textVerticalAlignment': 'middle' //top middle bottom
 };
 
 const defaultBoxSymbol = {

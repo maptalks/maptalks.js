@@ -140,8 +140,10 @@ gulp.task('reload', ['scripts'], () => {
 gulp.task('doc', () => {
     var sources = require('./doc/files.js');
     del([
-        'doc/api/**/*'
-    ]);
+        '../../maptalks.org/docs/api/**/*'
+    ],{
+        force : true
+    });
     var conf = require('./jsdoc.json');
     var cmd = 'jsdoc';
     var args = ['-c', 'jsdoc.json'].concat(['API.md']).concat(sources);
