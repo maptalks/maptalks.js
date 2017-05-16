@@ -10,8 +10,9 @@ module.exports = [
     './src/handler/Handler.js',
     './src/handler/Drag.js',
 
-    './src/map/view',
+    './src/map/spatial-reference',
     './src/map/Map.js',
+    './src/map/Map.Camera.js',
     './src/map/Map.Pan.js',
     './src/map/Map.Zoom.js',
     './src/map/Map.Topo.js',
@@ -61,6 +62,7 @@ module.exports = [
     './src/layer/tile/tileinfo/TileSystem.js',
     './src/layer/tile/tileinfo/TileConfig.js',
     './src/layer/tile/TileLayer.js',
+    './src/layer/tile/CanvasTileLayer.js',
     './src/layer/OverlayLayer.js',
     './src/layer/VectorLayer.js',
     './src/layer/GeoJSONLayer.js',

@@ -130,7 +130,7 @@ class Rectangle extends Polygon {
 
     /**
      * Rectangle won't have any holes, always returns null
-     * @return {[]} an empty array
+     * @return {Object[]} an empty array
      */
     getHoles() {
         return [];

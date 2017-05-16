@@ -137,7 +137,7 @@ class Sector extends CenterMixin(Polygon) {
 
     /**
      * Sector won't have any holes, always returns null
-     * @return {[]} an empty array
+     * @return {Object[]} an empty array
      */
     getHoles() {
         return [];

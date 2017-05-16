@@ -15,7 +15,7 @@
         "recurse" : true,
         "template": "../maptalks-jsdoc/",
         "encoding": "utf8",
-        "destination": "./doc/api/",
+        "destination": "../../maptalks.org/docs/api/",
         "access"  : "protected, undefined"
     }
 }
