@@ -303,9 +303,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol, a Polygon or a MultiPolygon.');
         }
 
-        if (!this.isCanvasRender()) {
-            throw new Error('Only canvas layers can setMask');
-        }
         if (mask.type === 'Point') {
             mask.updateSymbol({
                 'markerLineColor': 'rgba(0, 0, 0, 0)',
