@@ -80,9 +80,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         const fps = map.options['fpsOnInteracting'] || 0;
         const timeLimit = fps === 0 ? 0 : 1000 / fps;
         // time of layer drawing
+        const layerLimit = this.map.options['layerCanvasLimitOnInteracting'];
         let t = 0;
         this._lastUpdatedId = -1;
-        for (let i = layers.length - 1; i >= 0; i--) {
+        const l = layers.length;
+        for (let i = l - 1; i >= 0; i--) {
             const layer = layers[i];
             if (!layer.isVisible()) {
                 continue;
@@ -109,7 +111,11 @@ export default class MapCanvasRenderer extends MapRenderer {
             if (!needsRedraw) {
                 continue;
             }
+
             if (isInteracting && isCanvas) {
+                if (layerLimit > 0 && l - 1 - i > layerLimit) {
+                    continue;
+                }
                 t += this._drawCanvasLayerOnInteracting(layer, t, timeLimit);
             } else if (isInteracting && renderer.drawOnInteracting) {
                 // dom layers
@@ -169,6 +175,7 @@ export default class MapCanvasRenderer extends MapRenderer {
      * @param  {Number} t     current consumed time of layer drawing
      * @param  {Number} timeLimit time limit for layer drawing
      * @return {Number}       time to draw this layer
+     * @private
      */
     _drawCanvasLayerOnInteracting(layer, t, timeLimit) {
         const map = this.map;
@@ -197,6 +204,7 @@ export default class MapCanvasRenderer extends MapRenderer {
     /**
      * Fire layerload events.
      * Make sure layer are drawn on map when firing the events
+     * @private
      */
     _fireLayerLoadEvents() {
         if (this._updatedIds && this._updatedIds.length > 0) {
@@ -264,7 +272,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
 
         const interacting = this.map.isInteracting();
-        const limit = this.map.options['numOfLayersOnInteracting'];
+        const limit = this.map.options['layerCanvasLimitOnInteracting'];
         const len = layers.length;
 
         const start = interacting && limit >= 0 && len > limit ? len - limit : 0;
