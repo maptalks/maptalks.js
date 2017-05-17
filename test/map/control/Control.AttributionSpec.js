@@ -26,8 +26,11 @@ describe('Control.Attribution', function () {
             content: 'content'
         });
         map.addControl(control);
-
-        expect(control._attributionContainer.innerHTML).to.eql('<span style="padding:0px 4px">content</span>');
+        if (maptalks.Browser.ie) {
+            expect(control._attributionContainer.innerHTML).to.eql('<span style="padding: 0px 4px;">content</span>');
+        } else {
+            expect(control._attributionContainer.innerHTML).to.eql('<span style="padding:0px 4px">content</span>');
+        }
     });
 
     it('setContent in HTML', function () {
@@ -46,8 +49,12 @@ describe('Control.Attribution', function () {
         });
         map.addControl(control);
         control.setContent('new content');
+        if (maptalks.Browser.ie) {
+            expect(control._attributionContainer.innerHTML).to.eql('<span style="padding: 0px 4px;">new content</span>');
+        } else {
+            expect(control._attributionContainer.innerHTML).to.eql('<span style="padding:0px 4px">new content</span>');
+        }
 
-        expect(control._attributionContainer.innerHTML).to.eql('<span style="padding:0px 4px">new content</span>');
     });
 
 });

@@ -78,7 +78,11 @@ describe('#GeometryCollection', function () {
     it('getExternalResource', function () {
         var collection = new maptalks.GeometryCollection([new maptalks.Marker(center)]);
         var resources = collection._getExternalResources();
-        expect(resources).to.have.length(1);
+        if (maptalks.Browser.ie) {
+            expect(resources).to.have.length(0);
+        } else {
+            expect(resources).to.have.length(1);
+        }
     });
 
     describe('creation', function () {

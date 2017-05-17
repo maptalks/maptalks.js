@@ -6,8 +6,8 @@ describe('#TileLayer', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '1px';
-        container.style.height = '1px';
+        container.style.width = '3px';
+        container.style.height = '3px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
