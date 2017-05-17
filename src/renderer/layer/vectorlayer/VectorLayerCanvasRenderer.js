@@ -58,7 +58,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this.context) {
             return false;
         }
-        return !this.context._drawn;
+        return !this.context.canvas._drawn;
     }
 
     drawOnInteracting() {

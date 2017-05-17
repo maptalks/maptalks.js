@@ -2781,9 +2781,9 @@ karma-expect@^1.1.1:
   dependencies:
     expect.js "^0.3.1"
 
-karma-firefox-launcher@~1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/karma-firefox-launcher/-/karma-firefox-launcher-1.0.0.tgz#e08af3ce42e39860c2952ea7b7eaa64d63508bdc"
+karma-firefox-launcher@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/karma-firefox-launcher/-/karma-firefox-launcher-1.0.1.tgz#ce58f47c2013a88156d55a5d61337c099cf5bb51"
 
 karma-happen@^0.1.0:
   version "0.1.0"

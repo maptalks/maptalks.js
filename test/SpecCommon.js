@@ -328,8 +328,8 @@ var COMMON_GET_MAP_COLOR = function (map, x, y) {
 };
 
 function GET_PAGE_POSITION(obj) {
-    const docEl = document.documentElement;
-    const rect = obj.getBoundingClientRect();
+    var docEl = document.documentElement;
+    var rect = obj.getBoundingClientRect();
     return new maptalks.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
 }
 /*eslint-enable no-unused-vars */
