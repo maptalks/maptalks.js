@@ -244,6 +244,10 @@ describe('#Map.Camera', function () {
         });
 
         it('vector path marker', function () {
+            if (maptalks.Browser.ie) {
+                // IE throws SecurityError
+                return;
+            }
             var marker = new maptalks.Marker([100, 0]).addTo(layer);
             var s = new maptalks.Point(24, 34);
             expect(marker.getSize().toPoint()).to.be.eql(s);
