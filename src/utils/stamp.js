@@ -1,7 +1,7 @@
 /**
  * set _kiwi_id_ for object
  */
-const i = 1,
+let i = 1,
     prefix='_kiwi_id_';
 
 let getId = () => {
