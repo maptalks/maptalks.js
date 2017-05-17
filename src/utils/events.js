@@ -14,8 +14,6 @@ let isString = (obj)=>{
     return true;
 }
 
-const eventSplitter = /\s+/;
-
 class events {
 
     /**

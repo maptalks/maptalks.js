@@ -13,6 +13,4 @@ let stamp = (obj) => {
     return obj._kiwi_id_
 };
 
-export default stamp;
-
-export {prefix,getId}
+export {stamp,prefix,getId}
