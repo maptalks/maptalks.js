@@ -7,10 +7,10 @@
 */
 
 import stamp from './stamp';
-import splitWords from './splitWrods';
+import { splitWords } from './splitWrods';
 import noop from './noop';
 
-let isString = (obj)=>{
+let isString = (obj) => {
     return true;
 }
 
@@ -29,13 +29,13 @@ class events {
      * @example 
      * obj.on("dragstart dragend",()=>{},obj);
      */
-    on = (eventTypes, handler, context=null) => {
+    on = (eventTypes, handler, context = null) => {
         //split event name
         if (eventTypes && isString(eventTypes)) {
             return this;
         }
         context = context || this;
-        let eventNames =splitWords(eventTypes.toLowerCase()),
+        let eventNames = splitWords(eventTypes.toLowerCase()),
             eventName;
 
         for (let i = 0, len = eventNames.length; i < len; i++) {
@@ -56,7 +56,7 @@ class events {
     /**
      * 
      */
-    off=(eventTypes,handler,context)=>{
+    off = (eventTypes, handler, context) => {
 
     }
 
