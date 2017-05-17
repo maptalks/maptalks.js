@@ -6,6 +6,8 @@ environment:
 install:
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
+  # install gulp globally
+  - npm install gulp -g
   # install modules
   - npm install
 
