@@ -175,7 +175,7 @@ describe('#TileLayer', function () {
             });
             baselayer.on('layerload', function () {
                 expect(baselayer.isCanvasRender()).not.to.be.ok();
-                const cssMat = baselayer._getRenderer()._getTileContainer().style.cssText;
+                var cssMat = baselayer._getRenderer()._getTileContainer().style.cssText;
                 expect(cssMat.indexOf('matrix3d') > 0).to.be.ok();
                 done();
             });
