@@ -55,8 +55,8 @@ describe('#Map.Camera', function () {
             map.setBearing(0);
             map.setPitch(0);
             baseLayer.on('layerload', function () {
-                const tiles = baseLayer._getRenderer()._tiles;
-                const pos = tiles['53162__108844__17'].pos;
+                var tiles = baseLayer._getRenderer()._tiles;
+                var pos = tiles['53162__108844__17'].pos;
                 expect(pos.toArray()).to.be.eql([52, -412]);
                 done();
             });
