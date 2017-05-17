@@ -203,10 +203,10 @@ describe('#TileLayer', function () {
                 // fired by mapRenderer.drawLayer when map state changed(first render)
                 tile.once('layerload', function () {
                     expect(tile.isCanvasRender()).not.to.be.ok();
-                    const cssMat = tile._getRenderer()._getTileContainer().style.cssText;
+                    var cssMat = tile._getRenderer()._getTileContainer().style.cssText;
                     expect(cssMat.indexOf('matrix3d') === -1).to.be.ok();
                     tile.on('layerload', function () {
-                        const cssMat = tile._getRenderer()._getTileContainer().style.cssText;
+                        cssMat = tile._getRenderer()._getTileContainer().style.cssText;
                         expect(cssMat.indexOf('matrix3d') > 0).to.be.ok();
                         done();
                     });
