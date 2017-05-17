@@ -1,6 +1,5 @@
 ﻿/**
-*   @author }{yellow
-*   @date 2017/4/18
+*   @author }{yellow 2017/4/18
 *   @returns {Object} 合并后对象
 */
 
