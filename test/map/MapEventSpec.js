@@ -41,7 +41,7 @@ describe('#MapEventSpec', function () {
             });
             expect(spy.called).not.to.be.ok();
             done();
-        }, 301);
+        }, 400);
     });
 
     it('fire an additional click event after touch', function () {
