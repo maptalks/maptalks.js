@@ -1,10 +1,13 @@
 {
   "name": "kiwi.gl",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
-  "main": "dist/bundle.js",
+  "main": "src/init.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "karma start karma.conf.js --single-run",
+    "compile": "rollup -c",
+    "prepublish": "npm run compile",
+    "start": "karma start"
   },
   "repository": {
     "type": "git",
@@ -25,8 +28,10 @@
     "karma": "^1.7.0",
     "karma-babel-preprocessor": "^6.0.1",
     "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.1.1",
     "karma-cli": "^1.0.1",
     "karma-mocha": "^1.3.0",
+    "karma-mocha-reporter": "^2.2.3",
     "karma-rollup-preprocessor": "^4.0.0",
     "kiwi.matrix": "^0.1.5",
     "mocha": "^3.3.0",

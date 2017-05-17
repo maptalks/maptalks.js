@@ -1,7 +1,9 @@
 module.exports = function (config) {
-	config.set({
+	let cfg = {
 		basePath: '.',
 		frameworks: ['mocha', 'chai'],
+		browsers: ['Chrome'],
+		reporters: ['mocha'],
 		files: [
 			'test/**/*.spec.js',
 			// Watch src files for changes but
@@ -9,13 +11,11 @@ module.exports = function (config) {
 			{ pattern: 'src/**/*.js', included: false },
 
 		],
-
 		preprocessors: {
 			//'test/buble/**/*.spec.js': ['rollup'],
 			'src/**/*.js': ['rollupBabel'],
 			'test/**/*.spec.js': ['rollupBabel'],
 		},
-
 		rollupPreprocessor: {
 			plugins: [
 				require('rollup-plugin-buble')(),
@@ -24,7 +24,12 @@ module.exports = function (config) {
 			moduleName: 'test',//<your_project>
 			sourceMap: 'inline',
 		},
-
+		customLaunchers: {
+			Chrome_travis_ci: {
+				base: 'Chrome',
+				flags: ['--no-sandbox']
+			}
+		},
 		customPreprocessors: {
 			// Clones the base preprocessor, but overwrites
 			// its options with those defined below.
@@ -40,5 +45,9 @@ module.exports = function (config) {
 				}
 			}
 		}
-	});
+	}
+	if (process.env.TRAVIS) {
+		cfg.browsers = ['Chrome_travis_ci'];
+	}
+	config.set(cfg);
 };
