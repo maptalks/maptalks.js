@@ -17,7 +17,7 @@ test_script:
   - node --version
   - npm --version
   # run tests
-  - gulp test --browsers ie,ie10
+  - gulp test --browsers ie10,ie
 
 # Don't actually build.
 build: off
