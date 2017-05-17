@@ -1,2 +1,2 @@
-import matrix from 'kiwi.matrix';
+import {matrix} from 'kiwi.matrix';
 

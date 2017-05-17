@@ -1,6 +1,7 @@
 language: node_js
 node_js:
   - "6.10.3"
+sudo: false
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
@@ -8,6 +9,8 @@ before_install:
 before_script:
   - npm install -g karma-cli
   - npm install -g rollup
+  - npm install -g codecov
   - npm install
 script:
   - npm test
+  - codecov
