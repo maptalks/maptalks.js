@@ -1,0 +1,14 @@
+# Test against the latest version of this Node.js version
+environment:
+  nodejs_version: "6.9.0"
+
+# Post-install test scripts.
+test_script:
+  # Output useful info for debugging.
+  - node --version
+  - npm --version
+  # run tests
+  - gulp test --browsers ie
+
+# Don't actually build.
+build: off
