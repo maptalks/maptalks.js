@@ -18,7 +18,7 @@ class Event {
 
     _events = {};
 
-    _on = function (type, fn, context) {
+    _on(type, fn, context) {
         var events = this._events,
             contextId = context && context !== this && stamp(context);
         if (contextId) {
@@ -37,7 +37,7 @@ class Event {
         }
     }
 
-    _off = function (type, fn, context) {
+    _off(type, fn, context) {
         var events = this._events,
             indexKey = type + '_idx',
             indexLenKey = type + '_len';
@@ -77,7 +77,7 @@ class Event {
         }
     }
 
-    once = function (types, fn, context) {
+    once(types, fn, context) {
         if (typeof types === 'object') {
             for (var type in types) {
                 this.once(type, types[type], fn);
@@ -90,7 +90,7 @@ class Event {
         return this.on(types, fn, context).on(types, handler, context);
     }
 
-    on = function (types, fn, context) {
+    on(types, fn, context) {
         if (typeof types === 'object') {
             for (var type in types) {
                 this._on(type, types[type], fn);
@@ -113,7 +113,7 @@ class Event {
     *   @param {Object} context 上下文，用于存储事件
     *   @return {Object} this
     */
-    off = function (types, fn, context) {
+    off(types, fn, context) {
         if (!types) {
             delete this._events;
         } else if (typeof types === 'object') {
@@ -129,7 +129,7 @@ class Event {
         return this;
     }
 
-    fire = function (type, data, propagate) {
+    fire(type, data, propagate) {
         if (!this.listens(type, propagate)) { return this; }
         var event = merge({}, { data: data }, { type: type, target: this }),
             events = this._events;
@@ -150,7 +150,7 @@ class Event {
         return this;
     }
 
-    listens = function (type, propagate) {
+    listens(type, propagate) {
         var events = this._events;
         if (events[type] || events[type + '_len']) {
             return true;
@@ -163,20 +163,20 @@ class Event {
         return false;
     }
 
-    addEventParent = function (obj) {
+    addEventParent(obj) {
         this._eventParents = this._eventParents;
         this._eventParents[stamp(obj)] = obj;
         return this;
     }
 
-    removeEventParent = function (obj) {
+    removeEventParent(obj) {
         if (this._eventParents) {
             delete this._eventParents[stamp(obj)];
         }
         return this;
     }
 
-    _propagateEvent = function (e) {
+    _propagateEvent(e) {
         for (var id in this._eventParents) {
             this._eventParents[id].fire(e.type, merge({ layer: e.target }, e), true);
         }

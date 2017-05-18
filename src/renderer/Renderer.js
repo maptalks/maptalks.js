@@ -33,3 +33,5 @@ class Renderder extends Event{
 
 }
 
+export default Renderder;
+

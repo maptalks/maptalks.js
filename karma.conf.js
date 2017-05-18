@@ -54,6 +54,15 @@ module.exports = function (config) {
 	}
 	if (process.env.TRAVIS) {
 		cfg.browsers = ['Chrome_travis_ci'];
+		cfg.preprocessors = {
+			'src/**/*.js': ['rollupBabel', 'coverage'],
+			'test/**/*.spec.js': ['rollupBabel', 'coverage']
+		};
+	} else {
+		cfg.preprocessors = {
+			'src/**/*.js': ['rollupBabel'],
+			'test/**/*.spec.js': ['rollupBabel']
+		};
 	}
 	config.set(cfg);
 };
