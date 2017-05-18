@@ -7,6 +7,6 @@ export default class RenderManager{
 
     constructor(renderer){
         this._renderer=renderer;
-        
+        this._renderer.on()
     }
 }
