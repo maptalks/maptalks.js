@@ -139,7 +139,6 @@ describe('#TileLayer', function () {
 
     describe('In a canvas container', function () {
         it('can be loaded', function (done) {
-            this.timeout(5000);
             container = document.createElement('canvas');
             container.style.width = '1px';
             container.style.height = '1px';
@@ -156,6 +155,30 @@ describe('#TileLayer', function () {
             });
             tile.on('layerload', function () {
                 expect(tile.isCanvasRender()).to.be.ok();
+                expect(map).to.be.painted();
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
+
+        it('with rotation', function (done) {
+            container = document.createElement('canvas');
+            container.style.width = '1px';
+            container.style.height = '1px';
+            document.body.appendChild(container);
+            var option = {
+                zoom: 17,
+                center: center,
+                bearing : 50
+            };
+            map = new maptalks.Map(container, option);
+            var tile = new maptalks.TileLayer('tile', {
+                urlTemplate : '/resources/tile.png',
+                subdomains:['a', 'b', 'c']
+            });
+            tile.on('layerload', function () {
+                expect(tile.isCanvasRender()).to.be.ok();
+                expect(map).to.be.painted();
                 done();
             });
             map.setBaseLayer(tile);

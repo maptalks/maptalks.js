@@ -7,6 +7,7 @@ import Canvas2D from 'core/Canvas';
 import TileLayer from 'layer/tile/TileLayer';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 import TileCache from './TileCache';
+import Point from 'geo/Point';
 
 /**
  * @classdesc
@@ -60,12 +61,16 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (!this.canvas) {
             this.createCanvas();
         }
+
         // this.resizeCanvas(tileGrid['fullExtent'].getSize());
         const mask2DExtent = this.prepareCanvas();
         if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
             this.completeRender();
             return;
         }
+
+        // reset current transformation matrix to the identity matrix
+        this.context.setTransform(1, 0, 0, 1, 0, 0);
 
         //visit all the tiles
         this._totalTileToLoad = this._tileToLoadCounter = 0;
@@ -91,9 +96,17 @@ export default class TileLayerRenderer extends CanvasRenderer {
 
         if (this._tileToLoadCounter === 0) {
             this.completeRender();
-        } else {
+        } else if (!this.getMap().isInteracting()) {
             this._scheduleLoadTileQueue();
         }
+    }
+
+    // Unlike other layers, TileLayerCanvasRenderer is special in drawing on interacting:
+    // 1. it doesn't need to redraw on zooming and moving, map just merges layer's canvas as it is into map canvas with necessary transforming.
+    // 2. but it needs to redraw on drag rotating: when rotating, every tile needs to be rotated.
+    // Thus we introduce this method only to redraw on drag rotating.
+    drawOnDragRotating() {
+        this.draw();
     }
 
     needToRedraw() {
@@ -167,16 +180,27 @@ export default class TileLayerRenderer extends CanvasRenderer {
 
 
     _drawTile(point, tileImage) {
-        if (!point) {
+        if (!point || !this.getMap()) {
             return;
         }
+        const map = this.getMap();
         const tileSize = this.layer.getTileSize();
         const ctx = this.context;
+        const cp = map._pointToContainerPoint(point);
+        let x = cp.x,
+            y = cp.y;
+        const bearing = this.getMap().getBearing();
+        if (bearing) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(-bearing * Math.PI / 180);
+            x = y = 0;
+        }
         Canvas2D.image(ctx, tileImage,
-            Math.floor(point.x - this._northWest.x), Math.floor(point.y - this._northWest.y),
+            x, y,
             tileSize['width'], tileSize['height']);
         if (this.layer.options['debug']) {
-            const p = point.sub(this._northWest);
+            const p = new Point(x, y);
             ctx.save();
             const color = '#0f0';
             ctx.strokeStyle = color;
@@ -188,6 +212,9 @@ export default class TileLayerRenderer extends CanvasRenderer {
             Canvas2D.fillText(ctx, 'x:' + xyz[1] + ', y:' + xyz[0] + ', z:' + xyz[2], p.add(10, 20), color);
             Canvas2D.drawCross(ctx, p.add(tileSize['width'] / 2, tileSize['height'] / 2), 2, color);
             this.context.restore();
+        }
+        if (bearing) {
+            ctx.restore();
         }
         tileImage = null;
     }
