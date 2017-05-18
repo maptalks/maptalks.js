@@ -20,7 +20,7 @@ class Renderder extends Event{
      * @param {HTMLCanvasElement} view ,the canvas to draw
      */
     constructor(view,options){
-
+        super();
     }
 
     get backgroundColor(){

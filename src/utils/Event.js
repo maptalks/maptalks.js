@@ -7,8 +7,8 @@
 *   @inheritable
 */
 
-import stamp from './stamp';
-import { splitWords } from './splitWords';
+import {stamp} from './stamp';
+import {splitWords} from './splitWords';
 import noop from './noop';
 import merge from './merge';
 
@@ -28,7 +28,8 @@ class Event {
                 id = stamp(fn) + '_' + contextId;
             if (!typeIndex[id]) {
                 typeIndex[id] = { fn: fn, ctx: context };
-                events[indexLenKey] = ++(events[indexLenKey] || 0);
+                events[indexLenKey] = events[indexLenKey] || 0;
+                events[indexLenKey]++;
             }
         } else {
             events[type] = events[type] || [];
@@ -88,7 +89,7 @@ class Event {
         }, this);
         return this.on(types, fn, context).on(types, handler, context);
     }
-    
+
     on = function (types, fn, context) {
         if (typeof types === 'object') {
             for (var type in types) {
