@@ -101,18 +101,20 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
     }
 
-    // Unlike other layers, TileLayerCanvasRenderer is special in drawing on interacting:
-    // 1. it doesn't need to redraw on zooming and moving, map just merges layer's canvas as it is into map canvas with necessary transforming.
-    // 2. but it needs to redraw on drag rotating: when rotating, every tile needs to be rotated.
-    // Thus we introduce this method only to redraw on drag rotating.
-    drawOnDragRotating() {
+    drawOnInteracting() {
         this.draw();
     }
 
+    // Unlike other layers, TileLayerCanvasRenderer is special in drawing on interacting:
+    // 1. it doesn't need to redraw on zooming and moving, map just merges layer's canvas as it is into map canvas with necessary transforming.
+    // 2. it needs to redraw on drag rotating: when rotating, every tile needs to be rotated.
     needToRedraw() {
         const map = this.getMap();
-        if (map.isInteracting()) {
+        if (map.isDragRotating()) {
             return true;
+        }
+        if (map.isZooming()) {
+            return false;
         }
         return super.needToRedraw();
     }

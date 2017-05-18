@@ -99,7 +99,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             }
             // if need to call layer's draw/drawInteracting
             const needsRedraw = this._checkLayerRedraw(layer);
-            if (renderer.isCanvasUpdated && renderer.isCanvasUpdated()) {
+            if (isCanvas && renderer.isCanvasUpdated()) {
                 // don't need to call layer's draw/drawOnInteracting but need to redraw layer's updated canvas
                 if (!needsRedraw) {
                     updatedIds.push(layer.getId());
@@ -109,6 +109,17 @@ export default class MapCanvasRenderer extends MapRenderer {
             }
             delete renderer.__shouldZoomTransform;
             if (!needsRedraw) {
+                if (isCanvas && isInteracting) {
+                    if (map.isZooming() && !map.getPitch()) {
+                        // transform layer's current canvas when zooming
+                        renderer.prepareRender();
+                        renderer.__shouldZoomTransform = true;
+                    } else if (map.getPitch() || map.isDragRotating()) {
+                        // when map is pitching or rotating, clear the layer canvas
+                        // otherwise, leave layer's canvas unchanged
+                        renderer.clearCanvas();
+                    }
+                }
                 continue;
             }
 
@@ -201,17 +212,6 @@ export default class MapCanvasRenderer extends MapRenderer {
             // transform layer's current canvas when zooming
             renderer.prepareRender();
             renderer.__shouldZoomTransform = true;
-        } else if (renderer.drawOnDragRotating && inTime && !map.getPitch() && map.isDragRotating()) {
-            // This is a special case for TileLayerCanvasRenderer
-            // when:
-            // 1. layer's renderer doesn't have drawOnInteracting method
-            // 2. layer's renderer has a drawOnDragRotating method
-            // then:
-            // call drawOnDragRotating when map is dragRotating without any pitch
-            renderer.prepareRender();
-            renderer.prepareCanvas();
-            renderer.drawOnDragRotating();
-            return drawTime;
         } else if (map.getPitch() || map.isDragRotating()) {
             // when map is pitching or rotating, clear the layer canvas
             // otherwise, leave layer's canvas unchanged
