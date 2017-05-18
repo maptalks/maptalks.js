@@ -4,18 +4,22 @@ import WebGLRenderer from './../../src/renderer/WebGLRenderer';
 let cont = new Container();
 let render = new WebGLRenderer(null, null);
 render.on('event.fire', function () {
-    //console("event.fire");
+    let sss="";
+    let ssss=sss+"";
 });
 
-
-describe("test core function", () => {
-
-    describe("#container test", () => {
+let container=new Container();
+container.run();
 
 
-        //render.fire("event.fire",{});
+// describe("test core function", () => {
 
-    });
+//     describe("#container test", () => {
 
 
-});
+//         //render.fire("event.fire",{});
+
+//     });
+
+
+// });
