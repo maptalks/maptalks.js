@@ -32,6 +32,15 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return resources;
     }
 
+    needToRedraw() {
+        const map = this.getMap();
+        // don't redraw when map is zooming without pitch and layer doesn't have any point symbolizer.
+        if (map.isZooming() && !map.getPitch() && !this._hasPoint) {
+            return false;
+        }
+        return super.needToRedraw();
+    }
+
     /**
      * render layer
      * @param  {Geometry[]} geometries   geometries to render
@@ -103,6 +112,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     prepareToDraw() {
+        this._hasPoint = false;
         this._geosToDraw = [];
     }
 
@@ -115,6 +125,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             extent2D = painter.get2DExtent(this.resources);
         if (!extent2D || !extent2D.intersects(this._displayExtent)) {
             return;
+        }
+        if (painter.hasPoint()) {
+            this._hasPoint = true;
         }
         this._geosToDraw.push(geo);
     }
