@@ -1,3 +1,14 @@
+if (maptalks.Browser.ie) {
+    // change marker's default symbol to on IE due to the Security Error.
+    maptalks.Marker.prototype.options.symbol = {
+        'markerType' : 'ellipse',
+        'markerFill' : '#0ff',
+        'markerWidth' : 20,
+        'markerHeight' : 20
+    };
+}
+
+
 /*eslint-disable no-unused-vars */
 function GEN_GEOMETRIES_OF_ALL_TYPES() {
     var center = new maptalks.Coordinate(118.846825, 32.046534);
@@ -317,8 +328,8 @@ var COMMON_GET_MAP_COLOR = function (map, x, y) {
 };
 
 function GET_PAGE_POSITION(obj) {
-    const docEl = document.documentElement;
-    const rect = obj.getBoundingClientRect();
+    var docEl = document.documentElement;
+    var rect = obj.getBoundingClientRect();
     return new maptalks.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
 }
 /*eslint-enable no-unused-vars */

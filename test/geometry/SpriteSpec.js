@@ -134,6 +134,11 @@ describe('#Sprite', function () {
     });
 
     it('vector path marker sprite', function (done) {
+        if (maptalks.Browser.ie) {
+            // IE throws SecurityError
+            done();
+            return;
+        }
         var marker = new maptalks.Marker([0, 0], {
             symbol : {
                 'markerType' : 'path',

@@ -97,10 +97,10 @@ export default class CollectionPainter extends Class {
         });
     }
 
-    hasPointSymbolizer() {
+    hasPoint() {
         let result = false;
         this._eachPainter(painter => {
-            if (painter.hasPointSymbolizer()) {
+            if (painter.hasPoint()) {
                 result = true;
                 return false;
             }

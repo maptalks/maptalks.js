@@ -168,11 +168,14 @@ describe('#Marker', function () {
             var layer = new maptalks.VectorLayer('vector', [marker]);
             marker.on('click', function (e) {
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(0, -5);
+                    expect(layer).to.be.painted(0, 0, [0, 255, 0]);
                     done();
                 });
                 e.target.setSymbol({
-                    'markerFile' : 'images/control/2.png'
+                    'markerType' : 'ellipse',
+                    'markerFill' : '#0f0',
+                    'markerWidth' : 20,
+                    'markerHeight' : 20
                 });
             });
             layer.once('layerload', function () {
@@ -294,7 +297,13 @@ describe('#Marker', function () {
             map.setZoom(7);
             map.on('renderend', function () {
                 expect(layer).not.to.be.painted(53, 0);
-                expect(layer).to.be.painted(32, 0);
+                if (maptalks.Browser.ie) {
+                    // font is smaller with ie
+                    expect(layer).to.be.painted(20, 0);
+                } else {
+                    expect(layer).to.be.painted(32, 0);
+                }
+
                 done();
             });
         });

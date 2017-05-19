@@ -200,12 +200,12 @@ const Canvas = {
     },
 
     clearRect(ctx, x1, y1, x2, y2) {
-        ctx._drawn = false;
+        ctx.canvas._drawn = false;
         ctx.clearRect(x1, y1, x2, y2);
     },
 
     fillCanvas(ctx, fillOpacity, x, y) {
-        ctx._drawn = true;
+        ctx.canvas._drawn = true;
         if (fillOpacity === 0) {
             return;
         }
@@ -257,7 +257,7 @@ const Canvas = {
     },
 
     image(ctx, img, x, y, width, height) {
-        ctx._drawn = true;
+        ctx.canvas._drawn = true;
         x = round(x);
         y = round(y);
         try {
@@ -321,7 +321,7 @@ const Canvas = {
     },
 
     fillText(ctx, text, point, rgba) {
-        ctx._drawn = true;
+        ctx.canvas._drawn = true;
         if (rgba) {
             ctx.fillStyle = rgba;
         }
@@ -329,7 +329,7 @@ const Canvas = {
     },
 
     _stroke(ctx, strokeOpacity, x, y) {
-        ctx._drawn = true;
+        ctx.canvas._drawn = true;
         const isPattern = Canvas._isPattern(ctx.strokeStyle) && !isNil(x) && !isNil(y);
         if (isNil(strokeOpacity)) {
             strokeOpacity = 1;
@@ -675,7 +675,7 @@ const Canvas = {
     },
 
     drawCross(ctx, p, lineWidth, color) {
-        ctx._drawn = true;
+        ctx.canvas._drawn = true;
         ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
         ctx.beginPath();

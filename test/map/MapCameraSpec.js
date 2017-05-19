@@ -55,8 +55,8 @@ describe('#Map.Camera', function () {
             map.setBearing(0);
             map.setPitch(0);
             baseLayer.on('layerload', function () {
-                const tiles = baseLayer._getRenderer()._tiles;
-                const pos = tiles['53162__108844__17'].pos;
+                var tiles = baseLayer._getRenderer()._tiles;
+                var pos = tiles['53162__108844__17'].pos;
                 expect(pos.toArray()).to.be.eql([52, -412]);
                 done();
             });
@@ -244,6 +244,10 @@ describe('#Map.Camera', function () {
         });
 
         it('vector path marker', function () {
+            if (maptalks.Browser.ie) {
+                // IE throws SecurityError
+                return;
+            }
             var marker = new maptalks.Marker([100, 0]).addTo(layer);
             var s = new maptalks.Point(24, 34);
             expect(marker.getSize().toPoint()).to.be.eql(s);

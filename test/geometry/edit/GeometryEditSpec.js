@@ -176,8 +176,8 @@ describe('#GeometryEdit', function () {
             var size = rect.getSize();
             var ratio = rect.getWidth() / rect.getHeight();
             dragGeometry(rect, new maptalks.Point(size.width / 2, 0));
-            expect(rect.getWidth()).to.be.approx(111.13518);
-            expect(rect.getHeight()).to.be.approx(111.13518 / ratio);
+            expect(rect.getWidth()).to.be.approx(111.135, 3);
+            expect(rect.getHeight()).to.be.approx(111.135 / ratio, 3);
             rect.endEdit();
         });
 

@@ -224,7 +224,7 @@ describe('#Label', function () {
         expect(vector.isEditingText()).not.to.be.ok();
     });
 
-    it('edit with special characters', function () {
+    it.skip('edit with special characters', function () {
         var vector = new maptalks.Label('\b\t\v\flabel\r\n', center);
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
@@ -236,7 +236,7 @@ describe('#Label', function () {
         expect(vector.getContent()).to.be.eql('label\n');
     });
 
-    it('edit with "Enter" characters', function () {
+    it.skip('edit with "Enter" characters', function () {
         var vector = new maptalks.Label('Label\r', center);
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
@@ -329,7 +329,7 @@ describe('#Label', function () {
             expect(vector.isEditingText()).not.to.be.ok();
         });
 
-        it('filter with special characters', function () {
+        it.skip('filter with special characters', function () {
             var vector = new maptalks.Label('\b\t\v\fLabel', center);
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
@@ -341,7 +341,7 @@ describe('#Label', function () {
             expect(vector.getContent()).to.be.eql('Label');
         });
 
-        it('filter with "Enter" characters', function () {
+        it.skip('filter with "Enter" characters', function () {
             var vector = new maptalks.Label('Label\r', center);
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
@@ -387,7 +387,7 @@ describe('#Label', function () {
             }
         });
 
-        it('mock press “Enter” key', function () {
+        it.skip('mock press "Enter" key', function () {
             var label = new maptalks.Label('I am a Text', center);
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
