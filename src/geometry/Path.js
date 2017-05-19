@@ -49,7 +49,7 @@ class Path extends Geometry {
         const map = this.getMap(),
             fullExtent = map.getFullExtent(),
             projection = this._getProjection();
-        const anti = this.options['antiMeridian'] && Measurer.isSphere(projection),
+        const anti = Measurer.isSphere(projection) ? this.options['antiMeridian'] : false,
             isClip = map.options['clipFullExtent'],
             isSimplify = !disableSimplify && this.getLayer() && this.getLayer().options['enableSimplify'],
             tolerance = 2 * map._getResolution(),
