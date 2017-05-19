@@ -1,7 +1,6 @@
-﻿import { isString } from 'core/util';
-import { createEl } from 'core/util/dom';
-import Point from 'geo/Point';
-import { Geometry, Marker } from 'geometry';
+﻿import { createEl } from 'core/util/dom';
+//import Point from 'geo/Point';
+import { Geometry } from 'geometry';
 import UIComponent from './UI';
 
 
@@ -29,7 +28,7 @@ const defaults = {
  * @category ui
  * @extends ui.UIComponent
  * @param {Object} options - options defined in [tooltips]{@link tooltips#options}
- * @memberOf ui 
+ * @memberOf ui
  */
 class Tooltips extends UIComponent {
     // TODO:obtain class in super
@@ -43,10 +42,10 @@ class Tooltips extends UIComponent {
    * @param {String} owner - information  to show in tooltips.
    * @returns {UIComponent} this
     **/
-    setTo(geometry,info) {
+    setTo(geometry, info) {
         this._infomation = info;
         this._addTo(geometry);
-    } 
+    }
     /**
    * Adds the UI Component to a geometry or a map
    * @param {Geometry|Map} owner - geometry or map to addto.
@@ -54,47 +53,47 @@ class Tooltips extends UIComponent {
    * @fires UIComponent#add
    */
     _addTo(owner) {
-        if(owner instanceof Geometry) {
+        if (owner instanceof Geometry) {
             owner._tooltips = this;
-            let mouseHandler=function(e) {
-                switch(e.type) {
-                    case 'mouseover':
-                        if(!this.isVisible()) {
-                           const map = e.target.getMap();
-                           const zoom=map.getZoom();
-                           const mousescreen = map.coordinateToPoint(e.coordinate,zoom);
-                           const tipPosition = new maptalks.Point(mousescreen.x+25,mousescreen.y-45);
-                           this.show(map.pointToCoordinate(tipPosition, zoom));
-                          }
-                        break;
-                    case 'mouseout':
-                        this.hide();
-                        break;
-                    default:
-                        break;
+            const mouseHandler = function (e) {
+                switch (e.type) {
+                case 'mouseover':
+                    if (!this.isVisible()) {
+                        const map = e.target.getMap();
+                        const zoom = map.getZoom();
+                        const mousescreen = map.coordinateToPoint(e.coordinate, zoom);
+                        const tipPosition = new maptalks.Point(mousescreen.x + 25, mousescreen.y - 45);
+                        this.show(map.pointToCoordinate(tipPosition, zoom));
+                    }
+                    break;
+                case 'mouseout':
+                    this.hide();
+                    break;
+                default:
+                    break;
                 }
             };
-            this._mouseHandler=mouseHandler;
-            owner.on('mouseover mouseout',mouseHandler.bind(this));
+            this._mouseHandler = mouseHandler;
+            owner.on('mouseover mouseout', mouseHandler.bind(this));
         }
-       return super.addTo(owner);
+        return super.addTo(owner);
     }
 
     /**
     * get the UI Component's content
     * @returns {String} tooltips's content
     */
-    getContent(){
-      return this._infomation;
+    getContent() {
+        return this._infomation;
     }
 
     buildOn() {
         const dom = createEl('div');
         dom.className = 'maptalks-msgBox';
-        dom.id = "tipDiv";
+        dom.id = 'tipDiv';
         dom.style.width = defaults.width + 'px';
         let content = '';
-        content += '<div class="maptalks-msgContent">' + this. _infomation+ '</div>';
+        content += '<div class="maptalks-msgContent">' + this. _infomation + '</div>';
         dom.innerHTML = content;
         return dom;
     }
@@ -107,8 +106,8 @@ class Tooltips extends UIComponent {
    * @returns {UIComponent} this
    */
     cancelTips() {
-        if(this._owner){
-            this._owner.off('mouseover mouseout',this._mouseHandler);
+        if (this._owner) {
+            this._owner.off('mouseover mouseout', this._mouseHandler);
             delete this._owner._tooltips;
             delete this._owner;
             delete this._mouseHandler;
