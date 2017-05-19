@@ -1,5 +1,8 @@
-var s="";
 
-var ss=s+"2";
+debugger
+let s="";
 
-let sss="";
+let ss=s+"2";
+
+let sss = "";
+

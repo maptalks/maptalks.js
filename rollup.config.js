@@ -6,6 +6,7 @@ export default {
     format: 'iife',
     dest: './dist/bundle.js',
     moduleName:'test',
+    
     plugins: [
         resolve(),
         babel({
