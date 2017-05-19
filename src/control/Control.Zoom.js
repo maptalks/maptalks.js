@@ -1,4 +1,4 @@
-import { on, off, createEl } from 'core/util/dom';
+import { on, off, createEl, preventDefault } from 'core/util/dom';
 import Map from 'map/Map';
 import Control from './Control';
 
@@ -104,23 +104,31 @@ class Zoom extends Control {
     }
 
     _registerDomEvents() {
-        const map = this.getMap();
         if (this._zoomInButton) {
-            on(this._zoomInButton, 'click', map.zoomIn, map);
+            on(this._zoomInButton, 'click', this._onZoomInClick, this);
         }
         if (this._zoomOutButton) {
-            on(this._zoomOutButton, 'click', map.zoomOut, map);
+            on(this._zoomOutButton, 'click', this._onZoomOutClick, this);
         }
         //TODO slider dot拖放缩放逻辑还没有实现
     }
 
+    _onZoomInClick(e) {
+        preventDefault(e);
+        this.getMap().zoomIn();
+    }
+
+    _onZoomOutClick(e) {
+        preventDefault(e);
+        this.getMap().zoomOut();
+    }
+
     onRemove() {
-        const map = this.getMap();
         if (this._zoomInButton) {
-            off(this._zoomInButton, 'click', map.zoomIn, map);
+            off(this._zoomInButton, 'click', this._onZoomInClick, this);
         }
         if (this._zoomOutButton) {
-            off(this._zoomOutButton, 'click', map.zoomOut, map);
+            off(this._zoomOutButton, 'click', this._onZoomOutClick, this);
         }
     }
 }

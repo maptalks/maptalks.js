@@ -24,21 +24,19 @@ describe('Control.Zoom', function () {
 
     describe('Zoom button', function () {
 
-        it('when enabled, can trigger correct events', function () {
+        it('when enabled, can trigger correct events', function (done) {
             var control = new maptalks.control.Zoom();
-            var spy = sinon.spy();
-            map.zoomIn = spy;
-            map.zoomOut = spy;
+            var z = map.getZoom();
             map.addControl(control);
-            // control.enable();
-
-            spy.reset();
+            map.once('zoomend', function () {
+                expect(map.getZoom()).to.be.eql(z + 1);
+                map.once('zoomend', function () {
+                    expect(map.getZoom()).to.be.eql(z);
+                    done();
+                });
+                happen.click(control._zoomOutButton);
+            });
             happen.click(control._zoomInButton);
-            expect(spy.calledOnce).to.be.ok();
-
-            spy.reset();
-            happen.click(control._zoomOutButton);
-            expect(spy.calledOnce).to.be.ok();
         });
 
         it('when zoom in button clicked, change zoom correctly', function () {

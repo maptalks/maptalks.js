@@ -99,7 +99,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             }
             // if need to call layer's draw/drawInteracting
             const needsRedraw = this._checkLayerRedraw(layer);
-            if (renderer.isCanvasUpdated && renderer.isCanvasUpdated()) {
+            if (isCanvas && renderer.isCanvasUpdated()) {
                 // don't need to call layer's draw/drawOnInteracting but need to redraw layer's updated canvas
                 if (!needsRedraw) {
                     updatedIds.push(layer.getId());
@@ -109,6 +109,17 @@ export default class MapCanvasRenderer extends MapRenderer {
             }
             delete renderer.__shouldZoomTransform;
             if (!needsRedraw) {
+                if (isCanvas && isInteracting) {
+                    if (map.isZooming() && !map.getPitch()) {
+                        // transform layer's current canvas when zooming
+                        renderer.prepareRender();
+                        renderer.__shouldZoomTransform = true;
+                    } else if (map.getPitch() || map.isDragRotating()) {
+                        // when map is pitching or rotating, clear the layer canvas
+                        // otherwise, leave layer's canvas unchanged
+                        renderer.clearCanvas();
+                    }
+                }
                 continue;
             }
 
@@ -188,14 +199,22 @@ export default class MapCanvasRenderer extends MapRenderer {
             map.isMoving() && layer.options['forceRenderOnMoving'] ||
             map.isDragRotating() && layer.options['forceRenderOnDragRotating'])
             ) {
+            // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
             renderer.prepareCanvas();
             renderer.drawOnInteracting(this._eventParam);
             return drawTime;
         } else if (map.isZooming() && !map.getPitch()) {
+            // when:
+            // 1. layer's renderer doesn't have drawOnInteracting
+            // 2. timeLimit is exceeded
+            // then:
+            // transform layer's current canvas when zooming
             renderer.prepareRender();
             renderer.__shouldZoomTransform = true;
-        } else if (map.isDragRotating() || map.getPitch()) {
+        } else if (map.getPitch() || map.isDragRotating()) {
+            // when map is pitching or rotating, clear the layer canvas
+            // otherwise, leave layer's canvas unchanged
             renderer.clearCanvas();
         }
         return 0;
