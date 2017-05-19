@@ -19,17 +19,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
 
     draw() {
         this.prepareCanvas();
-        if (!this._predrawed) {
-            const params = ensureParams(this.getPrepareParams());
-            this._drawContext = this.layer.prepareToDraw.apply(this.layer, [this.context].concat(params));
-            if (!this._drawContext) {
-                this._drawContext = [];
-            }
-            if (!Array.isArray(this._drawContext)) {
-                this._drawContext = [this._drawContext];
-            }
-            this._predrawed = true;
-        }
+        this.prepareDrawContext();
         this._drawLayer();
     }
 
@@ -89,6 +79,20 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     onResize(param) {
         this.layer.onResize(param);
         super.onResize(param);
+    }
+
+    prepareDrawContext() {
+        if (!this._predrawed) {
+            const params = ensureParams(this.getPrepareParams());
+            this._drawContext = this.layer.prepareToDraw.apply(this.layer, [this.context].concat(params));
+            if (!this._drawContext) {
+                this._drawContext = [];
+            }
+            if (!Array.isArray(this._drawContext)) {
+                this._drawContext = [this._drawContext];
+            }
+            this._predrawed = true;
+        }
     }
 
     _prepareDrawParams() {

@@ -1,6 +1,6 @@
 import { now } from 'core/util';
 import CanvasLayer from './CanvasLayer';
-
+import CanvasLayerRenderer from 'renderer/layer/canvaslayer/CanvasLayerRenderer';
 /**
  * @property {Object} options                  - configuration options
  * @property {Boolean} [options.animation=true]       - if the layer is an animated layer
@@ -73,5 +73,25 @@ class ParticleLayer extends CanvasLayer {
 }
 
 ParticleLayer.mergeOptions(options);
+
+ParticleLayer.registerRenderer('canvas', class extends CanvasLayerRenderer {
+    draw() {
+        if (!this.canvas || !this.layer.options['animation'] || this._shouldClear) {
+            this.prepareCanvas();
+            this._shouldClear = false;
+        }
+        this.prepareDrawContext();
+        this._drawLayer();
+    }
+
+    drawOnInteracting() {
+        this.draw();
+        this._shouldClear = false;
+    }
+
+    skipDrawOnInteracting() {
+        this._shouldClear = true;
+    }
+});
 
 export default ParticleLayer;

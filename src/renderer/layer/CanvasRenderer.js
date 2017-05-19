@@ -114,6 +114,10 @@ class CanvasRenderer extends Class {
         return !!this._canvasUpdated;
     }
 
+    skipDrawOnInteracting() {
+
+    }
+
     /**
      * Remove the renderer, will be called when layer is removed
      */
