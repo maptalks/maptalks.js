@@ -223,8 +223,8 @@ Polygon.include({
         if (prjHoles && prjHoles.length > 0) {
             for (let i = 0; i < prjHoles.length; i++) {
                 const hole = this._getPath2DPoints(prjHoles[i], disableSimplify, maxZoom);
-                if (isSplitted) {
-                    if (Array.isArray(hole)) {
+                if (Array.isArray(hole) && isSplitted) {
+                    if (Array.isArray(hole[0])) {
                         points[0].push(hole[0]);
                         points[1].push(hole[1]);
                     } else {
