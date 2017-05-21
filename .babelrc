@@ -1,4 +1,6 @@
 {
+    "sourceMaps": true,
+    "retainLines": true,
     "presets": [
         [
             "es2015",
@@ -8,7 +10,8 @@
         ]
     ],
     "plugins": [
-        "external-helpers",
-        "transform-class-properties"
+        //"external-helpers",
+        "transform-class-properties",
+        "transform-es2015-modules-commonjs"
     ]
 }

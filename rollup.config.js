@@ -5,8 +5,8 @@ export default {
     entry: './src/init.js',
     format: 'iife',
     dest: './dist/bundle.js',
-    moduleName:'test',
-    
+    moduleName: 'test',
+    sourceMap: true,
     plugins: [
         resolve(),
         babel({

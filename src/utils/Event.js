@@ -164,20 +164,19 @@ class Event {
     }
 
     addEventParent(obj) {
-        this._eventParents = this._eventParents;
         this._eventParents[stamp(obj)] = obj;
         return this;
     }
 
     removeEventParent(obj) {
-        if (this._eventParents) {
+        if (!!this._eventParents[stamp(obj)]) {
             delete this._eventParents[stamp(obj)];
         }
         return this;
     }
 
     _propagateEvent(e) {
-        for (var id in this._eventParents) {
+        for (let id in this._eventParents) {
             this._eventParents[id].fire(e.type, merge({ layer: e.target }, e), true);
         }
     }
