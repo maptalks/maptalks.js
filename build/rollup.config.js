@@ -30,9 +30,8 @@ module.exports = {
     watch(cb) {
 
         const year = new Date().getFullYear();
-        const outro = pkg.name + ' v' + pkg.version;
         const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${year} maptalks.org\n */`;
-        config.entry = 'src/maptalks.js';
+        config.entry = 'src/index.js';
         config.dest = 'dist/maptalks.js';
         config.format = 'umd';
         config.moduleName = 'maptalks';

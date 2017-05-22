@@ -43,7 +43,7 @@ options.browsers.split(',').forEach(name => {
 });
 
 gulp.task('scripts', () => {
-    return bundler.bundle('src/maptalks.js', rollupCfg.config);
+    return bundler.bundle('src/index.js', rollupCfg.config);
 });
 
 var stylesPattern = './assets/css/**/*.css';
