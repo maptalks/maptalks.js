@@ -16,7 +16,7 @@
     "doc": "gulp doc"
   },
   "main": "dist/maptalks.js",
-  "module": "src/maptalks.js",
+  "module": "src/index.js",
   "style": "dist/maptalks.css",
   "devDependencies": {
     "babel-eslint": "^7.1.1",

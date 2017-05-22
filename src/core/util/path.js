@@ -1,3 +1,94 @@
+// @function clipSegment(a: Point, b: Point, bounds: Bounds, useLastCode?: Boolean, round?: Boolean): Point[]|Boolean
+// Clips the segment a to b by rectangular bounds with the
+// [Cohen-Sutherland algorithm](https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm)
+// (modifying the segment points directly!). Used by Leaflet to only show polyline
+// points that are on the screen or near, increasing performance.
+// @copyright Leaflet
+export function clipSegment(a, b, bounds, useLastCode, round) {
+    var codeA = useLastCode ? _lastCode : _getBitCode(a, bounds),
+        codeB = _getBitCode(b, bounds),
+
+        codeOut, p, newCode;
+
+        // save 2nd code to avoid calculating it on the next segment
+        _lastCode = codeB;
+
+    while (true) {
+        // if a,b is inside the clip window (trivial accept)
+        if (!(codeA | codeB)) {
+            return [a, b];
+        }
+
+        // if a,b is outside the clip window (trivial reject)
+        if (codeA & codeB) {
+            return false;
+        }
+
+        // other cases
+        codeOut = codeA || codeB;
+        p = _getEdgeIntersection(a, b, codeOut, bounds, round);
+        newCode = _getBitCode(p, bounds);
+
+        if (codeOut === codeA) {
+            a = p;
+            codeA = newCode;
+        } else {
+            b = p;
+            codeB = newCode;
+        }
+    }
+}
+
+/* @function clipPolygon(points: Point[], bounds: Bounds, round?: Boolean): Point[]
+ * Clips the polygon geometry defined by the given `points` by the given bounds (using the [Sutherland-Hodgeman algorithm](https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm)).
+ * Used by Leaflet to only show polygon points that are on the screen or near, increasing
+ * performance. Note that polygon points needs different algorithm for clipping
+ * than polyline, so there's a seperate method for it.
+ * @copyright Leaflet
+ */
+export function clipPolygon(points, bounds, round) {
+    var clippedPoints,
+        edges = [1, 4, 2, 8],
+        i, j, k,
+        a, b,
+        len, edge, p;
+
+    for (i = 0, len = points.length; i < len; i++) {
+        points[i]._code = _getBitCode(points[i], bounds);
+    }
+
+    // for each edge (left, bottom, right, top)
+    for (k = 0; k < 4; k++) {
+        edge = edges[k];
+        clippedPoints = [];
+
+        for (i = 0, len = points.length, j = len - 1; i < len; j = i++) {
+            a = points[i];
+            b = points[j];
+
+            // if a is inside the clip window
+            if (!(a._code & edge)) {
+                // if b is outside the clip window (a->b goes out of screen)
+                if (b._code & edge) {
+                    p = _getEdgeIntersection(b, a, edge, bounds, round);
+                    p._code = _getBitCode(p, bounds);
+                    clippedPoints.push(p);
+                }
+                clippedPoints.push(a);
+
+            // else if b is inside the clip window (a->b enters the screen)
+            } else if (!(b._code & edge)) {
+                p = _getEdgeIntersection(b, a, edge, bounds, round);
+                p._code = _getBitCode(p, bounds);
+                clippedPoints.push(p);
+            }
+        }
+        points = clippedPoints;
+    }
+
+    return points;
+}
+
 /**
  * caculate the distance from a point to a segment.
  * @param {Point} p
@@ -53,4 +144,49 @@ export function pointInsidePolygon(p, points) {
     }
 
     return c;
+}
+
+function _getEdgeIntersection(a, b, code, bounds, round) {
+    var dx = b.x - a.x,
+        dy = b.y - a.y,
+        min = bounds.min,
+        max = bounds.max,
+        x, y;
+
+    if (code & 8) { // top
+        x = a.x + dx * (max.y - a.y) / dy;
+        y = max.y;
+
+    } else if (code & 4) { // bottom
+        x = a.x + dx * (min.y - a.y) / dy;
+        y = min.y;
+
+    } else if (code & 2) { // right
+        x = max.x;
+        y = a.y + dy * (max.x - a.x) / dx;
+
+    } else if (code & 1) { // left
+        x = min.x;
+        y = a.y + dy * (min.x - a.x) / dx;
+    }
+
+    return new Point(x, y, round);
+}
+
+function _getBitCode(p, bounds) {
+    var code = 0;
+
+    if (p.x < bounds.min.x) { // left
+        code |= 1;
+    } else if (p.x > bounds.max.x) { // right
+        code |= 2;
+    }
+
+    if (p.y < bounds.min.y) { // bottom
+        code |= 4;
+    } else if (p.y > bounds.max.y) { // top
+        code |= 8;
+    }
+
+    return code;
 }
