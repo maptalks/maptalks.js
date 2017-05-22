@@ -1,3 +1,7 @@
+import { Point } from 'geo/Point';
+
+let _lastCode;
+
 // @function clipSegment(a: Point, b: Point, bounds: Bounds, useLastCode?: Boolean, round?: Boolean): Point[]|Boolean
 // Clips the segment a to b by rectangular bounds with the
 // [Cohen-Sutherland algorithm](https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm)
@@ -5,13 +9,13 @@
 // points that are on the screen or near, increasing performance.
 // @copyright Leaflet
 export function clipSegment(a, b, bounds, useLastCode, round) {
-    var codeA = useLastCode ? _lastCode : _getBitCode(a, bounds),
+    let codeA = useLastCode ? _lastCode : _getBitCode(a, bounds),
         codeB = _getBitCode(b, bounds),
 
         codeOut, p, newCode;
 
-        // save 2nd code to avoid calculating it on the next segment
-        _lastCode = codeB;
+    // save 2nd code to avoid calculating it on the next segment
+    _lastCode = codeB;
 
     while (true) {
         // if a,b is inside the clip window (trivial accept)
@@ -47,8 +51,8 @@ export function clipSegment(a, b, bounds, useLastCode, round) {
  * @copyright Leaflet
  */
 export function clipPolygon(points, bounds, round) {
-    var clippedPoints,
-        edges = [1, 4, 2, 8],
+    const edges = [1, 4, 2, 8];
+    let clippedPoints,
         i, j, k,
         a, b,
         len, edge, p;
@@ -147,11 +151,11 @@ export function pointInsidePolygon(p, points) {
 }
 
 function _getEdgeIntersection(a, b, code, bounds, round) {
-    var dx = b.x - a.x,
+    const dx = b.x - a.x,
         dy = b.y - a.y,
         min = bounds.min,
-        max = bounds.max,
-        x, y;
+        max = bounds.max;
+    let x, y;
 
     if (code & 8) { // top
         x = a.x + dx * (max.y - a.y) / dy;
@@ -170,11 +174,15 @@ function _getEdgeIntersection(a, b, code, bounds, round) {
         y = a.y + dy * (min.x - a.x) / dx;
     }
 
-    return new Point(x, y, round);
+    const p = new Point(x, y);
+    if (round) {
+        p._round();
+    }
+    return p;
 }
 
 function _getBitCode(p, bounds) {
-    var code = 0;
+    let code = 0;
 
     if (p.x < bounds.min.x) { // left
         code |= 1;
