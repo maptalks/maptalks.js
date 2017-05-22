@@ -74,8 +74,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this._geosToDraw) {
             return;
         }
+        this._getDisplayExtent();
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
-            this._geosToDraw[i]._paint();
+            this._geosToDraw[i]._paint(this._displayExtent);
         }
     }
 
@@ -95,19 +96,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     drawGeos() {
-        let extent2D = this._extent2D;
-        if (this._maskExtent) {
-            if (!this._maskExtent.intersects(extent2D)) {
-                this.completeRender();
-                return;
-            }
-            extent2D = extent2D.intersection(this._maskExtent);
-        }
+        this._getDisplayExtent();
         this.prepareToDraw();
-        this._displayExtent = extent2D;
+
         this.forEachGeo(this.checkGeo, this);
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
-            this._geosToDraw[i]._paint();
+            this._geosToDraw[i]._paint(this._displayExtent);
         }
     }
 
@@ -149,6 +143,18 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this.layer._styleGeometry(param['target']);
         }
         super.onGeometryPropertiesChange(param);
+    }
+
+    _getDisplayExtent() {
+        let extent2D = this._extent2D;
+        if (this._maskExtent) {
+            if (!this._maskExtent.intersects(extent2D)) {
+                this.completeRender();
+                return;
+            }
+            extent2D = extent2D.intersection(this._maskExtent);
+        }
+        this._displayExtent = extent2D;
     }
 }
 

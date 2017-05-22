@@ -30,12 +30,12 @@ export default class CollectionPainter extends Class {
         }
     }
 
-    paint() {
+    paint(extent) {
         if (!this.geometry) {
             return;
         }
         this._eachPainter(painter => {
-            painter.paint();
+            painter.paint(extent);
         });
     }
 
