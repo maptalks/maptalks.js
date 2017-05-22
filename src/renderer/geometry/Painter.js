@@ -167,12 +167,15 @@ export default class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
-    paint() {
+    paint(extent) {
         if (!this.symbolizers) {
             return;
         }
         const renderer = this.getLayer()._getRenderer();
         if (!renderer || !renderer.context) {
+            return;
+        }
+        if (extent && !extent.intersects(this.get2DExtent(renderer.resources))) {
             return;
         }
         const contexts = [renderer.context, renderer.resources];
