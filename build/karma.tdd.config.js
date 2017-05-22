@@ -3,7 +3,7 @@ const base = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
     basePath: '..',
     files: [
-        'dist/index.js',
+        'dist/maptalks.js',
         'test/core/ClassSpec.js',
         'test/**/*.js',
         {
