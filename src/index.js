@@ -15,6 +15,7 @@ export { default as JSONAble } from 'core/JSONAble';
 
 export { default as Handlerable } from 'handler/Handlerable';
 export { default as Handler } from 'handler/Handler';
+export { default as DragHandler } from 'handler/Drag';
 
 // geo classes
 export * from 'geo';
