@@ -1,5 +1,5 @@
 import { IS_NODE } from './env';
-import { isString, isNil, hasOwn } from './common';
+import { isString, isNil } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
