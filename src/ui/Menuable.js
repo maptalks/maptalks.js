@@ -1,18 +1,6 @@
-import { extend, setOptions } from 'core/util';
 import Map from '../map/Map';
 import Geometry from '../geometry/Geometry';
 import Menu from './Menu';
-
-const defaultOptions = {
-    'animation' : null,
-    'animationDelay' : 10,
-    'animationOnHide' : false,
-    'eventsToStop' : 'mousedown dblclick click',
-    'autoPan': false,
-    'width'  : 160,
-    'custom' : false,
-    'items'  : []
-};
 
 /**
  * Mixin of the context menu methods.
@@ -41,7 +29,7 @@ const Menuable = {
         this._menuOptions = options;
 
         if (this._menu) {
-            setOptions(this._menu, extend(defaultOptions, options));
+            this._menu.setOptions(options);
         } else {
             this.on('contextmenu', this._defaultOpenMenu, this);
         }

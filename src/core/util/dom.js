@@ -170,15 +170,11 @@ export function addDomEvent(obj, typeArr, handler, context) {
             callback: eventHandler,
             src: handler
         });
-        if ('addEventListener' in obj) {
-            //firefox
-            if (type === 'mousewheel' && Browser.gecko) {
-                type = 'DOMMouseScroll';
-            }
-            obj.addEventListener(type, eventHandler, false);
-        } else if ('attachEvent' in obj) {
-            obj.attachEvent('on' + type, eventHandler);
+        //firefox
+        if (type === 'mousewheel' && Browser.gecko) {
+            type = 'DOMMouseScroll';
         }
+        obj.addEventListener(type, eventHandler, false);
     }
     return this;
 }
@@ -192,15 +188,11 @@ export function addDomEvent(obj, typeArr, handler, context) {
  */
 export function removeDomEvent(obj, typeArr, handler) {
     function doRemove(type, callback) {
-        if ('removeEventListener' in obj) {
-            //mouse wheel in firefox
-            if (type === 'mousewheel' && Browser.gecko) {
-                type = 'DOMMouseScroll';
-            }
-            obj.removeEventListener(type, callback, false);
-        } else if ('detachEvent' in obj) {
-            obj.detachEvent('on' + type, callback);
+        //mouse wheel in firefox
+        if (type === 'mousewheel' && Browser.gecko) {
+            type = 'DOMMouseScroll';
         }
+        obj.removeEventListener(type, callback, false);
     }
     if (!obj || !typeArr) {
         return this;

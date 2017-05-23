@@ -549,8 +549,8 @@ class CanvasRenderer extends Class {
             };
             img.onerror = function (err) {
                 // if (console) { console.warn('image loading failed: ' + url[0]); }
-                if (err && !Browser.phantomjs) {
-                    if (console) { console.warn(err); }
+                if (err && typeof console !== 'undefined') {
+                    console.warn(err);
                 }
                 resources.markErrorResource(url);
                 resolve(url);

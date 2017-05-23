@@ -109,7 +109,7 @@ const Canvas = {
                 fillTexture = canvas;
             }
             if (!fillTexture) {
-                if (!Browser.phantomjs && console) {
+                if (typeof console !== 'undefined') {
                     console.warn('img not found for', fillImgUrl);
                 }
             } else {
@@ -194,7 +194,7 @@ const Canvas = {
         }
         if (imageTexture) {
             ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
-        } else if (!Browser.phantomjs && console) {
+        } else if (typeof console !== 'undefined') {
             console.warn('img not found for', imgUrl);
         }
     },
