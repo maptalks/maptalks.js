@@ -1,49 +1,51 @@
 ﻿import { createEl } from 'core/util/dom';
-//import Point from 'geo/Point';
+import { isString } from 'core/util';
 import { Geometry } from 'geometry';
 import UIComponent from './UI';
 
 
 /**
- * @property {Object} defaults
- * @property {Boolean} [defaults.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
- * @property {Number}  [defaults.width=300]     - default width
- * @property {Number}  [defaults.minHeight=120] - minimun height
- * @property {Boolean} [defaults.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
- * @property {String}  [defaults.title=null]    - title of the infowindow.
- * @property {String|HTMLElement}  defaults.content - content of the infowindow.
+ * @property {Object} options
+ * @property {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
+ * @property {Number}  [options.width=300]     - default width
+ * @property {Number}  [options.minHeight=120] - minimun height
+ * @property {Boolean} [options.custom=false]  - set it to true if you want a customized tooltip, customized html codes or a HTMLElement is set to content.
+ * @property {String}  [options.title=null]    - title of the tooltip.
+ * @property {String|HTMLElement}  options.content - content of the tooltip.
  * @memberOf ui.InfoWindow
  * @instance
  */
-const defaults = {
+const options = {
     'width': 150,
     'minHeight': 30,
-    'custom': false,
-    'title': null,
-    'content': null
+    'custom': false
 };
 /**
  * @classdesc
- * Class for tooltips, a tooltips used for showing some useful infomation attached to geometries on the map.
+ * Class for tooltip, a tooltip used for showing some useful infomation attached to geometries on the map.
  * @category ui
  * @extends ui.UIComponent
- * @param {Object} options - options defined in [tooltips]{@link tooltips#options}
+ * @param {Object} options - options defined in [tooltip]{@link tooltip#options}
  * @memberOf ui
  */
-class Tooltips extends UIComponent {
+class ToolTip extends UIComponent {
     // TODO:obtain class in super
     _getClassName() {
-        return 'Tooltips';
+        return 'ToolTip';
     }
-
+    constructor(info) {
+        super(options);
+        if (isString(info)) {
+            this._infomation = info;
+        }
+    }
     /**
-   * set the tooltips to a geometry or a map,and it needs some infomation to show
+   * set the toolTip to a geometry or a map,and it needs some infomation to show
    * @param {Geometry} owner - geometry to addto.
-   * @param {String} owner - information  to show in tooltips.
+   * @param {String} owner - information  to show in toolTip.
    * @returns {UIComponent} this
     **/
-    setTo(geometry, info) {
-        this._infomation = info;
+    addTo(geometry) {
         this._addTo(geometry);
     }
     /**
@@ -54,7 +56,7 @@ class Tooltips extends UIComponent {
    */
     _addTo(owner) {
         if (owner instanceof Geometry) {
-            owner._tooltips = this;
+            owner._tooltip = this;
             const mouseHandler = function (e) {
                 switch (e.type) {
                 case 'mouseover':
@@ -81,7 +83,7 @@ class Tooltips extends UIComponent {
 
     /**
     * get the UI Component's content
-    * @returns {String} tooltips's content
+    * @returns {String} tooltip's content
     */
     getContent() {
         return this._infomation;
@@ -91,32 +93,30 @@ class Tooltips extends UIComponent {
         const dom = createEl('div');
         dom.className = 'maptalks-msgBox';
         dom.id = 'tipDiv';
-        dom.style.width = defaults.width + 'px';
-        let content = '';
-        content += '<div class="maptalks-msgContent">' + this. _infomation + '</div>';
+        dom.style.width = options.width + 'px';
+        const content = '<div class="maptalks-msgContent">' + this. _infomation + '</div>';
         dom.innerHTML = content;
         return dom;
     }
 
-    show(coordinate) {
-        return super.show(coordinate);
-    }
     /**
-   * cancel the tooltips effect
+   * remove the tooltip effect
    * @returns {UIComponent} this
    */
-    cancelTips() {
-        if (this._owner) {
-            this._owner.off('mouseover mouseout', this._mouseHandler);
-            delete this._owner._tooltips;
-            delete this._owner;
-            delete this._mouseHandler;
-        }
-        this.remove();
+    remove() {
+        this.onRemove = function () {
+            if (this._owner) {
+                this._owner.off('mouseover mouseout', this._mouseHandler);
+                delete this._owner._tooltip;
+                delete this._owner;
+                delete this._mouseHandler;
+            }
+        };
+        super.remove();
         return this;
     }
 }
 
-Tooltips.mergeOptions(defaults);
+ToolTip.mergeOptions(options);
 
-export default Tooltips;
+export default ToolTip;
