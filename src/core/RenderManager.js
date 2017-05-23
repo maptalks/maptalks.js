@@ -1,11 +1,11 @@
 import merge from './../utils/merge';
-
+import { stamp } from './../utils/stamp';
 /**
- * 
+ * @class RenderManager
  */
-export default class RenderManager{
-
-    _renderer;
+export default class RenderManager {
+    //render collection
+    _renderers = {};
 
     _options;
 
@@ -13,9 +13,28 @@ export default class RenderManager{
      * 
      * @param {Renderer} renderer 
      */
-    constructor(renderer,options){
-        this._renderer=renderer;
-        this._options=merge({},options);
+    constructor(options) {
+        this._options = merge({}, options);
     }
-    
+    /**
+     * add renderer to manager
+     * @param {Renderer} renderer 
+     */
+    add(renderer) {
+        let id = stamp(renderer);
+        this._renderers[id] = renderer;
+        return this;
+    }
+    /**
+     * remove renderer 
+     * @param {Renderer} renderer 
+     */
+    remove(renderer) {
+        let id = stamp(renderer);
+        if (!!this._renderers[id])
+            delete this._renderers[id];
+        return this;
+    }
+
+
 }

@@ -6,8 +6,6 @@
   "scripts": {
     "report-coverage": "codecov",
     "test": "karma start karma.conf.js --single-run",
-    "compile": "rollup -c",
-    "prepublish": "npm run compile",
     "start": "karma start"
   },
   "repository": {
