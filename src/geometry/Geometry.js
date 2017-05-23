@@ -980,9 +980,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete this._painter;
     }
 
-    _paint() {
+    _paint(extent) {
         if (this._painter) {
-            this._painter.paint();
+            this._painter.paint(extent);
         }
     }
 

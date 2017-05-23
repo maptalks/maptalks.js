@@ -6,7 +6,7 @@ module.exports = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
     basePath: '..',
     files: [
-        'src/maptalks.js',
+        'src/index.js',
         'test/core/ClassSpec.js',
         'test/**/*.js',
         {
@@ -28,7 +28,7 @@ module.exports = {
     },
     preprocessors: {
         'test/core/ClassSpec.js': ['babel'],
-        'src/maptalks.js': ['rollup']
+        'src/index.js': ['rollup']
     },
     rollupPreprocessor: config,
     customLaunchers: {
