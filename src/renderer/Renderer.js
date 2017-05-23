@@ -4,7 +4,8 @@ import Event from './../utils/Event';
  * 
  */
 class Renderder extends Event{
-
+    //settings
+    _options={};
     //support webglRenderer and canvasRenderer
     _renderType=''; 
     //the drawing backgroud
@@ -15,12 +16,15 @@ class Renderder extends Event{
     _backgroundColorString ='#000000';
     //the resolution, represent=x/y;
     _resolution;
+    //the canvas
+    _view;
     /**
      * 
      * @param {HTMLCanvasElement} view ,the canvas to draw
      */
-    constructor(view,options){
+    constructor(options){
         super();
+        this._options=options||{};
     }
 
     get backgroundColor(){

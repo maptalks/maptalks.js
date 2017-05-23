@@ -8,11 +8,11 @@ let container =new Container();
 
 let webglRenderer = new WebGLRenderer();
 
-webglRenderer.on('event.fire',function(){
+webglRenderer.on('event.fire',function(data){
     var s="";
 });
 
-container.addEventParent(webglRenderer);
+container.addEventPopNode(webglRenderer);
 
 //webglRenderer.addEventParent();
 
