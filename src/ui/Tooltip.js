@@ -36,7 +36,7 @@ class ToolTip extends UIComponent {
     constructor(info) {
         super(options);
         if (isString(info)) {
-            this._infomation = info;
+            this._content = info;
         }
     }
     /**
@@ -57,26 +57,8 @@ class ToolTip extends UIComponent {
     _addTo(owner) {
         if (owner instanceof Geometry) {
             owner._tooltip = this;
-            const mouseHandler = function (e) {
-                switch (e.type) {
-                case 'mouseover':
-                    if (!this.isVisible()) {
-                        const map = e.target.getMap();
-                        const zoom = map.getZoom();
-                        const mousescreen = map.coordinateToPoint(e.coordinate, zoom);
-                        const tipPosition = new maptalks.Point(mousescreen.x + 25, mousescreen.y - 45);
-                        this.show(map.pointToCoordinate(tipPosition, zoom));
-                    }
-                    break;
-                case 'mouseout':
-                    this.hide();
-                    break;
-                default:
-                    break;
-                }
-            };
-            this._mouseHandler = mouseHandler;
-            owner.on('mouseover mouseout', mouseHandler.bind(this));
+            owner.on('mouseover', this.onMouseOver.bind(this));
+            owner.on('mouseout', this.onMouseOut.bind(this));
         }
         return super.addTo(owner);
     }
@@ -86,7 +68,7 @@ class ToolTip extends UIComponent {
     * @returns {String} tooltip's content
     */
     getContent() {
-        return this._infomation;
+        return this._content;
     }
 
     buildOn() {
@@ -94,11 +76,31 @@ class ToolTip extends UIComponent {
         dom.className = 'maptalks-msgBox';
         dom.id = 'tipDiv';
         dom.style.width = options.width + 'px';
-        const content = '<div class="maptalks-msgContent">' + this. _infomation + '</div>';
+        const content = '<div class="maptalks-msgContent">' + this. _content + '</div>';
         dom.innerHTML = content;
         return dom;
     }
 
+    getEvents() {
+        return {
+            'mouseover' : this.onMouseOver,
+            'mouseout' : this.onMouseOut
+        };
+    }
+
+    onMouseOver(e) {
+        if (!this.isVisible()) {
+            const map = e.target.getMap();
+            const zoom = map.getZoom();
+            const mousescreen = map.coordinateToPoint(e.coordinate, zoom);
+            const tipPosition = new maptalks.Point(mousescreen.x + 25, mousescreen.y - 45);
+            this.show(map.pointToCoordinate(tipPosition, zoom));
+        }
+    }
+
+    onMouseOut() {
+        this.hide();
+    }
     /**
    * remove the tooltip effect
    * @returns {UIComponent} this
@@ -106,7 +108,6 @@ class ToolTip extends UIComponent {
     remove() {
         this.onRemove = function () {
             if (this._owner) {
-                this._owner.off('mouseover mouseout', this._mouseHandler);
                 delete this._owner._tooltip;
                 delete this._owner;
                 delete this._mouseHandler;
