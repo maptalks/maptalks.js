@@ -1,9 +1,14 @@
-import Event from './../utils/Event';
-import merge from './../utils/merge';
+
 import {matrix} from 'kiwi.matrix';
 
+import Event from './../utils/Event';
+import merge from './../utils/merge';
+
+
 /**
- * 
+ * abstract base renderer class
+ * @author yellow 2017/5/24
+ * @class Renderer
  */
 class Renderder extends Event{
     //settings
