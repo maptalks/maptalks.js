@@ -1,5 +1,4 @@
 import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
-import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
@@ -34,7 +33,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
 
         const img = this._getImage(resources);
         if (!img) {
-            if (!Browser.phantomjs && console) {
+            if (typeof console !== 'undefined') {
                 console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
             }
             return;

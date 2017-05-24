@@ -1,5 +1,5 @@
 import { IS_NODE } from './env';
-import { isString, isNil, hasOwn } from './common';
+import { isString, isNil } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
@@ -57,23 +57,6 @@ let requestAnimFrame, cancelAnimFrame;
     };
 })();
 export { requestAnimFrame, cancelAnimFrame };
-
-/**
- * Merges options with the default options of the object.
- * @param {Object} obj      - object
- * @param {Object} options  - options
- * @returns {Object} options
- * @memberOf Util
- */
-export function setOptions(obj, options) {
-    if (hasOwn(obj, 'options')) {
-        obj.options = obj.options ? Object.create(obj.options) : {};
-    }
-    for (const i in options) {
-        obj.options[i] = options[i];
-    }
-    return obj.options;
-}
 
 export function isSVG(url) {
     const prefix = 'data:image/svg+xml';

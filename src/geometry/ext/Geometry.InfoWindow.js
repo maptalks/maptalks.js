@@ -1,4 +1,4 @@
-import { extend, setOptions } from 'core/util';
+import { extend } from 'core/util';
 import Geometry from 'geometry/Geometry';
 import { InfoWindow } from 'ui';
 
@@ -23,7 +23,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         }
         this._infoWinOptions = extend({}, options);
         if (this._infoWindow) {
-            setOptions(this._infoWindow, options);
+            this._infoWindow.setOptions(options);
         } else if (this.getMap()) {
             this._bindInfoWindow(this._infoWinOptions);
         }
