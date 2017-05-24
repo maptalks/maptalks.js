@@ -1,40 +1,30 @@
 import merge from './../utils/merge';
 import { stamp } from './../utils/stamp';
+import WebGLRenderer from './../renderer/WebGLRenderer';
+
 /**
+ * contain two dimensional
+ * -renderer,the paint renderer method
+ * -
  * @class RenderManager
  */
 export default class RenderManager {
     //render collection
     _renderers = {};
+    //the default options for RenderManager
+    _options = {};
 
-    _options;
-
+    _view;
     /**
      * 
      * @param {Renderer} renderer 
      */
     constructor(options) {
-        this._options = merge({}, options);
+        merge(this._options, options);
+        this._view = this._options.view || document.createElement('canvas');
+        this._renderers = this._options.renderType === 'webgl' ? new WebGLRenderer(this._view, this._options) : null;
     }
-    /**
-     * add renderer to manager
-     * @param {Renderer} renderer 
-     */
-    add(renderer) {
-        let id = stamp(renderer);
-        this._renderers[id] = renderer;
-        return this;
-    }
-    /**
-     * remove renderer 
-     * @param {Renderer} renderer 
-     */
-    remove(renderer) {
-        let id = stamp(renderer);
-        if (!!this._renderers[id])
-            delete this._renderers[id];
-        return this;
-    }
+
 
 
 }
