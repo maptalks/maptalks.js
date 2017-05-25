@@ -2,12 +2,10 @@
   "name": "kiwi.gl",
   "version": "0.1.0",
   "description": "",
-  "main": "src/init.js",
+  "main": "test/runner.js",
   "scripts": {
     "report-coverage": "codecov",
     "test": "karma start karma.conf.js --single-run",
-    "compile": "rollup -c",
-    "prepublish": "npm run compile",
     "start": "karma start"
   },
   "repository": {
@@ -22,9 +20,13 @@
   "homepage": "https://github.com/axmand/kiwi.gl#readme",
   "devDependencies": {
     "babel": "^6.23.0",
+    "babel-cli": "^6.24.1",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
     "babel-preset-es2015": "^6.24.1",
+    "babel-register": "^6.24.1",
     "chai": "^3.5.0",
     "karma": "^1.7.0",
     "karma-babel-preprocessor": "^6.0.1",
@@ -35,7 +37,7 @@
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.3",
     "karma-rollup-preprocessor": "^4.0.0",
-    "kiwi.matrix": "^0.1.5",
+    "kiwi.matrix": "^0.1.6",
     "mocha": "^3.3.0",
     "rollup": "^0.41.6",
     "rollup-plugin-babel": "^2.7.1",

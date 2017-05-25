@@ -1,20 +1,20 @@
 /**
 *   set two keys for events: _idx,_len
 *   _len means the count of handlers have bind with context
-*   提供事件绑定注册，事件广播等基础函数
+*   _event popNode
 *   @author yellow date 2014/11/10
 *   @class J.utils.Event
 *   @inheritable
 */
 
-import {stamp} from './stamp';
-import {splitWords} from './splitWords';
+import { stamp } from './stamp';
+import { splitWords } from './splitWords';
 import noop from './noop';
 import merge from './merge';
 
 class Event {
 
-    _eventParents = {};
+    _eventPopNodes = {};
 
     _events = {};
 
@@ -131,7 +131,7 @@ class Event {
 
     fire(type, data, propagate) {
         if (!this.listens(type, propagate)) { return this; }
-        var event = merge({}, { data: data }, { type: type, target: this }),
+        var event = merge({}, data, { type: type, target: this }),
             events = this._events;
         var typeIndex = events[type + '_idx'],
             i, len, listeners, id;
@@ -156,29 +156,28 @@ class Event {
             return true;
         }
         if (propagate) {
-            for (var id in this._eventParents) {
-                if (this._eventParents[id].listens(type, propagate)) { return true; }
+            for (var id in this._eventPopNodes) {
+                if (this._eventPopNodes[id].listens(type, propagate)) { return true; }
             }
         }
         return false;
     }
 
-    addEventParent(obj) {
-        this._eventParents = this._eventParents;
-        this._eventParents[stamp(obj)] = obj;
+    addEventPopNode(obj) {
+        this._eventPopNodes[stamp(obj)] = obj;
         return this;
     }
 
-    removeEventParent(obj) {
-        if (this._eventParents) {
-            delete this._eventParents[stamp(obj)];
+    removeEventPopNode(obj) {
+        if (!!this._eventPopNodes[stamp(obj)]) {
+            delete this._eventPopNodes[stamp(obj)];
         }
         return this;
     }
 
     _propagateEvent(e) {
-        for (var id in this._eventParents) {
-            this._eventParents[id].fire(e.type, merge({ layer: e.target }, e), true);
+        for (let id in this._eventPopNodes) {
+            this._eventPopNodes[id].fire(e.type, merge({ popNode: e.target }, e), true);
         }
     }
 };
