@@ -10,8 +10,8 @@
         ]
     ],
     "plugins": [
-        //"external-helpers",
-        "transform-class-properties",
-        "transform-es2015-modules-commonjs"
+        //"transform-es2015-modules-commonjs",
+        "external-helpers",
+        "transform-class-properties"
     ]
 }
