@@ -2,7 +2,7 @@
   "name": "kiwi.gl",
   "version": "0.1.0",
   "description": "",
-  "main": "test/runner.js",
+  "main": "src/init.js",
   "scripts": {
     "report-coverage": "codecov",
     "test": "karma start karma.conf.js --single-run",
@@ -24,7 +24,6 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
-    "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
     "babel-preset-es2015": "^6.24.1",
     "chai": "^3.5.0",
     "karma": "^1.7.0",
