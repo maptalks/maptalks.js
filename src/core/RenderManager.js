@@ -20,7 +20,7 @@ export default class RenderManager {
      * @param {Renderer} renderer 
      */
     constructor(options) {
-        merge(this._options, options);
+        merge(this._options, options||{});
         this._view = this._options.view || document.createElement('canvas');
         this._renderers = this._options.renderType === 'webgl' ? new WebGLRenderer(this._view, this._options) : null;
     }

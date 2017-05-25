@@ -1,9 +1,6 @@
 module.exports = function (config) {
 	let cfg = {
 		basePath: '.',
-		browserDisconnectTimeout:9999999,
-		browserNoActivityTimeout:9999999,
-		processKillTimeout:9999999,
 		frameworks: ['mocha', 'chai'],
 		browsers: ['ChromeDebugging'],
 		reporters: ['mocha', 'coverage'],
@@ -11,14 +8,8 @@ module.exports = function (config) {
 			'test/**/*.spec.js',
 			// Watch src files for changes but
 			// don't load them into the browser.
-			{ pattern: 'src/**/*.js', included: false },
-
+			{ pattern: 'src/**/*.js', included: false }
 		],
-		preprocessors: {
-			//'test/buble/**/*.spec.js': ['rollup'],
-			'src/**/*.js': ['rollupBabel', 'coverage'],
-			'test/**/*.spec.js': ['rollupBabel', 'coverage'],
-		},
 		coverageReporter: {
 			reporters: [
 				{ type: 'lcovonly', subdir: '.' },
@@ -30,14 +21,8 @@ module.exports = function (config) {
 				require('rollup-plugin-buble')(),
 			],
 			format: 'iife',
-			moduleName: 'test',//<your_project>
+			moduleName: 'test',	//<your_project>
 			sourceMap: 'inline',
-		},
-		customLaunchers: {
-			ChromeDebugging: {
-				base: 'Chrome',
-				flags: ['--remote-debugging-port=9333']
-			}
 		},
 		customPreprocessors: {
 			// Clones the base preprocessor, but overwrites
@@ -68,9 +53,18 @@ module.exports = function (config) {
 			}
 		};
 	} else {
+		cfg.browserDisconnectTimeout = 9999;
+		cfg.browserNoActivityTimeout = 9999;
+		cfg.processKillTimeout = 9999;
 		cfg.preprocessors = {
 			'src/**/*.js': ['rollupBabel'],
 			'test/**/*.spec.js': ['rollupBabel']
+		};
+		cfg.customLaunchers = {
+			ChromeDebugging: {
+				base: 'Chrome',
+				flags: ['--remote-debugging-port=9333']
+			}
 		};
 	}
 	config.set(cfg);
