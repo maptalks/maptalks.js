@@ -25,7 +25,7 @@ export default class RenderManager {
         this._renderers = this._options.renderType === 'webgl' ? new WebGLRenderer(this._view, this._options) : null;
     }
 
-    
+
 
 
 }

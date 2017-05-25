@@ -1,19 +1,21 @@
 
-
 import Container from './../src/core/Container';
 
-import WebGLRenderer from './../src/renderer/WebGLRenderer';
+debugger;
 
-let container =new Container();
+let s="";
+//import WebGLRenderer from './../src/renderer/WebGLRenderer';
 
-let webglRenderer = new WebGLRenderer();
+let c =new Container();
 
-webglRenderer.on('event.fire',function(data){
-    var s="";
-});
+// let webglRenderer = new WebGLRenderer();
 
-container.addEventPopNode(webglRenderer);
+// webglRenderer.on('event.fire',function(data){
+//     var s="";
+// });
+
+// container.addEventPopNode(webglRenderer);
 
 //webglRenderer.addEventParent();
 
-container.run();
+//c.run();

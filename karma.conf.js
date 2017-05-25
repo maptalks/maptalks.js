@@ -1,8 +1,11 @@
 module.exports = function (config) {
 	let cfg = {
 		basePath: '.',
+		browserDisconnectTimeout:9999999,
+		browserNoActivityTimeout:9999999,
+		processKillTimeout:9999999,
 		frameworks: ['mocha', 'chai'],
-		browsers: ['Chrome'],
+		browsers: ['ChromeDebugging'],
 		reporters: ['mocha', 'coverage'],
 		files: [
 			'test/**/*.spec.js',
@@ -31,9 +34,9 @@ module.exports = function (config) {
 			sourceMap: 'inline',
 		},
 		customLaunchers: {
-			Chrome_travis_ci: {
+			ChromeDebugging: {
 				base: 'Chrome',
-				flags: ['--no-sandbox']
+				flags: ['--remote-debugging-port=9333']
 			}
 		},
 		customPreprocessors: {
@@ -57,6 +60,12 @@ module.exports = function (config) {
 		cfg.preprocessors = {
 			'src/**/*.js': ['rollupBabel', 'coverage'],
 			'test/**/*.spec.js': ['rollupBabel', 'coverage']
+		};
+		cfg.customLaunchers = {
+			Chrome_travis_ci: {
+				base: 'Chrome',
+				flags: ['--no-sandbox']
+			}
 		};
 	} else {
 		cfg.preprocessors = {

@@ -1,9 +1,7 @@
 
 import {matrix} from 'kiwi.matrix';
-
 import Event from './../utils/Event';
 import merge from './../utils/merge';
-
 
 /**
  * abstract base renderer class
