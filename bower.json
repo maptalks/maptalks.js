@@ -11,8 +11,5 @@
     "test/vendor",
     "test",
     "tests"
-  ],
-  "dependencies": {
-    "jasmine-core": "jasmine#^2.6.0"
-  }
+  ]
 }
