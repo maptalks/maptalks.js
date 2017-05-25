@@ -1,7 +1,7 @@
 language: node_js
 node_js:
   - "6.10.3"
-sudo: true
+sudo: required
 addons:
   chrome: stable
 before_install:
