@@ -54,10 +54,8 @@ class Renderder extends Event {
     _onResize(eventData) {
         let w = eventData.width || this._options.width,
             h = eventData.height || this._options.height;
-        this._options.width = w;
-        this._options.height = h;
-        this._view.width = w;
-        this._view.height = h;
+        this._options.width = this._view.width = w;
+        this._options.height = this._view.height = h;
         this._resolution = this._options.roundPixels ? Math.floor(this._width / this._height) : this._width / this._height;
     }
 
