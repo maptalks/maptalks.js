@@ -2,20 +2,14 @@ module.exports = function (config) {
 	let cfg = {
 		basePath: '.',
 		frameworks: ['mocha', 'chai'],
-		browsers: ['Chrome'],
+		browsers: ['ChromeDebugging'],
 		reporters: ['mocha', 'coverage'],
 		files: [
 			'test/**/*.spec.js',
 			// Watch src files for changes but
 			// don't load them into the browser.
-			{ pattern: 'src/**/*.js', included: false },
-
+			{ pattern: 'src/**/*.js', included: false }
 		],
-		preprocessors: {
-			//'test/buble/**/*.spec.js': ['rollup'],
-			'src/**/*.js': ['rollupBabel', 'coverage'],
-			'test/**/*.spec.js': ['rollupBabel', 'coverage'],
-		},
 		coverageReporter: {
 			reporters: [
 				{ type: 'lcovonly', subdir: '.' },
@@ -27,14 +21,8 @@ module.exports = function (config) {
 				require('rollup-plugin-buble')(),
 			],
 			format: 'iife',
-			moduleName: 'test',//<your_project>
+			moduleName: 'test',	//<your_project>
 			sourceMap: 'inline',
-		},
-		customLaunchers: {
-			Chrome_travis_ci: {
-				base: 'Chrome',
-				flags: ['--no-sandbox']
-			}
 		},
 		customPreprocessors: {
 			// Clones the base preprocessor, but overwrites
@@ -58,10 +46,25 @@ module.exports = function (config) {
 			'src/**/*.js': ['rollupBabel', 'coverage'],
 			'test/**/*.spec.js': ['rollupBabel', 'coverage']
 		};
+		cfg.customLaunchers = {
+			Chrome_travis_ci: {
+				base: 'Chrome',
+				flags: ['--no-sandbox']
+			}
+		};
 	} else {
+		cfg.browserDisconnectTimeout = 300000;
+		cfg.browserNoActivityTimeout = 300000;
+		cfg.processKillTimeout = 300000;
 		cfg.preprocessors = {
 			'src/**/*.js': ['rollupBabel'],
 			'test/**/*.spec.js': ['rollupBabel']
+		};
+		cfg.customLaunchers = {
+			ChromeDebugging: {
+				base: 'Chrome',
+				flags: ['--remote-debugging-port=9333']
+			}
 		};
 	}
 	config.set(cfg);

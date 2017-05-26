@@ -1,8 +1,8 @@
 
-import {matrix} from 'kiwi.matrix';
-
+import { matrix } from 'kiwi.matrix';
 import Event from './../utils/Event';
 import merge from './../utils/merge';
+import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
 
 
 /**
@@ -10,17 +10,17 @@ import merge from './../utils/merge';
  * @author yellow 2017/5/24
  * @class Renderer
  */
-class Renderder extends Event{
+class Renderder extends Event {
     //settings
-    _options={};
+    _options = {};
     //support webglRenderer and canvasRenderer
-    _renderType=''; 
+    _renderType = '';
     //the drawing backgroud
-    _backgroundColor=0x000000;
+    _backgroundColor = 0x000000;
     //rbg represent
-    _backgroundColorRgba=[0,0,0,0];
+    _backgroundColorRgba = [0, 0, 0, 0];
     //rbg string represent
-    _backgroundColorString ='#000000';
+    _backgroundColorString = '#000000';
     //the resolution, represent=x/y;
     _resolution;
     //the canvas height
@@ -35,31 +35,44 @@ class Renderder extends Event{
      * 
      * @param {HTMLCanvasElement} view ,the canvas to draw
      */
-    constructor(options){
+    constructor(view, options) {
         super();
-        merge(this.options,options||{});
-        this._view=this._view;
-        this._width=this._options.width;
-        this._height=this._options.height;
-        this._resolution=this._options.roundPixels?Math.floor(this._width/this._height):this._width/this._height;
+        this._options = merge(this._options, options || {});
+        this._view = view;
+        this._width = this._options.width;
+        this._height = this._options.height;
+        this._resolution = this._options.roundPixels ? Math.floor(this._width / this._height) : this._width / this._height;
         //cause of unknown length,_bufferData don't need to be created
         //this._bufferData= new matrix.mat.ARRAY_TYPE(10);
+        this.on(_KIWI_EVENT_RESIZE, this._onResize);
+    }
+    /**
+     * 
+     * @param {number} width of html canvas 
+     * @param {number} height of html canvas
+     */
+    _onResize(eventData) {
+        let w = eventData.width || this._options.width,
+            h = eventData.height || this._options.height;
+        this._options.width = this._view.width = w;
+        this._options.height = this._view.height = h;
+        this._resolution = this._options.roundPixels ? Math.floor(this._width / this._height) : this._width / this._height;
     }
 
-    get backgroundColor(){
+    get backgroundColor() {
         return this._backgroundColor;
     }
 
-    get resolution(){
+    get resolution() {
         return this._resolution;
     }
 
-    get bufferData(){
+    get bufferData() {
         return this._bufferData;
     }
 
-    set bufferData(value){
-        this._bufferData=value;
+    set bufferData(value) {
+        this._bufferData = value;
     }
 }
 
