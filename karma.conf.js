@@ -53,9 +53,9 @@ module.exports = function (config) {
 			}
 		};
 	} else {
-		cfg.browserDisconnectTimeout = 30000;
-		cfg.browserNoActivityTimeout = 30000;
-		cfg.processKillTimeout = 30000;
+		cfg.browserDisconnectTimeout = 300000;
+		cfg.browserNoActivityTimeout = 300000;
+		cfg.processKillTimeout = 300000;
 		cfg.preprocessors = {
 			'src/**/*.js': ['rollupBabel'],
 			'test/**/*.spec.js': ['rollupBabel']

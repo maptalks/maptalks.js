@@ -9,23 +9,30 @@ import WebGLRenderer from './../renderer/WebGLRenderer';
  * @class RenderManager
  */
 export default class RenderManager {
-    //render collection
-    _renderers = {};
+    //render instance
+    _renderer;
     //the default options for RenderManager
     _options = {};
-
+    //html canvas
     _view;
     /**
      * 
-     * @param {Renderer} renderer 
+     * @param {Object} [options] 
+     * @param {String} [options.renderType] default is 'webgl'
+     * @param {number} [options.width] 
+     * @param {number} [options.height]
      */
     constructor(options) {
-        merge(this._options, options||{});
+        this._options=merge(this._options, options||{});
+        // get/create canvas and resize it
         this._view = this._options.view || document.createElement('canvas');
-        this._renderers = this._options.renderType === 'webgl' ? new WebGLRenderer(this._view, this._options) : null;
+        this._view.width = this._options.width;
+        this._view.height = this._options.height;
+        this._renderer = this._options.renderType === 'webgl' ? new WebGLRenderer(this._view, this._options) : null;
     }
 
-
-
+    get renderer(){
+        return this._renderer;
+    }
 
 }
