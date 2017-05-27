@@ -1,4 +1,4 @@
-import Renderer from './Renderer';
+import Renderer from './../Renderer';
 
 class WebGLRenderer extends Renderer{
 

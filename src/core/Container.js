@@ -4,7 +4,7 @@
 
 import Event from './../utils/Event';
 import merge from './../utils/merge';
-import RenderManager from './RenderManager';
+import RenderManager from './../renderer/RenderManager';
 import { _KIWI_EVENT_RESIZE } from './EventNames';
 
 const defaultOptions = {
