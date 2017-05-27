@@ -1,5 +1,6 @@
 /**
  * store events name to on/off/fire
+ * cause of each const event name has been changed by 'stamp',we recommend using this method.
  * @author yellow 2017/5/26
  */
 

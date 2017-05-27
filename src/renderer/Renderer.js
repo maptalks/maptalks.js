@@ -11,29 +11,66 @@ import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
  * @class Renderer
  */
 class Renderder extends Event {
-    //settings
-    _options = {};
-    //support webglRenderer and canvasRenderer
+    /**
+     * 
+     * @memberof Renderder
+     */
+    _roundPixels=false;
+    /**
+     * support webglRenderer and canvasRenderer
+     * @memberof Renderder
+     */
     _renderType = '';
-    //the drawing backgroud
+    /**
+     * the drawing backgroud
+     * @memberof Renderder
+     */
     _backgroundColor = 0x000000;
-    //rbg represent
+    /**
+     * rbg represent
+     * @memberof Renderder
+     */
     _backgroundColorRgba = [0, 0, 0, 0];
-    //rbg string represent
+    /**
+     * rbg string represent
+     * @memberof Renderder
+     */
     _backgroundColorString = '#000000';
-    //the resolution, represent=x/y;
+    /**
+     * the resolution, represent=x/y;
+     * @memberof Renderder
+     */
     _resolution;
-    //the canvas height
+    /**
+     * 
+     * @memberof Renderder
+     */
+    _transparent;
+    /**
+     * the canvas width
+     * @memberof Renderder
+     */
     _width;
-    //the canvas width
+    /**
+     * the canvas height
+     * @memberof Renderder
+     */
     _height;
-    //the canvas
+    /**
+     * html canvas
+     * @memberof Renderder
+     */
     _view;
-    //float32array,bufferData
+    /**
+     * draw bufferData
+     * @memberof Renderder
+     * @member {float32array}
+     */
     _bufferData;
     /**
      * 
      * @param {HTMLCanvasElement} view ,the canvas to draw
+     * @param {Object} [options] 
      */
     constructor(view, options) {
         super();
