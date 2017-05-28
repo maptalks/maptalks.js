@@ -92,11 +92,7 @@ class Renderder extends Event {
         let [w,h]=[eventData.width || this._options.width,eventData.height || this._options.height];
         this._options.width = this._view.width = w;
         this._options.height = this._view.height = h;
-<<<<<<< HEAD
-        this._resolution = this._options.roundPixels ? Math.floor(this._width / this._height) : w / h;
-=======
         this._resolution = this._options.roundPixels ? Math.floor(w/h) : w/h;
->>>>>>> d81f9c1b4173232b9c938fda1fce1fd91d2a2a77
     }
 
     get backgroundColor() {
