@@ -1,7 +1,19 @@
+/**
+ * @author yellow 2017/5/15
+ */
+
 import Event from './../utils/Event';
 import merge from './../utils/merge';
-import RenderManager from './RenderManager';
+import RenderManager from './../renderer/RenderManager';
 import { _KIWI_EVENT_RESIZE } from './EventNames';
+
+const defaultOptions = {
+    width: window.innerHeight,
+    height: window.innerHeight,
+    renderType: 'webgl',
+    roundPixels:false
+};
+
 /**
  * container 
  * used to transform accordance
@@ -9,15 +21,24 @@ import { _KIWI_EVENT_RESIZE } from './EventNames';
  */
 class Container extends Event {
 
-    //the renderer
+    /**
+     * readerManager
+     * @memberof Container
+     * @readOnly
+     */
     _renderManager;
-    //the default options
-    _options = {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        renderType: 'webgl',
-        view: null
-    }
+    /**
+     * container's width
+     * @memberof Container
+     * @member {number}
+     */
+    _width;
+    /**
+     * container's height
+     * @memberof Container
+     * @member {number}
+     */
+    _height;
     /**
      * 
      * @param {Object} [options] the settings of container 
@@ -29,33 +50,33 @@ class Container extends Event {
      */
     constructor(options) {
         super();
-        //merge options
-        this._options = merge(this._options, options || {});
-        this._renderManager = new RenderManager(this._options);
-        this.addEventPopNode(this._renderManager.renderer);
-
+        let _options = merge(defaultOptions,options);
+        this._width = _options.width;
+        this._height = _options.height;
+        this._renderManager = new RenderManager(_options);
+        this.addEventPopNode(this._renderManager);
     }
     /**
      * set container's height
      */
     set width(value) {
-        this._options.width = value;
+        this._width = value;
         this.fire(_KIWI_EVENT_RESIZE, { width: value }, true);
     }
     /**
      * set container's width
      */
     set height(value) {
-        this._options.height = value;
+        this._height = value;
         this.fire(_KIWI_EVENT_RESIZE, { height: value }, true);
     }
 
     get width() {
-        return this._options.width;
+        return this._width;
     }
 
     get height() {
-        return this._options.height;
+        return this._height;
     }
 
     /**
@@ -65,6 +86,7 @@ class Container extends Event {
     add() {
 
     }
+
 }
 
 export default Container;
