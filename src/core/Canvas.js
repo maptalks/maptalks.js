@@ -258,11 +258,9 @@ const Canvas = {
 
     image(ctx, img, x, y, width, height) {
         ctx.canvas._drawn = true;
-        x = round(x);
-        y = round(y);
         try {
             if (isNumber(width) && isNumber(height)) {
-                ctx.drawImage(img, x, y, round(width), round(height));
+                ctx.drawImage(img, x, y, width, height);
             } else {
                 ctx.drawImage(img, x, y);
             }
