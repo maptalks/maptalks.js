@@ -4,7 +4,6 @@ import Extent from 'geo/Extent';
 import * as projections from 'geo/projection';
 import Transformation from 'geo/transformation/Transformation';
 import { Measurer } from 'geo/measurer';
-import loadArcgis from './SpatialReference.Arc';
 
 const DefaultSpatialRef = {
     'EPSG:3857': {
@@ -187,5 +186,3 @@ export default class SpatialReference {
     }
 
 }
-
-SpatialReference.loadArcgis = loadArcgis;
