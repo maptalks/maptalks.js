@@ -58,4 +58,4 @@ SpatialReference.prototype.loadArcgis = function (url, cb, context) {
 
     }
     return this;
-}
+};
