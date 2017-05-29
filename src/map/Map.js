@@ -237,7 +237,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Boolean}
      */
     isLoaded() {
-        return this._loaded;
+        return !!this._loaded;
     }
 
     /**

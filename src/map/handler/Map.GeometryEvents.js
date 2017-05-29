@@ -11,17 +11,13 @@ class MapGeometryEventsHandler extends Handler {
     addHooks() {
         const map = this.target;
         const dom = map._panels.allLayers || map._containerDOM;
-        if (dom) {
-            on(dom, EVENTS, this._identifyGeometryEvents, this);
-        }
+        on(dom, EVENTS, this._identifyGeometryEvents, this);
     }
 
     removeHooks() {
         const map = this.target;
         const dom = map._panels.allLayers || map._containerDOM;
-        if (dom) {
-            off(dom, EVENTS, this._identifyGeometryEvents, this);
-        }
+        off(dom, EVENTS, this._identifyGeometryEvents, this);
     }
 
     _identifyGeometryEvents(domEvent, type) {

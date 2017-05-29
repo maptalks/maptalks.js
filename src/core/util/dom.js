@@ -141,7 +141,7 @@ export function removeDomNode(node) {
  * @memberOf DomUtil
  */
 export function addDomEvent(obj, typeArr, handler, context) {
-    if (!obj || !typeArr || !handler) {
+    if (!obj || !obj.addEventListener || !typeArr || !handler) {
         return this;
     }
     const eventHandler = function (e) {
@@ -194,7 +194,7 @@ export function removeDomEvent(obj, typeArr, handler) {
         }
         obj.removeEventListener(type, callback, false);
     }
-    if (!obj || !typeArr) {
+    if (!obj || !obj.removeEventListener || !typeArr) {
         return this;
     }
     const types = typeArr.split(' ');
