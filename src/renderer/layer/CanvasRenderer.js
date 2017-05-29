@@ -501,6 +501,8 @@ class CanvasRenderer extends Class {
     _tryToDraw() {
         this._toRedraw = false;
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
+            this._renderComplete = true;
+            // not to create canvas when layer is empty
             return;
         }
         if (!this._painted && this.onAdd) {

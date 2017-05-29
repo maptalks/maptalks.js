@@ -238,7 +238,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                     return;
                 }
                 const renderer = layer._getRenderer();
-                if (!renderer || !renderer.canvas || !renderer.isRenderComplete()) {
+                if (!renderer || !renderer.isRenderComplete()) {
                     return;
                 }
                 /**

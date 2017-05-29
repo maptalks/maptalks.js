@@ -43,6 +43,15 @@ describe('#VectorLayer', function () {
     });
 
     describe('add to map', function () {
+        it('fire layerload when empty', function (done) {
+            layer = new maptalks.VectorLayer('v');
+            layer.on('layerload', function () {
+                expect(layer.getCount()).to.be(0);
+                done();
+            });
+            map.addLayer(layer);
+        });
+
         it('add again', function (done) {
             layer = new maptalks.VectorLayer('v')
                 .addGeometry(new maptalks.Marker(map.getCenter())).addTo(map);
