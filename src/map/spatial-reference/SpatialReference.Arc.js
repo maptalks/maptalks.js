@@ -1,5 +1,6 @@
 import { isString, parseJSON } from 'core/util';
 import Ajax from 'core/Ajax';
+import SpatialReference from './SpatialReference';
 
 function parse(arcConf) {
     const tileInfo = arcConf['tileInfo'],
@@ -26,7 +27,7 @@ function parse(arcConf) {
     };
 }
 
-export default function loadArcgis(url, cb, context) {
+SpatialReference.prototype.loadArcgis = function (url, cb, context) {
     if (isString(url) && url.substring(0, 1) !== '{') {
         Ajax.getJSON(url, function (err, json) {
             if (err) {
