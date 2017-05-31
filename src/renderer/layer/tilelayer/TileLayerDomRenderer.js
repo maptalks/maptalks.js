@@ -173,9 +173,10 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _getTileQueue(tileGrid) {
-        const tiles = tileGrid['tiles'],
+        const map = this.getMap(),
+            tiles = tileGrid['tiles'],
             queue = [];
-        const mat = this.getMap().domCssMatrix;
+        const mat = map.domCssMatrix;
 
         const preCamOffset = this._camOffset;
         if (!this._camOffset || (!mat && !this._camOffset.isZero())) {
@@ -208,11 +209,14 @@ export default class TileLayerDomRenderer extends Class {
                 if (repos) {
                     const pos = t['pos'];
                     pos._add(preCamOffset);
-                    t['el'].style[TRANSFORM] = 'translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)';
+                    this._posTileImage(t['el'], pos);
                     t['viewPoint'] = pos;
                 }
             }
         }
+
+        const reposCached = this._preMapCenter && this._preCenterViewPoint &&
+            map._getPrjCenter().equals(this._preMapCenter) && !tileGrid['centerViewPoint'].equals(this._preCenterViewPoint);
 
         for (let i = tiles.length - 1; i >= 0; i--) {
             const cachedTile = this._tiles[tiles[i]['id']];
@@ -220,7 +224,19 @@ export default class TileLayerDomRenderer extends Class {
                 //tile is already added
                 cachedTile.current = true;
                 if (mat) {
+                    // has camera matrix, update viewPoint of all the existing tiles.
+                    // tile doesn't need to be repositioned, but view point needs to be updated to caculate cammera offset.
                     cachedTile['viewPoint'] = tiles[i]['viewPoint'];
+                } else if (reposCached) {
+                    // no camera matrix, when centerViewPoint changes but map center doesn't, reposition all the existing tile images.
+                    // e.g. when map.setCenter, although map's center is the same, map container's offset will be changed in the next frame.
+                    // In this case, existing tiles sholuld be repositioned.
+                    //
+                    // However, this doesn't work for the case with a camera matrix, becos tile's position is caculated by center tile's containerPoint.
+                    // When map container's offset changes but center doesn't, tile's position is not influenced.
+                    const pos = tiles[i]['viewPoint'];
+                    cachedTile['viewPoint'] = pos;
+                    this._posTileImage(cachedTile['el'], pos);
                 }
                 continue;
             }
@@ -231,7 +247,8 @@ export default class TileLayerDomRenderer extends Class {
             queue.push(tiles[i]);
         }
         this._preCenterId = tileGrid['center'];
-
+        this._preCenterViewPoint = tileGrid['centerViewPoint'];
+        this._preMapCenter = map._getPrjCenter();
         return queue;
     }
 
@@ -350,11 +367,7 @@ export default class TileLayerDomRenderer extends Class {
         }
 
         tileImage.style.position = 'absolute';
-        if (Browser.any3d) {
-            tileImage.style[TRANSFORM] = 'translate3d(' + tile['viewPoint'].x + 'px, ' + tile['viewPoint'].y + 'px, 0px)';
-        } else {
-            tileImage.style[TRANSFORM] = 'translate(' + tile['viewPoint'].x + 'px, ' + tile['viewPoint'].y + 'px)';
-        }
+        this._posTileImage(tileImage, tile['viewPoint']);
 
         tileImage.alt = '';
         tileImage.width = w;
@@ -613,6 +626,14 @@ export default class TileLayerDomRenderer extends Class {
 
     _hide() {
         this._container.style.display = 'none';
+    }
+
+    _posTileImage(tileImage, pos) {
+        if (Browser.any3d) {
+            tileImage.style[TRANSFORM] = 'translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)';
+        } else {
+            tileImage.style[TRANSFORM] = 'translate(' + pos.x + 'px, ' + pos.y + 'px)';
+        }
     }
 
     onZoomStart() {
