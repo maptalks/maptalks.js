@@ -597,7 +597,7 @@ export default class TileLayerDomRenderer extends Class {
             '_touchzoomstart _dragrotatestart' : this._pruneTiles,
             '_zooming'      : this.onZooming,
             '_zoomend'      : this.onZoomEnd,
-            '_moveend _resize _dragrotateend' : this.render,
+            // '_moveend _resize _dragrotateend' : this.render,
             '_dragrotatestart'    : this.onDragRotateStart
         };
         return events;
@@ -634,7 +634,6 @@ export default class TileLayerDomRenderer extends Class {
             clearTimeout(this._pruneTimeout);
         }
         this._clearCameraCache();
-        this.render();
         if (this._levelContainers) {
             if (this._canTransform()) {
                 if (this._levelContainers[param.from] && this._zoomStartPos) {
