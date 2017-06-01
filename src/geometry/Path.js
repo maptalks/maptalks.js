@@ -213,7 +213,8 @@ class Path extends Geometry {
      * @private
      */
     _computeCoordsExtent(coords) {
-        const anti = this.options['antiMeridian'];
+        const projection = this._getProjection();
+        const anti = this.options['antiMeridian'] && Measurer.isSphere(projection);
         let result = null;
         let ext, p, dx, pre;
         for (let i = 0, len = coords.length; i < len; i++) {

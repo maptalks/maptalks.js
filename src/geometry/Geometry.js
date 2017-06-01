@@ -876,10 +876,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!this._extent && p) {
             const ext = this._computeExtent(p);
             if (ext) {
-                const isAntiMeridian = this.options['antiMeridian'] && Measurer.isSphere(p);
-                if (isAntiMeridian && isAntiMeridian !== 'default') {
+                const isAnti = Measurer.isSphere(p) ? this.options['antiMeridian'] : false;
+                if (isAnti && isAnti !== 'default') {
                     const firstCoordinate = this.getFirstCoordinate();
-                    if (isAntiMeridian === 'continuous') {
+                    if (isAnti === 'continuous') {
                         if (ext['xmax'] - ext['xmin'] > 180) {
                             if (firstCoordinate.x > 0) {
                                 ext['xmin'] += 360;
