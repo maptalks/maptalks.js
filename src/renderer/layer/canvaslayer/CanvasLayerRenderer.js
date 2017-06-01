@@ -17,6 +17,14 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         }
     }
 
+    needToRedraw() {
+        const map = this.getMap();
+        if (map.isInteracting() && !this.layer.drawOnInteracting) {
+            return false;
+        }
+        return super.needToRedraw();
+    }
+
     draw() {
         this.prepareCanvas();
         this.prepareDrawContext();
@@ -121,6 +129,9 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     }
 
     _drawLayerOnInteracting() {
+        if (!this.layer.drawOnInteracting) {
+            return;
+        }
         const args = this._prepareDrawParams();
         if (!args) {
             return;
