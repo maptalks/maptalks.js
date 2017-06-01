@@ -71,6 +71,9 @@ export const Measurer = {
      * @function measurer.Measurer.isSphere
      */
     isSphere(measure) {
+        if (!measure) {
+            return false;
+        }
         return !isNil(measure.sphere);
     }
 };
