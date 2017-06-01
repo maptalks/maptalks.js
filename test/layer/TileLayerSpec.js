@@ -250,16 +250,25 @@ describe('#TileLayer', function () {
                 urlTemplate : '/resources/tile.png',
                 subdomains:['a', 'b', 'c']
             });
+            var tile2 = new maptalks.TileLayer('tile2', {
+                urlTemplate : '/resources/tile.png',
+                subdomains:['a', 'b', 'c'],
+                renderer : 'dom'
+            });
             // fired by tile.load()
             tile.once('layerload', function () {
                 // fired by mapRenderer.drawLayer when map state changed(first render)
                 tile.once('layerload', function () {
                     expect(tile.isCanvasRender()).not.to.be.ok();
                     var cssMat = tile._getRenderer()._getTileContainer().style.cssText;
+                    var cssMat2 = tile._getRenderer()._getTileContainer().style.cssText;
                     expect(cssMat.indexOf('matrix3d') === -1).to.be.ok();
+                    expect(cssMat2.indexOf('matrix3d') === -1).to.be.ok();
                     tile.on('layerload', function () {
                         cssMat = tile._getRenderer()._getTileContainer().style.cssText;
+                        cssMat2 = tile._getRenderer()._getTileContainer().style.cssText;
                         expect(cssMat.indexOf('matrix3d') > 0).to.be.ok();
+                        expect(cssMat2.indexOf('matrix3d') > 0).to.be.ok();
                         done();
                     });
                     tile.getMap().setPitch(40);
@@ -271,6 +280,7 @@ describe('#TileLayer', function () {
                 baseLayer : tile
             };
             map = new maptalks.Map(container, option);
+            map.addLayer(tile2);
         });
     });
 
