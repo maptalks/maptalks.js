@@ -22,13 +22,16 @@ class MapGeometryEventsHandler extends Handler {
 
     _identifyGeometryEvents(domEvent, type) {
         const map = this.target;
+        if (map.isInteracting() || map._ignoreEvent(domEvent)) {
+            return;
+        }
         const layers = map._getLayers(layer => {
             if (layer.identify && layer.options['geometryEvents']) {
                 return true;
             }
             return false;
         });
-        if (map.isInteracting() || !layers || !layers.length) {
+        if (!layers.length) {
             return;
         }
         let oneMoreEvent = null;
