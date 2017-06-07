@@ -6,19 +6,12 @@ import UIComponent from './UI';
 
 /**
  * @property {Object} options
- * @property {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
  * @property {Number}  [options.width=300]     - default width
- * @property {Number}  [options.minHeight=120] - minimun height
- * @property {Boolean} [options.custom=false]  - set it to true if you want a customized tooltip, customized html codes or a HTMLElement is set to content.
- * @property {String}  [options.title=null]    - title of the tooltip.
- * @property {String|HTMLElement}  options.content - content of the tooltip.
- * @memberOf ui.InfoWindow
+ * @memberOf ui.Tooltip
  * @instance
  */
 const options = {
-    'width': 150,
-    'minHeight': 30,
-    'custom': false
+    'width': 150
 };
 /**
  * @classdesc
@@ -39,28 +32,20 @@ class ToolTip extends UIComponent {
             this._content = info;
         }
     }
-    /**
-   * set the toolTip to a geometry or a map,and it needs some infomation to show
-   * @param {Geometry} owner - geometry to addto.
-   * @param {String} owner - information  to show in toolTip.
-   * @returns {UIComponent} this
-    **/
-    addTo(geometry) {
-        this._addTo(geometry);
-    }
+
     /**
    * Adds the UI Component to a geometry or a map
-   * @param {Geometry|Map} owner - geometry or map to addto.
+   * @param {Geometry} owner - geometry to addto.
    * @returns {UIComponent} this
    * @fires UIComponent#add
    */
-    _addTo(owner) {
+    addTo(owner) {
         if (owner instanceof Geometry) {
             owner._tooltip = this;
-            owner.on('mouseover', this.onMouseOver.bind(this));
-            owner.on('mouseout', this.onMouseOut.bind(this));
+            return super.addTo(owner);
+        } else {
+            throw new Error('Invalid Geometry when add a tooltip.');
         }
-        return super.addTo(owner);
     }
 
     /**
@@ -76,7 +61,7 @@ class ToolTip extends UIComponent {
         dom.className = 'maptalks-msgBox';
         dom.id = 'tipDiv';
         dom.style.width = options.width + 'px';
-        const content = '<div class="maptalks-msgContent">' + this. _content + '</div>';
+        const content = '<div class="maptalks-msgContent">${this. _content}</div>';
         dom.innerHTML = content;
         return dom;
     }
@@ -110,7 +95,7 @@ class ToolTip extends UIComponent {
             if (this._owner) {
                 delete this._owner._tooltip;
                 delete this._owner;
-                delete this._mouseHandler;
+                //delete this._mouseHandler;
             }
         };
         super.remove();

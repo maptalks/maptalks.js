@@ -39,14 +39,15 @@ describe('#ToolTip', function () {
         expect(tooltip.isVisible()).to.be.eql(true);
     });
 
-    it('it will hide when mouseout a geometry', function () {
+    it('it will hide when mouseout a geometry', function (done) {
         var geo = new maptalks.Marker(center).addTo(layer);
         var tooltip = new maptalks.ui.ToolTip('this is a geometry');
         tooltip.addTo(geo);
         setTimeout(function () {
             geo.fire('mouseout');
             expect(tooltip.isVisible()).to.be.eql(false);
-        }, 1000);
+            done();
+        }, 100);
     });
 
     describe('all kinds of geometries can set a tooltip', function () {
@@ -70,7 +71,7 @@ describe('#ToolTip', function () {
 
     describe('when remove tip', function () {
         var geo = new maptalks.Marker(center);
-        it('it will not show when mouseover and set a new tooltip again', function () {
+        it('it will not show when mouseover and set a new tooltip again', function (done) {
             geo = geo.addTo(layer);
             var tooltip = new maptalks.ui.ToolTip('this is a geometry');
             tooltip.addTo(geo);
@@ -85,7 +86,8 @@ describe('#ToolTip', function () {
                 newtooltip.addTo(geo);
                 geo.fire('mouseover', { coordinate:geo.getCenter() });
                 expect(geo._tooltip.isVisible()).to.be.eql(true);
-            }, 1000);
+                done();
+            }, 100);
         });
     });
 });
