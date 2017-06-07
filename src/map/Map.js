@@ -237,7 +237,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Boolean}
      */
     isLoaded() {
-        return this._loaded;
+        return !!this._loaded;
     }
 
     /**
@@ -245,9 +245,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {SpatialReference} map's spatial reference
      */
     getSpatialReference() {
-        if (!this._spatialReference) {
-            return null;
-        }
         return this._spatialReference;
     }
 
@@ -324,9 +321,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map}   this
      */
     onConfig(conf) {
-        if (!isNil(conf['spatialReference'])) {
-            this.setSpatialReference(conf['spatialReference']);
-            this.setSpatialReference(conf['spatialReference']);
+        const ref = conf['spatialReference'] || conf['view'];
+        if (!isNil(ref)) {
+            this.setSpatialReference(ref);
         }
         return this;
     }
@@ -344,6 +341,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Object}
      */
     getProjection() {
+        if (!this._spatialReference) {
+            return null;
+        }
         return this._spatialReference.getProjection();
     }
 
@@ -353,6 +353,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Extent}
      */
     getFullExtent() {
+        if (!this._spatialReference) {
+            return null;
+        }
         return this._spatialReference.getFullExtent();
     }
 

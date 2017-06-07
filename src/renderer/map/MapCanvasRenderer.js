@@ -47,6 +47,9 @@ export default class MapCanvasRenderer extends MapRenderer {
         // 1. frameend is often used internally by maptalks and plugins
         // 2. layerload is often used externally by tests or user apps
         this.map._fireEvent('frameend');
+        // refresh map's state
+        // It must be before events and frame callback, because map state may be changed in callbacks.
+        this._state = this._getMapState();
         this._fireLayerLoadEvents();
         this.executeFrameCallbacks();
         this._needRedraw = false;
@@ -238,7 +241,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                     return;
                 }
                 const renderer = layer._getRenderer();
-                if (!renderer || !renderer.canvas || !renderer.isRenderComplete()) {
+                if (!renderer || !renderer.isRenderComplete()) {
                     return;
                 }
                 /**
@@ -477,10 +480,18 @@ export default class MapCanvasRenderer extends MapRenderer {
      * @return {Boolean}
      */
     isStateChanged() {
-        const map = this.map;
         const previous = this._state;
-        const center = map.getCenter();
-        this._state = {
+        const state = this._getMapState();
+        if (!previous || !equalState(previous, state)) {
+            return true;
+        }
+        return false;
+    }
+
+    _getMapState() {
+        const map = this.map;
+        const center = map._getPrjCenter();
+        return {
             x       : center.x,
             y       : center.y,
             zoom    : map.getZoom(),
@@ -489,10 +500,6 @@ export default class MapCanvasRenderer extends MapRenderer {
             width   : map.width,
             height  : map.height
         };
-        if (!previous || !equalState(previous, this._state)) {
-            return true;
-        }
-        return false;
     }
 
     /**

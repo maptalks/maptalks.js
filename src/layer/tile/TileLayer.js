@@ -218,6 +218,7 @@ class TileLayer extends Layer {
         });
         return {
             'center' : centerTileId,
+            'centerViewPoint' : centerViewPoint,
             'tiles': tiles
         };
     }

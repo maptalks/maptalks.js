@@ -11,28 +11,27 @@ class MapGeometryEventsHandler extends Handler {
     addHooks() {
         const map = this.target;
         const dom = map._panels.allLayers || map._containerDOM;
-        if (dom) {
-            on(dom, EVENTS, this._identifyGeometryEvents, this);
-        }
+        on(dom, EVENTS, this._identifyGeometryEvents, this);
     }
 
     removeHooks() {
         const map = this.target;
         const dom = map._panels.allLayers || map._containerDOM;
-        if (dom) {
-            off(dom, EVENTS, this._identifyGeometryEvents, this);
-        }
+        off(dom, EVENTS, this._identifyGeometryEvents, this);
     }
 
     _identifyGeometryEvents(domEvent, type) {
         const map = this.target;
+        if (map.isInteracting() || map._ignoreEvent(domEvent)) {
+            return;
+        }
         const layers = map._getLayers(layer => {
             if (layer.identify && layer.options['geometryEvents']) {
                 return true;
             }
             return false;
         });
-        if (map.isInteracting() || !layers || !layers.length) {
+        if (!layers.length) {
             return;
         }
         let oneMoreEvent = null;

@@ -64,9 +64,9 @@ class CanvasLayer extends Layer {
      * @param  {CanvasRenderingContext2D} context - CanvasRenderingContext2D of the layer canvas.
      * @param  {*} params.. - parameters returned by function prepareToDraw(context).
      */
-    drawOnInteracting() {
-        return this.draw.apply(this, arguments);
-    }
+    // drawOnInteracting() {
+    //     return this.draw.apply(this, arguments);
+    // }
 
     /**
      * Redraw the layer

@@ -199,8 +199,13 @@ class OverlayLayer extends Layer {
             //内部全局唯一的id
             geo._setInternalId(internalId);
             this._geoList.push(geo);
-
-
+            if (this.onAddGeometry) {
+                this.onAddGeometry(geo);
+            }
+            geo._bindLayer(this);
+            if (geo.onAdd) {
+                geo.onAdd();
+            }
             if (fitView === true) {
                 const geoCenter = geo.getCenter();
                 const geoExtent = geo.getExtent();
@@ -213,13 +218,6 @@ class OverlayLayer extends Layer {
                     }
                     fitCounter++;
                 }
-            }
-            if (this.onAddGeometry) {
-                this.onAddGeometry(geo);
-            }
-            geo._bindLayer(this);
-            if (geo.onAdd) {
-                geo.onAdd();
             }
             /**
              * add event.

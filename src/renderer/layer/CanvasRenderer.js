@@ -84,7 +84,7 @@ class CanvasRenderer extends Class {
         const map = this.getMap();
         if (map.isInteracting()) {
             // don't redraw when map is moving without any pitch
-            return !(!map.getPitch() && map.isMoving());
+            return !(!map.getPitch() && map.isMoving() && !this.layer.options['forceRenderOnMoving']);
         }
         return false;
     }
@@ -501,6 +501,8 @@ class CanvasRenderer extends Class {
     _tryToDraw() {
         this._toRedraw = false;
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
+            this._renderComplete = true;
+            // not to create canvas when layer is empty
             return;
         }
         if (!this._painted && this.onAdd) {
