@@ -281,10 +281,12 @@ export default class Painter extends Class {
     }
 
     getContainerExtent() {
-        if (!this._extent2D || this._extent2D._zoom !== this.getMap().getZoom()) {
+        const map = this.getMap();
+        const zoom = map.getZoom();
+        if (!this._extent2D || this._extent2D._zoom !== zoom) {
             this.get2DExtent();
         }
-        const extent = this._extent2D.convertTo(c => this.getMap()._pointToContainerPoint(c, this.height));
+        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, this.height));
         if (extent) {
             extent._add(this._markerExtent);
         }
