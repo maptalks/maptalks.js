@@ -610,8 +610,7 @@ export default class TileLayerDomRenderer extends Class {
             '_touchzoomstart _dragrotatestart' : this._pruneTiles,
             '_zooming'      : this.onZooming,
             '_zoomend'      : this.onZoomEnd,
-            // '_moveend _resize _dragrotateend' : this.render,
-            '_dragrotatestart'    : this.onDragRotateStart
+            '_dragrotateend' : this.render
         };
         return events;
     }

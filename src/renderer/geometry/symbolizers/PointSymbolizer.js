@@ -50,9 +50,10 @@ export default class PointSymbolizer extends CanvasSymbolizer {
         const map = this.getMap();
         const maxZoom = map.getMaxNativeZoom();
         const dxdy = this.getDxDy(),
+            height = this.painter.getHeight(),
             layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest);
         const containerPoints = mapArrayRecursively(points, point =>
-            map._pointToContainerPoint(point, maxZoom)._add(dxdy)._sub(layerPoint)
+            map._pointToContainerPoint(point, maxZoom, height)._add(dxdy)._sub(layerPoint)
         );
         return containerPoints;
     }

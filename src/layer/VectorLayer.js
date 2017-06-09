@@ -11,7 +11,9 @@ import OverlayLayer from './OverlayLayer';
  * @property {String}  options.cursor=default        - the cursor style of the layer
  * @property {Boolean} options.geometryEvents=true   - enable/disable firing geometry events, disable it to improve performance.
  * @property {Boolean} options.defaultIconSize=[20,20] - default size of a marker's icon
- * @property {Boolean} [options.cacheVectorOnCanvas=true] - whether to cache vector markers on a canvas, this will improve performance.
+ * @property {Boolean} [options.enableHeight=false]  - whether to enable render geometry with height, false by default
+ * @property {Boolean} [options.heightProperty=height] - geometry's height property name, if enableHeight is true, "height" by default
+ * @property {Boolean} [options.debug=false]         - whether the geometries on the layer is in debug mode.
  * @memberOf VectorLayer
  * @instance
  */
@@ -21,7 +23,9 @@ const options = {
     'geometryEvents': true,
     'defaultIconSize': [20, 20],
     'cacheVectorOnCanvas': true,
-    'cacheSvgOnCanvas': false
+    'cacheSvgOnCanvas': false,
+    'enableHeight' : false,
+    'heightProperty' : 'height'
 };
 
 /**

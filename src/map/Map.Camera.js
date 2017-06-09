@@ -144,20 +144,21 @@ Map.include(/** @lends Map.prototype */{
      * @private
      */
     isTransforming() {
-        return !!this.projMatrix;
+        return !!(this._pitch || this._angle);
     },
 
     /**
      * Convert 2d point at target zoom to containerPoint at current zoom
      * @param  {Point} point 2d point at target zoom
      * @param  {Number} zoom  target zoom, current zoom in default
+     * @param  {Number} [height=0]  target's height in 2d point system at target zoom
      * @return {Point}       containerPoint at current zoom
      * @private
      */
-    _pointToContainerPoint(point, zoom) {
+    _pointToContainerPoint(point, zoom, height = 0) {
         point = this._pointToPoint(point, zoom);
-        if (this.pixelMatrix) {
-            const t = [point.x, point.y, 0, 1];
+        if (this._pitch || this._angle || height) {
+            const t = [point.x, point.y, height, 1];
             mat4.transformMat4(t, t, this.pixelMatrix);
             return new Point(t[0] / t[3], t[1] / t[3]);
         } else {
@@ -198,7 +199,7 @@ Map.include(/** @lends Map.prototype */{
             const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
             const cp = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t));
-            return (zoom === undefined ? cp : this._pointToPointAtZoom(cp, zoom));
+            return ((zoom === undefined || this.getZoom() === zoom) ? cp : this._pointToPointAtZoom(cp, zoom));
         }
         const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
@@ -217,11 +218,6 @@ Map.include(/** @lends Map.prototype */{
         }
         if (!this._angle) {
             this._angle = 0;
-        }
-
-        if (!this._pitch && !this._angle) {
-            this._clearMatrices();
-            return;
         }
 
         const centerPoint = this._prjToPoint(this._prjCenter);
@@ -275,6 +271,11 @@ Map.include(/** @lends Map.prototype */{
         if (!m) throw new Error('failed to invert matrix');
         this.pixelMatrixInverse = m;
 
+        if (!this._pitch && !this._angle) {
+            this._clearMatrices();
+            return;
+        }
+
         // matrix for TileLayerDomRenderer's css3 matrix3d transform
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
@@ -282,9 +283,6 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _clearMatrices() {
-        delete this.projMatrix;
-        delete this.pixelMatrix;
-        delete this.pixelMatrixInverse;
         delete this.domCssMatrix;
     },
 
