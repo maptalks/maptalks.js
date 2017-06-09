@@ -84,7 +84,7 @@ class ToolTip extends UIComponent {
         this.hide();
     }
     /**
-   * remove the tooltip effect
+   * remove the tooltip
    * @returns {UIComponent} this
    */
     remove() {
