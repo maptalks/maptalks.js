@@ -43,11 +43,14 @@ describe('#ToolTip', function () {
         var geo = new maptalks.Marker(center).addTo(layer);
         var tooltip = new maptalks.ui.ToolTip('this is a geometry');
         tooltip.addTo(geo);
+        geo.fire('mouseover', { coordinate: geo.getCenter() });
+        expect(tooltip.isVisible()).to.be.eql(true);
+        geo.fire('mouseout');
         setTimeout(function () {
-            geo.fire('mouseout');
-            expect(tooltip.isVisible()).to.be.eql(false);
+            var isvisible = tooltip.isVisible();
+            expect(isvisible).to.be.eql(false);
             done();
-        }, 100);
+        }, 500);
     });
 
     describe('all kinds of geometries can set a tooltip', function () {
@@ -71,23 +74,18 @@ describe('#ToolTip', function () {
 
     describe('when remove tip', function () {
         var geo = new maptalks.Marker(center);
-        it('it will not show when mouseover and set a new tooltip again', function (done) {
+        it('it will not show when mouseover and set a new tooltip again', function () {
             geo = geo.addTo(layer);
             var tooltip = new maptalks.ui.ToolTip('this is a geometry');
             tooltip.addTo(geo);
             geo.fire('mouseover', { coordinate:geo.getCenter() });
             expect(tooltip.isVisible()).to.be.eql(true);
-            setTimeout(function () {
-                geo._tooltip.cancelTips();
-                geo.fire('mouseover', { coordinate:geo.getCenter() });
-                expect(tooltip.isVisible()).to.be.eql(false);
-                expect(geo._tooltip).not.to.be.ok();
-                var newtooltip = new maptalks.ui.ToolTip('set a new tooltip');
-                newtooltip.addTo(geo);
-                geo.fire('mouseover', { coordinate:geo.getCenter() });
-                expect(geo._tooltip.isVisible()).to.be.eql(true);
-                done();
-            }, 100);
+            geo._tooltip.remove();
+            expect(geo._tooltip).not.to.be.ok();
+            var newtooltip = new maptalks.ui.ToolTip('set a new tooltip');
+            newtooltip.addTo(geo);
+            geo.fire('mouseover', { coordinate: geo.getCenter() });
+            expect(geo._tooltip.isVisible()).to.be.eql(true);
         });
     });
 });

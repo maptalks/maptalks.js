@@ -7,18 +7,20 @@ import UIComponent from './UI';
 /**
  * @property {Object} options
  * @property {Number}  [options.width=300]     - default width
+ * @property {String}  [options.animation=300]     - default fade, scale | fade,scale are an alternative to set
  * @memberOf ui.Tooltip
  * @instance
  */
 const options = {
-    'width': 150
+    'width': 150,
+    'animation': 'fade'
 };
 /**
  * @classdesc
  * Class for tooltip, a tooltip used for showing some useful infomation attached to geometries on the map.
  * @category ui
  * @extends ui.UIComponent
- * @param {Object} options - options defined in [tooltip]{@link tooltip#options}
+ * @param {Object} options - options defined in [ToolTip]{@link tooltip#options}
  * @memberOf ui
  */
 class ToolTip extends UIComponent {
@@ -34,14 +36,16 @@ class ToolTip extends UIComponent {
     }
 
     /**
-   * Adds the UI Component to a geometry or a map
-   * @param {Geometry} owner - geometry to addto.
+   * Adds the UI Component to a geometry
+   * @param {Geometry} owner - geometry to add.
    * @returns {UIComponent} this
    * @fires UIComponent#add
    */
     addTo(owner) {
         if (owner instanceof Geometry) {
             owner._tooltip = this;
+            owner.on('mouseover', this.onMouseOver.bind(this));
+            owner.on('mouseout', this.onMouseOut.bind(this));
             return super.addTo(owner);
         } else {
             throw new Error('Invalid Geometry when add a tooltip.');
@@ -61,16 +65,9 @@ class ToolTip extends UIComponent {
         dom.className = 'maptalks-msgBox';
         dom.id = 'tipDiv';
         dom.style.width = options.width + 'px';
-        const content = '<div class="maptalks-msgContent">${this. _content}</div>';
+        const content = '<div class="maptalks-msgContent">' + this. _content + '</div>';
         dom.innerHTML = content;
         return dom;
-    }
-
-    getEvents() {
-        return {
-            'mouseover' : this.onMouseOver,
-            'mouseout' : this.onMouseOut
-        };
     }
 
     onMouseOver(e) {
@@ -93,9 +90,10 @@ class ToolTip extends UIComponent {
     remove() {
         this.onRemove = function () {
             if (this._owner) {
+                this._owner.off('mouseover', this.onMouseOver);
+                this._owner.off('mouseout', this.onMouseOut);
                 delete this._owner._tooltip;
                 delete this._owner;
-                //delete this._mouseHandler;
             }
         };
         super.remove();
