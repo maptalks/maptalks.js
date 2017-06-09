@@ -365,6 +365,10 @@ export default class Painter extends Class {
     }
 
     _getGeometryHeight() {
+        const map = this.getMap();
+        if (!map) {
+            return 0;
+        }
         const geometry = this.geometry,
             layerOpts = geometry.getLayer().options,
             properties = geometry.getProperties();
@@ -372,8 +376,7 @@ export default class Painter extends Class {
         if (!height) {
             return 0;
         }
-        const map = this.getMap(),
-            z = map.getMaxNativeZoom(),
+        const z = map.getMaxNativeZoom(),
             center = geometry.getCenter(),
             target = map.locate(center, height, 0);
         const p0 = map.coordinateToPoint(center, z),

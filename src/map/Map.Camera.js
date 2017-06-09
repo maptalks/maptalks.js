@@ -157,7 +157,7 @@ Map.include(/** @lends Map.prototype */{
      */
     _pointToContainerPoint(point, zoom, height = 0) {
         point = this._pointToPoint(point, zoom);
-        if (this._pitch || this._angle || height) {
+        if (this.isTransforming() || height) {
             const t = [point.x, point.y, height, 1];
             mat4.transformMat4(t, t, this.pixelMatrix);
             return new Point(t[0] / t[3], t[1] / t[3]);
@@ -175,7 +175,7 @@ Map.include(/** @lends Map.prototype */{
      * @private
      */
     _containerPointToPoint(p, zoom) {
-        if (this.pixelMatrixInverse) {
+        if (this.isTransforming()) {
             const targetZ = 0;
             // since we don't know the correct projected z value for the point,
             // unproject two points to get a line and then find the point on that

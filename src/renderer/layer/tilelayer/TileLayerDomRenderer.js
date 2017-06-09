@@ -216,7 +216,7 @@ export default class TileLayerDomRenderer extends Class {
         }
 
         const reposCached = this._preMapCenter && this._preCenterViewPoint &&
-            map._getPrjCenter().equals(this._preMapCenter) && !tileGrid['centerViewPoint'].equals(this._preCenterViewPoint);
+            map._getPrjCenter().equals(this._preMapCenter) && tileGrid['centerViewPoint'] && !tileGrid['centerViewPoint'].equals(this._preCenterViewPoint);
 
         for (let i = tiles.length - 1; i >= 0; i--) {
             const cachedTile = this._tiles[tiles[i]['id']];
