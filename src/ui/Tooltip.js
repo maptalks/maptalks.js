@@ -65,7 +65,7 @@ class ToolTip extends UIComponent {
         dom.className = 'maptalks-msgBox';
         dom.id = 'tipDiv';
         dom.style.width = options.width + 'px';
-        const content = '<div class="maptalks-msgContent">' + this. _content + '</div>';
+        const content = `<div class="maptalks-msgContent">${this._content}</div>`;
         dom.innerHTML = content;
         return dom;
     }
