@@ -297,7 +297,7 @@ describe('#Map', function () {
                 expect(maxZoom).to.be.eql(map.getZoom());
                 done();
             });
-            map.fitExtent(extent);
+            map.fitExtent(extent.toJSON());
         });
     });
 
