@@ -820,10 +820,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!extent) {
             return this;
         }
-        zoomOffset = zoomOffset || 0;
-        let zoom = this.getFitZoom(extent);
-        zoom += zoomOffset;
-        const center = new Extent(extent).getCenter();
+        extent = new Extent(extent);
+        const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
+        const center = extent.getCenter();
         return this.setCenterAndZoom(center, zoom);
     }
 
