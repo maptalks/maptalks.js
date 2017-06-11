@@ -357,6 +357,10 @@ export default class Painter extends Class {
     }
 
     getHeight() {
+        const propHeight = this._getHeightProperty();
+        if (propHeight !== this._propHeight) {
+            this.height = this._getGeometryHeight();
+        }
         if (!this.height) {
             return 0;
         }
@@ -369,18 +373,25 @@ export default class Painter extends Class {
         if (!map) {
             return 0;
         }
-        const geometry = this.geometry,
-            layerOpts = geometry.getLayer().options,
-            properties = geometry.getProperties();
-        const height = layerOpts['enableHeight'] ? properties ? properties[layerOpts['heightProperty']] : 0 : 0;
+        const height = this._getHeightProperty();
+        this._propHeight = height;
         if (!height) {
             return 0;
         }
+        const geometry = this.geometry;
         const z = map.getMaxNativeZoom(),
             center = geometry.getCenter(),
             target = map.locate(center, height, 0);
         const p0 = map.coordinateToPoint(center, z),
             p1 = map.coordinateToPoint(target, z);
         return Math.abs(p1.x - p0.x) * sign(height);
+    }
+
+    _getHeightProperty() {
+        const geometry = this.geometry,
+            layerOpts = geometry.getLayer().options,
+            properties = geometry.getProperties();
+        const height = layerOpts['enableHeight'] ? properties ? properties[layerOpts['heightProperty']] : 0 : 0;
+        return height;
     }
 }
