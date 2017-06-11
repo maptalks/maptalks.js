@@ -12,7 +12,8 @@ describe('#VectorLayer', function () {
         document.body.appendChild(container);
         var option = {
             zoom: 17,
-            center: center
+            center: center,
+            centerCross : true
         };
         map = new maptalks.Map(container, option);
         layer = new maptalks.VectorLayer('id');
@@ -488,6 +489,46 @@ describe('#VectorLayer', function () {
             expect(geometries[0]._getInternalSymbol()).to.be.eql(symbol);
             expect(geometries[1].getSymbol()).not.to.be.ok();
             expect(geometries[1]._getInternalSymbol()).not.to.be.eql(styleSymbol);
+        });
+    });
+
+    describe('render geometry with height', function () {
+        it('circle', function (done) {
+            var circle = new maptalks.Circle(map.getCenter(), 2, {
+                properties : { height : 200 },
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.config('enableHeight', true);
+            layer.addGeometry(circle);
+            map.setPitch(60);
+            layer.once('layerload', function () {
+                expect(layer).not.to.be.painted(0, 0);
+                expect(layer).to.be.painted(0, -192);
+                done();
+            });
+            map.addLayer(layer);
+        });
+
+        it('marker', function (done) {
+            var marker = new maptalks.Marker(map.getCenter(), {
+                properties : { height : 100 },
+                symbol : {
+                    'markerType' : 'ellipse',
+                    'markerHeight' : 2,
+                    'markerWidth' : 2
+                }
+            });
+            layer.config('enableHeight', true);
+            layer.addGeometry(marker);
+            map.setPitch(60);
+            layer.once('layerload', function () {
+                expect(layer).not.to.be.painted(0, 0);
+                expect(layer).to.be.painted(0, -93);
+                done();
+            });
+            map.addLayer(layer);
         });
     });
 
