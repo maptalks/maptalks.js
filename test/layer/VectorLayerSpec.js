@@ -516,8 +516,8 @@ describe('#VectorLayer', function () {
                 properties : { height : 100 },
                 symbol : {
                     'markerType' : 'ellipse',
-                    'markerHeight' : 2,
-                    'markerWidth' : 2
+                    'markerHeight' : 6,
+                    'markerWidth' : 6
                 }
             });
             layer.config('enableHeight', true);
