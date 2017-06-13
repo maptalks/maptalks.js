@@ -1,6 +1,5 @@
 import { GEOJSON_TYPES } from 'core/Constants';
 import { isNil, isArrayHasData, UID } from 'core/util';
-import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import { Geometry, GeometryCollection, LineString } from 'geometry';
 import Layer from './Layer';
@@ -177,9 +176,7 @@ class OverlayLayer extends Layer {
             return this;
         }
         this._initCache();
-        let fitCounter = 0;
-        const centerSum = new Coordinate(0, 0);
-        let extent = null;
+        const extent = new Extent();
         for (let i = 0, len = geometries.length; i < len; i++) {
             let geo = geometries[i];
             if (!geo) {
@@ -207,17 +204,7 @@ class OverlayLayer extends Layer {
                 geo.onAdd();
             }
             if (fitView === true) {
-                const geoCenter = geo.getCenter();
-                const geoExtent = geo.getExtent();
-                if (geoCenter && geoExtent) {
-                    centerSum._add(geoCenter);
-                    if (extent == null) {
-                        extent = geoExtent;
-                    } else {
-                        extent = extent._combine(geoExtent);
-                    }
-                    fitCounter++;
-                }
+                extent._combine(geo.getExtent());
             }
             /**
              * add event.
@@ -236,10 +223,9 @@ class OverlayLayer extends Layer {
         const map = this.getMap();
         if (map) {
             this._getRenderer().onGeometryAdd(geometries);
-            if (fitView && extent) {
+            if (fitView === true && !isNil(extent.xmin)) {
                 const z = map.getFitZoom(extent);
-                const center = centerSum._multi(1 / fitCounter);
-                map.setCenterAndZoom(center, z);
+                map.setCenterAndZoom(extent.getCenter(), z);
             }
         }
         /**
