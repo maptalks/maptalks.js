@@ -21,7 +21,7 @@ const options = {
  * @category ui
  * @extends ui.UIComponent
  * @param {Object} options - options defined in [ToolTip]{@link tooltip#options}
- * @memberOf ui
+ * @member of ui
  */
 class ToolTip extends UIComponent {
     // TODO:obtain class in super
@@ -44,8 +44,8 @@ class ToolTip extends UIComponent {
     addTo(owner) {
         if (owner instanceof Geometry) {
             owner._tooltip = this;
-            owner.on('mouseover', this.onMouseOver.bind(this));
-            owner.on('mouseout', this.onMouseOut.bind(this));
+            owner.on('mouseover', this.onMouseOver, this);
+            owner.on('mouseout', this.onMouseOut, this);
             return super.addTo(owner);
         } else {
             throw new Error('Invalid Geometry when add a tooltip.');
@@ -81,23 +81,20 @@ class ToolTip extends UIComponent {
     }
 
     onMouseOut() {
-        this.hide();
+        if(this.isVisible()) {
+            this.hide();
+        }
     }
+
     /**
-   * remove the tooltip
-   * @returns {UIComponent} this
-   */
-    remove() {
-        this.onRemove = function () {
-            if (this._owner) {
-                this._owner.off('mouseover', this.onMouseOver);
-                this._owner.off('mouseout', this.onMouseOut);
-                delete this._owner._tooltip;
-                delete this._owner;
-            }
-        };
-        super.remove();
-        return this;
+      * remove the tooltip, this method will be called by 'this.remove()'
+      */
+    onRemove() {
+        if (this._owner) {
+            this._owner.off('mouseover', this.onMouseOver, this);
+            this._owner.off('mouseout', this.onMouseOut, this);
+            delete this._owner._tooltip;
+        }
     }
 }
 
