@@ -216,7 +216,7 @@ export default class TileLayerDomRenderer extends Class {
         }
 
         const reposCached = this._preMapCenter && this._preCenterViewPoint &&
-            map._getPrjCenter().equals(this._preMapCenter) && !tileGrid['centerViewPoint'].equals(this._preCenterViewPoint);
+            map._getPrjCenter().equals(this._preMapCenter) && tileGrid['centerViewPoint'] && !tileGrid['centerViewPoint'].equals(this._preCenterViewPoint);
 
         for (let i = tiles.length - 1; i >= 0; i--) {
             const cachedTile = this._tiles[tiles[i]['id']];
@@ -610,8 +610,7 @@ export default class TileLayerDomRenderer extends Class {
             '_touchzoomstart _dragrotatestart' : this._pruneTiles,
             '_zooming'      : this.onZooming,
             '_zoomend'      : this.onZoomEnd,
-            // '_moveend _resize _dragrotateend' : this.render,
-            '_dragrotatestart'    : this.onDragRotateStart
+            '_dragrotateend' : this.render
         };
         return events;
     }
