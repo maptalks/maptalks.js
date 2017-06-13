@@ -8,7 +8,7 @@ import UIComponent from './UI';
  * @property {Object} options
  * @property {Number}  [options.width=300]     - default width
  * @property {String}  [options.animation=300]     - default fade, scale | fade,scale are an alternative to set
- * @memberOf ui.Tooltip
+ * @memberOf ui.ToolTip
  * @instance
  */
 const options = {
