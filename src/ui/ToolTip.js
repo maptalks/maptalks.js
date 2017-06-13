@@ -7,13 +7,14 @@ import UIComponent from './UI';
 /**
  * @property {Object} options
  * @property {Number}  [options.width=300]     - default width
- * @property {String}  [options.animation=300]     - default fade, scale | fade,scale are an alternative to set
+ * @property {String}  [options.animation='fade']     - default fade, scale | fade,scale are an alternative to set
  * @memberOf ui.ToolTip
  * @instance
  */
 const options = {
     'width': 150,
-    'animation': 'fade'
+    'animation': 'fade',
+    'cssclass': ''
 };
 /**
  * @classdesc
@@ -52,6 +53,13 @@ class ToolTip extends UIComponent {
         }
     }
 
+    /*
+    * set the ToolTip's content's css class name.
+    * @param {String} css class name - set for ToolTip's content.
+    */
+    setStyle(cssclassName) {
+        this._cssclassName = cssclassName;
+    }
     /**
     * get the UI Component's content
     * @returns {String} tooltip's content
@@ -60,13 +68,24 @@ class ToolTip extends UIComponent {
         return this._content;
     }
 
+    /**
+    * get the ToolTip's dom content
+    * @returns {Object} ToolTip's dom content
+    */
+    getDom() {
+        return this._dom;
+    }
+
     buildOn() {
         const dom = createEl('div');
         dom.className = 'maptalks-msgBox';
         dom.id = 'tipDiv';
         dom.style.width = options.width + 'px';
-        const content = `<div class="maptalks-msgContent">${this._content}</div>`;
+        //default css name is 'maptalks-msgContent'
+        this._cssclassName = this._cssclassName || 'maptalks-msgContent';
+        const content = `<div class="${this._cssclassName}">${this._content}</div>`;
         dom.innerHTML = content;
+        this._dom = dom;
         return dom;
     }
 
