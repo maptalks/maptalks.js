@@ -87,8 +87,8 @@ class ToolTip extends UIComponent {
     }
 
     /**
-      * remove the tooltip, this method will be called by 'this.remove()'
-      */
+    * remove the tooltip, this method will be called by 'this.remove()'
+    */
     onRemove() {
         if (this._owner) {
             this._owner.off('mouseover', this.onMouseOver, this);
