@@ -120,9 +120,9 @@ class Extent {
      * @param {Coordinate|Point} p - point or coordinate to add
      * @returns {Extent} a new extent
      */
-    add(p) {
+    add() {
         const e = new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
-        return e._add(p);
+        return e._add.apply(e, arguments);
     }
 
     _sub(p) {
@@ -145,8 +145,8 @@ class Extent {
         return this;
     }
 
-    _substract(p) {
-        return this._sub(p);
+    _substract() {
+        return this._sub.apply(this, arguments);
     }
 
     /**
@@ -154,9 +154,9 @@ class Extent {
      * @param {Coordinate|Point} p - point or coordinate to substract
      * @returns {Extent} a new extent
      */
-    sub(p) {
+    sub() {
         const e = new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax']);
-        return e._sub(p);
+        return e._sub.apply(e, arguments);
     }
 
     /**
@@ -164,8 +164,8 @@ class Extent {
      * @param {Coordinate|Point} p - point or coordinate to substract
      * @returns {Extent} a new extent
      */
-    substract(p) {
-        return this.sub(p);
+    substract() {
+        return this.sub.apply(this, arguments);
     }
 
 
