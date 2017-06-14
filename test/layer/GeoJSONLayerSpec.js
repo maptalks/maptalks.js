@@ -1,5 +1,5 @@
 
-describe('#GeoJSONLayer', function () {
+describe('VectorLayer with GeoJSON', function () {
     //examples are from geoJSON.org
     var geoJSONs = [
 
@@ -115,33 +115,36 @@ describe('#GeoJSONLayer', function () {
     });
 
     it('create', function () {
-        var count = geoJSONs.length + 2,
-            pos = geoJSONs.length - 1;
-        var layer = new maptalks.GeoJSONLayer('v', { 'visible' : true }).addTo(map);
-        layer.addData(geoJSONs);
+        var count = geoJSONs.length + 2;
+        var layer = new maptalks.VectorLayer('v', { 'visible' : true }).addTo(map);
+        layer.addGeometry(geoJSONs);
         var json = layer.toJSON();
         expect(json).to.be.ok();
-        expect(json['geojson']).to.have.length(count);
-        expect(json['geojson'].slice(0, pos)).to.be.eql(geoJSONs.slice(0, pos));
+        expect(json['geometries']).to.have.length(count);
+        var i, len = geoJSONs.length;
+        for (i = 0; i < len - 1; i++) {
+            expect(json['geometries'][i].feature.geometry).to.be.eql(geoJSONs[i]);
+        }
+        var collection = geoJSONs[len - 1];
+        for (i = len - 1; i < len - 1 + collection.features.length; i++) {
+            expect(json['geometries'][i].feature).to.be.eql(collection.features[i - len + 1]);
+        }
     });
 
     it('from/toJSON', function () {
-        var count = geoJSONs.length + 2,
-            pos = geoJSONs.length - 1;
-        var layer = new maptalks.GeoJSONLayer('v', geoJSONs).addTo(map);
+        var count = geoJSONs.length + 2;
+        var layer = new maptalks.VectorLayer('v', geoJSONs).addTo(map);
         var json = layer.toJSON();
         expect(json).to.be.ok();
-        expect(json['geojson']).to.have.length(count);
-        expect(json['geojson'].slice(0, pos)).to.be.eql(geoJSONs.slice(0, pos));
-
+        expect(json['geometries']).to.have.length(count);
         var layer2 = maptalks.Layer.fromJSON(json);
-        expect(layer2).to.be.a(maptalks.GeoJSONLayer);
+        expect(layer2).to.be.a(maptalks.VectorLayer);
         expect(layer2.getCount()).to.be.eql(count);
     });
 
     it('add again', function (done) {
         var count = geoJSONs.length + 2;
-        var layer = new maptalks.GeoJSONLayer('v', geoJSONs).addTo(map);
+        var layer = new maptalks.VectorLayer('v', geoJSONs).addTo(map);
         expect(layer.getCount()).to.be(count);
         map.removeLayer(layer);
         expect(layer.getCount()).to.be(count);
