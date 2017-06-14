@@ -131,6 +131,11 @@ describe('VectorLayer with GeoJSON', function () {
         }
     });
 
+    it('create with only one geometry', function () {
+        var layer = new maptalks.VectorLayer('v', geoJSONs[2]).addTo(map);
+        expect(layer.getCount()).to.be.eql(1);
+    });
+
     it('from/toJSON', function () {
         var count = geoJSONs.length + 2;
         var layer = new maptalks.VectorLayer('v', geoJSONs).addTo(map);

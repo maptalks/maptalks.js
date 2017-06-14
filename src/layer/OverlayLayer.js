@@ -1,5 +1,5 @@
 import { GEOJSON_TYPES } from 'core/Constants';
-import { isNil, isArrayHasData, UID } from 'core/util';
+import { isNil, UID, isObject } from 'core/util';
 import Extent from 'geo/Extent';
 import { Geometry, GeometryCollection, LineString } from 'geometry';
 import Layer from './Layer';
@@ -167,16 +167,19 @@ class OverlayLayer extends Layer {
             const last = arguments[count - 1];
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
             fitView = last;
-            if (last instanceof Geometry) {
+            if (isObject(last)) {
                 geometries.push(last);
                 fitView = false;
             }
             return this.addGeometry(geometries, fitView);
-        } else if (!isArrayHasData(geometries)) {
+        } else if (geometries.length === 0) {
             return this;
         }
         this._initCache();
-        const extent = new Extent();
+        let extent;
+        if (fitView === true) {
+            extent = new Extent();
+        }
         for (let i = 0, len = geometries.length; i < len; i++) {
             let geo = geometries[i];
             if (!geo) {
@@ -184,40 +187,13 @@ class OverlayLayer extends Layer {
             }
             if (!(geo instanceof Geometry)) {
                 geo = Geometry.fromJSON(geo);
-            }
-            const geoId = geo.getId();
-            if (!isNil(geoId)) {
-                if (!isNil(this._geoMap[geoId])) {
-                    throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + geoId + ', at index:' + i);
+                if (Array.isArray(geo)) {
+                    geo.forEach(g => this._add(g, extent, i));
                 }
-                this._geoMap[geoId] = geo;
             }
-            const internalId = UID();
-            //内部全局唯一的id
-            geo._setInternalId(internalId);
-            this._geoList.push(geo);
-            if (this.onAddGeometry) {
-                this.onAddGeometry(geo);
+            if (!Array.isArray(geo)) {
+                this._add(geo, extent, i);
             }
-            geo._bindLayer(this);
-            if (geo.onAdd) {
-                geo.onAdd();
-            }
-            if (fitView === true) {
-                extent._combine(geo.getExtent());
-            }
-            /**
-             * add event.
-             *
-             * @event Geometry#add
-             * @type {Object}
-             * @property {String} type - add
-             * @property {Geometry} target - geometry
-             * @property {Layer} layer - the layer added to.
-             */
-            geo._fireEvent('add', {
-                'layer': this
-            });
         }
         this._sortGeometries();
         const map = this.getMap();
@@ -241,6 +217,42 @@ class OverlayLayer extends Layer {
             'geometries': geometries
         });
         return this;
+    }
+
+    _add(geo, extent, i) {
+        const geoId = geo.getId();
+        if (!isNil(geoId)) {
+            if (!isNil(this._geoMap[geoId])) {
+                throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + geoId + ', at index:' + i);
+            }
+            this._geoMap[geoId] = geo;
+        }
+        const internalId = UID();
+        //内部全局唯一的id
+        geo._setInternalId(internalId);
+        this._geoList.push(geo);
+        if (this.onAddGeometry) {
+            this.onAddGeometry(geo);
+        }
+        geo._bindLayer(this);
+        if (geo.onAdd) {
+            geo.onAdd();
+        }
+        if (extent) {
+            extent._combine(geo.getExtent());
+        }
+        /**
+         * add event.
+         *
+         * @event Geometry#add
+         * @type {Object}
+         * @property {String} type - add
+         * @property {Geometry} target - geometry
+         * @property {Layer} layer - the layer added to.
+         */
+        geo._fireEvent('add', {
+            'layer': this
+        });
     }
 
     /**
