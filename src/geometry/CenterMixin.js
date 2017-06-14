@@ -85,7 +85,7 @@ export default function (Base) {
         }
 
         _computeCenter() {
-            return this._coordinates;
+            return this._coordinates ? this._coordinates.copy() : null;
         }
 };
 }
