@@ -7,7 +7,6 @@ import {
     isString,
     isFunction,
     isNumber,
-    round,
     executeWhen
 } from 'core/util';
 import Class from 'core/Class';
@@ -518,8 +517,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Number} zoom fit for scale starting from fromZoom
      */
     getZoomForScale(scale, fromZoom) {
+        const zoom = this.getZoom();
         if (isNil(fromZoom)) {
-            fromZoom = this.getZoom();
+            fromZoom = zoom;
+        }
+        if (scale === 1 && fromZoom === zoom) {
+            return zoom;
         }
         const res = this._getResolution(fromZoom),
             resolutions = this._getResolutions(),
@@ -733,36 +736,17 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (extent['xmin'] === extent['xmax'] && extent['ymin'] === extent['ymax']) {
             return this.getMaxZoom();
         }
-        const projection = this.getProjection(),
-            x = Math.abs(extent['xmin'] - extent['xmax']),
-            y = Math.abs(extent['ymin'] - extent['ymax']),
-            projectedExtent = projection.project(new Coordinate(x, y)),
-            resolutions = this._getResolutions();
-        let xz = -1,
-            yz = -1;
-        for (let i = this.getMinZoom(), len = this.getMaxZoom(); i < len; i++) {
-            if (round(projectedExtent.x / resolutions[i]) >= this.width) {
-                if (xz === -1) {
-                    xz = i;
-                }
-            }
-            if (round(projectedExtent.y / resolutions[i]) >= this.height) {
-                if (yz === -1) {
-                    yz = i;
-                }
-            }
-            if (xz > -1 && yz > -1) {
-                break;
-            }
-        }
-        let ret = xz < yz ? xz : yz;
-        if (ret === -1) {
-            ret = xz < yz ? yz : xz;
-        }
-        if (ret === -1) {
-            return this.getMaxZoom();
-        }
-        return ret;
+        const size = this.getSize();
+        const containerExtent = extent.convertTo(p => this.coordinateToContainerPoint(p));
+        const w = containerExtent.getWidth(),
+            h = containerExtent.getHeight();
+        const scaleX = size['width'] / w,
+            scaleY = size['height'] / h;
+        const resolutions = this._getResolutions();
+        const scale = resolutions[0] < resolutions[resolutions.length - 1] ?
+            Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
+        const zoom = this.getZoomForScale(scale);
+        return zoom;
     }
 
     /**
