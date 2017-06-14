@@ -313,7 +313,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Coordinate}
      */
     getCenter() {
-        return this._computeCenter(this._getMeasurer()).copy();
+        return this._computeCenter(this._getMeasurer());
     }
 
     /**
