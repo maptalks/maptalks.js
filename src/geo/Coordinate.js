@@ -134,8 +134,8 @@ class Coordinate {
         return this;
     }
 
-    _substract(x, y) {
-        return this._sub(x, y);
+    _substract() {
+        return this._sub.apply(this, arguments);
     }
 
     /**
@@ -160,8 +160,8 @@ class Coordinate {
      * @param {Coordinate} coordinate - coordinate to substract
      * @return {Coordinate} result
      */
-    substract(x, y) {
-        return this.sub(x, y);
+    substract() {
+        return this.sub.apply(this, arguments);
     }
 
     /**
