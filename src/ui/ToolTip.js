@@ -54,26 +54,27 @@ class ToolTip extends UIComponent {
     }
 
     /*
-    * set the ToolTip's content's css class name.
+    * set ToolTip's content's css class name.
     * @param {String} css class name - set for ToolTip's content.
     */
     setStyle(cssclassName) {
         this._cssclassName = cssclassName;
     }
+
+    /**
+   * get ToolTip's  content's css class name
+   * @returns {String} css class name - set for ToolTip's content.
+   */
+    getStyle() {
+        return this._cssclassName;
+    }
+
     /**
     * get the UI Component's content
     * @returns {String} tooltip's content
     */
     getContent() {
         return this._content;
-    }
-
-    /**
-    * get the ToolTip's dom content
-    * @returns {Object} ToolTip's dom content
-    */
-    getDom() {
-        return this._dom;
     }
 
     buildOn() {
@@ -85,7 +86,6 @@ class ToolTip extends UIComponent {
         this._cssclassName = this._cssclassName || 'maptalks-msgContent';
         const content = `<div class="${this._cssclassName}">${this._content}</div>`;
         dom.innerHTML = content;
-        this._dom = dom;
         return dom;
     }
 
