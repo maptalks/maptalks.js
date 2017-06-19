@@ -1660,15 +1660,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._loaded = true;
         this._callOnLoadHooks();
         this._initTime = now();
-        /**
-         * load event, fired when the map completes loading.
-         *
-         * @event Map#load
-         * @type {Object}
-         * @property {String} type - load
-         * @property {Map} target - map
-         */
-        this._fireEvent('load');
     }
 
     _initRenderer() {
