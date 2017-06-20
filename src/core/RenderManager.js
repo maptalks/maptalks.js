@@ -1,20 +1,38 @@
 import merge from './../utils/merge';
 import { stamp } from './../utils/stamp';
-import WebGLRenderer from './../renderer/WebGLRenderer';
+import WebGLRenderer from './webgl/WebGLRenderer';
+import Event from './../utils/Event';
+import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
 
 /**
  * contain two dimensional
  * -renderer,the paint renderer method
- * -
+ * -data production queue
+ * so,if we want to render geometry,we shoud produce data by customer DataManage
  * @class RenderManager
  */
-export default class RenderManager {
-    //render instance
+export default class RenderManager extends Event {
+    /**
+     * render instance
+     * @memberof RenderManager
+     * @member {Renderer}
+     */
     _renderer;
-    //the default options for RenderManager
-    _options = {};
-    //html canvas
+    /**
+     * html canvas
+     * @memberof RenderManager
+     * @member {htmlcanvas}
+     */
     _view;
+    /**
+     * @memberof RenderManager
+     */
+    _width;
+    /**
+     * 
+     * @memberof RenderManager
+     */
+    _height;
     /**
      * 
      * @param {Object} [options] 
@@ -23,16 +41,18 @@ export default class RenderManager {
      * @param {number} [options.height]
      */
     constructor(options) {
-        this._options=merge(this._options, options||{});
-        // get/create canvas and resize it
-        this._view = this._options.view || document.createElement('canvas');
-        this._view.width = this._options.width;
-        this._view.height = this._options.height;
-        this._renderer = this._options.renderType === 'webgl' ? new WebGLRenderer(this._view, this._options) : null;
+        super();
+        this._view = options.view || document.createElement('canvas');
+        this._view.width = this._width = options.width;
+        this._view.height = this._height = options.height;
+        this._renderer = options.renderType === 'webgl' ? new WebGLRenderer(this._view, this._options) : null;
+        this.addEventPopNode(this._renderer);
+        this.on(_KIWI_EVENT_RESIZE, this._onResize);
     }
 
-    get renderer(){
-        return this._renderer;
+    _onResize(eventData) {
+        this._width = eventData.width || this._width;
+        this._height = eventData.height || this.height;
     }
 
 }

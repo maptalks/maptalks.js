@@ -13,7 +13,7 @@ describe("test core function", () => {
         });
 
         container.width=100;
-
+        container.height=200;
         it('#test event fire',()=>{
             expect(true).to.be.equal(true);
         })
