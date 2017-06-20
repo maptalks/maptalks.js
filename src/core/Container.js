@@ -79,6 +79,10 @@ class Container extends Event {
         return this._height;
     }
 
+    get camera(){
+
+    }
+
     /**
      * 
      * @param {Object} rNode, 

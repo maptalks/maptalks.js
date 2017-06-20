@@ -1,4 +1,4 @@
-export default vertext = `#version 300 es
+#version 300 es
 
 // an attribute is an input (in) to a vertex shader.
 // It will receive data from a buffer
@@ -17,4 +17,4 @@ void main() {
   gl_Position = u_matrix * a_position;
   // Pass the color to the fragment shader.
   v_color = a_color;
-}`;
+}

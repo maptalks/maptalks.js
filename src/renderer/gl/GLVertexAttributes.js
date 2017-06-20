@@ -50,7 +50,7 @@ class GLVertexAttribute {
         this._gl = gl;
         this._isWebgl2 = options.isWebgl2;
         this._gl.GLVertexAttribute = gl.GLVertexAttribute || {};
-    }
+    };
 
     get MaxAttributes() {
         return this._gl.getParameter(GLConstants.MAX_VERTEX_ATTRIBS);
@@ -58,7 +58,7 @@ class GLVertexAttribute {
 
     get HasDivisor() {
         return this._isWebgl2 && this._gl.getExtension(ANGLE_instanced_arrays);
-    }
+    };
 
     /**
      * 
@@ -67,19 +67,19 @@ class GLVertexAttribute {
      */
     getAttrib(location,pName){
         this._gl.getVertexAttrib(location,pName);
-    }
+    };
 
     /**
      * turn on the location
      * @param {GLunit} location 
      */
-    turnOn(location){
+    enableAttributeLocation(location){
         this._gl.enableVertexAttribArray(location);
-    }
+    };
 
-    turnOff(location){
+    disableAttributeLocation(location){
         if(location===0) return;
         this._gl.disableVertexAttribArray(location);
-    }
+    };
 
 }

@@ -6,11 +6,16 @@ import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
 
 
 /**
+ * like mapbox-gl's painter
+ * a renderer contain two variable
+ * - transform,from camera
+ * - context,the gl drawing context
+ * 
  * abstract base renderer class
  * @author yellow 2017/5/24
  * @class Renderer
  */
-class Renderder extends Event {
+class WebGLRenderder extends Event {
     /**
      * 
      * @memberof Renderder
@@ -112,4 +117,4 @@ class Renderder extends Event {
     }
 }
 
-export default Renderder;
+export default WebGLRenderder;
