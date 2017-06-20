@@ -7,7 +7,8 @@ import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
 /**
  * contain two dimensional
  * -renderer,the paint renderer method
- * -
+ * -data production queue
+ * so,if we want to render geometry,we shoud produce data by customer DataManage
  * @class RenderManager
  */
 export default class RenderManager extends Event {
