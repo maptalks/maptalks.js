@@ -50,6 +50,38 @@ describe('#Layer', function () {
             layer1.setId('2');
             expect(layer1).to.be.eql(map.getLayer('2'));
         });
+
+        it('prevent loading in onLoad', function (done) {
+            var layer = new maptalks.VectorLayer('1');
+            var ready = false;
+            layer.onLoad = function () {
+                if (!ready) {
+                    setTimeout(function () {
+                        ready = true;
+                        layer.load();
+                    }, 100);
+                }
+                return ready;
+            };
+            layer.on('layerload', function () {
+                expect(ready).to.be.ok();
+                done();
+            });
+            map.once('frameend', function () {
+                expect(layer.isLoaded()).not.to.be.ok();
+            });
+            map.addLayer(layer);
+
+        });
+
+        it('onAdd is called when added to map', function (done) {
+            var layer = new maptalks.VectorLayer('1');
+            layer.onAdd = function () {
+                done();
+            };
+            map.addLayer(layer);
+
+        });
     });
 
     describe('change order of layers', function () {

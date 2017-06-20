@@ -59,9 +59,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!this.getMap()) {
             return this;
         }
-        this._initRenderer();
-        const zIndex = this.getZIndex();
-        if (this.onAdd()) {
+        if (this.onLoad()) {
+            this._initRenderer();
+            const zIndex = this.getZIndex();
             if (!isNil(zIndex)) {
                 this._renderer.setZIndex(zIndex);
                 if (!this.isCanvasRender()) {
@@ -347,7 +347,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return {Boolean} true to continue loading, false to cease.
      * @protected
      */
-    onAdd() {
+    onLoad() {
         return true;
     }
 
@@ -366,6 +366,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this.map = map;
         this.setZIndex(zIndex);
         this._switchEvents('on', this);
+
+        if (this.onAdd) {
+            this.onAdd();
+        }
 
         this.fire('add');
     }
