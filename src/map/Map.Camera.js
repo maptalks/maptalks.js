@@ -209,7 +209,9 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _calcMatrices() {
-        if (!this.height) return;
+        if (!this.height || (typeof Float64Array === 'undefined')) {
+            return;
+        }
         if (!this._fov) {
             this._fov = DEFAULT_FOV;
         }
