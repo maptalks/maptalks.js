@@ -111,15 +111,45 @@ export default class TileLayerDomRenderer extends Class {
         }
         const map = this.getMap();
         const param = this._zoomParam;
-        const zoom = Math.floor(param['from']);
+        const zoom = this._tileZoom;
         if (this._levelContainers && this._levelContainers[zoom]) {
             const matrix = param.matrix['view'];
             if (map.domCssMatrix) {
-                this._setCssMatrix(param['origin'], zoom, matrix[0]);
+                this._setCssMatrix(param['origin'], matrix[0]);
             } else {
                 setTransformMatrix(this._levelContainers[zoom], matrix);
             }
         }
+        delete this._zoomParam;
+    }
+
+    _setCssMatrix(origin, scale) {
+        const map = this.getMap();
+        if (!map.domCssMatrix) {
+            return;
+        }
+        const pitch = map.getPitch();
+        const size = map.getSize();
+        const m = mat4.create();
+        const matOffset = [
+            (origin.x - size['width'] / 2)  * (1 - scale),
+            //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
+            (origin.y - size['height'] / 2) * (1 - scale) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
+            0
+        ];
+
+        // rotation is right
+        mat4.translate(m, m, matOffset);
+        mat4.multiply(m, m, map.domCssMatrix);
+        mat4.scale(m, m, [scale, scale, 1]);
+
+        // mat4.translate(m, m, matOffset);
+        // mat4.scale(m, m, [scale, scale, 1]);
+        // mat4.multiply(m, m, map.domCssMatrix);
+
+        const offset = map.offsetPlatform();
+        const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(m) + ')';
+        this._levelContainers[this._tileZoom].style[TRANSFORM] = transform;
     }
 
     _drawOnMoving() {
@@ -150,21 +180,19 @@ export default class TileLayerDomRenderer extends Class {
             return;
         }
 
-        const map = this.getMap();
-
         const queue = this._getTileQueue(tileGrid);
 
-        this._currentTileZoom = map.getZoom();
+        this._tileZoom = tileGrid['zoom'];
 
         this._prepareTileContainer();
 
         if (queue.length > 0) {
-            const container = this._getTileContainer();
+            const container = this._getTileContainer(tileGrid['zoom']);
             const fragment = document.createDocumentFragment();
             for (let i = 0, l = queue.length; i < l; i++) {
                 fragment.appendChild(this._loadTile(queue[i]));
             }
-            this._appendTileFragment(container, fragment);
+            container.tile.appendChild(fragment);
         }
         this._updateTileSize();
         if (queue.length === 0) {
@@ -252,57 +280,58 @@ export default class TileLayerDomRenderer extends Class {
         return queue;
     }
 
+
+    /**
+     * Update container's transform style in the following cases :
+     * 1 at an integer zoom
+     * 2 at a fractional zoom
+     * 3 with domCssMatrix(pitch/bearing) at an integer zoom
+     * 4 with domCssMatrix(pitch/bearing) at a fractional zoom
+     * @private
+     */
     _prepareTileContainer() {
-        const map = this.getMap();
-        const mat = map.domCssMatrix;
-        const container = this._getTileContainer();
-        if (!mat) {
-            removeTransform(container);
-            if (container.style.width || container.style.height) {
-                container.style.width = null;
-                container.style.height = null;
-                removeTransform(container.childNodes[0]);
-            }
-        } else {
-            const size = map.getSize();
+        const map = this.getMap(),
+            cssMat = map.domCssMatrix,
+            container = this._getTileContainer(this._tileZoom),
+            size = map.getSize(),
+            zoomFraction = map._getResolution(this._tileZoom) / map._getResolution();
+        if (cssMat) {
             if (parseInt(container.style.width) !== size['width'] || parseInt(container.style.height) !== size['height']) {
                 container.style.width = size['width'] + 'px';
                 container.style.height = size['height'] + 'px';
             }
-            const matrix = join(mat);
+            let matrix;
+            if (zoomFraction !== 1) {
+                // fractional zoom, multiply current domCssMat with zoomFraction
+                const m = mat4.create();
+                mat4.multiply(m, m, cssMat);
+                mat4.scale(m, m, [zoomFraction, zoomFraction, 1]);
+                matrix = join(m);
+            } else {
+                matrix = join(cssMat);
+            }
             const mapOffset = map.offsetPlatform();
-            container.childNodes[0].style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x) + 'px, ' + (this._camOffset.y + mapOffset.y) + 'px, 0px)';
+            container.tile.style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x / zoomFraction) + 'px, ' + (this._camOffset.y + mapOffset.y / zoomFraction) + 'px, 0px)';
             container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
+        } else {
+            this._resetDomCssMatrix();
+            if (zoomFraction !== 1) {
+                // fractional zoom
+                const matrix = [zoomFraction, 0, 0, zoomFraction, size['width'] / 2 *  (1 - zoomFraction), size['height'] / 2 *  (1 - zoomFraction)];
+                setTransformMatrix(container.tile, matrix);
+            } else {
+                removeTransform(container.tile);
+            }
         }
     }
 
-    _setCssMatrix(origin, zoom, scale) {
-        const map = this.getMap();
-        if (!map.domCssMatrix) {
-            return;
+    _resetDomCssMatrix() {
+        const container = this._getTileContainer(this._tileZoom);
+        removeTransform(container);
+        if (container.style.width || container.style.height) {
+            container.style.width = null;
+            container.style.height = null;
         }
-        const pitch = map.getPitch();
-        const size = map.getSize();
-        const m = mat4.create();
-        const matOffset = [
-            (origin.x - size['width'] / 2)  * (1 - scale),
-            //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
-            (origin.y - size['height'] / 2) * (1 - scale) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
-            0
-        ];
-
-        // rotation is right
-        mat4.translate(m, m, matOffset);
-        mat4.multiply(m, m, map.domCssMatrix);
-        mat4.scale(m, m, [scale, scale, 1]);
-
-        // mat4.translate(m, m, matOffset);
-        // mat4.scale(m, m, [scale, scale, 1]);
-        // mat4.multiply(m, m, map.domCssMatrix);
-
-        const offset = map.offsetPlatform();
-        const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(m) + ')';
-        this._levelContainers[zoom].style[TRANSFORM] = transform;
     }
 
     _getTileSize() {
@@ -314,7 +343,7 @@ export default class TileLayerDomRenderer extends Class {
         // https://bugs.chromium.org/p/chromium/issues/detail?id=600120
         // related issue by Leaflet:
         // https://github.com/Leaflet/Leaflet/issues/3575
-        if (Browser.webkit && (map.isTransforming() || map.isZooming())) {
+        if (Browser.webkit && (map.isTransforming() || map.isZooming() || map.getZoom() !== this._tileZoom)) {
             tileSize[0]++;
             tileSize[1]++;
         }
@@ -484,7 +513,7 @@ export default class TileLayerDomRenderer extends Class {
             return;
         }
 
-        const zoom = this._currentTileZoom;
+        const zoom = this._tileZoom;
 
         if (!this.layer.isVisible()) {
             this._removeAllTiles();
@@ -553,11 +582,10 @@ export default class TileLayerDomRenderer extends Class {
         }
     }
 
-    _getTileContainer() {
+    _getTileContainer(zoom) {
         if (!this._levelContainers) {
             this._levelContainers = {};
         }
-        const zoom = this.getMap().getZoom();
         if (!this._levelContainers[zoom]) {
             const container = this._levelContainers[zoom] = createEl('div', 'maptalks-tilelayer-level');
             container.style.cssText = POSITION0;
@@ -566,16 +594,10 @@ export default class TileLayerDomRenderer extends Class {
             tileContainer.style.cssText = POSITION0;
             tileContainer.style.willChange = 'transform';
             container.appendChild(tileContainer);
-
+            container.tile = tileContainer;
             this._container.appendChild(container);
         }
         return this._levelContainers[zoom];
-    }
-
-    _appendTileFragment(container, fragment) {
-        if (container.childNodes[0]) {
-            container.childNodes[0].appendChild(fragment);
-        }
     }
 
     _createLayerContainer() {
@@ -650,6 +672,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     onZoomEnd(param) {
+        delete this._zoomParam;
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }
