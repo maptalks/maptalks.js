@@ -477,12 +477,17 @@ export function setTransform(el, offset) {
 }
 
 export function setTransformMatrix(el, m) {
-    el.style[TRANSFORM] = 'matrix(' + (isString(m) ? m : m.join()) + ')';
+    const text = 'matrix(' + (isString(m) ? m : m.join()) + ')';
+    if (el.style[TRANSFORM] !== text) {
+        el.style[TRANSFORM] = text;
+    }
     return this;
 }
 
 export function removeTransform(el) {
-    el.style[TRANSFORM] = '';
+    if (el.style[TRANSFORM]) {
+        el.style[TRANSFORM] = '';
+    }
     return this;
 }
 
