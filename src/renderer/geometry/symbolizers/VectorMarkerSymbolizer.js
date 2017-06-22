@@ -83,13 +83,12 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
         const anchor = this._getAnchor(image.width, image.height);
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
-            let point = cookedPoints[i].sub(anchor);
+            let point = cookedPoints[i];
             const origin = this._rotate(ctx, point, this._getRotationAt(i));
             if (origin) {
                 point = origin;
             }
-
-            Canvas.image(ctx, image, point.x, point.y);
+            Canvas.image(ctx, image, point.x - anchor.x, point.y - anchor.y);
             if (origin) {
                 ctx.restore();
             }
@@ -281,7 +280,9 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'markerHeight': getValueOrDefault(s['markerHeight'], 10),
 
             'markerDx': getValueOrDefault(s['markerDx'], 0),
-            'markerDy': getValueOrDefault(s['markerDy'], 0)
+            'markerDy': getValueOrDefault(s['markerDy'], 0),
+
+            'markerRotation' : getValueOrDefault(s['markerRotation'], 0)
         };
         //markerOpacity覆盖fillOpacity和lineOpacity
         if (isNumber(s['markerOpacity'])) {

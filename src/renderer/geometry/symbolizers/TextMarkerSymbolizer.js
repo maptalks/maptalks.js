@@ -125,7 +125,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
 
             'textHorizontalAlignment': getValueOrDefault(s['textHorizontalAlignment'], 'middle'), //left | middle | right | auto
             'textVerticalAlignment': getValueOrDefault(s['textVerticalAlignment'], 'middle'), // top | middle | bottom | auto
-            'textAlign': getValueOrDefault(s['textAlign'], 'center') //left | right | center | auto
+            'textAlign': getValueOrDefault(s['textAlign'], 'center'), //left | right | center | auto
+
+            'textRotation' : getValueOrDefault(s['textRotation'], 0)
         };
 
         return result;
