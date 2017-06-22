@@ -1,4 +1,4 @@
-export default fragment = `#version 300 es
+#version 300 es
 
 precision mediump float;
 
@@ -10,4 +10,4 @@ out vec4 outColor;
 
 void main() {
   outColor = v_color;
-}`;
+};

@@ -3,7 +3,7 @@
  * @author yellow date 2017/6/15
  */
 
-import merge from './../../../merge';
+import merge from './../../utils/merge';
 import GLConstants from './GLConstants';
 
 const Limits = {
@@ -45,7 +45,7 @@ class GLLimits {
         this._limits = merge({}, Limits);
         this._includeParamter(this._gl);
         this._map();
-    }
+    };
 
     _includeParamter(gl) {
         this._limits.maximumCombinedTextureImageUnits = gl.getParameter(GLConstants.MAX_COMBINED_TEXTURE_IMAGE_UNITS); // min: 8
@@ -64,7 +64,7 @@ class GLLimits {
         [this._limits.minimumAliasedLineWidth, this._limits.maximumAliasedLineWidth] = gl.getParameter(GLConstants.ALIASED_LINE_WIDTH_RANGE);    //must include 1
         [this._limits.minimumAliasedPointSize, this._limits.maximumAliasedPointSize] = gl.getParameter(GLConstants.ALIASED_POINT_SIZE_RANGE);    //must include 1
         [this._limits.maximumViewportWidth, this._limits.maximumViewportHeight] = gl.getParameter(GLConstants.MAX_VIEWPORT_DIMS);
-    }
+    };
     /**
      * map the limits to GLLimits instance
      */
@@ -76,7 +76,7 @@ class GLLimits {
                     this[key] = target;
             }
         }
-    }
+    };
 
 }
 

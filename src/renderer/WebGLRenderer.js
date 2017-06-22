@@ -1,16 +1,21 @@
 
-import { matrix } from 'kiwi.matrix';
+import glMatrix from 'kiwi.matrix';
 import Event from './../utils/Event';
 import merge from './../utils/merge';
 import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
 
 
 /**
+ * like mapbox-gl's painter
+ * a renderer contain two variable
+ * - transform,from camera
+ * - context,the gl drawing context
+ * 
  * abstract base renderer class
  * @author yellow 2017/5/24
  * @class Renderer
  */
-class Renderder extends Event {
+class WebGLRenderder extends Event {
     /**
      * 
      * @memberof Renderder
@@ -80,7 +85,7 @@ class Renderder extends Event {
         this._height = this._options.height;
         this._resolution = this._options.roundPixels ? Math.floor(this._width / this._height) : this._width / this._height;
         //cause of unknown length,_bufferData don't need to be created
-        //this._bufferData= new matrix.mat.ARRAY_TYPE(10);
+        //this._bufferData= new glMatrix.mat.ARRAY_TYPE(10);
         this.on(_KIWI_EVENT_RESIZE, this._onResize);
     }
     /**
@@ -112,4 +117,4 @@ class Renderder extends Event {
     }
 }
 
-export default Renderder;
+export default WebGLRenderder;

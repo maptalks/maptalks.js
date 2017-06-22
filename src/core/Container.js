@@ -4,7 +4,7 @@
 
 import Event from './../utils/Event';
 import merge from './../utils/merge';
-import RenderManager from './../renderer/RenderManager';
+import RenderManager from './RenderManager';
 import { _KIWI_EVENT_RESIZE } from './EventNames';
 
 const defaultOptions = {
@@ -77,6 +77,10 @@ class Container extends Event {
 
     get height() {
         return this._height;
+    }
+
+    get camera(){
+
     }
 
     /**
