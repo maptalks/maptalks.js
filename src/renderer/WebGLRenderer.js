@@ -1,5 +1,5 @@
 
-import { matrix } from 'kiwi.matrix';
+import glMatrix from 'kiwi.matrix';
 import Event from './../utils/Event';
 import merge from './../utils/merge';
 import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
@@ -85,7 +85,7 @@ class WebGLRenderder extends Event {
         this._height = this._options.height;
         this._resolution = this._options.roundPixels ? Math.floor(this._width / this._height) : this._width / this._height;
         //cause of unknown length,_bufferData don't need to be created
-        //this._bufferData= new matrix.mat.ARRAY_TYPE(10);
+        //this._bufferData= new glMatrix.mat.ARRAY_TYPE(10);
         this.on(_KIWI_EVENT_RESIZE, this._onResize);
     }
     /**

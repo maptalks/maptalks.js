@@ -1,6 +1,6 @@
 import merge from './../utils/merge';
 import { stamp } from './../utils/stamp';
-import WebGLRenderer from './webgl/WebGLRenderer';
+import WebGLRenderer from './../renderer/WebGLRenderer';
 import Event from './../utils/Event';
 import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
 

@@ -1,1 +1,1 @@
-import {matrix} from 'kiwi.matrix';
+import Container from './core/Container';
