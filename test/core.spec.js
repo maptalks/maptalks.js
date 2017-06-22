@@ -5,21 +5,21 @@ import Context from './../src/renderer/Context';
 
 describe("test core function", () => {
 
-    describe("#evnet fire on remove test", () => {
+    // describe("#evnet fire on remove test", () => {
 
-        let container = new Container({
-            renderType: 'webgl',
-            width: 300,
-            height: 300
-        });
+    //     let container = new Container({
+    //         renderType: 'webgl',
+    //         width: 300,
+    //         height: 300
+    //     });
 
-        container.width=100;
-        container.height=200;
-        it('#test event fire',()=>{
-            expect(true).to.be.equal(true);
-        });
+    //     container.width=100;
+    //     container.height=200;
+    //     it('#test event fire',()=>{
+    //         expect(true).to.be.equal(true);
+    //     });
 
-    });
+    // });
 
     describe('#context', () => {
 
@@ -29,6 +29,8 @@ describe("test core function", () => {
         document.body.appendChild(cvs);
 
         let ctx = new Context(cvs);
+        
+
     });
 
 });
