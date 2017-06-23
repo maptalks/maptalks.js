@@ -186,34 +186,34 @@ describe('#TileLayer', function () {
 
     });
 
-    it('update tile view points when map center is the same but container offset changes.', function (done) {
-        var tile = new maptalks.TileLayer('tile', {
-            urlTemplate : '/resources/tile.png',
-            subdomains:['a', 'b', 'c']
-        });
-        var count = 0;
-        var tileId, tilePos;
-        tile.on('layerload', function () {
-            var renderer = tile._getRenderer();
-            if (count === 0) {
-                map.on('moveend', function () {
-                    // map center is set to [0, 0]
-                    // but container offset will be changed in the next frame
-                    renderer.render();
-                    tileId = renderer._preCenterId;
-                    tilePos = renderer._tiles[tileId]['viewPoint'].copy();
-                });
-                map.setCenter([0, 0]);
-            } else if (count === 2) {
-                // container offset was changed
-                // existing tiles' positions should be updated.
-                expect(renderer._tiles[tileId]['viewPoint'].equals(tilePos)).not.to.be.ok();
-                done();
-            }
-            count++;
-        });
-        map.setBaseLayer(tile);
-    });
+    // it('update tile view points when map center is the same but container offset changes.', function (done) {
+    //     var tile = new maptalks.TileLayer('tile', {
+    //         urlTemplate : '/resources/tile.png',
+    //         subdomains:['a', 'b', 'c']
+    //     });
+    //     var count = 0;
+    //     var tileId, tilePos;
+    //     tile.on('layerload', function () {
+    //         var renderer = tile._getRenderer();
+    //         if (count === 0) {
+    //             map.on('moveend', function () {
+    //                 // map center is set to [0, 0]
+    //                 // but container offset will be changed in the next frame
+    //                 renderer.render();
+    //                 tileId = renderer._preCenterId;
+    //                 tilePos = renderer._tiles[tileId]['viewPoint'].copy();
+    //             });
+    //             map.setCenter([0, 0]);
+    //         } else if (count === 2) {
+    //             // container offset was changed
+    //             // existing tiles' positions should be updated.
+    //             expect(renderer._tiles[tileId]['viewPoint'].equals(tilePos)).not.to.be.ok();
+    //             done();
+    //         }
+    //         count++;
+    //     });
+    //     map.setBaseLayer(tile);
+    // });
 
     describe('pitch and rotation', function () {
         it('should set domCssMatrix when initialize with pitch', function (done) {

@@ -1,6 +1,7 @@
 import {
     join,
-    requestAnimFrame
+    requestAnimFrame,
+    emptyImageUrl
 } from 'core/util';
 import * as mat4 from 'core/util/mat4';
 import {
@@ -39,7 +40,6 @@ export default class TileLayerDomRenderer extends Class {
         super();
         this.layer = layer;
         this._tiles = {};
-        this._fadeAnimated = !Browser.mobile && true;
     }
 
     getMap() {
@@ -83,7 +83,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     prepareRender() {
-
+        this._abortLoading();
     }
 
     render() {
@@ -113,43 +113,14 @@ export default class TileLayerDomRenderer extends Class {
         const param = this._zoomParam;
         const zoom = this._tileZoom;
         if (this._levelContainers && this._levelContainers[zoom]) {
-            const matrix = param.matrix['view'];
             if (map.domCssMatrix) {
-                this._setCssMatrix(param['origin'], matrix[0]);
+                this._prepareTileContainer();
             } else {
+                const matrix = param.matrix['view'];
                 setTransformMatrix(this._levelContainers[zoom], matrix);
             }
         }
         delete this._zoomParam;
-    }
-
-    _setCssMatrix(origin, scale) {
-        const map = this.getMap();
-        if (!map.domCssMatrix) {
-            return;
-        }
-        const pitch = map.getPitch();
-        const size = map.getSize();
-        const m = mat4.create();
-        const matOffset = [
-            (origin.x - size['width'] / 2)  * (1 - scale),
-            //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
-            (origin.y - size['height'] / 2) * (1 - scale) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
-            0
-        ];
-
-        // rotation is right
-        mat4.translate(m, m, matOffset);
-        mat4.multiply(m, m, map.domCssMatrix);
-        mat4.scale(m, m, [scale, scale, 1]);
-
-        // mat4.translate(m, m, matOffset);
-        // mat4.scale(m, m, [scale, scale, 1]);
-        // mat4.multiply(m, m, map.domCssMatrix);
-
-        const offset = map.offsetPlatform();
-        const transform = 'translate3d(' + (-offset.x) + 'px, ' + (-offset.y) + 'px, 0px) matrix3D(' + join(m) + ')';
-        this._levelContainers[this._tileZoom].style[TRANSFORM] = transform;
     }
 
     _drawOnMoving() {
@@ -243,9 +214,6 @@ export default class TileLayerDomRenderer extends Class {
             }
         }
 
-        const reposCached = this._preMapCenter && this._preCenterViewPoint &&
-            map._getPrjCenter().equals(this._preMapCenter) && tileGrid['centerViewPoint'] && !tileGrid['centerViewPoint'].equals(this._preCenterViewPoint);
-
         for (let i = tiles.length - 1; i >= 0; i--) {
             const cachedTile = this._tiles[tiles[i]['id']];
             if (cachedTile) {
@@ -253,15 +221,11 @@ export default class TileLayerDomRenderer extends Class {
                 cachedTile.current = true;
                 if (mat) {
                     // has camera matrix, update viewPoint of all the existing tiles.
-                    // tile doesn't need to be repositioned, but view point needs to be updated to caculate cammera offset.
+                    // tile doesn't need to be repositioned, but view point needs to be updated to caculate camera offset.
                     cachedTile['viewPoint'] = tiles[i]['viewPoint'];
-                } else if (reposCached) {
-                    // no camera matrix, when centerViewPoint changes but map center doesn't, reposition all the existing tile images.
-                    // e.g. when map.setCenter, although map's center is the same, map container's offset will be changed in the next frame.
-                    // In this case, existing tiles sholuld be repositioned.
-                    //
-                    // However, this doesn't work for the case with a camera matrix, becos tile's position is caculated by center tile's containerPoint.
-                    // When map container's offset changes but center doesn't, tile's position is not influenced.
+                }
+                if (this._reposTiles) {
+                    // existing tiles need to be repositioned to tileGrid's new viewPoint.
                     const pos = tiles[i]['viewPoint'];
                     cachedTile['viewPoint'] = pos;
                     this._posTileImage(cachedTile['el'], pos);
@@ -274,9 +238,8 @@ export default class TileLayerDomRenderer extends Class {
             }
             queue.push(tiles[i]);
         }
+        this._reposTiles = false;
         this._preCenterId = tileGrid['center'];
-        this._preCenterViewPoint = tileGrid['centerViewPoint'];
-        this._preMapCenter = map._getPrjCenter();
         return queue;
     }
 
@@ -295,6 +258,12 @@ export default class TileLayerDomRenderer extends Class {
             container = this._getTileContainer(this._tileZoom),
             size = map.getSize(),
             zoomFraction = map._getResolution(this._tileZoom) / map._getResolution();
+        if (container.style.left) {
+            // Remove container's left/top if it has.
+            // Left, top is set in onZoomEnd to keep container's position when map platform's offset is reset to 0.
+            container.style.left = null;
+            container.style.top = null;
+        }
         if (cssMat) {
             if (parseInt(container.style.width) !== size['width'] || parseInt(container.style.height) !== size['height']) {
                 container.style.width = size['width'] + 'px';
@@ -302,16 +271,31 @@ export default class TileLayerDomRenderer extends Class {
             }
             let matrix;
             if (zoomFraction !== 1) {
-                // fractional zoom, multiply current domCssMat with zoomFraction
                 const m = mat4.create();
+
+                // // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a matOffset to fix.
+                // const pitch = map.getPitch();
+                // const matOffset = [
+                //     (origin.x - size['width'] / 2)  * (1 - zoomFraction),
+                //     //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
+                //     (origin.y - size['height'] / 2) * (1 - zoomFraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
+                //     0
+                // ];
+                // mat4.translate(m, m, matOffset);
+
+                // Fractional zoom, multiply current domCssMat with zoomFraction
                 mat4.multiply(m, m, cssMat);
                 mat4.scale(m, m, [zoomFraction, zoomFraction, 1]);
                 matrix = join(m);
             } else {
                 matrix = join(cssMat);
             }
-            const mapOffset = map.offsetPlatform();
-            container.tile.style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x / zoomFraction) + 'px, ' + (this._camOffset.y + mapOffset.y / zoomFraction) + 'px, 0px)';
+            const mapOffset = map.offsetPlatform().round();
+            if (!map.isZooming()) {
+                // When map is zooming, tile's position is same with positions when zooming starts, so does't need to refresh camOffsets.
+                container.tile.style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x / zoomFraction) + 'px, ' + (this._camOffset.y + mapOffset.y / zoomFraction) + 'px, 0px)';
+            }
+
             container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
         } else {
             this._resetDomCssMatrix();
@@ -355,6 +339,7 @@ export default class TileLayerDomRenderer extends Class {
      */
     _updateTileSize() {
         if (this._tiles) {
+            const zooming = this.getMap().isZooming();
             const size = this._getTileSize();
             for (const p in this._tiles) {
                 if (this._tiles[p].current) {
@@ -364,6 +349,9 @@ export default class TileLayerDomRenderer extends Class {
                         if (img) {
                             img.width = size[0];
                             img.height = size[1];
+                        }
+                        if (zooming) {
+                            img.style[TRANSITION] = null;
                         }
                     } else {
                         break;
@@ -658,12 +646,12 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     onZoomStart() {
-        this._fadeAnimated = !Browser.mobile && true;
-        this._pruneTiles();
-        this._zoomStartPos = this.getMap().offsetPlatform();
+        this._fadeAnimated = false;
+        this._mapOffset = this.getMap().offsetPlatform().round();
         if (!this._canTransform()) {
             this._hide();
         }
+        this._pruneTiles();
         this._updateTileSize();
     }
 
@@ -677,24 +665,47 @@ export default class TileLayerDomRenderer extends Class {
             clearTimeout(this._pruneTimeout);
         }
         this._clearCameraCache();
+        this._reposTiles = (param['to'] === this._tileZoom);
         if (this._levelContainers) {
+            const container = this._levelContainers[this._tileZoom];
             if (this._canTransform()) {
-                if (this._levelContainers[param.from] && this._zoomStartPos) {
-                    this._levelContainers[param.from].style.left = this._zoomStartPos.x + 'px';
-                    this._levelContainers[param.from].style.top = this._zoomStartPos.y + 'px';
+                if (container && this._mapOffset) {
+                    // Container at old _tileZoom becomes background of new zoom container.
+                    // When zooming ends, map's platform offset will be reset to 0,
+                    // thus old container's left and top will be set with map's platform offset when zooming starts to force old container staying in the right position.
+                    container.style.left = this._mapOffset.x + 'px';
+                    container.style.top = this._mapOffset.y + 'px';
                 }
             } else {
-                if (this._levelContainers[param.from]) {
-                    this._levelContainers[param.from].style.display = 'none';
+                if (container) {
+                    container.style.display = 'none';
                 }
                 this._show();
             }
         }
+        this._fadeAnimated = !Browser.mobile && true;
     }
 
     _clearCameraCache() {
         delete this._preCenterId;
         delete this._camOffset;
+    }
+
+    _abortLoading() {
+        const falseFn = function () { return false; };
+        for (const i in this._tiles) {
+            if (this._tiles[i].z !== this._tileZoom) {
+                const tile = this._tiles[i].el;
+
+                tile.onload = falseFn;
+                tile.onerror = falseFn;
+
+                if (!tile.loaded) {
+                    tile.src = emptyImageUrl;
+                    removeDomNode(tile);
+                }
+            }
+        }
     }
 }
 
