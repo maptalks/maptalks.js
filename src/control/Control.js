@@ -1,5 +1,5 @@
 import { extend, isNil, isString } from 'core/util';
-import { createEl, addStyle, setStyle, removeDomNode } from 'core/util/dom';
+import { createEl, setStyle, removeDomNode } from 'core/util/dom';
 import Eventable from 'core/Eventable';
 import Class from 'core/Class';
 import Point from 'geo/Point';
@@ -41,7 +41,6 @@ class Control extends Eventable(Class) {
         const controlContainer = map._panels.control;
         this.__ctrlContainer = createEl('div');
         setStyle(this.__ctrlContainer, 'position:absolute');
-        addStyle(this.__ctrlContainer, 'z-index', controlContainer.style.zIndex);
         // on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', stopPropagation)
         this.update();
         controlContainer.appendChild(this.__ctrlContainer);

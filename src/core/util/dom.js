@@ -364,22 +364,6 @@ export function setStyle(dom, strCss) {
 }
 
 /**
- * add css style to dom element
- * @param {HTMLElement} dom dom element
- * @param {String} attr css property
- * @param {String} value css style value
- * @memberOf DomUtil
- */
-export function addStyle(dom, attr, value) {
-    const css = dom.style.cssText;
-    if (attr && value) {
-        const newStyle = attr + ':' + value + ';';
-        dom.style.cssText = css + newStyle;
-    }
-    return this;
-}
-
-/**
  * Whether the dom has the given css class.
  * @param {HTMLElement} el HTML Element
  * @param {String} name css class
