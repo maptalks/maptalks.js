@@ -34,8 +34,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     needToRedraw() {
         const map = this.getMap();
+        if (map.isInteracting() && this.layer.options['enableHeight']) {
+            return true;
+        }
         // don't redraw when map is zooming without pitch and layer doesn't have any point symbolizer.
-        if (map.isZooming() && !map.getPitch() && !this._hasPoint) {
+        if (map.isZooming() && !map.getPitch() && !this._hasPoint && this.layer.constructor === VectorLayer) {
             return false;
         }
         return super.needToRedraw();

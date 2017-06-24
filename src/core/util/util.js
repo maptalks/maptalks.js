@@ -348,3 +348,13 @@ export function computeDegree(p1, p2) {
     const dy = p2.y - p1.y;
     return Math.atan2(dy, dx);
 }
+
+/**
+ * from Leaflet.
+ * Data URI string containing a base64-encoded empty GIF image.
+ * Used as a hack to free memory from unused images on WebKit-powered
+ * mobile devices (by setting image `src` to this string).
+ * @type {String}
+ * @memberOf Util
+ */
+export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';

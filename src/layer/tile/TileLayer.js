@@ -1,4 +1,4 @@
-import { IS_NODE, isArrayHasData, isFunction, isNil, isInteger } from 'core/util';
+import { IS_NODE, isArrayHasData, isFunction, isInteger } from 'core/util';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
@@ -159,12 +159,17 @@ class TileLayer extends Layer {
             tileW = tileSize['width'],
             tileH = tileSize['height'];
         let zoom = map.getZoom();
-        if (!isInteger(zoom) && !isNil(map._frameZoom)) {
-            zoom = (zoom > map._frameZoom ? Math.floor(zoom) : Math.ceil(zoom));
+        if (!isInteger(zoom)) {
+            if (map.isZooming()) {
+                zoom = (zoom > map._frameZoom ? Math.floor(zoom) : Math.ceil(zoom));
+            } else {
+                zoom = Math.round(zoom);
+            }
         }
+
         const res = map._getResolution(zoom);
 
-        const extent2d = map._get2DExtent();
+        const extent2d = map._get2DExtent(zoom);
         const containerCenter = new Point(map.width / 2, map.height / 2),
             center2d = map._containerPointToPoint(containerCenter, zoom);
         if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
@@ -177,7 +182,9 @@ class TileLayer extends Layer {
         const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
         const offset = centerTile['offset'];
         const center2D = map._prjToPoint(map._getPrjCenter(), zoom)._sub(offset.x, offset.y);
-        const centerViewPoint = map._containerPointToViewPoint(containerCenter._sub(offset.x, offset.y))._round();
+        const mapOffset = map.offsetPlatform();
+        const scale = map._getResolution() / res;
+        const centerViewPoint = containerCenter.sub((scale !== 1 ? mapOffset.multi(scale) : mapOffset))._sub(offset.x, offset.y)._round();
 
         const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.isTransforming() ? 0 : map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
 
@@ -217,6 +224,7 @@ class TileLayer extends Layer {
             return (b['point'].distanceTo(center2D) - a['point'].distanceTo(center2D));
         });
         return {
+            'zoom' : zoom,
             'center' : centerTileId,
             'centerViewPoint' : centerViewPoint,
             'tiles': tiles

@@ -1,3 +1,4 @@
+import { isInteger } from 'core/util';
 import { on, off, createEl, preventDefault } from 'core/util/dom';
 import Map from 'map/Map';
 import Control from './Control';
@@ -98,7 +99,11 @@ class Zoom extends Control {
             this._sliderDot.style.bottom = zoomRange + 'px';
         }
         if (this._levelDOM) {
-            this._levelDOM.innerHTML = map.getZoom();
+            let zoom = map.getZoom();
+            if (!isInteger(zoom)) {
+                zoom = zoom.toFixed(1);
+            }
+            this._levelDOM.innerHTML = zoom;
         }
 
     }

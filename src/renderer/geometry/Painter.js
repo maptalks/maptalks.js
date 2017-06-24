@@ -1,4 +1,4 @@
-import { isNumber, mapArrayRecursively } from 'core/util';
+import { isNumber, mapArrayRecursively, sign } from 'core/util';
 import Class from 'core/Class';
 import Size from 'geo/Size';
 import Point from 'geo/Point';
@@ -29,6 +29,7 @@ export default class Painter extends Class {
         super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
+        this.height = this._getGeometryHeight();
     }
 
     getMap() {
@@ -126,6 +127,7 @@ export default class Painter extends Class {
         this._rotated = rotated;
         const maxZoom = map.getMaxNativeZoom();
         const zoomScale = map.getScale();
+        const height = this.getHeight();
         const layerNorthWest = this.getLayer()._getRenderer()._northWest;
         const layerPoint = map._pointToContainerPoint(layerNorthWest),
             paintParams = this._paintParams,
@@ -136,14 +138,14 @@ export default class Painter extends Class {
         //convert view points to container points needed by canvas
         if (Array.isArray(points)) {
             containerPoints = mapArrayRecursively(points, point => {
-                const p = map._pointToContainerPoint(point, maxZoom)._sub(layerPoint);
+                const p = map._pointToContainerPoint(point, maxZoom, height)._sub(layerPoint);
                 if (dx || dy) {
                     p._add(dx, dy);
                 }
                 return p;
             });
         } else if (points instanceof Point) {
-            containerPoints = map._pointToContainerPoint(points, maxZoom)._sub(layerPoint);
+            containerPoints = map._pointToContainerPoint(points, maxZoom, height)._sub(layerPoint);
             if (dx || dy) {
                 containerPoints._add(dx, dy);
             }
@@ -279,10 +281,12 @@ export default class Painter extends Class {
     }
 
     getContainerExtent() {
-        if (!this._extent2D || this._extent2D._zoom !== this.getMap().getZoom()) {
+        const map = this.getMap();
+        const zoom = map.getZoom();
+        if (!this._extent2D || this._extent2D._zoom !== zoom) {
             this.get2DExtent();
         }
-        const extent = this._extent2D.convertTo(c => this.getMap()._pointToContainerPoint(c));
+        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, this.height));
         if (extent) {
             extent._add(this._markerExtent);
         }
@@ -350,5 +354,44 @@ export default class Painter extends Class {
         delete this._sprite;
         delete this._extent2D;
         delete this._markerExtent;
+    }
+
+    getHeight() {
+        const propHeight = this._getHeightProperty();
+        if (propHeight !== this._propHeight) {
+            this.height = this._getGeometryHeight();
+        }
+        if (!this.height) {
+            return 0;
+        }
+        const scale = this.getMap().getScale();
+        return this.height / scale;
+    }
+
+    _getGeometryHeight() {
+        const map = this.getMap();
+        if (!map) {
+            return 0;
+        }
+        const height = this._getHeightProperty();
+        this._propHeight = height;
+        if (!height) {
+            return 0;
+        }
+        const geometry = this.geometry;
+        const z = map.getMaxNativeZoom(),
+            center = geometry.getCenter(),
+            target = map.locate(center, height, 0);
+        const p0 = map.coordinateToPoint(center, z),
+            p1 = map.coordinateToPoint(target, z);
+        return Math.abs(p1.x - p0.x) * sign(height);
+    }
+
+    _getHeightProperty() {
+        const geometry = this.geometry,
+            layerOpts = geometry.getLayer().options,
+            properties = geometry.getProperties();
+        const height = layerOpts['enableHeight'] ? properties ? properties[layerOpts['heightProperty']] : 0 : 0;
+        return height;
     }
 }

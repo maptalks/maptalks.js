@@ -38,12 +38,13 @@ module.exports = {
         config.banner = banner;
         config.outro = `typeof console !== \'undefined\' && console.log('${pkg.name} v${pkg.version}');`;
         const watcher = watch(rollup, config);
+        let startTime = 0;
         watcher.on('event', e => {
             if (e.code === 'BUILD_START') {
-                console.log('[ROLLUP] Starting...');
-                console.time('[ROLLUP]');
+                console.log('[' + new Date().toLocaleTimeString() + '] [ROLLUP] Starting to build');
+                startTime = +new Date();
             } else if (e.code === 'BUILD_END') {
-                console.timeEnd('[ROLLUP]');
+                console.log('[' + new Date().toLocaleTimeString() + '] [ROLLUP] Complete building in ' + (+new Date() - startTime) / 1000 + 's.');
                 if (cb) {
                     cb();
                 }
