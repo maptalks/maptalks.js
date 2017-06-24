@@ -188,7 +188,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         const map = this.getMap();
         const tileSize = this.layer.getTileSize();
         const ctx = this.context;
-        const cp = map._pointToContainerPoint(point);
+        const cp = map._pointToContainerPoint(point)._round();
         let x = cp.x,
             y = cp.y;
         const bearing = this.getMap().getBearing();
