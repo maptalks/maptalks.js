@@ -34,8 +34,11 @@ export default class MapRenderer extends Class {
     }
 
     panAnimation(distance, t, onFinish) {
-        distance = new Point(distance);
+        if (this._panPlayer && this._panPlayer.playState === 'running') {
+            return;
+        }
         const map = this.map;
+        distance = new Point(distance);
         if (map.options['panAnimation']) {
             let duration;
             if (!t) {
@@ -81,6 +84,9 @@ export default class MapRenderer extends Class {
                 }
             });
             player.play();
+            if (!map.isMoving()) {
+                map.onMoveStart();
+            }
         } else {
             map.onMoveEnd();
         }
@@ -94,9 +100,9 @@ export default class MapRenderer extends Class {
     }
 
     /**
-     * 获取地图容器偏移量或更新地图容器偏移量
-     * @param  {Point} offset 偏移量
-     * @return {this | Point}
+     * Move map platform with offset
+     * @param  {Point} offset
+     * @return {this}
      */
     offsetPlatform(offset) {
         if (!this.map._panels.front) {
