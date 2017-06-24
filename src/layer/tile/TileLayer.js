@@ -1,4 +1,4 @@
-import { IS_NODE, isArrayHasData, isFunction, isNil, isInteger } from 'core/util';
+import { IS_NODE, isArrayHasData, isFunction, isInteger } from 'core/util';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
