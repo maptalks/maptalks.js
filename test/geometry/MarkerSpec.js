@@ -366,6 +366,11 @@ describe('#Marker', function () {
         });
 
         it('rotate vector path marker', function (done) {
+            if (maptalks.Browser.ie) {
+                // skip test with IE due to Security Error
+                done();
+                return;
+            }
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
                     'markerType': 'path',
