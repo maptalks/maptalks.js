@@ -36,7 +36,8 @@ class MapScrollWheelZoomHandler extends Handler {
 
     _getSteps(level) {
         const now = Date.now();
-        if (!this._steps || (now - this._time) > 700 || level !== this._lastLevel) {
+        const maxTime = 500;
+        if (!this._steps || (now - this._time) > maxTime || level !== this._lastLevel) {
             this._steps = 1;
         }
         this._lastLevel = level;
