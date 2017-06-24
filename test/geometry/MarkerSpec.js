@@ -400,7 +400,7 @@ describe('#Marker', function () {
             });
             var layer = new maptalks.VectorLayer('vector', marker);
             layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(7, 0);
+                expect(layer).not.to.be.painted(11, 0);
                 expect(layer).to.be.painted(-11, -11);
                 done();
             })
