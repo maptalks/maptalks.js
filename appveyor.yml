@@ -5,7 +5,7 @@ environment:
     # first group
     - MAPTALKS_BROWSERS: IE10
     # second group
-    - MAPTALKS_BROWSERS: IE11
+    - MAPTALKS_BROWSERS: IE
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node.js or io.js
