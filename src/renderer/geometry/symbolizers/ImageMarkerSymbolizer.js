@@ -124,7 +124,8 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             'markerWidth': getValueOrDefault(s['markerWidth'], null),
             'markerHeight': getValueOrDefault(s['markerHeight'], null),
             'markerDx': getValueOrDefault(s['markerDx'], 0),
-            'markerDy': getValueOrDefault(s['markerDy'], 0)
+            'markerDy': getValueOrDefault(s['markerDy'], 0),
+            'markerRotation' : getValueOrDefault(s['markerRotation'], 0)
         };
     }
 }

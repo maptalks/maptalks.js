@@ -33,56 +33,57 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     draw() {
-        if (this.getMap().getPitch()) {
+        const map = this.getMap();
+        if (map.getPitch()) {
             if (console) {
                 console.warn('TileLayer with canvas renderer can\'t be pitched, use dom renderer (\'renderer\' : \'dom\') instead.');
             }
             this.clear();
             return;
         }
-        const layer = this.layer;
-        const tileGrid = layer._getTiles();
+        const layer = this.layer,
+            tileGrid = layer._getTiles();
         if (!tileGrid) {
+            this.completeRender();
+            return;
+        }
+
+        const mask2DExtent = this.prepareCanvas();
+        if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
             this.completeRender();
             return;
         }
         if (!this._tileRended) {
             this._tileRended = {};
         }
-        const tileRended = this._tileRended;
+        const tileRended = this._tileRended,
+            tiles = tileGrid['tiles'],
+            tileCache = this._tileCache,
+            tileSize = layer.getTileSize(),
+            zoom = map.getZoom();
+
+        this._tileZoom = tileGrid.zoom;
         this._tileRended = {};
 
-        const tiles = tileGrid['tiles'],
-            tileCache = this._tileCache,
-            tileSize = layer.getTileSize();
-
-        // this._extent2D = tileGrid['fullExtent'];
-        // this._northWest = tileGrid['northWest'];
         if (!this.canvas) {
             this.createCanvas();
         }
-
-        // this.resizeCanvas(tileGrid['fullExtent'].getSize());
-        const mask2DExtent = this.prepareCanvas();
-        if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
-            this.completeRender();
-            return;
-        }
-
         // reset current transformation matrix to the identity matrix
         this.context.setTransform(1, 0, 0, 1, 0, 0);
 
         //visit all the tiles
         this._totalTileToLoad = this._tileToLoadCounter = 0;
         for (let i = tiles.length - 1; i >= 0; i--) {
-            const tile = tiles[i];
-            const tileId = tiles[i]['id'];
+            const tile = tiles[i],
+                tileId = tiles[i]['id'];
+            if (zoom === this._tileZoom) {
+                const tile2DExtent = new PointExtent(tile['point'], tile['point'].add(tileSize.toPoint()));
+                if (!this._extent2D.intersects(tile2DExtent) || (mask2DExtent && !mask2DExtent.intersects(tile2DExtent))) {
+                    continue;
+                }
+            }
             //load tile in cache at first if it has.
             const cached = tileRended[tileId] || (tileCache ? tileCache.get(tileId) : null);
-            const tile2DExtent = new PointExtent(tile['point'], tile['point'].add(tileSize.toPoint()));
-            if (!this._extent2D.intersects(tile2DExtent) || (mask2DExtent && !mask2DExtent.intersects(tile2DExtent))) {
-                continue;
-            }
             this._totalTileToLoad++;
             if (cached) {
                 this._drawTile(tile['point'], cached);
@@ -149,8 +150,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
 
         for (const p in this._tileQueue) {
             if (this._tileQueue.hasOwnProperty(p)) {
-                const tileId = p.split('@')[0];
-                const tile = this._tileQueue[p];
+                const tileId = p.split('@')[0],
+                    tile = this._tileQueue[p];
                 delete this._tileQueue[p];
                 if (!this._tileCache || !this._tileCache[tileId]) {
                     this._loadTile(tileId, tile, onTileLoad, onTileError);
@@ -185,17 +186,25 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (!point || !this.getMap()) {
             return;
         }
-        const map = this.getMap();
-        const tileSize = this.layer.getTileSize();
-        const ctx = this.context;
-        const cp = map._pointToContainerPoint(point);
+        const map = this.getMap(),
+            zoom = map.getZoom(),
+            tileSize = this.layer.getTileSize(),
+            ctx = this.context,
+            cp = map._pointToContainerPoint(point, this._tileZoom)._round(),
+            bearing = map.getBearing(),
+            transformed = bearing || zoom !== this._tileZoom;
         let x = cp.x,
             y = cp.y;
-        const bearing = this.getMap().getBearing();
-        if (bearing) {
+        if (transformed) {
             ctx.save();
             ctx.translate(x, y);
-            ctx.rotate(-bearing * Math.PI / 180);
+            if (bearing) {
+                ctx.rotate(-bearing * Math.PI / 180);
+            }
+            if (zoom !== this._tileZoom) {
+                const scale = map._getResolution(this._tileZoom) / map._getResolution();
+                ctx.scale(scale, scale);
+            }
             x = y = 0;
         }
         Canvas2D.image(ctx, tileImage,
@@ -213,9 +222,9 @@ export default class TileLayerRenderer extends CanvasRenderer {
             const xyz = tileImage[this.propertyOfTileId].split('__');
             Canvas2D.fillText(ctx, 'x:' + xyz[1] + ', y:' + xyz[0] + ', z:' + xyz[2], p.add(10, 20), color);
             Canvas2D.drawCross(ctx, p.add(tileSize['width'] / 2, tileSize['height'] / 2), 2, color);
-            this.context.restore();
+            ctx.restore();
         }
-        if (bearing) {
+        if (transformed) {
             ctx.restore();
         }
         tileImage = null;
@@ -230,7 +239,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (!this.getMap()) {
             return;
         }
-        const zoom = this.getMap().getZoom();
+        const zoom = this._tileZoom;
         if (zoom !== tileImage[this.propertyOfTileZoom]) {
             return;
         }
@@ -239,11 +248,11 @@ export default class TileLayerRenderer extends CanvasRenderer {
         this._drawTile(point, tileImage);
 
         if (!IS_NODE) {
-            const tileSize = this.layer.getTileSize();
-            const mapExtent = this.getMap()._get2DExtent();
-            if (mapExtent.intersects(new PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
-                this.setCanvasUpdated();
-            }
+            // const tileSize = this.layer.getTileSize();
+            // const mapExtent = this.getMap()._get2DExtent();
+            // if (mapExtent.intersects(new PointExtent(point, point.add(tileSize['width'], tileSize['height'])))) {
+            this.setCanvasUpdated();
+            // }
         }
         if (this._tileToLoadCounter === 0) {
             this._onTileLoadComplete();
@@ -280,6 +289,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         delete this._tileCache;
         delete this._tileRended;
         delete this._tileQueue;
+        delete this._tileZoom;
     }
 }
 

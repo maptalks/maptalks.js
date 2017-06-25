@@ -136,8 +136,8 @@ class Point {
         return this;
     }
 
-    _substract(x, y) {
-        return this._sub(x, y);
+    _substract() {
+        return this._sub.apply(this, arguments);
     }
 
     /**
@@ -162,8 +162,8 @@ class Point {
      * @param {Point} point - point to substract
      * @return {Point} result
      */
-    substract(x, y) {
-        return this.sub(x, y);
+    substract() {
+        return this.sub.apply(this, arguments);
     }
 
     //destructive multi

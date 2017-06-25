@@ -441,18 +441,18 @@ export default class MapCanvasRenderer extends MapRenderer {
 
         const POSITION0 = 'position:absolute;top:0px;left:0px;';
 
-        const control = createContainer('control', 'maptalks-control', null, true),
-            mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true),
-            mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;', true),
-            frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0, true),
-            front = createContainer('front', 'maptalks-front', POSITION0 + 'will-change:transform;', true),
-            frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0),
-            // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
-            ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:10000;', true),
-            backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0, true),
-            back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;'),
+        const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true),
+            mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;z-index:0', true),
+            backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0 + 'z-index:0;', true),
+            back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;z-index:1;'),
             backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0),
-            canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;');
+            canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;z-index:2;'),
+            frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0 + 'z-index:3;', true),
+            front = createContainer('front', 'maptalks-front', POSITION0 + 'z-index:4;', true),
+            frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0 + 'z-index:0;'),
+            // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
+            ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:1;', true),
+            control = createContainer('control', 'maptalks-control', 'z-index:1', true);
 
         containerDOM.appendChild(mapWrapper);
 

@@ -290,6 +290,16 @@ describe('#Map', function () {
             expect(fitZoom).to.eql(zoom);
         });
 
+        it('getFitZoom 2', function () {
+            var extent = map.getExtent();
+            var zoom = map.getZoom();
+            var w = extent.getWidth(),
+                h = extent.getHeight();
+            var fitZoom = map.getFitZoom(new maptalks.Extent(extent.min + w / 4, extent.ymin + h / 4, extent.xmax - w / 4, extent.ymax - h / 4));
+
+            expect(fitZoom).to.eql(zoom + 2);
+        });
+
         it('fit to extent', function (done) {
             var extent = new maptalks.Marker(map.getCenter()).getExtent();
             var maxZoom = map.getMaxZoom();

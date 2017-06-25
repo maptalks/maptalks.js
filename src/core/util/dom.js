@@ -364,22 +364,6 @@ export function setStyle(dom, strCss) {
 }
 
 /**
- * add css style to dom element
- * @param {HTMLElement} dom dom element
- * @param {String} attr css property
- * @param {String} value css style value
- * @memberOf DomUtil
- */
-export function addStyle(dom, attr, value) {
-    const css = dom.style.cssText;
-    if (attr && value) {
-        const newStyle = attr + ':' + value + ';';
-        dom.style.cssText = css + newStyle;
-    }
-    return this;
-}
-
-/**
  * Whether the dom has the given css class.
  * @param {HTMLElement} el HTML Element
  * @param {String} name css class
@@ -477,12 +461,17 @@ export function setTransform(el, offset) {
 }
 
 export function setTransformMatrix(el, m) {
-    el.style[TRANSFORM] = 'matrix(' + (isString(m) ? m : m.join()) + ')';
+    const text = 'matrix(' + (isString(m) ? m : m.join()) + ')';
+    if (el.style[TRANSFORM] !== text) {
+        el.style[TRANSFORM] = text;
+    }
     return this;
 }
 
 export function removeTransform(el) {
-    el.style[TRANSFORM] = '';
+    if (el.style[TRANSFORM]) {
+        el.style[TRANSFORM] = '';
+    }
     return this;
 }
 
