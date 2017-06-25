@@ -23,6 +23,7 @@ test_script:
   # run tests
   - gulp test
 
+# fast_finish true
 matrix:
   fast_finish: true
 
