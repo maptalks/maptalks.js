@@ -1,7 +1,11 @@
 # Test against the latest version of this Node.js version
 environment:
   nodejs_version: "6.9.0"
-
+  matrix:
+    # first group
+    - MAPTALKS_BROWSERS: IE10
+    # second group
+    - MAPTALKS_BROWSERS: IE11
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node.js or io.js
@@ -17,7 +21,11 @@ test_script:
   - node --version
   - npm --version
   # run tests
-  - gulp test --browsers ie
+  - gulp test
+
+# fast_finish to true
+matrix:
+  fast_finish: true
 
 # Don't actually build.
 build: off
