@@ -3,7 +3,7 @@ const rollup = require('rollup'),
     commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
-    babel = require('rollup-plugin-babel'),
+    babel = require('maptalks-rollup-plugin-babel'),
     alias = require('rollup-plugin-alias');
 const pkg = require('../package.json');
 
