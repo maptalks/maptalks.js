@@ -19,7 +19,7 @@ const knownOptions = {
         'coverage': 'cov'
     },
     default: {
-        browsers: '',
+        browsers: null,
         coverage: false
     }
 };
@@ -27,7 +27,10 @@ const knownOptions = {
 var options = minimist(process.argv.slice(2), knownOptions);
 
 const browsers = [];
-options.browsers.split(',').forEach(name => {
+
+let configBrowsers = options.browsers || process.env['MAPTALKS_BROWSERS'] || '';
+console.log('configBrowsers', configBrowsers);
+configBrowsers.split(',').forEach(name => {
     if (!name || name.length < 2) {
         return;
     }
