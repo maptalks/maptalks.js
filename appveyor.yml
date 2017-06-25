@@ -29,3 +29,6 @@ matrix:
 
 # Don't actually build.
 build: off
+
+# https://github.com/appveyor/ci/issues/882
+skip_branch_with_pr: true
