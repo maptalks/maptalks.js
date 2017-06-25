@@ -20,7 +20,7 @@ module.exports = function (config) {
         return plugin.name === 'babel';
     });
     if (idx >= 0) {
-        const babel = require('rollup-plugin-babel');
+        const babel = require('maptalks-rollup-plugin-babel');
         plugins.splice(idx, 1, babel({
             plugins: [['istanbul', {
                 exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'node_modules/**/*']
