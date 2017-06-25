@@ -28,7 +28,7 @@ const options = {
 
     'renderOnMoving': false,
     'renderOnRotating' : false,
-    //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
+
     'updateInterval': (() => {
         return Browser.mobile ? -1 : 200;
     })(),
