@@ -200,7 +200,7 @@ class TileLayer extends Layer {
             for (let j = -(top); j < bottom; j++) {
                 const p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
                 const vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j);
-                const tileIndex = tileConfig.getNeighorTileIndex(centerTile['y'], centerTile['x'], j, i, res, this.options['repeatWorld']),
+                const tileIndex = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
                     tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
                     tileId = [tileIndex['idy'], tileIndex['idx'], zoom].join('__'),
                     tileDesc = {
