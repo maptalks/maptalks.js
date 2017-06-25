@@ -27,5 +27,4 @@ test_script:
 matrix:
   fast_finish: true
 
-# Don't actually build.
 build: off
