@@ -3142,19 +3142,28 @@ map-stream@~0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/map-stream/-/map-stream-0.1.0.tgz#e56aa94c4c8055a16404a0674b78f215f7c8e194"
 
-maptalks-build-helpers@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.npmjs.org/maptalks-build-helpers/-/maptalks-build-helpers-0.2.0.tgz#922df7e8cc8d0d8f6e65a89a1deb00e98f006e25"
+maptalks-build-helpers@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/maptalks-build-helpers/-/maptalks-build-helpers-0.3.0.tgz#9c84b726f66286caa5128101203ac1d9c01585dd"
   dependencies:
     babel-plugin-transform-proto-to-assign "^6.9.0"
     karma "^1.3.0"
+    maptalks-rollup-plugin-babel "^2.7.1"
     minimist "^1.2.0"
     rollup "^0.41.1"
-    rollup-plugin-babel "https://github.com/fuzhenn/rollup-plugin-babel.git"
     rollup-plugin-commonjs "^7.0.0"
     rollup-plugin-local-resolve "^1.0.7"
     rollup-plugin-node-resolve "^2.0.0"
     uglify-js "^2.7.5"
+
+maptalks-rollup-plugin-babel@^2.7.1:
+  version "2.7.1"
+  resolved "https://registry.npmjs.org/maptalks-rollup-plugin-babel/-/maptalks-rollup-plugin-babel-2.7.1.tgz#0c9c0910ed98c60c76255360f03dc868c9f42768"
+  dependencies:
+    babel-core "6"
+    babel-plugin-transform-es2015-classes "^6.9.0"
+    object-assign "^4.1.0"
+    rollup-pluginutils "^1.5.0"
 
 marked@~0.3.6:
   version "0.3.6"
@@ -4255,15 +4264,6 @@ rndm@1.2.0:
 "rollup-plugin-alias@github:wsw0108/rollup-plugin-alias":
   version "1.2.0"
   resolved "https://codeload.github.com/wsw0108/rollup-plugin-alias/tar.gz/f9c37f0afa4285be4637d70577dddccbf07fcea8"
-
-"rollup-plugin-babel@https://github.com/fuzhenn/rollup-plugin-babel.git":
-  version "2.7.1"
-  resolved "https://github.com/fuzhenn/rollup-plugin-babel.git#d4ac9a00a28df340e2cf60846951a7be02fa7e5b"
-  dependencies:
-    babel-core "6"
-    babel-plugin-transform-es2015-classes "^6.9.0"
-    object-assign "^4.1.0"
-    rollup-pluginutils "^1.5.0"
 
 rollup-plugin-commonjs@^7.0.0:
   version "7.1.0"
