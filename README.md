@@ -4,3 +4,4 @@ maptalks.js [![Circle CI](https://circleci.com/gh/maptalks/maptalks.js.svg?style
 An open-source javascript library for map applications.
 
 test
+test2
