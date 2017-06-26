@@ -27,8 +27,8 @@ describe('#ToolTip', function () {
         var geo = new maptalks.Marker(center).addTo(layer);
         var tooltip = new maptalks.ui.ToolTip('this is a geometry');
         tooltip.addTo(geo);
-        var m = document.getElementById('tipDiv');
-        expect(m).to.be(null);
+        var isvisible = tooltip.isVisible();
+        expect(isvisible).not.to.be.ok();
     });
 
     it('it can show when mouseover a geometry', function () {

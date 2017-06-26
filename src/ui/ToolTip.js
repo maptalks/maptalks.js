@@ -6,15 +6,18 @@ import UIComponent from './UI';
 
 /**
  * @property {Object} options
- * @property {Number}  [options.width=300]     - default width
+ * @property {Number}  [options.width=150]     - default width
+ * @property {Number}  [options.height=30]     - default height
  * @property {String}  [options.animation='fade']     - default fade, scale | fade,scale are an alternative to set
+ * @property {String}  [options.cssName=150]    - content's css class name, default null
  * @memberOf ui.ToolTip
  * @instance
  */
 const options = {
     'width': 150,
+    'height': 30,
     'animation': 'fade',
-    'cssclass': ''
+    'cssName': null
 };
 /**
  * @classdesc
@@ -57,8 +60,8 @@ class ToolTip extends UIComponent {
     * set ToolTip's content's css class name.
     * @param {String} css class name - set for ToolTip's content.
     */
-    setStyle(cssclassName) {
-        this._cssclassName = cssclassName;
+    setStyle(cssName) {
+        this._cssName = cssName;
     }
 
     /**
@@ -66,7 +69,7 @@ class ToolTip extends UIComponent {
    * @returns {String} css class name - set for ToolTip's content.
    */
     getStyle() {
-        return this._cssclassName;
+        return this._cssName;
     }
 
     /**
@@ -79,12 +82,17 @@ class ToolTip extends UIComponent {
 
     buildOn() {
         const dom = createEl('div');
-        dom.className = 'maptalks-msgBox';
-        dom.id = 'tipDiv';
+        dom.style.height = options.height + 'px';
         dom.style.width = options.width + 'px';
-        //default css name is 'maptalks-msgContent'
-        this._cssclassName = this._cssclassName || 'maptalks-msgContent';
-        const content = `<div class="${this._cssclassName}">${this._content}</div>`;
+        let cssName = '';
+        if (!this._cssName) {
+            //default css class name is 'maptalks-msgContent',and the container's css class name is 'maptalks-msgBox'
+            cssName = 'maptalks-msgContent';
+            dom.className = 'maptalks-msgBox';
+        } else {
+            cssName = this._cssName;
+        }
+        const content = `<div class="${cssName}">${this._content}</div>`;
         dom.innerHTML = content;
         return dom;
     }
