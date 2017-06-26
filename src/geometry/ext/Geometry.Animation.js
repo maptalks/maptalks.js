@@ -85,7 +85,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             }
             if (map && isFocusing) {
                 const pcenter = projection.project(this.getCenter());
-                map._setPrjCenterAndMove(pcenter);
+                map._setPrjCenter(pcenter);
                 if (player.playState !== 'running') {
                     map.onMoveEnd();
                 } else {

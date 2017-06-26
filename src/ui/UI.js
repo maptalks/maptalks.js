@@ -398,7 +398,7 @@ class UIComponent extends Eventable(Class) {
             top = (mapHeight - containerPoint.y - clientHeight) - 30;
         }
         if (top !== 0 || left !== 0) {
-            map._panAnimation(new Point(left, top), this.options['autoPanDuration']);
+            map.panBy(new Point(left, top), { 'duration' : this.options['autoPanDuration'] });
         }
     }
 

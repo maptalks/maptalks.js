@@ -91,7 +91,7 @@ class TileConfig {
         }
 
         //有可能tileIndex超出世界范围
-        tileIndex = this.getNeighorTileIndex(tileIndex['y'], tileIndex['x'], 0, 0, true);
+        tileIndex = this.getNeighorTileIndex(tileIndex['x'], tileIndex['y'], 0, 0, true);
 
         return {
             'x': tileIndex['x'],
@@ -102,14 +102,14 @@ class TileConfig {
 
     /**
      * Get neibor's tile index
-     * @param  {Number} tileY
      * @param  {Number} tileX
-     * @param  {Number} offsetY
+     * @param  {Number} tileY
      * @param  {Number} offsetX
+     * @param  {Number} offsetY
      * @param  {Number} zoomLevel
      * @return {Object}  tile's neighbor index
      */
-    getNeighorTileIndex(tileY, tileX, offsetY, offsetX, res, isRepeatWorld) {
+    getNeighorTileIndex(tileX, tileY, offsetX, offsetY, res, isRepeatWorld) {
         const tileSystem = this.tileSystem;
         let x = (tileX + tileSystem['scale']['x'] * offsetX);
         let y = (tileY - tileSystem['scale']['y'] * offsetY);
@@ -156,12 +156,12 @@ class TileConfig {
 
     /**
      * Get tile's south west's projected coordinate
-     * @param  {Number} tileY
      * @param  {Number} tileX
+     * @param  {Number} tileY
      * @param  {Number} res
      * @return {Object}
      */
-    getTileProjectedSw(tileY, tileX, res) {
+    getTileProjectedSw(tileX, tileY, res) {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
         const y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * (res * tileSize['height']);
@@ -169,6 +169,23 @@ class TileConfig {
         return [x, y];
     }
 
+    /**
+     * Get tile's extent
+     * @param  {Number} tileX
+     * @param  {Number} tileY
+     * @param  {Number} res
+     * @return {Extent}
+     */
+    getTilePrjExtent(tileX, tileY, res) {
+        const tileSystem = this.tileSystem,
+            tileSize = this['tileSize'],
+            sw = new Coordinate(this.getTileProjectedSw(tileX, tileY, res));
+        const sx = tileSystem['scale']['x'],
+            sy = tileSystem['scale']['y'];
+        const x = sw.x + sx * (res * tileSize['width']),
+            y = sw.y - sy * (res * tileSize['height']);
+        return new Extent(sw, new Coordinate(x, y));
+    }
 }
 
 export default TileConfig;

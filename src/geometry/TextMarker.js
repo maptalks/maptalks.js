@@ -1,5 +1,5 @@
 import { extend } from 'core/util';
-import { splitTextToRow } from 'core/util/strings';
+import { splitTextToRow, escapeSpecialChars } from 'core/util/strings';
 import Size from 'geo/Size';
 import Geometry from './Geometry';
 import Marker from './Marker';
@@ -40,10 +40,9 @@ const options = {
  */
 class TextMarker extends Marker {
 
-
     constructor(content, coordinates, options) {
         super(coordinates, options);
-        this._content = content;
+        this._content = escapeSpecialChars(content);
         this._refresh();
     }
 
@@ -62,7 +61,7 @@ class TextMarker extends Marker {
      */
     setContent(content) {
         const old = this._content;
-        this._content = content;
+        this._content = escapeSpecialChars(content);
         this._refresh();
         /**
          * an event when changing label's text content
