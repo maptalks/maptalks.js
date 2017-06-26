@@ -6,7 +6,7 @@ import Handlerable from 'handler/Handlerable';
 import DragHandler from 'handler/Drag';
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
-import UIComponent from './UI';
+import UIComponent from './UIComponent';
 
 /**
  * @property {Object} options - construct options

@@ -1,7 +1,7 @@
-﻿import { createEl } from 'core/util/dom';
+import { createEl } from 'core/util/dom';
 import { isString } from 'core/util';
 import { Geometry } from 'geometry';
-import UIComponent from './UI';
+import UIComponent from './UIComponent';
 
 
 /**
@@ -14,8 +14,8 @@ import UIComponent from './UI';
  * @instance
  */
 const options = {
-    'width': 150,
-    'height': 30,
+    'width': 0,
+    'height': 0,
     'animation': 'fade',
     'cssName': null
 };
@@ -24,7 +24,7 @@ const options = {
  * Class for tooltip, a tooltip used for showing some useful infomation attached to geometries on the map.
  * @category ui
  * @extends ui.UIComponent
- * @param {Object} options - options defined in [ToolTip]{@link tooltip#options}
+ * @param {Object} options - options defined in [ToolTip]{@link ToolTip#options}
  * @member of ui
  */
 class ToolTip extends UIComponent {
@@ -54,7 +54,7 @@ class ToolTip extends UIComponent {
             owner.on('mouseout', this.onMouseOut, this);
             return super.addTo(owner);
         } else {
-            throw new Error('Invalid Geometry when add a tooltip.');
+            throw new Error('Invalid geometry the tooltip is added to.');
         }
     }
 
@@ -84,34 +84,30 @@ class ToolTip extends UIComponent {
 
     buildOn() {
         const dom = createEl('div');
-        dom.style.height = options.height + 'px';
-        dom.style.width = options.width + 'px';
-        let cssName = '';
-        if (!this._cssName) {
-            //default css class name is 'maptalks-msgContent',and the container's css class name is 'maptalks-msgBox'
-            cssName = 'maptalks-msgContent';
-            dom.className = 'maptalks-msgBox';
-        } else {
-            cssName = this._cssName;
+        if (options.height) {
+            dom.style.height = options.height + 'px';
         }
-        const content = `<div class="${cssName}">${this._content}</div>`;
-        dom.innerHTML = content;
+        if (options.width) {
+            dom.style.width = options.width + 'px';
+        }
+        const cssName = this._cssName ? this._cssName : 'maptalks-tooltip';
+        if (!this._cssName && options.height) {
+            dom.style.lineHeight = options.height + 'px';
+        }
+        dom.innerHTML = `<div class="${cssName}">${this._content}</div>`;
         return dom;
     }
 
     onMouseOver(e) {
         if (!this.isVisible()) {
-            const map = e.target.getMap();
-            const zoom = map.getZoom();
-            const mousescreen = map.coordinateToPoint(e.coordinate, zoom);
-            const tipPosition = new maptalks.Point(mousescreen.x + 25, mousescreen.y - 45);
-            this.show(map.pointToCoordinate(tipPosition, zoom));
+            const map = this.getMap();
+            this.show(map.locateByPoint(e.coordinate, -5, 25));
         }
     }
 
     onMouseOut() {
         if (this.isVisible()) {
-            this.hide();
+            this._removePrevDOM();
         }
     }
 

@@ -2,7 +2,7 @@ import { isString } from 'core/util';
 import { createEl } from 'core/util/dom';
 import Point from 'geo/Point';
 import { Geometry, Marker } from 'geometry';
-import UIComponent from './UI';
+import UIComponent from './UIComponent';
 
 
 /**

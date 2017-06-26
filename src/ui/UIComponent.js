@@ -2,6 +2,7 @@ import { extend } from 'core/util';
 import { trim } from 'core/util/strings';
 import {
     on,
+    off,
     removeDomNode,
     stopPropagation,
     TRANSFORM,
@@ -431,15 +432,22 @@ class UIComponent extends Eventable(Class) {
         if (this.onDomRemove) {
             this.onDomRemove();
         }
+        const eventsToStop = this.options['eventsToStop'];
         if (this._singleton()) {
             const map = this.getMap(),
                 key = this._uiDomKey();
             if (map[key]) {
+                if (eventsToStop) {
+                    off(map[key], eventsToStop, stopPropagation);
+                }
                 removeDomNode(map[key]);
                 delete map[key];
             }
             delete this.__uiDOM;
         } else if (this.__uiDOM) {
+            if (eventsToStop) {
+                off(this.__uiDOM, eventsToStop, stopPropagation);
+            }
             removeDomNode(this.__uiDOM);
             delete this.__uiDOM;
         }

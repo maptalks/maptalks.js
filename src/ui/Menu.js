@@ -1,7 +1,7 @@
 import { isString, isFunction } from 'core/util';
 import { on, createEl, addClass } from 'core/util/dom';
 import Point from 'geo/Point';
-import UIComponent from './UI';
+import UIComponent from './UIComponent';
 
 /**
  * @property {Object} options
