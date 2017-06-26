@@ -42,7 +42,7 @@ class TextMarker extends Marker {
 
     constructor(content, coordinates, options) {
         super(coordinates, options);
-        this._content = content;
+        this._content = escapeSpecialChars(content);
         this._refresh();
     }
 
