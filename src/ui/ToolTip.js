@@ -9,7 +9,7 @@ import UIComponent from './UI';
  * @property {Number}  [options.width=150]     - default width
  * @property {Number}  [options.height=30]     - default height
  * @property {String}  [options.animation='fade']     - default fade, scale | fade,scale are an alternative to set
- * @property {String}  [options.cssName=150]    - content's css class name, default null
+ * @property {String}  [options.cssName=null]    - content's css class name, default null
  * @memberOf ui.ToolTip
  * @instance
  */
@@ -32,8 +32,11 @@ class ToolTip extends UIComponent {
     _getClassName() {
         return 'ToolTip';
     }
-    constructor(info) {
+    constructor(info, options = {}) {
         super(options);
+        if (options.cssName) {
+            this.setStyle(options.cssName);
+        }
         if (isString(info)) {
             this._content = info;
         }
