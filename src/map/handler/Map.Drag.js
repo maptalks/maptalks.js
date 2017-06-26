@@ -133,10 +133,8 @@ class MapDragHandler extends Handler {
         this._clear();
 
         if (t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
-            // const distance = new Point(dx * Math.ceil(500 / t), dy * Math.ceil(500 / t))._multi(0.5);
-            const distance = new Point(dx, dy);
-            t = 5 * t * (Math.abs(distance.x) + Math.abs(distance.y)) / 500;
-            map._panAnimation(distance, t);
+            t = 5 * t * (Math.abs(dx) + Math.abs(dy)) / 500;
+            map.panBy(new Point(dx, dy), { 'duration' : t });
         } else {
             map.onMoveEnd(param);
         }

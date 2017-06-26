@@ -1,6 +1,7 @@
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import Map from './Map';
+import { isFunction } from 'core/util';
 
 Map.include(/** @lends Map.prototype */ {
     /**
@@ -11,18 +12,12 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Boolean} [options.duration=600] - pan animation duration
      * @return {Map} this
      */
-    panTo: function (coordinate, options) {
+    panTo: function (coordinate, options = {}) {
         if (!coordinate) {
             return this;
         }
-        const map = this;
         coordinate = new Coordinate(coordinate);
-        const dest = this.coordinateToContainerPoint(coordinate),
-            current = this.coordinateToContainerPoint(this.getCenter());
-        return this._panBy(dest.sub(current), options, function () {
-            const c = map.getProjection().project(coordinate);
-            map._setPrjCenterAndMove(c);
-        });
+        return this._panAnimation(coordinate, options['duration']);
     },
 
     /**
@@ -33,7 +28,7 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Boolean} [options.duration=600] - pan animation duration
      * @return {Map} this
      */
-    panBy: function (offset, options) {
+    panBy: function (offset, options = {}) {
         return this._panBy(offset, options);
     },
 
@@ -45,11 +40,14 @@ Map.include(/** @lends Map.prototype */ {
         this.onMoveStart();
         if (!options) {
             options = {};
+        } else if (isFunction(options)) {
+            cb = options;
+            options = {};
         }
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
-            this._panAnimation(offset, options['duration'], cb);
+            const target = this.locateByPoint(this.getCenter(), offset.x, offset.y);
+            this._panAnimation(target, options['duration'], cb);
         } else {
-            this.offsetPlatform(offset);
             this._offsetCenterByPixel(offset);
             this.onMoving();
             if (cb) {
@@ -60,8 +58,8 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _panAnimation: function (offset, t, onFinish) {
-        this._getRenderer().panAnimation(offset, t, onFinish);
+    _panAnimation: function (target, t, onFinish) {
+        this._getRenderer().panAnimation(target, t, onFinish);
     }
 
 });

@@ -83,7 +83,6 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     prepareRender() {
-        this._abortLoading();
     }
 
     render() {
@@ -500,6 +499,7 @@ export default class TileLayerDomRenderer extends Class {
         if (!map || map.isMoving()) {
             return;
         }
+        this._abortLoading();
 
         const zoom = this._tileZoom;
 
@@ -694,7 +694,7 @@ export default class TileLayerDomRenderer extends Class {
     _abortLoading() {
         const falseFn = function () { return false; };
         for (const i in this._tiles) {
-            if (this._tiles[i].z !== this._tileZoom) {
+            if (this._tiles[i].z !== this._tileZoom || !this._tiles[i].current) {
                 const tile = this._tiles[i].el;
 
                 tile.onload = falseFn;

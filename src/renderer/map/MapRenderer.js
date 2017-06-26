@@ -33,12 +33,14 @@ export default class MapRenderer extends Class {
         }
     }
 
-    panAnimation(distance, t, onFinish) {
+    panAnimation(target, t, onFinish) {
         if (this._panPlayer && this._panPlayer.playState === 'running') {
             return;
         }
-        const map = this.map;
-        distance = new Point(distance);
+        const map = this.map,
+            pcenter = map._getPrjCenter().copy(),
+            ptarget = map.getProjection().project(target),
+            distance = ptarget.sub(pcenter);
         if (map.options['panAnimation']) {
             let duration;
             if (!t) {
@@ -50,7 +52,7 @@ export default class MapRenderer extends Class {
             const framer = function (fn) {
                 renderer.callInFrameLoop(fn);
             };
-            let preDist = null;
+
             const player = this._panPlayer = Animation.animate({
                 'distance': distance
             }, {
@@ -68,15 +70,11 @@ export default class MapRenderer extends Class {
                 }
 
                 if (player.playState === 'running' && frame.styles['distance']) {
-                    const dist = frame.styles['distance'];
-                    if (!preDist) {
-                        preDist = dist;
-                    }
-                    const offset = dist.sub(preDist);
-                    map._offsetCenterByPixel(offset);
-                    preDist = dist;
+                    const offset = frame.styles['distance'];
+                    map._setPrjCenter(pcenter.add(offset));
                     map.onMoving();
                 } else if (player.playState === 'finished') {
+                    map._setPrjCenter(ptarget);
                     if (onFinish) {
                         onFinish();
                     }

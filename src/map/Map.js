@@ -414,7 +414,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.onMoveStart();
         const projection = this.getProjection();
         const _pcenter = projection.project(center);
-        this._setPrjCenterAndMove(_pcenter);
+        this._setPrjCenter(_pcenter);
         this.onMoveEnd();
         return this;
     }
@@ -1588,12 +1588,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this.pointToCoordinate(extent2D.getMin()),
             this.pointToCoordinate(extent2D.getMax())
         );
-    }
-
-    _setPrjCenterAndMove(pcenter) {
-        // const offset = this._getPixelDistance(pcenter);
-        this._setPrjCenter(pcenter);
-        // this.offsetPlatform(offset);
     }
 
     //remove a layer from the layerList
