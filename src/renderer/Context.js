@@ -1,25 +1,46 @@
 /**
- * global WebGLRenderingContext
+ * warpped the WebGLRenderingContext
+ * 管理
+ * -cache
+ * -program
+ * -matrix
+ * -extension
+ * -limits
+ * 
+ * 
  * @author yellow 2017/6/11
  */
 import merge from './../utils/merge';
 import GLExtension from './gl/GLExtension';
 import GLLimits from './gl/GLLimits';
+import GLProgram from './gl/GLProgram';
 
 /**
  * @class Context
  * @example
- *   let cvs = document.createElement('canvas');
- *   let _context = new Context(cvs);
+ *   let cvs = document.createElement('canvas'),
+ *       ctx = new Context(cvs);
  */
 class Context {
+    /**
+     * program cache
+     */
+    _programCache = {};
+    /**
+     * the useing program
+     */
+    _currentProgram;
     /**
      * the html canvas
      */
     _canvas;
-
+    /**
+     * canvas width
+     */
     _width;
-
+    /**
+     * canvas height
+     */
     _height;
 
     _renderType;
@@ -141,6 +162,34 @@ class Context {
     includeParameter(gl) {
         this._glLimits = new GLLimits(gl);
     };
+
+    clearColor(){
+
+    };
+
+    clearSencil(){
+
+    };
+
+    clearDepth(){
+
+    };
+
+    _getProgram(programName,programConfiguration){
+        let cache = this._programCache;
+        const key = `${programName}`;
+        if(!!cache[key])
+            return cache[key];
+        else{
+            //create program
+        }
+    };
+
+    useProgram(programName,programConfiguration){
+
+    };
+
+
 }
 
 
