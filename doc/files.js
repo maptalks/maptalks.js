@@ -62,6 +62,7 @@ module.exports = [
     './src/layer/tile/tileinfo/TileSystem.js',
     './src/layer/tile/tileinfo/TileConfig.js',
     './src/layer/tile/TileLayer.js',
+    './src/layer/tile/WMSTileLayer.js',
     './src/layer/tile/CanvasTileLayer.js',
     './src/layer/OverlayLayer.js',
     './src/layer/VectorLayer.js',
@@ -74,9 +75,10 @@ module.exports = [
     './src/renderer/layer/CanvasRenderer.js',
 
     './src/ui/index.js',
-    './src/ui/UI.js',
+    './src/ui/UIComponent.js',
     './src/ui/UIMarker.js',
     './src/ui/InfoWindow.js',
+    './src/ui/ToolTip.js',
     './src/ui/Menu.js',
     './src/ui/Menuable.js',
 
