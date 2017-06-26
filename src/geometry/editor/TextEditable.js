@@ -1,5 +1,4 @@
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
-import { escapeSpecialChars } from 'core/util/strings';
 import TextBox from 'geometry/TextBox';
 import Label from 'geometry/Label';
 import { UIMarker } from 'ui';
@@ -41,15 +40,19 @@ const TextEditable = {
      */
     endEditText() {
         if (this._textEditor) {
-            const content = escapeSpecialChars(this._textEditor.innerText);
+            let html = this._textEditor.innerHTML;
+            html = html.replace(/<p>/ig, '').replace(/<\/p>/ig, '<br/>');
+            this._textEditor.innerHTML = html;
+            // trim enter chars in the end of text for IE
+            const content = this._textEditor.innerText.replace(/[\r\n]+$/gi, '');
             this.setContent(content);
-            this.show();
             off(this._textEditor, 'mousedown dblclick', stopPropagation);
             this.getMap().off('mousedown', this.endEditText, this);
             this._editUIMarker.remove();
             delete this._editUIMarker;
             this._textEditor.onkeyup = null;
             delete this._textEditor;
+            this.show();
             /**
              * edittextend when ended editing text content
              * @event TextMarker#edittextend
@@ -128,23 +131,12 @@ const TextEditable = {
             lineColor = symbol['markerLineColor'] || '#000',
             fill = symbol['markerFill'] || '#3398CC',
             spacing = symbol['textLineSpacing'] || 0;
-        // opacity = symbol['markerFillOpacity'];
         const editor = createEl('div');
         editor.contentEditable = true;
-        editor.style.cssText = 'background: ' + fill + ';' +
-            'border: 1px solid ' + lineColor + ';' +
-            'color: ' + textColor + ';' +
-            'font-size: ' + textSize + 'px;' +
-            'width: ' + (width - 2) + 'px;' +
-            'height: ' + (height - 2) + 'px;' +
-            'margin-left: auto;' +
-            'margin-right: auto;' +
-            'line-height: ' + (textSize + spacing) + 'px;' +
-            'outline: 0;' +
-            'word-wrap: break-word;' +
-            'overflow-x: hidden;' +
-            'overflow-y: hidden;' +
-            '-webkit-user-modify: read-write-plaintext-only;';
+        editor.style.cssText = `background:${fill}; border: 1px solid ${lineColor};
+            color:${textColor};font-size:${textSize}px;width:${width - 2}px;height:${height - 2}px;margin: auto;
+            line-height:${textSize + spacing}px;outline: 0; padding:0; margin:0;word-wrap: break-word;
+            overflow: hidden;-webkit-user-modify: read-write-plaintext-only;`;
 
         editor.innerText = content;
         on(editor, 'mousedown dblclick', stopPropagation);
