@@ -8,7 +8,6 @@ import Menu from './Menu';
 import Menuable from './Menuable';
 
 export {
-    UIComponent as UI,
     UIComponent,
     UIMarker,
     InfoWindow,
