@@ -55,29 +55,26 @@ const defaultWmsParams = {
 class WMSTileLayer extends TileLayer {
 
     constructor(id, options) {
+        super(id);
         const wmsParams = extend({}, defaultWmsParams);
-
-        for (const i in options) {
-            if (i in defaultWmsParams) {
-                wmsParams[i] = options[i];
+        for (const p in options) {
+            if (!(p in this.options)) {
+                wmsParams[p] = options[p];
             }
         }
-        super(id, options);
         const r = options.detectRetina && Browser.retina ? 2 : 1;
         wmsParams.width = this.options.tileSize.width * r;
         wmsParams.height = this.options.tileSize.height * r;
-
         this.wmsParams = wmsParams;
-
         this._wmsVersion = parseFloat(wmsParams.version);
-
+        this.setOptions(options);
     }
 
     onAdd() {
         this.wmsParams.crs = this.options.crs || this.getMap().getProjection().code;
     }
 
-    _getTileUrl(x, y, z) {
+    getTileUrl(x, y, z) {
         const map = this.getMap(),
             res = map._getResolution(z),
             tileConfig = this._getTileConfig(),
@@ -89,7 +86,7 @@ class WMSTileLayer extends TileLayer {
                 [min.y, min.x, max.y, max.x] :
                 [min.x, min.y, max.x, max.y]).join(',');
 
-        const url = super._getTileUrl(x, y, z);
+        const url = super.getTileUrl(x, y, z);
 
         return url +
             getParamString(this.wmsParams, url, this.options.uppercase) +

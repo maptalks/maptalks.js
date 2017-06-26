@@ -201,7 +201,7 @@ class TileLayer extends Layer {
                 const p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
                 const vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j);
                 const tileIndex = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
-                    tileUrl = this._getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
+                    tileUrl = this.getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
                     tileId = [tileIndex['idy'], tileIndex['idx'], zoom].join('__'),
                     tileDesc = {
                         'url': tileUrl,
@@ -275,7 +275,7 @@ class TileLayer extends Layer {
         return this._tileConfig || this._defaultTileConfig;
     }
 
-    _getTileUrl(x, y, z) {
+    getTileUrl(x, y, z) {
         if (!this.options['urlTemplate']) {
             return this.options['errorTileUrl'];
         }
