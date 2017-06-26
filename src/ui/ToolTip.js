@@ -50,7 +50,6 @@ class ToolTip extends UIComponent {
    */
     addTo(owner) {
         if (owner instanceof Geometry) {
-            owner._tooltip = this;
             owner.on('mouseover', this.onMouseOver, this);
             owner.on('mouseout', this.onMouseOut, this);
             return super.addTo(owner);
@@ -123,7 +122,6 @@ class ToolTip extends UIComponent {
         if (this._owner) {
             this._owner.off('mouseover', this.onMouseOver, this);
             this._owner.off('mouseout', this.onMouseOut, this);
-            delete this._owner._tooltip;
         }
     }
 }

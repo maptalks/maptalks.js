@@ -52,40 +52,4 @@ describe('#ToolTip', function () {
             done();
         }, 500);
     });
-
-    describe('all kinds of geometries can set a tooltip', function () {
-        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
-        it('set to all geometries and it will has a tooltip', function () {
-            for (var i = 0; i < geometries.length; i++) {
-                var tooltip = new maptalks.ui.ToolTip(geometries[i].getType());
-                tooltip.addTo(geometries[i]);
-                layer.addGeometry(geometries[i]);
-                expect(geometries[i]._tooltip).to.be.ok();
-            }
-        });
-
-        it('diffrent geometry\'s tooltip has diffrent content', function () {
-            for (var i = 0; i < geometries.length; i++) {
-                var geo = geometries[i];
-                expect(geo._tooltip.getContent()).to.be.eql(geo.getType());
-            }
-        });
-    });
-
-    describe('when remove tip', function () {
-        var geo = new maptalks.Marker(center);
-        it('it will not show when mouseover and set a new tooltip again', function () {
-            geo = geo.addTo(layer);
-            var tooltip = new maptalks.ui.ToolTip('this is a geometry');
-            tooltip.addTo(geo);
-            geo.fire('mouseover', { coordinate:geo.getCenter() });
-            expect(tooltip.isVisible()).to.be.eql(true);
-            geo._tooltip.remove();
-            expect(geo._tooltip).not.to.be.ok();
-            var newtooltip = new maptalks.ui.ToolTip('set a new tooltip');
-            newtooltip.addTo(geo);
-            geo.fire('mouseover', { coordinate: geo.getCenter() });
-            expect(geo._tooltip.isVisible()).to.be.eql(true);
-        });
-    });
 });
