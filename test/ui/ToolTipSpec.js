@@ -27,8 +27,7 @@ describe('#ToolTip', function () {
         var geo = new maptalks.Marker(center).addTo(layer);
         var tooltip = new maptalks.ui.ToolTip('this is a geometry');
         tooltip.addTo(geo);
-        var isvisible = tooltip.isVisible();
-        expect(isvisible).not.to.be.ok();
+        expect(tooltip.isVisible()).not.to.be.ok();
     });
 
     it('it can show when mouseover a geometry', function () {
@@ -36,7 +35,7 @@ describe('#ToolTip', function () {
         var tooltip = new maptalks.ui.ToolTip('this is a geometry');
         tooltip.addTo(geo);
         geo.fire('mouseover', { coordinate:geo.getCenter() });
-        expect(tooltip.isVisible()).to.be.eql(true);
+        expect(tooltip.isVisible()).to.be.ok();
     });
 
     it('it will hide when mouseout a geometry', function (done) {
@@ -44,12 +43,26 @@ describe('#ToolTip', function () {
         var tooltip = new maptalks.ui.ToolTip('this is a geometry');
         tooltip.addTo(geo);
         geo.fire('mouseover', { coordinate: geo.getCenter() });
-        expect(tooltip.isVisible()).to.be.eql(true);
+        expect(tooltip.isVisible()).to.be.ok();
         geo.fire('mouseout');
         setTimeout(function () {
-            var isvisible = tooltip.isVisible();
-            expect(isvisible).to.be.eql(false);
+            expect(tooltip.isVisible()).not.to.be.ok();
             done();
         }, 500);
     });
+
+    it('it will not show when mouseover and set a new tooltip again', function () {
+        var geo = new maptalks.Marker(center);
+        geo = geo.addTo(layer);
+        var tooltip = new maptalks.ui.ToolTip('this is a geometry');
+        tooltip.addTo(geo);
+        geo.fire('mouseover', { coordinate:geo.getCenter() });
+        expect(tooltip.isVisible()).to.be.ok();
+        tooltip.remove();
+        var newtooltip = new maptalks.ui.ToolTip('set a new tooltip');
+        newtooltip.addTo(geo);
+        geo.fire('mouseover', { coordinate: geo.getCenter() });
+        expect(newtooltip.isVisible()).to.be.ok();
+    });
+
 });
