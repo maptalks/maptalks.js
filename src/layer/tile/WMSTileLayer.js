@@ -35,7 +35,7 @@ const defaultWmsParams = {
 /**
  * @classdesc
  * Used to display [WMS]{https://en.wikipedia.org/wiki/Web_Map_Service} services as tile layers on the map. Extends [TileLayer]{@link TileLayer}.
- * Implement based on Leaflet's TileLayer.WMS.
+ * Implemented based on Leaflet's TileLayer.WMS.
  * @category layer
  * @extends TileLayer
  * @param {String|Number} id - tile layer's id
@@ -44,12 +44,12 @@ const defaultWmsParams = {
  * var layer = new maptalks.WMSTileLayer('wms', {
  *     'urlTemplate' : 'https://ahocevar.com/geoserver/wms',
  *     'crs' : 'EPSG:3857',
-       'layers' : 'ne:ne',
-       'styles' : '',
-       'version' : '1.3.0',
-       'format': 'image/png',
-       'transparent' : true,
-       'uppercase' : true
+ *     'layers' : 'ne:ne',
+ *     'styles' : '',
+ *     'version' : '1.3.0',
+ *     'format': 'image/png',
+ *     'transparent' : true,
+ *     'uppercase' : true
  * });
  */
 class WMSTileLayer extends TileLayer {
