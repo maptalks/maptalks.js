@@ -13,7 +13,7 @@ import Layer from '../Layer';
  * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {String}              [options.crossOrigin=null]  - tile Image's corssOrigin
- * @property {Object}              [options.tileSize={'width':256, 'height':256}] - size of the tile image
+ * @property {Number[]}            [options.tileSize=[256, 256]] - size of the tile image, [width, height]
  * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
  * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
  * @memberOf TileLayer
@@ -37,10 +37,7 @@ const options = {
 
     'crossOrigin': null,
 
-    'tileSize': {
-        'width': 256,
-        'height': 256
-    },
+    'tileSize': [256, 256],
 
     'tileSystem': null,
     'debug': false,
@@ -93,8 +90,7 @@ class TileLayer extends Layer {
      * @return {Size}
      */
     getTileSize() {
-        const size = this.options['tileSize'];
-        return new Size(size['width'], size['height']);
+        return new Size(this.options['tileSize']);
     }
 
     /**
@@ -256,15 +252,16 @@ class TileLayer extends Layer {
      * @private
      */
     _initTileConfig() {
-        const map = this.getMap();
-        this._defaultTileConfig = new TileConfig(TileSystem.getDefault(map.getProjection()), map.getFullExtent(), this.getTileSize());
+        const map = this.getMap(),
+            tileSize = this.getTileSize();
+        this._defaultTileConfig = new TileConfig(TileSystem.getDefault(map.getProjection()), map.getFullExtent(), tileSize);
         if (this.options['tileSystem']) {
-            this._tileConfig = new TileConfig(this.options['tileSystem'], map.getFullExtent(), this.getTileSize());
+            this._tileConfig = new TileConfig(this.options['tileSystem'], map.getFullExtent(), tileSize);
         }
         //inherit baselayer's tileconfig
         if (map && map.getBaseLayer() && map.getBaseLayer() !== this && map.getBaseLayer()._getTileConfig) {
             const base = map.getBaseLayer()._getTileConfig();
-            this._tileConfig = new TileConfig(base.tileSystem, base.fullExtent, this.getTileSize());
+            this._tileConfig = new TileConfig(base.tileSystem, base.fullExtent, tileSize);
         }
     }
 

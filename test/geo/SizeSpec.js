@@ -1,8 +1,20 @@
 
 describe('#Size', function () {
     describe('has constructors', function () {
-        it('can be created width and height', function () {
+        it('can be created with width and height', function () {
             var s = new maptalks.Size(1, 2);
+            expect(s.width).to.be.eql(1);
+            expect(s.height).to.be.eql(2);
+        });
+
+        it('can be created with an array', function () {
+            var s = new maptalks.Size([1, 2]);
+            expect(s.width).to.be.eql(1);
+            expect(s.height).to.be.eql(2);
+        });
+
+        it('can be created with an object', function () {
+            var s = new maptalks.Size({ width : 1, height : 2 });
             expect(s.width).to.be.eql(1);
             expect(s.height).to.be.eql(2);
         });
