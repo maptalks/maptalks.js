@@ -21,6 +21,37 @@ describe('#WMSTileLayer', function () {
         REMOVE_CONTAINER(container);
     });
 
+    it('set tile size', function () {
+        var tile1 = new maptalks.WMSTileLayer('tile', {
+            urlTemplate : '/resources/tile.png',
+            'layers' : 'layer',
+            'styles' : 'styles',
+            'version' : '1.3.0',
+            'format': 'image/png',
+            'transparent' : true,
+            'uppercase' : true,
+            'crs' : 'EPSG:4490',
+            'renderer' : 'dom',
+            tileSize : [1, 2]
+        });
+        expect(tile1.getTileSize().toArray()).to.be.eql([1, 2]);
+
+        var tile2 = new maptalks.WMSTileLayer('tile', {
+            urlTemplate : '/resources/tile.png',
+            'layers' : 'layer',
+            'styles' : 'styles',
+            'version' : '1.3.0',
+            'format': 'image/png',
+            'transparent' : true,
+            'uppercase' : true,
+            'crs' : 'EPSG:4490',
+            'renderer' : 'dom',
+            tileSize : { width : 1, height : 2 }
+        });
+
+        expect(tile2.getTileSize().toArray()).to.be.eql([1, 2]);
+    });
+
     it('add with dom renderer', function (done) {
         var tile = new maptalks.WMSTileLayer('tile', {
             urlTemplate : '/resources/tile.png',

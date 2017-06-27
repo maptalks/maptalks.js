@@ -4,10 +4,7 @@ import SpatialReference from './SpatialReference';
 
 function parse(arcConf) {
     const tileInfo = arcConf['tileInfo'],
-        tileSize = {
-            'width': tileInfo['cols'],
-            'height': tileInfo['rows']
-        },
+        tileSize = [tileInfo['cols'], tileInfo['rows']],
         resolutions = [],
         lods = tileInfo['lods'];
     for (let i = 0, len = lods.length; i < len; i++) {

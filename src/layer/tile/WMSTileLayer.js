@@ -62,12 +62,13 @@ class WMSTileLayer extends TileLayer {
                 wmsParams[p] = options[p];
             }
         }
-        const r = options.detectRetina && Browser.retina ? 2 : 1;
-        wmsParams.width = this.options.tileSize.width * r;
-        wmsParams.height = this.options.tileSize.height * r;
+        this.setOptions(options);
+        const r = options.detectRetina && Browser.retina ? 2 : 1,
+            tileSize = this.getTileSize();
+        wmsParams.width = tileSize.width * r;
+        wmsParams.height = tileSize.height * r;
         this.wmsParams = wmsParams;
         this._wmsVersion = parseFloat(wmsParams.version);
-        this.setOptions(options);
     }
 
     onAdd() {

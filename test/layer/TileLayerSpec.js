@@ -37,6 +37,21 @@ describe('#TileLayer', function () {
             });
             map.addLayer(tile);
         });
+
+        it('set tile size', function () {
+            var tile1 = new maptalks.TileLayer('tile', {
+                urlTemplate : '/resources/tile.png',
+                tileSize : [1, 2]
+            });
+            expect(tile1.getTileSize().toArray()).to.be.eql([1, 2]);
+
+            var tile2 = new maptalks.TileLayer('tile', {
+                urlTemplate : '/resources/tile.png',
+                tileSize : { width : 1, height : 2 }
+            });
+
+            expect(tile2.getTileSize().toArray()).to.be.eql([1, 2]);
+        });
     });
 
     describe('Different Projections', function () {
