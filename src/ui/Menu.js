@@ -1,5 +1,5 @@
 import { isString, isFunction } from 'core/util';
-import { on, createEl, addClass } from 'core/util/dom';
+import { on, createEl, addClass, setStyle } from 'core/util/dom';
 import Point from 'geo/Point';
 import UIComponent from './UIComponent';
 
@@ -16,9 +16,10 @@ const defaultOptions = {
     'animation': null,
     'animationDelay': 10,
     'animationOnHide': false,
-    'eventsToStop': 'mousedown dblclick click',
+    'eventsToStop': 'mousewheel mousedown dblclick click',
     'autoPan': false,
     'width': 160,
+    'height' : 300,
     'custom': false,
     'items': []
 };
@@ -150,6 +151,10 @@ class Menu extends UIComponent {
         const map = this.getMap();
         const ul = createEl('ul');
         addClass(ul, 'maptalks-menu-items');
+        const height = this.options['height'] || 0;
+        if(height > 0) {
+            setStyle(ul, 'height: ' + height+ 'px; overflow-y: auto;');
+        }
         const items = this.getItems();
 
         function onMenuClick(index) {
