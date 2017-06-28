@@ -271,19 +271,21 @@ export default class TileLayerDomRenderer extends Class {
             let matrix;
             if (zoomFraction !== 1) {
                 const m = mat4.create();
+                if (map.isZooming() && this._zoomParam) {
+                    const origin = this._zoomParam['origin'],
+                        // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a matOffset to fix.
+                        pitch = map.getPitch(),
+                        matOffset = [
+                            (origin.x - size['width'] / 2)  * (1 - zoomFraction),
+                            //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
+                            (origin.y - size['height'] / 2) * (1 - zoomFraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
+                            0
+                        ];
+                    mat4.translate(m, m, matOffset);
+                }
 
-                // // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a matOffset to fix.
-                // const pitch = map.getPitch();
-                // const matOffset = [
-                //     (origin.x - size['width'] / 2)  * (1 - zoomFraction),
-                //     //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
-                //     (origin.y - size['height'] / 2) * (1 - zoomFraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
-                //     0
-                // ];
-                // mat4.translate(m, m, matOffset);
-
-                // Fractional zoom, multiply current domCssMat with zoomFraction
                 mat4.multiply(m, m, cssMat);
+                // Fractional zoom, multiply current domCssMat with zoomFraction
                 mat4.scale(m, m, [zoomFraction, zoomFraction, 1]);
                 matrix = join(m);
             } else {
