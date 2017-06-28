@@ -27,7 +27,16 @@ const Limits = {
     maximumDrawBuffers: 0,
     maximumColorAttachments: 0,
     highpFloatSupported: false,
-    highpIntSupported: false
+    highpIntSupported: false,
+    //多线程获取,A Number indicating the number of logical processor cores.
+    //用于创建webwork 
+    // reference https://developer.mozilla.org/en-US/docs/Web/API/NavigatorConcurrentHardware/hardwareConcurrency
+    //@example 
+    //  let newWorker = {
+    //      worker=new Worker('cpuWorker.js'),
+    //      inUse:false
+    //  }
+    hardwareConcurrency: 0
 };
 
 
@@ -48,6 +57,7 @@ class GLLimits {
     };
 
     _includeParamter(gl) {
+        this._limits.hardwareConcurrency = window.navigator.hardwareConcurrency || 2;
         this._limits.maximumCombinedTextureImageUnits = gl.getParameter(GLConstants.MAX_COMBINED_TEXTURE_IMAGE_UNITS); // min: 8
         this._limits.maximumCubeMapSize = gl.getParameter(GLConstants.MAX_CUBE_MAP_TEXTURE_SIZE); // min: 16
         this._limits.maximumFragmentUniformVectors = gl.getParameter(GLConstants.MAX_FRAGMENT_UNIFORM_VECTORS); // min: 16

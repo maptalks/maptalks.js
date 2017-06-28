@@ -7,11 +7,21 @@
  * @author yellow date 2017/6/15
  */
 const GLConstants = {
-    // Clearing buffers
-    // Constants passed to clear() to clear buffer masks.
-    DEPTH_BUFFER_BIT: 0x00000100, // Passed to clear to clear the current depth buffer.
-    STENCIL_BUFFER_BIT: 0x00000400, // Passed to clear to clear the current stencil buffer.
-    COLOR_BUFFER_BIT: 0x00004000, // Passed to clear to clear the current color buffer.
+    /**
+     * 深度缓冲，常用与 gl.clear(gl.Enum)
+     * Passed to clear to clear the current depth buffer.
+     */
+    DEPTH_BUFFER_BIT: 0x00000100,
+    /**
+     * 模版缓冲，常用与 gl.clear(gl.Enum)
+     * Passed to clear to clear the current stencil buffer.
+     */
+    STENCIL_BUFFER_BIT: 0x00000400,
+    /**
+     * 当前可写的颜色缓冲，常用与 gl.clear(gl.Enum)
+     *  Passed to clear to clear the current color buffer.
+     */
+    COLOR_BUFFER_BIT: 0x00004000, //
 
     // Rendering primitives
     // Constants passed to drawElements() or drawArrays() to specify what kind of primitive to render.
@@ -32,7 +42,11 @@ const GLConstants = {
     SRC_COLOR: 0x0300, // Passed to blendFunc or blendFuncSeparate to multiply a component by the source elements color.
     ONE_MINUS_SRC_COLOR: 0x0301, // Passed to blendFunc or blendFuncSeparate to multiply a component by one minus the source elements color.
     SRC_ALPHA: 0x0302, // Passed to blendFunc or blendFuncSeparate to multiply a component by the source's alpha.
-    ONE_MINUS_SRC_ALPHA: 0x0303, // Passed to blendFunc or blendFuncSeparate to multiply a component by one minus the source's alpha.
+    /**
+     * 传递给BleandFunc或BlendFuncSeparate使用，用来指定混合计算颜色时，基于源颜色的aplha所占比。
+     * Passed to blendFunc or blendFuncSeparate to multiply a component by one minus the source's alpha.
+     */
+    ONE_MINUS_SRC_ALPHA: 0x0303,
     DST_ALPHA: 0x0304, // Passed to blendFunc or blendFuncSeparate to multiply a component by the destination's alpha.
     ONE_MINUS_DST_ALPHA: 0x0305, // Passed to blendFunc or blendFuncSeparate to multiply a component by one minus the destination's alpha.
     DST_COLOR: 0x0306, // Passed to blendFunc or blendFuncSeparate to multiply a component by the destination's color.
@@ -160,7 +174,11 @@ const GLConstants = {
     SAMPLE_ALPHA_TO_COVERAGE: 0x809E, // Passed to enable/disable to turn on/off the alpha to coverage. Used in multi-sampling alpha channels.
     SAMPLE_COVERAGE: 0x80A0, // Passed to enable/disable to turn on/off the sample coverage. Used in multi-sampling.
     SCISSOR_TEST: 0x0C11, // Passed to enable/disable to turn on/off the scissor test. Can also be used with getParameter to query the scissor test.
-    STENCIL_TEST: 0x0B90, // Passed to enable/disable to turn on/off the stencil test. Can also be used with getParameter to query the stencil test.
+    /**
+     *  模版缓冲区测试，发生在透明度测试之后，和深度测试之前
+     *  Passed to enable/disable to turn on/off the stencil test. Can also be used with getParameter to query the stencil test.
+     */
+    STENCIL_TEST: 0x0B90,
 
     // Errors
     // Constants returned from getError().
@@ -242,8 +260,16 @@ const GLConstants = {
     ALWAYS: 0x0207, //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
     LESS: 0x0201, //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
     EQUAL: 0x0202, //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
-    LEQUAL: 0x0203, //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
-    GREATER: 0x0204, //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
+    /**
+     * 测试对比条件，当参考值小于等于模板值时，通过测试，常用于深度测试
+     * Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
+     */
+    LEQUAL: 0x0203,
+    /**
+     * 测试对比条件，当参考值大于模版值时，通过测试
+     * Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
+     */
+    GREATER: 0x0204,
     GEQUAL: 0x0206, //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
     NOTEQUAL: 0x0205, //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
 
