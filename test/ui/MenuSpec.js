@@ -120,12 +120,13 @@ describe('#ContextMenu', function () {
 
         target.setMenu({
             items: items,
-            height: 300,
+            maxHeight: 300,
             width: 250
         });
         target.openMenu();
         var menuDom = target._menu.getDOM().firstChild;
-        expect(menuDom.style.height).to.be.equal('300px');
+        console.log(menuDom.style);
+        expect(menuDom.style['max-height']).to.be.equal('300px');
     });
 });
 

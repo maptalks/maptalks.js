@@ -1,5 +1,5 @@
 import { isString, isFunction } from 'core/util';
-import { on, createEl, addClass, setStyle, measureDom } from 'core/util/dom';
+import { on, createEl, addClass, setStyle } from 'core/util/dom';
 import Point from 'geo/Point';
 import UIComponent from './UIComponent';
 
@@ -19,7 +19,7 @@ const defaultOptions = {
     'eventsToStop': 'mousewheel mousedown dblclick click',
     'autoPan': false,
     'width': 160,
-    'height' : 300,
+    'maxHeight' : 300,
     'custom': false,
     'items': []
 };
@@ -187,10 +187,9 @@ class Menu extends UIComponent {
             }
             ul.appendChild(itemDOM);
         }
-        const ulSize = measureDom('div', ul);
-        const height = this.options['height'] || 0;
-        if (height > 0 && height < ulSize['height']) {
-            setStyle(ul, 'height: ' + height + 'px; overflow-y: auto;');
+        const maxHeight = this.options['maxHeight'] || 0;
+        if (maxHeight > 0) {
+            setStyle(ul, 'max-height: ' + maxHeight + 'px; overflow-y: auto;');
         }
         return ul;
     }
