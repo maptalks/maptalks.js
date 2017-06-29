@@ -14,6 +14,7 @@ class GLShader {
     _id;
     /**
      * the glContext 
+     * @type {WebGLRenderingContext}
      * @memberof Shader
      */
     _gl;
@@ -33,11 +34,11 @@ class GLShader {
     _handle;
     /**
      * Creates an instance of Shader.
-     * @param {any} gl 
+     * @param {WebGLRenderingContext} gl 
      * @param {Object} source
      * @param {String} [source.source]
      * @param {String} [source.name] 
-     * @param {any} shaderType 
+     * @param {String} shaderType 
      * 
      * @memberof Shader
      */
@@ -114,12 +115,22 @@ class GLShader {
 
 
 class VertexShader extends GLShader {
+    /**
+     * 创建vertex shader
+     * @param {WebGLRenderingContext} gl 
+     * @param {String} source 
+     */
     constructor(gl, source) {
         super(gl, source, GLConstants.VERTEX_SHADER);
     };
 }
 
 class FragmentShader extends GLShader {
+    /**
+     * 创建fragment shader
+     * @param {WebGLRenderingContext} gl 
+     * @param {String} source 
+     */
     constructor(gl, source) {
         super(gl, source, GLConstants.FRAGMENT_SHADER);
     };

@@ -6,8 +6,17 @@
  * -matrix
  * -extension
  * -limits
- * 
- * 
+ * 特点：
+ * reference https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap
+ * 使用 OffscreenCanvas 创建不可见绘制canvas,后基于此canvas绘制图像，并保存成bitmap缓存帧
+ * var htmlCanvas = document.getElementById("htmlCanvas").getContext("bitmaprenderer");
+ * //
+ * var offscreen = new OffscreenCanvas(256, 256);
+ * var gl = offscreen.getContext("webgl");
+ * var bitmap = offscreen.transferToImageBitmap();
+ * //
+ * 预留一定的帧数后，使用bitmaprender绘制bitmap到前端canvas即可
+ * htmlCanvas.transferFromImageBitmap(bitmap);
  * @author yellow 2017/6/11
  */
 import merge from './../utils/merge';
@@ -142,15 +151,19 @@ class Context {
     /**
      * get context attributes
      * include webgl2 attributes
+     * reference https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
+     * 
      */
     getContextAttributes() {
         return {
             alpha: this._alpha,
-            stencil: this._stencil,
             depth: this._depth,
+            stencil: this._stencil,
             antialias: this._antialias,
             premultipliedAlpha: this._premultipliedAlpha,
-            preserveDrawingBuffer: this._preserveDrawingBuffer
+            preserveDrawingBuffer: this._preserveDrawingBuffer,
+            //如果系统性能较低，也会创建context
+            failIfMajorPerformanceCaveat:true,  
         }
     };
     /**
@@ -180,7 +193,6 @@ class Context {
         gl.enable(GLConstants.DEPTH_TEST);
         gl.depthFunc(GLConstants.LEQUAL); //深度参考值小于模版值时，测试通过
         gl.depthMask(false);
-
     }
     /**
      * Query and initialize extensions
