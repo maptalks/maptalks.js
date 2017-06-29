@@ -1,5 +1,5 @@
 import { isString, isFunction } from 'core/util';
-import { on, createEl, addClass, setStyle } from 'core/util/dom';
+import { on, createEl, addClass, setStyle, measureDom} from 'core/util/dom';
 import Point from 'geo/Point';
 import UIComponent from './UIComponent';
 
@@ -151,10 +151,6 @@ class Menu extends UIComponent {
         const map = this.getMap();
         const ul = createEl('ul');
         addClass(ul, 'maptalks-menu-items');
-        const height = this.options['height'] || 0;
-        if(height > 0) {
-            setStyle(ul, 'height: ' + height+ 'px; overflow-y: auto;');
-        }
         const items = this.getItems();
 
         function onMenuClick(index) {
@@ -190,6 +186,11 @@ class Menu extends UIComponent {
                 on(itemDOM, 'click', (onMenuClick)(i));
             }
             ul.appendChild(itemDOM);
+        }
+        const ulSize = measureDom('div', ul);
+        const height = this.options['height'] || 0;
+        if (0 < height < ulSize['height']) {
+            setStyle(ul, 'height: ' + height+ 'px; overflow-y: auto;');
         }
         return ul;
     }

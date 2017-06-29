@@ -16826,10 +16826,6 @@ var Menu = function (_UIComponent) {
         var map = this.getMap();
         var ul = createEl('ul');
         addClass(ul, 'maptalks-menu-items');
-        var height = this.options['height'] || 0;
-        if (height > 0) {
-            setStyle(ul, 'height: ' + height + 'px; overflow-y: auto;');
-        }
         var items = this.getItems();
 
         function onMenuClick(index) {
@@ -16866,6 +16862,11 @@ var Menu = function (_UIComponent) {
                 on(itemDOM, 'click', onMenuClick(i));
             }
             ul.appendChild(itemDOM);
+        }
+        var ulSize = measureDom('div', ul);
+        var height = this.options['height'] || 0;
+        if (0 < height < ulSize['height']) {
+            setStyle(ul, 'height: ' + height + 'px; overflow-y: auto;');
         }
         return ul;
     };
