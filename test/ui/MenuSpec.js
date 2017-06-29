@@ -96,6 +96,37 @@ describe('#ContextMenu', function () {
         expect(target._menu.isVisible()).not.to.be.ok();
         expect(target._menu.getDOM().style.display).to.be.eql('none');
     });
+
+    it('specify menu height', function () {
+        map.removeLayer('vector');
+        var layer = new maptalks.VectorLayer('vector');
+        var target = new maptalks.Marker(map.getCenter());
+        layer.addGeometry(target).addTo(map);
+        var items = [
+                { item: 'item1', click: function () {} },
+                { item: 'item2', click: function () {} },
+            '-',
+                { item: 'item3', click: function () {} },
+                { item: 'item4', click: function () {} },
+                { item: 'item5', click: function () {} },
+                { item: 'item6', click: function () {} },
+            '-',
+                { item: 'item7', click: function () {} },
+            '-',
+                { item: 'item8', click: function () {} },
+                { item: 'item9', click: function () {} },
+                { item: 'item10', click: function () {} }
+        ];
+
+        target.setMenu({
+            items: items,
+            height: 300,
+            width: 250
+        });
+        target.openMenu();
+        var menuDom = target._menu.getDOM().firstChild;
+        expect(menuDom.style.height).to.be.equal('300px');
+    });
 });
 
 function runTests(target, _context) {
