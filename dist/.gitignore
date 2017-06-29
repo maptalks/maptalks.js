@@ -2,3 +2,7 @@ debug
 examples
 plugins
 *.gz
+*.bz2
+*.css
+*.js
+images/
