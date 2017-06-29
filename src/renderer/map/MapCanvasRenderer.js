@@ -74,19 +74,18 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     drawLayers(layers) {
-        const map = this.map;
-        const isInteracting = map.isInteracting();
-        // all the visible canvas layers' ids.
-        const canvasIds = [];
-        // all the updated canvas layers's ids.
-        const updatedIds = [];
-        const fps = map.options['fpsOnInteracting'] || 0;
-        const timeLimit = fps === 0 ? 0 : 1000 / fps;
-        // time of layer drawing
-        const layerLimit = this.map.options['layerCanvasLimitOnInteracting'];
+        const map = this.map,
+            isInteracting = map.isInteracting(),
+            // all the visible canvas layers' ids.
+            canvasIds = [],
+            // all the updated canvas layers's ids.
+            updatedIds = [],
+            fps = map.options['fpsOnInteracting'] || 0,
+            timeLimit = fps === 0 ? 0 : 1000 / fps,
+            // time of layer drawing
+            layerLimit = this.map.options['layerCanvasLimitOnInteracting'],
+            l = layers.length;
         let t = 0;
-        this._lastUpdatedId = -1;
-        const l = layers.length;
         for (let i = l - 1; i >= 0; i--) {
             const layer = layers[i];
             if (!layer.isVisible()) {
@@ -106,7 +105,6 @@ export default class MapCanvasRenderer extends MapRenderer {
                 // don't need to call layer's draw/drawOnInteracting but need to redraw layer's updated canvas
                 if (!needsRedraw) {
                     updatedIds.push(layer.getId());
-                    this._lastUpdatedId = i;
                 }
                 this.setToRedraw();
             }
@@ -144,7 +142,6 @@ export default class MapCanvasRenderer extends MapRenderer {
 
             if (isCanvas) {
                 updatedIds.push(layer.getId());
-                this._lastUpdatedId = i;
                 this.setToRedraw();
             }
         }
@@ -192,10 +189,10 @@ export default class MapCanvasRenderer extends MapRenderer {
      * @private
      */
     _drawCanvasLayerOnInteracting(layer, t, timeLimit) {
-        const map = this.map;
-        const renderer = layer._getRenderer();
-        const drawTime = renderer.getDrawTime();
-        const inTime = timeLimit === 0 || timeLimit > 0 && t + drawTime <= timeLimit;
+        const map = this.map,
+            renderer = layer._getRenderer(),
+            drawTime = renderer.getDrawTime(),
+            inTime = timeLimit === 0 || timeLimit > 0 && t + drawTime <= timeLimit;
         if (renderer.drawOnInteracting &&
             (inTime ||
             map.isZooming() && layer.options['forceRenderOnZooming'] ||
@@ -296,9 +293,9 @@ export default class MapCanvasRenderer extends MapRenderer {
             this.clearCanvas();
         }
 
-        const interacting = this.map.isInteracting();
-        const limit = this.map.options['layerCanvasLimitOnInteracting'];
-        const len = layers.length;
+        const interacting = this.map.isInteracting(),
+            limit = this.map.options['layerCanvasLimitOnInteracting'],
+            len = layers.length;
 
         const start = interacting && limit >= 0 && len > limit ? len - limit : 0;
         for (let i = start; i < len; i++) {
@@ -611,10 +608,10 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!this.canvas || this._containerIsCanvas) {
             return false;
         }
-        const map = this.map;
-        const mapSize = map.getSize();
-        const canvas = this.canvas;
-        const r = Browser.retina ? 2 : 1;
+        const map = this.map,
+            mapSize = map.getSize(),
+            canvas = this.canvas,
+            r = Browser.retina ? 2 : 1;
         if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
             return false;
         }
