@@ -7,6 +7,7 @@ import UIComponent from './UIComponent';
  * @property {Object} options
  * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened menu.
  * @property {Number}  [options.width=160]      - default width
+ * @property {Number}  [options.maxHeight=0]    - default max-height
  * @property {String|HTMLElement} [options.custom=false]  - set it to true if you want a customized menu, customized html codes or a HTMLElement is set to items.
  * @property {Object[]|String|HTMLElement}  options.items   - html code or a html element is options.custom is true. Or a menu items array, containing: item objects, "-" as a splitor line
  * @memberOf ui.Menu
@@ -19,7 +20,7 @@ const defaultOptions = {
     'eventsToStop': 'mousewheel mousedown dblclick click',
     'autoPan': false,
     'width': 160,
-    'maxHeight' : 300,
+    'maxHeight' : 0,
     'custom': false,
     'items': []
 };
