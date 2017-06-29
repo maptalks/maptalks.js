@@ -125,7 +125,6 @@ describe('#ContextMenu', function () {
         });
         target.openMenu();
         var menuDom = target._menu.getDOM().firstChild;
-        console.log(menuDom.style);
         expect(menuDom.style['max-height']).to.be.equal('300px');
     });
 });
