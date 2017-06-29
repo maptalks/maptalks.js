@@ -37,12 +37,7 @@ class GLProgram {
     gl.attachShader(program, fs.handle);
   }
 
-
-
-
-}
-
-
+};
 
 
 export default GLProgram;

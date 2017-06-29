@@ -33,6 +33,11 @@ import GLProgram from './gl/GLProgram';
  */
 class Context {
     /**
+     * @type {Array}
+     * @memberof Context
+     */
+    _cacheFrameBitmap=[];
+    /**
      * program cache
      */
     _programCache = {};
@@ -41,7 +46,8 @@ class Context {
      */
     _currentProgram;
     /**
-     * the html canvas
+     * the buffer canvas,
+     * @type {OffscreenCanvas}
      */
     _canvas;
     /**
@@ -121,13 +127,14 @@ class Context {
      * @param {boolean} [options.premultipliedAlpha] enable premultipliedAlpha,default is true , webgl2
      * @param {boolean} [options.preserveDrawingBuffer] enable preserveDrawingBuffer,default is false , webgl2
      */
-    constructor(canvas, options) {
+    constructor(options) {
         options = options || {};
-        this._canvas = canvas;
-        this._width = options.width || canvas.width;
-        this._height = options.height || canvas.height;
+        const width = options.width || window.innerWidth,
+            height = options.height || window.innerHeight;
+        //兼容性欠佳，故改用canvas = new OffscreenCanvas(width,height);
+        this._offScreenCanvas(width, height);
         this._renderType = options.renderType || 'webgl2';
-        this._isWebgl2 = this._renderType === 'webgl2' ? true : false;
+        this._isWebgl2 = this._renderType === 'webgl2';
         this._alpha = options.alpha || false;
         this._stencil = options.stencil || true;
         this._depth = options.depth || true;
@@ -140,7 +147,7 @@ class Context {
         this._validateShaderProgram = false;
         this._logShaderCompilation = false;
         //get glContext
-        this._gl = canvas.getContext(this._renderType, this.getContextAttributes()) || canvas.getContext('experimental-' + this._renderType, this.getContextAttributes()) || undefined;
+        this._gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes()) || undefined;
         //get extension
         this._includeExtension(this._gl);
         //get parameter and extensions
@@ -148,6 +155,33 @@ class Context {
         //setup env
         this._setup(this._gl);
     };
+
+    /**
+     * 兼容写法，创建非可见区域canvas，用户做缓冲绘制
+     * 待绘制完成后，使用bitmaprender绘制到实际页面上
+     * @memberof Context
+     * @param {number} width buffer canvas width
+     * @param {number} height buffer canvas height
+     */
+    _offScreenCanvas(width, height) {
+        let htmlCanvas = document.createElement('canvas');
+        htmlCanvas.width = width;
+        htmlCanvas.height = height;
+        this._canvas = htmlCanvas;
+        //bug only firfox 44 + support
+        //this._canvas = htmlCanvas.transferControlToOffscreen();
+        this._width = width;
+        this._height = height;
+    };
+    /**
+     * @param {HTMLCanvasElement} canvas
+     * @memberof Context
+     */
+    renderToCanvas(canvas){
+        const renderContext =  canvas.getContext('bitmaprenderer');
+        //renderContext.transferFromImageBitmap(bitmap);
+    }
+
     /**
      * get context attributes
      * include webgl2 attributes
@@ -163,7 +197,7 @@ class Context {
             premultipliedAlpha: this._premultipliedAlpha,
             preserveDrawingBuffer: this._preserveDrawingBuffer,
             //如果系统性能较低，也会创建context
-            failIfMajorPerformanceCaveat:true,  
+            failIfMajorPerformanceCaveat: true,
         }
     };
     /**
@@ -173,13 +207,13 @@ class Context {
      * 3.
      * @param {WebGLRenderingContext} gl [WebGL2RenderingContext]
      */
-    _setup(gl){
+    _setup(gl) {
         //reference http://www.cppblog.com/wc250en007/archive/2012/07/18/184088.html
         //gl.ONE 使用1.0作为因子，相当于完全使用了这种颜色参与混合运算
         //gl.ONE_MINUS_SRC_ALPHA 使用1.0-源颜色alpha值作为因子，
         //作用为：源颜色的alpha作为不透明度，即源颜色alpha值越大，混合时占比越高，混合时最常用的方式
         gl.enable(GLConstants.BLEND);
-        gl.blendFunc(GLConstants.ONE,GLConstants.ONE_MINUS_SRC_ALPHA);
+        gl.blendFunc(GLConstants.ONE, GLConstants.ONE_MINUS_SRC_ALPHA);
         //为了模仿真实物体和透明物体的混合颜色，需要使用深度信息
         //http://www.cnblogs.com/aokman/archive/2010/12/13/1904723.html
         //模版缓存区测试，用来对比当前值与预设值，用以判断是否更新此值
@@ -211,15 +245,15 @@ class Context {
     /**
      * 清理颜色缓冲
      */
-    clearColor(){
+    clearColor() {
         const gl = this._gl;
-        gl.clearColor(0,0,0,0);
+        gl.clearColor(0, 0, 0, 0);
         gl.clear(GLConstants.COLOR_BUFFER_BIT);
     };
     /**
      * 清理模版缓冲
      */
-    clearStencil(){
+    clearStencil() {
         const gl = this._gl;
         gl.clearStencil(0x0);
         gl.stencilMask(0xFF);
@@ -228,26 +262,25 @@ class Context {
     /**
      * 清理深度缓冲
      */
-    clearDepth(){
-         const gl = this._gl;
-         gl.clearDepth(0x1);
-         gl.clear(GLConstants.DEPTH_BUFFER_BIT);
+    clearDepth() {
+        const gl = this._gl;
+        gl.clearDepth(0x1);
+        gl.clear(GLConstants.DEPTH_BUFFER_BIT);
     };
 
-    _getProgram(programName,programConfiguration){
+    _getProgram(programName, programConfiguration) {
         let cache = this._programCache;
         const key = `${programName}`;
-        if(!!cache[key])
+        if (!!cache[key])
             return cache[key];
-        else{
+        else {
             //create program
         }
     };
 
-    useProgram(programName,programConfiguration){
+    useProgram(programName, programConfiguration) {
 
     };
-
 
 }
 
