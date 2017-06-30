@@ -11,6 +11,9 @@
 
 import { requestAnimationFrame, cancelAnimationFrame } from './../utils/raf';
 
+/**
+ * @class TimeLine
+ */
 class TimeLine {
     /**
      * 创建记录播放起始
