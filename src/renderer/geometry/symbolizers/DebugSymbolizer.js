@@ -6,12 +6,6 @@ import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 import VectorMarkerSymbolizer from './VectorMarkerSymbolizer';
 
-const styles = {
-    'lineColor': '#000',
-    'lineOpacity': 1,
-    'lineWidth': 1
-};
-
 export default class DebugSymbolizer extends PointSymbolizer {
 
     getPlacement() {
@@ -32,22 +26,23 @@ export default class DebugSymbolizer extends PointSymbolizer {
         if (!map || map.isZooming()) {
             return;
         }
-        Canvas.prepareCanvas(ctx, styles);
-        const op = styles['lineOpacity'];
+        const color = layer.options['debugOutline'],
+            op = 1;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
 
         //outline
         const outline = this.getPainter().getContainerExtent().toArray();
         Canvas.polygon(ctx, [outline], op, 0);
 
         //center cross and id if have any.
-        const points = this._getRenderContainerPoints();
-
-        const id = this.geometry.getId();
-        const cross = VectorMarkerSymbolizer._getVectorPoints('cross', 10, 10);
+        const points = this._getRenderContainerPoints(),
+            id = this.geometry.getId(),
+            cross = VectorMarkerSymbolizer._getVectorPoints('cross', 10, 10);
         for (let i = 0; i < points.length; i++) {
             const p = points[i];
             if (!isNil(id)) {
-                Canvas.fillText(ctx, id, p.add(8, -4), 'rgba(0,0,0,1)');
+                Canvas.fillText(ctx, id, p.add(8, -4), color);
             }
             const c = [];
             for (let ii = 0; ii < cross.length; ii++) {
