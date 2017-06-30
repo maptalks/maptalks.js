@@ -267,7 +267,7 @@ export default class MapCanvasRenderer extends MapRenderer {
      * Renders the layers
      */
     drawLayerCanvas(layers) {
-        if (!this.map) {
+        if (!this.map || this._canvasIds.length === 0) {
             return;
         }
         if (!this._needToRedraw() && !this.isStateChanged()) {
@@ -294,11 +294,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         }
 
         const interacting = this.map.isInteracting(),
-            limit = this.map.options['layerCanvasLimitOnInteracting'],
-            len = layers.length;
+            limit = this.map.options['layerCanvasLimitOnInteracting'];
+        let len = layers.length;
 
-        const start = interacting && limit >= 0 && len > limit ? len - limit : 0;
-        for (let i = start; i < len; i++) {
+        const images = [];
+        for (let i = 0; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
                 continue;
             }
@@ -308,9 +308,16 @@ export default class MapCanvasRenderer extends MapRenderer {
             }
             const layerImage = this._getLayerImage(layers[i]);
             if (layerImage && layerImage['image']) {
-                this._drawLayerCanvasImage(layers[i], layerImage);
+                images.push([layers[i], layerImage]);
             }
         }
+
+        len = images.length;
+        const start = interacting && limit >= 0 && len > limit ? len - limit : 0;
+        for (let i = start; i < len; i++) {
+            this._drawLayerCanvasImage.apply(this, images[i]);
+        }
+
 
         this._drawCenterCross();
         /**
@@ -560,15 +567,18 @@ export default class MapCanvasRenderer extends MapRenderer {
             ctx.save();
             ctx.setTransform.apply(ctx, matrix);
         }
-
-        if (layer.options['debugOutline']) {
-            this.context.strokeStyle = '#0f0';
-            this.context.fillStyle = '#0f0';
+        /*let outlineColor = layer.options['debugOutline'];
+        if (outlineColor) {
+            if (outlineColor === true) {
+                outlineColor = '#0f0';
+            }
+            this.context.strokeStyle = outlineColor;
+            this.context.fillStyle = outlineColor;
             this.context.lineWidth = 10;
             Canvas2D.rectangle(ctx, point, layerImage.size, 1, 0);
             ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width + ',' + canvasImage.height].join(' '),
                 point.x + 18, point.y + 18);
-        }
+        }*/
 
         ctx.drawImage(canvasImage, point.x, point.y);
         if (matrix && shouldTransform) {

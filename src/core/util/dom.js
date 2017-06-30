@@ -354,8 +354,7 @@ function endsWith(str, suffix) {
  * @memberOf DomUtil
  */
 export function setStyle(dom, strCss) {
-    const style = dom.style;
-    let cssText = style.cssText;
+    let cssText = dom.style.cssText;
     if (!endsWith(cssText, ';')) {
         cssText += ';';
     }
