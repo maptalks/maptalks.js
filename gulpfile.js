@@ -140,7 +140,7 @@ gulp.task('reload', ['scripts'], () => {
 });
 
 gulp.task('doc', () => {
-    var sources = require('./doc/files.js');
+    var sources = require('./docs/files.js');
     del([
         '../../maptalks.org/docs/api/**/*'
     ],{
