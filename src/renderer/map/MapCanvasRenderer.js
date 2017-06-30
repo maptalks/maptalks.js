@@ -267,7 +267,7 @@ export default class MapCanvasRenderer extends MapRenderer {
      * Renders the layers
      */
     drawLayerCanvas(layers) {
-        if (!this.map || this._canvasIds.length === 0) {
+        if (!this.map) {
             return;
         }
         if (!this._needToRedraw() && !this.isStateChanged()) {
@@ -526,9 +526,6 @@ export default class MapCanvasRenderer extends MapRenderer {
     }
 
     _drawLayerCanvasImage(layer, layerImage) {
-        if (!layer || !layerImage) {
-            return;
-        }
         const ctx = this.context;
         const point = layerImage['point'].multi(Browser.retina ? 2 : 1);
         const canvasImage = layerImage['image'];
