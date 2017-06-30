@@ -204,7 +204,7 @@ class CanvasRenderer extends Class {
 
     /**
      * Detect if there is anything painted on the given point
-     * @param  {Point} point a 2d point on current zoom
+     * @param  {Point} point containerPoint
      * @return {Boolean}
      */
     hitDetect(point) {
