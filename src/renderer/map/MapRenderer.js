@@ -74,7 +74,9 @@ export default class MapRenderer extends Class {
                     map._setPrjCenter(pcenter.add(offset));
                     map.onMoving();
                 } else if (player.playState === 'finished') {
-                    map._setPrjCenter(ptarget);
+                    if (!player._interupted) {
+                        map._setPrjCenter(ptarget);
+                    }
                     if (onFinish) {
                         onFinish();
                     }
@@ -92,6 +94,7 @@ export default class MapRenderer extends Class {
 
     stopPanAnimation() {
         if (this._panPlayer) {
+            this._panPlayer._interupted = true;
             this._panPlayer.finish();
         }
         delete this._panPlayer;
