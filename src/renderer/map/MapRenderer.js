@@ -107,8 +107,13 @@ export default class MapRenderer extends Class {
             return this;
         }
         const pos = this.map.offsetPlatform().add(offset)._round();
-        offsetDom(this.map._panels.back, pos);
-        offsetDom(this.map._panels.front, pos);
+        const panels = this.map._panels;
+        if (panels.backLayer.firstChild) {
+            offsetDom(panels.back, pos);
+        }
+        if (panels.frontLayer.firstChild || panels.ui.firstChild) {
+            offsetDom(this.map._panels.front, pos);
+        }
         return this;
     }
 
