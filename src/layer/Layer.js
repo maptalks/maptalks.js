@@ -17,7 +17,7 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
  *                                                    Set drawImmediate to true to draw immediately.<br>
  *                                                    This is necessary when layer's drawing is wrapped with another frame requested by RAF.
  * @property {String}   [options.globalCompositeOperation=null] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.
- * @property {Boolean}  [options.debugOutline=false]  - (Only for layer rendered with 2d canvas) An outline with debug information will be drawn with layer.
+ * @property {String}   [options.debugOutline='#0f0']  - debug outline's color.
  * @memberOf Layer
  * @instance
  */
@@ -30,7 +30,7 @@ const options = {
     // context.globalCompositeOperation, 'source-in' in default
     'globalCompositeOperation': null,
     'renderer': 'canvas',
-    'debugOutline' : false
+    'debugOutline' : '#0f0'
 };
 
 /**

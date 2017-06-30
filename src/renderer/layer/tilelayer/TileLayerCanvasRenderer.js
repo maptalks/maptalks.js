@@ -211,15 +211,15 @@ export default class TileLayerRenderer extends CanvasRenderer {
             x, y,
             tileSize['width'], tileSize['height']);
         if (this.layer.options['debug']) {
-            const p = new Point(x, y);
+            const p = new Point(x, y),
+                color = this.layer.options['debugOutline'],
+                xyz = tileImage[this.propertyOfTileId].split('__');
             ctx.save();
-            const color = '#0f0';
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
             ctx.strokeWidth = 10;
             ctx.font = '15px monospace';
             Canvas2D.rectangle(ctx, p, tileSize, 1, 0);
-            const xyz = tileImage[this.propertyOfTileId].split('__');
             Canvas2D.fillText(ctx, 'x:' + xyz[1] + ', y:' + xyz[0] + ', z:' + xyz[2], p.add(10, 20), color);
             Canvas2D.drawCross(ctx, p.add(tileSize['width'] / 2, tileSize['height'] / 2), 2, color);
             ctx.restore();
