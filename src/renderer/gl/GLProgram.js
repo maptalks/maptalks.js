@@ -6,7 +6,6 @@
  * 所以在此类提供两个方法，为不同的实例化
  * @author yellow date 2017/6/12
  */
-
 import { stamp } from './../../utils/stamp';
 import { FragmentShader, VertexShader } from './GLShader';
 import GLConstants from './GLConstants';
