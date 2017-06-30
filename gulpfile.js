@@ -24,16 +24,16 @@ const knownOptions = {
     }
 };
 
-var options = minimist(process.argv.slice(2), knownOptions);
+const options = minimist(process.argv.slice(2), knownOptions);
 
 const browsers = [];
 
-let configBrowsers = options.browsers || process.env['MAPTALKS_BROWSERS'] || '';
+const configBrowsers = options.browsers || process.env['MAPTALKS_BROWSERS'] || '';
 configBrowsers.split(',').forEach(name => {
     if (!name || name.length < 2) {
         return;
     }
-    var lname = name.toLowerCase();
+    const lname = name.toLowerCase();
     if (lname.indexOf('phantom') === 0) {
         browsers.push('PhantomJS');
     }
@@ -48,7 +48,7 @@ gulp.task('scripts', () => {
     return bundler.bundle('src/index.js', rollupCfg.config);
 });
 
-var stylesPattern = './assets/css/**/*.css';
+const stylesPattern = './assets/css/**/*.css';
 
 gulp.task('styles', () => {
     return gulp.src(stylesPattern)
@@ -80,7 +80,7 @@ gulp.task('watch', ['styles', 'images'], () => {
  * Run test once and exit
  */
 gulp.task('test', function (done) {
-    var karmaConfig = {
+    const karmaConfig = {
         configFile: path.join(__dirname, 'build/karma.test.config.js')
     };
     if (browsers.length > 0) {
@@ -103,7 +103,7 @@ gulp.task('test', function (done) {
  * Watch for file changes and re-run tests on each change
  */
 gulp.task('tdd', function (done) {
-    var karmaConfig = {
+    const karmaConfig = {
         configFile: path.join(__dirname, 'build/karma.tdd.config.js')
     };
     if (browsers.length > 0) {
@@ -116,10 +116,10 @@ gulp.task('tdd', function (done) {
             }
         };
     }
-    var started = false;
+    let started = false;
     rollupWatch(() => {
         if (!started) {
-            var karmaServer = new Server(karmaConfig, done);
+            const karmaServer = new Server(karmaConfig, done);
             karmaServer.start();
             started = true;
         }
@@ -140,16 +140,16 @@ gulp.task('reload', ['scripts'], () => {
 });
 
 gulp.task('doc', () => {
-    var sources = require('./docs/files.js');
+    const sources = require('./docs/files.js');
     del([
         '../../maptalks.org/docs/api/**/*'
-    ],{
+    ], {
         force : true
     });
-    var conf = require('./jsdoc.json');
-    var cmd = 'jsdoc';
-    var args = ['-c', 'jsdoc.json'].concat(['API.md']).concat(sources);
-    var exec = require('child_process').exec;
+    const conf = require('./jsdoc.json');
+    const cmd = 'jsdoc';
+    const args = ['-c', 'jsdoc.json'].concat(['API.md']).concat(sources);
+    const exec = require('child_process').exec;
     exec([cmd].concat(args).join(' '), (error, stdout, stderr) => {
         if (error) {
             console.error('JSDoc returned with error: ' + stderr ? stderr : '');
