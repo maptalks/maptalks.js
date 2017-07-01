@@ -6,6 +6,7 @@
  * -matrix
  * -extension
  * -limits
+ * 
  * 特点：
  * reference https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap
  * 使用 OffscreenCanvas 创建不可见绘制canvas,后基于此canvas绘制图像，并保存成bitmap缓存帧
@@ -17,6 +18,9 @@
  * //
  * 预留一定的帧数后，使用bitmaprender绘制bitmap到前端canvas即可
  * htmlCanvas.transferFromImageBitmap(bitmap);
+ * 
+ * context相当于webglRender
+ * 
  * @author yellow 2017/6/11
  */
 import merge from './../utils/merge';
