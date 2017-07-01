@@ -2,17 +2,12 @@
 .idea/
 *.iml
 .tern-port
-doc/**/*
-!doc/files.js
+dist/
+docs/**/*
+!docs/files.js
 
 ### yarn log
 yarn*.log
-
-### *tags
-GPATH
-GRTAGS
-GTAGS
-TAGS
 
 ### OSX template
 .DS_Store
@@ -46,6 +41,3 @@ build/Release
 # Dependency directory
 # https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
 node_modules
-
-#example deploy config
-examples/replace.json
