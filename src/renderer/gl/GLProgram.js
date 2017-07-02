@@ -34,6 +34,7 @@ class GLProgram {
     let program = gl.createProgram();
     gl.attachShader(program, vs.handle);
     gl.attachShader(program, fs.handle);
+    
   }
 
 };
