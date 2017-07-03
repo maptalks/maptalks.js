@@ -207,6 +207,9 @@ const GLConstants = {
     // Data types
 
     BYTE: 0x1400,
+    /**
+     * 无符号byte,即每通道8bit 适合 gl.RGBA
+     */
     UNSIGNED_BYTE: 0x1401,
     SHORT: 0x1402,
     UNSIGNED_SHORT: 0x1403,
@@ -218,6 +221,9 @@ const GLConstants = {
 
     DEPTH_COMPONENT: 0x1902,
     ALPHA: 0x1906,
+    /**
+     * RGB颜色表示Texture，Image颜色读取规则
+     */
     RGB: 0x1907,
     RGBA: 0x1908,
     LUMINANCE: 0x1909,
