@@ -5,11 +5,16 @@
  * -handle
  * -create handle
  * -des
- * @class GLDispose
+ * @class Dispose
  */
 
+import { stamp } from './../../utils/stamp';
 
-class GLDispose {
+class Dispose {
+    /**
+     * 资源id
+     */
+    _id;
     /**
      * 资源对象句柄
      */
@@ -18,7 +23,7 @@ class GLDispose {
      * 构建一个可被销毁的资源对象
      */
     constructor() {
-        this._handle = this._createHandle();
+        this.id = stamp(this);
     }
     /**
      * 资源销毁方法，执行完一段后，统一调用
@@ -26,15 +31,24 @@ class GLDispose {
      * @abstract
      */
     dispose() {
-
+        throw new Error(`no implementation of function dispose`);
+    }
+    /**
+     * 获取资源核心对象
+     * @readonly
+     * @member
+     */
+    handle(){
+        return this._handle;
     }
     /**
      * 创建资源
      * @abstract
      */
     _createHandle() {
-
+        // arguments.callee.toString();
+        throw new Error(`no implementation of function _createHandle`);
     }
-
-
 }
+
+export default Dispose;
