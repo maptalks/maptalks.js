@@ -8,4 +8,12 @@ import {stamp} from './../utils/stamp';
 
 const _KIWI_EVENT_RESIZE = stamp('resize');
 
-export {_KIWI_EVENT_RESIZE};
+const _KIWI_EVENT_ANIMATION_ONCANCEL=stamp('animation_cancel');
+
+const _KIWI_EVENT_ANIMATION_ONFINISH=stamp('animation_onfinish');
+
+export {
+    _KIWI_EVENT_RESIZE,
+    _KIWI_EVENT_ANIMATION_ONCANCEL,
+    _KIWI_EVENT_ANIMATION_ONFINISH
+};

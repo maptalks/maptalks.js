@@ -1,19 +1,19 @@
 /**
+ * 提供shader程序创建，销毁，应用等
  * @author yellow 2017/6/12
  */
-import { stamp } from './../../utils/stamp';
+import Dispose from './../../utils/Dispose';
 import isString from './../../utils/isString';
 import GLConstants from './GLConstants';
 
-
-class GLShader {
-    /**
-     * shader name
-     * @memberof Shader
-     */
-    _id;
+/** 
+ * Shader抽象类
+ * @class GLShader
+ */
+class GLShader extends Dispose {
     /**
      * the glContext 
+     * @type {WebGLRenderingContext}
      * @memberof Shader
      */
     _gl;
@@ -23,7 +23,9 @@ class GLShader {
      */
     _source;
     /**
+     * shader类型
      * @memberof Shader
+     * @type {number} a instance of gl.Enum
      */
     _shaderType;
     /**
@@ -32,22 +34,29 @@ class GLShader {
      */
     _handle;
     /**
+     * @type {GLExtension}
+     */
+    _extension;
+    /**
      * Creates an instance of Shader.
-     * @param {any} gl 
+     * @constructor
+     * @param {WebGLRenderingContext} gl 
      * @param {Object} source
      * @param {String} [source.source]
      * @param {String} [source.name] 
-     * @param {any} shaderType 
-     * 
-     * @memberof Shader
+     * @param {String} shaderType 
+     * @param {GLExtension} extension
      */
-    constructor(gl, source, shaderType) {
+    constructor(gl, source, shaderType, extension) {
+        super();
+        //可以指定id，方便检索
+        this._id = isString(source) ? source.id : stamp(this);
+        this._source = isString(source) ? source : source.source;
         this._gl = gl;
         this._shaderType = shaderType;
-        this._source = isString(source) ? source : source.source;
-        this._id = isString(source) ? source.id : stamp(this);
+        this._handle = this._createHandle();
         this._compile(this._source);
-    }
+    };
     /**
      * Accessors of shader
      * @param {any} pname 
@@ -58,20 +67,18 @@ class GLShader {
         return this.gl.getShaderParameter(this._handle, pname);
     };
     /**
-     * return the shader's name
-     * @returns 
-     * @memberof Shader
+     * 获取对象id
      */
-    get name() {
+    get id() {
         return this._id;
-    };
+    }
     /**
      * return the complied source
      * @readonly
      * @memberof Shader
      */
     get translateSource() {
-        const extension = this.gl.getExtension('WEBGL_debug_shaders');
+        const extension = this._extension['WEBGL_debug_shaders'];
         return extension ? extension.getTranslatedShaderSource(this.handle) : 'No translated source available. WEBGL_debug_shaders not implemented';
     };
     /**
@@ -82,47 +89,62 @@ class GLShader {
         return this._source;
     };
     /**
-     * @readonly
-     * @memberof Shader
-     */
-    get handle() {
-        return this._handle;
-    };
-    /**
      * use gl to compile the shader
      * @memberof Shader
      */
     _compile() {
-        this._handle = this._gl.createShader(this._shaderType);
         this._gl.shaderSource(this._handle, this._source);
         this._gl.compileShader(this._handle);
         const compileStatus = this._getParameter(gl.COMPILE_STATUS);
         if (!compileStatus) {
             const infoLog = this._gl.getShaderInfoLog(this._handle);
-            this._distory();
+            this.dispose();
             throw new Error(infoLog);
         }
     };
     /**
      * delete shader form gl
-     * @memberof Shader
      */
-    _distory() {
+    dispose() {
         this._gl.deleteShader(this._handle);
-    };
+    }
+    /**
+     * overwrite 
+     */
+    _createHandle() {
+        return this._gl.createShader(this._shaderType);
+    }
+
 };
 
-
-class VertexShader extends GLShader {
-    constructor(gl, source) {
-        super(gl, source, GLConstants.VERTEX_SHADER);
+/**
+ * @class GLVertexShader
+ */
+class GLVertexShader extends GLShader {
+    /**
+     * 创建vertex shader
+     * @param {WebGLRenderingContext} gl 
+     * @param {String} source 
+     * @param {GLExtension} extension
+     */
+    constructor(gl, source, extension) {
+        super(gl, source, GLConstants.VERTEX_SHADER, extension);
     };
 }
 
-class FragmentShader extends GLShader {
-    constructor(gl, source) {
-        super(gl, source, GLConstants.FRAGMENT_SHADER);
+/**
+ * @class GLVertexShader
+ */
+class GLFragmentShader extends GLShader {
+    /**
+     * 创建fragment shader
+     * @param {WebGLRenderingContext} gl 
+     * @param {String} source 
+     * @param {GLExtension} extension
+     */
+    constructor(gl, source, extension) {
+        super(gl, source, GLConstants.FRAGMENT_SHADER, extension);
     };
 }
 
-export { FragmentShader, VertexShader }
+export { GLFragmentShader, GLVertexShader }

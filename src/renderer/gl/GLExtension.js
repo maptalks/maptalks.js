@@ -13,7 +13,8 @@ const GL_STANDEXTENSIONS = {
     s3tc: ['WEBGL_compressed_texture_s3tc', 'MOZ_WEBGL_compressed_texture_s3tc', 'WEBKIT_WEBGL_compressed_texture_s3tc'],
     pvrtc: ['WEBGL_compressed_texture_pvrtc', 'WEBKIT_WEBGL_compressed_texture_pvrtc'],
     etc1: ['WEBGL_compressed_texture_etc1'],
-    textureFilterAnisotropic: ['EXT_texture_filter_anisotropic', 'WEBKIT_EXT_texture_filter_anisotropic']
+    textureFilterAnisotropic: ['EXT_texture_filter_anisotropic', 'MOZ_EXT_texture_filter_anisotropic', 'WEBKIT_EXT_texture_filter_anisotropic'],
+    vertexArrayObject:['OES_vertex_array_object'],
 };
 /**
  * 
@@ -75,6 +76,7 @@ class GLExtension {
             }
         }
     };
+
 }
 
 export default GLExtension;
