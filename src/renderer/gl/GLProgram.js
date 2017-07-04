@@ -76,7 +76,6 @@ class GLProgram extends Dispose {
   getUniformLocation(name){
     const uniformLocation = this._gl.getUniformLocation(this.handle,name);
   }
-
   /**
    * 清理绑定信息，销毁program对象
    */

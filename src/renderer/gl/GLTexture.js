@@ -14,6 +14,9 @@
 import Dispose from './../../utils/Dispose';
 import GLConstants from './GLConstants';
 
+/**
+ * @class
+ */
 class GLTexture extends Dispose {
     /**
      * mipmap指示
@@ -28,12 +31,12 @@ class GLTexture extends Dispose {
      *  the width of texture
      *  @type {number}
      */
-    _w;
+    _width;
     /**
      *  the hight of texture
      *  @type {number}
      */
-    _h;
+    _height;
     /**
      * @type {number}
      */
@@ -54,8 +57,8 @@ class GLTexture extends Dispose {
      */
     constructor(gl, width, height, extenson, limits, format, type) {
         this._gl = gl;
-        this._w = width || -1;
-        this._h = height || -1;
+        this._width = width || -1;
+        this._height = height || -1;
         this._handle = this._createHandle();
         //usually, UNSINGED_BYTE use 8bit per channel,which suit for RGBA.
         this._format = format || GLConstants.RGBA;
@@ -70,57 +73,87 @@ class GLTexture extends Dispose {
     /**
      * 释放texture资源
      */
-    dispose(){
+    dispose() {
         this._gl.deleteTexture(this.handle);
     };
     /**
      * return the flag mipmap
      * @member
      */
-    get mipmap(){
+    get mipmap() {
         return this._mipmap;
     };
     /**
      * 
      * @param {*} element 
      */
-    load(element){
-        
+    load(image) {
+        this.bind();
+        const gl = this._gl,
+            mipmapLevel = 0;
+        gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, this._format, this._format, this._type, image);
     };
     /**
      * 对纹理做插值，在不同分辨率下，当获取不到纹理原始值时，可以根据点位置和周围点的值插值计算。
      */
-    enableMipmap(){
+    enableMipmap() {
         const gl = this._gl;
         this.bind();
-        this._mipmap=true;
+        this._mipmap = true;
         gl.generateMipmap(GLConstants.TEXTURE_2D);
     }
     /**
-     * 
+     * 纹理延展到边界
      */
-    enableWrapMirrorRepeat(){
-        const gl=this._gl;
+    enableWrapClamp() {
+        const gl = this._gl;
         this.bind();
-        gl.texParameteri(GLConstants.TEXTURE_2D,GLConstants.TEXTURE_WRAP_S,GLConstants.MIRRORED_REPEAT);
+        gl.texParameteri(GLConstants.TEXTURE_2D, GLConstants.TEXTURE_WRAP_S, GLConstants.CLAMP_TO_EDGE);
+        gl.texParameteri(GLConstants.TEXTURE_2D, GLConstants.TEXTURE_WRAP_T, GLConstants.CLAMP_TO_EDGE);
+    }
+    /**
+     * 纹理超过边际，镜像repeat
+     */
+    enableWrapMirrorRepeat() {
+        const gl = this._gl;
+        this.bind();
+        gl.texParameteri(GLConstants.TEXTURE_2D, GLConstants.TEXTURE_WRAP_S, GLConstants.MIRRORED_REPEAT);
         gl.texParameteri(GLConstants.TEXTURE_2D, GLConstants.TEXTURE_WRAP_T, GLConstants.MIRRORED_REPEAT);
+    }
+    /**
+     * 纹理显现拉伸，使用线性插值法
+     */
+    enableLinearScaling() {
+        const gl = this._gl;
+        this.bind();
+        gl.texParameteri(GLConstants.TEXTURE_2D, GLConstants.TEXTURE_MIN_FILTER, this._mipmap ? GLConstants.LINEAR_MIPMAP_LINEAR : GLConstants.LINEAR);
+        gl.texParameteri(GLConstants.TEXTURE_2D, GLConstants.TEXTURE_MAG_FILTER, GLConstants.LINEAR);
+    }
+    /**
+     * 纹理临近拉伸，使用最临近插值法
+     */
+    enableNearstScaling() {
+        const gl = this._gl;
+        this.bind();
+        gl.texParameteri(GLConstants.TEXTURE_2D, GLConstants.TEXTURE_MIN_FILTER, this._mipmap ? GLConstants.NEAREST_MIPMAP_NEAREST : GLConstants.NEAREST);
+        gl.texParameteri(GLConstants.TEXTURE_2D, GLConstants.TEXTURE_MAG_FILTER, GLConstants.NEAREST);
     }
     /**
      * binds the texture
      * @type {texture}
      */
-    bind(location){
-        const gl =this._gl;
-        if(location!==undefined)
-            gl.activeTexture(GLConstants.TEXTURE0+location);
-        gl.bindTexture(GLConstants.TEXTURE_2D,this.handle);
+    bind(location) {
+        const gl = this._gl;
+        if (location !== undefined)
+            gl.activeTexture(GLConstants.TEXTURE0 + location);
+        gl.bindTexture(GLConstants.TEXTURE_2D, this.handle);
     };
     /**
      * unbinds the texture
      */
-    unbind(){
-        const gl =this._gl;
-        gl.bindTexture(gl.TEXTURE_2D, this.handle);
+    unbind() {
+        const gl = this._gl;
+        gl.bindTexture(gl.TEXTURE_2D, null);
     };
 }
 
