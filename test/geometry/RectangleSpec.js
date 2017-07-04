@@ -83,6 +83,7 @@ describe('#Rectangle', function () {
     });
 
     it('containsPoint', function () {
+        layer.config('drawImmediate', true);
         layer.clear();
         var geometry = new maptalks.Rectangle(center, 20, 10, {
             symbol: {

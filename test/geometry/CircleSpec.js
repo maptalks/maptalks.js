@@ -175,7 +175,7 @@ describe('#Circle', function () {
                 'lineWidth': 6
             }
         });
-        layer = new maptalks.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
         map.addLayer(layer);
         layer.addGeometry(geometry);
 
