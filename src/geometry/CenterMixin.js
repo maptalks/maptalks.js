@@ -83,6 +83,7 @@ export default function (Base) {
 
         _clearProjection() {
             this._pcenter = null;
+            super._clearProjection();
         }
 
         _computeCenter() {

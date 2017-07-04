@@ -961,7 +961,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     _verifyProjection() {
         const projection = this._getProjection();
         if (this._projCode && (!projection || this._projCode !== projection.code)) {
-            this._clearCache();
             this._clearProjection();
         }
         this._projCode = projection ? projection.code : null;
@@ -998,6 +997,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _clearCache() {
+        delete this._extent;
+    }
+
+    _clearProjection() {
         delete this._extent;
     }
 

@@ -153,6 +153,7 @@ class Path extends Geometry {
 
     _clearProjection() {
         this._prjCoords = null;
+        super._clearProjection();
     }
 
     _projectCoords(points) {
