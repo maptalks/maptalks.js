@@ -399,9 +399,9 @@ export default class Painter extends Class {
 
     _verifyProjection() {
         const projection = this.geometry._getProjection();
-        if (this._prjCode && !this._projCode !== projection.code) {
+        if (this._projCode && this._projCode !== projection.code) {
             this.removeCache();
         }
-        this._prjCode = projection.code;
+        this._projCode = projection.code;
     }
 }

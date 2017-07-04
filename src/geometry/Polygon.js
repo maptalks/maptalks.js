@@ -282,9 +282,26 @@ class Polygon extends Path {
 
     }
 
+    _updateCache() {
+        super._updateCache();
+        if (this._prjHoles) {
+            this._holes = this._unprojectCoords(this._getPrjHoles());
+        }
+    }
+
     _clearCache() {
         delete this._prjShell;
         return super._clearCache();
+    }
+
+    _clearProjection() {
+        if (this._prjHoles) {
+            this._prjHoles = null;
+        }
+        if (this._prjShell) {
+            this._prjShell = null;
+        }
+        super._clearProjection();
     }
 }
 

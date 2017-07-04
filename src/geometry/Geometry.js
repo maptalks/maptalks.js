@@ -960,11 +960,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _verifyProjection() {
         const projection = this._getProjection();
-        if (this._prjCode && (!projection || !this._projCode !== projection.code)) {
+        if (this._projCode && (!projection || this._projCode !== projection.code)) {
             this._clearCache();
             this._clearProjection();
         }
-        this._prjCode = projection ? projection.code : null;
+        this._projCode = projection ? projection.code : null;
     }
 
     //获取geometry样式中依赖的外部图片资源

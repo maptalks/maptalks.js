@@ -149,19 +149,10 @@ class Path extends Geometry {
         if (this._prjCoords) {
             this._coordinates = this._unprojectCoords(this._getPrjCoordinates());
         }
-        if (this._prjHoles) {
-            this._holes = this._unprojectCoords(this._getPrjHoles());
-        }
     }
 
     _clearProjection() {
         this._prjCoords = null;
-        if (this._prjHoles) {
-            this._prjHoles = null;
-        }
-        if (this._prjShell) {
-            this._prjShell = null;
-        }
     }
 
     _projectCoords(points) {
