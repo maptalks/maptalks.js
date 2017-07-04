@@ -142,7 +142,7 @@ describe('Geometry.Events', function () {
             });
             expect(spy.called).not.to.be.ok();
             done();
-        }, 301);
+        }, 500);
     });
 
     it('fire an additional click event after touch', function () {
