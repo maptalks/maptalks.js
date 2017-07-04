@@ -2,15 +2,10 @@
 .idea/
 *.iml
 .tern-port
+dist/
 
 ### yarn log
 yarn*.log
-
-### *tags
-GPATH
-GRTAGS
-GTAGS
-TAGS
 
 ### OSX template
 .DS_Store
