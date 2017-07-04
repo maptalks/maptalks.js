@@ -10,6 +10,7 @@ describe('Geometry.Events', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
+        map.config('onlyVisibleGeometryEvents', false);
         eventContainer = map._panels.canvasContainer;
         layer = new maptalks.VectorLayer('vector');
         map.addLayer(layer);

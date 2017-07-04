@@ -220,6 +220,7 @@ describe('#Polygon', function () {
     });
 
     it('Polygon._containsPoint', function () {
+        layer.config('drawImmediate', true);
         layer.clear();
         var geometry = new maptalks.Polygon([[
             new maptalks.Coordinate([center.x, center.y + 0.001]),

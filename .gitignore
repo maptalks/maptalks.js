@@ -3,8 +3,6 @@
 *.iml
 .tern-port
 dist/
-docs/**/*
-!docs/files.js
 
 ### yarn log
 yarn*.log
