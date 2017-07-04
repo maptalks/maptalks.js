@@ -1736,6 +1736,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this._prjCenter;
         const projection = this.getProjection();
         this._prjCenter = projection.project(this._center);
+        const renderer = this._getRenderer();
+        if (renderer) {
+            renderer.resetContainer();
+        }
     }
 
     _getContainerDomSize() {

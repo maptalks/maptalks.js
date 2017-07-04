@@ -258,6 +258,7 @@ export default class Painter extends Class {
     }
 
     get2DExtent(resources) {
+        this._verifyProjection();
         const map = this.getMap();
         resources = resources || this.getLayer()._getRenderer().resources;
         const zoom = map.getZoom();
@@ -281,6 +282,7 @@ export default class Painter extends Class {
     }
 
     getContainerExtent() {
+        this._verifyProjection();
         const map = this.getMap();
         const zoom = map.getZoom();
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
@@ -393,5 +395,13 @@ export default class Painter extends Class {
             properties = geometry.getProperties();
         const height = layerOpts['enableHeight'] ? properties ? properties[layerOpts['heightProperty']] : 0 : 0;
         return height;
+    }
+
+    _verifyProjection() {
+        const projection = this.geometry._getProjection();
+        if (this._prjCode && !this._projCode !== projection.code) {
+            this.removeCache();
+        }
+        this._prjCode = projection.code;
     }
 }

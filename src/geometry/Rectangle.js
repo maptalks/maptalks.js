@@ -141,6 +141,7 @@ class Rectangle extends Polygon {
         if (!projection) {
             return null;
         }
+        this._verifyProjection();
         if (!this._pnw) {
             if (this._coordinates) {
                 this._pnw = projection.project(this._coordinates);
@@ -165,6 +166,7 @@ class Rectangle extends Polygon {
 
     _clearProjection() {
         this._pnw = null;
+        super._clearProjection();
     }
 
     _computeCenter(measurer) {

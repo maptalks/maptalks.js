@@ -57,6 +57,7 @@ export default function (Base) {
             if (!projection) {
                 return null;
             }
+            this._verifyProjection();
             if (!this._pcenter) {
                 if (this._coordinates) {
                     this._pcenter = projection.project(this._coordinates);

@@ -50,6 +50,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         // refresh map's state
         // It must be before events and frame callback, because map state may be changed in callbacks.
         this._state = this._getMapState();
+        delete this._spatialRefChanged;
         this._fireLayerLoadEvents();
         this.executeFrameCallbacks();
         this._needRedraw = false;
@@ -167,6 +168,9 @@ export default class MapCanvasRenderer extends MapRenderer {
      * @return {Boolean}
      */
     _checkLayerRedraw(layer) {
+        if (this.isSpatialReferenceChanged()) {
+            return true;
+        }
         const map = this.map;
         const renderer = layer._getRenderer();
         if (layer.isCanvasRender()) {
@@ -372,7 +376,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         delete this.context;
         delete this.canvas;
         delete this.map;
-
+        delete this._spatialRefChanged;
         this._cancelFrameLoop();
     }
 
@@ -490,6 +494,10 @@ export default class MapCanvasRenderer extends MapRenderer {
             return true;
         }
         return false;
+    }
+
+    isSpatialReferenceChanged() {
+        return this._spatialRefChanged;
     }
 
     _getMapState() {
@@ -691,6 +699,10 @@ export default class MapCanvasRenderer extends MapRenderer {
         map.on('_zoomend', (param) => {
             this._eventParam = param;
             delete this._zoomMatrix;
+        });
+
+        map.on('_spatialreferencechange', () => {
+            this._spatialRefChanged = true;
         });
     }
 

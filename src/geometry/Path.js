@@ -128,9 +128,13 @@ class Path extends Geometry {
     }
 
     _getPrjCoordinates() {
+        const projection = this._getProjection();
+        if (!projection) {
+            return null;
+        }
+        this._verifyProjection();
         if (!this._prjCoords) {
-            const points = this._coordinates;
-            this._prjCoords = this._projectCoords(points);
+            this._prjCoords = this._projectCoords(this._coordinates);
         }
         return this._prjCoords;
     }
@@ -154,6 +158,9 @@ class Path extends Geometry {
         this._prjCoords = null;
         if (this._prjHoles) {
             this._prjHoles = null;
+        }
+        if (this._prjShell) {
+            this._prjShell = null;
         }
     }
 

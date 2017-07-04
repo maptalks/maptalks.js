@@ -444,7 +444,8 @@ class CanvasRenderer extends Class {
             '_movestart' : this.onMoveStart,
             '_moveend' : this.onMoveEnd,
             '_dragrotatestart' : this.onDragRotateStart,
-            '_dragrotateend' : this.onDragRotateEnd
+            '_dragrotateend' : this.onDragRotateEnd,
+            '_spatialreferencechange' : this.onSpatialReferenceChange
         };
     }
 
@@ -492,6 +493,9 @@ class CanvasRenderer extends Class {
 
     onDragRotateEnd() {
         this.setToRedraw();
+    }
+
+    onSpatialReferenceChange() {
     }
 
     getDrawTime() {

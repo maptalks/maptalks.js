@@ -186,6 +186,11 @@ class Polygon extends Path {
         if (this.getJSONType() === JSON_TYPE) {
             return this._getPrjCoordinates();
         }
+        const projection = this._getProjection();
+        if (!projection) {
+            return null;
+        }
+        this._verifyProjection();
         if (!this._prjShell) {
             this._prjShell = this._projectCoords(this.getShell());
         }
@@ -193,6 +198,11 @@ class Polygon extends Path {
     }
 
     _getPrjHoles() {
+        const projection = this._getProjection();
+        if (!projection) {
+            return null;
+        }
+        this._verifyProjection();
         if (!this._prjHoles) {
             this._prjHoles = this._projectCoords(this.getHoles());
         }

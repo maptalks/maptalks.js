@@ -814,6 +814,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             throw new Error('Geometry cannot be added to two or more layers at the same time.');
         }
         this._layer = layer;
+        this._clearCache();
         this._clearProjection();
         // this.callInitHooks();
     }
@@ -873,6 +874,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _getPrjExtent() {
         const p = this._getProjection();
+        this._verifyProjection();
         if (!this._extent && p) {
             const ext = this._computeExtent(p);
             if (ext) {
@@ -950,10 +952,19 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _getProjection() {
         const map = this.getMap();
-        if (map && map.getProjection()) {
+        if (map) {
             return map.getProjection();
         }
         return null;
+    }
+
+    _verifyProjection() {
+        const projection = this._getProjection();
+        if (this._prjCode && (!projection || !this._projCode !== projection.code)) {
+            this._clearCache();
+            this._clearProjection();
+        }
+        this._prjCode = projection ? projection.code : null;
     }
 
     //获取geometry样式中依赖的外部图片资源
