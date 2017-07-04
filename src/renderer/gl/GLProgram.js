@@ -60,6 +60,23 @@ class GLProgram extends Dispose {
     this._gl.useProgram(this.handle);
   }
   /**
+   * 获取attribute地址
+   * @param {String} name
+   * @return {number} 
+   */
+  getAttribLocation(name){
+    const attributeLocation = this._gl.getAttribLocation(this.handle,name);
+    return attributeLocation;
+  }
+  /**
+   * 获取uniform地址
+   * @param {String} name 
+   * @return {number} 
+   */
+  getUniformLocation(name){
+    const uniformLocation = this._gl.getUniformLocation(this.handle,name);
+  }
+  /**
    * 清理绑定信息，销毁program对象
    */
   dispose(){

@@ -40,7 +40,7 @@ const ANGLE_instanced_arrays='ANGLE_instanced_arrays';
  * let attributes = new GLVertexAttribute(gl);
  * attributes.
  */
-class GLVertexAttribute {
+class VertexAttribArray {
 
     _gl;
 

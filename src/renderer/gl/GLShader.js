@@ -55,16 +55,7 @@ class GLShader extends Dispose {
         this._gl = gl;
         this._shaderType = shaderType;
         this._handle = this._createHandle();
-        this._compile(this._source);
-    };
-    /**
-     * Accessors of shader
-     * @param {any} pname 
-     * @returns 
-     * @memberof Shader
-     */
-    _getParameter(pname) {
-        return this.gl.getShaderParameter(this._handle, pname);
+        this._compile();
     };
     /**
      * 获取对象id
@@ -93,11 +84,12 @@ class GLShader extends Dispose {
      * @memberof Shader
      */
     _compile() {
-        this._gl.shaderSource(this._handle, this._source);
-        this._gl.compileShader(this._handle);
-        const compileStatus = this._getParameter(gl.COMPILE_STATUS);
+        const gl =this._gl;
+        gl.shaderSource(this.handle, this._source);
+        gl.compileShader(this.handle);
+        const compileStatus = gl.getShaderParameter(this.handle,GLConstants.COMPILE_STATUS);
         if (!compileStatus) {
-            const infoLog = this._gl.getShaderInfoLog(this._handle);
+            const infoLog = gl.getShaderInfoLog(this.handle);
             this.dispose();
             throw new Error(infoLog);
         }
@@ -114,7 +106,7 @@ class GLShader extends Dispose {
     _createHandle() {
         return this._gl.createShader(this._shaderType);
     }
-
+    
 };
 
 /**

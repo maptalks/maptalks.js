@@ -38,7 +38,7 @@ class Dispose {
      * @readonly
      * @member
      */
-    handle(){
+    get handle(){
         return this._handle;
     }
     /**

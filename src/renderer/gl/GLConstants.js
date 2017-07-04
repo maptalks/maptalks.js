@@ -207,6 +207,9 @@ const GLConstants = {
     // Data types
 
     BYTE: 0x1400,
+    /**
+     * 无符号byte,即每通道8bit 适合 gl.RGBA
+     */
     UNSIGNED_BYTE: 0x1401,
     SHORT: 0x1402,
     UNSIGNED_SHORT: 0x1403,
@@ -218,6 +221,9 @@ const GLConstants = {
 
     DEPTH_COMPONENT: 0x1902,
     ALPHA: 0x1906,
+    /**
+     * RGB颜色表示Texture，Image颜色读取规则
+     */
     RGB: 0x1907,
     RGBA: 0x1908,
     LUMINANCE: 0x1909,
@@ -235,7 +241,11 @@ const GLConstants = {
 
     FRAGMENT_SHADER: 0x8B30, // Passed to createShader to define a fragment shader.
     VERTEX_SHADER: 0x8B31, // Passed to createShader to define a vertex shader
-    COMPILE_STATUS: 0x8B81, // Passed to getShaderParamter to get the status of the compilation. Returns false if the shader was not compiled. You can then query getShaderInfoLog to find the exact error
+    /**
+     * shader 编译状态，
+     * Passed to getShaderParamter to get the status of the compilation. Returns false if the shader was not compiled. You can then query getShaderInfoLog to find the exact error
+     */
+    COMPILE_STATUS: 0x8B81,
     DELETE_STATUS: 0x8B80, // Passed to getShaderParamter to determine if a shader was deleted via deleteShader. Returns true if it was, false otherwise.
     LINK_STATUS: 0x8B82, // Passed to getProgramParameter after calling linkProgram to determine if a program was linked correctly. Returns false if there were errors. Use getProgramInfoLog to find the exact error.
     VALIDATE_STATUS: 0x8B83, // Passed to getProgramParameter after calling validateProgram to determine if it is valid. Returns false if errors were found.
@@ -348,8 +358,13 @@ const GLConstants = {
     HIGH_INT: 0x8DF5,
 
     // Framebuffers and renderbuffers
-
+    /**
+     * 绑定framebuffer
+     */
     FRAMEBUFFER: 0x8D40,
+    /**
+     * 绑定 renderbuffer 
+     */
     RENDERBUFFER: 0x8D41,
     RGBA4: 0x8056,
     RGB5_A1: 0x8057,
@@ -357,6 +372,9 @@ const GLConstants = {
     DEPTH_COMPONENT16: 0x81A5,
     STENCIL_INDEX: 0x1901,
     STENCIL_INDEX8: 0x8D48,
+    /**
+     * 一般用于 bufferStorage，支持深度和缓冲区数据存储
+     */
     DEPTH_STENCIL: 0x84F9,
     RENDERBUFFER_WIDTH: 0x8D42,
     RENDERBUFFER_HEIGHT: 0x8D43,
@@ -374,6 +392,9 @@ const GLConstants = {
     COLOR_ATTACHMENT0: 0x8CE0,
     DEPTH_ATTACHMENT: 0x8D00,
     STENCIL_ATTACHMENT: 0x8D20,
+    /**
+     * 深度和缓冲区附着，webgl2支持
+     */
     DEPTH_STENCIL_ATTACHMENT: 0x821A,
     NONE: 0,
     FRAMEBUFFER_COMPLETE: 0x8CD5,
