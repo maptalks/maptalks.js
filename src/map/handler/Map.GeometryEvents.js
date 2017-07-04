@@ -88,6 +88,7 @@ class MapGeometryEventsHandler extends Handler {
             },
             'count': 1,
             'coordinate': coordinate,
+            'onlyVisible' : true,
             'layers': layers
         };
         const callback = fireGeometryEvent.bind(this);

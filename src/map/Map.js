@@ -1615,19 +1615,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         });
     }
 
-    /**
-     * Gets pixel lenth from pcenter to map's current center.
-     * @param  {Coordinate} pcenter - a projected coordinate
-     * @return {Point}
-     * @private
-     */
-    _getPixelDistance(pCoord) {
-        const center = this._getPrjCenter();
-        const pxCenter = this._prjToContainerPoint(center);
-        const pxCoord = this._prjToContainerPoint(pCoord);
-        const dist = new Point(-pxCoord.x + pxCenter.x, pxCenter.y - pxCoord.y);
-        return dist;
-    }
 
     _fireEvent(eventName, param) {
         if (this._eventSuppressed) {

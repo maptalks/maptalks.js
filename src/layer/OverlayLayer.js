@@ -357,8 +357,12 @@ class OverlayLayer extends Layer {
      * @return {Geometry[]} geometries identified
      */
     identify(coordinate, options = {}) {
-        const geometries = this._geoList,
-            filter = options.filter,
+        const geometries = this._geoList;
+        return this._hitGeos(geometries, coordinate, options);
+    }
+
+    _hitGeos(geometries, coordinate, options = {}) {
+        const filter = options.filter,
             hits = [];
         const map = this.getMap();
         const point = map.coordinateToPoint(coordinate);
