@@ -163,7 +163,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     identify(coordinate, options = {}) {
         const geometries = this._geosToDraw;
         if (!geometries) {
-            return null;
+            return [];
         }
         return this.layer._hitGeos(geometries, coordinate, options);
     }
