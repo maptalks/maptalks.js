@@ -150,11 +150,9 @@ class VectorLayer extends OverlayLayer {
     }
 
     identify(coordinate, options = {}) {
-        const renderer = this._getRenderer(),
-            map = this.getMap(),
-            // only iterate drawn geometries when onlyVisible is true or coordinate is within current map's extent.
-            visible = options['onlyVisible'] || map && map.getExtent().contains(coordinate);
-        if (visible && renderer) {
+        const renderer = this._getRenderer();
+        // only iterate drawn geometries when onlyVisible is true.
+        if (options['onlyVisible'] && renderer) {
             return renderer.identify(coordinate, options);
         }
         return super.identify(coordinate, options);

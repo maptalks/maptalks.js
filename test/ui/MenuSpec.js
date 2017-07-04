@@ -19,7 +19,12 @@ describe('#ContextMenu', function () {
     });
 
     var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
-
+    // change to vector marker to enable layer's drawImmdiate
+    geometries[0].setSymbol({
+        markerType : 'ellipse',
+        markerWidth : 20,
+        markerHeight : 20
+    });
     for (var i = 0; i < geometries.length; i++) {
         runTests.call(this, geometries[i], context);
     }
@@ -144,8 +149,8 @@ function runTests(target, _context) {
         var map = _context.map;
         if (target.getLayer()) { target.remove(); }
         map.removeLayer('vector');
-        var layer = new maptalks.VectorLayer('vector');
-        layer.addGeometry(target).addTo(map);
+        var layer = new maptalks.VectorLayer('vector', { 'drawImmediate' : true });
+        layer.addTo(map).addGeometry(target);
     }
 
     var items = [
@@ -329,6 +334,8 @@ function runTests(target, _context) {
             if (target instanceof maptalks.Sector) {
                 return;
             }
+            var map = _context.map;
+            map.setCenter(target.getFirstCoordinate());
             prepareGeometry();
             target.setMenu({
                 items: items,
@@ -361,6 +368,8 @@ function runTests(target, _context) {
         it('callback will be called when item is clicked', function () {
             var spy1 = sinon.spy();
             var spy2 = sinon.spy();
+            var map = _context.map;
+            map.setCenter(target.getFirstCoordinate());
             prepareGeometry();
             target.setMenuItems([
                     { item: 'item1', click: spy1 },
