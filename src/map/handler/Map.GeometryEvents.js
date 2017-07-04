@@ -88,7 +88,7 @@ class MapGeometryEventsHandler extends Handler {
             },
             'count': 1,
             'coordinate': coordinate,
-            'onlyVisible' : true,
+            'onlyVisible' : map.options['onlyVisibleGeometryEvents'],
             'layers': layers
         };
         const callback = fireGeometryEvent.bind(this);
@@ -173,7 +173,8 @@ class MapGeometryEventsHandler extends Handler {
 }
 
 Map.mergeOptions({
-    'geometryEvents': true
+    'geometryEvents': true,
+    'onlyVisibleGeometryEvents' : true
 });
 
 Map.addOnLoadHook('addHandler', 'geometryEvents', MapGeometryEventsHandler);
