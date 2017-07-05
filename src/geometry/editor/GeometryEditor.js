@@ -405,10 +405,10 @@ class GeometryEditor extends Eventable(Class) {
         if (!blackList) {
             blackList = [];
         }
-        const resizeHandles = [];
-        const anchorIndexes = {};
-        const map = this.getMap();
-        const handleSymbol = this.options['vertexHandleSymbol'];
+        const resizeHandles = [],
+            anchorIndexes = {},
+            map = this.getMap(),
+            handleSymbol = this.options['vertexHandleSymbol'];
         const fnLocateHandles = () => {
             const pExt = geometry._getPainter().get2DExtent(),
                 anchors = getResizeAnchors(pExt);
@@ -430,6 +430,7 @@ class GeometryEditor extends Eventable(Class) {
                         onMove: (function (_index) {
                             return function (handleViewPoint) {
                                 onHandleMove(handleViewPoint, _index);
+                                geometry.fire('resizing');
                             };
                         })(i),
                         onUp: () => {

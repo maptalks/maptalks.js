@@ -105,11 +105,16 @@ describe('#GeometryEdit', function () {
                 }
             }).addTo(layer);
             var size = marker.getSize();
+            var fired = false;
+            marker.on('resizing', function () {
+                fired = true;
+            });
             marker.startEdit();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
             expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(20);
+            expect(fired).to.be.ok();
             marker.endEdit();
         });
 
@@ -121,37 +126,56 @@ describe('#GeometryEdit', function () {
                     markerHeight:20
                 }
             }).addTo(layer);
+            var fired = false;
+            marker.on('resizing', function () {
+                fired = true;
+            });
             marker.startEdit({ 'fixAspectRatio' : true });
             var size = marker.getSize();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
             expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(39);
+            expect(fired).to.be.ok();
             marker.endEdit();
         });
 
         it('resize a circle', function () {
             var circle = new maptalks.Circle(map.getCenter(), 1000).addTo(layer);
+            var fired = false;
+            circle.on('resizing', function () {
+                fired = true;
+            });
             circle.startEdit();
             var size = circle.getSize();
             dragGeometry(circle, new maptalks.Point(size.width / 2, 0));
             var r = circle.getRadius();
             expect(r).to.be.eql(1010.22151);
             circle.endEdit();
+            expect(fired).to.be.ok();
         });
 
         it('resize a ellipse', function () {
             var ellipse = new maptalks.Ellipse(map.getCenter(), 1000, 500).addTo(layer);
+            var fired = false;
+            ellipse.on('resizing', function () {
+                fired = true;
+            });
             ellipse.startEdit();
             var size = ellipse.getSize();
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, size.height / 2));
             expect(ellipse.getWidth()).to.be.approx(1020.27122);
             expect(ellipse.getHeight()).to.be.approx(520.2339);
             ellipse.endEdit();
+            expect(fired).to.be.ok();
         });
 
         it('resize a ellipse with fix aspect ratio', function () {
             var ellipse = new maptalks.Ellipse(map.getCenter(), 100, 50).addTo(layer);
+            var fired = false;
+            ellipse.on('resizing', function () {
+                fired = true;
+            });
             ellipse.startEdit({ 'fixAspectRatio' : true });
             var size = ellipse.getSize();
             var ratio = ellipse.getWidth() / ellipse.getHeight();
@@ -159,20 +183,30 @@ describe('#GeometryEdit', function () {
             expect(ellipse.getWidth()).to.be.approx(120.24692);
             expect(ellipse.getHeight()).to.be.approx(120.24692 / ratio);
             ellipse.endEdit();
+            expect(fired).to.be.ok();
         });
 
         it('resize a rectangle', function () {
             var rect = new maptalks.Rectangle(map.getCenter(), 1000, 500).addTo(layer);
+            var fired = false;
+            rect.on('resizing', function () {
+                fired = true;
+            });
             rect.startEdit();
             var size = rect.getSize();
             dragGeometry(rect, new maptalks.Point(size.width / 2, size.height / 2));
             expect(rect.getWidth()).to.be.approx(1011.0866);
             expect(rect.getHeight()).to.be.approx(511.11058);
             rect.endEdit();
+            expect(fired).to.be.ok();
         });
 
         it('resize a rectangle with fix aspect ratio', function () {
             var rect = new maptalks.Rectangle(map.getCenter(), 100, 50).addTo(layer);
+            var fired = false;
+            rect.on('resizing', function () {
+                fired = true;
+            });
             rect.startEdit({ 'fixAspectRatio' : true });
             var size = rect.getSize();
             var ratio = rect.getWidth() / rect.getHeight();
@@ -180,6 +214,7 @@ describe('#GeometryEdit', function () {
             expect(rect.getWidth()).to.be.approx(111.135, 3);
             expect(rect.getHeight()).to.be.approx(111.135 / ratio, 3);
             rect.endEdit();
+            expect(fired).to.be.ok();
         });
 
         it('change a polygon vertex', function () {
