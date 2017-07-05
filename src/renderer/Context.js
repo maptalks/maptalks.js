@@ -85,12 +85,8 @@ class Context {
      * 设置材质属性
      */
     _premultipliedAlpha;
-    /**
-        * gl.attributes
-        * 
-        */
-    _preserveDrawingBuffer;
 
+    _preserveDrawingBuffer;
     /**
      * extension attrib
      */

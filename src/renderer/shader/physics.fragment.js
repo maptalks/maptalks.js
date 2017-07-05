@@ -1,4 +1,4 @@
-precision highp float;
+export default `precision highp float;
 
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
@@ -42,4 +42,4 @@ void main(void)
     }
 
     gl_FragColor = position;
-}
+}`;
