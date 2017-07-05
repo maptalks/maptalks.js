@@ -375,7 +375,6 @@ class UIMarkerDragHandler extends Handler {
 
     addHooks() {
         this.target.on(EVENTS, this._startDrag, this);
-
     }
 
     removeHooks() {
@@ -391,7 +390,8 @@ class UIMarkerDragHandler extends Handler {
             return;
         }
         this.target.on('click', this._endDrag, this);
-        this._lastPos = param['coordinate'];
+        this._lastCoord = param['coordinate'];
+        this._lastPoint = param['containerPoint'];
 
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
@@ -448,14 +448,22 @@ class UIMarkerDragHandler extends Handler {
             this._isDragging = true;
             return;
         }
-        const currentPos = eventParam['coordinate'];
-        if (!this._lastPos) {
-            this._lastPos = currentPos;
+
+        const coord = eventParam['coordinate'],
+            point = eventParam['containerPoint'];
+        if (!this._lastCoord) {
+            this._lastCoord = coord;
         }
-        const dragOffset = currentPos.sub(this._lastPos);
-        this._lastPos = currentPos;
-        this.target.setCoordinates(this.target.getCoordinates().add(dragOffset));
-        eventParam['dragOffset'] = dragOffset;
+        if (!this._lastPoint) {
+            this._lastPoint = point;
+        }
+        const coordOffset = coord.sub(this._lastCoord),
+            pointOffset = point.sub(this._lastPoint);
+        this._lastCoord = coord;
+        this._lastPoint = point;
+        this.target.setCoordinates(this.target.getCoordinates().add(coordOffset));
+        eventParam['coordOffset'] = coordOffset;
+        eventParam['pointOffset'] = pointOffset;
 
         /**
          * dragging event
@@ -480,7 +488,8 @@ class UIMarkerDragHandler extends Handler {
             this._dragHandler.disable();
             delete this._dragHandler;
         }
-        delete this._lastPos;
+        delete this._lastCoord;
+        delete this._lastPoint;
         this._isDragging = false;
         if (!map) {
             return;

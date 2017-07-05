@@ -299,10 +299,10 @@ class GeometryEditor extends Eventable(Class) {
                 shadow.setSymbol(symbol).addTo(this._editStageLayer);
             },
             onMove: (v, param) => {
-                const dragOffset = param['dragOffset'];
+                const offset = param['coordOffset'];
                 if (shadow) {
-                    shadow.translate(dragOffset);
-                    this._geometry.translate(dragOffset);
+                    shadow.translate(offset);
+                    this._geometry.translate(offset);
                 }
             },
             onUp: () => {
