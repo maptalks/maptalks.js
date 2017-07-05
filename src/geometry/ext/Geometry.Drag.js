@@ -53,7 +53,8 @@ class GeometryDragHandler extends Handler  {
             return;
         }
         this.target.on('click', this._endDrag, this);
-        this._lastPos = param['coordinate'];
+        this._lastCoord = param['coordinate'];
+        this._lastPoint = param['containerPoint'];
         this._prepareMap();
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
@@ -205,23 +206,32 @@ class GeometryDragHandler extends Handler  {
         if (!this._shadow) {
             return;
         }
-        const axis = this._shadow.options['dragOnAxis'];
-        const currentPos = eventParam['coordinate'];
-        if (!this._lastPos) {
-            this._lastPos = currentPos;
+        const axis = this._shadow.options['dragOnAxis'],
+            coord = eventParam['coordinate'],
+            point = eventParam['containerPoint'];
+        if (!this._lastCoord) {
+            this._lastCoord = coord;
         }
-        const dragOffset = currentPos.sub(this._lastPos);
+        if (!this._lastPoint) {
+            this._lastPoint = point;
+        }
+        const coordOffset = coord.sub(this._lastCoord),
+            pointOffset = point.sub(this._lastPoint);
         if (axis === 'x') {
-            dragOffset.y = 0;
+            coordOffset.y = 0;
+            pointOffset.y = 0;
         } else if (axis === 'y') {
-            dragOffset.x = 0;
+            coordOffset.x = 0;
+            pointOffset.x = 0;
         }
-        this._lastPos = currentPos;
-        this._shadow.translate(dragOffset);
+        this._lastCoord = coord;
+        this._lastPoint = point;
+        this._shadow.translate(coordOffset);
         if (!target.options['dragShadow']) {
-            target.translate(dragOffset);
+            target.translate(coordOffset);
         }
-        eventParam['dragOffset'] = dragOffset;
+        eventParam['coordOffset'] = coordOffset;
+        eventParam['pointOffset'] = pointOffset;
         this._shadow._fireEvent('dragging', eventParam);
 
         /**
@@ -255,7 +265,8 @@ class GeometryDragHandler extends Handler  {
 
         this._updateTargetAndRemoveShadow(eventParam);
 
-        delete this._lastPos;
+        delete this._lastCoord;
+        delete this._lastPoint;
 
         this._restoreMap();
 
