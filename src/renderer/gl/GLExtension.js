@@ -14,7 +14,8 @@ const GL_STANDEXTENSIONS = {
     pvrtc: ['WEBGL_compressed_texture_pvrtc', 'WEBKIT_WEBGL_compressed_texture_pvrtc'],
     etc1: ['WEBGL_compressed_texture_etc1'],
     textureFilterAnisotropic: ['EXT_texture_filter_anisotropic', 'MOZ_EXT_texture_filter_anisotropic', 'WEBKIT_EXT_texture_filter_anisotropic'],
-    vertexArrayObject:['OES_vertex_array_object'],
+    vertexArrayObject:['OES_vertex_array_object','MOZ_OES_vertex_array_object','WEBKIT_OES_vertex_array_object'],
+    angleInstancedArrays:['ANGLE_instanced_arrays']
 };
 /**
  * 

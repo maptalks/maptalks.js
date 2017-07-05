@@ -30,23 +30,18 @@ import GLLimits from './gl/GLLimits';
 import GLProgram from './gl/GLProgram';
 
 /**
- * @class Context
+ * @class
  * @example
  *   let cvs = document.createElement('canvas'),
  *       ctx = new Context(cvs);
  */
 class Context {
     /**
-     * @type {Array}
-     * @memberof Context
-     */
-    _cacheFrameBitmap=[];
-    /**
-     * program cache
+     * @type {Object}
      */
     _programCache = {};
     /**
-     * the useing program
+     * @type {GLProgram}
      */
     _currentProgram;
     /**
@@ -62,35 +57,33 @@ class Context {
      * canvas height
      */
     _height;
-
-    _renderType;
     /**
-     * @type {boolean}
+     * context类型，支持webgl,webgl2
+     * @type {String}
      */
-    _isWebgl2;
+    _renderType;
     /**
      * @type {number}
      */
     _alpha;
     /**
-      * gl.attributes
-      * 
-      */
+     * 是否启用缓冲区
+     * @type {boolean}
+     */
     _stencil;
     /**
-    * gl.attributes
-    * 
-    */
+     * 设置绘制depth属性
+     * @type {boolean}
+     */
     _depth;
     /**
-        * gl.attributes
-        * 
-        */
+     * 抗锯齿
+     * @type {boolean}
+     */
     _antialias;
     /**
-        * gl.attributes
-        * 
-        */
+     * 设置材质属性
+     */
     _premultipliedAlpha;
     /**
         * gl.attributes
@@ -107,15 +100,18 @@ class Context {
 
     _logShaderCompilation;
     /**
+     * 绘制上下文
      * @type {WebGLRenderingContext}
      */
     _gl;
     /**
-     * @attribute {GLExtension}
+     * webgl扩展
+     * @type {GLExtension}
      */
     _glExtension;
     /**
-     * @attribute {GLLimits}
+     * webgl detected
+     * @type {GLLimits}
      */
     _glLimits;
     /**
@@ -138,7 +134,6 @@ class Context {
         //兼容性欠佳，故改用canvas = new OffscreenCanvas(width,height);
         this._offScreenCanvas(width, height);
         this._renderType = options.renderType || 'webgl2';
-        this._isWebgl2 = this._renderType === 'webgl2';
         this._alpha = options.alpha || false;
         this._stencil = options.stencil || true;
         this._depth = options.depth || true;
@@ -159,7 +154,6 @@ class Context {
         //setup env
         this._setup(this._gl);
     };
-
     /**
      * 兼容写法，创建非可见区域canvas，用户做缓冲绘制
      * 待绘制完成后，使用bitmaprender绘制到实际页面上
@@ -185,7 +179,6 @@ class Context {
         const renderContext =  canvas.getContext('bitmaprenderer');
         //renderContext.transferFromImageBitmap(bitmap);
     }
-
     /**
      * get context attributes
      * include webgl2 attributes

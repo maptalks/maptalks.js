@@ -1,6 +1,5 @@
 import merge from './../utils/merge';
 import { stamp } from './../utils/stamp';
-import WebGLRenderer from './../renderer/WebGLRenderer';
 import Event from './../utils/Event';
 import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
 
@@ -9,9 +8,9 @@ import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
  * -renderer,the paint renderer method
  * -data production queue
  * so,if we want to render geometry,we shoud produce data by customer DataManage
- * @class RenderManager
+ * @class
  */
-export default class RenderManager extends Event {
+class RenderManager extends Event {
     /**
      * render instance
      * @memberof RenderManager
@@ -54,5 +53,6 @@ export default class RenderManager extends Event {
         this._width = eventData.width || this._width;
         this._height = eventData.height || this.height;
     }
-
 }
+
+export default RenderManager;

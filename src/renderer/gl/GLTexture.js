@@ -46,17 +46,24 @@ class GLTexture extends Dispose {
      */
     _type;
     /**
+     * @type {boolean}
+     */
+    _premultiplyAlpha = false;
+    /**
      * 
      * @param {WebGLRenderingContext} gl 
-     * @param {*} width 
-     * @param {*} height 
+     * @param {number} width 
+     * @param {number} height 
+     * @param {GLExtension} extenson 
+     * @param {*} limits 
      * @param {*} format 
      * @param {*} type 
-     * @param {*} extenson 
-     * @param {*} limits 
      */
-    constructor(gl, width, height, extenson, limits, format, type) {
+    constructor(gl, width, height, extension, limits, format, type) {
+        super();
         this._gl = gl;
+        this._extension = extension;
+        this._limits = limits;
         this._width = width || -1;
         this._height = height || -1;
         this._handle = this._createHandle();
@@ -85,16 +92,29 @@ class GLTexture extends Dispose {
     };
     /**
      * 
-     * @param {*} element 
+     * @param {Image|Html} element 
      */
-    load(image) {
+    loadImage(image) {
         this.bind();
         const gl = this._gl,
             mipmapLevel = 0;
         gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, this._format, this._format, this._type, image);
     };
     /**
+     * Use a data source and uploads this texture to the GPU
+     * @param {TypedArray} data the data to upload to the texture
+     */
+    loadData(data) {
+        this.bind();
+        const gl = this._gl,
+            ext = this._extension['textureFloat'];
+        this._type = (data instanceof Float32Array) ? gl.FLOAT : this._type;
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._premultiplyAlpha);
+        gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, data || null);
+    }
+    /**
      * 对纹理做插值，在不同分辨率下，当获取不到纹理原始值时，可以根据点位置和周围点的值插值计算。
+     * 建议优先调用此方法
      */
     enableMipmap() {
         const gl = this._gl;

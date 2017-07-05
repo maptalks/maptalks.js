@@ -45,6 +45,13 @@ class GLBuffer extends Dispose {
         this._handle = this._createHandle();
     }
     /**
+     * 创建句柄/对象
+     */
+    _createHandle() {
+        const gl=this._gl;
+        return gl.createBuffer();
+    }
+    /**
      * 资源销毁
      */
     dispose(){
@@ -59,11 +66,16 @@ class GLBuffer extends Dispose {
         gl.bindBuffer(this._type,this._handle);
     }
     /**
-     * 创建句柄/对象
+     * 获取buffer的长度
      */
-    _createHandle() {
-        const gl=this._gl;
-        return gl.createBuffer();
+    get length(){
+        return this._data.length;
+    }
+    /**
+     * 获取buffer data 的type,例如 gl.Float
+     */
+    get type(){
+        return this._type;
     }
 }
 

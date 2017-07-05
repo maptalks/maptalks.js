@@ -21,7 +21,7 @@ module.exports = function (config) {
 				require('rollup-plugin-buble')(),
 			],
 			format: 'iife',
-			moduleName: 'test',	//<your_project>
+			moduleName: 'kiwi',
 			sourceMap: 'inline',
 		},
 		customPreprocessors: {
