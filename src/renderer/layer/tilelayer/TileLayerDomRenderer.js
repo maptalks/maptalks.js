@@ -295,7 +295,7 @@ export default class TileLayerDomRenderer extends Class {
             } else {
                 matrix = join(cssMat);
             }
-            const mapOffset = map.offsetPlatform().round();
+            const mapOffset = map.getViewPoint().round();
             if (!map.isZooming()) {
                 // When map is zooming, tile's position is same with positions when zooming starts, so does't need to refresh camOffsets.
                 container.tile.style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x / zoomFraction) + 'px, ' + (this._camOffset.y + mapOffset.y / zoomFraction) + 'px, 0px)';

@@ -178,7 +178,7 @@ class TileLayer extends Layer {
         const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
         const offset = centerTile['offset'];
         const center2D = map._prjToPoint(map._getPrjCenter(), zoom)._sub(offset.x, offset.y);
-        const mapOffset = map.offsetPlatform();
+        const mapOffset = map.getViewPoint();
         const scale = map._getResolution() / res;
         const centerViewPoint = containerCenter.sub((scale !== 1 ? mapOffset.multi(scale) : mapOffset))._sub(offset.x, offset.y)._round();
 

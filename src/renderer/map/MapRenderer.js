@@ -21,7 +21,7 @@ export default class MapRenderer extends Class {
         this._handlerQueue = {};
     }
 
-    callInFrameLoop(fn) {
+    callInNextFrame(fn) {
         this._handlerQueue.push(fn);
     }
 
@@ -50,7 +50,7 @@ export default class MapRenderer extends Class {
             }
             const renderer = map._getRenderer();
             const framer = function (fn) {
-                renderer.callInFrameLoop(fn);
+                renderer.callInNextFrame(fn);
             };
 
             const player = this._panPlayer = Animation.animate({
@@ -107,6 +107,9 @@ export default class MapRenderer extends Class {
      */
     offsetPlatform(offset) {
         if (!this.map._panels.front) {
+            return this;
+        }
+        if (offset.x === 0 && offset.y === 0) {
             return this;
         }
         const pos = this.map.offsetPlatform().add(offset)._round();

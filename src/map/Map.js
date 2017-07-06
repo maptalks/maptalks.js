@@ -1218,7 +1218,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Point}
      */
     containerPointToViewPoint(containerPoint) {
-        return containerPoint.sub(this.offsetPlatform());
+        return containerPoint.sub(this.getViewPoint());
     }
 
     /**
@@ -1228,7 +1228,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Point}
      */
     viewPointToContainerPoint(viewPoint) {
-        return viewPoint.add(this.offsetPlatform());
+        return viewPoint.add(this.getViewPoint());
     }
 
     /**
@@ -1262,7 +1262,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._updateMapSize(watched);
         const resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
         this._offsetCenterByPixel(resizeOffset);
-        this._mapViewCoord = this._getPrjCenter();
 
         const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
@@ -1784,6 +1783,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     _setPrjCenter(pcenter) {
         this._prjCenter = pcenter;
+        if (this.isInteracting() && !this.isMoving()) {
+            // when map is not moving, map's center is updated but map platform won't
+            // mapViewCoord needs to be synced
+            this._mapViewCoord = pcenter;
+        }
         this._calcMatrices();
     }
 
@@ -1815,13 +1819,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * offset map platform panel.
+     * offset map panels.
      *
      * @param  {Point} offset - offset in pixel to move
      * @return {Map} this
      */
     /**
-     * Gets map platform panel's current view point.
+     * Gets map panel's current view point.
      * @return {Point}
      */
     offsetPlatform(offset) {
@@ -1829,14 +1833,42 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this._mapViewPoint;
         } else {
             this._getRenderer().offsetPlatform(offset);
-            this._mapViewPoint = this._mapViewPoint.add(offset);
             this._mapViewCoord = this._getPrjCenter();
+            this._mapViewPoint = this._mapViewPoint.add(offset);
             return this;
         }
     }
 
+    /**
+     * Get map's view point, adding in frame offset
+     * @return {Point} map view point
+     */
+    getViewPoint() {
+        const offset = this._getViewPointOffset();
+        let platformOffset = this.offsetPlatform();
+        if (offset) {
+            platformOffset = platformOffset.add(offset);
+        }
+        return platformOffset;
+    }
+
+    /**
+     * When moving map, map's center is updated in real time, but platform will be moved in the next frame to keep syncing with other layers
+     * Get the offset in current frame and the next frame
+     * @return {Point} view point offset
+     * @private
+     */
+    _getViewPointOffset() {
+        const pcenter = this._getPrjCenter();
+        if (this._mapViewCoord && !this._mapViewCoord.equals(pcenter)) {
+            return this._prjToContainerPoint(this._mapViewCoord).sub(this._prjToContainerPoint(pcenter));
+        }
+        return null;
+    }
+
     _resetMapViewPoint() {
         this._mapViewPoint = new Point(0, 0);
+        // mapViewCoord is the proj coordinate of current view point
         this._mapViewCoord = this._getPrjCenter();
     }
 
@@ -1955,8 +1987,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!containerPoint) {
             return null;
         }
-        const platformOffset = this.offsetPlatform();
-        return containerPoint._sub(platformOffset);
+        return containerPoint._sub(this.getViewPoint());
     }
 
     _viewPointToPoint(viewPoint, zoom) {
