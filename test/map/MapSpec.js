@@ -430,7 +430,6 @@ describe('#Map', function () {
         });
 
         it('fire resize when dom\'s size is changed', function (done) {
-            var center = map.getCenter();
             map.on('resize', function (param) {
                 expect(param).to.be.ok();
                 expect(map.getViewPoint().toArray()).to.be.eql([0, 0]);
