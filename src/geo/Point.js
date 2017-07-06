@@ -76,6 +76,26 @@ class Point {
         return new Point(round(this.x), round(this.y));
     }
 
+    _ceil() {
+        this.x = Math.ceil(this.x);
+        this.y = Math.ceil(this.y);
+        return this;
+    }
+
+    ceil() {
+        return new Point(Math.ceil(this.x), Math.ceil(this.y));
+    }
+
+    _floor() {
+        this.x = Math.floor(this.x);
+        this.y = Math.floor(this.y);
+        return this;
+    }
+
+    floor() {
+        return new Point(Math.floor(this.x), Math.floor(this.y));
+    }
+
     /**
      * Compare with another point to see whether they are equal.
      * @param {Point} c2 - point to compare
