@@ -433,8 +433,9 @@ describe('#Map', function () {
             var center = map.getCenter();
             map.on('resize', function (param) {
                 expect(param).to.be.ok();
-                //center moved
-                expect(map.getCenter().toArray()).not.to.be.eql(center.toArray());
+                expect(map.getViewPoint().toArray()).to.be.eql([0, 0]);
+                expect(map.getCenter().x).to.be.approx(118.84685718);
+                expect(map.getCenter().y).to.be.approx(32.046534);
                 done();
             });
             container.style.width = '10px';
