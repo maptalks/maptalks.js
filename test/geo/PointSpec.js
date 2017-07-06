@@ -123,6 +123,42 @@ describe('#Point', function () {
             expect(t.y).to.be.eql(3);
         });
 
+        it('can _ceil', function () {
+            var c = new maptalks.Point(new maptalks.Point(2.1, 3.1));
+            var t = c._ceil();
+            expect(c.x).to.be.eql(3);
+            expect(c.y).to.be.eql(4);
+            expect(t.x).to.be.eql(3);
+            expect(t.y).to.be.eql(4);
+        });
+
+        it('can ceil', function () {
+            var c = new maptalks.Point(new maptalks.Point(2.1, 3.1));
+            var t = c.ceil();
+            expect(c.x).to.be.eql(2.1);
+            expect(c.y).to.be.eql(3.1);
+            expect(t.x).to.be.eql(3);
+            expect(t.y).to.be.eql(4);
+        });
+
+        it('can _floor', function () {
+            var c = new maptalks.Point(new maptalks.Point(2.1, 3.1));
+            var t = c._floor();
+            expect(c.x).to.be.eql(2);
+            expect(c.y).to.be.eql(3);
+            expect(t.x).to.be.eql(2);
+            expect(t.y).to.be.eql(3);
+        });
+
+        it('can floor', function () {
+            var c = new maptalks.Point(new maptalks.Point(2.1, 3.1));
+            var t = c.floor();
+            expect(c.x).to.be.eql(2.1);
+            expect(c.y).to.be.eql(3.1);
+            expect(t.x).to.be.eql(2);
+            expect(t.y).to.be.eql(3);
+        });
+
         it('can toJSON', function () {
             var c = new maptalks.Point(-2, -3);
             var t = c.toJSON();
