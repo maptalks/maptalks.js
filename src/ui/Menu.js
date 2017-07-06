@@ -1,5 +1,5 @@
 import { isString, isFunction } from 'core/util';
-import { on, createEl, addClass, setStyle } from 'core/util/dom';
+import { on, createEl, addClass, setStyle, preventDefault } from 'core/util/dom';
 import Point from 'geo/Point';
 import UIComponent from './UIComponent';
 
@@ -110,6 +110,7 @@ class Menu extends UIComponent {
             const menuItems = this._createMenuItemDom();
             // dom.appendChild(arrow);
             dom.appendChild(menuItems);
+            on(dom, 'contextmenu', preventDefault);
             return dom;
         }
     }
