@@ -1,6 +1,7 @@
 import {
     join,
     requestAnimFrame,
+    cancelAnimFrame,
     emptyImageUrl
 } from 'core/util';
 import * as mat4 from 'core/util/mat4';
@@ -40,6 +41,7 @@ export default class TileLayerDomRenderer extends Class {
         super();
         this.layer = layer;
         this._tiles = {};
+        this._fadeAnimated = true;
     }
 
     getMap() {
@@ -257,6 +259,8 @@ export default class TileLayerDomRenderer extends Class {
             container = this._getTileContainer(this._tileZoom),
             size = map.getSize(),
             zoomFraction = map._getResolution(this._tileZoom) / map._getResolution();
+        // reduce repaint causing by dom updateing
+        this._container.style.display = 'none';
         if (container.style.left) {
             // Remove container's left/top if it has.
             // Left, top is set in onZoomEnd to keep container's position when map platform's offset is reset to 0.
@@ -308,6 +312,7 @@ export default class TileLayerDomRenderer extends Class {
                 removeTransform(container.tile);
             }
         }
+        this._container.style.display = '';
     }
 
     _resetDomCssMatrix() {
@@ -428,11 +433,13 @@ export default class TileLayerDomRenderer extends Class {
         const map = this.getMap();
 
         if (this._fadeAnimated) {
-            tile['el'].style[TRANSITION] = 'opacity 250ms';
+            setOpacity(tile.el, 0);
+            cancelAnimFrame(this._fadeFrame);
+            this._fadeFrame = requestAnimFrame(this._updateOpacity.bind(this));
+        } else {
+            setOpacity(tile.el, 1);
+            tile.active = true;
         }
-
-        setOpacity(tile['el'], 1);
-        tile.active = true;
 
         /**
          * tileload event, fired when layer is 'dom' rendered and a tile is loaded
@@ -450,18 +457,14 @@ export default class TileLayerDomRenderer extends Class {
         if (this._noTilesToLoad()) {
             this.layer.fire('layerload');
 
-            if (Browser.ielt9) {
-                requestAnimFrame(this._pruneTiles, this);
-            } else {
-                if (this._pruneTimeout) {
-                    clearTimeout(this._pruneTimeout);
-                }
-                const timeout = map ? map.options['zoomAnimationDuration'] : 250,
-                    pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
-                // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
-                // to trigger a pruning.
-                this._pruneTimeout = setTimeout(this._pruneTiles.bind(this, pruneLevels), timeout + 100);
+            if (this._pruneTimeout) {
+                clearTimeout(this._pruneTimeout);
             }
+            const timeout = map ? map.options['zoomAnimationDuration'] : 250,
+                pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
+            // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
+            // to trigger a pruning.
+            this._pruneTimeout = setTimeout(this._pruneTiles.bind(this, pruneLevels), timeout + 100);
         }
     }
 
@@ -494,6 +497,32 @@ export default class TileLayerDomRenderer extends Class {
             }
         }
         return true;
+    }
+
+    _updateOpacity() {
+        if (!this.getMap()) { return; }
+
+        const now = +new Date();
+        let nextFrame = false;
+
+        for (const key in this._tiles) {
+            const tile = this._tiles[key];
+            if (!tile.current || !tile.loaded) { continue; }
+
+            const fade = Math.min(1, (now - tile.loaded) / 200);
+
+            setOpacity(tile.el, fade);
+            if (fade < 1) {
+                nextFrame = true;
+            } else {
+                tile.active = true;
+            }
+        }
+
+        if (nextFrame) {
+            cancelAnimFrame(this._fadeFrame);
+            this._fadeFrame = requestAnimFrame(this._updateOpacity.bind(this));
+        }
     }
 
     _pruneTiles(pruneLevels = true) {
@@ -581,8 +610,7 @@ export default class TileLayerDomRenderer extends Class {
             container.style.cssText = POSITION0;
 
             const tileContainer =  createEl('div');
-            tileContainer.style.cssText = POSITION0;
-            tileContainer.style.willChange = 'transform';
+            tileContainer.style.cssText = POSITION0 + ';will-change:transform';
             container.appendChild(tileContainer);
             container.tile = tileContainer;
             this._container.appendChild(container);
@@ -640,11 +668,8 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _posTileImage(tileImage, pos) {
-        if (Browser.any3d) {
-            tileImage.style[TRANSFORM] = 'translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)';
-        } else {
-            tileImage.style[TRANSFORM] = 'translate(' + pos.x + 'px, ' + pos.y + 'px)';
-        }
+        tileImage.style.left = pos.x + 'px';
+        tileImage.style.top = pos.y + 'px';
     }
 
     onZoomStart() {
