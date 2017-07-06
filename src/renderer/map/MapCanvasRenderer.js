@@ -127,6 +127,7 @@ export default class MapCanvasRenderer extends MapRenderer {
 
             if (isInteracting && isCanvas) {
                 if (layerLimit > 0 && l - 1 - i > layerLimit) {
+                    layer._getRenderer().clearCanvas();
                     continue;
                 }
                 t += this._drawCanvasLayerOnInteracting(layer, t, timeLimit);
