@@ -14,6 +14,14 @@ export {
     RenderNode
 }
 
+/**
+ * import from namespace renderer
+ */
+import { ShaderFactory } from './renderer/shader/ShaderLib';
+import { GLFragmentShader, GLVertexShader } from './renderer/gl/GLShader';
 
-
-
+export {
+    ShaderFactory,
+    GLFragmentShader,
+    GLVertexShader
+}

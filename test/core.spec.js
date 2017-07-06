@@ -1,5 +1,6 @@
 import Container from './../src/core/Container';
 import Context from './../src/renderer/Context';
+import { ShaderFactory } from './../src/renderer/shader/ShaderLib';
 
 describe("test core function", () => {
     describe('#context', () => {
@@ -11,12 +12,18 @@ describe("test core function", () => {
             cvs.height = height;
             document.body.appendChild(cvs);
             let ctx = new Context({
+                alpha: false,
+                antialias: false,
+                premultipliedAlpha: false,
+                stencil: false,
+                preserveDrawingBuffer: false,
                 width: width,
-                height:height
+                height: height
             });
-            //
+            //背景设置为白色
+            ctx.clearColor(1, 1, 1, 1);
             
-
+            ctx.useProgram('physics');
 
         });
     });

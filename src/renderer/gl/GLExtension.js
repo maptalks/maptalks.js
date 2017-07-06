@@ -19,7 +19,7 @@ const GL_STANDEXTENSIONS = {
 };
 /**
  * 
- * @class GLExtension
+ * @class
  * @example
  *  let extension = new GLExtension(gl);
  *  let standardDerivatives = extension['standardDerivatives']; 

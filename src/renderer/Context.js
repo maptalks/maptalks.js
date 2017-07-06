@@ -28,6 +28,7 @@ import GLConstants from './gl/GLConstants';
 import GLExtension from './gl/GLExtension';
 import GLLimits from './gl/GLLimits';
 import GLProgram from './gl/GLProgram';
+import { ShaderFactory, shadersName } from './shader/ShaderLib';
 
 /**
  * @class
@@ -36,6 +37,10 @@ import GLProgram from './gl/GLProgram';
  *       ctx = new Context(cvs);
  */
 class Context {
+    /**
+     * shaderCache
+     */
+    _shaderCache = {};
     /**
      * @type {Object}
      */
@@ -144,9 +149,13 @@ class Context {
         //get glContext
         this._gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes()) || undefined;
         //get extension
-        this._includeExtension(this._gl);
+        this._includeExtension();
         //get parameter and extensions
-        this._includeParameter(this._gl);
+        this._includeParameter();
+        //inilization shaders
+        this._includeShaders();
+        //inilization programs
+        this._includePrograms();
         //setup env
         this._setup(this._gl);
     };
@@ -171,8 +180,12 @@ class Context {
      * @param {HTMLCanvasElement} canvas
      * @memberof Context
      */
-    renderToCanvas(canvas){
-        const renderContext =  canvas.getContext('bitmaprenderer');
+    renderToCanvas(canvas) {
+        //}{debug adjust canvas to fit the output
+        canvas.width = this._width;
+        canvas.height = this._height;
+
+        const renderContext = canvas.getContext('bitmaprenderer');
         //renderContext.transferFromImageBitmap(bitmap);
     }
     /**
@@ -223,24 +236,61 @@ class Context {
     }
     /**
      * Query and initialize extensions
-     * @param {glContext} gl 
      */
-    _includeExtension(gl) {
+    _includeExtension() {
+        const gl = this._gl;
         this._glExtension = new GLExtension(gl);
     };
     /**
      * hardware
-     * @param {glContext} gl 
      */
-    _includeParameter(gl) {
+    _includeParameter() {
+        const gl = this._gl;
         this._glLimits = new GLLimits(gl);
     };
     /**
-     * 清理颜色缓冲
+     *  加载shaders
      */
-    clearColor() {
-        const gl = this._gl;
-        gl.clearColor(0, 0, 0, 0);
+    _includeShaders() {
+        const gl = this._gl,
+            names = shadersName,
+            //limits=this._glLimits,
+            extension = this._glExtension;
+
+        for (let i = 0, len = names.length; i < len; i++) {
+            const name = names[i];
+            this._shaderCache[name] = ShaderFactory.create(name, gl, extension);
+        }
+    }
+    /**
+     * 加载prgorams
+     */
+    _includePrograms() {
+        const gl = this._gl,
+            limits = this._glLimits,
+            names = shadersName,
+            extension = this._glExtension,
+            shaderCache = this._shaderCache;
+
+        for (let i = 0, len = names.length; i < len; i++) {
+            const name = names[i];
+            const shaders = shaderCache[name];
+            const program = new GLProgram(gl, shaders[0], shaders[1]);
+            this._programCache[name] = program;
+            gl.linkProgram(program.handle);
+        }
+
+    }
+    /**
+     * 清理颜色缓冲
+     * @param {Array} rgba
+     * @example 
+     *  clearColor(1,1,1,1);
+     */
+    clearColor(...args) {
+        const gl = this._gl,
+            [r, g, b, a] = args;
+        gl.clearColor(r || 0, g || 0, b || 0, a || 0);
         gl.clear(GLConstants.COLOR_BUFFER_BIT);
     };
     /**
@@ -271,9 +321,14 @@ class Context {
         }
     };
 
-    useProgram(programName, programConfiguration) {
+    useProgram(name) {
+        const shaders=this._shaderCache[name];
+       
+        this._programCache[name].useProgram();
+    }
 
-    };
+
+
 
 }
 

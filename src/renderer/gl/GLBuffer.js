@@ -8,6 +8,9 @@ import GLConstants from './GLConstants';
 
 const EMPTY_BUFFER = new ArrayBuffer(0);
 
+/**
+ * @class
+ */
 class GLBuffer extends Dispose {
     /**
      * @type {WebGLRenderingContext}
@@ -78,7 +81,9 @@ class GLBuffer extends Dispose {
         return this._type;
     }
 }
-
+/**
+ * @class
+ */
 class GLVertexBuffer extends GLBuffer{
     /**
      * 
@@ -90,7 +95,9 @@ class GLVertexBuffer extends GLBuffer{
         super(gl,GLConstants.ARRAY_BUFFER,data,drawType);
     }
 }
-
+/**
+ * @class
+ */
 class GLIndexBuffer extends GLBuffer{
     /**
      * 
