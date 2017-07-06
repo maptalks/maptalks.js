@@ -28,25 +28,25 @@ import GLConstants from './gl/GLConstants';
 import GLExtension from './gl/GLExtension';
 import GLLimits from './gl/GLLimits';
 import GLProgram from './gl/GLProgram';
+import { ShaderFactory, shadersName } from './shader/ShaderLib';
 
 /**
- * @class Context
+ * @class
  * @example
  *   let cvs = document.createElement('canvas'),
  *       ctx = new Context(cvs);
  */
 class Context {
     /**
-     * @type {Array}
-     * @memberof Context
+     * shaderCache
      */
-    _cacheFrameBitmap=[];
+    _shaderCache = {};
     /**
-     * program cache
+     * @type {Object}
      */
     _programCache = {};
     /**
-     * the useing program
+     * @type {GLProgram}
      */
     _currentProgram;
     /**
@@ -62,42 +62,36 @@ class Context {
      * canvas height
      */
     _height;
-
-    _renderType;
     /**
-     * @type {boolean}
+     * context类型，支持webgl,webgl2
+     * @type {String}
      */
-    _isWebgl2;
+    _renderType;
     /**
      * @type {number}
      */
     _alpha;
     /**
-      * gl.attributes
-      * 
-      */
+     * 是否启用缓冲区
+     * @type {boolean}
+     */
     _stencil;
     /**
-    * gl.attributes
-    * 
-    */
+     * 设置绘制depth属性
+     * @type {boolean}
+     */
     _depth;
     /**
-        * gl.attributes
-        * 
-        */
+     * 抗锯齿
+     * @type {boolean}
+     */
     _antialias;
     /**
-        * gl.attributes
-        * 
-        */
+     * 设置材质属性
+     */
     _premultipliedAlpha;
-    /**
-        * gl.attributes
-        * 
-        */
-    _preserveDrawingBuffer;
 
+    _preserveDrawingBuffer;
     /**
      * extension attrib
      */
@@ -107,15 +101,18 @@ class Context {
 
     _logShaderCompilation;
     /**
+     * 绘制上下文
      * @type {WebGLRenderingContext}
      */
     _gl;
     /**
-     * @attribute {GLExtension}
+     * webgl扩展
+     * @type {GLExtension}
      */
     _glExtension;
     /**
-     * @attribute {GLLimits}
+     * webgl detected
+     * @type {GLLimits}
      */
     _glLimits;
     /**
@@ -138,7 +135,6 @@ class Context {
         //兼容性欠佳，故改用canvas = new OffscreenCanvas(width,height);
         this._offScreenCanvas(width, height);
         this._renderType = options.renderType || 'webgl2';
-        this._isWebgl2 = this._renderType === 'webgl2';
         this._alpha = options.alpha || false;
         this._stencil = options.stencil || true;
         this._depth = options.depth || true;
@@ -153,13 +149,16 @@ class Context {
         //get glContext
         this._gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes()) || undefined;
         //get extension
-        this._includeExtension(this._gl);
+        this._includeExtension();
         //get parameter and extensions
-        this._includeParameter(this._gl);
+        this._includeParameter();
+        //inilization shaders
+        this._includeShaders();
+        //inilization programs
+        this._includePrograms();
         //setup env
         this._setup(this._gl);
     };
-
     /**
      * 兼容写法，创建非可见区域canvas，用户做缓冲绘制
      * 待绘制完成后，使用bitmaprender绘制到实际页面上
@@ -181,11 +180,14 @@ class Context {
      * @param {HTMLCanvasElement} canvas
      * @memberof Context
      */
-    renderToCanvas(canvas){
-        const renderContext =  canvas.getContext('bitmaprenderer');
+    renderToCanvas(canvas) {
+        //}{debug adjust canvas to fit the output
+        canvas.width = this._width;
+        canvas.height = this._height;
+
+        const renderContext = canvas.getContext('bitmaprenderer');
         //renderContext.transferFromImageBitmap(bitmap);
     }
-
     /**
      * get context attributes
      * include webgl2 attributes
@@ -234,24 +236,61 @@ class Context {
     }
     /**
      * Query and initialize extensions
-     * @param {glContext} gl 
      */
-    _includeExtension(gl) {
+    _includeExtension() {
+        const gl = this._gl;
         this._glExtension = new GLExtension(gl);
     };
     /**
      * hardware
-     * @param {glContext} gl 
      */
-    _includeParameter(gl) {
+    _includeParameter() {
+        const gl = this._gl;
         this._glLimits = new GLLimits(gl);
     };
     /**
-     * 清理颜色缓冲
+     *  加载shaders
      */
-    clearColor() {
-        const gl = this._gl;
-        gl.clearColor(0, 0, 0, 0);
+    _includeShaders() {
+        const gl = this._gl,
+            names = shadersName,
+            //limits=this._glLimits,
+            extension = this._glExtension;
+
+        for (let i = 0, len = names.length; i < len; i++) {
+            const name = names[i];
+            this._shaderCache[name] = ShaderFactory.create(name, gl, extension);
+        }
+    }
+    /**
+     * 加载prgorams
+     */
+    _includePrograms() {
+        const gl = this._gl,
+            limits = this._glLimits,
+            names = shadersName,
+            extension = this._glExtension,
+            shaderCache = this._shaderCache;
+
+        for (let i = 0, len = names.length; i < len; i++) {
+            const name = names[i];
+            const shaders = shaderCache[name];
+            const program = new GLProgram(gl, shaders[0], shaders[1]);
+            this._programCache[name] = program;
+            gl.linkProgram(program.handle);
+        }
+
+    }
+    /**
+     * 清理颜色缓冲
+     * @param {Array} rgba
+     * @example 
+     *  clearColor(1,1,1,1);
+     */
+    clearColor(...args) {
+        const gl = this._gl,
+            [r, g, b, a] = args;
+        gl.clearColor(r || 0, g || 0, b || 0, a || 0);
         gl.clear(GLConstants.COLOR_BUFFER_BIT);
     };
     /**
@@ -282,9 +321,14 @@ class Context {
         }
     };
 
-    useProgram(programName, programConfiguration) {
+    useProgram(name) {
+        const shaders=this._shaderCache[name];
+       
+        this._programCache[name].useProgram();
+    }
 
-    };
+
+
 
 }
 

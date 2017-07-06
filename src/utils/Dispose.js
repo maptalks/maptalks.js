@@ -8,7 +8,7 @@
  * @class Dispose
  */
 
-import { stamp } from './../../utils/stamp';
+import { stamp } from './stamp';
 
 class Dispose {
     /**

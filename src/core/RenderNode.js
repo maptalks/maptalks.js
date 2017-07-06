@@ -10,14 +10,19 @@
  * @author yellow 2017/5/24
  * @class RenderNode
  */
-class RenderNode {
 
+import Event from './../utils/Event';
 
-
+/**
+ * @class
+ */
+class RenderNode extends Event {
 
     constructor() {
-
+        super();
     }
 
 
 }
+
+export default RenderNode;

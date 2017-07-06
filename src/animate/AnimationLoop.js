@@ -23,6 +23,7 @@ class AnimationLoop extends Event{
     _timeline;
 
     constructor(renderer,timeLine = new TimeLine()){
+        super();
         this._timeline = timeLine;
     }
 

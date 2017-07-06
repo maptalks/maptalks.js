@@ -11,7 +11,7 @@ const defaultOptions = {
     width: window.innerHeight,
     height: window.innerHeight,
     renderType: 'webgl',
-    roundPixels:false
+    roundPixels: false
 };
 
 /**
@@ -50,7 +50,8 @@ class Container extends Event {
      */
     constructor(options) {
         super();
-        let _options = merge(defaultOptions,options);
+        options = options || {};
+        let _options = merge(defaultOptions, options);
         this._width = _options.width;
         this._height = _options.height;
         this._renderManager = new RenderManager(_options);
@@ -79,7 +80,7 @@ class Container extends Event {
         return this._height;
     }
 
-    get camera(){
+    get camera() {
 
     }
 

@@ -3,8 +3,9 @@
  * underScore 1.8
  */
 
-let isString=(obj)=>{
-    return toString.call(obj) === '[object String]';
+let isString = (str) => {
+    //return toString.call(obj) === '[object String]';
+    return (typeof str == 'string') && str.constructor == String;
 }
 
 export default isString;

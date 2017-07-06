@@ -8,7 +8,7 @@ import GLConstants from './GLConstants';
 
 /** 
  * Shader抽象类
- * @class GLShader
+ * @class
  */
 class GLShader extends Dispose {
     /**
@@ -49,20 +49,12 @@ class GLShader extends Dispose {
      */
     constructor(gl, source, shaderType, extension) {
         super();
-        //可以指定id，方便检索
-        this._id = isString(source) ? source.id : stamp(this);
-        this._source = isString(source) ? source : source.source;
         this._gl = gl;
+        this._source = source;
         this._shaderType = shaderType;
         this._handle = this._createHandle();
         this._compile();
     };
-    /**
-     * 获取对象id
-     */
-    get id() {
-        return this._id;
-    }
     /**
      * return the complied source
      * @readonly
@@ -84,10 +76,10 @@ class GLShader extends Dispose {
      * @memberof Shader
      */
     _compile() {
-        const gl =this._gl;
-        gl.shaderSource(this.handle, this._source);
-        gl.compileShader(this.handle);
-        const compileStatus = gl.getShaderParameter(this.handle,GLConstants.COMPILE_STATUS);
+        const gl = this._gl;
+        gl.shaderSource(this._handle, this._source);
+        gl.compileShader(this._handle);
+        const compileStatus = gl.getShaderParameter(this._handle, GLConstants.COMPILE_STATUS);
         if (!compileStatus) {
             const infoLog = gl.getShaderInfoLog(this.handle);
             this.dispose();
@@ -104,13 +96,14 @@ class GLShader extends Dispose {
      * overwrite 
      */
     _createHandle() {
-        return this._gl.createShader(this._shaderType);
+        const gl = this._gl;
+        return gl.createShader(this._shaderType);
     }
-    
+
 };
 
 /**
- * @class GLVertexShader
+ * @class
  */
 class GLVertexShader extends GLShader {
     /**
@@ -125,7 +118,7 @@ class GLVertexShader extends GLShader {
 }
 
 /**
- * @class GLVertexShader
+ * @class
  */
 class GLFragmentShader extends GLShader {
     /**

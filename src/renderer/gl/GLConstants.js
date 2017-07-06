@@ -250,7 +250,13 @@ const GLConstants = {
     LINK_STATUS: 0x8B82, // Passed to getProgramParameter after calling linkProgram to determine if a program was linked correctly. Returns false if there were errors. Use getProgramInfoLog to find the exact error.
     VALIDATE_STATUS: 0x8B83, // Passed to getProgramParameter after calling validateProgram to determine if it is valid. Returns false if errors were found.
     ATTACHED_SHADERS: 0x8B85, // Passed to getProgramParameter after calling attachShader to determine if the shader was attached correctly. Returns false if errors occurred.
+    /**
+     * 获取program里可用的attributes，【map到program里方便upload属性】
+     */
     ACTIVE_ATTRIBUTES: 0x8B89, // Passed to getProgramParameter to get the number of attributes active in a program.
+    /**
+     * 获取program里可用的uniforms，【map到program里方便upload属性】
+     */
     ACTIVE_UNIFORMS: 0x8B86, // Passed to getProgramParamter to get the number of uniforms active in a program.
     MAX_VERTEX_ATTRIBS: 0x8869,
     MAX_VERTEX_UNIFORM_VECTORS: 0x8DFB,
