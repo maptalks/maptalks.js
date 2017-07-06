@@ -454,7 +454,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0 + 'z-index:0;', true),
             back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;z-index:1;'),
             backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0),
-            canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', 'position:relative;border:none;z-index:2;'),
+            canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', POSITION0 + 'border:none;z-index:2;'),
             frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0 + 'z-index:3;', true),
             front = createContainer('front', 'maptalks-front', POSITION0 + 'z-index:4;', true),
             frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0 + 'z-index:0;'),
