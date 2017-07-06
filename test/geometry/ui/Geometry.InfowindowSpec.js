@@ -49,7 +49,24 @@ describe('#Geometry.InfoWindow', function () {
         map.zoomIn();
     });
 
-    it('close when layer is removed', function (done) {
+    it('setCenter and show', function () {
+        // test infowindow's position with frame offset
+        var marker = new maptalks.Marker(center.add(0.01, 0.01));
+        marker.addTo(layer);
+        var options = {
+            title: 'title',
+            content: 'content',
+            animation : false
+        };
+        marker.setInfoWindow(options);
+        map.setCenter(marker.getCenter());
+        marker.openInfoWindow();
+        var w = marker.getInfoWindow();
+        var position = w._getViewPoint();
+        expect(position.round().toArray()).to.be.eql([633, 25]);
+    });
+
+    it('close when layer is removed', function () {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);
         var options = {
@@ -63,7 +80,6 @@ describe('#Geometry.InfoWindow', function () {
         expect(w.isVisible()).to.be.ok();
         layer.remove();
         expect(w.isVisible()).not.to.be.ok();
-        done();
     });
 
     describe('all kinds of geometries can have a infowindow', function () {

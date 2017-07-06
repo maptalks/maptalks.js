@@ -44,7 +44,7 @@ Map.include(/** @lends Map.prototype */{
         this._frameZoom = this._startZoomVal;
         const renderer = this._getRenderer();
         const framer = function (fn) {
-            renderer.callInFrameLoop(fn);
+            renderer.callInNextFrame(fn);
         };
 
         const player = Animation.animate(
@@ -99,7 +99,7 @@ Map.include(/** @lends Map.prototype */{
         const res = this.getResolution(nextZoom);
         const fromRes = this.getResolution(this._startZoomVal);
         const scale = fromRes / res / startScale;
-        const offset = this.offsetPlatform();
+        const offset = this.getViewPoint();
         const matrix = {
             'view' : [scale, 0, 0, scale, (origin.x - offset.x) *  (1 - scale), (origin.y - offset.y) *  (1 - scale)]
         };

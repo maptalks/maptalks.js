@@ -164,7 +164,7 @@ class UIComponent extends Eventable(Class) {
             map[this._uiDomKey()] = dom;
         }
 
-        this._updatePosition();
+        this._setPosition();
 
         dom.style[TRANSITION] = null;
 
@@ -501,7 +501,8 @@ class UIComponent extends Eventable(Class) {
 
     _getDefaultEvents() {
         return {
-            'zooming zoomend rotate pitch': this.onEvent,
+            'zooming rotate pitch': this.onEvent,
+            'zoomend' : this.onZoomEnd,
             'moving': this.onMoving
         };
     }
@@ -533,7 +534,20 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    onZoomEnd() {
+        if (this.isVisible()) {
+            // when zoomend, map container is reset, position should be updated in current frame
+            this._setPosition();
+        }
+    }
+
     _updatePosition() {
+        // update position in the next frame to sync with layers
+        const renderer = this.getMap()._getRenderer();
+        renderer.callInNextFrame(this._setPosition.bind(this));
+    }
+
+    _setPosition() {
         const dom = this.getDOM(),
             p = this.getPosition();
         this._pos = p;

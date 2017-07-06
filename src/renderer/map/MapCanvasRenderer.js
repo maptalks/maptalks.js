@@ -59,19 +59,14 @@ export default class MapCanvasRenderer extends MapRenderer {
 
     updateMapDOM() {
         const map = this.map;
+        // when map is zooming, container is being transformed with matrix, platform doesn't need to be moved.
         if (map.isInteracting() && !map.isMoving()) {
             return;
         }
-        const pre = map._mapViewCoord;
-        if (!pre) {
-            return;
+        const offset = map._getViewPointOffset();
+        if (offset) {
+            map.offsetPlatform(offset);
         }
-        const current = map._getPrjCenter();
-        if (pre.equals(current)) {
-            return;
-        }
-        const offset = map._prjToContainerPoint(pre).sub(map._prjToContainerPoint(current));
-        map.offsetPlatform(offset);
     }
 
     drawLayers(layers) {
