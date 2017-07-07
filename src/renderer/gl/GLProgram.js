@@ -11,13 +11,17 @@
  * 不提倡luma.gl的写法，即对gl对象添加属性，形如 gl.luma = {}
  * 所以在此类提供两个方法，为不同的实例化
  *
+ * -解决 uniform 和 attribute 通过属性即可设置的问题
+ * 
+ * 
+ * 
  * @author yellow date 2017/6/12
  */
 import Dispose from './../../utils/Dispose';
 import { stamp } from './../../utils/stamp';
 import { GLFragmentShader, GLVertexShader } from './GLShader';
 import GLConstants from './GLConstants';
-// import matrix from 'kiwi.matrix';
+
 
 
 const GL_GLSL = {
@@ -129,10 +133,15 @@ class GLProgram extends Dispose {
     this._gl.attachShader(this._handle, this._fs.handle);
   }
 
+  /**
+   * extract attributes
+   * 
+   */
   _extractAttributes() {
     const gl = this._gl,
       attribLen = gl.getProgramParameter(this._handle, GLConstants.ACTIVE_ATTRIBUTES);
-    let attributes = this._attributes;
+    let attributes = {};
+    //1.get attributes and store mapdata
     for (let i = 0; i < attribLen; i++) {
       const attrib = gl.getActiveAttrib(this._handle, i),
         type = getGLSLType(attrib.type),
@@ -143,12 +152,16 @@ class GLProgram extends Dispose {
         location: gl.getAttribLocation(this._handle, name),
       }
     }
+    //2.map attributeLocation to 'program.attributes'
+
+
   }
 
   _extractUniforms() {
     const gl = this._gl,
       uniformsLen = gl.getProgramParameter(this._handle, GLConstants.ACTIVE_UNIFORMS);
     let uniforms = {};
+    //1.get uniforms and store mapdata
     for (let i = 0; i < uniformsLen; i++) {
       const uniform = gl.getActiveUniform(this._handle, i),
         type = getGLSLType(uniform.type),
