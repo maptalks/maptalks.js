@@ -17,12 +17,14 @@
  * 
  * @author yellow date 2017/6/12
  */
+
+
 import Dispose from './../../utils/Dispose';
 import { stamp } from './../../utils/stamp';
 import { GLFragmentShader, GLVertexShader } from './GLShader';
 import GLConstants from './GLConstants';
-
-
+import { GLBuffer, GLVertexBuffer, GLIndexBuffer } from './GLBuffer';
+import GLVertexArrayObject from './GLVertexArrayObject';
 
 const GL_GLSL = {
   'FLOAT': 'float',
@@ -62,6 +64,9 @@ const GLSL_SIZE = {
   'sampler2D': 1
 };
 
+/**
+ * 构建gl类型（number）和 glsl类型映射表
+ */
 const GL_TABLE = ((keys) => {
   let _gl_table = {};
   for (let i = 0, len = keys.length; i < len; i++) {
@@ -116,26 +121,49 @@ class GLProgram extends Dispose {
    */
   _fs;
   /**
+   * 混合存储 oes_vertex_array_object
+   * @type {GLVertexArrayObject}
+   * @memberof GLProgram
+   */
+  _vao;
+  /**
    * 创建program
    * @param {WebGLRenderingContext} gl 
    * @param {GLVertexShader} fragmentSource glsl shader文本
    * @param {GLFragmentShader} vertexSource glsl shader文本
    * @param {GLExtension} extension
    */
-  constructor(gl, vs, fs, extension) {
+  constructor(gl, vs, fs, extension, limits) {
     super();
     this._gl = gl;
     this._extension = extension;
+    this._limits = limits;
     this._vs = vs;
     this._fs = fs;
     this._handle = this._createHandle();
     this._gl.attachShader(this._handle, this._vs.handle);
     this._gl.attachShader(this._handle, this._fs.handle);
+    this._vao = new GLVertexArrayObject(gl, extension, limits);
   }
-
+  /**
+   * 获取attribues
+   * @readonly
+   * @memberof GLProgram
+   */
+  get attributes(){
+    return this._attributes;
+  };
+  /**
+   * 获取unfiroms
+   * @readonly
+   * @memberof GLProgram
+   */
+  get uniforms(){
+    return this._uniforms;
+  }
   /**
    * extract attributes
-   * 
+   * 展开attributes
    */
   _extractAttributes() {
     const gl = this._gl,
@@ -145,18 +173,30 @@ class GLProgram extends Dispose {
     for (let i = 0; i < attribLen; i++) {
       const attrib = gl.getActiveAttrib(this._handle, i),
         type = getGLSLType(attrib.type),
-        name = attrib.name;
-      attributes[attrib.name] = {
-        type: type,
-        size: getGLSLTypeSize(type),
-        location: gl.getAttribLocation(this._handle, name),
-      }
+        name = attrib.name,
+        size = getGLSLTypeSize(type),
+        location = gl.getAttribLocation(this._handle, name);
+      Object.defineProperty(attributes, name, {
+        /**
+       * @param {GLBuffer|GLVertexBuffer} value
+       */
+        set: (value) => {
+          const glBuffer = value;
+          if (!((glBuffer instanceof GLVertexBuffer) || (glBuffer instanceof GLBuffer)))
+            throw new Error('the attribute must be an implement of GLBuffer or GLVertexBuffer');
+          gl.bindBuffer(glBuffer.type, glBuffer.handle);
+          gl.bufferData(glBuffer.type, glBuffer.data);
+          this._vao.addAttribute(glBuffer, location, size);
+        }
+      })
     }
-    //2.map attributeLocation to 'program.attributes'
-
-
+    //2.导入全局
+    this._attributes = attributes;
   }
-
+  /**
+   * 展开uniforms并map到对象
+   * @memberof GLProgram
+   */
   _extractUniforms() {
     const gl = this._gl,
       uniformsLen = gl.getProgramParameter(this._handle, GLConstants.ACTIVE_UNIFORMS);
@@ -208,7 +248,8 @@ class GLProgram extends Dispose {
    * 清理绑定信息，销毁program对象
    */
   dispose() {
-
+    const gl = this._gl;
+    gl.deleteProgram(this._handle);
   }
 
 };

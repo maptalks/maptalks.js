@@ -275,7 +275,7 @@ class Context {
         for (let i = 0, len = names.length; i < len; i++) {
             const name = names[i];
             const shaders = shaderCache[name];
-            const program = new GLProgram(gl, shaders[0], shaders[1]);
+            const program = new GLProgram(gl, shaders[0], shaders[1],extension,limits);
             this._programCache[name] = program;
             gl.linkProgram(program.handle);
         }
@@ -323,8 +323,8 @@ class Context {
 
     useProgram(name) {
         const shaders=this._shaderCache[name];
-       
         this._programCache[name].useProgram();
+        
     }
 
 

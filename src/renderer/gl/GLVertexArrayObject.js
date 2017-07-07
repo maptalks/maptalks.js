@@ -47,21 +47,35 @@ class GLVertexArrayObject extends Dispose {
     }
     /**
      * 创建vao对象
+     * @description polyfill
+     * @return va
      */
     _createHandle() {
-        return this._ext.createVertexArrayOES();
+        const gl = this._gl,
+            ext = this._ext;
+        return !!ext?ext.createVertexArrayOES():gl.createVertexArray();
     }
     /**
      * 绑定上下文
      */
     bind() {
-        this._ext.bindVertexArrayOES(this.handle);
+        const ext = this._ext,
+            gl = this._gl;
+        if(!!ext)
+            ext.bindVertexArrayOES(this._handle);
+        else
+            gl.bindVertexArray(this._handle);
     }
     /**
      * 解除上下文绑定
      */
     unbind() {
-        this._ext.bindVertexArrayOES(null);
+        const ext = this._ext,
+            gl = this._gl;
+        if(!!ext)
+            ext.bindVertexArrayOES(null);
+        else
+            gl.bindVertexArray(null);
     }
     /**
      * 启动vertexbuffer和indexbuffer

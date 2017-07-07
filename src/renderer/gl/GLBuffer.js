@@ -80,6 +80,16 @@ class GLBuffer extends Dispose {
     get type(){
         return this._type;
     }
+    /**
+     * 获取buffer的data array
+     * @readonly
+     * @memberof GLBuffer
+     * @return {Float32Array} 
+     */
+    get data(){
+        const dataArray = this._data;
+        return new Float32Array(dataArray);
+    }
 }
 /**
  * @class
