@@ -5,15 +5,14 @@
  * https://github.com/pixijs/pixi-gl-core/blob/master/src/GLShader.js
  * https://github.com/pixijs/pixi-gl-core/blob/master/src/shader/extractAttributes.js
  * https://github.com/pixijs/pixi-gl-core/blob/master/src/shader/extractUniforms.js
- *
  * 
  * 合并shader，并缓存进gl，便于之后使用
  * 不提倡luma.gl的写法，即对gl对象添加属性，形如 gl.luma = {}
  * 所以在此类提供两个方法，为不同的实例化
  *
  * -解决 uniform 和 attribute 通过属性即可设置的问题
- * 
- * 
+ * -unifrom 涉及数据类型转换，所以规定属性使用 GLUniform
+ * -attribuet 涉及数据转换，规定attribute使用 GLBuffer
  * 
  * @author yellow date 2017/6/12
  */
@@ -138,12 +137,13 @@ class GLProgram extends Dispose {
     this._gl = gl;
     this._extension = extension;
     this._limits = limits;
+    this._vao = new GLVertexArrayObject(gl, extension, limits);
     this._vs = vs;
     this._fs = fs;
     this._handle = this._createHandle();
     this._gl.attachShader(this._handle, this._vs.handle);
     this._gl.attachShader(this._handle, this._fs.handle);
-    this._vao = new GLVertexArrayObject(gl, extension, limits);
+
   }
   /**
    * 获取attribues
@@ -176,6 +176,7 @@ class GLProgram extends Dispose {
         name = attrib.name,
         size = getGLSLTypeSize(type),
         location = gl.getAttribLocation(this._handle, name);
+        //提供attribute属性访问
       Object.defineProperty(attributes, name, {
         /**
        * @param {GLBuffer|GLVertexBuffer} value
@@ -188,7 +189,7 @@ class GLProgram extends Dispose {
           gl.bufferData(glBuffer.type, glBuffer.data);
           this._vao.addAttribute(glBuffer, location, size);
         }
-      })
+      });
     }
     //2.导入全局
     this._attributes = attributes;
@@ -212,6 +213,7 @@ class GLProgram extends Dispose {
         location: gl.getUniformLocation(this._handle, name)
       }
     }
+    //2.
 
   }
 
