@@ -24,6 +24,24 @@ import { GLFragmentShader, GLVertexShader } from './GLShader';
 import GLConstants from './GLConstants';
 import { GLBuffer, GLVertexBuffer, GLIndexBuffer } from './GLBuffer';
 import GLVertexArrayObject from './GLVertexArrayObject';
+/**
+ * 统一使用array方式调用， ..args
+ */
+const GLSL_UNIFORM = {
+  'float': 'uniform1fv',//(location, value)
+  'vec2': 'uniform2fv',//(location, value)
+  'vec3': 'uniform3fv',//(location, value)
+  'vec4': 'uniform4fv',//(location, value)
+  'int': 'uniform1iv',//(location, value)
+  'ivec2': 'uniform2iv',//(location, value)
+  'ivec3': 'uniform3iv',//(location, value)
+  'ivec4': 'uniform4iv',//(location, value)
+  'bool': 'uniform1iv',//(location, value)
+  'bvec2': 'uniform2iv',//(location, value)
+  'bvec3': 'uniform3iv',//(location, value)
+  'bvec4': 'uniform4iv',//
+  'sampler2D': 'uniform1iv'//(location, value)
+};
 
 const GL_GLSL = {
   'FLOAT': 'float',
@@ -66,7 +84,7 @@ const GLSL_SIZE = {
 /**
  * 构建gl类型（number）和 glsl类型映射表
  */
-const GL_TABLE = ((keys) => {
+const NATIVE_GL_TABLE = ((keys) => {
   let _gl_table = {};
   for (let i = 0, len = keys.length; i < len; i++) {
     const key = keys[i];
@@ -87,7 +105,14 @@ const getGLSLTypeSize = (glslType) => {
  * @param {number} glType 
  */
 const getGLSLType = (glType) => {
-  return GL_TABLE[glType];
+  return NATIVE_GL_TABLE[glType];
+}
+/**
+ * glsl类型转换成获取uniform设置属性的方法
+ * @param {String} glslType 
+ */
+const getUniformFunc = (glslType) => {
+  return GLSL_UNIFORM[glslType];
 }
 /**
  * @class
@@ -143,14 +168,13 @@ class GLProgram extends Dispose {
     this._handle = this._createHandle();
     this._gl.attachShader(this._handle, this._vs.handle);
     this._gl.attachShader(this._handle, this._fs.handle);
-
   }
   /**
    * 获取attribues
    * @readonly
    * @memberof GLProgram
    */
-  get attributes(){
+  get attributes() {
     return this._attributes;
   };
   /**
@@ -158,7 +182,7 @@ class GLProgram extends Dispose {
    * @readonly
    * @memberof GLProgram
    */
-  get uniforms(){
+  get uniforms() {
     return this._uniforms;
   }
   /**
@@ -168,7 +192,6 @@ class GLProgram extends Dispose {
   _extractAttributes() {
     const gl = this._gl,
       attribLen = gl.getProgramParameter(this._handle, GLConstants.ACTIVE_ATTRIBUTES);
-    let attributes = {};
     //1.get attributes and store mapdata
     for (let i = 0; i < attribLen; i++) {
       const attrib = gl.getActiveAttrib(this._handle, i),
@@ -176,8 +199,8 @@ class GLProgram extends Dispose {
         name = attrib.name,
         size = getGLSLTypeSize(type),
         location = gl.getAttribLocation(this._handle, name);
-        //提供attribute属性访问
-      Object.defineProperty(attributes, name, {
+      //提供attribute属性访问
+      Object.defineProperty(this._attributes, name, {
         /**
        * @param {GLBuffer|GLVertexBuffer} value
        */
@@ -185,14 +208,15 @@ class GLProgram extends Dispose {
           const glBuffer = value;
           if (!((glBuffer instanceof GLVertexBuffer) || (glBuffer instanceof GLBuffer)))
             throw new Error('the attribute must be an implement of GLBuffer or GLVertexBuffer');
+          //1.创建buffer
+          //2.绑定到gl里，并将buffer写入
           gl.bindBuffer(glBuffer.type, glBuffer.handle);
-          gl.bufferData(glBuffer.type, glBuffer.data);
+          gl.bufferData(glBuffer.type, glBuffer.float32);
+          //3.将buffer数据导出到vao里
           this._vao.addAttribute(glBuffer, location, size);
         }
       });
     }
-    //2.导入全局
-    this._attributes = attributes;
   }
   /**
    * 展开uniforms并map到对象
@@ -206,15 +230,20 @@ class GLProgram extends Dispose {
     for (let i = 0; i < uniformsLen; i++) {
       const uniform = gl.getActiveUniform(this._handle, i),
         type = getGLSLType(uniform.type),
-        name = uniform.name.replace(/\[.*?\]/, "");
-      uniforms[name] = {
-        type: type,
-        size: uniform.size,
-        location: gl.getUniformLocation(this._handle, name)
-      }
-    }
-    //2.
+        name = uniform.name.replace(/\[.*?\]/, ""),
+        size = uniform.size,
+        location = gl.getUniformLocation(this._handle, name);
+      //提供attribute属性访问
+      Object.defineProperty(this.uniforms, name, {
+        /**
+       * @param {glMatrix.*} value
+       */
+        set: (value) => {
 
+
+        }
+      });
+    }
   }
 
   _createHandle() {
