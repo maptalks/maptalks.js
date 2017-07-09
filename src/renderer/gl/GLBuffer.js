@@ -77,6 +77,12 @@ class GLBuffer extends Dispose {
         return this._type;
     }
     /**
+     * 绘制类型
+     */
+    get drawType(){
+        return this._drawType;
+    }
+    /**
      * 获取buffer的Float32aArray类型数据
      * @readonly
      * @memberof GLBuffer
