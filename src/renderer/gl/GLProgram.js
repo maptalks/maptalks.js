@@ -174,7 +174,7 @@ class GLProgram extends Dispose {
     this._handle = this._createHandle();
     this._gl.attachShader(this._handle, this._vs.handle);
     this._gl.attachShader(this._handle, this._fs.handle);
-    this._isWebGL2 = isWebGL2 && (!!this._vao);
+    this._isWebGL2 = isWebGL2 && !!this._vao.handle;
   }
   /**
    * 获取attribues
@@ -216,11 +216,11 @@ class GLProgram extends Dispose {
             const glBuffer = value;
             gl.bindBuffer(glBuffer.type, glBuffer.handle);
             gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
+            vao.addAttribute(glBuffer, location, size);
           } : function (value) {
             const glBuffer = value;
             gl.bindBuffer(glBuffer.type, glBuffer.handle);
             gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
-            vao.addAttribute(glBuffer, location, size);
           }
         })(isWebGL2, location, type, name, size)
       });
