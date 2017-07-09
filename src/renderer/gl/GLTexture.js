@@ -89,7 +89,7 @@ class GLTexture extends Dispose {
      */
     get mipmap() {
         return this._mipmap;
-    };
+    }
     /**
      * 
      * @param {Image|Html} element 
@@ -99,7 +99,7 @@ class GLTexture extends Dispose {
         const gl = this._gl,
             mipmapLevel = 0;
         gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, this._format, this._format, this._type, image);
-    };
+    }
     /**
      * Use a data source and uploads this texture to the GPU
      * @param {TypedArray} data the data to upload to the texture

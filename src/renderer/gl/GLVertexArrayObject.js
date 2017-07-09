@@ -53,7 +53,19 @@ class GLVertexArrayObject extends Dispose {
     _createHandle() {
         const gl = this._gl,
             ext = this._ext;
-        return !!ext?ext.createVertexArrayOES():gl.createVertexArray();
+        if (!!ext) {
+            return ext.createVertexArrayOES();
+        }
+        if (!!gl.createVertexArray) {
+            return gl.createVertexArray();
+        }
+        return null;
+    }
+    /**
+     * 销毁vao对象
+     */
+    dispose() {
+
     }
     /**
      * 绑定上下文
@@ -61,7 +73,7 @@ class GLVertexArrayObject extends Dispose {
     bind() {
         const ext = this._ext,
             gl = this._gl;
-        if(!!ext)
+        if (!!ext)
             ext.bindVertexArrayOES(this._handle);
         else
             gl.bindVertexArray(this._handle);
@@ -72,7 +84,7 @@ class GLVertexArrayObject extends Dispose {
     unbind() {
         const ext = this._ext,
             gl = this._gl;
-        if(!!ext)
+        if (!!ext)
             ext.bindVertexArrayOES(null);
         else
             gl.bindVertexArray(null);
@@ -91,7 +103,7 @@ class GLVertexArrayObject extends Dispose {
         this._indexBuffer.bind();
     }
     /**
-     * 启动VertexBuffer
+     * bufferData到指定vao
      */
     _activeVertexBuffer() {
         const gl = this._gl;
@@ -121,9 +133,8 @@ class GLVertexArrayObject extends Dispose {
             type: buffer.type || GLConstants.FLOAT,
             normalized: normalized || false,
             stride: stride || 0,
-            offset: offset
+            offset: offset || 0
         });
-        this._needsToActive = true;
     }
     /**
      * reference
@@ -136,7 +147,6 @@ class GLVertexArrayObject extends Dispose {
      */
     addIndex(buffer) {
         this._indexBuffer = buffer;
-        this._needsToActive = true;
     }
 
     clear() {

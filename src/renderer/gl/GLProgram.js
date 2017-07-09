@@ -121,11 +121,11 @@ class GLProgram extends Dispose {
   /**
    * program active attribute
    */
-  _attributes = {};
+  _attributes;
   /**
    * program active 
    */
-  _uniforms = {}
+  _uniforms;
   /**
    * @type {GLExtension}
    */
@@ -151,13 +151,19 @@ class GLProgram extends Dispose {
    */
   _vao;
   /**
+   * 指示是否支持webgl2
+   */
+  _isWebGL2;
+  /**
    * 创建program
    * @param {WebGLRenderingContext} gl 
    * @param {GLVertexShader} fragmentSource glsl shader文本
    * @param {GLFragmentShader} vertexSource glsl shader文本
    * @param {GLExtension} extension
+   * @param {GLLimits} [limits] the context limtis
+   * @param {Boolean} [isWebGL2] detect the evn support webgl2
    */
-  constructor(gl, vs, fs, extension, limits) {
+  constructor(gl, vs, fs, extension, limits, isWebGL2=true) {
     super();
     this._gl = gl;
     this._extension = extension;
@@ -168,6 +174,7 @@ class GLProgram extends Dispose {
     this._handle = this._createHandle();
     this._gl.attachShader(this._handle, this._vs.handle);
     this._gl.attachShader(this._handle, this._fs.handle);
+    this._isWebGL2 = isWebGL2 && !!this._vao.handle;
   }
   /**
    * 获取attribues
@@ -190,40 +197,44 @@ class GLProgram extends Dispose {
    * 展开attributes
    */
   _extractAttributes() {
-    const gl = this._gl,
+    const isWebGL2 = this._isWebGL2,
+      gl = this._gl,
+      vao = this._vao,
       attribLen = gl.getProgramParameter(this._handle, GLConstants.ACTIVE_ATTRIBUTES);
-    //1.get attributes and store mapdata
+    let attributes = {};
+    //get attributes and store mapdata
     for (let i = 0; i < attribLen; i++) {
       const attrib = gl.getActiveAttrib(this._handle, i),
         type = getGLSLType(attrib.type),
         name = attrib.name,
         size = getGLSLTypeSize(type),
         location = gl.getAttribLocation(this._handle, name);
-      //提供attribute属性访问
-      Object.defineProperty(this._attributes, name, {
-        /**
-       * @param {GLBuffer|GLVertexBuffer} value
-       */
-        set: (value) => {
-          const glBuffer = value;
-          if (!((glBuffer instanceof GLVertexBuffer) || (glBuffer instanceof GLBuffer)))
-            throw new Error('the attribute must be an implement of GLBuffer or GLVertexBuffer');
-          //1.创建buffer
-          //2.绑定到gl里，并将buffer写入
-          gl.bindBuffer(glBuffer.type, glBuffer.handle);
-          gl.bufferData(glBuffer.type, glBuffer.float32);
-          //3.将buffer数据导出到vao里
-          this._vao.addAttribute(glBuffer, location, size);
-        }
+      //
+      Object.defineProperty(attributes, name, {
+        set: (function (gl2, loc, typ, ne, se) {
+          return gl2 ? function (value) {
+            const glBuffer = value;
+            gl.bindBuffer(glBuffer.type, glBuffer.handle);
+            gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
+            vao.addAttribute(glBuffer, location, size);
+          } : function (value) {
+            const glBuffer = value;
+            gl.bindBuffer(glBuffer.type, glBuffer.handle);
+            gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
+          }
+        })(isWebGL2, location, type, name, size)
       });
     }
+    //
+    this._attributes = attributes;
   }
   /**
    * 展开uniforms并map到对象
    * @memberof GLProgram
    */
   _extractUniforms() {
-    const gl = this._gl,
+    const isWebGL2 = this._isWebGL2,
+      gl = this._gl,
       uniformsLen = gl.getProgramParameter(this._handle, GLConstants.ACTIVE_UNIFORMS);
     let uniforms = {};
     //1.get uniforms and store mapdata
@@ -234,16 +245,19 @@ class GLProgram extends Dispose {
         size = uniform.size,
         location = gl.getUniformLocation(this._handle, name);
       //提供attribute属性访问
-      Object.defineProperty(this.uniforms, name, {
+      Object.defineProperty(uniforms, name, {
         /**
        * @param {glMatrix.*} value
        */
         set: (value) => {
-
-
+          const funcName = getUniformFunc(type);
+          //gl[funcName](location,)
+          gl[funcName](location, value);
         }
       });
     }
+    //
+    this._uniforms = uniforms;
   }
 
   _createHandle() {
