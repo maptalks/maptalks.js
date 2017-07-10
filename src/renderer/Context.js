@@ -177,6 +177,9 @@ class Context {
         this._height = height;
     };
     /**
+     * 兼容写法
+     * -如果支持最新的bitmaprenderer则使用此方法
+     * -如果不支持，则使用 canvas2d 贴图绘制
      * @param {HTMLCanvasElement} canvas
      * @memberof Context
      */
@@ -184,9 +187,14 @@ class Context {
         //}{debug adjust canvas to fit the output
         canvas.width = this._width;
         canvas.height = this._height;
-
-        const renderContext = canvas.getContext('bitmaprenderer');
-        //renderContext.transferFromImageBitmap(bitmap);
+        const _canvas = this._canvas;
+        //
+        let image = new Image();
+        image.src = _canvas.toDataURL("image/png");
+        //
+        const renderContext = canvas.getContext('bitmaprenderer')||canvas.getContext('2d');
+        !!renderContext.transferFromImageBitmap?renderContext.transferFromImageBitmap(image):renderContext.drawImage(image,0,0);
+        //
     }
     /**
      * get context attributes

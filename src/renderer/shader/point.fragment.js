@@ -1,8 +1,9 @@
-export default `precision highp float;
+export default `
+precision mediump float;
 
-uniform sampler2D uSampler;
+uniform vec4 u_color;
 
-void main(void)
-{
-    gl_FragColor = texture2D(uSampler, gl_PointCoord);
-}`;
+void main() {
+   gl_FragColor = u_color;
+}
+`;
