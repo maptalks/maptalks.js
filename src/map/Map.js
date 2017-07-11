@@ -2002,6 +2002,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /* eslint no-extend-native: 0 */
     _callOnLoadHooks() {
         const proto = Map.prototype;
+        if (!proto._onLoadHooks) {
+            return;
+        }
         for (let i = 0, l = proto._onLoadHooks.length; i < l; i++) {
             proto._onLoadHooks[i].call(this);
         }
