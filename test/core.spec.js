@@ -23,8 +23,8 @@ describe("test core function", () => {
                 height: height
             });
             //背景设置为白色
-            ctx.clearColor(1, 1, 1, 1);
-
+            ctx.clearColor();
+            //
             let point_program = ctx.useProgram('point');
             point_program.uniforms.uSampler = 1;
             point_program.uniforms.positions = 0;
