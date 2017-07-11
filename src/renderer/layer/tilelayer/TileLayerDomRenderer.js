@@ -386,7 +386,7 @@ export default class TileLayerDomRenderer extends Class {
         on(tileImage, 'error', this._tileOnError.bind(this, done, tile));
 
         if (this.layer.options['crossOrigin']) {
-            tile.crossOrigin = this.layer.options['crossOrigin'];
+            tileImage.crossOrigin = this.layer.options['crossOrigin'];
         }
 
         tileImage.style.position = 'absolute';
