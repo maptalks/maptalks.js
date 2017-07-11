@@ -30,7 +30,7 @@ const options = {
 class Attribution extends Control {
 
     buildOn() {
-        this._attributionContainer = createEl('div', 'maptalks-attribution');
+        this._attributionContainer = createEl('div');
         this._update();
         return this._attributionContainer;
     }
@@ -52,6 +52,7 @@ class Attribution extends Control {
         }
         let content = this.options['content'];
         if (isString(content) && content.charAt(0) !== '<') {
+            this._attributionContainer.className = 'maptalks-attribution';
             content = '<span style="padding:0px 4px">' + content + '</span>';
         }
         this._attributionContainer.innerHTML = content;
