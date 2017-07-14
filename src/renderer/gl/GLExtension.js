@@ -2,7 +2,6 @@
  * @author yellow date 2017/6/15
  * management of GLExtension
  */
-
 const GL_STANDEXTENSIONS = {
     standardDerivatives: ['OES_standard_derivatives'],
     elementIndexUint: ['OES_element_index_uint'],

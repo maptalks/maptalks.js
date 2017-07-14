@@ -10,10 +10,8 @@
  * -支持非2的n次方规格的textures
  * 
  */
-
 import Dispose from './../../utils/Dispose';
 import GLConstants from './GLConstants';
-
 /**
  * @class
  */

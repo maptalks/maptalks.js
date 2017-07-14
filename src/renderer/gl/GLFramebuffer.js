@@ -12,16 +12,12 @@
  * 渲染流程：
  * http://blog.csdn.net/myarrow/article/details/7782963
  * 
- * 
- * 
- * 
  */
-
 import Dispose from './../../utils/Dispose';
 import GLConstants from './GLConstants';
 import GLTexture from './GLTexture';
-
 /**
+ * 帧缓冲类
  * @class
  */
 class GLFramebuffer extends Dispose {
@@ -58,7 +54,9 @@ class GLFramebuffer extends Dispose {
         this._height = height || 100;
         this._handle = this._createHandle();
     }
-
+    /**
+     * 创建 framebuffer 帧缓冲
+     */
     _createHandle() {
         const gl = this._gl;
         return gl.createFramebuffer();
@@ -102,6 +100,5 @@ class GLFramebuffer extends Dispose {
         //设置贴图对象的属性...此步骤在外部调用，例如 glTexture.enableLineScaling();故此不做额外设置
     }
 }
-
 
 export default GLFramebuffer;
