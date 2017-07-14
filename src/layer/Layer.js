@@ -27,7 +27,7 @@ const options = {
     'visible': true,
     'opacity': 1,
     'drawImmediate': false,
-    // context.globalCompositeOperation, 'source-in' in default
+    // context.globalCompositeOperation, 'source-over' in default
     'globalCompositeOperation': null,
     'renderer': 'canvas',
     'debugOutline' : '#0f0'
