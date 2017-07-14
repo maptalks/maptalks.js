@@ -46,7 +46,7 @@
     "karma-ie-launcher": "^1.0.0",
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.1",
-    "karma-rollup-plugin": "^0.2.4",
+    "karma-rollup-plugin": "mjeanroy/karma-rollup-preprocessor#fix-rollup-0_45",
     "karma-safari-launcher": "~1.0.0",
     "karma-sinon": "^1.0.5",
     "maptalks-build-helpers": "^0.3.0",
