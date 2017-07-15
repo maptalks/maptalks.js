@@ -26,9 +26,9 @@ export default Base =>
          * Get class of input JSON type
          * @param  {String} type - JSON type
          * @return {Class}      Class
-         * @function JSONAble.getClass
+         * @function JSONAble.getJSONClass
          */
-        static getClass(type) {
+        static getJSONClass(type) {
             if (!type) {
                 return null;
             }
