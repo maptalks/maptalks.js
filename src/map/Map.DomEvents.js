@@ -250,3 +250,5 @@ Map.include(/** @lends Map.prototype */ {
         this._fireEvent(type, eventParam);
     }
 });
+
+Map.addOnLoadHook('_registerDomEvents');

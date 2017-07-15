@@ -1618,7 +1618,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     _Load() {
         this._resetMapStatus();
-        this._registerDomEvents();
         if (this.options['pitch']) {
             this.setPitch(this.options['pitch']);
             delete this.options['pitch'];
