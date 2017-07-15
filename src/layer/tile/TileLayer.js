@@ -310,6 +310,15 @@ class TileLayer extends Layer {
             return value;
         });
     }
+
+    _bindMap(map) {
+        if (map.getBaseLayer() === this) {
+            this.config({
+                'renderOnMoving': true
+            });
+        }
+        return super._bindMap.apply(this, arguments);
+    }
 }
 
 TileLayer.registerJSONType('TileLayer');
