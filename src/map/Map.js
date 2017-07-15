@@ -19,8 +19,6 @@ import PointExtent from 'geo/PointExtent';
 import Extent from 'geo/Extent';
 import Coordinate from 'geo/Coordinate';
 import Layer from 'layer/Layer';
-import TileLayer from 'layer/tile/TileLayer';
-import TileSystem from 'layer/tile/tileinfo/TileSystem';
 import Renderable from 'renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
 
@@ -864,16 +862,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._fireEvent('setbaselayer');
             return this;
         }
-        if (baseLayer instanceof TileLayer) {
-            baseLayer.config({
-                'renderOnMoving': true
-            });
-            if (!baseLayer.options['tileSystem']) {
-                baseLayer.config('tileSystem', TileSystem.getDefault(this.getProjection()));
-            }
-        }
-        baseLayer._bindMap(this, -1);
+
         this._baseLayer = baseLayer;
+        baseLayer._bindMap(this, -1);
 
         function onbaseLayerload() {
             /**
