@@ -54,7 +54,7 @@ Geometry.fromJSON = function (json) {
     }
     let geometry;
     if (json['subType']) {
-        geometry = Geometry.getClass(json['subType']).fromJSON(json);
+        geometry = Geometry.getJSONClass(json['subType']).fromJSON(json);
         if (!isNil(json['feature']['id'])) {
             geometry.setId(json['feature']['id']);
         }
@@ -83,7 +83,7 @@ Layer.fromJSON = function (layerJSON) {
         return null;
     }
     const layerType = layerJSON['type'];
-    const clazz = Layer.getClass(layerType);
+    const clazz = Layer.getJSONClass(layerType);
     if (!clazz || !clazz.fromJSON) {
         throw new Error('unsupported layer type:' + layerType);
     }
