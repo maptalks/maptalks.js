@@ -711,9 +711,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     setCenterAndZoom(center, zoom) {
         if (this._zoomLevel !== zoom) {
             this.setCenter(center);
-            if (!isNil(zoom)) {
-                this.setZoom(zoom);
-            }
+            const a = this.options['zoomAnimation'];
+            this.config('zoomAnimation', false);
+            this.setZoom(zoom);
+            this.config('zoomAnimation', a);
         } else {
             this.setCenter(center);
         }
@@ -745,6 +746,19 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
         const zoom = this.getZoomForScale(scale);
         return zoom;
+    }
+
+    /**
+     * Get map's current view (center/zoom/pitch/bearing)
+     * @return {Object} { center : *, zoom : *, pitch : *, bearing : * }
+     */
+    getView() {
+        return {
+            'center' : this.getCenter().toArray(),
+            'zoom'  : this.getZoom(),
+            'pitch' : this.getPitch(),
+            'bearing' : this.getBearing()
+        };
     }
 
     /**
@@ -1184,12 +1198,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Convert a geographical coordinate to the container point. <br>
      *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {Coordinate}
+     * @param {Coordinate}                - coordinate
+     * @param  {Number} [zoom=undefined]  - zoom level
      * @return {Point}
      */
-    coordinateToContainerPoint(coordinate) {
+    coordinateToContainerPoint(coordinate, zoom) {
         const pCoordinate = this.getProjection().project(coordinate);
-        return this._prjToContainerPoint(pCoordinate);
+        return this._prjToContainerPoint(pCoordinate, zoom);
     }
 
     /**
@@ -1835,12 +1850,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} map view point
      */
     getViewPoint() {
-        const offset = this._getViewPointOffset();
-        let platformOffset = this.offsetPlatform();
+        const offset = this._getViewPointFrameOffset();
+        let panelOffset = this.offsetPlatform();
         if (offset) {
-            platformOffset = platformOffset.add(offset);
+            panelOffset = panelOffset.add(offset);
         }
-        return platformOffset;
+        return panelOffset;
     }
 
     /**
@@ -1849,7 +1864,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} view point offset
      * @private
      */
-    _getViewPointOffset() {
+    _getViewPointFrameOffset() {
+        // when zooming, view point is not updated, and container is being transformed with matrix.
+        // so ignore the frame offset
+        if (this.isZooming()) {
+            return null;
+        }
         const pcenter = this._getPrjCenter();
         if (this._mapViewCoord && !this._mapViewCoord.equals(pcenter)) {
             return this._prjToContainerPoint(this._mapViewCoord).sub(this._prjToContainerPoint(pcenter));
@@ -1958,8 +1978,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point}
      * @private
      */
-    _prjToContainerPoint(pCoordinate) {
-        return this._pointToContainerPoint(this._prjToPoint(pCoordinate));
+    _prjToContainerPoint(pCoordinate, zoom) {
+        return this._pointToContainerPoint(this._prjToPoint(pCoordinate, zoom), zoom);
     }
 
     /**
