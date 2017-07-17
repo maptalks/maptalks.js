@@ -5,6 +5,7 @@ import './handler/Map.Drag';
 import './handler/Map.GeometryEvents';
 import './handler/Map.ScrollWheelZoom';
 import './handler/Map.TouchZoom';
+import './handler/Map.BoxZoom';
 
 import './Map.DomEvents';
 import './Map.FullScreen';
