@@ -295,7 +295,6 @@ export default class TileLayerDomRenderer extends Class {
                         (origin.y - size['height'] / 2) * (1 - zoomFraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
                         0
                     ];
-                console.log(matOffset);
                 mat4.translate(m, m, matOffset);
             }
 
