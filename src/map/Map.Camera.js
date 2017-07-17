@@ -74,9 +74,6 @@ Map.include(/** @lends Map.prototype */{
         if (Browser.ie9) {
             throw new Error('map can\'t rotate in IE9.');
         }
-        if (this.isZooming()) {
-            return this;
-        }
         const b = -wrap(bearing, -180, 180) * RADIAN;
         if (this._angle === b) return this;
         const from = this.getBearing();
@@ -115,9 +112,6 @@ Map.include(/** @lends Map.prototype */{
     setPitch(pitch) {
         if (Browser.ie9) {
             throw new Error('map can\'t tilt in IE9.');
-        }
-        if (this.isZooming()) {
-            return this;
         }
         const p = clamp(pitch, 0, 60) * RADIAN;
         if (this._pitch === p) return this;
@@ -249,8 +243,8 @@ Map.include(/** @lends Map.prototype */{
         mat4.rotateX(m, m, this._pitch);
         mat4.rotateZ(m, m, this._angle);
 
-        //matrix for TileLayerDomRenderer
-        const m2 = mat4.copy(new Float64Array(16), m);
+        //matrix for doms
+        const domMat = mat4.copy(new Float64Array(16), m);
 
         mat4.translate(m, m, [-x, -y, 0]);
 
@@ -278,10 +272,10 @@ Map.include(/** @lends Map.prototype */{
             return;
         }
 
-        // matrix for TileLayerDomRenderer's css3 matrix3d transform
+        // matrix for dom's css3 matrix3d transform
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
-        this.domCssMatrix = mat4.multiply(m, m, m2);
+        this.domCssMatrix = mat4.multiply(m, m, domMat);
     },
 
     _clearMatrices() {

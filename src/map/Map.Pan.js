@@ -4,6 +4,7 @@ import Map from './Map';
 import { isFunction } from 'core/util';
 
 Map.include(/** @lends Map.prototype */ {
+
     /**
      * Pan to the given coordinate
      * @param {Coordinate} coordinate - coordinate to pan to
@@ -59,7 +60,15 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _panAnimation: function (target, t, onFinish) {
-        this._getRenderer().panAnimation(target, t, onFinish);
+        if (!this.options['panAnimation']) {
+            this.setCenter(target);
+            return;
+        }
+        this.animateTo({
+            'center' : target
+        }, {
+            'duration' : t || this.options['panAnimationDuration'],
+            'onFinish' : onFinish
+        });
     }
-
 });

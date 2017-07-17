@@ -103,7 +103,6 @@ export default class TileLayerDomRenderer extends Class {
         } else if (map.isMoving()) {
             this._drawOnMoving();
         }
-
     }
 
     _drawOnZooming() {
@@ -255,54 +254,17 @@ export default class TileLayerDomRenderer extends Class {
      */
     _prepareTileContainer() {
         const map = this.getMap(),
-            cssMat = map.domCssMatrix,
+            domMat = map.domCssMatrix,
             container = this._getTileContainer(this._tileZoom),
             size = map.getSize(),
             zoomFraction = map._getResolution(this._tileZoom) / map._getResolution();
-        // reduce repaint causing by dom updateing
-        this._container.style.display = 'none';
         if (container.style.left) {
             // Remove container's left/top if it has.
             // Left, top is set in onZoomEnd to keep container's position when map platform's offset is reset to 0.
             container.style.left = null;
             container.style.top = null;
         }
-        if (cssMat) {
-            if (parseInt(container.style.width) !== size['width'] || parseInt(container.style.height) !== size['height']) {
-                container.style.width = size['width'] + 'px';
-                container.style.height = size['height'] + 'px';
-            }
-            let matrix;
-            if (zoomFraction !== 1) {
-                const m = mat4.create();
-                if (map.isZooming() && this._zoomParam) {
-                    const origin = this._zoomParam['origin'],
-                        // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a matOffset to fix.
-                        pitch = map.getPitch(),
-                        matOffset = [
-                            (origin.x - size['width'] / 2)  * (1 - zoomFraction),
-                            //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
-                            (origin.y - size['height'] / 2) * (1 - zoomFraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
-                            0
-                        ];
-                    mat4.translate(m, m, matOffset);
-                }
-
-                mat4.multiply(m, m, cssMat);
-                // Fractional zoom, multiply current domCssMat with zoomFraction
-                mat4.scale(m, m, [zoomFraction, zoomFraction, 1]);
-                matrix = join(m);
-            } else {
-                matrix = join(cssMat);
-            }
-            const mapOffset = map.getViewPoint().round();
-            if (!map.isZooming()) {
-                // When map is zooming, tile's position is same with positions when zooming starts, so does't need to refresh camOffsets.
-                container.tile.style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x / zoomFraction) + 'px, ' + (this._camOffset.y + mapOffset.y / zoomFraction) + 'px, 0px)';
-            }
-
-            container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
-        } else {
+        if (!domMat) {
             this._resetDomCssMatrix();
             if (zoomFraction !== 1) {
                 // fractional zoom
@@ -311,7 +273,46 @@ export default class TileLayerDomRenderer extends Class {
             } else {
                 removeTransform(container.tile);
             }
+            return;
         }
+
+        // reduce repaint causing by dom updateing
+        this._container.style.display = 'none';
+        if (parseInt(container.style.width) !== size['width'] || parseInt(container.style.height) !== size['height']) {
+            container.style.width = size['width'] + 'px';
+            container.style.height = size['height'] + 'px';
+        }
+        let matrix;
+        if (zoomFraction !== 1) {
+            const m = mat4.create();
+            if (map.isZooming() && this._zoomParam) {
+                const origin = this._zoomParam['origin'],
+                    // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a matOffset to fix.
+                    pitch = map.getPitch(),
+                    matOffset = [
+                        (origin.x - size['width'] / 2)  * (1 - zoomFraction),
+                        //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
+                        (origin.y - size['height'] / 2) * (1 - zoomFraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
+                        0
+                    ];
+                console.log(matOffset);
+                mat4.translate(m, m, matOffset);
+            }
+
+            mat4.multiply(m, m, domMat);
+            // Fractional zoom, multiply current domCssMat with zoomFraction
+            mat4.scale(m, m, [zoomFraction, zoomFraction, 1]);
+            matrix = join(m);
+        } else {
+            matrix = join(domMat);
+        }
+        const mapOffset = map.getViewPoint().round();
+        if (!map.isZooming()) {
+            // When map is zooming, tile's position is same with positions when zooming starts, so does't need to refresh camOffsets.
+            container.tile.style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x / zoomFraction) + 'px, ' + (this._camOffset.y + mapOffset.y / zoomFraction) + 'px, 0px)';
+        }
+
+        container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
         this._container.style.display = '';
     }
 
@@ -527,7 +528,7 @@ export default class TileLayerDomRenderer extends Class {
 
     _pruneTiles(pruneLevels = true) {
         const map = this.getMap();
-        if (!map || map.isMoving()) {
+        if (!map || map.isMoving() && !map.isZooming()) {
             return;
         }
         this._abortLoading();
@@ -673,8 +674,10 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     onZoomStart() {
+        const map = this.getMap();
         this._fadeAnimated = false;
-        this._mapOffset = this.getMap().offsetPlatform().round();
+        this._mapOffset = map.offsetPlatform().round();
+        this._startMapCenter = map.getCenter();
         if (!this._canTransform()) {
             this._hide();
         }
