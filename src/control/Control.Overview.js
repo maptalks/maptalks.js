@@ -84,7 +84,7 @@ class Overview extends Control {
         })
             .on('dragstart', this._onDragStart, this)
             .on('dragend', this._onDragEnd, this);
-        map.on('resize moveend zoomend', this._update, this)
+        map.on('resize moving moveend zoomend pitch rotate', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this);
         new VectorLayer('v', [this._perspective]).addTo(this._overview);
         this.fire('load');
@@ -93,7 +93,7 @@ class Overview extends Control {
     onRemove() {
         this.getMap()
             .off('load', this._initOverview, this)
-            .off('resize moveend zoomend', this._update, this)
+            .off('resize moving moveend zoomend pitch rotate', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this);
     }
 
