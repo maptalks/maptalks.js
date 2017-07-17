@@ -4,7 +4,7 @@
  */
 import noop from './noop';
 
-let _parseData = function (data) {
+const _parseData = function (data) {
     var ret = "";
     if (typeof data === "string") {
         ret = data;
@@ -13,28 +13,55 @@ let _parseData = function (data) {
             ret += "&" + key + "=" + encodeURIComponent(data[key]);
         }
     }
-    //加时间戳，防止缓存
     //ret += "&_time=" + this.now();
     ret = ret.substr(1);
     return ret;
-};
-
-let _now = function () {
+}
+const _now = function () {
     return (new Date()).getTime();
 };
 
-let _random = function () {
+const _random = function () {
     return Math.random().toString().substr(2);
 };
 
-let _removeElem = function (elem) {
+const _removeElem = function (elem) {
     var parent = elem.parentNode;
     if (parent && parent.nodeType !== 11) {
         parent.removeChild(elem);
     }
 };
 
+/**
+ * @class
+ */
 class ajax {
+    /**
+     * 
+     * @param {String} url 
+     * @param {Object} data 
+     * @param {*} success 
+     * @param {*} fail 
+     */
+    static getBinary(url, data, success, fail) {
+        let _url = url || "",
+            _data = data || {},
+            _success = success || noop,
+            _fail = fail || noop;
+        //ajax-get请求
+        let xhr = new XMLHttpRequest();
+        _url = _url + (_url.indexOf("?") === -1 ? "?" : "&") + _parseData(data);
+        xhr.responseType = 'arraybuffer';
+        let failTick = setTimeout(10000, function () {
+            _fail('请求超时');
+        });
+        xhr.onload = (e) => {
+            clearTimeout(failTick);
+            success(xmlHttp.response);
+        }
+        xhr.open('GET', _url, true);
+        xhr.send(null);
+    }
     /**
      * ajax GET 方法
      * @param {any} url
@@ -49,9 +76,7 @@ class ajax {
             _fail = fail || noop;
         //ajax-get请求
         var xhr = new XMLHttpRequest();
-        _url = _url + (_url.indexOf("?") === -1 ? "?" : "&") + _parseData(args);
-        xhr.open('GET', _url, true);
-        //
+        _url = _url + (_url.indexOf("?") === -1 ? "?" : "&") + _parseData(data);
         var failTick = setTimeout(10000, function () {
             _fail('请求超时');
         });
@@ -63,8 +88,9 @@ class ajax {
                 success(xhr.responseText);
             }
         };
+        xhr.open('GET', _url, true);
+        xhr.send(null);
     }
-
     /**
      * ajax POST 方法
      * @param {any} url
@@ -73,17 +99,14 @@ class ajax {
      * @param {any} fail
      */
     static post(url, data, success, fail) {
-        var _url = url || "",
+        let _url = url || "",
             _data = data || {},
             _success = success || noop,
             _fail = fail || noop;
         //ajax-post请求
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', _url, true);
+        let xhr = new XMLHttpRequest();
         xhr.setRequestHeader("content-type", "application/x-www-form-urlencoded");
-        xhr.send(_data);
-        //
-        var failTick = setTimeout(10000, function () {
+        let failTick = setTimeout(10000, function () {
             _fail('请求超时');
         });
         //ajax状态改变
@@ -94,10 +117,13 @@ class ajax {
                 success(xhr.responseText);
             }
         };
+        xhr.open('POST', _url, true);
+        xhr.send(_data);
     }
-
 }
-
+/**
+ * @class
+ */
 class jsonp {
     /**
      *  jsonp GET 方法
@@ -156,17 +182,19 @@ class jsonp {
     }
 
 }
-
+/**
+ * @class 
+ */
 class http {
     /**
      *
-     * @param {any} url
-     * @param {any} args
-     * @param {any} [type] 可选参数，支持 json和jsonp
+     * @param {String} url
+     * @param {Object} args
+     * @param {String} [type] 可选参数，支持 json和jsonp
      * @returns {Promise} promise对象
      */
     static get(url, args, type = 'json') {
-        return new Promise(function (resolve,reject) {
+        return new Promise(function (resolve, reject) {
             if (type === 'json') {//jsonp形式
                 ajax.get(url, args, function (data) {
                     resolve(data);
@@ -180,9 +208,22 @@ class http {
                     reject(err);
                 });
             }
-        })
+        });
     }
-
+    /**
+     * use arraybuffer to get binarydata by xhr object
+     * @param {String} url 
+     * @param {Object} args 
+     */
+    static getBinary(url, args) {
+        return new Promise(function (resolve, reject) {
+            ajax.getBinary(url, args, function (data) {
+                resolve(data);
+            }, function (data) {
+                reject(data);
+            });
+        });
+    }
     /**
      * 
      * @param {any} url
@@ -198,7 +239,6 @@ class http {
             })
         })
     }
-
 };
 
 export default http;

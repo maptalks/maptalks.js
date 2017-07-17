@@ -310,5 +310,4 @@ class GLProgram extends Dispose {
 
 };
 
-
 export default GLProgram;

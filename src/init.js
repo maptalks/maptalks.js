@@ -8,12 +8,15 @@ import { PerspectiveCamera } from './core/Camera';
 //import EventNames from './core/EventNames';
 import RenderManager from './core/RenderManager';
 import RenderNode from './core/RenderNode';
+//loader
+import * as Loader from './renderer/loader/loader';
 
 export {
     Container,
     PerspectiveCamera,
     RenderManager,
-    RenderNode
+    RenderNode,
+    Loader
 }
 
 /**
