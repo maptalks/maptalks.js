@@ -7,7 +7,6 @@
 import Dispose from './../../utils/Dispose';
 import GLExtension from './GLExtension';
 import GLConstants from './GLConstants';
-
 /**
  * @class
  */
@@ -34,7 +33,6 @@ class GLVertexArrayObject extends Dispose {
      */
     _needsToActive = false;
     /**
-     * 
      * @param {WebGLRenderingContext} gl 
      * @param {GLExtension} extension 
      * @param {GLLimits} limits
@@ -53,19 +51,17 @@ class GLVertexArrayObject extends Dispose {
     _createHandle() {
         const gl = this._gl,
             ext = this._ext;
-        if (!!ext) {
+        if (!!ext) 
             return ext.createVertexArrayOES();
-        }
-        if (!!gl.createVertexArray) {
+        if (!!gl.createVertexArray)
             return gl.createVertexArray();
-        }
         return null;
     }
     /**
      * 销毁vao对象
      */
     dispose() {
-
+        
     }
     /**
      * 绑定上下文
@@ -148,7 +144,9 @@ class GLVertexArrayObject extends Dispose {
     addIndex(buffer) {
         this._indexBuffer = buffer;
     }
-
+    /**
+     * 清空vao对象
+     */
     clear() {
         this.unbind();
         this.bind();
@@ -176,7 +174,6 @@ class GLVertexArrayObject extends Dispose {
         var attrib = this._attributes[0];
         return attrib.buffer.length / ((attrib.stride / 4) || attrib.size);
     }
-
 }
 
 export default GLVertexArrayObject;

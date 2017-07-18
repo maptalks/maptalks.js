@@ -209,6 +209,7 @@ class GLProgram extends Dispose {
         name = attrib.name,
         size = getGLSLTypeSize(type),
         location = gl.getAttribLocation(this._handle, name);
+        gl.enableVertexAttribArray(location);
       //
       Object.defineProperty(attributes, name, {
         set: (function (gl2, loc, typ, ne, se) {
@@ -216,11 +217,12 @@ class GLProgram extends Dispose {
             const glBuffer = value;
             gl.bindBuffer(glBuffer.type, glBuffer.handle);
             gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
-            vao.addAttribute(glBuffer, location, size);
+            vao.addAttribute(glBuffer, loc, se);
           } : function (value) {
             const glBuffer = value;
             gl.bindBuffer(glBuffer.type, glBuffer.handle);
             gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
+            gl.vertexAttribPointer(loc,se,glBuffer.type,false,0,0);
           }
         })(isWebGL2, location, type, name, size)
       });
@@ -265,10 +267,9 @@ class GLProgram extends Dispose {
   }
 
   useProgram() {
-    this._gl.useProgram(this.handle);
-    //extract active attributes
+    const gl= this._gl;
+    gl.useProgram(this.handle);
     this._extractAttributes();
-    //extract active uniforms
     this._extractUniforms();
   }
   /**
@@ -296,8 +297,17 @@ class GLProgram extends Dispose {
     const gl = this._gl;
     gl.deleteProgram(this._handle);
   }
+  /**
+   * 绘制
+   * @param {gl.TRIANGLES|gl.POINTS} primitiveType 
+   * @param {number} offset 
+   * @param {number} count 
+   */
+  drawArrays(primitiveType,offset,count){
+    const gl = this._gl;
+    gl.drawArrays(primitiveType||GLConstants.TRIANGLES,offset||0,count||6);
+  }
 
 };
-
 
 export default GLProgram;

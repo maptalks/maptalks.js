@@ -90,16 +90,11 @@ class Context {
      * 设置材质属性
      */
     _premultipliedAlpha;
-
-    _preserveDrawingBuffer;
     /**
-     * extension attrib
+     * get context setting
+     * @memberof Context
      */
-    _validateFramebuffer;
-
-    _validateShaderProgram;
-
-    _logShaderCompilation;
+    _preserveDrawingBuffer;
     /**
      * 绘制上下文
      * @type {WebGLRenderingContext}
@@ -157,7 +152,7 @@ class Context {
         //inilization programs
         this._includePrograms();
         //setup env
-        this._setup(this._gl);
+        this._setup();
     };
     /**
      * 兼容写法，创建非可见区域canvas，用户做缓冲绘制
@@ -177,6 +172,9 @@ class Context {
         this._height = height;
     };
     /**
+     * 兼容写法
+     * -如果支持最新的bitmaprenderer则使用此方法
+     * -如果不支持，则使用 canvas2d 贴图绘制
      * @param {HTMLCanvasElement} canvas
      * @memberof Context
      */
@@ -184,9 +182,14 @@ class Context {
         //}{debug adjust canvas to fit the output
         canvas.width = this._width;
         canvas.height = this._height;
-
-        const renderContext = canvas.getContext('bitmaprenderer');
-        //renderContext.transferFromImageBitmap(bitmap);
+        const _canvas = this._canvas;
+        //
+        let image = new Image();
+        image.src = _canvas.toDataURL("image/png");
+        //
+        const renderContext = canvas.getContext('bitmaprenderer')||canvas.getContext('2d');
+        !!renderContext.transferFromImageBitmap?renderContext.transferFromImageBitmap(image):renderContext.drawImage(image,0,0);
+        //
     }
     /**
      * get context attributes
@@ -213,7 +216,8 @@ class Context {
      * 3.
      * @param {WebGLRenderingContext} gl [WebGL2RenderingContext]
      */
-    _setup(gl) {
+    _setup() {
+        const gl = this._gl;
         //reference http://www.cppblog.com/wc250en007/archive/2012/07/18/184088.html
         //gl.ONE 使用1.0作为因子，相当于完全使用了这种颜色参与混合运算
         //gl.ONE_MINUS_SRC_ALPHA 使用1.0-源颜色alpha值作为因子，

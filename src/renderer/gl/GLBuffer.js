@@ -1,7 +1,8 @@
 /**
  * 
  * 提供 buffer,vertexbuffer,indexbuffer 三种类型
- * 
+ * -vertexbuffer对应draw
+ * -indexbuffer对应element draw
  */
 import Dispose from './../../utils/Dispose';
 import GLConstants from './GLConstants';
