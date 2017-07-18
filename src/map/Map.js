@@ -709,7 +709,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      */
     setCenterAndZoom(center, zoom) {
-        if (this._zoomLevel !== zoom) {
+        if (!isNil(zoom) && this._zoomLevel !== zoom) {
             this.setCenter(center);
             const a = this.options['zoomAnimation'];
             this.config('zoomAnimation', false);
