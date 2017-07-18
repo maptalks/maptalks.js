@@ -571,11 +571,11 @@ DrawTool.registerMode('rectangle', {
         const map = geometry.getMap();
         const width = map.computeLength(firstCoord, new Coordinate(coordinate.x, firstCoord.y)),
             height = map.computeLength(firstCoord, new Coordinate(firstCoord.x, coordinate.y));
-        const cnw = map.coordinateToContainerPoint(firstCoord),
-            cc = map.coordinateToContainerPoint(coordinate);
+        const cnw = map.coordinateToPoint(firstCoord),
+            cc = map.coordinateToPoint(coordinate);
         const x = Math.min(cnw.x, cc.x),
             y = Math.min(cnw.y, cc.y);
-        geometry.setCoordinates(map.containerPointToCoordinate(new Point(x, y)));
+        geometry.setCoordinates(map.pointToCoordinate(new Point(x, y)));
         geometry.setWidth(width);
         geometry.setHeight(height);
     },
