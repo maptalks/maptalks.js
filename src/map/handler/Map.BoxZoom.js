@@ -33,9 +33,13 @@ class MapBoxZoomHander extends Handler {
     }
 
     _boxZoom(param) {
-        const extent = param.geometry.getExtent();
-        this.target.fitExtent(extent);
         this.drawTool.remove();
+        const extent = param.geometry.getExtent();
+        const zoom = this.target.getFitZoom(extent);
+        this.target.animateTo({
+            center : extent.getCenter(),
+            zoom : zoom
+        });
     }
 }
 
