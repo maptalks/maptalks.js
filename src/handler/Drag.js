@@ -26,25 +26,28 @@ const END_EVENTS = {
  */
 class DragHandler extends Handler {
 
-    constructor(dom, options) {
+    constructor(dom, options = {}) {
         super(null);
         this.dom = dom;
-        this.options = options || {};
+        this.options = options;
     }
 
     enable() {
         if (!this.dom) {
-            return;
+            return this;
         }
         on(this.dom, START_EVENTS, this.onMouseDown, this);
+        return this;
     }
 
 
     disable() {
         if (!this.dom) {
-            return;
+            return this;
         }
+        this._offEvents();
         off(this.dom, START_EVENTS, this.onMouseDown);
+        return this;
     }
 
     onMouseDown(event) {
@@ -69,7 +72,9 @@ class DragHandler extends Handler {
         this.startPos = new Point(actual.clientX, actual.clientY);
         on(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
         on(document, END_EVENTS[event.type], this.onMouseUp, this);
-        on(this.dom, 'mouseleave', this.onMouseUp, this);
+        if (!this.options['offMouseleave']) {
+            on(this.dom, 'mouseleave', this.onMouseUp, this);
+        }
         this.fire('mousedown', {
             'domEvent': event,
             'mousePos': new Point(actual.clientX, actual.clientY)
@@ -102,18 +107,8 @@ class DragHandler extends Handler {
     }
 
     onMouseUp(event) {
-        const dom = this.dom;
         const actual = event.changedTouches ? event.changedTouches[0] : event;
-        for (const i in MOVE_EVENTS) {
-            off(document, MOVE_EVENTS[i], this.onMouseMove, this);
-            off(document, END_EVENTS[i], this.onMouseUp, this);
-        }
-        off(this.dom, 'mouseleave', this.onMouseUp, this);
-        if (dom['releaseCapture']) {
-            dom['releaseCapture']();
-        } else if (window.captureEvents) {
-            window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
-        }
+        this._offEvents();
         const param = {
             'domEvent': event
         };
@@ -125,6 +120,20 @@ class DragHandler extends Handler {
         }
 
         this.fire('mouseup', param);
+    }
+
+    _offEvents() {
+        const dom = this.dom;
+        for (const i in MOVE_EVENTS) {
+            off(document, MOVE_EVENTS[i], this.onMouseMove, this);
+            off(document, END_EVENTS[i], this.onMouseUp, this);
+        }
+        off(dom, 'mouseleave', this.onMouseUp, this);
+        if (dom['releaseCapture']) {
+            dom['releaseCapture']();
+        } else if (window.captureEvents) {
+            window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
+        }
     }
 }
 
