@@ -118,11 +118,16 @@ class Class {
                 }
             }
             // callback when set config
-            if (this.onConfig) {
-                this.onConfig(conf);
-            }
+            this.onConfig(conf);
         }
         return this;
+    }
+
+    /**
+     * Default callback when config is called
+     */
+    onConfig(/*conf*/) {
+
     }
 
     _visitInitHooks(proto) {
