@@ -29,7 +29,6 @@ import GLExtension from './gl/GLExtension';
 import GLLimits from './gl/GLLimits';
 import GLProgram from './gl/GLProgram';
 import { ShaderFactory, shadersName } from './shader/ShaderLib';
-
 /**
  * @class
  * @example
