@@ -93,12 +93,23 @@ Map.include({
                 if (isFunction(options['onFinish'])) {
                     options['onFinish']();
                 }
-                this._fireEvent(player._interupted ? 'animateinterupted' : 'animateend');
             }
         });
-        this._startAnim(props, zoomOrigin);
-        player.play();
-        this._fireEvent('animatestart');
+        if (!this.isTransforming() && (props['pitch'] || props['bearing'])) {
+            // force tilelayer render with pitch and bearing, to fix the incorrect offset of tiles if animation starts without pitch and bearing.
+            if (props['pitch']) {
+                this.setPitch(1);
+            } else {
+                this.setBearing(1);
+            }
+            renderer.callInNextFrame(() => {
+                preView = this.getView();
+                this._startAnim(props, zoomOrigin);
+            });
+        } else {
+            this._startAnim(props, zoomOrigin);
+        }
+
         return this;
     },
 
@@ -109,6 +120,7 @@ Map.include({
         if (!isNil(props['zoom'])) {
             this.onZoomEnd(props['zoom'][1], zoomOrigin);
         }
+        this._fireEvent(this._animPlayer._interupted ? 'animateinterupted' : 'animateend');
     },
 
     _startAnim(props, zoomOrigin) {
@@ -118,6 +130,8 @@ Map.include({
         if (props['zoom']) {
             this.onZoomStart(props['zoom'][1], zoomOrigin);
         }
+        this._animPlayer.play();
+        this._fireEvent('animatestart');
     },
 
     _stopAnim() {
