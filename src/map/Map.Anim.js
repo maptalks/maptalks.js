@@ -121,6 +121,7 @@ Map.include({
             this.onZoomEnd(props['zoom'][1], zoomOrigin);
         }
         this._fireEvent(this._animPlayer._interupted ? 'animateinterupted' : 'animateend');
+        delete this._animPlayer;
     },
 
     _startAnim(props, zoomOrigin) {
@@ -138,7 +139,6 @@ Map.include({
         if (this._animPlayer) {
             this._animPlayer._interupted = true;
             this._animPlayer.finish();
-            delete this._animPlayer;
         }
     }
 });
