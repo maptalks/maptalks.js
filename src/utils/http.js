@@ -213,11 +213,11 @@ class http {
     /**
      * use arraybuffer to get binarydata by xhr object
      * @param {String} url 
-     * @param {Object} args 
+     * @param {object} args 
      */
     static getBinary(url, args) {
         return new Promise(function (resolve, reject) {
-            ajax.getBinary(url, args, function (data) {
+            ajax.getBinary(url, args||{}, function (data) {
                 resolve(data);
             }, function (data) {
                 reject(data);
