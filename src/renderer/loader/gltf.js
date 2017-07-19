@@ -12,7 +12,6 @@ import { arrayBufferToString } from './../../utils/convert';
 
 
 class gltf {
-
     /**
      * @type {WebGLRenderingContext}
      */
@@ -66,12 +65,37 @@ class gltf {
                     //4.1 载入模型并返回
                 }
             }, function (err) {
-
             });
         });
     }
+    /**
+     * 读取binary
+     * -scene
+     * -resource
+     */
+    _accessBinary() {
+
+    }
+    /**
+     * 读取scene
+     * 
+     */
+    _accessScene() {
+
+    }
+    /**
+     * 读取resource
+     */
+    _accessResource() {
+
+    }
+    /**
+     * 读取shader
+     */
+    _accessShader() {
+      
+    }
 
 }
-
 
 export default gltf;

@@ -4,7 +4,6 @@
  * @author yellow date 2017/6/12
  */
 import glMatrix from 'kiwi.matrix';
-
 /**
  * @class
  */
@@ -160,7 +159,6 @@ class PerspectiveCamera extends Camera {
     get viewProjection() {
         return this._viewProjection;
     };
-
 }
 
 export { PerspectiveCamera }
