@@ -147,7 +147,8 @@ class Overview extends Control {
         this._perspective = new Polygon(extent.toArray(), {
             'draggable': true,
             'cursor': 'move',
-            'symbol': this.options['symbol']
+            'symbol': this.options['symbol'],
+            'antiMeridian' : false
         })
             .on('dragstart', this._onDragStart, this)
             .on('dragend', this._onDragEnd, this);
