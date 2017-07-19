@@ -54,3 +54,19 @@
 .maptalks-attribution {display: inline-block;opacity: 1;background:#fff; background-color: rgba(255,255,255,0.7);padding:0px;font-size:13px;font-family: "microsoft yahei","Helvetica Neue", Helvetica, sans-serif;}
 .maptalks-attribution a {text-decoration: none; color : #0078A8;}
 .maptalks-attribution a:hover {text-decoration: underline;}
+
+.maptalks-overview {background:#fff; border:1px solid #b4b3b3; width:100%;height:100%;}
+.maptalks-overview-button {
+  cursor:pointer;
+  background:#fff;
+  width:18px;
+  height:18px;
+  position:absolute;
+  bottom: 1px;
+  right: 1px;
+  font: 16px sans-serif;
+  text-align : center;
+  line-height : 16px;
+  border:1px solid #b4b3b3;
+  color : #363539;
+}

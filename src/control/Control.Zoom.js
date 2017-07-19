@@ -41,7 +41,6 @@ class Zoom extends Control {
      * @return {HTMLDOMElement}
      */
     buildOn(map) {
-        this._map = map;
         const options = this.options;
 
         const dom = createEl('div', 'maptalks-zoom');
@@ -89,6 +88,21 @@ class Zoom extends Control {
         this._registerDomEvents();
 
         return dom;
+    }
+
+    onRemove() {
+        this.getMap().off('_zoomend _zoomstart _spatialreferencechange', this._update, this);
+        if (this._zoomInButton) {
+            off(this._zoomInButton, 'click', this._onZoomInClick, this);
+        }
+        if (this._zoomOutButton) {
+            off(this._zoomOutButton, 'click', this._onZoomOutClick, this);
+        }
+        if (this._sliderRuler) {
+            off(this._sliderRuler, 'click', this._onClickRuler, this);
+            this.dotDragger.disable();
+            delete this.dotDragger;
+        }
     }
 
     _update() {
@@ -192,20 +206,6 @@ class Zoom extends Control {
         this._sliderDot.style.top = top + 'px';
         this._sliderReading.style.height = (map.getZoom() - minZoom) * UNIT + 'px';
         this._updateText();
-    }
-
-    onRemove() {
-        if (this._zoomInButton) {
-            off(this._zoomInButton, 'click', this._onZoomInClick, this);
-        }
-        if (this._zoomOutButton) {
-            off(this._zoomOutButton, 'click', this._onZoomOutClick, this);
-        }
-        if (this._sliderRuler) {
-            off(this._sliderRuler, 'click', this._onClickRuler, this);
-            this.dotDragger.disable();
-            delete this.dotDragger;
-        }
     }
 }
 
