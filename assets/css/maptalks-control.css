@@ -5,10 +5,10 @@
 .maptalks-zoom .maptalks-zoom-zoomlevel { display: block; width: 23px; height: 23px; background: #172029; color: #fff;  line-height: 23px; font-size: 12px;}
 .maptalks-zoom-slider {margin-top: 6px;}
 .maptalks-zoom-slider a.maptalks-zoom-zoomin ,.maptalks-zoom-slider a.maptalks-zoom-zoomout {display: block; font-size: 16px; width: 21px; height: 21px; border: 1px solid #363539; background: #172029; color: #fff;  line-height: 19px; text-decoration: none;}
-.maptalks-zoom-slider-box { width: 21px; height: 124px; background: #34495e; background:url(images/control/kedu.png) repeat-y; border: 1px solid #35383b;}
+.maptalks-zoom-slider-box { width: 21px; height: 124px; background: #34495e; background:url(images/control/kedu.png) repeat-y; border: 1px solid #35383b; position: relative;}
 .maptalks-zoom-slider-box .maptalks-zoom-slider-ruler { width: 5px; height: 112px; background: #372e2b; border-radius: 2px; -moz-border-radius: 2px; -webkit-border-radius: 2px; margin: 4px auto; position: relative;}
 .maptalks-zoom-slider-box .maptalks-zoom-slider-ruler .maptalks-zoom-slider-reading { width: 5px; height: 50%; position: absolute; bottom: 0; left: 0; background: #1bbc9b; border-radius: 2px; -moz-border-radius: 2px; -webkit-border-radius: 2px;}
-.maptalks-zoom-slider-box .maptalks-zoom-slider-ruler .maptalks-zoom-slider-dot { width: 15px; height: 15px; background: url(images/control/3.png) no-repeat; position: absolute; bottom: 45%; left: -5px; cursor: pointer;}
+.maptalks-zoom-slider-box .maptalks-zoom-slider-dot { width: 15px; height: 15px; background: url(images/control/3.png) no-repeat; position: absolute; top: 50%; left: 3px; cursor: pointer;}
 
 .maptalks-toolbar-vertical { /*border: 1px solid #3b3e44;*/margin: 0;}
 .maptalks-toolbar-vertical ul ,.maptalks-toolbar-horizonal ul {margin: 0;padding: 0;}
