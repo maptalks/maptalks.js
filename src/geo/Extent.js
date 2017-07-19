@@ -249,6 +249,15 @@ class Extent {
     }
 
     /**
+     * Whether the extent is within another extent
+     * @param  {Extent}  ext2 - another extent
+     * @returns {Boolean}
+     */
+    within(extent) {
+        return this.xmin >= extent.xmin && this.xmax <= extent.xmax && this.ymin >= extent.ymin && this.ymax <= extent.ymax;
+    }
+
+    /**
      * Whether the extent contains the input point.
      * @param  {Coordinate|Number[]} coordinate - input point
      * @returns {Boolean}

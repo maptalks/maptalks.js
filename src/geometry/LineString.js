@@ -15,7 +15,8 @@ import Path from './Path';
  */
 const options = {
     'arrowStyle': null,
-    'arrowPlacement': 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
+    'arrowPlacement': 'vertex-last', //vertex-first, vertex-last, vertex-firstlast, point
+    'clipToPaint' : true
 };
 
 /**
