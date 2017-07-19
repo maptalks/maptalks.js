@@ -167,19 +167,19 @@ class Zoom extends Control {
         const map = this.getMap(),
             origin = map.getSize().toPoint()._multi(1 / 2),
             point = getEventContainerPoint(e.domEvent, this._sliderRuler),
-            top = point.y,
             maxZoom = map.getMaxZoom(),
-            minZoom = map.getMinZoom(),
+            minZoom = map.getMinZoom();
+        let top = point.y,
             z = maxZoom - top / UNIT;
-        
-        if(maxZoom < z){
+
+        if (maxZoom < z) {
             z = maxZoom;
             top = 0;
-        } else if(minZoom > z){
+        } else if (minZoom > z) {
             z = minZoom;
             top = (maxZoom - minZoom) * UNIT;
         }
-        
+
         if (e.type === 'dragging') {
             map.onZooming(z, origin, 1);
         } else if (e.type === 'dragend') {
