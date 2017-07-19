@@ -169,17 +169,20 @@ export default class Painter extends Class {
                     } else {
                         clipPoints = [];
                         for (let i = 0; i < points.length; i++) {
-                            clipPoints.push(clipPolygon(points[i], extent2D));
+                            const part = clipPolygon(points[i], extent2D);
+                            if (part.length) {
+                                clipPoints.push(part);
+                            }
                         }
                     }
                 } else if (this.geometry.getJSONType() === 'LineString') {
                     // clip the line string to draw less and improve performance
                     if (!Array.isArray(points[0])) {
-                        clipPoints = clipLine(points, extent2D, false);
+                        clipPoints = clipLine(points, extent2D, true);
                     } else {
                         clipPoints = [];
                         for (let i = 0; i < points.length; i++) {
-                            pushIn(clipPoints, clipLine(points[i], extent2D, false));
+                            pushIn(clipPoints, clipLine(points[i], extent2D, true));
                         }
                     }
                 }
