@@ -9,7 +9,6 @@
 *       形如:"[[100, 100], [300, 100], [300, 300], [100, 300]]"
 *
 */
-
 let clipPolygon = function (subjectPolygon, clipPolygon) {
     var cp1, cp2, s, e;
     var inside = function (p) {

@@ -5,19 +5,19 @@ import { GLFragmentShader, GLVertexShader } from './../gl/GLShader';
 
 // import physics_fragment from './physics.fragment';
 // import physics_vertex from './physics.vertex';
-import point_fragment from './point.fragment';
-import point_vertex from './point.vertex';
+import point_fragment from './default.fragment';
+import point_vertex from './default.vertex';
 
 const shadersName=[
     // 'physics',
-    'point'
+    'default'
 ];
 
 const ShaderLibConstants = {
     // physics_fragment: physics_fragment,
     // physics_vertex: physics_vertex,
-    point_fragment: point_fragment,
-    point_vertex: point_vertex
+    default_fragment: point_fragment,
+    default_vertex: point_vertex
 }
 
 const ShaderFactory = {
