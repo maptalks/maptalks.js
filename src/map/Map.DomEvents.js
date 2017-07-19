@@ -57,6 +57,30 @@ const events =
      */
     'mouseout ' +
     /**
+     * mouseenter event
+     * @event Map#mouseenter
+     * @type {Object}
+     * @property {String} type                    - mouseenter
+     * @property {Map} target            - the map fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseenter ' +
+    /**
+     * mouseleave event
+     * @event Map#mouseleave
+     * @type {Object}
+     * @property {String} type                    - mouseleave
+     * @property {Map} target            - the map fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'mouseleave ' +
+    /**
      * mousemove event
      * @event Map#mousemove
      * @type {Object}
