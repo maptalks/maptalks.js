@@ -167,19 +167,18 @@ class Zoom extends Control {
         const map = this.getMap(),
             origin = map.getSize().toPoint()._multi(1 / 2),
             point = getEventContainerPoint(e.domEvent, this._sliderRuler),
-            top = point.y;
-        this._sliderDot.style.top = top + 'px';
-        const z = map.getMaxZoom() - top / UNIT;
+            top = point.y,
+            maxZoom = map.getMaxZoom(),
+            minZoom = map.getMinZoom(),
+            z = maxZoom - top / UNIT;
         
-        if(map.getMaxZoom() < z){
-			z = map.getMaxZoom();
-			this._sliderDot.style.top = 0;
-		} 
-					
-		if(map.getMinZoom() > z){
-			z = map.getMinZoom();
-			this._sliderDot.style.top = (map.getMaxZoom() - map.getMinZoom()) * UNIT + 'px';
-		}
+        if(maxZoom < z){
+            z = maxZoom;
+            top = 0;
+        } else if(minZoom > z){
+            z = minZoom;
+            top = (maxZoom - minZoom) * UNIT;
+        }
         
         if (e.type === 'dragging') {
             map.onZooming(z, origin, 1);
@@ -189,9 +188,9 @@ class Zoom extends Control {
             } else {
                 map.onZoomEnd(Math.round(z), origin);
             }
-
         }
-        this._sliderReading.style.height = (map.getZoom() - map.getMinZoom()) * UNIT + 'px';
+        this._sliderDot.style.top = top + 'px';
+        this._sliderReading.style.height = (map.getZoom() - minZoom) * UNIT + 'px';
         this._updateText();
     }
 
