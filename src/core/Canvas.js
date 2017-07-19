@@ -352,6 +352,10 @@ const Canvas = {
     },
 
     _path(ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
+        if (!isArrayHasData(points)) {
+            return;
+        }
+
         function fillWithPattern(p1, p2) {
             const degree = computeDegree(p1, p2);
             ctx.save();
@@ -428,9 +432,6 @@ const Canvas = {
                 dash = !dash;
             }
         }
-        if (!isArrayHasData(points)) {
-            return;
-        }
 
         const isDashed = isArrayHasData(lineDashArray);
         const isPatternLine = (ignoreStrokePattern === true ? false : Canvas._isPattern(ctx.strokeStyle));
@@ -456,6 +457,9 @@ const Canvas = {
     },
 
     path(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
+        if (!isArrayHasData(points)) {
+            return;
+        }
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         Canvas._path(ctx, points, lineDashArray, lineOpacity);
@@ -463,6 +467,9 @@ const Canvas = {
     },
 
     polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
+        if (!isArrayHasData(points)) {
+            return;
+        }
         function fillPolygon(points, i, op) {
             Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
         }
@@ -476,6 +483,9 @@ const Canvas = {
             //因为canvas只填充moveto,lineto,lineto的空间, 而dashline的moveto不再构成封闭空间, 所以重新绘制图形轮廓用于填充
             ctx.save();
             for (i = 0, len = points.length; i < len; i++) {
+                if (!isArrayHasData(points[i])) {
+                    continue;
+                }
                 Canvas._ring(ctx, points[i], null, 0, true);
                 op = fillOpacity;
                 if (i > 0) {
@@ -493,7 +503,9 @@ const Canvas = {
             ctx.restore();
         }
         for (i = 0, len = points.length; i < len; i++) {
-
+            if (!isArrayHasData(points[i])) {
+                continue;
+            }
             Canvas._ring(ctx, points[i], lineDashArray, lineOpacity);
 
             if (!fillFirst) {
