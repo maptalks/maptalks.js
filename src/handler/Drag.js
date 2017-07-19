@@ -72,7 +72,7 @@ class DragHandler extends Handler {
         this.startPos = new Point(actual.clientX, actual.clientY);
         on(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
         on(document, END_EVENTS[event.type], this.onMouseUp, this);
-        if (!this.options['offMouseleave']) {
+        if (!this.options['ignoreMouseleave']) {
             on(this.dom, 'mouseleave', this.onMouseUp, this);
         }
         this.fire('mousedown', {

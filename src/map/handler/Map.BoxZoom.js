@@ -6,7 +6,8 @@ class MapBoxZoomHander extends Handler {
     constructor(target) {
         super(target);
         this.drawTool = new DrawTool({
-            'mode'   : 'Rectangle'
+            'mode'   : 'Rectangle',
+            'ignoreMouseleave' : false
         });
     }
 
@@ -26,9 +27,9 @@ class MapBoxZoomHander extends Handler {
             return;
         }
         if (param.domEvent.shiftKey) {
-            this.drawTool.setSymbol(this.target.options['boxZoomSymbol']);
-            this.drawTool.addTo(this.target);
-            this.drawTool.on('drawend', this._boxZoom, this);
+            this.drawTool.setSymbol(this.target.options['boxZoomSymbol'])
+                .on('drawend', this._boxZoom, this)
+                .addTo(this.target);
         }
     }
 
@@ -46,9 +47,11 @@ class MapBoxZoomHander extends Handler {
 Map.mergeOptions({
     'boxZoom' : true,
     'boxZoomSymbol': {
-        'lineWidth' : 2,
-        'lineColor' : '#000',
-        'polygonOpacity' : 0
+        'lineWidth' : 3,
+        'lineColor' : '#1bbc9b',
+        'lineDasharray' : [10, 5],
+        'polygonOpacity' : 0.1,
+        'polygonFill' : '#1bbc9b'
     }
 });
 
