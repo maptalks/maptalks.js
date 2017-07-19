@@ -133,8 +133,10 @@ class MapTool extends Eventable(Class) {
             return this;
         }
         this.disable();
-        delete this._map[key];
-        delete this._map;
+        if (this._map) {
+            delete this._map[key];
+            delete this._map;
+        }
         /**
          * remove event.
          *

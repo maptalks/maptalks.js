@@ -3,10 +3,16 @@ import Map from '../Map';
 
 class MapDoubleClickZoomHandler extends Handler {
     addHooks() {
+        if (!this.target) {
+            return;
+        }
         this.target.on('_dblclick', this._onDoubleClick, this);
     }
 
     removeHooks() {
+        if (!this.target) {
+            return;
+        }
         this.target.off('_dblclick', this._onDoubleClick, this);
     }
 
