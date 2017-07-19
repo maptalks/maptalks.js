@@ -127,7 +127,7 @@ class Zoom extends Control {
         if (this._sliderRuler) {
             on(this._sliderRuler, 'click', this._onClickRuler, this);
             this.dotDragger = new DragHandler(this._sliderDot, {
-                offMouseleave : true
+                'ignoreMouseleave' : true
             });
             this.dotDragger.on('dragstart', this._onDotDragstart, this)
                 .on('dragging dragend', this._onDotDrag, this)

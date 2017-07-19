@@ -27,8 +27,7 @@ class MapDragHandler extends Handler {
         this._dragHandler.off('mousedown', this._onMouseDown, this)
             .off('dragstart', this._onDragStart, this)
             .off('dragging', this._onDragging, this)
-            .off('dragend', this._onDragEnd, this)
-            .disable();
+            .off('dragend', this._onDragEnd, this);
         this._dragHandler.remove();
         delete this._dragHandler;
     }
