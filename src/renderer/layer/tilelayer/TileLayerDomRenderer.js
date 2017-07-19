@@ -105,6 +105,19 @@ export default class TileLayerDomRenderer extends Class {
         }
     }
 
+    needToRedraw() {
+        if (this._redraw) {
+            return true;
+        }
+        const map = this.getMap(),
+            mapRenderer = map._getRenderer();
+        return map.isInteracting() || mapRenderer.isStateChanged();
+    }
+
+    setToRedraw() {
+        this._redraw = true;
+    }
+
     _drawOnZooming() {
         if (!this._zoomParam) {
             return;
@@ -143,6 +156,7 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _renderTiles() {
+        this._redraw = false;
         if (!this._container) {
             this._createLayerContainer();
         }
@@ -713,6 +727,7 @@ export default class TileLayerDomRenderer extends Class {
             }
         }
         this._fadeAnimated = !Browser.mobile && true;
+        this.setToRedraw();
     }
 
     _clearCameraCache() {

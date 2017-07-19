@@ -1,7 +1,8 @@
 import { isInteger } from 'core/util';
-import { on, off, createEl, preventDefault } from 'core/util/dom';
+import { on, off, createEl, preventDefault, getEventContainerPoint } from 'core/util/dom';
 import Map from 'map/Map';
 import Control from './Control';
+import DragHandler from 'handler/Drag';
 
 /**
  * @property {Object}   options - options
@@ -14,8 +15,11 @@ import Control from './Control';
 const options = {
     'position': 'top-left',
     'slider': true,
-    'zoomLevel': true
+    'zoomLevel': true,
+    'seamless' : false
 };
+
+const UNIT = 10;
 
 /**
  * @classdesc
@@ -57,15 +61,15 @@ class Zoom extends Control {
         this._zoomInButton = zoomInButton;
 
         if (options['slider']) {
-            const sliderDOM = createEl('div', 'maptalks-zoom-slider-box');
+            const box = createEl('div', 'maptalks-zoom-slider-box');
             const ruler = createEl('div', 'maptalks-zoom-slider-ruler');
             const reading = createEl('span', 'maptalks-zoom-slider-reading');
             const dot = createEl('span', 'maptalks-zoom-slider-dot');
             ruler.appendChild(reading);
-            ruler.appendChild(dot);
-            sliderDOM.appendChild(ruler);
-            zoomDOM.appendChild(sliderDOM);
-            this._sliderBox = sliderDOM;
+            box.appendChild(ruler);
+            box.appendChild(dot);
+            zoomDOM.appendChild(box);
+            this._sliderBox = box;
             this._sliderRuler = ruler;
             this._sliderReading = reading;
             this._sliderDot = dot;
@@ -90,22 +94,27 @@ class Zoom extends Control {
     _update() {
         const map = this.getMap();
         if (this._sliderBox) {
-            const pxUnit = 10;
-            const totalRange = (map.getMaxZoom() - map.getMinZoom()) * pxUnit;
+
+            const totalRange = (map.getMaxZoom() - map.getMinZoom()) * UNIT;
             this._sliderBox.style.height = totalRange + 6 + 'px';
             this._sliderRuler.style.height = totalRange + 'px';
-            const zoomRange = (map.getZoom() - map.getMinZoom()) * pxUnit;
-            this._sliderReading.style.height = zoomRange + 'px';
-            this._sliderDot.style.bottom = zoomRange + 'px';
+            this._sliderRuler.style.cursor = 'pointer';
+            const zoomRange = (map.getMaxZoom() - map.getZoom()) * UNIT;
+            this._sliderReading.style.height = (map.getZoom() - map.getMinZoom()) * UNIT + 'px';
+            this._sliderDot.style.top = zoomRange + 'px';
         }
+        this._updateText();
+    }
+
+    _updateText() {
         if (this._levelDOM) {
+            const map = this.getMap();
             let zoom = map.getZoom();
             if (!isInteger(zoom)) {
                 zoom = zoom.toFixed(1);
             }
             this._levelDOM.innerHTML = zoom;
         }
-
     }
 
     _registerDomEvents() {
@@ -115,7 +124,15 @@ class Zoom extends Control {
         if (this._zoomOutButton) {
             on(this._zoomOutButton, 'click', this._onZoomOutClick, this);
         }
-        //TODO slider dot拖放缩放逻辑还没有实现
+        if (this._sliderRuler) {
+            on(this._sliderRuler, 'click', this._onClickRuler, this);
+            this.dotDragger = new DragHandler(this._sliderDot, {
+                offMouseleave : true
+            });
+            this.dotDragger.on('dragstart', this._onDotDragstart, this)
+                .on('dragging dragend', this._onDotDrag, this)
+                .enable();
+        }
     }
 
     _onZoomInClick(e) {
@@ -128,12 +145,56 @@ class Zoom extends Control {
         this.getMap().zoomOut();
     }
 
+    _onClickRuler(e) {
+        preventDefault(e);
+        const map = this.getMap(),
+            point = getEventContainerPoint(e, this._sliderRuler),
+            h = point.y;
+        const maxZoom = map.getMaxZoom(),
+            zoom = Math.floor(maxZoom - h / UNIT);
+        map.setZoom(zoom);
+    }
+
+    _onDotDragstart(e) {
+        preventDefault(e.domEvent);
+        const map = this.getMap(),
+            origin = map.getSize().toPoint()._multi(1 / 2);
+        map.onZoomStart(map.getZoom(), origin);
+    }
+
+    _onDotDrag(e) {
+        preventDefault(e.domEvent);
+        const map = this.getMap(),
+            origin = map.getSize().toPoint()._multi(1 / 2),
+            point = getEventContainerPoint(e.domEvent, this._sliderRuler),
+            top = point.y;
+        this._sliderDot.style.top = top + 'px';
+        const z = map.getMaxZoom() - top / UNIT;
+        if (e.type === 'dragging') {
+            map.onZooming(z, origin, 1);
+        } else if (e.type === 'dragend') {
+            if (this.options['seamless']) {
+                map.onZoomEnd(z, origin);
+            } else {
+                map.onZoomEnd(Math.round(z), origin);
+            }
+
+        }
+        this._sliderReading.style.height = (map.getZoom() - map.getMinZoom()) * UNIT + 'px';
+        this._updateText();
+    }
+
     onRemove() {
         if (this._zoomInButton) {
             off(this._zoomInButton, 'click', this._onZoomInClick, this);
         }
         if (this._zoomOutButton) {
             off(this._zoomOutButton, 'click', this._onZoomOutClick, this);
+        }
+        if (this._sliderRuler) {
+            off(this._sliderRuler, 'click', this._onClickRuler, this);
+            this.dotDragger.disable();
+            delete this.dotDragger;
         }
     }
 }
