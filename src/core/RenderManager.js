@@ -1,7 +1,7 @@
 /**
  * 生产和处理绘制数据，丢给render队列待output
  */
-import { _KIWI_EVENT_RESIZE } from './../core/EventNames';
+import { _FUSION_EVENT_RESIZE } from './../core/EventNames';
 
 import Event from './../utils/Event';
 import merge from './../utils/merge';
@@ -43,7 +43,7 @@ class RenderManager extends Event {
         this._ctx=new Context(options);
         //renderManager监听 _KIWI_EVENT_RESIZE 事件
         //this.addEventPopNode(this._ctx);
-        this.on(_KIWI_EVENT_RESIZE, this._onResize);
+        this.on(_FUSION_EVENT_RESIZE, this._onResize);
     }
 
     _onResize(width,height) {

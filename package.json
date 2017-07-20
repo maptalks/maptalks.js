@@ -1,5 +1,5 @@
 {
-  "name": "kiwi.gl",
+  "name": "fusion.gl",
   "version": "0.1.0",
   "description": "",
   "main": "dist/bundle.js",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/axmand/kiwi.gl.git"
+    "url": "git+https://github.com/axmand/fusion.gl.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/axmand/kiwi.gl/issues"
+    "url": "https://github.com/axmand/fusion.gl/issues"
   },
-  "homepage": "https://github.com/axmand/kiwi.gl#readme",
+  "homepage": "https://github.com/axmand/fusion.gl#readme",
   "devDependencies": {
     "babel": "^6.23.0",
     "babel-cli": "^6.24.1",

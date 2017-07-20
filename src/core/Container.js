@@ -5,7 +5,7 @@ import Event from './../utils/Event';
 import merge from './../utils/merge';
 import RenderManager from './RenderManager';
 import RenderNode from './RenderNode';
-import { _KIWI_EVENT_RESIZE } from './EventNames';
+import { _FUSION_EVENT_RESIZE } from './EventNames';
 
 //加载器
 import GLTF from './../object/GLTF';
@@ -74,14 +74,14 @@ class Container extends Event {
      */
     set width(value) {
         this._width = value;
-        this.fire(_KIWI_EVENT_RESIZE, { width: value }, true);
+        this.fire(_FUSION_EVENT_RESIZE, { width: value }, true);
     }
     /**
      * set container's width
      */
     set height(value) {
         this._height = value;
-        this.fire(_KIWI_EVENT_RESIZE, { height: value }, true);
+        this.fire(_FUSION_EVENT_RESIZE, { height: value }, true);
     }
 
     get width() {

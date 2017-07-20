@@ -5,7 +5,7 @@ export default {
     entry: './src/init.js',
     format: 'iife',
     dest: './dist/bundle.js',
-    moduleName: 'kiwi',
+    moduleName: 'fusion',
     sourceMap: true,
     plugins: [
         resolve(),

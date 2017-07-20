@@ -31,7 +31,6 @@ const _removeElem = function (elem) {
         parent.removeChild(elem);
     }
 };
-
 /**
  * @class
  */

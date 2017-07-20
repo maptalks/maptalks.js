@@ -8,7 +8,7 @@
 import isObject from './../utils/isObject';
 import isString from './../utils/isString';
 
-const prefix = '_kiwi_',
+const prefix = '_fusion_',
     prefixId = prefix + 'id_';
 
 let i = 1;
@@ -25,8 +25,8 @@ let getId = () => {
  */
 let stamp = (obj) => {
     if (isObject(obj)) {
-        obj._kiwi_id_ = obj._kiwi_id_ || getId();
-        return obj._kiwi_id_
+        obj._fusion_id_ = obj._fusion_id_ || getId();
+        return obj._fusion_id_
     }
     else if (isString(obj)) {
         return prefix + obj;

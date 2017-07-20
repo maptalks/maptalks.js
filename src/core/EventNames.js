@@ -6,14 +6,14 @@
 
 import {stamp} from './../utils/stamp';
 
-const _KIWI_EVENT_RESIZE = stamp('resize');
+const _FUSION_EVENT_RESIZE = stamp('resize');
 
-const _KIWI_EVENT_ANIMATION_ONCANCEL=stamp('animation_cancel');
+const _FUSION_EVENT_ANIMATION_ONCANCEL=stamp('animation_cancel');
 
-const _KIWI_EVENT_ANIMATION_ONFINISH=stamp('animation_onfinish');
+const _FUSION_EVENT_ANIMATION_ONFINISH=stamp('animation_onfinish');
 
 export {
-    _KIWI_EVENT_RESIZE,
-    _KIWI_EVENT_ANIMATION_ONCANCEL,
-    _KIWI_EVENT_ANIMATION_ONFINISH
+    _FUSION_EVENT_RESIZE,
+    _FUSION_EVENT_ANIMATION_ONCANCEL,
+    _FUSION_EVENT_ANIMATION_ONFINISH
 };
