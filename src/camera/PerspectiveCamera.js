@@ -2,6 +2,7 @@
  * an implement of PerspectiveCamera
  */
 import Camera from './Camera';
+import glMatrix from 'kiwi.matrix';
 
 /**
  * @class
@@ -120,7 +121,6 @@ class PerspectiveCamera extends Camera {
     get viewProjection() {
         return this._viewProjection;
     };
-
 }
 
 export default PerspectiveCamera;
