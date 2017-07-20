@@ -7,7 +7,9 @@
  * -gltf 1.1
  * 
  * load完成后，返回一个RenderNode对象，可插入Container待渲染
- * 
+ * 加载gltf数据的主要步骤：
+ * -创建gltf对象，解析内容并转换成promise集合
+ * -add进renderNode后，处理资源队列，逐步加载
  */
 import { arrayBufferToString, base64ToArrayBuffer } from './../utils/convert';
 import http from './../utils/http.js';
@@ -15,7 +17,7 @@ import http from './../utils/http.js';
 /**
  * @class
  */
-class gltf {
+class GLTF {
     /**
      * @type {WebGLRenderingContext}
      */
@@ -203,4 +205,4 @@ class gltf {
 }
 
 
-export default gltf;
+export default GLTF;

@@ -36,8 +36,13 @@ class RenderNode extends Event {
     constructor(gl) {
         super();
     }
+    /**
+     * 
+     */
+    add(){
 
-        
+    }
+
 }
 
 export default RenderNode;

@@ -107,10 +107,6 @@ class Container extends Event {
         renderManager.addRenderNode(renderNode);
         return renderNode;
     }
-
-    loadGLTF(){
-        
-    }
     
 }
 
