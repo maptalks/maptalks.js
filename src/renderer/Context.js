@@ -323,29 +323,45 @@ class Context {
             //create program
         }
     };
+    /**
+     * resize the gl.viewPort
+     * }{yellow wait to be implemented
+     * @param {number} width 
+     * @param {number} height 
+     */
+    resize(width,height){
 
+    }
+    /**
+     * 返回渲染缓冲的宽度
+     */
     get width(){
         return this._width;
     }
-
+    /**
+     * 返回渲染缓冲的高度
+     */
     get height(){
         return this._height;
     }
-
+    /**
+     * 返回物理上下文
+     * @return {WebGLRenderingConext}
+     */
     get gl(){
         return this._gl;
     }
-
+    /**
+     * 使用指定program
+     * @param {String} name 
+     * @return {GLProgram}
+     */
     useProgram(name) {
         const shaders = this._shaderCache[name],
             program = this._programCache[name];
         program.useProgram();
         return program;
     }
-
-
-
-
 }
 
 

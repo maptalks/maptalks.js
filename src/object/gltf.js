@@ -6,9 +6,11 @@
  * -gltf 1.0
  * -gltf 1.1
  * 
+ * load完成后，返回一个RenderNode对象，可插入Container待渲染
+ * 
  */
-import http from './../../utils/http.js';
-import { arrayBufferToString, base64ToArrayBuffer } from './../../utils/convert';
+import { arrayBufferToString, base64ToArrayBuffer } from './../utils/convert';
+import http from './../utils/http.js';
 
 /**
  * @class
