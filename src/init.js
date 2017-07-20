@@ -4,19 +4,16 @@ import './../node_modules/babel-polyfill/dist/polyfill';
  * improt from namespace core
  */
 import Container from './core/Container';
-import { PerspectiveCamera } from './core/Camera';
+import PerspectiveCamera from './camera/PerspectiveCamera';
 //import EventNames from './core/EventNames';
 import RenderManager from './core/RenderManager';
 import RenderNode from './core/RenderNode';
-//loader
-import * as Loader from './renderer/loader/loader';
 
 export {
     Container,
     PerspectiveCamera,
     RenderManager,
-    RenderNode,
-    Loader
+    RenderNode
 }
 
 /**
