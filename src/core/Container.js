@@ -1,11 +1,15 @@
 /**
  * @author yellow 2017/5/15
  */
-
 import Event from './../utils/Event';
 import merge from './../utils/merge';
 import RenderManager from './RenderManager';
-import { _KIWI_EVENT_RESIZE } from './EventNames';
+import RenderNode from './RenderNode';
+import { _FUSION_EVENT_RESIZE } from './EventNames';
+
+//加载器
+import GLTF from './../object/GLTF';
+//基础
 
 const defaultOptions = {
     width: window.innerHeight,
@@ -17,13 +21,13 @@ const defaultOptions = {
 /**
  * container 
  * used to transform accordance
- * @class Container
+ * @class
  */
 class Container extends Event {
-
     /**
      * readerManager
      * @memberof Container
+     * @type {RenderManager}
      * @readOnly
      */
     _renderManager;
@@ -58,18 +62,26 @@ class Container extends Event {
         this.addEventPopNode(this._renderManager);
     }
     /**
+     * 获取绘制上下文（逻辑）
+     * @return {Context}
+     */
+    get context(){
+        const renderManager = this._renderManager;
+        return renderManager.context;
+    }
+    /**
      * set container's height
      */
     set width(value) {
         this._width = value;
-        this.fire(_KIWI_EVENT_RESIZE, { width: value }, true);
+        this.fire(_FUSION_EVENT_RESIZE, { width: value }, true);
     }
     /**
      * set container's width
      */
     set height(value) {
         this._height = value;
-        this.fire(_KIWI_EVENT_RESIZE, { height: value }, true);
+        this.fire(_FUSION_EVENT_RESIZE, { height: value }, true);
     }
 
     get width() {
@@ -83,15 +95,19 @@ class Container extends Event {
     get camera() {
 
     }
-
     /**
-     * 
-     * @param {Object} rNode, 
+     * RenderNode对象不能直接创建
+     * 1.通过 Container.createRenderNode
+     * 2.通过 load 方法创建
      */
-    add() {
-
+    crateRenderNode(){
+        const gl = this.context.gl,
+            renderManager = this._renderManager;
+        let renderNode = new RenderNode(gl);
+        renderManager.addRenderNode(renderNode);
+        return renderNode;
     }
-
+    
 }
 
 export default Container;
