@@ -107,7 +107,6 @@ class Container extends Event {
         renderManager.addRenderNode(renderNode);
         return renderNode;
     }
-    
 }
 
 export default Container;

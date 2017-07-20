@@ -10,9 +10,15 @@
  * -shader
  * -
  * 
- * @modify 2017/6/20
+ * @modify :1 2017/6/20
  * @author yellow 2017/5/24
  * @class RenderNode
+ * 
+ * @modify :2 2017/7/20
+ * renderNode基类，其他需要render的结点须实现此基类方法：
+ * 1. prepare,数据准备阶段，将任务插入队列
+ * 2. draw,实际绘制方法
+ * 3. animationDraw,动画时绘制方法，此方法将在requestFrameLoop里采用队列式插入调用
  * 
  */
 import Event from './../utils/Event';
@@ -21,27 +27,44 @@ import Event from './../utils/Event';
  */
 class RenderNode extends Event {
     /**
+     * @type {WebGLRenderingContext}
+     */
+    _gl;
+    /**
      * 
      */
     _textures={};
     /**
      * 
      */
-    _programs={};
+    _buffer={};
     /**
      * 
      */
     _shaders={};
+    /**
+     * 待载入资源队列
+     */
+    _promiseToLoadResources=[];
 
     constructor(gl) {
         super();
+        this._gl = gl;
+        //准备资源
+        this.prepare();
     }
-    /**
-     * 
-     */
-    add(){
 
+    /**
+     * 数据拆分与准备阶段
+     */
+    prepare(){
+        throw Error('no implement of RenderNode.prepare')
     }
+    
+    animate(){
+        
+    }
+    
 
 }
 
