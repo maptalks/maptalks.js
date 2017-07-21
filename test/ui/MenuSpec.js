@@ -156,7 +156,7 @@ describe('#ContextMenu', function () {
                 width: 250
             });
             target.openMenu();
-            const pos = map.getViewPoint().round();
+            var pos = map.getViewPoint().round();
             expect(map._panels.front.style.transform).to.be.eql('translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)');
             done();
         });
