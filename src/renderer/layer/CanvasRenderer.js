@@ -25,9 +25,10 @@ class CanvasRenderer extends Class {
         this.setToRedraw();
     }
 
+
     /**
-     * Render the layer
-     * @param  {Boolean} isCheckRes whether to check and load external resources in the layer
+     * Render the layer.
+     * Call checkResources
      */
     render() {
         this.prepareRender();
@@ -66,11 +67,45 @@ class CanvasRenderer extends Class {
         }
     }
 
-    // whether the layer is animating
+    /**
+     * Check if has any external resources to load
+     * If yes, load the resources before calling draw method
+     * @abstract
+     * @method checkResources
+     * @instance
+     * @returns {Array[]} an array of resource arrays [ [url1, width, height], [url2, width, height], [url3, width, height] .. ]
+     */
+
+    /**
+     * a required abstract method to implement
+     * draw the layer when map is not interacting
+     * @abstract
+     * @instance
+     * @method draw
+     */
+
+    /**
+     * an optional abstract method to implement
+     * draw the layer when map is interacting (moving/zooming/dragrotating)
+     * @abstract
+     * @instance
+     * @method drawOnInteracting
+     * @param {Object} eventParam event parameters
+     */
+
+
+    /**
+     * whether the layer is animating, if yes, draw/drawOnInteracting will be called in every frame.
+     * @return {Boolean}
+     */
     isAnimating() {
         return false;
     }
 
+    /**
+     * Ask whether the layer renderer needs to redraw
+     * @return {Boolean}
+     */
     needToRedraw() {
         if (this._loadingResource) {
             return false;
@@ -89,10 +124,20 @@ class CanvasRenderer extends Class {
         return false;
     }
 
+    /**
+     * A callback for overriding when drawOnInteracting is skipped due to low fps
+     */
+    onSkipDrawOnInteracting() {
+
+    }
+
     isRenderComplete() {
         return !!this._renderComplete;
     }
 
+    /**
+     * Set to redraw, ask map to call draw/drawOnInteracting to redraw the layer
+     */
     setToRedraw() {
         this._toRedraw = true;
         return this;
@@ -108,14 +153,11 @@ class CanvasRenderer extends Class {
 
     /**
      * Only called by map's renderer to check whether the layer's canvas is updated
+     * @private
      * @return {Boolean}
      */
     isCanvasUpdated() {
         return !!this._canvasUpdated;
-    }
-
-    skipDrawOnInteracting() {
-
     }
 
     /**
@@ -162,7 +204,6 @@ class CanvasRenderer extends Class {
         }
         const map = this.getMap(),
             size = this._extent2D.getSize(),
-            // point = this._extent2D.getMin(),
             containerPoint = map._pointToContainerPoint(this._northWest);
         return {
             'image': this.canvas,
@@ -172,10 +213,18 @@ class CanvasRenderer extends Class {
         };
     }
 
+    /**
+     * Clear canvas
+     */
     clear() {
         this.clearCanvas();
     }
 
+    /**
+     * A method to help improve performance.
+     * If you are sure that layer's canvas is blank, returns true to save unnecessary layer works of maps.
+     * @return {Boolean}
+     */
     isBlank() {
         if (!this._painted) {
             return true;
@@ -198,6 +247,9 @@ class CanvasRenderer extends Class {
         this.setToRedraw();
     }
 
+    /**
+     * Set z-index of layer
+     */
     setZIndex(/*z*/) {
         this.setToRedraw();
     }
@@ -269,7 +321,9 @@ class CanvasRenderer extends Class {
     }
 
     /**
-     * Prepare rendering,
+     * Prepare rendering
+     * Set necessary properties, like this._renderZoom/ this._extent2D, this._northWest
+     * @private
      */
     prepareRender() {
         delete this._renderComplete;
@@ -403,10 +457,12 @@ class CanvasRenderer extends Class {
         };
     }
 
+    /**
+     * call when rendering completes, this will fire necessary events and call setCanvasUpdated
+     */
     completeRender() {
         if (this.getMap() && this.context) {
             this._renderComplete = true;
-            // this.setToRedraw();
             /**
              * renderend event, fired when layer ends rendering.
              *
@@ -420,20 +476,11 @@ class CanvasRenderer extends Class {
                 'context': this.context
             });
             this.setCanvasUpdated();
-            /**
-             * layerload event, fired when layer is loaded.
-             *
-             * @event Layer#layerload
-             * @type {Object}
-             * @property {String} type - layerload
-             * @property {Layer} target - layer
-             */
-            // this.layer.fire('layerload');
         }
     }
 
     /**
-     * Get renderer's events registered on the map
+     * Get renderer's event map registered on the map
      * @return {Object} events
      */
     getEvents() {
@@ -489,15 +536,31 @@ class CanvasRenderer extends Class {
         this.setToRedraw();
     }
 
+    /**
+    * onDragRotateStart
+    * @param  {Object} param event parameters
+    */
     onDragRotateStart() {}
 
+    /**
+    * onDragRotateEnd
+    * @param  {Object} param event parameters
+    */
     onDragRotateEnd() {
         this.setToRedraw();
     }
 
+    /**
+    * onSpatialReferenceChange
+    * @param  {Object} param event parameters
+    */
     onSpatialReferenceChange() {
     }
 
+    /**
+     * Get ellapsed time of previous drawing
+     * @return {Number}
+     */
     getDrawTime() {
         return this._drawTime;
     }
