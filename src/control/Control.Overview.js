@@ -1,12 +1,12 @@
 import { extend } from 'core/util';
-import { createEl } from 'core/util/dom';
+import { on, off, createEl } from 'core/util/dom';
 import Polygon from 'geometry/Polygon';
 import Layer from 'layer/Layer';
 import VectorLayer from 'layer/VectorLayer';
 import Map from 'map/Map';
 import Control from './Control';
 
- /**
+/**
  * @property {Object} options - options
  * @property {Object} [options.position='bottom-right'] - position of the control
  * @property {Number} [options.level=4]  - the zoom level of the overview
@@ -17,16 +17,17 @@ import Control from './Control';
  */
 const options = {
     'level': 4,
-    'position': 'bottom-right',
-    'size': {
-        'width': 300,
-        'height': 200
+    'position': {
+        'right' : 1,
+        'bottom' : 1
     },
+    'size': [300, 200],
+    'maximize' : true,
     'symbol': {
         'lineWidth': 3,
         'lineColor': '#1bbc9b',
         'polygonFill': '#1bbc9b',
-        'polygonOpacity': 0.4,
+        'polygonOpacity': 0.4
     }
 };
 
@@ -50,18 +51,84 @@ class Overview extends Control {
      * @return {HTMLDOMElement}
      */
     buildOn() {
+        let size = this.options['size'];
+        if (!this.options['maximize']) {
+            size = [0, 0];
+        }
         const container = createEl('div');
-        container.style.cssText = 'background:#fff;border:1px solid #b4b3b3;width:' + this.options['size']['width'] + 'px;height:' + this.options['size']['height'] + 'px;';
+
+        const mapContainer = this.mapContainer = createEl('div');
+        mapContainer.style.width = size[0] + 'px';
+        mapContainer.style.height = size[1] + 'px';
+        mapContainer.className = 'maptalks-overview';
+        const button = this.button = createEl('div');
+        button.className = 'maptalks-overview-button';
+        container.appendChild(mapContainer);
+        container.appendChild(button);
         return container;
     }
 
     onAdd() {
+        if (this.options['maximize']) {
+            this._createOverview();
+        }
+        this.getMap().on('resize moving moveend zoomend pitch rotate', this._update, this)
+            .on('setbaselayer', this._updateBaseLayer, this);
+        on(this.button, 'click', this._onButtonClick, this);
+        this._updateButtonText();
+    }
+
+    onRemove() {
+        this.getMap()
+            .off('resize moving moveend zoomend pitch rotate', this._update, this)
+            .off('setbaselayer', this._updateBaseLayer, this);
+        if (this._overview) {
+            this._overview.remove();
+            delete this._overview;
+            delete this._perspective;
+        }
+        off(this.button, 'click', this._onButtonClick, this);
+    }
+
+    maxmize() {
+        const size = this.options['size'];
+        const dom = this.mapContainer;
+        dom.style.width = size[0] + 'px';
+        dom.style.height = size[1] + 'px';
         this._createOverview();
     }
 
-    _createOverview(container) {
+    minimize() {
+        if (this._overview) {
+            this._overview.remove();
+        }
+        delete this._overview;
+        delete this._perspective;
+        const dom = this.mapContainer;
+        dom.style.width = 0 + 'px';
+        dom.style.height = 0 + 'px';
+    }
+
+    _onButtonClick() {
+        if (!this._overview) {
+            this.maxmize();
+        } else {
+            this.minimize();
+        }
+        this._updateButtonText();
+    }
+
+    _updateButtonText() {
+        if (this._overview) {
+            this.button.innerHTML = '-';
+        } else {
+            this.button.innerHTML = '+';
+        }
+    }
+
+    _createOverview() {
         const map = this.getMap(),
-            dom = container || this.getDOM(),
+            dom = this.mapContainer,
             extent = map.getExtent();
         const options = map.config();
         extend(options, {
@@ -80,21 +147,13 @@ class Overview extends Control {
         this._perspective = new Polygon(extent.toArray(), {
             'draggable': true,
             'cursor': 'move',
-            'symbol': this.options['symbol']
+            'symbol': this.options['symbol'],
+            'antiMeridian' : false
         })
             .on('dragstart', this._onDragStart, this)
             .on('dragend', this._onDragEnd, this);
-        map.on('resize moveend zoomend', this._update, this)
-            .on('setbaselayer', this._updateBaseLayer, this);
         new VectorLayer('v', [this._perspective]).addTo(this._overview);
         this.fire('load');
-    }
-
-    onRemove() {
-        this.getMap()
-            .off('load', this._initOverview, this)
-            .off('resize moveend zoomend', this._update, this)
-            .off('setbaselayer', this._updateBaseLayer, this);
     }
 
     _getOverviewZoom() {
@@ -132,11 +191,17 @@ class Overview extends Control {
     }
 
     _update() {
+        if (!this._overview) {
+            return;
+        }
         this._perspective.setCoordinates(this.getMap().getExtent().toArray());
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
     }
 
     _updateBaseLayer() {
+        if (!this._overview) {
+            return;
+        }
         const map = this.getMap();
         if (map.getBaseLayer()) {
             this._overview.setBaseLayer(Layer.fromJSON(map.getBaseLayer().toJSON()));

@@ -1,6 +1,5 @@
 import { isNil } from 'core/util';
 import Browser from 'core/Browser';
-import { Animation } from 'core/Animation';
 import Point from 'geo/Point';
 import Map from './Map';
 import TileLayer from 'layer/tile/TileLayer';
@@ -24,8 +23,7 @@ Map.include(/** @lends Map.prototype */{
             return;
         }
         origin = this._checkZoomOrigin(origin);
-        this.onZoomStart(nextZoom, origin);
-        this._startZoomAnimation(nextZoom, origin, startScale);
+        this._startZoomAnim(nextZoom, origin, startScale);
     },
 
     _checkZoomOrigin(origin) {
@@ -35,44 +33,23 @@ Map.include(/** @lends Map.prototype */{
         return origin;
     },
 
-    _startZoomAnimation(nextZoom, origin, startScale) {
+    _startZoomAnim(nextZoom, origin, startScale) {
         if (isNil(startScale)) {
             startScale = 1;
         }
         const endScale = this._getResolution(this._startZoomVal) / this._getResolution(nextZoom);
         const duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
         this._frameZoom = this._startZoomVal;
-        const renderer = this._getRenderer();
-        const framer = function (fn) {
-            renderer.callInNextFrame(fn);
-        };
-
-        const player = Animation.animate(
-            {
-                'zoom'  : [this._startZoomVal, nextZoom]
-            },
-            {
-                'easing' : 'out',
-                'duration'  : duration,
-                'framer' : framer
-            },
-            frame => {
-                if (this.isRemoved()) {
-                    player.finish();
-                    return;
-                }
-                if (frame.state.playState === 'finished') {
-                    this.onZoomEnd(frame.styles['zoom'], origin);
-                } else {
-                    this.onZooming(frame.styles['zoom'], origin, startScale);
-                }
-            }
-        ).play();
+        this.animateTo({
+            'zoom' : nextZoom,
+            'around' : origin
+        }, {
+            'duration' : duration
+        });
     },
 
     onZoomStart(nextZoom, origin) {
         this._zooming = true;
-        this._enablePanAnimation = false;
         this._startZoomVal = this.getZoom();
         this._startZoomCoord = this.containerPointToCoordinate(origin);
         /**
@@ -96,10 +73,22 @@ Map.include(/** @lends Map.prototype */{
             startScale = 1;
         }
         this._zoomTo(nextZoom, origin);
-        const res = this.getResolution(nextZoom);
-        const fromRes = this.getResolution(this._startZoomVal);
-        const scale = fromRes / res / startScale;
+        const res = this.getResolution(nextZoom),
+            fromRes = this.getResolution(this._startZoomVal),
+            scale = fromRes / res / startScale,
+            startPoint = this.coordinateToContainerPoint(this._startZoomCoord, this._startZoomVal);
         const offset = this.getViewPoint();
+        if (!startPoint.equals(origin) && scale !== 1) {
+            const pitch = this.getPitch();
+            // coordinate at origin changed, usually by map.setCenter
+            // add origin offset
+            const originOffset = startPoint._sub(origin)._multi(1 / (1 - scale));
+            if (pitch) {
+                //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
+                originOffset.y /= Math.cos(pitch * Math.PI / 180);
+            }
+            origin = origin.add(originOffset);
+        }
         const matrix = {
             'view' : [scale, 0, 0, scale, (origin.x - offset.x) *  (1 - scale), (origin.y - offset.y) *  (1 - scale)]
         };

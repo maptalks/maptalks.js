@@ -1,4 +1,5 @@
-import { isNumber, mapArrayRecursively, sign } from 'core/util';
+import { isNumber, mapArrayRecursively, sign, pushIn } from 'core/util';
+import { clipPolygon, clipLine } from 'core/util/path';
 import Class from 'core/Class';
 import Size from 'geo/Size';
 import Point from 'geo/Point';
@@ -102,10 +103,10 @@ export default class Painter extends Class {
      * @return {Object[]} resources to render vector
      */
     getPaintParams(dx, dy) {
-        const map = this.getMap();
-        const zoom = map.getZoom();
-        const pitched = (map.getPitch() !== 0);
-        const rotated = (map.getBearing() !== 0);
+        const map = this.getMap(),
+            zoom = map.getZoom(),
+            pitched = (map.getPitch() !== 0),
+            rotated = (map.getBearing() !== 0);
         let params = this._paintParams;
         // remove cached points if the geometry is simplified on the zoom.
         if (!params ||
@@ -125,31 +126,13 @@ export default class Painter extends Class {
         }
         this._pitched = pitched;
         this._rotated = rotated;
-        const maxZoom = map.getMaxNativeZoom();
-        const zoomScale = map.getScale();
-        const height = this.getHeight();
-        const layerNorthWest = this.getLayer()._getRenderer()._northWest;
-        const layerPoint = map._pointToContainerPoint(layerNorthWest),
+        const zoomScale = map.getScale(),
             paintParams = this._paintParams,
             tPaintParams = [], // transformed params
-            //refer to Geometry.Canvas
             points = paintParams[0];
-        let containerPoints;
-        //convert view points to container points needed by canvas
-        if (Array.isArray(points)) {
-            containerPoints = mapArrayRecursively(points, point => {
-                const p = map._pointToContainerPoint(point, maxZoom, height)._sub(layerPoint);
-                if (dx || dy) {
-                    p._add(dx, dy);
-                }
-                return p;
-            });
-        } else if (points instanceof Point) {
-            containerPoints = map._pointToContainerPoint(points, maxZoom, height)._sub(layerPoint);
-            if (dx || dy) {
-                containerPoints._add(dx, dy);
-            }
-        }
+
+        const containerPoints = this._getContainerPoints(points, dx, dy);
+
         tPaintParams.push(containerPoints);
         for (let i = 1, len = paintParams.length; i < len; i++) {
             if (isNumber(paintParams[i]) || (paintParams[i] instanceof Size)) {
@@ -164,6 +147,62 @@ export default class Painter extends Class {
         }
         return tPaintParams;
     }
+
+    _getContainerPoints(points, dx, dy) {
+        const map = this.getMap(),
+            lineWidth = this.getSymbol()['lineWidth'] || 0,
+            maxZoom = map.getMaxNativeZoom(),
+            containerExtent = map.getContainerExtent(),
+            extent2D = containerExtent.expand(lineWidth / 2).convertTo(p => map._containerPointToPoint(p, maxZoom)),
+            height = this.getHeight(),
+            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
+
+        let containerPoints;
+        //convert view points to container points needed by canvas
+        if (Array.isArray(points)) {
+            let clipPoints = points;
+            if (!this.getContainerExtent().within(containerExtent) && this.geometry.options['clipToPaint']) {
+                if (this.geometry.getJSONType() === 'Polygon') {
+                    // clip the polygon to draw less and improve performance
+                    if (!Array.isArray(points[0])) {
+                        clipPoints = clipPolygon(points, extent2D);
+                    } else {
+                        clipPoints = [];
+                        for (let i = 0; i < points.length; i++) {
+                            const part = clipPolygon(points[i], extent2D);
+                            if (part.length) {
+                                clipPoints.push(part);
+                            }
+                        }
+                    }
+                } else if (this.geometry.getJSONType() === 'LineString') {
+                    // clip the line string to draw less and improve performance
+                    if (!Array.isArray(points[0])) {
+                        clipPoints = clipLine(points, extent2D, true);
+                    } else {
+                        clipPoints = [];
+                        for (let i = 0; i < points.length; i++) {
+                            pushIn(clipPoints, clipLine(points[i], extent2D, true));
+                        }
+                    }
+                }
+            }
+            containerPoints = mapArrayRecursively(clipPoints, point => {
+                const p = map._pointToContainerPoint(point, maxZoom, height)._sub(layerPoint);
+                if (dx || dy) {
+                    p._add(dx, dy);
+                }
+                return p;
+            });
+        } else if (points instanceof Point) {
+            containerPoints = map._pointToContainerPoint(points, maxZoom, height)._sub(layerPoint);
+            if (dx || dy) {
+                containerPoints._add(dx, dy);
+            }
+        }
+        return containerPoints;
+    }
+
 
     getSymbol() {
         return this.geometry._getInternalSymbol();

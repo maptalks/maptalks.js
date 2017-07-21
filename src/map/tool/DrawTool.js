@@ -35,7 +35,8 @@ const options = {
     },
     'doubleClickZoom' : false,
     'mode': null,
-    'once': false
+    'once': false,
+    'ignoreMouseleave' : true
 };
 
 const registeredMode = {};
@@ -201,7 +202,9 @@ class DrawTool extends MapTool {
         delete this._mapDraggable;
         delete this._mapDoubleClickZoom;
         this._endDraw();
-        map.removeLayer(this._getDrawLayer());
+        if (this._map) {
+            map.removeLayer(this._getDrawLayer());
+        }
         return this;
     }
 
@@ -418,6 +421,9 @@ class DrawTool extends MapTool {
             }
             this._map.off('mousemove', onMouseMove, this);
             this._map.off('mouseup', onMouseUp, this);
+            if (!this.options['ignoreMouseleave']) {
+                this._map.off('mouseleave', onMouseUp, this);
+            }
             this._endDraw(param);
             return false;
         };
@@ -426,6 +432,9 @@ class DrawTool extends MapTool {
         genGeometry(firstCoord);
         this._map.on('mousemove', onMouseMove, this);
         this._map.on('mouseup', onMouseUp, this);
+        if (!this.options['ignoreMouseleave']) {
+            this._map.on('mouseleave', onMouseUp, this);
+        }
         return false;
     }
 
@@ -571,11 +580,11 @@ DrawTool.registerMode('rectangle', {
         const map = geometry.getMap();
         const width = map.computeLength(firstCoord, new Coordinate(coordinate.x, firstCoord.y)),
             height = map.computeLength(firstCoord, new Coordinate(firstCoord.x, coordinate.y));
-        const cnw = map.coordinateToContainerPoint(firstCoord),
-            cc = map.coordinateToContainerPoint(coordinate);
+        const cnw = map.coordinateToPoint(firstCoord),
+            cc = map.coordinateToPoint(coordinate);
         const x = Math.min(cnw.x, cc.x),
             y = Math.min(cnw.y, cc.y);
-        geometry.setCoordinates(map.containerPointToCoordinate(new Point(x, y)));
+        geometry.setCoordinates(map.pointToCoordinate(new Point(x, y)));
         geometry.setWidth(width);
         geometry.setHeight(height);
     },

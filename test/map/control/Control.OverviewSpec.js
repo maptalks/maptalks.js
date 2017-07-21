@@ -41,53 +41,67 @@ describe('Control.Overview', function () {
         map.setBaseLayer(tile);
     });
 
-    it('baseLayer', function (done) {
+    it('baseLayer', function () {
         var overview = new maptalks.control.Overview();
-        overview.on('load', function () {
-            expect(overview._overview.getBaseLayer()).to.be.ok();
-            done();
-        });
         map.setBaseLayer(tile);
         overview.addTo(map);
+        expect(overview._overview.getBaseLayer()).to.be.ok();
     });
 
-    it('remove', function (done) {
+    it('remove', function () {
         var overview = new maptalks.control.Overview();
-        overview.on('load', function () {
-            expect(map.listens('zoomend')).to.be(2);
-            expect(map.listens('moveend')).to.be(2);
-            overview.remove();
-            expect(map.listens('moveend')).to.be(1);
-            expect(map.listens('zoomend')).to.be(1);
-            done();
-        });
         overview.addTo(map);
+        expect(map.listens('zoomend')).to.be(2);
+        expect(map.listens('moveend')).to.be(2);
+        overview.remove();
+        expect(map.listens('moveend')).to.be(1);
+        expect(map.listens('zoomend')).to.be(1);
         map.setBaseLayer(tile);
 
     });
 
     it('move', function (done) {
         var overview = new maptalks.control.Overview();
-        overview.on('load', function () {
-            map.on('moveend', function () {
-                expect(overview._overview.getCenter().toArray()).to.be.eql([0, 0]);
-                done();
-            });
-            map.setCenter([0, 0]);
-        });
         overview.addTo(map);
+        map.on('moveend', function () {
+            expect(overview._overview.getCenter().toArray()).to.be.eql([0, 0]);
+            done();
+        });
+        map.setCenter([0, 0]);
     });
 
     it('zoom', function (done) {
         var overview = new maptalks.control.Overview();
-        overview.on('load', function () {
-            var zoom = overview._overview.getZoom();
-            overview._overview.on('zoomend', function () {
-                expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
-                done();
-            });
-            map.zoomIn();
+        overview.addTo(map);
+        var zoom = overview._overview.getZoom();
+        overview._overview.on('zoomend', function () {
+            expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
+            done();
+        });
+        map.zoomIn();
+    });
+
+    it('maximize and minimize overview', function () {
+        var overview = new maptalks.control.Overview({
+            maximize : false
         });
         overview.addTo(map);
+        expect(overview._overview).not.to.be.ok();
+        happen.click(overview.button);
+        expect(overview._overview).to.be.ok();
+        happen.click(overview.button);
+        expect(overview._overview).not.to.be.ok();
+    });
+
+    it('maximize overview', function () {
+        var overview = new maptalks.control.Overview({
+            maximize : false
+        });
+        overview.addTo(map);
+        expect(overview._overview).not.to.be.ok();
+        happen.click(overview.button);
+        expect(overview._overview).to.be.ok();
+        expect(overview._overview.getZoom()).to.be.eql(map.getZoom() - overview.options['level']);
+        expect(overview._overview.getCenter().toArray()).to.be.eql(map.getCenter().toArray());
     });
 });

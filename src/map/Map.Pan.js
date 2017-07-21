@@ -1,9 +1,9 @@
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import Map from './Map';
-import { isFunction } from 'core/util';
 
 Map.include(/** @lends Map.prototype */ {
+
     /**
      * Pan to the given coordinate
      * @param {Coordinate} coordinate - coordinate to pan to
@@ -17,7 +17,12 @@ Map.include(/** @lends Map.prototype */ {
             return this;
         }
         coordinate = new Coordinate(coordinate);
-        return this._panAnimation(coordinate, options['duration']);
+        if (typeof (options['animation']) === 'undefined' || options['animation']) {
+            return this._panAnimation(coordinate, options['duration']);
+        } else {
+            this.setCenter(coordinate);
+            return this;
+        }
     },
 
     /**
@@ -29,37 +34,31 @@ Map.include(/** @lends Map.prototype */ {
      * @return {Map} this
      */
     panBy: function (offset, options = {}) {
-        return this._panBy(offset, options);
-    },
-
-    _panBy: function (offset, options, cb) {
         if (!offset) {
             return this;
         }
         offset = new Point(offset).multi(-1);
         this.onMoveStart();
-        if (!options) {
-            options = {};
-        } else if (isFunction(options)) {
-            cb = options;
-            options = {};
-        }
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
             const target = this.locateByPoint(this.getCenter(), offset.x, offset.y);
-            this._panAnimation(target, options['duration'], cb);
+            this._panAnimation(target, options['duration']);
         } else {
             this._offsetCenterByPixel(offset);
             this.onMoving();
-            if (cb) {
-                cb();
-            }
             this.onMoveEnd();
         }
         return this;
     },
 
     _panAnimation: function (target, t, onFinish) {
-        this._getRenderer().panAnimation(target, t, onFinish);
+        if (!this.options['panAnimation']) {
+            return this.setCenter(target);
+        }
+        return this.animateTo({
+            'center' : target
+        }, {
+            'duration' : t || this.options['panAnimationDuration'],
+            'onFinish' : onFinish
+        });
     }
-
 });

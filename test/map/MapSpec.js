@@ -121,6 +121,16 @@ describe('#Map', function () {
         });
     });
 
+    describe('#getView', function () {
+        it('can getView', function () {
+            var view = map.getView();
+            expect(view.center).to.be.eql(map.getCenter().toArray());
+            expect(view.zoom).to.be.eql(map.getZoom());
+            expect(view.pitch).to.be.eql(map.getPitch());
+            expect(view.bearing).to.be.eql(map.getBearing());
+        });
+    });
+
     describe('#setCenter', function () {
         it('setCenterAndZoom', function () {
             var nc = new maptalks.Coordinate(119, 32);

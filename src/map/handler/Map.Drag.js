@@ -27,8 +27,7 @@ class MapDragHandler extends Handler {
         this._dragHandler.off('mousedown', this._onMouseDown, this)
             .off('dragstart', this._onDragStart, this)
             .off('dragging', this._onDragging, this)
-            .off('dragend', this._onDragEnd, this)
-            .disable();
+            .off('dragend', this._onDragEnd, this);
         this._dragHandler.remove();
         delete this._dragHandler;
     }
@@ -63,7 +62,7 @@ class MapDragHandler extends Handler {
         } else if (this.target.options['dragPan']) {
             this._mode = 'move';
         }
-        this.target._getRenderer().stopPanAnimation();
+        this.target._stopAnim();
         preventDefault(param['domEvent']);
     }
 

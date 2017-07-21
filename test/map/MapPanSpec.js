@@ -22,13 +22,10 @@ describe('#MapPan', function () {
         REMOVE_CONTAINER(container);
     });
 
-    it('panTo without animation', function (done) {
+    it('panTo without animation', function () {
         var coord = center.substract(1, 1);
-        map.once('moveend', function () {
-            expect(map.getCenter()).to.be.closeTo(coord);
-            done();
-        });
         map.panTo(coord, { 'animation' : false });
+        expect(map.getCenter()).to.be.closeTo(coord);
     });
 
     it('panTo', function (done) {

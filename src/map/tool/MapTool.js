@@ -1,6 +1,8 @@
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
 
+const key = '_map_tool';
+
 /**
  * @classdesc
  * <pre>
@@ -30,7 +32,7 @@ class MapTool extends Eventable(Class) {
             return this;
         }
         this._map = map;
-        const key = '_tool' + this.name;
+        // map tool is unique on one map
         if (map[key]) {
             map[key].disable();
         }
@@ -124,6 +126,27 @@ class MapTool extends Eventable(Class) {
             return false;
         }
         return true;
+    }
+
+    remove() {
+        if (!this._map) {
+            return this;
+        }
+        this.disable();
+        if (this._map) {
+            delete this._map[key];
+            delete this._map;
+        }
+        /**
+         * remove event.
+         *
+         * @event MapTool#remove
+         * @type {Object}
+         * @property {String} type - remove
+         * @property {MapTool} target - map tool
+         */
+        this._fireEvent('remove');
+        return this;
     }
 
     _registerEvents() {

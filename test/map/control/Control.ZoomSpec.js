@@ -11,7 +11,7 @@ describe('Control.Zoom', function () {
         document.body.appendChild(container);
         var option = {
             zoomAnimation: false,
-            zoom: 15,
+            zoom: 5,
             center: center
         };
         map = new maptalks.Map(container, option);
@@ -57,19 +57,40 @@ describe('Control.Zoom', function () {
             expect(map.getZoom()).to.be(zoom - 1);
         });
 
-       /* it("when disabled, don't update zoom of map", function() {
+        it('click on ruler to zoom', function () {
             var control = new maptalks.control.Zoom();
             map.addControl(control);
             var zoom = map.getZoom();
-            control.disable();
+            var domPosition = GET_PAGE_POSITION(control._sliderRuler);
+            happen.click(control._sliderRuler, {
+                'clientX' : domPosition.x + 2,
+                'clientY' : domPosition.y + 100
+            });
+            expect(map.getZoom()).to.be.above(zoom);
+        });
 
-            happen.click(control._zoomInButton);
-            expect(map.getZoom()).to.be(zoom);
 
-            happen.click(control._zoomOutButton);
-            expect(map.getZoom()).to.be(zoom);
-        });*/
-
+        it('drag ruler dot to zoom', function () {
+            var control = new maptalks.control.Zoom();
+            map.addControl(control);
+            var zoom = map.getZoom();
+            var domPosition = GET_PAGE_POSITION(control._sliderDot).add(2, 2);
+            var top = parseInt(control._sliderDot.style.top);
+            happen.mousedown(control._sliderDot, {
+                'clientX' : domPosition.x,
+                'clientY' : domPosition.y
+            });
+            happen.mousemove(document, {
+                'clientX' : domPosition.x,
+                'clientY' : domPosition.y - 80
+            });
+            happen.mouseup(document, {
+                'clientX' : domPosition.x,
+                'clientY' : domPosition.y - 80
+            });
+            expect(map.getZoom()).to.be.above(zoom);
+            expect(parseInt(control._sliderDot.style.top)).to.be.below(top);
+        });
     });
 
 });

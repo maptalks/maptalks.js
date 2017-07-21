@@ -1,5 +1,26 @@
 import Point from 'geo/Point';
 
+
+export function clipLine(points, bounds, useLastCode, round) {
+    const parts = [];
+    let k = 0, segment;
+    for (let j = 0, l = points.length; j < l - 1; j++) {
+        segment = clipSegment(points[j], points[j + 1], bounds, j, round);
+
+        if (!segment) { continue; }
+
+        parts[k] = parts[k] || [];
+        parts[k].push(segment[0]);
+
+        // if segment goes out of screen, or it's the last one, it's the end of the line part
+        if ((segment[1] !== points[j + 1]) || (j === l - 2)) {
+            parts[k].push(segment[1]);
+            k++;
+        }
+    }
+    return parts;
+}
+
 let _lastCode;
 
 // @function clipSegment(a: Point, b: Point, bounds: Bounds, useLastCode?: Boolean, round?: Boolean): Point[]|Boolean
@@ -153,8 +174,8 @@ export function pointInsidePolygon(p, points) {
 function _getEdgeIntersection(a, b, code, bounds, round) {
     const dx = b.x - a.x,
         dy = b.y - a.y,
-        min = bounds.min,
-        max = bounds.max;
+        min = bounds.getMin(),
+        max = bounds.getMax();
     let x, y;
 
     if (code & 8) { // top
@@ -184,15 +205,15 @@ function _getEdgeIntersection(a, b, code, bounds, round) {
 function _getBitCode(p, bounds) {
     let code = 0;
 
-    if (p.x < bounds.min.x) { // left
+    if (p.x < bounds.getMin().x) { // left
         code |= 1;
-    } else if (p.x > bounds.max.x) { // right
+    } else if (p.x > bounds.getMax().x) { // right
         code |= 2;
     }
 
-    if (p.y < bounds.min.y) { // bottom
+    if (p.y < bounds.getMin().y) { // bottom
         code |= 4;
-    } else if (p.y > bounds.max.y) { // top
+    } else if (p.y > bounds.getMax().y) { // top
         code |= 8;
     }
 

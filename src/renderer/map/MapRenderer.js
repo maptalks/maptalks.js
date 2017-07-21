@@ -1,6 +1,5 @@
 import { offsetDom } from 'core/util/dom';
 import Class from 'core/Class';
-import { Animation } from 'core/Animation';
 import Point from 'geo/Point';
 
 /**
@@ -31,73 +30,6 @@ export default class MapRenderer extends Class {
         for (let i = 0, l = running.length; i < l; i++) {
             running[i]();
         }
-    }
-
-    panAnimation(target, t, onFinish) {
-        if (this._panPlayer && this._panPlayer.playState === 'running') {
-            return;
-        }
-        const map = this.map,
-            pcenter = map._getPrjCenter().copy(),
-            ptarget = map.getProjection().project(target),
-            distance = ptarget.sub(pcenter);
-        if (map.options['panAnimation']) {
-            let duration;
-            if (!t) {
-                duration = map.options['panAnimationDuration'];
-            } else {
-                duration = t;
-            }
-            const renderer = map._getRenderer();
-            const framer = function (fn) {
-                renderer.callInNextFrame(fn);
-            };
-
-            const player = this._panPlayer = Animation.animate({
-                'distance': distance
-            }, {
-                'easing': 'out',
-                'duration': duration,
-                'framer' : framer
-            }, frame => {
-                if (map.isRemoved()) {
-                    player.finish();
-                    return;
-                }
-                if (player.playState === 'running' && (map.isZooming() || map.isDragRotating())) {
-                    player.finish();
-                    return;
-                }
-
-                if (player.playState === 'running' && frame.styles['distance']) {
-                    const offset = frame.styles['distance'];
-                    map._setPrjCenter(pcenter.add(offset));
-                    map.onMoving();
-                } else if (player.playState === 'finished') {
-                    if (!player._interupted) {
-                        map._setPrjCenter(ptarget);
-                    }
-                    if (onFinish) {
-                        onFinish();
-                    }
-                    map.onMoveEnd();
-                }
-            });
-            player.play();
-            if (!map.isMoving()) {
-                map.onMoveStart();
-            }
-        } else {
-            map.onMoveEnd();
-        }
-    }
-
-    stopPanAnimation() {
-        if (this._panPlayer) {
-            this._panPlayer._interupted = true;
-            this._panPlayer.finish();
-        }
-        delete this._panPlayer;
     }
 
     /**

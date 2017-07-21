@@ -57,8 +57,8 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
 
         const points = paintParams[0],
-            isSplitted = (this.geometry.getJSONType() === 'Polygon' && points.length > 1 && Array.isArray(points[0][0])) ||
-            (this.geometry.type === 'LineString' && points.length > 1 && Array.isArray(points[0]));
+            isSplitted = (this.geometry.getJSONType() === 'Polygon' && points.length > 0 && Array.isArray(points[0][0])) ||
+            (this.geometry.type === 'LineString' && points.length > 0 && Array.isArray(points[0]));
 
         if (isSplitted) {
             for (let i = 0; i < points.length; i++) {
