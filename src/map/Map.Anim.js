@@ -120,8 +120,10 @@ Map.include({
         if (!isNil(props['zoom'])) {
             this.onZoomEnd(props['zoom'][1], zoomOrigin);
         }
-        this._fireEvent(this._animPlayer._interupted ? 'animateinterupted' : 'animateend');
-        delete this._animPlayer;
+        if (this._animPlayer) {
+            this._fireEvent(this._animPlayer._interupted ? 'animateinterupted' : 'animateend');
+            delete this._animPlayer;
+        }
     },
 
     _startAnim(props, zoomOrigin) {
