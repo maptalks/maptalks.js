@@ -132,6 +132,36 @@ describe('#ContextMenu', function () {
         var menuDom = target._menu.getDOM().firstChild;
         expect(menuDom.style['max-height']).to.be.equal('300px');
     });
+
+    // a bugfix on 2017-07-21
+    // frontlayer panel's position is not updated when menu opened
+    it('update front panel\'s position after menu opens.', function (done) {
+        map.removeLayer('vector');
+
+        var layer = new maptalks.VectorLayer('vector');
+        var target = new maptalks.Marker(map.getCenter());
+        layer.addGeometry(target).addTo(map);
+        var items = [
+                { item: 'item1', click: function () {} },
+            '-',
+                { item: 'item2', click: function () {} }
+        ];
+
+
+
+        map.on('frameend', function () {
+            target.setMenu({
+                items: items,
+                animation : null,
+                width: 250
+            });
+            target.openMenu();
+            var pos = map.getViewPoint().round();
+            expect(map._panels.front.style.transform).to.be.eql('translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)');
+            done();
+        });
+        map.setCenter(map.getCenter().add(0.01, 0.02));
+    });
 });
 
 function runTests(target, _context) {
