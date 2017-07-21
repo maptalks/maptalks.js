@@ -452,9 +452,9 @@ export function copyCanvas(src) {
 export function setTransform(el, offset) {
     const pos = offset || new Point(0, 0);
     el.style[TRANSFORM] =
-        (Browser.ie3d ?
-            'translate(' + pos.x + 'px,' + pos.y + 'px)' :
-            'translate3d(' + pos.x + 'px,' + pos.y + 'px,0)');
+        Browser.any3d ?
+            'translate3d(' + pos.x + 'px,' + pos.y + 'px,0px)' :
+            'translate(' + pos.x + 'px,' + pos.y + 'px)';
 
     return this;
 }
