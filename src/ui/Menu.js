@@ -144,7 +144,7 @@ class Menu extends UIComponent {
 
     getEvents() {
         return {
-            '_zoomstart _zoomend _movestart _dblclick _click': this.hide
+            '_zoomstart _zoomend _movestart _dblclick _click': this. _removePrevDOM
         };
     }
 

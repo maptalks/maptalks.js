@@ -218,7 +218,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             renderer.clearCanvas();
         }
         if (renderer.drawOnInteracting && !inTime) {
-            renderer.skipDrawOnInteracting(this._eventParam);
+            renderer.onSkipDrawOnInteracting(this._eventParam);
         }
         return 0;
     }
