@@ -33,24 +33,6 @@ const Canvas = {
         return canvas;
     },
 
-    setDefaultCanvasSetting(ctx) {
-        ctx.lineWidth = 1;
-        ctx.lineCap = 'butt';
-        ctx.lineJoin = 'miter';
-        ctx.strokeStyle = 'rgba(0,0,0,1)';
-        ctx.fillStyle = 'rgba(255,255,255,0)';
-        ctx.textAlign = 'start';
-        ctx.textBaseline = 'top';
-        const fontSize = 11;
-        ctx.font = fontSize + 'px monospace';
-        ctx.shadowBlur = null;
-        ctx.shadowColor = null;
-        if (ctx.setLineDash) {
-            ctx.setLineDash([]);
-        }
-        ctx.globalAlpha = 1;
-    },
-
     prepareCanvasFont(ctx, style) {
         ctx.textBaseline = 'top';
         ctx.font = getFont(style);

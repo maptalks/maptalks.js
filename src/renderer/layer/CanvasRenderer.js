@@ -351,7 +351,6 @@ class CanvasRenderer extends Class {
         if (Browser.retina) {
             this.context.scale(r, r);
         }
-        Canvas2D.setDefaultCanvasSetting(this.context);
         if (this.onCanvasCreate) {
             this.onCanvasCreate();
         }
