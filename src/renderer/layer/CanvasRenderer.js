@@ -93,15 +93,6 @@ class CanvasRenderer extends Class {
      * @param {Object} eventParam event parameters
      */
 
-
-    /**
-     * whether the layer is animating, if yes, draw/drawOnInteracting will be called in every frame.
-     * @return {Boolean}
-     */
-    isAnimating() {
-        return false;
-    }
-
     /**
      * Ask whether the layer renderer needs to redraw
      * @return {Boolean}
