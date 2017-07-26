@@ -27,14 +27,14 @@ describe('#SpatialReference.Update', function () {
                 projection : 'baidu'
             });
             var tiles = tileLayer.getTiles();
-            expect(tiles.center).to.be.eql('4891__4891__14');
-            expect(tiles.centerViewPoint.toArray()).to.be.eql([-48, -48]);
+            expect(tiles.anchor.toArray()).to.be.eql([-1252144, -1252144]);
+            expect(tiles.anchor.zoom).to.be.eql(14);
             done();
         });
         map.setBaseLayer(tileLayer);
         var tiles = tileLayer.getTiles();
-        expect(tiles.center).to.be.eql('8191__8191__14');
-        expect(tiles.centerViewPoint.toArray()).to.be.eql([-56, -56]);
+        expect(tiles.anchor.toArray()).to.be.eql([-2096952, -2096952]);
+        expect(tiles.anchor.zoom).to.be.eql(14);
     });
 
     var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();

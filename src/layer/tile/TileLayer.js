@@ -212,8 +212,10 @@ class TileLayer extends Layer {
         tiles.sort(function (a, b) {
             return (b.point.distanceTo(center2D) - a.point.distanceTo(center2D));
         });
+
         //tile's view point at 0, 0, zoom
-        const anchor = centerVP.sub(centerTile['x'] * width, centerTile['y'] * height);
+        const tileSystem = tileConfig.tileSystem;
+        const anchor = centerVP.sub(centerTile.x * width * tileSystem.scale.x, -centerTile.y * height * tileSystem.scale.y);
         anchor.zoom = zoom;
         return {
             'zoom' : zoom,
