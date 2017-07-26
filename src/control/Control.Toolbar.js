@@ -137,8 +137,8 @@ class Toolbar extends Control {
             menuUL = createEl('ul'),
             children = items[index]['children'];
         if (index === len - 1 && children) {
-            menuDom.style = "right: 0px;";
-            menuUL.style = "right: 0px;position: absolute;";
+            menuDom.style = 'right: 0px;';
+            menuUL.style = 'right: 0px;position: absolute;';
         }
         menuDom.appendChild(createEl('em', 'maptalks-ico'));
 
