@@ -170,7 +170,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         const map = this.map;
         const renderer = layer._getRenderer();
         if (layer.isCanvasRender()) {
-            return renderer.isAnimating && renderer.isAnimating() || renderer.needToRedraw();
+            return renderer.needToRedraw();
         } else {
             if (renderer.needToRedraw && renderer.needToRedraw()) {
                 return true;

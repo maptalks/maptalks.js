@@ -128,7 +128,7 @@ gulp.task('tdd', function (done) {
 
 gulp.task('connect', ['watch'], () => {
     connect.server({
-        root: 'dist',
+        root: ['dist', 'debug'],
         livereload: true,
         port: 20000
     });

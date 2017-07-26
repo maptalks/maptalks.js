@@ -75,20 +75,8 @@ Map.include(/** @lends Map.prototype */{
         this._zoomTo(nextZoom, origin);
         const res = this.getResolution(nextZoom),
             fromRes = this.getResolution(this._startZoomVal),
-            scale = fromRes / res / startScale,
-            startPoint = this.coordinateToContainerPoint(this._startZoomCoord, this._startZoomVal);
+            scale = fromRes / res / startScale;
         const offset = this.getViewPoint();
-        if (!startPoint.equals(origin) && scale !== 1) {
-            const pitch = this.getPitch();
-            // coordinate at origin changed, usually by map.setCenter
-            // add origin offset
-            const originOffset = startPoint._sub(origin)._multi(1 / (1 - scale));
-            if (pitch) {
-                //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
-                originOffset.y /= Math.cos(pitch * Math.PI / 180);
-            }
-            origin = origin.add(originOffset);
-        }
         const matrix = {
             'view' : [scale, 0, 0, scale, (origin.x - offset.x) *  (1 - scale), (origin.y - offset.y) *  (1 - scale)]
         };
