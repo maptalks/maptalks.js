@@ -188,7 +188,6 @@ class TileLayer extends Layer {
             right = Math.ceil(Math.abs(extent2d.xmax - center2d.x + offset.x) / width) + keepBuffer;
 
         const tiles = [];
-        let centerId;
         for (let i = -(left); i < right; i++) {
             for (let j = -(top); j < bottom; j++) {
                 const p = new Point(center2D.x + width * i, center2D.y + height * j),
@@ -206,9 +205,6 @@ class TileLayer extends Layer {
                         'y' : idx['y']
                     };
                 tiles.push(desc);
-                if (i === 0 && j === 0) {
-                    centerId = id;
-                }
             }
         }
 
@@ -216,9 +212,12 @@ class TileLayer extends Layer {
         tiles.sort(function (a, b) {
             return (b.point.distanceTo(center2D) - a.point.distanceTo(center2D));
         });
+        //tile's view point at 0, 0, zoom
+        const anchor = centerVP.sub(centerTile['x'] * width, centerTile['y'] * height);
+        anchor.zoom = zoom;
         return {
             'zoom' : zoom,
-            'centerId' : centerId,
+            'anchor' : anchor,
             'tiles': tiles
         };
     }

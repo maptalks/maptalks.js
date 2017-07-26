@@ -1,3 +1,8 @@
+//------------------
+// It's a little bit tricky to test tilelayer with CI.
+// run gulp test
+// and test tilelayer manually at http://localhost:20000/tilelayer.html
+//------------------
 import {
     join,
     requestAnimFrame,
@@ -194,21 +199,14 @@ export default class TileLayerDomRenderer extends Class {
         const tiles = tileGrid['tiles'],
             queue = [];
         delete this._centerOffset;
-        let offset;
-        // center tile's position may be changed, e.g. map is pitching
-        if (this._preCenterId) {
-            const prePos = this._tiles[this._preCenterId]['viewPoint'];
-            let current;
-            for (let i = tiles.length - 1; i >= 0; i--) {
-                if (tiles[i]['id'] === this._preCenterId) {
-                    current = tiles[i]['viewPoint'];
-                    break;
-                }
-            }
-            if (current) {
-                offset = current.sub(prePos);
-            }
+        if (!this._anchor || this._anchor.zoom !== tileGrid.zoom) {
+            this._anchor = tileGrid.anchor;
         }
+        let offset;
+        if (this._preAnchor && this._preAnchor.zoom === tileGrid.zoom) {
+            offset = tileGrid.anchor.sub(this._preAnchor);
+        }
+        // center tile's position may be changed, e.g. map is pitching
         for (let i = tiles.length - 1; i >= 0; i--) {
             const cachedTile = this._tiles[tiles[i]['id']];
             if (cachedTile) {
@@ -222,8 +220,11 @@ export default class TileLayerDomRenderer extends Class {
             }
             queue.push(tiles[i]);
         }
-        this._centerOffset = offset;
-        this._preCenterId = tileGrid['centerId'];
+        this._centerOffset = tileGrid.anchor.sub(this._anchor);
+        this._preAnchor = tileGrid.anchor;
+        if (offset && !offset.isZero()) {
+            this._preAnchor._sub(offset);
+        }
         return queue;
     }
 
@@ -251,8 +252,9 @@ export default class TileLayerDomRenderer extends Class {
         if (!domMat) {
             let style = '';
             if (this._centerOffset && !this._centerOffset.isZero()) {
-                style = Browser.any3d ? 'translate3d(' + this._centerOffset.x + 'px, ' + this._centerOffset.y + 'px, 0px) ' :
-                    'translate(' + this._centerOffset.x + 'px, ' + this._centerOffset.y + 'px) ';
+                const offset = this._centerOffset.multi(fraction);
+                style = Browser.any3d ? 'translate3d(' + offset.x + 'px, ' + offset.y + 'px, 0px) ' :
+                    'translate(' + offset.x + 'px, ' + offset.y + 'px) ';
             }
             if (fraction !== 1) {
                 // fractional zoom
@@ -281,15 +283,15 @@ export default class TileLayerDomRenderer extends Class {
             const m = mat4.create();
             if (map.isZooming() && this._zoomParam) {
                 const origin = this._zoomParam['origin'],
-                    // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a matOffset to fix.
+                    // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a offset to fix.
                     pitch = map.getPitch(),
-                    matOffset = [
+                    offset = [
                         (origin.x - size['width'] / 2)  * (1 - fraction),
                         //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
                         (origin.y - size['height'] / 2) * (1 - fraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
                         0
                     ];
-                mat4.translate(m, m, matOffset);
+                mat4.translate(m, m, offset);
             }
             mat4.multiply(m, m, domMat);
             // Fractional zoom, multiply current domCssMat with fraction
@@ -299,7 +301,15 @@ export default class TileLayerDomRenderer extends Class {
             matrix = join(domMat);
         }
         const mapOffset = map.getViewPoint().round();
-        const tileOffset = mapOffset.multi(1 / fraction);
+        let tileOffset;
+        if (map.isZooming()) {
+            // when map is zooming, mapOffset is fixed when zoom starts
+            // should multiply with zoom fraction if zoom start from a fractional zoom
+            const startFraction = map.getResolution(this._tileZoom) / map.getResolution(this._startZoom);
+            tileOffset = mapOffset.multi(1 / startFraction);
+        } else {
+            tileOffset = mapOffset.multi(1 / fraction);
+        }
         if (this._centerOffset) {
             tileOffset._add(this._centerOffset);
         }
@@ -677,6 +687,7 @@ export default class TileLayerDomRenderer extends Class {
     onZoomStart() {
         const map = this.getMap();
         this._fadeAnimated = false;
+        this._startZoom = map.getZoom();
         this._mapOffset = map.offsetPlatform().round();
         if (!this._canTransform()) {
             this._hide();
