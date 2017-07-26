@@ -245,16 +245,16 @@ Control.positions = {
         'left'  : 20
     },
     'top-right': {
-        'top'   : 40,
-        'right' : 60
+        'top'   : 20,
+        'right' : 20
     },
     'bottom-left': {
         'bottom': 20,
-        'left'  : 60
+        'left'  : 20
     },
     'bottom-right': {
         'bottom': 20,
-        'right' : 60
+        'right' : 20
     }
 };
 
