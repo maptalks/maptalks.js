@@ -1,5 +1,4 @@
 import { IS_NODE, isArrayHasData, isFunction, isInteger } from 'core/util';
-import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 import TileConfig from './tileinfo/TileConfig';
@@ -28,10 +27,8 @@ const options = {
 
     'renderOnMoving': false,
     'renderOnRotating' : false,
-    //移图时地图的更新间隔, 默认为0即实时更新, -1表示不更新.如果效率较慢则可改为适当的值
-    'updateInterval': (() => {
-        return Browser.mobile ? -1 : 200;
-    })(),
+
+    'durationToAnimate' : 2000,
 
     'cssFilter': null,
 
@@ -152,8 +149,8 @@ class TileLayer extends Layer {
         }
 
         const tileSize = this.getTileSize(),
-            tileW = tileSize['width'],
-            tileH = tileSize['height'];
+            width = tileSize['width'],
+            height = tileSize['height'];
         let zoom = map.getZoom();
         if (!isInteger(zoom)) {
             if (map.isZooming()) {
@@ -163,10 +160,9 @@ class TileLayer extends Layer {
             }
         }
 
-        const res = map._getResolution(zoom);
-
-        const extent2d = map._get2DExtent(zoom);
-        const containerCenter = new Point(map.width / 2, map.height / 2),
+        const res = map.getResolution(zoom),
+            extent2d = map._get2DExtent(zoom),
+            containerCenter = new Point(map.width / 2, map.height / 2),
             center2d = map._containerPointToPoint(containerCenter, zoom);
         if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
             return {
@@ -175,54 +171,55 @@ class TileLayer extends Layer {
         }
 
         //Get description of center tile including left and top offset
-        const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res);
-        const offset = centerTile['offset'];
-        const center2D = map._prjToPoint(map._getPrjCenter(), zoom)._sub(offset.x, offset.y);
-        const mapOffset = map.getViewPoint();
-        const scale = map._getResolution() / res;
-        const centerViewPoint = containerCenter.sub((scale !== 1 ? mapOffset.multi(scale) : mapOffset))._sub(offset.x, offset.y)._round();
+        const centerTile = tileConfig.getCenterTile(map._getPrjCenter(), res),
+            offset = centerTile['offset'],
+            center2D = map._prjToPoint(map._getPrjCenter(), zoom)._sub(offset.x, offset.y),
+            mapVP = map.getViewPoint();
+
+        const scale = map.getResolution() / res,
+            centerVP = containerCenter.sub((scale !== 1 ? mapVP.multi(scale) : mapVP))._sub(offset.x, offset.y)._round();
 
         const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.isTransforming() ? 0 : map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
 
         //Number of tiles around the center tile
-        const top = Math.ceil(Math.abs(center2d.y - extent2d['ymin'] - offset.y) / tileH) + keepBuffer,
-            left = Math.ceil(Math.abs(center2d.x - extent2d['xmin'] - offset.x) / tileW) + keepBuffer,
-            bottom = Math.ceil(Math.abs(extent2d['ymax'] - center2d.y + offset.y) / tileH) + keepBuffer,
-            right = Math.ceil(Math.abs(extent2d['xmax'] - center2d.x + offset.x) / tileW) + keepBuffer;
+        const top = Math.ceil(Math.abs(center2d.y - extent2d.ymin - offset.y) / height) + keepBuffer,
+            left = Math.ceil(Math.abs(center2d.x - extent2d.xmin - offset.x) / width) + keepBuffer,
+            bottom = Math.ceil(Math.abs(extent2d.ymax - center2d.y + offset.y) / height) + keepBuffer,
+            right = Math.ceil(Math.abs(extent2d.xmax - center2d.x + offset.x) / width) + keepBuffer;
 
         const tiles = [];
-        let centerTileId;
         for (let i = -(left); i < right; i++) {
             for (let j = -(top); j < bottom; j++) {
-                const p = new Point(center2D.x + tileW * i, center2D.y + tileH * j);
-                const vp = new Point(centerViewPoint.x + tileW * i, centerViewPoint.y + tileH * j);
-                const tileIndex = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
-                    tileUrl = this.getTileUrl(tileIndex['x'], tileIndex['y'], zoom),
-                    tileId = [tileIndex['idy'], tileIndex['idx'], zoom].join('__'),
-                    tileDesc = {
-                        'url': tileUrl,
+                const p = new Point(center2D.x + width * i, center2D.y + height * j),
+                    vp = new Point(centerVP.x + width * i, centerVP.y + height * j),
+                    idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
+                    url = this.getTileUrl(idx['x'], idx['y'], zoom),
+                    id = [idx['idy'], idx['idx'], zoom].join('__'),
+                    desc = {
+                        'url': url,
                         'point': p,
                         'viewPoint' : vp,
-                        'id': tileId,
+                        'id': id,
                         'z': zoom,
-                        'x' : tileIndex['x'],
-                        'y' : tileIndex['y']
+                        'x' : idx['x'],
+                        'y' : idx['y']
                     };
-                tiles.push(tileDesc);
-                if (i === 0 && j === 0) {
-                    centerTileId = tileId;
-                }
+                tiles.push(desc);
             }
         }
 
         //sort tiles according to tile's distance to center
         tiles.sort(function (a, b) {
-            return (b['point'].distanceTo(center2D) - a['point'].distanceTo(center2D));
+            return (b.point.distanceTo(center2D) - a.point.distanceTo(center2D));
         });
+
+        //tile's view point at 0, 0, zoom
+        const tileSystem = tileConfig.tileSystem;
+        const anchor = centerVP.sub(centerTile.x * width * tileSystem.scale.x, -centerTile.y * height * tileSystem.scale.y);
+        anchor.zoom = zoom;
         return {
             'zoom' : zoom,
-            'center' : centerTileId,
-            'centerViewPoint' : centerViewPoint,
+            'anchor' : anchor,
             'tiles': tiles
         };
     }

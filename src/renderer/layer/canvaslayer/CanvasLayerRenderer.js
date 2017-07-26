@@ -18,6 +18,9 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     }
 
     needToRedraw() {
+        if (this.layer.options['animation']) {
+            return true;
+        }
         const map = this.getMap();
         if (map.isInteracting() && !this.layer.drawOnInteracting) {
             return false;
@@ -52,11 +55,6 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         }
         return canvasImg;
     }
-
-    isAnimating() {
-        return this.layer.options['animation'];
-    }
-
 
     remove() {
         delete this._drawContext;
