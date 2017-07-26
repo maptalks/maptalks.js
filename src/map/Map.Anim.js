@@ -127,6 +127,9 @@ Map.include({
     },
 
     _startAnim(props, zoomOrigin) {
+        if (!this._animPlayer) {
+            return;
+        }
         if (props['center']) {
             this.onMoveStart();
         }

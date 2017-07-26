@@ -1,3 +1,8 @@
+//------------------
+// It's a little bit tricky to test tilelayer with CI.
+// run gulp test
+// and test tilelayer manually at http://localhost:20000/tilelayer.html
+//------------------
 import {
     join,
     requestAnimFrame,
@@ -18,7 +23,6 @@ import {
 } from 'core/util/dom';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
-import Point from 'geo/Point';
 import TileLayer from 'layer/tile/TileLayer';
 
 
@@ -66,9 +70,9 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     remove() {
+        this._abortLoading();
         delete this._tiles;
         delete this.layer;
-        this._clearCameraCache();
         this._removeLayerContainer();
     }
 
@@ -94,6 +98,12 @@ export default class TileLayerDomRenderer extends Class {
     drawOnInteracting() {
         const map = this.getMap();
         if (!map) {
+            return;
+        }
+        if (map._animPlayer && map._animPlayer.duration >= this.layer.options['durationToAnimate']) {
+            this._fadeAnimated = false;
+            this._abortLoading(false);
+            this._renderTiles();
             return;
         }
         if (map.isZooming()) {
@@ -127,7 +137,7 @@ export default class TileLayerDomRenderer extends Class {
         const zoom = this._tileZoom;
         if (this._levelContainers && this._levelContainers[zoom]) {
             if (map.domCssMatrix) {
-                this._prepareTileContainer();
+                this._updateContainer();
             } else {
                 const matrix = param.matrix['view'];
                 setTransformMatrix(this._levelContainers[zoom], matrix);
@@ -148,10 +158,10 @@ export default class TileLayerDomRenderer extends Class {
     _drawOnDragRotating() {
         // when rotation is canceled, tiles needs to be repositioned.
         const mat = this.getMap().domCssMatrix;
-        if (!mat) {
+        if (!mat || this.layer.options['renderOnRotating']) {
             this._renderTiles();
         } else {
-            this._prepareTileContainer();
+            this._updateContainer();
         }
     }
 
@@ -169,7 +179,7 @@ export default class TileLayerDomRenderer extends Class {
 
         this._tileZoom = tileGrid['zoom'];
 
-        this._prepareTileContainer();
+        this._updateContainer();
 
         if (queue.length > 0) {
             const container = this._getTileContainer(tileGrid['zoom']);
@@ -186,74 +196,35 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     _getTileQueue(tileGrid) {
-        const map = this.getMap(),
-            tiles = tileGrid['tiles'],
+        const tiles = tileGrid['tiles'],
             queue = [];
-        const mat = map.domCssMatrix;
-
-        const preCamOffset = this._camOffset;
-        if (!this._camOffset || (!mat && !this._camOffset.isZero())) {
-            // offset of tile container due to camera matrix
-            this._camOffset = new Point(0, 0);
+        delete this._centerOffset;
+        if (!this._anchor || this._anchor.zoom !== tileGrid.zoom) {
+            this._anchor = tileGrid.anchor;
         }
-
-        if (this._preCenterId && mat) {
-            // caculate tile container's offset if map is pitching
-            const preCenterTilePos = this._tiles[this._preCenterId]['viewPoint'];
-            let current;
-            for (let i = tiles.length - 1; i >= 0; i--) {
-                if (tiles[i]['id'] === this._preCenterId) {
-                    current = tiles[i]['viewPoint'];
-                    break;
-                }
-            }
-            if (current) {
-                const offset = current.sub(preCenterTilePos);
-                this._camOffset._add(offset);
-            }
+        let offset;
+        if (this._preAnchor && this._preAnchor.zoom === tileGrid.zoom) {
+            offset = tileGrid.anchor.sub(this._preAnchor);
         }
-
-        if (this._tiles) {
-            // when camera is canceled, all current tiles needs to be repositioned (adding pre camera offset)
-            const repos = !mat && preCamOffset && !preCamOffset.isZero();
-            for (const p in this._tiles) {
-                const t = this._tiles[p];
-                this._tiles[p].current = false;
-                if (repos) {
-                    const pos = t['pos'];
-                    pos._add(preCamOffset);
-                    this._posTileImage(t['el'], pos);
-                    t['viewPoint'] = pos;
-                }
-            }
-        }
-
+        // center tile's position may be changed, e.g. map is pitching
         for (let i = tiles.length - 1; i >= 0; i--) {
             const cachedTile = this._tiles[tiles[i]['id']];
             if (cachedTile) {
                 //tile is already added
                 cachedTile.current = true;
-                if (mat) {
-                    // has camera matrix, update viewPoint of all the existing tiles.
-                    // tile doesn't need to be repositioned, but view point needs to be updated to caculate camera offset.
-                    cachedTile['viewPoint'] = tiles[i]['viewPoint'];
-                }
-                if (this._reposTiles) {
-                    // existing tiles need to be repositioned to tileGrid's new viewPoint.
-                    const pos = tiles[i]['viewPoint'];
-                    cachedTile['viewPoint'] = pos;
-                    this._posTileImage(cachedTile['el'], pos);
-                }
                 continue;
             }
             tiles[i].current = true;
-            if (mat && this._camOffset) {
-                tiles[i]['viewPoint']._sub(this._camOffset);
+            if (offset && !offset.isZero()) {
+                tiles[i]['viewPoint']._sub(offset);
             }
             queue.push(tiles[i]);
         }
-        this._reposTiles = false;
-        this._preCenterId = tileGrid['center'];
+        this._centerOffset = tileGrid.anchor.sub(this._anchor);
+        this._preAnchor = tileGrid.anchor;
+        if (offset && !offset.isZero()) {
+            this._preAnchor._sub(offset);
+        }
         return queue;
     }
 
@@ -266,12 +237,12 @@ export default class TileLayerDomRenderer extends Class {
      * 4 with domCssMatrix(pitch/bearing) at a fractional zoom
      * @private
      */
-    _prepareTileContainer() {
+    _updateContainer() {
         const map = this.getMap(),
             domMat = map.domCssMatrix,
             container = this._getTileContainer(this._tileZoom),
             size = map.getSize(),
-            zoomFraction = map._getResolution(this._tileZoom) / map._getResolution();
+            fraction = map.getResolution(this._tileZoom) / map.getResolution();
         if (container.style.left) {
             // Remove container's left/top if it has.
             // Left, top is set in onZoomEnd to keep container's position when map platform's offset is reset to 0.
@@ -279,16 +250,27 @@ export default class TileLayerDomRenderer extends Class {
             container.style.top = null;
         }
         if (!domMat) {
-            this._resetDomCssMatrix();
-            if (zoomFraction !== 1) {
+            let style = '';
+            if (this._centerOffset && !this._centerOffset.isZero()) {
+                const offset = this._centerOffset.multi(fraction);
+                style = Browser.any3d ? 'translate3d(' + offset.x + 'px, ' + offset.y + 'px, 0px) ' :
+                    'translate(' + offset.x + 'px, ' + offset.y + 'px) ';
+            }
+            if (fraction !== 1) {
                 // fractional zoom
-                const matrix = [zoomFraction, 0, 0, zoomFraction, size['width'] / 2 *  (1 - zoomFraction), size['height'] / 2 *  (1 - zoomFraction)];
-                setTransformMatrix(container.tile, matrix);
+                const matrix = [fraction, 0, 0, fraction, size['width'] / 2 *  (1 - fraction), size['height'] / 2 *  (1 - fraction)];
+                style += 'matrix(' + matrix.join() + ')';
+            }
+            this._resetDomCssMatrix();
+            if (style !== '') {
+                container.tile.style[TRANSFORM] = style;
             } else {
                 removeTransform(container.tile);
             }
             return;
         }
+
+        // update container when map is rotating or pitching.
 
         // reduce repaint causing by dom updateing
         this._container.style.display = 'none';
@@ -297,34 +279,41 @@ export default class TileLayerDomRenderer extends Class {
             container.style.height = size['height'] + 'px';
         }
         let matrix;
-        if (zoomFraction !== 1) {
+        if (fraction !== 1) {
             const m = mat4.create();
             if (map.isZooming() && this._zoomParam) {
                 const origin = this._zoomParam['origin'],
-                    // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a matOffset to fix.
+                    // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a offset to fix.
                     pitch = map.getPitch(),
-                    matOffset = [
-                        (origin.x - size['width'] / 2)  * (1 - zoomFraction),
+                    offset = [
+                        (origin.x - size['width'] / 2)  * (1 - fraction),
                         //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
-                        (origin.y - size['height'] / 2) * (1 - zoomFraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
+                        (origin.y - size['height'] / 2) * (1 - fraction) * (pitch ? Math.cos(pitch * Math.PI / 180) : 1),
                         0
                     ];
-                mat4.translate(m, m, matOffset);
+                mat4.translate(m, m, offset);
             }
-
             mat4.multiply(m, m, domMat);
-            // Fractional zoom, multiply current domCssMat with zoomFraction
-            mat4.scale(m, m, [zoomFraction, zoomFraction, 1]);
+            // Fractional zoom, multiply current domCssMat with fraction
+            mat4.scale(m, m, [fraction, fraction, 1]);
             matrix = join(m);
         } else {
             matrix = join(domMat);
         }
         const mapOffset = map.getViewPoint().round();
-        if (!map.isZooming()) {
-            // When map is zooming, tile's position is same with positions when zooming starts, so does't need to refresh camOffsets.
-            container.tile.style[TRANSFORM] = 'translate3d(' + (this._camOffset.x + mapOffset.x / zoomFraction) + 'px, ' + (this._camOffset.y + mapOffset.y / zoomFraction) + 'px, 0px)';
+        let tileOffset;
+        if (map.isZooming()) {
+            // when map is zooming, mapOffset is fixed when zoom starts
+            // should multiply with zoom fraction if zoom start from a fractional zoom
+            const startFraction = map.getResolution(this._tileZoom) / map.getResolution(this._startZoom);
+            tileOffset = mapOffset.multi(1 / startFraction);
+        } else {
+            tileOffset = mapOffset.multi(1 / fraction);
         }
-
+        if (this._centerOffset) {
+            tileOffset._add(this._centerOffset);
+        }
+        container.tile.style[TRANSFORM] = 'translate3d(' + tileOffset.x + 'px, ' + tileOffset.y + 'px, 0px)';
         container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
         this._container.style.display = '';
     }
@@ -469,16 +458,20 @@ export default class TileLayerDomRenderer extends Class {
         });
 
         if (this._noTilesToLoad()) {
-            this.layer.fire('layerload');
+            if (map.isInteracting()) {
+                this._pruneLevels();
+            } else {
+                this.layer.fire('layerload');
 
-            if (this._pruneTimeout) {
-                clearTimeout(this._pruneTimeout);
+                if (this._pruneTimeout) {
+                    clearTimeout(this._pruneTimeout);
+                }
+                const timeout = map ? map.options['zoomAnimationDuration'] : 250,
+                    pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
+                // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
+                // to trigger a pruning.
+                this._pruneTimeout = setTimeout(this._pruneTiles.bind(this, pruneLevels), timeout + 100);
             }
-            const timeout = map ? map.options['zoomAnimationDuration'] : 250,
-                pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
-            // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
-            // to trigger a pruning.
-            this._pruneTimeout = setTimeout(this._pruneTiles.bind(this, pruneLevels), timeout + 100);
         }
     }
 
@@ -565,15 +558,20 @@ export default class TileLayerDomRenderer extends Class {
                     this._removeTile(key);
                 }
             }
-            for (const z in this._levelContainers) {
-                if (+z !== zoom) {
-                    removeDomNode(this._levelContainers[z]);
-                    this._removeTilesAtZoom(z);
-                    delete this._levelContainers[z];
-                }
-            }
+            this._pruneLevels();
         }
 
+    }
+
+    _pruneLevels() {
+        const zoom = this._tileZoom;
+        for (const z in this._levelContainers) {
+            if (+z !== zoom) {
+                removeDomNode(this._levelContainers[z]);
+                this._removeTilesAtZoom(z);
+                delete this._levelContainers[z];
+            }
+        }
     }
 
     _removeTile(key) {
@@ -689,8 +687,8 @@ export default class TileLayerDomRenderer extends Class {
     onZoomStart() {
         const map = this.getMap();
         this._fadeAnimated = false;
+        this._startZoom = map.getZoom();
         this._mapOffset = map.offsetPlatform().round();
-        this._startMapCenter = map.getCenter();
         if (!this._canTransform()) {
             this._hide();
         }
@@ -702,13 +700,11 @@ export default class TileLayerDomRenderer extends Class {
         this._zoomParam = param;
     }
 
-    onZoomEnd(param) {
+    onZoomEnd() {
         delete this._zoomParam;
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }
-        this._clearCameraCache();
-        this._reposTiles = (param['to'] === this._tileZoom);
         if (this._levelContainers) {
             const container = this._levelContainers[this._tileZoom];
             if (this._canTransform()) {
@@ -730,12 +726,7 @@ export default class TileLayerDomRenderer extends Class {
         this.setToRedraw();
     }
 
-    _clearCameraCache() {
-        delete this._preCenterId;
-        delete this._camOffset;
-    }
-
-    _abortLoading() {
+    _abortLoading(removeDOM = true) {
         const falseFn = function () { return false; };
         for (const i in this._tiles) {
             if (this._tiles[i].z !== this._tileZoom || !this._tiles[i].current) {
@@ -746,7 +737,9 @@ export default class TileLayerDomRenderer extends Class {
 
                 if (!tile.loaded) {
                     tile.src = emptyImageUrl;
-                    removeDomNode(tile);
+                    if (removeDOM) {
+                        removeDomNode(tile);
+                    }
                 }
             }
         }
