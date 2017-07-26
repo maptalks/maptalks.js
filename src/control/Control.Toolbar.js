@@ -131,10 +131,16 @@ class Toolbar extends Control {
                 });
             };
         }
-        const menuDom = createEl('div', 'maptalks-dropMenu');
+        const menuDom = createEl('div', 'maptalks-dropMenu'),
+            items = this._getItems(),
+            len = items.length,
+            menuUL = createEl('ul'),
+            children = items[index]['children'];
+        if (index === len - 1 && children) {
+            menuDom.style = "right: 0px;";
+            menuUL.style = "right: 0px;position: absolute;";
+        }
         menuDom.appendChild(createEl('em', 'maptalks-ico'));
-        const menuUL = createEl('ul');
-        const children = this._getItems()[index]['children'];
         let liWidth = 0;
         for (let i = 0, l = children.length; i < l; i++) {
             const size = stringLength(children[i]['item'], '12px');
