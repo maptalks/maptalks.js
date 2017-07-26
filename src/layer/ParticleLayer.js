@@ -89,7 +89,7 @@ ParticleLayer.registerRenderer('canvas', class extends CanvasLayerRenderer {
         this._shouldClear = false;
     }
 
-    skipDrawOnInteracting() {
+    onSkipDrawOnInteracting() {
         this._shouldClear = true;
     }
 });
