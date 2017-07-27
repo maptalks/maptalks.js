@@ -243,11 +243,12 @@ export default class TileLayerDomRenderer extends Class {
             container = this._getTileContainer(this._tileZoom),
             size = map.getSize(),
             fraction = map.getResolution(this._tileZoom) / map.getResolution();
-        if (container.style.left) {
+        const style = container.style;
+        if (style.left) {
             // Remove container's left/top if it has.
             // Left, top is set in onZoomEnd to keep container's position when map platform's offset is reset to 0.
-            container.style.left = null;
-            container.style.top = null;
+            style.left = null;
+            style.top = null;
         }
         if (!domMat) {
             let style = '';
@@ -273,10 +274,10 @@ export default class TileLayerDomRenderer extends Class {
         // update container when map is rotating or pitching.
 
         // reduce repaint causing by dom updateing
-        this._container.style.display = 'none';
-        if (parseInt(container.style.width) !== size['width'] || parseInt(container.style.height) !== size['height']) {
-            container.style.width = size['width'] + 'px';
-            container.style.height = size['height'] + 'px';
+        this._style.display = 'none';
+        if (parseInt(style.width) !== size['width'] || parseInt(style.height) !== size['height']) {
+            style.width = size['width'] + 'px';
+            style.height = size['height'] + 'px';
         }
         let matrix;
         if (fraction !== 1) {
@@ -314,7 +315,7 @@ export default class TileLayerDomRenderer extends Class {
             tileOffset._add(this._centerOffset);
         }
         container.tile.style[TRANSFORM] = 'translate3d(' + tileOffset.x + 'px, ' + tileOffset.y + 'px, 0px)';
-        container.style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
+        style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
         this._container.style.display = '';
     }
 
@@ -567,11 +568,18 @@ export default class TileLayerDomRenderer extends Class {
         const zoom = this._tileZoom;
         for (const z in this._levelContainers) {
             if (+z !== zoom) {
-                removeDomNode(this._levelContainers[z]);
-                this._removeTilesAtZoom(z);
-                delete this._levelContainers[z];
+                this._removeTileContainer(z);
             }
         }
+    }
+
+    _removeTileContainer(z) {
+        if (!this._levelContainers[z]) {
+            return;
+        }
+        removeDomNode(this._levelContainers[z]);
+        this._removeTilesAtZoom(z);
+        delete this._levelContainers[z];
     }
 
     _removeTile(key) {
@@ -701,12 +709,19 @@ export default class TileLayerDomRenderer extends Class {
     }
 
     onZoomEnd() {
+        if (!this.getMap() || !this._levelContainers) {
+            return;
+        }
+        if (!this._zoomParam) {
+            // zoom without animation
+            this._removeTileContainer(this._tileZoom);
+        }
         delete this._zoomParam;
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }
-        if (this._levelContainers) {
-            const container = this._levelContainers[this._tileZoom];
+        const container = this._levelContainers[this._tileZoom];
+        if (container) {
             if (this._canTransform()) {
                 if (container && this._mapOffset) {
                     // Container at old _tileZoom becomes background of new zoom container.
@@ -716,9 +731,7 @@ export default class TileLayerDomRenderer extends Class {
                     container.style.top = this._mapOffset.y + 'px';
                 }
             } else {
-                if (container) {
-                    container.style.display = 'none';
-                }
+                container.style.display = 'none';
                 this._show();
             }
         }
