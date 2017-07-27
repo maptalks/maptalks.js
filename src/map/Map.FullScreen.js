@@ -2,6 +2,16 @@ import Map from './Map';
 
 Map.include(/** @lends Map.prototype */ {
     /**
+     * @return {boolean} Element is currently in fullscreen.
+     */
+    isFullScreen() {
+        return !!(
+            document.webkitIsFullScreen || document.mozFullScreen ||
+            document.msFullscreenElement || document.fullscreenElement
+        );
+    },
+
+    /**
      * Request for the full screen
      * @return {Map} this
      */
