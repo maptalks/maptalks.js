@@ -166,6 +166,8 @@ class TileLayer extends Layer {
             center2d = map._containerPointToPoint(containerCenter, zoom);
         if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
             return {
+                'zoom' : zoom,
+                'anchor' : null,
                 'tiles' : []
             };
         }
