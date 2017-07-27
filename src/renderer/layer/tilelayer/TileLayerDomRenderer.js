@@ -171,7 +171,7 @@ export default class TileLayerDomRenderer extends Class {
             this._createLayerContainer();
         }
         const tileGrid = this.layer._getTiles();
-        if (!tileGrid) {
+        if (!tileGrid || tileGrid.tiles.length === 0) {
             return;
         }
 
@@ -243,12 +243,12 @@ export default class TileLayerDomRenderer extends Class {
             container = this._getTileContainer(this._tileZoom),
             size = map.getSize(),
             fraction = map.getResolution(this._tileZoom) / map.getResolution();
-        const style = container.style;
-        if (style.left) {
+        const containerStyle = container.style;
+        if (containerStyle.left) {
             // Remove container's left/top if it has.
             // Left, top is set in onZoomEnd to keep container's position when map platform's offset is reset to 0.
-            style.left = null;
-            style.top = null;
+            containerStyle.left = null;
+            containerStyle.top = null;
         }
         if (!domMat) {
             let style = '';
@@ -274,10 +274,10 @@ export default class TileLayerDomRenderer extends Class {
         // update container when map is rotating or pitching.
 
         // reduce repaint causing by dom updateing
-        this._style.display = 'none';
-        if (parseInt(style.width) !== size['width'] || parseInt(style.height) !== size['height']) {
-            style.width = size['width'] + 'px';
-            style.height = size['height'] + 'px';
+        this._container.style.display = 'none';
+        if (parseInt(containerStyle.width) !== size['width'] || parseInt(containerStyle.height) !== size['height']) {
+            containerStyle.width = size['width'] + 'px';
+            containerStyle.height = size['height'] + 'px';
         }
         let matrix;
         if (fraction !== 1) {
@@ -315,7 +315,7 @@ export default class TileLayerDomRenderer extends Class {
             tileOffset._add(this._centerOffset);
         }
         container.tile.style[TRANSFORM] = 'translate3d(' + tileOffset.x + 'px, ' + tileOffset.y + 'px, 0px)';
-        style[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
+        containerStyle[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
         this._container.style.display = '';
     }
 
