@@ -164,11 +164,7 @@ export function getValueOrDefault(v, d) {
  * @memberOf Util
  */
 export function round(num) {
-    if (num > 0) {
-        return (0.5 + num) << 0;
-    } else {
-        return (num - 0.5) << 0;
-    }
+    return Math.round(num);
 }
 
 /**

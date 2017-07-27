@@ -64,6 +64,11 @@ class Extent {
             this['xmax'] = Math.max(p1, p3);
             this['ymax'] = Math.max(p2, p4);
             return;
+        } else if (Array.isArray(p1)) {
+            this['xmin'] = Math.min(p1[0], p1[2]);
+            this['ymin'] = Math.min(p1[1], p1[3]);
+            this['xmax'] = Math.max(p1[0], p1[2]);
+            this['ymax'] = Math.max(p1[1], p1[3]);
         } else if (isNumber(p1.x) &&
             isNumber(p2.x) &&
             isNumber(p1.y) &&
