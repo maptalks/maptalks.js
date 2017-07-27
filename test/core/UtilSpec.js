@@ -8,10 +8,16 @@ describe('Util', function () {
             expect(r).to.eql('apple is not pear.');
         });
 
+        it('replace variables without value', function () {
+            var str = '{foo} is not {foo2}.';
+            var r = maptalks.StringUtil.replaceVariable(str, { foo : 'apple' });
+            expect(r).to.eql('apple is not .');
+        });
+
         it('input null', function () {
             var str = '{foo} is not {foo2}.';
             var r = maptalks.StringUtil.replaceVariable(str, null);
-            expect(r).to.eql(str);
+            expect(r).to.eql(' is not .');
         });
     });
 

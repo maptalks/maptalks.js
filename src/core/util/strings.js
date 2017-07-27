@@ -1,4 +1,4 @@
-import { isObject, isString, isNil } from './common';
+import { isString, isNil } from './common';
 import { getDomRuler, removeDomNode } from './dom';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
@@ -105,13 +105,16 @@ const contentExpRe = /\{([\w_]+)\}/g;
  * @memberOf StringUtil
  */
 export function replaceVariable(str, props) {
-    if (!isObject(props) || !isString(str)) {
+    if (!isString(str)) {
         return str;
     }
     return str.replace(contentExpRe, function (str, key) {
+        if (!props) {
+            return '';
+        }
         const value = props[key];
         if (isNil(value)) {
-            return str;
+            return '';
         }
         return value;
     });
