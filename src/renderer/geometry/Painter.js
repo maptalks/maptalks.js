@@ -150,10 +150,10 @@ export default class Painter extends Class {
 
     _getContainerPoints(points, dx, dy) {
         const map = this.getMap(),
-            lineWidth = this.getSymbol()['lineWidth'] || 0,
+            lineWidth = this.getSymbol()['lineWidth'] || 2,
             maxZoom = map.getMaxNativeZoom(),
             containerExtent = map.getContainerExtent(),
-            extent2D = containerExtent.expand(lineWidth / 2).convertTo(p => map._containerPointToPoint(p, maxZoom)),
+            extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom)),
             height = this.getHeight(),
             layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
 
