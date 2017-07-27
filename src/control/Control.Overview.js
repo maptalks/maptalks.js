@@ -140,7 +140,8 @@ class Overview extends Control {
             'doubleClickZoom': false,
             'touchZoom': false,
             'control': false,
-            'draggable' : false
+            'draggable' : false,
+            'maxExtent' : null
         });
         this._overview = new Map(dom, options);
         this._updateBaseLayer();
