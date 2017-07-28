@@ -566,6 +566,8 @@ describe('#Map', function () {
 
         it('requestFullScreen', function () {
             map.requestFullScreen();
+            // Failed to execute 'requestFullscreen' on 'Element': API can only be initiated by a user gesture.
+            // So,the value of 'map.isFullScreen()' is false.
             expect(map.isFullScreen()).not.to.be.ok();
         });
 
