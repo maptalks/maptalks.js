@@ -46,7 +46,7 @@ Map.include({
             };
 
         const player = this._animPlayer = Animation.animate(props, {
-            'easing': 'out',
+            'easing': options['easing'] || 'out',
             'duration': options['duration'] || this.options['zoomAnimationDuration'],
             'framer' : framer
         }, frame => {
