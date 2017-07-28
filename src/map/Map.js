@@ -1152,6 +1152,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
      * The 2D point's coordinate system's origin is the same with map's origin.
+     * Usually used in plugin development.
      * @param  {Coordinate} coordinate - coordinate
      * @param  {Number} [zoom=undefined]       - zoom level
      * @return {Point}  2D point
@@ -1165,6 +1166,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Converts a 2D point in current zoom or a specific zoom to a coordinate.
+     * Usually used in plugin development.
      * @param  {Point} point - 2D point
      * @param  {Number} zoom  - zoom level
      * @return {Coordinate} coordinate
@@ -1179,6 +1181,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Converts a geographical coordinate to view point.<br>
      * A view point is a point relative to map's mapPlatform panel's position. <br>
+     * Usually used in plugin development.
      * @param {Coordinate} coordinate
      * @return {Point}
      */
@@ -1188,6 +1191,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Converts a view point to the geographical coordinate.
+     * Usually used in plugin development.
      * @param {Point} viewPoint
      * @return {Coordinate}
      */
@@ -1219,7 +1223,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Converts a container point to the view point.
-     *
+     * Usually used in plugin development.
      * @param {Point}
      * @returns {Point}
      */
@@ -1229,7 +1233,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Converts a view point to the container point.
-     *
+     * Usually used in plugin development.
      * @param {Point}
      * @returns {Point}
      */

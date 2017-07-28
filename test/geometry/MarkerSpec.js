@@ -84,7 +84,7 @@ describe('#Marker', function () {
             map.removeLayer(layer);
         });
 
-        it('can be icon', function () {
+        it('can be icon', function (done) {
             var marker = new maptalks.Marker(center, {
                 symbol: {
                     markerFile: 'images/control/2.png',
@@ -92,41 +92,46 @@ describe('#Marker', function () {
                     markerHeight: 22
                 }
             });
-
-            expect(function () {
-                layer.addGeometry(marker);
-                expect(marker.getSize().toArray()).to.be.eql([30, 22]);
-            }).to.not.throwException();
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, -3);
+                done();
+            });
+            layer.addGeometry(marker);
+            expect(marker.getSize().toArray()).to.be.eql([30, 22]);
         });
 
         it('can be text', function () {
             var marker = new maptalks.Marker(center, {
                 symbol: {
-                    textName: 'texxxxxt',
-                    textFaceName: 'monospace'
+                    textName : '■■■■■■■■■',
+                    textSize : 20,
+                    textFill : '#000'
                 }
             });
 
-            expect(function () {
-                layer.addGeometry(marker);
-            }).to.not.throwException();
+            layer.addGeometry(marker);
+            expect(layer).to.be.painted(0, 0);
         });
 
 
         it('can be vector', function () {
-            var types = ['ellipse', 'triangle', 'cross', 'diamond', 'square', 'x', 'bar'];
+            var types = ['ellipse', 'cross', 'x', 'diamond', 'bar', 'square', 'pin', 'pie'];
 
-            expect(function () {
-                for (var i = 0; i < types.length; i++) {
-                    var marker = new maptalks.Marker(center, {
-                        symbol: {
-                            markerType: types[i],
-                            markerLineDasharray: [20, 10, 5, 5, 5, 10]
-                        }
-                    });
-                    layer.addGeometry(marker);
-                }
-            }).to.not.throwException();
+            for (var i = 0; i < types.length; i++) {
+                var marker = new maptalks.Marker(center, {
+                    symbol: {
+                        markerType: types[i],
+                        markerLineDasharray: [20, 10, 5, 5, 5, 10],
+                        markerWidth : 10,
+                        markerHeight : 20
+                    }
+                });
+                var layer = new maptalks.VectorLayer('id' + i, { 'drawImmediate' : true }).addTo(map);
+                layer.addGeometry(marker);
+                expect(layer).to.be.painted(0, -3);
+                expect(marker.getSize().toArray()).to.be.eql([11, 21]);
+                map.removeLayer(layer);
+            }
         });
 
     });
