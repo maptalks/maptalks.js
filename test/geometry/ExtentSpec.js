@@ -24,12 +24,15 @@ describe('ExtentSpec', function () {
             expect(extent['ymax']).to.be(4);
         }
 
-        it('has 2 constructors', function () {
+        it('has 3 constructors', function () {
             //constructor 1
             var extent = new maptalks.Extent(1, 2, 3, 4);
             verify(extent);
 
             extent = new maptalks.Extent(3, 4, 1, 2);
+            verify(extent);
+
+            extent = new maptalks.Extent([3, 4, 1, 2]);
             verify(extent);
 
             //constructor 2
