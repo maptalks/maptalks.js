@@ -46,6 +46,93 @@ describe('ExtentSpec', function () {
 
 
     describe('extent instance methods', function () {
+        it('sub', function () {
+            var extent = new maptalks.Extent(1, 2, 3, 4);
+            var subed2 = extent.sub([1, 1]);
+            var subed3 = extent.sub(new maptalks.Point(1, 1));
+            var subed4 = extent.substract([1, 1]);
+            var subed5 = extent.sub({ xmin : 1, ymin : 2, xmax : 3, ymax : 4 });
+            expect(subed2.toJSON()).to.eql({
+                'xmin':0,
+                'ymin':1,
+                'xmax':2,
+                'ymax':3
+            });
+            expect(subed3.toJSON()).to.eql({
+                'xmin':0,
+                'ymin':1,
+                'xmax':2,
+                'ymax':3
+            });
+            expect(subed4.toJSON()).to.eql({
+                'xmin':0,
+                'ymin':1,
+                'xmax':2,
+                'ymax':3
+            });
+            expect(subed5.toJSON()).to.eql({
+                'xmin':0,
+                'ymin':0,
+                'xmax':0,
+                'ymax':0
+            });
+        });
+
+        it('add', function () {
+            var extent = new maptalks.Extent(1, 2, 3, 4);
+            var subed2 = extent.add([1, 1]);
+            var subed3 = extent.add(new maptalks.Point(1, 1));
+            var subed4 = extent.add({ xmin : 1, ymin : 2, xmax : 3, ymax : 4 });
+            expect(subed2.toJSON()).to.eql({
+                'xmin':2,
+                'ymin':3,
+                'xmax':4,
+                'ymax':5
+            });
+            expect(subed3.toJSON()).to.eql({
+                'xmin':2,
+                'ymin':3,
+                'xmax':4,
+                'ymax':5
+            });
+            expect(subed4.toJSON()).to.eql({
+                'xmin':2,
+                'ymin':4,
+                'xmax':6,
+                'ymax':8
+            });
+        });
+
+        it('round', function () {
+            var extent = new maptalks.Extent(1.1, 2.5, 3.3, 4.2);
+            var rounded = extent.round();
+            expect(rounded.toJSON()).to.eql({
+                'xmin':1,
+                'ymin':3,
+                'xmax':3,
+                'ymax':4
+            });
+            expect(extent.xmin).to.be.eql(1.1);
+            extent._round();
+            expect(extent.toJSON()).to.eql({
+                'xmin':1,
+                'ymin':3,
+                'xmax':3,
+                'ymax':4
+            });
+        });
+
+        it('copy', function () {
+            var extent = new maptalks.Extent(1.1, 2.5, 3.3, 4.2);
+            var copied = extent.copy();
+            expect(copied.toJSON()).to.eql({
+                'xmin':1.1,
+                'ymin':2.5,
+                'xmax':3.3,
+                'ymax':4.2
+            });
+        });
+
         it('is valid', function () {
             var extent = new maptalks.Extent(1, 2, 3, 4);
             expect(extent.isValid()).to.be.ok();
@@ -136,7 +223,7 @@ describe('ExtentSpec', function () {
             expect(expanded.equals(ext)).to.be.ok();
 
             var empty = new maptalks.Extent();
-            expanded = empty.expand(1);
+            expanded = empty.expand(new maptalks.Size(1, 1));
             expect(expanded.equals(new maptalks.Extent(-1, -1, 1, 1))).to.be.ok();
         });
 
