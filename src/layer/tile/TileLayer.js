@@ -1,6 +1,7 @@
-import { IS_NODE, isArrayHasData, isFunction, isInteger } from 'core/util';
+import { isNil, IS_NODE, isArrayHasData, isFunction, isInteger } from 'core/util';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
+import PointExtent from 'geo/PointExtent';
 import TileConfig from './tileinfo/TileConfig';
 import TileSystem from './tileinfo/TileSystem';
 import Layer from '../Layer';
@@ -133,7 +134,20 @@ class TileLayer extends Layer {
         return profile;
     }
 
-    _getTiles() {
+    _getTileZoom() {
+        const map = this.getMap();
+        let zoom = map.getZoom();
+        if (!isInteger(zoom)) {
+            if (map.isZooming()) {
+                zoom = (zoom > map._frameZoom ? Math.floor(zoom) : Math.ceil(zoom));
+            } else {
+                zoom = Math.round(zoom);
+            }
+        }
+        return zoom;
+    }
+
+    _getTiles(z) {
         // rendWhenReady = false;
         const map = this.getMap();
         if (!map) {
@@ -151,14 +165,7 @@ class TileLayer extends Layer {
         const tileSize = this.getTileSize(),
             width = tileSize['width'],
             height = tileSize['height'];
-        let zoom = map.getZoom();
-        if (!isInteger(zoom)) {
-            if (map.isZooming()) {
-                zoom = (zoom > map._frameZoom ? Math.floor(zoom) : Math.ceil(zoom));
-            } else {
-                zoom = Math.round(zoom);
-            }
-        }
+        const zoom = isNil(z) ? this._getTileZoom() : z;
 
         const res = map.getResolution(zoom),
             extent2d = map._get2DExtent(zoom),
@@ -222,6 +229,7 @@ class TileLayer extends Layer {
         return {
             'zoom' : zoom,
             'anchor' : anchor,
+            'extent' : new PointExtent(center2D - left * width, center2D - top * height, center2D + right * width, center2D + bottom * height),
             'tiles': tiles
         };
     }

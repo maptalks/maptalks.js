@@ -153,6 +153,12 @@ class CanvasLayer extends Layer {
     onZoomStart() {}
 
     /**
+     * The event callback for map's zooming event.
+     * @param  {Object} param - event parameter
+     */
+    onZooming() {}
+
+    /**
      * The event callback for map's zoomend event.
      * @param  {Object} param - event parameter
      */
@@ -163,6 +169,12 @@ class CanvasLayer extends Layer {
      * @param  {Object} param - event parameter
      */
     onMoveStart() {}
+
+    /**
+     * The event callback for map's moving event.
+     * @param  {Object} param - event parameter
+     */
+    onMoving() {}
 
     /**
      * The event callback for map's moveend event.

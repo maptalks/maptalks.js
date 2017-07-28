@@ -14,7 +14,8 @@ describe('#CanvasLayer', function () {
         document.body.appendChild(container);
         var option = {
             zoom: 17,
-            center: center
+            center: center,
+            zoomAnimationDuration : 100
         };
         map = new maptalks.Map(container, option);
     });
@@ -48,23 +49,38 @@ describe('#CanvasLayer', function () {
     });
 
     it('zoom events', function (done) {
+        var size = map.getSize();
         layer = new maptalks.CanvasLayer('v');
         layer.draw = function (context) {
             context.fillStyle = '#f00';
-            context.fillRect(0, 0, 10, 10);
+            context.fillRect(0, 0, size.width, size.height);
         };
-        layer.addTo(map);
+        var drawCalled = false;
+        layer.drawOnInteracting = function (context) {
+            drawCalled = true;
+            context.fillStyle = '#f00';
+            context.fillRect(0, 0, size.width, size.height);
+        };
+        // layer.addTo(map);
         var zoomStartFired = false;
         layer.onZoomStart = function (param) {
             expect(param).to.be.ok();
             zoomStartFired = true;
         };
+        layer.onZooming = function (param) {
+            expect(param).to.be.ok();
+        };
         layer.onZoomEnd = function (param) {
+            //cleared
             expect(param).to.be.ok();
             expect(zoomStartFired).to.be.ok();
+            expect(drawCalled).to.be.ok();
             done();
         };
-        map.zoomIn();
+        layer.once('layerload', function () {
+            map.zoomIn();
+        });
+        layer.addTo(map);
     });
 
     it('move events', function (done) {
@@ -75,13 +91,19 @@ describe('#CanvasLayer', function () {
         };
         layer.addTo(map);
         var moveStartFired = false;
+        var movingFired = false;
         layer.onMoveStart = function (param) {
             expect(param).to.be.ok();
             moveStartFired = true;
         };
+        layer.onMoving = function (param) {
+            expect(param).to.be.ok();
+            movingFired = true;
+        };
         layer.onMoveEnd = function (param) {
             expect(param).to.be.ok();
             expect(moveStartFired).to.be.ok();
+            expect(movingFired).not.to.be.ok();
             done();
         };
         map.setCenter([0, 0]);
@@ -136,7 +158,7 @@ describe('#CanvasLayer', function () {
 
     it('show', function (done) {
         var size = map.getSize();
-        layer = new maptalks.CanvasLayer('v', { visible : false });
+        layer = new maptalks.CanvasLayer('v', { visible : false, doubleBuffer : true });
         layer.draw = function (context) {
             context.fillStyle = '#f00';
             context.fillRect(0, 0, size.width, size.height);

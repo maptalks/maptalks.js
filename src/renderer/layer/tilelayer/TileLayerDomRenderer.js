@@ -4,6 +4,7 @@
 // and test tilelayer manually at http://localhost:20000/tilelayer.html
 //------------------
 import {
+    sign,
     join,
     requestAnimFrame,
     cancelAnimFrame,
@@ -102,8 +103,20 @@ export default class TileLayerDomRenderer extends Class {
         }
         if (map._animPlayer && map._animPlayer.duration >= this.layer.options['durationToAnimate']) {
             this._fadeAnimated = false;
-            this._abortLoading(false);
-            this._renderTiles();
+            const preTileZoom = this._tileZoom;
+            if (preTileZoom !== this.layer._getTileZoom() || !this._tileExtent.contains(map.coordinateToPoint(map.getCenter(), preTileZoom))) {
+                this._abortLoading(false);
+                this._renderTiles();
+            } else {
+                this._updateContainer(this._tileZoom);
+            }
+            if (map.isZooming() && (!this._preLoaded || preTileZoom !== this._tileZoom)) {
+                const nextZoom = this._tileZoom + sign(this._endZoom - preTileZoom);
+                if (nextZoom !== this._tileZoom) {
+                    const nextGrid = this.layer._getTiles(nextZoom);
+                    this._preloadTiles(nextGrid.tiles);
+                }
+            }
             return;
         }
         if (map.isZooming()) {
@@ -113,6 +126,13 @@ export default class TileLayerDomRenderer extends Class {
         } else if (map.isMoving()) {
             this._drawOnMoving();
         }
+    }
+
+    _preloadTiles(tiles) {
+        this._preLoaded = true;
+        tiles.forEach(t => {
+            new Image().src = t.url;
+        });
     }
 
     needToRedraw() {
@@ -178,6 +198,7 @@ export default class TileLayerDomRenderer extends Class {
         const queue = this._getTileQueue(tileGrid);
 
         this._tileZoom = tileGrid['zoom'];
+        this._tileExtent = tileGrid['extent'];
 
         this._updateContainer();
 
@@ -239,10 +260,12 @@ export default class TileLayerDomRenderer extends Class {
      */
     _updateContainer() {
         const map = this.getMap(),
+            tileZoom = this._tileZoom,
             domMat = map.domCssMatrix,
-            container = this._getTileContainer(this._tileZoom),
+            container = this._getTileContainer(tileZoom),
             size = map.getSize(),
-            fraction = map.getResolution(this._tileZoom) / map.getResolution();
+            centerOffset = this._centerOffset,
+            fraction = map.getResolution(tileZoom) / map.getResolution();
         const containerStyle = container.style;
         if (containerStyle.left) {
             // Remove container's left/top if it has.
@@ -252,8 +275,8 @@ export default class TileLayerDomRenderer extends Class {
         }
         if (!domMat) {
             let style = '';
-            if (this._centerOffset && !this._centerOffset.isZero()) {
-                const offset = this._centerOffset.multi(fraction);
+            if (centerOffset && !centerOffset.isZero()) {
+                const offset = centerOffset.multi(fraction);
                 style = Browser.any3d ? 'translate3d(' + offset.x + 'px, ' + offset.y + 'px, 0px) ' :
                     'translate(' + offset.x + 'px, ' + offset.y + 'px) ';
             }
@@ -306,13 +329,13 @@ export default class TileLayerDomRenderer extends Class {
         if (map.isZooming()) {
             // when map is zooming, mapOffset is fixed when zoom starts
             // should multiply with zoom fraction if zoom start from a fractional zoom
-            const startFraction = map.getResolution(this._tileZoom) / map.getResolution(this._startZoom);
+            const startFraction = map.getResolution(tileZoom) / map.getResolution(this._startZoom);
             tileOffset = mapOffset.multi(1 / startFraction);
         } else {
             tileOffset = mapOffset.multi(1 / fraction);
         }
-        if (this._centerOffset) {
-            tileOffset._add(this._centerOffset);
+        if (centerOffset) {
+            tileOffset._add(centerOffset);
         }
         container.tile.style[TRANSFORM] = 'translate3d(' + tileOffset.x + 'px, ' + tileOffset.y + 'px, 0px)';
         containerStyle[TRANSFORM] = 'translate3d(' + (-mapOffset.x) + 'px, ' + (-mapOffset.y) + 'px, 0px) matrix3D(' + matrix + ')';
@@ -459,14 +482,13 @@ export default class TileLayerDomRenderer extends Class {
         });
 
         if (this._noTilesToLoad()) {
+            if (this._pruneTimeout) {
+                clearTimeout(this._pruneTimeout);
+            }
             if (map.isInteracting()) {
                 this._pruneLevels();
             } else {
                 this.layer.fire('layerload');
-
-                if (this._pruneTimeout) {
-                    clearTimeout(this._pruneTimeout);
-                }
                 const timeout = map ? map.options['zoomAnimationDuration'] : 250,
                     pruneLevels = (map && this.layer === map.getBaseLayer()) ? !map.options['zoomBackground'] : true;
                 // Wait a bit more than 0.2 secs (the duration of the tile fade-in)
@@ -692,10 +714,11 @@ export default class TileLayerDomRenderer extends Class {
         tileImage.style.top = pos.y + 'px';
     }
 
-    onZoomStart() {
+    onZoomStart(param) {
         const map = this.getMap();
         this._fadeAnimated = false;
         this._startZoom = map.getZoom();
+        this._endZoom = param.to;
         this._mapOffset = map.offsetPlatform().round();
         if (!this._canTransform()) {
             this._hide();
@@ -717,6 +740,9 @@ export default class TileLayerDomRenderer extends Class {
             this._removeTileContainer(this._tileZoom);
         }
         delete this._zoomParam;
+        delete this._preLoaded;
+        delete this._endZoom;
+        delete this._startZoom;
         if (this._pruneTimeout) {
             clearTimeout(this._pruneTimeout);
         }
@@ -729,6 +755,7 @@ export default class TileLayerDomRenderer extends Class {
                     // thus old container's left and top will be set with map's platform offset when zooming starts to force old container staying in the right position.
                     container.style.left = this._mapOffset.x + 'px';
                     container.style.top = this._mapOffset.y + 'px';
+                    delete this._mapOffset;
                 }
             } else {
                 container.style.display = 'none';
@@ -739,10 +766,13 @@ export default class TileLayerDomRenderer extends Class {
         this.setToRedraw();
     }
 
-    _abortLoading(removeDOM = true) {
-        const falseFn = function () { return false; };
+    _abortLoading(removeDOM) {
         for (const i in this._tiles) {
+            if (this._tiles[i].abort) {
+                continue;
+            }
             if (this._tiles[i].z !== this._tileZoom || !this._tiles[i].current) {
+                this._tiles[i].abort = true;
                 const tile = this._tiles[i].el;
 
                 tile.onload = falseFn;
@@ -758,5 +788,7 @@ export default class TileLayerDomRenderer extends Class {
         }
     }
 }
+
+function falseFn() { return false; }
 
 TileLayer.registerRenderer('dom', TileLayerDomRenderer);

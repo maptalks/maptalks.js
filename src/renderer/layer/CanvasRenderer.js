@@ -476,11 +476,14 @@ class CanvasRenderer extends Class {
     getEvents() {
         return {
             '_zoomstart' : this.onZoomStart,
+            '_zooming' : this.onZooming,
             '_zoomend' : this.onZoomEnd,
             '_resize'  : this.onResize,
             '_movestart' : this.onMoveStart,
+            '_moving' : this.onMoving,
             '_moveend' : this.onMoveEnd,
             '_dragrotatestart' : this.onDragRotateStart,
+            '_dragrotating' : this.onDragRotating,
             '_dragrotateend' : this.onDragRotateEnd,
             '_spatialreferencechange' : this.onSpatialReferenceChange
         };
@@ -503,10 +506,22 @@ class CanvasRenderer extends Class {
     }
 
     /**
+    * onZooming
+    * @param  {Object} param event parameters
+    */
+    onZooming() {}
+
+    /**
     * onMoveStart
     * @param  {Object} param event parameters
     */
     onMoveStart() {}
+
+    /**
+    * onMoving
+    * @param  {Object} param event parameters
+    */
+    onMoving() {}
 
     /**
     * onMoveEnd
@@ -531,6 +546,12 @@ class CanvasRenderer extends Class {
     * @param  {Object} param event parameters
     */
     onDragRotateStart() {}
+
+    /**
+    * onDragRotating
+    * @param  {Object} param event parameters
+    */
+    onDragRotating() {}
 
     /**
     * onDragRotateEnd

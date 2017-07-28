@@ -67,6 +67,11 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         super.onZoomStart(param);
     }
 
+    onZooming(param) {
+        this.layer.onZooming(param);
+        super.onZooming(param);
+    }
+
     onZoomEnd(param) {
         this.layer.onZoomEnd(param);
         super.onZoomEnd(param);
@@ -75,6 +80,11 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     onMoveStart(param) {
         this.layer.onMoveStart(param);
         super.onMoveStart(param);
+    }
+
+    onMoving(param) {
+        this.layer.onMoving(param);
+        super.onMoving(param);
     }
 
     onMoveEnd(param) {

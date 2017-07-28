@@ -12,7 +12,11 @@ describe('Map.Anim', function () {
         var option = {
             zoomAnimation:false,
             zoom: 17,
-            center: center
+            center: center,
+            baseLayer : new maptalks.TileLayer('tile', {
+                urlTemplate:'/resources/tile.png',
+                subdomains: [1, 2, 3]
+            })
         };
         map = new maptalks.Map(container, option);
     });
@@ -27,6 +31,7 @@ describe('Map.Anim', function () {
         var zoom = map.getZoom() - 1;
         var pitch = map.getPitch() + 10;
         var bearing = map.getBearing() + 60;
+        map.getBaseLayer().config('durationToAnimate', 300);
         map.on('animateend', function () {
             expect(map.getCenter().toArray()).to.be.closeTo(center.toArray());
             expect(map.getZoom()).to.be.eql(zoom);
@@ -40,7 +45,7 @@ describe('Map.Anim', function () {
             pitch : pitch,
             bearing : bearing
         }, {
-            'duration' : 100
+            'duration' : 300
         });
     });
 
