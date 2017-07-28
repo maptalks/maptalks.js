@@ -49,7 +49,7 @@ describe('#CanvasLayer', function () {
     });
 
     it('zoom events', function (done) {
-        const size = map.getSize();
+        var size = map.getSize();
         layer = new maptalks.CanvasLayer('v');
         layer.draw = function (context) {
             context.fillStyle = '#f00';
