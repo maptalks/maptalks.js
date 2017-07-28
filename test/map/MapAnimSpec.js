@@ -12,7 +12,11 @@ describe('Map.Anim', function () {
         var option = {
             zoomAnimation:false,
             zoom: 17,
-            center: center
+            center: center,
+            baseLayer : new maptalks.TileLayer('tile', {
+                urlTemplate:'/resources/tile.png',
+                subdomains: [1, 2, 3]
+            })
         };
         map = new maptalks.Map(container, option);
     });
