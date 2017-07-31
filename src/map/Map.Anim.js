@@ -90,7 +90,7 @@ Map.include({
                         this.setBearing(props['bearing'][1]);
                     }
                 }
-                this._endAnim(props, zoomOrigin);
+                this._endAnim(props, zoomOrigin, options);
                 if (isFunction(options['onFinish'])) {
                     options['onFinish']();
                 }
@@ -114,12 +114,16 @@ Map.include({
         return this;
     },
 
-    _endAnim(props, zoomOrigin) {
+    _endAnim(props, zoomOrigin, options) {
         if (props['center']) {
             this.onMoveEnd();
         }
         if (!isNil(props['zoom'])) {
-            this.onZoomEnd(props['zoom'][1], zoomOrigin);
+            if (!options['wheelZoom']) {
+                this.onZoomEnd(props['zoom'][1], zoomOrigin);
+            } else {
+                this.onZooming(props['zoom'][1], zoomOrigin);
+            }
         }
         if (this._animPlayer) {
             this._fireEvent(this._animPlayer._interupted ? 'animateinterupted' : 'animateend');
@@ -134,7 +138,7 @@ Map.include({
         if (props['center']) {
             this.onMoveStart();
         }
-        if (props['zoom']) {
+        if (props['zoom'] && !this.isZooming()) {
             this.onZoomStart(props['zoom'][1], zoomOrigin);
         }
         this._animPlayer.play();
