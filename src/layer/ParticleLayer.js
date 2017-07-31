@@ -41,7 +41,8 @@ class ParticleLayer extends CanvasLayer {
 
     draw(context, view) {
         const points = this.getParticles(now());
-        if (!points) {
+        if (!points || points.length === 0) {
+            this._getRenderer()._shouldClear = true;
             return;
         }
         const map = this.getMap();
