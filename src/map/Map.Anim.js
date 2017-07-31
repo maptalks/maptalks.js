@@ -21,6 +21,7 @@ function equalView(view1, view2) {
 
 Map.include({
     animateTo(view, options = {}) {
+        this._stopAnim();
         const projection = this.getProjection(),
             currView = this.getView(),
             props = {};
