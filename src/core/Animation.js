@@ -1,4 +1,5 @@
 import {
+    isNil,
     extend,
     isNumber,
     isString,
@@ -221,6 +222,14 @@ const Animation = {
         for (const p in styles) {
             if (styles.hasOwnProperty(p)) {
                 const values = styles[p];
+                // ignore null values
+                if (!values) {
+                    continue;
+                } else if (Array.isArray(values)) {
+                    if (isNil(values[0]) || isNil(values[1])) {
+                        continue;
+                    }
+                }
                 let childStyles;
                 if (isChild(values)) {
                     childStyles = resolveChild(values);
