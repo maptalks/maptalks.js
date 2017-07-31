@@ -1,4 +1,4 @@
-import { requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { isNil } from 'core/util';
 import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
 import Handler from 'handler/Handler';
 import Map from '../Map';
@@ -13,39 +13,59 @@ class MapScrollWheelZoomHandler extends Handler {
     }
 
     _onWheelScroll(evt) {
-        const map = this.target;
-        const container = map._containerDOM;
         preventDefault(evt);
         stopPropagation(evt);
-        if (map.isZooming()) { return false; }
+        if (this._zooming) {
+            this._requesting++;
+            return false;
+        }
+        this._requesting = 0;
+        const map = this.target;
+        const container = map._containerDOM;
+        this._zooming = true;
         let levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
-        levelValue *= this._getSteps(levelValue);
         if (evt.detail) {
             levelValue *= -1;
         }
-        const mouseOffset = getEventContainerPoint(evt, container);
-        if (this._scrollZoomFrame) {
-            cancelAnimFrame(this._scrollZoomFrame);
+        let nextZoom = map.getZoom() + levelValue;
+        nextZoom = map._checkZoom(levelValue > 0 ? Math.ceil(nextZoom) : Math.floor(nextZoom));
+        const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
+        if (!map.isZooming()) {
+            map.onZoomStart(null, origin);
+            this._origin = origin;
+            this._delta = levelValue;
+            this._startTime = Date.now();
         }
-        this._scrollZoomFrame = requestAnimFrame(function () {
-            map._zoomAnimation(Math.ceil(map.getZoom() + levelValue), mouseOffset);
+        const duration = 220;
+        map.animateTo({
+            'zoom' : nextZoom - this._delta * 1 / 2,
+            'around' : this._origin
+        }, {
+            'easing' : 'linear',
+            'duration' : duration,
+            'wheelZoom' : true,
+            'onFinish' : () => {
+                if (this._requesting < 4 || this._requesting >= 10) {
+                    map.animateTo({
+                        'zoom' : nextZoom,
+                        'around' : this._origin
+                    }, {
+                        'duration' : duration,
+                        'onFinish' : () => {
+                            delete this._zooming;
+                        }
+                    });
+                    delete this._origin;
+                    delete this._delta;
+                    delete this._timeout;
+                    this._requesting = 0;
+                } else if (!isNil(this._requesting)) {
+                    delete this._zooming;
+                    this._onWheelScroll(evt);
+                }
+            }
         });
-
         return false;
-    }
-
-    _getSteps(level) {
-        const now = Date.now();
-        const maxTime = 500;
-        if (!this._steps || (now - this._time) > maxTime || level !== this._lastLevel) {
-            this._steps = 1;
-        }
-        this._lastLevel = level;
-        this._time = now;
-        if (this._steps > 3) {
-            this._steps = 3;
-        }
-        return this._steps++;
     }
 }
 
