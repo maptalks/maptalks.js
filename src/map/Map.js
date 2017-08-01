@@ -122,7 +122,7 @@ const options = {
  *          subdomains:['a','b','c']
  *      }),
  *      layers : [
- *          new maptalks.VectorLayer('v', [new maptalks.Marker([180, 0]])
+ *          new maptalks.VectorLayer('v', [new maptalks.Marker([180, 0])])
  *      ]
  * });
  */
@@ -132,9 +132,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
      *                                          1. A HTMLElement container.<br/>
      *                                          2. ID of a HTMLElement container.<br/>
-     *                                          3. A canvas compatible container in node,
-     *                                          e.g. [node-canvas]{@link https://github.com/Automattic/node-canvas},
-     *                                              [canvas2svg]{@link https://github.com/gliffy/canvas2svg}
+     *                                          3. Any canvas compatible container
      * @param {Object} options - construct options
      * @param {(Number[]|Coordinate)} options.center - initial center of the map.
      * @param {Number} options.zoom - initial zoom of the map.
