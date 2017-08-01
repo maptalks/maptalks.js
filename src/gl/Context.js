@@ -23,92 +23,19 @@
  * 
  * @author yellow 2017/6/11
  */
-import merge from './../utils/merge';
-import GLConstants from './gl/GLConstants';
-import GLExtension from './gl/GLExtension';
-import GLLimits from './gl/GLLimits';
-import GLProgram from './gl/GLProgram';
-import { ShaderFactory, shadersName } from './shader/ShaderLib';
+const merge = require('./../utils/merge'),
+
+    GLConstants = require('./GLConstants'),
+    GLExtension = require('./GLExtension'),
+    GLLimits = require('./GLLimits'),
+    GLProgram = require('./GLProgram');
 /**
  * @class
  * @example
- *   let cvs = document.createElement('canvas'),
- *       ctx = new Context(cvs);
+ * let cvs = document.createElement('canvas'),
+ *  ctx = new Context(cvs);
  */
 class Context {
-    /**
-     * shaderCache
-     */
-    _shaderCache = {};
-    /**
-     * @type {Object}
-     */
-    _programCache = {};
-    /**
-     * @type {GLProgram}
-     */
-    _currentProgram;
-    /**
-     * the buffer canvas,
-     * @type {OffscreenCanvas}
-     */
-    _canvas;
-    /**
-     * canvas width
-     */
-    _width;
-    /**
-     * canvas height
-     */
-    _height;
-    /**
-     * context类型，支持webgl,webgl2
-     * @type {String}
-     */
-    _renderType;
-    /**
-     * @type {number}
-     */
-    _alpha;
-    /**
-     * 是否启用缓冲区
-     * @type {boolean}
-     */
-    _stencil;
-    /**
-     * 设置绘制depth属性
-     * @type {boolean}
-     */
-    _depth;
-    /**
-     * 抗锯齿
-     * @type {boolean}
-     */
-    _antialias;
-    /**
-     * 设置材质属性
-     */
-    _premultipliedAlpha;
-    /**
-     * get context setting
-     * @memberof Context
-     */
-    _preserveDrawingBuffer;
-    /**
-     * 绘制上下文
-     * @type {WebGLRenderingContext}
-     */
-    _gl;
-    /**
-     * webgl扩展
-     * @type {GLExtension}
-     */
-    _glExtension;
-    /**
-     * webgl detected
-     * @type {GLLimits}
-     */
-    _glLimits;
     /**
      * @param {htmlCanvas} canvas
      * @param {Object} [options]
@@ -124,51 +51,119 @@ class Context {
      */
     constructor(options) {
         options = options || {};
-        const width = options.width || window.innerWidth,
-            height = options.height || window.innerHeight;
-        //兼容性欠佳，故改用canvas = new OffscreenCanvas(width,height);
-        this._offScreenCanvas(width, height);
+        /**
+         * canvas width
+         */
+        this._width = options.width || window.innerWidth;
+        /**
+         * canvas height
+         */
+        this._height = options.height || window.innerHeight;
+        /**
+         * 兼容性欠佳，故改用canvas = new OffscreenCanvas(width,height);
+         * @type {HTMLCanvasElement}
+         */
+        this._canvas = this._offScreenCanvas();
+        /**
+         * context类型，支持webgl,webgl2
+         * @type {String}
+         */
         this._renderType = options.renderType || 'webgl2';
+        /**
+         * 设置允许透明度
+         * @type {boolean}
+         */
         this._alpha = options.alpha || false;
+        /**
+         * 是否启用缓冲区
+         * @type {boolean}
+         */
         this._stencil = options.stencil || true;
+        /**
+         * 设置绘制depth属性
+         * @type {boolean}
+         */
         this._depth = options.depth || true;
+        /**
+         * 抗锯齿
+         * @type {boolean}
+         */
         this._antialias = options.antialias || false;
+        /**
+         * 设置材质属性
+         */
         this._premultipliedAlpha = options.premultipliedAlpha || true;
+        /**
+         * get context setting
+         * @memberof Context
+         */
         this._preserveDrawingBuffer = options.preserveDrawingBuffer || false;
+        /**
+         * @type {boolean}
+         */
         this._allowTextureFilterAnisotropic = options.allowTextureFilterAnisotropic || true;
-        //validation and logging disabled by default for speed.
-        this._validateFramebuffer = false;
-        this._validateShaderProgram = false;
-        this._logShaderCompilation = false;
-        //get glContext
+        /**
+         * @type {GLProgram}
+         */
+        this._currentProgram = null;
+        /**
+         * webgl detected
+         * @type {GLLimits}
+         */
+        this._glLimits;
+        /**
+         *  @type {WebGLRenderingContext}
+         */
         this._gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes()) || undefined;
-        //get extension
-        this._includeExtension();
-        //get parameter and extensions
-        this._includeParameter();
-        //inilization shaders
-        this._includeShaders();
-        //inilization programs
-        this._includePrograms();
-        //setup env
+        /**
+         * webgl扩展
+         * @type {GLExtension}
+         */
+        this._glExtension = this._includeExtension();
+        /**
+         * get parameter and extensions
+         */
+        this._glLimits = this._includeLimits();
+        /**
+         * 
+         * @type {Object}
+         */
+        this._shaderCache = {};
+        /**
+         * @type {Object}
+         */
+        this._programCache = {};
+        /**
+         * setup env
+         */
         this._setup();
     };
     /**
      * 兼容写法，创建非可见区域canvas，用户做缓冲绘制
      * 待绘制完成后，使用bitmaprender绘制到实际页面上
      * @memberof Context
-     * @param {number} width buffer canvas width
-     * @param {number} height buffer canvas height
      */
-    _offScreenCanvas(width, height) {
+    _offScreenCanvas() {
         let htmlCanvas = document.createElement('canvas');
-        htmlCanvas.width = width;
-        htmlCanvas.height = height;
-        this._canvas = htmlCanvas;
+        htmlCanvas.width = this._width;
+        htmlCanvas.height = this._height;
         //bug only firfox 44 + support
         //this._canvas = htmlCanvas.transferControlToOffscreen();
-        this._width = width;
-        this._height = height;
+        return htmlCanvas;
+    };
+    /**
+     * Query and initialize extensions
+     */
+    _includeExtension() {
+        const gl = this._gl;
+        return new GLExtension(gl);
+    };
+    /**
+     * hardware
+     */
+    _includeLimits() {
+        const gl = this._gl;
+        return new GLLimits(gl);
     };
     /**
      * 兼容写法
@@ -186,8 +181,8 @@ class Context {
         let image = new Image();
         image.src = _canvas.toDataURL("image/png");
         //
-        const renderContext = canvas.getContext('bitmaprenderer')||canvas.getContext('2d');
-        !!renderContext.transferFromImageBitmap?renderContext.transferFromImageBitmap(image):renderContext.drawImage(image,0,0);
+        const renderContext = canvas.getContext('bitmaprenderer') || canvas.getContext('2d');
+        !!renderContext.transferFromImageBitmap ? renderContext.transferFromImageBitmap(image) : renderContext.drawImage(image, 0, 0);
         //
     }
     /**
@@ -213,7 +208,6 @@ class Context {
      * 1. 混合颜色
      * 2. 深度
      * 3.
-     * @param {WebGLRenderingContext} gl [WebGL2RenderingContext]
      */
     _setup() {
         const gl = this._gl;
@@ -237,20 +231,6 @@ class Context {
         gl.depthFunc(GLConstants.LEQUAL); //深度参考值小于模版值时，测试通过
         gl.depthMask(false);
     }
-    /**
-     * Query and initialize extensions
-     */
-    _includeExtension() {
-        const gl = this._gl;
-        this._glExtension = new GLExtension(gl);
-    };
-    /**
-     * hardware
-     */
-    _includeParameter() {
-        const gl = this._gl;
-        this._glLimits = new GLLimits(gl);
-    };
     /**
      *  加载shaders
      */
@@ -329,26 +309,26 @@ class Context {
      * @param {number} width 
      * @param {number} height 
      */
-    resize(width,height){
+    resize(width, height) {
 
     }
     /**
      * 返回渲染缓冲的宽度
      */
-    get width(){
+    get width() {
         return this._width;
     }
     /**
      * 返回渲染缓冲的高度
      */
-    get height(){
+    get height() {
         return this._height;
     }
     /**
      * 返回物理上下文
      * @return {WebGLRenderingConext}
      */
-    get gl(){
+    get gl() {
         return this._gl;
     }
     /**
@@ -364,5 +344,4 @@ class Context {
     }
 }
 
-
-export default Context;
+module.exports = Context;

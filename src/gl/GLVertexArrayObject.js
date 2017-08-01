@@ -4,34 +4,12 @@
  * 
  * @class GLVertexArrayObject
  */
-import Dispose from './../../utils/Dispose';
-import GLExtension from './GLExtension';
-import GLConstants from './GLConstants';
+const Dispose = require('./../utils/Dispose'),
+    GLConstants = require('./GLConstants');
 /**
  * @class
  */
 class GLVertexArrayObject extends Dispose {
-    /**
-     * 存储 indexbuffer ，用于重新排列 vertexbuffer顶点
-     */
-    _indexBuffer = null;
-    /**
-     * 存储 vertexbuffer和其相关属性
-     */
-    _attributes = [];
-    /**
-     * @type {GLExtension}
-     */
-    _ext;
-    /**
-     * @type {WebGLRenderingContext}
-     */
-    _gl;
-    /**
-     * 默认情况下，未新增attribute时不需要active，如果新增了active，则整个vao对象里的绘制方法混合，需要重新active
-     * @type {boolean}
-     */
-    _needsToActive = false;
     /**
      * @param {WebGLRenderingContext} gl 
      * @param {GLExtension} extension 
@@ -39,7 +17,22 @@ class GLVertexArrayObject extends Dispose {
      */
     constructor(gl, extension, limits) {
         super();
+        /**
+         * @type {WebGLRenderingContext}
+         */
         this._gl = gl;
+        /**
+         * 存储 indexbuffer ，用于重新排列 vertexbuffer顶点
+         */
+        this._indexBuffer=null;
+        /**
+         * 存储 vertexbuffer和其相关属性
+         */
+        this._attributes=[];
+
+        /**
+         * @type {GLExtension}
+         */
         this._ext = extension['vertexArrayObject'];
         this._handle = this._createHandle();
     }
@@ -51,7 +44,7 @@ class GLVertexArrayObject extends Dispose {
     _createHandle() {
         const gl = this._gl,
             ext = this._ext;
-        if (!!ext) 
+        if (!!ext)
             return ext.createVertexArrayOES();
         if (!!gl.createVertexArray)
             return gl.createVertexArray();
@@ -61,7 +54,7 @@ class GLVertexArrayObject extends Dispose {
      * 销毁vao对象
      */
     dispose() {
-        
+
     }
     /**
      * 绑定上下文
@@ -176,4 +169,4 @@ class GLVertexArrayObject extends Dispose {
     }
 }
 
-export default GLVertexArrayObject;
+module.exports =  GLVertexArrayObject;

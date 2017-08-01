@@ -7,11 +7,14 @@
 *   @inheritable
 */
 
-import { stamp } from './stamp';
-import { splitWords } from './splitWords';
-import noop from './noop';
-import merge from './merge';
+const stamp = require('./stamp').stamp,
+    splitWords = require('./splitWords').splitWords,
+    noop = require('./noop'),
+    merge = require('./merge');
 
+/**
+ * @class 
+ */
 class Event {
 
     _eventPopNodes = {};
@@ -182,4 +185,4 @@ class Event {
     }
 };
 
-export default Event;
+module.exports = Event;

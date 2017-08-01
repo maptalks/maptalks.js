@@ -4,26 +4,20 @@
  * -id
  * -handle
  * -create handle
- * -des
- * @class Dispose
+ * -dispose
  */
 
-import { stamp } from './stamp';
+const stamp = require('./stamp').stamp;
 
+/**
+ * @class
+ */
 class Dispose {
-    /**
-     * 资源id
-     */
-    _id;
-    /**
-     * 资源对象句柄
-     */
-    _handle;
     /**
      * 构建一个可被销毁的资源对象
      */
     constructor() {
-        this.id = stamp(this);
+        this._id = stamp(this);
     }
     /**
      * 资源销毁方法，执行完一段后，统一调用
@@ -51,4 +45,4 @@ class Dispose {
     }
 }
 
-export default Dispose;
+module.exports = Dispose;

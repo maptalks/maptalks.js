@@ -1,75 +1,40 @@
 /**
  * 生产和处理绘制数据，丢给render队列待output
+ * @author yellow date 2017/6/12
  */
-import { _FUSION_EVENT_RESIZE } from './../core/EventNames';
 
-import Event from './../utils/Event';
-import merge from './../utils/merge';
-import { stamp } from './../utils/stamp';
+const Event = require('./../utils/Event'),
+    merge = require('./../utils/merge'),
+    stamp = require('./../utils/stamp').stamp;
 
-import Context from './../renderer/Context';
+const Context = require('./../gl/Context');
 
-/**
- * contain two dimensional
- * -renderer,the paint renderer method
- * -data production queue
- * so,if we want to render geometry,we shoud produce data by customer DataManage
- * 
- * -将RenderNode内的数据取出，生成与逻辑无关的顶点用于渲染。
- *  绘制好后放入待output队列，等待RenderLoop操作逐帧渲染。
- * 
- * @class
- */
-class RenderManager extends Event {
-    /**
-     * render数据集
-     */
-    _renderNodes=[];
-    /**
-     * render instance
-     * @memberof RenderManager
-     * @type {Context}
-     */
-    _ctx;
+class RenderManager extends Event{
+
+    constructor(options){
+        super();
+        /**
+         * Array of Nodes
+         */
+        this._renderNodes=[];
+        /**
+         * render Context
+         * @type {Context}
+         */
+        this._ctx = new Context(options);
+        /**
+         * register event of 'resize'
+         */
+        this.on('resize',this._onResize);
+    }
     /**
      * 
-     * @param {Object} [options] 
-     * @param {String} [options.renderType] default is 'webgl'
-     * @param {number} [options.width] 
-     * @param {number} [options.height]
+     * @param {number} w 
+     * @param {number} h 
      */
-    constructor(options) {
-        super();
-        this._ctx=new Context(options);
-        //renderManager监听 _KIWI_EVENT_RESIZE 事件
-        //this.addEventPopNode(this._ctx);
-        this.on(_FUSION_EVENT_RESIZE, this._onResize);
-    }
-
-    _onResize(width,height) {
+    _onResize(w,h){
         const ctx = this._ctx;
-        ctx.resize(width,height);
-    }
-
-    get context(){
-         const ctx = this._ctx;
-         return ctx;
-    }
-
-    get width(){
-         const ctx = this._ctx;
-         return ctx.width;
-    }
-
-    get height(){
-         const ctx = this._ctx;
-         return ctx.height;
-    }
-
-    addRenderNode(renderNode){
-        this._renderNodes.push(renderNode);
+        ctx.resize(w,h);
     }
 
 }
-
-export default RenderManager;

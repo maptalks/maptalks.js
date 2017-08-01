@@ -3,7 +3,7 @@
  * reference https://webgl2fundamentals.org/webgl/lessons/webgl-3d-camera.html
  * @author yellow date 2017/6/12
  */
-import glMatrix from 'kiwi.matrix';
+const glMatrix = require('kiwi.matrix').default;
 
 /**
  * @class

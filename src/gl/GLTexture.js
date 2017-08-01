@@ -10,43 +10,13 @@
  * -支持非2的n次方规格的textures
  * 
  */
-import Dispose from './../../utils/Dispose';
-import GLConstants from './GLConstants';
+const Dispose = require('./../utils/Dispose'),
+        GLConstants = require('./GLConstants');
+
 /**
  * @class
  */
 class GLTexture extends Dispose {
-    /**
-     * mipmap指示
-     * @type {boolean}
-     */
-    _mipmap;
-    /**
-     * @type {WebGLRenderingContext}
-     */
-    _gl;
-    /**
-     *  the width of texture
-     *  @type {number}
-     */
-    _width;
-    /**
-     *  the hight of texture
-     *  @type {number}
-     */
-    _height;
-    /**
-     * @type {number}
-     */
-    _format;
-    /**
-     * @type {number}
-     */
-    _type;
-    /**
-     * @type {boolean}
-     */
-    _premultiplyAlpha = false;
     /**
      * 
      * @param {WebGLRenderingContext} gl 
@@ -175,4 +145,4 @@ class GLTexture extends Dispose {
     };
 }
 
-export default GLTexture;
+module.exports =  GLTexture;

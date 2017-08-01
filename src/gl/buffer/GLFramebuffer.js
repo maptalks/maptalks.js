@@ -13,34 +13,16 @@
  * http://blog.csdn.net/myarrow/article/details/7782963
  * 
  */
-import Dispose from './../../utils/Dispose';
-import GLConstants from './GLConstants';
-import GLTexture from './GLTexture';
+
+const Dispose = require('./../../utils/Dispose'),
+    GLConstants = require('./../GLConstants'),
+    GLTexture = require('./../GLTexture');
+
 /**
  * 帧缓冲类
  * @class
  */
 class GLFramebuffer extends Dispose {
-    /**
-     * @type {WebGLRenderbuffer}
-     */
-    _stencil;
-    /**
-     * @type {number}
-     */
-    _height
-    /**
-     * @type {number}
-     */
-    _width;
-    /**
-     * @type {WebGLRenderingContext}
-     */
-    _gl;
-    /**
-     * @type {GLTexture}
-     */
-    _texture;
     /**
      * 
      * @param {WebGLRenderingContext} gl 
@@ -101,4 +83,4 @@ class GLFramebuffer extends Dispose {
     }
 }
 
-export default GLFramebuffer;
+module.exports = GLFramebuffer;
