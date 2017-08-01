@@ -1,6 +1,5 @@
 import { extend, isNil, isString } from 'core/util';
 import { createEl } from 'core/util/dom';
-import Point from 'geo/Point';
 import DragHandler from 'handler/Drag';
 import Control from './Control';
 
@@ -184,28 +183,27 @@ class Panel extends Control {
      * @private
      */
     _getConnectPoints() {
-        const map = this._map;
+        const map = this.getMap();
         const containerPoint = this.getContainerPoint();
         const dom = this.getDOM(),
-            width = dom.clientWidth,
-            height = dom.clientHeight;
-
+            width = parseInt(dom.clientWidth),
+            height = parseInt(dom.clientHeight);
         const anchors = [
             //top center
             map.containerPointToCoordinate(
-                containerPoint.add(new Point(Math.round(width / 2), 0))
+                containerPoint.add(width / 2, 0)
             ),
             //middle right
             map.containerPointToCoordinate(
-                containerPoint.add(new Point(width, Math.round(height / 2)))
+                containerPoint.add(width, height / 2)
             ),
             //bottom center
             map.containerPointToCoordinate(
-                containerPoint.add(new Point(Math.round(width / 2), height))
+                containerPoint.add(width / 2, height)
             ),
             //middle left
             map.containerPointToCoordinate(
-                containerPoint.add(new Point(0, Math.round(height / 2)))
+                containerPoint.add(0, height / 2)
             )
 
         ];

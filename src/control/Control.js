@@ -116,15 +116,15 @@ class Control extends Eventable(Class) {
 
         const size = this.getMap().getSize();
         let x, y;
-        if (!isNil(position['top'])) {
-            x = position['top'];
-        } else if (!isNil(position['bottom'])) {
-            x = size['height'] - position['bottom'];
-        }
         if (!isNil(position['left'])) {
-            y = position['left'];
+            x = parseInt(position['left']);
         } else if (!isNil(position['right'])) {
-            y = size['width'] - position['right'];
+            x = size['width'] - parseInt(position['right']);
+        }
+        if (!isNil(position['top'])) {
+            y = parseInt(position['top']);
+        } else if (!isNil(position['bottom'])) {
+            y = size['height'] - parseInt(position['bottom']);
         }
         return new Point(x, y);
     }
