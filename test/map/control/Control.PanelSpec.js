@@ -84,4 +84,25 @@ describe('Control.Panel', function () {
         expect(panel.getPosition()).not.to.be.eql(position);
     });
 
+    it('has connector points', function () {
+        var position = {
+            top: '150',
+            left: '150'
+        };
+        var panel = new maptalks.control.Panel({
+            position : position,
+            draggable: true,
+            custom: false,
+            content: '面板内容'
+        });
+        map.addControl(panel);
+
+        var points = panel._getConnectPoints();
+        expect(points.length).to.be.eql(4);
+        expect(points[0].toArray()).to.be.closeTo([118.844486, 32.0478981]);
+        expect(points[1].toArray()).to.be.closeTo([118.844829, 32.0478025]);
+        expect(points[2].toArray()).to.be.closeTo([118.844486, 32.047707]);
+        expect(points[3].toArray()).to.be.closeTo([118.8441427, 32.0478025]);
+        console.log(points);
+    });
 });
