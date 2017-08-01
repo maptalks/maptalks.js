@@ -1,5 +1,6 @@
 import { isNil, isArrayHasData, removeFromArray } from 'core/util';
 import LineString from './LineString';
+import Geometry from './Geometry';
 import ArcCurve from './ArcCurve';
 
 /**
@@ -39,7 +40,7 @@ const Connectable = Base =>
             this._connSource = src;
             this._connTarget = target;
             this._updateCoordinates();
-            this._registEvents();
+            this._registerEvents();
             return this;
         }
 
@@ -64,7 +65,7 @@ const Connectable = Base =>
             this._connSource = src;
             this._connTarget = target;
             this._updateCoordinates();
-            this._registEvents();
+            this._registerEvents();
             return this;
         }
 
@@ -108,6 +109,7 @@ const Connectable = Base =>
         }
 
         onAdd() {
+            this._registerEvents();
             this._updateCoordinates();
         }
 
@@ -130,6 +132,12 @@ const Connectable = Base =>
                 this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
                 delete this._connTarget;
             }
+
+            //not a geometry
+            if (!(this._connSource instanceof Geometry) || !(this._connTarget instanceof Geometry)) {
+                const map = this.getMap();
+                map.off('movestart moving moveend zoomstart zooming zoomend rotate pitch fovchange spatialreferencechange', this._updateCoordinates, this);
+            }
         }
 
         _showConnect() {
@@ -142,7 +150,7 @@ const Connectable = Base =>
             }
         }
 
-        _registEvents() {
+        _registerEvents() {
             if (!this._connSource || !this._connTarget) {
                 return;
             }
@@ -173,6 +181,12 @@ const Connectable = Base =>
                 this._connTarget.on('mouseover', this._showConnect, this).on('mouseout', this.hide, this);
             } else {
                 this._showConnect();
+            }
+
+            //not a geometry
+            if (!(this._connSource instanceof Geometry) || !(this._connTarget instanceof Geometry)) {
+                const map = this.getMap();
+                map.on('movestart moving moveend zoomstart zooming zoomend rotate pitch fovchange spatialreferencechange', this._updateCoordinates, this);
             }
         }
     };
@@ -227,7 +241,6 @@ class ConnectorLine extends Connectable(LineString) {
         }
         this._connSource = src;
         this._connTarget = target;
-        this._registEvents();
     }
 }
 
@@ -270,7 +283,7 @@ class ArcConnectorLine extends Connectable(ArcCurve) {
         }
         this._connSource = src;
         this._connTarget = target;
-        this._registEvents();
+        this._registerEvents();
     }
 }
 

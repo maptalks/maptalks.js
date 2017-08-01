@@ -83,6 +83,9 @@ class UIComponent extends Eventable(Class) {
      */
     addTo(owner) {
         this._owner = owner;
+        if (this.onAdd) {
+            this.onAdd();
+        }
         /**
          * add event.
          *

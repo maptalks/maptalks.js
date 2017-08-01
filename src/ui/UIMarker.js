@@ -284,6 +284,10 @@ class UIMarker extends Handlerable(UIComponent) {
         return this.options['content'];
     }
 
+    onAdd() {
+        this.show();
+    }
+
     /**
      * Show the UIMarker
      * @returns {UIMarker} this
@@ -361,6 +365,37 @@ class UIMarker extends Handlerable(UIComponent) {
         off(dom, domEvents, this._onDomEvents, this);
     }
 
+    /**
+     * Get the connect points of panel for connector lines.
+     * @private
+     */
+    _getConnectPoints() {
+        const map = this.getMap();
+        const containerPoint = map.coordinateToContainerPoint(this.getCoordinates());
+        const size = this.getSize(),
+            width = size.width,
+            height = size.height;
+        const anchors = [
+            //top center
+            map.containerPointToCoordinate(
+                containerPoint.add(-width / 2, 0)
+            ),
+            //middle right
+            map.containerPointToCoordinate(
+                containerPoint.add(width / 2, 0)
+            ),
+            //bottom center
+            map.containerPointToCoordinate(
+                containerPoint.add(0, height / 2)
+            ),
+            //middle left
+            map.containerPointToCoordinate(
+                containerPoint.add(0, -height / 2)
+            )
+
+        ];
+        return anchors;
+    }
 }
 
 UIMarker.mergeOptions(options);

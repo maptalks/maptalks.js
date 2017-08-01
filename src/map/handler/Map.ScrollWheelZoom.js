@@ -36,7 +36,7 @@ class MapScrollWheelZoomHandler extends Handler {
             this._delta = levelValue;
             this._startTime = Date.now();
         }
-        const duration = 220;
+        const duration = 180;
         map.animateTo({
             'zoom' : nextZoom - this._delta * 1 / 2,
             'around' : this._origin
