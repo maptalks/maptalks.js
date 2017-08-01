@@ -39,8 +39,7 @@ const Connectable = Base =>
             this.onRemove();
             this._connSource = src;
             this._connTarget = target;
-            this._updateCoordinates();
-            this._registerEvents();
+            this.onAdd();
             return this;
         }
 
@@ -136,7 +135,9 @@ const Connectable = Base =>
             //not a geometry
             if (!(this._connSource instanceof Geometry) || !(this._connTarget instanceof Geometry)) {
                 const map = this.getMap();
-                map.off('movestart moving moveend zoomstart zooming zoomend rotate pitch fovchange spatialreferencechange', this._updateCoordinates, this);
+                if (map) {
+                    map.off('movestart moving moveend zoomstart zooming zoomend rotate pitch fovchange spatialreferencechange', this._updateCoordinates, this);
+                }
             }
         }
 
@@ -186,7 +187,9 @@ const Connectable = Base =>
             //not a geometry
             if (!(this._connSource instanceof Geometry) || !(this._connTarget instanceof Geometry)) {
                 const map = this.getMap();
-                map.on('movestart moving moveend zoomstart zooming zoomend rotate pitch fovchange spatialreferencechange', this._updateCoordinates, this);
+                if (map) {
+                    map.on('movestart moving moveend zoomstart zooming zoomend rotate pitch fovchange spatialreferencechange', this._updateCoordinates, this);
+                }
             }
         }
     };
@@ -283,7 +286,6 @@ class ArcConnectorLine extends Connectable(ArcCurve) {
         }
         this._connSource = src;
         this._connTarget = target;
-        this._registerEvents();
     }
 }
 

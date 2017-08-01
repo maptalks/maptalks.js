@@ -57,6 +57,26 @@ describe('#ConnectorLineSpec', function () {
             }
         });
 
+        it('can connect geometries with UIMarker', function () {
+            var uimarker = new maptalks.ui.UIMarker(map.getCenter(), {
+                draggable: true,
+                content: 'UIMarker'
+            });
+            map.addControl(uimarker);
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+            layer.addGeometry(geometries);
+            for (var i = 0; i < geometries.length; i++) {
+
+                var conn = new maptalks.ArcConnectorLine(geometries[i], uimarker);
+                layer.addGeometry(conn);
+                expect(conn.getConnectSource()).to.be.eql(geometries[i]);
+                expect(conn.getConnectTarget()).to.be.eql(uimarker);
+
+            }
+        });
+
         it('remove connector line', function () {
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
