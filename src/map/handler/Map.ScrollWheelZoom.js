@@ -45,7 +45,7 @@ class MapScrollWheelZoomHandler extends Handler {
             'duration' : duration,
             'wheelZoom' : true,
             'onFinish' : () => {
-                if (this._requesting < 4 || this._requesting >= 10) {
+                if (this._requesting < 3 || this._requesting >= 10) {
                     map.animateTo({
                         'zoom' : nextZoom,
                         'around' : this._origin
