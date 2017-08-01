@@ -100,9 +100,17 @@ describe('Control.Panel', function () {
         var points = panel._getConnectPoints();
         expect(points.length).to.be.eql(4);
         expect(points[0].toArray()).to.be.closeTo([118.844486, 32.0478981]);
-        expect(points[1].toArray()).to.be.closeTo([118.844829, 32.0478025]);
-        expect(points[2].toArray()).to.be.closeTo([118.844486, 32.047707]);
-        expect(points[3].toArray()).to.be.closeTo([118.8441427, 32.0478025]);
+        if (maptalks.Browser.ie) {
+            expect(points[1].toArray()).to.be.closeTo([118.84482943649291, 32.04781623775102]);
+            expect(points[2].toArray()).to.be.closeTo([118.84448611373901, 32.04773439332491]);
+            expect(points[3].toArray()).to.be.closeTo([118.8441427909851, 32.04781623775102]);
+        } else {
+            expect(points[1].toArray()).to.be.closeTo([118.844829, 32.0478025]);
+            expect(points[2].toArray()).to.be.closeTo([118.844486, 32.047707]);
+            expect(points[3].toArray()).to.be.closeTo([118.8441427, 32.0478025]);
+        }
+
+
         console.log(points);
     });
 });
