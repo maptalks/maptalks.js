@@ -3,8 +3,8 @@
  * @author yellow date 2017/6/15
  */
 
-import merge from './../../utils/merge';
-import GLConstants from './GLConstants';
+const merge = require('./../utils/merge'),
+    GLConstants = require('./GLConstants');
 
 const Limits = {
     maximumCombinedTextureImageUnits: 0,
@@ -39,12 +39,10 @@ const Limits = {
     hardwareConcurrency: 0
 };
 
-
+/**
+ * @class
+ */
 class GLLimits {
-
-    _limits;
-
-    _gl;
     /**
      * 
      * @param {WebGLRenderingContext} gl 
@@ -90,4 +88,4 @@ class GLLimits {
 
 }
 
-export default GLLimits;
+module.exports = GLLimits;

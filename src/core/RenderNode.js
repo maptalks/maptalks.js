@@ -21,51 +21,32 @@
  * 3. animationDraw,动画时绘制方法，此方法将在requestFrameLoop里采用队列式插入调用
  * 
  */
-import Event from './../utils/Event';
-/**
- * @class
- */
-class RenderNode extends Event {
-    /**
-     * @type {WebGLRenderingContext}
-     */
-    _gl;
-    /**
-     * 
-     */
-    _textures={};
-    /**
-     * 
-     */
-    _buffer={};
-    /**
-     * 
-     */
-    _shaders={};
-    /**
-     * 待载入资源队列
-     */
-    _promiseToLoadResources=[];
 
-    constructor(gl) {
+ const Event = require('./../utils/Event');
+
+ /**
+  * @class
+  */
+ class RenderNode extends Event{
+
+    constructor(){
         super();
-        this._gl = gl;
-        //准备资源
-        this.prepare();
+        this._textures = {};
+        this._buffers = {};
+        this._shaders = {};
+        this._promiseToLoadResources=[];
     }
 
     /**
      * 数据拆分与准备阶段
      */
-    prepare(){
-        throw Error('no implement of RenderNode.prepare')
+    prepare(gl){
+        /**
+         * @type {WebGLRenderingContext}
+         */
+        this._gl = gl;
     }
-    
-    animate(){
-        
-    }
-    
 
-}
+ }
 
-export default RenderNode;
+ module.exports = RenderNode;

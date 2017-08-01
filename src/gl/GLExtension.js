@@ -27,20 +27,13 @@ const GL_STANDEXTENSIONS = {
  */
 class GLExtension {
     /**
-     * map of extension
-     */
-    _extensions = {};
-    /**
-     * 
-     */
-    _gl;
-    /**
      * 
      * @param {WebGLRenderingContext} gl 
      * @param {Array} [names] the arry of extension names
      */
     constructor(gl) {
         this._gl = gl;
+        this._extensions = {};
         this._includeExtension(gl);
         this._map();
     };
@@ -79,4 +72,4 @@ class GLExtension {
 
 }
 
-export default GLExtension;
+module.exports = GLExtension;

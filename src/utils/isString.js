@@ -1,11 +1,10 @@
 /**
- * reference http://www.css88.com/doc/underscore/docs/underscore.html
- * underScore 1.8
+ * reference:
+ *  http://www.css88.com/doc/underscore/docs/underscore.html
  */
 
-let isString = (str) => {
-    //return toString.call(obj) === '[object String]';
+const isString = (str) => {
     return (typeof str == 'string') && str.constructor == String;
 }
 
-export default isString;
+module.exports = isString;

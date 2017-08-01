@@ -4,8 +4,8 @@
  * -vertexbuffer对应draw
  * -indexbuffer对应element draw
  */
-import Dispose from './../../utils/Dispose';
-import GLConstants from './GLConstants';
+const Dispose = require('./../utils/Dispose'),
+    GLConstants = require('./GLConstants');
 
 const EMPTY_BUFFER = new ArrayBuffer(0);
 
@@ -13,22 +13,6 @@ const EMPTY_BUFFER = new ArrayBuffer(0);
  * @class
  */
 class GLBuffer extends Dispose {
-    /**
-     * @type {WebGLRenderingContext}
-     */
-    _gl;
-    /**
-     * @type {gl.ARRAY_BUFFER|gl.ELEMENT_ARRAY_BUFFER}
-     */
-    _type;
-    /**
-     * @type {gl.STATIC_DRAW|gl.DYNAMIC_DRAW|gl.STREAM_DRAW}
-     */
-    _drawType;
-    /**
-     * @type {ArrayBuffer| SharedArrayBuffer|ArrayBufferView}
-     */
-    _data;
     /**
      * 
      * @param {WebGLRenderingContext} gl 
@@ -93,38 +77,6 @@ class GLBuffer extends Dispose {
         const array = this._data;
         return new Float32Array(array);
     }
-}
-/**
- * @class
- */
-class GLVertexBuffer extends GLBuffer {
-    /**
-     * 
-     * @param {WebGLRenderingContext} gl 
-     * @param {ArrayBuffer| SharedArrayBuffer|ArrayBufferView} data 
-     * @param {gl.STATIC_DRAW|gl.DYNAMIC_DRAW|gl.STREAM_DRAW} drawType 
-     */
-    constructor(gl, data, drawType) {
-        super(gl, GLConstants.ARRAY_BUFFER, data, drawType);
-    }
-}
-/**
- * @class
- */
-class GLIndexBuffer extends GLBuffer {
-    /**
-     * 
-     * @param {WebGLRenderingContext} gl 
-     * @param {ArrayBuffer| SharedArrayBuffer|ArrayBufferView} data 
-     * @param {gl.STATIC_DRAW|gl.DYNAMIC_DRAW|gl.STREAM_DRAW} drawType 
-     */
-    constructor(gl, data, drawType) {
-        super(gl, GLConstants.ELEMENT_ARRAY_BUFFER, data.drawType);
-    }
-}
+};
 
-export {
-    GLBuffer,
-    GLVertexBuffer,
-    GLIndexBuffer
-}
+module.exports = GLBuffer;

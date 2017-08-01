@@ -1,48 +1,23 @@
 /**
  * @author yellow 2017/5/15
  */
-import Event from './../utils/Event';
-import merge from './../utils/merge';
-import RenderManager from './RenderManager';
-import RenderNode from './RenderNode';
-import { _FUSION_EVENT_RESIZE } from './EventNames';
-
-//加载器
-import GLTF from './../object/GLTF';
-//基础
+const Event = require('./../utils/Event'),
+    merge = require('./../utils/merge'),
+    RenderManager = require('./RenderManager'),
+    RenderNode = require('./RenderNode');
 
 const defaultOptions = {
-    width: window.innerHeight,
-    height: window.innerHeight,
+    width: 800,
+    height: 600,
     renderType: 'webgl',
     roundPixels: false
 };
-
 /**
  * container 
  * used to transform accordance
  * @class
  */
 class Container extends Event {
-    /**
-     * readerManager
-     * @memberof Container
-     * @type {RenderManager}
-     * @readOnly
-     */
-    _renderManager;
-    /**
-     * container's width
-     * @memberof Container
-     * @member {number}
-     */
-    _width;
-    /**
-     * container's height
-     * @memberof Container
-     * @member {number}
-     */
-    _height;
     /**
      * 
      * @param {Object} [options] the settings of container 
@@ -54,18 +29,36 @@ class Container extends Event {
      */
     constructor(options) {
         super();
-        options = options || {};
-        let _options = merge(defaultOptions, options);
-        this._width = _options.width;
-        this._height = _options.height;
-        this._renderManager = new RenderManager(_options);
+        options = merge(defaultOptions, options || {});
+        /**
+         * container's width
+         * @memberof Container
+         * @member {number}
+         */
+        this._width = options.width;
+        /**
+         * container's height
+         * @memberof Container
+         * @member {number}
+         */
+        this._height = options.height;
+        /**
+         * readerManager
+         * @memberof Container
+         * @type {RenderManager}
+         * @readOnly
+        */
+        this._renderManager = new RenderManager(options);
+        /**
+         * add event pop to renderManager
+         */
         this.addEventPopNode(this._renderManager);
     }
     /**
      * 获取绘制上下文（逻辑）
      * @return {Context}
      */
-    get context(){
+    get context() {
         const renderManager = this._renderManager;
         return renderManager.context;
     }
@@ -83,15 +76,21 @@ class Container extends Event {
         this._height = value;
         this.fire(_FUSION_EVENT_RESIZE, { height: value }, true);
     }
-
+    /**
+     * get cantainer's width
+     */
     get width() {
         return this._width;
     }
-
+    /**
+     * get cantainer's height
+     */
     get height() {
         return this._height;
     }
-
+    /**
+     * 
+     */
     get camera() {
 
     }
@@ -100,7 +99,7 @@ class Container extends Event {
      * 1.通过 Container.createRenderNode
      * 2.通过 load 方法创建
      */
-    crateRenderNode(){
+    crateRenderNode() {
         const gl = this.context.gl,
             renderManager = this._renderManager;
         let renderNode = new RenderNode(gl);
@@ -109,4 +108,4 @@ class Container extends Event {
     }
 }
 
-export default Container;
+module.exports = Container;
