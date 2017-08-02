@@ -493,7 +493,7 @@ class UIComponent extends Eventable(Class) {
             }
         }
         const ownerEvents = this._getOwnerEvents();
-        if (this._owner && ownerEvents) {
+        if (this._owner) {
             for (const p in ownerEvents) {
                 if (ownerEvents.hasOwnProperty(p)) {
                     this._owner[to](p, ownerEvents[p], this);
@@ -511,12 +511,14 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getOwnerEvents() {
+        const events = {};
         if (this._owner && (this._owner instanceof Geometry)) {
-            return {
-                'positionchange': this.onGeometryPositionChange
-            };
+            events.positionchange = this.onGeometryPositionChange;
         }
-        return null;
+        if (this.getOwnerEvents) {
+            extend(events, this.getOwnerEvents());
+        }
+        return events;
     }
 
     onGeometryPositionChange(param) {
