@@ -4,9 +4,20 @@
 [![npm version](https://badge.fury.io/js/fusion.gl.svg)](https://badge.fury.io/js/fusion.gl)
 
 ## Description ##
->A drawing container,only provide sample geometry such as boll,cube and physics engine.
+> a drawing container,only provide sample geometry such as boll,cube and physics engine.
 
 ## Project Reference ##
 https://github.com/axmand/karma-rollup-mocha
 
-
+### dependency ###
+> 1. headless-gl
+```
+npm install --global --production windows-build-tools
+```
+```
+npm install gl
+```
+> 2. electron[optional]
+```
+npm install electron
+```
