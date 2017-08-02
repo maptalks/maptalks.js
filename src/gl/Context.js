@@ -24,7 +24,6 @@
  * @author yellow 2017/6/11
  */
 const merge = require('./../utils/merge'),
-
     GLConstants = require('./GLConstants'),
     GLExtension = require('./GLExtension'),
     GLLimits = require('./GLLimits'),

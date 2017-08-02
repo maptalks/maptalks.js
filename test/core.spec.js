@@ -1,7 +1,7 @@
-import Container from './../src/core/Container';
-import Context from './../src/renderer/Context';
-import { ShaderFactory } from './../src/renderer/shader/ShaderLib';
-import { GLBuffer, GLVertexBuffer, GLIndexBuffer } from './../src/renderer/gl/GLBuffer';
+/**
+ * @author yellow date 2017/8/3
+ */
+const Fusion = require('./../src/init');
 
 
 describe("test core function", () => {
@@ -13,7 +13,7 @@ describe("test core function", () => {
             cvs.width = width;
             cvs.height = height;
             document.body.appendChild(cvs);
-            let ctx = new Context({
+            let ctx = new Fusion.gl.Context({
                 alpha: false,
                 antialias: false,
                 premultipliedAlpha: false,
@@ -31,9 +31,6 @@ describe("test core function", () => {
             point_program.uniforms.bounds = [ctx._width, ctx._height];
             point_program.uniforms.zoom = 0.5;
             //设置attribute
-
-
-
         });
     });
 });

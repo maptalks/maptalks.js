@@ -6,7 +6,7 @@
 const isObject = require('./isObject'),
     isString = require('./isString');
 
-const prefix = '_kiwi_',
+const prefix = '_fusion_',
     prefixId = prefix + 'id_';
 
 let i = 1;

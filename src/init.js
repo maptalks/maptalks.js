@@ -1,35 +1,37 @@
-// //use polyfill
+// use polyfill
 // import './../node_modules/babel-polyfill/dist/polyfill';
-// /**
-//  * improt from namespace core
-//  */
-// import Container from './core/Container';
-// import PerspectiveCamera from './camera/PerspectiveCamera';
-// //import EventNames from './core/EventNames';
-// import RenderManager from './core/RenderManager';
-// import RenderNode from './core/RenderNode';
+/**
+ * improt from namespace core
+ */
 
-// export {
-//     Container,
-//     PerspectiveCamera,
-//     RenderManager,
-//     RenderNode
-// }
+const RenderNode = require('./core/RenderNode');
+const RenderManager = require('./core/RenderManager');
+const Container = require('./core/Container');
 
-// /**
-//  * import from namespace renderer
-//  */
-// import { ShaderFactory } from './renderer/shader/ShaderLib';
-// import { GLFragmentShader, GLVertexShader } from './renderer/gl/GLShader';
-// import Context from './renderer/Context';
-// import { GLVertexBuffer, GLIndexBuffer } from './renderer/gl/GLBuffer.js';
+module.exports.RenderNode = RenderNode;
+module.exports.RenderManager = RenderManager;
+module.exports.Container = Container;
+/**
+ * import from namespace renderer
+ */
+const Context = require('./gl/Context');
+const GLIndexbuffer = require('./gl/buffer/GLIndexbuffer');
+const GLVertexbuffer = require('./gl/buffer/GLVertexbuffer');
+const GLProgram = require('./gl/GLProgram');
+const GLFragmentShader = require('./gl/shader/GLFragmentShader');
+const GLVertexShader = require('./gl/shader/GLVertexShader');
+const GLTexture = require('./gl/GLTexture');
+const GLVertexArrayObject = require('./gl/GLVertexArrayObject');
 
-// export {
-//     ShaderFactory,
-//     GLFragmentShader,
-//     GLVertexShader,
-//     Context,
-//     GLVertexBuffer,
-//     GLIndexBuffer
-// }
+module.exports.gl = {
+    Context,
+    GLIndexbuffer,
+    GLVertexbuffer,
+    GLProgram,
+    GLFragmentShader,
+    GLVertexShader,
+    GLTexture,
+    GLVertexArrayObject
+}
 
+//

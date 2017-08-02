@@ -34,6 +34,9 @@ class GLVertexArrayObject extends Dispose {
          * @type {GLExtension}
          */
         this._ext = extension['vertexArrayObject'];
+        /**
+         * @type {vertexArrayObject}
+         */
         this._handle = this._createHandle();
     }
     /**

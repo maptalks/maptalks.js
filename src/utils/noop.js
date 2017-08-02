@@ -3,4 +3,6 @@
  * @date 2017/4/18
  * @description 空函数
  */
-export default function noop() { }
+const noop = function noop() { }
+
+module.exports = noop;
