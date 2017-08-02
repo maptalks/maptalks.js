@@ -36,7 +36,6 @@
         this._shaders = {};
         this._promiseToLoadResources=[];
     }
-
     /**
      * 数据拆分与准备阶段
      */

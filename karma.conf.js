@@ -1,3 +1,7 @@
+const resolve = require('rollup-plugin-node-resolve'),
+	babel = require('rollup-plugin-babel'),
+	commonjs = require('rollup-plugin-commonjs');
+
 module.exports = function (config) {
 	let cfg = {
 		basePath: '.',
@@ -16,34 +20,29 @@ module.exports = function (config) {
 				{ type: 'json', subdir: '.' },
 			]
 		},
-		rollupPreprocessor: {
-			plugins: [
-				require('rollup-plugin-buble')(),
-			],
-			format: 'iife',
-			moduleName: 'fusion',
-			sourceMap: 'inline',
-		},
 		customPreprocessors: {
 			// Clones the base preprocessor, but overwrites
 			// its options with those defined below.
 			rollupBabel: {
-				base: 'rollup',
+				format: 'umd',
+				moduleName: 'fusion',
 				options: {
 					// In this case, to use
 					// a different transpiler:
 					plugins: [
-						require('rollup-plugin-node-resolve')(),
-						require('rollup-plugin-babel')(),
+						resolve(),
+						commonjs(),
+						babel()
 					],
 				}
 			}
 		}
 	}
+
 	if (process.env.TRAVIS) {
 		cfg.browsers = ['Chrome_travis_ci'];
 		cfg.preprocessors = {
-			'src/**/*.js': ['rollupBabel', 'coverage'],
+			'src/init.js': ['rollupBabel', 'coverage'],
 			'test/**/*.spec.js': ['rollupBabel', 'coverage']
 		};
 		cfg.customLaunchers = {
@@ -57,7 +56,7 @@ module.exports = function (config) {
 		cfg.browserNoActivityTimeout = 30000;
 		cfg.processKillTimeout = 30000;
 		cfg.preprocessors = {
-			'src/**/*.js': ['rollupBabel'],
+			'src/init.js': ['rollupBabel'],
 			'test/**/*.spec.js': ['rollupBabel']
 		};
 		cfg.customLaunchers = {
@@ -67,5 +66,6 @@ module.exports = function (config) {
 			}
 		};
 	}
+	
 	config.set(cfg);
 };

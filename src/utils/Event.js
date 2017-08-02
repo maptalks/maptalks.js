@@ -17,9 +17,10 @@ const stamp = require('./stamp').stamp,
  */
 class Event {
 
-    _eventPopNodes = {};
-
-    _events = {};
+    constructor() {
+        this._eventPopNodes = {};
+        this._events = {};
+    }
 
     _on(type, fn, context) {
         var events = this._events,
@@ -183,6 +184,7 @@ class Event {
             this._eventPopNodes[id].fire(e.type, merge({ popNode: e.target }, e), true);
         }
     }
-};
+
+}
 
 module.exports = Event;

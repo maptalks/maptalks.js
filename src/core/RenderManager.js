@@ -36,5 +36,6 @@ class RenderManager extends Event{
         const ctx = this._ctx;
         ctx.resize(w,h);
     }
-
 }
+
+module.exports = RenderManager;
