@@ -64,6 +64,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
 
         this._tileZoom = tileGrid.zoom;
         this._tileRended = {};
+        this._tileQueue = {};
 
         if (!this.canvas) {
             this.createCanvas();
@@ -111,7 +112,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
     // 2. it needs to redraw on drag rotating: when rotating, every tile needs to be rotated.
     needToRedraw() {
         const map = this.getMap();
-        if (map.isDragRotating()) {
+        if (map.isRotating()) {
             return true;
         }
         if (map.isZooming()) {
@@ -194,8 +195,12 @@ export default class TileLayerRenderer extends CanvasRenderer {
             bearing = map.getBearing(),
             transformed = bearing || zoom !== this._tileZoom;
         let x = cp.x,
-            y = cp.y;
+            y = cp.y,
+            w = tileSize['width'],
+            h = tileSize['height'];
         if (transformed) {
+            w++;
+            h++;
             ctx.save();
             ctx.translate(x, y);
             if (bearing) {
@@ -209,7 +214,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
         Canvas2D.image(ctx, tileImage,
             x, y,
-            tileSize['width'], tileSize['height']);
+            w, h);
         if (this.layer.options['debug']) {
             const p = new Point(x, y),
                 color = this.layer.options['debugOutline'],
@@ -221,7 +226,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             ctx.font = '15px monospace';
             Canvas2D.rectangle(ctx, p, tileSize, 1, 0);
             Canvas2D.fillText(ctx, 'x:' + xyz[1] + ', y:' + xyz[0] + ', z:' + xyz[2], p.add(10, 20), color);
-            Canvas2D.drawCross(ctx, p.add(tileSize['width'] / 2, tileSize['height'] / 2), 2, color);
+            Canvas2D.drawCross(ctx, p.add(w / 2, h / 2), 2, color);
             ctx.restore();
         }
         if (transformed) {

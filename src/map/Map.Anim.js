@@ -20,6 +20,25 @@ function equalView(view1, view2) {
 }
 
 Map.include({
+
+    /**
+     * Change to combination of center, zoom, pitch and bearing with animation.
+     * @example
+     * map.animateTo({
+     *     zoom : 13,
+     *     center : [0, 0],
+     *     pitch : 30,
+     *     bearing : 60
+     * }, {
+     *     duration : 6000,
+     *     easing : 'out'
+     * });
+     * @param  {Object} view    view object
+     * @param  {Object} [options=null]
+     * @param  {String} [options.easing=out]
+     * @param  {Number} [options.duration=map.options.zoomAnimationDuration]
+     * @return {Map}         this
+     */
     animateTo(view, options = {}) {
         this._stopAnim();
         const projection = this.getProjection(),
@@ -30,7 +49,7 @@ Map.include({
             if (hasOwn(view, p) && !isNil(currView[p])) {
                 empty = false;
                 if (p === 'center') {
-                    props[p] = [projection.project(new Coordinate(currView[p])), projection.project(new Coordinate(view[p]))];
+                    props[p] = [new Coordinate(currView[p]), new Coordinate(view[p])];
                 } else if (currView[p] !== view[p] && p !== 'around') {
                     props[p] = [currView[p], view[p]];
                 }
@@ -64,7 +83,7 @@ Map.include({
                 }
                 if (frame.styles['center']) {
                     const center = frame.styles['center'];
-                    this._setPrjCenter(center);
+                    this._setPrjCenter(projection.project(center));
                     this.onMoving();
                 }
                 if (!isNil(frame.styles['zoom'])) {
@@ -81,7 +100,7 @@ Map.include({
             } else if (player.playState === 'finished') {
                 if (!player._interupted) {
                     if (props['center']) {
-                        this._setPrjCenter(props['center'][1]);
+                        this._setPrjCenter(projection.project(props['center'][1]));
                     }
                     if (!isNil(props['pitch'])) {
                         this.setPitch(props['pitch'][1]);
@@ -114,7 +133,20 @@ Map.include({
         return this;
     },
 
+    /**
+     * Whether the map is animating with .animateTo
+     * @return {Boolean}
+     */
+    isAnimating() {
+        return !!(this._animPlayer);
+    },
+
+    isRotating() {
+        return this.isDragRotating() || this._animRotating;
+    },
+
     _endAnim(props, zoomOrigin, options) {
+        delete this._animRotating;
         if (props['center']) {
             this.onMoveEnd();
         }
@@ -140,6 +172,9 @@ Map.include({
         }
         if (props['zoom'] && !this.isZooming()) {
             this.onZoomStart(props['zoom'][1], zoomOrigin);
+        }
+        if (props['pitch'] || props['bearing']) {
+            this._animRotating = true;
         }
         this._animPlayer.play();
         this._fireEvent('animatestart');

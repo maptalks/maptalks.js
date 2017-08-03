@@ -17,6 +17,16 @@ import Map from 'map/Map';
 class Control extends Eventable(Class) {
 
     /**
+     * Methods needs to implement:  <br>
+     *  <br>
+     * 1. Method to create UI's Dom element  <br>
+     * function buildOn : HTMLElement  <br>
+     *  <br>
+     * 2. Optional, a callback when the control is added.  <br>
+     * function onAdd : void  <br>
+     * 3. Optional, a callback when the control is removed.  <br>
+     * function onRemove : void  <br>
+     *  <br>
      * @param  {Object} [options=null] configuration options
      */
     constructor(options) {

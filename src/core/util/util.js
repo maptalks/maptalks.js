@@ -104,18 +104,6 @@ export function parseJSON(str) {
     return JSON.parse(str);
 }
 
-export function executeWhen(fn, when) {
-    const exe = function () {
-        if (when()) {
-            fn();
-        } else {
-            requestAnimFrame(exe);
-        }
-    };
-
-    exe();
-}
-
 export function pushIn(arr1, arr2) {
     for (let i = 0, l = arr2.length; i < l; i++) {
         arr1.push(arr2[i]);
