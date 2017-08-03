@@ -111,7 +111,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                         // transform layer's current canvas when zooming
                         renderer.prepareRender();
                         renderer.__shouldZoomTransform = true;
-                    } else if (map.getPitch() || map.isDragRotating()) {
+                    } else if (map.getPitch() || map.isRotating()) {
                         // when map is pitching or rotating, clear the layer canvas
                         // otherwise, leave layer's canvas unchanged
                         renderer.clearCanvas();
@@ -197,7 +197,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             (inTime ||
             map.isZooming() && layer.options['forceRenderOnZooming'] ||
             map.isMoving() && layer.options['forceRenderOnMoving'] ||
-            map.isDragRotating() && layer.options['forceRenderOnDragRotating'])
+            map.isRotating() && layer.options['forceRenderOnRotating'])
             ) {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
@@ -212,7 +212,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             // transform layer's current canvas when zooming
             renderer.prepareRender();
             renderer.__shouldZoomTransform = true;
-        } else if (map.getPitch() || map.isDragRotating()) {
+        } else if (map.getPitch() || map.isRotating()) {
             // when map is pitching or rotating, clear the layer canvas
             // otherwise, leave layer's canvas unchanged
             renderer.clearCanvas();

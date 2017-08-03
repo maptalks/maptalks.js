@@ -6,8 +6,7 @@ import {
     isNil,
     isString,
     isFunction,
-    isNumber,
-    executeWhen
+    isNumber
 } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
@@ -578,16 +577,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Map} this
      */
     setZoom(zoom) {
-        const me = this;
-        executeWhen(function () {
-            if (me._loaded && me.options['zoomAnimation']) {
-                me._zoomAnimation(zoom);
-            } else {
-                me._zoom(zoom);
-            }
-        }, function () {
-            return !me._zooming;
-        });
+        if (isNaN(zoom) || isNil(zoom)) {
+            return this;
+        }
+        if (this._loaded && this.options['zoomAnimation']) {
+            this._zoomAnimation(zoom);
+        } else {
+            this._zoom(zoom);
+        }
         return this;
     }
 
@@ -661,13 +658,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      */
     zoomIn() {
-        const me = this;
-        executeWhen(function () {
-            me.setZoom(me.getZoom() + 1);
-        }, function () {
-            return !me._zooming;
-        });
-        return this;
+        return this.setZoom(this.getZoom() + 1);
     }
 
     /**
@@ -675,13 +666,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      */
     zoomOut() {
-        const me = this;
-        executeWhen(function () {
-            me.setZoom(me.getZoom() - 1);
-        }, function () {
-            return !me._zooming;
-        });
-        return this;
+        return this.setZoom(this.getZoom() + 1);
     }
 
     /**
@@ -697,7 +682,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Boolean}
      */
     isInteracting() {
-        return this.isZooming() || this.isMoving() || this.isDragRotating();
+        return this.isZooming() || this.isMoving() || this.isRotating();
     }
 
     /**
