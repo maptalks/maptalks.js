@@ -115,15 +115,11 @@ Map.include({
                 }
             }
         });
-        if (!this.isTransforming() && (props['pitch'] || props['bearing'])) {
-            // force tilelayer render with pitch and bearing, to fix the incorrect offset of tiles if animation starts without pitch and bearing.
-            if (props['pitch']) {
-                this.setPitch(1);
-            } else {
-                this.setBearing(1);
-            }
+        if (props['zoom'] || !this.isTransforming() && (props['pitch'] || props['bearing'])) {
+            // reset map container if will zoom or rotate
+            // force tilelayer to reset, to fix the incorrect offset of tiles if animation starts without pitch and bearing.
+            this._zoom(this.getZoom());
             renderer.callInNextFrame(() => {
-                preView = this.getView();
                 this._startAnim(props, zoomOrigin);
             });
         } else {

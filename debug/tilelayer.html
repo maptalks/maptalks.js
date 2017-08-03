@@ -26,8 +26,12 @@
     <div id="map4" class="map"></div>
     <div id="map5" class="map"></div>
     <div id="map6" class="map"></div>
+    <div id="map7" class="map"></div>
+    <div id="map8" class="map"></div>
+    <div id="map9" class="map"></div>
   </div>
     <script>
+    var center = [-73.99596196746747, 40.927671985372456];
     // The test cases need to be covered:
 
     createMap('map1', {
@@ -75,8 +79,56 @@
     }, function (e) {
       e.target.setPitch(0).setBearing(0);
     });
+    createMap('map7', {
+      zoom : 14,
+      attribution : {
+        content: 'drag and click to animateTo with zoom'
+      },
+      layers : [
+        new maptalks.VectorLayer('v', new maptalks.Marker(center))
+      ]
+    }, function (e) {
+      e.target.animateTo({
+        zoom : e.target.getZoom() - 3
+      }, {
+        duration : 4000
+      })
+    });
+    createMap('map8', {
+      zoom : 14,
+      attribution : {
+        content: 'drag and click to animateTo with zoom and rotation'
+      },
+      layers : [
+        new maptalks.VectorLayer('v', new maptalks.Marker(center))
+      ]
+    }, function (e) {
+      e.target.animateTo({
+        zoom : e.target.getZoom() - 3,
+        bearing : 60
+      }, {
+        duration : 4000
+      })
+    });
+    createMap('map9', {
+      zoom : 14,
+      attribution : {
+        content: 'drag and click to animateTo with center, zoom and rotation'
+      },
+      layers : [
+        new maptalks.VectorLayer('v', new maptalks.Marker(center))
+      ]
+    }, function (e) {
+      e.target.animateTo({
+        center : e.target.getCenter().add(0.01, 0.01),
+        zoom : e.target.getZoom() - 3,
+        bearing : 60
+      }, {
+        duration : 4000
+      })
+    });
     function createMap(div, options, cb) {
-      var center = [-73.99596196746747, 40.927671985372456];
+
       const opts = maptalks.Util.extend({
         center:  center,
         zoom: 14,
