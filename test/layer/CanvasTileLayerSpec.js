@@ -27,7 +27,7 @@ describe('CanvasTileLayer', function () {
                 urlTemplate : '/resources/tile.png'
             });
             tile.drawTile = function (canvas, tileContext, onComplete) {
-                const ctx = canvas.getContext('2d');
+                var ctx = canvas.getContext('2d');
                 ctx.fillStyle = 'Red';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 onComplete(null);
