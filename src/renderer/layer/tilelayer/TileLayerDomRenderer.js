@@ -119,6 +119,7 @@ export default class TileLayerDomRenderer extends Class {
                 if (this._endZoom < this._startZoom && next === tileZoom) {
                     this._abortLoading(false);
                     this._renderTiles();
+                    this._pruneLevels();
                     this._curAnimZoom = this._tileZoom;
 
                     const nextZoom = this._curAnimZoom + gap * s;
@@ -128,7 +129,7 @@ export default class TileLayerDomRenderer extends Class {
                         this._preloadTiles(nextGrid.tiles.slice(0, curTilesCount));
                     }
                 } else {
-                    this._updateContainer();
+                    this._drawOnZooming();
                 }
             } else if (map.isRotating()) {
                 this._drawOnDragRotating();
@@ -362,15 +363,13 @@ export default class TileLayerDomRenderer extends Class {
         }
         const mapOffset = map.getViewPoint().round();
         let tileOffset;
-        if (map.isZooming()) {
+        if (map.isZooming() && !map.isMoving()) {
             // when map is zooming, mapOffset is fixed when zoom starts
             // should multiply with zoom fraction if zoom start from a fractional zoom
             const startFraction = map.getResolution(tileZoom) / map.getResolution(this._startZoom);
             tileOffset = mapOffset.multi(1 / startFraction);
-            // centerOffset = centerOffset.multi(1 / startFraction);
         } else {
             tileOffset = mapOffset.multi(1 / fraction);
-            // centerOffset = centerOffset.multi(1 / fraction);
         }
         if (centerOffset) {
             tileOffset._add(centerOffset);
@@ -692,7 +691,7 @@ export default class TileLayerDomRenderer extends Class {
             container.style.cssText = POSITION0;
 
             const tileContainer =  createEl('div');
-            tileContainer.style.cssText = POSITION0 + ';will-change:transform';
+            tileContainer.style.cssText = POSITION0;// + ';will-change:transform';
             container.appendChild(tileContainer);
             container.tile = tileContainer;
             this._container.appendChild(container);
@@ -775,7 +774,7 @@ export default class TileLayerDomRenderer extends Class {
         if (!this.getMap() || !this._levelContainers) {
             return;
         }
-        if (!this._zoomParam && this._tileZoom !== this._endZoom) {
+        if (!this._zoomParam && this._tileZoom !== this.layer._getTileZoom()) {
             // zoom without animation
             this._removeTileContainer(this._tileZoom);
         }

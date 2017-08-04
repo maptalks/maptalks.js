@@ -3,6 +3,8 @@
   <meta charset="UTF-8"/>
   <script type="text/javascript" src="maptalks.js"></script>
   <title>TileLayer Tests</title>
+  <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"></script> -->
   <style>
     html,
     body {
@@ -127,7 +129,19 @@
         duration : 4000
       })
     });
+
+
     function createMap(div, options, cb) {
+
+      /*var map = L.map(div).setView([51.505, -0.09], 13);
+
+      L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      L.marker([51.5, -0.09]).addTo(map)
+          .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+          .openPopup();*/
 
       const opts = maptalks.Util.extend({
         center:  center,
