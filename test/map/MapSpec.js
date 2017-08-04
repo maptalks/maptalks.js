@@ -17,7 +17,7 @@ describe('#Map', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
-        map.config('zoomAnimationDuration', 50);
+        map.config('zoomAnimationDuration', 10);
         map._getRenderer()._setCheckSizeInterval(10);
         tile = new maptalks.TileLayer('tile', {
             urlTemplate:'/resources/tile.png',
