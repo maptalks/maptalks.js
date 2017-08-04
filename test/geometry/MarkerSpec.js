@@ -220,10 +220,10 @@ describe('#Marker', function () {
         });
     });
 
-    it('can have various symbols', function (done) {
-        var vector = new maptalks.Marker(center);
-        COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
-    });
+    // it('can have various symbols', function (done) {
+    //     var vector = new maptalks.Marker(center);
+    //     COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
+    // });
 
     it('Marker.containsPoint', function () {
 
