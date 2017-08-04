@@ -115,7 +115,7 @@ describe('#Marker', function () {
 
 
         it('can be vector', function () {
-            var types = ['ellipse', 'cross', 'x', 'diamond', 'bar', 'square', 'triangle', 'pin', 'pie'];
+            var types = ['ellipse', 'cross', 'x', 'diamond', 'bar', 'square', 'rectangle', 'triangle', 'pin', 'pie'];
 
             for (var i = 0; i < types.length; i++) {
                 var marker = new maptalks.Marker(center, {
@@ -128,7 +128,11 @@ describe('#Marker', function () {
                 });
                 var layer = new maptalks.VectorLayer('id' + i, { 'drawImmediate' : true }).addTo(map);
                 layer.addGeometry(marker);
-                expect(layer).to.be.painted(0, -1);
+                if (types[i] === 'rectangle') {
+                    expect(layer).to.be.painted(1, 1);
+                } else {
+                    expect(layer).to.be.painted(0, -1);
+                }
                 expect(marker.getSize().toArray()).to.be.eql([11, 21]);
                 map.removeLayer(layer);
             }
