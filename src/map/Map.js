@@ -574,13 +574,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Sets zoom of the map
      * @param {Number} zoom
+     * @param {Object} [options=null] options
+     * @param {Boolean} [options.animation=true] whether zoom is animation, true by default
      * @returns {Map} this
      */
-    setZoom(zoom) {
+    setZoom(zoom, options = { 'animation' : true }) {
         if (isNaN(zoom) || isNil(zoom)) {
             return this;
         }
-        if (this._loaded && this.options['zoomAnimation']) {
+        if (this._loaded && this.options['zoomAnimation'] && options['animation']) {
             this._zoomAnimation(zoom);
         } else {
             this._zoom(zoom);
@@ -666,7 +668,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      */
     zoomOut() {
-        return this.setZoom(this.getZoom() + 1);
+        return this.setZoom(this.getZoom() - 1);
     }
 
     /**
@@ -694,10 +696,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     setCenterAndZoom(center, zoom) {
         if (!isNil(zoom) && this._zoomLevel !== zoom) {
             this.setCenter(center);
-            const a = this.options['zoomAnimation'];
-            this.config('zoomAnimation', false);
-            this.setZoom(zoom);
-            this.config('zoomAnimation', a);
+            this.setZoom(zoom, { animation : false });
         } else {
             this.setCenter(center);
         }
@@ -1260,9 +1259,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
         if (justStart || hided) {
-            this._eventSuppressed = true;
+            this._noEvent = true;
             this.setCenter(center);
-            this._eventSuppressed = false;
+            delete this._noEvent;
         }
         /**
          * resize event when map container's size changes
@@ -1610,7 +1609,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
 
     _fireEvent(eventName, param) {
-        if (this._eventSuppressed) {
+        if (this._noEvent) {
             return;
         }
         //fire internal events at first

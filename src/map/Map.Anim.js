@@ -115,16 +115,8 @@ Map.include({
                 }
             }
         });
-        if (props['zoom'] || !this.isTransforming() && (props['pitch'] || props['bearing'])) {
-            // reset map container if will zoom or rotate
-            // force tilelayer to reset, to fix the incorrect offset of tiles if animation starts without pitch and bearing.
-            this._zoom(this.getZoom());
-            renderer.callInNextFrame(() => {
-                this._startAnim(props, zoomOrigin);
-            });
-        } else {
-            this._startAnim(props, zoomOrigin);
-        }
+
+        this._startAnim(props, zoomOrigin);
 
         return this;
     },
@@ -143,6 +135,11 @@ Map.include({
 
     _endAnim(props, zoomOrigin, options) {
         delete this._animRotating;
+        if (this._animPlayer) {
+            const evtType = this._animPlayer._interupted ? 'animateinterupted' : 'animateend';
+            delete this._animPlayer;
+            this._fireEvent(evtType);
+        }
         if (props['center']) {
             this.onMoveEnd();
         }
@@ -152,10 +149,6 @@ Map.include({
             } else {
                 this.onZooming(props['zoom'][1], zoomOrigin);
             }
-        }
-        if (this._animPlayer) {
-            this._fireEvent(this._animPlayer._interupted ? 'animateinterupted' : 'animateend');
-            delete this._animPlayer;
         }
     },
 
@@ -172,8 +165,8 @@ Map.include({
         if (props['pitch'] || props['bearing']) {
             this._animRotating = true;
         }
-        this._animPlayer.play();
         this._fireEvent('animatestart');
+        this._animPlayer.play();
     },
 
     _stopAnim() {

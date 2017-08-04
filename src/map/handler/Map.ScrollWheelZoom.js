@@ -34,7 +34,6 @@ class MapScrollWheelZoomHandler extends Handler {
             map.onZoomStart(null, origin);
             this._origin = origin;
             this._delta = levelValue;
-            this._startTime = Date.now();
         }
         const duration = 180;
         map.animateTo({
@@ -45,7 +44,7 @@ class MapScrollWheelZoomHandler extends Handler {
             'duration' : duration,
             'wheelZoom' : true,
             'onFinish' : () => {
-                if (this._requesting < 3 || this._requesting >= 10) {
+                if (this._requesting === 0) {
                     map.animateTo({
                         'zoom' : nextZoom,
                         'around' : this._origin
@@ -57,7 +56,6 @@ class MapScrollWheelZoomHandler extends Handler {
                     });
                     delete this._origin;
                     delete this._delta;
-                    delete this._timeout;
                     this._requesting = 0;
                 } else if (!isNil(this._requesting)) {
                     delete this._zooming;
