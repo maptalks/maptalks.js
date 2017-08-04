@@ -431,7 +431,6 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
      */
     pause() {
         this.playState = 'paused';
-        this._run();
         //this.duration = this.duration - this.currentTime;
         return this;
     },
@@ -442,7 +441,6 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
      */
     cancel() {
         this.playState = 'idle';
-        this._run();
         this.finished = false;
         return this;
     },
@@ -453,7 +451,6 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
      */
     finish() {
         this.playState = 'finished';
-        this._run();
         this.finished = true;
         return this;
     },
@@ -493,6 +490,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         } else if (this.playState === 'running') {
             this._framer(() => {
                 if (this.playState !== 'running') {
+                    this._run();
                     return;
                 }
                 this.currentTime = elapsed;
