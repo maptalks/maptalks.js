@@ -109,8 +109,5 @@ describe('Control.Panel', function () {
             expect(points[2].toArray()).to.be.closeTo([118.844486, 32.047707]);
             expect(points[3].toArray()).to.be.closeTo([118.8441427, 32.0478025]);
         }
-
-
-        console.log(points);
     });
 });
