@@ -115,6 +115,7 @@ export function createElOn(tagName, style, container) {
  * @param {HTMLElement} node
  * @memberOf DomUtil
  */
+/* istanbul ignore next */
 export function removeDomNode(node) {
     if (!node) {
         return this;
@@ -426,22 +427,16 @@ export function setOpacity(el, value) {
     return this;
 }
 
-/**
- * Copy the source canvas
- * @param  {Element|Canvas} src - source canvas
- * @return {Element|Canvas}     target canvas
- * @memberOf DomUtil
- */
-export function copyCanvas(src) {
-    if (IS_NODE) {
-        return null;
-    }
-    const target = createEl('canvas');
-    target.width = src.width;
-    target.height = src.height;
-    target.getContext('2d').drawImage(src, 0, 0);
-    return target;
-}
+// export function copyCanvas(src) {
+//     if (IS_NODE) {
+//         return null;
+//     }
+//     const target = createEl('canvas');
+//     target.width = src.width;
+//     target.height = src.height;
+//     target.getContext('2d').drawImage(src, 0, 0);
+//     return target;
+// }
 
 /**
  * Resets the 3D CSS transform of `el` so it is translated by `offset` pixels

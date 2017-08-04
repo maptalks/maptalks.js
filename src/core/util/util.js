@@ -3,6 +3,7 @@ import { isString, isNil } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
+/* istanbul ignore next */
 (function () {
     if (IS_NODE) {
         requestAnimFrame = function (fn) {
@@ -77,6 +78,7 @@ export function isSVG(url) {
  * @memberOf Util
  */
 export function loadImage(img, imgDesc) {
+    /* istanbul ignore next */
     if (IS_NODE && loadImage.node) {
         loadImage.node(img, imgDesc);
         return;
@@ -161,6 +163,7 @@ export function round(num) {
  * @return {Number}
  * @memberOf Util
  */
+/* istanbul ignore next */
 export function sign(x) {
     if (Math.sign) {
         return Math.sign(x);
