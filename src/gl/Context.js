@@ -38,6 +38,7 @@ class Context {
     /**
      * @param {htmlCanvas} canvas
      * @param {Object} [options]
+     * @param {WebGLRenderingContext} [options.gl]
      * @param {number} [options.width]
      * @param {number} [options.height]
      * @param {String} [options.renderType] 'webgl'、'webgl2'
@@ -49,6 +50,9 @@ class Context {
      * @param {boolean} [options.preserveDrawingBuffer] enable preserveDrawingBuffer,default is false , webgl2
      */
     constructor(options) {
+        /**
+         * options
+         */
         options = options || {};
         /**
          * canvas width
@@ -62,7 +66,7 @@ class Context {
          * 兼容性欠佳，故改用canvas = new OffscreenCanvas(width,height);
          * @type {HTMLCanvasElement}
          */
-        this._canvas = this._offScreenCanvas();
+        this._canvas = this._offScreenCanvas(options);
         /**
          * context类型，支持webgl,webgl2
          * @type {String}
@@ -102,18 +106,9 @@ class Context {
          */
         this._allowTextureFilterAnisotropic = options.allowTextureFilterAnisotropic || true;
         /**
-         * @type {GLProgram}
-         */
-        this._currentProgram = null;
-        /**
-         * webgl detected
-         * @type {GLLimits}
-         */
-        this._glLimits;
-        /**
          *  @type {WebGLRenderingContext}
          */
-        this._gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes()) || undefined;
+        this._gl = this._gl || this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes()) || undefined;
         /**
          * webgl扩展
          * @type {GLExtension}
@@ -124,7 +119,6 @@ class Context {
          */
         this._glLimits = this._includeLimits();
         /**
-         * 
          * @type {Object}
          */
         this._shaderCache = {};
@@ -132,6 +126,10 @@ class Context {
          * @type {Object}
          */
         this._programCache = {};
+        /**
+         * @type {GLProgram}
+         */
+        this._currentProgram = null;
         /**
          * setup env
          */
@@ -142,13 +140,19 @@ class Context {
      * 待绘制完成后，使用bitmaprender绘制到实际页面上
      * @memberof Context
      */
-    _offScreenCanvas() {
-        let htmlCanvas = document.createElement('canvas');
-        htmlCanvas.width = this._width;
-        htmlCanvas.height = this._height;
-        //bug only firfox 44 + support
-        //this._canvas = htmlCanvas.transferControlToOffscreen();
-        return htmlCanvas;
+    _offScreenCanvas(options) {
+        const gl = options.gl || null;
+        if (!gl) {
+            let htmlCanvas = document.createElement('canvas');
+            htmlCanvas.width = this._width;
+            htmlCanvas.height = this._height;
+            //bug only firfox 44 + support
+            //this._canvas = htmlCanvas.transferControlToOffscreen();
+            return htmlCanvas;
+        } else {
+            this._gl = gl;
+            return null;
+        }
     };
     /**
      * Query and initialize extensions
