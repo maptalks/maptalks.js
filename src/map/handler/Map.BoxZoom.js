@@ -1,12 +1,13 @@
 import Handler from 'handler/Handler';
 import Map from '../Map';
 import DrawTool from '../tool/DrawTool';
+import Extent from 'geo/Extent';
 
 class MapBoxZoomHander extends Handler {
     constructor(target) {
         super(target);
         this.drawTool = new DrawTool({
-            'mode'   : 'Rectangle',
+            'mode'   : 'boxZoom',
             'ignoreMouseleave' : false
         });
     }
@@ -34,10 +35,17 @@ class MapBoxZoomHander extends Handler {
     }
 
     _boxZoom(param) {
+        const map = this.target;
         this.drawTool.remove();
-        const extent = param.geometry.getExtent();
-        const zoom = this.target.getFitZoom(extent);
-        this.target.animateTo({
+        const geometry = param.geometry,
+            center = geometry.getCenter(),
+            symbol = geometry.getSymbol(),
+            w = symbol.markerWidth,
+            h = symbol.markerHeight;
+
+        const extent = new Extent(center, map.locateByPoint(center, w, h));
+        const zoom = map.getFitZoom(extent);
+        map.animateTo({
             center : extent.getCenter(),
             zoom : zoom
         });
@@ -47,11 +55,14 @@ class MapBoxZoomHander extends Handler {
 Map.mergeOptions({
     'boxZoom' : true,
     'boxZoomSymbol': {
-        'lineWidth' : 3,
-        'lineColor' : '#1bbc9b',
-        'lineDasharray' : [10, 5],
-        'polygonOpacity' : 0.1,
-        'polygonFill' : '#1bbc9b'
+        'markerType' : 'rectangle',
+        'markerLineWidth' : 3,
+        'markerLineColor' : '#1bbc9b',
+        'markerLineDasharray' : [10, 5],
+        'markerFillOpacity' : 0.1,
+        'markerFill' : '#1bbc9b',
+        'markerWidth' : 1,
+        'markerHeight' : 1
     }
 });
 

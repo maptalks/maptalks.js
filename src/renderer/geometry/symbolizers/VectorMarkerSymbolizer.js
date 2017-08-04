@@ -137,6 +137,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const markerType = this.style['markerType'].toLowerCase();
         if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
             return new Point(w / 2, h - this.padding[1] - lineWidth / 2 - shadow);
+        } else if (markerType === 'rectangle') {
+            return new Point(0, 0);
         } else {
             return new Point(w / 2, h / 2);
         }
@@ -184,7 +186,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
 
         const width = style['markerWidth'],
-            height = style['markerHeight'];
+            height = style['markerHeight'],
+            hLineWidth = style['markerLineWidth'] / 2;
         if (markerType === 'ellipse') {
             //ellipse default
             Canvas.ellipse(ctx, point, width / 2, height / 2, lineOpacity, fillOpacity);
@@ -195,9 +198,11 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             //线类型
             Canvas.path(ctx, vectorArray.slice(0, 2), lineOpacity);
             Canvas.path(ctx, vectorArray.slice(2, 4), lineOpacity);
-        } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'triangle') {
+        } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'rectangle' || markerType === 'triangle') {
             if (markerType === 'bar') {
-                point = point.add(0, -style['markerLineWidth'] / 2);
+                point = point.add(0, -hLineWidth);
+            } else if (markerType === 'rectangle') {
+                point = point.add(hLineWidth, hLineWidth);
             }
             for (let j = vectorArray.length - 1; j >= 0; j--) {
                 vectorArray[j]._add(point);
@@ -205,7 +210,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             //面类型
             Canvas.polygon(ctx, vectorArray, lineOpacity, fillOpacity);
         } else if (markerType === 'pin') {
-            point = point.add(0, -style['markerLineWidth'] / 2);
+            point = point.add(0, -hLineWidth);
             for (let j = vectorArray.length - 1; j >= 0; j--) {
                 vectorArray[j]._add(point);
             }
@@ -214,7 +219,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             Canvas.bezierCurveAndFill(ctx, vectorArray, lineOpacity, fillOpacity);
             ctx.lineCap = lineCap;
         } else if (markerType === 'pie') {
-            point = point.add(0, -style['markerLineWidth'] / 2);
+            point = point.add(0, -hLineWidth);
             const angle = Math.atan(width / 2 / height) * 180 / Math.PI;
             const lineCap = ctx.lineCap;
             ctx.lineCap = 'round';
@@ -298,7 +303,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'linePatternFile': s['markerLinePatternFile'],
             'lineWidth': s['markerLineWidth'],
             'lineOpacity': s['markerLineOpacity'],
-            'lineDasharray': null,
+            'lineDasharray': s['markerLineDasharray'],
             'lineCap': 'butt',
             'lineJoin': 'round',
             'polygonFill': s['markerFill'],
@@ -340,6 +345,12 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             v1 = new Point((left + hw), (top + hh));
             v2 = new Point((left + hw), (top - hh));
             v3 = new Point((left - hw), (top - hh));
+            return [v0, v1, v2, v3];
+        } else if (markerType === 'rectangle') {
+            v0 = new Point(left, top);
+            v1 = v0.add(width, 0);
+            v2 = v0.add(width, height);
+            v3 = v0.add(0, height);
             return [v0, v1, v2, v3];
         } else if (markerType === 'x') {
             v0 = new Point(left - hw, top + hh);
