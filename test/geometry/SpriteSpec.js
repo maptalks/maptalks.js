@@ -21,7 +21,9 @@ describe('#Sprite', function () {
             expect(canvas).to.be.ok();
             expect(sprite.offset.x).to.be.eql(0 + 10);
             expect(sprite.offset.y).to.be.eql(-60 / 2 + 5);
-            expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
+            if (!maptalks.Browser.ie) {
+                expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
+            }
             expect(canvas.width).to.be.eql(symbol.markerWidth);
             expect(canvas.height).to.be.eql(symbol.markerHeight);
             done();
