@@ -209,7 +209,7 @@ describe('#Map', function () {
         });
     });
 
-    describe.skip('#Zoom Level', function () {
+    describe('#Zoom Level', function () {
         it('get (min/max/current)zoom level', function () {
             map.setBaseLayer(tile);
 
