@@ -616,8 +616,8 @@ const Canvas = {
 export default Canvas;
 
 
+/* istanbul ignore next */
 function drawDashLine(ctx, startPoint, endPoint, dashArray) {
-    /* istanbul ignore next */
     //https://davidowens.wordpress.com/2010/09/07/html-5-canvas-and-dashed-lines/
     //
     // Our growth rate for our line can be one of the following:
