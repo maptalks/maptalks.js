@@ -103,8 +103,8 @@ export default class TileLayerDomRenderer extends Class {
         }
         const isAnim = map._animPlayer && map._animPlayer.duration >= this.layer.options['durationToAnimate'];
         if (isAnim) {
+            this._fadeAnimated = false;
             const tileZoom = this.layer._getTileZoom();
-            /*!this._tileExtent.contains(map.coordinateToPoint(map.getCenter(), tileZoom))*/
             if (map.isMoving()) {
                 this._abortLoading(false);
                 this._renderTiles();
@@ -134,28 +134,6 @@ export default class TileLayerDomRenderer extends Class {
             } else if (map.isRotating()) {
                 this._drawOnDragRotating();
             }
-
-            /*else if (map.isMoving()) {
-                this._drawOnMoving();
-            }*/
-            // this._fadeAnimated = false;
-            // const preTileZoom = this._tileZoom;
-            // const tileZoom = this.layer._getTileZoom();
-            // const reload = (Math.abs(preTileZoom - tileZoom) >= 2);
-            // if (reload || !this._tileExtent.contains(map.coordinateToPoint(map.getCenter(), preTileZoom))) {
-            //     this._abortLoading(false);
-            //     this._renderTiles();
-            // } else {
-            //     this._updateContainer(this._tileZoom);
-            // }
-            // if (map.isZooming() && (!this._preLoaded || reload)) {
-            //     const nextZoom = this._tileZoom + 2 * sign(this._endZoom - preTileZoom);
-            //     if (nextZoom !== this._tileZoom) {
-            //         const nextGrid = this.layer._getTiles(nextZoom);
-            //         this._preloadTiles(nextGrid.tiles);
-            //     }
-            // }
-            // return;
         } else if (map.isZooming()) {
             this._drawOnZooming();
         } else if (map.isRotating()) {

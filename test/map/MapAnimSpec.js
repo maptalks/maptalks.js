@@ -49,6 +49,37 @@ describe('Map.Anim', function () {
         });
     });
 
+    it('rotate', function (done) {
+        var pitch = map.getPitch() + 10;
+        var bearing = map.getBearing() + 60;
+        map.getBaseLayer().config('durationToAnimate', 300);
+        map.on('animateend', function () {
+            expect(map.getPitch()).to.be.eql(pitch);
+            expect(map.getBearing()).to.be.approx(bearing);
+            done();
+        });
+        map.animateTo({
+            pitch : pitch,
+            bearing : bearing
+        }, {
+            'duration' : 300
+        });
+    });
+
+    it('zoomOut', function (done) {
+        var zoom = map.getZoom() - 5;
+        map.getBaseLayer().config('durationToAnimate', 300);
+        map.on('animateend', function () {
+            expect(map.getZoom()).to.be.eql(zoom);
+            done();
+        });
+        map.animateTo({
+            zoom : zoom
+        }, {
+            'duration' : 300
+        });
+    });
+
     it('interupt animateTo', function (done) {
         var center = map.getCenter().add(0.1, 0.1);
         var zoom = map.getZoom() - 4;
