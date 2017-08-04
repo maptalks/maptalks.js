@@ -32,15 +32,24 @@ Map.include({
      * }, {
      *     duration : 6000,
      *     easing : 'out'
+     * }, function(frame) {
+     *     if (frame.state.playState === 'finished') {
+     *         console.log('animation finished');
+     *     }
      * });
      * @param  {Object} view    view object
      * @param  {Object} [options=null]
      * @param  {String} [options.easing=out]
      * @param  {Number} [options.duration=map.options.zoomAnimationDuration]
+     * @param  {Function} [step=null]  - step function during animation, animation frame as the parameter
      * @return {Map}         this
      */
-    animateTo(view, options = {}) {
+    animateTo(view, options = {}, step) {
         this._stopAnim();
+        if (isFunction(options)) {
+            step = options;
+            options = {};
+        }
         const projection = this.getProjection(),
             currView = this.getView(),
             props = {};
@@ -110,9 +119,9 @@ Map.include({
                     }
                 }
                 this._endAnim(props, zoomOrigin, options);
-                if (isFunction(options['onFinish'])) {
-                    options['onFinish']();
-                }
+            }
+            if (step) {
+                step(frame);
             }
         });
 

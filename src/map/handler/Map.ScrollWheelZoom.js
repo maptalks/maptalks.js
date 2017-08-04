@@ -43,26 +43,30 @@ class MapScrollWheelZoomHandler extends Handler {
         }, {
             'easing' : 'linear',
             'duration' : duration,
-            'wheelZoom' : true,
-            'onFinish' : () => {
-                if (this._requesting === 0 || Math.abs(nextZoom - this._startZoom) > 3) {
-                    map.animateTo({
-                        'zoom' : nextZoom,
-                        'around' : this._origin
-                    }, {
-                        'duration' : 160,
-                        'onFinish' : () => {
-                            delete this._zooming;
-                        }
-                    });
-                    delete this._startZoom;
-                    delete this._origin;
-                    delete this._delta;
-                    this._requesting = 0;
-                } else if (!isNil(this._requesting)) {
-                    delete this._zooming;
-                    this._onWheelScroll(evt);
-                }
+            'wheelZoom' : true
+        }, frame => {
+            if (frame.state.playState !== 'finished') {
+                return;
+            }
+            if (this._requesting === 0 || Math.abs(nextZoom - this._startZoom) > 3) {
+                map.animateTo({
+                    'zoom' : nextZoom,
+                    'around' : this._origin
+                }, {
+                    'duration' : 160
+                }, frame => {
+                    if (frame.state.playState === 'finished') {
+                        delete this._zooming;
+                        delete this._requesting;
+                    }
+                });
+                delete this._startZoom;
+                delete this._origin;
+                delete this._delta;
+                this._requesting = 0;
+            } else if (!isNil(this._requesting)) {
+                delete this._zooming;
+                this._onWheelScroll(evt);
             }
         });
         return false;

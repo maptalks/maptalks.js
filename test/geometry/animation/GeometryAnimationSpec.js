@@ -3,37 +3,37 @@ describe('#GeometryAnimation', function () {
     // animation duration for
     var animSpeed = 16 * 4;
 
+    it('all kinds of geometry', function (done) {
+        this.timeout(8000);
+        var expected = GEN_GEOMETRIES_OF_ALL_TYPES();
+        var i;
+        for (i = 0; i < expected.length; i++) {
+            expected[i].translate([0.01, 0.01]);
+        }
+        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+        var counter = 0;
+        function cmp(frame) {
+            if (frame.state.playState !== 'finished') {
+                return;
+            }
+            counter++;
+            if (counter < geometries.length) {
+                return;
+            }
+            for (var i = 0; i < expected.length; i++) {
+                expect(expected[i].toGeoJSON()).to.eqlGeoJSON(geometries[i].toGeoJSON());
+            }
+            done();
+        }
+        for (i = 0; i < geometries.length; i++) {
+            var player = geometries[i].animate({
+                translate : new maptalks.Coordinate(0.01, 0.01)
+            }, { duration : animSpeed }, cmp);
+            expect(player).to.be.ok();
+        }
+    });
+
     describe('geometry can animate', function () {
-        it('all kinds of geometry', function (done) {
-            var expected = GEN_GEOMETRIES_OF_ALL_TYPES();
-            var i;
-            for (i = 0; i < expected.length; i++) {
-                expected[i].translate([0.01, 0.01]);
-            }
-            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
-            var counter = 0;
-            function cmp(frame) {
-                if (frame.state.playState !== 'finished') {
-                    return;
-                }
-                counter++;
-                if (counter < geometries.length) {
-                    return;
-                }
-                for (var i = 0; i < expected.length; i++) {
-                    expect(expected[i].toGeoJSON()).to.eqlGeoJSON(geometries[i].toGeoJSON());
-                }
-                done();
-            }
-            for (i = 0; i < geometries.length; i++) {
-                var player = geometries[i].animate({
-                    translate:new maptalks.Coordinate(0.01, 0.01)
-                }, { duration : animSpeed }, cmp);
-                expect(player).to.be.ok();
-            }
-
-
-        });
 
         it('animate a normal symbol', function (done) {
             var marker = new maptalks.Marker([100, 0], {
