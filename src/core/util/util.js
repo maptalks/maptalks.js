@@ -295,6 +295,7 @@ const b64chrs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
  * @example
  *     const encodedData = Util.btoa(stringToEncode);
  */
+/* istanbul ignore next */
 export function btoa(input) {
     if ((typeof window !== 'undefined') && window.btoa) {
         return window.btoa(input);
