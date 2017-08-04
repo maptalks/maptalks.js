@@ -57,8 +57,14 @@ Map.include(/** @lends Map.prototype */ {
         return this.animateTo({
             'center' : target
         }, {
-            'duration' : t || this.options['panAnimationDuration'],
-            'onFinish' : onFinish
+            'duration' : t || this.options['panAnimationDuration']
+        }, frame => {
+            if (frame.state.playState !== 'finished') {
+                return;
+            }
+            if (onFinish) {
+                onFinish();
+            }
         });
     }
 });

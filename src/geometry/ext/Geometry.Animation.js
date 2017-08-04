@@ -13,7 +13,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param  {Object}   [options.duration=1000]      - duration
      * @param  {Object}   [options.startTime=null]  - time to start animation in ms
      * @param  {Object}   [options.easing=linear]   - animation easing: in, out, inAndOut, linear, upAndDown
-     * @param  {Function} [step=null]               - step function when animating
+     * @param  {Function} [step=null]  - step function during animation, animation frame as the parameter
      * @return {animation.Player} animation player
      * @example
      * var player = marker.animate({
@@ -23,7 +23,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * }, {
      *     'duration': 2000
      * }, function (frame) {
-     *     console.log(frame);
+     *     if (frame.state.playState === 'finished') {
+     *         console.log('animation finished');
+     *     }
      * });
      * player.pause();
      */
@@ -33,17 +35,17 @@ Geometry.include(/** @lends Geometry.prototype */ {
         }
         if (isFunction(options)) {
             step = options;
-            options = null;
+        }
+        if (!options) {
+            options = {};
         }
         const map = this.getMap(),
             projection = this._getProjection(),
             symbol = this.getSymbol() || {},
             stylesToAnimate = this._prepareAnimationStyles(styles);
-        let preTranslate, isFocusing;
+        let preTranslate;
 
-        if (options) {
-            isFocusing = options['focus'];
-        }
+        const isFocusing = options['focus'];
         delete this._animationStarted;
         // geometry.animate can be called without map
         if (map) {
