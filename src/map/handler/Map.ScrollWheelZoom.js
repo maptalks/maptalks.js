@@ -56,8 +56,10 @@ class MapScrollWheelZoomHandler extends Handler {
                     'duration' : 160
                 }, frame => {
                     if (frame.state.playState === 'finished') {
-                        delete this._zooming;
-                        delete this._requesting;
+                        setTimeout(() => {
+                            delete this._zooming;
+                            delete this._requesting;
+                        }, 200);
                     }
                 });
                 delete this._startZoom;
