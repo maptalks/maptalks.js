@@ -135,10 +135,10 @@ Map.include({
 
     _endAnim(props, zoomOrigin, options) {
         delete this._animRotating;
+        let evtType;
         if (this._animPlayer) {
-            const evtType = this._animPlayer._interupted ? 'animateinterupted' : 'animateend';
+            evtType = this._animPlayer._interupted ? 'animateinterupted' : 'animateend';
             delete this._animPlayer;
-            this._fireEvent(evtType);
         }
         if (props['center']) {
             this.onMoveEnd();
@@ -149,6 +149,9 @@ Map.include({
             } else {
                 this.onZooming(props['zoom'][1], zoomOrigin);
             }
+        }
+        if (evtType) {
+            this._fireEvent(evtType);
         }
     },
 

@@ -17,7 +17,7 @@ describe('#Map', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
-        map.config('zoomAnimationDuration', 10);
+        map.config('zoomAnimationDuration', 50);
         map._getRenderer()._setCheckSizeInterval(10);
         tile = new maptalks.TileLayer('tile', {
             urlTemplate:'/resources/tile.png',
@@ -258,16 +258,12 @@ describe('#Map', function () {
             map.setBaseLayer(tile);
             map.config('zoomAnimation', true);
             var cur = map.getZoom();
-            var count = 0;
             map.on('zoomend', function () {
-                if (count < 2) {
-                    count++;
-                } else {
-                    expect(map.getZoom()).to.be.eql(cur + 1);
-                    done();
-                }
+                expect(map.getZoom()).to.be.eql(cur + 1);
+                done();
             });
             map.zoomIn();
+            // ignired
             map.zoomIn();
             map.zoomOut();
             expect(map.getZoom()).to.be.eql(cur);
@@ -277,19 +273,23 @@ describe('#Map', function () {
             map.setBaseLayer(tile);
             map.config('zoomAnimation', true);
             var cur = map.getZoom();
-            var count = 0;
             map.on('zoomend', function () {
-                if (count < 1) {
-                    count++;
-                } else {
-                    expect(map.getZoom()).to.be.eql(13);
-                    done();
-                }
+                expect(map.getZoom()).to.be.eql(6);
+                done();
             });
             map.setZoom(6);
-            map.setZoom(13);
+            //ignored
+            // map.setZoom(13);
             expect(map.isZooming()).to.be.ok();
             expect(map.getZoom()).to.be.eql(cur);
+        });
+
+        it('setZoom without animation', function () {
+            map.setBaseLayer(tile);
+            var cur = map.getZoom();
+            map.setZoom(cur + 2, { animation : false });
+            expect(map.isZooming()).not.to.be.ok();
+            expect(map.getZoom()).to.be.eql(cur + 2);
         });
 
         it('getFitZoom', function () {
@@ -318,6 +318,17 @@ describe('#Map', function () {
                 done();
             });
             map.fitExtent(extent.toJSON());
+        });
+
+        it('update zoom', function (done) {
+            map.once('zoomend', function () {
+                map.once('zoomend', function () {
+                    expect(map.getZoom()).to.be.eql(15);
+                    done();
+                });
+                map.setZoom(15);
+            });
+            map.setZoom(13);
         });
     });
 
