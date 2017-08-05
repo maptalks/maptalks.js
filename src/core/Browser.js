@@ -24,6 +24,11 @@ if (!IS_NODE) {
         opera12 = 'OTransition' in doc.style,
         any3d = (ie3d || webkit3d || gecko3d) && !opera12 && !phantomjs;
 
+    let chromeVersion = 0;
+    if (chrome) {
+        chromeVersion = ua.match(/chrome\/([\d.]+)/)[1];
+    }
+
     const touch = !phantomjs && (pointer || 'ontouchstart' in window ||
         (window.DocumentTouch && document instanceof window.DocumentTouch));
 
@@ -36,6 +41,7 @@ if (!IS_NODE) {
         android: ua.indexOf('android') !== -1,
         android23: android23,
         chrome: chrome,
+        chromeVersion : chromeVersion,
         safari: !chrome && ua.indexOf('safari') !== -1,
         phantomjs: phantomjs,
 

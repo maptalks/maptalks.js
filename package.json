@@ -1,6 +1,6 @@
 {
   "name": "maptalks",
-  "version": "0.27.0",
+  "version": "0.28.0-alpha.0",
   "description": "An open-source javascript library for map applications.",
   "license": "BSD-3-Clause",
   "repository": {
@@ -12,7 +12,8 @@
     "lint": "eslint src/**/*.js test/**/*.js",
     "test": "gulp test --cov",
     "pretest": "npm run lint",
-    "prepublish": "npm run lint && gulp minify",
+    "prepublish": "gulp minify",
+    "preversion" : "npm run lint",
     "doc": "gulp doc"
   },
   "main": "dist/maptalks.js",

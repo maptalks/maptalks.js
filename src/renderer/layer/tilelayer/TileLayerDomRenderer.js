@@ -309,6 +309,18 @@ export default class TileLayerDomRenderer extends Class {
             return;
         }
 
+        if (Browser.chrome && Browser.chromeVersion.startsWith('60')) {
+            const err =  'DOM TileLayer can\'t pitch or rotate due to a crash bug with chrome 60.';
+            if (!this._reported) {
+                this._reported = true;
+                if (window.confirm(err + ' Click OK to redirect to the bug report.')) {
+                    window.location.href = 'https://bugs.chromium.org/p/chromium/issues/detail?id=752382&q=&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified&start=200';
+                    return;
+                }
+            }
+            throw new Error(err);
+        }
+
         // update container when map is rotating or pitching.
 
         // reduce repaint causing by dom updateing
