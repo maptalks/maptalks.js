@@ -28,6 +28,12 @@ class Dispose {
         throw new Error(`no implementation of function dispose`);
     }
     /**
+     * 获取资源id
+     */
+    get id(){
+        return this._id;
+    }
+    /**
      * 获取资源核心对象
      * @readonly
      * @member

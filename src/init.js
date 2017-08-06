@@ -60,4 +60,13 @@ const veterxBuffer = new GLVertexbuffer(gl,obj.position);
 
 const shaders = GLShaderFactory.create('default',gl,null);
 
+const program = new GLProgram(gl,shaders[0],shaders[1]);
+
+const programId=program.id;
+
+ctx.mergeProrgam(program);
+
+const program2 = ctx.useProgram(programId);
+
+
 
