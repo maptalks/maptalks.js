@@ -1,7 +1,7 @@
 import { extend } from 'core/util';
 import { splitTextToRow, escapeSpecialChars } from 'core/util/strings';
-import Size from 'geo/Size';
-import Geometry from './Geometry';
+// import Size from 'geo/Size';
+// import Geometry from './Geometry';
 import Marker from './Marker';
 
 const defaultSymbol = {
@@ -19,15 +19,6 @@ const defaultBoxSymbol = {
     'markerLineOpacity': 1,
     'markerFill': '#fff',
     'markerOpacity': 1
-};
-
-/**
- * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
- * @memberOf TextMarker
- * @instance
- */
-const options = {
-    'box': true,
 };
 
 /**
@@ -79,27 +70,27 @@ class TextMarker extends Marker {
         return this;
     }
 
-    getSymbol() {
-        if (this._textSymbolChanged) {
-            return Geometry.prototype.getSymbol.call(this);
-        }
-        return null;
-    }
+    // getSymbol() {
+    //     if (this._textSymbolChanged) {
+    //         return Geometry.prototype.getSymbol.call(this);
+    //     }
+    //     return null;
+    // }
 
-    setSymbol(symbol) {
-        if (!symbol || symbol === this.options['symbol']) {
-            this._textSymbolChanged = false;
-            symbol = {};
-        } else {
-            this._textSymbolChanged = true;
-        }
-        const cooked = this._prepareSymbol(symbol);
-        const s = this._getDefaultTextSymbol();
-        extend(s, cooked);
-        this._symbol = s;
-        this._refresh();
-        return this;
-    }
+    // setSymbol(symbol) {
+    //     if (!symbol || symbol === this.options['symbol']) {
+    //         this._textSymbolChanged = false;
+    //         symbol = {};
+    //     } else {
+    //         this._textSymbolChanged = true;
+    //     }
+    //     const cooked = this._prepareSymbol(symbol);
+    //     const s = this._getDefaultTextSymbol();
+    //     extend(s, cooked);
+    //     this._symbol = s;
+    //     this._refresh();
+    //     return this;
+    // }
 
     onConfig(conf) {
         let needRepaint = false;
@@ -117,28 +108,15 @@ class TextMarker extends Marker {
         return super.onConfig(conf);
     }
 
-    _getBoxSize(symbol) {
-        if (!symbol['markerType']) {
-            symbol['markerType'] = 'square';
-        }
-        const size = splitTextToRow(this._content, symbol)['size'];
-        let width, height;
-        if (this.options['boxAutoSize']) {
-            const padding = this.options['boxPadding'];
-            width = size['width'] + padding['width'] * 2;
-            height = size['height'] + padding['height'] * 2;
-        }
-        if (this.options['boxMinWidth']) {
-            if (!width || width < this.options['boxMinWidth']) {
-                width = this.options['boxMinWidth'];
-            }
-        }
-        if (this.options['boxMinHeight']) {
-            if (!height || height < this.options['boxMinHeight']) {
-                height = this.options['boxMinHeight'];
-            }
-        }
-        return [width && height ? new Size(width, height) : null, size];
+    toJSON() {
+        // symbol is overrided by boxSymbol/textSymbol
+        const json = super.JSON.apply(this, arguments);
+        delete json.symbol;
+        return json;
+    }
+
+    _getTextSize(symbol) {
+        return splitTextToRow(this._content, symbol)['size'];
     }
 
     _getInternalSymbol() {
@@ -159,7 +137,5 @@ class TextMarker extends Marker {
         super.onShapeChanged();
     }
 }
-
-TextMarker.mergeOptions(options);
 
 export default TextMarker;

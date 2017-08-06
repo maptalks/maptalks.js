@@ -134,17 +134,17 @@ export function getAlignPoint(size, horizontalAlignment, verticalAlignment) {
     let alignW, alignH;
     if (horizontalAlignment === 'left') {
         alignW = -width;
-    } else if (horizontalAlignment === 'middle') {
-        alignW = -width / 2;
     } else if (horizontalAlignment === 'right') {
         alignW = 0;
+    } else {
+        alignW = -width / 2;
     }
     if (verticalAlignment === 'top') {
         alignH = -height;
-    } else if (verticalAlignment === 'middle') {
-        alignH = -height / 2;
     } else if (verticalAlignment === 'bottom') {
         alignH = 0;
+    } else {
+        alignH = -height / 2;
     }
     return new Point(alignW, alignH);
 }

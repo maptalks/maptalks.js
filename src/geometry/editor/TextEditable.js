@@ -1,6 +1,5 @@
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
-import TextBox from 'geometry/TextBox';
-import Label from 'geometry/Label';
+import TextMarker from 'geometry/TextMarker';
 import { UIMarker } from 'ui';
 
 /**
@@ -165,7 +164,6 @@ const TextEditable = {
     }
 };
 
-TextBox.include(TextEditable);
-Label.include(TextEditable);
+TextMarker.include(TextEditable);
 
 export default TextEditable;
