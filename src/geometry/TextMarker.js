@@ -1,7 +1,5 @@
 import { extend } from 'core/util';
 import { splitTextToRow, escapeSpecialChars } from 'core/util/strings';
-// import Size from 'geo/Size';
-// import Geometry from './Geometry';
 import Marker from './Marker';
 
 const defaultSymbol = {
@@ -70,44 +68,6 @@ class TextMarker extends Marker {
         return this;
     }
 
-    // getSymbol() {
-    //     if (this._textSymbolChanged) {
-    //         return Geometry.prototype.getSymbol.call(this);
-    //     }
-    //     return null;
-    // }
-
-    // setSymbol(symbol) {
-    //     if (!symbol || symbol === this.options['symbol']) {
-    //         this._textSymbolChanged = false;
-    //         symbol = {};
-    //     } else {
-    //         this._textSymbolChanged = true;
-    //     }
-    //     const cooked = this._prepareSymbol(symbol);
-    //     const s = this._getDefaultTextSymbol();
-    //     extend(s, cooked);
-    //     this._symbol = s;
-    //     this._refresh();
-    //     return this;
-    // }
-
-    onConfig(conf) {
-        let needRepaint = false;
-        for (const p in conf) {
-            if (conf.hasOwnProperty(p)) {
-                if (p.slice(0, 3) === 'box') {
-                    needRepaint = true;
-                    break;
-                }
-            }
-        }
-        if (needRepaint) {
-            this._refresh();
-        }
-        return super.onConfig(conf);
-    }
-
     toJSON() {
         // symbol is overrided by boxSymbol/textSymbol
         const json = super.JSON.apply(this, arguments);
@@ -124,17 +84,11 @@ class TextMarker extends Marker {
     }
 
     _getDefaultTextSymbol() {
-        const s = {};
-        extend(s, defaultSymbol);
-        if (this.options['box']) {
-            extend(s, defaultBoxSymbol);
-        }
-        return s;
+        return extend({}, defaultSymbol);
     }
 
-    onShapeChanged() {
-        this._refresh();
-        super.onShapeChanged();
+    _getDefaultBoxSymbol() {
+        return extend({}, defaultBoxSymbol);
     }
 }
 

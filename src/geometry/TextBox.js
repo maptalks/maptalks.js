@@ -1,5 +1,4 @@
 import { extend } from 'core/util';
-// import Size from 'geo/Size';
 import TextMarker from './TextMarker';
 
 /**
