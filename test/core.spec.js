@@ -3,7 +3,6 @@
  */
 const Fusion = require('./../src/init');
 
-
 describe("test core function", () => {
     describe('#context', () => {
         it('@', () => {
