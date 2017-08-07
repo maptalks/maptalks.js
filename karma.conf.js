@@ -24,11 +24,10 @@ module.exports = function (config) {
 			// Clones the base preprocessor, but overwrites
 			// its options with those defined below.
 			rollupBabel: {
-				format: 'umd',
-				moduleName: 'fusion',
+				base: 'rollup',
 				options: {
-					// In this case, to use
-					// a different transpiler:
+					format: 'umd',
+					moduleName: 'fusion',
 					plugins: [
 						resolve(),
 						commonjs(),
@@ -45,6 +44,8 @@ module.exports = function (config) {
 			'src/init.js': ['rollupBabel', 'coverage'],
 			'test/**/*.spec.js': ['rollupBabel', 'coverage']
 		};
+		//	https://docs.travis-ci.com/user/gui-and-headless-browsers/
+		// - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost
 		cfg.customLaunchers = {
 			Chrome_travis_ci: {
 				base: 'Chrome',
@@ -66,6 +67,6 @@ module.exports = function (config) {
 			}
 		};
 	}
-	
+
 	config.set(cfg);
 };
