@@ -22,6 +22,7 @@ class GLShaderFactory  {
      * @param {String} name 
      * @param {WebGLRenderingContext} gl 
      * @param {GLExtension} extension 
+     * @return {Array} [VertexShader,FragmentShader]
      */
     static create(name, gl, extension) {
          const vertexKey = `${name}_vertex`,

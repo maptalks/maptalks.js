@@ -16,7 +16,6 @@
  * 
  * @author yellow date 2017/6/12
  */
-
 const Dispose = require('./../utils/Dispose'),
     stamp = require('./../utils/stamp').stamp,
     GLConstants = require('./GLConstants'),
@@ -25,7 +24,6 @@ const Dispose = require('./../utils/Dispose'),
     GLVertexbuffer = require('./buffer/GLVertexbuffer'),
     GLIndexbuffer = require('./buffer/GLIndexbuffer'),
     GLVertexArrayObject = require('./GLVertexArrayObject');
-
 /**
  * 统一使用array方式调用， ..args
  */
@@ -44,7 +42,9 @@ const GLSL_UNIFORM = {
     'bvec4': 'uniform4iv',//
     'sampler2D': 'uniform1iv'//(location, value)
 };
-
+/**
+ * 
+ */
 const GL_GLSL = {
     'FLOAT': 'float',
     'FLOAT_VEC2': 'vec2',
@@ -63,7 +63,9 @@ const GL_GLSL = {
     'FLOAT_MAT4': 'mat4',
     'SAMPLER_2D': 'sampler2D'
 };
-
+/**
+ * 
+ */
 const GLSL_SIZE = {
     'float': 1,
     'vec2': 2,
@@ -82,7 +84,6 @@ const GLSL_SIZE = {
     'mat4': 16,
     'sampler2D': 1
 };
-
 /**
  * 构建gl类型（number）和 glsl类型映射表
  */

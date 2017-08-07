@@ -1,17 +1,6 @@
 // use polyfill
 // import './../node_modules/babel-polyfill/dist/polyfill';
 /**
- * improt from namespace core
- */
-
-const RenderNode = require('./core/RenderNode');
-const RenderManager = require('./core/RenderManager');
-const Container = require('./core/Container');
-
-module.exports.RenderNode = RenderNode;
-module.exports.RenderManager = RenderManager;
-module.exports.Container = Container;
-/**
  * import from namespace renderer
  */
 const Context = require('./gl/Context');
@@ -24,16 +13,18 @@ const GLTexture = require('./gl/GLTexture');
 const GLVertexArrayObject = require('./gl/GLVertexArrayObject');
 const GLShaderFactory = require('./gl/shader/GLShaderFactory');
 
-module.exports.gl = {
-    Context,
-    GLIndexbuffer,
-    GLVertexbuffer,
-    GLProgram,
-    GLFragmentShader,
-    GLVertexShader,
-    GLTexture,
-    GLShaderFactory,
-    GLVertexArrayObject
+module.exports = {
+    gl:{
+        Context,
+        GLIndexbuffer,
+        GLVertexbuffer,
+        GLProgram,
+        GLFragmentShader,
+        GLVertexShader,
+        GLTexture,
+        GLShaderFactory,
+        GLVertexArrayObject
+    }
 }
 
 /**
@@ -44,20 +35,29 @@ module.exports.gl = {
 /**
  * @type {WebGLRenderingContext}
  */
-const gl = require('gl')(600,600);
+// const gl = require('gl')(600,600);
 
-const ctx = new Context({
-    gl:gl,
-    width:600,
-    height:600
-})
+// const ctx = new Context({
+//     gl:gl,
+//     width:600,
+//     height:600
+// })
 
-const obj ={
-    position:[-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0]
-}
+// const obj ={
+//     position:[-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0]
+// }
 
-const veterxBuffer = new GLVertexbuffer(gl,obj.position);
+// const veterxBuffer = new GLVertexbuffer(gl,obj.position);
 
-const shaders = GLShaderFactory.create('default',gl,null);
+// const shaders = GLShaderFactory.create('default',gl,null);
+
+// const program = new GLProgram(gl,shaders[0],shaders[1]);
+
+// const programId=program.id;
+
+// ctx.mergeProrgam(program);
+
+// const program2 = ctx.useProgram(programId);
+
 
 

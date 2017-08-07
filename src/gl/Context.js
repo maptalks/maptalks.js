@@ -49,11 +49,7 @@ class Context {
      * @param {boolean} [options.premultipliedAlpha] enable premultipliedAlpha,default is true , webgl2
      * @param {boolean} [options.preserveDrawingBuffer] enable preserveDrawingBuffer,default is false , webgl2
      */
-    constructor(options) {
-        /**
-         * options
-         */
-        options = options || {};
+    constructor(options = {}) {
         /**
          * canvas width
          */
@@ -118,10 +114,6 @@ class Context {
          * get parameter and extensions
          */
         this._glLimits = this._includeLimits();
-        /**
-         * @type {Object}
-         */
-        this._shaderCache = {};
         /**
          * @type {Object}
          */
@@ -265,7 +257,36 @@ class Context {
             this._programCache[name] = program;
             gl.linkProgram(program.handle);
         }
-
+    }
+    /**
+     * 
+     * @param {*} programs 
+     */
+    mergeProrgam(...programs) {
+        const gl = this._gl,
+            _programList = [].concat(...programs),
+            len = _programList.length;
+        //map to programs
+        for (let i = 0; i < len; i++) {
+            const _program = _programList[i],
+                _id = _program.id;
+            if (!this._programCache[_id]) {
+                this._programCache[_id] = _program;
+                gl.linkProgram(_program.handle);
+            }
+        }
+    }
+    /**
+     * 使用指定program
+     * @param {String} key 
+     * @return {GLProgram}
+     */
+    useProgram(key) {
+        if(key instanceof GLProgram)
+            key = key.id;
+        const program = this._programCache[key];
+        program.useProgram();
+        return program;
     }
     /**
      * 清理颜色缓冲
@@ -296,16 +317,6 @@ class Context {
         gl.clearDepth(0x1);
         gl.clear(GLConstants.DEPTH_BUFFER_BIT);
     };
-
-    _getProgram(programName, programConfiguration) {
-        let cache = this._programCache;
-        const key = `${programName}`;
-        if (!!cache[key])
-            return cache[key];
-        else {
-            //create program
-        }
-    };
     /**
      * resize the gl.viewPort
      * }{yellow wait to be implemented
@@ -333,17 +344,6 @@ class Context {
      */
     get gl() {
         return this._gl;
-    }
-    /**
-     * 使用指定program
-     * @param {String} name 
-     * @return {GLProgram}
-     */
-    useProgram(name) {
-        const shaders = this._shaderCache[name],
-            program = this._programCache[name];
-        program.useProgram();
-        return program;
     }
 }
 
