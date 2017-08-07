@@ -40,7 +40,7 @@ class Circle extends CenterMixin(Polygon) {
 
     /**
      * @param {Coordinate} center - center of the circle
-     * @param {Number} radius           - radius of the circle
+     * @param {Number} radius           - radius of the circle, in meter
      * @param {Object} [options=null]   - construct options defined in [Circle]{@link Circle#options}
      */
     constructor(coordinates, radius, opts) {

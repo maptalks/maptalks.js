@@ -36,8 +36,8 @@ class Ellipse extends CenterMixin(Polygon) {
 
     /**
      * @param {Coordinate} center  - center of the ellipse
-     * @param {Number} width  - width of the ellipse
-     * @param {Number} height - height of the ellipse
+     * @param {Number} width  - width of the ellipse, in meter
+     * @param {Number} height - height of the ellipse, in meter
      * @param {Object}  [options=null] - construct options defined in [Ellipse]{@link Ellipse#options}
      */
     constructor(coordinates, width, height, opts) {
