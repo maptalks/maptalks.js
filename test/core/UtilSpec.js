@@ -74,21 +74,20 @@ describe('Util', function () {
             'textLineSpacing' : 8
         };
         var font = maptalks.StringUtil.getFont(style), wrapWidth = style['textWrapWidth'];
-        // var shortText = 'short text.';
-        // it('split short text', function () {
-        //     var shorts = maptalks.StringUtil.splitContent(shortText, font, wrapWidth);
-        //     for (var i = 0; i < shorts.length; i++) {
-        //         var size = maptalks.StringUtil.stringLength(shorts[i], font);
-        //         expect(size['width']).to.be.below(wrapWidth);
-        //     }
-        // });
+        var shortText = 'short text.';
+        it('split short text', function () {
+            var shorts = maptalks.StringUtil.splitContent(shortText, font, wrapWidth);
+            for (var i = 0; i < shorts.length; i++) {
+                var size = maptalks.StringUtil.stringLength(shorts[i], font);
+                expect(size['width']).to.be.below(wrapWidth);
+            }
+        });
 
         var longText = 'This is a long text : 213232132323213213123213213123213213213123123123123123123123123123123123123123.';
         it('split long text', function () {
             var longs = maptalks.StringUtil.splitContent(longText, font, wrapWidth);
             for (var i = 0; i < longs.length; i++) {
                 var size = maptalks.StringUtil.stringLength(longs[i], font);
-                console.log(longs[i]);
                 expect(size['width']).not.to.be.above(wrapWidth);
             }
         });
