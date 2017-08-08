@@ -64,4 +64,33 @@ describe('Util', function () {
         expected = '[ markerFile=foo.png;markerWidth=5;markerHeight=5 , markerType=ellipse;markerFill=radial_0,rgba(17, 172, 263, 0),0.4,rgba(17, 172, 263, 1);markerWidth=10;markerHeight=10 ]';
         expect(maptalks.Util.getSymbolStamp(symbol)).to.be.eql(expected);
     });
+
+    describe('split content', function () {
+        var style = {
+            'textFaceName': 'microsoft yahei',
+            'textSize': 18,
+            'textFill': '#333333',
+            'textWrapWidth': 100,
+            'textLineSpacing' : 8
+        };
+        var font = maptalks.StringUtil.getFont(style), wrapWidth = style['textWrapWidth'];
+        // var shortText = 'short text.';
+        // it('split short text', function () {
+        //     var shorts = maptalks.StringUtil.splitContent(shortText, font, wrapWidth);
+        //     for (var i = 0; i < shorts.length; i++) {
+        //         var size = maptalks.StringUtil.stringLength(shorts[i], font);
+        //         expect(size['width']).to.be.below(wrapWidth);
+        //     }
+        // });
+
+        var longText = 'This is a long text : 213232132323213213123213213123213213213123123123123123123123123123123123123123.';
+        it('split long text', function () {
+            var longs = maptalks.StringUtil.splitContent(longText, font, wrapWidth);
+            for (var i = 0; i < longs.length; i++) {
+                var size = maptalks.StringUtil.stringLength(longs[i], font);
+                console.log(longs[i]);
+                expect(size['width']).not.to.be.above(wrapWidth);
+            }
+        });
+    });
 });

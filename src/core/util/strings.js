@@ -70,25 +70,56 @@ export function stringLength(text, font) {
 }
 
 /**
- * Split content by wrapLength 根据长度分割文本
- * @param {String} content      - text to split
- * @param {Number} textLength   - width of the text, provided to prevent expensive repeated text measuring
- * @param {Number} wrapWidth    - width to wrap
+ * Split text content by dom.
+ * @param {String} content - content to split
+ * @param {String} font - font of the text, same as the CSS font.
+ * @return {Number} wrapWidth - width to wrap
  * @return {String[]}
  * @memberOf StringUtil
  */
-export function splitContent(content, textLength, wrapWidth) {
-    const rowNum = Math.ceil(textLength / wrapWidth);
-    const avgLen = textLength / content.length;
-    const approxLen = Math.floor(wrapWidth / avgLen);
+export function splitContent(content, font, wrapWidth) {
+    const textSize = stringLength(content, font);
+    if(textSize['width'] <= wrapWidth) return [content];
     const result = [];
-    for (let i = 0; i < rowNum; i++) {
-        if (i < rowNum - 1) {
-            result.push(content.substring(i * approxLen, (i + 1) * approxLen));
+    let ruler, ctx;
+    if (!stringLength.env) {
+        ruler = getDomRuler('canvas');
+        ctx = ruler.getContext('2d');
+        if(ctx) {
+            ctx.font = font;
         } else {
-            result.push(content.substring(i * approxLen));
+            ruler = getDomRuler('span');
+            ruler.style.font = font;
         }
     }
+    let start = 0, step = 1, textWidth = 0, text = '', lastText = '';
+    while(step < content.length - 1) {
+        if(textWidth < wrapWidth) {
+            text = content.substring(start, step);
+            if (stringLength.env) {
+                textWidth = stringLength.env(text, font);
+            } else {
+                if (ctx) {
+                    textWidth = ctx.measureText(text).width;
+                } else {
+                    ruler.innerHTML = text;
+                    textWidth = ruler.clientWidth;
+                }
+            }
+            step ++;
+        } else {
+            step --;
+            result.push(content.substring(start, step - 1));
+            start = step - 1;
+            textWidth = 0;
+            lastText = content.substring(start);
+            if(stringLength(lastText, font).width <= wrapWidth) {
+                result.push(lastText);
+                break;
+            }
+        }
+    }
+    if(ruler) removeDomNode(ruler);
     return result;
 }
 
@@ -199,7 +230,7 @@ export function splitTextToRow(text, style) {
             tSize = stringLength(t, font);
             tWidth = tSize['width'];
             if (tWidth > wrapWidth) {
-                contents = splitContent(t, tWidth, wrapWidth);
+                contents = splitContent(t, font, wrapWidth);
                 for (let ii = 0, ll = contents.length; ii < ll; ii++) {
                     size = stringLength(contents[ii], font);
                     if (size['width'] > actualWidth) {
@@ -221,7 +252,7 @@ export function splitTextToRow(text, style) {
             }
         }
     } else if (textWidth > wrapWidth) {
-        const splitted = splitContent(text, textWidth, wrapWidth);
+        const splitted = splitContent(text, font, wrapWidth);
         for (let i = 0; i < splitted.length; i++) {
             size = stringLength(splitted[i], font);
             if (size['width'] > actualWidth) {
