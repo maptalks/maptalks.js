@@ -2,7 +2,7 @@
  * @author yellow date 2017/8/3
  */
 
-const Context = require('./../src/gl/Context');
+const GLContext = require('./../src/gl/GLContext');
 
 describe("#1",()=>{
 
