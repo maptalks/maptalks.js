@@ -136,7 +136,7 @@ describe('#TextBox', function () {
             layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(layer).to.be.painted(-100 / 2 + padding[0], 0);
+            expect(layer).to.be.painted(-100 / 2 + padding[0] + 1, 0);
             expect(layer).not.to.be.painted(-100 / 2 + padding[0] - 1, 0);
             expect(layer).not.to.be.painted(0, 0);
         });
@@ -158,7 +158,7 @@ describe('#TextBox', function () {
             layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(layer).to.be.painted(100 / 2 - padding[0] - 1, 0);
+            expect(layer).to.be.painted(100 / 2 - padding[0] - 2, 0);
             expect(layer).not.to.be.painted(100 / 2 - padding[0], 0);
             expect(layer).not.to.be.painted(0, 0);
         });
