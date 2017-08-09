@@ -92,6 +92,7 @@ const TextEditable = {
         map.on('mousedown', this.endEditText, this);
         const offset = this._getEditorOffset();
         this._editUIMarker = new UIMarker(this.getCoordinates(), {
+            'animation' : null,
             'content': editContainer,
             'dx': offset.dx,
             'dy': offset.dy
@@ -121,16 +122,16 @@ const TextEditable = {
         const content = this.getContent();
         const labelSize = this.getSize(),
             symbol = this._getInternalSymbol() || {},
-            width = (content && content.length > 0) ? (Math.max(labelSize['width'], this.options['boxMinWidth']) || 100) : 100,
+            width = labelSize.width,
             textColor = symbol['textFill'] || '#000000',
             textSize = symbol['textSize'] || 12,
-            height = Math.max(labelSize['height'], this.options['boxMinHeight']) || textSize * 1.5,
+            height = labelSize.height,
             lineColor = symbol['markerLineColor'] || '#000',
             fill = symbol['markerFill'] || '#3398CC',
             spacing = symbol['textLineSpacing'] || 0;
         const editor = createEl('div');
         editor.contentEditable = true;
-        editor.style.cssText = `background:${fill}; border: 1px solid ${lineColor};
+        editor.style.cssText = `background:${fill}; border:1px solid ${lineColor};
             color:${textColor};font-size:${textSize}px;width:${width - 2}px;height:${height - 2}px;margin: auto;
             line-height:${textSize + spacing}px;outline: 0; padding:0; margin:0;word-wrap: break-word;
             overflow: hidden;-webkit-user-modify: read-write-plaintext-only;`;
