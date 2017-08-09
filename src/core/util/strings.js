@@ -93,10 +93,9 @@ export function splitContent(content, font, wrapWidth) {
         }
     }
     let start = 0, step = 0, textWidth = 0, text = '', lastText = '';
-    const chars = Array.from(content);
-    while(step < chars.length) {
+    while(step < content.length) {
         if(textWidth < wrapWidth) {
-            text += chars[step];
+            text += content[step];
             if (stringLength.env) {
                 textWidth = stringLength.env(text, font);
             } else {
