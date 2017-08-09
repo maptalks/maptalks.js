@@ -29,12 +29,6 @@ const defaultBoxSymbol = {
  */
 class TextMarker extends Marker {
 
-    constructor(content, coordinates, options) {
-        super(coordinates, options);
-        this._content = escapeSpecialChars(content);
-        this._refresh();
-    }
-
     /**
      * Get text content of the label
      * @returns {String}
@@ -68,11 +62,8 @@ class TextMarker extends Marker {
         return this;
     }
 
-    toJSON() {
-        // symbol is overrided by boxSymbol/textSymbol
-        const json = super.JSON.apply(this, arguments);
-        delete json.symbol;
-        return json;
+    onAdd() {
+        this._refresh();
     }
 
     _getTextSize(symbol) {
@@ -89,6 +80,10 @@ class TextMarker extends Marker {
 
     _getDefaultBoxSymbol() {
         return extend({}, defaultBoxSymbol);
+    }
+
+    _getDefaultPadding() {
+        return [12, 8];
     }
 }
 

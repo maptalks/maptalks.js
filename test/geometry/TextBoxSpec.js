@@ -17,24 +17,21 @@ describe('#TextBox', function () {
         REMOVE_CONTAINER(container);
     });
 
-    describe('textBox fires events', function () {
+    describe('events', function () {
         it('canvas events', function () {
-            var vector = new maptalks.TextBox('test textbox', center);
+            var vector = new maptalks.TextBox('test label', center, 100, 40);
             new COMMON_GEOEVENTS_TESTOR().testCanvasEvents(vector, map, vector.getCenter());
         });
-    });
 
-    describe('change position', function () {
-        it('events', function () {
+        it('change position', function () {
             var spy = sinon.spy();
 
-            var vector = new maptalks.TextBox('test textbox', center);
+            var vector = new maptalks.TextBox('test label', center, 100, 40);
             vector.on('positionchange', spy);
 
             function evaluate() {
                 var rnd = Math.random() * 0.001;
                 var coordinates = new maptalks.Coordinate(center.x + rnd, center.y + rnd);
-
                 vector.setCoordinates(coordinates);
                 expect(spy.calledOnce).to.be.ok();
                 expect(vector.getCoordinates()).to.eql(coordinates);
@@ -51,57 +48,69 @@ describe('#TextBox', function () {
         });
     });
 
-    describe('can get/set content', function () {
-        it('get/set content', function () {
-            var text = '中文标签';
-            var vector = new maptalks.TextBox(text, center);
+
+    describe('get/set', function () {
+        it('content', function () {
+            var content = '中文标签';
+            var vector = new maptalks.TextBox(content, center, 100, 40);
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(vector.getContent()).to.be.eql(text);
-            text = '中文标签-2';
-            vector.setContent(text);
-            expect(vector.getContent()).to.be.eql(text);
+            expect(vector.getContent()).to.be.eql(content);
+            content = '中文标签-2';
+            vector.setContent(content);
+            expect(vector.getContent()).to.be.eql(content);
         });
-    });
 
-    describe('can get/set symbol', function () {
-        it('get/set symbol', function () {
-            var text = '中文标签';
-            var vector = new maptalks.TextBox(text, center);
-            vector.setSymbol(null);
-            //null symbol is allowed, means set to default symbol.
-            expect(vector.getSymbol()).not.to.be.ok();
+        it('textAlign', function () {
+            var content = '中文标签';
+            var vector = new maptalks.TextBox(content, center, 100, 40);
+            var textStyle = {
+                'wrap' : true,
+                'padding' : [12, 8],
+                'verticalAlignment' : 'middle',
+                'horizontalAlignment' : 'middle'
+            };
+            vector.setTextStyle(textStyle);
+            //default textalign
+            expect(vector.getTextStyle().verticalAlignment).to.be.eql('middle');
+            expect(vector.getTextStyle().horizontalAlignment).to.be.eql('middle');
+            textStyle.horizontalAlignment = 'right';
+            expect(vector.getTextStyle().horizontalAlignment).to.be.eql('middle');
+            vector.setTextStyle(textStyle);
+            expect(vector.getTextStyle().horizontalAlignment).to.be.eql('right');
             layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
             layer.addGeometry(vector);
-            var textboxSymbol = {
-                'markerLineColor': '#ff0000',
-                'markerLineWidth': 2,
-                'markerLineOpacity': 0.9,
-                'markerLineDasharray': null,
-                'markerFillOpacity': 0.6,
+            expect(vector.getTextStyle().horizontalAlignment).to.be.eql('right');
+        });
 
-                'textFaceName': 'arial',
-                'textSize': 12,
-                'textOpacity': 1,
-                'textSpacing': 30,
-                'textWrapWidth': null, //auto
-                'textWrapBefore': false,
-                'textWrapCharacter': '\n',
-                'textLineSpacing': 8,
-                'textHorizontalAlignment': 'middle', //left middle right
-                'textVerticalAlignment': 'top'//top middle bottom
+        it('boxSymbol', function () {
+            var content = '中文标签';
+            var vector = new maptalks.TextBox(content, center, 100, 40);
+            //null symbol is allowed, means set to default symbol.
+            expect(vector.getSymbol()).to.be.ok();
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var boxSymbol = {
+                'markerType': 'square',
+                'markerLineColor': '#000',
+                'markerLineWidth': 2,
+                'markerLineOpacity': 1,
+                'markerFill': '#fff',
+                'markerOpacity': 1
             };
-            vector.setSymbol(textboxSymbol);
+            vector.setBoxSymbol(boxSymbol);
             //symbol's textName will be set.
-            expect(vector.getSymbol()['textName']).not.to.be.empty();
+            expect(vector.getSymbol().markerWidth).to.be.ok();
+            expect(vector.getSymbol().markerHeight).to.be.ok();
         });
     });
 
     describe('can config', function () {
         it('configs', function () {
-            var vector = new maptalks.TextBox('textbox', center);
+            var vector = new maptalks.TextBox('textbox', center, 100, 40);
             var defaultConfig = vector.config();
             expect(defaultConfig).to.be.empty();
 
@@ -109,86 +118,99 @@ describe('#TextBox', function () {
     });
 
     describe('alignment', function () {
+        var padding = [12, 8];
         it('left', function () {
-            var vector = new maptalks.TextBox('■■■', center, {
-                box : false,
-                symbol : {
-                    'markerWidth' : 100,
-                    'markerHeight' : 50,
+            var vector = new maptalks.TextBox('■■■', center, 100, 100, {
+                textStyle : {
+                    'wrap' : true,
+                    'padding' : padding,
+                    'verticalAlignment' : 'middle',
+                    'horizontalAlignment' : 'left'
+                },
+                boxSymbol : {
+                    'markerType' : 'square',
                     'markerFillOpacity' : 0,
-                    'markerLineOpacity' : 0,
-                    'textHorizontalAlignment' : 'left'
+                    'markerLineOpacity' : 0
                 }
             });
             layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(layer).to.be.painted(-Math.floor(100 / 2) + 2, 0);
-            expect(layer).not.to.be.painted(Math.floor(100 / 2) - 2, 0);
+            expect(layer).to.be.painted(-100 / 2 + padding[0], 0);
+            expect(layer).not.to.be.painted(-100 / 2 + padding[0] - 1, 0);
+            expect(layer).not.to.be.painted(0, 0);
         });
 
         it('right', function () {
-            var vector = new maptalks.TextBox('■■■', center, {
-                box : false,
-                symbol : {
-                    'markerWidth' : 100,
-                    'markerHeight' : 50,
+            var vector = new maptalks.TextBox('■■■', center, 100, 100, {
+                textStyle : {
+                    'wrap' : true,
+                    'padding' : padding,
+                    'verticalAlignment' : 'middle',
+                    'horizontalAlignment' : 'right'
+                },
+                boxSymbol : {
+                    'markerType' : 'square',
                     'markerFillOpacity' : 0,
-                    'markerLineOpacity' : 0,
-                    'textHorizontalAlignment' : 'right'
+                    'markerLineOpacity' : 0
                 }
             });
             layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(layer).to.be.painted(Math.floor(100 / 2) - 3, 0);
-            expect(layer).not.to.be.painted(-Math.floor(100 / 2) + 3, 0);
+            expect(layer).to.be.painted(100 / 2 - padding[0] - 1, 0);
+            expect(layer).not.to.be.painted(100 / 2 - padding[0], 0);
+            expect(layer).not.to.be.painted(0, 0);
         });
 
         it('top', function () {
-            var vector = new maptalks.TextBox('■■■', center, {
-                box : false,
-                symbol : {
-                    'markerWidth' : 100,
-                    'markerHeight' : 50,
+            var vector = new maptalks.TextBox('■■■', center, 100, 100, {
+                textStyle : {
+                    'wrap' : true,
+                    'padding' : padding,
+                    'verticalAlignment' : 'top',
+                    'horizontalAlignment' : 'middle'
+                },
+                boxSymbol : {
+                    'markerType' : 'square',
                     'markerFillOpacity' : 0,
-                    'markerLineOpacity' : 0,
-                    'textVerticalAlignment' : 'top'
+                    'markerLineOpacity' : 0
                 }
             });
             layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(layer).to.be.painted(0, -50 / 2 + 7);
-            expect(layer).not.to.be.painted(0, 50 / 2 - 7);
+            expect(layer).to.be.painted(0, -100 / 2 + padding[1] + 7);
+            expect(layer).not.be.painted();
         });
 
         it('bottom', function () {
-            var vector = new maptalks.TextBox('■■■', center, {
-                box : false,
-                symbol : {
-                    'markerWidth' : 100,
-                    'markerHeight' : 50,
+            var vector = new maptalks.TextBox('■■■', center, 100, 100, {
+                textStyle : {
+                    'wrap' : true,
+                    'padding' : padding,
+                    'verticalAlignment' : 'bottom',
+                    'horizontalAlignment' : 'middle'
+                },
+                boxSymbol : {
+                    'markerType' : 'square',
                     'markerFillOpacity' : 0,
-                    'markerLineOpacity' : 0,
-                    'textVerticalAlignment' : 'bottom'
+                    'markerLineOpacity' : 0
                 }
             });
             layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(layer).to.be.painted(0, 50 / 2 - 5);
-            expect(layer).not.to.be.painted(0, -50 / 2 + 5);
+            expect(layer).to.be.painted(0, 100 / 2 - padding[1] - 7);
+            expect(layer).not.be.painted();
         });
     });
 
-    it('autoSize', function () {
-        var vector = new maptalks.TextBox('■■■', center, {
-            boxAutoSize: true
-        });
-        var symbol = vector._getInternalSymbol();
-        expect(symbol.markerWidth).to.be.above(5);
-        expect(symbol.markerHeight).to.be.above(5);
+    it('width, height', function () {
+        var vector = new maptalks.TextBox('■■■', center, 100, 50);
+        var symbol = vector.getSymbol();
+        expect(symbol.markerWidth).to.be.eql(100);
+        expect(symbol.markerHeight).to.be.eql(50);
     });
 
     it('can edit', function () {
@@ -202,7 +224,7 @@ describe('#TextBox', function () {
         expect(vector.isEditingText()).not.to.be.ok();
     });
 
-    it.skip('edit with special characters', function () {
+    it('edit with special characters', function () {
         var vector = new maptalks.TextBox('\b\t\v\ftextbox', center);
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
@@ -218,7 +240,7 @@ describe('#TextBox', function () {
         expect(vector.getContent()).to.be.eql('textbox');
     });
 
-    it.skip('edit with "Enter" characters', function () {
+    it('edit with "Enter" characters', function () {
         var vector = new maptalks.TextBox('textbox\r', center);
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
@@ -227,8 +249,6 @@ describe('#TextBox', function () {
         expect(vector.isEditingText()).to.be.ok();
         vector.endEditText();
         expect(vector.isEditingText()).not.to.be.ok();
-        expect(vector.getContent()).to.be.eql('textbox\n');
+        expect(vector.getContent()).to.be.eql('textbox');
     });
-
-
 });

@@ -1,5 +1,5 @@
 import { extend } from 'core/util';
-import { getAlignPoint } from 'core/util/strings';
+import { getAlignPoint, escapeSpecialChars } from 'core/util/strings';
 import Size from 'geo/Size';
 import TextMarker from './TextMarker';
 
@@ -15,14 +15,14 @@ import TextMarker from './TextMarker';
  * @instance
  */
 const options = {
-    'boxStyle' : {
+    'boxStyle' : null/*{
         'padding' : [12, 8],
         'verticalAlignment' : 'middle',
         'horizontalAlignment' : 'middle',
         'minWidth' : 0,
         'minHeight' : 0,
         'symbol' : null
-    }
+    }*/
 };
 
 /**
@@ -41,22 +41,37 @@ const options = {
  */
 class Label extends TextMarker {
 
+    constructor(content, coordinates, options = {}) {
+        super(coordinates, options);
+        if (options.textSymbol) {
+            this.setTextSymbol(options.textSymbol);
+        }
+        if (options.boxStyle) {
+            this.setBoxStyle(options.boxStyle);
+        }
+        this._content = escapeSpecialChars(content);
+        this._refresh();
+    }
+
     getBoxStyle() {
+        if (!this.options.boxStyle) {
+            return null;
+        }
         return extend({}, this.options.boxStyle);
     }
 
     setBoxStyle(style) {
-        this.options.boxStyle = style;
+        this.options.boxStyle = style ? extend({}, style) : style;
         this._refresh();
         return this;
     }
 
     getTextSymbol() {
-        return extend({}, this.options.textSymbol);
+        return extend({}, this.options.textSymbol || this._getDefaultTextSymbol());
     }
 
     setTextSymbol(symbol) {
-        this.options.textSymbol = extend({}, symbol);
+        this.options.textSymbol = symbol ? extend({}, symbol) : symbol;
         this._refresh();
         return this;
     }
@@ -67,6 +82,10 @@ class Label extends TextMarker {
         label.setProperties(feature['properties']);
         label.setId(feature['id']);
         return label;
+    }
+
+    _canEdit() {
+        return false;
     }
 
     _toJSON(options) {
@@ -80,7 +99,7 @@ class Label extends TextMarker {
 
     _refresh() {
         const symbol = extend({},
-            this.getTextSymbol() || this._getDefaultTextSymbol(),
+            this.getTextSymbol(),
             {
                 'textName' : this._content
             });
@@ -90,7 +109,7 @@ class Label extends TextMarker {
             extend(symbol, boxStyle.symbol);
             const sizes = this._getBoxSize(symbol),
                 textSize = sizes[1],
-                padding = boxStyle['padding'] || [12, 8];
+                padding = boxStyle['padding'] || this._getDefaultPadding();
             const boxSize = sizes[0];
             //if no boxSize then use text's size in default
             symbol['markerWidth'] = boxSize['width'];
@@ -121,7 +140,7 @@ class Label extends TextMarker {
                 symbol['markerDy'] += textSize['height'] / 2;
             }
         }
-        this.setSymbol(symbol);
+        this.updateSymbol(symbol);
     }
 
     _getBoxSize(symbol) {
@@ -131,7 +150,7 @@ class Label extends TextMarker {
         const boxStyle = this.getBoxStyle();
         const size = this._getTextSize(symbol);
         let width, height;
-        const padding = boxStyle['padding'];
+        const padding = boxStyle['padding'] || this._getDefaultPadding();
         width = size['width'] + padding[0] * 2;
         height = size['height'] + padding[1] * 2;
         if (boxStyle['minWidth']) {

@@ -1,4 +1,5 @@
 import { extend } from 'core/util';
+import { escapeSpecialChars } from 'core/util/strings';
 import TextMarker from './TextMarker';
 
 /**
@@ -12,6 +13,7 @@ import TextMarker from './TextMarker';
  */
 const options = {
     'textStyle' :  {
+        'wrap' : true,
         'padding' : [12, 8],
         'verticalAlignment' : 'middle',
         'horizontalAlignment' : 'middle'
@@ -34,15 +36,22 @@ const options = {
  */
 class TextBox extends TextMarker {
 
-    constructor(text, coordinates, width, height, options) {
-        super(text, coordinates, options);
+    constructor(content, coordinates, width, height, options = {}) {
+        super(coordinates, options);
+        this._content = escapeSpecialChars(content);
         this._width = width;
         this._height = height;
+        if (options.boxSymbol) {
+            this.setBoxSymbol(options.boxSymbol);
+        }
+        if (options.textStyle) {
+            this.setTextStyle(options.textStyle);
+        }
         this._refresh();
     }
 
     getWidth() {
-        return this.width;
+        return this._width;
     }
 
     setWidth(width) {
@@ -66,18 +75,25 @@ class TextBox extends TextMarker {
     }
 
     setBoxSymbol(symbol) {
-        this.options.boxSymbol = extend({}, symbol);
-        this._refresh();
+        this.options.boxSymbol = symbol ? extend({}, symbol) : symbol;
+        if (this.getSymbol()) {
+            this._refresh();
+        }
         return this;
     }
 
     getTextStyle() {
+        if (!this.options.textStyle) {
+            return null;
+        }
         return extend({}, this.options.textStyle);
     }
 
     setTextStyle(style) {
-        this.options.textStyle = style;
-        this._refresh();
+        this.options.textStyle = style ? extend({}, style) : style;
+        if (this.getSymbol()) {
+            this._refresh();
+        }
         return this;
     }
 
@@ -100,7 +116,10 @@ class TextBox extends TextMarker {
     }
 
     _refresh() {
-        const textStyle = this.getTextStyle();
+        const textStyle = this.getTextStyle() || {},
+            padding = textStyle['padding'] || [12, 8],
+            maxWidth = this._width - 2 * padding[0],
+            maxHeight = this._height - 2 * padding[1];
         const symbol = extend({},
             textStyle.symbol || this._getDefaultTextSymbol(),
             this.options.boxSymbol || this._getDefaultBoxSymbol(),
@@ -109,10 +128,14 @@ class TextBox extends TextMarker {
                 'markerWidth' : this._width,
                 'markerHeight' : this._height,
                 'textHorizontalAlignment' : 'middle',
-                'textVerticalAlignment' : 'middle'
+                'textVerticalAlignment' : 'middle',
+                'textMaxWidth' : maxWidth,
+                'textMaxHeight' : maxHeight
             });
 
-        const padding = textStyle['padding'] || [12, 8];
+        if (textStyle['wrap'] && !symbol['textWrapWidth']) {
+            symbol['textWrapWidth'] = maxWidth;
+        }
 
         const hAlign = textStyle['horizontalAlignment'];
         symbol['textDx'] = symbol['markerDx'] || 0;
@@ -136,7 +159,7 @@ class TextBox extends TextMarker {
             symbol['textDy'] += offsetY;
         }
 
-        this.setSymbol(symbol);
+        this.updateSymbol(symbol);
     }
 }
 

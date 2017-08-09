@@ -4,7 +4,7 @@ import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
 import Point from 'geo/Point';
-import { Marker, TextMarker, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
+import { Marker, TextBox, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
 import * as Symbolizers from 'renderer/geometry/symbolizers';
 
@@ -535,7 +535,7 @@ class GeometryEditor extends Eventable(Class) {
                 height = width / aspectRatio;
             }
             const ability = resizeAbilities[i];
-            if (!(marker instanceof TextMarker)) {
+            if (!(marker instanceof TextBox)) {
                 if (aspectRatio || ability === 0 || ability === 2) {
                     symbol['markerWidth'] = width;
                 }
@@ -546,12 +546,12 @@ class GeometryEditor extends Eventable(Class) {
                 geometryToEdit.setSymbol(symbol);
             } else {
                 if (aspectRatio || ability === 0 || ability === 2) {
-                    geometryToEdit.config('boxMinWidth', width);
-                    marker.config('boxMinWidth', width);
+                    marker.setWidth(width);
+                    geometryToEdit.setWidth(width);
                 }
                 if (aspectRatio || ability === 1 || ability === 2) {
-                    geometryToEdit.config('boxMinHeight', height);
-                    marker.config('boxMinHeight', height);
+                    marker.setHeight(height);
+                    geometryToEdit.setHeight(height);
                 }
             }
         });

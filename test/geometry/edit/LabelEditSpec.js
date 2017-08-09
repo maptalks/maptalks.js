@@ -54,7 +54,7 @@ describe('LabelEdit', function () {
             }
         });
 
-        it.skip('edit content with “Enter” key', function () {
+        it('edit content with "Enter" key', function () {
             var label = getLabel();
 
             label.on('edittextstart', startEdit);
@@ -92,6 +92,11 @@ describe('LabelEdit', function () {
                 var expected = h * 2 + spacing;
                 expect(label.getSize()['height'] >= expected).to.be.ok();
             }
+        });
+
+        it('can not be edited with startEdit', function () {
+            var label = getLabel();
+            expect(label._canEdit()).not.to.be.ok();
         });
 
     });

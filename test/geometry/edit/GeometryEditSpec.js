@@ -140,6 +140,22 @@ describe('#GeometryEdit', function () {
             marker.endEdit();
         });
 
+        it('resize a text box', function () {
+            var marker = new maptalks.TextBox('textbox', map.getCenter(), 20, 20).addTo(layer);
+            var size = marker.getSize();
+            var fired = false;
+            marker.on('resizing', function () {
+                fired = true;
+            });
+            marker.startEdit();
+            dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
+            var symbol = marker.getSymbol();
+            expect(symbol.markerWidth).to.be.approx(40);
+            expect(symbol.markerHeight).to.be.approx(20);
+            expect(fired).to.be.ok();
+            marker.endEdit();
+        });
+
         it('resize a circle', function () {
             var circle = new maptalks.Circle(map.getCenter(), 1000).addTo(layer);
             var fired = false;
