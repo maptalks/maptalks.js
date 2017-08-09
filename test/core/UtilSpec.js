@@ -100,5 +100,13 @@ describe('Util', function () {
                 expect(size['width']).not.to.be.above(wrapWidth);
             }
         });
+
+        it('split text with a small wrapWidth', function () {
+            var shorts = maptalks.StringUtil.splitContent('foo', font, 2);
+            for (var i = 0; i < shorts.length; i++) {
+                var size = maptalks.StringUtil.stringLength(shorts[i], font);
+                expect(size['width']).to.be.below(wrapWidth);
+            }
+        });
     });
 });

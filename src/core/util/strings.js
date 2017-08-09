@@ -79,7 +79,8 @@ export function stringLength(text, font) {
  */
 export function splitContent(content, font, wrapWidth) {
     const textSize = stringLength(content, font);
-    if(textSize['width'] <= wrapWidth) return [content];
+    const contentWidth = textSize['width'];
+    if(contentWidth <= wrapWidth || (contentWidth/content.length) >= wrapWidth) return [content];
     const result = [];
     let ruler, ctx;
     if (!stringLength.env) {
