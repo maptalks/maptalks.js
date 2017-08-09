@@ -67,7 +67,7 @@ describe('Util', function () {
 
     describe('split content', function () {
         var style = {
-            'textFaceName': 'microsoft yahei',
+            'textFaceName': 'sans-serif',
             'textSize': 18,
             'textFill': '#333333',
             'textWrapWidth': 100,
@@ -85,6 +85,15 @@ describe('Util', function () {
 
         var longText = 'This is a long text : 213232132323213213123213213123213213213123123123123123123123123123123123123123.';
         it('split long text', function () {
+            var longs = maptalks.StringUtil.splitContent(longText, font, wrapWidth);
+            for (var i = 0; i < longs.length; i++) {
+                var size = maptalks.StringUtil.stringLength(longs[i], font);
+                expect(size['width']).not.to.be.above(wrapWidth);
+            }
+        });
+
+        var longText = '这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串。';
+        it('split chinese text', function () {
             var longs = maptalks.StringUtil.splitContent(longText, font, wrapWidth);
             for (var i = 0; i < longs.length; i++) {
                 var size = maptalks.StringUtil.stringLength(longs[i], font);
