@@ -225,7 +225,7 @@ describe('#TextBox', function () {
     });
 
     it('edit with special characters', function () {
-        var vector = new maptalks.TextBox('\b\t\v\ftextbox', center);
+        var vector = new maptalks.TextBox('\b\t\v\ftextbox', center, 100, 50);
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);
@@ -241,7 +241,7 @@ describe('#TextBox', function () {
     });
 
     it('edit with "Enter" characters', function () {
-        var vector = new maptalks.TextBox('textbox\r', center);
+        var vector = new maptalks.TextBox('textbox\r', center, 100, 50);
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         layer.addGeometry(vector);

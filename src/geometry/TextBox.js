@@ -1,4 +1,4 @@
-import { extend } from 'core/util';
+import { extend, isNil } from 'core/util';
 import { escapeSpecialChars } from 'core/util/strings';
 import TextMarker from './TextMarker';
 
@@ -39,8 +39,8 @@ class TextBox extends TextMarker {
     constructor(content, coordinates, width, height, options = {}) {
         super(coordinates, options);
         this._content = escapeSpecialChars(content);
-        this._width = width;
-        this._height = height;
+        this._width = isNil(width) ? 100 : width;
+        this._height = isNil(height) ? 40 : height;
         if (options.boxSymbol) {
             this.setBoxSymbol(options.boxSymbol);
         }

@@ -16,7 +16,7 @@ function GEN_GEOMETRIES_OF_ALL_TYPES() {
     return [
         new maptalks.Marker(center),
         new maptalks.Label('test label', center),
-        new maptalks.TextBox('test textbox', center),
+        new maptalks.TextBox('test textbox', center, 100, 50),
         new maptalks.Circle(center, r),
         new maptalks.Ellipse(center, w, h),
         new maptalks.Rectangle(center, w, h),
