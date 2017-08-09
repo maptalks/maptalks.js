@@ -305,42 +305,6 @@ class GLContext extends Dispose {
     //     program.useProgram();
     //     return program;
     // }
-    // /**
-    //  * 清理颜色缓冲
-    //  * @param {Array} rgba
-    //  * @example 
-    //  *  clearColor(1,1,1,1);
-    //  */
-    // clearColor(...args) {
-    //     const gl = this._gl,
-    //         [r, g, b, a] = args;
-    //     gl.clearColor(r || 0, g || 0, b || 0, a || 0);
-    //     gl.clear(GLConstants.COLOR_BUFFER_BIT);
-    // };
-    // /**
-    //  * 清理模版缓冲
-    //  */
-    // clearStencil() {
-    //     const gl = this._gl;
-    //     gl.clearStencil(0x0);
-    //     gl.stencilMask(0xFF);
-    //     gl.clear(GLConstants.STENCIL_BUFFER_BIT);
-    // };
-    // /**
-    //  * 清理深度缓冲
-    //  */
-    // clearDepth() {
-    //     const gl = this._gl;
-    //     gl.clearDepth(0x1);
-    //     gl.clear(GLConstants.DEPTH_BUFFER_BIT);
-    // };
-    // /**
-    //  * resize the gl.viewPort
-    //  * }{yellow wait to be implemented
-    //  * @param {number} width 
-    //  * @param {number} height 
-    //  */
-    // resize(width, height) {
     /**
      * 获取canvas
      */
@@ -420,6 +384,14 @@ class GLContext extends Dispose {
     }
     /**
      * 
+     * @param {number} cap 
+     */
+    disable(cap){
+        const gl = this._gl;
+        gl.disable(cap);
+    }
+    /**
+     * 
      * @param {number} func 
      */
     depthFunc(func) {
@@ -428,11 +400,38 @@ class GLContext extends Dispose {
     }
     /**
      * 
+     * @param {number} red 
+     * @param {number} green 
+     * @param {number} blue 
+     * @param {number} alpha 
+     */
+    clearColor(red,green,blue,alpha){
+        const gl =this._gl;
+        //gl.clearColor(red,green,blue,alpha);
+    }
+    /**
+     * 
      * @param {number} depth 
      */
     clearDepth(depth) {
         const gl = this._gl;
-        gl.clearDepth(depth);
+        //gl.clearDepth(depth);
+    }
+    /**
+     * 
+     * @param {number} mask 
+     */
+    clear(mask) {
+        const gl = this._gl;
+        //gl.clear(mask);
+    }
+    /**
+     * 
+     * @param {GLenum} s 
+     */
+    clearStencil(s) {
+        const gl = this._gl;
+        //gl.clearStencil(s);
     }
     /**
      * 
@@ -483,14 +482,6 @@ class GLContext extends Dispose {
     getShaderParameter(shader, pname) {
         const gl = this._gl;
         return gl.getShaderParameter(shader, pname)
-    }
-    /**
-     * @param {WebGLShader} shader
-     * @return {String}
-     */
-    getShaderInfoLog(shader) {
-        const gl = this._gl;
-        return gl.getShaderInfoLog(shader);
     }
     /**
      * 
@@ -566,7 +557,12 @@ class GLContext extends Dispose {
      */
     createProgram() {
         const gl = this._gl;
-        return gl.createProgram();
+        //1.创建GLProgram
+        const glProgram = new GLProgram(gl);
+        //2.缓存program
+        this._programCache[glProgram.id] = glProgram;
+        //3.兼容，返回句柄
+        return glProgram.handle;
     }
     /**
      * 
@@ -659,6 +655,17 @@ class GLContext extends Dispose {
     /**
      * 
      * @param {WebGLUniformLocation} location 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+     */
+    uniform3f(location,x,y,z){
+        const gl = this._gl;
+        gl.uniform3f(location,x,y,z);
+    }
+    /**
+     * 
+     * @param {WebGLUniformLocation} location 
      * @param {Float32Array|number[]} v 
      */
     uniform3fv(location, v) {
@@ -692,16 +699,25 @@ class GLContext extends Dispose {
         const gl = this._gl;
         gl.uniform1fv(location, v);
     }
-
     /**
      * 
      * @param {WebGLUniformLocation} location 
      * @param {boolean} transpose
      * @param {Float32Array | number[]} v
      */
-    uniformMatrix4fv(location,transpose,v) {
+    uniformMatrix3fv(location,transpose,value){
         const gl = this._gl;
-        gl.uniformMatrix4fv(location,transpose,v);
+        gl.uniformMatrix3fv(location,transpose,value);
+    }
+    /**
+     * 
+     * @param {WebGLUniformLocation} location 
+     * @param {boolean} transpose
+     * @param {Float32Array | number[]} v
+     */
+    uniformMatrix4fv(location, transpose, v) {
+        const gl = this._gl;
+        gl.uniformMatrix4fv(location, transpose, v);
     }
     /**
      * 
@@ -728,19 +744,98 @@ class GLContext extends Dispose {
      * @param {number} offset 
      */
     drawElements(mode, count, type, offset) {
+        const programCache = this._programCache;
+        for(const key in programCache){
+            const glProgram = programCache[key];
+            glProgram.useProgram();
+            glProgram.drawElements(mode, count, type, offset);
+        }
+        //gl.drawElements(mode, count, type, offset);
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquationSeparate
+     * used to set the RGB blend equation and alpha blend equation separately.
+     * The blend equation determines how a new pixel is combined with a pixel already in the WebGLFramebuffer
+     * @param {GLenum} modeRGB 
+     * @param {GLenum} modeAlpha 
+     */
+    blendEquationSeparate(modeRGB, modeAlpha) {
         const gl = this._gl;
-        gl.drawElements(mode, count, type, offset);
+        gl.blendEquationSeparate(modeRGB, modeAlpha);
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFuncSeparate
+     * defines which function is used for blending pixel arithmetic for RGB and alpha components separately.
+     * 
+     * @param {number|GLenum} srcRGB 
+     * @param {number|GLenum} dstRGB 
+     * @param {number|GLenum} srcAlpha 
+     * @param {number|GLenum} dstAlpha 
+     */
+    blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha) {
+        const gl = this._gl;
+        gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+     * sets a scissor box, which limits the drawing to a specified rectangle.
+     * 
+     * turn on scissor test to open
+     * gl.enable(gl.SCISSSOR_TEST);
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} widht 
+     * @param {number} height 
+     */
+    scissor(x, y, widht, height) {
+        const gl = this._gl;
+        gl.scissor(x, y, widht, height);
     }
     /**
      * 
-     * @param {number} mask 
+     * @param {boolean} flag 
      */
-    clear(mask) {
+    depthMask(flag){
         const gl = this._gl;
-        gl.clear(mask);
+        gl.depthMask(flag);
     }
-
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+     * sets which color components to enable or to disable when drawing or rendering to a WebGLFramebuffer
+     * @param {boolean} red 
+     * @param {boolean} green 
+     * @param {boolean} blue 
+     * @param {boolean} alpha 
+     */
+    colorMask(red, green, blue, alpha){
+        const gl = this._gl;
+        gl.colorMask(red, green, blue, alpha);
+    }
+    /**
+     * @param {WebGLProgram} program
+     * @return {String}
+     */
+    getProgramInfoLog(program){
+        const gl = this._gl;
+        return gl.getProgramInfoLog(program);
+    }
+    /**
+     * @param {WebGLShader} shader 
+     * @return {String}
+     */
+    getShaderInfoLog(shader){
+        const gl =this._gl;
+        return gl.getShaderInfoLog(shader);
+    }
+    /**
+     * 
+     * @param {number} width 
+     */
+    lineWidth(width){
+        const gl = this._gl;
+        gl.lineWidth(width);
+    }
 }
-
 
 module.exports = GLContext;

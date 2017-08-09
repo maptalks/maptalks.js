@@ -1,8 +1,8 @@
 /**
  * an implement of PerspectiveCamera
  */
-import Camera from './Camera';
-import glMatrix from 'kiwi.matrix';
+const Camera = require('./Camera');
+const glMatrix = require('kiwi.matrix');
 
 /**
  * @class
