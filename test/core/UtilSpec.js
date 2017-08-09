@@ -92,11 +92,11 @@ describe('Util', function () {
             }
         });
 
-        var longText = '这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串。';
+        var chineseText = '这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串。';
         it('split chinese text', function () {
-            var longs = maptalks.StringUtil.splitContent(longText, font, wrapWidth);
-            for (var i = 0; i < longs.length; i++) {
-                var size = maptalks.StringUtil.stringLength(longs[i], font);
+            var texts = maptalks.StringUtil.splitContent(chineseText, font, wrapWidth);
+            for (var i = 0; i < texts.length; i++) {
+                var size = maptalks.StringUtil.stringLength(texts[i], font);
                 expect(size['width']).not.to.be.above(wrapWidth);
             }
         });
