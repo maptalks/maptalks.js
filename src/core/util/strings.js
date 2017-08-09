@@ -47,6 +47,24 @@ export function splitWords(chr) {
     return trim(chr).split(/\s+/);
 }
 
+const rulerCtx = typeof document !== 'undefined' ? document.createElement('canvas').getContext('2d') : null;
+
+/**
+ * Gets width of the text with a certain font.
+ * More performant than stringLength.
+ * @param {String} text - text to measure
+ * @param {String} font - font of the text, same as the CSS font.
+ * @return {Number}
+ * @memberOf StringUtil
+ */
+export function stringWidth(text, font) {
+    if (stringWidth.node) {
+        return stringWidth.node(text, font);
+    }
+    rulerCtx.font = font;
+    return rulerCtx.measureText(text).width;
+}
+
 /**
  * Gets size in pixel of the text with a certain font.
  * @param {String} text - text to measure
@@ -78,50 +96,26 @@ export function stringLength(text, font) {
  * @memberOf StringUtil
  */
 export function splitContent(content, font, wrapWidth) {
-    const textSize = stringLength(content, font);
-    const contentWidth = textSize['width'];
-    if(contentWidth <= wrapWidth || (contentWidth/content.length) >= wrapWidth) return [content];
+    const width = stringWidth(content, font),
+        chrWidth = (width / content.length);
+    if (width <= wrapWidth || chrWidth >= wrapWidth) return [{ 'text' : content, 'width' : width }];
     const result = [];
-    let ruler, ctx;
-    if (!stringLength.env) {
-        ruler = getDomRuler('canvas');
-        ctx = ruler.getContext('2d');
-        if(ctx) {
-            ctx.font = font;
+    let testStr = '', prew = chrWidth;
+    for (let i = 0, l = content.length; i < l; i++) {
+        const chr = content[i];
+        const w = stringWidth(testStr + chr);
+        if (w > wrapWidth) {
+            result.push({ 'text' : testStr, 'width' : prew });
+            testStr = chr;
+            prew = chrWidth;
         } else {
-            ruler = getDomRuler('span');
-            ruler.style.font = font;
-        }
-    }
-    let start = 0, step = 0, textWidth = 0, text = '', lastText = '';
-    while(step < content.length) {
-        if(textWidth < wrapWidth) {
-            text += content[step];
-            if (stringLength.env) {
-                textWidth = stringLength.env(text, font);
-            } else {
-                if (ctx) {
-                    textWidth = ctx.measureText(text).width;
-                } else {
-                    ruler.innerHTML = text;
-                    textWidth = ruler.clientWidth;
-                }
-            }
-            step ++;
-        } else {
-            step --;
-            result.push(content.substring(start, step - 1));
-            start = step - 1;
-            textWidth = 0;
-            text = '';
-            lastText = content.substring(start);
-            if(stringLength(lastText, font).width <= wrapWidth) {
-                result.push(lastText);
-                break;
+            testStr += chr;
+            prew = w;
+            if (i === l - 1) {
+                result.push({ 'text' : testStr, 'width' : w });
             }
         }
     }
-    if(ruler) removeDomNode(ruler);
     return result;
 }
 
@@ -221,53 +215,49 @@ export function splitTextToRow(text, style) {
     if (!isString(text)) {
         text += '';
     }
-    let actualWidth = 0,
-        size;
+    let actualWidth = 0;
     if (wrapChar && text.indexOf(wrapChar) >= 0) {
         const texts = text.split(wrapChar);
-        let t, tSize, tWidth, contents;
         for (let i = 0, l = texts.length; i < l; i++) {
-            t = texts[i];
-            //TODO stringLength is expensive, should be reduced here.
-            tSize = stringLength(t, font);
-            tWidth = tSize['width'];
+            const t = texts[i];
+            const tWidth = stringWidth(t, font);
             if (tWidth > wrapWidth) {
-                contents = splitContent(t, font, wrapWidth);
+                const contents = splitContent(t, font, wrapWidth);
                 for (let ii = 0, ll = contents.length; ii < ll; ii++) {
-                    size = stringLength(contents[ii], font);
-                    if (size['width'] > actualWidth) {
-                        actualWidth = size['width'];
+                    const w = contents[ii].width;
+                    if (w > actualWidth) {
+                        actualWidth = w;
                     }
                     textRows.push({
-                        'text': contents[ii],
-                        'size': size
+                        'text': contents[ii].text,
+                        'size': new Size(w, textHeight)
                     });
                 }
             } else {
-                if (tSize['width'] > actualWidth) {
-                    actualWidth = tSize['width'];
+                if (tWidth > actualWidth) {
+                    actualWidth = tWidth;
                 }
                 textRows.push({
                     'text': t,
-                    'size': tSize
+                    'size': new Size(tWidth, textHeight)
                 });
             }
         }
     } else if (textWidth > wrapWidth) {
-        const splitted = splitContent(text, font, wrapWidth);
-        for (let i = 0; i < splitted.length; i++) {
-            size = stringLength(splitted[i], font);
-            if (size['width'] > actualWidth) {
-                actualWidth = size['width'];
+        const contents = splitContent(text, font, wrapWidth);
+        for (let i = 0; i < contents.length; i++) {
+            const w = contents[i].width;
+            if (w > actualWidth) {
+                actualWidth = w;
             }
             textRows.push({
-                'text': splitted[i],
-                'size': size
+                'text': contents[i].text,
+                'size': new Size(w, textHeight)
             });
         }
     } else {
-        if (rawTextSize['width'] > actualWidth) {
-            actualWidth = rawTextSize['width'];
+        if (textWidth > actualWidth) {
+            actualWidth = textWidth;
         }
         textRows.push({
             'text': text,

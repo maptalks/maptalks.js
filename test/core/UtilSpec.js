@@ -74,39 +74,63 @@ describe('Util', function () {
             'textLineSpacing' : 8
         };
         var font = maptalks.StringUtil.getFont(style), wrapWidth = style['textWrapWidth'];
-        var shortText = 'short text.';
+
+        function concat(texts) {
+            return texts.map(function (t) {
+                return t.text;
+            }).join('');
+        }
+
         it('split short text', function () {
+            var shortText = 'short text.';
             var shorts = maptalks.StringUtil.splitContent(shortText, font, wrapWidth);
-            for (var i = 0; i < shorts.length; i++) {
-                var size = maptalks.StringUtil.stringLength(shorts[i], font);
-                expect(size['width']).to.be.below(wrapWidth);
+            for (var i = 0, l = shorts.length; i < l; i++) {
+                var w = maptalks.StringUtil.stringWidth(shorts[i].text, font);
+                expect(w).to.be.below(wrapWidth);
             }
+            expect(concat(shorts)).to.be.eql(shortText);
         });
 
-        var longText = 'This is a long text : 213232132323213213123213213123213213213123123123123123123123123123123123123123.';
+
         it('split long text', function () {
+            var longText = 'This is a long text : 213232132323213213123213213123213213213123123123123123123123123123123123123123.';
             var longs = maptalks.StringUtil.splitContent(longText, font, wrapWidth);
-            for (var i = 0; i < longs.length; i++) {
-                var size = maptalks.StringUtil.stringLength(longs[i], font);
-                expect(size['width']).not.to.be.above(wrapWidth);
+            for (var i = 0, l = longs.length; i < l; i++) {
+                var w = maptalks.StringUtil.stringWidth(longs[i].text, font);
+                expect(w).not.to.be.above(wrapWidth);
             }
+            expect(concat(longs)).to.be.eql(longText);
         });
 
-        var chineseText = '这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串。';
+
         it('split chinese text', function () {
+            var chineseText = '这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串;这是一段需要分割的中文长文本字符串。';
             var texts = maptalks.StringUtil.splitContent(chineseText, font, wrapWidth);
-            for (var i = 0; i < texts.length; i++) {
-                var size = maptalks.StringUtil.stringLength(texts[i], font);
-                expect(size['width']).not.to.be.above(wrapWidth);
+            for (var i = 0, l = texts.length; i < l; i++) {
+                var w = maptalks.StringUtil.stringWidth(texts[i].text, font);
+                expect(w).not.to.be.above(wrapWidth);
             }
+            expect(concat(texts)).to.be.eql(chineseText);
+        });
+
+        it('split chi-eng text', function () {
+            var text = '这是一段w需要分割的   中文1wreqdf we长文dfsdf本字符  串;这是一段  dfs需要qweqwdsd分sdfg割的fg  中文长gdf文fsdfsd本字符串;这是   一段需sdgsd要分割的dfsdf  中文长文 sdfsdf本字符串。';
+            var texts = maptalks.StringUtil.splitContent(text, font, wrapWidth);
+            for (var i = 0, l = texts.length; i < l; i++) {
+                var w = maptalks.StringUtil.stringWidth(texts[i].text, font);
+                expect(w).not.to.be.above(wrapWidth);
+            }
+            expect(concat(texts)).to.be.eql(text);
         });
 
         it('split text with a small wrapWidth', function () {
             var shorts = maptalks.StringUtil.splitContent('foo', font, 2);
             for (var i = 0; i < shorts.length; i++) {
-                var size = maptalks.StringUtil.stringLength(shorts[i], font);
-                expect(size['width']).to.be.below(wrapWidth);
+                var w = maptalks.StringUtil.stringWidth(shorts[i].text, font);
+                expect(w).to.be.below(wrapWidth);
             }
+            expect(shorts.length).to.be(1);
+            expect(concat(shorts)).to.be.eql('foo');
         });
     });
 });
