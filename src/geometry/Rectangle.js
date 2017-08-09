@@ -25,8 +25,8 @@ class Rectangle extends Polygon {
 
     /**
      * @param {Coordinate} coordinates  - northwest of the rectangle
-     * @param {Number} width                     - width of the rectangle
-     * @param {Number} height                    - height of the rectangle
+     * @param {Number} width                     - width of the rectangle, in meter
+     * @param {Number} height                    - height of the rectangle, in meter
      * @param {Object} [options=null]            - options defined in [Rectangle]{@link Rectangle#options}
      */
     constructor(coordinates, width, height, opts) {

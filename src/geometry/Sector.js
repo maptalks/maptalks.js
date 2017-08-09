@@ -36,9 +36,9 @@ class Sector extends CenterMixin(Polygon) {
 
     /**
      * @param {Coordinate} center - center of the sector
-     * @param {Number} radius           - radius of the sector
-     * @param {Number} startAngle       - start angle of the sector
-     * @param {Number} endAngle         - end angle of the sector
+     * @param {Number} radius           - radius of the sector, in meter
+     * @param {Number} startAngle       - start angle of the sector, in degree
+     * @param {Number} endAngle         - end angle of the sector, in degree
      * @param {Object} [options=null]   - construct options defined in [Sector]{@link Sector#options}
      */
     constructor(coordinates, radius, startAngle, endAngle, opts) {

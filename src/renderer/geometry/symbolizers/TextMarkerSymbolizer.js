@@ -127,9 +127,18 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             'textVerticalAlignment': getValueOrDefault(s['textVerticalAlignment'], 'middle'), // top | middle | bottom | auto
             'textAlign': getValueOrDefault(s['textAlign'], 'center'), //left | right | center | auto
 
-            'textRotation' : getValueOrDefault(s['textRotation'], 0)
+            'textRotation' : getValueOrDefault(s['textRotation'], 0),
+
+            'textMaxWidth' : getValueOrDefault(s['textMaxWidth'], 0),
+            'textMaxHeight' : getValueOrDefault(s['textMaxHeight'], 0)
         };
 
+        if (result['textMaxWidth'] > 0 && (!result['textWrapWidth'] || result['textWrapWidth'] > result['textMaxWidth'])) {
+            if (!result['textWrapWidth']) {
+                result['textMaxHeight'] = 1;
+            }
+            result['textWrapWidth'] = result['textMaxWidth'];
+        }
         return result;
     }
 
@@ -148,14 +157,23 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
 
     _descText(textContent) {
         if (this._dynamic) {
-            this.textDesc = splitTextToRow(textContent, this.style);
+            this.textDesc = this._measureText(textContent);
             return;
         }
         this.textDesc = this._loadFromCache();
         if (!this.textDesc) {
-            this.textDesc = splitTextToRow(textContent, this.style);
+            this.textDesc = this._measureText(textContent);
             this._storeToCache(this.textDesc);
         }
+    }
+
+    _measureText(textContent) {
+        const maxHeight = this.style['textMaxHeight'];
+        const textDesc = splitTextToRow(textContent, this.style);
+        if (maxHeight && maxHeight < textDesc.size.height) {
+            textDesc.size.height = maxHeight;
+        }
+        return textDesc;
     }
 
     _storeToCache(textDesc) {

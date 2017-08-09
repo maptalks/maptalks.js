@@ -696,15 +696,14 @@ DrawTool.registerMode('boxZoom', {
     },
     'update': function (coordinate, geometry, param) {
         const map = geometry.getMap();
-        const p1 = map.coordinateToContainerPoint(geometry.getCenter()),
+        const p1 = map.coordinateToContainerPoint(geometry._firstClick),
             p2 = param['containerPoint'];
-
-        const w = Math.abs(p1.x - p2.x),
-            h = Math.abs(p1.y - p2.y);
-        geometry.updateSymbol({
-            markerWidth  : w,
-            markerHeight : h
-        });
+        const coord = map.containerPointToCoordinate(new Coordinate(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)));
+        geometry.setCoordinates(coord)
+            .updateSymbol({
+                markerWidth  : Math.abs(p1.x - p2.x),
+                markerHeight : Math.abs(p1.y - p2.y)
+            });
     },
     'generate': function (geometry) {
         return geometry;

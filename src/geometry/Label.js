@@ -1,27 +1,30 @@
-import { getAlignPoint } from 'core/util/strings';
+import { extend } from 'core/util';
+import { getAlignPoint, escapeSpecialChars } from 'core/util/strings';
 import Size from 'geo/Size';
 import TextMarker from './TextMarker';
 
 /**
- * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link Marker#options}
- * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
- * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
- * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
- * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
- * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
- * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
+ * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
+ * @property {Boolean} [options.boxStyle=null]             - the default box style of text
+ * @property {Boolean} [options.boxStyle.padding=[12, 8]]           - text padding in the box
+ * @property {Boolean} [options.boxStyle.verticalAlignment=middle]  - text's vertical alignment
+ * @property {Boolean} [options.boxStyle.horizontalAlignment=true]  - text's horizontal alignment
+ * @property {Number} [options.boxStyle.minWidth=0]                 - label box's minWidth
+ * @property {Number} [options.boxStyle.minHeight=0]                - label box's minHeight
+ * @property {Boolean} [options.textSymbol=null]        - text symbol of label
  * @memberOf Label
  * @instance
  */
 const options = {
-    'boxAutoSize': true,
-    'boxMinWidth': 0,
-    'boxMinHeight': 0,
-    'boxPadding': {
-        'width': 12,
-        'height': 8
-    },
-    'boxTextAlign': 'middle'
+    'boxStyle' : null, /*{
+        'padding' : [12, 8],
+        'verticalAlignment' : 'middle',
+        'horizontalAlignment' : 'middle',
+        'minWidth' : 0,
+        'minHeight' : 0,
+        'symbol' : null
+    }*/
+    textSymbol : null
 };
 
 /**
@@ -31,14 +34,95 @@ const options = {
  * @category geometry
  * @extends TextMarker
  * @mixes TextEditable
- * @param {String} content                          - Label's text content
- * @param {Coordinate} coordinates         - center
- * @param {Object} [options=null]                   - construct options defined in [Label]{@link Label#options}
  * @example
- * var label = new Label('This is a label',[100,0])
- *     .addTo(layer);
+ * var label = new maptalks.Label('label with a box',
+    [0, 0],
+    {
+      'draggable' : true,
+      'boxStyle' : {
+        'padding' : [12, 8],
+        'verticalAlignment' : 'top',
+        'horizontalAlignment' : 'right',
+        'minWidth' : 300,
+        'minHeight' : 200,
+        'symbol' : {
+          'markerType' : 'square',
+          'markerFill' : 'rgb(135,196,240)',
+          'markerFillOpacity' : 0.9,
+          'markerLineColor' : '34495e',
+          'markerLineWidth' : 1,
+        }
+      },
+      'textSymbol': {
+        'textFaceName' : 'monospace',
+        'textFill' : '#34495e',
+        'textHaloFill' : '#fff',
+        'textHaloRadius' : 4,
+        'textSize' : 18,
+        'textWeight' : 'bold',
+        'textVerticalAlignment' : 'top'
+      }
+    });
  */
 class Label extends TextMarker {
+
+    /**
+     * @param {String} content                 - Label's text content
+     * @param {Coordinate} coordinates         - coordinates
+     * @param {Object} [options=null]          - construct options defined in [Label]{@link Label#options}
+     */
+    constructor(content, coordinates, options = {}) {
+        super(coordinates, options);
+        if (options.textSymbol) {
+            this.setTextSymbol(options.textSymbol);
+        }
+        if (options.boxStyle) {
+            this.setBoxStyle(options.boxStyle);
+        }
+        this._content = escapeSpecialChars(content);
+        this._refresh();
+    }
+
+    /**
+     * Get label's box style
+     * @return {Object}
+     */
+    getBoxStyle() {
+        if (!this.options.boxStyle) {
+            return null;
+        }
+        return extend({}, this.options.boxStyle);
+    }
+
+    /**
+     * Set a new box style to the label
+     * @param {Object}
+     * @returns {Label} this
+     */
+    setBoxStyle(style) {
+        this.options.boxStyle = style ? extend({}, style) : style;
+        this._refresh();
+        return this;
+    }
+
+    /**
+     * Get label's text symbol
+     * @return {Object}
+     */
+    getTextSymbol() {
+        return extend({}, this.options.textSymbol || this._getDefaultTextSymbol());
+    }
+
+    /**
+     * Set a new text symbol to the label
+     * @param {Object} symbol
+     * @returns {Label} this
+     */
+    setTextSymbol(symbol) {
+        this.options.textSymbol = symbol ? extend({}, symbol) : symbol;
+        this._refresh();
+        return this;
+    }
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -48,54 +132,88 @@ class Label extends TextMarker {
         return label;
     }
 
+    _canEdit() {
+        return false;
+    }
+
     _toJSON(options) {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'Label',
-            'content': this._content
+            'content': this._content,
+            'textSymbol' : this.getTextSymbol()
         };
     }
 
     _refresh() {
-        const symbol = this.getSymbol() || this._getDefaultTextSymbol();
-        symbol['textName'] = this._content;
-        if (this.options['box']) {
+        const symbol = extend({},
+            this.getTextSymbol(),
+            {
+                'textName' : this._content
+            });
+
+        const boxStyle = this.getBoxStyle();
+        if (boxStyle) {
+            extend(symbol, boxStyle.symbol);
             const sizes = this._getBoxSize(symbol),
                 textSize = sizes[1],
-                padding = this.options['boxPadding'];
-            let boxSize = sizes[0];
+                padding = boxStyle['padding'] || this._getDefaultPadding();
+            const boxSize = sizes[0];
             //if no boxSize then use text's size in default
-            if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
-                const width = textSize['width'] + padding['width'] * 2,
-                    height = textSize['height'] + padding['height'] * 2;
-                boxSize = new Size(width, height);
-                symbol['markerWidth'] = boxSize['width'];
-                symbol['markerHeight'] = boxSize['height'];
-            } else if (boxSize) {
-                symbol['markerWidth'] = boxSize['width'];
-                symbol['markerHeight'] = boxSize['height'];
+            symbol['markerWidth'] = boxSize['width'];
+            symbol['markerHeight'] = boxSize['height'];
+
+            const dx = symbol['textDx'] || 0,
+                dy = symbol['textDy'] || 0,
+                textAlignPoint = getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment'])
+                    ._add(dx, dy);
+
+            const hAlign = boxStyle['horizontalAlignment'] || 'middle';
+            symbol['markerDx'] = textAlignPoint.x;
+            if (hAlign === 'left') {
+                symbol['markerDx'] += symbol['markerWidth'] / 2 - padding[0];
+            } else if (hAlign === 'right') {
+                symbol['markerDx'] -= symbol['markerWidth'] / 2 - textSize['width'] - padding[0];
+            } else {
+                symbol['markerDx'] += textSize['width'] / 2;
             }
 
-            const align = this.options['boxTextAlign'];
-            if (align) {
-                const dx = symbol['textDx'] || 0,
-                    dy = symbol['textDy'] || 0,
-                    textAlignPoint = getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment'])
-                        ._add(dx, dy);
-                symbol['markerDx'] = textAlignPoint.x;
-                symbol['markerDy'] = textAlignPoint.y + textSize['height'] / 2;
-                if (align === 'left') {
-                    symbol['markerDx'] += symbol['markerWidth'] / 2 - padding['width'];
-                } else if (align === 'right') {
-                    symbol['markerDx'] -= symbol['markerWidth'] / 2 - textSize['width'] - padding['width'];
-                } else {
-                    symbol['markerDx'] += textSize['width'] / 2;
-                }
+            const vAlign = boxStyle['verticalAlignment'] || 'middle';
+            symbol['markerDy'] = textAlignPoint.y;
+            if (vAlign === 'top') {
+                symbol['markerDy'] += symbol['markerHeight'] / 2 - padding[1];
+            } else if (vAlign === 'bottom') {
+                symbol['markerDy'] -= symbol['markerHeight'] / 2 - textSize['height'] - padding[1];
+            } else {
+                symbol['markerDy'] += textSize['height'] / 2;
             }
         }
-        this._symbol = symbol;
-        this.onSymbolChanged();
+        this.updateSymbol(symbol);
     }
+
+    _getBoxSize(symbol) {
+        if (!symbol['markerType']) {
+            symbol['markerType'] = 'square';
+        }
+        const boxStyle = this.getBoxStyle();
+        const size = this._getTextSize(symbol);
+        let width, height;
+        const padding = boxStyle['padding'] || this._getDefaultPadding();
+        width = size['width'] + padding[0] * 2;
+        height = size['height'] + padding[1] * 2;
+        if (boxStyle['minWidth']) {
+            if (!width || width < boxStyle['minWidth']) {
+                width = boxStyle['minWidth'];
+            }
+        }
+        if (boxStyle['minHeight']) {
+            if (!height || height < boxStyle['minHeight']) {
+                height = boxStyle['minHeight'];
+            }
+        }
+        return [new Size(width, height), size];
+    }
+
 }
 
 Label.mergeOptions(options);

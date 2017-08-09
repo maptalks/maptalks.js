@@ -1,24 +1,26 @@
-import { extend } from 'core/util';
-import Size from 'geo/Size';
+import { extend, isNil } from 'core/util';
+import { escapeSpecialChars } from 'core/util/strings';
 import TextMarker from './TextMarker';
 
 /**
  * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
- * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the box automatically to fit for the textbox's text.
- * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the box.
- * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
- * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the text to the border of the box.
+ * @property {Boolean} [options.textStyle]             - the default text style of text
+ * @property {Boolean} [options.textStyle.wrap=true]             - whether to autowrap text in the textbox
+ * @property {Boolean} [options.textStyle.padding=[12, 8]]       - text padding in the box
+ * @property {Boolean} [options.textStyle.verticalAlignment=middle]  - text's vertical alignment
+ * @property {Boolean} [options.textStyle.horizontalAlignment=true]  - text's horizontal alignment
+ * @property {Boolean} [options.boxSymbol=null]        - box symbol of textbox
  * @memberOf TextBox
  * @instance
  */
 const options = {
-    'boxAutoSize': false,
-    'boxMinWidth': 0,
-    'boxMinHeight': 0,
-    'boxPadding': {
-        'width': 12,
-        'height': 8
-    }
+    'textStyle' :  {
+        'wrap' : true,
+        'padding' : [12, 8],
+        'verticalAlignment' : 'middle',
+        'horizontalAlignment' : 'middle'
+    },
+    'boxSymbol' : null
 };
 
 /**
@@ -28,18 +30,143 @@ const options = {
  * @category geometry
  * @extends TextMarker
  * @mixes TextEditable
- * @param {String} content                          - TextBox's text content
- * @param {Coordinate} coordinates         - center
- * @param {Object} [options=null]                   - construct options defined in [TextBox]{@link TextBox#options}
  * @example
- * var textBox = new TextBox('This is a textBox',[100,0])
- *     .addTo(layer);
+ * var textbox = new maptalks.TextBox('This is a textbox',
+    [0, 0], 200, 90,
+    {
+      'draggable' : true,
+      'textStyle' : {
+        'wrap' : true,
+        'padding' : [12, 8],
+        'verticalAlignment' : 'top',
+        'horizontalAlignment' : 'right',
+        'symbol' : {
+          'textFaceName' : 'monospace',
+          'textFill' : '#34495e',
+          'textHaloFill' : '#fff',
+          'textHaloRadius' : 4,
+          'textSize' : 18,
+          'textWeight' : 'bold'
+        }
+      },
+      'boxSymbol': {
+        // box's symbol
+        'markerType' : 'square',
+        'markerFill' : 'rgb(135,196,240)',
+        'markerFillOpacity' : 0.9,
+        'markerLineColor' : '34495e',
+        'markerLineWidth' : 1,
+      }
+    });
  */
 class TextBox extends TextMarker {
+    /**
+     * @param {String} content                 - TextBox's text content
+     * @param {Coordinate} coordinates         - coordinates
+     * @param {Number} width                   - width in pixel
+     * @param {Number} height                  - height in pixel
+     * @param {Object} [options=null]          - construct options defined in [TextBox]{@link TextBox#options}
+     */
+    constructor(content, coordinates, width, height, options = {}) {
+        super(coordinates, options);
+        this._content = escapeSpecialChars(content);
+        this._width = isNil(width) ? 100 : width;
+        this._height = isNil(height) ? 40 : height;
+        if (options.boxSymbol) {
+            this.setBoxSymbol(options.boxSymbol);
+        }
+        if (options.textStyle) {
+            this.setTextStyle(options.textStyle);
+        }
+        this._refresh();
+    }
+
+    /**
+     * Get textbox's width
+     * @return {Number}
+     */
+    getWidth() {
+        return this._width;
+    }
+
+    /**
+     * Set new width to textbox
+     * @param {Number} width
+     * returns {TextBox} this
+     */
+    setWidth(width) {
+        this._width = width;
+        this._refresh();
+        return this;
+    }
+
+    /**
+     * Get textbox's height
+     * @return {Number}
+     */
+    getHeight() {
+        return this._height;
+    }
+
+    /**
+     * Set new height to textbox
+     * @param {Number} height
+     * returns {TextBox} this
+     */
+    setHeight(height) {
+        this._height = height;
+        this._refresh();
+        return this;
+    }
+
+    /**
+     * Get textbox's boxSymbol
+     * @return {Object} boxsymbol
+     */
+    getBoxSymbol() {
+        return extend({}, this.options.boxSymbol);
+    }
+
+    /**
+     * Set a new box symbol to textbox
+     * @param {Object} symbol
+     * returns {TextBox} this
+     */
+    setBoxSymbol(symbol) {
+        this.options.boxSymbol = symbol ? extend({}, symbol) : symbol;
+        if (this.getSymbol()) {
+            this._refresh();
+        }
+        return this;
+    }
+
+    /**
+     * Get textbox's text style
+     * @return {Object}
+     */
+    getTextStyle() {
+        if (!this.options.textStyle) {
+            return null;
+        }
+        return extend({}, this.options.textStyle);
+    }
+
+    /**
+     * Set a new text style to the textbox
+     * @param {Object} style new text style
+     * returns {TextBox} this
+     */
+    setTextStyle(style) {
+        this.options.textStyle = style ? extend({}, style) : style;
+        if (this.getSymbol()) {
+            this._refresh();
+        }
+        return this;
+    }
 
     static fromJSON(json) {
         const feature = json['feature'];
-        const textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['options']);
+        const textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['width'], json['height'], json['options']);
         textBox.setProperties(feature['properties']);
         textBox.setId(feature['id']);
         return textBox;
@@ -48,70 +175,58 @@ class TextBox extends TextMarker {
     _toJSON(options) {
         return {
             'feature': this.toGeoJSON(options),
+            'width' : this.getWidth(),
+            'height' : this.getHeight(),
             'subType': 'TextBox',
             'content': this._content
         };
     }
 
     _refresh() {
-        const symbol = this.getSymbol() || this._getDefaultTextSymbol();
-        symbol['textName'] = this._content;
+        const textStyle = this.getTextStyle() || {},
+            padding = textStyle['padding'] || [12, 8],
+            maxWidth = this._width - 2 * padding[0],
+            maxHeight = this._height - 2 * padding[1];
+        const symbol = extend({},
+            textStyle.symbol || this._getDefaultTextSymbol(),
+            this.options.boxSymbol || this._getDefaultBoxSymbol(),
+            {
+                'textName' : this._content,
+                'markerWidth' : this._width,
+                'markerHeight' : this._height,
+                'textHorizontalAlignment' : 'middle',
+                'textVerticalAlignment' : 'middle',
+                'textMaxWidth' : maxWidth,
+                'textMaxHeight' : maxHeight
+            });
 
-        const sizes = this._getBoxSize(symbol),
-            textSize = sizes[1];
-        let boxSize = sizes[0];
-
-        //if no boxSize then use text's size in default
-        if (!boxSize && !symbol['markerWidth'] && !symbol['markerHeight']) {
-            const padding = this.options['boxPadding'];
-            const width = textSize['width'] + padding['width'] * 2,
-                height = textSize['height'] + padding['height'] * 2;
-            boxSize = new Size(width, height);
-            symbol['markerWidth'] = boxSize['width'];
-            symbol['markerHeight'] = boxSize['height'];
-        } else if (boxSize) {
-            symbol['markerWidth'] = boxSize['width'];
-            symbol['markerHeight'] = boxSize['height'];
+        if (textStyle['wrap'] && !symbol['textWrapWidth']) {
+            symbol['textWrapWidth'] = maxWidth;
         }
 
-        const textAlign = symbol['textHorizontalAlignment'];
-        if (textAlign) {
-            symbol['textDx'] = symbol['markerDx'] || 0;
-            if (textAlign === 'left') {
-                symbol['textDx'] -= symbol['markerWidth'] / 2;
-            } else if (textAlign === 'right') {
-                symbol['textDx'] += symbol['markerWidth'] / 2;
-            }
+        const hAlign = textStyle['horizontalAlignment'];
+        symbol['textDx'] = symbol['markerDx'] || 0;
+        const offsetX = symbol['markerWidth'] / 2 - padding[0];
+        if (hAlign === 'left') {
+            symbol['textHorizontalAlignment'] = 'right';
+            symbol['textDx'] = symbol['textDx'] - offsetX;
+        } else if (hAlign === 'right') {
+            symbol['textHorizontalAlignment'] = 'left';
+            symbol['textDx'] = symbol['textDx'] + offsetX;
         }
 
-        const vAlign = symbol['textVerticalAlignment'];
-        if (vAlign) {
-            symbol['textDy'] = symbol['markerDy'] || 0;
-            if (vAlign === 'top') {
-                symbol['textDy'] -= symbol['markerHeight'] / 2;
-            } else if (vAlign === 'bottom') {
-                symbol['textDy'] += symbol['markerHeight'] / 2;
-            }
+        const vAlign = textStyle['verticalAlignment'];
+        symbol['textDy'] = symbol['markerDy'] || 0;
+        const offsetY = symbol['markerHeight'] / 2 - padding[1];
+        if (vAlign === 'top') {
+            symbol['textVerticalAlignment'] = 'bottom';
+            symbol['textDy'] -= offsetY;
+        } else if (vAlign === 'bottom') {
+            symbol['textVerticalAlignment'] = 'top';
+            symbol['textDy'] += offsetY;
         }
 
-        this._symbol = symbol;
-        this.onSymbolChanged();
-    }
-
-    _getInternalSymbol() {
-        //In TextBox, textHorizontalAlignment's meaning is textAlign in the box which is reversed from original textHorizontalAlignment.
-        const textSymbol = extend({}, this._symbol);
-        if (textSymbol['textHorizontalAlignment'] === 'left') {
-            textSymbol['textHorizontalAlignment'] = 'right';
-        } else if (textSymbol['textHorizontalAlignment'] === 'right') {
-            textSymbol['textHorizontalAlignment'] = 'left';
-        }
-        if (textSymbol['textVerticalAlignment'] === 'top') {
-            textSymbol['textVerticalAlignment'] = 'bottom';
-        } else if (textSymbol['textVerticalAlignment'] === 'bottom') {
-            textSymbol['textVerticalAlignment'] = 'top';
-        }
-        return textSymbol;
+        this.updateSymbol(symbol);
     }
 }
 

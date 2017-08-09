@@ -21,7 +21,11 @@ describe('SymbolSpec', function () {
         var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
         var i;
         for (i = 0; i < geometries.length; i++) {
-            expect(geometries[i].getSymbol()).not.to.be.ok();
+            if (geometries[i] instanceof maptalks.TextMarker) {
+                expect(geometries[i].getSymbol()).to.be.ok();
+            } else {
+                expect(geometries[i].getSymbol()).not.to.be.ok();
+            }
         }
         for (i = 0; i < geometries.length; i++) {
             if (!(geometries[i] instanceof maptalks.GeometryCollection)) {

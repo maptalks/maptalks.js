@@ -1,6 +1,6 @@
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
-import TextBox from 'geometry/TextBox';
-import Label from 'geometry/Label';
+import { isNil } from 'core/util';
+import TextMarker from 'geometry/TextMarker';
 import { UIMarker } from 'ui';
 
 /**
@@ -95,7 +95,7 @@ const TextEditable = {
             'content': editContainer,
             'dx': offset.dx,
             'dy': offset.dy
-        }).addTo(map).show();
+        }).addTo(map);
         this._setCursorToLast(this._textEditor);
     },
 
@@ -104,15 +104,12 @@ const TextEditable = {
         let dx = 0,
             dy = 0;
         const textAlign = symbol['textHorizontalAlignment'];
-        if (textAlign === 'middle') {
-            dx = symbol['textDx'] - 2 || 0;
-            dy = symbol['textDy'] - 2 || 0;
-        } else if (textAlign === 'left') {
-            dx = symbol['markerDx'] - 2 || 0;
-            dy = symbol['markerDy'] - 2 || 0;
+        if (textAlign === 'middle' || isNil(textAlign)) {
+            dx = (symbol['textDx'] || 0) - 2;
+            dy = (symbol['textDy'] || 0) - 2;
         } else {
-            dx = symbol['markerDx'] - 2 || 0;
-            dy = symbol['markerDy'] - 2 || 0;
+            dx = (symbol['markerDx'] || 0) - 2;
+            dy = (symbol['markerDy'] || 0) - 2;
         }
         return {
             'dx': dx,
@@ -165,7 +162,6 @@ const TextEditable = {
     }
 };
 
-TextBox.include(TextEditable);
-Label.include(TextEditable);
+TextMarker.include(TextEditable);
 
 export default TextEditable;

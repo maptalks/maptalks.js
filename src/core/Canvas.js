@@ -260,14 +260,21 @@ const Canvas = {
     },
 
     _textOnMultiRow(ctx, texts, style, point, splitTextSize, textSize) {
-        const ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']);
-        const lineHeight = textSize['height'] + style['textLineSpacing'];
-        const basePoint = point.add(0, ptAlign.y);
-        let text, rowAlign;
+        const ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']),
+            lineHeight = textSize['height'] + style['textLineSpacing'],
+            basePoint = point.add(0, ptAlign.y),
+            maxHeight = style['textMaxHeight'];
+        let text, rowAlign, height = 0;
         for (let i = 0, len = texts.length; i < len; i++) {
             text = texts[i]['text'];
             rowAlign = getAlignPoint(texts[i]['size'], style['textHorizontalAlignment'], style['textVerticalAlignment']);
             Canvas._textOnLine(ctx, text, basePoint.add(rowAlign.x, i * lineHeight), style['textHaloRadius'], style['textHaloFill'], style['textHaloOpacity']);
+            if (maxHeight > 0) {
+                height += lineHeight;
+                if (height + textSize['height'] >= maxHeight) {
+                    break;
+                }
+            }
         }
     },
 
