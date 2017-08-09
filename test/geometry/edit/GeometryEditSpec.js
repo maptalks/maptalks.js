@@ -150,11 +150,7 @@ describe('#GeometryEdit', function () {
             marker.startEdit();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
-            if (maptalks.Browser.ie) {
-                expect(symbol.markerWidth).to.be.approx(54);
-            } else {
-                expect(symbol.markerWidth).to.be.approx(61.2070312);
-            }
+            expect(symbol.markerWidth).to.be.above(39);
             expect(symbol.markerHeight).to.be.approx(20);
             expect(fired).to.be.ok();
             marker.endEdit();
