@@ -111,9 +111,9 @@ export function splitContent(content, font, wrapWidth) {
         } else {
             testStr += chr;
             prew = w;
-            if (i === l - 1) {
-                result.push({ 'text' : testStr, 'width' : w });
-            }
+        }
+        if (i === l - 1) {
+            result.push({ 'text' : testStr, 'width' : prew });
         }
     }
     return result;
