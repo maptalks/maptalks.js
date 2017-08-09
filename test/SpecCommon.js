@@ -15,7 +15,7 @@ function GEN_GEOMETRIES_OF_ALL_TYPES() {
     var w = 200, h = 200, r = 200;
     return [
         new maptalks.Marker(center),
-        new maptalks.Label('test label', center),
+        new maptalks.Label('■■■■■■■■■', center),
         new maptalks.TextBox('test textbox', center, 100, 50),
         new maptalks.Circle(center, r),
         new maptalks.Ellipse(center, w, h),
