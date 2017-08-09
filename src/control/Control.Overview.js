@@ -10,8 +10,12 @@ import Control from './Control';
  * @property {Object} options - options
  * @property {Object} [options.position='bottom-right'] - position of the control
  * @property {Number} [options.level=4]  - the zoom level of the overview
- * @property {Object} [options.size={"width":300, "height":200}  - size of the Control
+ * @property {Object} [options.maximize=true]  - whether to maximize overview when added
+ * @property {Object} [options.size=[300, 200]  - size of the Control
  * @property {Object} [options.symbol={}] - symbol of the overview rectangle
+ * @property {Object} [options.containerClass=maptalks-overview] - overview's container div's CSS class
+ * @property {Object} [options.buttonClass=maptalks-overview-button] - overview's minimize/maximize button's CSS class
+ *
  * @memberOf control.Overview
  * @instance
  */
@@ -28,7 +32,9 @@ const options = {
         'lineColor': '#1bbc9b',
         'polygonFill': '#1bbc9b',
         'polygonOpacity': 0.4
-    }
+    },
+    'containerClass' : 'maptalks-overview',
+    'buttonClass' : 'maptalks-overview-button'
 };
 
 /**
@@ -60,9 +66,9 @@ class Overview extends Control {
         const mapContainer = this.mapContainer = createEl('div');
         mapContainer.style.width = size[0] + 'px';
         mapContainer.style.height = size[1] + 'px';
-        mapContainer.className = 'maptalks-overview';
+        mapContainer.className = this.options['containerClass'];
         const button = this.button = createEl('div');
-        button.className = 'maptalks-overview-button';
+        button.className = this.options['buttonClass'];
         container.appendChild(mapContainer);
         container.appendChild(button);
         return container;
