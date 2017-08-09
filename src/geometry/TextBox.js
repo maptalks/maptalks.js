@@ -4,10 +4,12 @@ import TextMarker from './TextMarker';
 
 /**
  * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
- * @property {Boolean} [options.boxAutoSize=false]     - whether to set the size of the box automatically to fit for the textbox's text.
- * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the box.
- * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the box.
- * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the text to the border of the box.
+ * @property {Boolean} [options.textStyle]             - the default text style of text
+ * @property {Boolean} [options.textStyle.wrap=true]             - whether to autowrap text in the textbox
+ * @property {Boolean} [options.textStyle.padding=[12, 8]]       - text padding in the box
+ * @property {Boolean} [options.textStyle.verticalAlignment=middle]  - text's vertical alignment
+ * @property {Boolean} [options.textStyle.horizontalAlignment=true]  - text's horizontal alignment
+ * @property {Boolean} [options.boxSymbol=null]        - box symbol of textbox
  * @memberOf TextBox
  * @instance
  */
@@ -17,7 +19,8 @@ const options = {
         'padding' : [12, 8],
         'verticalAlignment' : 'middle',
         'horizontalAlignment' : 'middle'
-    }
+    },
+    'boxSymbol' : null
 };
 
 /**
@@ -27,15 +30,43 @@ const options = {
  * @category geometry
  * @extends TextMarker
  * @mixes TextEditable
- * @param {String} content                          - TextBox's text content
- * @param {Coordinate} coordinates         - center
- * @param {Object} [options=null]                   - construct options defined in [TextBox]{@link TextBox#options}
  * @example
- * var textBox = new TextBox('This is a textBox',[100,0])
- *     .addTo(layer);
+ * var textbox = new maptalks.TextBox('This is a textbox',
+    [0, 0], 200, 90,
+    {
+      'draggable' : true,
+      'textStyle' : {
+        'wrap' : true,
+        'padding' : [12, 8],
+        'verticalAlignment' : 'top',
+        'horizontalAlignment' : 'right',
+        'symbol' : {
+          'textFaceName' : 'monospace',
+          'textFill' : '#34495e',
+          'textHaloFill' : '#fff',
+          'textHaloRadius' : 4,
+          'textSize' : 18,
+          'textWeight' : 'bold'
+        }
+      },
+      'boxSymbol': {
+        // box's symbol
+        'markerType' : 'square',
+        'markerFill' : 'rgb(135,196,240)',
+        'markerFillOpacity' : 0.9,
+        'markerLineColor' : '34495e',
+        'markerLineWidth' : 1,
+      }
+    });
  */
 class TextBox extends TextMarker {
-
+    /**
+     * @param {String} content                 - TextBox's text content
+     * @param {Coordinate} coordinates         - coordinates
+     * @param {Number} width                   - width in pixel
+     * @param {Number} height                  - height in pixel
+     * @param {Object} [options=null]          - construct options defined in [TextBox]{@link TextBox#options}
+     */
     constructor(content, coordinates, width, height, options = {}) {
         super(coordinates, options);
         this._content = escapeSpecialChars(content);
@@ -50,30 +81,57 @@ class TextBox extends TextMarker {
         this._refresh();
     }
 
+    /**
+     * Get textbox's width
+     * @return {Number}
+     */
     getWidth() {
         return this._width;
     }
 
+    /**
+     * Set new width to textbox
+     * @param {Number} width
+     * returns {TextBox} this
+     */
     setWidth(width) {
         this._width = width;
         this._refresh();
         return this;
     }
 
+    /**
+     * Get textbox's height
+     * @return {Number}
+     */
     getHeight() {
         return this._height;
     }
 
+    /**
+     * Set new height to textbox
+     * @param {Number} height
+     * returns {TextBox} this
+     */
     setHeight(height) {
         this._height = height;
         this._refresh();
         return this;
     }
 
+    /**
+     * Get textbox's boxSymbol
+     * @return {Object} boxsymbol
+     */
     getBoxSymbol() {
         return extend({}, this.options.boxSymbol);
     }
 
+    /**
+     * Set a new box symbol to textbox
+     * @param {Object} symbol
+     * returns {TextBox} this
+     */
     setBoxSymbol(symbol) {
         this.options.boxSymbol = symbol ? extend({}, symbol) : symbol;
         if (this.getSymbol()) {
@@ -82,6 +140,10 @@ class TextBox extends TextMarker {
         return this;
     }
 
+    /**
+     * Get textbox's text style
+     * @return {Object}
+     */
     getTextStyle() {
         if (!this.options.textStyle) {
             return null;
@@ -89,6 +151,11 @@ class TextBox extends TextMarker {
         return extend({}, this.options.textStyle);
     }
 
+    /**
+     * Set a new text style to the textbox
+     * @param {Object} style new text style
+     * returns {TextBox} this
+     */
     setTextStyle(style) {
         this.options.textStyle = style ? extend({}, style) : style;
         if (this.getSymbol()) {

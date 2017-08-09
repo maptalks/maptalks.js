@@ -4,18 +4,19 @@ import Size from 'geo/Size';
 import TextMarker from './TextMarker';
 
 /**
- * @property {Object} [options=null]                   - label's options, also including options of [Marker]{@link Marker#options}
- * @property {Boolean} [options.box=true]              - whether to display a background box wrapping the label text.
- * @property {Boolean} [options.boxAutoSize=true]      - whether to set the size of the background box automatically to fit for the label text.
- * @property {Boolean} [options.boxMinWidth=0]         - the minimum width of the background box.
- * @property {Boolean} [options.boxMinHeight=0]        - the minimum height of the background box.
- * @property {Boolean} [options.boxPadding={'width' : 12, 'height' : 8}] - padding of the label text to the border of the background box.
- * @property {Boolean} [options.boxTextAlign=middle]   - text align in the box, possible values:left, middle, right
+ * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
+ * @property {Boolean} [options.boxStyle=null]             - the default box style of text
+ * @property {Boolean} [options.boxStyle.padding=[12, 8]]           - text padding in the box
+ * @property {Boolean} [options.boxStyle.verticalAlignment=middle]  - text's vertical alignment
+ * @property {Boolean} [options.boxStyle.horizontalAlignment=true]  - text's horizontal alignment
+ * @property {Number} [options.boxStyle.minWidth=0]                 - label box's minWidth
+ * @property {Number} [options.boxStyle.minHeight=0]                - label box's minHeight
+ * @property {Boolean} [options.textSymbol=null]        - text symbol of label
  * @memberOf Label
  * @instance
  */
 const options = {
-    'boxStyle' : null/*{
+    'boxStyle' : null, /*{
         'padding' : [12, 8],
         'verticalAlignment' : 'middle',
         'horizontalAlignment' : 'middle',
@@ -23,6 +24,7 @@ const options = {
         'minHeight' : 0,
         'symbol' : null
     }*/
+    textSymbol : null
 };
 
 /**
@@ -32,15 +34,43 @@ const options = {
  * @category geometry
  * @extends TextMarker
  * @mixes TextEditable
- * @param {String} content                          - Label's text content
- * @param {Coordinate} coordinates         - center
- * @param {Object} [options=null]                   - construct options defined in [Label]{@link Label#options}
  * @example
- * var label = new Label('This is a label',[100,0])
- *     .addTo(layer);
+ * var label = new maptalks.Label('label with a box',
+    [0, 0],
+    {
+      'draggable' : true,
+      'boxStyle' : {
+        'padding' : [12, 8],
+        'verticalAlignment' : 'top',
+        'horizontalAlignment' : 'right',
+        'minWidth' : 300,
+        'minHeight' : 200,
+        'symbol' : {
+          'markerType' : 'square',
+          'markerFill' : 'rgb(135,196,240)',
+          'markerFillOpacity' : 0.9,
+          'markerLineColor' : '34495e',
+          'markerLineWidth' : 1,
+        }
+      },
+      'textSymbol': {
+        'textFaceName' : 'monospace',
+        'textFill' : '#34495e',
+        'textHaloFill' : '#fff',
+        'textHaloRadius' : 4,
+        'textSize' : 18,
+        'textWeight' : 'bold',
+        'textVerticalAlignment' : 'top'
+      }
+    });
  */
 class Label extends TextMarker {
 
+    /**
+     * @param {String} content                 - Label's text content
+     * @param {Coordinate} coordinates         - coordinates
+     * @param {Object} [options=null]          - construct options defined in [Label]{@link Label#options}
+     */
     constructor(content, coordinates, options = {}) {
         super(coordinates, options);
         if (options.textSymbol) {
@@ -53,6 +83,10 @@ class Label extends TextMarker {
         this._refresh();
     }
 
+    /**
+     * Get label's box style
+     * @return {Object}
+     */
     getBoxStyle() {
         if (!this.options.boxStyle) {
             return null;
@@ -60,16 +94,30 @@ class Label extends TextMarker {
         return extend({}, this.options.boxStyle);
     }
 
+    /**
+     * Set a new box style to the label
+     * @param {Object}
+     * @returns {Label} this
+     */
     setBoxStyle(style) {
         this.options.boxStyle = style ? extend({}, style) : style;
         this._refresh();
         return this;
     }
 
+    /**
+     * Get label's text symbol
+     * @return {Object}
+     */
     getTextSymbol() {
         return extend({}, this.options.textSymbol || this._getDefaultTextSymbol());
     }
 
+    /**
+     * Set a new text symbol to the label
+     * @param {Object} symbol
+     * @returns {Label} this
+     */
     setTextSymbol(symbol) {
         this.options.textSymbol = symbol ? extend({}, symbol) : symbol;
         this._refresh();
