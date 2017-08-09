@@ -73,8 +73,8 @@ export function stringWidth(text, font) {
  * @memberOf StringUtil
  */
 export function stringLength(text, font) {
-    if (stringLength.env) {
-        return stringLength.env(text, font);
+    if (stringLength.node) {
+        return stringLength.node(text, font);
     } else {
         const ruler = getDomRuler('span');
         ruler.style.font = font;
