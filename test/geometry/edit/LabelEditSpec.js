@@ -29,8 +29,12 @@ describe('LabelEdit', function () {
             label.on('edittextend', endEdit);
             label.startEditText();
 
+
             function startEdit() {
+                var size = label.getSize();
                 expect(label.isEditingText()).to.be.ok();
+                expect(label._textEditor.clientWidth + 2).to.be.eql(size.width);
+                expect(label._textEditor.clientHeight + 2).to.be.eql(size.height);
                 var dom = label.getTextEditor().getDOM();
                 maptalks.DomUtil.on(dom, 'keyup', function (ev) {
                     var oEvent = ev || event;
@@ -54,7 +58,7 @@ describe('LabelEdit', function () {
             }
         });
 
-        it.skip('edit content with "Enter" key', function () {
+        it('edit content with "Enter" key', function () {
             var label = getLabel();
 
             label.on('edittextstart', startEdit);
