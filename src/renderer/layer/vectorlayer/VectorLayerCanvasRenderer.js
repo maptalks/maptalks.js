@@ -79,6 +79,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this._getDisplayExtent();
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
+            if (!this._geosToDraw[i].isVisible()) {
+                continue;
+            }
             this._geosToDraw[i]._paint(this._displayExtent);
         }
     }

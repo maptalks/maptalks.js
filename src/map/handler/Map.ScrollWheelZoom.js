@@ -48,7 +48,7 @@ class MapScrollWheelZoomHandler extends Handler {
             if (frame.state.playState !== 'finished') {
                 return;
             }
-            if (this._requesting === 0 || Math.abs(nextZoom - this._startZoom) > 3) {
+            if (this._requesting < 2 || Math.abs(nextZoom - this._startZoom) > 3) {
                 map.animateTo({
                     'zoom' : nextZoom,
                     'around' : this._origin
