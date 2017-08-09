@@ -15,6 +15,10 @@ const getId = () => {
     return prefixId + (i++);
 };
 
+const setId = (obj, id) => {
+    isObject(obj)&&isString(id)?obj._fusion_id_=id:null;
+}
+
 /**
  * get the unique id
  * @method stamp
@@ -32,4 +36,6 @@ const stamp = (obj) => {
         return null;
 };
 
-module.exports = { stamp, prefix, getId }
+
+
+module.exports = { stamp, prefix, getId, setId }

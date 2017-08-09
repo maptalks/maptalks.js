@@ -3,7 +3,7 @@
 /**
  * import from namespace renderer
  */
-const Context = require('./gl/Context');
+const GLContext = require('./gl/GLContext');
 const GLIndexbuffer = require('./gl/buffer/GLIndexbuffer');
 const GLVertexbuffer = require('./gl/buffer/GLVertexbuffer');
 const GLProgram = require('./gl/GLProgram');
@@ -15,7 +15,7 @@ const GLShaderFactory = require('./gl/shader/GLShaderFactory');
 
 module.exports = {
     gl:{
-        Context,
+        GLContext,
         GLIndexbuffer,
         GLVertexbuffer,
         GLProgram,
@@ -31,17 +31,19 @@ module.exports = {
  * debug
  */
 
-//1.创建一个gl对象
-/**
- * @type {WebGLRenderingContext}
- */
-// const gl = require('gl')(600,600);
 
-// const ctx = new Context({
-//     gl:gl,
+// const THREE = require('three.js');
+
+// /**
+//  * @type {WebGLRenderingContext}
+//  */
+// const gl = new GLContext({
 //     width:600,
 //     height:600
 // })
+
+// var renderer = new THREE.WebGLRenderer({context:gl});
+
 
 // const obj ={
 //     position:[-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0]

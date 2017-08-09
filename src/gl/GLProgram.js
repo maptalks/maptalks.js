@@ -18,6 +18,7 @@
  */
 const Dispose = require('./../utils/Dispose'),
     stamp = require('./../utils/stamp').stamp,
+    setId = require('./../utils/stamp').setId,
     GLConstants = require('./GLConstants'),
     GLFragmentShader = require('./shader/GLFragmentShader'),
     GLVertexShader = require('./shader/GLVertexShader'),
@@ -130,7 +131,7 @@ class GLProgram extends Dispose {
      * @param {GLLimits} [limits] the context limtis
      * @param {Boolean} [isWebGL2] detect the evn support webgl2
      */
-    constructor(gl, vs, fs, extension, limits, isWebGL2 = true) {
+    constructor(gl, extension = null, limits = null, vs = null, fs = null) {
         super();
         /**
          * @type {WebGLRenderingContext}
@@ -159,26 +160,30 @@ class GLProgram extends Dispose {
          */
         this._vao = new GLVertexArrayObject(gl, extension, limits);
         /**
-         * vertex_shader
-         * @type {GLVertexShader}
-         */
-        this._vs = vs;
-        /**
-         * fragment_shader
-         * @type {GLFragmentShader}
-         */
-        this._fs = fs;
-        /**
          * @type {WebGLProgram}
          */
         this._handle = this._createHandle();
         /**
-         * indicate the glContext type
-         * @type {boolean}
+         * vertex_shader
+         * @type {GLVertexShader}
          */
-        this._isWebGL2 = isWebGL2 && !!this._vao.handle;
-        this._gl.attachShader(this._handle, this._vs.handle);
-        this._gl.attachShader(this._handle, this._fs.handle);
+        this._vs = vs || null;
+        /**
+         * fragment_shader
+         * @type {GLFragmentShader}
+         */
+        this._fs = fs || null;
+        /**
+         * attacht shaders to program
+         */
+        this._attachShader();
+    }
+    /**
+     * @private
+     */
+    _attachShader() {
+        this._vs && (this._vs instanceof GLVertexShader) ? this._gl.attachShader(this._handle, this._vs.handle) : null;
+        this._gl && (this._fs instanceof GLFragmentShader) ? this._gl.attachShader(this._handle, this._fs.handle) : null;
     }
     /**
      * 获取attribues
@@ -267,15 +272,24 @@ class GLProgram extends Dispose {
     }
 
     _createHandle() {
-        return this._gl.createProgram();
+        const gl = this._gl,
+            program = gl.createProgram();
+        setId(program,this.id);
+        return program;
     }
 
     useProgram() {
         const gl = this._gl;
         gl.useProgram(this.handle);
-        this._extractAttributes();
-        this._extractUniforms();
+        // this._extractAttributes();
+        // this._extractUniforms();
     }
+
+    drawElements(mode, count, type, offset){
+        const gl = this._gl;
+        gl.drawElements(mode, count, type, offset);
+    }
+    
     /**
      * 获取attribute地址
      * @param {String} name
