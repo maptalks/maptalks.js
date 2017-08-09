@@ -92,10 +92,11 @@ export function splitContent(content, font, wrapWidth) {
             ruler.style.font = font;
         }
     }
-    let start = 0, step = 1, textWidth = 0, text = '', lastText = '';
-    while(step < content.length - 1) {
+    let start = 0, step = 0, textWidth = 0, text = '', lastText = '';
+    const chars = Array.from(content);
+    while(step < chars.length) {
         if(textWidth < wrapWidth) {
-            text = content.substring(start, step);
+            text += chars[step];
             if (stringLength.env) {
                 textWidth = stringLength.env(text, font);
             } else {
@@ -112,6 +113,7 @@ export function splitContent(content, font, wrapWidth) {
             result.push(content.substring(start, step - 1));
             start = step - 1;
             textWidth = 0;
+            text = '';
             lastText = content.substring(start);
             if(stringLength(lastText, font).width <= wrapWidth) {
                 result.push(lastText);
