@@ -54,7 +54,7 @@ describe('LabelEdit', function () {
             }
         });
 
-        it('edit content with "Enter" key', function () {
+        it.skip('edit content with "Enter" key', function () {
             var label = getLabel();
 
             label.on('edittextstart', startEdit);
