@@ -8,7 +8,10 @@ export default {
     dest: './dist/bundle.js',
     moduleName: 'fusion',
     // sourceMap: 'inline',
-    external: ['fs', 'path','gl'],
+    external: [
+        'fs', 
+        'path'
+    ],
     plugins: [
         resolve({
             jsnext: true,

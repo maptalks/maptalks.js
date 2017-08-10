@@ -1716,36 +1716,52 @@ var GLExtension = function () {
 
         this._gl = gl;
         this._extensions = {};
-        this._includeExtension(gl);
+        this._includeExtension();
         this._map();
     }
+    /**
+     * @private
+     */
+
 
     createClass(GLExtension, [{
         key: '_includeExtension',
-        value: function _includeExtension(gl) {
+        value: function _includeExtension() {
+            var gl = this._gl;
             for (var key in GL_STANDEXTENSIONS) {
                 if (GL_STANDEXTENSIONS.hasOwnProperty(key)) {
                     var extensionName = GL_STANDEXTENSIONS[key],
-                        extension = this._getExtension(gl, extensionName);
+                        extension = this.getExtension(extensionName);
                     if (!!extension) this._extensions[key] = extension;
                 }
             }
         }
+        /**
+         * 
+         * @param {String[]} extNames 
+         */
+
     }, {
-        key: '_getExtension',
-        value: function _getExtension(gl, names) {
-            for (var i = 0, len = names.length; i < len; ++i) {
-                var extension = gl.getExtension(names[i]);
+        key: 'getExtension',
+        value: function getExtension() {
+            var _ref;
+
+            var gl = this._gl,
+                names = (_ref = []).concat.apply(_ref, arguments),
+                len = names.length;
+            for (var i = 0; i < len; ++i) {
+                var name = names[i];
+                var extension = gl.getExtension(name);
                 if (extension) return extension;
             }
-            return undefined;
+            return null;
         }
-    }, {
-        key: '_map',
-
         /**
          * map gl.extension to GLContext instance
          */
+
+    }, {
+        key: '_map',
         value: function _map() {
             for (var key in this._extensions) {
                 if (this._extensions.hasOwnProperty(key)) {
@@ -2393,8 +2409,7 @@ var GLVertexArrayObject_1 = GLVertexArrayObject;
 
 var GLProgram_1 = createCommonjsModule(function (module) {
     /**
-     * the program 
-     * reference 
+     * reference:
      * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLProgram
      * https://github.com/pixijs/pixi-gl-core/blob/master/src/GLShader.js
      * https://github.com/pixijs/pixi-gl-core/blob/master/src/shader/extractAttributes.js
@@ -2923,7 +2938,7 @@ var GLContext = function (_Dispose) {
         var gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes());
         return gl;
       } else {
-        // const GL = require('gl');
+        // const GL = require('gl'),
         // return GL(this._width, this._height);
       }
     }
@@ -3127,8 +3142,8 @@ var GLContext = function (_Dispose) {
      * 获取extension
      */
     value: function getExtension(name) {
-      var gl = this._gl;
-      return gl.getExtension(name);
+      var glExtension = this._glExtension;
+      return glExtension.getExtension(name);
     }
     /**
      * 
@@ -4076,41 +4091,12 @@ var init = {
         GLShaderFactory: GLShaderFactory_1,
         GLVertexArrayObject: GLVertexArrayObject_1
     }
-
-    /**
-     * debug
-     */
-
-    // const THREE = require('three.js');
-
-    // /**
-    //  * @type {WebGLRenderingContext}
-    //  */
-    // const gl = new GLContext({
-    //     width:600,
-    //     height:600
-    // })
-
-    // var renderer = new THREE.WebGLRenderer({context:gl});
-
-
-    // const obj ={
-    //     position:[-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0]
-    // }
-
-    // const veterxBuffer = new GLVertexbuffer(gl,obj.position);
-
-    // const shaders = GLShaderFactory.create('default',gl,null);
-
-    // const program = new GLProgram(gl,shaders[0],shaders[1]);
-
-    // const programId=program.id;
-
-    // ctx.mergeProrgam(program);
-
-    // const program2 = ctx.useProgram(programId);
-
 };
+
+var gl = new GLContext_1({
+    width: 900,
+    height: 600
+});
 
 return init;
 

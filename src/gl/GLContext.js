@@ -147,7 +147,7 @@ class GLContext extends Dispose {
             const gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes());
             return gl;
         } else {
-            // const GL = require('gl');
+            // const GL = require('gl'),
             // return GL(this._width, this._height);
         }
     };
@@ -322,8 +322,8 @@ class GLContext extends Dispose {
      * 获取extension
      */
     getExtension(name) {
-        const gl = this._gl;
-        return gl.getExtension(name);
+        const glExtension = this._glExtension;
+        return glExtension.getExtension(name);
     }
     /**
      * 

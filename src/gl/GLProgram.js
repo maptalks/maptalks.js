@@ -1,6 +1,5 @@
 /**
- * the program 
- * reference 
+ * reference:
  * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLProgram
  * https://github.com/pixijs/pixi-gl-core/blob/master/src/GLShader.js
  * https://github.com/pixijs/pixi-gl-core/blob/master/src/shader/extractAttributes.js
