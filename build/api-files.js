@@ -66,7 +66,6 @@ module.exports = [
     './src/layer/tile/CanvasTileLayer.js',
     './src/layer/OverlayLayer.js',
     './src/layer/VectorLayer.js',
-    './src/layer/GeoJSONLayer.js',
     './src/layer/CanvasLayer.js',
     './src/layer/ParticleLayer.js',
 
