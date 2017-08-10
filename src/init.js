@@ -27,39 +27,5 @@ module.exports = {
     }
 }
 
-/**
- * debug
- */
-
-
-// const THREE = require('three.js');
-
-// /**
-//  * @type {WebGLRenderingContext}
-//  */
-// const gl = new GLContext({
-//     width:600,
-//     height:600
-// })
-
-// var renderer = new THREE.WebGLRenderer({context:gl});
-
-
-// const obj ={
-//     position:[-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0]
-// }
-
-// const veterxBuffer = new GLVertexbuffer(gl,obj.position);
-
-// const shaders = GLShaderFactory.create('default',gl,null);
-
-// const program = new GLProgram(gl,shaders[0],shaders[1]);
-
-// const programId=program.id;
-
-// ctx.mergeProrgam(program);
-
-// const program2 = ctx.useProgram(programId);
-
 
 
