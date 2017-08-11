@@ -139,11 +139,15 @@ class GLProgram extends Dispose {
         /**
          *  program active attribute
          */
-        this._attributes = null;
+        this._attributes = {};
         /**
          * program active 
          */
-        this._uniforms = null;
+        this._uniforms = {};
+        /**
+         * store the uniform ids
+         */
+        this._uniformIds={};
         /**
          * @type {GLExtension}
          */
@@ -176,13 +180,17 @@ class GLProgram extends Dispose {
          * attacht shaders to program
          */
         this._attachShader();
+        /**
+         * 处理队列
+         */
+        this._taskQueue=[];
     }
     /**
      * @private
      */
     _attachShader() {
-        this._vs && (this._vs instanceof GLVertexShader) ? this._gl.attachShader(this._handle, this._vs.handle) : null;
-        this._gl && (this._fs instanceof GLFragmentShader) ? this._gl.attachShader(this._handle, this._fs.handle) : null;
+        this._vs && (this._vs instanceof GLVertexShader) ?  this._gl.attachShader(this._handle, this._vs.handle): null;
+        this._gl && (this._fs instanceof GLFragmentShader) ?  this._gl.attachShader(this._handle, this._fs.handle): null;
     }
     /**
      * 获取attribues
@@ -201,11 +209,30 @@ class GLProgram extends Dispose {
         return this._uniforms;
     }
     /**
+     * attach shader
+     * @param {GLVertexShader|GLFragmentShader} glShader 
+     */
+    attachShader(glShader){
+        if(glShader instanceof GLVertexShader){
+            this._vs = glShader;
+            this._gl.attachShader(this._handle, this._vs.handle);
+        }else if(glShader instanceof GLFragmentShader){
+            this._fs = glShader;
+            this._gl.attachShader(this._handle, this._fs.handle);
+        }
+        //
+        if(this._vs&&this._fs){
+            this._gl.linkProgram(this._handle);
+            this._extractAttributes();
+            this._extractUniforms();
+        }
+    }
+    /**
      * extract attributes
      * 展开attributes
      */
     _extractAttributes() {
-        const isWebGL2 = this._isWebGL2,
+        const isWebGL2 = !!this._vao.handle,
             gl = this._gl,
             vao = this._vao,
             attribLen = gl.getProgramParameter(this._handle, GLConstants.ACTIVE_ATTRIBUTES);
@@ -217,17 +244,20 @@ class GLProgram extends Dispose {
                 name = attrib.name,
                 size = getGLSLTypeSize(type),
                 location = gl.getAttribLocation(this._handle, name);
-            gl.enableVertexAttribArray(location);
-            //
             Object.defineProperty(attributes, name, {
+                get:()=>{
+                    return location;
+                },  
                 set: (function (gl2, loc, typ, ne, se) {
                     return gl2 ? function (value) {
                         const glBuffer = value;
+                        gl.enableVertexAttribArray(location);
                         gl.bindBuffer(glBuffer.type, glBuffer.handle);
                         gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
                         vao.addAttribute(glBuffer, loc, se);
                     } : function (value) {
                         const glBuffer = value;
+                        gl.enableVertexAttribArray(location);
                         gl.bindBuffer(glBuffer.type, glBuffer.handle);
                         gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
                         gl.vertexAttribPointer(loc, se, glBuffer.type, false, 0, 0);
@@ -243,7 +273,7 @@ class GLProgram extends Dispose {
      * @memberof GLProgram
      */
     _extractUniforms() {
-        const isWebGL2 = this._isWebGL2,
+        const isWebGL2 = !!this._vao.handle,
             gl = this._gl,
             uniformsLen = gl.getProgramParameter(this._handle, GLConstants.ACTIVE_UNIFORMS);
         let uniforms = {};
@@ -254,14 +284,21 @@ class GLProgram extends Dispose {
                 name = uniform.name.replace(/\[.*?\]/, ""),
                 size = uniform.size,
                 location = gl.getUniformLocation(this._handle, name);
+            //map the WebGLUniformLocation
+            setId(location,this._id);
             //提供attribute属性访问
             Object.defineProperty(uniforms, name, {
                 /**
-               * @param {glMatrix.*} value
-               */
+                 * 
+                 */
+                get:()=>{
+                    return location;
+                },
+                /**
+                 * @param {glMatrix.*} value
+                 */
                 set: (value) => {
                     const funcName = getUniformFunc(type);
-                    //gl[funcName](location,)
                     gl[funcName](location, value);
                 }
             });
@@ -288,7 +325,13 @@ class GLProgram extends Dispose {
         const gl = this._gl;
         gl.drawElements(mode, count, type, offset);
     }
-    
+    /**
+     * @param {number} index 
+     */
+    getActiveAttrib(index){
+        const gl = this._gl;
+        return gl.getActiveAttrib(this._handle,index);
+    }
     /**
      * 获取attribute地址
      * @param {String} name
@@ -323,6 +366,22 @@ class GLProgram extends Dispose {
     drawArrays(primitiveType, offset, count) {
         const gl = this._gl;
         gl.drawArrays(primitiveType || GLConstants.TRIANGLES, offset || 0, count || 6);
+    }
+    /**
+     * 处理队列更新操作
+     */
+    update(){
+        const taskQueue = this._taskQueue,
+            gl = this._gl;
+        let task=taskQueue.shift();
+        while(!!task){
+            gl[task.name](...task.args);
+            task=taskQueue.shift();
+        }
+    }
+
+    enQueue(name,args){
+        this._taskQueue.push({name,args});
     }
 
 };

@@ -728,7 +728,7 @@ var stamp_1 = createCommonjsModule(function (module) {
  * -dispose
  */
 
-var stamp = stamp_1.stamp;
+var stamp$1 = stamp_1.stamp;
 
 /**
  * @class
@@ -741,7 +741,7 @@ var Dispose = function () {
   function Dispose() {
     classCallCheck(this, Dispose);
 
-    this._id = stamp(this);
+    this._id = stamp$1(this);
   }
   /**
    * 资源销毁方法，执行完一段后，统一调用
@@ -1678,6 +1678,178 @@ var GLConstants = {
 var GLConstants_1 = GLConstants;
 
 /**
+ * 提供shader程序创建，销毁，应用等
+ * @author yellow 2017/6/12
+ */
+
+var setId = stamp_1.setId;
+
+/** 
+ * Shader抽象类
+ * @class
+ */
+
+var GLShader = function (_Dispose) {
+    inherits(GLShader, _Dispose);
+
+    /**
+     * Creates an instance of Shader.
+     * @constructor
+     * @param {WebGLRenderingContext} gl 
+     * @param {Object} source
+     * @param {String} [source.source]
+     * @param {String} [source.name] 
+     * @param {String} shaderType 
+     * @param {GLExtension} extension
+     */
+    function GLShader(gl, source, shaderType, extension) {
+        classCallCheck(this, GLShader);
+
+        var _this = possibleConstructorReturn(this, (GLShader.__proto__ || Object.getPrototypeOf(GLShader)).call(this));
+
+        _this._gl = gl;
+        _this._extension = extension;
+        _this._shaderType = shaderType;
+        _this._handle = _this._createHandle();
+        if (!!source) {
+            _this.source = source;
+            _this.compile();
+        }
+        return _this;
+    }
+    /**
+     * return the complied source
+     * @readonly
+     * @memberof Shader
+     */
+
+
+    createClass(GLShader, [{
+        key: 'compile',
+
+        /**
+         * use gl to compile the shader
+         * @memberof Shader
+         */
+        value: function compile() {
+            var gl = this._gl;
+            gl.compileShader(this._handle);
+            var compileStatus = gl.getShaderParameter(this._handle, GLConstants_1.COMPILE_STATUS);
+            if (!compileStatus) {
+                var infoLog = gl.getShaderInfoLog(this.handle);
+                this.dispose();
+                throw new Error(infoLog);
+            }
+        }
+        /**
+         * delete shader form gl
+         */
+
+    }, {
+        key: 'dispose',
+        value: function dispose() {
+            this._gl.deleteShader(this._handle);
+        }
+        /**
+         * overwrite 
+         */
+
+    }, {
+        key: '_createHandle',
+        value: function _createHandle() {
+            var gl = this._gl;
+            var shader = gl.createShader(this._shaderType);
+            setId(shader, this._id);
+            return shader;
+        }
+    }, {
+        key: 'translateSource',
+        get: function get$$1() {
+            var ext = this._extension['WEBGL_debug_shaders'];
+            return ext ? ext.getTranslatedShaderSource(this.handle) : 'No translated source available. WEBGL_debug_shaders not implemented';
+        }
+        /**
+         * @readonly
+         * @memberof Shader
+         */
+
+    }, {
+        key: 'source',
+        get: function get$$1() {
+            return this._source;
+        }
+        /**
+         * set the source
+         */
+        ,
+        set: function set$$1(value) {
+            var gl = this._gl;
+            this._source = value;
+            gl.shaderSource(this._handle, this._source);
+        }
+    }]);
+    return GLShader;
+}(Dispose_1);
+
+var GLShader_1 = GLShader;
+
+/**
+ * vertex shader object
+ * @author yellow date 2017/6/12
+ */
+
+/**
+ * @class
+ */
+
+var GLVertexShader = function (_GLShader) {
+  inherits(GLVertexShader, _GLShader);
+
+  /**
+   * 创建vertex shader
+   * @param {WebGLRenderingContext} gl 
+   * @param {String} source 
+   * @param {GLExtension} extension
+   */
+  function GLVertexShader(gl, source, extension) {
+    classCallCheck(this, GLVertexShader);
+    return possibleConstructorReturn(this, (GLVertexShader.__proto__ || Object.getPrototypeOf(GLVertexShader)).call(this, gl, source, GLConstants_1.VERTEX_SHADER, extension));
+  }
+
+  return GLVertexShader;
+}(GLShader_1);
+
+var GLVertexShader_1 = GLVertexShader;
+
+/**
+ * fragment shader object
+ * @author yellow date 2017/6/12
+ */
+
+/**
+ * @class
+ */
+
+var GLFragmentShader = function (_GLShader) {
+  inherits(GLFragmentShader, _GLShader);
+
+  /**
+   * 创建fragment shader
+   * @param {WebGLRenderingContext} gl 
+   * @param {String} source 
+   * @param {GLExtension} extension
+   */
+  function GLFragmentShader(gl, source, extension) {
+    classCallCheck(this, GLFragmentShader);
+    return possibleConstructorReturn(this, (GLFragmentShader.__proto__ || Object.getPrototypeOf(GLFragmentShader)).call(this, gl, source, GLConstants_1.FRAGMENT_SHADER, extension));
+  }
+
+  return GLFragmentShader;
+}(GLShader_1);
+
+var GLFragmentShader_1 = GLFragmentShader;
+
+/**
  * @author yellow date 2017/6/15
  * management of GLExtension
  */
@@ -1869,164 +2041,6 @@ var GLLimits = function () {
 }();
 
 var GLLimits_1 = GLLimits;
-
-/**
- * 提供shader程序创建，销毁，应用等
- * @author yellow 2017/6/12
- */
-
-/** 
- * Shader抽象类
- * @class
- */
-
-var GLShader = function (_Dispose) {
-  inherits(GLShader, _Dispose);
-
-  /**
-   * Creates an instance of Shader.
-   * @constructor
-   * @param {WebGLRenderingContext} gl 
-   * @param {Object} source
-   * @param {String} [source.source]
-   * @param {String} [source.name] 
-   * @param {String} shaderType 
-   * @param {GLExtension} extension
-   */
-  function GLShader(gl, source, shaderType, extension) {
-    classCallCheck(this, GLShader);
-
-    var _this = possibleConstructorReturn(this, (GLShader.__proto__ || Object.getPrototypeOf(GLShader)).call(this));
-
-    _this._gl = gl;
-    _this._extension = extension;
-    _this._source = source;
-    _this._shaderType = shaderType;
-    _this._handle = _this._createHandle();
-    _this._compile();
-    return _this;
-  }
-  /**
-   * return the complied source
-   * @readonly
-   * @memberof Shader
-   */
-
-
-  createClass(GLShader, [{
-    key: '_compile',
-
-    /**
-     * use gl to compile the shader
-     * @memberof Shader
-     */
-    value: function _compile() {
-      var gl = this._gl;
-      gl.shaderSource(this._handle, this._source);
-      gl.compileShader(this._handle);
-      var compileStatus = gl.getShaderParameter(this._handle, GLConstants_1.COMPILE_STATUS);
-      if (!compileStatus) {
-        var infoLog = gl.getShaderInfoLog(this.handle);
-        this.dispose();
-        throw new Error(infoLog);
-      }
-    }
-    /**
-     * delete shader form gl
-     */
-
-  }, {
-    key: 'dispose',
-    value: function dispose() {
-      this._gl.deleteShader(this._handle);
-    }
-    /**
-     * overwrite 
-     */
-
-  }, {
-    key: '_createHandle',
-    value: function _createHandle() {
-      var gl = this._gl;
-      return gl.createShader(this._shaderType);
-    }
-  }, {
-    key: 'translateSource',
-    get: function get$$1() {
-      var ext = this._extension['WEBGL_debug_shaders'];
-      return ext ? ext.getTranslatedShaderSource(this.handle) : 'No translated source available. WEBGL_debug_shaders not implemented';
-    }
-    /**
-     * @readonly
-     * @memberof Shader
-     */
-
-  }, {
-    key: 'source',
-    get: function get$$1() {
-      return this._source;
-    }
-  }]);
-  return GLShader;
-}(Dispose_1);
-
-var GLShader_1 = GLShader;
-
-/**
- * fragment shader object
- * @author yellow date 2017/6/12
- */
-
-/**
- * @class
- */
-
-var GLFragmentShader = function (_GLShader) {
-  inherits(GLFragmentShader, _GLShader);
-
-  /**
-   * 创建fragment shader
-   * @param {WebGLRenderingContext} gl 
-   * @param {String} source 
-   * @param {GLExtension} extension
-   */
-  function GLFragmentShader(gl, source, extension) {
-    classCallCheck(this, GLFragmentShader);
-    return possibleConstructorReturn(this, (GLFragmentShader.__proto__ || Object.getPrototypeOf(GLFragmentShader)).call(this, gl, source, GLConstants_1.FRAGMENT_SHADER, extension));
-  }
-
-  return GLFragmentShader;
-}(GLShader_1);
-
-var GLFragmentShader_1 = GLFragmentShader;
-
-/**
- * vertex shader object
- * @author yellow date 2017/6/12
- */
-
-/**
- * @class
- */
-
-var GLVertexShader = function (_GLShader) {
-  inherits(GLVertexShader, _GLShader);
-
-  /**
-   * 创建vertex shader
-   * @param {WebGLRenderingContext} gl 
-   * @param {String} source 
-   * @param {GLExtension} extension
-   */
-  function GLVertexShader(gl, source, extension) {
-    classCallCheck(this, GLVertexShader);
-    return possibleConstructorReturn(this, (GLVertexShader.__proto__ || Object.getPrototypeOf(GLVertexShader)).call(this, gl, source, GLConstants_1.VERTEX_SHADER, extension));
-  }
-
-  return GLVertexShader;
-}(GLShader_1);
-
-var GLVertexShader_1 = GLVertexShader;
 
 /**
  * 
@@ -2552,11 +2566,15 @@ var GLProgram_1 = createCommonjsModule(function (module) {
             /**
              *  program active attribute
              */
-            _this._attributes = null;
+            _this._attributes = {};
             /**
              * program active 
              */
-            _this._uniforms = null;
+            _this._uniforms = {};
+            /**
+             * store the uniform ids
+             */
+            _this._uniformIds = {};
             /**
              * @type {GLExtension}
              */
@@ -2589,6 +2607,10 @@ var GLProgram_1 = createCommonjsModule(function (module) {
              * attacht shaders to program
              */
             _this._attachShader();
+            /**
+             * 处理队列
+             */
+            _this._taskQueue = [];
             return _this;
         }
         /**
@@ -2609,42 +2631,74 @@ var GLProgram_1 = createCommonjsModule(function (module) {
              */
 
         }, {
-            key: '_extractAttributes',
+            key: 'attachShader',
 
+            /**
+             * attach shader
+             * @param {GLVertexShader|GLFragmentShader} glShader 
+             */
+            value: function attachShader(glShader) {
+                if (glShader instanceof GLVertexShader_1) {
+                    this._vs = glShader;
+                    this._gl.attachShader(this._handle, this._vs.handle);
+                } else if (glShader instanceof GLFragmentShader_1) {
+                    this._fs = glShader;
+                    this._gl.attachShader(this._handle, this._fs.handle);
+                }
+                //
+                if (this._vs && this._fs) {
+                    this._gl.linkProgram(this._handle);
+                    this._extractAttributes();
+                    this._extractUniforms();
+                }
+            }
             /**
              * extract attributes
              * 展开attributes
              */
+
+        }, {
+            key: '_extractAttributes',
             value: function _extractAttributes() {
-                var isWebGL2 = this._isWebGL2,
+                var _this2 = this;
+
+                var isWebGL2 = !!this._vao.handle,
                     gl = this._gl,
                     vao = this._vao,
                     attribLen = gl.getProgramParameter(this._handle, GLConstants_1.ACTIVE_ATTRIBUTES);
                 var attributes = {};
                 //get attributes and store mapdata
-                for (var i = 0; i < attribLen; i++) {
-                    var attrib = gl.getActiveAttrib(this._handle, i),
+
+                var _loop = function _loop(i) {
+                    var attrib = gl.getActiveAttrib(_this2._handle, i),
                         type = getGLSLType(attrib.type),
                         name = attrib.name,
                         size = getGLSLTypeSize(type),
-                        location = gl.getAttribLocation(this._handle, name);
-                    gl.enableVertexAttribArray(location);
-                    //
+                        location = gl.getAttribLocation(_this2._handle, name);
                     Object.defineProperty(attributes, name, {
+                        get: function get$$1() {
+                            return location;
+                        },
                         set: function (gl2, loc, typ, ne, se) {
                             return gl2 ? function (value) {
                                 var glBuffer = value;
+                                gl.enableVertexAttribArray(location);
                                 gl.bindBuffer(glBuffer.type, glBuffer.handle);
                                 gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
                                 vao.addAttribute(glBuffer, loc, se);
                             } : function (value) {
                                 var glBuffer = value;
+                                gl.enableVertexAttribArray(location);
                                 gl.bindBuffer(glBuffer.type, glBuffer.handle);
                                 gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
                                 gl.vertexAttribPointer(loc, se, glBuffer.type, false, 0, 0);
                             };
                         }(isWebGL2, location, type, name, size)
                     });
+                };
+
+                for (var i = 0; i < attribLen; i++) {
+                    _loop(i);
                 }
                 //
                 this._attributes = attributes;
@@ -2657,35 +2711,42 @@ var GLProgram_1 = createCommonjsModule(function (module) {
         }, {
             key: '_extractUniforms',
             value: function _extractUniforms() {
-                var _this2 = this;
+                var _this3 = this;
 
-                var isWebGL2 = this._isWebGL2,
+                var isWebGL2 = !!this._vao.handle,
                     gl = this._gl,
                     uniformsLen = gl.getProgramParameter(this._handle, GLConstants_1.ACTIVE_UNIFORMS);
                 var uniforms = {};
                 //1.get uniforms and store mapdata
 
-                var _loop = function _loop(i) {
-                    var uniform = gl.getActiveUniform(_this2._handle, i),
+                var _loop2 = function _loop2(i) {
+                    var uniform = gl.getActiveUniform(_this3._handle, i),
                         type = getGLSLType(uniform.type),
                         name = uniform.name.replace(/\[.*?\]/, ""),
                         size = uniform.size,
-                        location = gl.getUniformLocation(_this2._handle, name);
+                        location = gl.getUniformLocation(_this3._handle, name);
+                    //map the WebGLUniformLocation
+                    setId(location, _this3._id);
                     //提供attribute属性访问
                     Object.defineProperty(uniforms, name, {
                         /**
-                        * @param {glMatrix.*} value
-                        */
+                         * 
+                         */
+                        get: function get$$1() {
+                            return location;
+                        },
+                        /**
+                         * @param {glMatrix.*} value
+                         */
                         set: function set$$1(value) {
                             var funcName = getUniformFunc(type);
-                            //gl[funcName](location,)
                             gl[funcName](location, value);
                         }
                     });
                 };
 
                 for (var i = 0; i < uniformsLen; i++) {
-                    _loop(i);
+                    _loop2(i);
                 }
                 //
                 this._uniforms = uniforms;
@@ -2712,7 +2773,16 @@ var GLProgram_1 = createCommonjsModule(function (module) {
                 var gl = this._gl;
                 gl.drawElements(mode, count, type, offset);
             }
+            /**
+             * @param {number} index 
+             */
 
+        }, {
+            key: 'getActiveAttrib',
+            value: function getActiveAttrib(index) {
+                var gl = this._gl;
+                return gl.getActiveAttrib(this._handle, index);
+            }
             /**
              * 获取attribute地址
              * @param {String} name
@@ -2759,6 +2829,26 @@ var GLProgram_1 = createCommonjsModule(function (module) {
             value: function drawArrays(primitiveType, offset, count) {
                 var gl = this._gl;
                 gl.drawArrays(primitiveType || GLConstants_1.TRIANGLES, offset || 0, count || 6);
+            }
+            /**
+             * 处理队列更新操作
+             */
+
+        }, {
+            key: 'update',
+            value: function update() {
+                var taskQueue = this._taskQueue,
+                    gl = this._gl;
+                var task = taskQueue.shift();
+                while (!!task) {
+                    gl[task.name].apply(gl, toConsumableArray(task.args));
+                    task = taskQueue.shift();
+                }
+            }
+        }, {
+            key: 'enQueue',
+            value: function enQueue(name, args) {
+                this._taskQueue.push({ name: name, args: args });
             }
         }, {
             key: 'attributes',
@@ -2813,7 +2903,7 @@ var GLProgram_1 = createCommonjsModule(function (module) {
  * 
  * 
  */
-
+var stamp = stamp_1.stamp;
 /**
  * @class
  * @example
@@ -2841,6 +2931,9 @@ var GLContext = function (_Dispose) {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     classCallCheck(this, GLContext);
 
+    /**
+     * @type {HtmlCanvas}
+     */
     var _this = possibleConstructorReturn(this, (GLContext.__proto__ || Object.getPrototypeOf(GLContext)).call(this));
 
     _this._canvas = options.canvas || null;
@@ -2904,9 +2997,15 @@ var GLContext = function (_Dispose) {
      */
     _this._glLimits = _this._includeLimits();
     /**
+     * the program cache
      * @type {Object}
      */
     _this._programCache = {};
+    /**
+     * the shader cache
+     * @type {Object}
+     */
+    _this._shaderCache = {};
     /**
      * @type {GLProgram}
      */
@@ -3092,7 +3191,7 @@ var GLContext = function (_Dispose) {
     }
     /**
      * 
-     * @param {*} programs 
+     * @param {GLProgram} programs 
      */
 
   }, {
@@ -3113,18 +3212,33 @@ var GLContext = function (_Dispose) {
         }
       }
     }
-    // /**
-    //  * 使用指定program
-    //  * @param {String} key 
-    //  * @return {GLProgram}
-    //  */
-    // useProgram(key) {
-    //     if (key instanceof GLProgram)
-    //         key = key.id;
-    //     const program = this._programCache[key];
-    //     program.useProgram();
-    //     return program;
-    // }
+    /**
+     * @param {WebGLProgram} program
+     */
+
+  }, {
+    key: 'useProgram',
+    value: function useProgram(program) {
+      var gl = this._gl;
+      //1.加入队列处理program
+      //2.
+      gl.useProgram(program);
+    }
+    /**
+     * @return {WebGLProgram}
+     */
+
+  }, {
+    key: 'createProgram',
+    value: function createProgram() {
+      var gl = this._gl;
+      //1.创建GLProgram
+      var glProgram = new GLProgram_1(gl);
+      //2.缓存program
+      this._programCache[glProgram.id] = glProgram;
+      //3.兼容，返回句柄
+      return glProgram.handle;
+    }
     /**
      * 获取canvas
      */
@@ -3132,12 +3246,6 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'getExtension',
 
-    /**
-    * Some experimental-webgl implementations do not have getShaderPrecisionFormat
-    */
-    // getShaderPrecisionFormat() {
-    //     return { 'rangeMin': 1, 'rangeMax': 1, 'precision': 1 };
-    // }
     /**
      * 获取extension
      */
@@ -3319,8 +3427,19 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'createShader',
     value: function createShader(type) {
-      var gl = this._gl;
-      return gl.createShader(type);
+      var gl = this._gl,
+          glExtension = this._glExtension;
+      var glShader = null;
+      if (type === GLConstants_1.VERTEX_SHADER) {
+        glShader = new GLVertexShader_1(gl, null, glExtension);
+      } else if (type === GLConstants_1.FRAGMENT_SHADER) {
+        glShader = new GLFragmentShader_1(gl, null, glExtension);
+      }
+      if (!!glShader) {
+        this._shaderCache[glShader.id] = glShader;
+        return glShader.handle;
+      }
+      return null;
     }
     /**
      * 
@@ -3331,19 +3450,18 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'shaderSource',
     value: function shaderSource(shader, source) {
-      var gl = this._gl;
-      gl.shaderSource(shader, source);
+      var glShader = this._shaderCache[stamp(shader)];
+      glShader.source = source;
     }
     /**
-     * 
      * @param {WebGLShader} shader 
      */
 
   }, {
     key: 'compileShader',
     value: function compileShader(shader) {
-      var gl = this._gl;
-      gl.compileShader(shader);
+      var glShader = this._shaderCache[stamp(shader)];
+      glShader.compile();
     }
     /**
      * 
@@ -3441,31 +3559,6 @@ var GLContext = function (_Dispose) {
       gl.viewport(x, y, width, height);
     }
     /**
-     * @param {WebGLProgram} program
-     */
-
-  }, {
-    key: 'useProgram',
-    value: function useProgram(program) {
-      var gl = this._gl;
-      gl.useProgram(program);
-    }
-    /**
-     * @return {WebGLProgram}
-     */
-
-  }, {
-    key: 'createProgram',
-    value: function createProgram() {
-      var gl = this._gl;
-      //1.创建GLProgram
-      var glProgram = new GLProgram_1(gl);
-      //2.缓存program
-      this._programCache[glProgram.id] = glProgram;
-      //3.兼容，返回句柄
-      return glProgram.handle;
-    }
-    /**
      * 
      * @param {WebGLProgram} program 
      * @param {WebGLShader} shader 
@@ -3475,19 +3568,19 @@ var GLContext = function (_Dispose) {
     key: 'attachShader',
     value: function attachShader(program, shader) {
       var gl = this._gl;
-      gl.attachShader(program, shader);
+      //1.获取shader和program
+      var glProgram = this._programCache[stamp(program)];
+      var glShader = this._shaderCache[stamp(shader)];
+      glProgram.attachShader(glShader);
     }
     /**
-     * 
+     * no needs to implement this function
      * @param {WebGLProgram} program 
      */
 
   }, {
     key: 'linkProgram',
-    value: function linkProgram(program) {
-      var gl = this._gl;
-      gl.linkProgram(program);
-    }
+    value: function linkProgram(program) {}
     /**
      * 
      * @param {WebGLProgram} program 
@@ -3524,8 +3617,8 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'getUniformLocation',
     value: function getUniformLocation(program, name) {
-      var gl = this._gl;
-      return gl.getUniformLocation(program, name);
+      var glProgram = this._programCache[stamp(program)];
+      return glProgram.uniforms[name];
     }
     /**
      * 
@@ -3537,8 +3630,8 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'getActiveAttrib',
     value: function getActiveAttrib(program, index) {
-      var gl = this._gl;
-      return gl.getActiveAttrib(program, index);
+      var glProgram = this._programCache[stamp(program)];
+      return glProgram.getActiveAttrib(index);
     }
     /**
      * 
@@ -3550,8 +3643,8 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'getAttribLocation',
     value: function getAttribLocation(program, name) {
-      var gl = this._gl;
-      return gl.getAttribLocation(program, name);
+      var glProgram = this._programCache[stamp(program)];
+      return glProgram.attributes[name];
     }
     /**
      * 
@@ -3591,8 +3684,10 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'uniform3f',
     value: function uniform3f(location, x, y, z) {
-      var gl = this._gl;
-      gl.uniform3f(location, x, y, z);
+      var glProgram = this._programCache[stamp(location)];
+      glProgram.enQueue('uniform3f', [location, x, y, z]);
+      //const gl = this._gl;
+      //gl.uniform3f(location,x,y,z);
     }
     /**
      * 
@@ -3603,8 +3698,10 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'uniform3fv',
     value: function uniform3fv(location, v) {
-      var gl = this._gl;
-      gl.uniform3fv(location, v);
+      var glProgram = this._programCache[stamp(location)];
+      glProgram.enQueue('uniform3fv', [location, v]);
+      //const gl = this._gl;
+      //gl.uniform3fv(location, v);
     }
     /**
      * 
@@ -3615,8 +3712,10 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'uniform4fv',
     value: function uniform4fv(location, v) {
-      var gl = this._gl;
-      gl.uniform4fv(location, v);
+      var glProgram = this._programCache[stamp(location)];
+      glProgram.enQueue('uniform4fv', [location, v]);
+      //const gl = this._gl;
+      //gl.uniform4fv(location, v);
     }
     /**
      * 
@@ -3627,8 +3726,10 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'uniform1f',
     value: function uniform1f(location, x) {
-      var gl = this._gl;
-      gl.uniform1f(location, x);
+      var glProgram = this._programCache[stamp(location)];
+      glProgram.enQueue('uniform1f', [location, x]);
+      // const gl = this._gl;
+      // gl.uniform1f(location, x);
     }
     /**
      * 
@@ -3639,8 +3740,10 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'uniform1fv',
     value: function uniform1fv(location, v) {
-      var gl = this._gl;
-      gl.uniform1fv(location, v);
+      var glProgram = this._programCache[stamp(location)];
+      glProgram.enQueue('uniform1fv', [location, v]);
+      // const gl = this._gl;
+      // gl.uniform1fv(location, v);
     }
     /**
      * 
@@ -3651,9 +3754,11 @@ var GLContext = function (_Dispose) {
 
   }, {
     key: 'uniformMatrix3fv',
-    value: function uniformMatrix3fv(location, transpose, value) {
-      var gl = this._gl;
-      gl.uniformMatrix3fv(location, transpose, value);
+    value: function uniformMatrix3fv(location, transpose, v) {
+      var glProgram = this._programCache[stamp(location)];
+      glProgram.enQueue('uniformMatrix3fv', [location, transpose, v]);
+      // const gl = this._gl;
+      // gl.uniformMatrix3fv(location,transpose,v);
     }
     /**
      * 
@@ -3665,8 +3770,10 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'uniformMatrix4fv',
     value: function uniformMatrix4fv(location, transpose, v) {
-      var gl = this._gl;
-      gl.uniformMatrix4fv(location, transpose, v);
+      var glProgram = this._programCache[stamp(location)];
+      glProgram.enQueue('uniformMatrix4fv', [location, transpose, v]);
+      // const gl = this._gl;
+      // gl.uniformMatrix4fv(location, transpose, v);
     }
     /**
      * 
@@ -3677,8 +3784,10 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'uniform1i',
     value: function uniform1i(location, x) {
-      var gl = this._gl;
-      gl.uniform1i(location, x);
+      var glProgram = this._programCache[stamp(location)];
+      glProgram.enQueue('uniform1i', [location, x]);
+      // const gl = this._gl;
+      // gl.uniform1i(location, x);
     }
     /**
      * 
@@ -3706,7 +3815,8 @@ var GLContext = function (_Dispose) {
       for (var key in programCache) {
         var glProgram = programCache[key];
         glProgram.useProgram();
-        glProgram.drawElements(mode, count, type, offset);
+        glProgram.update();
+        glProgram.drawElements(GLConstants_1.TRIANGLES, count, type, offset);
       }
       //gl.drawElements(mode, count, type, offset);
     }
@@ -4092,11 +4202,6 @@ var init = {
         GLVertexArrayObject: GLVertexArrayObject_1
     }
 };
-
-var gl = new GLContext_1({
-    width: 900,
-    height: 600
-});
 
 return init;
 

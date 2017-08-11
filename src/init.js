@@ -29,10 +29,3 @@ module.exports = {
 
 
 
-
-const gl = new GLContext({
-    width:900,
-    height:600
-});
-
-

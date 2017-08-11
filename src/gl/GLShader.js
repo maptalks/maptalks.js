@@ -3,9 +3,10 @@
  * @author yellow 2017/6/12
  */
 
-const Dispose = require('./../utils/Dispose'),
-     isString = require('./../utils/isString'), 
-     GLConstants = require('./GLConstants');
+const isString = require('./../utils/isString'),
+    setId = require('./../utils/stamp').setId,
+    Dispose = require('./../utils/Dispose'),
+    GLConstants = require('./GLConstants');
 
 /** 
  * Shader抽象类
@@ -26,10 +27,12 @@ class GLShader extends Dispose {
         super();
         this._gl = gl;
         this._extension = extension;
-        this._source = source;
         this._shaderType = shaderType;
         this._handle = this._createHandle();
-        this._compile();
+        if(!!source){
+            this.source = source;
+            this.compile()
+        }
     }
     /**
      * return the complied source
@@ -48,12 +51,19 @@ class GLShader extends Dispose {
         return this._source;
     }
     /**
+     * set the source
+     */
+    set source(value) {
+        const gl = this._gl;
+        this._source = value;
+        gl.shaderSource(this._handle, this._source);
+    }
+    /**
      * use gl to compile the shader
      * @memberof Shader
      */
-    _compile() {
+    compile() {
         const gl = this._gl;
-        gl.shaderSource(this._handle, this._source);
         gl.compileShader(this._handle);
         const compileStatus = gl.getShaderParameter(this._handle, GLConstants.COMPILE_STATUS);
         if (!compileStatus) {
@@ -73,7 +83,9 @@ class GLShader extends Dispose {
      */
     _createHandle() {
         const gl = this._gl;
-        return gl.createShader(this._shaderType);
+        const shader = gl.createShader(this._shaderType);
+        setId(shader, this._id);
+        return shader
     }
 }
 

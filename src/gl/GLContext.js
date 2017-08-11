@@ -30,6 +30,9 @@ const merge = require('./../utils/merge'),
     isFunction = require('./../utils/isFunction'),
     isNode = require('./../utils/isNode'),
     mapFunc = require('./../utils/mapFunc'),
+    stamp = require('./../utils/stamp').stamp,
+    GLVertexShader = require('./../gl/shader/GLVertexShader'),
+    GLFragmentShader = require('./../gl/shader/GLFragmentShader'),
     Dispose = require('./../utils/Dispose'),
     GLConstants = require('./GLConstants'),
     GLExtension = require('./GLExtension'),
@@ -57,6 +60,9 @@ class GLContext extends Dispose {
      */
     constructor(options = {}) {
         super();
+        /**
+         * @type {HtmlCanvas}
+         */
         this._canvas = options.canvas || null;
         /**
          * canvas width
@@ -118,9 +124,15 @@ class GLContext extends Dispose {
          */
         this._glLimits = this._includeLimits();
         /**
+         * the program cache
          * @type {Object}
          */
         this._programCache = {};
+        /**
+         * the shader cache
+         * @type {Object}
+         */
+        this._shaderCache={};
         /**
          * @type {GLProgram}
          */
@@ -277,7 +289,7 @@ class GLContext extends Dispose {
     }
     /**
      * 
-     * @param {*} programs 
+     * @param {GLProgram} programs 
      */
     mergeProrgam(...programs) {
         const gl = this._gl,
@@ -293,18 +305,27 @@ class GLContext extends Dispose {
             }
         }
     }
-    // /**
-    //  * 使用指定program
-    //  * @param {String} key 
-    //  * @return {GLProgram}
-    //  */
-    // useProgram(key) {
-    //     if (key instanceof GLProgram)
-    //         key = key.id;
-    //     const program = this._programCache[key];
-    //     program.useProgram();
-    //     return program;
-    // }
+    /**
+     * @param {WebGLProgram} program
+     */
+    useProgram(program) {
+        const gl = this._gl;
+        //1.加入队列处理program
+        //2.
+        gl.useProgram(program);
+    }
+    /**
+     * @return {WebGLProgram}
+     */
+    createProgram() {
+        const gl = this._gl;
+        //1.创建GLProgram
+        const glProgram = new GLProgram(gl);
+        //2.缓存program
+        this._programCache[glProgram.id] = glProgram;
+        //3.兼容，返回句柄
+        return glProgram.handle;
+    }
     /**
      * 获取canvas
      */
@@ -312,12 +333,6 @@ class GLContext extends Dispose {
         const gl = this._gl;
         return gl.canvas;
     }
-    /**
-    * Some experimental-webgl implementations do not have getShaderPrecisionFormat
-    */
-    // getShaderPrecisionFormat() {
-    //     return { 'rangeMin': 1, 'rangeMax': 1, 'precision': 1 };
-    // }
     /**
      * 获取extension
      */
@@ -454,8 +469,19 @@ class GLContext extends Dispose {
      * @param {number} type 
      */
     createShader(type) {
-        const gl = this._gl;
-        return gl.createShader(type);
+        const gl = this._gl,
+            glExtension = this._glExtension;
+        let glShader =null;
+        if(type===GLConstants.VERTEX_SHADER){
+            glShader = new GLVertexShader(gl,null,glExtension);
+        }else if(type === GLConstants.FRAGMENT_SHADER){
+            glShader = new GLFragmentShader(gl,null,glExtension);
+        }
+        if(!!glShader){
+            this._shaderCache[glShader.id] = glShader;
+            return glShader.handle;
+        }
+        return null;
     }
     /**
      * 
@@ -463,16 +489,15 @@ class GLContext extends Dispose {
      * @param {String} source 
      */
     shaderSource(shader, source) {
-        const gl = this._gl;
-        gl.shaderSource(shader, source);
+        const glShader = this._shaderCache[stamp(shader)];
+        glShader.source = source;
     }
     /**
-     * 
      * @param {WebGLShader} shader 
      */
     compileShader(shader) {
-        const gl = this._gl;
-        gl.compileShader(shader);
+        const glShader = this._shaderCache[stamp(shader)];
+        glShader.compile();
     }
     /**
      * 
@@ -546,41 +571,22 @@ class GLContext extends Dispose {
         gl.viewport(x, y, width, height);
     }
     /**
-     * @param {WebGLProgram} program
-     */
-    useProgram(program) {
-        const gl = this._gl;
-        gl.useProgram(program);
-    }
-    /**
-     * @return {WebGLProgram}
-     */
-    createProgram() {
-        const gl = this._gl;
-        //1.创建GLProgram
-        const glProgram = new GLProgram(gl);
-        //2.缓存program
-        this._programCache[glProgram.id] = glProgram;
-        //3.兼容，返回句柄
-        return glProgram.handle;
-    }
-    /**
      * 
      * @param {WebGLProgram} program 
      * @param {WebGLShader} shader 
      */
     attachShader(program, shader) {
         const gl = this._gl;
-        gl.attachShader(program, shader);
+        //1.获取shader和program
+        const glProgram = this._programCache[stamp(program)];
+        const glShader = this._shaderCache[stamp(shader)];
+        glProgram.attachShader(glShader);
     }
     /**
-     * 
+     * no needs to implement this function
      * @param {WebGLProgram} program 
      */
-    linkProgram(program) {
-        const gl = this._gl;
-        gl.linkProgram(program);
-    }
+    linkProgram(program) { }
     /**
      * 
      * @param {WebGLProgram} program 
@@ -608,8 +614,8 @@ class GLContext extends Dispose {
      * @return {WebGLUniformLocation}
      */
     getUniformLocation(program, name) {
-        const gl = this._gl;
-        return gl.getUniformLocation(program, name);
+        const glProgram = this._programCache[stamp(program)];
+        return glProgram.uniforms[name];
     }
     /**
      * 
@@ -618,8 +624,8 @@ class GLContext extends Dispose {
      * @return {WebGLActiveInfo}
      */
     getActiveAttrib(program, index) {
-        const gl = this._gl;
-        return gl.getActiveAttrib(program, index)
+        const glProgram = this._programCache[stamp(program)];
+        return glProgram.getActiveAttrib(index)
     }
     /**
      * 
@@ -628,8 +634,8 @@ class GLContext extends Dispose {
      * @return {number}
      */
     getAttribLocation(program, name) {
-        const gl = this._gl;
-        return gl.getAttribLocation(program, name);
+        const glProgram = this._programCache[stamp(program)];
+        return glProgram.attributes[name];
     }
     /**
      * 
@@ -660,8 +666,10 @@ class GLContext extends Dispose {
      * @param {number} z 
      */
     uniform3f(location,x,y,z){
-        const gl = this._gl;
-        gl.uniform3f(location,x,y,z);
+        const glProgram = this._programCache[stamp(location)];
+        glProgram.enQueue('uniform3f',[location,x,y,z]);
+        //const gl = this._gl;
+        //gl.uniform3f(location,x,y,z);
     }
     /**
      * 
@@ -669,8 +677,10 @@ class GLContext extends Dispose {
      * @param {Float32Array|number[]} v 
      */
     uniform3fv(location, v) {
-        const gl = this._gl;
-        gl.uniform3fv(location, v);
+        const glProgram = this._programCache[stamp(location)];
+        glProgram.enQueue('uniform3fv',[location, v]);
+        //const gl = this._gl;
+        //gl.uniform3fv(location, v);
     }
     /**
      * 
@@ -678,8 +688,10 @@ class GLContext extends Dispose {
      * @param {Float32Array|number[]} v 
      */
     uniform4fv(location, v) {
-        const gl = this._gl;
-        gl.uniform4fv(location, v);
+        const glProgram = this._programCache[stamp(location)];
+        glProgram.enQueue('uniform4fv',[location, v]);
+        //const gl = this._gl;
+        //gl.uniform4fv(location, v);
     }
     /**
      * 
@@ -687,8 +699,10 @@ class GLContext extends Dispose {
      * @param {number} x 
      */
     uniform1f(location, x) {
-        const gl = this._gl;
-        gl.uniform1f(location, x);
+        const glProgram = this._programCache[stamp(location)];
+        glProgram.enQueue('uniform1f',[location, x]);
+        // const gl = this._gl;
+        // gl.uniform1f(location, x);
     }
     /**
      * 
@@ -696,8 +710,10 @@ class GLContext extends Dispose {
      * @param {Float32Array|number[]} v 
      */
     uniform1fv(location, v) {
-        const gl = this._gl;
-        gl.uniform1fv(location, v);
+        const glProgram = this._programCache[stamp(location)];
+        glProgram.enQueue('uniform1fv',[location, v]);
+        // const gl = this._gl;
+        // gl.uniform1fv(location, v);
     }
     /**
      * 
@@ -705,9 +721,11 @@ class GLContext extends Dispose {
      * @param {boolean} transpose
      * @param {Float32Array | number[]} v
      */
-    uniformMatrix3fv(location,transpose,value){
-        const gl = this._gl;
-        gl.uniformMatrix3fv(location,transpose,value);
+    uniformMatrix3fv(location,transpose,v){
+        const glProgram = this._programCache[stamp(location)];
+        glProgram.enQueue('uniformMatrix3fv',[location,transpose,v]);
+        // const gl = this._gl;
+        // gl.uniformMatrix3fv(location,transpose,v);
     }
     /**
      * 
@@ -716,8 +734,10 @@ class GLContext extends Dispose {
      * @param {Float32Array | number[]} v
      */
     uniformMatrix4fv(location, transpose, v) {
-        const gl = this._gl;
-        gl.uniformMatrix4fv(location, transpose, v);
+        const glProgram = this._programCache[stamp(location)];
+        glProgram.enQueue('uniformMatrix4fv',[location,transpose,v]);
+        // const gl = this._gl;
+        // gl.uniformMatrix4fv(location, transpose, v);
     }
     /**
      * 
@@ -725,8 +745,10 @@ class GLContext extends Dispose {
      * @param {number} x 
      */
     uniform1i(location, x) {
-        const gl = this._gl;
-        gl.uniform1i(location, x);
+        const glProgram = this._programCache[stamp(location)];
+        glProgram.enQueue('uniform1i',[location,x]);
+        // const gl = this._gl;
+        // gl.uniform1i(location, x);
     }
     /**
      * 
@@ -748,6 +770,7 @@ class GLContext extends Dispose {
         for(const key in programCache){
             const glProgram = programCache[key];
             glProgram.useProgram();
+            glProgram.update();
             glProgram.drawElements(mode, count, type, offset);
         }
         //gl.drawElements(mode, count, type, offset);
