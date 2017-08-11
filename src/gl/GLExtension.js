@@ -34,29 +34,39 @@ class GLExtension {
     constructor(gl) {
         this._gl = gl;
         this._extensions = {};
-        this._includeExtension(gl);
+        this._includeExtension();
         this._map();
-    };
-
-    _includeExtension(gl) {
+    }
+    /**
+     * @private
+     */
+    _includeExtension() {
+        const gl = this._gl;
         for (var key in GL_STANDEXTENSIONS) {
             if (GL_STANDEXTENSIONS.hasOwnProperty(key)) {
                 let extensionName = GL_STANDEXTENSIONS[key],
-                    extension = this._getExtension(gl, extensionName);
+                    extension = this.getExtension(extensionName);
                 if (!!extension)
                     this._extensions[key] = extension;
             }
         }
-    };
-
-    _getExtension(gl, names) {
-        for (let i = 0, len = names.length; i < len; ++i) {
-            let extension = gl.getExtension(names[i]);
+    }
+    /**
+     * 
+     * @param {String[]} extNames 
+     */
+    getExtension(...extNames) {
+        const gl = this._gl,
+            names = [].concat(...extNames),
+            len = names.length;
+        for (let i = 0; i < len; ++i) {
+            const name = names[i];
+            let extension = gl.getExtension(name);
             if (extension)
                 return extension;
         }
-        return undefined;
-    };
+        return null;
+    }
     /**
      * map gl.extension to GLContext instance
      */
@@ -68,7 +78,7 @@ class GLExtension {
                     this[key] = target;
             }
         }
-    };
+    }
 
 }
 

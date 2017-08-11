@@ -7,7 +7,6 @@ const GLContext = require('./../src/gl/GLContext');
 describe("#1",()=>{
 
     it("#1.1 test context",()=>{
-
         // const width = 600,
         //     height=600;
 
@@ -17,12 +16,7 @@ describe("#1",()=>{
         //     width:width,
         //     height:height
         // });
-
     })
-
-
-
-
 });
 
 
