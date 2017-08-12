@@ -3208,6 +3208,8 @@ var GLContext = function (_Dispose) {
     }, {
         key: 'useProgram',
         value: function useProgram(program) {
+            if (!program)
+                return;
             var gl = this._gl;
             this._program = program;
             gl.program = program;
@@ -3239,8 +3241,10 @@ var GLContext = function (_Dispose) {
          * 获取extension
          */
         value: function getExtension(name) {
-            var glExtension = this._glExtension;
-            return glExtension.getExtension(name);
+            var gl = this._gl;
+            return gl.getExtension(name);
+            // const glExtension = this._glExtension;
+            // return glExtension.getExtension(name);
         }
         /**
          * 
@@ -3273,6 +3277,9 @@ var GLContext = function (_Dispose) {
         key: 'bindTexture',
         value: function bindTexture(target, texture) {
             var gl = this._gl;
+            if (gl.program !== this._program) {
+                this.useProgram(this._program);
+            }
             gl.bindTexture(target, texture);
         }
         /**
@@ -3302,9 +3309,9 @@ var GLContext = function (_Dispose) {
 
     }, {
         key: 'texImage2D',
-        value: function texImage2D(target, level, internalformat, width, height, border, format, type, pixels) {
+        value: function texImage2D() {
             var gl = this._gl;
-            gl.texImage2D(target, level, internalformat, width, height, border, format, type, pixels);
+            gl.texImage2D.apply(gl, arguments);
         }
         /**
          * 
@@ -3337,7 +3344,7 @@ var GLContext = function (_Dispose) {
         key: 'depthFunc',
         value: function depthFunc(func) {
             var gl = this._gl;
-            gl.depthFunc(func);
+            //gl.depthFunc(func);
         }
         /**
          * 
@@ -3395,7 +3402,7 @@ var GLContext = function (_Dispose) {
         key: 'frontFace',
         value: function frontFace(mode) {
             var gl = this._gl;
-            gl.frontFace(mode);
+            //gl.frontFace(mode);
         }
         /**
          * 
@@ -3515,6 +3522,22 @@ var GLContext = function (_Dispose) {
                 this.useProgram(this._program);
             }
             gl.bufferData(target, size, usage);
+        }
+        /**
+         * 
+         * @param {number} target 
+         * @param {number} offset 
+         * @param {ArrayBufferView|ArrayBuffer} data 
+         */
+
+    }, {
+        key: 'bufferSubData',
+        value: function bufferSubData(target, offset, data) {
+            var gl = this._gl;
+            if (gl.program !== this._program) {
+                this.useProgram(this._program);
+            }
+            gl.bufferSubData(target, offset, data);
         }
         /**
          * 
@@ -3679,6 +3702,21 @@ var GLContext = function (_Dispose) {
         }
         /**
          * 
+         * @param {*} location 
+         * @param {*} v 
+         */
+
+    }, {
+        key: 'uniform1iv',
+        value: function uniform1iv(location, v) {
+            var gl = this._gl;
+            if (gl.program !== this._program) {
+                this.useProgram(this._program);
+            }
+            gl.uniform1iv(location, v);
+        }
+        /**
+         * 
          * @param {WebGLUniformLocation} location 
          * @param {number} x 
          * @param {number} y 
@@ -3729,6 +3767,24 @@ var GLContext = function (_Dispose) {
                 this.useProgram(this._program);
             }
             gl.uniform4fv(location, v);
+        }
+        /**
+         * 
+         * @param {WebGLUniformLocation} location 
+         * @param {number} x 
+         * @param {number} y 
+         * @param {number} z 
+         * @param {number} w 
+         */
+
+    }, {
+        key: 'uniform4f',
+        value: function uniform4f(location, x, y, z, w) {
+            var gl = this._gl;
+            if (gl.program !== this._program) {
+                this.useProgram(this._program);
+            }
+            gl.uniform4f(location, x, y, z, w);
         }
         /**
          * 
@@ -3826,6 +3882,9 @@ var GLContext = function (_Dispose) {
         key: 'activeTexture',
         value: function activeTexture(texture) {
             var gl = this._gl;
+            if (gl.program !== this._program) {
+                this.useProgram(this._program);
+            }
             gl.activeTexture(texture);
         }
         /**
@@ -4076,6 +4135,9 @@ var GLContext = function (_Dispose) {
         key: 'deleteTexture',
         value: function deleteTexture(texture) {
             var gl = this._gl;
+            if (gl.program !== this._program) {
+                this.useProgram(this._program);
+            }
             gl.deleteTexture(texture);
         }
     }, {
@@ -4125,6 +4187,29 @@ var GLContext = function (_Dispose) {
         value: function readPixels(x, y, width, height, format, type, pixels) {
             var gl = this._gl;
             gl.readPixels(x, y, width, height, format, type, pixels);
+        }
+        /**
+         * 
+         * @param {WebGLProgram} program 
+         */
+
+    }, {
+        key: 'isProgram',
+        value: function isProgram(program) {
+            var gl = this._gl;
+            gl.isProgram(program);
+        }
+    }, {
+        key: 'isContextLost',
+        value: function isContextLost() {
+            var gl = this._gl;
+            return gl.isContextLost();
+        }
+    }, {
+        key: 'disableVertexAttribArray',
+        value: function disableVertexAttribArray(index) {
+            var gl = this._gl;
+            gl.disableVertexAttribArray(index);
         }
     }, {
         key: 'canvas',

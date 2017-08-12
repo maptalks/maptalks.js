@@ -326,8 +326,10 @@ class GLContext extends Dispose {
      * 获取extension
      */
     getExtension(name) {
-        const glExtension = this._glExtension;
-        return glExtension.getExtension(name);
+        const gl = this._gl;
+        return gl.getExtension(name);
+        // const glExtension = this._glExtension;
+        // return glExtension.getExtension(name);
     }
     /**
      * 
@@ -351,6 +353,9 @@ class GLContext extends Dispose {
      */
     bindTexture(target, texture) {
         const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
         gl.bindTexture(target, texture);
     }
     /**
@@ -374,9 +379,9 @@ class GLContext extends Dispose {
      * @param {number} type 
      * @param {ArrayBufferView} pixels 
      */
-    texImage2D(target, level, internalformat, width, height, border, format, type, pixels) {
+    texImage2D() {
         const gl = this._gl;
-        gl.texImage2D(target, level, internalformat, width, height, border, format, type, pixels)
+        gl.texImage2D.apply(gl,arguments);
     }
     /**
      * 
@@ -539,6 +544,19 @@ class GLContext extends Dispose {
     }
     /**
      * 
+     * @param {number} target 
+     * @param {number} offset 
+     * @param {ArrayBufferView|ArrayBuffer} data 
+     */
+    bufferSubData(target,offset,data){
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.bufferSubData(target,offset,data);
+    }
+    /**
+     * 
      * @param {number} pname 
      * @param {number|boolean} param 
      */
@@ -664,6 +682,18 @@ class GLContext extends Dispose {
     }
     /**
      * 
+     * @param {*} location 
+     * @param {*} v 
+     */
+    uniform1iv(location,v){
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniform1iv(location,v);
+    }
+    /**
+     * 
      * @param {WebGLUniformLocation} location 
      * @param {number} x 
      * @param {number} y 
@@ -705,6 +735,21 @@ class GLContext extends Dispose {
             this.useProgram(this._program)
         }
         gl.uniform4fv(location, v);
+    }
+    /**
+     * 
+     * @param {WebGLUniformLocation} location 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+     * @param {number} w 
+     */
+    uniform4f(location,x,y,z,w){
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniform4f(location,x,y,z,w);
     }
     /**
      * 
@@ -784,6 +829,9 @@ class GLContext extends Dispose {
      */
     activeTexture(texture) {
         const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
         gl.activeTexture(texture);
     }
     /**
@@ -979,6 +1027,9 @@ class GLContext extends Dispose {
     
     deleteTexture(texture){
         const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
         gl.deleteTexture(texture);
     }
 
@@ -1023,7 +1074,24 @@ class GLContext extends Dispose {
         const gl = this._gl;
         gl.readPixels(x,y,width,height,format,type,pixels);
     }
-    
+    /**
+     * 
+     * @param {WebGLProgram} program 
+     */
+    isProgram(program){
+        const gl = this._gl;
+        gl.isProgram(program);
+    }
+
+    isContextLost(){
+        const gl = this._gl;
+        return gl.isContextLost();
+    }
+
+    disableVertexAttribArray(index){
+        const gl =this._gl;
+        gl.disableVertexAttribArray(index);
+    }
 }
 
 module.exports = GLContext;
