@@ -2838,11 +2838,12 @@ karma-mocha@^1.3.0:
   dependencies:
     minimist "1.2.0"
 
-karma-rollup-plugin@^0.2.4:
-  version "0.2.4"
-  resolved "https://registry.npmjs.org/karma-rollup-plugin/-/karma-rollup-plugin-0.2.4.tgz#059548b412e75a2e463d5f6e09035b9d09785a53"
+karma-rollup-preprocessor@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.npmjs.org/karma-rollup-preprocessor/-/karma-rollup-preprocessor-4.0.3.tgz#b365a2c54049223b62fb09953b8664b8ec0272be"
   dependencies:
-    rollup "^0.x"
+    lodash "^4.17.4"
+    rollup ">=0.45.x"
 
 karma-safari-launcher@~1.0.0:
   version "1.0.0"
@@ -3080,7 +3081,7 @@ lodash@^3.8.0:
   version "3.10.1"
   resolved "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
 
-lodash@^4.0.0, lodash@^4.2.0, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.6.1:
+lodash@^4.0.0, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.6.1:
   version "4.17.4"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -3155,6 +3156,10 @@ maptalks-build-helpers@^0.3.0:
     rollup-plugin-local-resolve "^1.0.7"
     rollup-plugin-node-resolve "^2.0.0"
     uglify-js "^2.7.5"
+
+maptalks-jsdoc@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.npmjs.org/maptalks-jsdoc/-/maptalks-jsdoc-0.2.0.tgz#f224b1fdbcc165eaaa85a32382fc62371b778286"
 
 maptalks-rollup-plugin-babel@^2.7.1:
   version "2.7.1"
@@ -4308,15 +4313,13 @@ rollup-watch@^4.0.0:
     chokidar "^1.7.0"
     require-relative "0.8.7"
 
+rollup@>=0.45.x:
+  version "0.47.2"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-0.47.2.tgz#e65ee4c16997400170e84a67404fa95f2240f205"
+
 rollup@^0.41.1:
   version "0.41.6"
   resolved "https://registry.npmjs.org/rollup/-/rollup-0.41.6.tgz#e0d05497877a398c104d816d2733a718a7a94e2a"
-  dependencies:
-    source-map-support "^0.4.0"
-
-rollup@^0.x:
-  version "0.42.0"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-0.42.0.tgz#56e791b3a2f3dd7190bbb80a375675f2fe0f9b23"
   dependencies:
     source-map-support "^0.4.0"
 

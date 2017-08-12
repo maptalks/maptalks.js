@@ -48,6 +48,7 @@ gulp.task('scripts', () => {
     return bundler.bundle('src/index.js', rollupCfg.config);
 });
 
+
 const stylesPattern = './assets/css/**/*.css';
 
 gulp.task('styles', () => {
@@ -139,10 +140,10 @@ gulp.task('reload', ['scripts'], () => {
         .pipe(connect.reload());
 });
 
-gulp.task('doc', () => {
-    const sources = require('./docs/files.js');
+gulp.task('doc', (done) => {
+    const sources = require('./build/api-files.js');
     del([
-        '../../maptalks.org/docs/api/**/*'
+        './docs/api/**/*'
     ], {
         force : true
     });
@@ -161,6 +162,7 @@ gulp.task('doc', () => {
         if (stdout) { console.log(stdout); }
         console.log('Documented ' + sources.length + ' files in:');
         console.log(conf.opts.destination);
+        done(stderr);
     });
 });
 
