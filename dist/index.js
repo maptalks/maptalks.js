@@ -1,50 +1,13 @@
-﻿/// <reference path="bundle.js" />
-/// <reference path="three.js" />
+﻿/// <reference path="three.js" />
 /// <reference path="twgl.js" />
+/// <reference path="playcanvas-stable.min.js" />
 /// <reference path="bundle.js" />
 
 var canvas = document.getElementById('cvs');
 
-const gl = new fusion.gl.GLContext({
-    canvas:canvas,
-    width: 800,
-    height:600
-});
+const glCanvas = new Fusion.gl.GLCanvas(canvas);
 
-init();
-
-animate();
-
-function init() {
-
-    scene = new THREE.Scene();
-
-    camera = new THREE.PerspectiveCamera(75, 800 / 600, 1, 10000);
-    camera.position.z = 1000;
-
-    geometry = new THREE.BoxGeometry(900, 900, 900);
-    material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-
-    mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    renderer = new THREE.WebGLRenderer({
-        canvas: canvas,
-        context: gl
-    });
-    renderer.setSize(800, 600);
-}
-
-function animate() {
-
-    requestAnimationFrame(animate);
-
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.02;
-
-    renderer.render(scene, camera);
-
-}
+const gl = glCanvas.getContext('webgl');
 
 const m4 = twgl.m4;
 const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
@@ -110,7 +73,41 @@ function render(time) {
     twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
     twgl.setUniforms(programInfo, uniforms);
     gl.drawElements(gl.TRIANGLES, bufferInfo.numElements, gl.UNSIGNED_SHORT, 0);
-
     requestAnimationFrame(render);
 }
 requestAnimationFrame(render);
+
+var scene, camera1;
+
+init();
+
+function init() {
+
+    scene = new THREE.Scene();
+
+    camera1 = new THREE.PerspectiveCamera(75, 800 / 600, 1, 10000);
+    camera1.position.z = 1000;
+
+
+    geometry = new THREE.BoxGeometry(900, 900, 900);
+    material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+
+    mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+    const glCanvas1 = new Fusion.gl.GLCanvas(canvas);
+
+    renderer = new THREE.WebGLRenderer({
+        canvas: glCanvas1,
+        context: glCanvas1.getContext('webgl')
+    });
+    renderer.setSize(800, 600);
+}
+
+animate();
+
+function animate() {
+    requestAnimationFrame(animate);
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.02;
+    renderer.render(scene, camera1);
+}

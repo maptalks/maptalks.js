@@ -3,6 +3,7 @@
 /**
  * import from namespace renderer
  */
+const GLCanvas = require('./gl/GLCanvas');
 const GLContext = require('./gl/GLContext');
 const GLIndexbuffer = require('./gl/buffer/GLIndexbuffer');
 const GLVertexbuffer = require('./gl/buffer/GLVertexbuffer');
@@ -15,6 +16,7 @@ const GLShaderFactory = require('./gl/shader/GLShaderFactory');
 
 module.exports = {
     gl:{
+        GLCanvas,
         GLContext,
         GLIndexbuffer,
         GLVertexbuffer,

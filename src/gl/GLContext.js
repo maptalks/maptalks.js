@@ -65,14 +65,6 @@ class GLContext extends Dispose {
          */
         this._canvas = options.canvas || null;
         /**
-         * canvas width
-         */
-        this._width = options.width || window.innerWidth;
-        /**
-         * canvas height
-         */
-        this._height = options.height || window.innerHeight;
-        /**
          * context类型，支持webgl,webgl2
          * @type {String} default is 'webgl'
          */
@@ -113,7 +105,7 @@ class GLContext extends Dispose {
         /**
          *  @type {WebGLRenderingContext}
          */
-        this._gl = this._createHandle();
+        this._gl = options.gl||this._createHandle();
         /**
          * webgl扩展
          * @type {GLExtension}
@@ -153,9 +145,6 @@ class GLContext extends Dispose {
      */
     _createHandle() {
         if (!isNode) {
-            this._canvas = this._canvas || document.createElement('canvas');
-            this._canvas.width = this._width;
-            this._canvas.height = this._height;
             const gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes());
             return gl;
         } else {
@@ -310,8 +299,8 @@ class GLContext extends Dispose {
      */
     useProgram(program) {
         const gl = this._gl;
-        //1.加入队列处理program
-        //2.
+        this._program  = program;
+        gl.program = program;
         gl.useProgram(program);
     }
     /**
@@ -530,6 +519,9 @@ class GLContext extends Dispose {
      */
     bindBuffer(target, buffer) {
         const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
         return gl.bindBuffer(target, buffer);
     }
     /**
@@ -540,6 +532,9 @@ class GLContext extends Dispose {
      */
     bufferData(target, size, usage) {
         const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
         gl.bufferData(target, size, usage);
     }
     /**
@@ -549,6 +544,9 @@ class GLContext extends Dispose {
      */
     pixelStorei(pname, param) {
         const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
         gl.pixelStorei(pname, param);
     }
     /**
@@ -557,6 +555,9 @@ class GLContext extends Dispose {
      */
     generateMipmap(target) {
         const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
         gl.generateMipmap(target);
     }
     /**
@@ -605,6 +606,9 @@ class GLContext extends Dispose {
      */
     getActiveUniform(program, index) {
         const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
         return gl.getActiveUniform(program, index);
     }
     /**
@@ -666,10 +670,13 @@ class GLContext extends Dispose {
      * @param {number} z 
      */
     uniform3f(location,x,y,z){
-        const glProgram = this._programCache[stamp(location)];
-        glProgram.enQueue('uniform3f',[location,x,y,z]);
-        //const gl = this._gl;
-        //gl.uniform3f(location,x,y,z);
+        //const glProgram = this._programCache[stamp(location)];
+        //glProgram.enQueue('uniform3f',[location,x,y,z]);
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniform3f(location,x,y,z);
     }
     /**
      * 
@@ -677,10 +684,13 @@ class GLContext extends Dispose {
      * @param {Float32Array|number[]} v 
      */
     uniform3fv(location, v) {
-        const glProgram = this._programCache[stamp(location)];
-        glProgram.enQueue('uniform3fv',[location, v]);
-        //const gl = this._gl;
-        //gl.uniform3fv(location, v);
+        //const glProgram = this._programCache[stamp(location)];
+        //glProgram.enQueue('uniform3fv',[location, v]);
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniform3fv(location, v);
     }
     /**
      * 
@@ -688,10 +698,13 @@ class GLContext extends Dispose {
      * @param {Float32Array|number[]} v 
      */
     uniform4fv(location, v) {
-        const glProgram = this._programCache[stamp(location)];
-        glProgram.enQueue('uniform4fv',[location, v]);
-        //const gl = this._gl;
-        //gl.uniform4fv(location, v);
+        //const glProgram = this._programCache[stamp(location)];
+        //glProgram.enQueue('uniform4fv',[location, v]);
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniform4fv(location, v);
     }
     /**
      * 
@@ -699,10 +712,13 @@ class GLContext extends Dispose {
      * @param {number} x 
      */
     uniform1f(location, x) {
-        const glProgram = this._programCache[stamp(location)];
-        glProgram.enQueue('uniform1f',[location, x]);
-        // const gl = this._gl;
-        // gl.uniform1f(location, x);
+        //const glProgram = this._programCache[stamp(location)];
+        //glProgram.enQueue('uniform1f',[location, x]);
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniform1f(location, x);
     }
     /**
      * 
@@ -710,10 +726,13 @@ class GLContext extends Dispose {
      * @param {Float32Array|number[]} v 
      */
     uniform1fv(location, v) {
-        const glProgram = this._programCache[stamp(location)];
-        glProgram.enQueue('uniform1fv',[location, v]);
-        // const gl = this._gl;
-        // gl.uniform1fv(location, v);
+        //const glProgram = this._programCache[stamp(location)];
+        //glProgram.enQueue('uniform1fv',[location, v]);
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniform1fv(location, v);
     }
     /**
      * 
@@ -722,10 +741,13 @@ class GLContext extends Dispose {
      * @param {Float32Array | number[]} v
      */
     uniformMatrix3fv(location,transpose,v){
-        const glProgram = this._programCache[stamp(location)];
-        glProgram.enQueue('uniformMatrix3fv',[location,transpose,v]);
-        // const gl = this._gl;
-        // gl.uniformMatrix3fv(location,transpose,v);
+        //const glProgram = this._programCache[stamp(location)];
+        //glProgram.enQueue('uniformMatrix3fv',[location,transpose,v]);
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniformMatrix3fv(location,transpose,v);
     }
     /**
      * 
@@ -734,10 +756,13 @@ class GLContext extends Dispose {
      * @param {Float32Array | number[]} v
      */
     uniformMatrix4fv(location, transpose, v) {
-        const glProgram = this._programCache[stamp(location)];
-        glProgram.enQueue('uniformMatrix4fv',[location,transpose,v]);
-        // const gl = this._gl;
-        // gl.uniformMatrix4fv(location, transpose, v);
+        //const glProgram = this._programCache[stamp(location)];
+        //glProgram.enQueue('uniformMatrix4fv',[location,transpose,v]);
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniformMatrix4fv(location, transpose, v);
     }
     /**
      * 
@@ -745,10 +770,13 @@ class GLContext extends Dispose {
      * @param {number} x 
      */
     uniform1i(location, x) {
-        const glProgram = this._programCache[stamp(location)];
-        glProgram.enQueue('uniform1i',[location,x]);
-        // const gl = this._gl;
-        // gl.uniform1i(location, x);
+        //const glProgram = this._programCache[stamp(location)];
+        //glProgram.enQueue('uniform1i',[location,x]);
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.uniform1i(location, x);
     }
     /**
      * 
@@ -766,14 +794,16 @@ class GLContext extends Dispose {
      * @param {number} offset 
      */
     drawElements(mode, count, type, offset) {
-        const programCache = this._programCache;
-        for(const key in programCache){
-            const glProgram = programCache[key];
-            glProgram.useProgram();
-            glProgram.update();
-            glProgram.drawElements(mode, count, type, offset);
-        }
-        //gl.drawElements(mode, count, type, offset);
+        // const programCache = this._programCache;
+        // for(const key in programCache){
+        //     const glProgram = programCache[key];
+        //     glProgram.useProgram();
+        //     glProgram.update();
+        //     glProgram.drawElements(mode, count, type, offset);
+        // }
+        //
+        const gl = this._gl;
+        gl.drawElements(mode, count, type, offset);
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquationSeparate
@@ -800,6 +830,23 @@ class GLContext extends Dispose {
         gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
     }
     /**
+     * 
+     * @param {number} mode 
+     */
+    blendEquation(mode){
+        const gl = this._gl;
+        gl.blendEquation(mode);
+    }
+    /**
+     * 
+     * @param {number} sfactor 
+     * @param {number} dfactor 
+     */
+    blendFunc(sfactor,dfactor){
+        const gl = this._gl;
+        gl.blendFunc(sfactor,dfactor);
+    }
+    /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
      * sets a scissor box, which limits the drawing to a specified rectangle.
      * 
@@ -814,6 +861,18 @@ class GLContext extends Dispose {
     scissor(x, y, widht, height) {
         const gl = this._gl;
         gl.scissor(x, y, widht, height);
+    }
+    stencilOp(fail,zfail,zpass){
+        const gl = this._gl;
+        gl.stencilOp(fail,zfail,zpass);
+    }
+    stencilFunc(func,ref,mask){
+        const gl =this._gl;
+        gl.stencilFunc(func,ref,mask);
+    }
+    stencilMask(mask){
+        const gl =this._gl;
+        gl.stencilMask(mask);
     }
     /**
      * 
@@ -859,6 +918,112 @@ class GLContext extends Dispose {
         const gl = this._gl;
         gl.lineWidth(width);
     }
+    /**
+     * 
+     * @param {number} target 
+     * @param {number} mode 
+     */
+    hint(target,mode){
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.hint(target,mode);
+    }
+    /**
+     * webgl2 support
+     */
+    createTransformFeedback(){
+        const gl = this._gl;
+        return gl.createTransformFeedback?gl.createTransformFeedback():null;
+    }
+    /**
+     * webgl2 support
+     * @param {*} target 
+     * @param {*} transformFeedback 
+     */
+    bindTransformFeedback(target, transformFeedback){
+        const gl = this._gl;
+        return gl.bindTransformFeedback?gl.bindTransformFeedback(target, transformFeedback):null;
+    }
+
+    getError(){
+        const gl = this._gl;
+        return gl.getError();
+    }
+
+    deleteBuffer(buffer){
+        const gl = this._gl;
+        gl.deleteBuffer(buffer);
+    }
+
+    deleteShader(shader){
+        const gl = this._gl;
+        gl.deleteShader(shader);
+    }
+
+    deleteProgram(program){
+        const gl = this._gl;
+        gl.deleteProgram(program);
+    }
+
+    deleteFramebuffer(framebuffer){
+        const gl = this._gl;
+        gl.deleteFramebuffer(framebuffer);
+    }
+
+    deleteRenderbuffer(renderbuffer){
+        const gl = this._gl;
+        gl.deleteRenderbuffer(renderbuffer);
+    }
+    
+    deleteTexture(texture){
+        const gl = this._gl;
+        gl.deleteTexture(texture);
+    }
+
+    createFramebuffer(){
+        const gl = this._gl;
+        return gl.createFramebuffer();
+    }
+
+    bindFramebuffer(target,framebuffer){
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        return gl.bindFramebuffer(target,framebuffer);
+    }
+
+    texParameterf(target,pname,param){
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.texParameterf(target,pname,param);
+    }
+
+    framebufferTexture2D(target,attachment,textarget,texture,level){
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.framebufferTexture2D(target,attachment,textarget,texture,level);
+    }
+
+    drawArrays(mode,first,count){
+        const gl = this._gl;
+        if(gl.program!==this._program){
+            this.useProgram(this._program)
+        }
+        gl.drawArrays(mode,first,count);
+    }
+
+    readPixels(x,y,width,height,format,type,pixels){
+        const gl = this._gl;
+        gl.readPixels(x,y,width,height,format,type,pixels);
+    }
+    
 }
 
 module.exports = GLContext;

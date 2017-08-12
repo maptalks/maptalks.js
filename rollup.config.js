@@ -6,7 +6,7 @@ export default {
     entry: './src/init.js',
     format: 'umd',
     dest: './dist/bundle.js',
-    moduleName: 'fusion',
+    moduleName: 'Fusion',
     // sourceMap: 'inline',
     external: [
         'fs', 

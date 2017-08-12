@@ -6,10 +6,7 @@
 ## Description ##
 > a drawing container,only provide sample geometry such as boll,cube and physics engine.
 
-## Project Reference ##
-https://github.com/axmand/karma-rollup-mocha
-
-### dependency ###
+### Dependency ###
 > 1. headless-gl
 ```
 npm install --global --production windows-build-tools
@@ -21,3 +18,28 @@ npm install gl
 ```
 npm install electron
 ```
+### User guide ###
+```
+const canvas = doucment.createElement('canvas');
+```
+with three
+```
+const glCanvas = new Fusion.gl.GLCanvas(canvas);
+const gl = glCavnas.getContext('webgl');
+const renderer = new THREE.WebGLRenderer({
+    canvas:glCanvas,
+    context:glCavnas.getContext('webgl');
+});
+//need to create scene and camera
+render.render(scene,camera);
+```
+width twgl
+```
+const glCanvas2 = new Fusion.gl.GLCanvas(canvas);
+const gl2 = glCanvas2.getContext('webgl');
+const programInfo = twgl.createProgramInfo(gl2, ["vs", "fs"]);
+const tex = twgl.createTexture(gl2,{...});
+
+```
+create a GLCanvas instance every time when you want to mix width other WebGL library
+
