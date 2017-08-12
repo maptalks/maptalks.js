@@ -54,13 +54,19 @@ class ParticleLayer extends CanvasLayer {
             extent = view.extent.intersection(view.maskExtent);
         }
         extent = extent.convertTo(c => map._pointToContainerPoint(c));
+        const e = 2 * Math.PI;
         for (let i = 0, l = points.length; i < l; i++) {
             const pos = points[i].point;
             if (extent.contains(pos)) {
-                if (context.fillStyle !== points[i].color) {
-                    context.fillStyle = points[i].color || this.options['lineColor'] || '#fff';
+                const color = points[i].color || this.options['lineColor'] || '#fff',
+                    r = points[i].r;
+                if (context.fillStyle !== color) {
+                    context.fillStyle = color;
                 }
-                context.fillRect(pos.x - points[i].r / 2, pos.y - points[i].r / 2, points[i].r, points[i].r);
+                context.beginPath();
+                context.arc(pos.x - r, pos.y - r, r, 0, e);
+                context.stroke();
+                context.fill();
             }
         }
         this._fillCanvas(context);

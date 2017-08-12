@@ -523,30 +523,26 @@ const Canvas = {
     ellipse(ctx, pt, width, height, lineOpacity, fillOpacity) {
         function bezierEllipse(x, y, a, b) {
             const k = 0.5522848,
-                ox = a * k, // 水平控制点偏移量
-                oy = b * k; // 垂直控制点偏移量
-            ctx.beginPath();
-            //从椭圆的左端点开始顺时针绘制四条三次贝塞尔曲线
+                ox = a * k,
+                oy = b * k;
             ctx.moveTo(x - a, y);
             ctx.bezierCurveTo(x - a, y - oy, x - ox, y - b, x, y - b);
             ctx.bezierCurveTo(x + ox, y - b, x + a, y - oy, x + a, y);
             ctx.bezierCurveTo(x + a, y + oy, x + ox, y + b, x, y + b);
             ctx.bezierCurveTo(x - ox, y + b, x - a, y + oy, x - a, y);
             ctx.closePath();
-            Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
-            Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
         }
-        // pt = pt._round();
+        ctx.beginPath();
         if (width === height) {
-            //如果高宽相同,则直接绘制圆形, 提高效率
-            ctx.beginPath();
             ctx.arc(pt.x, pt.y, width, 0, 2 * Math.PI);
-            Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
-            Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
+        } else if (ctx.ellipse) {
+            ctx.ellipse(pt.x, pt.y, width, height, 0, 0, Math.PI / 180 * 360);
         } else {
+            // IE
             bezierEllipse(pt.x, pt.y, width, height);
         }
-
+        Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
+        Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
     },
 
     rectangle(ctx, pt, size, lineOpacity, fillOpacity) {
@@ -558,11 +554,11 @@ const Canvas = {
     },
 
     sector(ctx, pt, size, angles, lineOpacity, fillOpacity) {
+        const rad = Math.PI / 180;
         const startAngle = angles[0],
             endAngle = angles[1];
 
         function sector(ctx, x, y, radius, startAngle, endAngle) {
-            const rad = Math.PI / 180;
             const sDeg = rad * -endAngle;
             const eDeg = rad * -startAngle;
             ctx.beginPath();
@@ -572,7 +568,6 @@ const Canvas = {
             Canvas.fillCanvas(ctx, fillOpacity, x - radius, y - radius);
             Canvas._stroke(ctx, lineOpacity, x - radius, y - radius);
         }
-        // pt = pt._round();
         sector(ctx, pt.x, pt.y, size, startAngle, endAngle);
     },
 
