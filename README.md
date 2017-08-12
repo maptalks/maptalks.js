@@ -25,19 +25,25 @@ const canvas = doucment.createElement('canvas');
 with three
 ```
 const glCanvas = new Fusion.gl.GLCanvas(canvas);
+
 const gl = glCavnas.getContext('webgl');
+
 const renderer = new THREE.WebGLRenderer({
     canvas:glCanvas,
     context:glCavnas.getContext('webgl');
 });
+
 //need to create scene and camera
 render.render(scene,camera);
 ```
 width twgl
 ```
 const glCanvas2 = new Fusion.gl.GLCanvas(canvas);
+
 const gl2 = glCanvas2.getContext('webgl');
+
 const programInfo = twgl.createProgramInfo(gl2, ["vs", "fs"]);
+
 const tex = twgl.createTexture(gl2,{...});
 
 ```
