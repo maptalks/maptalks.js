@@ -24,6 +24,7 @@ const canvas = doucment.createElement('canvas');
 ```
 with three
 ```
+
 const glCanvas = new Fusion.gl.GLCanvas(canvas);
 
 const gl = glCavnas.getContext('webgl');
@@ -33,11 +34,11 @@ const renderer = new THREE.WebGLRenderer({
     context:glCavnas.getContext('webgl');
 });
 
-//need to create scene and camera
 render.render(scene,camera);
 ```
 width twgl
 ```
+
 const glCanvas2 = new Fusion.gl.GLCanvas(canvas);
 
 const gl2 = glCanvas2.getContext('webgl');
@@ -47,5 +48,5 @@ const programInfo = twgl.createProgramInfo(gl2, ["vs", "fs"]);
 const tex = twgl.createTexture(gl2,{...});
 
 ```
-create a GLCanvas instance every time when you want to mix width other WebGL library
+Creating GLCanvas instance every time when you want to mix with other WebGL library
 
