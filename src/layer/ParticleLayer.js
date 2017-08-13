@@ -64,8 +64,7 @@ class ParticleLayer extends CanvasLayer {
                     context.fillStyle = color;
                 }
                 context.beginPath();
-                context.arc(pos.x - r, pos.y - r, r, 0, e);
-                context.stroke();
+                context.arc(pos.x, pos.y, r, 0, e);
                 context.fill();
             }
         }
