@@ -1,4 +1,4 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault, round } from 'core/util';
+import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
 import { isGradient, getGradientStamp } from 'core/util/style';
 import { hasFunctionDefinition } from 'core/mapbox';
 import Point from 'geo/Point';
@@ -99,8 +99,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const canvasClass = ctx.canvas.constructor,
             lineWidth = this.strokeAndFill['lineWidth'],
             shadow = this.geometry.options['shadowBlur'],
-            w = round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0] * 2),
-            h = round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1] * 2),
+            w = Math.round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0] * 2),
+            h = Math.round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1] * 2),
             canvas = Canvas.createCanvas(w, h, canvasClass),
             point = this._getAnchor(w, h);
         const context = canvas.getContext('2d');

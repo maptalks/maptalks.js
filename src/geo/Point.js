@@ -1,4 +1,4 @@
-import { isNil, isArrayHasData, round } from 'core/util';
+import { isNil, isArrayHasData } from 'core/util';
 
 /**
  * Represents a 2d point.<br>
@@ -63,8 +63,8 @@ class Point {
     }
 
     _round() {
-        this.x = round(this.x);
-        this.y = round(this.y);
+        this.x = Math.round(this.x);
+        this.y = Math.round(this.y);
         return this;
     }
 
@@ -73,7 +73,7 @@ class Point {
      * @return {Point} rounded point
      */
     round() {
-        return new Point(round(this.x), round(this.y));
+        return new Point(Math.round(this.x), Math.round(this.y));
     }
 
     _ceil() {

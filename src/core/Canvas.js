@@ -7,7 +7,6 @@ import {
     isSVG,
     isCssUrl,
     extractCssUrl,
-    round,
     computeDegree
 } from 'core/util';
 import { isGradient } from 'core/util/style';
@@ -165,7 +164,7 @@ const Canvas = {
                     if (!imageRes.width || !imageRes.height) {
                         w = strokeWidth;
                     } else {
-                        w = round(imageRes.width * strokeWidth / imageRes.height);
+                        w = Math.round(imageRes.width * strokeWidth / imageRes.height);
                     }
                     const patternCanvas = Canvas.createCanvas(w, strokeWidth, ctx.canvas.constructor);
                     Canvas.image(patternCanvas.getContext('2d'), imageRes, 0, 0, w, strokeWidth);
@@ -295,7 +294,7 @@ const Canvas = {
                 ctx.lineCap = 'round';
                 ctx.lineWidth = (textHaloRadius * 2 - 1);
                 ctx.strokeStyle = textHaloFill;
-                ctx.strokeText(text, round(pt.x), round(pt.y));
+                ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y));
                 ctx.lineWidth = 1;
                 ctx.miterLimit = 10; //default
             }
@@ -312,7 +311,7 @@ const Canvas = {
         if (rgba) {
             ctx.fillStyle = rgba;
         }
-        ctx.fillText(text, round(point.x), round(point.y));
+        ctx.fillText(text, Math.round(point.x), Math.round(point.y));
     },
 
     _stroke(ctx, strokeOpacity, x, y) {

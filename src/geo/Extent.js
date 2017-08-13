@@ -1,4 +1,4 @@
-import { isNil, isNumber, round } from 'core/util';
+import { isNil, isNumber } from 'core/util';
 import Coordinate from './Coordinate';
 import Point from './Point';
 import Size from './Size';
@@ -179,15 +179,15 @@ class Extent {
      * @return {Extent} rounded extent
      */
     round() {
-        return new this.constructor(round(this['xmin']), round(this['ymin']),
-            round(this['xmax']), round(this['ymax']));
+        return new this.constructor(Math.round(this['xmin']), Math.round(this['ymin']),
+            Math.round(this['xmax']), Math.round(this['ymax']));
     }
 
     _round() {
-        this['xmin'] = round(this['xmin']);
-        this['ymin'] = round(this['ymin']);
-        this['xmax'] = round(this['xmax']);
-        this['ymax'] = round(this['ymax']);
+        this['xmin'] = Math.round(this['xmin']);
+        this['ymin'] = Math.round(this['ymin']);
+        this['xmax'] = Math.round(this['xmax']);
+        this['ymax'] = Math.round(this['ymax']);
         return this;
     }
 

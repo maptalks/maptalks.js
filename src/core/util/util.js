@@ -147,16 +147,6 @@ export function getValueOrDefault(v, d) {
     return v === undefined ? d : v;
 }
 
-/*
- * Caculate round of a number, more efficient.
- * @param  {Number} num - num to round
- * @return {Number}
- * @memberOf Util
- */
-export function round(num) {
-    return Math.round(num);
-}
-
 /**
  * Polyfill for Math.sign
  * @param  {Number} x
