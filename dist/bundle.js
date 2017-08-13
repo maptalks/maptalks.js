@@ -728,7 +728,7 @@ var stamp_1 = createCommonjsModule(function (module) {
  * -dispose
  */
 
-var stamp$1 = stamp_1.stamp;
+var stamp$2 = stamp_1.stamp;
 
 /**
  * @class
@@ -741,7 +741,7 @@ var Dispose = function () {
   function Dispose() {
     classCallCheck(this, Dispose);
 
-    this._id = stamp$1(this);
+    this._id = stamp$2(this);
   }
   /**
    * 资源销毁方法，执行完一段后，统一调用
@@ -1682,7 +1682,7 @@ var GLConstants_1 = GLConstants;
  * @author yellow 2017/6/12
  */
 
-var setId = stamp_1.setId;
+var setId$1 = stamp_1.setId;
 
 /** 
  * Shader抽象类
@@ -1759,7 +1759,7 @@ var GLShader = function (_Dispose) {
         value: function _createHandle() {
             var gl = this._gl;
             var shader = gl.createShader(this._shaderType);
-            setId(shader, this._id);
+            setId$1(shader, this._id);
             return shader;
         }
     }, {
@@ -2903,7 +2903,7 @@ var GLProgram_1 = createCommonjsModule(function (module) {
  * 
  * 
  */
-var stamp = stamp_1.stamp;
+var stamp$1 = stamp_1.stamp;
 /**
  * @class
  * @example
@@ -3208,8 +3208,6 @@ var GLContext = function (_Dispose) {
     }, {
         key: 'useProgram',
         value: function useProgram(program) {
-            if (!program)
-                return;
             var gl = this._gl;
             this._program = program;
             gl.program = program;
@@ -3344,7 +3342,7 @@ var GLContext = function (_Dispose) {
         key: 'depthFunc',
         value: function depthFunc(func) {
             var gl = this._gl;
-            //gl.depthFunc(func);
+            gl.depthFunc(func);
         }
         /**
          * 
@@ -3402,7 +3400,7 @@ var GLContext = function (_Dispose) {
         key: 'frontFace',
         value: function frontFace(mode) {
             var gl = this._gl;
-            //gl.frontFace(mode);
+            gl.frontFace(mode);
         }
         /**
          * 
@@ -3446,7 +3444,7 @@ var GLContext = function (_Dispose) {
     }, {
         key: 'shaderSource',
         value: function shaderSource(shader, source) {
-            var glShader = this._shaderCache[stamp(shader)];
+            var glShader = this._shaderCache[stamp$1(shader)];
             glShader.source = source;
         }
         /**
@@ -3456,7 +3454,7 @@ var GLContext = function (_Dispose) {
     }, {
         key: 'compileShader',
         value: function compileShader(shader) {
-            var glShader = this._shaderCache[stamp(shader)];
+            var glShader = this._shaderCache[stamp$1(shader)];
             glShader.compile();
         }
         /**
@@ -3593,8 +3591,8 @@ var GLContext = function (_Dispose) {
         value: function attachShader(program, shader) {
             var gl = this._gl;
             //1.获取shader和program
-            var glProgram = this._programCache[stamp(program)];
-            var glShader = this._shaderCache[stamp(shader)];
+            var glProgram = this._programCache[stamp$1(program)];
+            var glShader = this._shaderCache[stamp$1(shader)];
             glProgram.attachShader(glShader);
         }
         /**
@@ -3644,7 +3642,7 @@ var GLContext = function (_Dispose) {
     }, {
         key: 'getUniformLocation',
         value: function getUniformLocation(program, name) {
-            var glProgram = this._programCache[stamp(program)];
+            var glProgram = this._programCache[stamp$1(program)];
             return glProgram.uniforms[name];
         }
         /**
@@ -3657,7 +3655,7 @@ var GLContext = function (_Dispose) {
     }, {
         key: 'getActiveAttrib',
         value: function getActiveAttrib(program, index) {
-            var glProgram = this._programCache[stamp(program)];
+            var glProgram = this._programCache[stamp$1(program)];
             return glProgram.getActiveAttrib(index);
         }
         /**
@@ -3670,7 +3668,7 @@ var GLContext = function (_Dispose) {
     }, {
         key: 'getAttribLocation',
         value: function getAttribLocation(program, name) {
-            var glProgram = this._programCache[stamp(program)];
+            var glProgram = this._programCache[stamp$1(program)];
             return glProgram.attributes[name];
         }
         /**
@@ -4223,11 +4221,63 @@ var GLContext = function (_Dispose) {
 
 var GLContext_1 = GLContext;
 
+var raf_1 = createCommonjsModule(function (module) {
+    /**
+     * 
+     * 兼容不同的写法
+     * 提供 requestAnimationFrame 和 cancelAnimationFrame
+     * @author yellow date 2017/6/29
+     */
+
+    var vendors = ['webkit', 'moz', 'o', 'ms'];
+
+    var _raf = window.requestAnimationFrame,
+        _craf = window.cancelAnimationFrame;
+
+    var raf = function () {
+        for (var i = 0, len = vendors.length; i < len && _raf && _craf; i++) {
+            var reqKey = vendors[i] + 'RequestAnimationFrame',
+                celKeyO = vendors[i] + 'CancelAnimationFrame',
+                celKeyN = vendors[i] + 'CancelRequestAnimationFrame';
+            _raf = window[reqKey];
+            _craf = window[celKeyO] || window[celKeyN];
+        }
+
+        if (!_raf) {
+            _raf = function _raf(callback, element) {
+                var currTime = new Date().getTime();
+                var timeToCall = Math.max(0, 16.7 - (currTime - lastTime));
+                var id = window.setTimeout(function () {
+                    callback(currTime + timeToCall);
+                }, timeToCall);
+                lastTime = currTime + timeToCall;
+                return id;
+            };
+        }
+
+        if (!_craf) {
+            _craf = function _craf(id) {
+                clearTimeout(id);
+            };
+        }
+    }();
+
+    module.exports = {
+        requestAnimationFrame: requestAnimationFrame,
+        cancelAnimationFrame: cancelAnimationFrame
+    };
+});
+
 /**
  *
  */
+var setId = stamp_1.setId;
+/**
+ * @class
+ */
 
-var GLCanvas = function () {
+var GLCanvas = function (_Dispose) {
+    inherits(GLCanvas, _Dispose);
 
     /**
      * 
@@ -4236,17 +4286,37 @@ var GLCanvas = function () {
     function GLCanvas(canvas) {
         classCallCheck(this, GLCanvas);
 
-        /**
-         * @type {HTMLCanvasElement}
-         */
-        this._canvas = canvas;
+        var _this = possibleConstructorReturn(this, (GLCanvas.__proto__ || Object.getPrototypeOf(GLCanvas)).call(this));
+
+        setId(canvas, _this._id);
+        GLCanvas.CANVAS[_this._id] = canvas;
+        return _this;
     }
 
     createClass(GLCanvas, [{
+        key: '_getContextAttributes',
+        value: function _getContextAttributes(options) {
+            options = options || {};
+            return ctxAtt = {
+                alpha: options.alpha || false,
+                depth: options.depth || true,
+                stencil: options.stencil || true,
+                antialias: options.antialias || false,
+                premultipliedAlpha: options.premultipliedAlpha || true,
+                preserveDrawingBuffer: options.preserveDrawingBuffer || false,
+                failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false
+            };
+        }
+    }, {
         key: 'getContext',
         value: function getContext(renderType, options) {
-            this._gl = this._gl || new GLContext_1(merge_1({}, { renderType: renderType, gl: this._gl, canvas: this._canvas }, options || {}));
-            return this._gl;
+            var id = this._id;
+            if (!GLCanvas.GLCONTEXT[id]) {
+                var canvas = GLCanvas.CANVAS[id];
+                !canvas.gl ? canvas.gl = canvas.getContext(renderType, this._getContextAttributes(options)) : null;
+                GLCanvas.GLCONTEXT[id] = new GLContext_1({ renderType: renderType, canvas: canvas, gl: canvas.gl });
+            }
+            return GLCanvas.GLCONTEXT[id];
         }
     }, {
         key: 'getBoundingClientRect',
@@ -4268,7 +4338,19 @@ var GLCanvas = function () {
         }
     }]);
     return GLCanvas;
-}();
+}(Dispose_1);
+/**
+ * singleton
+ * store the canvas
+ */
+
+
+GLCanvas.CANVAS = {};
+/**
+ * singleton
+ * store glContext
+ */
+GLCanvas.GLCONTEXT = {};
 
 var GLCanvas_1 = GLCanvas;
 
