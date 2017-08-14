@@ -42,6 +42,9 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
  *
+ * @property {Extent}  [options.viewHistory=true]               -  whether to record view history
+ * @property {Extent}  [options.viewHistoryCount=10]            -  the count of view history record.
+ *
  * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
  * @property {Boolean} [options.dragPan=true]                           - if true, map can be dragged to pan.
  * @property {Boolean} [options.dragRotate=true]                        - default true. If true, map can be dragged to rotate by right click or ctrl + left click.
@@ -756,7 +759,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this.setCenter(view['center']);
         }
         if (view['zoom']) {
-            this.setZoom(view['zoom']);
+            this.setZoom(view['zoom'], { 'animation' : false });
         }
         if (view['pitch']) {
             this.setPitch(view['pitch']);
