@@ -1,6 +1,7 @@
 /**
  * warpped the WebGLRenderingContext
  * 管理
+ * 
  * -cache
  * -program
  * -matrix
@@ -8,6 +9,9 @@
  * -limits
  * 
  * 特点：
+ * 
+ * -bitmaprender
+ * 
  * reference https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap
  * 使用 OffscreenCanvas 创建不可见绘制canvas,后基于此canvas绘制图像，并保存成bitmap缓存帧
  * var htmlCanvas = document.getElementById("htmlCanvas").getContext("bitmaprenderer");
@@ -46,75 +50,33 @@ const merge = require('./../utils/merge'),
  */
 class GLContext extends Dispose {
     /**
-     * @param {htmlCanvas} canvas
-     * @param {Object} [options]
-     * @param {number} [options.width]
-     * @param {number} [options.height]
-     * @param {String} [options.renderType] 'webgl'、'webgl2'
-     * @param {boolean} [options.alpha] default is false,but gl default is true
-     * @param {boolean} [options.stencil] default is true,but gl default is false.the stencilBuffer to draw color and depth
-     * @param {boolean} [options.depth] enable gl depth
-     * @param {boolean} [options.antialias] enable antialias,default is false
-     * @param {boolean} [options.premultipliedAlpha] enable premultipliedAlpha,default is true , webgl2
-     * @param {boolean} [options.preserveDrawingBuffer] enable preserveDrawingBuffer,default is false , webgl2
+     * @param {Object} options
+     * @param {HTMLCanvasElement} options.canvas
+     * @param {WebGLRenderingContext} options.gl
+     * @param {String} options.renderType 'webgl'、'webgl2'
+     * @param {GLExtension} [options.glExtension] 
+     * @param {GLLimits} [options.glLimits]
      */
     constructor(options = {}) {
         super();
         /**
-         * @type {HtmlCanvas}
+         * @type {HTMLCanvasElement}
          */
         this._canvas = options.canvas || null;
         /**
-         * context类型，支持webgl,webgl2
-         * @type {String} default is 'webgl'
-         */
-        this._renderType = options.renderType || 'webgl';
-        /**
-         * 设置允许透明度
-         * @type {boolean}
-         */
-        this._alpha = options.alpha || false;
-        /**
-         * 是否启用缓冲区
-         * @type {boolean}
-         */
-        this._stencil = options.stencil || true;
-        /**
-         * 设置绘制depth属性
-         * @type {boolean}
-         */
-        this._depth = options.depth || true;
-        /**
-         * 抗锯齿
-         * @type {boolean}
-         */
-        this._antialias = options.antialias || false;
-        /**
-         * 设置材质属性
-         */
-        this._premultipliedAlpha = options.premultipliedAlpha || true;
-        /**
-         * get context setting
-         * @memberof Context
-         */
-        this._preserveDrawingBuffer = options.preserveDrawingBuffer || false;
-        /**
-         * @type {boolean}
-         */
-        this._allowTextureFilterAnisotropic = options.allowTextureFilterAnisotropic || true;
-        /**
          *  @type {WebGLRenderingContext}
          */
-        this._gl = options.gl||this._createHandle();
+        this._gl = options.gl;
         /**
          * webgl扩展
          * @type {GLExtension}
          */
-        this._glExtension = this._includeExtension();
+        this._glExtension = options.glExtension;
         /**
          * get parameter and extensions
+         * @type {GLLimits}
          */
-        this._glLimits = this._includeLimits();
+        this._glLimits = options.glLimits;
         /**
          * the program cache
          * @type {Object}
@@ -126,9 +88,10 @@ class GLContext extends Dispose {
          */
         this._shaderCache={};
         /**
+         * current using program
          * @type {GLProgram}
          */
-        this._currentProgram = null;
+        this._program = null;
         /**
          * setup env
          */
@@ -137,71 +100,6 @@ class GLContext extends Dispose {
          * map glContext to Context
          */
         this._map();
-    };
-    /**
-     * 兼容写法，创建非可见区域canvas，用户做缓冲绘制
-     * 待绘制完成后，使用bitmaprender绘制到实际页面上
-     * @memberof Context
-     */
-    _createHandle() {
-        if (!isNode) {
-            const gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes());
-            return gl;
-        } else {
-            // const GL = require('gl'),
-            // return GL(this._width, this._height);
-        }
-    };
-    /**
-     * Query and initialize extensions
-     */
-    _includeExtension() {
-        const gl = this._gl;
-        return new GLExtension(gl);
-    };
-    /**
-     * hardware
-     */
-    _includeLimits() {
-        const gl = this._gl;
-        return new GLLimits(gl);
-    };
-    /**
-     * 兼容写法
-     * -如果支持最新的bitmaprenderer则使用此方法
-     * -如果不支持，则使用 canvas2d 贴图绘制
-     * @param {HTMLCanvasElement} canvas
-     * @memberof Context
-     */
-    renderToCanvas(canvas) {
-        //}{debug adjust canvas to fit the output
-        canvas.width = this._width;
-        canvas.height = this._height;
-        const _canvas = this._canvas;
-        //
-        let image = new Image();
-        image.src = _canvas.toDataURL("image/png");
-        //
-        const renderContext = canvas.getContext('bitmaprenderer') || canvas.getContext('2d');
-        !!renderContext.transferFromImageBitmap ? renderContext.transferFromImageBitmap(image) : renderContext.drawImage(image, 0, 0);
-    }
-    /**
-     * get context attributes
-     * include webgl2 attributes
-     * reference https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
-     * 
-     */
-    getContextAttributes() {
-        return {
-            alpha: this._alpha,
-            depth: this._depth,
-            stencil: this._stencil,
-            antialias: this._antialias,
-            premultipliedAlpha: this._premultipliedAlpha,
-            preserveDrawingBuffer: this._preserveDrawingBuffer,
-            //如果系统性能较低，也会创建context
-            failIfMajorPerformanceCaveat: true,
-        }
     };
     /**
      * 设置绘制区域的规则
