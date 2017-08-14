@@ -2878,6 +2878,7 @@ var GLProgram_1 = createCommonjsModule(function (module) {
 /**
  * warpped the WebGLRenderingContext
  * 管理
+ * 
  * -cache
  * -program
  * -matrix
@@ -2885,6 +2886,9 @@ var GLProgram_1 = createCommonjsModule(function (module) {
  * -limits
  * 
  * 特点：
+ * 
+ * -bitmaprender
+ * 
  * reference https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap
  * 使用 OffscreenCanvas 创建不可见绘制canvas,后基于此canvas绘制图像，并保存成bitmap缓存帧
  * var htmlCanvas = document.getElementById("htmlCanvas").getContext("bitmaprenderer");
@@ -2915,79 +2919,37 @@ var GLContext = function (_Dispose) {
     inherits(GLContext, _Dispose);
 
     /**
-     * @param {htmlCanvas} canvas
-     * @param {Object} [options]
-     * @param {number} [options.width]
-     * @param {number} [options.height]
-     * @param {String} [options.renderType] 'webgl'、'webgl2'
-     * @param {boolean} [options.alpha] default is false,but gl default is true
-     * @param {boolean} [options.stencil] default is true,but gl default is false.the stencilBuffer to draw color and depth
-     * @param {boolean} [options.depth] enable gl depth
-     * @param {boolean} [options.antialias] enable antialias,default is false
-     * @param {boolean} [options.premultipliedAlpha] enable premultipliedAlpha,default is true , webgl2
-     * @param {boolean} [options.preserveDrawingBuffer] enable preserveDrawingBuffer,default is false , webgl2
+     * @param {Object} options
+     * @param {HTMLCanvasElement} options.canvas
+     * @param {WebGLRenderingContext} options.gl
+     * @param {String} options.renderType 'webgl'、'webgl2'
+     * @param {GLExtension} [options.glExtension] 
+     * @param {GLLimits} [options.glLimits]
      */
     function GLContext() {
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         classCallCheck(this, GLContext);
 
         /**
-         * @type {HtmlCanvas}
+         * @type {HTMLCanvasElement}
          */
         var _this = possibleConstructorReturn(this, (GLContext.__proto__ || Object.getPrototypeOf(GLContext)).call(this));
 
         _this._canvas = options.canvas || null;
         /**
-         * context类型，支持webgl,webgl2
-         * @type {String} default is 'webgl'
-         */
-        _this._renderType = options.renderType || 'webgl';
-        /**
-         * 设置允许透明度
-         * @type {boolean}
-         */
-        _this._alpha = options.alpha || false;
-        /**
-         * 是否启用缓冲区
-         * @type {boolean}
-         */
-        _this._stencil = options.stencil || true;
-        /**
-         * 设置绘制depth属性
-         * @type {boolean}
-         */
-        _this._depth = options.depth || true;
-        /**
-         * 抗锯齿
-         * @type {boolean}
-         */
-        _this._antialias = options.antialias || false;
-        /**
-         * 设置材质属性
-         */
-        _this._premultipliedAlpha = options.premultipliedAlpha || true;
-        /**
-         * get context setting
-         * @memberof Context
-         */
-        _this._preserveDrawingBuffer = options.preserveDrawingBuffer || false;
-        /**
-         * @type {boolean}
-         */
-        _this._allowTextureFilterAnisotropic = options.allowTextureFilterAnisotropic || true;
-        /**
          *  @type {WebGLRenderingContext}
          */
-        _this._gl = options.gl || _this._createHandle();
+        _this._gl = options.gl;
         /**
          * webgl扩展
          * @type {GLExtension}
          */
-        _this._glExtension = _this._includeExtension();
+        _this._glExtension = options.glExtension;
         /**
          * get parameter and extensions
+         * @type {GLLimits}
          */
-        _this._glLimits = _this._includeLimits();
+        _this._glLimits = options.glLimits;
         /**
          * the program cache
          * @type {Object}
@@ -2999,9 +2961,10 @@ var GLContext = function (_Dispose) {
          */
         _this._shaderCache = {};
         /**
+         * current using program
          * @type {GLProgram}
          */
-        _this._currentProgram = null;
+        _this._program = null;
         /**
          * setup env
          */
@@ -3014,86 +2977,6 @@ var GLContext = function (_Dispose) {
     }
 
     createClass(GLContext, [{
-        key: '_createHandle',
-
-        /**
-         * 兼容写法，创建非可见区域canvas，用户做缓冲绘制
-         * 待绘制完成后，使用bitmaprender绘制到实际页面上
-         * @memberof Context
-         */
-        value: function _createHandle() {
-            if (!isNode_1) {
-                var gl = this._canvas.getContext(this._renderType, this.getContextAttributes()) || this._canvas.getContext('experimental-' + this._renderType, this.getContextAttributes());
-                return gl;
-            } else {
-                // const GL = require('gl'),
-                // return GL(this._width, this._height);
-            }
-        }
-    }, {
-        key: '_includeExtension',
-
-        /**
-         * Query and initialize extensions
-         */
-        value: function _includeExtension() {
-            var gl = this._gl;
-            return new GLExtension_1(gl);
-        }
-    }, {
-        key: '_includeLimits',
-
-        /**
-         * hardware
-         */
-        value: function _includeLimits() {
-            var gl = this._gl;
-            return new GLLimits_1(gl);
-        }
-    }, {
-        key: 'renderToCanvas',
-
-        /**
-         * 兼容写法
-         * -如果支持最新的bitmaprenderer则使用此方法
-         * -如果不支持，则使用 canvas2d 贴图绘制
-         * @param {HTMLCanvasElement} canvas
-         * @memberof Context
-         */
-        value: function renderToCanvas(canvas) {
-            //}{debug adjust canvas to fit the output
-            canvas.width = this._width;
-            canvas.height = this._height;
-            var _canvas = this._canvas;
-            //
-            var image = new Image();
-            image.src = _canvas.toDataURL("image/png");
-            //
-            var renderContext = canvas.getContext('bitmaprenderer') || canvas.getContext('2d');
-            !!renderContext.transferFromImageBitmap ? renderContext.transferFromImageBitmap(image) : renderContext.drawImage(image, 0, 0);
-        }
-        /**
-         * get context attributes
-         * include webgl2 attributes
-         * reference https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
-         * 
-         */
-
-    }, {
-        key: 'getContextAttributes',
-        value: function getContextAttributes() {
-            return {
-                alpha: this._alpha,
-                depth: this._depth,
-                stencil: this._stencil,
-                antialias: this._antialias,
-                premultipliedAlpha: this._premultipliedAlpha,
-                preserveDrawingBuffer: this._preserveDrawingBuffer,
-                //如果系统性能较低，也会创建context
-                failIfMajorPerformanceCaveat: true
-            };
-        }
-    }, {
         key: '_setup',
 
         /**
@@ -4269,9 +4152,43 @@ var raf_1 = createCommonjsModule(function (module) {
 });
 
 /**
- *
+ * @type {HTMLCanvasElement[]|Object}
  */
-var setId = stamp_1.setId;
+var CANVAS$1 = {};
+/**
+ * @type {Object}
+ */
+var GLCONTEXT$1 = {};
+/**
+ * @type {Object}
+ */
+var WEBGLCONTEXT$1 = {};
+/**
+ * @type {GLLimits[]}
+ */
+var GLLIMITS$1 = {};
+/**
+ * @type {GLExtension[]}
+ */
+var GLEXTENSION$1 = {};
+
+var util = {
+  CANVAS: CANVAS$1,
+  GLCONTEXT: GLCONTEXT$1,
+  WEBGLCONTEXT: WEBGLCONTEXT$1,
+  GLEXTENSION: GLEXTENSION$1,
+  GLLIMITS: GLLIMITS$1
+};
+
+/**
+ *  
+ */
+var stamp = stamp_1.stamp;
+var CANVAS = util.CANVAS;
+var GLCONTEXT = util.GLCONTEXT;
+var WEBGLCONTEXT = util.WEBGLCONTEXT;
+var GLEXTENSION = util.GLEXTENSION;
+var GLLIMITS = util.GLLIMITS;
 /**
  * @class
  */
@@ -4288,16 +4205,23 @@ var GLCanvas = function (_Dispose) {
 
         var _this = possibleConstructorReturn(this, (GLCanvas.__proto__ || Object.getPrototypeOf(GLCanvas)).call(this));
 
-        setId(canvas, _this._id);
-        GLCanvas.CANVAS[_this._id] = canvas;
+        _this._rootId = stamp(canvas);
+        CANVAS[_this._rootId] = canvas;
         return _this;
     }
+    /**
+     * get context attributes
+     * include webgl2 attributes
+     * reference https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
+     * @param {Object} [options] 
+     */
+
 
     createClass(GLCanvas, [{
         key: '_getContextAttributes',
         value: function _getContextAttributes(options) {
             options = options || {};
-            return ctxAtt = {
+            return {
                 alpha: options.alpha || false,
                 depth: options.depth || true,
                 stencil: options.stencil || true,
@@ -4307,50 +4231,61 @@ var GLCanvas = function (_Dispose) {
                 failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false
             };
         }
+        /**
+         * 
+         * @param {String} renderType ,default is 'webgl',experiment-webgl
+         * @param {Object} [options]
+         * @param {boolean} [options.alpha]
+         * @param {boolean} [options.depth]
+         * @param {boolean} [options.stencil]
+         * @param {boolean} [options.antialias]
+         * @param {boolean} [options.premultipliedAlpha]
+         * @param {boolean} [options.preserveDrawingBuffer]
+         * @param {boolean} [options.failIfMajorPerformanceCaveat]
+         */
+
     }, {
         key: 'getContext',
-        value: function getContext(renderType, options) {
-            var id = this._id;
-            if (!GLCanvas.GLCONTEXT[id]) {
-                var canvas = GLCanvas.CANVAS[id];
-                !canvas.gl ? canvas.gl = canvas.getContext(renderType, this._getContextAttributes(options)) : null;
-                GLCanvas.GLCONTEXT[id] = new GLContext_1({ renderType: renderType, canvas: canvas, gl: canvas.gl });
+        value: function getContext() {
+            var renderType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'webgl';
+            var options = arguments[1];
+
+            var id = this._id,
+                rootId = this._rootId;
+            if (!GLCONTEXT[id]) {
+                var attrib = this._getContextAttributes(options);
+                var canvas = CANVAS[rootId];
+                if (!WEBGLCONTEXT[rootId]) WEBGLCONTEXT[rootId] = canvas.getContext(renderType, attrib) || canvas.getContext('experimental-' + renderType, attrib);
+                var gl = WEBGLCONTEXT[rootId];
+                if (!GLLIMITS[rootId]) GLLIMITS[rootId] = new GLLimits_1(gl);
+                if (!GLEXTENSION[rootId]) GLEXTENSION[rootId] = new GLExtension_1(gl);
+                var glLimits = GLLIMITS[rootId],
+                    glExtension = GLEXTENSION[rootId];
+                GLCONTEXT[id] = new GLContext_1({ renderType: renderType, canvas: canvas, gl: gl, glLimits: glLimits, glExtension: glExtension });
             }
-            return GLCanvas.GLCONTEXT[id];
+            return GLCONTEXT[id];
         }
     }, {
         key: 'getBoundingClientRect',
         value: function getBoundingClientRect() {
-            var canvas = this._canvas;
-            return canvas.getBoundingClientRect();
+            var id = this._rootId;
+            CANVAS[id].getBoundingClientRect();
         }
     }, {
         key: 'addEventListener',
         value: function addEventListener(type, Listener, useCapture) {
-            var canvas = this._canvas;
-            canvas.addEventListener(type, Listener, useCapture);
+            var id = this._rootId;
+            CANVAS[id].addEventListener(type, Listener, useCapture);
         }
     }, {
         key: 'style',
         get: function get$$1() {
-            var canvas = this._canvas;
-            return canvas.style;
+            var id = this._rootId;
+            return CANVAS[id].style;
         }
     }]);
     return GLCanvas;
 }(Dispose_1);
-/**
- * singleton
- * store the canvas
- */
-
-
-GLCanvas.CANVAS = {};
-/**
- * singleton
- * store glContext
- */
-GLCanvas.GLCONTEXT = {};
 
 var GLCanvas_1 = GLCanvas;
 
@@ -4602,6 +4537,10 @@ var GLShaderFactory_1 = GLShaderFactory;
 /**
  * import from namespace renderer
  */
+
+//const GLCONTEXT = require('./gl/GLCanvas').GLCONTEXT;
+//const CANVAS = require('./gl/GLCanvas').CANVAS;
+
 
 var init = {
     gl: {

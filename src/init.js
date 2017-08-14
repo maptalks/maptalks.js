@@ -3,6 +3,10 @@
 /**
  * import from namespace renderer
  */
+
+//const GLCONTEXT = require('./gl/GLCanvas').GLCONTEXT;
+//const CANVAS = require('./gl/GLCanvas').CANVAS;
+
 const GLCanvas = require('./gl/GLCanvas');
 const GLContext = require('./gl/GLContext');
 const GLIndexbuffer = require('./gl/buffer/GLIndexbuffer');
