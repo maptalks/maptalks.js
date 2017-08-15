@@ -4,6 +4,7 @@ import { lowerSymbolOpacity } from 'core/util/style';
 import Class from 'core/Class';
 import Eventable from 'core/Eventable';
 import Point from 'geo/Point';
+import Coordinate from 'geo/Coordinate';
 import { Marker, TextBox, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
 import VectorLayer from 'layer/VectorLayer';
 import * as Symbolizers from 'renderer/geometry/symbolizers';
@@ -85,10 +86,17 @@ class GeometryEditor extends Eventable(Class) {
     _prepareEditStageLayer() {
         const map = this.getMap();
         const uid = UID();
-        this._editStageLayer = map.getLayer(EDIT_STAGE_LAYER_PREFIX + uid);
+        const stageId = EDIT_STAGE_LAYER_PREFIX + uid,
+            shadowId = EDIT_STAGE_LAYER_PREFIX + uid + '_shadow';
+        this._editStageLayer = map.getLayer(stageId);
+        this._shadowLayer = map.getLayer(shadowId);
         if (!this._editStageLayer) {
-            this._editStageLayer = new VectorLayer(EDIT_STAGE_LAYER_PREFIX + uid);
+            this._editStageLayer = new VectorLayer(stageId);
             map.addLayer(this._editStageLayer);
+        }
+        if (!this._shadowLayer) {
+            this._shadowLayer = new VectorLayer(shadowId);
+            map.addLayer(this._shadowLayer);
         }
     }
 
@@ -99,6 +107,7 @@ class GeometryEditor extends Eventable(Class) {
         if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) {
             return;
         }
+        const map = this.getMap();
         this.editing = true;
         const geometry = this._geometry;
         this._geometryDraggble = geometry.options['draggable'];
@@ -130,12 +139,17 @@ class GeometryEditor extends Eventable(Class) {
             //ouline has to be added before shadow to let shadow on top of it, otherwise shadow's events will be overrided by outline
             this._createOrRefreshOutline();
         }
-        this._editStageLayer.bringToFront().addGeometry(shadow);
+        this._shadowLayer.bringToFront().addGeometry(shadow);
+        this._editStageLayer.bringToFront();
+        this._addListener([map, 'zoomstart', () => { this._editStageLayer.hide(); }]);
+        this._addListener([map, 'zoomend', () => {
+            this._editStageLayer.show();
+        }]);
         if (!(geometry instanceof Marker)) {
             this._createCenterHandle();
         } else {
             shadow.config('draggable', true);
-            shadow.on('dragend', this._onShadowDragEnd, this);
+            shadow.on('dragend', this._onMarkerDragEnd, this);
         }
         if (geometry instanceof Marker) {
             this.createMarkerEditor();
@@ -157,22 +171,21 @@ class GeometryEditor extends Eventable(Class) {
      * Stop editing
      */
     stop() {
+        delete this._history;
+        delete this._historyPointer;
+        delete this._editOutline;
         this._switchGeometryEvents('off');
         const map = this.getMap();
         if (!map) {
             return;
         }
-        if (this._shadow) {
-            this._update();
-            this._shadow._clearAllListeners();
-            this._shadow.remove();
-            delete this._shadow;
-        }
+        delete this._shadow;
         this._geometry.config('draggable', this._geometryDraggble);
         delete this._geometryDraggble;
         this._geometry.show();
 
         this._editStageLayer.remove();
+        this._shadowLayer.remove();
         if (isArrayHasData(this._eventListeners)) {
             for (let i = this._eventListeners.length - 1; i >= 0; i--) {
                 const listener = this._eventListeners[i];
@@ -220,37 +233,9 @@ class GeometryEditor extends Eventable(Class) {
         }
     }
 
-    _onShadowDragEnd() {
-        this._update();
+    _onMarkerDragEnd() {
+        this._update('setCoordinates', this._shadow.getCoordinates().toArray());
         this._refresh();
-    }
-
-    _update() {
-        //update geographical properties from shadow to geometry
-        this._geometry.setCoordinates(this._shadow.getCoordinates());
-        if (this._geometry.getRadius) {
-            this._geometry.setRadius(this._shadow.getRadius());
-        }
-        if (this._geometry.getWidth) {
-            this._geometry.setWidth(this._shadow.getWidth());
-        }
-        if (this._geometry.getHeight) {
-            this._geometry.setHeight(this._shadow.getHeight());
-        }
-        if (this._geometry.getStartAngle) {
-            this._geometry.setStartAngle(this._shadow.getStartAngle());
-        }
-        if (this._geometry.getEndAngle) {
-            this._geometry.setEndAngle(this._shadow.getEndAngle());
-        }
-    }
-
-    _updateAndFireEvent(eventName) {
-        if (!this._shadow) {
-            return;
-        }
-        this._update();
-        this._geometry.fire(eventName);
     }
 
     /**
@@ -258,28 +243,31 @@ class GeometryEditor extends Eventable(Class) {
      * @private
      */
     _createOrRefreshOutline() {
-        const geometry = this._geometry,
-            map = this.getMap();
+        const geometry = this._geometry;
         let outline = this._editOutline;
         const pixelExtent = geometry._getPainter().get2DExtent(),
             size = pixelExtent.getSize();
-        const nw = map.pointToCoordinate(pixelExtent.getMin());
-        const width = map.pixelToDistance(size['width'], 0),
-            height = map.pixelToDistance(0, size['height']);
         if (!outline) {
-            outline = new Rectangle(nw, width, height, {
+            outline = new Marker(geometry.getCenter(), {
                 'symbol': {
-                    'lineWidth': 1,
-                    'lineColor': '6b707b'
+                    'markerType' : 'square',
+                    'markerWidth' : size.width,
+                    'markerHeight' : size.height,
+                    'markerLineWidth': 1,
+                    'markerLineColor': '6b707b',
+                    'markerFillOpacity' : 0
                 }
             });
             this._editStageLayer.addGeometry(outline);
             this._editOutline = outline;
             this._addRefreshHook(this._createOrRefreshOutline);
+            this._addListener([this.getMap(), 'zoomend', this._createOrRefreshOutline.bind(this)]);
         } else {
-            outline.setCoordinates(nw);
-            outline.setWidth(width);
-            outline.setHeight(height);
+            outline.setCoordinates(geometry.getCenter());
+            const symbol = outline.getSymbol();
+            symbol.markerWidth = size.width;
+            symbol.markerHeight = size.height;
+            outline.setSymbol(symbol);
         }
 
         return outline;
@@ -300,17 +288,12 @@ class GeometryEditor extends Eventable(Class) {
             },
             onMove: (v, param) => {
                 const offset = param['coordOffset'];
-                if (shadow) {
-                    shadow.translate(offset);
-                    this._geometry.translate(offset);
-                }
+                shadow.translate(offset);
             },
             onUp: () => {
-                if (shadow) {
-                    this._shadow.setCoordinates(this._geometry.getCoordinates());
-                    shadow.remove();
-                    this._refresh();
-                }
+                this._update('setCoordinates', Coordinate.toNumberArrays(shadow.getCoordinates()));
+                shadow.remove();
+                this._refresh();
             }
         });
         this._addRefreshHook(() => {
@@ -343,20 +326,23 @@ class GeometryEditor extends Eventable(Class) {
             if (opts.onDown) {
                 opts.onDown.call(me, param['viewPoint'], param);
             }
+            return false;
         }
 
         function onHandleDragging(param) {
             me._hideContext();
             const viewPoint = map._prjToViewPoint(handle._getPrjCoordinates());
             if (opts.onMove) {
-                opts.onMove.call(me, viewPoint, param);
+                return opts.onMove.call(me, viewPoint, param);
             }
+            return false;
         }
 
         function onHandleDragEnd(ev) {
             if (opts.onUp) {
-                opts.onUp.call(me, ev);
+                return opts.onUp.call(me, ev);
             }
+            return false;
         }
         handle.on('dragstart', onHandleDragstart, this);
         handle.on('dragging', onHandleDragging, this);
@@ -375,7 +361,7 @@ class GeometryEditor extends Eventable(Class) {
      * @param {fn} onHandleMove callback
      * @private
      */
-    _createResizeHandles(blackList, onHandleMove) {
+    _createResizeHandles(blackList, onHandleMove, onHandleUp) {
         //cursor styles.
         const cursors = [
             'nw-resize', 'n-resize', 'ne-resize',
@@ -434,6 +420,7 @@ class GeometryEditor extends Eventable(Class) {
                             };
                         })(i),
                         onUp: () => {
+                            onHandleUp();
                             this._refresh();
                         }
                     });
@@ -458,18 +445,22 @@ class GeometryEditor extends Eventable(Class) {
      * @private
      */
     createMarkerEditor() {
-        const marker = this._shadow,
-            geometryToEdit = this._geometry,
+        const geometryToEdit = this._geometry,
+            shadow = this._shadow,
             map = this.getMap();
-        if (!marker._canEdit()) {
+        if (!shadow._canEdit()) {
             if (console) {
-                console.warn('A marker can\'t be resized with symbol:', marker.getSymbol());
+                console.warn('A marker can\'t be resized with symbol:', shadow.getSymbol());
             }
             return;
         }
+
+        if (!this._history) {
+            this._recordHistory(getUpdates());
+        }
         //only image marker and vector marker can be edited now.
 
-        const symbol = marker._getInternalSymbol();
+        const symbol = shadow._getInternalSymbol();
         const dxdy = new Point(0, 0);
         if (isNumber(symbol['markerDx'])) {
             dxdy.x = symbol['markerDx'];
@@ -500,7 +491,7 @@ class GeometryEditor extends Eventable(Class) {
 
         let aspectRatio;
         if (this.options['fixAspectRatio']) {
-            const size = marker.getSize();
+            const size = shadow.getSize();
             aspectRatio = size.width / size.height;
         }
 
@@ -508,9 +499,9 @@ class GeometryEditor extends Eventable(Class) {
             if (blackList && blackList.indexOf(i) >= 0) {
                 //need to change marker's coordinates
                 const newCoordinates = map.viewPointToCoordinate(handleViewPoint.sub(dxdy));
-                const coordinates = marker.getCoordinates();
+                const coordinates = shadow.getCoordinates();
                 newCoordinates.x = coordinates.x;
-                marker.setCoordinates(newCoordinates);
+                shadow.setCoordinates(newCoordinates);
                 geometryToEdit.setCoordinates(newCoordinates);
                 //coordinates changed, and use mirror handle instead to caculate width and height
                 const mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
@@ -519,8 +510,8 @@ class GeometryEditor extends Eventable(Class) {
             }
 
             //caculate width and height
-            const viewCenter = map._pointToViewPoint(marker._getCenter2DPoint()).add(dxdy),
-                symbol = marker._getInternalSymbol();
+            const viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint()).add(dxdy),
+                symbol = shadow._getInternalSymbol();
             const wh = handleViewPoint.sub(viewCenter);
             if (blackList && handleViewPoint.y > viewCenter.y) {
                 wh.y = 0;
@@ -535,51 +526,46 @@ class GeometryEditor extends Eventable(Class) {
                 height = width / aspectRatio;
             }
             const ability = resizeAbilities[i];
-            if (!(marker instanceof TextBox)) {
+            if (!(shadow instanceof TextBox)) {
                 if (aspectRatio || ability === 0 || ability === 2) {
                     symbol['markerWidth'] = width;
                 }
                 if (aspectRatio || ability === 1 || ability === 2) {
                     symbol['markerHeight'] = height;
                 }
-                marker.setSymbol(symbol);
+                shadow.setSymbol(symbol);
                 geometryToEdit.setSymbol(symbol);
             } else {
                 if (aspectRatio || ability === 0 || ability === 2) {
-                    marker.setWidth(width);
+                    shadow.setWidth(width);
                     geometryToEdit.setWidth(width);
                 }
                 if (aspectRatio || ability === 1 || ability === 2) {
-                    marker.setHeight(height);
+                    shadow.setHeight(height);
                     geometryToEdit.setHeight(height);
                 }
             }
+        }, () => {
+            this._update(getUpdates());
         });
 
-        function onZoomStart() {
-            if (Array.isArray(resizeHandles)) {
-                for (let i = resizeHandles.length - 1; i >= 0; i--) {
-                    resizeHandles[i].hide();
-                }
+        function getUpdates() {
+            const updates = [
+                ['setCoordinates', shadow.getCoordinates().toArray()]
+            ];
+            if (shadow instanceof TextBox) {
+                updates.push(['setWidth', shadow.getWidth()]);
+                updates.push(['setHeight', shadow.getHeight()]);
+            } else {
+                updates.push(['setSymbol', shadow.getSymbol()]);
             }
-            if (this._editOutline) {
-                this._editOutline.hide();
-            }
+            return updates;
         }
 
         function onZoomEnd() {
             this._refresh();
-            if (Array.isArray(resizeHandles)) {
-                for (let i = resizeHandles.length - 1; i >= 0; i--) {
-                    resizeHandles[i].show();
-                }
-            }
-            if (this._editOutline) {
-                this._editOutline.show();
-            }
         }
 
-        this._addListener([map, 'zoomstart', onZoomStart]);
         this._addListener([map, 'zoomend', onZoomEnd]);
 
     }
@@ -589,9 +575,17 @@ class GeometryEditor extends Eventable(Class) {
      * @private
      */
     createCircleEditor() {
-        const shadow = this._shadow,
-            circle = this._geometry;
+        const circle = this._geometry,
+            shadow = this._shadow;
         const map = this.getMap();
+
+        if (!this._history) {
+            this._recordHistory([
+                ['setCoordinates', shadow.getCoordinates().toArray()],
+                ['setRadius', shadow.getRadius()]
+            ]);
+        }
+
         this._createResizeHandles(null, handleViewPoint => {
             const viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
             const wh = handleViewPoint.sub(viewCenter);
@@ -605,6 +599,8 @@ class GeometryEditor extends Eventable(Class) {
             }
             shadow.setRadius(r);
             circle.setRadius(r);
+        }, () => {
+            this._update('setRadius', shadow.getRadius());
         });
     }
 
@@ -620,8 +616,13 @@ class GeometryEditor extends Eventable(Class) {
             0, 0,
             2, 1, 2
         ];
-        const shadow = this._shadow,
-            geometryToEdit = this._geometry;
+        const geometryToEdit = this._geometry,
+            shadow = this._shadow;
+
+        if (!this._history) {
+            this._recordHistory(getUpdates());
+        }
+
         const map = this.getMap();
         const isRect = this._geometry instanceof Rectangle;
         let aspectRatio;
@@ -702,7 +703,17 @@ class GeometryEditor extends Eventable(Class) {
                 shadow.setHeight(h * r);
                 geometryToEdit.setHeight(h * r);
             }
+        }, () => {
+            this._update(getUpdates());
         });
+
+        function getUpdates() {
+            return [
+                ['setCoordinates', shadow.getCoordinates().toArray()],
+                ['setWidth', shadow.getWidth()],
+                ['setHeight', shadow.getHeight()]
+            ];
+        }
     }
 
     /**
@@ -712,9 +723,14 @@ class GeometryEditor extends Eventable(Class) {
     createPolygonEditor() {
 
         const map = this.getMap(),
+            geometry = this._geometry,
             shadow = this._shadow,
             me = this,
             projection = map.getProjection();
+        if (!this._history) {
+            this._recordHistory('setCoordinates', Coordinate.toNumberArrays(shadow.getCoordinates()));
+        }
+
         const verticeLimit = shadow instanceof Polygon ? 3 : 2;
         const propertyOfVertexRefreshFn = 'maptalks--editor-refresh-fn',
             propertyOfVertexIndex = 'maptalks--editor-vertex-index';
@@ -781,6 +797,7 @@ class GeometryEditor extends Eventable(Class) {
             pVertex.y = nVertex.y;
             shadow._updateCache();
             shadow.onShapeChanged();
+            geometry.setCoordinates(shadow.getCoordinates());
             let nextIndex;
             if (index === 0) {
                 nextIndex = newVertexHandles.length - 1;
@@ -794,8 +811,6 @@ class GeometryEditor extends Eventable(Class) {
             if (newVertexHandles[nextIndex]) {
                 newVertexHandles[nextIndex][propertyOfVertexRefreshFn]();
             }
-
-            me._updateAndFireEvent('shapechange');
         }
 
         function createVertexHandle(index) {
@@ -813,6 +828,7 @@ class GeometryEditor extends Eventable(Class) {
                 },
                 onUp: function () {
                     me._refresh();
+                    me._updateFromShadow();
                 }
             });
             handle[propertyOfVertexIndex] = index;
@@ -849,7 +865,7 @@ class GeometryEditor extends Eventable(Class) {
 
                     //add two "new vertex" handles
                     newVertexHandles.splice(vertexIndex, 0, createNewVertexHandle.call(me, vertexIndex), createNewVertexHandle.call(me, vertexIndex + 1));
-                    me._updateAndFireEvent('shapechange');
+
                 },
                 onMove: function (handleViewPoint) {
                     moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex] + 1);
@@ -862,6 +878,7 @@ class GeometryEditor extends Eventable(Class) {
                     //add a new vertex handle
                     vertexHandles.splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1));
                     onVertexAddOrRemove();
+                    me._updateFromShadow();
                     me._refresh();
                 },
                 onRefresh: function () {
@@ -932,6 +949,93 @@ class GeometryEditor extends Eventable(Class) {
             this._refreshHooks = [];
         }
         this._refreshHooks.push(fn);
+    }
+
+    _update(method, ...args) {
+        this._exeHistory([method, args]);
+        this._recordHistory(method, ...args);
+    }
+
+    _updateFromShadow() {
+        if (!this._shadow) {
+            return;
+        }
+        const coords = this._shadow.getCoordinates();
+        this._geometry.setCoordinates(coords);
+        this._recordHistory('setCoordinates', Coordinate.toNumberArrays(this._geometry.getCoordinates()));
+    }
+
+    _recordHistory(method, ...args) {
+        if (!this._history) {
+            this._history = [];
+            this._historyPointer = 0;
+        }
+
+        if (this._historyPointer < this._history.length - 1) {
+            // remove old 'next views'
+            this._history.splice(this._historyPointer + 1);
+        }
+        this._history.push([method, args]);
+        this._historyPointer = this._history.length - 1;
+        /**
+         * edit record event, fired when an edit happend and being recorded
+         *
+         * @event Geometry#editrecord
+         * @type {Object}
+         * @property {String} type - editrecord
+         * @property {Geometry} target - the geometry fires the event
+         */
+        this._geometry.fire('editrecord');
+    }
+
+        /**
+     * Get previous map view in view history
+     * @return {Object} map view
+     */
+    undo() {
+        if (!this._history || this._historyPointer === 0) {
+            return this;
+        }
+        const record = this._history[--this._historyPointer];
+        this._exeAndReset(record);
+        return this;
+    }
+
+    /**
+     * Get next view in view history
+     * @return {Object} map view
+     */
+    redo() {
+        if (!this._history || this._historyPointer === this._history.length - 1) {
+            return null;
+        }
+        const record = this._history[++this._historyPointer];
+        this._exeAndReset(record);
+        return this;
+    }
+
+    _exeAndReset(record) {
+        this._exeHistory(record);
+        const history = this._history,
+            pointer = this._historyPointer;
+        this.stop();
+        this._history = history;
+        this._historyPointer = pointer;
+        this.start();
+    }
+
+    _exeHistory(record) {
+        if (Array.isArray(record[0])) {
+            record[0].forEach(o => {
+                const m = o[0],
+                    args = o.slice(1);
+                this._shadow[m].apply(this._shadow, args);
+                this._geometry[m].apply(this._geometry, args);
+            });
+        } else {
+            this._shadow[record[0]].apply(this._shadow, record[1]);
+            this._geometry[record[0]].apply(this._geometry, record[1]);
+        }
     }
 
 }
