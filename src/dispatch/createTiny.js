@@ -16,12 +16,74 @@
  * 5、复制结果图层到实际可视区
  * 
  */
+const Dispose = require('./../../utils/Dispose');
+/**
+ * 
+ */
+const InternalTinyQueue = {};
+/**
+ * 
+ */
+const OverrallTinyQueue = {};
+/**
+ * 
+ */
+const TransferTinyQueue = {};
+/**
+ * @class
+ */
+class Tiny extends Dispose{
+    
+    constructor(glProgram,name,parameter){
+        super();
+        this._glProgram = glProgram;
+        this._name = name;
+        this._parameter = parameter;
+    }
+
+    apply(){
+
+    }
+
+}
+
+
+class InternalTiny extends Tiny{
+    
+    constructor(glProgram,name,parameter){
+      super(glProgram,name,parameter);
+      InternalTinyQueue.push(this);
+    }
+
+    apply(){
+        const glProgram = this._glProgram;
+        glProgram.useProgram();
+    }
+
+ }
+
+ class OverrallTiny extends Tiny{
+
+    constructor(glProgram,name,parameter){
+        super(glProgram,name,parameter);
+    }
+ }
+
+
+ class TransferTiny extends Tiny{
+
+    constructor(glProgram,name,parameter){
+        super(glProgram,name,parameter);
+    }
+ }
+
+ 
 
 /**
  * @func
  */
 const createTiny = function (name,glProgram,parameter) {
-
+    
 }
 
 module.exports = createTiny;
