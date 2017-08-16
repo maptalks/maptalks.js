@@ -13,6 +13,10 @@ describe('#DistanceTool and AreaTool', function () {
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
         var measure = 0;
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
@@ -24,11 +28,20 @@ describe('#DistanceTool and AreaTool', function () {
                 'clientY':point.y + i
             });
         }
+
+        happen.mousedown(eventContainer, {
+            'clientX':point.x + 10,
+            'clientY':point.y
+        });
         happen.click(eventContainer, {
             'clientX':point.x + 10,
             'clientY':point.y
         });
 
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y + 10
+        });
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y + 10

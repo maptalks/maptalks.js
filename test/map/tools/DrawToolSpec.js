@@ -13,6 +13,10 @@ describe('#DrawTool', function () {
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
@@ -23,9 +27,17 @@ describe('#DrawTool', function () {
                 'clientY':point.y + i
             });
         }
+        happen.mousedown(eventContainer, {
+            'clientX':point.x + 10,
+            'clientY':point.y
+        });
         happen.click(eventContainer, {
             'clientX':point.x + 10,
             'clientY':point.y
+        });
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y + 10
         });
         happen.click(eventContainer, {
             'clientX':point.x,
@@ -62,6 +74,10 @@ describe('#DrawTool', function () {
 
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y

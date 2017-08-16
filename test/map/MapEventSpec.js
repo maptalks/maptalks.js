@@ -72,13 +72,28 @@ describe('#MapEventSpec', function () {
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         map.once('click', spy);
-
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
         });
         expect(spy.called).to.be.ok();
         spy.reset();
+        happen.click(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
+        expect(spy.called).not.to.be.ok();
+    });
+
+    it('it ignore click without mousedown', function () {
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        map.on('click', spy);
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y

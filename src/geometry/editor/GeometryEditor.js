@@ -333,14 +333,14 @@ class GeometryEditor extends Eventable(Class) {
             me._hideContext();
             const viewPoint = map._prjToViewPoint(handle._getPrjCoordinates());
             if (opts.onMove) {
-                return opts.onMove.call(me, viewPoint, param);
+                opts.onMove.call(me, viewPoint, param);
             }
             return false;
         }
 
         function onHandleDragEnd(ev) {
             if (opts.onUp) {
-                return opts.onUp.call(me, ev);
+                opts.onUp.call(me, ev);
             }
             return false;
         }

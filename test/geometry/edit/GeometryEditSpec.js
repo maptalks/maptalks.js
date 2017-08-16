@@ -253,7 +253,7 @@ describe('#GeometryEdit', function () {
                 }
             }).addTo(layer);
             circle.startEdit();
-            var editStage = circle._editor._editStageLayer;
+            var editStage = circle._editor._shadowLayer;
             editStage.once('layerload', function () {
                 expect(editStage).to.be.painted(0, 20, [255, 0, 0]);
                 editStage.once('layerload', function () {

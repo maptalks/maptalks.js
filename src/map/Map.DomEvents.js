@@ -201,16 +201,22 @@ Map.include(/** @lends Map.prototype */ {
         // ignore click lasted for more than 300ms.
         if (type === 'mousedown' || (type === 'touchstart' && e.touches.length === 1)) {
             this._mouseDownTime = now();
-        } else if ((type === 'click' || type === 'touchend' || type === 'contextmenu') && this._mouseDownTime) {
-            const downTime = this._mouseDownTime;
-            delete this._mouseDownTime;
-            const time = now();
-            if (time - downTime > 300) {
-                if (type === 'click' || type === 'contextmenu') {
-                    return;
+        } else if ((type === 'click' || type === 'touchend' || type === 'contextmenu')) {
+            if (!this._mouseDownTime) {
+                //mousedown | touchstart propogation is stopped
+                //ignore the click/touchend/contextmenu
+                return;
+            } else {
+                const downTime = this._mouseDownTime;
+                delete this._mouseDownTime;
+                const time = now();
+                if (time - downTime > 300) {
+                    if (type === 'click' || type === 'contextmenu') {
+                        return;
+                    }
+                } else if (type === 'touchend') {
+                    oneMoreEvent = 'click';
                 }
-            } else if (type === 'touchend') {
-                oneMoreEvent = 'click';
             }
         }
         if (type === 'click') {
