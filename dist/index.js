@@ -78,6 +78,7 @@ function render(time) {
     requestAnimationFrame(render);
 }
 requestAnimationFrame(render);
+<<<<<<< HEAD
 //var scene, camera1;
 //init();
 //function init() {
@@ -98,6 +99,30 @@ requestAnimationFrame(render);
 
 //animate();
 
+=======
+
+
+//var scene, camera1;
+//init();
+//function init() {
+//    scene = new THREE.Scene();
+//    camera1 = new THREE.PerspectiveCamera(75, 800 / 600, 1, 10000);
+//    camera1.position.z = 1000;
+//    geometry = new THREE.BoxGeometry(900, 900, 900);
+//    material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+//    mesh = new THREE.Mesh(geometry, material);
+//    scene.add(mesh);
+//    const glCanvas1 = new Fusion.gl.GLCanvas(canvas);
+//    renderer = new THREE.WebGLRenderer({
+//        canvas: glCanvas1,
+//        context: glCanvas1.getContext('webgl')
+//    });
+//    renderer.setSize(800, 600);
+//}
+
+//animate();
+
+>>>>>>> 3fe14018df4553bc171476dfcfe8d00dd5660d6e
 //function animate() {
 //    requestAnimationFrame(animate);
 //    mesh.rotation.x += 0.01;
