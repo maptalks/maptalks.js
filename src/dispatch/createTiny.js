@@ -196,7 +196,6 @@ const tinys = merge({},OverrallTinys,InternalTinys);
 /**
  * @func
  */
-<<<<<<< HEAD
 const createTiny = function (glProgram, name,parameter) {
     //1.加入正序处理队列
     if(tinys[name]){
@@ -208,10 +207,6 @@ const createTiny = function (glProgram, name,parameter) {
     if(OverrallTinys[name]){
 
     }
-=======
-const createTiny = function (name,glProgram,parameter) {
-    
->>>>>>> 3fe14018df4553bc171476dfcfe8d00dd5660d6e
 }
 
 module.exports = {
