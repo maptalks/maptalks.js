@@ -1,4 +1,7 @@
 /**
+ * reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext
+ * 
  * 总线进行调度时，生产系列的block
  * tiny分为三种：
  * 
@@ -17,12 +20,136 @@
  * 
  */
 
+ const merge = require('./../utils/merge'),
+    enQueue = require('./queue').enQueue,
+    acquireQueue = require('./queue').acquireQueue,
+    InternalTiny = require('./tiny/InternallTiny'),
+    OverrallTiny = require('./tiny/OverrallTiny');
+
+const OverrallTinys = {
+    'texParameteri':true,
+    'texImage2D':true,
+    'depthFunc':true,
+    'clearColor':true,
+    'clearDepth':true,
+    'clear':true,
+    'clearStencil':true,
+    'frontFace':true,
+    'cullFace':true,
+    'pixelStorei':true,
+    'generateMipmap':true,
+    'pixelStorei':true,
+    'activeTexture':true,
+    'blendEquationSeparate':true,
+    'blendFuncSeparate':true,
+    'blendEquation':true,
+    'blendFunc':true,
+    'scissor':true,
+    'stencilOp':true,
+    'stencilFunc':true,
+    'stencilMask':true,
+    'depthMask':true,
+    'colorMask':true,
+    'texParameterf':true,
+    'hint':true
+};
+/**
+ * 存储gl中最简单的逻辑，即为当前program赋值操作，此操作没有:回滚，删除，覆盖
+ * - uniforms
+ * - attributes
+ * - buffers,除了 createBuffer,deleteBuffer,getBufferParameter,isBuffer
+ */
+const InternalTinys = {
+    //
+    'lineWidth':true,
+    //
+    'scissor':true,
+    'viewport':true,
+    'enable':true,
+    'disable':true,
+    'deleteTexture':true,
+    'deleteBuffer':true,
+    'deleteShader':true,
+    'deleteProgram':true,
+    'deleteFramebuffer':true,
+    'deleteRenderbuffer':true,
+    //
+    'bindFramebuffer':true,
+    'framebufferTexture2D':true,
+    //
+    'readPixels':true,
+    //buffer-uinform-attrib
+    'bindBuffer':true,
+    'bufferData':true,
+    'bufferSubData':true,
+    'disableVertexAttribArray': true,
+    'enableVertexAttribArray': true,
+    'getActiveAttrib': true,
+    'getActiveUniform': true,
+    'getAttribLocation': true,
+    'getUniform': true,
+    'getUniformLocation': true,
+    'getVertexAttrib': true,
+    'getVertexAttribOffset': true,
+    'vertexAttribPointer': true,
+    //uniformMatrix
+    'uniformMatrix2fv': true,
+    'uniformMatrix3fv': true,
+    'uniformMatrix4fv': true,
+    //uniform1[f][i][v]
+    'uniform1f': true,
+    'uniform1fv': true,
+    'uniform1i': true,
+    'uniform1iv': true,
+    //uniform2[f][i][v]
+    'uniform2f': true,
+    'uniform2fv': true,
+    'uniform2i': true,
+    'uniform2iv': true,
+    //uniform3[f][i][v]
+    'uniform3f': true,
+    'uniform3fv': true,
+    'uniform3i': true,
+    'uniform3iv': true,
+    //uniform4[f][i][v]
+    'uniform4f': true,
+    'uniform4fv': true,
+    'uniform4i': true,
+    'uniform4iv': true,
+    //vertexAttrib1f
+    'vertexAttrib1f':true,
+    'vertexAttrib2f':true,
+    'vertexAttrib3f':true,
+    'vertexAttrib4f':true,
+    //vertexAttrib1fv
+    'vertexAttrib1fv':true,
+    'vertexAttrib2fv':true,
+    'vertexAttrib3fv':true,
+    'vertexAttrib4fv':true,
+    //texture
+    'bindTexture':true,
+};
+
+const tinys = merge({},OverrallTinys,InternalTinys);
 /**
  * @func
  */
-const createTiny = function (name,glProgram,parameter) {
+const createTiny = function (glProgram, name,parameter) {
+    //1.加入正序处理队列
+    if(tinys[name]){
+        const tiny = new InternalTiny(glProgram,name,parameter);
+        enQueue(glProgram,tiny);
+        return tiny;
+    }
+    //2.加入反序执行队列
+    if(OverrallTinys[name]){
 
+    }
 }
 
-module.exports = createTiny;
+module.exports = {
+    createTiny,
+    OverrallTinys,
+    InternalTinys
+}
 

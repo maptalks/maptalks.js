@@ -124,14 +124,18 @@ class GLProgram extends Dispose {
     /**
      * 创建program
      * @param {WebGLRenderingContext} gl 
-     * @param {GLVertexShader} fragmentSource glsl shader文本
-     * @param {GLFragmentShader} vertexSource glsl shader文本
-     * @param {GLExtension} extension
-     * @param {GLLimits} [limits] the context limtis
-     * @param {Boolean} [isWebGL2] detect the evn support webgl2
+     * @param {object} [options]
+     * @param {GLExtension} [options.extension] 
+     * @param {GLLimits} [options.limits]
+     * @param {GLFragmentShader} [options.fs] 
+     * @param {GLVertexShader} [options.vs]
      */
-    constructor(gl, extension = null, limits = null, vs = null, fs = null) {
+    constructor(gl, options = {}) {
         super();
+        /**
+         * destruction options
+         */
+        const {extension, limits, vs, fs} = options;
         /**
          * @type {WebGLRenderingContext}
          */
@@ -147,7 +151,7 @@ class GLProgram extends Dispose {
         /**
          * store the uniform ids
          */
-        this._uniformIds={};
+        this._uniformIds = {};
         /**
          * @type {GLExtension}
          */
@@ -176,21 +180,6 @@ class GLProgram extends Dispose {
          * @type {GLFragmentShader}
          */
         this._fs = fs || null;
-        /**
-         * attacht shaders to program
-         */
-        this._attachShader();
-        /**
-         * 处理队列
-         */
-        this._taskQueue=[];
-    }
-    /**
-     * @private
-     */
-    _attachShader() {
-        this._vs && (this._vs instanceof GLVertexShader) ?  this._gl.attachShader(this._handle, this._vs.handle): null;
-        this._gl && (this._fs instanceof GLFragmentShader) ?  this._gl.attachShader(this._handle, this._fs.handle): null;
     }
     /**
      * 获取attribues
@@ -212,16 +201,16 @@ class GLProgram extends Dispose {
      * attach shader
      * @param {GLVertexShader|GLFragmentShader} glShader 
      */
-    attachShader(glShader){
-        if(glShader instanceof GLVertexShader){
+    attachShader(glShader) {
+        if (glShader instanceof GLVertexShader) {
             this._vs = glShader;
             this._gl.attachShader(this._handle, this._vs.handle);
-        }else if(glShader instanceof GLFragmentShader){
+        } else if (glShader instanceof GLFragmentShader) {
             this._fs = glShader;
             this._gl.attachShader(this._handle, this._fs.handle);
         }
         //
-        if(this._vs&&this._fs){
+        if (this._vs && this._fs) {
             this._gl.linkProgram(this._handle);
             this._extractAttributes();
             this._extractUniforms();
@@ -245,9 +234,9 @@ class GLProgram extends Dispose {
                 size = getGLSLTypeSize(type),
                 location = gl.getAttribLocation(this._handle, name);
             Object.defineProperty(attributes, name, {
-                get:()=>{
+                get: () => {
                     return location;
-                },  
+                },
                 set: (function (gl2, loc, typ, ne, se) {
                     return gl2 ? function (value) {
                         const glBuffer = value;
@@ -285,13 +274,13 @@ class GLProgram extends Dispose {
                 size = uniform.size,
                 location = gl.getUniformLocation(this._handle, name);
             //map the WebGLUniformLocation
-            setId(location,this._id);
+            setId(location, this._id);
             //提供attribute属性访问
             Object.defineProperty(uniforms, name, {
                 /**
                  * 
                  */
-                get:()=>{
+                get: () => {
                     return location;
                 },
                 /**
@@ -310,45 +299,15 @@ class GLProgram extends Dispose {
     _createHandle() {
         const gl = this._gl,
             program = gl.createProgram();
-        setId(program,this.id);
+        setId(program, this.id);
         return program;
     }
-
+    /**
+     * 使用此program
+     */
     useProgram() {
         const gl = this._gl;
         gl.useProgram(this.handle);
-        // this._extractAttributes();
-        // this._extractUniforms();
-    }
-
-    drawElements(mode, count, type, offset){
-        const gl = this._gl;
-        gl.drawElements(mode, count, type, offset);
-    }
-    /**
-     * @param {number} index 
-     */
-    getActiveAttrib(index){
-        const gl = this._gl;
-        return gl.getActiveAttrib(this._handle,index);
-    }
-    /**
-     * 获取attribute地址
-     * @param {String} name
-     * @return {number} 
-     */
-    getAttribLocation(name) {
-        const attributeLocation = this._gl.getAttribLocation(this.handle, name);
-        return attributeLocation;
-    }
-    /**
-     * 获取uniform地址
-     * @param {String} name 
-     * @return {number} 
-     */
-    getUniformLocation(name) {
-        const uniformLocation = this._gl.getUniformLocation(this.handle, name);
-        return uniformLocation;
     }
     /**
      * 清理绑定信息，销毁program对象
@@ -358,7 +317,7 @@ class GLProgram extends Dispose {
         gl.deleteProgram(this._handle);
     }
     /**
-     * 绘制
+     * 绘制,ticktock执行队列
      * @param {gl.TRIANGLES|gl.POINTS} primitiveType 
      * @param {number} offset 
      * @param {number} count 
@@ -368,20 +327,15 @@ class GLProgram extends Dispose {
         gl.drawArrays(primitiveType || GLConstants.TRIANGLES, offset || 0, count || 6);
     }
     /**
-     * 处理队列更新操作
+     * 绘制,ticktock执行队列
+     * @param {*} mode 
+     * @param {*} count 
+     * @param {*} type 
+     * @param {*} offset 
      */
-    update(){
-        const taskQueue = this._taskQueue,
-            gl = this._gl;
-        let task=taskQueue.shift();
-        while(!!task){
-            gl[task.name](...task.args);
-            task=taskQueue.shift();
-        }
-    }
-
-    enQueue(name,args){
-        this._taskQueue.push({name,args});
+    drawElements(mode, count, type, offset) {
+        const gl = this._gl;
+        gl.drawElements(mode, count, type, offset);
     }
 
 };

@@ -719,6 +719,277 @@ var stamp_1 = createCommonjsModule(function (module) {
     module.exports = { stamp: stamp, prefix: prefix, getId: getId, setId: setId };
 });
 
+var strManipulate = createCommonjsModule(function (module) {
+    /**
+     * 提供数据转换方法
+     * @author yellow date 2017/7/19
+     */
+
+    var _aTob = function () {
+        return isNode_1 ? function () {
+            return new Buffer(str, 'base64').toString('binary');
+        } : function (str) {
+            return atob(str);
+        };
+    }();
+
+    /**
+     * arraybuffer转换成字符串
+     * @param {ArrayBuffer} arrayBuffer 
+     */
+    var arrayBufferToString = function arrayBufferToString(arrayBuffer) {
+        if (typeof TextDecoder !== 'undefined') {
+            var textDecoder = new TextDecoder();
+            return textDecoder.decode(arrayBuffer);
+        } else {
+            var bytes = new Uint8Array(arrayBuffer);
+            var result = "";
+            var length = bytes.length;
+            for (var i = 0; i < length; i++) {
+                result += String.fromCharCode(bytes[i]);
+            }
+            return result;
+        }
+    };
+    /**
+     * 
+     */
+    var base64ToArrayBuffer = function base64ToArrayBuffer(base64Str) {
+        var splittedDataUri = base64Str.split(','),
+            type = splittedDataUri[0].split(':')[1].split(';')[0],
+            byteString = _aTob(splittedDataUri[1]),
+            byteStringLength = byteString.length;
+        var arrayBuffer = new ArrayBuffer(byteStringLength),
+            uint8Array = new Uint8Array(arrayBuffer);
+        for (var i = 0; i < byteStringLength; i++) {
+            uint8Array[i] = byteString.charCodeAt(i);
+        }return arrayBuffer;
+    };
+    /**
+     * hump string convert to continuous sting 
+     * depthFunc => DEPTH_FUNC
+     * @param {String} continuousStr 
+     */
+    var humpToContinuous = function humpToContinuous(humpString) {
+        if (isString_1(humpString)) return humpString.replace(/([A-Z])/g, "-$1").toUpperCase();else return null;
+    };
+    /**
+     * DEPTH_FUNC => depthFunc 
+     * @param {String} continuousStr 
+     */
+    var continuousToHump = function continuousToHump(continuousStr) {
+        if (isString_1(continuousStr)) return continuousStr.replace(/([A-Z])/g, function (all, letter) {
+            return letter.toUpperCase();
+        });else return null;
+    };
+
+    module.exports = {
+        arrayBufferToString: arrayBufferToString,
+        base64ToArrayBuffer: base64ToArrayBuffer,
+        humpToContinuous: humpToContinuous,
+        continuousToHump: continuousToHump
+    };
+});
+
+var queue = createCommonjsModule(function (module) {
+    /**
+     * 
+     */
+    var stamp = stamp_1.stamp;
+
+    var Tinys = {};
+
+    var enQueue = function enQueue(glProgram, tiny) {
+        var id = glProgram.id;
+        if (Tinys[id]) {
+            Tinys[id] = [];
+        }
+        var queue = Tinys[id];
+        queue.push(tiny);
+    };
+
+    var acquireQueue = function acquireQueue(id) {
+        var glProgramId = isString_1(id) ? id : stamp(id);
+        return Tinys[glProgramId];
+    };
+
+    module.exports = {
+        enQueue: enQueue,
+        acquireQueue: acquireQueue
+    };
+});
+
+/**
+ * gl中基于Programn的赋值操作
+ * 需useProgram切换到当前program后才能实际赋值
+ */
+
+var InternalTiny = function () {
+    function InternalTiny(glProgram, name, parameters) {
+        classCallCheck(this, InternalTiny);
+
+        this._glProgram = glProgram;
+        this._name = name;
+        this._parameters = parameters;
+        glProgram.enQueue();
+    }
+
+    createClass(InternalTiny, [{
+        key: 'apply',
+        value: function apply() {
+            var handle = this._glProgram.handle;
+            var name = this._name;
+            var parameters = this._parameters;
+            handle[name].apply(this.parameters);
+        }
+    }]);
+    return InternalTiny;
+}();
+
+var InternallTiny = InternalTiny;
+
+/**
+ * 处理改变全局状态的操心
+ * 需要在draw执行完后，复原之前的状态
+ */
+
+var _OverrallTinys;
+
+/**
+ * reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext
+ * 
+ * 总线进行调度时，生产系列的block
+ * tiny分为三种：
+ * 
+ * 
+ * -1.非全局影响式，例如 bufferData
+ * -2.全局影响式，例如 gl.Clear
+ * -3.全局转换容器式，例如 readPixel（可合并到2）
+ * 
+ * 
+ * 流程：
+ * 1、当glContext进行赋值等操作的时候，根据不同的操作，讲非全局影响操作暂存插入执行区
+ * 2、当操作为 drawBuffer,drawElement和draw的时候，将队列包装成task插入raf待处理
+ * 3、待全部glProgram都执行完毕后，写入frameBuffer
+ * 4、最后统一调度全局影响操作
+ * 5、复制结果图层到实际可视区
+ * 
+ */
+
+var enQueue = queue.enQueue;
+
+var OverrallTinys$1 = (_OverrallTinys = {
+    'texParameteri': true,
+    'texImage2D': true,
+    'depthFunc': true,
+    'clearColor': true,
+    'clearDepth': true,
+    'clear': true,
+    'clearStencil': true,
+    'frontFace': true,
+    'cullFace': true,
+    'pixelStorei': true,
+    'generateMipmap': true
+}, defineProperty(_OverrallTinys, 'pixelStorei', true), defineProperty(_OverrallTinys, 'activeTexture', true), defineProperty(_OverrallTinys, 'blendEquationSeparate', true), defineProperty(_OverrallTinys, 'blendFuncSeparate', true), defineProperty(_OverrallTinys, 'blendEquation', true), defineProperty(_OverrallTinys, 'blendFunc', true), defineProperty(_OverrallTinys, 'scissor', true), defineProperty(_OverrallTinys, 'stencilOp', true), defineProperty(_OverrallTinys, 'stencilFunc', true), defineProperty(_OverrallTinys, 'stencilMask', true), defineProperty(_OverrallTinys, 'depthMask', true), defineProperty(_OverrallTinys, 'colorMask', true), defineProperty(_OverrallTinys, 'texParameterf', true), defineProperty(_OverrallTinys, 'hint', true), _OverrallTinys);
+/**
+ * 存储gl中最简单的逻辑，即为当前program赋值操作，此操作没有:回滚，删除，覆盖
+ * - uniforms
+ * - attributes
+ * - buffers,除了 createBuffer,deleteBuffer,getBufferParameter,isBuffer
+ */
+var InternalTinys$1 = {
+    //
+    'lineWidth': true,
+    //
+    'scissor': true,
+    'viewport': true,
+    'enable': true,
+    'disable': true,
+    'deleteTexture': true,
+    'deleteBuffer': true,
+    'deleteShader': true,
+    'deleteProgram': true,
+    'deleteFramebuffer': true,
+    'deleteRenderbuffer': true,
+    //
+    'bindFramebuffer': true,
+    'framebufferTexture2D': true,
+    //
+    'readPixels': true,
+    //buffer-uinform-attrib
+    'bindBuffer': true,
+    'bufferData': true,
+    'bufferSubData': true,
+    'disableVertexAttribArray': true,
+    'enableVertexAttribArray': true,
+    'getActiveAttrib': true,
+    'getActiveUniform': true,
+    'getAttribLocation': true,
+    'getUniform': true,
+    'getUniformLocation': true,
+    'getVertexAttrib': true,
+    'getVertexAttribOffset': true,
+    'vertexAttribPointer': true,
+    //uniformMatrix
+    'uniformMatrix2fv': true,
+    'uniformMatrix3fv': true,
+    'uniformMatrix4fv': true,
+    //uniform1[f][i][v]
+    'uniform1f': true,
+    'uniform1fv': true,
+    'uniform1i': true,
+    'uniform1iv': true,
+    //uniform2[f][i][v]
+    'uniform2f': true,
+    'uniform2fv': true,
+    'uniform2i': true,
+    'uniform2iv': true,
+    //uniform3[f][i][v]
+    'uniform3f': true,
+    'uniform3fv': true,
+    'uniform3i': true,
+    'uniform3iv': true,
+    //uniform4[f][i][v]
+    'uniform4f': true,
+    'uniform4fv': true,
+    'uniform4i': true,
+    'uniform4iv': true,
+    //vertexAttrib1f
+    'vertexAttrib1f': true,
+    'vertexAttrib2f': true,
+    'vertexAttrib3f': true,
+    'vertexAttrib4f': true,
+    //vertexAttrib1fv
+    'vertexAttrib1fv': true,
+    'vertexAttrib2fv': true,
+    'vertexAttrib3fv': true,
+    'vertexAttrib4fv': true,
+    //texture
+    'bindTexture': true
+};
+
+var tinys = merge_1({}, OverrallTinys$1, InternalTinys$1);
+/**
+ * @func
+ */
+var createTiny$1 = function createTiny(glProgram, name, parameter) {
+    //1.加入正序处理队列
+    if (tinys[name]) {
+        var tiny = new InternallTiny(glProgram, name, parameter);
+        enQueue(glProgram, tiny);
+        return tiny;
+    }
+    //2.加入反序执行队列
+    if (OverrallTinys$1[name]) {}
+};
+
+var createTiny_1 = {
+    createTiny: createTiny$1,
+    OverrallTinys: OverrallTinys$1,
+    InternalTinys: InternalTinys$1
+};
+
 /**
  * 设计思路为.net framework 的 IDispose接口
  * 除此之外提供额外的属性：
@@ -1850,6 +2121,206 @@ var GLFragmentShader = function (_GLShader) {
 var GLFragmentShader_1 = GLFragmentShader;
 
 /**
+ * use texture soruce to create the texture form
+ * reference:
+ * https://webgl2fundamentals.org/webgl/lessons/webgl-2-textures.html
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/texImage3D
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGLTexture
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL
+ * 
+ * -mipmap
+ * -支持非2的n次方规格的textures
+ * 
+ */
+
+/**
+ * @class
+ */
+
+var GLTexture = function (_Dispose) {
+    inherits(GLTexture, _Dispose);
+
+    /**
+     * 
+     * @param {WebGLRenderingContext} gl 
+     * @param {object} [options] 
+     * @param {number} [options.width] 
+     * @param {number} [options.height] 
+     * @param {GLExtension} [options.extenson] 
+     * @param {GLLimits} [options.limits] 
+     * @param {number} [options.format] 
+     * @param {number} [options.type] 
+     */
+    function GLTexture(gl) {
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+        classCallCheck(this, GLTexture);
+
+        var _this = possibleConstructorReturn(this, (GLTexture.__proto__ || Object.getPrototypeOf(GLTexture)).call(this));
+
+        var width = options.width,
+            height = options.height,
+            extension = options.extension,
+            limits = options.limits,
+            format = options.format,
+            type = options.type;
+
+        _this._gl = gl;
+        _this._extension = extension || null;
+        _this._limits = limits || null;
+        _this._width = width || -1;
+        _this._height = height || -1;
+        _this._format = format || GLConstants_1.RGBA; //usually, UNSINGED_BYTE use 8bit per channel,which suit for RGBA.
+        _this._type = type || GLConstants_1.UNSIGNED_BYTE;
+        _this._handle = _this._createHandle();
+        return _this;
+    }
+
+    createClass(GLTexture, [{
+        key: '_createHandle',
+
+        /**
+         * overwrite
+         */
+        value: function _createHandle() {
+            return this._gl.createTexture();
+        }
+    }, {
+        key: 'dispose',
+
+        /**
+         * 释放texture资源
+         */
+        value: function dispose() {
+            this._gl.deleteTexture(this.handle);
+        }
+    }, {
+        key: 'loadImage',
+
+        /**
+         * 
+         * @param {Image|Html} element 
+         */
+        value: function loadImage(image) {
+            this.bind();
+            var gl = this._gl,
+                mipmapLevel = 0;
+            gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, this._format, this._format, this._type, image);
+        }
+        /**
+         * Use a data source and uploads this texture to the GPU
+         * @param {TypedArray} data the data to upload to the texture
+         */
+
+    }, {
+        key: 'loadData',
+        value: function loadData(data) {
+            this.bind();
+            var gl = this._gl,
+                ext = this._extension['textureFloat'];
+            this._type = data instanceof Float32Array ? gl.FLOAT : this._type;
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._premultiplyAlpha);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, data || null);
+        }
+        /**
+         * 对纹理做插值，在不同分辨率下，当获取不到纹理原始值时，可以根据点位置和周围点的值插值计算。
+         * 建议优先调用此方法
+         */
+
+    }, {
+        key: 'enableMipmap',
+        value: function enableMipmap() {
+            var gl = this._gl;
+            this.bind();
+            this._mipmap = true;
+            gl.generateMipmap(GLConstants_1.TEXTURE_2D);
+        }
+        /**
+         * 纹理延展到边界
+         */
+
+    }, {
+        key: 'enableWrapClamp',
+        value: function enableWrapClamp() {
+            var gl = this._gl;
+            this.bind();
+            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_S, GLConstants_1.CLAMP_TO_EDGE);
+            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_T, GLConstants_1.CLAMP_TO_EDGE);
+        }
+        /**
+         * 纹理超过边际，镜像repeat
+         */
+
+    }, {
+        key: 'enableWrapMirrorRepeat',
+        value: function enableWrapMirrorRepeat() {
+            var gl = this._gl;
+            this.bind();
+            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_S, GLConstants_1.MIRRORED_REPEAT);
+            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_T, GLConstants_1.MIRRORED_REPEAT);
+        }
+        /**
+         * 纹理显现拉伸，使用线性插值法
+         */
+
+    }, {
+        key: 'enableLinearScaling',
+        value: function enableLinearScaling() {
+            var gl = this._gl;
+            this.bind();
+            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MIN_FILTER, this._mipmap ? GLConstants_1.LINEAR_MIPMAP_LINEAR : GLConstants_1.LINEAR);
+            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MAG_FILTER, GLConstants_1.LINEAR);
+        }
+        /**
+         * 纹理临近拉伸，使用最临近插值法
+         */
+
+    }, {
+        key: 'enableNearstScaling',
+        value: function enableNearstScaling() {
+            var gl = this._gl;
+            this.bind();
+            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MIN_FILTER, this._mipmap ? GLConstants_1.NEAREST_MIPMAP_NEAREST : GLConstants_1.NEAREST);
+            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MAG_FILTER, GLConstants_1.NEAREST);
+        }
+        /**
+         * binds the texture
+         * @type {texture}
+         */
+
+    }, {
+        key: 'bind',
+        value: function bind(location) {
+            var gl = this._gl;
+            if (location !== undefined) gl.activeTexture(GLConstants_1.TEXTURE0 + location);
+            gl.bindTexture(GLConstants_1.TEXTURE_2D, this.handle);
+        }
+    }, {
+        key: 'unbind',
+
+        /**
+         * unbinds the texture
+         */
+        value: function unbind() {
+            var gl = this._gl;
+            gl.bindTexture(gl.TEXTURE_2D, null);
+        }
+    }, {
+        key: 'mipmap',
+
+        /**
+         * return the flag mipmap
+         * @member
+         */
+        get: function get$$1() {
+            return this._mipmap;
+        }
+    }]);
+    return GLTexture;
+}(Dispose_1);
+
+var GLTexture_1 = GLTexture;
+
+/**
  * @author yellow date 2017/6/15
  * management of GLExtension
  */
@@ -2544,23 +3015,28 @@ var GLProgram_1 = createCommonjsModule(function (module) {
         /**
          * 创建program
          * @param {WebGLRenderingContext} gl 
-         * @param {GLVertexShader} fragmentSource glsl shader文本
-         * @param {GLFragmentShader} vertexSource glsl shader文本
-         * @param {GLExtension} extension
-         * @param {GLLimits} [limits] the context limtis
-         * @param {Boolean} [isWebGL2] detect the evn support webgl2
+         * @param {object} [options]
+         * @param {GLExtension} [options.extension] 
+         * @param {GLLimits} [options.limits]
+         * @param {GLFragmentShader} [options.fs] 
+         * @param {GLVertexShader} [options.vs]
          */
         function GLProgram(gl) {
-            var extension = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-            var limits = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-            var vs = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-            var fs = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
+            var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
             classCallCheck(this, GLProgram);
 
             /**
-             * @type {WebGLRenderingContext}
+             * destruction options
              */
             var _this = possibleConstructorReturn(this, (GLProgram.__proto__ || Object.getPrototypeOf(GLProgram)).call(this));
+
+            var extension = options.extension,
+                limits = options.limits,
+                vs = options.vs,
+                fs = options.fs;
+            /**
+             * @type {WebGLRenderingContext}
+             */
 
             _this._gl = gl;
             /**
@@ -2603,34 +3079,16 @@ var GLProgram_1 = createCommonjsModule(function (module) {
              * @type {GLFragmentShader}
              */
             _this._fs = fs || null;
-            /**
-             * attacht shaders to program
-             */
-            _this._attachShader();
-            /**
-             * 处理队列
-             */
-            _this._taskQueue = [];
             return _this;
         }
         /**
-         * @private
+         * 获取attribues
+         * @readonly
+         * @memberof GLProgram
          */
 
 
         createClass(GLProgram, [{
-            key: '_attachShader',
-            value: function _attachShader() {
-                this._vs && this._vs instanceof GLVertexShader_1 ? this._gl.attachShader(this._handle, this._vs.handle) : null;
-                this._gl && this._fs instanceof GLFragmentShader_1 ? this._gl.attachShader(this._handle, this._fs.handle) : null;
-            }
-            /**
-             * 获取attribues
-             * @readonly
-             * @memberof GLProgram
-             */
-
-        }, {
             key: 'attachShader',
 
             /**
@@ -2759,53 +3217,15 @@ var GLProgram_1 = createCommonjsModule(function (module) {
                 setId(program, this.id);
                 return program;
             }
+            /**
+             * 使用此program
+             */
+
         }, {
             key: 'useProgram',
             value: function useProgram() {
                 var gl = this._gl;
                 gl.useProgram(this.handle);
-                // this._extractAttributes();
-                // this._extractUniforms();
-            }
-        }, {
-            key: 'drawElements',
-            value: function drawElements(mode, count, type, offset) {
-                var gl = this._gl;
-                gl.drawElements(mode, count, type, offset);
-            }
-            /**
-             * @param {number} index 
-             */
-
-        }, {
-            key: 'getActiveAttrib',
-            value: function getActiveAttrib(index) {
-                var gl = this._gl;
-                return gl.getActiveAttrib(this._handle, index);
-            }
-            /**
-             * 获取attribute地址
-             * @param {String} name
-             * @return {number} 
-             */
-
-        }, {
-            key: 'getAttribLocation',
-            value: function getAttribLocation(name) {
-                var attributeLocation = this._gl.getAttribLocation(this.handle, name);
-                return attributeLocation;
-            }
-            /**
-             * 获取uniform地址
-             * @param {String} name 
-             * @return {number} 
-             */
-
-        }, {
-            key: 'getUniformLocation',
-            value: function getUniformLocation(name) {
-                var uniformLocation = this._gl.getUniformLocation(this.handle, name);
-                return uniformLocation;
             }
             /**
              * 清理绑定信息，销毁program对象
@@ -2818,7 +3238,7 @@ var GLProgram_1 = createCommonjsModule(function (module) {
                 gl.deleteProgram(this._handle);
             }
             /**
-             * 绘制
+             * 绘制,ticktock执行队列
              * @param {gl.TRIANGLES|gl.POINTS} primitiveType 
              * @param {number} offset 
              * @param {number} count 
@@ -2831,24 +3251,18 @@ var GLProgram_1 = createCommonjsModule(function (module) {
                 gl.drawArrays(primitiveType || GLConstants_1.TRIANGLES, offset || 0, count || 6);
             }
             /**
-             * 处理队列更新操作
+             * 绘制,ticktock执行队列
+             * @param {*} mode 
+             * @param {*} count 
+             * @param {*} type 
+             * @param {*} offset 
              */
 
         }, {
-            key: 'update',
-            value: function update() {
-                var taskQueue = this._taskQueue,
-                    gl = this._gl;
-                var task = taskQueue.shift();
-                while (!!task) {
-                    gl[task.name].apply(gl, toConsumableArray(task.args));
-                    task = taskQueue.shift();
-                }
-            }
-        }, {
-            key: 'enQueue',
-            value: function enQueue(name, args) {
-                this._taskQueue.push({ name: name, args: args });
+            key: 'drawElements',
+            value: function drawElements(mode, count, type, offset) {
+                var gl = this._gl;
+                gl.drawElements(mode, count, type, offset);
             }
         }, {
             key: 'attributes',
@@ -2877,29 +3291,17 @@ var GLProgram_1 = createCommonjsModule(function (module) {
 
 /**
  * warpped the WebGLRenderingContext
+ * reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext
+ * 
  * 管理
- * 
  * -cache
- * -program
- * -matrix
- * -extension
- * -limits
- * 
- * 特点：
- * 
- * -bitmaprender
  * 
  * reference https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap
  * 使用 OffscreenCanvas 创建不可见绘制canvas,后基于此canvas绘制图像，并保存成bitmap缓存帧
  * var htmlCanvas = document.getElementById("htmlCanvas").getContext("bitmaprenderer");
- * //
- * var offscreen = new OffscreenCanvas(256, 256);
- * var gl = offscreen.getContext("webgl");
- * var bitmap = offscreen.transferToImageBitmap();
- * //
  * 预留一定的帧数后，使用bitmaprender绘制bitmap到前端canvas即可
  * htmlCanvas.transferFromImageBitmap(bitmap);
- * 
  * context相当于webglRender
  * 
  * @author yellow 2017/6/11
@@ -2908,6 +3310,18 @@ var GLProgram_1 = createCommonjsModule(function (module) {
  * 
  */
 var stamp$1 = stamp_1.stamp;
+var createTiny = createTiny_1.createTiny;
+var InternalTinys = createTiny_1.InternalTinys;
+var OverrallTinys = createTiny_1.OverrallTinys;
+
+//without canvas,drawingBufferHeight,drawingBufferWidth
+//no implement :linkProgram,attachShader,compileShader
+// 'createProgram',
+// 'createShader',
+// 'createTexture',
+//及时处理的函数
+var ImplementBridge = ['isShader', 'isBuffer', 'isProgram', 'isContextLost', 'deleteBuffer', 'createBuffer', 'createFramebuffer', 'getBufferParameter', 'getParameter', 'getError', 'getProgramInfoLog', 'getShaderInfoLog'];
+
 /**
  * @class
  * @example
@@ -2961,10 +3375,14 @@ var GLContext = function (_Dispose) {
          */
         _this._shaderCache = {};
         /**
+         * the texture cache
+         */
+        _this._textureCache = {};
+        /**
          * current using program
          * @type {GLProgram}
          */
-        _this._program = null;
+        _this._glProgram = null;
         /**
          * setup env
          */
@@ -3004,7 +3422,8 @@ var GLContext = function (_Dispose) {
             gl.enable(GLConstants_1.STENCIL_TEST);
             //gl.stencilFunc(gl)
             gl.enable(GLConstants_1.DEPTH_TEST);
-            gl.depthFunc(GLConstants_1.LEQUAL); //深度参考值小于模版值时，测试通过
+            //深度参考值小于模版值时，测试通过
+            gl.depthFunc(GLConstants_1.LEQUAL);
             gl.depthMask(false);
         }
         /**
@@ -3014,291 +3433,94 @@ var GLContext = function (_Dispose) {
     }, {
         key: '_map',
         value: function _map() {
-            //map constant
+            var _this2 = this;
+
+            var that = this;
+            //get the WebGLRenderingContext
+            var gl = this._gl;
+            //1.map constant
             for (var key in GLConstants_1) {
                 if (!this.hasOwnProperty(key)) {
                     var target = GLConstants_1[key];
                     if (!this[key] && !!target) this[key] = target;
                 }
             }
-        }
-        /**
-         *  加载shaders
-         */
+            //map ImplementBridge
 
-    }, {
-        key: '_includeShaders',
-        value: function _includeShaders() {
-            var gl = this._gl,
-                names = shadersName,
+            var _loop = function _loop(i, len) {
+                var key = ImplementBridge[i];
+                _this2[key] = function () {
+                    for (var _len = arguments.length, rest = Array(_len), _key3 = 0; _key3 < _len; _key3++) {
+                        rest[_key3] = arguments[_key3];
+                    }
 
-            //limits=this._glLimits,
-            extension = this._glExtension;
+                    return gl[key].apply(gl, rest);
+                };
+            };
 
-            for (var i = 0, len = names.length; i < len; i++) {
-                var name = names[i];
-                this._shaderCache[name] = ShaderFactory.create(name, gl, extension);
+            for (var i = 0, len = ImplementBridge.length; i < len; i++) {
+                _loop(i, len);
             }
-        }
-        /**
-         * 加载prgorams
-         */
+            //map internalTinyOperation
 
-    }, {
-        key: '_includePrograms',
-        value: function _includePrograms() {
-            var gl = this._gl,
-                limits = this._glLimits,
-                names = shadersName,
-                extension = this._glExtension,
-                shaderCache = this._shaderCache;
+            var _loop2 = function _loop2(_key) {
+                if (InternalTinys[_key]) {
+                    _this2[_key] = function () {
+                        for (var _len2 = arguments.length, rest = Array(_len2), _key4 = 0; _key4 < _len2; _key4++) {
+                            rest[_key4] = arguments[_key4];
+                        }
 
-            for (var i = 0, len = names.length; i < len; i++) {
-                var name = names[i];
-                var shaders = shaderCache[name];
-                var program = new GLProgram_1(gl, shaders[0], shaders[1], extension, limits);
-                this._programCache[name] = program;
-                gl.linkProgram(program.handle);
-            }
-        }
-        /**
-         * 
-         * @param {GLProgram} programs 
-         */
-
-    }, {
-        key: 'mergeProrgam',
-        value: function mergeProrgam() {
-            var _ref;
-
-            var gl = this._gl,
-                _programList = (_ref = []).concat.apply(_ref, arguments),
-                len = _programList.length;
-            //map to programs
-            for (var i = 0; i < len; i++) {
-                var _program = _programList[i],
-                    _id = _program.id;
-                if (!this._programCache[_id]) {
-                    this._programCache[_id] = _program;
-                    gl.linkProgram(_program.handle);
+                        var glProgram = _this2._glProgram;
+                        createTiny(_key, glProgram, rest);
+                    };
                 }
+            };
+
+            for (var _key in InternalTinys) {
+                _loop2(_key);
             }
-        }
-        /**
-         * @param {WebGLProgram} program
-         */
+            //map overrallTinyOperation,construct rollback at the same time
 
-    }, {
-        key: 'useProgram',
-        value: function useProgram(program) {
-            var gl = this._gl;
-            this._program = program;
-            gl.program = program;
-            gl.useProgram(program);
-        }
-        /**
-         * @return {WebGLProgram}
-         */
+            var _loop3 = function _loop3(_key2) {
+                if (OverrallTinys[_key2]) {
+                    _this2[_key2] = function () {
+                        for (var _len3 = arguments.length, rest = Array(_len3), _key5 = 0; _key5 < _len3; _key5++) {
+                            rest[_key5] = arguments[_key5];
+                        }
 
-    }, {
-        key: 'createProgram',
-        value: function createProgram() {
-            var gl = this._gl;
-            //1.创建GLProgram
-            var glProgram = new GLProgram_1(gl);
-            //2.缓存program
-            this._programCache[glProgram.id] = glProgram;
-            //3.兼容，返回句柄
-            return glProgram.handle;
+                        var glProgram = _this2._glProgram;
+                        createTiny(_key2, glProgram, rest);
+                    };
+                }
+            };
+
+            for (var _key2 in OverrallTinys) {
+                _loop3(_key2);
+            }
         }
         /**
          * 获取canvas
          */
 
     }, {
-        key: 'getExtension',
+        key: 'createProgram',
 
         /**
-         * 获取extension
+         * @return {WebGLProgram}
          */
-        value: function getExtension(name) {
+        value: function createProgram() {
             var gl = this._gl;
-            return gl.getExtension(name);
-            // const glExtension = this._glExtension;
-            // return glExtension.getExtension(name);
+            //1.创建GLProgram
+            var glProgram = new GLProgram_1(gl);
+            //2.缓存program
+            this._programCache[glProgram.id] = glProgram;
+            //3.返回句柄
+            return glProgram.handle;
         }
         /**
-         * 
-         * @param {number|GLConstants} number 枚举
-         */
-
-    }, {
-        key: 'getParameter',
-        value: function getParameter(number) {
-            var gl = this._gl;
-            return gl.getParameter(number);
-        }
-        /**
-         * map to texture
-         */
-
-    }, {
-        key: 'createTexture',
-        value: function createTexture() {
-            var gl = this._gl;
-            return gl.createTexture();
-        }
-        /**
-         * 
-         * @param {number} target 
-         * @param {texture} texture 
-         */
-
-    }, {
-        key: 'bindTexture',
-        value: function bindTexture(target, texture) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.bindTexture(target, texture);
-        }
-        /**
-         * 
-         * @param {number} target 
-         * @param {number} pname 
-         * @param {number} param 
-         */
-
-    }, {
-        key: 'texParameteri',
-        value: function texParameteri(target, pname, param) {
-            var gl = this._gl;
-            gl.texParameteri(target, pname, param);
-        }
-        /**
-         * @param {number} target 
-         * @param {number} level 
-         * @param {number} internalformat 
-         * @param {number} width 
-         * @param {number} height 
-         * @param {number} border 
-         * @param {number} format 
-         * @param {number} type 
-         * @param {ArrayBufferView} pixels 
-         */
-
-    }, {
-        key: 'texImage2D',
-        value: function texImage2D() {
-            var gl = this._gl;
-            gl.texImage2D.apply(gl, arguments);
-        }
-        /**
-         * 
-         * @param {number} cap 
-         */
-
-    }, {
-        key: 'enable',
-        value: function enable(cap) {
-            var gl = this._gl;
-            gl.enable(cap);
-        }
-        /**
-         * 
-         * @param {number} cap 
-         */
-
-    }, {
-        key: 'disable',
-        value: function disable(cap) {
-            var gl = this._gl;
-            gl.disable(cap);
-        }
-        /**
-         * 
-         * @param {number} func 
-         */
-
-    }, {
-        key: 'depthFunc',
-        value: function depthFunc(func) {
-            var gl = this._gl;
-            gl.depthFunc(func);
-        }
-        /**
-         * 
-         * @param {number} red 
-         * @param {number} green 
-         * @param {number} blue 
-         * @param {number} alpha 
-         */
-
-    }, {
-        key: 'clearColor',
-        value: function clearColor(red, green, blue, alpha) {
-            var gl = this._gl;
-            //gl.clearColor(red,green,blue,alpha);
-        }
-        /**
-         * 
-         * @param {number} depth 
-         */
-
-    }, {
-        key: 'clearDepth',
-        value: function clearDepth(depth) {
-            var gl = this._gl;
-            //gl.clearDepth(depth);
-        }
-        /**
-         * 
-         * @param {number} mask 
-         */
-
-    }, {
-        key: 'clear',
-        value: function clear(mask) {
-            var gl = this._gl;
-            //gl.clear(mask);
-        }
-        /**
-         * 
-         * @param {GLenum} s 
-         */
-
-    }, {
-        key: 'clearStencil',
-        value: function clearStencil(s) {
-            var gl = this._gl;
-            //gl.clearStencil(s);
-        }
-        /**
-         * 
-         * @param {number} mode 
-         */
-
-    }, {
-        key: 'frontFace',
-        value: function frontFace(mode) {
-            var gl = this._gl;
-            gl.frontFace(mode);
-        }
-        /**
-         * 
-         * @param {number} mode 
-         */
-
-    }, {
-        key: 'cullFace',
-        value: function cullFace(mode) {
-            var gl = this._gl;
-            gl.cullFace(mode);
-        }
-        /**
-         * 
-         * @param {number} type 
+         * create shader
+         * @param {number} type
+         * @return {WebGLShader}
          */
 
     }, {
@@ -3319,6 +3541,53 @@ var GLContext = function (_Dispose) {
             return null;
         }
         /**
+         * @return {WebGLTexture}
+         */
+
+    }, {
+        key: 'createTexture',
+        value: function createTexture() {
+            var gl = this._gl;
+            var glTexture = new GLTexture_1(gl);
+            this._textureCache[glTexture.id] = glTexture;
+            return glTexture.handle;
+        }
+        /**
+         * 注意在处理tiny的时候，需先useProgram
+         * @param {WebGLProgram} program
+         */
+
+    }, {
+        key: 'useProgram',
+        value: function useProgram(program) {
+            var id = stamp$1(program);
+            this._glProgram = this._programCache[id];
+            createTiny(this._glProgram, 'useProgram', arguments);
+        }
+        /**
+         * 获取extension
+         */
+
+    }, {
+        key: 'getExtension',
+        value: function getExtension(name) {
+            var glExtension = this._glExtension;
+            return glExtension.getExtension(name);
+        }
+        /**
+         * 
+         * @param {WebGLProgram} program 
+         * @param {WebGLShader} shader 
+         */
+
+    }, {
+        key: 'attachShader',
+        value: function attachShader(program, shader) {
+            var glProgram = this._programCache[stamp$1(program)];
+            var glShader = this._shaderCache[stamp$1(shader)];
+            glProgram.attachShader(glShader);
+        }
+        /**
          * 
          * @param {WebGLShader} shader 
          * @param {String} source 
@@ -3329,16 +3598,6 @@ var GLContext = function (_Dispose) {
         value: function shaderSource(shader, source) {
             var glShader = this._shaderCache[stamp$1(shader)];
             glShader.source = source;
-        }
-        /**
-         * @param {WebGLShader} shader 
-         */
-
-    }, {
-        key: 'compileShader',
-        value: function compileShader(shader) {
-            var glShader = this._shaderCache[stamp$1(shader)];
-            glShader.compile();
         }
         /**
          * 
@@ -3354,140 +3613,6 @@ var GLContext = function (_Dispose) {
         }
         /**
          * 
-         * @param {WebGLShader} shader 
-         */
-
-    }, {
-        key: 'deleteShader',
-        value: function deleteShader(shader) {
-            var gl = this._gl;
-            gl.deleteShader(shader);
-        }
-        /**
-         * @return {WebGLBuffer}
-         */
-
-    }, {
-        key: 'createBuffer',
-        value: function createBuffer() {
-            var gl = this._gl;
-            return gl.createBuffer();
-        }
-        /**
-         * 
-         * @param {number} target 
-         * @param {WebGLBuffer} buffer 
-         */
-
-    }, {
-        key: 'bindBuffer',
-        value: function bindBuffer(target, buffer) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            return gl.bindBuffer(target, buffer);
-        }
-        /**
-         * 
-         * @param {number} target 
-         * @param {number | ArrayBufferView | ArrayBuffer} size 
-         * @param {number} usage 
-         */
-
-    }, {
-        key: 'bufferData',
-        value: function bufferData(target, size, usage) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.bufferData(target, size, usage);
-        }
-        /**
-         * 
-         * @param {number} target 
-         * @param {number} offset 
-         * @param {ArrayBufferView|ArrayBuffer} data 
-         */
-
-    }, {
-        key: 'bufferSubData',
-        value: function bufferSubData(target, offset, data) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.bufferSubData(target, offset, data);
-        }
-        /**
-         * 
-         * @param {number} pname 
-         * @param {number|boolean} param 
-         */
-
-    }, {
-        key: 'pixelStorei',
-        value: function pixelStorei(pname, param) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.pixelStorei(pname, param);
-        }
-        /**
-         * 
-         * @param {number} target 
-         */
-
-    }, {
-        key: 'generateMipmap',
-        value: function generateMipmap(target) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.generateMipmap(target);
-        }
-        /**
-         * 
-         * @param {number} x 
-         * @param {number} y 
-         * @param {number} width 
-         * @param {number} height 
-         */
-
-    }, {
-        key: 'viewport',
-        value: function viewport(x, y, width, height) {
-            var gl = this._gl;
-            gl.viewport(x, y, width, height);
-        }
-        /**
-         * 
-         * @param {WebGLProgram} program 
-         * @param {WebGLShader} shader 
-         */
-
-    }, {
-        key: 'attachShader',
-        value: function attachShader(program, shader) {
-            var gl = this._gl;
-            //1.获取shader和program
-            var glProgram = this._programCache[stamp$1(program)];
-            var glShader = this._shaderCache[stamp$1(shader)];
-            glProgram.attachShader(glShader);
-        }
-        /**
-         * no needs to implement this function
-         * @param {WebGLProgram} program 
-         */
-
-    }, {
-        key: 'linkProgram',
-        value: function linkProgram(program) {}
-        /**
-         * 
          * @param {WebGLProgram} program 
          * @param {number} pnam 
          * @return {any}
@@ -3500,6 +3625,24 @@ var GLContext = function (_Dispose) {
             return gl.getProgramParameter(program, pnam);
         }
         /**
+         * no need to implement
+         */
+
+    }, {
+        key: 'compileShader',
+        value: function compileShader(shader) {
+            var gl = this._gl;
+            gl.compileShader(shader);
+        }
+        /**
+         * no needs to implement this function
+         * @param {WebGLProgram} program 
+         */
+
+    }, {
+        key: 'linkProgram',
+        value: function linkProgram(program) {}
+        /**
          * 
          * @param {WebGLProgram} program 
          * @param {number} index 
@@ -3510,23 +3653,7 @@ var GLContext = function (_Dispose) {
         key: 'getActiveUniform',
         value: function getActiveUniform(program, index) {
             var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
             return gl.getActiveUniform(program, index);
-        }
-        /**
-         * 
-         * @param {WebGLProgram} program 
-         * @param {number} name 
-         * @return {WebGLUniformLocation}
-         */
-
-    }, {
-        key: 'getUniformLocation',
-        value: function getUniformLocation(program, name) {
-            var glProgram = this._programCache[stamp$1(program)];
-            return glProgram.uniforms[name];
         }
         /**
          * 
@@ -3545,6 +3672,20 @@ var GLContext = function (_Dispose) {
          * 
          * @param {WebGLProgram} program 
          * @param {number} name 
+         * @return {WebGLUniformLocation}
+         */
+
+    }, {
+        key: 'getUniformLocation',
+        value: function getUniformLocation(program, name) {
+            var glProgram = this._programCache[stamp$1(program)];
+            return glProgram.uniforms[name];
+        }
+
+        /**
+         * 
+         * @param {WebGLProgram} program 
+         * @param {number} name 
          * @return {number}
          */
 
@@ -3553,220 +3694,6 @@ var GLContext = function (_Dispose) {
         value: function getAttribLocation(program, name) {
             var glProgram = this._programCache[stamp$1(program)];
             return glProgram.attributes[name];
-        }
-        /**
-         * 
-         * @param {number} index 
-         */
-
-    }, {
-        key: 'enableVertexAttribArray',
-        value: function enableVertexAttribArray(index) {
-            var gl = this._gl;
-            gl.enableVertexAttribArray(index);
-        }
-        /**
-         * 
-         * @param {number} index 
-         * @param {number} size 
-         * @param {number} type 
-         * @param {boolean} normalize 
-         * @param {number} stride 
-         * @param {number} offset 
-         */
-
-    }, {
-        key: 'vertexAttribPointer',
-        value: function vertexAttribPointer(index, size, type, normalize, stride, offset) {
-            var gl = this._gl;
-            gl.vertexAttribPointer(index, size, type, normalize, stride, offset);
-        }
-        /**
-         * 
-         * @param {*} location 
-         * @param {*} v 
-         */
-
-    }, {
-        key: 'uniform1iv',
-        value: function uniform1iv(location, v) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniform1iv(location, v);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {number} x 
-         * @param {number} y 
-         * @param {number} z 
-         */
-
-    }, {
-        key: 'uniform3f',
-        value: function uniform3f(location, x, y, z) {
-            //const glProgram = this._programCache[stamp(location)];
-            //glProgram.enQueue('uniform3f',[location,x,y,z]);
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniform3f(location, x, y, z);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {Float32Array|number[]} v 
-         */
-
-    }, {
-        key: 'uniform3fv',
-        value: function uniform3fv(location, v) {
-            //const glProgram = this._programCache[stamp(location)];
-            //glProgram.enQueue('uniform3fv',[location, v]);
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniform3fv(location, v);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {Float32Array|number[]} v 
-         */
-
-    }, {
-        key: 'uniform4fv',
-        value: function uniform4fv(location, v) {
-            //const glProgram = this._programCache[stamp(location)];
-            //glProgram.enQueue('uniform4fv',[location, v]);
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniform4fv(location, v);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {number} x 
-         * @param {number} y 
-         * @param {number} z 
-         * @param {number} w 
-         */
-
-    }, {
-        key: 'uniform4f',
-        value: function uniform4f(location, x, y, z, w) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniform4f(location, x, y, z, w);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {number} x 
-         */
-
-    }, {
-        key: 'uniform1f',
-        value: function uniform1f(location, x) {
-            //const glProgram = this._programCache[stamp(location)];
-            //glProgram.enQueue('uniform1f',[location, x]);
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniform1f(location, x);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {Float32Array|number[]} v 
-         */
-
-    }, {
-        key: 'uniform1fv',
-        value: function uniform1fv(location, v) {
-            //const glProgram = this._programCache[stamp(location)];
-            //glProgram.enQueue('uniform1fv',[location, v]);
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniform1fv(location, v);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {boolean} transpose
-         * @param {Float32Array | number[]} v
-         */
-
-    }, {
-        key: 'uniformMatrix3fv',
-        value: function uniformMatrix3fv(location, transpose, v) {
-            //const glProgram = this._programCache[stamp(location)];
-            //glProgram.enQueue('uniformMatrix3fv',[location,transpose,v]);
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniformMatrix3fv(location, transpose, v);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {boolean} transpose
-         * @param {Float32Array | number[]} v
-         */
-
-    }, {
-        key: 'uniformMatrix4fv',
-        value: function uniformMatrix4fv(location, transpose, v) {
-            //const glProgram = this._programCache[stamp(location)];
-            //glProgram.enQueue('uniformMatrix4fv',[location,transpose,v]);
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniformMatrix4fv(location, transpose, v);
-        }
-        /**
-         * 
-         * @param {WebGLUniformLocation} location 
-         * @param {number} x 
-         */
-
-    }, {
-        key: 'uniform1i',
-        value: function uniform1i(location, x) {
-            //const glProgram = this._programCache[stamp(location)];
-            //glProgram.enQueue('uniform1i',[location,x]);
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.uniform1i(location, x);
-        }
-        /**
-         * 
-         * @param {number} texture 
-         */
-
-    }, {
-        key: 'activeTexture',
-        value: function activeTexture(texture) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.activeTexture(texture);
         }
         /**
          * 
@@ -3790,170 +3717,24 @@ var GLContext = function (_Dispose) {
             var gl = this._gl;
             gl.drawElements(mode, count, type, offset);
         }
-        /**
-         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquationSeparate
-         * used to set the RGB blend equation and alpha blend equation separately.
-         * The blend equation determines how a new pixel is combined with a pixel already in the WebGLFramebuffer
-         * @param {GLenum} modeRGB 
-         * @param {GLenum} modeAlpha 
-         */
 
-    }, {
-        key: 'blendEquationSeparate',
-        value: function blendEquationSeparate(modeRGB, modeAlpha) {
-            var gl = this._gl;
-            gl.blendEquationSeparate(modeRGB, modeAlpha);
-        }
-        /**
-         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFuncSeparate
-         * defines which function is used for blending pixel arithmetic for RGB and alpha components separately.
-         * 
-         * @param {number|GLenum} srcRGB 
-         * @param {number|GLenum} dstRGB 
-         * @param {number|GLenum} srcAlpha 
-         * @param {number|GLenum} dstAlpha 
-         */
-
-    }, {
-        key: 'blendFuncSeparate',
-        value: function blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha) {
-            var gl = this._gl;
-            gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
-        }
         /**
          * 
-         * @param {number} mode 
+         * @param {*} mode 
+         * @param {*} first 
+         * @param {*} count 
          */
 
     }, {
-        key: 'blendEquation',
-        value: function blendEquation(mode) {
-            var gl = this._gl;
-            gl.blendEquation(mode);
-        }
-        /**
-         * 
-         * @param {number} sfactor 
-         * @param {number} dfactor 
-         */
-
-    }, {
-        key: 'blendFunc',
-        value: function blendFunc(sfactor, dfactor) {
-            var gl = this._gl;
-            gl.blendFunc(sfactor, dfactor);
-        }
-        /**
-         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
-         * sets a scissor box, which limits the drawing to a specified rectangle.
-         * 
-         * turn on scissor test to open
-         * gl.enable(gl.SCISSSOR_TEST);
-         * 
-         * @param {number} x 
-         * @param {number} y 
-         * @param {number} widht 
-         * @param {number} height 
-         */
-
-    }, {
-        key: 'scissor',
-        value: function scissor(x, y, widht, height) {
-            var gl = this._gl;
-            gl.scissor(x, y, widht, height);
-        }
-    }, {
-        key: 'stencilOp',
-        value: function stencilOp(fail, zfail, zpass) {
-            var gl = this._gl;
-            gl.stencilOp(fail, zfail, zpass);
-        }
-    }, {
-        key: 'stencilFunc',
-        value: function stencilFunc(func, ref, mask) {
-            var gl = this._gl;
-            gl.stencilFunc(func, ref, mask);
-        }
-    }, {
-        key: 'stencilMask',
-        value: function stencilMask(mask) {
-            var gl = this._gl;
-            gl.stencilMask(mask);
-        }
-        /**
-         * 
-         * @param {boolean} flag 
-         */
-
-    }, {
-        key: 'depthMask',
-        value: function depthMask(flag) {
-            var gl = this._gl;
-            gl.depthMask(flag);
-        }
-        /**
-         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
-         * sets which color components to enable or to disable when drawing or rendering to a WebGLFramebuffer
-         * @param {boolean} red 
-         * @param {boolean} green 
-         * @param {boolean} blue 
-         * @param {boolean} alpha 
-         */
-
-    }, {
-        key: 'colorMask',
-        value: function colorMask(red, green, blue, alpha) {
-            var gl = this._gl;
-            gl.colorMask(red, green, blue, alpha);
-        }
-        /**
-         * @param {WebGLProgram} program
-         * @return {String}
-         */
-
-    }, {
-        key: 'getProgramInfoLog',
-        value: function getProgramInfoLog(program) {
-            var gl = this._gl;
-            return gl.getProgramInfoLog(program);
-        }
-        /**
-         * @param {WebGLShader} shader 
-         * @return {String}
-         */
-
-    }, {
-        key: 'getShaderInfoLog',
-        value: function getShaderInfoLog(shader) {
-            var gl = this._gl;
-            return gl.getShaderInfoLog(shader);
-        }
-        /**
-         * 
-         * @param {number} width 
-         */
-
-    }, {
-        key: 'lineWidth',
-        value: function lineWidth(width) {
-            var gl = this._gl;
-            gl.lineWidth(width);
-        }
-        /**
-         * 
-         * @param {number} target 
-         * @param {number} mode 
-         */
-
-    }, {
-        key: 'hint',
-        value: function hint(target, mode) {
+        key: 'drawArrays',
+        value: function drawArrays(mode, first, count) {
             var gl = this._gl;
             if (gl.program !== this._program) {
                 this.useProgram(this._program);
             }
-            gl.hint(target, mode);
+            gl.drawArrays(mode, first, count);
         }
+
         /**
          * webgl2 support
          */
@@ -3977,126 +3758,30 @@ var GLContext = function (_Dispose) {
             return gl.bindTransformFeedback ? gl.bindTransformFeedback(target, transformFeedback) : null;
         }
     }, {
-        key: 'getError',
-        value: function getError() {
-            var gl = this._gl;
-            return gl.getError();
-        }
-    }, {
-        key: 'deleteBuffer',
-        value: function deleteBuffer(buffer) {
-            var gl = this._gl;
-            gl.deleteBuffer(buffer);
-        }
-    }, {
-        key: 'deleteShader',
-        value: function deleteShader(shader) {
-            var gl = this._gl;
-            gl.deleteShader(shader);
-        }
-    }, {
-        key: 'deleteProgram',
-        value: function deleteProgram(program) {
-            var gl = this._gl;
-            gl.deleteProgram(program);
-        }
-    }, {
-        key: 'deleteFramebuffer',
-        value: function deleteFramebuffer(framebuffer) {
-            var gl = this._gl;
-            gl.deleteFramebuffer(framebuffer);
-        }
-    }, {
-        key: 'deleteRenderbuffer',
-        value: function deleteRenderbuffer(renderbuffer) {
-            var gl = this._gl;
-            gl.deleteRenderbuffer(renderbuffer);
-        }
-    }, {
-        key: 'deleteTexture',
-        value: function deleteTexture(texture) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.deleteTexture(texture);
-        }
-    }, {
-        key: 'createFramebuffer',
-        value: function createFramebuffer() {
-            var gl = this._gl;
-            return gl.createFramebuffer();
-        }
-    }, {
-        key: 'bindFramebuffer',
-        value: function bindFramebuffer(target, framebuffer) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            return gl.bindFramebuffer(target, framebuffer);
-        }
-    }, {
-        key: 'texParameterf',
-        value: function texParameterf(target, pname, param) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.texParameterf(target, pname, param);
-        }
-    }, {
-        key: 'framebufferTexture2D',
-        value: function framebufferTexture2D(target, attachment, textarget, texture, level) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.framebufferTexture2D(target, attachment, textarget, texture, level);
-        }
-    }, {
-        key: 'drawArrays',
-        value: function drawArrays(mode, first, count) {
-            var gl = this._gl;
-            if (gl.program !== this._program) {
-                this.useProgram(this._program);
-            }
-            gl.drawArrays(mode, first, count);
-        }
-    }, {
-        key: 'readPixels',
-        value: function readPixels(x, y, width, height, format, type, pixels) {
-            var gl = this._gl;
-            gl.readPixels(x, y, width, height, format, type, pixels);
-        }
-        /**
-         * 
-         * @param {WebGLProgram} program 
-         */
-
-    }, {
-        key: 'isProgram',
-        value: function isProgram(program) {
-            var gl = this._gl;
-            gl.isProgram(program);
-        }
-    }, {
-        key: 'isContextLost',
-        value: function isContextLost() {
-            var gl = this._gl;
-            return gl.isContextLost();
-        }
-    }, {
-        key: 'disableVertexAttribArray',
-        value: function disableVertexAttribArray(index) {
-            var gl = this._gl;
-            gl.disableVertexAttribArray(index);
-        }
-    }, {
         key: 'canvas',
         get: function get$$1() {
             var gl = this._gl;
             return gl.canvas;
+        }
+        /**
+         * 获取drawingBuffer的width
+         */
+
+    }, {
+        key: 'drawingBufferWidth',
+        get: function get$$1() {
+            var gl = this._gl;
+            return gl.drawingBufferWidth;
+        }
+        /**
+         * 获取drawingBuffer的height
+         */
+
+    }, {
+        key: 'drawingBufferHeight',
+        get: function get$$1() {
+            var gl = this._gl;
+            return gl.drawingBufferHeight;
         }
     }]);
     return GLContext;
@@ -4289,198 +3974,6 @@ var GLCanvas = function (_Dispose) {
 
 var GLCanvas_1 = GLCanvas;
 
-/**
- * use texture soruce to create the texture form
- * reference:
- * https://webgl2fundamentals.org/webgl/lessons/webgl-2-textures.html
- * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/texImage3D
- * https://developer.mozilla.org/en-US/docs/Web/API/WebGLTexture
- * https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL
- * 
- * -mipmap
- * -支持非2的n次方规格的textures
- * 
- */
-
-/**
- * @class
- */
-
-var GLTexture = function (_Dispose) {
-    inherits(GLTexture, _Dispose);
-
-    /**
-     * 
-     * @param {WebGLRenderingContext} gl 
-     * @param {number} width 
-     * @param {number} height 
-     * @param {GLExtension} extenson 
-     * @param {*} limits 
-     * @param {*} format 
-     * @param {*} type 
-     */
-    function GLTexture(gl, width, height, extension, limits, format, type) {
-        classCallCheck(this, GLTexture);
-
-        var _this = possibleConstructorReturn(this, (GLTexture.__proto__ || Object.getPrototypeOf(GLTexture)).call(this));
-
-        _this._gl = gl;
-        _this._extension = extension;
-        _this._limits = limits;
-        _this._width = width || -1;
-        _this._height = height || -1;
-        _this._handle = _this._createHandle();
-        //usually, UNSINGED_BYTE use 8bit per channel,which suit for RGBA.
-        _this._format = format || GLConstants_1.RGBA;
-        _this._type = type || GLConstants_1.UNSIGNED_BYTE;
-        return _this;
-    }
-
-    createClass(GLTexture, [{
-        key: '_createHandle',
-
-        /**
-         * overwrite
-         */
-        value: function _createHandle() {
-            return this._gl.createTexture();
-        }
-    }, {
-        key: 'dispose',
-
-        /**
-         * 释放texture资源
-         */
-        value: function dispose() {
-            this._gl.deleteTexture(this.handle);
-        }
-    }, {
-        key: 'loadImage',
-
-        /**
-         * 
-         * @param {Image|Html} element 
-         */
-        value: function loadImage(image) {
-            this.bind();
-            var gl = this._gl,
-                mipmapLevel = 0;
-            gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, this._format, this._format, this._type, image);
-        }
-        /**
-         * Use a data source and uploads this texture to the GPU
-         * @param {TypedArray} data the data to upload to the texture
-         */
-
-    }, {
-        key: 'loadData',
-        value: function loadData(data) {
-            this.bind();
-            var gl = this._gl,
-                ext = this._extension['textureFloat'];
-            this._type = data instanceof Float32Array ? gl.FLOAT : this._type;
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._premultiplyAlpha);
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, data || null);
-        }
-        /**
-         * 对纹理做插值，在不同分辨率下，当获取不到纹理原始值时，可以根据点位置和周围点的值插值计算。
-         * 建议优先调用此方法
-         */
-
-    }, {
-        key: 'enableMipmap',
-        value: function enableMipmap() {
-            var gl = this._gl;
-            this.bind();
-            this._mipmap = true;
-            gl.generateMipmap(GLConstants_1.TEXTURE_2D);
-        }
-        /**
-         * 纹理延展到边界
-         */
-
-    }, {
-        key: 'enableWrapClamp',
-        value: function enableWrapClamp() {
-            var gl = this._gl;
-            this.bind();
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_S, GLConstants_1.CLAMP_TO_EDGE);
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_T, GLConstants_1.CLAMP_TO_EDGE);
-        }
-        /**
-         * 纹理超过边际，镜像repeat
-         */
-
-    }, {
-        key: 'enableWrapMirrorRepeat',
-        value: function enableWrapMirrorRepeat() {
-            var gl = this._gl;
-            this.bind();
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_S, GLConstants_1.MIRRORED_REPEAT);
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_T, GLConstants_1.MIRRORED_REPEAT);
-        }
-        /**
-         * 纹理显现拉伸，使用线性插值法
-         */
-
-    }, {
-        key: 'enableLinearScaling',
-        value: function enableLinearScaling() {
-            var gl = this._gl;
-            this.bind();
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MIN_FILTER, this._mipmap ? GLConstants_1.LINEAR_MIPMAP_LINEAR : GLConstants_1.LINEAR);
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MAG_FILTER, GLConstants_1.LINEAR);
-        }
-        /**
-         * 纹理临近拉伸，使用最临近插值法
-         */
-
-    }, {
-        key: 'enableNearstScaling',
-        value: function enableNearstScaling() {
-            var gl = this._gl;
-            this.bind();
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MIN_FILTER, this._mipmap ? GLConstants_1.NEAREST_MIPMAP_NEAREST : GLConstants_1.NEAREST);
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MAG_FILTER, GLConstants_1.NEAREST);
-        }
-        /**
-         * binds the texture
-         * @type {texture}
-         */
-
-    }, {
-        key: 'bind',
-        value: function bind(location) {
-            var gl = this._gl;
-            if (location !== undefined) gl.activeTexture(GLConstants_1.TEXTURE0 + location);
-            gl.bindTexture(GLConstants_1.TEXTURE_2D, this.handle);
-        }
-    }, {
-        key: 'unbind',
-
-        /**
-         * unbinds the texture
-         */
-        value: function unbind() {
-            var gl = this._gl;
-            gl.bindTexture(gl.TEXTURE_2D, null);
-        }
-    }, {
-        key: 'mipmap',
-
-        /**
-         * return the flag mipmap
-         * @member
-         */
-        get: function get$$1() {
-            return this._mipmap;
-        }
-    }]);
-    return GLTexture;
-}(Dispose_1);
-
-var GLTexture_1 = GLTexture;
-
 var glsl = "\nprecision mediump float;\nvoid main() {\n  gl_FragColor  = vec4(1, 0, 0.5, 1);\n}\n\n";
 
 var default_fragment_glsl = glsl;
@@ -4534,10 +4027,10 @@ var GLShaderFactory_1 = GLShaderFactory;
 
 // use polyfill
 // import './../node_modules/babel-polyfill/dist/polyfill';
+//const polyfill = require('babel-polyfill');
 /**
  * import from namespace renderer
  */
-
 //const GLCONTEXT = require('./gl/GLCanvas').GLCONTEXT;
 //const CANVAS = require('./gl/GLCanvas').CANVAS;
 

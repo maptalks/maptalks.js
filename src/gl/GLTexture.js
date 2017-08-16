@@ -11,7 +11,7 @@
  * 
  */
 const Dispose = require('./../utils/Dispose'),
-        GLConstants = require('./GLConstants');
+    GLConstants = require('./GLConstants');
 
 /**
  * @class
@@ -20,24 +20,25 @@ class GLTexture extends Dispose {
     /**
      * 
      * @param {WebGLRenderingContext} gl 
-     * @param {number} width 
-     * @param {number} height 
-     * @param {GLExtension} extenson 
-     * @param {*} limits 
-     * @param {*} format 
-     * @param {*} type 
+     * @param {object} [options] 
+     * @param {number} [options.width] 
+     * @param {number} [options.height] 
+     * @param {GLExtension} [options.extenson] 
+     * @param {GLLimits} [options.limits] 
+     * @param {number} [options.format] 
+     * @param {number} [options.type] 
      */
-    constructor(gl, width, height, extension, limits, format, type) {
+    constructor(gl, options = {}) {
         super();
+        const {width, height, extension, limits, format, type} = options;
         this._gl = gl;
-        this._extension = extension;
-        this._limits = limits;
+        this._extension = extension || null;
+        this._limits = limits || null;
         this._width = width || -1;
         this._height = height || -1;
-        this._handle = this._createHandle();
-        //usually, UNSINGED_BYTE use 8bit per channel,which suit for RGBA.
-        this._format = format || GLConstants.RGBA;
+        this._format = format || GLConstants.RGBA;//usually, UNSINGED_BYTE use 8bit per channel,which suit for RGBA.
         this._type = type || GLConstants.UNSIGNED_BYTE;
+        this._handle = this._createHandle();
     };
     /**
      * overwrite
@@ -145,4 +146,4 @@ class GLTexture extends Dispose {
     };
 }
 
-module.exports =  GLTexture;
+module.exports = GLTexture;
