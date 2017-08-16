@@ -39,7 +39,7 @@ let raf = (() => {
     
 })();
 
-export {
-    _raf as requestAnimationFrame,
-    _craf as cancelAnimationFrame
+module.exports ={
+    requestAnimationFrame,
+    cancelAnimationFrame
 }

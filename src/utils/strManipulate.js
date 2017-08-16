@@ -3,7 +3,8 @@
  * @author yellow date 2017/7/19
  */
 
-const isNode = (typeof process !== "undefined" && typeof require !== "undefined");
+const isNode = require('./isNode'),
+    isString = require('./isString');
 
 const _aTob = (function () {
     return isNode ? function () {
@@ -41,12 +42,35 @@ const base64ToArrayBuffer = (base64Str) => {
         byteStringLength = byteString.length;
     let arrayBuffer = new ArrayBuffer(byteStringLength),
         uint8Array = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < byteStringLength; i++) 
+    for (let i = 0; i < byteStringLength; i++)
         uint8Array[i] = byteString.charCodeAt(i);
     return arrayBuffer;
 }
+/**
+ * hump string convert to continuous sting 
+ * depthFunc => DEPTH_FUNC
+ * @param {String} continuousStr 
+ */
+const humpToContinuous = (humpString) => {
+    if (isString(humpString))
+        return humpString.replace(/([A-Z])/g, "-$1").toUpperCase();
+    else
+        return null;
+}
+/**
+ * DEPTH_FUNC => depthFunc 
+ * @param {String} continuousStr 
+ */
+const continuousToHump = (continuousStr) => {
+    if (isString(continuousStr))
+        return continuousStr.replace(/([A-Z])/g, (all, letter) => { return letter.toUpperCase(); });
+    else
+        return null;
+}
 
-export {
+module.exports = {
     arrayBufferToString,
-    base64ToArrayBuffer
+    base64ToArrayBuffer,
+    humpToContinuous,
+    continuousToHump
 };
