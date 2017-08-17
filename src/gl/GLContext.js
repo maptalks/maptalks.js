@@ -25,8 +25,6 @@ const merge = require('./../utils/merge'),
     stamp = require('./../utils/stamp').stamp,
     humpToContinuous = require('./../utils/strManipulate').humpToContinuous,
     createTiny = require('./../dispatch/createTiny').createTiny,
-    InternalTinys = require('./../dispatch/createTiny').InternalTinys,
-    OverrallTinys= require('./../dispatch/createTiny').OverrallTinys,
     Dispose = require('./../utils/Dispose'),
     GLVertexShader = require('./shader/GLVertexShader'),
     GLFragmentShader = require('./shader/GLFragmentShader'),
@@ -35,14 +33,15 @@ const merge = require('./../utils/merge'),
     GLExtension = require('./GLExtension'),
     GLLimits = require('./GLLimits'),
     GLProgram = require('./GLProgram');
-
-    //without canvas,drawingBufferHeight,drawingBufferWidth
-    //no implement :linkProgram,attachShader,compileShader
-    // 'createProgram',
-    // 'createShader',
-    // 'createTexture',
-//及时处理的函数
-const ImplementBridge = [
+/**
+ * supported tiny operation
+ */
+const TINY_ENUM = require('./../dispatch/createTiny').TINY_ENUM;
+/**
+ * 实时处理的函数,多为直接获取结果函数
+ * needs to be executing in real time1
+ */
+const BRIDGE_ENUM = [
     'isShader',
     'isBuffer',
     'isProgram',
@@ -54,14 +53,20 @@ const ImplementBridge = [
     'getParameter',
     'getError',
     'getProgramInfoLog',
-    'getShaderInfoLog'
+    'getShaderInfoLog',
+    'getActiveAttrib',
+    'getActiveUniform',
+    'getAttribLocation',
+    'getUniform',
+    'getUniformLocation',
+    'getVertexAttrib',
+    'getVertexAttribOffset'
 ];
-
 /**
  * @class
  * @example
  * let cvs = document.createElement('canvas'),
- *  ctx = new Context(cvs);
+ * ctx = new Context(cvs);
  */
 class GLContext extends Dispose {
     /**
@@ -101,11 +106,11 @@ class GLContext extends Dispose {
          * the shader cache
          * @type {Object}
          */
-        this._shaderCache={};
+        this._shaderCache = {};
         /**
          * the texture cache
          */
-        this._textureCache={};
+        this._textureCache = {};
         /**
          * current using program
          * @type {GLProgram}
@@ -146,14 +151,14 @@ class GLContext extends Dispose {
         //gl.stencilFunc(gl)
         gl.enable(GLConstants.DEPTH_TEST);
         //深度参考值小于模版值时，测试通过
-        gl.depthFunc(GLConstants.LEQUAL); 
+        gl.depthFunc(GLConstants.LEQUAL);
         gl.depthMask(false);
     }
     /**
      * map相关属性与方法
      */
     _map() {
-        const that =this;
+        const that = this;
         //get the WebGLRenderingContext
         const gl = this._gl;
         //1.map constant
@@ -165,27 +170,23 @@ class GLContext extends Dispose {
             }
         }
         //map ImplementBridge
-        for(let i=0,len=ImplementBridge.length;i<len;i++){
-            const key = ImplementBridge[i];
-            this[key]=(...rest)=>{
-                return gl[key].apply(gl,rest);
+        for (let i = 0, len = BRIDGE_ENUM.length; i < len; i++) {
+            const key = BRIDGE_ENUM[i];
+            this[key] = (...rest) => {
+                return gl[key].apply(gl, rest);
             }
         }
         //map internalTinyOperation
-        for(const key in InternalTinys){
-            if(InternalTinys[key]){
-                this[key] = (...rest)=>{
+        for (const key in TINY_ENUM) {
+            if (TINY_ENUM[key]) {
+                this[key] = (...rest) => {
                     const glProgram = this._glProgram;
-                    createTiny(key,glProgram,rest);
-                }
-            }
-        }
-        //map overrallTinyOperation,construct rollback at the same time
-        for(const key in OverrallTinys){
-            if(OverrallTinys[key]){
-                this[key] = (...rest)=>{
-                    const glProgram = this._glProgram;
-                    createTiny(key,glProgram,rest);
+                    if(!!glProgram)
+                        createTiny(glProgram, key, ...rest);
+                    else{
+                        const gl = this._gl;
+                        gl[key].apply(gl,rest);
+                    }
                 }
             }
         }
@@ -200,14 +201,14 @@ class GLContext extends Dispose {
     /**
      * 获取drawingBuffer的width
      */
-    get drawingBufferWidth(){
+    get drawingBufferWidth() {
         const gl = this._gl;
         return gl.drawingBufferWidth;
     }
     /**
      * 获取drawingBuffer的height
      */
-    get drawingBufferHeight(){
+    get drawingBufferHeight() {
         const gl = this._gl;
         return gl.drawingBufferHeight;
     }
@@ -231,13 +232,13 @@ class GLContext extends Dispose {
     createShader(type) {
         const gl = this._gl,
             glExtension = this._glExtension;
-        let glShader =null;
-        if(type===GLConstants.VERTEX_SHADER){
-            glShader = new GLVertexShader(gl,null,glExtension);
-        }else if(type === GLConstants.FRAGMENT_SHADER){
-            glShader = new GLFragmentShader(gl,null,glExtension);
+        let glShader = null;
+        if (type === GLConstants.VERTEX_SHADER) {
+            glShader = new GLVertexShader(gl, null, glExtension);
+        } else if (type === GLConstants.FRAGMENT_SHADER) {
+            glShader = new GLFragmentShader(gl, null, glExtension);
         }
-        if(!!glShader){
+        if (!!glShader) {
             this._shaderCache[glShader.id] = glShader;
             return glShader.handle;
         }
@@ -246,7 +247,7 @@ class GLContext extends Dispose {
     /**
      * @return {WebGLTexture}
      */
-    createTexture(){
+    createTexture() {
         const gl = this._gl;
         const glTexture = new GLTexture(gl);
         this._textureCache[glTexture.id] = glTexture;
@@ -259,7 +260,7 @@ class GLContext extends Dispose {
     useProgram(program) {
         const id = stamp(program);
         this._glProgram = this._programCache[id];
-        createTiny(this._glProgram,'useProgram',arguments);
+        createTiny(this._glProgram, 'useProgram', arguments);
     }
     /**
      * 获取extension
@@ -309,7 +310,7 @@ class GLContext extends Dispose {
     /**
      * no need to implement
      */
-    compileShader(shader) { 
+    compileShader(shader) {
         const gl = this._gl;
         gl.compileShader(shader);
     }
@@ -319,97 +320,21 @@ class GLContext extends Dispose {
      */
     linkProgram(program) { }
     /**
-     * 
-     * @param {WebGLProgram} program 
-     * @param {number} index 
-     * @return {WebGLActiveInfo}
-     */
-    getActiveUniform(program, index) {
-        const gl = this._gl;
-        return gl.getActiveUniform(program, index);
-    }
-    /**
-     * 
-     * @param {WebGLProgram} program 
-     * @param {number} index 
-     * @return {WebGLActiveInfo}
-     */
-    getActiveAttrib(program, index) {
-        const glProgram = this._programCache[stamp(program)];
-        return glProgram.getActiveAttrib(index)
-    }
-    /**
-     * 
-     * @param {WebGLProgram} program 
-     * @param {number} name 
-     * @return {WebGLUniformLocation}
-     */
-    getUniformLocation(program, name) {
-        const glProgram = this._programCache[stamp(program)];
-        return glProgram.uniforms[name];
-    }
-
-    /**
-     * 
-     * @param {WebGLProgram} program 
-     * @param {number} name 
-     * @return {number}
-     */
-    getAttribLocation(program, name) {
-        const glProgram = this._programCache[stamp(program)];
-        return glProgram.attributes[name];
-    }
-    /**
-     * 
-     * @param {number} mode 
-     * @param {number} count 
-     * @param {number} type 
-     * @param {number} offset 
-     */
-    drawElements(mode, count, type, offset) {
-        // const programCache = this._programCache;
-        // for(const key in programCache){
-        //     const glProgram = programCache[key];
-        //     glProgram.useProgram();
-        //     glProgram.update();
-        //     glProgram.drawElements(mode, count, type, offset);
-        // }
-        //
-        const gl = this._gl;
-        gl.drawElements(mode, count, type, offset);
-    }
-
-    /**
-     * 
-     * @param {*} mode 
-     * @param {*} first 
-     * @param {*} count 
-     */
-    drawArrays(mode,first,count){
-        const gl = this._gl;
-        if(gl.program!==this._program){
-            this.useProgram(this._program)
-        }
-        gl.drawArrays(mode,first,count);
-    }
-
-    /**
      * webgl2 support
      */
-    createTransformFeedback(){
+    createTransformFeedback() {
         const gl = this._gl;
-        return gl.createTransformFeedback?gl.createTransformFeedback():null;
+        return gl.createTransformFeedback ? gl.createTransformFeedback() : null;
     }
     /**
      * webgl2 support
      * @param {*} target 
      * @param {*} transformFeedback 
      */
-    bindTransformFeedback(target, transformFeedback){
+    bindTransformFeedback(target, transformFeedback) {
         const gl = this._gl;
-        return gl.bindTransformFeedback?gl.bindTransformFeedback(target, transformFeedback):null;
+        return gl.bindTransformFeedback ? gl.bindTransformFeedback(target, transformFeedback) : null;
     }
-
 }
 
 module.exports = GLContext;

@@ -1,6 +1,6 @@
 ﻿/// <reference path="three.js" />
 /// <reference path="twgl.js" />
-/// <reference path="pixi.min.js" />
+/// <reference path="pixi.js" />
 /// <reference path="bundle.js" />
 
 var canvas = document.getElementById('cvs');
@@ -8,9 +8,6 @@ var canvas = document.getElementById('cvs');
 const glCanvas = new Fusion.gl.GLCanvas(canvas);
 
 const gl = glCanvas.getContext('webgl');
-
-
-
 const m4 = twgl.m4;
 const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
 
@@ -20,6 +17,7 @@ const arrays = {
     texcoord: [1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
     indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23],
 };
+
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
 const tex = twgl.createTexture(gl, {
@@ -78,28 +76,6 @@ function render(time) {
     requestAnimationFrame(render);
 }
 requestAnimationFrame(render);
-<<<<<<< HEAD
-//var scene, camera1;
-//init();
-//function init() {
-//    scene = new THREE.Scene();
-//    camera1 = new THREE.PerspectiveCamera(75, 800 / 600, 1, 10000);
-//    camera1.position.z = 1000;
-//    geometry = new THREE.BoxGeometry(900, 900, 900);
-//    material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-//    mesh = new THREE.Mesh(geometry, material);
-//    scene.add(mesh);
-//    const glCanvas1 = new Fusion.gl.GLCanvas(canvas);
-//    renderer = new THREE.WebGLRenderer({
-//        canvas: glCanvas1,
-//        context: glCanvas1.getContext('webgl')
-//    });
-//    renderer.setSize(800, 600);
-//}
-
-//animate();
-
-=======
 
 
 //var scene, camera1;
@@ -122,7 +98,6 @@ requestAnimationFrame(render);
 
 //animate();
 
->>>>>>> 3fe14018df4553bc171476dfcfe8d00dd5660d6e
 //function animate() {
 //    requestAnimationFrame(animate);
 //    mesh.rotation.x += 0.01;
