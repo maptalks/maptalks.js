@@ -62,7 +62,13 @@ describe('#GeometryEdit', function () {
                     //geo can only be dragged by center handle.
                     var newCenter = geo.getCenter();
                     dragGeometry(geo, new maptalks.Point(500, 20));
-                    expect(geo.getCenter()).to.closeTo(newCenter);
+                    if (!(geo instanceof maptalks.Marker) || geo._canEdit()) {
+                        expect(geo.getCenter()).to.closeTo(newCenter);
+                        geo.undoEdit();
+                        expect(geo.getCenter()).to.closeTo(center);
+                        geo.redoEdit();
+                        expect(geo.getCenter()).to.closeTo(newCenter);
+                    }
                     geo.endEdit();
                 };
             }
@@ -115,6 +121,14 @@ describe('#GeometryEdit', function () {
             expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(20);
             expect(fired).to.be.ok();
+            marker.undoEdit();
+            symbol = marker.getSymbol();
+            expect(symbol.markerWidth).to.be.approx(20);
+            expect(symbol.markerHeight).to.be.approx(20);
+            marker.redoEdit();
+            symbol = marker.getSymbol();
+            expect(symbol.markerWidth).to.be.approx(39);
+            expect(symbol.markerHeight).to.be.approx(20);
             marker.endEdit();
         });
 
@@ -137,6 +151,14 @@ describe('#GeometryEdit', function () {
             expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(39);
             expect(fired).to.be.ok();
+            marker.undoEdit();
+            symbol = marker.getSymbol();
+            expect(symbol.markerWidth).to.be.approx(20);
+            expect(symbol.markerHeight).to.be.approx(20);
+            marker.redoEdit();
+            symbol = marker.getSymbol();
+            expect(symbol.markerWidth).to.be.approx(39);
+            expect(symbol.markerHeight).to.be.approx(39);
             marker.endEdit();
         });
 
@@ -149,10 +171,17 @@ describe('#GeometryEdit', function () {
             });
             marker.startEdit();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
-            var symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.above(39);
-            expect(symbol.markerHeight).to.be.approx(20);
+            expect(marker.getWidth()).to.be.above(39);
+            expect(marker.getHeight()).to.be.approx(20);
             expect(fired).to.be.ok();
+            marker.undoEdit();
+
+            expect(marker.getWidth()).to.be.approx(20);
+            expect(marker.getHeight()).to.be.approx(20);
+            marker.redoEdit();
+
+            expect(marker.getWidth()).to.be.above(39);
+            expect(marker.getHeight()).to.be.approx(20);
             marker.endEdit();
         });
 
@@ -165,8 +194,13 @@ describe('#GeometryEdit', function () {
             circle.startEdit();
             var size = circle.getSize();
             dragGeometry(circle, new maptalks.Point(size.width / 2, 0));
-            var r = circle.getRadius();
-            expect(r).to.be.eql(1010.22151);
+            expect(circle.getRadius()).to.be.eql(1010.22151);
+
+            circle.undoEdit();
+            expect(circle.getRadius()).to.be.eql(1000);
+            circle.redoEdit();
+            expect(circle.getRadius()).to.be.eql(1010.22151);
+
             circle.endEdit();
             expect(fired).to.be.ok();
         });
@@ -182,6 +216,14 @@ describe('#GeometryEdit', function () {
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, size.height / 2));
             expect(ellipse.getWidth()).to.be.approx(1020.27122);
             expect(ellipse.getHeight()).to.be.approx(520.2339);
+
+            ellipse.undoEdit();
+            expect(ellipse.getWidth()).to.be.approx(1000);
+            expect(ellipse.getHeight()).to.be.approx(500);
+            ellipse.redoEdit();
+            expect(ellipse.getWidth()).to.be.approx(1020.27122);
+            expect(ellipse.getHeight()).to.be.approx(520.2339);
+
             ellipse.endEdit();
             expect(fired).to.be.ok();
         });
@@ -198,6 +240,15 @@ describe('#GeometryEdit', function () {
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, 0));
             expect(ellipse.getWidth()).to.be.approx(120.24692);
             expect(ellipse.getHeight()).to.be.approx(120.24692 / ratio);
+
+            ellipse.undoEdit();
+            expect(ellipse.getWidth()).to.be.approx(100);
+            expect(ellipse.getHeight()).to.be.approx(50);
+
+            ellipse.redoEdit();
+            expect(ellipse.getWidth()).to.be.approx(120.24692);
+            expect(ellipse.getHeight()).to.be.approx(120.24692 / ratio);
+
             ellipse.endEdit();
             expect(fired).to.be.ok();
         });
@@ -213,6 +264,14 @@ describe('#GeometryEdit', function () {
             dragGeometry(rect, new maptalks.Point(size.width / 2, size.height / 2));
             expect(rect.getWidth()).to.be.approx(1011.0866);
             expect(rect.getHeight()).to.be.approx(511.11058);
+
+            rect.undoEdit();
+            expect(rect.getWidth()).to.be.approx(1000);
+            expect(rect.getHeight()).to.be.approx(500);
+            rect.redoEdit();
+            expect(rect.getWidth()).to.be.approx(1011.0866);
+            expect(rect.getHeight()).to.be.approx(511.11058);
+
             rect.endEdit();
             expect(fired).to.be.ok();
         });
@@ -229,6 +288,14 @@ describe('#GeometryEdit', function () {
             dragGeometry(rect, new maptalks.Point(size.width / 2, 0));
             expect(rect.getWidth()).to.be.approx(111.135, 3);
             expect(rect.getHeight()).to.be.approx(111.135 / ratio, 3);
+
+            rect.undoEdit();
+            expect(rect.getWidth()).to.be.approx(100);
+            expect(rect.getHeight()).to.be.approx(50);
+            rect.redoEdit();
+            expect(rect.getWidth()).to.be.approx(111.135, 3);
+            expect(rect.getHeight()).to.be.approx(111.135 / ratio, 3);
+
             rect.endEdit();
             expect(fired).to.be.ok();
         });
@@ -237,12 +304,19 @@ describe('#GeometryEdit', function () {
             var rect = new maptalks.Rectangle(map.getCenter(), 1000, 500).addTo(layer);
             var polygon = new maptalks.Polygon(rect.getShell()).addTo(layer);
             var o = polygon.toGeoJSON();
+
             polygon.startEdit();
             var size = polygon.getSize();
             dragGeometry(polygon, new maptalks.Point(size.width / 2, size.height / 2));
             expect(polygon.toGeoJSON()).not.to.be.eqlGeoJSON(o);
             var expected = { 'type':'Feature', 'geometry':{ 'type':'Polygon', 'coordinates':[[[118.84682500000001, 32.046534], [118.85742312186674, 32.046534], [118.85751916135895, 32.041960573990714], [118.84682500000001, 32.04204242358055], [118.84682500000001, 32.046534]]] }, 'properties':null };
             expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
+
+            polygon.undoEdit();
+            expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(o);
+            polygon.redoEdit();
+            expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
+
             polygon.endEdit();
         });
 

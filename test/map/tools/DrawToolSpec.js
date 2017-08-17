@@ -7,7 +7,7 @@ describe('#DrawTool', function () {
 
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    function drawLine() {
+    function drawLine(drawTool) {
         var center = map.getCenter();
 
         var domPosition = GET_PAGE_POSITION(container);
@@ -35,6 +35,9 @@ describe('#DrawTool', function () {
             'clientX':point.x + 10,
             'clientY':point.y
         });
+
+        var geojson1 = drawTool.getCurrentGeometry().toGeoJSON();
+
         happen.mousedown(eventContainer, {
             'clientX':point.x,
             'clientY':point.y + 10
@@ -43,6 +46,15 @@ describe('#DrawTool', function () {
             'clientX':point.x,
             'clientY':point.y + 10
         });
+
+        var geojson2 = drawTool.getCurrentGeometry().toGeoJSON();
+
+        drawTool.undo();
+        expect(drawTool.getCurrentGeometry().toGeoJSON()).to.be.eqlGeoJSON(geojson1);
+
+        drawTool.redo();
+        expect(drawTool.getCurrentGeometry().toGeoJSON()).to.be.eqlGeoJSON(geojson2);
+
         happen.dblclick(eventContainer, {
             'clientX':point.x - 1,
             'clientY':point.y + 5
@@ -146,7 +158,7 @@ describe('#DrawTool', function () {
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
-            drawLine();
+            drawLine(drawTool);
         });
 
         it('can draw Polygon', function (done) {
@@ -160,7 +172,7 @@ describe('#DrawTool', function () {
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
-            drawLine();
+            drawLine(drawTool);
         });
 
         it('can draw circle', function (done) {
