@@ -19,199 +19,84 @@
  * 5、复制结果图层到实际可视区
  * 
  */
-const Dispose = require('./../../utils/Dispose');
+const merge = require('./../utils/merge'),
+    isString = require('./../utils/isString'),
+    stamp = require('./../utils/stamp').stamp,
+    Dispose = require('./../utils/Dispose'),
+    Ticker = require('./../ticker/Ticker');
+/**
+ * tiny
+ */
+const InternalTiny = require('./tiny/InternallTiny').InternalTiny,
+    OverrallTiny = require('./tiny/OverrallTiny').OverrallTiny;
+/**
+ * tiny_Enum
+ */
+const INTERNAL_TINY_ENUM = require('./tiny/InternallTiny').INTERNAL_TINY_ENUM,
+    OVERRAL_TINY_ENUM = require('./tiny/OverrallTiny').OVERRAL_TINY_ENUM;
+/**
+ * Tiny Cache
+ */
+const Tinys = {};
 /**
  * 
+ * @param {GLProgram} glProgram 
+ * @param {*} tiny 
  */
-const InternalTinyQueue = {};
-/**
- * 
- */
-const OverrallTinyQueue = {};
-/**
- * 
- */
-const TransferTinyQueue = {};
-/**
- * @class
- */
-class Tiny extends Dispose{
-    
-    constructor(glProgram,name,parameter){
-        super();
-        this._glProgram = glProgram;
-        this._name = name;
-        this._parameter = parameter;
-    }
-
-    apply(){
-
-    }
-
+const enQueue = (glProgram, tiny, head=false) => {
+    const id = glProgram.id;
+    if (!Tinys[id])
+        Tinys[id] = [];
+    const queue = Tinys[id];
+    queue.push(tiny);
 }
-
-
-class InternalTiny extends Tiny{
-    
-    constructor(glProgram,name,parameter){
-      super(glProgram,name,parameter);
-      InternalTinyQueue.push(this);
-    }
-
-    apply(){
-        const glProgram = this._glProgram;
-        glProgram.useProgram();
-    }
-
- }
-
- class OverrallTiny extends Tiny{
-
-    constructor(glProgram,name,parameter){
-        super(glProgram,name,parameter);
-    }
- }
-
-
- class TransferTiny extends Tiny{
-
-    constructor(glProgram,name,parameter){
-        super(glProgram,name,parameter);
-    }
- }
-
- 
-
- const merge = require('./../utils/merge'),
-    enQueue = require('./queue').enQueue,
-    acquireQueue = require('./queue').acquireQueue,
-    InternalTiny = require('./tiny/InternallTiny'),
-    OverrallTiny = require('./tiny/OverrallTiny');
-
-const OverrallTinys = {
-    'texParameteri':true,
-    'texImage2D':true,
-    'depthFunc':true,
-    'clearColor':true,
-    'clearDepth':true,
-    'clear':true,
-    'clearStencil':true,
-    'frontFace':true,
-    'cullFace':true,
-    'pixelStorei':true,
-    'generateMipmap':true,
-    'pixelStorei':true,
-    'activeTexture':true,
-    'blendEquationSeparate':true,
-    'blendFuncSeparate':true,
-    'blendEquation':true,
-    'blendFunc':true,
-    'scissor':true,
-    'stencilOp':true,
-    'stencilFunc':true,
-    'stencilMask':true,
-    'depthMask':true,
-    'colorMask':true,
-    'texParameterf':true,
-    'hint':true
-};
 /**
- * 存储gl中最简单的逻辑，即为当前program赋值操作，此操作没有:回滚，删除，覆盖
- * - uniforms
- * - attributes
- * - buffers,除了 createBuffer,deleteBuffer,getBufferParameter,isBuffer
+ * 
  */
-const InternalTinys = {
-    //
-    'lineWidth':true,
-    //
-    'scissor':true,
-    'viewport':true,
-    'enable':true,
-    'disable':true,
-    'deleteTexture':true,
-    'deleteBuffer':true,
-    'deleteShader':true,
-    'deleteProgram':true,
-    'deleteFramebuffer':true,
-    'deleteRenderbuffer':true,
-    //
-    'bindFramebuffer':true,
-    'framebufferTexture2D':true,
-    //
-    'readPixels':true,
-    //buffer-uinform-attrib
-    'bindBuffer':true,
-    'bufferData':true,
-    'bufferSubData':true,
-    'disableVertexAttribArray': true,
-    'enableVertexAttribArray': true,
-    'getActiveAttrib': true,
-    'getActiveUniform': true,
-    'getAttribLocation': true,
-    'getUniform': true,
-    'getUniformLocation': true,
-    'getVertexAttrib': true,
-    'getVertexAttribOffset': true,
-    'vertexAttribPointer': true,
-    //uniformMatrix
-    'uniformMatrix2fv': true,
-    'uniformMatrix3fv': true,
-    'uniformMatrix4fv': true,
-    //uniform1[f][i][v]
-    'uniform1f': true,
-    'uniform1fv': true,
-    'uniform1i': true,
-    'uniform1iv': true,
-    //uniform2[f][i][v]
-    'uniform2f': true,
-    'uniform2fv': true,
-    'uniform2i': true,
-    'uniform2iv': true,
-    //uniform3[f][i][v]
-    'uniform3f': true,
-    'uniform3fv': true,
-    'uniform3i': true,
-    'uniform3iv': true,
-    //uniform4[f][i][v]
-    'uniform4f': true,
-    'uniform4fv': true,
-    'uniform4i': true,
-    'uniform4iv': true,
-    //vertexAttrib1f
-    'vertexAttrib1f':true,
-    'vertexAttrib2f':true,
-    'vertexAttrib3f':true,
-    'vertexAttrib4f':true,
-    //vertexAttrib1fv
-    'vertexAttrib1fv':true,
-    'vertexAttrib2fv':true,
-    'vertexAttrib3fv':true,
-    'vertexAttrib4fv':true,
-    //texture
-    'bindTexture':true,
-};
-
-const tinys = merge({},OverrallTinys,InternalTinys);
+const ticker = new Ticker({
+    autoStart: true
+});
+/**
+ * tinys which needs to render
+ */
+const TICK_TINY_ENUM = {
+    'drawArrays': true,
+    'drawElements': true
+}
+/**
+ * @type {enum}
+ */
+const TINY_ENUM = merge({}, OVERRAL_TINY_ENUM, INTERNAL_TINY_ENUM, TICK_TINY_ENUM);
 /**
  * @func
  */
-const createTiny = function (glProgram, name,parameter) {
+const createTiny = function (glProgram, name, ...rest) {
     //1.加入正序处理队列
-    if(tinys[name]){
-        const tiny = new InternalTiny(glProgram,name,parameter);
-        enQueue(glProgram,tiny);
-        return tiny;
+    if (TINY_ENUM[name]) {
+        const tiny = new InternalTiny(glProgram, name, ...rest);
+        enQueue(glProgram, tiny);
     }
     //2.加入反序执行队列
-    if(OverrallTinys[name]){
+    if (OVERRAL_TINY_ENUM[name]) {
 
+    }
+    //3.加入ticker
+    if (TICK_TINY_ENUM[name]) {
+        ticker.add(function(){
+            const id = glProgram.id;
+            const queue = Tinys[id];
+            glProgram.useProgram();
+            let tiny = queue.shift();
+            while(!!tiny){
+                tiny.apply();
+                tiny = queue.shift();
+            }
+        },glProgram.handle);
     }
 }
 
 module.exports = {
-    createTiny,
-    OverrallTinys,
-    InternalTinys
+    TINY_ENUM,
+    createTiny
 }
 

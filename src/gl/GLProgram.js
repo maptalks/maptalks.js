@@ -317,27 +317,13 @@ class GLProgram extends Dispose {
         gl.deleteProgram(this._handle);
     }
     /**
-     * 绘制,ticktock执行队列
-     * @param {gl.TRIANGLES|gl.POINTS} primitiveType 
-     * @param {number} offset 
-     * @param {number} count 
+     * retrun WebGLRenderContext
+     * @return {WebGLRenderContext}
      */
-    drawArrays(primitiveType, offset, count) {
+    get gl(){
         const gl = this._gl;
-        gl.drawArrays(primitiveType || GLConstants.TRIANGLES, offset || 0, count || 6);
+        return gl;
     }
-    /**
-     * 绘制,ticktock执行队列
-     * @param {*} mode 
-     * @param {*} count 
-     * @param {*} type 
-     * @param {*} offset 
-     */
-    drawElements(mode, count, type, offset) {
-        const gl = this._gl;
-        gl.drawElements(mode, count, type, offset);
-    }
-
 };
 
 module.exports = GLProgram;
