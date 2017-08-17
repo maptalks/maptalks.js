@@ -1,4 +1,5 @@
-import { isNil, isNumber, isArrayHasData } from 'core/util';
+import { isNil, isNumber, isArrayHasData, isFunction } from 'core/util';
+import { Animation } from 'core/Animation';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Geometry from './Geometry';
@@ -32,6 +33,103 @@ const options = {
  * @extends Geometry
  */
 class Path extends Geometry {
+
+    /**
+     * Show the linestring with animation
+     * @param  {Object} [options=null] animation options
+     * @param  {Number} [options.duration=1000] duration
+     * @param  {String} [options.easing=out] animation easing
+     * @param  {Function} [cb=null] callback function in animation
+     * @return {LineString}         this
+     */
+    animateShow(options = {}, cb) {
+        if (this._showPlayer) {
+            this._showPlayer.finish();
+        }
+        if (isFunction(options)) {
+            options = {};
+            cb = options;
+        }
+        const coordinates = this.getCoordinates();
+        if (coordinates.length === 0) {
+            return this;
+        }
+        const isPolygon = !!this.getShell;
+        const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : this.getCoordinates();
+        this._aniShowCenter = this.getExtent().getCenter();
+        const duration = options['duration'] || 1000,
+            length = this.getLength(),
+            easing = options['easing'] || 'out';
+        this.setCoordinates([]);
+        const player = this._showPlayer = Animation.animate({
+            't': duration
+        }, {
+            'duration': duration,
+            'easing': easing
+        }, frame => {
+            if (!this.getMap()) {
+                player.finish();
+                if (cb) {
+                    cb(frame);
+                }
+                return;
+            }
+            this._drawAnimShowFrame(frame.styles.t, duration, length, animCoords);
+            if (frame.state.playState === 'finished') {
+                delete this._showPlayer;
+                delete this._aniShowCenter;
+                this.setCoordinates(coordinates);
+            }
+            if (cb) {
+                cb(frame);
+            }
+        });
+        player.play();
+        return player;
+    }
+
+    _drawAnimShowFrame(t, duration, length, coordinates) {
+        if (t === 0) {
+            return;
+        }
+        const map = this.getMap();
+        const targetLength = t / duration * length;
+        if (!this._animIdx) {
+            this._animIdx = 0;
+            this._animLenSoFar = 0;
+            this.show();
+        }
+        let segLen = 0;
+        let i, l;
+        for (i = this._animIdx, l = coordinates.length; i < l - 1; i++) {
+            segLen = map.computeLength(coordinates[i], coordinates[i + 1]);
+            if (this._animLenSoFar + segLen > targetLength) {
+                break;
+            }
+            this._animLenSoFar += segLen;
+        }
+        this._animIdx = i;
+        if (this._animIdx >= l - 1) {
+            this.setCoordinates(coordinates);
+            return;
+        }
+        const idx = this._animIdx;
+        const p1 = coordinates[idx],
+            p2 = coordinates[idx + 1],
+            span = targetLength - this._animLenSoFar,
+            r = span / segLen;
+        const x = p1.x + (p2.x - p1.x) * r,
+            y = p1.y + (p2.y - p1.y) * r,
+            targetCoord = new Coordinate(x, y);
+        const animCoords = coordinates.slice(0, this._animIdx + 1);
+        animCoords.push(targetCoord);
+        const isPolygon = !!this.getShell;
+        if (isPolygon) {
+            this.setCoordinates([this._aniShowCenter].concat(animCoords));
+        } else {
+            this.setCoordinates(animCoords);
+        }
+    }
 
     /**
      * Transform projected coordinates to view points

@@ -132,7 +132,9 @@ export default class Painter extends Class {
             points = paintParams[0];
 
         const containerPoints = this._getContainerPoints(points, dx, dy);
-
+        if (!containerPoints) {
+            return null;
+        }
         tPaintParams.push(containerPoints);
         for (let i = 1, len = paintParams.length; i < len; i++) {
             if (isNumber(paintParams[i]) || (paintParams[i] instanceof Size)) {
@@ -155,13 +157,17 @@ export default class Painter extends Class {
             containerExtent = map.getContainerExtent(),
             extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom)),
             height = this.getHeight(),
-            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
+            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest),
+            cExtent = this.getContainerExtent();
 
+        if (!cExtent) {
+            return null;
+        }
         let containerPoints;
         //convert view points to container points needed by canvas
         if (Array.isArray(points)) {
             let clipPoints = points;
-            if (!this.getContainerExtent().within(containerExtent) && this.geometry.options['clipToPaint']) {
+            if (!cExtent.within(containerExtent) && this.geometry.options['clipToPaint']) {
                 if (this.geometry.getJSONType() === 'Polygon') {
                     // clip the polygon to draw less and improve performance
                     if (!Array.isArray(points[0])) {

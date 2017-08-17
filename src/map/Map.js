@@ -974,6 +974,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (isNil(id)) {
                 throw new Error('Invalid id for the layer: ' + id);
             }
+            if (layer.getMap() === this) {
+                continue;
+            }
             if (this._layerCache[id]) {
                 throw new Error('Duplicate layer id in the map: ' + id);
             }

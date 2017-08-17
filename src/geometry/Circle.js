@@ -100,6 +100,10 @@ class Circle extends CenterMixin(Polygon) {
         return [];
     }
 
+    animateShow() {
+        return this.show();
+    }
+
     _containsPoint(point, tolerance) {
         const map = this.getMap();
         const coord = map.pointToCoordinate(point);

@@ -1,5 +1,4 @@
-import { isNil, isFunction } from 'core/util';
-import { Animation } from 'core/Animation';
+import { isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
 import { pointInsidePolygon, distanceToSegment } from 'core/util/path';
@@ -74,87 +73,6 @@ class LineString extends Path {
      */
     getCoordinates() {
         return this._coordinates || [];
-    }
-
-    /**
-     * Show the linestring with animation
-     * @param  {Object} [options=null] animation options
-     * @param  {Number} [options.duration=1000] duration
-     * @param  {String} [options.easing=out] animation easing
-     * @param  {Function} [cb=null] callback function in animation
-     * @return {LineString}         this
-     */
-    animateShow(options = {}, cb) {
-        if (isFunction(options)) {
-            options = {};
-            cb = options;
-        }
-        const coordinates = this.getCoordinates();
-        const duration = options['duration'] || 1000;
-        const length = this.getLength();
-        const easing = options['easing'] || 'out';
-        this.setCoordinates([]);
-        const player = Animation.animate({
-            't': duration
-        }, {
-            'duration': duration,
-            'easing': easing
-        }, frame => {
-            if (!this.getMap()) {
-                player.finish();
-                this.setCoordinates(coordinates);
-                if (cb) {
-                    cb(frame);
-                }
-                return;
-            }
-            this._drawAnimFrame(frame.styles.t, duration, length, coordinates);
-            if (cb) {
-                cb(frame);
-            }
-        });
-        player.play();
-        return player;
-    }
-
-    _drawAnimFrame(t, duration, length, coordinates) {
-        if (t === 0) {
-            this.setCoordinates([]);
-            return;
-        }
-        const map = this.getMap();
-        const targetLength = t / duration * length;
-        if (!this._animIdx) {
-            this._animIdx = 0;
-            this._animLenSoFar = 0;
-            this.show();
-        }
-        let segLen = 0;
-        let i, l;
-        for (i = this._animIdx, l = coordinates.length; i < l - 1; i++) {
-            segLen = map.computeLength(coordinates[i], coordinates[i + 1]);
-            if (this._animLenSoFar + segLen > targetLength) {
-                break;
-            }
-            this._animLenSoFar += segLen;
-        }
-        this._animIdx = i;
-        if (this._animIdx >= l - 1) {
-            this.setCoordinates(coordinates);
-            return;
-        }
-        const idx = this._animIdx;
-        const p1 = coordinates[idx],
-            p2 = coordinates[idx + 1],
-            span = targetLength - this._animLenSoFar,
-            r = span / segLen;
-        const x = p1.x + (p2.x - p1.x) * r,
-            y = p1.y + (p2.y - p1.y) * r,
-            targetCoord = new Coordinate(x, y);
-        const animCoords = coordinates.slice(0, this._animIdx + 1);
-        animCoords.push(targetCoord);
-
-        this.setCoordinates(animCoords);
     }
 
     _computeGeodesicLength(measurer) {
