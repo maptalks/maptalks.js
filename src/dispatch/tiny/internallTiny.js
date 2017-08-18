@@ -9,23 +9,18 @@
  * - buffers,除了 createBuffer,deleteBuffer,getBufferParameter,isBuffer
  */
 const INTERNAL_TINY_ENUM = {
-    //
     'lineWidth': true,
-    //
-    'scissor': true,
-    'viewport': true,
-    'enable': true,
-    'disable': true,
-    'deleteTexture': true,
+    //'viewport': true,
+    //'enable': true,
+    //'disable': true,
     'deleteBuffer': true,
-    'deleteShader': true,
+    //'deleteShader': true,
     'deleteProgram': true,
     'deleteFramebuffer': true,
     'deleteRenderbuffer': true,
     //
     'bindFramebuffer': true,
     'framebufferTexture2D': true,
-    //
     'readPixels': true,
     //buffer-uinform-attrib
     'bindBuffer': true,
@@ -67,9 +62,7 @@ const INTERNAL_TINY_ENUM = {
     'vertexAttrib1fv': true,
     'vertexAttrib2fv': true,
     'vertexAttrib3fv': true,
-    'vertexAttrib4fv': true,
-    //texture
-    'bindTexture': true,
+    'vertexAttrib4fv': true
 };
 
 class InternalTiny {

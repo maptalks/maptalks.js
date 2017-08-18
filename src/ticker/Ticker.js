@@ -30,7 +30,7 @@ class Ticker {
          * @private
          * @type {TickerListener}
          */
-        this._head = new TickerListener(null, null, Infinity);
+        this._head = new TickerListener(null, null, null, Infinity);
         /**
          * Internal current frame request ID
          * @private
@@ -50,7 +50,7 @@ class Ticker {
          * @member {boolean}
          * @default false
          */
-        this.autoStart = autoStart||false;
+        this.autoStart = autoStart || false;
         /**
          * Scalar time value from last frame to this frame.
          * This value is capped by setting {@link PIXI.ticker.Ticker#minFPS}
@@ -182,8 +182,8 @@ class Ticker {
      * @param {number} [priority=PIXI.UPDATE_PRIORITY.NORMAL] - The priority for emitting
      * @returns {PIXI.ticker.Ticker} This instance of a ticker
      */
-    add(fn, context, priority = UPDATE_PRIORITY.NORMAL) {
-        return this._addListener(new TickerListener(fn, context, priority));
+    add(fn, context, data = [], priority = UPDATE_PRIORITY.NORMAL) {
+        return this._addListener(new TickerListener(fn, context, data, priority, ));
     }
     /**
      * Add a handler for the tick event which is only execute once.
@@ -193,8 +193,8 @@ class Ticker {
      * @param {number} [priority=PIXI.UPDATE_PRIORITY.NORMAL] - The priority for emitting
      * @returns {PIXI.ticker.Ticker} This instance of a ticker
      */
-    addOnce(fn, context, priority = UPDATE_PRIORITY.NORMAL) {
-        return this._addListener(new TickerListener(fn, context, priority, true));
+    addOnce(fn, context, data = [], priority = UPDATE_PRIORITY.NORMAL) {
+        return this._addListener(new TickerListener(fn, context, data, priority, true));
     }
     /**
      * Internally adds the event handler so that it can be sorted by priority.
@@ -375,8 +375,7 @@ class Ticker {
     /**
      * eslint-disable-line require-jsdoc
      */
-    set minFPS(fps) 
-    {
+    set minFPS(fps) {
         // Clamp: 0 to TARGET_FPMS
         const minFPMS = Math.min(Math.max(0, fps) / 1000, TARGET_FPMS);
 

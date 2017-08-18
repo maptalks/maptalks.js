@@ -23,8 +23,7 @@ const merge = require('./../utils/merge'),
     isNode = require('./../utils/isNode'),
     mapFunc = require('./../utils/mapFunc'),
     stamp = require('./../utils/stamp').stamp,
-    humpToContinuous = require('./../utils/strManipulate').humpToContinuous,
-    createTiny = require('./../dispatch/createTiny').createTiny,
+   
     Dispose = require('./../utils/Dispose'),
     GLVertexShader = require('./shader/GLVertexShader'),
     GLFragmentShader = require('./shader/GLFragmentShader'),
@@ -36,7 +35,8 @@ const merge = require('./../utils/merge'),
 /**
  * supported tiny operation
  */
-const TINY_ENUM = require('./../dispatch/createTiny').TINY_ENUM;
+const TINY_ENUM = require('./../dispatch/createTiny').TINY_ENUM,
+    createTiny = require('./../dispatch/createTiny').createTiny;
 /**
  * 实时处理的函数,多为直接获取结果函数
  * needs to be executing in real time1
@@ -45,11 +45,13 @@ const BRIDGE_ENUM = [
     'isShader',
     'isBuffer',
     'isProgram',
+    'isTexture',
     'isContextLost',
     'deleteBuffer',
-    'createBuffer',
     'createFramebuffer',
     'getBufferParameter',
+    'getProgramParameter',
+    'getShaderParameter',
     'getParameter',
     'getError',
     'getProgramInfoLog',
@@ -60,13 +62,46 @@ const BRIDGE_ENUM = [
     'getUniform',
     'getUniformLocation',
     'getVertexAttrib',
-    'getVertexAttribOffset'
+    'getVertexAttribOffset',
+    'getTexParameter'
 ];
+/**
+ * - State information
+ * - Textures
+ */
+const BRIDGE_VOID_ENUM = [
+    'texParameterf',
+    'texParameteri',
+    'bindTexture',
+    'compressedTexImage2D',
+    'compressedTexSubImage2D',
+    'viewport',
+    'scissor',
+    'enable',
+    'disable',
+    'texParameteri',
+    'texImage2D',
+    'texSubImage2D',
+    'depthFunc',
+    'depthMask',
+    'colorMask',
+    'deleteShader',
+    'deleteTexture',
+    'clearColor',
+    'clearDepth',
+    'clear',
+    'clearStencil',
+    'frontFace',
+    'cullFace',
+    'blendEquationSeparate',
+    'blendFuncSeparate',
+    'pixelStorei',
+    'generateMipmap',
+    'activeTexture',
+]
 /**
  * @class
  * @example
- * let cvs = document.createElement('canvas'),
- * ctx = new Context(cvs);
  */
 class GLContext extends Dispose {
     /**
@@ -161,7 +196,7 @@ class GLContext extends Dispose {
         const that = this;
         //get the WebGLRenderingContext
         const gl = this._gl;
-        //1.map constant
+        //map constant
         for (const key in GLConstants) {
             if (!this.hasOwnProperty(key)) {
                 const target = GLConstants[key];
@@ -176,18 +211,18 @@ class GLContext extends Dispose {
                 return gl[key].apply(gl, rest);
             }
         }
+        //map BRIDGE_VOID_ENUM
+        for (let i = 0, len = BRIDGE_VOID_ENUM.length; i < len; i++) {
+            const key = BRIDGE_VOID_ENUM[i];
+            this[key] = (...rest) => {
+                 gl[key].apply(gl, rest);
+            }
+        }
         //map internalTinyOperation
         for (const key in TINY_ENUM) {
-            if (TINY_ENUM[key]) {
-                this[key] = (...rest) => {
-                    const glProgram = this._glProgram;
-                    if(!!glProgram)
-                        createTiny(glProgram, key, ...rest);
-                    else{
-                        const gl = this._gl;
-                        gl[key].apply(gl,rest);
-                    }
-                }
+            this[key] = (...rest) => {
+                const glProgram = this._glProgram;
+                createTiny(this,glProgram,key,...rest);
             }
         }
     }
@@ -254,13 +289,20 @@ class GLContext extends Dispose {
         return glTexture.handle;
     }
     /**
+     * @return {WebGLBuffer}
+     */
+    createBuffer(){
+        const gl = this._gl;
+        return gl.createBuffer();
+    }
+    /**
      * 注意在处理tiny的时候，需先useProgram
      * @param {WebGLProgram} program
      */
     useProgram(program) {
         const id = stamp(program);
-        this._glProgram = this._programCache[id];
-        createTiny(this._glProgram, 'useProgram', arguments);
+        const glProgram = this._programCache[id];
+        this._glProgram = glProgram;
     }
     /**
      * 获取extension
@@ -285,27 +327,8 @@ class GLContext extends Dispose {
      * @param {String} source 
      */
     shaderSource(shader, source) {
-        const glShader = this._shaderCache[stamp(shader)];
-        glShader.source = source;
-    }
-    /**
-     * 
-     * @param {WebGLShader} shader 
-     * @param {number} pname 
-     */
-    getShaderParameter(shader, pname) {
         const gl = this._gl;
-        return gl.getShaderParameter(shader, pname)
-    }
-    /**
-     * 
-     * @param {WebGLProgram} program 
-     * @param {number} pnam 
-     * @return {any}
-     */
-    getProgramParameter(program, pnam) {
-        const gl = this._gl;
-        return gl.getProgramParameter(program, pnam);
+        gl.shaderSource(shader, source);
     }
     /**
      * no need to implement
@@ -318,22 +341,9 @@ class GLContext extends Dispose {
      * no needs to implement this function
      * @param {WebGLProgram} program 
      */
-    linkProgram(program) { }
-    /**
-     * webgl2 support
-     */
-    createTransformFeedback() {
+    linkProgram(program) {
         const gl = this._gl;
-        return gl.createTransformFeedback ? gl.createTransformFeedback() : null;
-    }
-    /**
-     * webgl2 support
-     * @param {*} target 
-     * @param {*} transformFeedback 
-     */
-    bindTransformFeedback(target, transformFeedback) {
-        const gl = this._gl;
-        return gl.bindTransformFeedback ? gl.bindTransformFeedback(target, transformFeedback) : null;
+        gl.linkProgram(program);
     }
 }
 

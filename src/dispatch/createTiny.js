@@ -43,13 +43,23 @@ const Tinys = {};
  * @param {GLProgram} glProgram 
  * @param {*} tiny 
  */
-const enQueue = (glProgram, tiny, head=false) => {
+const enQueue = (glProgram, tiny, head = false) => {
     const id = glProgram.id;
     if (!Tinys[id])
         Tinys[id] = [];
     const queue = Tinys[id];
     queue.push(tiny);
 }
+/**
+ * 
+ * @param {*} id 
+ */
+const acquireQueue = (id) => {
+    const queue = Tinys[id];
+    Tinys[id] = [];
+    return queue;
+}
+
 /**
  * 
  */
@@ -70,7 +80,7 @@ const TINY_ENUM = merge({}, OVERRAL_TINY_ENUM, INTERNAL_TINY_ENUM, TICK_TINY_ENU
 /**
  * @func
  */
-const createTiny = function (glProgram, name, ...rest) {
+const createTiny = function (glContext,glProgram, name, ...rest) {
     //1.加入正序处理队列
     if (TINY_ENUM[name]) {
         const tiny = new InternalTiny(glProgram, name, ...rest);
@@ -82,16 +92,18 @@ const createTiny = function (glProgram, name, ...rest) {
     }
     //3.加入ticker
     if (TICK_TINY_ENUM[name]) {
-        ticker.add(function(){
-            const id = glProgram.id;
-            const queue = Tinys[id];
-            glProgram.useProgram();
+        ticker.addOnce(function (deltaTime, data) {
+            data.tickPrgoram.useProgram();
+            const queue = data.queue;
             let tiny = queue.shift();
-            while(!!tiny){
+            while (!!tiny) {
                 tiny.apply();
                 tiny = queue.shift();
             }
-        },glProgram.handle);
+        },glProgram.handle, {
+            tickPrgoram: glProgram,
+            queue: acquireQueue(glProgram.id)
+        });
     }
 }
 

@@ -33,8 +33,7 @@ class GLCanvas extends Dispose {
      * reference https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
      * @param {Object} [options] 
      */
-    _getContextAttributes(options) {
-        options = options || {};
+    _getContextAttributes(options = {}) {
         return {
             alpha: options.alpha || false,
             depth: options.depth || true,
@@ -44,6 +43,13 @@ class GLCanvas extends Dispose {
             preserveDrawingBuffer: options.preserveDrawingBuffer || false,
             failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
         }
+    }
+    /**
+     * return HTMLCanvasElement.style 
+     */
+    get style() {
+        const id = this._rootId;
+        return CANVAS[id].style;
     }
     /**
      * 
@@ -57,7 +63,7 @@ class GLCanvas extends Dispose {
      * @param {boolean} [options.preserveDrawingBuffer]
      * @param {boolean} [options.failIfMajorPerformanceCaveat]
      */
-    getContext(renderType = 'webgl', options) {
+    getContext(renderType = 'webgl', options = {}) {
         const id = this._id,
             rootId = this._rootId;
         if (!GLCONTEXT[id]) {
@@ -85,11 +91,6 @@ class GLCanvas extends Dispose {
     addEventListener(type, Listener, useCapture) {
         const id = this._rootId;
         CANVAS[id].addEventListener(type, Listener, useCapture);
-    }
-
-    get style() {
-        const id = this._rootId;
-        return CANVAS[id].style;
     }
 
 }

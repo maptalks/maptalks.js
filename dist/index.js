@@ -78,25 +78,24 @@ function render(time) {
 requestAnimationFrame(render);
 
 
-//var scene, camera1;
-//init();
-//function init() {
-//    scene = new THREE.Scene();
-//    camera1 = new THREE.PerspectiveCamera(75, 800 / 600, 1, 10000);
-//    camera1.position.z = 1000;
-//    geometry = new THREE.BoxGeometry(900, 900, 900);
-//    material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-//    mesh = new THREE.Mesh(geometry, material);
-//    scene.add(mesh);
-//    const glCanvas1 = new Fusion.gl.GLCanvas(canvas);
-//    renderer = new THREE.WebGLRenderer({
-//        canvas: glCanvas1,
-//        context: glCanvas1.getContext('webgl')
-//    });
-//    renderer.setSize(800, 600);
-//}
 
-//animate();
+//const glCanvas1 = new Fusion.gl.GLCanvas(canvas);
+
+//var scene = new THREE.Scene(),
+//    camera1 = new THREE.PerspectiveCamera(75, 800 / 600, 1, 10000);
+//camera1.position.z = 1000;
+//geometry = new THREE.BoxGeometry(200, 200, 200);
+//material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+//mesh = new THREE.Mesh(geometry, material);
+//scene.add(mesh);
+
+//renderer = new THREE.WebGLRenderer({
+//    //canvas:canvas
+//    canvas: canvas,
+//    //context: glCanvas1.getContext('webgl')
+//});
+
+//renderer.setSize(800, 600);
 
 //function animate() {
 //    requestAnimationFrame(animate);
@@ -105,6 +104,7 @@ requestAnimationFrame(render);
 //    renderer.render(scene, camera1);
 //}
 
+//animate();
 
 
 //// The application will create a renderer using WebGL, if possible,

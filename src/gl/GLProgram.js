@@ -149,10 +149,6 @@ class GLProgram extends Dispose {
          */
         this._uniforms = {};
         /**
-         * store the uniform ids
-         */
-        this._uniformIds = {};
-        /**
          * @type {GLExtension}
          */
         this._extension = extension;
@@ -208,12 +204,6 @@ class GLProgram extends Dispose {
         } else if (glShader instanceof GLFragmentShader) {
             this._fs = glShader;
             this._gl.attachShader(this._handle, this._fs.handle);
-        }
-        //
-        if (this._vs && this._fs) {
-            this._gl.linkProgram(this._handle);
-            this._extractAttributes();
-            this._extractUniforms();
         }
     }
     /**
