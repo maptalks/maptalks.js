@@ -65,6 +65,8 @@ export function stringWidth(text, font) {
     return rulerCtx.measureText(text).width;
 }
 
+const fontHeight = {};
+
 /**
  * Gets size in pixel of the text with a certain font.
  * @param {String} text - text to measure
@@ -76,15 +78,29 @@ export function stringLength(text, font) {
     if (stringLength.node) {
         return stringLength.node(text, font);
     } else {
-        const ruler = getDomRuler('span');
-        ruler.style.font = font;
-        ruler.innerHTML = text;
-        const result = new Size(ruler.clientWidth, ruler.clientHeight);
-        //if not removed, the canvas container on chrome will turn to unexpected blue background.
-        //Reason is unknown.
-        removeDomNode(ruler);
-        return result;
+        const w = stringWidth(text, font);
+        if (!font) {
+            font = '_default_';
+        }
+        if (!fontHeight[font]) {
+            fontHeight[font] = getFontHeight(font);
+        }
+        return new Size(w, fontHeight[font]);
     }
+}
+
+export function getFontHeight(font) {
+    //dom
+    const domRuler = getDomRuler();
+    if (font !== '_default_') {
+        domRuler.style.font = font;
+    }
+    domRuler.innerHTML = '秦';
+    const h = domRuler.clientHeight;
+    //if not removed, the canvas container on chrome will turn to unexpected blue background.
+    // Reason is unknown.
+    removeDomNode(domRuler);
+    return h;
 }
 
 /**
@@ -95,24 +111,27 @@ export function stringLength(text, font) {
  * @return {String[]}
  * @memberOf StringUtil
  */
-export function splitContent(content, font, wrapWidth) {
-    const width = stringWidth(content, font),
-        chrWidth = (width / content.length);
+export function splitContent(content, font, wrapWidth, textWidth) {
+    const width = isNil(textWidth) ? stringWidth(content, font) : textWidth;
+    const chrWidth = width / content.length,
+        minChrCount = Math.floor(wrapWidth / chrWidth / 2);
     if (width <= wrapWidth || chrWidth >= wrapWidth) return [{ 'text' : content, 'width' : width }];
     const result = [];
-    let testStr = '', prew = chrWidth;
-    for (let i = 0, l = content.length; i < l; i++) {
+    let testStr = content.substring(0, minChrCount), prew = chrWidth * minChrCount;
+    for (let i = minChrCount, l = content.length; i < l; i++) {
         const chr = content[i];
         const w = stringWidth(testStr + chr);
-        if (w > wrapWidth) {
+        if (w >= wrapWidth) {
             result.push({ 'text' : testStr, 'width' : prew });
-            testStr = chr;
-            prew = chrWidth;
+            testStr = content.substring(i, minChrCount + i);
+            i += (minChrCount - 1);
+            prew = chrWidth * minChrCount;
         } else {
             testStr += chr;
             prew = w;
         }
-        if (i === l - 1) {
+        if (i >= l - 1) {
+            prew = stringWidth(testStr);
             result.push({ 'text' : testStr, 'width' : prew });
         }
     }
@@ -197,15 +216,15 @@ export function getFont(style) {
  * Split a text to multiple rows according to the style.
  * @param {String} text     - text to split
  * @param {Object} style    - text style
- * @return {Object[]} the object's structure: {rowNum: rowNum, textSize: textSize, rows: textRows}
+ * @return {Object[]} the object's structure: { rowNum: rowNum, textSize: textSize, rows: textRows, rawSize : rawSize }
  * @memberOf StringUtil
  */
 export function splitTextToRow(text, style) {
     const font = getFont(style),
         lineSpacing = style['textLineSpacing'] || 0,
-        rawTextSize = stringLength(text, font),
-        textWidth = rawTextSize['width'],
-        textHeight = rawTextSize['height'],
+        size = stringLength(text, font),
+        textWidth = size['width'],
+        textHeight = size['height'],
         wrapChar = style['textWrapCharacter'],
         textRows = [];
     let wrapWidth = style['textWrapWidth'];
@@ -222,7 +241,7 @@ export function splitTextToRow(text, style) {
             const t = texts[i];
             const tWidth = stringWidth(t, font);
             if (tWidth > wrapWidth) {
-                const contents = splitContent(t, font, wrapWidth);
+                const contents = splitContent(t, font, wrapWidth, tWidth);
                 for (let ii = 0, ll = contents.length; ii < ll; ii++) {
                     const w = contents[ii].width;
                     if (w > actualWidth) {
@@ -244,7 +263,7 @@ export function splitTextToRow(text, style) {
             }
         }
     } else if (textWidth > wrapWidth) {
-        const contents = splitContent(text, font, wrapWidth);
+        const contents = splitContent(text, font, wrapWidth, textWidth);
         for (let i = 0; i < contents.length; i++) {
             const w = contents[i].width;
             if (w > actualWidth) {
@@ -261,7 +280,7 @@ export function splitTextToRow(text, style) {
         }
         textRows.push({
             'text': text,
-            'size': rawTextSize
+            'size': size
         });
     }
 
@@ -271,6 +290,6 @@ export function splitTextToRow(text, style) {
         'total': rowNum,
         'size': textSize,
         'rows': textRows,
-        'rawSize': rawTextSize
+        'rawSize': size
     };
 }
