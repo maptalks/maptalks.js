@@ -1,4 +1,4 @@
-import { isNumber, mapArrayRecursively, sign, pushIn } from 'core/util';
+import { isNumber, mapArrayRecursively, sign, pushIn, hasOwn } from 'core/util';
 import { clipPolygon, clipLine } from 'core/util/path';
 import Class from 'core/Class';
 import Size from 'geo/Size';
@@ -225,11 +225,13 @@ export default class Painter extends Class {
         if (extent && !extent.intersects(this.get2DExtent(renderer.resources))) {
             return;
         }
+        this._beforePaint();
         const contexts = [renderer.context, renderer.resources];
         this._prepareShadow(renderer.context);
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
+        this._afterPaint();
         this._painted = true;
         this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
     }
@@ -448,5 +450,31 @@ export default class Painter extends Class {
             this.removeCache();
         }
         this._projCode = projection.code;
+    }
+
+    _beforePaint() {
+        const textcache = this.geometry[Symbolizers.TextMarkerSymbolizer.CACHE_KEY];
+        if (!textcache) {
+            return;
+        }
+        for (const p in textcache) {
+            if (hasOwn(textcache, p)) {
+                textcache[p].active = false;
+            }
+        }
+    }
+
+    _afterPaint() {
+        const textcache = this.geometry[Symbolizers.TextMarkerSymbolizer.CACHE_KEY];
+        if (!textcache) {
+            return;
+        }
+        for (const p in textcache) {
+            if (hasOwn(textcache, p)) {
+                if (!textcache[p].active) {
+                    delete textcache[p];
+                }
+            }
+        }
     }
 }
