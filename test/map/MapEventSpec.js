@@ -44,12 +44,49 @@ describe('#MapEventSpec', function () {
         }, 500);
     });
 
-    it('fire an additional click event after touch', function () {
+    it('mimic click event after touch', function () {
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         var spy = sinon.spy();
         map.on('click', spy);
 
+        happen.once(eventContainer, {
+            'type' : 'touchstart',
+            'touches' : [{
+                'clientX':point.x,
+                'clientY':point.y
+            }]
+        });
+        happen.once(eventContainer, {
+            'type' : 'touchend',
+            'touches' : [{
+                'clientX':point.x,
+                'clientY':point.y
+            }]
+        });
+        expect(spy.called).to.be.ok();
+    });
+
+    it('mimic dblclick event after double touch', function () {
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        map.on('dblclick', spy);
+
+        happen.once(eventContainer, {
+            'type' : 'touchstart',
+            'touches' : [{
+                'clientX':point.x,
+                'clientY':point.y
+            }]
+        });
+        happen.once(eventContainer, {
+            'type' : 'touchend',
+            'touches' : [{
+                'clientX':point.x,
+                'clientY':point.y
+            }]
+        });
         happen.once(eventContainer, {
             'type' : 'touchstart',
             'touches' : [{

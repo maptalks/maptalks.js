@@ -48,6 +48,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return this;
     },
 
+    /**
+     * Redo the edit
+     * @return {Geometry} this
+     */
     redoEdit() {
         if (!this.isEditing()) {
             return this;
@@ -65,6 +69,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return this;
     },
 
+    /**
+     * Undo the edit
+     * @return {Geometry} this
+     */
     undoEdit() {
         if (!this.isEditing()) {
             return this;

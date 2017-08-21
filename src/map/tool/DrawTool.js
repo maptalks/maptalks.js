@@ -212,6 +212,10 @@ class DrawTool extends MapTool {
         return this;
     }
 
+    /**
+     * Undo drawing, only applicable for click/dblclick mode
+     * @return {DrawTool} this
+     */
     undo() {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
@@ -223,6 +227,10 @@ class DrawTool extends MapTool {
         return this;
     }
 
+    /**
+     * Redo drawing, only applicable for click/dblclick mode
+     * @return {DrawTool} this
+     */
     redo() {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
