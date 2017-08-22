@@ -4,7 +4,7 @@
  * 
  * -
  */
-const Ticker = require('./../ticker/Ticker');
+const Ticker = require('./Ticker');
 /**
  * internal ticker
  */
@@ -124,7 +124,15 @@ class Tiny{
     get isEmpty(){
         return this._internal.length === 0;
     }
-
+    /**
+     * 
+     */
+    add(){
+        
+    }
+    
     
 
 }
+
+module.exports = Tiny;
