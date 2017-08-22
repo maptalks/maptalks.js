@@ -33,8 +33,8 @@ describe('LabelEdit', function () {
             function startEdit() {
                 var size = label.getSize();
                 expect(label.isEditingText()).to.be.ok();
-                expect(label._textEditor.clientWidth + 2).to.be.eql(size.width);
-                expect(label._textEditor.clientHeight + 2).to.be.eql(size.height);
+                expect(label._textEditor.clientWidth + 2).to.be.eql(Math.round(size.width));
+                expect(label._textEditor.clientHeight + 2).to.be.eql(Math.round(size.height));
                 var dom = label.getTextEditor().getDOM();
                 maptalks.DomUtil.on(dom, 'keyup', function (ev) {
                     var oEvent = ev || event;

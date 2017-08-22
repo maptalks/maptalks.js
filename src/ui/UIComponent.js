@@ -557,7 +557,7 @@ class UIComponent extends Eventable(Class) {
             p = this.getPosition();
         this._pos = p;
         dom.style[TRANSITION] = null;
-        dom.style[TRANSFORM] = toCSSTranslate(p);
+        dom.style[TRANSFORM] = toCSSTranslate(p) + ' scale(1)';
     }
 }
 

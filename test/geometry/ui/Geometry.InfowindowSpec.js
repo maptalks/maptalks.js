@@ -132,9 +132,9 @@ describe('#Geometry.InfoWindow', function () {
             expect(p.toArray()).to.be.eql([c.x + offset.x, c.y + offset.y]);
             var t;
             if (maptalks.Browser.any3d) {
-                t = 'translate3d(' + p.x + 'px, ' + p.y + 'px, 0px)';
+                t = 'translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(1)';
             } else {
-                t = 'translate(' + p.x + 'px, ' + p.y + 'px)';
+                t = 'translate(' + p.x + 'px, ' + p.y + 'px) scale(1)';
             }
             expect(dom.style[maptalks.DomUtil.TRANSFORM]).to.be.eql(t);
         });
