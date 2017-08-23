@@ -34,6 +34,11 @@ const merge = require('./../utils/merge'),
     GLProgram = require('./GLProgram');
 
 const ALL_ENUM = require('./../core/handle').ALL_ENUM;
+
+const GLPROGRAMS = require('./../utils/util').GLPROGRAMS,
+    GLSHADERS = require('./../utils/util').GLSHADERS,
+    GLTEXTURES = require('./../utils/util').GLTEXTURES;
+
 /**
  * 实时处理的函数,多为直接获取结果函数
  * needs to be executing in real time1
@@ -46,6 +51,7 @@ const BRIDGE_ARRAY = [
     'isContextLost',
     'getBufferParameter',
     'getProgramParameter',
+    'getProgramInfoLog ',
     'getShaderParameter',
     'getParameter',
     'getError',
@@ -98,20 +104,6 @@ class GLContext extends Dispose {
          * @type {Tiny}
          */
         this._tiny = new Tiny(this);
-        /**
-         * the program cache
-         * @type {Object}
-         */
-        this._programCache = {};
-        /**
-         * the shader cache
-         * @type {Object}
-         */
-        this._shaderCache = {};
-        /**
-         * the texture cache
-         */
-        this._textureCache = {};
         /**
          * current using program
          * @type {GLProgram}
@@ -182,8 +174,6 @@ class GLContext extends Dispose {
         for (const key in ALL_ENUM) {
             this[key] = (...rest) => {
                 tiny.push(key,...rest);
-                //const glProgram = this._glProgram;
-                //createTiny(this,glProgram,key,...rest);
             }
         }
     }
@@ -216,7 +206,7 @@ class GLContext extends Dispose {
         //1.创建GLProgram
         const glProgram = new GLProgram(gl);
         //2.缓存program
-        this._programCache[glProgram.id] = glProgram;
+        GLPROGRAMS[glProgram.id] = glProgram;
         //3.返回句柄
         return glProgram.handle;
     }
@@ -235,7 +225,7 @@ class GLContext extends Dispose {
             glShader = new GLFragmentShader(gl, null, glExtension);
         }
         if (!!glShader) {
-            this._shaderCache[glShader.id] = glShader;
+            GLSHADERS[glShader.id] = glShader;
             return glShader.handle;
         }
         return null;
@@ -246,7 +236,7 @@ class GLContext extends Dispose {
     createTexture() {
         const gl = this._gl;
         const glTexture = new GLTexture(gl);
-        this._textureCache[glTexture.id] = glTexture;
+        GLTEXTURES[glTexture.id] = glTexture;
         return glTexture.handle;
     }
     /**
@@ -270,7 +260,7 @@ class GLContext extends Dispose {
     useProgram(program) {
         const id = stamp(program),
             tiny = this._tiny,
-            glProgram = this._programCache[id];
+            glProgram = GLPROGRAMS[id];
         //this._glProgram = glProgram;
         tiny.switchPorgarm(glProgram);
     }
@@ -287,8 +277,8 @@ class GLContext extends Dispose {
      * @param {WebGLShader} shader 
      */
     attachShader(program, shader) {
-        const glProgram = this._programCache[stamp(program)];
-        const glShader = this._shaderCache[stamp(shader)];
+        const glProgram = GLPROGRAMS[stamp(program)];
+        const glShader = GLSHADERS[stamp(shader)];
         glProgram.attachShader(glShader);
     }
     /**

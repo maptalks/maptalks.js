@@ -1412,10 +1412,57 @@ var handle = {
 };
 
 /**
+ * 全局HTMLCanvasElement
+ */
+var CANVASES$1 = {};
+/**
+ * 全局GLCONTEXT
+ */
+var GLCONTEXTS$1 = {};
+/**
+ * 全局WEBGLCONTEXT
+ */
+var WEBGLCONTEXTS$1 = {};
+/**
+ * 全局limit存储
+ */
+var GLLIMITS$1 = {};
+/**
+ * 全局扩展存储
+ */
+var GLEXTENSIONS$1 = {};
+/**
+ * 全局扩展，glShader存储
+ */
+var GLSHADERS$2 = {};
+/**
+ * 全局扩展，glTexture纹理存储
+ */
+var GLTEXTURES$2 = {};
+/**
+ * 全局扩展，GLPrograms存储
+ */
+var GLPROGRAMS$2 = {};
+
+var util = {
+  CANVASES: CANVASES$1,
+  GLCONTEXTS: GLCONTEXTS$1,
+  WEBGLCONTEXTS: WEBGLCONTEXTS$1,
+  GLEXTENSIONS: GLEXTENSIONS$1,
+  GLLIMITS: GLLIMITS$1,
+  GLPROGRAMS: GLPROGRAMS$2,
+  GLSHADERS: GLSHADERS$2,
+  GLTEXTURES: GLTEXTURES$2
+};
+
+/**
  * Tiny的作用与策略，详情请参见：
  * https://github.com/axmand/fusion.gl/wiki/Tiny
  * 
  * -
+ * -
+ * -
+ * 
  */
 var stamp$2 = stamp_1.stamp;
 var ticker = handle.ticker;
@@ -1449,6 +1496,10 @@ var Tiny = function () {
          * 
          */
         this._tinyProgramCache = {};
+        /**
+         * @type {GLProgram}
+         */
+        this._glPrgram = null;
     }
     /**
      * indicate wether it's need to be updated
@@ -1459,10 +1510,12 @@ var Tiny = function () {
         key: 'switchPorgarm',
 
         /**
-         * useProgram
-         * @returns {Array} []
+         * 
+         * @param {GLProgram} glProgram
+         * @returns {Array} [] 
          */
         value: function switchPorgarm(glProgram) {
+            this._glPrgram = glProgram;
             var id = stamp$2(glProgram),
                 tinyProgramCache = this._tinyProgramCache;
             if (!tinyProgramCache[id]) tinyProgramCache[id] = [];
@@ -1470,6 +1523,8 @@ var Tiny = function () {
         }
         /**
          * 
+         * @param {String} name 
+         * @param {[]} rest 
          */
 
     }, {
@@ -1479,19 +1534,26 @@ var Tiny = function () {
                 rest[_key - 1] = arguments[_key];
             }
 
-            var programInternal = this._programInternal;
-            if (programInternal === null) {
-                this._overrall.push({ name: name, rest: rest });
-            } else {
-                programInternal.push({ name: name, rest: rest });
-            }
+            var glProgram = this._glPrgram,
+                overrall = this._overrall,
+                programInternal = this._programInternal;
+            programInternal === null ? overrall.push({ name: name, rest: rest }) : programInternal.push({ name: name, rest: rest });
             //如果是TICKER_ENUM,则需要加入ticker
             if (TICKER_ENUM[name]) {
-                ticker.addOnce(function (detialTime, data) {
-                    alert(data);
+                ticker.addOnce(function (deltaTime, bucket) {
+                    bucket.glProgram.useProgram();
+                    var gl = bucket.glProgram.gl;
+                    var queue = bucket.overrall.concat(bucket.internal).reverse();
+                    var task = queue.pop();
+                    while (task != null) {
+                        gl[task.name].apply(gl, task.rest);
+                        task = queue.pop();
+                    }
                 }, this, {
-                    overrall: this._overrall.slice(0, this._overrall.length - 1), //重复取
-                    internal: programInternal.splice(0, programInternal.length) //清空取
+                    //overrall: this._overrall.slice(0, this._overrall.length - 1), //重复取
+                    overrall: overrall.splice(0, this._overrall.length), //重复取
+                    internal: programInternal.splice(0, programInternal.length), //清空取
+                    glProgram: glProgram
                 });
             }
             //
@@ -2638,40 +2700,6 @@ var GLFragmentShader = function (_GLShader) {
 var GLFragmentShader_1 = GLFragmentShader;
 
 /**
- * 全局HTMLCanvasElement
- */
-var CANVAS$1 = {};
-/**
- * 全局GLCONTEXT
- */
-var GLCONTEXT$1 = {};
-/**
- * 全局WEBGLCONTEXT
- */
-var WEBGLCONTEXT$1 = {};
-/**
- * 全局limit存储
- */
-var GLLIMITS$1 = {};
-/**
- * 全局扩展存储
- */
-var GLEXTENSION$1 = {};
-/**
- * 全局纹理存储
- */
-var GLTEXTURES$1 = {};
-
-var util = {
-  CANVAS: CANVAS$1,
-  GLCONTEXT: GLCONTEXT$1,
-  WEBGLCONTEXT: WEBGLCONTEXT$1,
-  GLEXTENSION: GLEXTENSION$1,
-  GLLIMITS: GLLIMITS$1,
-  GLTEXTURES: GLTEXTURES$1
-};
-
-/**
  * use texture soruce to create the texture form
  * reference:
  * https://webgl2fundamentals.org/webgl/lessons/webgl-2-textures.html
@@ -2684,7 +2712,7 @@ var util = {
  * 
  */
 var setId$2 = stamp_1.setId;
-var GLTEXTURES = util.GLTEXTURES;
+var GLTEXTURES$3 = util.GLTEXTURES;
 
 /**
  * @class
@@ -2710,7 +2738,7 @@ var GLTexture = function (_Dispose) {
 
         var _this = possibleConstructorReturn(this, (GLTexture.__proto__ || Object.getPrototypeOf(GLTexture)).call(this));
 
-        GLTEXTURES[_this._id] = _this;
+        GLTEXTURES$3[_this._id] = _this;
         var width = options.width,
             height = options.height,
             extension = options.extension,
@@ -3844,344 +3872,333 @@ var GLProgram_1 = createCommonjsModule(function (module) {
 var stamp$1 = stamp_1.stamp;
 
 var ALL_ENUM = handle.ALL_ENUM;
+
+var GLPROGRAMS = util.GLPROGRAMS;
+var GLSHADERS = util.GLSHADERS;
+var GLTEXTURES = util.GLTEXTURES;
+
 /**
  * 实时处理的函数,多为直接获取结果函数
  * needs to be executing in real time1
  */
-var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getShaderParameter', 'getParameter', 'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset', 'getTexParameter'];
+var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getProgramInfoLog ', 'getShaderParameter', 'getParameter', 'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset', 'getTexParameter'];
 /**
  * @class
  * @example
  */
 
 var GLContext = function (_Dispose) {
-  inherits(GLContext, _Dispose);
-
-  /**
-   * @param {Object} options
-   * @param {HTMLCanvasElement} options.canvas
-   * @param {WebGLRenderingContext} options.gl
-   * @param {String} options.renderType 'webgl'、'webgl2'
-   * @param {GLExtension} [options.glExtension] 
-   * @param {GLLimits} [options.glLimits]
-   */
-  function GLContext() {
-    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    classCallCheck(this, GLContext);
+    inherits(GLContext, _Dispose);
 
     /**
-     * @type {HTMLCanvasElement}
+     * @param {Object} options
+     * @param {HTMLCanvasElement} options.canvas
+     * @param {WebGLRenderingContext} options.gl
+     * @param {String} options.renderType 'webgl'、'webgl2'
+     * @param {GLExtension} [options.glExtension] 
+     * @param {GLLimits} [options.glLimits]
      */
-    var _this = possibleConstructorReturn(this, (GLContext.__proto__ || Object.getPrototypeOf(GLContext)).call(this));
+    function GLContext() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        classCallCheck(this, GLContext);
 
-    _this._canvas = options.canvas || null;
-    /**
-     *  @type {WebGLRenderingContext}
-     */
-    _this._gl = options.gl;
-    /**
-     * webgl扩展
-     * @type {GLExtension}
-     */
-    _this._glExtension = options.glExtension;
-    /**
-     * get parameter and extensions
-     * @type {GLLimits}
-     */
-    _this._glLimits = options.glLimits;
-    /**
-     * the ticker datasource
-     * @type {Tiny}
-     */
-    _this._tiny = new Tiny_1(_this);
-    /**
-     * the program cache
-     * @type {Object}
-     */
-    _this._programCache = {};
-    /**
-     * the shader cache
-     * @type {Object}
-     */
-    _this._shaderCache = {};
-    /**
-     * the texture cache
-     */
-    _this._textureCache = {};
-    /**
-     * current using program
-     * @type {GLProgram}
-     */
-    //this._glProgram = null;
-    /**
-     * setup env
-     */
-    _this._setup();
-    /**
-     * map glContext to Context
-     */
-    _this._map();
-    return _this;
-  }
+        /**
+         * @type {HTMLCanvasElement}
+         */
+        var _this = possibleConstructorReturn(this, (GLContext.__proto__ || Object.getPrototypeOf(GLContext)).call(this));
 
-  createClass(GLContext, [{
-    key: '_setup',
-
-    /**
-     * 设置绘制区域的规则
-     * 1. 混合颜色
-     * 2. 深度
-     * 3.
-     */
-    value: function _setup() {
-      var gl = this._gl;
-      //reference http://www.cppblog.com/wc250en007/archive/2012/07/18/184088.html
-      //gl.ONE 使用1.0作为因子，相当于完全使用了这种颜色参与混合运算
-      //gl.ONE_MINUS_SRC_ALPHA 使用1.0-源颜色alpha值作为因子，
-      //作用为：源颜色的alpha作为不透明度，即源颜色alpha值越大，混合时占比越高，混合时最常用的方式
-      gl.enable(GLConstants_1.BLEND);
-      gl.blendFunc(GLConstants_1.ONE, GLConstants_1.ONE_MINUS_SRC_ALPHA);
-      //为了模仿真实物体和透明物体的混合颜色，需要使用深度信息
-      //http://www.cnblogs.com/aokman/archive/2010/12/13/1904723.html
-      //模版缓存区测试，用来对比当前值与预设值，用以判断是否更新此值
-      //顺序为：(framment + associated data) - pixel ownership test - scissor test
-      //       - alpha test - stencil test - depth test
-      //       - blending - dithering - logic op - framebuffer
-      //在模板测试的过程中，可以先使用一个比较用掩码（comparison mask）与模板缓冲区中的值进行位与运算，
-      //再与参考值进行比较，从而实现对模板缓冲区中的值的某一位上的置位状态的判断。
-      gl.enable(GLConstants_1.STENCIL_TEST);
-      //gl.stencilFunc(gl)
-      gl.enable(GLConstants_1.DEPTH_TEST);
-      //深度参考值小于模版值时，测试通过
-      gl.depthFunc(GLConstants_1.LEQUAL);
-      gl.depthMask(false);
+        _this._canvas = options.canvas || null;
+        /**
+         *  @type {WebGLRenderingContext}
+         */
+        _this._gl = options.gl;
+        /**
+         * webgl扩展
+         * @type {GLExtension}
+         */
+        _this._glExtension = options.glExtension;
+        /**
+         * get parameter and extensions
+         * @type {GLLimits}
+         */
+        _this._glLimits = options.glLimits;
+        /**
+         * the ticker datasource
+         * @type {Tiny}
+         */
+        _this._tiny = new Tiny_1(_this);
+        /**
+         * current using program
+         * @type {GLProgram}
+         */
+        //this._glProgram = null;
+        /**
+         * setup env
+         */
+        _this._setup();
+        /**
+         * map glContext to Context
+         */
+        _this._map();
+        return _this;
     }
-    /**
-     * map相关属性与方法
-     */
 
-  }, {
-    key: '_map',
-    value: function _map() {
-      var _this2 = this;
+    createClass(GLContext, [{
+        key: '_setup',
 
-      //get the WebGLRenderingContext
-      var gl = this._gl;
-      //get tiny
-      var tiny = this._tiny;
-      //map constant
-      for (var key in GLConstants_1) {
-        if (!this.hasOwnProperty(key)) {
-          var target = GLConstants_1[key];
-          if (!this[key] && !!target) this[key] = target;
+        /**
+         * 设置绘制区域的规则
+         * 1. 混合颜色
+         * 2. 深度
+         * 3.
+         */
+        value: function _setup() {
+            var gl = this._gl;
+            //reference http://www.cppblog.com/wc250en007/archive/2012/07/18/184088.html
+            //gl.ONE 使用1.0作为因子，相当于完全使用了这种颜色参与混合运算
+            //gl.ONE_MINUS_SRC_ALPHA 使用1.0-源颜色alpha值作为因子，
+            //作用为：源颜色的alpha作为不透明度，即源颜色alpha值越大，混合时占比越高，混合时最常用的方式
+            gl.enable(GLConstants_1.BLEND);
+            gl.blendFunc(GLConstants_1.ONE, GLConstants_1.ONE_MINUS_SRC_ALPHA);
+            //为了模仿真实物体和透明物体的混合颜色，需要使用深度信息
+            //http://www.cnblogs.com/aokman/archive/2010/12/13/1904723.html
+            //模版缓存区测试，用来对比当前值与预设值，用以判断是否更新此值
+            //顺序为：(framment + associated data) - pixel ownership test - scissor test
+            //       - alpha test - stencil test - depth test
+            //       - blending - dithering - logic op - framebuffer
+            //在模板测试的过程中，可以先使用一个比较用掩码（comparison mask）与模板缓冲区中的值进行位与运算，
+            //再与参考值进行比较，从而实现对模板缓冲区中的值的某一位上的置位状态的判断。
+            gl.enable(GLConstants_1.STENCIL_TEST);
+            //gl.stencilFunc(gl)
+            gl.enable(GLConstants_1.DEPTH_TEST);
+            //深度参考值小于模版值时，测试通过
+            gl.depthFunc(GLConstants_1.LEQUAL);
+            gl.depthMask(false);
         }
-      }
-      //map ImplementBridge
+        /**
+         * map相关属性与方法
+         */
 
-      var _loop = function _loop(i, len) {
-        var key = BRIDGE_ARRAY[i];
-        _this2[key] = function () {
-          for (var _len = arguments.length, rest = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
-            rest[_key2] = arguments[_key2];
-          }
+    }, {
+        key: '_map',
+        value: function _map() {
+            var _this2 = this;
 
-          return gl[key].apply(gl, rest);
-        };
-      };
+            //get the WebGLRenderingContext
+            var gl = this._gl;
+            //get tiny
+            var tiny = this._tiny;
+            //map constant
+            for (var key in GLConstants_1) {
+                if (!this.hasOwnProperty(key)) {
+                    var target = GLConstants_1[key];
+                    if (!this[key] && !!target) this[key] = target;
+                }
+            }
+            //map ImplementBridge
 
-      for (var i = 0, len = BRIDGE_ARRAY.length; i < len; i++) {
-        _loop(i, len);
-      }
-      //map internalTinyOperation
+            var _loop = function _loop(i, len) {
+                var key = BRIDGE_ARRAY[i];
+                _this2[key] = function () {
+                    for (var _len = arguments.length, rest = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
+                        rest[_key2] = arguments[_key2];
+                    }
 
-      var _loop2 = function _loop2(_key) {
-        _this2[_key] = function () {
-          for (var _len2 = arguments.length, rest = Array(_len2), _key3 = 0; _key3 < _len2; _key3++) {
-            rest[_key3] = arguments[_key3];
-          }
+                    return gl[key].apply(gl, rest);
+                };
+            };
 
-          tiny.push.apply(tiny, [_key].concat(rest));
-          //const glProgram = this._glProgram;
-          //createTiny(this,glProgram,key,...rest);
-        };
-      };
+            for (var i = 0, len = BRIDGE_ARRAY.length; i < len; i++) {
+                _loop(i, len);
+            }
+            //map internalTinyOperation
 
-      for (var _key in ALL_ENUM) {
-        _loop2(_key);
-      }
-    }
-    /**
-     * 获取canvas
-     */
+            var _loop2 = function _loop2(_key) {
+                _this2[_key] = function () {
+                    for (var _len2 = arguments.length, rest = Array(_len2), _key3 = 0; _key3 < _len2; _key3++) {
+                        rest[_key3] = arguments[_key3];
+                    }
 
-  }, {
-    key: 'createProgram',
+                    tiny.push.apply(tiny, [_key].concat(rest));
+                };
+            };
 
-    /**
-     * @return {WebGLProgram}
-     */
-    value: function createProgram() {
-      var gl = this._gl;
-      //1.创建GLProgram
-      var glProgram = new GLProgram_1(gl);
-      //2.缓存program
-      this._programCache[glProgram.id] = glProgram;
-      //3.返回句柄
-      return glProgram.handle;
-    }
-    /**
-     * create shader
-     * @param {number} type
-     * @return {WebGLShader}
-     */
+            for (var _key in ALL_ENUM) {
+                _loop2(_key);
+            }
+        }
+        /**
+         * 获取canvas
+         */
 
-  }, {
-    key: 'createShader',
-    value: function createShader(type) {
-      var gl = this._gl,
-          glExtension = this._glExtension;
-      var glShader = null;
-      if (type === GLConstants_1.VERTEX_SHADER) {
-        glShader = new GLVertexShader_1(gl, null, glExtension);
-      } else if (type === GLConstants_1.FRAGMENT_SHADER) {
-        glShader = new GLFragmentShader_1(gl, null, glExtension);
-      }
-      if (!!glShader) {
-        this._shaderCache[glShader.id] = glShader;
-        return glShader.handle;
-      }
-      return null;
-    }
-    /**
-     * @return {WebGLTexture}
-     */
+    }, {
+        key: 'createProgram',
 
-  }, {
-    key: 'createTexture',
-    value: function createTexture() {
-      var gl = this._gl;
-      var glTexture = new GLTexture_1(gl);
-      this._textureCache[glTexture.id] = glTexture;
-      return glTexture.handle;
-    }
-    /**
-     * @return {WebGLBuffer}
-     */
+        /**
+         * @return {WebGLProgram}
+         */
+        value: function createProgram() {
+            var gl = this._gl;
+            //1.创建GLProgram
+            var glProgram = new GLProgram_1(gl);
+            //2.缓存program
+            GLPROGRAMS[glProgram.id] = glProgram;
+            //3.返回句柄
+            return glProgram.handle;
+        }
+        /**
+         * create shader
+         * @param {number} type
+         * @return {WebGLShader}
+         */
 
-  }, {
-    key: 'createBuffer',
-    value: function createBuffer() {
-      var gl = this._gl;
-      return gl.createBuffer();
-    }
-    /**
-     * @type {WebGLFramebuffer}
-     */
+    }, {
+        key: 'createShader',
+        value: function createShader(type) {
+            var gl = this._gl,
+                glExtension = this._glExtension;
+            var glShader = null;
+            if (type === GLConstants_1.VERTEX_SHADER) {
+                glShader = new GLVertexShader_1(gl, null, glExtension);
+            } else if (type === GLConstants_1.FRAGMENT_SHADER) {
+                glShader = new GLFragmentShader_1(gl, null, glExtension);
+            }
+            if (!!glShader) {
+                GLSHADERS[glShader.id] = glShader;
+                return glShader.handle;
+            }
+            return null;
+        }
+        /**
+         * @return {WebGLTexture}
+         */
 
-  }, {
-    key: 'createFramebuffer',
-    value: function createFramebuffer() {
-      var gl = this._gl;
-      return gl.createFramebuffer();
-    }
-    /**
-     * 注意在处理tiny的时候，需先useProgram
-     * @param {WebGLProgram} program
-     */
+    }, {
+        key: 'createTexture',
+        value: function createTexture() {
+            var gl = this._gl;
+            var glTexture = new GLTexture_1(gl);
+            GLTEXTURES[glTexture.id] = glTexture;
+            return glTexture.handle;
+        }
+        /**
+         * @return {WebGLBuffer}
+         */
 
-  }, {
-    key: 'useProgram',
-    value: function useProgram(program) {
-      var id = stamp$1(program),
-          tiny = this._tiny,
-          glProgram = this._programCache[id];
-      //this._glProgram = glProgram;
-      tiny.switchPorgarm(glProgram);
-    }
-    /**
-     * 获取extension
-     */
+    }, {
+        key: 'createBuffer',
+        value: function createBuffer() {
+            var gl = this._gl;
+            return gl.createBuffer();
+        }
+        /**
+         * @type {WebGLFramebuffer}
+         */
 
-  }, {
-    key: 'getExtension',
-    value: function getExtension(name) {
-      var glExtension = this._glExtension;
-      return glExtension.getExtension(name);
-    }
-    /**
-     * 
-     * @param {WebGLProgram} program 
-     * @param {WebGLShader} shader 
-     */
+    }, {
+        key: 'createFramebuffer',
+        value: function createFramebuffer() {
+            var gl = this._gl;
+            return gl.createFramebuffer();
+        }
+        /**
+         * 注意在处理tiny的时候，需先useProgram
+         * @param {WebGLProgram} program
+         */
 
-  }, {
-    key: 'attachShader',
-    value: function attachShader(program, shader) {
-      var glProgram = this._programCache[stamp$1(program)];
-      var glShader = this._shaderCache[stamp$1(shader)];
-      glProgram.attachShader(glShader);
-    }
-    /**
-     * 
-     * @param {WebGLShader} shader 
-     * @param {String} source 
-     */
+    }, {
+        key: 'useProgram',
+        value: function useProgram(program) {
+            var id = stamp$1(program),
+                tiny = this._tiny,
+                glProgram = GLPROGRAMS[id];
+            //this._glProgram = glProgram;
+            tiny.switchPorgarm(glProgram);
+        }
+        /**
+         * 获取extension
+         */
 
-  }, {
-    key: 'shaderSource',
-    value: function shaderSource(shader, source) {
-      var gl = this._gl;
-      gl.shaderSource(shader, source);
-    }
-    /**
-     * no need to implement
-     */
+    }, {
+        key: 'getExtension',
+        value: function getExtension(name) {
+            var glExtension = this._glExtension;
+            return glExtension.getExtension(name);
+        }
+        /**
+         * 
+         * @param {WebGLProgram} program 
+         * @param {WebGLShader} shader 
+         */
 
-  }, {
-    key: 'compileShader',
-    value: function compileShader(shader) {
-      var gl = this._gl;
-      gl.compileShader(shader);
-    }
-    /**
-     * no needs to implement this function
-     * @param {WebGLProgram} program 
-     */
+    }, {
+        key: 'attachShader',
+        value: function attachShader(program, shader) {
+            var glProgram = GLPROGRAMS[stamp$1(program)];
+            var glShader = GLSHADERS[stamp$1(shader)];
+            glProgram.attachShader(glShader);
+        }
+        /**
+         * 
+         * @param {WebGLShader} shader 
+         * @param {String} source 
+         */
 
-  }, {
-    key: 'linkProgram',
-    value: function linkProgram(program) {
-      var gl = this._gl;
-      gl.linkProgram(program);
-    }
-  }, {
-    key: 'canvas',
-    get: function get$$1() {
-      var gl = this._gl;
-      return gl.canvas;
-    }
-    /**
-     * 获取drawingBuffer的width
-     */
+    }, {
+        key: 'shaderSource',
+        value: function shaderSource(shader, source) {
+            var gl = this._gl;
+            gl.shaderSource(shader, source);
+        }
+        /**
+         * no need to implement
+         */
 
-  }, {
-    key: 'drawingBufferWidth',
-    get: function get$$1() {
-      var gl = this._gl;
-      return gl.drawingBufferWidth;
-    }
-    /**
-     * 获取drawingBuffer的height
-     */
+    }, {
+        key: 'compileShader',
+        value: function compileShader(shader) {
+            var gl = this._gl;
+            gl.compileShader(shader);
+        }
+        /**
+         * no needs to implement this function
+         * @param {WebGLProgram} program 
+         */
 
-  }, {
-    key: 'drawingBufferHeight',
-    get: function get$$1() {
-      var gl = this._gl;
-      return gl.drawingBufferHeight;
-    }
-  }]);
-  return GLContext;
+    }, {
+        key: 'linkProgram',
+        value: function linkProgram(program) {
+            var gl = this._gl;
+            gl.linkProgram(program);
+        }
+    }, {
+        key: 'canvas',
+        get: function get$$1() {
+            var gl = this._gl;
+            return gl.canvas;
+        }
+        /**
+         * 获取drawingBuffer的width
+         */
+
+    }, {
+        key: 'drawingBufferWidth',
+        get: function get$$1() {
+            var gl = this._gl;
+            return gl.drawingBufferWidth;
+        }
+        /**
+         * 获取drawingBuffer的height
+         */
+
+    }, {
+        key: 'drawingBufferHeight',
+        get: function get$$1() {
+            var gl = this._gl;
+            return gl.drawingBufferHeight;
+        }
+    }]);
+    return GLContext;
 }(Dispose_1);
 
 var GLContext_1 = GLContext;
@@ -4190,10 +4207,10 @@ var GLContext_1 = GLContext;
  *  
  */
 var stamp = stamp_1.stamp;
-var CANVAS = util.CANVAS;
-var GLCONTEXT = util.GLCONTEXT;
-var WEBGLCONTEXT = util.WEBGLCONTEXT;
-var GLEXTENSION = util.GLEXTENSION;
+var CANVASES = util.CANVASES;
+var GLCONTEXTS = util.GLCONTEXTS;
+var WEBGLCONTEXTS = util.WEBGLCONTEXTS;
+var GLEXTENSIONS = util.GLEXTENSIONS;
 var GLLIMITS = util.GLLIMITS;
 /**
  * @class
@@ -4212,7 +4229,7 @@ var GLCanvas = function (_Dispose) {
         var _this = possibleConstructorReturn(this, (GLCanvas.__proto__ || Object.getPrototypeOf(GLCanvas)).call(this));
 
         _this._rootId = stamp(canvas);
-        CANVAS[_this._rootId] = canvas;
+        CANVASES[_this._rootId] = canvas;
         return _this;
     }
     /**
@@ -4263,36 +4280,36 @@ var GLCanvas = function (_Dispose) {
 
             var id = this._id,
                 rootId = this._rootId;
-            if (!GLCONTEXT[id]) {
+            if (!GLCONTEXTS[id]) {
                 var attrib = this._getContextAttributes(options);
-                var canvas = CANVAS[rootId];
-                if (!WEBGLCONTEXT[rootId]) WEBGLCONTEXT[rootId] = canvas.getContext(renderType, attrib) || canvas.getContext('experimental-' + renderType, attrib);
-                var gl = WEBGLCONTEXT[rootId];
+                var canvas = CANVASES[rootId];
+                if (!WEBGLCONTEXTS[rootId]) WEBGLCONTEXTS[rootId] = canvas.getContext(renderType, attrib) || canvas.getContext('experimental-' + renderType, attrib);
+                var gl = WEBGLCONTEXTS[rootId];
                 if (!GLLIMITS[rootId]) GLLIMITS[rootId] = new GLLimits_1(gl);
-                if (!GLEXTENSION[rootId]) GLEXTENSION[rootId] = new GLExtension_1(gl);
+                if (!GLEXTENSIONS[rootId]) GLEXTENSIONS[rootId] = new GLExtension_1(gl);
                 var glLimits = GLLIMITS[rootId],
-                    glExtension = GLEXTENSION[rootId];
-                GLCONTEXT[id] = new GLContext_1({ renderType: renderType, canvas: canvas, gl: gl, glLimits: glLimits, glExtension: glExtension });
+                    glExtension = GLEXTENSIONS[rootId];
+                GLCONTEXTS[id] = new GLContext_1({ renderType: renderType, canvas: canvas, gl: gl, glLimits: glLimits, glExtension: glExtension });
             }
-            return GLCONTEXT[id];
+            return GLCONTEXTS[id];
         }
     }, {
         key: 'getBoundingClientRect',
         value: function getBoundingClientRect() {
             var id = this._rootId;
-            CANVAS[id].getBoundingClientRect();
+            CANVASES[id].getBoundingClientRect();
         }
     }, {
         key: 'addEventListener',
         value: function addEventListener(type, Listener, useCapture) {
             var id = this._rootId;
-            CANVAS[id].addEventListener(type, Listener, useCapture);
+            CANVASES[id].addEventListener(type, Listener, useCapture);
         }
     }, {
         key: 'style',
         get: function get$$1() {
             var id = this._rootId;
-            return CANVAS[id].style;
+            return CANVASES[id].style;
         }
     }]);
     return GLCanvas;
